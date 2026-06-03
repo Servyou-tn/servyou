@@ -60,6 +60,11 @@ The following are explicitly NOT in the MVP and should NOT be added without firs
 - When in doubt, prefer the simpler approach
 - Tunisia-first: check that every design decision fits Tunisian reality (governorates, dinars, WhatsApp, French/Arabic where relevant)
 
+## Git Commit Rules
+
+- NEVER add "Co-Authored-By" lines or any Claude/Anthropic attribution to commit messages
+- Use the exact commit message provided by the user when one is given; otherwise write a clear one-line message with no trailer lines
+
 ## Reference Documents
 
 The full project context lives in 11 documents inside the Claude.ai project workspace. When more detail is needed, refer to those documents — especially the database architecture, security model, and frontend architecture files.
