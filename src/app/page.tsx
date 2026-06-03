@@ -5,6 +5,16 @@ export default async function HomePage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
+  let sellerType: string | null = null
+  if (user) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('seller_type')
+      .eq('id', user.id)
+      .single()
+    sellerType = profile?.seller_type ?? null
+  }
+
   return (
     <main className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
       <div className="bg-white rounded-lg shadow p-8 max-w-md w-full text-center">
@@ -13,13 +23,28 @@ export default async function HomePage() {
         {user ? (
           <>
             <p className="text-gray-600 mb-4">{user.email}</p>
-            <div className="flex justify-center gap-3 mb-6">
+            <div className="flex flex-wrap justify-center gap-3 mb-6">
               <Link
                 href="/profile"
                 className="border border-gray-300 hover:bg-gray-50 text-gray-700 font-medium py-2 px-5 rounded text-sm transition-colors"
               >
                 Mon profil
               </Link>
+              {sellerType === 'shop_owner' ? (
+                <Link
+                  href="/ma-boutique"
+                  className="border border-gray-300 hover:bg-gray-50 text-gray-700 font-medium py-2 px-5 rounded text-sm transition-colors"
+                >
+                  Ma boutique
+                </Link>
+              ) : sellerType === null ? (
+                <Link
+                  href="/devenir-vendeur"
+                  className="border border-blue-300 hover:bg-blue-50 text-blue-700 font-medium py-2 px-5 rounded text-sm transition-colors"
+                >
+                  Devenir vendeur
+                </Link>
+              ) : null}
             </div>
             <form action="/auth/signout" method="POST">
               <button
