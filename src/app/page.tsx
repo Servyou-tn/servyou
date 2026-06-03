@@ -37,6 +37,13 @@ export default async function HomePage() {
                 >
                   Ma boutique
                 </Link>
+              ) : sellerType === 'freelancer' ? (
+                <Link
+                  href="/mon-profil-freelance"
+                  className="border border-gray-300 hover:bg-gray-50 text-gray-700 font-medium py-2 px-5 rounded text-sm transition-colors"
+                >
+                  Mon espace freelance
+                </Link>
               ) : sellerType === null ? (
                 <Link
                   href="/devenir-vendeur"

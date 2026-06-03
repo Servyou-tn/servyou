@@ -47,6 +47,26 @@ export default function DevenirVendeurPage() {
     load()
   }, [])
 
+  async function handleFreelancer() {
+    if (!userId) return
+    setError('')
+    setUpgrading(true)
+
+    const { error: updateError } = await supabase
+      .from('profiles')
+      .update({ seller_type: 'freelancer' })
+      .eq('id', userId)
+
+    setUpgrading(false)
+
+    if (updateError) {
+      setError('Une erreur est survenue. Veuillez réessayer.')
+      return
+    }
+
+    router.push('/mon-profil-freelance/creer')
+  }
+
   async function handleShopOwner() {
     if (!userId) return
     setError('')
@@ -113,8 +133,9 @@ export default function DevenirVendeurPage() {
               </button>
 
               <button
-                onClick={() => router.push('/devenir-freelance')}
-                className="w-full border-2 border-gray-300 hover:bg-gray-50 text-gray-600 font-medium py-3 px-4 rounded text-sm transition-colors"
+                onClick={handleFreelancer}
+                disabled={upgrading}
+                className="w-full border-2 border-gray-300 hover:bg-gray-50 text-gray-600 font-medium py-3 px-4 rounded text-sm transition-colors disabled:opacity-50"
               >
                 💼 Devenir freelance
               </button>
