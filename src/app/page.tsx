@@ -12,7 +12,15 @@ export default async function HomePage() {
 
         {user ? (
           <>
-            <p className="text-gray-600 mb-6">{user.email}</p>
+            <p className="text-gray-600 mb-4">{user.email}</p>
+            <div className="flex justify-center gap-3 mb-6">
+              <Link
+                href="/profile"
+                className="border border-gray-300 hover:bg-gray-50 text-gray-700 font-medium py-2 px-5 rounded text-sm transition-colors"
+              >
+                Mon profil
+              </Link>
+            </div>
             <form action="/auth/signout" method="POST">
               <button
                 type="submit"
