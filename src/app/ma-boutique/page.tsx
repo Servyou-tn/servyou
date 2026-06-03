@@ -82,12 +82,18 @@ export default function MaBoutiquePage() {
           </div>
         </div>
 
-        <div className="mt-6 mb-8">
+        <div className="mt-6 mb-4 flex flex-wrap gap-3">
           <Link
             href="/ma-boutique/produits"
             className="inline-block bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-5 rounded text-sm transition-colors"
           >
             Gérer mes produits
+          </Link>
+          <Link
+            href={`/boutique/${shop!.id}`}
+            className="inline-block border border-gray-300 hover:bg-gray-50 text-gray-700 font-medium py-2 px-5 rounded text-sm transition-colors"
+          >
+            Voir ma boutique publique
           </Link>
         </div>
 
