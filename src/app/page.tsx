@@ -37,6 +37,7 @@ export default async function HomePage() {
             <div className="flex flex-wrap items-center gap-2 text-sm">
               <Link href="/profile" className="text-gray-600 hover:underline">Mon profil</Link>
               <Link href="/mes-demandes" className="text-gray-600 hover:underline">Mes demandes</Link>
+              <Link href="/mes-favoris" className="text-gray-600 hover:underline">Mes favoris</Link>
               {sellerType === 'shop_owner' && <Link href="/ma-boutique" className="text-gray-600 hover:underline">Ma boutique</Link>}
               {sellerType === 'freelancer' && <Link href="/mon-profil-freelance" className="text-gray-600 hover:underline">Mon espace freelance</Link>}
               {sellerType === null && <Link href="/devenir-vendeur" className="text-blue-600 hover:underline">Devenir vendeur</Link>}
