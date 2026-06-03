@@ -165,6 +165,10 @@ export default function MonProfilFreelancePage() {
             className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-5 rounded text-sm transition-colors">
             Gérer mes services
           </Link>
+          <Link href="/mon-profil-freelance/demandes"
+            className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-5 rounded text-sm transition-colors">
+            Demandes reçues
+          </Link>
           <Link href={`/freelance/${fp!.id}`}
             className="border border-gray-300 hover:bg-gray-50 text-gray-700 font-medium py-2 px-5 rounded text-sm transition-colors">
             Voir mon profil public
