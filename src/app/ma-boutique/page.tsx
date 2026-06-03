@@ -82,11 +82,16 @@ export default function MaBoutiquePage() {
           </div>
         </div>
 
-        <p className="text-sm text-gray-400 italic">
-          La gestion des produits sera disponible prochainement.
-        </p>
+        <div className="mt-6 mb-8">
+          <Link
+            href="/ma-boutique/produits"
+            className="inline-block bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-5 rounded text-sm transition-colors"
+          >
+            Gérer mes produits
+          </Link>
+        </div>
 
-        <div className="mt-8">
+        <div className="mt-2">
           <Link href="/" className="text-sm text-blue-600 hover:underline">
             ← Retour à l'accueil
           </Link>
