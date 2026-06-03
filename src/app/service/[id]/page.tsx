@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
+import { FavoriteButton } from '@/components/FavoriteButton'
 
 type Props = { params: Promise<{ id: string }> }
 
@@ -33,7 +34,10 @@ export default async function ServicePage({ params }: Props) {
     <main className="min-h-screen bg-gray-50 px-4 py-12">
       <div className="max-w-2xl mx-auto">
         <div className="bg-white rounded-lg shadow p-8 mb-4">
-          <h1 className="text-2xl font-bold text-gray-800 mb-2">{service.title}</h1>
+          <div className="flex items-start justify-between gap-2 mb-2">
+            <h1 className="text-2xl font-bold text-gray-800">{service.title}</h1>
+            <FavoriteButton item_type="service" item_id={service.id} />
+          </div>
 
           <p className="text-2xl text-blue-700 font-bold mb-4">
             À partir de {Number(service.starting_price_tnd).toFixed(2)} TND
