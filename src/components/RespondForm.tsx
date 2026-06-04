@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { MAX_RESPONSES_PER_POST, MAX_ACTIVE_RESPONSES_PER_FREELANCER, JOB_POST_EXPIRY_DAYS } from '@/lib/job-constants'
 import { isValidPhone, normalizePhone } from '@/lib/phone'
+import { useLang } from './LangProvider'
+import { t } from '@/lib/i18n'
 
 type Props = {
   jobPostId: string
@@ -16,6 +18,7 @@ type Props = {
 export function RespondForm({ jobPostId, jobPostTitle, consumerPhone, currentResponseCount }: Props) {
   const supabase = createClient()
   const router = useRouter()
+  const lang = useLang()
 
   const [proposal, setProposal] = useState('')
   const [submitting, setSubmitting] = useState(false)
@@ -36,19 +39,16 @@ export function RespondForm({ jobPostId, jobPostTitle, consumerPhone, currentRes
       setProfilePhone(profile?.phone ?? null)
 
       if (currentResponseCount >= MAX_RESPONSES_PER_POST) {
-        setCapError('Cette mission a atteint le nombre maximum de réponses.')
+        setCapError(t('respond.cap_post_full', lang))
         return
       }
 
-      // Count this freelancer's active responses
       const cutoff = new Date(Date.now() - JOB_POST_EXPIRY_DAYS * 86400000).toISOString()
       const { count } = await supabase
         .from('job_responses')
         .select('id', { count: 'exact', head: true })
         .eq('freelancer_id', user.id)
-        // join-based filter not available via count; use subquery approach
 
-      // Fetch active post IDs directly
       const { data: activePosts } = await supabase
         .from('job_posts')
         .select('id')
@@ -64,15 +64,14 @@ export function RespondForm({ jobPostId, jobPostTitle, consumerPhone, currentRes
           .in('job_post_id', activeIds)
 
         if ((activeCount ?? 0) >= MAX_ACTIVE_RESPONSES_PER_FREELANCER) {
-          setCapError(`Vous avez atteint le maximum de ${MAX_ACTIVE_RESPONSES_PER_FREELANCER} réponses actives. Attendez qu'une mission se ferme pour répondre à une nouvelle.`)
+          setCapError(t('respond.cap_active_full', lang, { n: MAX_ACTIVE_RESPONSES_PER_FREELANCER }))
         }
       }
 
-      // suppress unused count warning
       void count
     }
     checkCaps()
-  }, [jobPostId, currentResponseCount])
+  }, [jobPostId, currentResponseCount, lang])
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -86,7 +85,7 @@ export function RespondForm({ jobPostId, jobPostTitle, consumerPhone, currentRes
 
     if (!profilePhone) {
       if (!isValidPhone(phoneInput)) {
-        setError('Format attendu : 8 chiffres (ex. 20 123 456) ou +216 suivi de 8 chiffres.')
+        setError(t('common.phone_format_error', lang))
         setSubmitting(false)
         return
       }
@@ -96,7 +95,7 @@ export function RespondForm({ jobPostId, jobPostTitle, consumerPhone, currentRes
         .eq('id', user.id)
       if (phoneErr) {
         console.error('[RespondForm] phone update error:', phoneErr)
-        setError('Impossible de sauvegarder le numéro. Veuillez réessayer.')
+        setError(t('common.phone_save_error', lang))
         setSubmitting(false)
         return
       }
@@ -113,20 +112,19 @@ export function RespondForm({ jobPostId, jobPostTitle, consumerPhone, currentRes
     setSubmitting(false)
 
     if (insertErr) {
-      // Surface the trigger's French error message
       const msg = insertErr.message ?? ''
       if (msg.includes('maximum de réponses actives')) {
-        setError(`Vous avez atteint le maximum de ${MAX_ACTIVE_RESPONSES_PER_FREELANCER} réponses actives.`)
+        setError(t('respond.error_cap_active', lang, { n: MAX_ACTIVE_RESPONSES_PER_FREELANCER }))
       } else if (msg.includes('nombre maximum de réponses')) {
-        setError('Cette mission a atteint le nombre maximum de réponses.')
+        setError(t('respond.error_cap_post', lang))
       } else if (msg.includes('déjà répondu')) {
-        setError('Vous avez déjà répondu à cette mission.')
+        setError(t('respond.error_already', lang))
       } else if (msg.includes('plus ouverte') || msg.includes('expiré')) {
-        setError('Cette mission n\'est plus disponible.')
+        setError(t('respond.error_closed', lang))
       } else if (msg.includes('propre annonce')) {
-        setError('Vous ne pouvez pas répondre à votre propre mission.')
+        setError(t('respond.error_own', lang))
       } else {
-        setError('Erreur lors de l\'envoi. Veuillez réessayer.')
+        setError(t('respond.error_generic', lang))
       }
       return
     }
@@ -142,18 +140,16 @@ export function RespondForm({ jobPostId, jobPostTitle, consumerPhone, currentRes
     return (
       <div className="space-y-4">
         <div className="bg-green-50 border border-green-200 rounded px-4 py-3 text-sm text-green-700">
-          Votre réponse a été envoyée. Le client pourra vous contacter via WhatsApp.
+          {t('respond.success', lang)}
         </div>
         {phone ? (
           <a href={`https://wa.me/${phone}?text=${waText}`}
             target="_blank" rel="noopener noreferrer"
             className="inline-block bg-green-500 hover:bg-green-600 text-white font-medium text-sm px-4 py-2 rounded transition-colors">
-            Contacter le client sur WhatsApp
+            {t('respond.whatsapp_btn', lang)}
           </a>
         ) : (
-          <p className="text-sm text-gray-500">
-            Le client n'a pas encore renseigné son numéro de téléphone. Il vous contactera directement.
-          </p>
+          <p className="text-sm text-gray-500">{t('respond.no_phone', lang)}</p>
         )}
       </div>
     )
@@ -171,23 +167,24 @@ export function RespondForm({ jobPostId, jobPostTitle, consumerPhone, currentRes
     <form onSubmit={handleSubmit} className="space-y-3">
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">
-          Message de candidature <span className="text-gray-400 text-xs">(facultatif)</span>
+          {t('respond.field_proposal', lang)}{' '}
+          <span className="text-gray-400 text-xs">{t('respond.field_proposal_opt', lang)}</span>
         </label>
         <textarea rows={4} value={proposal} onChange={e => setProposal(e.target.value)}
-          placeholder="Présentez brièvement votre expérience et pourquoi vous êtes le bon profil…"
+          placeholder={t('respond.field_proposal_ph', lang)}
           className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
       </div>
 
       {!profilePhone && (
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Numéro WhatsApp <span className="text-red-500">*</span>
+            {t('common.phone_label', lang)} <span className="text-red-500">*</span>
           </label>
           <input type="tel" required value={phoneInput} onChange={e => setPhoneInput(e.target.value)}
-            placeholder="Ex : 20 000 000, 056 480 920, +216 20 000 000"
+            placeholder={t('common.phone_placeholder', lang)}
             className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
           <p className="text-xs text-gray-400 mt-1">
-            Nécessaire pour que le client puisse vous contacter via WhatsApp.
+            {t('common.phone_helper_client', lang)}
           </p>
         </div>
       )}
@@ -198,7 +195,7 @@ export function RespondForm({ jobPostId, jobPostTitle, consumerPhone, currentRes
 
       <button type="submit" disabled={submitting || (!profilePhone && !phoneInput.trim())}
         className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 text-white font-medium py-2 px-4 rounded text-sm transition-colors">
-        {submitting ? 'Envoi…' : 'Envoyer ma candidature'}
+        {submitting ? t('respond.submitting', lang) : t('respond.submit', lang)}
       </button>
     </form>
   )

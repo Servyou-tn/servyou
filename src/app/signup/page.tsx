@@ -2,6 +2,8 @@
 
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { useLang } from '@/components/LangProvider'
+import { t } from '@/lib/i18n'
 
 const GOVERNORATES = [
   'Tunis', 'Ariana', 'Ben Arous', 'Manouba', 'Nabeul', 'Zaghouan',
@@ -15,30 +17,25 @@ function getAge(dateOfBirth: string): number {
   const dob = new Date(dateOfBirth)
   let age = today.getFullYear() - dob.getFullYear()
   const monthDiff = today.getMonth() - dob.getMonth()
-  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dob.getDate())) {
-    age--
-  }
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dob.getDate())) age--
   return age
 }
 
-function translateError(message: string): string {
+function translateError(message: string, lang: ReturnType<typeof useLang>): string {
   if (message.includes('User already registered') || message.includes('already been registered')) {
-    return 'Cette adresse e-mail est déjà utilisée. Veuillez vous connecter ou utiliser une autre adresse.'
+    return t('signup.error_email_exists', lang)
   }
-  if (message.includes('Invalid email')) {
-    return 'Adresse e-mail invalide.'
-  }
-  if (message.includes('Password should be at least')) {
-    return 'Le mot de passe doit contenir au moins 8 caractères.'
-  }
+  if (message.includes('Invalid email')) return t('signup.error_invalid_email', lang)
+  if (message.includes('Password should be at least')) return t('signup.error_password_len', lang)
   if (message.includes('rate limit') || message.includes('too many requests')) {
-    return 'Trop de tentatives. Veuillez patienter quelques minutes avant de réessayer.'
+    return t('common.rate_limit', lang)
   }
-  return 'Une erreur est survenue. Veuillez réessayer.'
+  return t('common.error_generic', lang)
 }
 
 export default function SignupPage() {
   const supabase = createClient()
+  const lang = useLang()
 
   const [fullName, setFullName] = useState('')
   const [email, setEmail] = useState('')
@@ -55,15 +52,15 @@ export default function SignupPage() {
     setError('')
 
     if (!fullName || !email || !password || !dateOfBirth || !city) {
-      setError('Veuillez remplir tous les champs obligatoires.')
+      setError(t('signup.error_all_fields', lang))
       return
     }
     if (password.length < 8) {
-      setError('Le mot de passe doit contenir au moins 8 caractères.')
+      setError(t('signup.error_password_len', lang))
       return
     }
     if (getAge(dateOfBirth) < 16) {
-      setError('Vous devez avoir au moins 16 ans pour créer un compte. Nous espérons vous accueillir bientôt !')
+      setError(t('signup.error_min_age', lang))
       return
     }
 
@@ -72,18 +69,13 @@ export default function SignupPage() {
       email,
       password,
       options: {
-        data: {
-          full_name: fullName,
-          date_of_birth: dateOfBirth,
-          city,
-          language,
-        },
+        data: { full_name: fullName, date_of_birth: dateOfBirth, city, language },
       },
     })
     setLoading(false)
 
     if (signUpError) {
-      setError(translateError(signUpError.message))
+      setError(translateError(signUpError.message, lang))
       return
     }
 
@@ -95,10 +87,9 @@ export default function SignupPage() {
       <main className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
         <div className="bg-white rounded-lg shadow p-8 max-w-md w-full text-center">
           <div className="text-4xl mb-4">✉️</div>
-          <h1 className="text-xl font-semibold text-gray-800 mb-2">Vérifiez votre e-mail</h1>
+          <h1 className="text-xl font-semibold text-gray-800 mb-2">{t('signup.success_title', lang)}</h1>
           <p className="text-gray-600">
-            Un lien de confirmation a été envoyé à <span className="font-medium">{email}</span>.
-            Veuillez cliquer sur ce lien pour activer votre compte avant de vous connecter.
+            {t('signup.success_prefix', lang)}<span className="font-medium">{email}</span>{t('signup.success_suffix', lang)}
           </p>
         </div>
       </main>
@@ -108,18 +99,15 @@ export default function SignupPage() {
   return (
     <main className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
       <div className="bg-white rounded-lg shadow p-8 max-w-md w-full">
-        <h1 className="text-2xl font-bold text-gray-800 mb-6">Créer un compte</h1>
+        <h1 className="text-2xl font-bold text-gray-800 mb-6">{t('signup.title', lang)}</h1>
 
         <form onSubmit={handleSubmit} noValidate className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="fullName">
-              Nom complet <span className="text-red-500">*</span>
+              {t('signup.full_name', lang)} <span className="text-red-500">*</span>
             </label>
             <input
-              id="fullName"
-              type="text"
-              required
-              value={fullName}
+              id="fullName" type="text" required value={fullName}
               onChange={e => setFullName(e.target.value)}
               className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
@@ -127,13 +115,10 @@ export default function SignupPage() {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="email">
-              E-mail <span className="text-red-500">*</span>
+              {t('signup.email', lang)} <span className="text-red-500">*</span>
             </label>
             <input
-              id="email"
-              type="email"
-              required
-              value={email}
+              id="email" type="email" required value={email}
               onChange={e => setEmail(e.target.value)}
               className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
@@ -141,29 +126,22 @@ export default function SignupPage() {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="password">
-              Mot de passe <span className="text-red-500">*</span>
+              {t('signup.password', lang)} <span className="text-red-500">*</span>
             </label>
             <input
-              id="password"
-              type="password"
-              required
-              minLength={8}
-              value={password}
+              id="password" type="password" required minLength={8} value={password}
               onChange={e => setPassword(e.target.value)}
               className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
-            <p className="text-xs text-gray-500 mt-1">Minimum 8 caractères</p>
+            <p className="text-xs text-gray-500 mt-1">{t('signup.password_hint', lang)}</p>
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="dateOfBirth">
-              Date de naissance <span className="text-red-500">*</span>
+              {t('signup.date_of_birth', lang)} <span className="text-red-500">*</span>
             </label>
             <input
-              id="dateOfBirth"
-              type="date"
-              required
-              value={dateOfBirth}
+              id="dateOfBirth" type="date" required value={dateOfBirth}
               onChange={e => setDateOfBirth(e.target.value)}
               className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
@@ -171,16 +149,14 @@ export default function SignupPage() {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="city">
-              Ville / Gouvernorat <span className="text-red-500">*</span>
+              {t('signup.city', lang)} <span className="text-red-500">*</span>
             </label>
             <select
-              id="city"
-              required
-              value={city}
+              id="city" required value={city}
               onChange={e => setCity(e.target.value)}
               className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
             >
-              <option value="">— Choisir un gouvernorat —</option>
+              <option value="">{t('signup.city_placeholder', lang)}</option>
               {GOVERNORATES.map(gov => (
                 <option key={gov} value={gov}>{gov}</option>
               ))}
@@ -189,16 +165,15 @@ export default function SignupPage() {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="language">
-              Langue préférée
+              {t('signup.language', lang)}
             </label>
             <select
-              id="language"
-              value={language}
+              id="language" value={language}
               onChange={e => setLanguage(e.target.value)}
               className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
             >
-              <option value="fr">Français</option>
-              <option value="ar">العربية</option>
+              <option value="fr">{t('signup.lang_fr', lang)}</option>
+              <option value="ar">{t('signup.lang_ar', lang)}</option>
             </select>
           </div>
 
@@ -213,7 +188,7 @@ export default function SignupPage() {
             disabled={loading}
             className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 text-white font-medium py-2 px-4 rounded text-sm transition-colors"
           >
-            {loading ? 'Inscription en cours…' : 'Créer mon compte'}
+            {loading ? t('signup.submitting', lang) : t('signup.submit', lang)}
           </button>
         </form>
       </div>

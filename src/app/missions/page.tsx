@@ -1,5 +1,7 @@
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
+import { getLang } from '@/lib/i18n/server'
+import { t, type Lang } from '@/lib/i18n'
 import { JOB_POST_EXPIRY_DAYS, MAX_RESPONSES_PER_POST } from '@/lib/job-constants'
 
 type SearchParams = Promise<{
@@ -24,16 +26,17 @@ type Post = {
   skills: string[]
 }
 
-function budgetLabel(min: number | null, max: number | null) {
+function budgetLabel(min: number | null, max: number | null, lang: Lang) {
   if (!min && !max) return null
   if (min && max) return `${Number(min).toFixed(0)} – ${Number(max).toFixed(0)} TND`
-  if (min) return `Dès ${Number(min).toFixed(0)} TND`
-  return `Jusqu'à ${Number(max).toFixed(0)} TND`
+  if (min) return `${t('missions.budget_from', lang)} ${Number(min).toFixed(0)} TND`
+  return `${t('missions.budget_to', lang)} ${Number(max).toFixed(0)} TND`
 }
 
 export default async function MissionsPage({ searchParams }: { searchParams: SearchParams }) {
   const { categorie, ville, budget_max, competence } = await searchParams
   const supabase = await createClient()
+  const lang = await getLang()
 
   const cutoff = new Date(Date.now() - JOB_POST_EXPIRY_DAYS * 86400000).toISOString()
 
@@ -67,8 +70,7 @@ export default async function MissionsPage({ searchParams }: { searchParams: Sea
   if (budget_max) query = query.or(`budget_max.lte.${budget_max},budget_max.is.null`)
   if (skillFilterIds !== null) {
     if (skillFilterIds.length === 0) {
-      // No posts match this skill
-      return renderPage([], categories, { categorie, ville, budget_max, competence })
+      return renderPage([], categories, { categorie, ville, budget_max, competence }, lang)
     }
     query = query.in('id', skillFilterIds)
   }
@@ -108,22 +110,23 @@ export default async function MissionsPage({ searchParams }: { searchParams: Sea
     skills: skillsByPost[p.id] ?? [],
   }))
 
-  return renderPage(posts, categories, { categorie, ville, budget_max, competence })
+  return renderPage(posts, categories, { categorie, ville, budget_max, competence }, lang)
 }
 
 function renderPage(
   posts: Post[],
   categories: { id: string; name_fr: string; slug: string }[] | null,
-  filters: { categorie?: string; ville?: string; budget_max?: string; competence?: string }
+  filters: { categorie?: string; ville?: string; budget_max?: string; competence?: string },
+  lang: Lang,
 ) {
   return (
     <main className="min-h-screen bg-gray-50 px-4 py-10">
       <div className="max-w-4xl mx-auto space-y-8">
         <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-gray-800">Tableau des missions</h1>
+          <h1 className="text-2xl font-bold text-gray-800">{t('missions.title', lang)}</h1>
           <Link href="/poster-mission"
             className="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded transition-colors">
-            Poster une mission
+            {t('missions.post_btn', lang)}
           </Link>
         </div>
 
@@ -131,42 +134,44 @@ function renderPage(
         <form method="GET" action="/missions" className="bg-white rounded-lg shadow p-4 flex flex-wrap gap-3">
           <select name="categorie" defaultValue={filters.categorie ?? ''}
             className="border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-            <option value="">Toutes catégories</option>
+            <option value="">{t('missions.filter_all_cats', lang)}</option>
             {(categories ?? []).map(c => (
               <option key={c.id} value={c.id}>{c.name_fr}</option>
             ))}
           </select>
 
           <input name="ville" type="text" defaultValue={filters.ville ?? ''}
-            placeholder="Ville"
+            placeholder={t('missions.filter_city', lang)}
             className="border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-36" />
 
           <input name="budget_max" type="number" min="0" defaultValue={filters.budget_max ?? ''}
-            placeholder="Budget max (TND)"
+            placeholder={t('missions.filter_budget_max', lang)}
             className="border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-44" />
 
           <input name="competence" type="text" defaultValue={filters.competence ?? ''}
-            placeholder="Compétence"
+            placeholder={t('missions.filter_skill', lang)}
             className="border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-36" />
 
           <button type="submit"
             className="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded transition-colors">
-            Filtrer
+            {t('missions.filter_btn', lang)}
           </button>
           {Object.values(filters).some(Boolean) && (
-            <a href="/missions" className="text-sm text-gray-500 hover:underline self-center">Réinitialiser</a>
+            <a href="/missions" className="text-sm text-gray-500 hover:underline self-center">
+              {t('missions.filter_reset', lang)}
+            </a>
           )}
         </form>
 
         {/* Results */}
         {posts.length === 0 ? (
           <div className="bg-white rounded-lg shadow p-8 text-center text-gray-500">
-            Aucune mission disponible pour le moment.
+            {t('missions.empty', lang)}
           </div>
         ) : (
           <div className="space-y-4">
             {posts.map(post => {
-              const budget = budgetLabel(post.budget_min, post.budget_max)
+              const budget = budgetLabel(post.budget_min, post.budget_max, lang)
               const date = new Date(post.created_at).toLocaleDateString('fr-TN', { day: '2-digit', month: 'short', year: 'numeric' })
               const capped = post.response_count >= MAX_RESPONSES_PER_POST
               return (
@@ -178,7 +183,7 @@ function renderPage(
                         {post.title}
                       </Link>
                       <p className="text-xs text-gray-500 mt-0.5">
-                        {post.is_remote ? 'À distance' : (post.city ?? '')}
+                        {post.is_remote ? t('missions.remote', lang) : (post.city ?? '')}
                         {post.categories ? ` · ${(post.categories as unknown as { name_fr: string }).name_fr}` : ''}
                         {' · '}{date}
                       </p>
@@ -200,15 +205,15 @@ function renderPage(
 
                   <div className="flex items-center justify-between gap-2 pt-1">
                     <span className="text-xs text-gray-400">
-                      {post.response_count} réponse{post.response_count > 1 ? 's' : ''}
-                      {post.deadline ? ` · Avant le ${new Date(post.deadline).toLocaleDateString('fr-TN', { day: '2-digit', month: 'short' })}` : ''}
+                      {post.response_count} {post.response_count > 1 ? t('missions.response_plural', lang) : t('missions.response_singular', lang)}
+                      {post.deadline ? ` · ${t('missions.deadline_prefix', lang)}${new Date(post.deadline).toLocaleDateString('fr-TN', { day: '2-digit', month: 'short' })}` : ''}
                     </span>
                     {capped ? (
-                      <span className="text-xs text-gray-400 italic">Réponses complètes</span>
+                      <span className="text-xs text-gray-400 italic">{t('missions.full', lang)}</span>
                     ) : (
                       <Link href={`/missions/${post.id}`}
                         className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium px-3 py-1.5 rounded transition-colors">
-                        Voir et répondre
+                        {t('missions.view_respond', lang)}
                       </Link>
                     )}
                   </div>
@@ -219,7 +224,7 @@ function renderPage(
         )}
 
         <div>
-          <Link href="/" className="text-sm text-blue-600 hover:underline">← Retour à l'accueil</Link>
+          <Link href="/" className="text-sm text-blue-600 hover:underline">{t('common.back_home', lang)}</Link>
         </div>
       </div>
     </main>
