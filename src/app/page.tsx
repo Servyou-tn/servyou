@@ -1,8 +1,12 @@
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
+import { getLang } from '@/lib/i18n/server'
+import { t } from '@/lib/i18n'
 
 export default async function HomePage() {
   const supabase = await createClient()
+  const lang = await getLang()
+
   const { data: { user } } = await supabase.auth.getUser()
 
   let sellerType: string | null = null
@@ -35,23 +39,23 @@ export default async function HomePage() {
           <span className="font-bold text-gray-800 text-lg">Servyou</span>
           {user ? (
             <div className="flex flex-wrap items-center gap-2 text-sm">
-              <Link href="/profile" className="text-gray-600 hover:underline">Mon profil</Link>
-              <Link href="/mes-demandes" className="text-gray-600 hover:underline">Mes demandes</Link>
-              <Link href="/mes-favoris" className="text-gray-600 hover:underline">Mes favoris</Link>
-              <Link href="/mes-missions" className="text-gray-600 hover:underline">Mes missions</Link>
-              {sellerType === 'shop_owner' && <Link href="/ma-boutique" className="text-gray-600 hover:underline">Ma boutique</Link>}
-              {sellerType === 'freelancer' && <Link href="/mon-profil-freelance" className="text-gray-600 hover:underline">Mon espace freelance</Link>}
-              {sellerType === 'freelancer' && <Link href="/mes-reponses" className="text-gray-600 hover:underline">Mes réponses</Link>}
-              {sellerType === null && <Link href="/devenir-vendeur" className="text-blue-600 hover:underline">Devenir vendeur</Link>}
+              <Link href="/profile" className="text-gray-600 hover:underline">{t('nav.profile', lang)}</Link>
+              <Link href="/mes-demandes" className="text-gray-600 hover:underline">{t('nav.orders', lang)}</Link>
+              <Link href="/mes-favoris" className="text-gray-600 hover:underline">{t('nav.favorites', lang)}</Link>
+              <Link href="/mes-missions" className="text-gray-600 hover:underline">{t('nav.missions', lang)}</Link>
+              {sellerType === 'shop_owner' && <Link href="/ma-boutique" className="text-gray-600 hover:underline">{t('nav.shop', lang)}</Link>}
+              {sellerType === 'freelancer' && <Link href="/mon-profil-freelance" className="text-gray-600 hover:underline">{t('nav.freelance_space', lang)}</Link>}
+              {sellerType === 'freelancer' && <Link href="/mes-reponses" className="text-gray-600 hover:underline">{t('nav.my_responses', lang)}</Link>}
+              {sellerType === null && <Link href="/devenir-vendeur" className="text-blue-600 hover:underline">{t('nav.become_seller', lang)}</Link>}
               <form action="/auth/signout" method="POST" className="inline">
-                <button type="submit" className="text-red-500 hover:underline">Déconnexion</button>
+                <button type="submit" className="text-red-500 hover:underline">{t('nav.logout', lang)}</button>
               </form>
             </div>
           ) : (
             <div className="flex gap-3 text-sm items-center">
-              <Link href="/missions" className="text-gray-600 hover:underline">Missions</Link>
-              <Link href="/login" className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-1.5 rounded transition-colors">Se connecter</Link>
-              <Link href="/signup" className="border border-gray-300 hover:bg-gray-50 text-gray-700 px-4 py-1.5 rounded transition-colors">Créer un compte</Link>
+              <Link href="/missions" className="text-gray-600 hover:underline">{t('nav.missions_board', lang)}</Link>
+              <Link href="/login" className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-1.5 rounded transition-colors">{t('nav.login', lang)}</Link>
+              <Link href="/signup" className="border border-gray-300 hover:bg-gray-50 text-gray-700 px-4 py-1.5 rounded transition-colors">{t('nav.signup', lang)}</Link>
             </div>
           )}
         </div>
@@ -61,13 +65,13 @@ export default async function HomePage() {
 
         {/* Search */}
         <section>
-          <h1 className="text-2xl font-bold text-gray-800 mb-4 text-center">Trouvez des produits et services en Tunisie</h1>
+          <h1 className="text-2xl font-bold text-gray-800 mb-4 text-center">{t('home.hero', lang)}</h1>
           <form action="/recherche" method="GET" className="flex gap-2 max-w-xl mx-auto">
-            <input name="q" type="text" placeholder="Rechercher un produit ou service…"
+            <input name="q" type="text" placeholder={t('home.search_placeholder', lang)}
               className="flex-1 border border-gray-300 rounded px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
             <button type="submit"
               className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-5 py-2 rounded text-sm transition-colors">
-              Rechercher
+              {t('home.search_btn', lang)}
             </button>
           </form>
         </section>
@@ -75,7 +79,7 @@ export default async function HomePage() {
         {/* Categories */}
         {categories && categories.length > 0 && (
           <section>
-            <h2 className="text-lg font-semibold text-gray-700 mb-3">Catégories</h2>
+            <h2 className="text-lg font-semibold text-gray-700 mb-3">{t('home.categories', lang)}</h2>
             <div className="flex flex-wrap gap-2">
               {(categories as unknown as { id: string; name_fr: string; slug: string }[]).map(c => (
                 <Link key={c.id} href={`/categorie/${c.slug}`}
@@ -89,9 +93,9 @@ export default async function HomePage() {
 
         {/* Recent products */}
         <section>
-          <h2 className="text-lg font-semibold text-gray-700 mb-3">Produits récents</h2>
+          <h2 className="text-lg font-semibold text-gray-700 mb-3">{t('home.recent_products', lang)}</h2>
           {!recentProducts || recentProducts.length === 0 ? (
-            <p className="text-gray-400 text-sm">Aucun produit disponible pour le moment.</p>
+            <p className="text-gray-400 text-sm">{t('home.no_products', lang)}</p>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               {(recentProducts as unknown as { id: string; title: string; price_tnd: number; shops: { name: string; city: string } | null }[]).map(p => (
@@ -108,9 +112,9 @@ export default async function HomePage() {
 
         {/* Recent services */}
         <section>
-          <h2 className="text-lg font-semibold text-gray-700 mb-3">Services récents</h2>
+          <h2 className="text-lg font-semibold text-gray-700 mb-3">{t('home.recent_services', lang)}</h2>
           {!recentServices || recentServices.length === 0 ? (
-            <p className="text-gray-400 text-sm">Aucun service disponible pour le moment.</p>
+            <p className="text-gray-400 text-sm">{t('home.no_services', lang)}</p>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               {(recentServices as unknown as { id: string; title: string; starting_price_tnd: number; freelancer_profiles: { city: string | null; profiles: { full_name: string } | null } | null }[]).map(s => {
@@ -120,7 +124,7 @@ export default async function HomePage() {
                   <Link key={s.id} href={`/service/${s.id}`}
                     className="bg-white rounded-lg shadow p-4 hover:shadow-md transition-shadow flex flex-col gap-1">
                     <p className="font-medium text-gray-800 text-sm line-clamp-2">{s.title}</p>
-                    <p className="text-blue-700 font-semibold text-sm">Dès {Number(s.starting_price_tnd).toFixed(2)} TND</p>
+                    <p className="text-blue-700 font-semibold text-sm">{t('home.from_price', lang)} {Number(s.starting_price_tnd).toFixed(2)} TND</p>
                     {(name || fp?.city) && <p className="text-xs text-gray-500">{name ?? ''}{name && fp?.city ? ' · ' : ''}{fp?.city ?? ''}</p>}
                   </Link>
                 )
