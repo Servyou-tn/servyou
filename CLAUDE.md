@@ -38,3 +38,45 @@ In-platform card payments, subscriptions, escrow, reviews/ratings, full notifica
 - Stock model: tracks_stock + stock_count (dropshipping-friendly: tracks_stock=false means "Toujours disponible")
 - seller_type: null = consumer (universal buying baseline); 'shop_owner' or 'freelancer' for sellers; never both; switching deletes own role content but preserves completed transaction records
 - Image storage uses Supabase Storage public buckets for display images only
+
+## Engineering Discipline (earned during the build — do not violate)
+
+### Before building anything
+- Read the relevant layer docs (Layers 1–7) for the feature first. Verify existing
+  tables, columns, and RLS against Layer 4 and Layer 5. Report any drift.
+- This is a features-on-existing-schema project, NOT a fresh build. Do NOT recreate
+  or rebuild tables that already exist. Verify, don't rebuild.
+- Stay in scope. Build only what the current task names. Flag anything that looks
+  like scope creep and wait for confirmation.
+
+### Supabase queries
+- NEVER destructure only `data` from a Supabase call. Always capture `error` and
+  surface it (console.error at minimum; show a real error state, never a silent
+  empty list). A swallowed error once hid a real bug for a day on /mes-missions.
+- RLS gates ROWS, not columns. You cannot make some columns public and others
+  owner-only with one table policy. Sensitive columns (phone, email, date_of_birth)
+  stay owner-only.
+- To read ANOTHER user's data: use the `public_profiles` view for name/city, and
+  `get_contact_phone(target)` for phone. Never invent a nested PostgREST join
+  through freelancer_profiles, and never read phone/email/dob directly across users.
+- The protection of `public_profiles` lives entirely in its SELECT column list.
+  NEVER add phone, email, or date_of_birth to that view.
+
+### The database is the source of truth for rules
+- Every business rule (fairness caps, age 18+ to sell, one seller capability) and
+  every sensitive-data permission MUST be enforced in the database (constraint,
+  trigger, or RLS) — not only in app code. App checks are for friendly messages;
+  the DB is the real guard.
+
+### Migrations
+- Present EVERY migration for human approval before applying. Never auto-apply to
+  the live database. Never "don't ask again."
+
+### Shipping
+- Run `npm run build` locally before pushing — not just `next dev`. `next dev` skips
+  the strict TypeScript check that `next build` and Vercel run; a type error it
+  ignored once failed the Vercel deploy.
+- One branch per feature. PR against main. Wait for the Vercel GREEN check before
+  merging — never merge on a red or pending check.
+- One real test for anything with real logic. No Co-Authored-By in commits.
+- Function-first: UI/UX polish is a dedicated later phase, not now.
