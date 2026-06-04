@@ -11,8 +11,8 @@ type Responder = {
   proposal_message: string | null
   created_at: string
   freelancer_id: string
+  fpId: string | undefined
   profiles: { full_name: string; phone: string | null } | null
-  freelancer_profiles_link: { id: string } | null
 }
 
 type Post = {
@@ -51,32 +51,50 @@ export default function MesMissionsPage() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { router.replace('/login'); return }
 
-      const { data } = await supabase
+      const { data, error: postsError } = await supabase
         .from('job_posts')
         .select(`
           id, title, status, created_at, is_remote, city,
           categories(name_fr),
           responses:job_responses(
-            id, proposal_message, created_at, freelancer_id,
-            freelancer_profiles_link:freelancer_profiles!profile_id(id)
+            id, proposal_message, created_at, freelancer_id
           )
         `)
         .eq('consumer_id', user.id)
         .neq('status', 'deleted')
         .order('created_at', { ascending: false })
 
-      const rawPosts = (data as unknown as Post[]) ?? []
+      if (postsError) {
+        console.error('[mes-missions] job_posts query error:', postsError)
+        setLoading(false)
+        return
+      }
+
+      const rawPosts = (data as unknown as Omit<Post, 'responses'> & { responses: Omit<Responder, 'fpId' | 'profiles'>[] }[]) ?? []
       const freelancerIds = [...new Set(rawPosts.flatMap(p => p.responses.map(r => r.freelancer_id)))]
 
       const nameMap: Record<string, string> = {}
       const phoneMap: Record<string, string | null> = {}
+      const fpMap: Record<string, string> = {}
 
       if (freelancerIds.length > 0) {
-        const { data: pubs } = await supabase.from('public_profiles').select('id, full_name').in('id', freelancerIds)
+        const { data: pubs, error: pubsError } = await supabase
+          .from('public_profiles')
+          .select('id, full_name')
+          .in('id', freelancerIds)
+        if (pubsError) console.error('[mes-missions] public_profiles query error:', pubsError)
         for (const pub of pubs ?? []) nameMap[pub.id] = pub.full_name ?? ''
 
+        const { data: fpRows, error: fpError } = await supabase
+          .from('freelancer_profiles')
+          .select('id, profile_id')
+          .in('profile_id', freelancerIds)
+        if (fpError) console.error('[mes-missions] freelancer_profiles query error:', fpError)
+        for (const fp of fpRows ?? []) fpMap[fp.profile_id] = fp.id
+
         await Promise.all(freelancerIds.map(async fid => {
-          const { data: ph } = await supabase.rpc('get_contact_phone', { target: fid })
+          const { data: ph, error: phError } = await supabase.rpc('get_contact_phone', { target: fid })
+          if (phError) console.error(`[mes-missions] get_contact_phone error for ${fid}:`, phError)
           phoneMap[fid] = ph ?? null
         }))
       }
@@ -85,6 +103,7 @@ export default function MesMissionsPage() {
         ...post,
         responses: post.responses.map(r => ({
           ...r,
+          fpId: fpMap[r.freelancer_id],
           profiles: { full_name: nameMap[r.freelancer_id] ?? '', phone: phoneMap[r.freelancer_id] ?? null },
         })),
       })))
@@ -163,15 +182,14 @@ export default function MesMissionsPage() {
                         const waText = encodeURIComponent(
                           `Bonjour, j'ai vu votre candidature pour ma mission "${post.title}" sur Servyou.`
                         )
-                        const fpId = r.freelancer_profiles_link?.id
                         return (
                           <div key={r.id} className="bg-gray-50 rounded p-3 space-y-2">
                             <div className="flex items-center justify-between gap-2">
                               <p className="text-sm font-medium text-gray-800">
                                 {r.profiles?.full_name ?? 'Freelance'}
                               </p>
-                              {fpId && (
-                                <Link href={`/freelance/${fpId}`}
+                              {r.fpId && (
+                                <Link href={`/freelance/${r.fpId}`}
                                   className="text-xs text-blue-600 hover:underline">
                                   Voir le profil
                                 </Link>
