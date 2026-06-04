@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { isValidPhone, normalizePhone } from '@/lib/phone'
 
 export default function DemandeServicePage() {
   const supabase = createClient()
@@ -17,6 +18,8 @@ export default function DemandeServicePage() {
   const [sellerId, setSellerId] = useState('')
   const [serviceId, setServiceId] = useState('')
   const [buyerNote, setBuyerNote] = useState('')
+  const [profilePhone, setProfilePhone] = useState<string | null>(null)
+  const [phoneInput, setPhoneInput] = useState('')
 
   useEffect(() => {
     async function load() {
@@ -36,6 +39,12 @@ export default function DemandeServicePage() {
       setServiceTitle(service.title)
       setServiceId(service.id)
       setSellerId(fp?.profile_id ?? '')
+
+      const { data: profile, error: profileErr } = await supabase
+        .from('profiles').select('phone').eq('id', user.id).single()
+      if (profileErr) console.error('[service/demande] profile fetch error:', profileErr)
+      setProfilePhone(profile?.phone ?? null)
+
       setLoading(false)
     }
     load()
@@ -49,6 +58,24 @@ export default function DemandeServicePage() {
     if (!user) { router.replace('/login'); return }
 
     setSaving(true)
+
+    if (!profilePhone) {
+      if (!isValidPhone(phoneInput)) {
+        setError('Numéro de téléphone invalide.')
+        setSaving(false)
+        return
+      }
+      const { error: phoneErr } = await supabase
+        .from('profiles')
+        .update({ phone: normalizePhone(phoneInput) })
+        .eq('id', user.id)
+      if (phoneErr) {
+        console.error('[service/demande] phone update error:', phoneErr)
+        setError('Impossible de sauvegarder le numéro. Veuillez réessayer.')
+        setSaving(false)
+        return
+      }
+    }
 
     const { data: order, error: insertError } = await supabase
       .from('orders')
@@ -99,11 +126,26 @@ export default function DemandeServicePage() {
               className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none" />
           </div>
 
+          {!profilePhone && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="whatsapp">
+                Numéro WhatsApp <span className="text-red-500">*</span>
+              </label>
+              <input id="whatsapp" type="tel" required value={phoneInput}
+                onChange={e => setPhoneInput(e.target.value)}
+                placeholder="Ex : 20 000 000 ou +216 20 000 000"
+                className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              <p className="text-xs text-gray-400 mt-1">
+                Nécessaire pour que le freelance puisse vous contacter via WhatsApp.
+              </p>
+            </div>
+          )}
+
           {error && (
             <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded px-3 py-2">{error}</p>
           )}
 
-          <button type="submit" disabled={saving}
+          <button type="submit" disabled={saving || (!profilePhone && !phoneInput.trim())}
             className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 text-white font-semibold py-3 px-4 rounded text-sm transition-colors">
             {saving ? 'Envoi en cours…' : 'Envoyer la demande'}
           </button>

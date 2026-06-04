@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { MAX_RESPONSES_PER_POST, MAX_ACTIVE_RESPONSES_PER_FREELANCER, JOB_POST_EXPIRY_DAYS } from '@/lib/job-constants'
+import { isValidPhone, normalizePhone } from '@/lib/phone'
 
 type Props = {
   jobPostId: string
@@ -21,11 +22,18 @@ export function RespondForm({ jobPostId, jobPostTitle, consumerPhone, currentRes
   const [error, setError] = useState('')
   const [submitted, setSubmitted] = useState(false)
   const [capError, setCapError] = useState('')
+  const [profilePhone, setProfilePhone] = useState<string | null>(null)
+  const [phoneInput, setPhoneInput] = useState('')
 
   useEffect(() => {
     async function checkCaps() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
+
+      const { data: profile, error: profileErr } = await supabase
+        .from('profiles').select('phone').eq('id', user.id).single()
+      if (profileErr) console.error('[RespondForm] profile fetch error:', profileErr)
+      setProfilePhone(profile?.phone ?? null)
 
       if (currentResponseCount >= MAX_RESPONSES_PER_POST) {
         setCapError('Cette mission a atteint le nombre maximum de réponses.')
@@ -75,6 +83,24 @@ export function RespondForm({ jobPostId, jobPostTitle, consumerPhone, currentRes
 
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) { router.push('/login'); return }
+
+    if (!profilePhone) {
+      if (!isValidPhone(phoneInput)) {
+        setError('Numéro de téléphone invalide.')
+        setSubmitting(false)
+        return
+      }
+      const { error: phoneErr } = await supabase
+        .from('profiles')
+        .update({ phone: normalizePhone(phoneInput) })
+        .eq('id', user.id)
+      if (phoneErr) {
+        console.error('[RespondForm] phone update error:', phoneErr)
+        setError('Impossible de sauvegarder le numéro. Veuillez réessayer.')
+        setSubmitting(false)
+        return
+      }
+    }
 
     const { error: insertErr } = await supabase
       .from('job_responses')
@@ -152,11 +178,25 @@ export function RespondForm({ jobPostId, jobPostTitle, consumerPhone, currentRes
           className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
       </div>
 
+      {!profilePhone && (
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Numéro WhatsApp <span className="text-red-500">*</span>
+          </label>
+          <input type="tel" required value={phoneInput} onChange={e => setPhoneInput(e.target.value)}
+            placeholder="Ex : 20 000 000 ou +216 20 000 000"
+            className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+          <p className="text-xs text-gray-400 mt-1">
+            Nécessaire pour que le client puisse vous contacter via WhatsApp.
+          </p>
+        </div>
+      )}
+
       {error && (
         <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded px-3 py-2">{error}</p>
       )}
 
-      <button type="submit" disabled={submitting}
+      <button type="submit" disabled={submitting || (!profilePhone && !phoneInput.trim())}
         className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 text-white font-medium py-2 px-4 rounded text-sm transition-colors">
         {submitting ? 'Envoi…' : 'Envoyer ma candidature'}
       </button>

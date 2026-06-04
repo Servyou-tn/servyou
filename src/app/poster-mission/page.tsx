@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { isValidPhone, normalizePhone } from '@/lib/phone'
 
 type Category = { id: string; name_fr: string }
 
@@ -25,6 +26,8 @@ export default function PosterMissionPage() {
   const [deadline, setDeadline] = useState('')
   const [skillInput, setSkillInput] = useState('')
   const [skills, setSkills] = useState<string[]>([])
+  const [profilePhone, setProfilePhone] = useState<string | null>(null)
+  const [phoneInput, setPhoneInput] = useState('')
 
   useEffect(() => {
     async function init() {
@@ -34,6 +37,12 @@ export default function PosterMissionPage() {
       const { data: cats } = await supabase
         .from('categories').select('id, name_fr').order('name_fr')
       setCategories((cats as Category[]) ?? [])
+
+      const { data: profile, error: profileErr } = await supabase
+        .from('profiles').select('phone').eq('id', user.id).single()
+      if (profileErr) console.error('[poster-mission] profile fetch error:', profileErr)
+      setProfilePhone(profile?.phone ?? null)
+
       setLoading(false)
     }
     init()
@@ -65,6 +74,24 @@ export default function PosterMissionPage() {
 
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) { router.replace('/login'); return }
+
+    if (!profilePhone) {
+      if (!isValidPhone(phoneInput)) {
+        setError('Numéro de téléphone invalide.')
+        setSubmitting(false)
+        return
+      }
+      const { error: phoneErr } = await supabase
+        .from('profiles')
+        .update({ phone: normalizePhone(phoneInput) })
+        .eq('id', user.id)
+      if (phoneErr) {
+        console.error('[poster-mission] phone update error:', phoneErr)
+        setError('Impossible de sauvegarder le numéro. Veuillez réessayer.')
+        setSubmitting(false)
+        return
+      }
+    }
 
     const { data: post, error: postErr } = await supabase
       .from('job_posts')
@@ -204,11 +231,25 @@ export default function PosterMissionPage() {
             )}
           </div>
 
+          {!profilePhone && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Numéro WhatsApp <span className="text-red-500">*</span>
+              </label>
+              <input type="tel" required value={phoneInput} onChange={e => setPhoneInput(e.target.value)}
+                placeholder="Ex : 20 000 000 ou +216 20 000 000"
+                className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              <p className="text-xs text-gray-400 mt-1">
+                Nécessaire pour que le freelance puisse vous contacter via WhatsApp.
+              </p>
+            </div>
+          )}
+
           {error && (
             <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded px-3 py-2">{error}</p>
           )}
 
-          <button type="submit" disabled={submitting || !title.trim() || !description.trim()}
+          <button type="submit" disabled={submitting || !title.trim() || !description.trim() || (!profilePhone && !phoneInput.trim())}
             className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 text-white font-medium py-2 px-4 rounded text-sm transition-colors">
             {submitting ? 'Publication…' : 'Publier la mission'}
           </button>
