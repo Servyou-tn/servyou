@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { useLang } from '@/components/LangProvider'
+import { t } from '@/lib/i18n'
 
 const GOVERNORATES = [
   'Tunis', 'Ariana', 'Ben Arous', 'Manouba', 'Nabeul', 'Zaghouan',
@@ -14,6 +16,7 @@ const GOVERNORATES = [
 export default function ProfilePage() {
   const supabase = createClient()
   const router = useRouter()
+  const lang = useLang()
 
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -72,7 +75,7 @@ export default function ProfilePage() {
     setSaving(false)
 
     if (updateError) {
-      setError('Une erreur est survenue lors de la sauvegarde. Veuillez réessayer.')
+      setError(t('profile.error_save', lang))
       return
     }
 
@@ -82,7 +85,7 @@ export default function ProfilePage() {
   if (loading) {
     return (
       <main className="min-h-screen flex items-center justify-center bg-gray-50">
-        <p className="text-gray-500 text-sm">Chargement…</p>
+        <p className="text-gray-500 text-sm">{t('common.loading', lang)}</p>
       </main>
     )
   }
@@ -90,12 +93,12 @@ export default function ProfilePage() {
   return (
     <main className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
       <div className="bg-white rounded-lg shadow p-8 max-w-md w-full">
-        <h1 className="text-2xl font-bold text-gray-800 mb-6">Mon profil</h1>
+        <h1 className="text-2xl font-bold text-gray-800 mb-6">{t('profile.title', lang)}</h1>
 
         <form onSubmit={handleSubmit} noValidate className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="fullName">
-              Nom complet <span className="text-red-500">*</span>
+              {t('signup.full_name', lang)} <span className="text-red-500">*</span>
             </label>
             <input
               id="fullName"
@@ -109,7 +112,7 @@ export default function ProfilePage() {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="city">
-              Ville / Gouvernorat <span className="text-red-500">*</span>
+              {t('signup.city', lang)} <span className="text-red-500">*</span>
             </label>
             <select
               id="city"
@@ -118,7 +121,7 @@ export default function ProfilePage() {
               onChange={e => setCity(e.target.value)}
               className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
             >
-              <option value="">— Choisir un gouvernorat —</option>
+              <option value="">{t('signup.city_placeholder', lang)}</option>
               {GOVERNORATES.map(gov => (
                 <option key={gov} value={gov}>{gov}</option>
               ))}
@@ -127,7 +130,7 @@ export default function ProfilePage() {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="language">
-              Langue préférée
+              {t('signup.language', lang)}
             </label>
             <select
               id="language"
@@ -135,14 +138,14 @@ export default function ProfilePage() {
               onChange={e => setLanguage(e.target.value)}
               className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
             >
-              <option value="fr">Français</option>
-              <option value="ar">العربية</option>
+              <option value="fr">{t('signup.lang_fr', lang)}</option>
+              <option value="ar">{t('signup.lang_ar', lang)}</option>
             </select>
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="phone">
-              Téléphone <span className="text-gray-400 font-normal">(optionnel)</span>
+              {t('profile.phone', lang)} <span className="text-gray-400 font-normal">{t('common.optional_m', lang)}</span>
             </label>
             <input
               id="phone"
@@ -161,7 +164,7 @@ export default function ProfilePage() {
 
           {success && (
             <p className="text-sm text-green-700 bg-green-50 border border-green-200 rounded px-3 py-2">
-              Profil mis à jour avec succès.
+              {t('profile.success', lang)}
             </p>
           )}
 
@@ -170,7 +173,7 @@ export default function ProfilePage() {
             disabled={saving}
             className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 text-white font-medium py-2 px-4 rounded text-sm transition-colors"
           >
-            {saving ? 'Enregistrement…' : 'Enregistrer'}
+            {saving ? t('common.saving', lang) : t('common.save_short', lang)}
           </button>
         </form>
       </div>

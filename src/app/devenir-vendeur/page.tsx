@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { useLang } from '@/components/LangProvider'
+import { t } from '@/lib/i18n'
 
 function getAge(dateOfBirth: string): number {
   const today = new Date()
@@ -16,6 +18,7 @@ function getAge(dateOfBirth: string): number {
 export default function DevenirVendeurPage() {
   const supabase = createClient()
   const router = useRouter()
+  const lang = useLang()
 
   const [loading, setLoading] = useState(true)
   const [upgrading, setUpgrading] = useState(false)
@@ -60,7 +63,7 @@ export default function DevenirVendeurPage() {
     setUpgrading(false)
 
     if (updateError) {
-      setError('Une erreur est survenue. Veuillez réessayer.')
+      setError(t('common.error_generic', lang))
       return
     }
 
@@ -80,7 +83,7 @@ export default function DevenirVendeurPage() {
     setUpgrading(false)
 
     if (updateError) {
-      setError('Une erreur est survenue. Veuillez réessayer.')
+      setError(t('common.error_generic', lang))
       return
     }
 
@@ -90,7 +93,7 @@ export default function DevenirVendeurPage() {
   if (loading) {
     return (
       <main className="min-h-screen flex items-center justify-center bg-gray-50">
-        <p className="text-gray-500 text-sm">Chargement…</p>
+        <p className="text-gray-500 text-sm">{t('common.loading', lang)}</p>
       </main>
     )
   }
@@ -98,24 +101,17 @@ export default function DevenirVendeurPage() {
   return (
     <main className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
       <div className="bg-white rounded-lg shadow p-8 max-w-md w-full">
-        <h1 className="text-2xl font-bold text-gray-800 mb-4">Devenir vendeur</h1>
+        <h1 className="text-2xl font-bold text-gray-800 mb-4">{t('seller.title', lang)}</h1>
 
         {age !== null && age < 18 ? (
-          <p className="text-gray-600">
-            Vous devez avoir au moins 18 ans pour vendre sur Servyou.
-            Nous espérons vous accueillir bientôt en tant que vendeur !
-          </p>
+          <p className="text-gray-600">{t('seller.min_age', lang)}</p>
         ) : sellerType === 'shop_owner' ? (
-          <p className="text-gray-600">
-            Vous êtes déjà inscrit en tant que <strong>propriétaire de boutique</strong>.
-          </p>
+          <p className="text-gray-600">{t('seller.already_shop', lang)}</p>
         ) : sellerType === 'freelancer' ? (
-          <p className="text-gray-600">
-            Vous êtes déjà inscrit en tant que <strong>freelance</strong>.
-          </p>
+          <p className="text-gray-600">{t('seller.already_free', lang)}</p>
         ) : (
           <>
-            <p className="text-gray-600 mb-6">Choisissez votre type de compte vendeur :</p>
+            <p className="text-gray-600 mb-6">{t('seller.choose_type', lang)}</p>
 
             {error && (
               <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded px-3 py-2 mb-4">
@@ -129,7 +125,7 @@ export default function DevenirVendeurPage() {
                 disabled={upgrading}
                 className="w-full border-2 border-blue-600 hover:bg-blue-50 text-blue-700 font-medium py-3 px-4 rounded text-sm transition-colors disabled:opacity-50"
               >
-                🛍️ Devenir vendeur (boutique)
+                {t('seller.become_shop', lang)}
               </button>
 
               <button
@@ -137,7 +133,7 @@ export default function DevenirVendeurPage() {
                 disabled={upgrading}
                 className="w-full border-2 border-gray-300 hover:bg-gray-50 text-gray-600 font-medium py-3 px-4 rounded text-sm transition-colors disabled:opacity-50"
               >
-                💼 Devenir freelance
+                {t('seller.become_free', lang)}
               </button>
             </div>
           </>

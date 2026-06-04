@@ -135,7 +135,7 @@ export function RespondForm({ jobPostId, jobPostTitle, consumerPhone, currentRes
   if (submitted) {
     const phone = consumerPhone?.replace(/\s+/g, '')
     const waText = encodeURIComponent(
-      `Bonjour, j'ai répondu à votre mission "${jobPostTitle}" sur Servyou et je serais ravi(e) d'en discuter.`
+      t('job.whatsapp_responder_to_consumer', lang, { mission: jobPostTitle })
     )
     return (
       <div className="space-y-4">

@@ -3,11 +3,14 @@
 import { useEffect, useState } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { useLang } from '@/components/LangProvider'
+import { t } from '@/lib/i18n'
 
 export default function DemandeAchatPage() {
   const supabase = createClient()
   const router = useRouter()
   const { id } = useParams<{ id: string }>()
+  const lang = useLang()
 
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -57,11 +60,11 @@ export default function DemandeAchatPage() {
     e.preventDefault()
     setError('')
 
-    if (!deliveryName.trim()) { setError('Le nom de livraison est requis.'); return }
-    if (!deliveryAddress.trim()) { setError('L\'adresse de livraison est requise.'); return }
-    if (!deliveryPhone.trim()) { setError('Le numéro de téléphone est requis.'); return }
+    if (!deliveryName.trim()) { setError(t('product.error_delivery_name', lang)); return }
+    if (!deliveryAddress.trim()) { setError(t('product.error_delivery_address', lang)); return }
+    if (!deliveryPhone.trim()) { setError(t('product.error_phone', lang)); return }
     const qty = parseInt(quantity)
-    if (isNaN(qty) || qty < 1) { setError('La quantité doit être au moins 1.'); return }
+    if (isNaN(qty) || qty < 1) { setError(t('product.error_quantity', lang)); return }
 
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) { router.replace('/login'); return }
@@ -89,7 +92,7 @@ export default function DemandeAchatPage() {
     setSaving(false)
 
     if (insertError || !order) {
-      setError('Une erreur est survenue lors de l\'envoi de la demande. Veuillez réessayer.')
+      setError(t('product.order_error_send', lang))
       return
     }
 
@@ -99,7 +102,7 @@ export default function DemandeAchatPage() {
   if (loading) {
     return (
       <main className="min-h-screen flex items-center justify-center bg-gray-50">
-        <p className="text-gray-500 text-sm">Chargement…</p>
+        <p className="text-gray-500 text-sm">{t('common.loading', lang)}</p>
       </main>
     )
   }
@@ -107,13 +110,13 @@ export default function DemandeAchatPage() {
   return (
     <main className="min-h-screen flex items-start justify-center bg-gray-50 px-4 py-12">
       <div className="bg-white rounded-lg shadow p-8 max-w-lg w-full">
-        <h1 className="text-2xl font-bold text-gray-800 mb-1">Demande d'achat</h1>
-        <p className="text-sm text-gray-500 mb-6">Produit : <strong>{productTitle}</strong></p>
+        <h1 className="text-2xl font-bold text-gray-800 mb-1">{t('product.order_title', lang)}</h1>
+        <p className="text-sm text-gray-500 mb-6">{t('product.order_prefix', lang)} <strong>{productTitle}</strong></p>
 
         <form onSubmit={handleSubmit} noValidate className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="deliveryName">
-              Nom complet (livraison) <span className="text-red-500">*</span>
+              {t('product.field_delivery_name', lang)} <span className="text-red-500">*</span>
             </label>
             <input id="deliveryName" type="text" required value={deliveryName}
               onChange={e => setDeliveryName(e.target.value)}
@@ -122,7 +125,7 @@ export default function DemandeAchatPage() {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="deliveryAddress">
-              Adresse de livraison <span className="text-red-500">*</span>
+              {t('product.field_delivery_address', lang)} <span className="text-red-500">*</span>
             </label>
             <textarea id="deliveryAddress" rows={2} required value={deliveryAddress}
               onChange={e => setDeliveryAddress(e.target.value)}
@@ -131,7 +134,7 @@ export default function DemandeAchatPage() {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="deliveryPhone">
-              Téléphone <span className="text-red-500">*</span>
+              {t('product.field_phone', lang)} <span className="text-red-500">*</span>
             </label>
             <input id="deliveryPhone" type="tel" required value={deliveryPhone}
               onChange={e => setDeliveryPhone(e.target.value)}
@@ -140,7 +143,7 @@ export default function DemandeAchatPage() {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="quantity">
-              Quantité <span className="text-red-500">*</span>
+              {t('product.field_quantity', lang)} <span className="text-red-500">*</span>
             </label>
             <input id="quantity" type="number" min="1" step="1" required value={quantity}
               onChange={e => setQuantity(e.target.value)}
@@ -149,7 +152,7 @@ export default function DemandeAchatPage() {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="buyerNote">
-              Note pour le vendeur <span className="text-gray-400 font-normal">(optionnelle)</span>
+              {t('product.field_note', lang)} <span className="text-gray-400 font-normal">{t('common.optional_f', lang)}</span>
             </label>
             <textarea id="buyerNote" rows={3} value={buyerNote}
               onChange={e => setBuyerNote(e.target.value)}
@@ -162,7 +165,7 @@ export default function DemandeAchatPage() {
 
           <button type="submit" disabled={saving}
             className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 text-white font-semibold py-3 px-4 rounded text-sm transition-colors">
-            {saving ? 'Envoi en cours…' : 'Envoyer la demande'}
+            {saving ? t('common.submitting', lang) : t('common.send_request', lang)}
           </button>
         </form>
       </div>

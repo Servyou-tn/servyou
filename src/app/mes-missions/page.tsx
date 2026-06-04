@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { useLang } from '@/components/LangProvider'
+import { t } from '@/lib/i18n'
 import { JOB_POST_EXPIRY_DAYS } from '@/lib/job-constants'
 
 type Responder = {
@@ -26,11 +28,11 @@ type Post = {
   responses: Responder[]
 }
 
-const STATUS_LABELS: Record<string, { label: string; cls: string }> = {
-  open:    { label: 'Ouverte',   cls: 'bg-green-100 text-green-700' },
-  filled:  { label: 'Pourvue',   cls: 'bg-blue-100 text-blue-700' },
-  expired: { label: 'Expirée',   cls: 'bg-gray-100 text-gray-500' },
-  deleted: { label: 'Supprimée', cls: 'bg-red-100 text-red-500' },
+const STATUS_LABELS: Record<string, { key: string; cls: string }> = {
+  open:    { key: 'job.status_open',    cls: 'bg-green-100 text-green-700' },
+  filled:  { key: 'job.status_filled',  cls: 'bg-blue-100 text-blue-700' },
+  expired: { key: 'job.status_expired', cls: 'bg-gray-100 text-gray-500' },
+  deleted: { key: 'job.status_deleted', cls: 'bg-red-100 text-red-500' },
 }
 
 function effectiveStatus(post: { status: string; created_at: string }) {
@@ -42,6 +44,7 @@ function effectiveStatus(post: { status: string; created_at: string }) {
 export default function MesMissionsPage() {
   const supabase = createClient()
   const router = useRouter()
+  const lang = useLang()
 
   const [loading, setLoading] = useState(true)
   const [posts, setPosts] = useState<Post[]>([])
@@ -119,7 +122,7 @@ export default function MesMissionsPage() {
   }
 
   async function deletePost(id: string) {
-    if (!window.confirm('Supprimer cette mission ? Elle ne sera plus visible.')) return
+    if (!window.confirm(t('job.delete_confirm', lang))) return
     await supabase.from('job_posts').update({ status: 'deleted', updated_at: new Date().toISOString() }).eq('id', id)
     setPosts(prev => prev.filter(p => p.id !== id))
   }
@@ -127,7 +130,7 @@ export default function MesMissionsPage() {
   if (loading) {
     return (
       <main className="min-h-screen flex items-center justify-center bg-gray-50">
-        <p className="text-gray-500 text-sm">Chargement…</p>
+        <p className="text-gray-500 text-sm">{t('common.loading', lang)}</p>
       </main>
     )
   }
@@ -136,25 +139,27 @@ export default function MesMissionsPage() {
     <main className="min-h-screen bg-gray-50 px-4 py-10">
       <div className="max-w-3xl mx-auto">
         <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-bold text-gray-800">Mes missions</h1>
+          <h1 className="text-2xl font-bold text-gray-800">{t('job.my_missions_title', lang)}</h1>
           <Link href="/poster-mission"
             className="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded transition-colors">
-            + Nouvelle mission
+            {t('job.new_mission_btn', lang)}
           </Link>
         </div>
 
         {posts.length === 0 ? (
           <div className="bg-white rounded-lg shadow p-8 text-center text-gray-500">
-            <p className="mb-4">Vous n'avez pas encore posté de mission.</p>
+            <p className="mb-4">{t('job.no_missions', lang)}</p>
             <Link href="/poster-mission" className="text-blue-600 hover:underline text-sm">
-              Poster ma première mission
+              {t('job.no_missions_cta', lang)}
             </Link>
           </div>
         ) : (
           <div className="space-y-5">
             {posts.map(post => {
               const status = effectiveStatus(post)
-              const s = STATUS_LABELS[status] ?? { label: status, cls: 'bg-gray-100 text-gray-600' }
+              const sl = STATUS_LABELS[status]
+              const label = sl ? t(sl.key, lang) : status
+              const cls = sl?.cls ?? 'bg-gray-100 text-gray-600'
               const date = new Date(post.created_at).toLocaleDateString('fr-TN', { day: '2-digit', month: 'short', year: 'numeric' })
               return (
                 <div key={post.id} className="bg-white rounded-lg shadow p-5 space-y-4">
@@ -162,13 +167,13 @@ export default function MesMissionsPage() {
                     <div>
                       <p className="font-semibold text-gray-800">{post.title}</p>
                       <p className="text-xs text-gray-500 mt-0.5">
-                        {post.is_remote ? 'À distance' : (post.city ?? '')}
+                        {post.is_remote ? t('missions.remote', lang) : (post.city ?? '')}
                         {post.categories ? ` · ${(post.categories as unknown as { name_fr: string }).name_fr}` : ''}
                         {' · '}{date}
                       </p>
                     </div>
-                    <span className={`text-xs font-medium px-2 py-1 rounded-full whitespace-nowrap ${s.cls}`}>
-                      {s.label}
+                    <span className={`text-xs font-medium px-2 py-1 rounded-full whitespace-nowrap ${cls}`}>
+                      {label}
                     </span>
                   </div>
 
@@ -176,23 +181,23 @@ export default function MesMissionsPage() {
                   {post.responses.length > 0 ? (
                     <div className="border-t border-gray-100 pt-3 space-y-3">
                       <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">
-                        {post.responses.length} réponse{post.responses.length > 1 ? 's' : ''}
+                        {post.responses.length} {post.responses.length > 1 ? t('missions.response_plural', lang) : t('missions.response_singular', lang)}
                       </p>
                       {post.responses.map(r => {
                         const phone = r.profiles?.phone?.replace(/\s+/g, '')
                         const waText = encodeURIComponent(
-                          `Bonjour, j'ai vu votre candidature pour ma mission "${post.title}" sur Servyou.`
+                          t('job.whatsapp_consumer_to_responder', lang, { mission: post.title })
                         )
                         return (
                           <div key={r.id} className="bg-gray-50 rounded p-3 space-y-2">
                             <div className="flex items-center justify-between gap-2">
                               <p className="text-sm font-medium text-gray-800">
-                                {r.profiles?.full_name ?? 'Freelance'}
+                                {r.profiles?.full_name || t('job.freelancer_fallback', lang)}
                               </p>
                               {r.fpId && (
                                 <Link href={`/freelance/${r.fpId}`}
                                   className="text-xs text-blue-600 hover:underline">
-                                  Voir le profil
+                                  {t('job.view_profile', lang)}
                                 </Link>
                               )}
                             </div>
@@ -203,7 +208,7 @@ export default function MesMissionsPage() {
                               <a href={`https://wa.me/${phone}?text=${waText}`}
                                 target="_blank" rel="noopener noreferrer"
                                 className="inline-block bg-green-500 hover:bg-green-600 text-white text-xs font-medium px-3 py-1.5 rounded transition-colors">
-                                Contacter sur WhatsApp
+                                {t('common.whatsapp_contact', lang)}
                               </a>
                             )}
                           </div>
@@ -212,7 +217,7 @@ export default function MesMissionsPage() {
                     </div>
                   ) : (
                     <p className="text-sm text-gray-400 border-t border-gray-100 pt-3">
-                      Aucune réponse pour le moment.
+                      {t('job.no_responses', lang)}
                     </p>
                   )}
 
@@ -221,15 +226,15 @@ export default function MesMissionsPage() {
                     <div className="flex flex-wrap gap-2 border-t border-gray-100 pt-3">
                       <Link href={`/mes-missions/${post.id}/modifier`}
                         className="border border-gray-300 hover:bg-gray-50 text-gray-700 text-xs font-medium px-3 py-1.5 rounded transition-colors">
-                        Modifier
+                        {t('common.edit', lang)}
                       </Link>
                       <button onClick={() => markFilled(post.id)}
                         className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium px-3 py-1.5 rounded transition-colors">
-                        Marquer pourvue
+                        {t('job.mark_filled', lang)}
                       </button>
                       <button onClick={() => deletePost(post.id)}
                         className="border border-red-300 hover:bg-red-50 text-red-600 text-xs font-medium px-3 py-1.5 rounded transition-colors">
-                        Supprimer
+                        {t('common.delete', lang)}
                       </button>
                     </div>
                   )}
@@ -240,7 +245,7 @@ export default function MesMissionsPage() {
         )}
 
         <div className="mt-6">
-          <Link href="/" className="text-sm text-blue-600 hover:underline">← Retour à l'accueil</Link>
+          <Link href="/" className="text-sm text-blue-600 hover:underline">{t('common.back_home', lang)}</Link>
         </div>
       </div>
     </main>

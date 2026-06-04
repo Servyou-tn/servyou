@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { useLang } from '@/components/LangProvider'
+import { t } from '@/lib/i18n'
 
 type Product = {
   id: string
@@ -15,18 +17,18 @@ type Product = {
   categories: { name_fr: string } | null
 }
 
-const STATUS_LABELS: Record<string, string> = {
-  active: 'Actif',
-  hidden: 'Masqué',
-  sold_out: 'Épuisé',
+const STATUS_KEYS: Record<string, string> = {
+  active: 'common.status_active',
+  hidden: 'common.status_hidden',
+  sold_out: 'common.status_sold_out',
 }
 
 export default function ProduitsPage() {
   const supabase = createClient()
   const router = useRouter()
+  const lang = useLang()
 
   const [loading, setLoading] = useState(true)
-  const [shopId, setShopId] = useState<string | null>(null)
   const [products, setProducts] = useState<Product[]>([])
 
   async function loadData() {
@@ -41,8 +43,6 @@ export default function ProduitsPage() {
       .from('shops').select('id').eq('owner_id', user.id).maybeSingle()
     if (!shop) { router.replace('/ma-boutique/creer'); return }
 
-    setShopId(shop.id)
-
     const { data: rows } = await supabase
       .from('products')
       .select('id, title, price_tnd, status, tracks_stock, stock_count, categories(name_fr)')
@@ -56,7 +56,7 @@ export default function ProduitsPage() {
   useEffect(() => { loadData() }, [])
 
   async function handleDelete(id: string, title: string) {
-    if (!window.confirm(`Supprimer le produit "${title}" ? Cette action est irréversible.`)) return
+    if (!window.confirm(t('product.delete_confirm', lang, { title }))) return
 
     await supabase.from('products').delete().eq('id', id)
     setProducts(prev => prev.filter(p => p.id !== id))
@@ -65,7 +65,7 @@ export default function ProduitsPage() {
   if (loading) {
     return (
       <main className="min-h-screen flex items-center justify-center bg-gray-50">
-        <p className="text-gray-500 text-sm">Chargement…</p>
+        <p className="text-gray-500 text-sm">{t('common.loading', lang)}</p>
       </main>
     )
   }
@@ -74,20 +74,20 @@ export default function ProduitsPage() {
     <main className="min-h-screen bg-gray-50 px-4 py-12">
       <div className="max-w-3xl mx-auto">
         <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-bold text-gray-800">Mes produits</h1>
+          <h1 className="text-2xl font-bold text-gray-800">{t('product.list_title', lang)}</h1>
           <Link
             href="/ma-boutique/produits/nouveau"
             className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded text-sm transition-colors"
           >
-            + Ajouter un produit
+            {t('product.add_btn', lang)}
           </Link>
         </div>
 
         {products.length === 0 ? (
           <div className="bg-white rounded-lg shadow p-8 text-center text-gray-500">
-            <p className="mb-4">Vous n'avez pas encore de produits.</p>
+            <p className="mb-4">{t('product.empty', lang)}</p>
             <Link href="/ma-boutique/produits/nouveau" className="text-blue-600 hover:underline text-sm">
-              Ajouter votre premier produit
+              {t('product.empty_cta', lang)}
             </Link>
           </div>
         ) : (
@@ -95,11 +95,11 @@ export default function ProduitsPage() {
             <table className="w-full text-sm">
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
-                  <th className="text-left px-4 py-3 font-medium text-gray-600">Titre</th>
-                  <th className="text-left px-4 py-3 font-medium text-gray-600">Catégorie</th>
-                  <th className="text-left px-4 py-3 font-medium text-gray-600">Prix</th>
-                  <th className="text-left px-4 py-3 font-medium text-gray-600">Stock</th>
-                  <th className="text-left px-4 py-3 font-medium text-gray-600">Statut</th>
+                  <th className="text-left px-4 py-3 font-medium text-gray-600">{t('common.field_title', lang)}</th>
+                  <th className="text-left px-4 py-3 font-medium text-gray-600">{t('common.field_category', lang)}</th>
+                  <th className="text-left px-4 py-3 font-medium text-gray-600">{t('product.col_price', lang)}</th>
+                  <th className="text-left px-4 py-3 font-medium text-gray-600">{t('product.col_stock', lang)}</th>
+                  <th className="text-left px-4 py-3 font-medium text-gray-600">{t('product.col_status', lang)}</th>
                   <th className="px-4 py-3"></th>
                 </tr>
               </thead>
@@ -110,7 +110,7 @@ export default function ProduitsPage() {
                     <td className="px-4 py-3 text-gray-600">{p.categories?.name_fr ?? '—'}</td>
                     <td className="px-4 py-3 text-gray-700">{p.price_tnd.toFixed(2)} TND</td>
                     <td className="px-4 py-3 text-gray-600">
-                      {p.tracks_stock ? (p.stock_count ?? 0) : 'Toujours disponible'}
+                      {p.tracks_stock ? (p.stock_count ?? 0) : t('common.stock_always', lang)}
                     </td>
                     <td className="px-4 py-3">
                       <span className={`text-xs font-medium px-2 py-1 rounded-full ${
@@ -118,7 +118,7 @@ export default function ProduitsPage() {
                         p.status === 'sold_out' ? 'bg-red-100 text-red-700' :
                         'bg-gray-100 text-gray-600'
                       }`}>
-                        {STATUS_LABELS[p.status] ?? p.status}
+                        {STATUS_KEYS[p.status] ? t(STATUS_KEYS[p.status], lang) : p.status}
                       </span>
                     </td>
                     <td className="px-4 py-3 text-right whitespace-nowrap">
@@ -126,13 +126,13 @@ export default function ProduitsPage() {
                         href={`/ma-boutique/produits/${p.id}`}
                         className="text-blue-600 hover:underline mr-4"
                       >
-                        Modifier
+                        {t('common.edit', lang)}
                       </Link>
                       <button
                         onClick={() => handleDelete(p.id, p.title)}
                         className="text-red-500 hover:underline"
                       >
-                        Supprimer
+                        {t('common.delete', lang)}
                       </button>
                     </td>
                   </tr>
@@ -144,7 +144,7 @@ export default function ProduitsPage() {
 
         <div className="mt-6">
           <Link href="/ma-boutique" className="text-sm text-blue-600 hover:underline">
-            ← Retour à ma boutique
+            {t('boutique.back', lang)}
           </Link>
         </div>
       </div>

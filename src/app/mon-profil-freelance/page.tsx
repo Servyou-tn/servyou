@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { useLang } from '@/components/LangProvider'
+import { t } from '@/lib/i18n'
 
 type FreelancerProfile = {
   id: string
@@ -20,6 +22,7 @@ type Skill = { id: string; name: string }
 export default function MonProfilFreelancePage() {
   const supabase = createClient()
   const router = useRouter()
+  const lang = useLang()
 
   const [loading, setLoading] = useState(true)
   const [fp, setFp] = useState<FreelancerProfile | null>(null)
@@ -84,7 +87,7 @@ export default function MonProfilFreelancePage() {
   if (loading) {
     return (
       <main className="min-h-screen flex items-center justify-center bg-gray-50">
-        <p className="text-gray-500 text-sm">Chargement…</p>
+        <p className="text-gray-500 text-sm">{t('common.loading', lang)}</p>
       </main>
     )
   }
@@ -101,7 +104,7 @@ export default function MonProfilFreelancePage() {
             </div>
             <Link href="/mon-profil-freelance/modifier"
               className="text-sm text-blue-600 hover:underline whitespace-nowrap ml-4">
-              Modifier
+              {t('common.edit', lang)}
             </Link>
           </div>
 
@@ -110,19 +113,19 @@ export default function MonProfilFreelancePage() {
           <div className="grid grid-cols-2 gap-3 text-sm text-gray-600">
             {fp!.years_experience != null && (
               <div>
-                <span className="font-medium text-gray-500">Expérience :</span>{' '}
+                <span className="font-medium text-gray-500">{t('freelance.experience_label', lang)}</span>{' '}
                 {fp!.years_experience} an{fp!.years_experience !== 1 ? 's' : ''}
               </div>
             )}
             {fp!.languages && (
               <div>
-                <span className="font-medium text-gray-500">Langues :</span>{' '}
+                <span className="font-medium text-gray-500">{t('freelance.languages_label', lang)}</span>{' '}
                 {fp!.languages}
               </div>
             )}
             {fp!.portfolio_link && (
               <div className="col-span-2">
-                <span className="font-medium text-gray-500">Portfolio :</span>{' '}
+                <span className="font-medium text-gray-500">{t('freelance.portfolio_label', lang)}</span>{' '}
                 <a href={fp!.portfolio_link} target="_blank" rel="noopener noreferrer"
                   className="text-blue-600 hover:underline break-all">
                   {fp!.portfolio_link}
@@ -133,17 +136,17 @@ export default function MonProfilFreelancePage() {
         </div>
 
         <div className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-base font-semibold text-gray-700 mb-3">Compétences</h2>
+          <h2 className="text-base font-semibold text-gray-700 mb-3">{t('freelance.skills_section', lang)}</h2>
           <div className="flex flex-wrap gap-2 mb-4">
             {skills.length === 0 && (
-              <p className="text-sm text-gray-400">Aucune compétence ajoutée.</p>
+              <p className="text-sm text-gray-400">{t('freelance.no_skills', lang)}</p>
             )}
             {skills.map(s => (
               <span key={s.id} className="flex items-center gap-1 bg-blue-50 text-blue-700 text-sm px-3 py-1 rounded-full">
                 {s.name}
                 <button onClick={() => handleDeleteSkill(s.id)}
                   className="ml-1 text-blue-400 hover:text-red-500 font-medium leading-none"
-                  aria-label={`Supprimer ${s.name}`}>
+                  aria-label={t('freelance.delete_skill_label', lang, { name: s.name })}>
                   ×
                 </button>
               </span>
@@ -151,11 +154,11 @@ export default function MonProfilFreelancePage() {
           </div>
           <form onSubmit={handleAddSkill} className="flex gap-2">
             <input type="text" value={newSkill} onChange={e => setNewSkill(e.target.value)}
-              placeholder="Ajouter une compétence…"
+              placeholder={t('freelance.add_skill_ph', lang)}
               className="flex-1 border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
             <button type="submit" disabled={addingSkill || !newSkill.trim()}
               className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 text-white font-medium py-2 px-4 rounded text-sm transition-colors">
-              Ajouter
+              {t('common.add', lang)}
             </button>
           </form>
         </div>
@@ -163,21 +166,21 @@ export default function MonProfilFreelancePage() {
         <div className="bg-white rounded-lg shadow p-6 flex flex-wrap gap-3">
           <Link href="/mon-profil-freelance/services"
             className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-5 rounded text-sm transition-colors">
-            Gérer mes services
+            {t('freelance.manage_services', lang)}
           </Link>
           <Link href="/mon-profil-freelance/demandes"
             className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-5 rounded text-sm transition-colors">
-            Demandes reçues
+            {t('freelance.received_requests', lang)}
           </Link>
           <Link href={`/freelance/${fp!.id}`}
             className="border border-gray-300 hover:bg-gray-50 text-gray-700 font-medium py-2 px-5 rounded text-sm transition-colors">
-            Voir mon profil public
+            {t('freelance.view_public', lang)}
           </Link>
         </div>
 
         <div>
           <Link href="/" className="text-sm text-blue-600 hover:underline">
-            ← Retour à l'accueil
+            {t('common.back_home', lang)}
           </Link>
         </div>
       </div>
