@@ -70,7 +70,8 @@ export default function MesMissionsPage() {
         return
       }
 
-      const rawPosts = (data as unknown as Omit<Post, 'responses'> & { responses: Omit<Responder, 'fpId' | 'profiles'>[] }[]) ?? []
+      type RawPost = Omit<Post, 'responses'> & { responses: { id: string; proposal_message: string | null; created_at: string; freelancer_id: string }[] }
+      const rawPosts = (data as unknown as RawPost[]) ?? []
       const freelancerIds = [...new Set(rawPosts.flatMap(p => p.responses.map(r => r.freelancer_id)))]
 
       const nameMap: Record<string, string> = {}
