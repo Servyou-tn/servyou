@@ -85,7 +85,7 @@ export default async function PublicFreelancerPage({ params }: Props) {
           <h2 className="text-lg font-semibold text-gray-700 mb-4">
             {t('freelance.services_section', lang)}
             {services && services.length > 0 && (
-              <span className="ml-2 text-sm font-normal text-gray-400">({services.length})</span>
+              <span className="ms-2 text-sm font-normal text-gray-400">({services.length})</span>
             )}
           </h2>
 

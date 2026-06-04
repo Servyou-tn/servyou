@@ -36,7 +36,7 @@ export default async function RootLayout({
         <LangProvider lang={lang}>
           {children}
           {/* Always-visible language switcher — Phase 8 Subtask 1 */}
-          <div className="fixed bottom-4 right-4 z-50 bg-white border border-gray-200 rounded-lg shadow-md px-2 py-1.5">
+          <div className="fixed bottom-4 end-4 z-50 bg-white border border-gray-200 rounded-lg shadow-md px-2 py-1.5">
             <LanguageSwitcher />
           </div>
         </LangProvider>

@@ -227,7 +227,7 @@ export default function PosterMissionPage() {
                   <span key={s} className="flex items-center gap-1 bg-blue-50 text-blue-700 text-xs px-3 py-1 rounded-full">
                     {s}
                     <button type="button" onClick={() => removeSkill(s)}
-                      className="text-blue-400 hover:text-blue-700 ml-1 leading-none">×</button>
+                      className="text-blue-400 hover:text-blue-700 ms-1 leading-none">×</button>
                   </span>
                 ))}
               </div>
