@@ -53,7 +53,7 @@ export default async function PublicShopPage({ params }: Props) {
         <h2 className="text-lg font-semibold text-gray-700 mb-4">
           {t('boutique.available_products', lang)}
           {products && products.length > 0 && (
-            <span className="ml-2 text-sm font-normal text-gray-400">({products.length})</span>
+            <span className="ms-2 text-sm font-normal text-gray-400">({products.length})</span>
           )}
         </h2>
 

@@ -103,7 +103,7 @@ export default function MonProfilFreelancePage() {
               {fp!.city && <p className="text-sm text-gray-500 mt-1">{fp!.city}</p>}
             </div>
             <Link href="/mon-profil-freelance/modifier"
-              className="text-sm text-blue-600 hover:underline whitespace-nowrap ml-4">
+              className="text-sm text-blue-600 hover:underline whitespace-nowrap ms-4">
               {t('common.edit', lang)}
             </Link>
           </div>
@@ -145,7 +145,7 @@ export default function MonProfilFreelancePage() {
               <span key={s.id} className="flex items-center gap-1 bg-blue-50 text-blue-700 text-sm px-3 py-1 rounded-full">
                 {s.name}
                 <button onClick={() => handleDeleteSkill(s.id)}
-                  className="ml-1 text-blue-400 hover:text-red-500 font-medium leading-none"
+                  className="ms-1 text-blue-400 hover:text-red-500 font-medium leading-none"
                   aria-label={t('freelance.delete_skill_label', lang, { name: s.name })}>
                   ×
                 </button>

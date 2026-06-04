@@ -92,11 +92,11 @@ export default function ServicesPage() {
             <table className="w-full text-sm">
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
-                  <th className="text-left px-4 py-3 font-medium text-gray-600">{t('common.field_title', lang)}</th>
-                  <th className="text-left px-4 py-3 font-medium text-gray-600">{t('common.field_category', lang)}</th>
-                  <th className="text-left px-4 py-3 font-medium text-gray-600">{t('freelance.col_price_from', lang)}</th>
-                  <th className="text-left px-4 py-3 font-medium text-gray-600">{t('freelance.col_delay', lang)}</th>
-                  <th className="text-left px-4 py-3 font-medium text-gray-600">{t('common.field_status', lang)}</th>
+                  <th className="text-start px-4 py-3 font-medium text-gray-600">{t('common.field_title', lang)}</th>
+                  <th className="text-start px-4 py-3 font-medium text-gray-600">{t('common.field_category', lang)}</th>
+                  <th className="text-start px-4 py-3 font-medium text-gray-600">{t('freelance.col_price_from', lang)}</th>
+                  <th className="text-start px-4 py-3 font-medium text-gray-600">{t('freelance.col_delay', lang)}</th>
+                  <th className="text-start px-4 py-3 font-medium text-gray-600">{t('common.field_status', lang)}</th>
                   <th className="px-4 py-3"></th>
                 </tr>
               </thead>
@@ -114,8 +114,8 @@ export default function ServicesPage() {
                         {STATUS_KEYS[s.status] ? t(STATUS_KEYS[s.status], lang) : s.status}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-right whitespace-nowrap">
-                      <Link href={`/mon-profil-freelance/services/${s.id}`} className="text-blue-600 hover:underline mr-4">
+                    <td className="px-4 py-3 text-end whitespace-nowrap">
+                      <Link href={`/mon-profil-freelance/services/${s.id}`} className="text-blue-600 hover:underline me-4">
                         {t('common.edit', lang)}
                       </Link>
                       <button onClick={() => handleDelete(s.id, s.title)} className="text-red-500 hover:underline">

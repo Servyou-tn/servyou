@@ -95,11 +95,11 @@ export default function ProduitsPage() {
             <table className="w-full text-sm">
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
-                  <th className="text-left px-4 py-3 font-medium text-gray-600">{t('common.field_title', lang)}</th>
-                  <th className="text-left px-4 py-3 font-medium text-gray-600">{t('common.field_category', lang)}</th>
-                  <th className="text-left px-4 py-3 font-medium text-gray-600">{t('product.col_price', lang)}</th>
-                  <th className="text-left px-4 py-3 font-medium text-gray-600">{t('product.col_stock', lang)}</th>
-                  <th className="text-left px-4 py-3 font-medium text-gray-600">{t('product.col_status', lang)}</th>
+                  <th className="text-start px-4 py-3 font-medium text-gray-600">{t('common.field_title', lang)}</th>
+                  <th className="text-start px-4 py-3 font-medium text-gray-600">{t('common.field_category', lang)}</th>
+                  <th className="text-start px-4 py-3 font-medium text-gray-600">{t('product.col_price', lang)}</th>
+                  <th className="text-start px-4 py-3 font-medium text-gray-600">{t('product.col_stock', lang)}</th>
+                  <th className="text-start px-4 py-3 font-medium text-gray-600">{t('product.col_status', lang)}</th>
                   <th className="px-4 py-3"></th>
                 </tr>
               </thead>
@@ -121,10 +121,10 @@ export default function ProduitsPage() {
                         {STATUS_KEYS[p.status] ? t(STATUS_KEYS[p.status], lang) : p.status}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-right whitespace-nowrap">
+                    <td className="px-4 py-3 text-end whitespace-nowrap">
                       <Link
                         href={`/ma-boutique/produits/${p.id}`}
-                        className="text-blue-600 hover:underline mr-4"
+                        className="text-blue-600 hover:underline me-4"
                       >
                         {t('common.edit', lang)}
                       </Link>
