@@ -13,7 +13,7 @@ export default async function ConfirmationPage({ params }: Props) {
 
   const { data: order } = await supabase
     .from('orders')
-    .select('id, order_type, status, quantity, delivery_name, delivery_address, delivery_phone, buyer_note, buyer_id, products(title), service_listings(title), profiles!seller_id(phone, full_name)')
+    .select('id, order_type, status, quantity, delivery_name, delivery_address, delivery_phone, buyer_note, buyer_id, seller_id, products(title), service_listings(title)')
     .eq('id', id)
     .single()
 
@@ -32,8 +32,8 @@ export default async function ConfirmationPage({ params }: Props) {
   const itemTitle = isProduct
     ? (order.products as unknown as { title: string } | null)?.title
     : (order.service_listings as unknown as { title: string } | null)?.title
-  const seller = order.profiles as unknown as { phone: string | null; full_name: string } | null
-  const sellerPhone = seller?.phone?.replace(/\s+/g, '') ?? null
+  const { data: rawPhone } = await supabase.rpc('get_contact_phone', { target: order.seller_id })
+  const sellerPhone = rawPhone?.replace(/\s+/g, '') ?? null
 
   const waMessage = isProduct
     ? `Bonjour, je suis intéressé(e) par votre produit «${itemTitle}» sur Servyou. Je souhaite passer une commande en paiement à la livraison.`

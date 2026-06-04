@@ -10,6 +10,7 @@ type Responder = {
   id: string
   proposal_message: string | null
   created_at: string
+  freelancer_id: string
   profiles: { full_name: string; phone: string | null } | null
   freelancer_profiles_link: { id: string } | null
 }
@@ -56,8 +57,7 @@ export default function MesMissionsPage() {
           id, title, status, created_at, is_remote, city,
           categories(name_fr),
           responses:job_responses(
-            id, proposal_message, created_at,
-            profiles!freelancer_id(full_name, phone),
+            id, proposal_message, created_at, freelancer_id,
             freelancer_profiles_link:freelancer_profiles!profile_id(id)
           )
         `)
@@ -65,7 +65,29 @@ export default function MesMissionsPage() {
         .neq('status', 'deleted')
         .order('created_at', { ascending: false })
 
-      setPosts((data as unknown as Post[]) ?? [])
+      const rawPosts = (data as unknown as Post[]) ?? []
+      const freelancerIds = [...new Set(rawPosts.flatMap(p => p.responses.map(r => r.freelancer_id)))]
+
+      const nameMap: Record<string, string> = {}
+      const phoneMap: Record<string, string | null> = {}
+
+      if (freelancerIds.length > 0) {
+        const { data: pubs } = await supabase.from('public_profiles').select('id, full_name').in('id', freelancerIds)
+        for (const pub of pubs ?? []) nameMap[pub.id] = pub.full_name ?? ''
+
+        await Promise.all(freelancerIds.map(async fid => {
+          const { data: ph } = await supabase.rpc('get_contact_phone', { target: fid })
+          phoneMap[fid] = ph ?? null
+        }))
+      }
+
+      setPosts(rawPosts.map(post => ({
+        ...post,
+        responses: post.responses.map(r => ({
+          ...r,
+          profiles: { full_name: nameMap[r.freelancer_id] ?? '', phone: phoneMap[r.freelancer_id] ?? null },
+        })),
+      })))
       setLoading(false)
     }
     load()

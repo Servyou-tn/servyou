@@ -12,7 +12,7 @@ export default async function MesFavorisPage() {
     .select(`
       id, item_type, created_at,
       product:product_id (id, title, price_tnd, status, shops(name, city)),
-      service:service_listing_id (id, title, starting_price_tnd, status, freelancer_profiles(city, profiles(full_name)))
+      service:service_listing_id (id, title, starting_price_tnd, status, freelancer_profiles(city, profiles:public_profiles(full_name)))
     `)
     .eq('user_id', user.id)
     .order('created_at', { ascending: false })

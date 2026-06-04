@@ -20,7 +20,7 @@ export default async function HomePage() {
       .order('created_at', { ascending: false })
       .limit(8),
     supabase.from('service_listings')
-      .select('id, title, starting_price_tnd, freelancer_profiles(city, profiles(full_name))')
+      .select('id, title, starting_price_tnd, freelancer_profiles(city, profiles:public_profiles(full_name))')
       .eq('status', 'active')
       .order('created_at', { ascending: false })
       .limit(8),

@@ -38,7 +38,7 @@ export default async function RecherchePage({ searchParams }: Props) {
       .order('created_at', { ascending: false })
       .limit(20),
     supabase.from('service_listings')
-      .select('id, title, starting_price_tnd, freelancer_profiles(city, profiles(full_name))')
+      .select('id, title, starting_price_tnd, freelancer_profiles(city, profiles:public_profiles(full_name))')
       .eq('status', 'active')
       .ilike('title', pattern)
       .order('created_at', { ascending: false })

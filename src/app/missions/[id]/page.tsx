@@ -66,20 +66,19 @@ export default async function MissionDetailPage({ params }: Props) {
   if (user) {
     isOwnPost = p.consumer_id === user.id
 
-    const [{ data: existingResp }, { data: consumerProfile }, { data: userProfile }] = await Promise.all([
+    const [{ data: existingResp }, { data: phoneResult }, { data: userProfile }] = await Promise.all([
       supabase
         .from('job_responses')
         .select('id')
         .eq('job_post_id', id)
         .eq('freelancer_id', user.id)
         .maybeSingle(),
-      // Fetch consumer phone only for logged-in users (gate at app layer)
-      supabase.from('profiles').select('phone').eq('id', p.consumer_id).single(),
+      supabase.rpc('get_contact_phone', { target: p.consumer_id }),
       supabase.from('profiles').select('seller_type').eq('id', user.id).single(),
     ])
 
     hasResponded = !!existingResp
-    consumerPhone = consumerProfile?.phone ?? null
+    consumerPhone = phoneResult ?? null
     sellerType = userProfile?.seller_type ?? null
   }
 

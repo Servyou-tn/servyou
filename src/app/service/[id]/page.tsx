@@ -10,7 +10,7 @@ export default async function ServicePage({ params }: Props) {
 
   const { data: service } = await supabase
     .from('service_listings')
-    .select('id, title, description, starting_price_tnd, delivery_time, status, categories(name_fr), freelancer_profiles(id, city, profiles(full_name))')
+    .select('id, title, description, starting_price_tnd, delivery_time, status, categories(name_fr), freelancer_profiles(id, city, profiles:public_profiles(full_name))')
     .eq('id', id)
     .eq('status', 'active')
     .single()
