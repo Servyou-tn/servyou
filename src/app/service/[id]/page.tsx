@@ -1,12 +1,15 @@
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { FavoriteButton } from '@/components/FavoriteButton'
+import { getLang } from '@/lib/i18n/server'
+import { t } from '@/lib/i18n'
 
 type Props = { params: Promise<{ id: string }> }
 
 export default async function ServicePage({ params }: Props) {
   const { id } = await params
   const supabase = await createClient()
+  const lang = await getLang()
 
   const { data: service } = await supabase
     .from('service_listings')
@@ -19,9 +22,9 @@ export default async function ServicePage({ params }: Props) {
     return (
       <main className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
         <div className="bg-white rounded-lg shadow p-8 max-w-md w-full text-center">
-          <h1 className="text-xl font-semibold text-gray-700">Service introuvable</h1>
-          <p className="text-gray-500 text-sm mt-2">Ce service n'existe pas ou n'est plus disponible.</p>
-          <Link href="/" className="block mt-4 text-sm text-blue-600 hover:underline">← Retour à l'accueil</Link>
+          <h1 className="text-xl font-semibold text-gray-700">{t('service.not_found', lang)}</h1>
+          <p className="text-gray-500 text-sm mt-2">{t('service.not_found_desc', lang)}</p>
+          <Link href="/" className="block mt-4 text-sm text-blue-600 hover:underline">{t('common.back_home', lang)}</Link>
         </div>
       </main>
     )
@@ -40,18 +43,18 @@ export default async function ServicePage({ params }: Props) {
           </div>
 
           <p className="text-2xl text-blue-700 font-bold mb-4">
-            À partir de {Number(service.starting_price_tnd).toFixed(2)} TND
+            {t('service.from_price', lang)} {Number(service.starting_price_tnd).toFixed(2)} TND
           </p>
 
           {category && (
             <p className="text-sm text-gray-500 mb-2">
-              Catégorie : <span className="text-gray-700">{category.name_fr}</span>
+              {t('service.category_label', lang)} <span className="text-gray-700">{category.name_fr}</span>
             </p>
           )}
 
           {service.delivery_time && (
             <p className="text-sm text-gray-500 mb-4">
-              Délai : <span className="text-gray-700">{service.delivery_time}</span>
+              {t('service.delay_label', lang)} <span className="text-gray-700">{service.delivery_time}</span>
             </p>
           )}
 
@@ -62,9 +65,9 @@ export default async function ServicePage({ params }: Props) {
           {fp && (
             <div className="border-t border-gray-100 pt-4 mb-6">
               <p className="text-sm text-gray-500">
-                Proposé par{' '}
+                {t('service.offered_by', lang)}{' '}
                 <Link href={`/freelance/${fp.id}`} className="text-blue-600 hover:underline font-medium">
-                  {fp.profiles?.full_name ?? 'Freelance'}
+                  {fp.profiles?.full_name ?? t('job.freelancer_fallback', lang)}
                 </Link>
                 {fp.city ? ` · ${fp.city}` : ''}
               </p>
@@ -73,11 +76,11 @@ export default async function ServicePage({ params }: Props) {
 
           <Link href={`/service/${id}/demande`}
             className="block w-full text-center bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded text-base transition-colors">
-            Demander ce service
+            {t('service.buy_cta', lang)}
           </Link>
         </div>
 
-        <Link href="/" className="text-sm text-blue-600 hover:underline">← Retour à l'accueil</Link>
+        <Link href="/" className="text-sm text-blue-600 hover:underline">{t('common.back_home', lang)}</Link>
       </div>
     </main>
   )

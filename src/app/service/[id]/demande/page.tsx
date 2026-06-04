@@ -4,11 +4,14 @@ import { useEffect, useState } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { isValidPhone, normalizePhone } from '@/lib/phone'
+import { useLang } from '@/components/LangProvider'
+import { t } from '@/lib/i18n'
 
 export default function DemandeServicePage() {
   const supabase = createClient()
   const router = useRouter()
   const { id } = useParams<{ id: string }>()
+  const lang = useLang()
 
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -61,7 +64,7 @@ export default function DemandeServicePage() {
 
     if (!profilePhone) {
       if (!isValidPhone(phoneInput)) {
-        setError('Format attendu : 8 chiffres (ex. 20 123 456) ou +216 suivi de 8 chiffres.')
+        setError(t('common.phone_format_error', lang))
         setSaving(false)
         return
       }
@@ -71,7 +74,7 @@ export default function DemandeServicePage() {
         .eq('id', user.id)
       if (phoneErr) {
         console.error('[service/demande] phone update error:', phoneErr)
-        setError('Impossible de sauvegarder le numéro. Veuillez réessayer.')
+        setError(t('common.phone_save_error', lang))
         setSaving(false)
         return
       }
@@ -94,7 +97,7 @@ export default function DemandeServicePage() {
     setSaving(false)
 
     if (insertError || !order) {
-      setError('Une erreur est survenue lors de l\'envoi de la demande. Veuillez réessayer.')
+      setError(t('common.error_generic', lang))
       return
     }
 
@@ -104,7 +107,7 @@ export default function DemandeServicePage() {
   if (loading) {
     return (
       <main className="min-h-screen flex items-center justify-center bg-gray-50">
-        <p className="text-gray-500 text-sm">Chargement…</p>
+        <p className="text-gray-500 text-sm">{t('common.loading', lang)}</p>
       </main>
     )
   }
@@ -112,31 +115,31 @@ export default function DemandeServicePage() {
   return (
     <main className="min-h-screen flex items-start justify-center bg-gray-50 px-4 py-12">
       <div className="bg-white rounded-lg shadow p-8 max-w-lg w-full">
-        <h1 className="text-2xl font-bold text-gray-800 mb-1">Demande de service</h1>
-        <p className="text-sm text-gray-500 mb-6">Service : <strong>{serviceTitle}</strong></p>
+        <h1 className="text-2xl font-bold text-gray-800 mb-1">{t('service.order_title', lang)}</h1>
+        <p className="text-sm text-gray-500 mb-6">{t('service.order_prefix', lang)} <strong>{serviceTitle}</strong></p>
 
         <form onSubmit={handleSubmit} noValidate className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="buyerNote">
-              Message pour le prestataire <span className="text-gray-400 font-normal">(optionnel)</span>
+              {t('service.field_note', lang)} <span className="text-gray-400 font-normal">{t('common.optional_m', lang)}</span>
             </label>
             <textarea id="buyerNote" rows={4} value={buyerNote}
               onChange={e => setBuyerNote(e.target.value)}
-              placeholder="Décrivez votre besoin, vos contraintes, vos questions…"
+              placeholder={t('service.note_ph', lang)}
               className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none" />
           </div>
 
           {!profilePhone && (
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="whatsapp">
-                Numéro WhatsApp <span className="text-red-500">*</span>
+                {t('common.phone_label', lang)} <span className="text-red-500">*</span>
               </label>
               <input id="whatsapp" type="tel" required value={phoneInput}
                 onChange={e => setPhoneInput(e.target.value)}
-                placeholder="Ex : 20 000 000, 056 480 920, +216 20 000 000"
+                placeholder={t('common.phone_placeholder', lang)}
                 className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
               <p className="text-xs text-gray-400 mt-1">
-                Nécessaire pour que le freelance puisse vous contacter via WhatsApp.
+                {t('common.phone_helper_freelance', lang)}
               </p>
             </div>
           )}
@@ -147,7 +150,7 @@ export default function DemandeServicePage() {
 
           <button type="submit" disabled={saving || (!profilePhone && !phoneInput.trim())}
             className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 text-white font-semibold py-3 px-4 rounded text-sm transition-colors">
-            {saving ? 'Envoi en cours…' : 'Envoyer la demande'}
+            {saving ? t('common.submitting', lang) : t('common.send_request', lang)}
           </button>
         </form>
       </div>

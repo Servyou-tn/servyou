@@ -1,10 +1,13 @@
 import { createClient } from '@/lib/supabase/server'
+import { getLang } from '@/lib/i18n/server'
+import { t } from '@/lib/i18n'
 
 type Props = { params: Promise<{ id: string }> }
 
 export default async function PublicShopPage({ params }: Props) {
   const { id } = await params
   const supabase = await createClient()
+  const lang = await getLang()
 
   const { data: shop } = await supabase
     .from('shops')
@@ -16,8 +19,8 @@ export default async function PublicShopPage({ params }: Props) {
     return (
       <main className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
         <div className="bg-white rounded-lg shadow p-8 max-w-md w-full text-center">
-          <h1 className="text-xl font-semibold text-gray-700">Boutique introuvable</h1>
-          <p className="text-gray-500 text-sm mt-2">Cette boutique n'existe pas ou a été supprimée.</p>
+          <h1 className="text-xl font-semibold text-gray-700">{t('boutique.not_found', lang)}</h1>
+          <p className="text-gray-500 text-sm mt-2">{t('boutique.not_found_desc', lang)}</p>
         </div>
       </main>
     )
@@ -40,7 +43,7 @@ export default async function PublicShopPage({ params }: Props) {
           <h1 className="text-3xl font-bold text-gray-800 mb-1">{shop.name}</h1>
           <p className="text-sm text-gray-500 mb-1">{shop.city}</p>
           {ownerName && (
-            <p className="text-sm text-gray-500 mb-3">Vendeur : {ownerName}</p>
+            <p className="text-sm text-gray-500 mb-3">{t('boutique.seller_label', lang)} {ownerName}</p>
           )}
           {shop.description && (
             <p className="text-gray-700 mt-3">{shop.description}</p>
@@ -48,7 +51,7 @@ export default async function PublicShopPage({ params }: Props) {
         </div>
 
         <h2 className="text-lg font-semibold text-gray-700 mb-4">
-          Produits disponibles
+          {t('boutique.available_products', lang)}
           {products && products.length > 0 && (
             <span className="ml-2 text-sm font-normal text-gray-400">({products.length})</span>
           )}
@@ -56,15 +59,17 @@ export default async function PublicShopPage({ params }: Props) {
 
         {!products || products.length === 0 ? (
           <div className="bg-white rounded-lg shadow p-8 text-center text-gray-500">
-            Aucun produit disponible pour le moment.
+            {t('home.no_products', lang)}
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {products.map(p => {
               const category = (p.categories as unknown as { name_fr: string } | null)?.name_fr
               const stockLabel = p.tracks_stock
-                ? (p.stock_count != null && p.stock_count > 0 ? `${p.stock_count} en stock` : 'Épuisé')
-                : 'Toujours disponible'
+                ? (p.stock_count != null && p.stock_count > 0
+                    ? t('product.stock_in_stock', lang, { n: p.stock_count })
+                    : t('common.status_sold_out', lang))
+                : t('common.stock_always', lang)
 
               return (
                 <div key={p.id} className="bg-white rounded-lg shadow p-5 flex flex-col gap-2">

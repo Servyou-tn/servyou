@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { useLang } from '@/components/LangProvider'
+import { t } from '@/lib/i18n'
 
 const GOVERNORATES = [
   'Tunis', 'Ariana', 'Ben Arous', 'Manouba', 'Nabeul', 'Zaghouan',
@@ -14,6 +16,7 @@ const GOVERNORATES = [
 export default function CreerBoutiquePage() {
   const supabase = createClient()
   const router = useRouter()
+  const lang = useLang()
 
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -58,8 +61,8 @@ export default function CreerBoutiquePage() {
     e.preventDefault()
     setError('')
 
-    if (!name.trim()) { setError('Le nom de la boutique est requis.'); return }
-    if (!city) { setError('Veuillez sélectionner un gouvernorat.'); return }
+    if (!name.trim()) { setError(t('boutique.error_name', lang)); return }
+    if (!city) { setError(t('boutique.error_city', lang)); return }
 
     setSaving(true)
 
@@ -70,7 +73,7 @@ export default function CreerBoutiquePage() {
     setSaving(false)
 
     if (insertError) {
-      setError('Une erreur est survenue lors de la création. Veuillez réessayer.')
+      setError(t('boutique.error_create', lang))
       return
     }
 
@@ -80,7 +83,7 @@ export default function CreerBoutiquePage() {
   if (loading) {
     return (
       <main className="min-h-screen flex items-center justify-center bg-gray-50">
-        <p className="text-gray-500 text-sm">Chargement…</p>
+        <p className="text-gray-500 text-sm">{t('common.loading', lang)}</p>
       </main>
     )
   }
@@ -88,12 +91,12 @@ export default function CreerBoutiquePage() {
   return (
     <main className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
       <div className="bg-white rounded-lg shadow p-8 max-w-md w-full">
-        <h1 className="text-2xl font-bold text-gray-800 mb-6">Créer ma boutique</h1>
+        <h1 className="text-2xl font-bold text-gray-800 mb-6">{t('boutique.create_title', lang)}</h1>
 
         <form onSubmit={handleSubmit} noValidate className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="name">
-              Nom de la boutique <span className="text-red-500">*</span>
+              {t('boutique.shop_name_field', lang)} <span className="text-red-500">*</span>
             </label>
             <input
               id="name"
@@ -107,7 +110,7 @@ export default function CreerBoutiquePage() {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="description">
-              Description <span className="text-gray-400 font-normal">(optionnelle)</span>
+              {t('common.field_description', lang)} <span className="text-gray-400 font-normal">{t('common.optional_f', lang)}</span>
             </label>
             <textarea
               id="description"
@@ -120,7 +123,7 @@ export default function CreerBoutiquePage() {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="city">
-              Ville / Gouvernorat <span className="text-red-500">*</span>
+              {t('signup.city', lang)} <span className="text-red-500">*</span>
             </label>
             <select
               id="city"
@@ -129,7 +132,7 @@ export default function CreerBoutiquePage() {
               onChange={e => setCity(e.target.value)}
               className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
             >
-              <option value="">— Choisir un gouvernorat —</option>
+              <option value="">{t('signup.city_placeholder', lang)}</option>
               {GOVERNORATES.map(gov => (
                 <option key={gov} value={gov}>{gov}</option>
               ))}
@@ -147,7 +150,7 @@ export default function CreerBoutiquePage() {
             disabled={saving}
             className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 text-white font-medium py-2 px-4 rounded text-sm transition-colors"
           >
-            {saving ? 'Création en cours…' : 'Créer ma boutique'}
+            {saving ? t('common.creating', lang) : t('boutique.create_title', lang)}
           </button>
         </form>
       </div>

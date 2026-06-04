@@ -64,4 +64,30 @@ describe('t() — interpolation', () => {
     const result = t('respond.error_cap_active', 'fr')
     expect(result).toContain('{n}')
   })
+
+  // WhatsApp message-body templates — confirm {title}/{mission} substitution,
+  // since these become the prefilled wa.me message and must carry the item name.
+  it('substitutes {title} into the product WhatsApp message', () => {
+    const result = t('product.whatsapp_buy_message', 'fr', { title: 'Chaise en bois' })
+    expect(result).toContain('«Chaise en bois»')
+    expect(result).not.toContain('{title}')
+  })
+
+  it('substitutes {title} into the service WhatsApp message', () => {
+    const result = t('service.whatsapp_buy_message', 'fr', { title: 'Logo design' })
+    expect(result).toContain('«Logo design»')
+    expect(result).not.toContain('{title}')
+  })
+
+  it('substitutes {mission} into the responder→consumer WhatsApp message', () => {
+    const result = t('job.whatsapp_responder_to_consumer', 'fr', { mission: 'Site vitrine' })
+    expect(result).toContain('"Site vitrine"')
+    expect(result).not.toContain('{mission}')
+  })
+
+  it('substitutes {mission} into the consumer→responder WhatsApp message', () => {
+    const result = t('job.whatsapp_consumer_to_responder', 'fr', { mission: 'Traduction FR-AR' })
+    expect(result).toContain('"Traduction FR-AR"')
+    expect(result).not.toContain('{mission}')
+  })
 })

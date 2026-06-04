@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { useLang } from '@/components/LangProvider'
+import { t } from '@/lib/i18n'
 
 const GOVERNORATES = [
   'Tunis', 'Ariana', 'Ben Arous', 'Manouba', 'Nabeul', 'Zaghouan',
@@ -14,6 +16,7 @@ const GOVERNORATES = [
 export default function CreerProfilFreelancePage() {
   const supabase = createClient()
   const router = useRouter()
+  const lang = useLang()
 
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -50,11 +53,11 @@ export default function CreerProfilFreelancePage() {
     e.preventDefault()
     setError('')
 
-    if (!headline.trim()) { setError('Le titre professionnel est requis.'); return }
+    if (!headline.trim()) { setError(t('freelance.error_headline', lang)); return }
 
     const exp = yearsExperience ? parseInt(yearsExperience) : null
     if (yearsExperience && (isNaN(exp!) || exp! < 0)) {
-      setError('Veuillez entrer un nombre d\'années d\'expérience valide.')
+      setError(t('freelance.error_experience', lang))
       return
     }
 
@@ -73,7 +76,7 @@ export default function CreerProfilFreelancePage() {
     setSaving(false)
 
     if (insertError) {
-      setError('Une erreur est survenue lors de la création. Veuillez réessayer.')
+      setError(t('freelance.error_create', lang))
       return
     }
 
@@ -83,7 +86,7 @@ export default function CreerProfilFreelancePage() {
   if (loading) {
     return (
       <main className="min-h-screen flex items-center justify-center bg-gray-50">
-        <p className="text-gray-500 text-sm">Chargement…</p>
+        <p className="text-gray-500 text-sm">{t('common.loading', lang)}</p>
       </main>
     )
   }
@@ -91,22 +94,22 @@ export default function CreerProfilFreelancePage() {
   return (
     <main className="min-h-screen flex items-start justify-center bg-gray-50 px-4 py-12">
       <div className="bg-white rounded-lg shadow p-8 max-w-lg w-full">
-        <h1 className="text-2xl font-bold text-gray-800 mb-6">Créer mon profil freelance</h1>
+        <h1 className="text-2xl font-bold text-gray-800 mb-6">{t('freelance.create_title', lang)}</h1>
 
         <form onSubmit={handleSubmit} noValidate className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="headline">
-              Titre professionnel <span className="text-red-500">*</span>
+              {t('freelance.field_headline', lang)} <span className="text-red-500">*</span>
             </label>
             <input id="headline" type="text" required value={headline}
               onChange={e => setHeadline(e.target.value)}
-              placeholder="Ex : Développeur web React · Sfax"
+              placeholder={t('freelance.headline_ph', lang)}
               className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="bio">
-              Bio <span className="text-gray-400 font-normal">(optionnelle)</span>
+              {t('freelance.field_bio', lang)} <span className="text-gray-400 font-normal">{t('common.optional_f', lang)}</span>
             </label>
             <textarea id="bio" rows={4} value={bio} onChange={e => setBio(e.target.value)}
               className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none" />
@@ -114,18 +117,18 @@ export default function CreerProfilFreelancePage() {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="city">
-              Ville / Gouvernorat
+              {t('signup.city', lang)}
             </label>
             <select id="city" value={city} onChange={e => setCity(e.target.value)}
               className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
-              <option value="">— Choisir un gouvernorat —</option>
+              <option value="">{t('signup.city_placeholder', lang)}</option>
               {GOVERNORATES.map(g => <option key={g} value={g}>{g}</option>)}
             </select>
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="portfolioLink">
-              Lien portfolio <span className="text-gray-400 font-normal">(optionnel)</span>
+              {t('freelance.field_portfolio', lang)} <span className="text-gray-400 font-normal">{t('common.optional_m', lang)}</span>
             </label>
             <input id="portfolioLink" type="url" value={portfolioLink}
               onChange={e => setPortfolioLink(e.target.value)}
@@ -135,7 +138,7 @@ export default function CreerProfilFreelancePage() {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="yearsExperience">
-              Années d'expérience <span className="text-gray-400 font-normal">(optionnel)</span>
+              {t('freelance.field_experience', lang)} <span className="text-gray-400 font-normal">{t('common.optional_m', lang)}</span>
             </label>
             <input id="yearsExperience" type="number" min="0" step="1" value={yearsExperience}
               onChange={e => setYearsExperience(e.target.value)}
@@ -144,11 +147,11 @@ export default function CreerProfilFreelancePage() {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="languages">
-              Langues <span className="text-gray-400 font-normal">(optionnel)</span>
+              {t('freelance.field_languages', lang)} <span className="text-gray-400 font-normal">{t('common.optional_m', lang)}</span>
             </label>
             <input id="languages" type="text" value={languages}
               onChange={e => setLanguages(e.target.value)}
-              placeholder="Ex : Arabe, Français, Anglais"
+              placeholder={t('freelance.languages_ph', lang)}
               className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
           </div>
 
@@ -158,7 +161,7 @@ export default function CreerProfilFreelancePage() {
 
           <button type="submit" disabled={saving}
             className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 text-white font-medium py-2 px-4 rounded text-sm transition-colors">
-            {saving ? 'Création en cours…' : 'Créer mon profil'}
+            {saving ? t('common.creating', lang) : t('freelance.create_btn', lang)}
           </button>
         </form>
       </div>

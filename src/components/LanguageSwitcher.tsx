@@ -30,6 +30,11 @@ export function LanguageSwitcher() {
     }
   }
 
+  // NOTE: the aria-labels below ("Français" / "العربية") are intentionally NOT
+  // run through t() and must stay in their own language. By accessibility
+  // convention a language name is written in that language, so a screen reader
+  // announces each option natively regardless of the current UI language.
+  // Do not "translate" these into the active locale.
   return (
     <div className="flex items-center gap-0.5">
       <button

@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { useLang } from '@/components/LangProvider'
+import { t } from '@/lib/i18n'
 
 type Category = { id: string; name_fr: string }
 
@@ -11,6 +13,7 @@ export default function ModifierMissionPage() {
   const router = useRouter()
   const params = useParams<{ id: string }>()
   const id = params.id
+  const lang = useLang()
 
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
@@ -79,10 +82,10 @@ export default function ModifierMissionPage() {
 
     const min = budgetMin ? parseFloat(budgetMin) : null
     const max = budgetMax ? parseFloat(budgetMax) : null
-    if (min !== null && min < 0) { setError('Le budget minimum doit être positif.'); return }
-    if (max !== null && max < 0) { setError('Le budget maximum doit être positif.'); return }
+    if (min !== null && min < 0) { setError(t('poster.error_budget_min', lang)); return }
+    if (max !== null && max < 0) { setError(t('poster.error_budget_max', lang)); return }
     if (min !== null && max !== null && min > max) {
-      setError('Le budget minimum ne peut pas dépasser le maximum.'); return
+      setError(t('poster.error_budget_range', lang)); return
     }
 
     setSubmitting(true)
@@ -103,7 +106,7 @@ export default function ModifierMissionPage() {
       .eq('id', id)
 
     if (updateErr) {
-      setError('Erreur lors de la mise à jour. Veuillez réessayer.')
+      setError(t('job.error_update', lang))
       setSubmitting(false)
       return
     }
@@ -124,7 +127,7 @@ export default function ModifierMissionPage() {
   if (loading) {
     return (
       <main className="min-h-screen flex items-center justify-center bg-gray-50">
-        <p className="text-gray-500 text-sm">Chargement…</p>
+        <p className="text-gray-500 text-sm">{t('common.loading', lang)}</p>
       </main>
     )
   }
@@ -132,13 +135,13 @@ export default function ModifierMissionPage() {
   return (
     <main className="min-h-screen bg-gray-50 px-4 py-10">
       <div className="max-w-xl mx-auto">
-        <h1 className="text-2xl font-bold text-gray-800 mb-6">Modifier la mission</h1>
+        <h1 className="text-2xl font-bold text-gray-800 mb-6">{t('job.edit_title', lang)}</h1>
 
         <form onSubmit={handleSubmit} noValidate className="bg-white rounded-lg shadow p-6 space-y-5">
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Titre <span className="text-red-500">*</span>
+              {t('poster.field_title', lang)} <span className="text-red-500">*</span>
             </label>
             <input type="text" required value={title} onChange={e => setTitle(e.target.value)}
               className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
@@ -146,30 +149,30 @@ export default function ModifierMissionPage() {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Description <span className="text-red-500">*</span>
+              {t('poster.field_desc', lang)} <span className="text-red-500">*</span>
             </label>
             <textarea required rows={4} value={description} onChange={e => setDescription(e.target.value)}
               className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Budget (TND)</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">{t('poster.field_budget', lang)}</label>
             <div className="flex gap-2 items-center">
               <input type="number" min="0" step="0.01" value={budgetMin} onChange={e => setBudgetMin(e.target.value)}
-                placeholder="Min"
+                placeholder={t('poster.field_budget_min', lang)}
                 className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
               <span className="text-gray-500 text-sm">–</span>
               <input type="number" min="0" step="0.01" value={budgetMax} onChange={e => setBudgetMax(e.target.value)}
-                placeholder="Max"
+                placeholder={t('poster.field_budget_max', lang)}
                 className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
             </div>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Catégorie</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">{t('poster.field_category', lang)}</label>
             <select value={categoryId} onChange={e => setCategoryId(e.target.value)}
               className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-              <option value="">— Toutes catégories —</option>
+              <option value="">{t('poster.field_category_all', lang)}</option>
               {categories.map(c => (
                 <option key={c.id} value={c.id}>{c.name_fr}</option>
               ))}
@@ -177,34 +180,34 @@ export default function ModifierMissionPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Localisation</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">{t('poster.field_location', lang)}</label>
             <div className="flex items-center gap-2 mb-2">
               <input type="checkbox" id="remote" checked={isRemote} onChange={e => setIsRemote(e.target.checked)} />
-              <label htmlFor="remote" className="text-sm text-gray-600">Travail à distance possible</label>
+              <label htmlFor="remote" className="text-sm text-gray-600">{t('poster.field_remote', lang)}</label>
             </div>
             {!isRemote && (
               <input type="text" value={city} onChange={e => setCity(e.target.value)}
-                placeholder="Ville / Gouvernorat"
+                placeholder={t('poster.field_city', lang)}
                 className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
             )}
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Date limite souhaitée</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">{t('poster.field_deadline', lang)}</label>
             <input type="date" value={deadline} onChange={e => setDeadline(e.target.value)}
               className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Compétences requises</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">{t('poster.field_skills', lang)}</label>
             <div className="flex gap-2 mb-2">
               <input type="text" value={skillInput} onChange={e => setSkillInput(e.target.value)}
                 onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addSkill() } }}
-                placeholder="Ex : React, Photoshop…"
+                placeholder={t('poster.field_skills_ph', lang)}
                 className="flex-1 border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
               <button type="button" onClick={addSkill}
                 className="border border-gray-300 hover:bg-gray-50 text-gray-700 text-sm px-3 py-2 rounded transition-colors">
-                Ajouter
+                {t('common.add', lang)}
               </button>
             </div>
             {skills.length > 0 && (
@@ -226,12 +229,12 @@ export default function ModifierMissionPage() {
 
           <button type="submit" disabled={submitting || !title.trim() || !description.trim()}
             className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 text-white font-medium py-2 px-4 rounded text-sm transition-colors">
-            {submitting ? 'Enregistrement…' : 'Enregistrer les modifications'}
+            {submitting ? t('common.saving', lang) : t('common.save', lang)}
           </button>
         </form>
 
         <div className="mt-4">
-          <a href="/mes-missions" className="text-sm text-blue-600 hover:underline">← Mes missions</a>
+          <a href="/mes-missions" className="text-sm text-blue-600 hover:underline">{t('poster.back', lang)}</a>
         </div>
       </div>
     </main>

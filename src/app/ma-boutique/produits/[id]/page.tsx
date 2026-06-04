@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { useLang } from '@/components/LangProvider'
+import { t } from '@/lib/i18n'
 
 type Category = { id: string; name_fr: string }
 
@@ -10,6 +12,7 @@ export default function EditProduitPage() {
   const supabase = createClient()
   const router = useRouter()
   const { id } = useParams<{ id: string }>()
+  const lang = useLang()
 
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -70,8 +73,8 @@ export default function EditProduitPage() {
     setError('')
 
     const price = parseFloat(priceTnd)
-    if (!title.trim()) { setError('Le titre est requis.'); return }
-    if (isNaN(price) || price < 0) { setError('Veuillez entrer un prix valide (>= 0).'); return }
+    if (!title.trim()) { setError(t('product.error_title', lang)); return }
+    if (isNaN(price) || price < 0) { setError(t('product.error_price', lang)); return }
 
     setSaving(true)
 
@@ -88,7 +91,7 @@ export default function EditProduitPage() {
     setSaving(false)
 
     if (updateError) {
-      setError('Une erreur est survenue lors de la mise à jour. Veuillez réessayer.')
+      setError(t('product.error_update', lang))
       return
     }
 
@@ -98,7 +101,7 @@ export default function EditProduitPage() {
   if (loading) {
     return (
       <main className="min-h-screen flex items-center justify-center bg-gray-50">
-        <p className="text-gray-500 text-sm">Chargement…</p>
+        <p className="text-gray-500 text-sm">{t('common.loading', lang)}</p>
       </main>
     )
   }
@@ -106,12 +109,12 @@ export default function EditProduitPage() {
   return (
     <main className="min-h-screen flex items-start justify-center bg-gray-50 px-4 py-12">
       <div className="bg-white rounded-lg shadow p-8 max-w-lg w-full">
-        <h1 className="text-2xl font-bold text-gray-800 mb-6">Modifier le produit</h1>
+        <h1 className="text-2xl font-bold text-gray-800 mb-6">{t('product.edit_title', lang)}</h1>
 
         <form onSubmit={handleSubmit} noValidate className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="title">
-              Titre <span className="text-red-500">*</span>
+              {t('common.field_title', lang)} <span className="text-red-500">*</span>
             </label>
             <input id="title" type="text" required value={title}
               onChange={e => setTitle(e.target.value)}
@@ -120,7 +123,7 @@ export default function EditProduitPage() {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="description">
-              Description <span className="text-gray-400 font-normal">(optionnelle)</span>
+              {t('common.field_description', lang)} <span className="text-gray-400 font-normal">{t('common.optional_f', lang)}</span>
             </label>
             <textarea id="description" rows={3} value={description}
               onChange={e => setDescription(e.target.value)}
@@ -129,7 +132,7 @@ export default function EditProduitPage() {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="price">
-              Prix (TND) <span className="text-red-500">*</span>
+              {t('product.field_price', lang)} <span className="text-red-500">*</span>
             </label>
             <input id="price" type="number" min="0" step="0.01" required value={priceTnd}
               onChange={e => setPriceTnd(e.target.value)}
@@ -138,24 +141,24 @@ export default function EditProduitPage() {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="category">
-              Catégorie
+              {t('common.field_category', lang)}
             </label>
             <select id="category" value={categoryId} onChange={e => setCategoryId(e.target.value)}
               className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
-              <option value="">— Sans catégorie —</option>
+              <option value="">{t('common.no_category', lang)}</option>
               {categories.map(c => <option key={c.id} value={c.id}>{c.name_fr}</option>)}
             </select>
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="status">
-              Statut
+              {t('common.field_status', lang)}
             </label>
             <select id="status" value={status} onChange={e => setStatus(e.target.value)}
               className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
-              <option value="active">Actif</option>
-              <option value="hidden">Masqué</option>
-              <option value="sold_out">Épuisé</option>
+              <option value="active">{t('common.status_active', lang)}</option>
+              <option value="hidden">{t('common.status_hidden', lang)}</option>
+              <option value="sold_out">{t('common.status_sold_out', lang)}</option>
             </select>
           </div>
 
@@ -164,12 +167,12 @@ export default function EditProduitPage() {
               <input type="checkbox" checked={tracksStock}
                 onChange={e => setTracksStock(e.target.checked)}
                 className="rounded border-gray-300" />
-              <span className="text-sm font-medium text-gray-700">Gérer le stock</span>
+              <span className="text-sm font-medium text-gray-700">{t('product.field_stock_manage', lang)}</span>
             </label>
             {tracksStock && (
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="stockCount">
-                  Quantité en stock
+                  {t('product.field_stock_count', lang)}
                 </label>
                 <input id="stockCount" type="number" min="0" step="1" value={stockCount}
                   onChange={e => setStockCount(e.target.value)}
@@ -177,7 +180,7 @@ export default function EditProduitPage() {
               </div>
             )}
             {!tracksStock && (
-              <p className="text-xs text-gray-500">Toujours disponible (stock non géré)</p>
+              <p className="text-xs text-gray-500">{t('product.stock_always_hint', lang)}</p>
             )}
           </div>
 
@@ -187,13 +190,13 @@ export default function EditProduitPage() {
 
           <button type="submit" disabled={saving}
             className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 text-white font-medium py-2 px-4 rounded text-sm transition-colors">
-            {saving ? 'Enregistrement…' : 'Enregistrer les modifications'}
+            {saving ? t('common.saving', lang) : t('common.save', lang)}
           </button>
         </form>
 
         <div className="mt-6">
           <a href="/ma-boutique/produits" className="text-sm text-blue-600 hover:underline">
-            ← Retour aux produits
+            {t('product.back', lang)}
           </a>
         </div>
       </div>

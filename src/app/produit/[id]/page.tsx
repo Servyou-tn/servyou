@@ -1,12 +1,15 @@
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { FavoriteButton } from '@/components/FavoriteButton'
+import { getLang } from '@/lib/i18n/server'
+import { t } from '@/lib/i18n'
 
 type Props = { params: Promise<{ id: string }> }
 
 export default async function ProduitPage({ params }: Props) {
   const { id } = await params
   const supabase = await createClient()
+  const lang = await getLang()
 
   const { data: product } = await supabase
     .from('products')
@@ -19,9 +22,9 @@ export default async function ProduitPage({ params }: Props) {
     return (
       <main className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
         <div className="bg-white rounded-lg shadow p-8 max-w-md w-full text-center">
-          <h1 className="text-xl font-semibold text-gray-700">Produit introuvable</h1>
-          <p className="text-gray-500 text-sm mt-2">Ce produit n'existe pas ou n'est plus disponible.</p>
-          <Link href="/" className="block mt-4 text-sm text-blue-600 hover:underline">← Retour à l'accueil</Link>
+          <h1 className="text-xl font-semibold text-gray-700">{t('product.not_found', lang)}</h1>
+          <p className="text-gray-500 text-sm mt-2">{t('product.not_found_desc', lang)}</p>
+          <Link href="/" className="block mt-4 text-sm text-blue-600 hover:underline">{t('common.back_home', lang)}</Link>
         </div>
       </main>
     )
@@ -31,8 +34,10 @@ export default async function ProduitPage({ params }: Props) {
   const category = product.categories as unknown as { name_fr: string } | null
 
   const stockLabel = product.tracks_stock
-    ? (product.stock_count != null && product.stock_count > 0 ? `${product.stock_count} en stock` : 'Épuisé')
-    : 'Toujours disponible'
+    ? (product.stock_count != null && product.stock_count > 0
+        ? t('product.stock_in_stock', lang, { n: product.stock_count })
+        : t('common.status_sold_out', lang))
+    : t('common.stock_always', lang)
 
   return (
     <main className="min-h-screen bg-gray-50 px-4 py-12">
@@ -47,12 +52,12 @@ export default async function ProduitPage({ params }: Props) {
 
           {category && (
             <p className="text-sm text-gray-500 mb-2">
-              Catégorie : <span className="text-gray-700">{category.name_fr}</span>
+              {t('product.category_label', lang)} <span className="text-gray-700">{category.name_fr}</span>
             </p>
           )}
 
           <p className="text-sm text-gray-500 mb-4">
-            Stock : <span className="text-gray-700">{stockLabel}</span>
+            {t('product.stock_label', lang)} <span className="text-gray-700">{stockLabel}</span>
           </p>
 
           {product.description && (
@@ -62,7 +67,7 @@ export default async function ProduitPage({ params }: Props) {
           {shop && (
             <div className="border-t border-gray-100 pt-4 mb-6">
               <p className="text-sm text-gray-500">
-                Vendu par{' '}
+                {t('product.sold_by', lang)}{' '}
                 <Link href={`/boutique/${shop.id}`} className="text-blue-600 hover:underline font-medium">
                   {shop.name}
                 </Link>
@@ -73,11 +78,11 @@ export default async function ProduitPage({ params }: Props) {
 
           <Link href={`/produit/${id}/demande`}
             className="block w-full text-center bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded text-base transition-colors">
-            Demander à acheter
+            {t('product.buy_cta', lang)}
           </Link>
         </div>
 
-        <Link href="/" className="text-sm text-blue-600 hover:underline">← Retour à l'accueil</Link>
+        <Link href="/" className="text-sm text-blue-600 hover:underline">{t('common.back_home', lang)}</Link>
       </div>
     </main>
   )

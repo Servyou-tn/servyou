@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { useLang } from './LangProvider'
+import { t } from '@/lib/i18n'
 
 type Props = {
   item_type: 'product' | 'service'
@@ -12,6 +14,7 @@ type Props = {
 export function FavoriteButton({ item_type, item_id }: Props) {
   const supabase = createClient()
   const router = useRouter()
+  const lang = useLang()
 
   const [loggedIn, setLoggedIn] = useState(false)
   const [favorited, setFavorited] = useState(false)
@@ -74,19 +77,21 @@ export function FavoriteButton({ item_type, item_id }: Props) {
 
   if (loading) {
     return (
-      <button disabled aria-label="Chargement…"
+      <button disabled aria-label={t('common.loading', lang)}
         className="p-2 rounded-full text-gray-300">
         ♡
       </button>
     )
   }
 
+  const label = favorited ? t('favorites.remove', lang) : t('favorites.add', lang)
+
   return (
     <button
       onClick={handleToggle}
       disabled={toggling}
-      title={favorited ? 'Retirer des favoris' : 'Ajouter aux favoris'}
-      aria-label={favorited ? 'Retirer des favoris' : 'Ajouter aux favoris'}
+      title={label}
+      aria-label={label}
       className={`p-2 rounded-full transition-colors text-xl leading-none disabled:opacity-50 ${
         favorited
           ? 'text-red-500 hover:text-red-400'

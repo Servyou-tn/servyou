@@ -1,6 +1,8 @@
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { RespondForm } from '@/components/RespondForm'
+import { getLang } from '@/lib/i18n/server'
+import { t } from '@/lib/i18n'
 import { JOB_POST_EXPIRY_DAYS, MAX_RESPONSES_PER_POST } from '@/lib/job-constants'
 
 type Props = { params: Promise<{ id: string }> }
@@ -8,6 +10,7 @@ type Props = { params: Promise<{ id: string }> }
 export default async function MissionDetailPage({ params }: Props) {
   const { id } = await params
   const supabase = await createClient()
+  const lang = await getLang()
   const { data: { user } } = await supabase.auth.getUser()
 
   const { data: post } = await supabase
@@ -26,9 +29,9 @@ export default async function MissionDetailPage({ params }: Props) {
     return (
       <main className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
         <div className="bg-white rounded-lg shadow p-8 max-w-md w-full text-center">
-          <h1 className="text-xl font-semibold text-gray-700">Mission introuvable</h1>
-          <p className="text-gray-500 text-sm mt-2">Cette mission n'existe pas ou a été supprimée.</p>
-          <Link href="/missions" className="block mt-4 text-sm text-blue-600 hover:underline">← Tableau des missions</Link>
+          <h1 className="text-xl font-semibold text-gray-700">{t('job.not_found', lang)}</h1>
+          <p className="text-gray-500 text-sm mt-2">{t('job.not_found_desc', lang)}</p>
+          <Link href="/missions" className="block mt-4 text-sm text-blue-600 hover:underline">{t('job.back_to_board', lang)}</Link>
         </div>
       </main>
     )
@@ -53,8 +56,8 @@ export default async function MissionDetailPage({ params }: Props) {
   function budgetLabel() {
     if (!p.budget_min && !p.budget_max) return null
     if (p.budget_min && p.budget_max) return `${Number(p.budget_min).toFixed(0)} – ${Number(p.budget_max).toFixed(0)} TND`
-    if (p.budget_min) return `Dès ${Number(p.budget_min).toFixed(0)} TND`
-    return `Jusqu'à ${Number(p.budget_max).toFixed(0)} TND`
+    if (p.budget_min) return `${t('missions.budget_from', lang)} ${Number(p.budget_min).toFixed(0)} TND`
+    return `${t('missions.budget_to', lang)} ${Number(p.budget_max).toFixed(0)} TND`
   }
 
   // Check existing response + consumer phone (only fetched when user is logged in)
@@ -90,55 +93,55 @@ export default async function MissionDetailPage({ params }: Props) {
   if (!user) {
     respondSection = (
       <div className="bg-blue-50 border border-blue-200 rounded p-4 text-sm text-blue-700">
-        <Link href="/login" className="font-medium hover:underline">Connectez-vous</Link>
-        {' '}pour répondre à cette mission.
+        <Link href="/login" className="font-medium hover:underline">{t('job.login_to_respond', lang)}</Link>
+        {' '}{t('job.login_suffix', lang)}
       </div>
     )
   } else if (isOwnPost) {
     respondSection = (
       <div className="bg-gray-50 border border-gray-200 rounded p-4 text-sm text-gray-500">
-        Ceci est votre propre mission.{' '}
-        <Link href="/mes-missions" className="text-blue-600 hover:underline">Gérer mes missions →</Link>
+        {t('job.own_post', lang)}{' '}
+        <Link href="/mes-missions" className="text-blue-600 hover:underline">{t('job.manage_link', lang)}</Link>
       </div>
     )
   } else if (isClosed) {
     respondSection = (
       <div className="bg-gray-50 border border-gray-200 rounded p-4 text-sm text-gray-500">
-        {p.status === 'filled' ? 'Cette mission a été pourvue.' : 'Cette mission a expiré.'}
+        {p.status === 'filled' ? t('job.filled_msg', lang) : t('job.expired_msg', lang)}
       </div>
     )
   } else if (sellerType !== 'freelancer') {
     respondSection = (
       <div className="bg-gray-50 border border-gray-200 rounded p-4 text-sm text-gray-500">
-        Seuls les freelancers peuvent répondre aux missions.{' '}
-        <Link href="/devenir-vendeur" className="text-blue-600 hover:underline">Devenir freelancer →</Link>
+        {t('job.freelancer_only', lang)}{' '}
+        <Link href="/devenir-vendeur" className="text-blue-600 hover:underline">{t('job.become_freelancer_link', lang)}</Link>
       </div>
     )
   } else if (hasResponded) {
     const phone = consumerPhone?.replace(/\s+/g, '')
     const waText = encodeURIComponent(
-      `Bonjour, j'ai répondu à votre mission "${p.title}" sur Servyou et je serais ravi(e) d'en discuter.`
+      t('job.whatsapp_responder_to_consumer', lang, { mission: p.title })
     )
     respondSection = (
       <div className="space-y-3">
         <div className="bg-green-50 border border-green-200 rounded px-4 py-3 text-sm text-green-700">
-          Vous avez déjà envoyé une candidature pour cette mission.
+          {t('job.already_responded', lang)}
         </div>
         {phone ? (
           <a href={`https://wa.me/${phone}?text=${waText}`}
             target="_blank" rel="noopener noreferrer"
             className="inline-block bg-green-500 hover:bg-green-600 text-white font-medium text-sm px-4 py-2 rounded transition-colors">
-            Contacter le client sur WhatsApp
+            {t('respond.whatsapp_btn', lang)}
           </a>
         ) : (
-          <p className="text-sm text-gray-500">Le client n'a pas renseigné son numéro. Il vous contactera directement.</p>
+          <p className="text-sm text-gray-500">{t('job.consumer_no_phone', lang)}</p>
         )}
       </div>
     )
   } else if (isCapped) {
     respondSection = (
       <div className="bg-amber-50 border border-amber-200 rounded p-4 text-sm text-amber-700">
-        Cette mission a atteint le nombre maximum de réponses ({MAX_RESPONSES_PER_POST}).
+        {t('job.max_capped', lang, { n: MAX_RESPONSES_PER_POST })}
       </div>
     )
   } else {
@@ -159,10 +162,10 @@ export default async function MissionDetailPage({ params }: Props) {
           <div>
             <h1 className="text-2xl font-bold text-gray-800 mb-1">{p.title}</h1>
             <p className="text-xs text-gray-500">
-              {p.is_remote ? 'À distance' : (p.city ?? '')}
+              {p.is_remote ? t('missions.remote', lang) : (p.city ?? '')}
               {p.categories ? ` · ${(p.categories as unknown as { name_fr: string }).name_fr}` : ''}
-              {' · Publié le '}{date}
-              {' · '}{responseCount} réponse{responseCount !== 1 ? 's' : ''}
+              {' · '}{t('job.published_on', lang)}{date}
+              {' · '}{responseCount} {responseCount !== 1 ? t('job.responses_label_pl', lang) : t('job.responses_label', lang)}
             </p>
           </div>
 
@@ -172,7 +175,7 @@ export default async function MissionDetailPage({ params }: Props) {
 
           {p.deadline && (
             <p className="text-sm text-gray-500">
-              Date limite :{' '}
+              {t('job.deadline_label', lang)}{' '}
               <span className="text-gray-700">
                 {new Date(p.deadline).toLocaleDateString('fr-TN', { day: '2-digit', month: 'long', year: 'numeric' })}
               </span>
@@ -183,7 +186,7 @@ export default async function MissionDetailPage({ params }: Props) {
 
           {skills.length > 0 && (
             <div>
-              <p className="text-sm font-medium text-gray-600 mb-2">Compétences recherchées</p>
+              <p className="text-sm font-medium text-gray-600 mb-2">{t('job.skills_section', lang)}</p>
               <div className="flex flex-wrap gap-2">
                 {skills.map(s => (
                   <span key={s} className="bg-blue-50 text-blue-700 text-xs px-3 py-1 rounded-full">{s}</span>
@@ -193,12 +196,12 @@ export default async function MissionDetailPage({ params }: Props) {
           )}
 
           <div className="border-t border-gray-100 pt-5">
-            <h2 className="text-base font-semibold text-gray-700 mb-3">Répondre à cette mission</h2>
+            <h2 className="text-base font-semibold text-gray-700 mb-3">{t('job.respond_section', lang)}</h2>
             {respondSection}
           </div>
         </div>
 
-        <Link href="/missions" className="text-sm text-blue-600 hover:underline">← Tableau des missions</Link>
+        <Link href="/missions" className="text-sm text-blue-600 hover:underline">{t('job.back_to_board', lang)}</Link>
       </div>
     </main>
   )

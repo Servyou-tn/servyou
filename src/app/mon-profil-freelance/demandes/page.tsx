@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { useLang } from '@/components/LangProvider'
+import { t } from '@/lib/i18n'
 
 type Order = {
   id: string
@@ -15,15 +17,16 @@ type Order = {
   profiles: { full_name: string; phone: string | null } | null
 }
 
-const STATUS_LABELS: Record<string, { label: string; cls: string }> = {
-  pending:   { label: 'En attente',  cls: 'bg-yellow-100 text-yellow-700' },
-  completed: { label: 'Terminée',   cls: 'bg-green-100 text-green-700' },
-  cancelled: { label: 'Annulée',    cls: 'bg-red-100 text-red-600' },
+const STATUS_LABELS: Record<string, { key: string; cls: string }> = {
+  pending:   { key: 'common.status_pending',   cls: 'bg-yellow-100 text-yellow-700' },
+  completed: { key: 'common.status_completed', cls: 'bg-green-100 text-green-700' },
+  cancelled: { key: 'common.status_cancelled', cls: 'bg-red-100 text-red-600' },
 }
 
 export default function DemandesFreelancePage() {
   const supabase = createClient()
   const router = useRouter()
+  const lang = useLang()
 
   const [loading, setLoading] = useState(true)
   const [orders, setOrders] = useState<Order[]>([])
@@ -77,7 +80,7 @@ export default function DemandesFreelancePage() {
   if (loading) {
     return (
       <main className="min-h-screen flex items-center justify-center bg-gray-50">
-        <p className="text-gray-500 text-sm">Chargement…</p>
+        <p className="text-gray-500 text-sm">{t('common.loading', lang)}</p>
       </main>
     )
   }
@@ -85,16 +88,18 @@ export default function DemandesFreelancePage() {
   return (
     <main className="min-h-screen bg-gray-50 px-4 py-12">
       <div className="max-w-3xl mx-auto">
-        <h1 className="text-2xl font-bold text-gray-800 mb-6">Demandes reçues</h1>
+        <h1 className="text-2xl font-bold text-gray-800 mb-6">{t('freelance.requests_title', lang)}</h1>
 
         {orders.length === 0 ? (
           <div className="bg-white rounded-lg shadow p-8 text-center text-gray-500">
-            Aucune demande pour le moment.
+            {t('freelance.no_requests', lang)}
           </div>
         ) : (
           <div className="space-y-4">
             {orders.map(o => {
-              const s = STATUS_LABELS[o.status] ?? { label: o.status, cls: 'bg-gray-100 text-gray-600' }
+              const sl = STATUS_LABELS[o.status]
+              const label = sl ? t(sl.key, lang) : o.status
+              const cls = sl?.cls ?? 'bg-gray-100 text-gray-600'
               const date = new Date(o.created_at).toLocaleDateString('fr-TN', { day: '2-digit', month: 'short', year: 'numeric' })
               const buyerPhone = o.profiles?.phone?.replace(/\s+/g, '')
               return (
@@ -103,15 +108,15 @@ export default function DemandesFreelancePage() {
                     <div>
                       <p className="font-semibold text-gray-800">{o.service_listings?.title ?? '—'}</p>
                       <p className="text-xs text-gray-500 mt-0.5">
-                        {o.profiles?.full_name ?? 'Client'} · {date}
+                        {o.profiles?.full_name || t('boutique.buyer_fallback', lang)} · {date}
                       </p>
                     </div>
-                    <span className={`text-xs font-medium px-2 py-1 rounded-full whitespace-nowrap ${s.cls}`}>{s.label}</span>
+                    <span className={`text-xs font-medium px-2 py-1 rounded-full whitespace-nowrap ${cls}`}>{label}</span>
                   </div>
 
                   {o.buyer_note && (
                     <p className="text-sm text-gray-600">
-                      <span className="font-medium">Message :</span> {o.buyer_note}
+                      <span className="font-medium">{t('common.message_label', lang)}</span> {o.buyer_note}
                     </p>
                   )}
 
@@ -119,18 +124,18 @@ export default function DemandesFreelancePage() {
                     {buyerPhone && (
                       <a href={`https://wa.me/${buyerPhone}`} target="_blank" rel="noopener noreferrer"
                         className="bg-green-500 hover:bg-green-600 text-white text-xs font-medium px-3 py-1.5 rounded transition-colors">
-                        Contacter sur WhatsApp
+                        {t('common.whatsapp_contact', lang)}
                       </a>
                     )}
                     {o.status === 'pending' && (
                       <>
                         <button onClick={() => updateStatus(o.id, 'completed')}
                           className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium px-3 py-1.5 rounded transition-colors">
-                          Marquer terminée
+                          {t('common.mark_completed', lang)}
                         </button>
                         <button onClick={() => updateStatus(o.id, 'cancelled')}
                           className="border border-red-300 hover:bg-red-50 text-red-600 text-xs font-medium px-3 py-1.5 rounded transition-colors">
-                          Annuler
+                          {t('common.cancel', lang)}
                         </button>
                       </>
                     )}
@@ -142,7 +147,7 @@ export default function DemandesFreelancePage() {
         )}
 
         <div className="mt-6">
-          <Link href="/mon-profil-freelance" className="text-sm text-blue-600 hover:underline">← Retour à mon espace freelance</Link>
+          <Link href="/mon-profil-freelance" className="text-sm text-blue-600 hover:underline">{t('freelance.back', lang)}</Link>
         </div>
       </div>
     </main>
