@@ -10,6 +10,7 @@ type Order = {
   status: string
   created_at: string
   buyer_note: string | null
+  buyer_id: string
   service_listings: { title: string } | null
   profiles: { full_name: string; phone: string | null } | null
 }
@@ -38,12 +39,31 @@ export default function DemandesFreelancePage() {
 
       const { data: rows } = await supabase
         .from('orders')
-        .select('id, status, created_at, buyer_note, service_listings(title), profiles!buyer_id(full_name, phone)')
+        .select('id, status, created_at, buyer_note, buyer_id, service_listings(title)')
         .eq('seller_id', user.id)
         .eq('order_type', 'service')
         .order('created_at', { ascending: false })
 
-      setOrders((rows as unknown as Order[]) ?? [])
+      const rawOrders = (rows as unknown as Order[]) ?? []
+      const buyerIds = [...new Set(rawOrders.map(o => o.buyer_id))]
+
+      const nameMap: Record<string, string> = {}
+      const phoneMap: Record<string, string | null> = {}
+
+      if (buyerIds.length > 0) {
+        const { data: pubs } = await supabase.from('public_profiles').select('id, full_name').in('id', buyerIds)
+        for (const pub of pubs ?? []) nameMap[pub.id] = pub.full_name ?? ''
+
+        await Promise.all(buyerIds.map(async bid => {
+          const { data: ph } = await supabase.rpc('get_contact_phone', { target: bid })
+          phoneMap[bid] = ph ?? null
+        }))
+      }
+
+      setOrders(rawOrders.map(o => ({
+        ...o,
+        profiles: { full_name: nameMap[o.buyer_id] ?? '', phone: phoneMap[o.buyer_id] ?? null },
+      })))
       setLoading(false)
     }
     load()

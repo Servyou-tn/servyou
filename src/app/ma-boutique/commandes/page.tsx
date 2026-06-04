@@ -42,7 +42,7 @@ export default function CommandesBoutiquePage() {
 
       const { data: rows } = await supabase
         .from('orders')
-        .select('id, status, created_at, quantity, delivery_name, delivery_address, delivery_phone, buyer_note, products(title), profiles!buyer_id(full_name)')
+        .select('id, status, created_at, quantity, delivery_name, delivery_address, delivery_phone, buyer_note, products(title), profiles:public_profiles!buyer_id(full_name)')
         .eq('seller_id', user.id)
         .eq('order_type', 'product')
         .order('created_at', { ascending: false })

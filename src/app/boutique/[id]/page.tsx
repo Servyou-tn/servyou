@@ -8,7 +8,7 @@ export default async function PublicShopPage({ params }: Props) {
 
   const { data: shop } = await supabase
     .from('shops')
-    .select('id, name, description, city, profiles(full_name)')
+    .select('id, name, description, city, profiles:public_profiles(full_name)')
     .eq('id', id)
     .single()
 

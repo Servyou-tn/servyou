@@ -8,7 +8,7 @@ export default async function PublicFreelancerPage({ params }: Props) {
 
   const { data: fp } = await supabase
     .from('freelancer_profiles')
-    .select('id, headline, bio, city, portfolio_link, years_experience, languages, profiles(full_name)')
+    .select('id, headline, bio, city, portfolio_link, years_experience, languages, profiles:public_profiles(full_name)')
     .eq('id', id)
     .single()
 

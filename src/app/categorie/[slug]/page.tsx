@@ -31,7 +31,7 @@ export default async function CategoriePage({ params }: Props) {
       .eq('category_id', category.id)
       .order('created_at', { ascending: false }),
     supabase.from('service_listings')
-      .select('id, title, starting_price_tnd, freelancer_profiles(city, profiles(full_name))')
+      .select('id, title, starting_price_tnd, freelancer_profiles(city, profiles:public_profiles(full_name))')
       .eq('status', 'active')
       .eq('category_id', category.id)
       .order('created_at', { ascending: false }),

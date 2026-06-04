@@ -20,7 +20,7 @@ export default async function HomePage() {
       .order('created_at', { ascending: false })
       .limit(8),
     supabase.from('service_listings')
-      .select('id, title, starting_price_tnd, freelancer_profiles(city, profiles(full_name))')
+      .select('id, title, starting_price_tnd, freelancer_profiles(city, profiles:public_profiles(full_name))')
       .eq('status', 'active')
       .order('created_at', { ascending: false })
       .limit(8),
@@ -38,15 +38,18 @@ export default async function HomePage() {
               <Link href="/profile" className="text-gray-600 hover:underline">Mon profil</Link>
               <Link href="/mes-demandes" className="text-gray-600 hover:underline">Mes demandes</Link>
               <Link href="/mes-favoris" className="text-gray-600 hover:underline">Mes favoris</Link>
+              <Link href="/mes-missions" className="text-gray-600 hover:underline">Mes missions</Link>
               {sellerType === 'shop_owner' && <Link href="/ma-boutique" className="text-gray-600 hover:underline">Ma boutique</Link>}
               {sellerType === 'freelancer' && <Link href="/mon-profil-freelance" className="text-gray-600 hover:underline">Mon espace freelance</Link>}
+              {sellerType === 'freelancer' && <Link href="/mes-reponses" className="text-gray-600 hover:underline">Mes réponses</Link>}
               {sellerType === null && <Link href="/devenir-vendeur" className="text-blue-600 hover:underline">Devenir vendeur</Link>}
               <form action="/auth/signout" method="POST" className="inline">
                 <button type="submit" className="text-red-500 hover:underline">Déconnexion</button>
               </form>
             </div>
           ) : (
-            <div className="flex gap-3 text-sm">
+            <div className="flex gap-3 text-sm items-center">
+              <Link href="/missions" className="text-gray-600 hover:underline">Missions</Link>
               <Link href="/login" className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-1.5 rounded transition-colors">Se connecter</Link>
               <Link href="/signup" className="border border-gray-300 hover:bg-gray-50 text-gray-700 px-4 py-1.5 rounded transition-colors">Créer un compte</Link>
             </div>
