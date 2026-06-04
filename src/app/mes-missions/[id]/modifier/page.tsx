@@ -5,6 +5,7 @@ import { useRouter, useParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { useLang } from '@/components/LangProvider'
 import { t } from '@/lib/i18n'
+import { DirArrow } from '@/components/DirArrow'
 
 type Category = { id: string; name_fr: string }
 
@@ -234,7 +235,7 @@ export default function ModifierMissionPage() {
         </form>
 
         <div className="mt-4">
-          <a href="/mes-missions" className="text-sm text-blue-600 hover:underline">{t('poster.back', lang)}</a>
+          <a href="/mes-missions" className="text-sm text-blue-600 hover:underline"><DirArrow lang={lang} direction="back" />{' '}{t('poster.back', lang)}</a>
         </div>
       </div>
     </main>

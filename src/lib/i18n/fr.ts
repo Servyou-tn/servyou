@@ -1,7 +1,7 @@
 export const fr: Record<string, string> = {
 
   // ─── Common ─────────────────────────────────────────────────────────────────
-  'common.back_home':              "← Retour à l'accueil",
+  'common.back_home':              "Retour à l'accueil",
   'common.error_generic':          "Une erreur est survenue. Veuillez réessayer.",
   'common.loading':                "Chargement…",
   'common.rate_limit':             "Trop de tentatives. Veuillez patienter quelques minutes avant de réessayer.",
@@ -144,7 +144,7 @@ export const fr: Record<string, string> = {
   'boutique.manage_products':   "Gérer mes produits",
   'boutique.orders_link':       "Commandes reçues",
   'boutique.view_public':       "Voir ma boutique publique",
-  'boutique.back':              "← Retour à ma boutique",
+  'boutique.back':              "Retour à ma boutique",
   // Create
   'boutique.create_title':      "Créer ma boutique",
   'boutique.shop_name_field':   "Nom de la boutique",
@@ -180,7 +180,7 @@ export const fr: Record<string, string> = {
   'product.col_price':      "Prix",
   'product.col_stock':      "Stock",
   'product.col_status':     "Statut",
-  'product.back':           "← Retour aux produits",
+  'product.back':           "Retour aux produits",
   'product.error_title':    "Le titre est requis.",
   'product.error_price':    "Veuillez entrer un prix valide (>= 0).",
   'product.error_update':   "Une erreur est survenue lors de la mise à jour. Veuillez réessayer.",
@@ -232,7 +232,7 @@ export const fr: Record<string, string> = {
   'orders.type_service':       "Service",
   // Confirmation page
   'orders.not_found':          "Demande introuvable",
-  'orders.back':               "← Mes demandes",
+  'orders.back':               "Mes demandes",
   'orders.confirmed_title':    "Demande envoyée !",
   'orders.contact_hint':       "Pour finaliser, contactez le vendeur via WhatsApp.",
   'orders.type_label':         "Type :",
@@ -248,7 +248,7 @@ export const fr: Record<string, string> = {
 
   // ─── Favorites ───────────────────────────────────────────────────────────────
   'favorites.title':         "Mes favoris",
-  'favorites.back':          "← Accueil",
+  'favorites.back':          "Accueil",
   'favorites.no_products':   "Aucun produit en favoris.",
   'favorites.no_services':   "Aucun service en favoris.",
   // FavoriteButton component
@@ -292,7 +292,7 @@ export const fr: Record<string, string> = {
   // Received requests
   'freelance.requests_title':     "Demandes reçues",
   'freelance.no_requests':        "Aucune demande pour le moment.",
-  'freelance.back':               "← Retour à mon espace freelance",
+  'freelance.back':               "Retour à mon espace freelance",
   // My services list
   'freelance.services_title':     "Mes services",
   'freelance.add_service_btn':    "+ Ajouter un service",
@@ -300,7 +300,7 @@ export const fr: Record<string, string> = {
   'freelance.no_services_cta':    "Ajouter votre premier service",
   'freelance.col_price_from':     "Prix dès",
   'freelance.col_delay':          "Délai",
-  'freelance.back_services':      "← Retour aux services",
+  'freelance.back_services':      "Retour aux services",
   'freelance.delete_service_confirm': "Supprimer le service \"{title}\" ? Cette action est irréversible.",
   // Service create / edit
   'freelance.service_new_title':  "Ajouter un service",
@@ -335,18 +335,18 @@ export const fr: Record<string, string> = {
   // Mission detail page
   'job.not_found':            "Mission introuvable",
   'job.not_found_desc':       "Cette mission n'existe pas ou a été supprimée.",
-  'job.back_to_board':        "← Tableau des missions",
+  'job.back_to_board':        "Tableau des missions",
   'job.published_on':         "Publié le ",
   'job.skills_section':       "Compétences recherchées",
   'job.respond_section':      "Répondre à cette mission",
   'job.login_to_respond':     "Connectez-vous",
   'job.login_suffix':         "pour répondre à cette mission.",
   'job.own_post':             "Ceci est votre propre mission.",
-  'job.manage_link':          "Gérer mes missions →",
+  'job.manage_link':          "Gérer mes missions",
   'job.filled_msg':           "Cette mission a été pourvue.",
   'job.expired_msg':          "Cette mission a expiré.",
   'job.freelancer_only':      "Seuls les freelancers peuvent répondre aux missions.",
-  'job.become_freelancer_link':"Devenir freelancer →",
+  'job.become_freelancer_link':"Devenir freelancer",
   'job.already_responded':    "Vous avez déjà envoyé une candidature pour cette mission.",
   'job.deadline_label':       "Date limite :",
   'job.max_capped':           "Cette mission a atteint le nombre maximum de réponses ({n}).",
@@ -358,7 +358,7 @@ export const fr: Record<string, string> = {
   'job.error_update':         "Erreur lors de la mise à jour. Veuillez réessayer.",
   // My responses page
   'job.my_responses_title':   "Mes réponses",
-  'job.board_link':           "Tableau des missions →",
+  'job.board_link':           "Tableau des missions",
   'job.active_section':       "Réponses actives ({n})",
   'job.no_active_responses':  "Aucune réponse active.",
   'job.history_section':      "Historique ({n})",
@@ -405,7 +405,7 @@ export const fr: Record<string, string> = {
   'poster.skill_add':          "Ajouter",
   'poster.submit':             "Publier la mission",
   'poster.submitting':         "Publication…",
-  'poster.back':               "← Mes missions",
+  'poster.back':               "Mes missions",
   'poster.error_budget_min':   "Le budget minimum doit être positif.",
   'poster.error_budget_max':   "Le budget maximum doit être positif.",
   'poster.error_budget_range': "Le budget minimum ne peut pas dépasser le maximum.",

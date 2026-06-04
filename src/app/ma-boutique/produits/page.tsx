@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { useLang } from '@/components/LangProvider'
 import { t } from '@/lib/i18n'
+import { DirArrow } from '@/components/DirArrow'
 
 type Product = {
   id: string
@@ -144,7 +145,7 @@ export default function ProduitsPage() {
 
         <div className="mt-6">
           <Link href="/ma-boutique" className="text-sm text-blue-600 hover:underline">
-            {t('boutique.back', lang)}
+            <DirArrow lang={lang} direction="back" />{' '}{t('boutique.back', lang)}
           </Link>
         </div>
       </div>

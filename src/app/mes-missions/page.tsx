@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { useLang } from '@/components/LangProvider'
 import { t } from '@/lib/i18n'
+import { DirArrow } from '@/components/DirArrow'
 import { JOB_POST_EXPIRY_DAYS } from '@/lib/job-constants'
 
 type Responder = {
@@ -245,7 +246,7 @@ export default function MesMissionsPage() {
         )}
 
         <div className="mt-6">
-          <Link href="/" className="text-sm text-blue-600 hover:underline">{t('common.back_home', lang)}</Link>
+          <Link href="/" className="text-sm text-blue-600 hover:underline"><DirArrow lang={lang} direction="back" />{' '}{t('common.back_home', lang)}</Link>
         </div>
       </div>
     </main>

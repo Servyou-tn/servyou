@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { useLang } from '@/components/LangProvider'
 import { t } from '@/lib/i18n'
+import { DirArrow } from '@/components/DirArrow'
 
 type Shop = {
   id: string
@@ -108,7 +109,7 @@ export default function MaBoutiquePage() {
 
         <div className="mt-2">
           <Link href="/" className="text-sm text-blue-600 hover:underline">
-            {t('common.back_home', lang)}
+            <DirArrow lang={lang} direction="back" />{' '}{t('common.back_home', lang)}
           </Link>
         </div>
       </div>
