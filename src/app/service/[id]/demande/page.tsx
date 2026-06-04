@@ -61,7 +61,7 @@ export default function DemandeServicePage() {
 
     if (!profilePhone) {
       if (!isValidPhone(phoneInput)) {
-        setError('Numéro de téléphone invalide.')
+        setError('Format attendu : 8 chiffres (ex. 20 123 456) ou +216 suivi de 8 chiffres.')
         setSaving(false)
         return
       }
@@ -133,7 +133,7 @@ export default function DemandeServicePage() {
               </label>
               <input id="whatsapp" type="tel" required value={phoneInput}
                 onChange={e => setPhoneInput(e.target.value)}
-                placeholder="Ex : 20 000 000 ou +216 20 000 000"
+                placeholder="Ex : 20 000 000, 056 480 920, +216 20 000 000"
                 className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
               <p className="text-xs text-gray-400 mt-1">
                 Nécessaire pour que le freelance puisse vous contacter via WhatsApp.

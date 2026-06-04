@@ -86,7 +86,7 @@ export function RespondForm({ jobPostId, jobPostTitle, consumerPhone, currentRes
 
     if (!profilePhone) {
       if (!isValidPhone(phoneInput)) {
-        setError('Numéro de téléphone invalide.')
+        setError('Format attendu : 8 chiffres (ex. 20 123 456) ou +216 suivi de 8 chiffres.')
         setSubmitting(false)
         return
       }
@@ -184,7 +184,7 @@ export function RespondForm({ jobPostId, jobPostTitle, consumerPhone, currentRes
             Numéro WhatsApp <span className="text-red-500">*</span>
           </label>
           <input type="tel" required value={phoneInput} onChange={e => setPhoneInput(e.target.value)}
-            placeholder="Ex : 20 000 000 ou +216 20 000 000"
+            placeholder="Ex : 20 000 000, 056 480 920, +216 20 000 000"
             className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
           <p className="text-xs text-gray-400 mt-1">
             Nécessaire pour que le client puisse vous contacter via WhatsApp.
