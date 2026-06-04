@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { getLang } from '@/lib/i18n/server'
 import { t } from '@/lib/i18n'
+import { DirArrow } from '@/components/DirArrow'
 
 type Props = { searchParams: Promise<{ q?: string }> }
 
@@ -107,7 +108,7 @@ export default async function RecherchePage({ searchParams }: Props) {
           <p className="text-gray-500">{t('search.no_results', lang)}</p>
         )}
 
-        <Link href="/" className="text-sm text-blue-600 hover:underline">{t('common.back_home', lang)}</Link>
+        <Link href="/" className="text-sm text-blue-600 hover:underline"><DirArrow lang={lang} direction="back" />{' '}{t('common.back_home', lang)}</Link>
       </div>
     </main>
   )

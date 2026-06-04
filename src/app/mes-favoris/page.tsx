@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { getLang } from '@/lib/i18n/server'
 import { t } from '@/lib/i18n'
+import { DirArrow } from '@/components/DirArrow'
 
 export default async function MesFavorisPage() {
   const supabase = await createClient()
@@ -34,7 +35,7 @@ export default async function MesFavorisPage() {
       <div className="max-w-4xl mx-auto space-y-10">
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-bold text-gray-800">{t('favorites.title', lang)}</h1>
-          <Link href="/" className="text-sm text-blue-600 hover:underline">{t('favorites.back', lang)}</Link>
+          <Link href="/" className="text-sm text-blue-600 hover:underline"><DirArrow lang={lang} direction="back" />{' '}{t('favorites.back', lang)}</Link>
         </div>
 
         {/* Products */}

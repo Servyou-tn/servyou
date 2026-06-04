@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { getLang } from '@/lib/i18n/server'
 import { t } from '@/lib/i18n'
+import { DirArrow } from '@/components/DirArrow'
 
 type Props = { params: Promise<{ id: string }> }
 
@@ -25,7 +26,7 @@ export default async function ConfirmationPage({ params }: Props) {
       <main className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
         <div className="bg-white rounded-lg shadow p-8 max-w-md w-full text-center">
           <h1 className="text-xl font-semibold text-gray-700">{t('orders.not_found', lang)}</h1>
-          <Link href="/mes-demandes" className="block mt-4 text-sm text-blue-600 hover:underline">{t('orders.back', lang)}</Link>
+          <Link href="/mes-demandes" className="block mt-4 text-sm text-blue-600 hover:underline"><DirArrow lang={lang} direction="back" />{' '}{t('orders.back', lang)}</Link>
         </div>
       </main>
     )
@@ -92,7 +93,7 @@ export default async function ConfirmationPage({ params }: Props) {
 
         <div className="flex gap-4 text-sm">
           <Link href="/mes-demandes" className="text-blue-600 hover:underline">{t('nav.orders', lang)}</Link>
-          <Link href="/" className="text-blue-600 hover:underline">{t('common.back_home', lang)}</Link>
+          <Link href="/" className="text-blue-600 hover:underline"><DirArrow lang={lang} direction="back" />{' '}{t('common.back_home', lang)}</Link>
         </div>
       </div>
     </main>

@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { getLang } from '@/lib/i18n/server'
 import { t } from '@/lib/i18n'
+import { DirArrow } from '@/components/DirArrow'
 import { JOB_POST_EXPIRY_DAYS } from '@/lib/job-constants'
 
 export default async function MesReponsesPage() {
@@ -100,7 +101,7 @@ export default async function MesReponsesPage() {
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-bold text-gray-800">{t('job.my_responses_title', lang)}</h1>
           <Link href="/missions" className="text-sm text-blue-600 hover:underline">
-            {t('job.board_link', lang)}
+            {t('job.board_link', lang)}{' '}<DirArrow lang={lang} direction="forward" />
           </Link>
         </div>
 
@@ -129,7 +130,7 @@ export default async function MesReponsesPage() {
         )}
 
         <div>
-          <Link href="/" className="text-sm text-blue-600 hover:underline">{t('common.back_home', lang)}</Link>
+          <Link href="/" className="text-sm text-blue-600 hover:underline"><DirArrow lang={lang} direction="back" />{' '}{t('common.back_home', lang)}</Link>
         </div>
       </div>
     </main>

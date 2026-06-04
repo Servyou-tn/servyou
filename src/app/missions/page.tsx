@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { getLang } from '@/lib/i18n/server'
 import { t, type Lang } from '@/lib/i18n'
+import { DirArrow } from '@/components/DirArrow'
 import { JOB_POST_EXPIRY_DAYS, MAX_RESPONSES_PER_POST } from '@/lib/job-constants'
 
 type SearchParams = Promise<{
@@ -224,7 +225,7 @@ function renderPage(
         )}
 
         <div>
-          <Link href="/" className="text-sm text-blue-600 hover:underline">{t('common.back_home', lang)}</Link>
+          <Link href="/" className="text-sm text-blue-600 hover:underline"><DirArrow lang={lang} direction="back" />{' '}{t('common.back_home', lang)}</Link>
         </div>
       </div>
     </main>

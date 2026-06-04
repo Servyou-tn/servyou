@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { RespondForm } from '@/components/RespondForm'
 import { getLang } from '@/lib/i18n/server'
 import { t } from '@/lib/i18n'
+import { DirArrow } from '@/components/DirArrow'
 import { JOB_POST_EXPIRY_DAYS, MAX_RESPONSES_PER_POST } from '@/lib/job-constants'
 
 type Props = { params: Promise<{ id: string }> }
@@ -31,7 +32,7 @@ export default async function MissionDetailPage({ params }: Props) {
         <div className="bg-white rounded-lg shadow p-8 max-w-md w-full text-center">
           <h1 className="text-xl font-semibold text-gray-700">{t('job.not_found', lang)}</h1>
           <p className="text-gray-500 text-sm mt-2">{t('job.not_found_desc', lang)}</p>
-          <Link href="/missions" className="block mt-4 text-sm text-blue-600 hover:underline">{t('job.back_to_board', lang)}</Link>
+          <Link href="/missions" className="block mt-4 text-sm text-blue-600 hover:underline"><DirArrow lang={lang} direction="back" />{' '}{t('job.back_to_board', lang)}</Link>
         </div>
       </main>
     )
@@ -101,7 +102,7 @@ export default async function MissionDetailPage({ params }: Props) {
     respondSection = (
       <div className="bg-gray-50 border border-gray-200 rounded p-4 text-sm text-gray-500">
         {t('job.own_post', lang)}{' '}
-        <Link href="/mes-missions" className="text-blue-600 hover:underline">{t('job.manage_link', lang)}</Link>
+        <Link href="/mes-missions" className="text-blue-600 hover:underline">{t('job.manage_link', lang)}{' '}<DirArrow lang={lang} direction="forward" /></Link>
       </div>
     )
   } else if (isClosed) {
@@ -114,7 +115,7 @@ export default async function MissionDetailPage({ params }: Props) {
     respondSection = (
       <div className="bg-gray-50 border border-gray-200 rounded p-4 text-sm text-gray-500">
         {t('job.freelancer_only', lang)}{' '}
-        <Link href="/devenir-vendeur" className="text-blue-600 hover:underline">{t('job.become_freelancer_link', lang)}</Link>
+        <Link href="/devenir-vendeur" className="text-blue-600 hover:underline">{t('job.become_freelancer_link', lang)}{' '}<DirArrow lang={lang} direction="forward" /></Link>
       </div>
     )
   } else if (hasResponded) {
@@ -201,7 +202,7 @@ export default async function MissionDetailPage({ params }: Props) {
           </div>
         </div>
 
-        <Link href="/missions" className="text-sm text-blue-600 hover:underline">{t('job.back_to_board', lang)}</Link>
+        <Link href="/missions" className="text-sm text-blue-600 hover:underline"><DirArrow lang={lang} direction="back" />{' '}{t('job.back_to_board', lang)}</Link>
       </div>
     </main>
   )

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { useLang } from '@/components/LangProvider'
 import { t } from '@/lib/i18n'
+import { DirArrow } from '@/components/DirArrow'
 
 type Category = { id: string; name_fr: string }
 
@@ -161,7 +162,7 @@ export default function NouveauServicePage() {
 
         <div className="mt-6">
           <a href="/mon-profil-freelance/services" className="text-sm text-blue-600 hover:underline">
-            {t('freelance.back_services', lang)}
+            <DirArrow lang={lang} direction="back" />{' '}{t('freelance.back_services', lang)}
           </a>
         </div>
       </div>

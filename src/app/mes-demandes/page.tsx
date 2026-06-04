@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { t } from '@/lib/i18n'
+import { DirArrow } from '@/components/DirArrow'
 import { getLang } from '@/lib/i18n/server'
 
 export default async function MesDemandesPage() {
@@ -75,7 +76,7 @@ export default async function MesDemandesPage() {
         )}
 
         <div className="mt-6">
-          <Link href="/" className="text-sm text-blue-600 hover:underline">{t('common.back_home', lang)}</Link>
+          <Link href="/" className="text-sm text-blue-600 hover:underline"><DirArrow lang={lang} direction="back" />{' '}{t('common.back_home', lang)}</Link>
         </div>
       </div>
     </main>

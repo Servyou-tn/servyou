@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { useLang } from '@/components/LangProvider'
 import { t } from '@/lib/i18n'
+import { DirArrow } from '@/components/DirArrow'
 
 type Order = {
   id: string
@@ -147,7 +148,7 @@ export default function DemandesFreelancePage() {
         )}
 
         <div className="mt-6">
-          <Link href="/mon-profil-freelance" className="text-sm text-blue-600 hover:underline">{t('freelance.back', lang)}</Link>
+          <Link href="/mon-profil-freelance" className="text-sm text-blue-600 hover:underline"><DirArrow lang={lang} direction="back" />{' '}{t('freelance.back', lang)}</Link>
         </div>
       </div>
     </main>
