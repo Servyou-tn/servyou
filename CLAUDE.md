@@ -112,6 +112,101 @@ When a new operational rule earns its place in CLAUDE.md through experience, Pil
 
 Pillar 1 is locked. Pillars 2-6 (Design System, Brand, Target Users, Marketing, Roadmap) build on this foundation in subsequent sessions of the same discipline.
 
+## Pillar 4 — Target Users and Market (Operational Summary)
+
+Pillar 4 locked in commit `5588d39`. Layer updates: Layer 4 (`db0a6ad`), Layer 3 (`6d05a07`), Layer 2 (`463b13d`). Pillar 1 cross-reference: `29e7e40`.
+
+### Four Founder-Contributed Principles
+
+The named principles Servyou is built on:
+
+1. **The headroom principle** (Pillar 1 §1.8.3) — every architectural choice sized for 3-5x today's expected load.
+2. **The Plan-A-B-C principle** (Pillar 1 §1.8.4) — load-bearing systems have three plans per scale-stage, capable of running in parallel.
+3. **The Unified Workspace Principle** (Pillar 4 §4.8) — each user type's workspace is built with the seriousness tomorrow's larger user types deserve to find. Today's freelancer foundation supports tomorrow's liberal professionals.
+4. **The Configurable Workspace Principle** (Pillar 4 §4.10) — Servyou provides building blocks; each user fills in what is true for them. Non-core profile fields are optional by default.
+
+**Operational rule:** when designing schema changes or UI, verify the change respects these four principles. Make new profile fields optional unless they are universal identity (name, email, date of birth, city, language).
+
+### Pending Schema Migrations from Pillar 4 Appendix A
+
+These are committed in Layer 4 documentation but NOT YET applied to the database. Sequenced into Phase 9 or Phase 10, each with full Step 0 discovery, founder approval gate, and manual click-through per CLAUDE.md migration discipline.
+
+**Orders table expansion (Layer 4 §4.6):**
+- Status enum expands from 3 values (`pending`/`completed`/`cancelled`) to 8 values: `pending` → `accepted` → `prepared` → `dispatched` → `in_delivery` → `arrived` → `received`, with `cancelled` as parallel terminal state. The current `completed` renames to `received`.
+- New column `cancelled_by` (nullable enum: `'buyer'`/`'seller'`), set only when status = cancelled.
+- New column `cancellation_reason` (nullable text), required for post-dispatch buyer cancellation.
+- New column `received_at` (nullable timestamp), set when buyer confirms receipt.
+- New read-only view: buyer-cancellation-history, RLS restricts to buyer themselves + admin only.
+- Other transition timestamps (accepted_at, prepared_at, dispatched_at, arrived_at) deferred post-launch — useful analytics later, premature optimization now.
+
+**Shop owner profile expansion (Layer 4 §4.3):**
+- 4 new optional columns on `shops`: `shop_type` (enum: `'physical'`/`'online_only'`/`'dropshipper'`), `delivery_setup` (enum: `'self_delivery'`/`'third_party'`/`'buyer_pickup'`), `working_hours` (text), `location_detail` (text).
+- 2 new child tables: `shop_payment_methods` (shop_id + method enum + optional note), `shop_categories` (shop_id + category_id).
+
+**Freelancer profile expansion (Layer 4 §4.4):**
+- 3 new optional columns on `freelancer_profiles`: `working_hours` (text), `current_workplace` (text), `preferred_payment_method` (enum/text).
+- 3 new child tables: `freelancer_tools`, `freelancer_education` (institution, degree, field, year_start, year_end), `freelancer_certifications` (name, issuer, year, optional credential URL).
+- Note: `freelancer_skills` child table already exists, kept as-is.
+
+**Implementation rules for these migrations:** All new columns nullable per Configurable Workspace Principle. All new child tables follow existing `freelancer_skills` RLS pattern (owner can edit, public can read). Verify RLS test coverage. Migrations must happen as separate focused PRs, never bundled with feature work.
+
+### Pillar 4 COD Friction-Reduction Features (Pillar 4 §4.14)
+
+Three MVP features locked, requiring UI work in Phase 9 or earlier coding phases:
+
+1. **Order status lifecycle transparency** — both buyer and seller see the same status at the same time. Seller dashboard shows lifecycle-aware action buttons (Accept → Prepare → Dispatch → In Delivery → Arrived). Buyer "My Requests" page shows progression. Service orders skip middle delivery states (accepted → arrived → received directly).
+
+2. **Cancellation discipline** — pre-dispatch (pending/accepted/prepared) free for buyer; post-dispatch (dispatched/in_delivery/arrived) requires stated reason logged on buyer's record. UI presents "Cancel" vs "Cancel with reason" appropriately.
+
+3. **Receipt confirmation** — when order reaches `arrived`, buyer confirms in app, status moves to `received`, `received_at` timestamp set. Order does not close without buyer confirmation. Disputes resolved by admin with structured evidence (lifecycle history + received_at + cancellation reasons).
+
+### Dropshipping Scope (Layer 2 §2.4)
+
+**MVP: domestic-only.** Tunisian dropshippers sourcing from Tunisian suppliers, fulfilling Tunisian buyers' orders. The `shop_type` value `'dropshipper'` is reserved for this case.
+
+**Out of MVP scope:** International dropshipping (China, Turkey, AliExpress, foreign suppliers). Adding it later requires cross-border customs/payment/trust infrastructure and a new `shop_type` enum value (e.g., `'international_dropshipper'`).
+
+**Post-MVP integration trajectory:** Tunisian dropshippers run business across Converty + AliExpress + Shopify + WhatsApp/email. Servyou's value is *integration, not replacement*. Connector integrations sequence through carriage-and-horses stages: MVP no connectors → post-launch Converty integration first (most common Tunisian platform, bounded cost) → collaboration scale international connectors with regulatory infrastructure. Each connector requires its own Step 0 discovery, technical due diligence, founder approval. Final sequencing decided in Pillar 6 (Roadmap, not yet written).
+
+### Locked Strategic Sequence
+
+**Step 1 — Engineering track (continues from now):**
+- Pillar 6 (Roadmap) — engineering/business sequencing, deep work in fresh session
+- Phase 8 Subtask 3 — Arabic translations (`ar.ts`), needs fluent Tunisian Arabic reader
+- Phase 9 — Admin dashboard + reports + statistics (most security-sensitive remaining phase)
+- Phase 10 — Polish + Sentry + Turnstile + lawyer review of legal docs (FR + AR)
+- Pillar 4 Appendix A schema migrations sequenced into Phase 9 or Phase 10
+
+**Step 2 — User-facing Pillars (deep focused work, fresh sessions only):**
+- Pillar 5 (Content and Marketing Strategy) — social, ads, content positioning
+- Pillar 3 (Brand and Visual Identity) — colors, typography, voice
+- Pillar 2 (Design System and UX Principles) — components, layouts, mobile-first
+
+**Locked: Pillars 5/3/2 do NOT mix with same-day backend coding.** Brand/design/marketing decide whether Servyou succeeds against competitors (Converty, Jumia Tunisia, MyTek). They deserve fresh focus, not engineering-tired energy.
+
+**Step 3 — Apply design + launch (the last steps):**
+- Redesign pass: rebuild UI of coded pages per locked Pillar 2 design system
+- OVH domain purchase
+- Production launch
+
+### Pattern Approach (not Personas)
+
+Pillar 4 §4.4 uses pattern-based audience description, NOT personas. **Operational rule:** when adding user-facing copy, UI element, or feature, reference documented patterns in Pillar 4 §4.4 (consumer patterns, shop owner patterns concentrated in 7 cities, freelancer patterns including UGC creators). Do NOT invent personas not anchored in Pillar 4 sourced market data.
+
+### Tunisia 2026 Anchor Data (Pillar 4 §4.2)
+
+When coding decisions involve assumptions about user behavior, check these locked numbers first rather than guessing:
+
+- 12.3M population, 84.3% internet penetration (10.4M users), 71% Facebook penetration
+- 56% of internet users shop online, 49.2% monthly, avg cart 173 TND
+- COD = 56-80% of all e-commerce transactions (vs 7% world average)
+- Mobile-first: 70%+ of e-commerce traffic
+- Sellers concentrated in 7 cities: Ariana, Tunis, Ben Arous, Manouba, Sfax, Sousse, Bizerte
+- Fashion/lifestyle leading category, tech sector = 7.5% GDP
+- 1,040+ startups, 82 tech institutions feeding the freelancer talent pool
+
+These numbers anchor every product decision back to actual Tunisian reality, not assumed reality.
+
 ## Engineering Discipline (earned during the build — do not violate)
 
 ### Before building anything
