@@ -184,6 +184,15 @@ Three MVP features locked, requiring UI work in Phase 9 or earlier coding phases
 
 **Locked: Pillars 5/3/2 do NOT mix with same-day backend coding.** Brand/design/marketing decide whether Servyou succeeds against competitors (Converty, Jumia Tunisia, MyTek). They deserve fresh focus, not engineering-tired energy.
 
+**Founder-locked inspiration sources for Pillars 5, 3, 2** (recorded from session conversation, for future sessions):
+- **Shopify** — shop owner dashboard elements (product management, order pipeline, stock tracking, analytics, the professional e-commerce backend feel)
+- **Upwork** — freelancer dashboard elements (service catalog, project tracking, client communications, proposals, portfolio presentation)
+- **Webflow** — visual design language, typography systems, the designed-by-designers polish
+- **Framer** — motion design and interaction patterns, smooth transitions, micro-interactions, modern web feel
+- **Pinterest** — visual discovery, grid layouts, image-heavy browsing UX
+
+Pillar 2 must lock **standard design rules** before the redesign pass starts: design tokens (colors, typography scale, spacing scale), component patterns, mobile-first behavior, RTL behavior, WCAG 2.2 AA compliance per Pillar 1 §1.2.4. The brand, marketing, and design Pillars are not small — they are the biggest case for Servyou's success against competitors and require dedicated fresh-session work, not end-of-day energy.
+
 **Step 3 — Apply design + launch (the last steps):**
 - Redesign pass: rebuild UI of coded pages per locked Pillar 2 design system
 - OVH domain purchase
