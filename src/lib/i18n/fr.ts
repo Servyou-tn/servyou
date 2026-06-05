@@ -151,6 +151,9 @@ export const fr: Record<string, string> = {
   'boutique.error_name':        "Le nom de la boutique est requis.",
   'boutique.error_city':        "Veuillez sélectionner un gouvernorat.",
   'boutique.error_create':      "Une erreur est survenue lors de la création. Veuillez réessayer.",
+  // Edit
+  'boutique.edit_title':        "Modifier ma boutique",
+  'boutique.error_save':        "Une erreur est survenue lors de la sauvegarde. Veuillez réessayer.",
   // Orders list
   'boutique.orders_title':      "Commandes reçues",
   'boutique.orders_empty':      "Aucune commande pour le moment.",
