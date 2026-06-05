@@ -11,7 +11,7 @@ export default async function PublicShopPage({ params }: Props) {
 
   const { data: shop } = await supabase
     .from('shops')
-    .select('id, name, description, city, profiles:public_profiles(full_name)')
+    .select('id, name, description, city, logo_url, banner_url, profiles:public_profiles(full_name)')
     .eq('id', id)
     .single()
 
@@ -39,15 +39,25 @@ export default async function PublicShopPage({ params }: Props) {
     <main className="min-h-screen bg-gray-50 px-4 py-12">
       <div className="max-w-3xl mx-auto">
 
-        <div className="bg-white rounded-lg shadow p-8 mb-8">
-          <h1 className="text-3xl font-bold text-gray-800 mb-1">{shop.name}</h1>
-          <p className="text-sm text-gray-500 mb-1">{shop.city}</p>
-          {ownerName && (
-            <p className="text-sm text-gray-500 mb-3">{t('boutique.seller_label', lang)} {ownerName}</p>
+        <div className="bg-white rounded-lg shadow mb-8 overflow-hidden">
+          {shop.banner_url && (
+            <img src={shop.banner_url} alt="" className="h-40 w-full object-cover rounded-t-lg" />
           )}
-          {shop.description && (
-            <p className="text-gray-700 mt-3">{shop.description}</p>
-          )}
+          <div className="p-8">
+            <div className="flex items-center gap-4 mb-1">
+              {shop.logo_url && (
+                <img src={shop.logo_url} alt={shop.name} className="h-16 w-16 rounded-full border-2 border-white object-cover" />
+              )}
+              <h1 className="text-3xl font-bold text-gray-800">{shop.name}</h1>
+            </div>
+            <p className="text-sm text-gray-500 mb-1">{shop.city}</p>
+            {ownerName && (
+              <p className="text-sm text-gray-500 mb-3">{t('boutique.seller_label', lang)} {ownerName}</p>
+            )}
+            {shop.description && (
+              <p className="text-gray-700 mt-3">{shop.description}</p>
+            )}
+          </div>
         </div>
 
         <h2 className="text-lg font-semibold text-gray-700 mb-4">

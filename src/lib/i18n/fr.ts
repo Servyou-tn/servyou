@@ -154,6 +154,10 @@ export const fr: Record<string, string> = {
   // Edit
   'boutique.edit_title':        "Modifier ma boutique",
   'boutique.error_save':        "Une erreur est survenue lors de la sauvegarde. Veuillez réessayer.",
+  // Images
+  'boutique.field_logo':        "Logo (URL)",
+  'boutique.field_banner':      "Bannière (URL)",
+  'boutique.image_url_hint':    "Collez l'URL d'une image (https://...)",
   // Orders list
   'boutique.orders_title':      "Commandes reçues",
   'boutique.orders_empty':      "Aucune commande pour le moment.",
