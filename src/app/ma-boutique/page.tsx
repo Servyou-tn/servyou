@@ -100,6 +100,12 @@ export default function MaBoutiquePage() {
             {t('boutique.orders_link', lang)}
           </Link>
           <Link
+            href="/ma-boutique/modifier"
+            className="inline-block border border-gray-300 hover:bg-gray-50 text-gray-700 font-medium py-2 px-5 rounded text-sm transition-colors"
+          >
+            {t('common.edit', lang)}
+          </Link>
+          <Link
             href={`/boutique/${shop!.id}`}
             className="inline-block border border-gray-300 hover:bg-gray-50 text-gray-700 font-medium py-2 px-5 rounded text-sm transition-colors"
           >
