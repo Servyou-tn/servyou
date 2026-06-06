@@ -48,6 +48,29 @@ export const fr: Record<string, string> = {
   'common.confirm_receipt_help':      "Cliquez ici une fois la commande bien reçue.",
   'common.receipt_confirmed_success': "Réception confirmée.",
   'common.receipt_confirm_error':     "Une erreur est survenue, veuillez réessayer.",
+  // Cancellation flow (PR-D) — modal labels
+  'common.cancel_reason_required_hint': "Une raison est requise à ce stade",
+  'common.cancel_reason_optional_hint': "Vous pouvez ajouter une raison (facultatif)",
+  'common.cancel_reason_placeholder':   "Précisez la raison de l'annulation...",
+  'common.cancel_reason_dropdown_label':   "Motif courant",
+  'common.cancel_reason_dropdown_default': "Choisissez un motif",
+  'common.cancel_confirm_action':       "Confirmer l'annulation",
+  'common.cancel_keep_action':          "Garder la commande",
+  'common.cancel_reason_empty_error':   "Veuillez préciser la raison de l'annulation",
+  'common.cancel_submit_error':         "L'annulation a échoué, veuillez réessayer",
+  // Cancellation flow (PR-D) — buyer reason options
+  'common.cancel_reason_buyer_changed_mind':  "J'ai changé d'avis",
+  'common.cancel_reason_buyer_too_slow':      "Délai de livraison trop long",
+  'common.cancel_reason_buyer_unavailable':   "Je ne serai pas disponible pour la livraison",
+  'common.cancel_reason_buyer_found_cheaper': "Trouvé moins cher ailleurs",
+  'common.cancel_reason_buyer_order_error':   "Erreur de commande",
+  'common.cancel_reason_buyer_other':         "Autre raison",
+  // Cancellation flow (PR-D) — seller reason options
+  'common.cancel_reason_seller_out_of_stock':    "Produit en rupture de stock",
+  'common.cancel_reason_seller_invalid_address': "Adresse de livraison invalide",
+  'common.cancel_reason_seller_unreachable':     "Client injoignable",
+  'common.cancel_reason_seller_product_error':   "Erreur dans la fiche produit",
+  'common.cancel_reason_seller_other':           "Autre raison",
   // Listing statuses (products + services)
   'common.status_active':          "Actif",
   'common.status_hidden':          "Masqué",
@@ -259,6 +282,7 @@ export const fr: Record<string, string> = {
   // ─── Orders — my orders + confirmation ───────────────────────────────────────
   'orders.title':              "Mes demandes",
   'orders.buyer_detail_title': "Détails de la demande",
+  'orders.cancel_modal_title': "Annuler la commande",
   'orders.empty':              "Vous n'avez pas encore envoyé de demande.",
   'orders.browse_cta':         "Parcourir les produits et services",
   'orders.type_product':       "Produit",
