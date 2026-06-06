@@ -47,3 +47,29 @@ export interface FreelancerCertification {
   year_obtained: number | null
   credential_url: string | null
 }
+
+// Form-state row shapes used by FreelancerForm and its child-table editors.
+// Distinct from the DB interfaces above: optional text columns are '' (not
+// null) in form state so they bind to controlled inputs; year columns stay
+// number | null. Conversion to/from the DB null-form happens in FreelancerForm.
+export interface ToolRow {
+  id?: string
+  name: string
+}
+
+export interface EducationRow {
+  id?: string
+  institution: string
+  degree: string
+  field: string
+  year_start: number | null
+  year_end: number | null
+}
+
+export interface CertificationRow {
+  id?: string
+  name: string
+  issuing_org: string
+  year_obtained: number | null
+  credential_url: string
+}
