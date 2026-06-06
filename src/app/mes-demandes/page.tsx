@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { t } from '@/lib/i18n'
 import { DirArrow } from '@/components/DirArrow'
 import { getLang } from '@/lib/i18n/server'
+import { OrderLifecycleStepper } from '@/components/OrderLifecycleStepper'
 
 export default async function MesDemandesPage() {
   const supabase = await createClient()
@@ -11,15 +12,9 @@ export default async function MesDemandesPage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const STATUS_LABELS: Record<string, { key: string; cls: string }> = {
-    pending:   { key: 'common.status_pending',   cls: 'bg-yellow-100 text-yellow-700' },
-    received:  { key: 'common.status_received',  cls: 'bg-green-100 text-green-700' },
-    cancelled: { key: 'common.status_cancelled', cls: 'bg-red-100 text-red-600' },
-  }
-
   const { data: orders } = await supabase
     .from('orders')
-    .select('id, order_type, status, created_at, quantity, products(title), service_listings(title), profiles!seller_id(full_name)')
+    .select('id, order_type, status, created_at, quantity, cancelled_by, cancellation_reason, received_at, products(title), service_listings(title), profiles!seller_id(full_name)')
     .eq('buyer_id', user.id)
     .order('created_at', { ascending: false })
 
@@ -29,6 +24,9 @@ export default async function MesDemandesPage() {
     status: string
     created_at: string
     quantity: number | null
+    cancelled_by: string | null
+    cancellation_reason: string | null
+    received_at: string | null
     products: { title: string } | null
     service_listings: { title: string } | null
     profiles: { full_name: string } | null
@@ -50,25 +48,26 @@ export default async function MesDemandesPage() {
           <div className="space-y-3">
             {rows.map(o => {
               const title = o.order_type === 'product' ? o.products?.title : o.service_listings?.title
-              const sl = STATUS_LABELS[o.status]
-              const label = sl ? t(sl.key, lang) : o.status
-              const cls = sl?.cls ?? 'bg-gray-100 text-gray-600'
               const date = new Date(o.created_at).toLocaleDateString('fr-TN', { day: '2-digit', month: 'short', year: 'numeric' })
               return (
                 <Link key={o.id} href={`/demande/confirmation/${o.id}`}
-                  className="block bg-white rounded-lg shadow p-4 hover:shadow-md transition-shadow">
-                  <div className="flex items-start justify-between gap-2">
-                    <div>
-                      <p className="font-medium text-gray-800">{title ?? '—'}</p>
-                      <p className="text-xs text-gray-500 mt-0.5">
-                        {o.order_type === 'product' ? t('orders.type_product', lang) : t('orders.type_service', lang)}
-                        {o.quantity && o.order_type === 'product' ? ` · ${t('boutique.qty_label', lang)} ${o.quantity}` : ''}
-                        {o.profiles?.full_name ? ` · ${o.profiles.full_name}` : ''}
-                        {' · '}{date}
-                      </p>
-                    </div>
-                    <span className={`text-xs font-medium px-2 py-1 rounded-full whitespace-nowrap ${cls}`}>{label}</span>
+                  className="block bg-white rounded-lg shadow p-4 hover:shadow-md transition-shadow space-y-3">
+                  <div>
+                    <p className="font-medium text-gray-800">{title ?? '—'}</p>
+                    <p className="text-xs text-gray-500 mt-0.5">
+                      {o.order_type === 'product' ? t('orders.type_product', lang) : t('orders.type_service', lang)}
+                      {o.quantity && o.order_type === 'product' ? ` · ${t('boutique.qty_label', lang)} ${o.quantity}` : ''}
+                      {o.profiles?.full_name ? ` · ${o.profiles.full_name}` : ''}
+                      {' · '}{date}
+                    </p>
                   </div>
+                  <OrderLifecycleStepper
+                    status={o.status}
+                    order_type={o.order_type === 'service' ? 'service' : 'product'}
+                    cancelled_by={o.cancelled_by}
+                    cancellation_reason={o.cancellation_reason}
+                    received_at={o.received_at}
+                  />
                 </Link>
               )
             })}

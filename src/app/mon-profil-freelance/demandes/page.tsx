@@ -7,6 +7,8 @@ import { createClient } from '@/lib/supabase/client'
 import { useLang } from '@/components/LangProvider'
 import { t } from '@/lib/i18n'
 import { DirArrow } from '@/components/DirArrow'
+import { OrderLifecycleStepper } from '@/components/OrderLifecycleStepper'
+import { type OrderStatus, nextStatus, canCancel, advanceLabelKey } from '@/lib/types/order-status'
 
 type Order = {
   id: string
@@ -14,14 +16,11 @@ type Order = {
   created_at: string
   buyer_note: string | null
   buyer_id: string
+  cancelled_by: string | null
+  cancellation_reason: string | null
+  received_at: string | null
   service_listings: { title: string } | null
   profiles: { full_name: string; phone: string | null } | null
-}
-
-const STATUS_LABELS: Record<string, { key: string; cls: string }> = {
-  pending:   { key: 'common.status_pending',   cls: 'bg-yellow-100 text-yellow-700' },
-  received:  { key: 'common.status_received',  cls: 'bg-green-100 text-green-700' },
-  cancelled: { key: 'common.status_cancelled', cls: 'bg-red-100 text-red-600' },
 }
 
 export default function DemandesFreelancePage() {
@@ -43,7 +42,7 @@ export default function DemandesFreelancePage() {
 
       const { data: rows } = await supabase
         .from('orders')
-        .select('id, status, created_at, buyer_note, buyer_id, service_listings(title)')
+        .select('id, status, created_at, buyer_note, buyer_id, cancelled_by, cancellation_reason, received_at, service_listings(title)')
         .eq('seller_id', user.id)
         .eq('order_type', 'service')
         .order('created_at', { ascending: false })
@@ -73,7 +72,7 @@ export default function DemandesFreelancePage() {
     load()
   }, [])
 
-  async function updateStatus(id: string, status: 'received' | 'cancelled') {
+  async function updateStatus(id: string, status: OrderStatus) {
     const { error } = await supabase.from('orders').update({ status }).eq('id', id)
     if (error) { console.error('[mon-profil-freelance/demandes] updateStatus error:', error); return }
     setOrders(prev => prev.map(o => o.id === id ? { ...o, status } : o))
@@ -99,22 +98,26 @@ export default function DemandesFreelancePage() {
         ) : (
           <div className="space-y-4">
             {orders.map(o => {
-              const sl = STATUS_LABELS[o.status]
-              const label = sl ? t(sl.key, lang) : o.status
-              const cls = sl?.cls ?? 'bg-gray-100 text-gray-600'
               const date = new Date(o.created_at).toLocaleDateString('fr-TN', { day: '2-digit', month: 'short', year: 'numeric' })
               const buyerPhone = o.profiles?.phone?.replace(/\s+/g, '')
+              const advance = nextStatus(o.status as OrderStatus, 'service')
+              const showCancel = canCancel(o.status as OrderStatus, 'service')
               return (
                 <div key={o.id} className="bg-white rounded-lg shadow p-5 space-y-3">
-                  <div className="flex items-start justify-between gap-2">
-                    <div>
-                      <p className="font-semibold text-gray-800">{o.service_listings?.title ?? '—'}</p>
-                      <p className="text-xs text-gray-500 mt-0.5">
-                        {o.profiles?.full_name || t('boutique.buyer_fallback', lang)} · {date}
-                      </p>
-                    </div>
-                    <span className={`text-xs font-medium px-2 py-1 rounded-full whitespace-nowrap ${cls}`}>{label}</span>
+                  <div>
+                    <p className="font-semibold text-gray-800">{o.service_listings?.title ?? '—'}</p>
+                    <p className="text-xs text-gray-500 mt-0.5">
+                      {o.profiles?.full_name || t('boutique.buyer_fallback', lang)} · {date}
+                    </p>
                   </div>
+
+                  <OrderLifecycleStepper
+                    status={o.status}
+                    order_type="service"
+                    cancelled_by={o.cancelled_by}
+                    cancellation_reason={o.cancellation_reason}
+                    received_at={o.received_at}
+                  />
 
                   {o.buyer_note && (
                     <p className="text-sm text-gray-600">
@@ -122,24 +125,27 @@ export default function DemandesFreelancePage() {
                     </p>
                   )}
 
-                  <div className="flex flex-wrap gap-2 pt-1">
+                  <div className="flex flex-wrap items-center gap-2 pt-1">
                     {buyerPhone && (
                       <a href={`https://wa.me/${buyerPhone}`} target="_blank" rel="noopener noreferrer"
                         className="bg-green-500 hover:bg-green-600 text-white text-xs font-medium px-3 py-1.5 rounded transition-colors">
                         {t('common.whatsapp_contact', lang)}
                       </a>
                     )}
-                    {o.status === 'pending' && (
-                      <>
-                        <button onClick={() => updateStatus(o.id, 'received')}
-                          className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium px-3 py-1.5 rounded transition-colors">
-                          {t('common.mark_received', lang)}
-                        </button>
-                        <button onClick={() => updateStatus(o.id, 'cancelled')}
-                          className="border border-red-300 hover:bg-red-50 text-red-600 text-xs font-medium px-3 py-1.5 rounded transition-colors">
-                          {t('common.cancel', lang)}
-                        </button>
-                      </>
+                    {advance && advance !== 'received' && (
+                      <button onClick={() => updateStatus(o.id, advance)}
+                        className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium px-3 py-1.5 rounded transition-colors">
+                        {t(advanceLabelKey(advance, 'service'), lang)}
+                      </button>
+                    )}
+                    {showCancel && (
+                      <button onClick={() => updateStatus(o.id, 'cancelled')}
+                        className="border border-red-300 hover:bg-red-50 text-red-600 text-xs font-medium px-3 py-1.5 rounded transition-colors">
+                        {t('common.cancel', lang)}
+                      </button>
+                    )}
+                    {o.status === 'arrived' && (
+                      <span className="text-xs text-gray-500">{t('common.awaiting_buyer', lang)}</span>
                     )}
                   </div>
                 </div>
