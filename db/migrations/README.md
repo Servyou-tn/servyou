@@ -37,7 +37,7 @@ This is a manual mirror of what Supabase tracks internally. The benefit is that 
 
 ## Historical context
 
-These 16 migrations represent the entire schema history of Servyou from initial setup (June 3, 2026) onward. Migrations are listed in chronological order:
+These 17 migrations represent the entire schema history of Servyou from initial setup (June 3, 2026) onward. Migrations are listed in chronological order:
 
 1. **20260603002549_create_profiles_table** — initial `profiles` table with role-based identity (later revised)
 2. **20260603174720_revise_profiles_table_to_layer4** — replaced `role` column with `seller_type`, added `date_of_birth`, `phone`, `is_admin` per Layer 4 design
@@ -55,6 +55,7 @@ These 16 migrations represent the entire schema history of Servyou from initial 
 14. **20260606155746_orders_role_gating_trigger** — `check_order_status_transition` BEFORE UPDATE trigger enforcing buyer/seller role gating, no-skips/no-backwards transitions, cancellation reason pivots
 15. **20260606192321_shop_configurable_workspace** — adds the configurable workspace fields to the shops table (shop_type, delivery_setup, working_hours, location_detail) plus shop_payment_methods and shop_categories child tables with RLS policies (per Configurable Workspace Principle in product.md, schema details in data-model.md)
 16. **20260606194103_shop_workspace_market_alignment** — Adds preferred_carriers free-text column on shops so owners can name their actual Tunisian carriers (First Delivery, Aramex, Mylerz, Adex, Navex, Bestway, Jetpack, Droppex, Collissimo, FedEx, UPS, Best Delivery, etc.). Expands shop_payment_methods.method CHECK to include 'flouci' alongside cod/bank_transfer/d17/konnect/other. Both changes from the Day-4 Tunisian market research session — Flouci is named in every Tunisian payment article alongside D17/Konnect and was the gap in our enum; 12+ named carriers is the reality every shop owner navigates. Deferred (covered by 'other' for now): paymee, e_dinar, orange_money. Sequenced before PR-F UI so the form ships with full schema in place.
+17. **20260606200109_categories_extend_with_market_signals** — Extends the original 10-category taxonomy (seeded by 20260603182553_categories_and_admin_helper) with 4 additions surfaced by the Day-4 Tunisian market research session: Design & Création, Data Science & Analyse, Business & Conseil (the three top-tier categories from Tunisie Freelance that were missing), and Automobile & Accessoires (a high-velocity Tunisian e-commerce segment per Accio research). Also corrects the existing UGC row's Arabic name from the literal-translation form 'محتوى من إنشاء المستخدمين' to 'صناعة محتوى UGC' which matches how Tunisian creators actually refer to themselves. The 10 existing categories with attached data (1 product, 1 service, 3 job posts) were not disturbed beyond the UGC name correction. Brings total categories from 10 to 14. Flat structure preserved at MVP; sub-category nesting is post-launch when real user listings reveal which buckets need splitting.
 
 Migration 13 includes a one-row data UPDATE (legacy `'completed'` → `'received'`) because the constraint widening required the legacy row to be reconciled with the new allowed value set. Migration 14 closes the pre-existing wide-open RLS UPDATE policy by adding DB-level transition enforcement above the row-gating policy.
 
