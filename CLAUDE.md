@@ -216,6 +216,24 @@ When coding decisions involve assumptions about user behavior, check these locke
 
 These numbers anchor every product decision back to actual Tunisian reality, not assumed reality.
 
+## Platform-Building Framework (Project Overview Reference)
+
+Servyou is being built within a general platform-building framework that maps cleanly onto its ten-stage lifecycle, documented in full at `docs/project-overview.md`. The framework is generic and applies to any digital platform; this section captures only how it intersects with the current state of Servyou and what it implies for Claude Code's decisions during sessions.
+
+The ten stages are: (1) the idea and the problem, (2) validation before building, (3) the foundation documents, (4) the MVP, (5) technical architecture decisions, (6) the design system, (7) pre-launch checklist, (8) launch and first users, (9) the build-measure-learn loop, (10) scaling readiness.
+
+Servyou's current position: late Stage 4 (MVP construction) with most of Phases 1-7 done and the Pillar 4 §4.14 features (8-value order lifecycle, cancellation discipline, receipt confirmation) and Layer 4 Appendix A schema additions remaining. The genuine remaining MVP work all sits behind one schema migration session that unlocks five features at once. Stage 5 architecture decisions are locked (Next.js + Supabase + Vercel + Tailwind, modular monolith, justified complexity per Pillar 1). Stage 6 (design system) is deliberately deferred to its own dedicated multi-week phase after backend work completes, per the locked strategic sequence. Stage 7 (pre-launch checklist) items are partially in motion (Sentry and Cloudflare Turnstile are filed for Phase 10, legal documents require Tunisian lawyer review).
+
+What this framework implies for Claude Code sessions:
+
+The schema migration is the gate that unlocks the last batch of Stage 4 features. It deserves its own focused session with full Step 0 discovery, founder explicit per-migration authorization, and manual click-through verification. Migrations are never bundled with feature work and never run silently. The migration approval gate locked in CLAUDE.md takes precedence over any tool capability that appears available.
+
+The design system is not a parallel-track task that fits between coding sessions. It is multi-week dedicated work measured against the three-layer token architecture (primitive → semantic → component), the 8-point grid foundation, real device testing in French LTR and Arabic RTL, and inspiration sources locked separately (Shopify, Upwork, Webflow, Framer, Pinterest). Claude Code does not improvise design system decisions during feature work and does not suggest UI polish features as substitutes for the genuine remaining backend work.
+
+The build-measure-learn loop begins after launch, not before. Pre-launch, the discipline is to complete the launch readiness gate in Pillar 6 §6.2.7 without skipping items. Post-launch, the roadmap shifts to Now/Next/Later prioritized by real user signal, not founder intuition or competitor comparison.
+
+For full framework context, read docs/project-overview.md.
+
 ## Engineering Discipline (earned during the build — do not violate)
 
 ### Before building anything
