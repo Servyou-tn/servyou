@@ -405,6 +405,32 @@ export const fr: Record<string, string> = {
   'freelance.hint_preferred_payment_method':  "Ex : Konnect, Virement bancaire, Flouci",
   'freelance.action_create':                  "Créer mon profil",
   'freelance.action_save':                    "Enregistrer les modifications",
+  // Child tables (PR-H2) — tools
+  'freelance.section_tools':        "Outils et logiciels",
+  'freelance.hint_tools':           "Listez les outils que vous utilisez au quotidien",
+  'freelance.placeholder_tool_name':"Ex : Figma, VS Code, Photoshop",
+  'freelance.action_add_tool':      "Ajouter un outil",
+  // Child tables (PR-H2) — education
+  'freelance.section_education':      "Formation",
+  'freelance.hint_education':         "Vos diplômes et formations professionnelles",
+  'freelance.field_institution':      "Institution ou école",
+  'freelance.field_degree':           "Diplôme",
+  'freelance.field_field_of_study':   "Domaine d'étude",
+  'freelance.field_year_start':       "Année de début",
+  'freelance.field_year_end':         "Année de fin",
+  'freelance.hint_year_end_ongoing':  "Laissez vide si en cours",
+  'freelance.action_add_education':   "Ajouter une formation",
+  'freelance.error_institution_required': "L'institution est obligatoire",
+  // Child tables (PR-H2) — certifications
+  'freelance.section_certifications':        "Certifications",
+  'freelance.hint_certifications':           "Certifications professionnelles obtenues",
+  'freelance.field_certification_name':      "Nom de la certification",
+  'freelance.field_issuing_org':             "Organisme émetteur",
+  'freelance.field_year_obtained':           "Année d'obtention",
+  'freelance.field_credential_url':          "Lien (URL)",
+  'freelance.hint_credential_url':           "https://...",
+  'freelance.action_add_certification':      "Ajouter une certification",
+  'freelance.error_certification_name_required': "Le nom est obligatoire",
 
   // ─── Job missions (mes-missions, missions/[id], mes-réponses, modifier) ────────
   // Status labels — my missions page (consumer view)
