@@ -396,6 +396,15 @@ export const fr: Record<string, string> = {
   'freelance.service_add_btn':    "Ajouter le service",
   'freelance.error_service_update':"Une erreur est survenue lors de la mise à jour. Veuillez réessayer.",
   'freelance.error_service_add':  "Une erreur est survenue lors de l'ajout. Veuillez réessayer.",
+  // Configurable workspace scalars (PR-H1)
+  'freelance.field_working_hours':            "Disponibilité / horaires",
+  'freelance.field_current_workplace':        "Poste ou emploi actuel",
+  'freelance.field_preferred_payment_method': "Mode de paiement préféré",
+  'freelance.hint_working_hours':             "Ex : Lun-Ven 9h-18h, Soirs et week-ends",
+  'freelance.hint_current_workplace':         "Ex : Junior dev @ TechCo, Indépendant à plein temps",
+  'freelance.hint_preferred_payment_method':  "Ex : Konnect, Virement bancaire, Flouci",
+  'freelance.action_create':                  "Créer mon profil",
+  'freelance.action_save':                    "Enregistrer les modifications",
 
   // ─── Job missions (mes-missions, missions/[id], mes-réponses, modifier) ────────
   // Status labels — my missions page (consumer view)
