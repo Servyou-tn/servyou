@@ -37,7 +37,7 @@ This is a manual mirror of what Supabase tracks internally. The benefit is that 
 
 ## Historical context
 
-These 14 migrations represent the entire schema history of Servyou from initial setup (June 3, 2026) onward. Migrations are listed in chronological order:
+These 15 migrations represent the entire schema history of Servyou from initial setup (June 3, 2026) onward. Migrations are listed in chronological order:
 
 1. **20260603002549_create_profiles_table** — initial `profiles` table with role-based identity (later revised)
 2. **20260603174720_revise_profiles_table_to_layer4** — replaced `role` column with `seller_type`, added `date_of_birth`, `phone`, `is_admin` per Layer 4 design
@@ -53,6 +53,7 @@ These 14 migrations represent the entire schema history of Servyou from initial 
 12. **20260604090224_add_null_caller_guard_to_get_contact_phone** — defense in depth: explicit NULL check on `auth.uid()` in `get_contact_phone`
 13. **20260606141915_orders_lifecycle_expansion** — expanded orders.status from 3 values to 8 (per Layer 4 §4.6), added `cancelled_by`, `cancellation_reason`, `received_at` columns
 14. **20260606155746_orders_role_gating_trigger** — `check_order_status_transition` BEFORE UPDATE trigger enforcing buyer/seller role gating, no-skips/no-backwards transitions, cancellation reason pivots
+15. **20260606192321_shop_configurable_workspace** — adds the configurable workspace fields to the shops table (shop_type, delivery_setup, working_hours, location_detail) plus shop_payment_methods and shop_categories child tables with RLS policies (per Configurable Workspace Principle in product.md, schema details in data-model.md)
 
 Migration 13 includes a one-row data UPDATE (legacy `'completed'` → `'received'`) because the constraint widening required the legacy row to be reconciled with the new allowed value set. Migration 14 closes the pre-existing wide-open RLS UPDATE policy by adding DB-level transition enforcement above the row-gating policy.
 
