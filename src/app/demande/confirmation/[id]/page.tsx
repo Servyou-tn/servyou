@@ -4,10 +4,13 @@ import { createClient } from '@/lib/supabase/server'
 import { getLang } from '@/lib/i18n/server'
 import { t } from '@/lib/i18n'
 import { DirArrow } from '@/components/DirArrow'
+import { OrderLifecycleStepper } from '@/components/OrderLifecycleStepper'
+import { ReceiptConfirmButton } from '@/components/ReceiptConfirmButton'
+import { canConfirmReceipt, type OrderStatus, type OrderType } from '@/lib/types/order-status'
 
 type Props = { params: Promise<{ id: string }> }
 
-export default async function ConfirmationPage({ params }: Props) {
+export default async function OrderDetailPage({ params }: Props) {
   const { id } = await params
   const supabase = await createClient()
   const lang = await getLang()
@@ -15,11 +18,13 @@ export default async function ConfirmationPage({ params }: Props) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const { data: order } = await supabase
+  const { data: order, error } = await supabase
     .from('orders')
-    .select('id, order_type, status, quantity, delivery_name, delivery_address, delivery_phone, buyer_note, buyer_id, seller_id, products(title), service_listings(title)')
+    .select('id, order_type, status, quantity, delivery_name, delivery_address, delivery_phone, buyer_note, cancelled_by, cancellation_reason, received_at, buyer_id, seller_id, products(title), service_listings(title)')
     .eq('id', id)
     .single()
+
+  if (error) console.error('[demande/confirmation] order fetch error:', error)
 
   if (!order || order.buyer_id !== user.id) {
     return (
@@ -33,6 +38,7 @@ export default async function ConfirmationPage({ params }: Props) {
   }
 
   const isProduct = order.order_type === 'product'
+  const orderType: OrderType = isProduct ? 'product' : 'service'
   const itemTitle = isProduct
     ? (order.products as unknown as { title: string } | null)?.title
     : (order.service_listings as unknown as { title: string } | null)?.title
@@ -50,12 +56,24 @@ export default async function ConfirmationPage({ params }: Props) {
   return (
     <main className="min-h-screen bg-gray-50 px-4 py-12">
       <div className="max-w-lg mx-auto space-y-6">
-        <div className="bg-white rounded-lg shadow p-8">
-          <div className="text-4xl mb-4">✅</div>
-          <h1 className="text-2xl font-bold text-gray-800 mb-2">{t('orders.confirmed_title', lang)}</h1>
-          <p className="text-gray-600 mb-6">{t('orders.contact_hint', lang)}</p>
+        <div className="bg-white rounded-lg shadow p-8 space-y-6">
+          <h1 className="text-2xl font-bold text-gray-800">{t('orders.buyer_detail_title', lang)}</h1>
 
-          <div className="space-y-2 text-sm text-gray-700 mb-6">
+          {/* Where the order sits in its lifecycle — prominent, near the top */}
+          <OrderLifecycleStepper
+            status={order.status}
+            order_type={orderType}
+            cancelled_by={order.cancelled_by}
+            cancellation_reason={order.cancellation_reason}
+            received_at={order.received_at}
+          />
+
+          {/* Buyer receipt confirmation — only once the order has arrived */}
+          {canConfirmReceipt(order.status as OrderStatus) && (
+            <ReceiptConfirmButton orderId={order.id} />
+          )}
+
+          <div className="space-y-2 text-sm text-gray-700">
             <div><span className="font-medium text-gray-500">{t('orders.type_label', lang)}</span> {isProduct ? t('orders.type_product', lang) : t('orders.type_service', lang)}</div>
             <div><span className="font-medium text-gray-500">{t('orders.item_label', lang)}</span> {itemTitle}</div>
             {isProduct && order.quantity && (
@@ -73,22 +91,21 @@ export default async function ConfirmationPage({ params }: Props) {
             {order.buyer_note && (
               <div><span className="font-medium text-gray-500">{t('orders.note_label', lang)}</span> {order.buyer_note}</div>
             )}
-            <div>
-              <span className="font-medium text-gray-500">{t('orders.status_label', lang)}</span>{' '}
-              <span className="bg-yellow-100 text-yellow-700 text-xs px-2 py-0.5 rounded-full font-medium">{t('common.status_pending', lang)}</span>
-            </div>
           </div>
 
-          {waUrl ? (
-            <a href={waUrl} target="_blank" rel="noopener noreferrer"
-              className="block w-full text-center bg-green-500 hover:bg-green-600 text-white font-semibold py-3 px-6 rounded text-base transition-colors">
-              {t('orders.contact_seller', lang)}
-            </a>
-          ) : (
-            <p className="text-sm text-gray-500 bg-gray-50 border border-gray-200 rounded px-4 py-3">
-              {t('orders.seller_no_phone', lang)}
-            </p>
-          )}
+          <div className="space-y-2">
+            <p className="text-sm text-gray-500">{t('orders.contact_hint', lang)}</p>
+            {waUrl ? (
+              <a href={waUrl} target="_blank" rel="noopener noreferrer"
+                className="block w-full text-center bg-green-500 hover:bg-green-600 text-white font-semibold py-3 px-6 rounded text-base transition-colors">
+                {t('orders.contact_seller', lang)}
+              </a>
+            ) : (
+              <p className="text-sm text-gray-500 bg-gray-50 border border-gray-200 rounded px-4 py-3">
+                {t('orders.seller_no_phone', lang)}
+              </p>
+            )}
+          </div>
         </div>
 
         <div className="flex gap-4 text-sm">

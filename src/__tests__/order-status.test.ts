@@ -14,6 +14,7 @@ import {
   SERVICE_LIFECYCLE,
   nextStatus,
   canCancel,
+  canConfirmReceipt,
   canTransition,
   statusLabelKey,
   advanceLabelKey,
@@ -90,6 +91,22 @@ describe('canTransition — role gating', () => {
   it('allows cancel only from cancellable states', () => {
     expect(canTransition('accepted', 'cancelled', 'product', 'seller')).toBe(true)
     expect(canTransition('dispatched', 'cancelled', 'product', 'seller')).toBe(false)
+  })
+})
+
+describe('canConfirmReceipt — buyer receipt-button gate', () => {
+  it('is true only once the order has arrived', () => {
+    expect(canConfirmReceipt('arrived')).toBe(true)
+  })
+
+  it('is false for every other status', () => {
+    expect(canConfirmReceipt('pending')).toBe(false)
+    expect(canConfirmReceipt('accepted')).toBe(false)
+    expect(canConfirmReceipt('prepared')).toBe(false)
+    expect(canConfirmReceipt('dispatched')).toBe(false)
+    expect(canConfirmReceipt('in_delivery')).toBe(false)
+    expect(canConfirmReceipt('received')).toBe(false)
+    expect(canConfirmReceipt('cancelled')).toBe(false)
   })
 })
 
