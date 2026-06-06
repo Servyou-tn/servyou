@@ -18,12 +18,16 @@ documents in this priority order:
 
 2. The Servyou-specific foundation documents (read next, as relevant
    to the current task):
-   - docs/pillar-1-engineering-standards.md — engineering discipline
-   - docs/pillar-4-target-users-and-market.md — who Servyou serves
-   - docs/pillar-6-roadmap.md — the phased build sequence
-   - docs/servyou-layer-2-users-and-roles.md — role architecture
-   - docs/servyou-layer-3-features-and-journeys.md — user journeys
-   - docs/servyou-layer-4-data-model.md — database schema
+   - docs/product.md — who Servyou serves: users, roles, and journeys
+     (replaces former Layer 1/2/3 + Pillar 4)
+   - docs/data-model.md — database schema and the security rules in it
+     (replaces former Layer 4/5)
+   - docs/architecture.md — the stack and architecture principles
+     (replaces former Layer 6 + Pillar 1 §1.8)
+   - docs/engineering-standards.md — engineering discipline and coding standards
+     (replaces former Pillar 1 §§1.2–1.7)
+   - docs/roadmap.md — the phased build sequence and current state
+     (replaces former Pillar 6 + Layer 7)
 
 3. The operational rules in this CLAUDE.md file itself — the migration
    approval gate, the locked strategic sequence, the inspiration sources
@@ -41,7 +45,7 @@ grounding it in the relevant documents, the response is to stop and
 read first, then propose the task with proper grounding.
 
 ## Source of truth
-The seven layer documents (Vision, Users & Roles, Features & Journeys, Data Model, Security, Technical Architecture, Build Plan) in the project knowledge are the definitive specification for Servyou. Always follow them. Discard any older instructions that contradict them.
+The seven foundation documents (project-overview, platform-pages-and-system, product, data-model, architecture, engineering-standards, roadmap) under `docs/` are the source of truth for what Servyou is and how it is built. Always follow them. Discard any older instructions that contradict them.
 
 ## What is IN the MVP (per Build Plan phases 1-10)
 - Phase 1: Identity (signup, login, logout, password reset, profile editing) — DONE
@@ -81,7 +85,7 @@ In-platform card payments, subscriptions, escrow, reviews/ratings, full notifica
 
 ## PILLAR 1 — ENGINEERING STANDARDS (operational summary)
 
-Pillar 1 is the engineering foundation under everything Servyou builds. The full document lives at `docs/pillar-1-engineering-standards.md` (~880 lines, seven sections). This summary is the operational essence for day-to-day work; the full document is the authoritative reference when a decision needs depth.
+Pillar 1 is the engineering foundation under everything Servyou builds. The full content now lives in `docs/engineering-standards.md` (the engineering rules and architecture principles), with the architecture rules formerly in §1.8 in `docs/architecture.md`. This summary is the operational essence for day-to-day work; those documents are the authoritative reference when a decision needs depth.
 
 ### The four external standards Servyou aligns to
 
@@ -133,14 +137,14 @@ Every commitment in Pillar 1 is named at the **scale-stage** where it comes onli
 
 ### When to read the full Pillar 1 instead of this summary
 
-Read the full document at `docs/pillar-1-engineering-standards.md` when:
-- A decision touches partner integrations (Konnect, delivery, banks, government APIs) → Section 6
-- A decision touches compliance, legal documents, or institutional partnerships → Section 7
-- A decision changes the architectural shape (new backing service, new infrastructure) → Section 4
-- A decision touches security operations, secrets, or incident response → Section 3
-- A judgment call on testing depth or quality discipline is needed → Section 5
-- Coding-convention specifics are needed beyond the operational essentials above → Section 2
-- An evaluator, partner, or judge is requesting documentation about Servyou's standards → reference the full document by section number
+Read the full `docs/engineering-standards.md` (and `docs/architecture.md` for architecture rules) when:
+- A decision touches partner integrations (Konnect, delivery, banks, government APIs)
+- A decision touches compliance, legal documents, or institutional partnerships
+- A decision changes the architectural shape (new backing service, new infrastructure)
+- A decision touches security operations, secrets, or incident response
+- A judgment call on testing depth or quality discipline is needed
+- Coding-convention specifics are needed beyond the operational essentials above
+- An evaluator, partner, or judge is requesting documentation about Servyou's standards
 
 The full document is the authoritative reference. This summary is the operational essence for day-to-day decisions.
 
