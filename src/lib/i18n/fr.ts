@@ -434,6 +434,23 @@ export const fr: Record<string, string> = {
   // Public profile display (PR-H3)
   'freelance.year_ongoing':    "en cours",
   'freelance.view_credential': "Voir le certificat",
+  // Admin dashboard foundation (PR-I1)
+  'admin.nav.overview':            "Vue d'ensemble",
+  'admin.nav.users':               "Utilisateurs",
+  'admin.nav.content':             "Contenu",
+  'admin.nav.reports':             "Signalements",
+  'admin.nav.disputes':            "Litiges",
+  'admin.nav.statistics':          "Statistiques",
+  'admin.nav.coming_soon':         "Bientôt",
+  'admin.overview.title':          "Vue d'ensemble",
+  'admin.metrics.total_users':       "Utilisateurs au total",
+  'admin.metrics.total_shops':       "Boutiques au total",
+  'admin.metrics.total_freelancers': "Freelances au total",
+  'admin.metrics.total_products':    "Produits au total",
+  'admin.metrics.total_services':    "Services au total",
+  'admin.metrics.total_job_posts':   "Offres d'emploi au total",
+  'admin.metrics.completed_orders':  "Commandes finalisées",
+  'admin.metrics.pending_reports':   "Signalements en attente",
 
   // ─── Job missions (mes-missions, missions/[id], mes-réponses, modifier) ────────
   // Status labels — my missions page (consumer view)
