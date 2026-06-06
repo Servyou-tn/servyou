@@ -13,6 +13,8 @@ type Shop = {
   name: string
   description: string | null
   city: string
+  logo_url: string | null
+  banner_url: string | null
 }
 
 export default function MaBoutiquePage() {
@@ -41,7 +43,7 @@ export default function MaBoutiquePage() {
 
       const { data: shopData } = await supabase
         .from('shops')
-        .select('id, name, description, city')
+        .select('id, name, description, city, logo_url, banner_url')
         .eq('owner_id', user.id)
         .maybeSingle()
 
@@ -64,7 +66,12 @@ export default function MaBoutiquePage() {
   return (
     <main className="min-h-screen flex items-start justify-center bg-gray-50 px-4 py-12">
       <div className="bg-white rounded-lg shadow p-8 max-w-md w-full">
-        <h1 className="text-2xl font-bold text-gray-800 mb-1">{t('boutique.title', lang)}</h1>
+        <div className="flex items-center gap-3 mb-1">
+          {shop!.logo_url && (
+            <img src={shop!.logo_url} alt={shop!.name} className="h-12 w-12 rounded object-cover" />
+          )}
+          <h1 className="text-2xl font-bold text-gray-800">{t('boutique.title', lang)}</h1>
+        </div>
         <p className="text-xs text-gray-400 mb-6">{t('boutique.dashboard', lang)}</p>
 
         <div className="space-y-3 mb-8">

@@ -18,6 +18,8 @@ type Shop = {
   name: string
   description: string | null
   city: string | null
+  logo_url: string | null
+  banner_url: string | null
 }
 
 export default function ModifierBoutiquePage() {
@@ -33,6 +35,8 @@ export default function ModifierBoutiquePage() {
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
   const [city, setCity] = useState('')
+  const [logoUrl, setLogoUrl] = useState('')
+  const [bannerUrl, setBannerUrl] = useState('')
 
   useEffect(() => {
     async function load() {
@@ -45,7 +49,7 @@ export default function ModifierBoutiquePage() {
 
       const { data: shop, error: shopError } = await supabase
         .from('shops')
-        .select('id, name, description, city')
+        .select('id, name, description, city, logo_url, banner_url')
         .eq('owner_id', user.id)
         .maybeSingle()
       if (shopError) console.error('[ma-boutique/modifier] shop fetch error:', shopError)
@@ -56,6 +60,8 @@ export default function ModifierBoutiquePage() {
       setName(s.name)
       setDescription(s.description ?? '')
       setCity(s.city ?? '')
+      setLogoUrl(s.logo_url ?? '')
+      setBannerUrl(s.banner_url ?? '')
       setLoading(false)
     }
     load()
@@ -74,6 +80,8 @@ export default function ModifierBoutiquePage() {
       name: name.trim(),
       description: description.trim() || null,
       city,
+      logo_url: logoUrl.trim() || null,
+      banner_url: bannerUrl.trim() || null,
     }).eq('id', shopId)
 
     setSaving(false)
@@ -127,6 +135,26 @@ export default function ModifierBoutiquePage() {
               <option value="">{t('signup.city_placeholder', lang)}</option>
               {GOVERNORATES.map(g => <option key={g} value={g}>{g}</option>)}
             </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="logoUrl">
+              {t('boutique.field_logo', lang)} <span className="text-gray-400 font-normal">{t('common.optional_m', lang)}</span>
+            </label>
+            <input id="logoUrl" type="url" value={logoUrl}
+              onChange={e => setLogoUrl(e.target.value)}
+              className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            <p className="text-xs text-gray-400 mt-1">{t('boutique.image_url_hint', lang)}</p>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="bannerUrl">
+              {t('boutique.field_banner', lang)} <span className="text-gray-400 font-normal">{t('common.optional_f', lang)}</span>
+            </label>
+            <input id="bannerUrl" type="url" value={bannerUrl}
+              onChange={e => setBannerUrl(e.target.value)}
+              className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            <p className="text-xs text-gray-400 mt-1">{t('boutique.image_url_hint', lang)}</p>
           </div>
 
           {error && (

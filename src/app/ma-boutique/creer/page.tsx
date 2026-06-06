@@ -26,6 +26,8 @@ export default function CreerBoutiquePage() {
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
   const [city, setCity] = useState('')
+  const [logoUrl, setLogoUrl] = useState('')
+  const [bannerUrl, setBannerUrl] = useState('')
 
   useEffect(() => {
     async function check() {
@@ -68,7 +70,14 @@ export default function CreerBoutiquePage() {
 
     const { error: insertError } = await supabase
       .from('shops')
-      .insert({ owner_id: userId, name: name.trim(), description: description.trim() || null, city })
+      .insert({
+        owner_id: userId,
+        name: name.trim(),
+        description: description.trim() || null,
+        city,
+        logo_url: logoUrl.trim() || null,
+        banner_url: bannerUrl.trim() || null,
+      })
 
     setSaving(false)
 
@@ -137,6 +146,26 @@ export default function CreerBoutiquePage() {
                 <option key={gov} value={gov}>{gov}</option>
               ))}
             </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="logoUrl">
+              {t('boutique.field_logo', lang)} <span className="text-gray-400 font-normal">{t('common.optional_m', lang)}</span>
+            </label>
+            <input id="logoUrl" type="url" value={logoUrl}
+              onChange={e => setLogoUrl(e.target.value)}
+              className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            <p className="text-xs text-gray-400 mt-1">{t('boutique.image_url_hint', lang)}</p>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="bannerUrl">
+              {t('boutique.field_banner', lang)} <span className="text-gray-400 font-normal">{t('common.optional_f', lang)}</span>
+            </label>
+            <input id="bannerUrl" type="url" value={bannerUrl}
+              onChange={e => setBannerUrl(e.target.value)}
+              className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            <p className="text-xs text-gray-400 mt-1">{t('boutique.image_url_hint', lang)}</p>
           </div>
 
           {error && (
