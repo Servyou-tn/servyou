@@ -16,12 +16,12 @@ export const fr: Record<string, string> = {
   'common.delete':                 "Supprimer",
   'common.cancel':                 "Annuler",
   'common.send_request':           "Envoyer la demande",
-  'common.mark_completed':         "Marquer terminée",
+  'common.mark_received':          "Marquer reçue",          // Lifecycle rename: completed → received
   'common.whatsapp_contact':       "Contacter sur WhatsApp",
   'common.message_label':          "Message :",
   // Order / service-request statuses
   'common.status_pending':         "En attente",
-  'common.status_completed':       "Terminée",
+  'common.status_received':        "Reçue",                  // Lifecycle rename: completed → received
   'common.status_cancelled':       "Annulée",
   // Listing statuses (products + services)
   'common.status_active':          "Actif",
