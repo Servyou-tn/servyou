@@ -20,7 +20,7 @@ type Order = {
 
 const STATUS_LABELS: Record<string, { key: string; cls: string }> = {
   pending:   { key: 'common.status_pending',   cls: 'bg-yellow-100 text-yellow-700' },
-  completed: { key: 'common.status_completed', cls: 'bg-green-100 text-green-700' },
+  received:  { key: 'common.status_received',  cls: 'bg-green-100 text-green-700' },
   cancelled: { key: 'common.status_cancelled', cls: 'bg-red-100 text-red-600' },
 }
 
@@ -73,8 +73,9 @@ export default function DemandesFreelancePage() {
     load()
   }, [])
 
-  async function updateStatus(id: string, status: 'completed' | 'cancelled') {
-    await supabase.from('orders').update({ status }).eq('id', id)
+  async function updateStatus(id: string, status: 'received' | 'cancelled') {
+    const { error } = await supabase.from('orders').update({ status }).eq('id', id)
+    if (error) { console.error('[mon-profil-freelance/demandes] updateStatus error:', error); return }
     setOrders(prev => prev.map(o => o.id === id ? { ...o, status } : o))
   }
 
@@ -130,9 +131,9 @@ export default function DemandesFreelancePage() {
                     )}
                     {o.status === 'pending' && (
                       <>
-                        <button onClick={() => updateStatus(o.id, 'completed')}
+                        <button onClick={() => updateStatus(o.id, 'received')}
                           className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium px-3 py-1.5 rounded transition-colors">
-                          {t('common.mark_completed', lang)}
+                          {t('common.mark_received', lang)}
                         </button>
                         <button onClick={() => updateStatus(o.id, 'cancelled')}
                           className="border border-red-300 hover:bg-red-50 text-red-600 text-xs font-medium px-3 py-1.5 rounded transition-colors">

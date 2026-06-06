@@ -13,7 +13,7 @@ export default async function MesDemandesPage() {
 
   const STATUS_LABELS: Record<string, { key: string; cls: string }> = {
     pending:   { key: 'common.status_pending',   cls: 'bg-yellow-100 text-yellow-700' },
-    completed: { key: 'common.status_completed', cls: 'bg-green-100 text-green-700' },
+    received:  { key: 'common.status_received',  cls: 'bg-green-100 text-green-700' },
     cancelled: { key: 'common.status_cancelled', cls: 'bg-red-100 text-red-600' },
   }
 
