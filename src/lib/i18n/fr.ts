@@ -17,12 +17,32 @@ export const fr: Record<string, string> = {
   'common.cancel':                 "Annuler",
   'common.send_request':           "Envoyer la demande",
   'common.mark_received':          "Marquer reçue",          // Lifecycle rename: completed → received
+  // 8-stage lifecycle actions
+  'common.mark_accepted':          "Accepter",
+  'common.mark_prepared':          "Marquer préparée",
+  'common.mark_dispatched':        "Marquer expédiée",
+  'common.mark_in_delivery':       "Marquer en livraison",
+  'common.mark_arrived':           "Marquer arrivée",
+  'common.mark_arrived_service':   "Marquer livré",
   'common.whatsapp_contact':       "Contacter sur WhatsApp",
   'common.message_label':          "Message :",
   // Order / service-request statuses
   'common.status_pending':         "En attente",
+  // 8-stage lifecycle
+  'common.status_accepted':        "Acceptée",
+  'common.status_prepared':        "Préparée",
+  'common.status_dispatched':      "Expédiée",
+  'common.status_in_delivery':     "En livraison",
+  'common.status_arrived':         "Arrivée",
+  'common.status_arrived_service': "Travail livré",
   'common.status_received':        "Reçue",                  // Lifecycle rename: completed → received
   'common.status_cancelled':       "Annulée",
+  // 8-stage lifecycle — stepper support
+  'common.cancelled_by_buyer':     "Annulée par l'acheteur",
+  'common.cancelled_by_seller':    "Annulée par le vendeur",
+  'common.cancel_reason_label':    "Motif :",
+  'common.received_on_label':      "Reçue le",
+  'common.awaiting_buyer':         "En attente de confirmation de l'acheteur",
   // Listing statuses (products + services)
   'common.status_active':          "Actif",
   'common.status_hidden':          "Masqué",
