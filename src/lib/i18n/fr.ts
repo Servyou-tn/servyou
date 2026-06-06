@@ -431,6 +431,9 @@ export const fr: Record<string, string> = {
   'freelance.hint_credential_url':           "https://...",
   'freelance.action_add_certification':      "Ajouter une certification",
   'freelance.error_certification_name_required': "Le nom est obligatoire",
+  // Public profile display (PR-H3)
+  'freelance.year_ongoing':    "en cours",
+  'freelance.view_credential': "Voir le certificat",
 
   // ─── Job missions (mes-missions, missions/[id], mes-réponses, modifier) ────────
   // Status labels — my missions page (consumer view)
