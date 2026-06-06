@@ -43,6 +43,11 @@ export const fr: Record<string, string> = {
   'common.cancel_reason_label':    "Motif :",
   'common.received_on_label':      "Reçue le",
   'common.awaiting_buyer':         "En attente de confirmation de l'acheteur",
+  // Buyer receipt confirmation (PR-C)
+  'common.confirm_receipt_action':    "Confirmer la réception",
+  'common.confirm_receipt_help':      "Cliquez ici une fois la commande bien reçue.",
+  'common.receipt_confirmed_success': "Réception confirmée.",
+  'common.receipt_confirm_error':     "Une erreur est survenue, veuillez réessayer.",
   // Listing statuses (products + services)
   'common.status_active':          "Actif",
   'common.status_hidden':          "Masqué",
@@ -253,6 +258,7 @@ export const fr: Record<string, string> = {
 
   // ─── Orders — my orders + confirmation ───────────────────────────────────────
   'orders.title':              "Mes demandes",
+  'orders.buyer_detail_title': "Détails de la demande",
   'orders.empty':              "Vous n'avez pas encore envoyé de demande.",
   'orders.browse_cta':         "Parcourir les produits et services",
   'orders.type_product':       "Produit",

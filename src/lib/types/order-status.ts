@@ -63,6 +63,14 @@ export function canTransition(
   return to === 'received' ? role === 'buyer' : role === 'seller'
 }
 
+// Buyer-side UI gate for the receipt-confirmation button: the buyer may
+// confirm receipt only once the order has arrived. The DB trigger is the
+// authoritative guard (buyer-only, only from 'arrived'); this is the single
+// app-code source of truth for whether the button renders.
+export function canConfirmReceipt(status: OrderStatus): boolean {
+  return status === 'arrived'
+}
+
 // i18n key helpers — 'arrived' reads differently for a non-physical service.
 export function statusLabelKey(status: OrderStatus, orderType: OrderType): string {
   if (status === 'arrived' && orderType === 'service') return 'common.status_arrived_service'
