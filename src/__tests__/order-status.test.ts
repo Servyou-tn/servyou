@@ -13,7 +13,8 @@ import {
   PRODUCT_LIFECYCLE,
   SERVICE_LIFECYCLE,
   nextStatus,
-  canCancel,
+  isCancellable,
+  requiresCancellationReason,
   canConfirmReceipt,
   canTransition,
   statusLabelKey,
@@ -53,20 +54,49 @@ describe('nextStatus', () => {
   })
 })
 
-describe('canCancel — pivot differs by type', () => {
-  it('product is cancellable pre-dispatch only', () => {
-    expect(canCancel('pending', 'product')).toBe(true)
-    expect(canCancel('accepted', 'product')).toBe(true)
-    expect(canCancel('prepared', 'product')).toBe(true)
-    expect(canCancel('dispatched', 'product')).toBe(false)
-    expect(canCancel('in_delivery', 'product')).toBe(false)
-    expect(canCancel('arrived', 'product')).toBe(false)
+describe('isCancellable — any non-terminal state', () => {
+  it('is true for every non-terminal state', () => {
+    expect(isCancellable('pending')).toBe(true)
+    expect(isCancellable('accepted')).toBe(true)
+    expect(isCancellable('prepared')).toBe(true)
+    expect(isCancellable('dispatched')).toBe(true)
+    expect(isCancellable('in_delivery')).toBe(true)
+    expect(isCancellable('arrived')).toBe(true)
   })
 
-  it('service pivots at acceptance', () => {
-    expect(canCancel('pending', 'service')).toBe(true)
-    expect(canCancel('accepted', 'service')).toBe(true)
-    expect(canCancel('arrived', 'service')).toBe(false)
+  it('is false for the terminal states', () => {
+    expect(isCancellable('received')).toBe(false)
+    expect(isCancellable('cancelled')).toBe(false)
+  })
+})
+
+describe('requiresCancellationReason — post-pivot needs a reason', () => {
+  it('product requires a reason from dispatch onward', () => {
+    expect(requiresCancellationReason('dispatched', 'product')).toBe(true)
+    expect(requiresCancellationReason('in_delivery', 'product')).toBe(true)
+    expect(requiresCancellationReason('arrived', 'product')).toBe(true)
+  })
+
+  it('product is free to cancel pre-dispatch', () => {
+    expect(requiresCancellationReason('pending', 'product')).toBe(false)
+    expect(requiresCancellationReason('accepted', 'product')).toBe(false)
+    expect(requiresCancellationReason('prepared', 'product')).toBe(false)
+  })
+
+  it('service requires a reason from acceptance onward', () => {
+    expect(requiresCancellationReason('accepted', 'service')).toBe(true)
+    expect(requiresCancellationReason('arrived', 'service')).toBe(true)
+  })
+
+  it('service is free to cancel while pending', () => {
+    expect(requiresCancellationReason('pending', 'service')).toBe(false)
+  })
+
+  it('terminal states never require a reason, for either type', () => {
+    expect(requiresCancellationReason('received', 'product')).toBe(false)
+    expect(requiresCancellationReason('cancelled', 'product')).toBe(false)
+    expect(requiresCancellationReason('received', 'service')).toBe(false)
+    expect(requiresCancellationReason('cancelled', 'service')).toBe(false)
   })
 })
 
@@ -88,9 +118,11 @@ describe('canTransition — role gating', () => {
     expect(canTransition('prepared', 'accepted', 'product', 'seller')).toBe(false)
   })
 
-  it('allows cancel only from cancellable states', () => {
+  it('allows cancel from any non-terminal state, blocks it from terminal ones', () => {
     expect(canTransition('accepted', 'cancelled', 'product', 'seller')).toBe(true)
-    expect(canTransition('dispatched', 'cancelled', 'product', 'seller')).toBe(false)
+    expect(canTransition('dispatched', 'cancelled', 'product', 'seller')).toBe(true)
+    expect(canTransition('arrived', 'cancelled', 'service', 'buyer')).toBe(true)
+    expect(canTransition('received', 'cancelled', 'product', 'buyer')).toBe(false)
   })
 })
 

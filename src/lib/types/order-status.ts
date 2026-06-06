@@ -39,14 +39,25 @@ export function nextStatus(current: OrderStatus, orderType: OrderType): OrderSta
   return chain[i + 1]
 }
 
-// Cancellable states. The free/logged cancellation pivot differs by type:
-// products pivot at dispatch (cancellable while pending/accepted/prepared),
-// services pivot at acceptance (cancellable while pending/accepted) — Layer 3 §63.
-export function canCancel(status: OrderStatus, orderType: OrderType): boolean {
-  const cancellable: OrderStatus[] = orderType === 'product'
-    ? ['pending', 'accepted', 'prepared']
-    : ['pending', 'accepted']
-  return cancellable.includes(status)
+// An order may be cancelled from any non-terminal state. The DB trigger
+// (check_order_status_transition) is the authoritative guard; this is the
+// app-code gate for whether to surface a cancel affordance at all.
+export function isCancellable(status: OrderStatus): boolean {
+  return status !== 'received' && status !== 'cancelled'
+}
+
+// Whether a cancellation from this state must carry a reason — mirrors the
+// post-pivot rule the DB trigger enforces. Products pivot at dispatch
+// (dispatched/in_delivery/arrived); services pivot at acceptance
+// (accepted/arrived). Pre-pivot cancellation is free (no reason required).
+export function requiresCancellationReason(status: OrderStatus, orderType: OrderType): boolean {
+  if (orderType === 'product') {
+    return status === 'dispatched' || status === 'in_delivery' || status === 'arrived'
+  }
+  if (orderType === 'service') {
+    return status === 'accepted' || status === 'arrived'
+  }
+  return false
 }
 
 // App-code transition guard. PR-B's DB trigger is the authoritative enforcement.
@@ -56,7 +67,7 @@ export function canTransition(
   orderType: OrderType,
   role: OrderRole,
 ): boolean {
-  if (to === 'cancelled') return canCancel(from, orderType)
+  if (to === 'cancelled') return isCancellable(from)
   if (to !== nextStatus(from, orderType)) return false
   // The final hop into 'received' is the buyer's confirmation of receipt;
   // every earlier hop is the seller advancing the order.

@@ -8,7 +8,8 @@ import { useLang } from '@/components/LangProvider'
 import { t } from '@/lib/i18n'
 import { DirArrow } from '@/components/DirArrow'
 import { OrderLifecycleStepper } from '@/components/OrderLifecycleStepper'
-import { type OrderStatus, nextStatus, canCancel, advanceLabelKey } from '@/lib/types/order-status'
+import { CancelOrderModal } from '@/components/CancelOrderModal'
+import { type OrderStatus, nextStatus, isCancellable, advanceLabelKey } from '@/lib/types/order-status'
 
 type Order = {
   id: string
@@ -101,7 +102,7 @@ export default function DemandesFreelancePage() {
               const date = new Date(o.created_at).toLocaleDateString('fr-TN', { day: '2-digit', month: 'short', year: 'numeric' })
               const buyerPhone = o.profiles?.phone?.replace(/\s+/g, '')
               const advance = nextStatus(o.status as OrderStatus, 'service')
-              const showCancel = canCancel(o.status as OrderStatus, 'service')
+              const showCancel = isCancellable(o.status as OrderStatus)
               return (
                 <div key={o.id} className="bg-white rounded-lg shadow p-5 space-y-3">
                   <div>
@@ -139,10 +140,12 @@ export default function DemandesFreelancePage() {
                       </button>
                     )}
                     {showCancel && (
-                      <button onClick={() => updateStatus(o.id, 'cancelled')}
-                        className="border border-red-300 hover:bg-red-50 text-red-600 text-xs font-medium px-3 py-1.5 rounded transition-colors">
-                        {t('common.cancel', lang)}
-                      </button>
+                      <CancelOrderModal
+                        orderId={o.id}
+                        cancelledBy="seller"
+                        currentStatus={o.status as OrderStatus}
+                        orderType="service"
+                      />
                     )}
                     {o.status === 'arrived' && (
                       <span className="text-xs text-gray-500">{t('common.awaiting_buyer', lang)}</span>

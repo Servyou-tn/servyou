@@ -6,7 +6,8 @@ import { t } from '@/lib/i18n'
 import { DirArrow } from '@/components/DirArrow'
 import { OrderLifecycleStepper } from '@/components/OrderLifecycleStepper'
 import { ReceiptConfirmButton } from '@/components/ReceiptConfirmButton'
-import { canConfirmReceipt, type OrderStatus, type OrderType } from '@/lib/types/order-status'
+import { CancelOrderModal } from '@/components/CancelOrderModal'
+import { canConfirmReceipt, isCancellable, type OrderStatus, type OrderType } from '@/lib/types/order-status'
 
 type Props = { params: Promise<{ id: string }> }
 
@@ -71,6 +72,16 @@ export default async function OrderDetailPage({ params }: Props) {
           {/* Buyer receipt confirmation — only once the order has arrived */}
           {canConfirmReceipt(order.status as OrderStatus) && (
             <ReceiptConfirmButton orderId={order.id} />
+          )}
+
+          {/* Buyer cancellation — available from any non-terminal state */}
+          {isCancellable(order.status as OrderStatus) && (
+            <CancelOrderModal
+              orderId={order.id}
+              cancelledBy="buyer"
+              currentStatus={order.status as OrderStatus}
+              orderType={orderType}
+            />
           )}
 
           <div className="space-y-2 text-sm text-gray-700">
