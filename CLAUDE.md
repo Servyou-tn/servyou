@@ -1,5 +1,45 @@
 # Servyou — Project Rules for Claude Code
 
+## Required Reading Before Any Task
+
+Before writing any line of code, running any migration, or making any
+architectural decision in this session, read the relevant foundation
+documents in this priority order:
+
+1. The two cross-cutting reference documents (read first, every time):
+   - docs/project-overview.md — the 10-stage platform-building
+     lifecycle, the WHEN. Tells you which stage Servyou is in and
+     what the requirements of that stage are.
+   - docs/platform-pages-and-system.md — the complete page anatomy
+     and system architecture, the WHAT. Tells you what surfaces
+     belong on a marketplace platform and how the layered
+     architecture (database → auth → application → frontend) ties
+     them together.
+
+2. The Servyou-specific foundation documents (read next, as relevant
+   to the current task):
+   - docs/pillar-1-engineering-standards.md — engineering discipline
+   - docs/pillar-4-target-users-and-market.md — who Servyou serves
+   - docs/pillar-6-roadmap.md — the phased build sequence
+   - docs/servyou-layer-2-users-and-roles.md — role architecture
+   - docs/servyou-layer-3-features-and-journeys.md — user journeys
+   - docs/servyou-layer-4-data-model.md — database schema
+
+3. The operational rules in this CLAUDE.md file itself — the migration
+   approval gate, the locked strategic sequence, the inspiration sources
+   for design Pillars, and the engineering discipline summary.
+
+The reading order matters. The two cross-cutting reference documents
+are the freshest and most comprehensive shared mental model; they
+override stale assumptions from training data or earlier conversation
+context. The Servyou-specific documents narrow the framework to the
+particular platform being built. CLAUDE.md captures the operational
+rules that govern how the work proceeds.
+
+This rule is non-negotiable. If a task is proposed without first
+grounding it in the relevant documents, the response is to stop and
+read first, then propose the task with proper grounding.
+
 ## Source of truth
 The seven layer documents (Vision, Users & Roles, Features & Journeys, Data Model, Security, Technical Architecture, Build Plan) in the project knowledge are the definitive specification for Servyou. Always follow them. Discard any older instructions that contradict them.
 
