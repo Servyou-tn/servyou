@@ -36,6 +36,71 @@ export async function claimReport(reportId: string): Promise<ReportActionResult>
   return { success: true }
 }
 
+// --- In-place content moderation (products + services) ---------------------
+// hide/unhide go through the admin_hide_content / admin_unhide_content SECURITY
+// DEFINER functions, which gate on is_admin() and RAISE EXCEPTION on every failure
+// mode — so a null error genuinely means the state changed (no rowcount guard needed,
+// unlike the bare-UPDATE report actions above). We translate the function's RAISE
+// messages to friendly i18n keys; the calling client component renders them.
+
+export type ModerationTargetType = 'product' | 'service'
+
+function translateModerationError(message: string): string {
+  if (message.includes('Forbidden')) return 'admin.moderation.error_forbidden'
+  if (message.includes('reason is required')) return 'admin.moderation.hide_reason_required'
+  if (message.includes('already moderated')) return 'admin.moderation.error_already_moderated'
+  if (message.includes('not currently moderated')) return 'admin.moderation.error_not_moderated'
+  if (message.includes('Unsupported target_type')) return 'admin.moderation.error_unsupported_type'
+  return 'common.error_generic'
+}
+
+export async function hideContent(
+  targetType: ModerationTargetType,
+  targetId: string,
+  reason: string,
+  reportId: string,
+): Promise<ReportActionResult> {
+  const trimmed = reason.trim()
+  if (trimmed.length === 0) {
+    return { success: false, error: 'admin.moderation.hide_reason_required' }
+  }
+
+  const supabase = await createClient()
+  const { error } = await supabase.rpc('admin_hide_content', {
+    target_type: targetType,
+    target_id: targetId,
+    reason: trimmed,
+  })
+  if (error) {
+    console.error('[admin/signalements] hideContent error:', error)
+    return { success: false, error: translateModerationError(error.message) }
+  }
+
+  revalidatePath('/admin/signalements')
+  revalidatePath('/admin/signalements/' + reportId)
+  return { success: true }
+}
+
+export async function unhideContent(
+  targetType: ModerationTargetType,
+  targetId: string,
+  reportId: string,
+): Promise<ReportActionResult> {
+  const supabase = await createClient()
+  const { error } = await supabase.rpc('admin_unhide_content', {
+    target_type: targetType,
+    target_id: targetId,
+  })
+  if (error) {
+    console.error('[admin/signalements] unhideContent error:', error)
+    return { success: false, error: translateModerationError(error.message) }
+  }
+
+  revalidatePath('/admin/signalements')
+  revalidatePath('/admin/signalements/' + reportId)
+  return { success: true }
+}
+
 export async function resolveReport(reportId: string, adminNote: string): Promise<ReportActionResult> {
   const note = adminNote.trim()
   if (note.length === 0) {
