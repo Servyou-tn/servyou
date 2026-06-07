@@ -16,7 +16,7 @@ export function AdminSidebar({ t }: Props) {
 
   const items: { key: string; href?: string }[] = [
     { key: 'admin.nav.overview', href: '/admin' },
-    { key: 'admin.nav.users' },
+    { key: 'admin.nav.users', href: '/admin/utilisateurs' },
     { key: 'admin.nav.content' },
     { key: 'admin.nav.reports', href: '/admin/signalements' },
     { key: 'admin.nav.disputes' },

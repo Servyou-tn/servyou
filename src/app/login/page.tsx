@@ -1,11 +1,12 @@
 'use client'
 
-import { useState } from 'react'
+import { Suspense, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { useLang } from '@/components/LangProvider'
 import { t } from '@/lib/i18n'
+import { SuspendedBanner } from './SuspendedBanner'
 
 function translateError(message: string, lang: ReturnType<typeof useLang>): string {
   if (message.includes('Email not confirmed')) return t('login.error_not_confirmed', lang)
@@ -48,6 +49,10 @@ export default function LoginPage() {
     <main className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
       <div className="bg-white rounded-lg shadow p-8 max-w-md w-full">
         <h1 className="text-2xl font-bold text-gray-800 mb-6">{t('login.title', lang)}</h1>
+
+        <Suspense fallback={null}>
+          <SuspendedBanner />
+        </Suspense>
 
         <form onSubmit={handleSubmit} noValidate className="space-y-4">
           <div>
