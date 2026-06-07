@@ -525,6 +525,22 @@ export const fr: Record<string, string> = {
   'admin.users.error_self_suspend':               "Vous ne pouvez pas vous suspendre vous-même.",
   'admin.users.error_forbidden':                  "Accès non autorisé.",
   'auth.suspended_banner':                        "Votre compte a été suspendu. Veuillez contacter le support pour plus d'informations.",
+  'admin.moderation.section_title':           "Modération du contenu",
+  'admin.moderation.target_not_found':        "Contenu introuvable.",
+  'admin.moderation.status_active':           "Contenu actif",
+  'admin.moderation.status_moderated':        "Contenu masqué par modération",
+  'admin.moderation.action_hide':             "Masquer ce contenu",
+  'admin.moderation.action_unhide':           "Restaurer le contenu",
+  'admin.moderation.hide_reason_label':       "Raison de la modération",
+  'admin.moderation.hide_reason_placeholder': "Décrivez la raison de la modération. Visible uniquement par les administrateurs.",
+  'admin.moderation.hide_reason_required':    "Une raison de modération est requise.",
+  'admin.moderation.moderated_at_label':      "Modéré le",
+  'admin.moderation.moderated_reason_label':  "Raison",
+  'admin.moderation.unhide_confirm':          "Restaurer ce contenu et le rendre à nouveau visible ?",
+  'admin.moderation.error_already_moderated': "Ce contenu est déjà modéré.",
+  'admin.moderation.error_not_moderated':     "Ce contenu n'est pas modéré.",
+  'admin.moderation.error_unsupported_type':  "Type de contenu non pris en charge.",
+  'admin.moderation.error_forbidden':         "Accès non autorisé.",
 
   // ─── Job missions (mes-missions, missions/[id], mes-réponses, modifier) ────────
   // Status labels — my missions page (consumer view)

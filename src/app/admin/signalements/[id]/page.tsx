@@ -5,8 +5,26 @@ import type { Lang } from '@/lib/i18n'
 import { createClient } from '@/lib/supabase/server'
 import { ClaimButton } from './ClaimButton'
 import { ResolveForm } from './ResolveForm'
+import { HideForm } from './HideForm'
+import { UnhideButton } from './UnhideButton'
+import type { ModerationTargetType } from '../actions'
 
 type Props = { params: Promise<{ id: string }> }
+
+// Report target_types that support in-place content moderation (PR-M). Shop,
+// freelancer_profile, job_post, and user targets are out of scope (PR-N+).
+const MODERATION_TABLES: Record<string, 'products' | 'service_listings'> = {
+  product: 'products',
+  service: 'service_listings',
+}
+
+type ModerationTarget = {
+  id: string
+  title: string | null
+  status: string
+  admin_hidden_at: string | null
+  admin_hidden_reason: string | null
+}
 
 type Report = {
   id: string
@@ -78,6 +96,22 @@ export default async function ReportDetailPage({ params }: Props) {
   const targetBase = TARGET_ROUTES[r.target_type]
   const targetUrl = targetBase ? `${targetBase}/${r.target_id}` : null
 
+  // Moderation target row (products/service_listings) — only for moderatable types.
+  // The SELECT policy on both tables is `using (true)`, so the admin can read the row
+  // even after it is hidden (needed to render the unhide UI). The section is gated on
+  // `moderationTable`; within it, a null moderationTarget means the row is gone.
+  const moderationTable = MODERATION_TABLES[r.target_type]
+  let moderationTarget: ModerationTarget | null = null
+  if (moderationTable) {
+    const { data: targetRow, error: targetError } = await supabase
+      .from(moderationTable)
+      .select('id, title, status, admin_hidden_at, admin_hidden_reason')
+      .eq('id', r.target_id)
+      .maybeSingle()
+    if (targetError) console.error('[admin/signalements/[id]] moderation target fetch error:', targetError)
+    moderationTarget = (targetRow as ModerationTarget | null) ?? null
+  }
+
   return (
     <div className="max-w-2xl space-y-6">
       <Link href="/admin/signalements" className="inline-block text-sm text-blue-600 hover:underline">
@@ -123,6 +157,34 @@ export default async function ReportDetailPage({ params }: Props) {
             <dd className="mt-1 text-gray-800">{formatDate(r.created_at, lang)}</dd>
           </div>
         </dl>
+
+        {moderationTable && (
+          <div className="space-y-3 border-t border-gray-100 pt-4">
+            <h2 className="text-sm font-semibold uppercase tracking-wide text-gray-500">
+              {tr('admin.moderation.section_title')}
+            </h2>
+            {moderationTarget === null ? (
+              <p className="text-sm text-gray-500">{tr('admin.moderation.target_not_found')}</p>
+            ) : moderationTarget.admin_hidden_at ? (
+              <div className="space-y-3">
+                <div className="space-y-1 rounded border border-red-200 bg-red-50 p-3">
+                  <p className="text-sm font-medium text-red-700">{tr('admin.moderation.status_moderated')}</p>
+                  <p className="text-sm text-red-800">
+                    <span className="font-medium">{tr('admin.moderation.moderated_at_label')}:</span>{' '}
+                    {formatDate(moderationTarget.admin_hidden_at, lang)}
+                  </p>
+                  <p className="text-sm text-red-800">
+                    <span className="font-medium">{tr('admin.moderation.moderated_reason_label')}:</span>{' '}
+                    {moderationTarget.admin_hidden_reason}
+                  </p>
+                </div>
+                <UnhideButton targetType={r.target_type as ModerationTargetType} targetId={r.target_id} reportId={r.id} />
+              </div>
+            ) : (
+              <HideForm targetType={r.target_type as ModerationTargetType} targetId={r.target_id} reportId={r.id} />
+            )}
+          </div>
+        )}
 
         {r.status === 'resolved' ? (
           <div className="space-y-1 rounded border border-gray-200 bg-gray-50 p-4">
