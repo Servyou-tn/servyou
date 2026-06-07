@@ -75,23 +75,19 @@ export default async function UserDetailPage({ params }: Props) {
   const u = profile as Profile
   const isSelf = me?.id === u.id
 
-  // Activity: seller links + report counts. Counts use head:true (no rows returned,
-  // just the count). Run concurrently.
-  //
-  // Order counts are intentionally OMITTED: the orders SELECT policy is
-  // buyer_id/seller_id = auth.uid() with no is_admin() disjunct, so a raw count run
-  // as the admin would silently return 0 for any user but themselves (RLS hides the
-  // rows, no error). Surfacing accurate order counts needs an "Admin reads all orders"
-  // RLS policy (a separate migration) or a SECURITY DEFINER counter like
-  // admin_overview_stats — deferred to a follow-up rather than ship wrong zeros.
-  // The two report counts are accurate: reports already has an is_admin() SELECT policy.
-  const [shopRes, freelancerRes, reportsCreated, reportsAgainst] = await Promise.all([
+  // Activity: seller links + order/report counts. Counts use head:true (no rows
+  // returned, just the count). Run concurrently. Order counts are accurate now that
+  // migration 24 ("Admin reads all orders") grants the admin SELECT on all orders;
+  // report counts rely on reports' pre-existing is_admin() SELECT policy.
+  const [shopRes, freelancerRes, ordersBuyer, ordersSeller, reportsCreated, reportsAgainst] = await Promise.all([
     u.seller_type === 'shop_owner'
       ? supabase.from('shops').select('id').eq('owner_id', u.id).maybeSingle()
       : Promise.resolve({ data: null }),
     u.seller_type === 'freelancer'
       ? supabase.from('freelancer_profiles').select('id').eq('profile_id', u.id).maybeSingle()
       : Promise.resolve({ data: null }),
+    supabase.from('orders').select('id', { count: 'exact', head: true }).eq('buyer_id', u.id),
+    supabase.from('orders').select('id', { count: 'exact', head: true }).eq('seller_id', u.id),
     supabase.from('reports').select('id', { count: 'exact', head: true }).eq('reporter_id', u.id),
     supabase.from('reports').select('id', { count: 'exact', head: true }).eq('target_type', 'user').eq('target_id', u.id),
   ])
@@ -134,7 +130,9 @@ export default async function UserDetailPage({ params }: Props) {
 
       <div className="space-y-3 rounded-lg border border-gray-200 bg-white p-6">
         <h2 className="text-sm font-semibold uppercase tracking-wide text-gray-500">{tr('admin.users.activity_section_title')}</h2>
-        <div className="grid grid-cols-2 gap-3 text-sm">
+        <div className="grid grid-cols-2 gap-3 text-sm sm:grid-cols-4">
+          <Field label={tr('admin.users.activity_orders_as_buyer')} value={String(ordersBuyer.count ?? 0)} />
+          <Field label={tr('admin.users.activity_orders_as_seller')} value={String(ordersSeller.count ?? 0)} />
           <Field label={tr('admin.users.activity_reports_created')} value={String(reportsCreated.count ?? 0)} />
           <Field label={tr('admin.users.activity_reports_against')} value={String(reportsAgainst.count ?? 0)} />
         </div>
