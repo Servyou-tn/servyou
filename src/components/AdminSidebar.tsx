@@ -18,7 +18,7 @@ export function AdminSidebar({ t }: Props) {
     { key: 'admin.nav.overview', href: '/admin' },
     { key: 'admin.nav.users' },
     { key: 'admin.nav.content' },
-    { key: 'admin.nav.reports' },
+    { key: 'admin.nav.reports', href: '/admin/signalements' },
     { key: 'admin.nav.disputes' },
     { key: 'admin.nav.statistics' },
   ]
@@ -32,7 +32,11 @@ export function AdminSidebar({ t }: Props) {
         {items.map(item => {
           const label = t(item.key)
           if (item.href) {
-            const active = pathname === item.href
+            // Overview matches its exact path only (every admin route starts with
+            // /admin); section links also highlight on their nested detail pages.
+            const active = item.href === '/admin'
+              ? pathname === '/admin'
+              : pathname === item.href || pathname.startsWith(item.href + '/')
             return (
               <Link
                 key={item.key}

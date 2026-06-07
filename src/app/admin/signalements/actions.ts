@@ -1,0 +1,68 @@
+'use server'
+
+import { revalidatePath } from 'next/cache'
+import { createClient } from '@/lib/supabase/server'
+
+export type ReportActionResult = { success: boolean; error?: string }
+
+// The admin layout's client guard does NOT protect server actions — only RLS does.
+// The reports UPDATE policy is is_admin(). For a non-admin caller (or a double-submit,
+// or an already-claimed/resolved report) the WHERE filter matches zero rows and
+// PostgREST returns { data: [], error: null } — i.e. NO error. So we .select('id')
+// after the update and treat an empty result as failure. The DB CHECK + RLS are the
+// real guards; this is the honest-result layer that prevents a misleading green UI.
+// Error values are i18n keys; the calling client component translates them.
+
+export async function claimReport(reportId: string): Promise<ReportActionResult> {
+  const supabase = await createClient()
+  const { data, error } = await supabase
+    .from('reports')
+    .update({ status: 'under_review' })
+    .eq('id', reportId)
+    .eq('status', 'open')
+    .select('id')
+
+  if (error) {
+    console.error('[admin/signalements] claimReport error:', error)
+    return { success: false, error: 'admin.reports.error_already_claimed' }
+  }
+  if (!data || data.length === 0) {
+    // RLS-blocked, already under review/resolved, or gone.
+    return { success: false, error: 'admin.reports.error_already_claimed' }
+  }
+
+  revalidatePath('/admin/signalements')
+  revalidatePath('/admin/signalements/' + reportId)
+  return { success: true }
+}
+
+export async function resolveReport(reportId: string, adminNote: string): Promise<ReportActionResult> {
+  const note = adminNote.trim()
+  if (note.length === 0) {
+    return { success: false, error: 'admin.reports.admin_note_required' }
+  }
+
+  const supabase = await createClient()
+  const { data, error } = await supabase
+    .from('reports')
+    .update({ status: 'resolved', admin_note: note })
+    .eq('id', reportId)
+    .in('status', ['open', 'under_review'])
+    .select('id')
+
+  if (error) {
+    // The DB CHECK reports_resolved_requires_admin_note is the final guard; a null
+    // note can never reach here (trimmed-empty is rejected above), but surface any
+    // other failure honestly rather than reporting a phantom success.
+    console.error('[admin/signalements] resolveReport error:', error)
+    return { success: false, error: 'admin.reports.error_not_actionable' }
+  }
+  if (!data || data.length === 0) {
+    // RLS-blocked, already resolved, or gone.
+    return { success: false, error: 'admin.reports.error_not_actionable' }
+  }
+
+  revalidatePath('/admin/signalements')
+  revalidatePath('/admin/signalements/' + reportId)
+  return { success: true }
+}
