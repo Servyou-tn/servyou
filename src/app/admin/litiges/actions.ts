@@ -17,6 +17,13 @@ const VALID_OUTCOMES: DisputeOutcome[] = ['sided_buyer', 'sided_seller', 'compro
 // requires_admin_note, disputes_outcome_only_when_resolved) + RLS are the real guards;
 // this is the honest-result layer. Error values are i18n keys; the client translates.
 
+// Audit logging (best-effort, by design) — same rationale as the reports actions
+// (src/app/admin/signalements/actions.ts). Each successful action writes a forensic
+// row via the log_admin_action RPC (migration 20260608165709). The dispute UPDATE has
+// already committed by the time we log, so the audit write is a separate Supabase
+// round-trip: a failed audit must NOT turn a succeeded action into a reported failure.
+// We surface the error to the server log per the never-swallow rule, then return success.
+
 export async function claimDispute(disputeId: string): Promise<DisputeActionResult> {
   const supabase = await createClient()
   const { data, error } = await supabase
@@ -33,6 +40,17 @@ export async function claimDispute(disputeId: string): Promise<DisputeActionResu
   if (!data || data.length === 0) {
     // RLS-blocked, already under review/closed, or gone.
     return { success: false, error: 'admin.disputes.error_claim_no_row' }
+  }
+
+  const { error: logError } = await supabase.rpc('log_admin_action', {
+    p_action: 'claim_dispute',
+    p_target_type: 'dispute',
+    p_target_id: disputeId,
+    p_before_state: { status: 'open' },
+    p_after_state: { status: 'under_review' },
+  })
+  if (logError) {
+    console.error('[admin/litiges] claimDispute audit log error:', logError)
   }
 
   revalidatePath('/admin/litiges')
@@ -75,6 +93,17 @@ export async function resolveDispute(
     return { success: false, error: 'admin.disputes.error_resolve_no_row' }
   }
 
+  const { error: logError } = await supabase.rpc('log_admin_action', {
+    p_action: 'resolve_dispute',
+    p_target_type: 'dispute',
+    p_target_id: disputeId,
+    p_after_state: { status: 'resolved', outcome },
+    p_note: note,
+  })
+  if (logError) {
+    console.error('[admin/litiges] resolveDispute audit log error:', logError)
+  }
+
   revalidatePath('/admin/litiges')
   revalidatePath('/admin/litiges/' + disputeId)
   return { success: true }
@@ -105,6 +134,17 @@ export async function dismissDispute(disputeId: string, adminNote: string): Prom
   if (!data || data.length === 0) {
     // RLS-blocked, or already in a terminal state (resolved/dismissed).
     return { success: false, error: 'admin.disputes.error_dismiss_no_row' }
+  }
+
+  const { error: logError } = await supabase.rpc('log_admin_action', {
+    p_action: 'dismiss_dispute',
+    p_target_type: 'dispute',
+    p_target_id: disputeId,
+    p_after_state: { status: 'dismissed' },
+    p_note: note,
+  })
+  if (logError) {
+    console.error('[admin/litiges] dismissDispute audit log error:', logError)
   }
 
   revalidatePath('/admin/litiges')
