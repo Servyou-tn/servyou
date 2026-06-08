@@ -89,9 +89,12 @@ export default async function ReportsQueuePage() {
             </thead>
             <tbody className="divide-y divide-gray-100">
               {rows.map(r => (
-                <tr key={r.id} className="hover:bg-gray-50">
+                <tr key={r.id} className="relative cursor-pointer hover:bg-gray-50">
                   <td className="px-4 py-3">
-                    <Link href={`/admin/signalements/${r.id}`} className="font-medium text-blue-600 hover:underline">
+                    {/* Stretched link: after:absolute after:inset-0 makes this anchor's
+                        hit area cover the whole (relative) row, so the entire row
+                        navigates while staying a real, keyboard-activatable <a>. */}
+                    <Link href={`/admin/signalements/${r.id}`} className="font-medium text-blue-600 after:absolute after:inset-0 hover:underline">
                       {nameById.get(r.reporter_id) ?? '—'}
                     </Link>
                   </td>
