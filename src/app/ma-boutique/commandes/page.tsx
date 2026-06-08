@@ -9,6 +9,7 @@ import { t } from '@/lib/i18n'
 import { DirArrow } from '@/components/DirArrow'
 import { OrderLifecycleStepper } from '@/components/OrderLifecycleStepper'
 import { CancelOrderModal } from '@/components/CancelOrderModal'
+import { OrderDisputeSection } from '@/components/OrderDisputeSection'
 import { type OrderStatus, nextStatus, isCancellable, advanceLabelKey } from '@/lib/types/order-status'
 
 type Order = {
@@ -136,6 +137,8 @@ export default function CommandesBoutiquePage() {
                       <span className="text-xs text-gray-500">{t('common.awaiting_buyer', lang)}</span>
                     )}
                   </div>
+
+                  <OrderDisputeSection orderId={o.id} status={o.status} />
                 </div>
               )
             })}

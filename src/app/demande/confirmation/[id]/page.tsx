@@ -7,6 +7,7 @@ import { DirArrow } from '@/components/DirArrow'
 import { OrderLifecycleStepper } from '@/components/OrderLifecycleStepper'
 import { ReceiptConfirmButton } from '@/components/ReceiptConfirmButton'
 import { CancelOrderModal } from '@/components/CancelOrderModal'
+import { OrderDisputeSection } from '@/components/OrderDisputeSection'
 import { canConfirmReceipt, isCancellable, type OrderStatus, type OrderType } from '@/lib/types/order-status'
 
 type Props = { params: Promise<{ id: string }> }
@@ -83,6 +84,9 @@ export default async function OrderDetailPage({ params }: Props) {
               orderType={orderType}
             />
           )}
+
+          {/* Dispute on this order — lifecycle evidence, sits with the stepper */}
+          <OrderDisputeSection orderId={order.id} status={order.status} />
 
           <div className="space-y-2 text-sm text-gray-700">
             <div><span className="font-medium text-gray-500">{t('orders.type_label', lang)}</span> {isProduct ? t('orders.type_product', lang) : t('orders.type_service', lang)}</div>
