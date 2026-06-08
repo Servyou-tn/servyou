@@ -19,7 +19,7 @@ export function AdminSidebar({ t }: Props) {
     { key: 'admin.nav.users', href: '/admin/utilisateurs' },
     { key: 'admin.nav.content' },
     { key: 'admin.nav.reports', href: '/admin/signalements' },
-    { key: 'admin.nav.disputes' },
+    { key: 'admin.nav.disputes', href: '/admin/litiges' },
     { key: 'admin.nav.statistics', href: '/admin/statistiques' },
   ]
 
