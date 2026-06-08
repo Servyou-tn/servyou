@@ -1,10 +1,10 @@
 import { fr } from './fr'
+import { ar } from './ar'
 
 export type Lang = 'fr' | 'ar'
 export const LANG_COOKIE = 'servyou_lang'
 
-// ar points to fr until Subtask 3 adds ar.ts
-const dicts: Record<Lang, Record<string, string>> = { fr, ar: fr }
+const dicts: Record<Lang, Record<string, string>> = { fr, ar }
 
 /**
  * Translate a key to the given language.

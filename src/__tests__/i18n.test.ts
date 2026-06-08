@@ -17,8 +17,8 @@ describe('t() — known keys', () => {
     expect(t('nav.logout')).toBe('Déconnexion')
   })
 
-  it('ar falls back to the French string (no ar.ts yet)', () => {
-    expect(t('nav.profile', 'ar')).toBe('Mon profil')
+  it('returns the Arabic string for a known key (ar.ts wired — PR-Q)', () => {
+    expect(t('nav.profile', 'ar')).toBe('ملفي الشخصي')
   })
 
   it('returns the correct value for a common key', () => {
@@ -39,7 +39,7 @@ describe('t() — missing keys', () => {
     expect(t('nonexistent.key', 'fr')).toBe('nonexistent.key')
   })
 
-  it('returns the raw key for ar too (no ar.ts, falls back to fr, key missing)', () => {
+  it('returns the raw key for ar too (key missing in ar.ts as well)', () => {
     expect(t('totally.unknown', 'ar')).toBe('totally.unknown')
   })
 })
