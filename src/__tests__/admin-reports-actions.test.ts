@@ -15,8 +15,12 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 
 // Mutable mock state + chainable Supabase query builder, hoisted so vi.mock can use it.
 const h = vi.hoisted(() => {
-  const state: { result: { data: unknown; error: unknown } } = {
+  const state: {
+    result: { data: unknown; error: unknown }
+    rpcResult: { data: unknown; error: unknown }
+  } = {
     result: { data: [{ id: 'r1' }], error: null },
+    rpcResult: { data: 'audit-id', error: null },
   }
   // The action chains .from().update().eq().eq()/.in().select(); only .select()
   // resolves. Every other step returns the chain.
@@ -26,12 +30,14 @@ const h = vi.hoisted(() => {
   chain.in = vi.fn(() => chain)
   chain.select = vi.fn(() => Promise.resolve(state.result))
   const from = vi.fn(() => chain)
+  // log_admin_action is invoked via supabase.rpc(...) after a successful update.
+  const rpc = vi.fn(() => Promise.resolve(state.rpcResult))
   const revalidatePath = vi.fn()
-  return { state, chain, from, revalidatePath }
+  return { state, chain, from, rpc, revalidatePath }
 })
 
 vi.mock('@/lib/supabase/server', () => ({
-  createClient: vi.fn(async () => ({ from: h.from })),
+  createClient: vi.fn(async () => ({ from: h.from, rpc: h.rpc })),
 }))
 
 vi.mock('next/cache', () => ({
@@ -42,8 +48,10 @@ import { claimReport, resolveReport, dismissReport } from '@/app/admin/signaleme
 
 beforeEach(() => {
   h.state.result = { data: [{ id: 'r1' }], error: null }
+  h.state.rpcResult = { data: 'audit-id', error: null }
   h.revalidatePath.mockClear()
   h.from.mockClear()
+  h.rpc.mockClear()
 })
 
 describe('resolveReport', () => {
@@ -72,6 +80,44 @@ describe('resolveReport', () => {
     expect(h.revalidatePath).toHaveBeenCalledWith('/admin/signalements')
     expect(h.revalidatePath).toHaveBeenCalledWith('/admin/signalements/r1')
   })
+
+  it('writes a resolve_report audit log entry with the note on success', async () => {
+    h.state.result = { data: [{ id: 'r1' }], error: null }
+    await resolveReport('r1', 'Spam confirmé.')
+    expect(h.rpc).toHaveBeenCalledWith('log_admin_action', {
+      p_action: 'resolve_report',
+      p_target_type: 'report',
+      p_target_id: 'r1',
+      p_after_state: { status: 'resolved' },
+      p_note: 'Spam confirmé.',
+    })
+  })
+
+  // The genuinely new behavioral contract: report actions are bare UPDATEs that
+  // have already committed before the (separate-round-trip) audit log runs, so a
+  // failed audit write must NOT downgrade a succeeded action to a failure. This
+  // is the assertion the happy-path mocks can't make for us.
+  it('still returns success when the audit log RPC fails (best-effort logging)', async () => {
+    h.state.result = { data: [{ id: 'r1' }], error: null }
+    h.state.rpcResult = { data: null, error: { message: 'audit insert failed' } }
+    const res = await resolveReport('r1', 'Spam confirmé.')
+    expect(res).toEqual({ success: true })
+  })
+
+  // Sibling of the above for the OTHER failure shape: a transport-level throw
+  // (network down) instead of a returned { error }. Without the try/catch this
+  // would propagate past the `if (logError)` check and downgrade a succeeded,
+  // already-committed action to a thrown failure. One action proves the wrapper;
+  // the try/catch is the same shape across all six.
+  it('still returns success when the audit log RPC throws at the transport level', async () => {
+    h.state.result = { data: [{ id: 'r1' }], error: null }
+    h.rpc.mockRejectedValueOnce(new Error('network down'))
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+    const res = await resolveReport('r1', 'Spam confirmé.')
+    expect(res).toEqual({ success: true })
+    expect(errorSpy).toHaveBeenCalled()
+    errorSpy.mockRestore()
+  })
 })
 
 describe('claimReport', () => {
@@ -87,6 +133,18 @@ describe('claimReport', () => {
     expect(res).toEqual({ success: true })
     expect(h.revalidatePath).toHaveBeenCalledWith('/admin/signalements')
     expect(h.revalidatePath).toHaveBeenCalledWith('/admin/signalements/r1')
+  })
+
+  it('writes a claim_report audit log entry on success', async () => {
+    h.state.result = { data: [{ id: 'r1' }], error: null }
+    await claimReport('r1')
+    expect(h.rpc).toHaveBeenCalledWith('log_admin_action', {
+      p_action: 'claim_report',
+      p_target_type: 'report',
+      p_target_id: 'r1',
+      p_before_state: { status: 'open' },
+      p_after_state: { status: 'under_review' },
+    })
   })
 })
 
@@ -115,5 +173,17 @@ describe('dismissReport', () => {
     expect(res).toEqual({ success: true })
     expect(h.revalidatePath).toHaveBeenCalledWith('/admin/signalements')
     expect(h.revalidatePath).toHaveBeenCalledWith('/admin/signalements/r1')
+  })
+
+  it('writes a dismiss_report audit log entry with the note on success', async () => {
+    h.state.result = { data: [{ id: 'r1' }], error: null }
+    await dismissReport('r1', 'Signalement infondé, aucune action.')
+    expect(h.rpc).toHaveBeenCalledWith('log_admin_action', {
+      p_action: 'dismiss_report',
+      p_target_type: 'report',
+      p_target_id: 'r1',
+      p_after_state: { status: 'dismissed' },
+      p_note: 'Signalement infondé, aucune action.',
+    })
   })
 })

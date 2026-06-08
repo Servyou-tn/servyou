@@ -18,8 +18,12 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 
 // Mutable mock state + chainable Supabase query builder, hoisted so vi.mock can use it.
 const h = vi.hoisted(() => {
-  const state: { result: { data: unknown; error: unknown } } = {
+  const state: {
+    result: { data: unknown; error: unknown }
+    rpcResult: { data: unknown; error: unknown }
+  } = {
     result: { data: [{ id: 'd1' }], error: null },
+    rpcResult: { data: 'audit-id', error: null },
   }
   // The action chains .from().update().eq().eq()/.in().select(); only .select() resolves.
   const chain: Record<string, unknown> = {}
@@ -28,12 +32,14 @@ const h = vi.hoisted(() => {
   chain.in = vi.fn(() => chain)
   chain.select = vi.fn(() => Promise.resolve(state.result))
   const from = vi.fn(() => chain)
+  // log_admin_action is invoked via supabase.rpc(...) after a successful update.
+  const rpc = vi.fn(() => Promise.resolve(state.rpcResult))
   const revalidatePath = vi.fn()
-  return { state, chain, from, revalidatePath }
+  return { state, chain, from, rpc, revalidatePath }
 })
 
 vi.mock('@/lib/supabase/server', () => ({
-  createClient: vi.fn(async () => ({ from: h.from })),
+  createClient: vi.fn(async () => ({ from: h.from, rpc: h.rpc })),
 }))
 
 vi.mock('next/cache', () => ({
@@ -44,8 +50,10 @@ import { claimDispute, resolveDispute, dismissDispute } from '@/app/admin/litige
 
 beforeEach(() => {
   h.state.result = { data: [{ id: 'd1' }], error: null }
+  h.state.rpcResult = { data: 'audit-id', error: null }
   h.revalidatePath.mockClear()
   h.from.mockClear()
+  h.rpc.mockClear()
 })
 
 describe('claimDispute', () => {
@@ -61,6 +69,18 @@ describe('claimDispute', () => {
     expect(res).toEqual({ success: true })
     expect(h.revalidatePath).toHaveBeenCalledWith('/admin/litiges')
     expect(h.revalidatePath).toHaveBeenCalledWith('/admin/litiges/d1')
+  })
+
+  it('writes a claim_dispute audit log entry on success', async () => {
+    h.state.result = { data: [{ id: 'd1' }], error: null }
+    await claimDispute('d1')
+    expect(h.rpc).toHaveBeenCalledWith('log_admin_action', {
+      p_action: 'claim_dispute',
+      p_target_type: 'dispute',
+      p_target_id: 'd1',
+      p_before_state: { status: 'open' },
+      p_after_state: { status: 'under_review' },
+    })
   })
 })
 
@@ -102,6 +122,18 @@ describe('resolveDispute', () => {
     expect(h.revalidatePath).toHaveBeenCalledWith('/admin/litiges')
     expect(h.revalidatePath).toHaveBeenCalledWith('/admin/litiges/d1')
   })
+
+  it('writes a resolve_dispute audit log entry with the outcome + note on success', async () => {
+    h.state.result = { data: [{ id: 'd1' }], error: null }
+    await resolveDispute('d1', 'sided_seller', 'Preuve de livraison fournie.')
+    expect(h.rpc).toHaveBeenCalledWith('log_admin_action', {
+      p_action: 'resolve_dispute',
+      p_target_type: 'dispute',
+      p_target_id: 'd1',
+      p_after_state: { status: 'resolved', outcome: 'sided_seller' },
+      p_note: 'Preuve de livraison fournie.',
+    })
+  })
 })
 
 describe('dismissDispute', () => {
@@ -129,5 +161,17 @@ describe('dismissDispute', () => {
     expect(res).toEqual({ success: true })
     expect(h.revalidatePath).toHaveBeenCalledWith('/admin/litiges')
     expect(h.revalidatePath).toHaveBeenCalledWith('/admin/litiges/d1')
+  })
+
+  it('writes a dismiss_dispute audit log entry with the note on success', async () => {
+    h.state.result = { data: [{ id: 'd1' }], error: null }
+    await dismissDispute('d1', 'Litige infondé, aucune action prise.')
+    expect(h.rpc).toHaveBeenCalledWith('log_admin_action', {
+      p_action: 'dismiss_dispute',
+      p_target_type: 'dispute',
+      p_target_id: 'd1',
+      p_after_state: { status: 'dismissed' },
+      p_note: 'Litige infondé, aucune action prise.',
+    })
   })
 })
