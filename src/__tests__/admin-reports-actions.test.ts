@@ -38,11 +38,12 @@ vi.mock('next/cache', () => ({
   revalidatePath: h.revalidatePath,
 }))
 
-import { claimReport, resolveReport } from '@/app/admin/signalements/actions'
+import { claimReport, resolveReport, dismissReport } from '@/app/admin/signalements/actions'
 
 beforeEach(() => {
   h.state.result = { data: [{ id: 'r1' }], error: null }
   h.revalidatePath.mockClear()
+  h.from.mockClear()
 })
 
 describe('resolveReport', () => {
@@ -83,6 +84,34 @@ describe('claimReport', () => {
   it('succeeds and revalidates when a row is updated', async () => {
     h.state.result = { data: [{ id: 'r1' }], error: null }
     const res = await claimReport('r1')
+    expect(res).toEqual({ success: true })
+    expect(h.revalidatePath).toHaveBeenCalledWith('/admin/signalements')
+    expect(h.revalidatePath).toHaveBeenCalledWith('/admin/signalements/r1')
+  })
+})
+
+describe('dismissReport', () => {
+  it('rejects an empty admin_note without touching the database', async () => {
+    const res = await dismissReport('r1', '')
+    expect(res).toEqual({ success: false, error: 'admin.reports.dismiss_note_required' })
+    expect(h.from).not.toHaveBeenCalled()
+  })
+
+  it('rejects a whitespace-only admin_note', async () => {
+    const res = await dismissReport('r1', '   \n\t  ')
+    expect(res).toEqual({ success: false, error: 'admin.reports.dismiss_note_required' })
+    expect(h.from).not.toHaveBeenCalled()
+  })
+
+  it('returns the no-row error when the report is already terminal (resolved/dismissed)', async () => {
+    h.state.result = { data: [], error: null }
+    const res = await dismissReport('r1', 'Signalement infondé.')
+    expect(res).toEqual({ success: false, error: 'admin.reports.error_dismiss_no_row' })
+  })
+
+  it('succeeds and revalidates when a row is updated', async () => {
+    h.state.result = { data: [{ id: 'r1' }], error: null }
+    const res = await dismissReport('r1', 'Signalement infondé, aucune action.')
     expect(res).toEqual({ success: true })
     expect(h.revalidatePath).toHaveBeenCalledWith('/admin/signalements')
     expect(h.revalidatePath).toHaveBeenCalledWith('/admin/signalements/r1')

@@ -131,3 +131,36 @@ export async function resolveReport(reportId: string, adminNote: string): Promis
   revalidatePath('/admin/signalements/' + reportId)
   return { success: true }
 }
+
+// Dismiss = terminal close with NO action against the target (the report was invalid
+// or spurious). Mirrors resolveReport exactly: same admin_note requirement (the DB
+// CHECK reports_terminal_requires_admin_note backs it), same RLS (is_admin UPDATE
+// policy) + rowcount-honest guard. updated_at is bumped by reports_set_updated_at;
+// there is no resolved_at column.
+export async function dismissReport(reportId: string, adminNote: string): Promise<ReportActionResult> {
+  const note = adminNote.trim()
+  if (note.length === 0) {
+    return { success: false, error: 'admin.reports.dismiss_note_required' }
+  }
+
+  const supabase = await createClient()
+  const { data, error } = await supabase
+    .from('reports')
+    .update({ status: 'dismissed', admin_note: note })
+    .eq('id', reportId)
+    .in('status', ['open', 'under_review'])
+    .select('id')
+
+  if (error) {
+    console.error('[admin/signalements] dismissReport error:', error)
+    return { success: false, error: 'admin.reports.error_dismiss_no_row' }
+  }
+  if (!data || data.length === 0) {
+    // RLS-blocked, or already in a terminal state (resolved/dismissed).
+    return { success: false, error: 'admin.reports.error_dismiss_no_row' }
+  }
+
+  revalidatePath('/admin/signalements')
+  revalidatePath('/admin/signalements/' + reportId)
+  return { success: true }
+}
