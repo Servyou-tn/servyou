@@ -44,6 +44,13 @@ export default async function AdminOverviewPage() {
           const value = raw != null ? String(raw) : undefined
           return <AdminMetricCard key={key} label={t(key, lang)} value={value} />
         })}
+        {/* pending_disputes is rendered explicitly (not via METRIC_KEYS): its label
+            key lives under admin.overview.*, while the map derives RPC columns from
+            the admin.metrics.* prefix. Reads the 9th RPC column from the same row. */}
+        <AdminMetricCard
+          label={t('admin.overview.pending_disputes', lang)}
+          value={stats?.pending_disputes != null ? String(stats.pending_disputes) : undefined}
+        />
       </div>
     </div>
   )
