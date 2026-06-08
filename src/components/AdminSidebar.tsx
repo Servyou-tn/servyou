@@ -20,7 +20,7 @@ export function AdminSidebar({ t }: Props) {
     { key: 'admin.nav.content' },
     { key: 'admin.nav.reports', href: '/admin/signalements' },
     { key: 'admin.nav.disputes' },
-    { key: 'admin.nav.statistics' },
+    { key: 'admin.nav.statistics', href: '/admin/statistiques' },
   ]
 
   return (
