@@ -1,5 +1,82 @@
 # Operations — Servyou
 
+## RLS smoke test (`npm run rls-smoke`)
+
+Programmatic verification that the critical Row-Level Security policies actually hold,
+run against **production Supabase**. The server-action unit tests mock the Supabase
+client, so they never exercise real RLS; this script does — it creates three ephemeral
+users, signs in as each with a real authenticated client, and asserts the privacy and
+visibility boundaries, then cleans up.
+
+```
+npm run rls-smoke
+```
+
+Requires `.env.local` with `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`,
+and `SUPABASE_SERVICE_ROLE_KEY` (loaded via `node --env-file`). The service-role key is
+used **only** for fixture setup and teardown; the assertions themselves run through
+per-user authenticated clients. **Pass** = all assertions green, exit 0. **Fail** = the
+failing assertions are listed, exit 1.
+
+### MVP coverage (PR-U)
+
+Highest-risk paths, each "deny" paired with a positive control on the same row:
+
+- **profiles** — `public_profiles` exposes name/city but hides phone/email/date_of_birth
+  (the invariant CLAUDE.md states twice); base `profiles` rows of other users are not
+  readable; `get_contact_phone` reveals the number only with a relationship.
+- **reports** — reporter sees own; non-reporter non-admin does not; admin sees all.
+- **disputes** — buyer and seller parties see; non-party non-admin does not; admin sees all.
+- **admin_audit_log** — non-admin can neither write (via `log_admin_action`) nor read;
+  admin can do both.
+- **moderation** — `admin_hide_content` sets the admin marker (`status='hidden'` +
+  `admin_hidden_at`); the moderation-lock triggers then block a non-admin owner from
+  overriding it: `enforce_admin_moderation_lock_products` (a seller can't clear the
+  marker or flip status back to `active` on products an admin moderated) and
+  `enforce_admin_marker_lock` (a non-admin owner can't set `shops.admin_hidden_at`).
+
+Each new RLS-touching PR should add coverage here (PR-U1, U2… expand to the remaining
+tables).
+
+### Public catalog tables are world-readable by design — hiding is APP-layer, not RLS
+
+`products` and `shops` have a SELECT policy of `USING (true)` — the public catalog is
+intentionally readable by everyone. Hiding a listing (seller-hide via `status`, or admin
+moderation via `admin_hidden_at`) is **not** enforced by RLS on the read path; it is
+enforced at the **application layer** by the cascade filtering shipped in PR-N (public
+surfaces query `status='active'` and `admin_hidden_at IS NULL`). The DB-layer guarantee
+is narrower and is what the smoke test asserts: an admin can set the marker, and a
+non-admin owner **cannot override or clear it** (the moderation-lock triggers above).
+
+Do **not** add an RLS assertion of the form "a hidden product/shop is invisible to the
+public" — it will fail, because RLS returns the row and the app does the filtering. (PR-U's
+first run included exactly that false-premise assertion; it was swapped for the
+override-lock test. Documented here so it isn't reintroduced.)
+
+### Note on the audit-log write (design intent preserved)
+
+To exercise the `admin_audit_log` RLS at all, the script writes a couple of **ephemeral**
+rows to that table (the admin-write assertion + the moderation action), then removes them
+via the service role. The "immutable audit log" design — no UPDATE, no DELETE policy — is
+a **user/app-facing** invariant and stays fully intact: no application code path can ever
+delete an audit row. The narrow service-role cleanup is scoped strictly by the
+script-generated test-user ids created in the same run (`admin_id IN (test_user_ids)`),
+never by an action/target pattern, so it can never touch a real forensic row.
+
+### Manual cleanup (if the script crashes mid-run)
+
+The test users use deterministic emails (`alice@rls-smoke.servyou.invalid`, etc.). The
+script self-cleans, and also re-runs cleanup on a fatal error — but if it is killed
+hard, clean up manually. **Order matters**: delete the audit-log rows *before* the users.
+`admin_audit_log.admin_id → profiles` is `ON DELETE RESTRICT`, so deleting the users first
+fails for the admin test user (charlie) while their audit rows still reference them:
+
+```sql
+DELETE FROM admin_audit_log
+ WHERE admin_id IN (SELECT id FROM auth.users WHERE email LIKE '%@rls-smoke.servyou.invalid');
+DELETE FROM auth.users WHERE email LIKE '%@rls-smoke.servyou.invalid';
+```
+
 ## Sentry (error monitoring)
 
 Sentry is wired into the app but **inert until env vars are set** — the SDK init is
