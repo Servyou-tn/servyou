@@ -63,6 +63,7 @@ export default async function MissionsPage({ searchParams }: { searchParams: Sea
       job_responses(id)
     `)
     .eq('status', 'open')
+    .is('admin_hidden_at', null) // drop admin-moderated job posts from the public board
     .gte('created_at', cutoff)
     .order('created_at', { ascending: false })
 

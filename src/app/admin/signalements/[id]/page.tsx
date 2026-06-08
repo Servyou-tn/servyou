@@ -11,17 +11,20 @@ import type { ModerationTargetType } from '../actions'
 
 type Props = { params: Promise<{ id: string }> }
 
-// Report target_types that support in-place content moderation (PR-M). Shop,
-// freelancer_profile, job_post, and user targets are out of scope (PR-N+).
-const MODERATION_TABLES: Record<string, 'products' | 'service_listings'> = {
+// Report target_types that support in-place content moderation. products/service_listings
+// (PR-M) carry a status='hidden' seller feature; shops/freelancer_profiles/job_posts (PR-N)
+// have no status column, so the moderation marker is the sole signal. The section only ever
+// reads the three shared columns below, so a uniform fetch works across all five tables.
+const MODERATION_TABLES: Record<string, string> = {
   product: 'products',
   service: 'service_listings',
+  shop: 'shops',
+  freelancer_profile: 'freelancer_profiles',
+  job_post: 'job_posts',
 }
 
 type ModerationTarget = {
   id: string
-  title: string | null
-  status: string
   admin_hidden_at: string | null
   admin_hidden_reason: string | null
 }
@@ -96,16 +99,18 @@ export default async function ReportDetailPage({ params }: Props) {
   const targetBase = TARGET_ROUTES[r.target_type]
   const targetUrl = targetBase ? `${targetBase}/${r.target_id}` : null
 
-  // Moderation target row (products/service_listings) — only for moderatable types.
-  // The SELECT policy on both tables is `using (true)`, so the admin can read the row
-  // even after it is hidden (needed to render the unhide UI). The section is gated on
-  // `moderationTable`; within it, a null moderationTarget means the row is gone.
+  // Moderation target row — only for moderatable target_types. The admin can read the
+  // row even after it is hidden so the unhide UI renders: products/service_listings/
+  // shops/freelancer_profiles are SELECT `using (true)`; job_posts gets the dedicated
+  // "Admin reads all job_posts" policy (migration 27) so non-open posts are readable too.
+  // The section is gated on `moderationTable`; within it, a null moderationTarget means
+  // the row is gone.
   const moderationTable = MODERATION_TABLES[r.target_type]
   let moderationTarget: ModerationTarget | null = null
   if (moderationTable) {
     const { data: targetRow, error: targetError } = await supabase
       .from(moderationTable)
-      .select('id, title, status, admin_hidden_at, admin_hidden_reason')
+      .select('id, admin_hidden_at, admin_hidden_reason')
       .eq('id', r.target_id)
       .maybeSingle()
     if (targetError) console.error('[admin/signalements/[id]] moderation target fetch error:', targetError)

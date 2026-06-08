@@ -43,7 +43,7 @@ export async function claimReport(reportId: string): Promise<ReportActionResult>
 // unlike the bare-UPDATE report actions above). We translate the function's RAISE
 // messages to friendly i18n keys; the calling client component renders them.
 
-export type ModerationTargetType = 'product' | 'service'
+export type ModerationTargetType = 'product' | 'service' | 'shop' | 'freelancer_profile' | 'job_post'
 
 function translateModerationError(message: string): string {
   if (message.includes('Forbidden')) return 'admin.moderation.error_forbidden'
