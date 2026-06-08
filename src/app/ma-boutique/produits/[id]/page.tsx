@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/client'
 import { useLang } from '@/components/LangProvider'
 import { t } from '@/lib/i18n'
 import { DirArrow } from '@/components/DirArrow'
+import { ModerationBanner } from '@/components/ModerationBanner'
 
 type Category = { id: string; name_fr: string }
 
@@ -19,6 +20,7 @@ export default function EditProduitPage() {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const [categories, setCategories] = useState<Category[]>([])
+  const [adminHidden, setAdminHidden] = useState(false)
 
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
@@ -43,7 +45,7 @@ export default function EditProduitPage() {
 
       const { data: product } = await supabase
         .from('products')
-        .select('id, title, description, price_tnd, category_id, status, tracks_stock, stock_count, shop_id')
+        .select('id, title, description, price_tnd, category_id, status, tracks_stock, stock_count, shop_id, admin_hidden_at')
         .eq('id', id)
         .single()
 
@@ -59,6 +61,7 @@ export default function EditProduitPage() {
       setStatus(product.status)
       setTracksStock(product.tracks_stock)
       setStockCount(product.stock_count != null ? String(product.stock_count) : '')
+      setAdminHidden(product.admin_hidden_at != null)
 
       const { data: cats } = await supabase
         .from('categories').select('id, name_fr').order('name_fr')
@@ -110,6 +113,7 @@ export default function EditProduitPage() {
   return (
     <main className="min-h-screen flex items-start justify-center bg-gray-50 px-4 py-12">
       <div className="bg-white rounded-lg shadow p-8 max-w-lg w-full">
+        {adminHidden && <ModerationBanner variant="product" />}
         <h1 className="text-2xl font-bold text-gray-800 mb-6">{t('product.edit_title', lang)}</h1>
 
         <form onSubmit={handleSubmit} noValidate className="space-y-4">

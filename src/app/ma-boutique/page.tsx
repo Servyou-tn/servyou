@@ -7,6 +7,7 @@ import { createClient } from '@/lib/supabase/client'
 import { useLang } from '@/components/LangProvider'
 import { t } from '@/lib/i18n'
 import { DirArrow } from '@/components/DirArrow'
+import { ModerationBanner } from '@/components/ModerationBanner'
 
 type Shop = {
   id: string
@@ -15,6 +16,7 @@ type Shop = {
   city: string
   logo_url: string | null
   banner_url: string | null
+  admin_hidden_at: string | null
 }
 
 export default function MaBoutiquePage() {
@@ -43,7 +45,7 @@ export default function MaBoutiquePage() {
 
       const { data: shopData } = await supabase
         .from('shops')
-        .select('id, name, description, city, logo_url, banner_url')
+        .select('id, name, description, city, logo_url, banner_url, admin_hidden_at')
         .eq('owner_id', user.id)
         .maybeSingle()
 
@@ -66,6 +68,7 @@ export default function MaBoutiquePage() {
   return (
     <main className="min-h-screen flex items-start justify-center bg-gray-50 px-4 py-12">
       <div className="bg-white rounded-lg shadow p-8 max-w-md w-full">
+        {shop!.admin_hidden_at && <ModerationBanner variant="shop" />}
         <div className="flex items-center gap-3 mb-1">
           {shop!.logo_url && (
             <img src={shop!.logo_url} alt={shop!.name} className="h-12 w-12 rounded object-cover" />

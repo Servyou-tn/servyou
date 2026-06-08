@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/client'
 import { useLang } from '@/components/LangProvider'
 import { t } from '@/lib/i18n'
 import { DirArrow } from '@/components/DirArrow'
+import { ModerationBanner } from '@/components/ModerationBanner'
 
 type Category = { id: string; name_fr: string }
 
@@ -20,6 +21,7 @@ export default function ModifierMissionPage() {
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
   const [categories, setCategories] = useState<Category[]>([])
+  const [adminHidden, setAdminHidden] = useState(false)
 
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
@@ -53,6 +55,7 @@ export default function ModifierMissionPage() {
       setCity(post.city ?? '')
       setIsRemote(post.is_remote ?? false)
       setDeadline(post.deadline ?? '')
+      setAdminHidden(post.admin_hidden_at != null)
       setCategories((cats as Category[]) ?? [])
 
       const { data: existingSkills } = await supabase
@@ -136,6 +139,7 @@ export default function ModifierMissionPage() {
   return (
     <main className="min-h-screen bg-gray-50 px-4 py-10">
       <div className="max-w-xl mx-auto">
+        {adminHidden && <ModerationBanner variant="job_post" />}
         <h1 className="text-2xl font-bold text-gray-800 mb-6">{t('job.edit_title', lang)}</h1>
 
         <form onSubmit={handleSubmit} noValidate className="bg-white rounded-lg shadow p-6 space-y-5">
