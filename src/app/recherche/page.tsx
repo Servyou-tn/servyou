@@ -36,15 +36,18 @@ export default async function RecherchePage({ searchParams }: Props) {
 
   const [{ data: products }, { data: services }] = await Promise.all([
     supabase.from('products')
-      .select('id, title, price_tnd, shops(name, city)')
+      // !inner + admin_hidden_at IS NULL drops products of admin-moderated shops.
+      .select('id, title, price_tnd, shops!inner(name, city)')
       .eq('status', 'active')
       .ilike('title', pattern)
+      .is('shops.admin_hidden_at', null)
       .order('created_at', { ascending: false })
       .limit(20),
     supabase.from('service_listings')
-      .select('id, title, starting_price_tnd, freelancer_profiles(city, profiles:public_profiles(full_name))')
+      .select('id, title, starting_price_tnd, freelancer_profiles!inner(city, profiles:public_profiles(full_name))')
       .eq('status', 'active')
       .ilike('title', pattern)
+      .is('freelancer_profiles.admin_hidden_at', null)
       .order('created_at', { ascending: false })
       .limit(20),
   ])

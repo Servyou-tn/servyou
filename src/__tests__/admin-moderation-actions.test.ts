@@ -90,3 +90,42 @@ describe('unhideContent', () => {
     expect(h.revalidatePath).toHaveBeenCalledWith('/admin/signalements/r1')
   })
 })
+
+// PR-N: the three new target types share the same action code path; only the union
+// widened and the DB dispatches on target_type. These confirm the widened types reach
+// the RPC and that the new branches' RAISE messages still map via substring.
+describe('moderation of shops, freelancer profiles, and job posts (PR-N)', () => {
+  const cases = [
+    { type: 'shop', alreadyMsg: 'Shop not found or already moderated', notMsg: 'Shop not found or not currently moderated' },
+    { type: 'freelancer_profile', alreadyMsg: 'Freelancer profile not found or already moderated', notMsg: 'Freelancer profile not found or not currently moderated' },
+    { type: 'job_post', alreadyMsg: 'Job post not found or already moderated', notMsg: 'Job post not found or not currently moderated' },
+  ] as const
+
+  for (const c of cases) {
+    it(`hideContent(${c.type}) succeeds and calls admin_hide_content with the target_type`, async () => {
+      h.state.result = { data: null, error: null }
+      const res = await hideContent(c.type, 'tid', 'Raison valide.', 'r1')
+      expect(res).toEqual({ success: true })
+      expect(h.rpc).toHaveBeenCalledWith('admin_hide_content', { target_type: c.type, target_id: 'tid', reason: 'Raison valide.' })
+    })
+
+    it(`unhideContent(${c.type}) succeeds and calls admin_unhide_content with the target_type`, async () => {
+      h.state.result = { data: null, error: null }
+      const res = await unhideContent(c.type, 'tid', 'r1')
+      expect(res).toEqual({ success: true })
+      expect(h.rpc).toHaveBeenCalledWith('admin_unhide_content', { target_type: c.type, target_id: 'tid' })
+    })
+
+    it(`hideContent(${c.type}) maps its already-moderated RAISE to error_already_moderated`, async () => {
+      h.state.result = { data: null, error: { message: c.alreadyMsg } }
+      const res = await hideContent(c.type, 'tid', 'Raison.', 'r1')
+      expect(res).toEqual({ success: false, error: 'admin.moderation.error_already_moderated' })
+    })
+
+    it(`unhideContent(${c.type}) maps its not-moderated RAISE to error_not_moderated`, async () => {
+      h.state.result = { data: null, error: { message: c.notMsg } }
+      const res = await unhideContent(c.type, 'tid', 'r1')
+      expect(res).toEqual({ success: false, error: 'admin.moderation.error_not_moderated' })
+    })
+  }
+})

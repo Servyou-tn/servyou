@@ -23,6 +23,7 @@ export default async function PublicFreelancerPage({ params }: Props) {
       profiles:public_profiles(full_name)
     `)
     .eq('id', id)
+    .is('admin_hidden_at', null) // hide admin-moderated freelancer profiles from the public detail page
     .single()
   if (fpError) console.error('[freelance/[id]] profile fetch error:', fpError)
 

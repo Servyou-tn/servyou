@@ -25,6 +25,7 @@ export default async function PublicShopPage({ params }: Props) {
       profiles:public_profiles(full_name)
     `)
     .eq('id', id)
+    .is('admin_hidden_at', null) // hide admin-moderated shops from the public detail page
     .single()
   if (shopError) console.error('[boutique/[id]] shop fetch error:', shopError)
 

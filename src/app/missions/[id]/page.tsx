@@ -24,6 +24,7 @@ export default async function MissionDetailPage({ params }: Props) {
       job_post_skills(skill)
     `)
     .eq('id', id)
+    .is('admin_hidden_at', null) // hide admin-moderated job posts from the public detail page
     .single()
 
   if (!post || post.status === 'deleted') {
