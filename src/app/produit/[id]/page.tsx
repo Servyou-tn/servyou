@@ -14,9 +14,12 @@ export default async function ProduitPage({ params }: Props) {
 
   const { data: product } = await supabase
     .from('products')
-    .select('id, title, description, price_tnd, tracks_stock, stock_count, status, categories(name_fr), shops(id, name, city, owner_id)')
+    // shops!inner + admin_hidden_at IS NULL: a product whose shop is admin-moderated
+    // returns no row, so this detail page 404s (cascade moderation, PR-N commit 4).
+    .select('id, title, description, price_tnd, tracks_stock, stock_count, status, categories(name_fr), shops!inner(id, name, city, owner_id)')
     .eq('id', id)
     .eq('status', 'active')
+    .is('shops.admin_hidden_at', null)
     .single()
 
   if (!product) {

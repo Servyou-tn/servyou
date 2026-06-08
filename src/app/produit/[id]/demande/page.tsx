@@ -33,9 +33,12 @@ export default function DemandeAchatPage() {
 
       const [{ data: product }, { data: profile }] = await Promise.all([
         supabase.from('products')
-          .select('id, title, status, shops(owner_id)')
+          // Cascade moderation: block the order flow for products of admin-moderated
+          // shops (product → null → redirect to '/'), not just the detail page.
+          .select('id, title, status, shops!inner(owner_id)')
           .eq('id', id)
           .eq('status', 'active')
+          .is('shops.admin_hidden_at', null)
           .single(),
         supabase.from('profiles')
           .select('full_name, phone')

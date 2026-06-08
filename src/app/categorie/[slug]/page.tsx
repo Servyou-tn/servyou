@@ -30,14 +30,17 @@ export default async function CategoriePage({ params }: Props) {
 
   const [{ data: products }, { data: services }] = await Promise.all([
     supabase.from('products')
-      .select('id, title, price_tnd, shops(name, city)')
+      // !inner + admin_hidden_at IS NULL drops products of admin-moderated shops.
+      .select('id, title, price_tnd, shops!inner(name, city)')
       .eq('status', 'active')
       .eq('category_id', category.id)
+      .is('shops.admin_hidden_at', null)
       .order('created_at', { ascending: false }),
     supabase.from('service_listings')
-      .select('id, title, starting_price_tnd, freelancer_profiles(city, profiles:public_profiles(full_name))')
+      .select('id, title, starting_price_tnd, freelancer_profiles!inner(city, profiles:public_profiles(full_name))')
       .eq('status', 'active')
       .eq('category_id', category.id)
+      .is('freelancer_profiles.admin_hidden_at', null)
       .order('created_at', { ascending: false }),
   ])
 

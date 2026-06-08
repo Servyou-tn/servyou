@@ -19,13 +19,16 @@ export default async function HomePage() {
   const [{ data: categories }, { data: recentProducts }, { data: recentServices }] = await Promise.all([
     supabase.from('categories').select('id, name_fr, slug').order('name_fr'),
     supabase.from('products')
-      .select('id, title, price_tnd, shops(name, city)')
+      // !inner + admin_hidden_at IS NULL drops products of admin-moderated shops.
+      .select('id, title, price_tnd, shops!inner(name, city)')
       .eq('status', 'active')
+      .is('shops.admin_hidden_at', null)
       .order('created_at', { ascending: false })
       .limit(8),
     supabase.from('service_listings')
-      .select('id, title, starting_price_tnd, freelancer_profiles(city, profiles:public_profiles(full_name))')
+      .select('id, title, starting_price_tnd, freelancer_profiles!inner(city, profiles:public_profiles(full_name))')
       .eq('status', 'active')
+      .is('freelancer_profiles.admin_hidden_at', null)
       .order('created_at', { ascending: false })
       .limit(8),
   ])

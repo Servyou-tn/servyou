@@ -14,9 +14,12 @@ export default async function ServicePage({ params }: Props) {
 
   const { data: service } = await supabase
     .from('service_listings')
-    .select('id, title, description, starting_price_tnd, delivery_time, status, categories(name_fr), freelancer_profiles(id, city, profiles:public_profiles(full_name))')
+    // freelancer_profiles!inner + admin_hidden_at IS NULL: a service whose freelancer is
+    // admin-moderated returns no row, so this detail page 404s (cascade moderation).
+    .select('id, title, description, starting_price_tnd, delivery_time, status, categories(name_fr), freelancer_profiles!inner(id, city, profiles:public_profiles(full_name))')
     .eq('id', id)
     .eq('status', 'active')
+    .is('freelancer_profiles.admin_hidden_at', null)
     .single()
 
   if (!service) {

@@ -31,9 +31,12 @@ export default function DemandeServicePage() {
 
       const { data: service } = await supabase
         .from('service_listings')
-        .select('id, title, status, freelancer_profiles(profile_id)')
+        // Cascade moderation: block the request flow for services of admin-moderated
+        // freelancers (service → null → redirect to '/'), not just the detail page.
+        .select('id, title, status, freelancer_profiles!inner(profile_id)')
         .eq('id', id)
         .eq('status', 'active')
+        .is('freelancer_profiles.admin_hidden_at', null)
         .single()
 
       if (!service) { router.replace('/'); return }
