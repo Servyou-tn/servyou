@@ -42,14 +42,18 @@ export async function claimDispute(disputeId: string): Promise<DisputeActionResu
     return { success: false, error: 'admin.disputes.error_claim_no_row' }
   }
 
-  const { error: logError } = await supabase.rpc('log_admin_action', {
-    p_action: 'claim_dispute',
-    p_target_type: 'dispute',
-    p_target_id: disputeId,
-    p_before_state: { status: 'open' },
-    p_after_state: { status: 'under_review' },
-  })
-  if (logError) {
+  try {
+    const { error: logError } = await supabase.rpc('log_admin_action', {
+      p_action: 'claim_dispute',
+      p_target_type: 'dispute',
+      p_target_id: disputeId,
+      p_before_state: { status: 'open' },
+      p_after_state: { status: 'under_review' },
+    })
+    if (logError) {
+      console.error('[admin/litiges] claimDispute audit log error:', logError)
+    }
+  } catch (logError) {
     console.error('[admin/litiges] claimDispute audit log error:', logError)
   }
 
@@ -93,14 +97,18 @@ export async function resolveDispute(
     return { success: false, error: 'admin.disputes.error_resolve_no_row' }
   }
 
-  const { error: logError } = await supabase.rpc('log_admin_action', {
-    p_action: 'resolve_dispute',
-    p_target_type: 'dispute',
-    p_target_id: disputeId,
-    p_after_state: { status: 'resolved', outcome },
-    p_note: note,
-  })
-  if (logError) {
+  try {
+    const { error: logError } = await supabase.rpc('log_admin_action', {
+      p_action: 'resolve_dispute',
+      p_target_type: 'dispute',
+      p_target_id: disputeId,
+      p_after_state: { status: 'resolved', outcome },
+      p_note: note,
+    })
+    if (logError) {
+      console.error('[admin/litiges] resolveDispute audit log error:', logError)
+    }
+  } catch (logError) {
     console.error('[admin/litiges] resolveDispute audit log error:', logError)
   }
 
@@ -136,14 +144,18 @@ export async function dismissDispute(disputeId: string, adminNote: string): Prom
     return { success: false, error: 'admin.disputes.error_dismiss_no_row' }
   }
 
-  const { error: logError } = await supabase.rpc('log_admin_action', {
-    p_action: 'dismiss_dispute',
-    p_target_type: 'dispute',
-    p_target_id: disputeId,
-    p_after_state: { status: 'dismissed' },
-    p_note: note,
-  })
-  if (logError) {
+  try {
+    const { error: logError } = await supabase.rpc('log_admin_action', {
+      p_action: 'dismiss_dispute',
+      p_target_type: 'dispute',
+      p_target_id: disputeId,
+      p_after_state: { status: 'dismissed' },
+      p_note: note,
+    })
+    if (logError) {
+      console.error('[admin/litiges] dismissDispute audit log error:', logError)
+    }
+  } catch (logError) {
     console.error('[admin/litiges] dismissDispute audit log error:', logError)
   }
 

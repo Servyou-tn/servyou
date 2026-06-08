@@ -103,6 +103,21 @@ describe('resolveReport', () => {
     const res = await resolveReport('r1', 'Spam confirmé.')
     expect(res).toEqual({ success: true })
   })
+
+  // Sibling of the above for the OTHER failure shape: a transport-level throw
+  // (network down) instead of a returned { error }. Without the try/catch this
+  // would propagate past the `if (logError)` check and downgrade a succeeded,
+  // already-committed action to a thrown failure. One action proves the wrapper;
+  // the try/catch is the same shape across all six.
+  it('still returns success when the audit log RPC throws at the transport level', async () => {
+    h.state.result = { data: [{ id: 'r1' }], error: null }
+    h.rpc.mockRejectedValueOnce(new Error('network down'))
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+    const res = await resolveReport('r1', 'Spam confirmé.')
+    expect(res).toEqual({ success: true })
+    expect(errorSpy).toHaveBeenCalled()
+    errorSpy.mockRestore()
+  })
 })
 
 describe('claimReport', () => {

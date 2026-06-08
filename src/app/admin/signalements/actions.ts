@@ -22,8 +22,11 @@ export type ReportActionResult = { success: boolean; error?: string }
 // necessity: a failed audit write must NOT turn a succeeded action into a
 // reported failure (that would drive confusing double-submits). We surface the
 // error to the server log per the never-swallow-a-Supabase-error rule, then
-// return success. Wrapping each action in its own RPC to regain atomicity is
-// heavier than the value for a solo-admin forensic log.
+// return success — and the call is wrapped in try/catch so a transport-level
+// throw (not just a returned { error }) is caught and swallowed identically,
+// so the contract holds regardless of how the client surfaces failure.
+// Wrapping each action in its own RPC to regain atomicity is heavier than the
+// value for a solo-admin forensic log.
 
 export async function claimReport(reportId: string): Promise<ReportActionResult> {
   const supabase = await createClient()
@@ -43,14 +46,18 @@ export async function claimReport(reportId: string): Promise<ReportActionResult>
     return { success: false, error: 'admin.reports.error_already_claimed' }
   }
 
-  const { error: logError } = await supabase.rpc('log_admin_action', {
-    p_action: 'claim_report',
-    p_target_type: 'report',
-    p_target_id: reportId,
-    p_before_state: { status: 'open' },
-    p_after_state: { status: 'under_review' },
-  })
-  if (logError) {
+  try {
+    const { error: logError } = await supabase.rpc('log_admin_action', {
+      p_action: 'claim_report',
+      p_target_type: 'report',
+      p_target_id: reportId,
+      p_before_state: { status: 'open' },
+      p_after_state: { status: 'under_review' },
+    })
+    if (logError) {
+      console.error('[admin/signalements] claimReport audit log error:', logError)
+    }
+  } catch (logError) {
     console.error('[admin/signalements] claimReport audit log error:', logError)
   }
 
@@ -150,14 +157,18 @@ export async function resolveReport(reportId: string, adminNote: string): Promis
     return { success: false, error: 'admin.reports.error_not_actionable' }
   }
 
-  const { error: logError } = await supabase.rpc('log_admin_action', {
-    p_action: 'resolve_report',
-    p_target_type: 'report',
-    p_target_id: reportId,
-    p_after_state: { status: 'resolved' },
-    p_note: note,
-  })
-  if (logError) {
+  try {
+    const { error: logError } = await supabase.rpc('log_admin_action', {
+      p_action: 'resolve_report',
+      p_target_type: 'report',
+      p_target_id: reportId,
+      p_after_state: { status: 'resolved' },
+      p_note: note,
+    })
+    if (logError) {
+      console.error('[admin/signalements] resolveReport audit log error:', logError)
+    }
+  } catch (logError) {
     console.error('[admin/signalements] resolveReport audit log error:', logError)
   }
 
@@ -194,14 +205,18 @@ export async function dismissReport(reportId: string, adminNote: string): Promis
     return { success: false, error: 'admin.reports.error_dismiss_no_row' }
   }
 
-  const { error: logError } = await supabase.rpc('log_admin_action', {
-    p_action: 'dismiss_report',
-    p_target_type: 'report',
-    p_target_id: reportId,
-    p_after_state: { status: 'dismissed' },
-    p_note: note,
-  })
-  if (logError) {
+  try {
+    const { error: logError } = await supabase.rpc('log_admin_action', {
+      p_action: 'dismiss_report',
+      p_target_type: 'report',
+      p_target_id: reportId,
+      p_after_state: { status: 'dismissed' },
+      p_note: note,
+    })
+    if (logError) {
+      console.error('[admin/signalements] dismissReport audit log error:', logError)
+    }
+  } catch (logError) {
     console.error('[admin/signalements] dismissReport audit log error:', logError)
   }
 
