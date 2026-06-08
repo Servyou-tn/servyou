@@ -7,6 +7,7 @@ import { createClient } from '@/lib/supabase/client'
 import { useLang } from '@/components/LangProvider'
 import { t } from '@/lib/i18n'
 import { DirArrow } from '@/components/DirArrow'
+import { ModerationBanner } from '@/components/ModerationBanner'
 
 type FreelancerProfile = {
   id: string
@@ -16,6 +17,7 @@ type FreelancerProfile = {
   portfolio_link: string | null
   years_experience: number | null
   languages: string | null
+  admin_hidden_at: string | null
 }
 
 type Skill = { id: string; name: string }
@@ -42,7 +44,7 @@ export default function MonProfilFreelancePage() {
 
       const { data: fpData } = await supabase
         .from('freelancer_profiles')
-        .select('id, headline, bio, city, portfolio_link, years_experience, languages')
+        .select('id, headline, bio, city, portfolio_link, years_experience, languages, admin_hidden_at')
         .eq('profile_id', user.id).maybeSingle()
 
       if (!fpData) { router.replace('/mon-profil-freelance/creer'); return }
@@ -96,6 +98,8 @@ export default function MonProfilFreelancePage() {
   return (
     <main className="min-h-screen bg-gray-50 px-4 py-12">
       <div className="max-w-2xl mx-auto space-y-6">
+
+        {fp!.admin_hidden_at && <ModerationBanner variant="freelancer_profile" />}
 
         <div className="bg-white rounded-lg shadow p-8">
           <div className="flex items-start justify-between mb-4">

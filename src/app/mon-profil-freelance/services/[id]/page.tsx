@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/client'
 import { useLang } from '@/components/LangProvider'
 import { t } from '@/lib/i18n'
 import { DirArrow } from '@/components/DirArrow'
+import { ModerationBanner } from '@/components/ModerationBanner'
 
 type Category = { id: string; name_fr: string }
 
@@ -19,6 +20,7 @@ export default function EditServicePage() {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const [categories, setCategories] = useState<Category[]>([])
+  const [adminHidden, setAdminHidden] = useState(false)
 
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
@@ -42,7 +44,7 @@ export default function EditServicePage() {
 
       const { data: service } = await supabase
         .from('service_listings')
-        .select('id, title, description, starting_price_tnd, category_id, delivery_time, status, freelancer_profile_id')
+        .select('id, title, description, starting_price_tnd, category_id, delivery_time, status, freelancer_profile_id, admin_hidden_at')
         .eq('id', id).single()
 
       if (!service || service.freelancer_profile_id !== fp.id) {
@@ -56,6 +58,7 @@ export default function EditServicePage() {
       setCategoryId(service.category_id ?? '')
       setDeliveryTime(service.delivery_time ?? '')
       setStatus(service.status)
+      setAdminHidden(service.admin_hidden_at != null)
 
       const { data: cats } = await supabase.from('categories').select('id, name_fr').order('name_fr')
       setCategories(cats ?? [])
@@ -105,6 +108,7 @@ export default function EditServicePage() {
   return (
     <main className="min-h-screen flex items-start justify-center bg-gray-50 px-4 py-12">
       <div className="bg-white rounded-lg shadow p-8 max-w-lg w-full">
+        {adminHidden && <ModerationBanner variant="service" />}
         <h1 className="text-2xl font-bold text-gray-800 mb-6">{t('freelance.service_edit_title', lang)}</h1>
 
         <form onSubmit={handleSubmit} noValidate className="space-y-4">
