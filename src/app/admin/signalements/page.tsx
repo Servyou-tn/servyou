@@ -30,6 +30,9 @@ const STATUS_BADGE: Record<string, string> = {
   open: 'bg-amber-50 text-amber-700',
   under_review: 'bg-blue-50 text-blue-700',
   resolved: 'bg-green-50 text-green-700',
+  // 'dismissed' is filtered out of the pending queue today; kept for consistency and
+  // a future "show closed reports" view.
+  dismissed: 'bg-gray-100 text-gray-600',
 }
 
 function StatusBadge({ status, tr }: { status: string; tr: (k: string) => string }) {

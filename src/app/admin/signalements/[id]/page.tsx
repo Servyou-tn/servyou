@@ -5,6 +5,7 @@ import type { Lang } from '@/lib/i18n'
 import { createClient } from '@/lib/supabase/server'
 import { ClaimButton } from './ClaimButton'
 import { ResolveForm } from './ResolveForm'
+import { DismissForm } from './DismissForm'
 import { HideForm } from './HideForm'
 import { UnhideButton } from './UnhideButton'
 import type { ModerationTargetType } from '../actions'
@@ -63,6 +64,7 @@ const STATUS_BADGE: Record<string, string> = {
   open: 'bg-amber-50 text-amber-700',
   under_review: 'bg-blue-50 text-blue-700',
   resolved: 'bg-green-50 text-green-700',
+  dismissed: 'bg-gray-100 text-gray-600',
 }
 
 export default async function ReportDetailPage({ params }: Props) {
@@ -197,10 +199,17 @@ export default async function ReportDetailPage({ params }: Props) {
             <p className="whitespace-pre-wrap text-sm text-gray-800">{r.admin_note}</p>
             <p className="text-xs text-gray-400">{tr('admin.reports.error_resolved_at')} {formatDate(r.updated_at, lang)}</p>
           </div>
+        ) : r.status === 'dismissed' ? (
+          <div className="space-y-1 rounded border border-gray-200 bg-gray-50 p-4">
+            <p className="text-sm font-medium text-gray-500">{tr('admin.reports.dismissed_header')}</p>
+            <p className="whitespace-pre-wrap text-sm text-gray-800">{r.admin_note}</p>
+            <p className="text-xs text-gray-400">{formatDate(r.updated_at, lang)}</p>
+          </div>
         ) : (
           <div className="space-y-4 border-t border-gray-100 pt-4">
             {r.status === 'open' && <ClaimButton reportId={r.id} />}
             <ResolveForm reportId={r.id} />
+            <DismissForm reportId={r.id} />
           </div>
         )}
       </div>
