@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "rls-smoke": "node --env-file=.env.local scripts/rls-smoke.mjs"
   },
   "dependencies": {
     "@sentry/nextjs": "^10.56.0",
