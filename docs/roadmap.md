@@ -56,7 +56,7 @@ Phase 10 covers everything that should be solid before opening to real users. Th
 
 - **Sentry integration** for error monitoring. Sentry's free tier covers MVP volume. Initialization in `instrumentation.ts`, error boundaries on the route segments, server action error capture.
 - **Cloudflare Turnstile** on `/signup` and `/login` for bot protection. The widget is rendered client-side; the server action validates the Turnstile token before processing.
-- **Backup and restore runbook.** A documented procedure for capturing a Supabase backup and restoring it. The runbook lives in `docs/operations/backup-restore.md`.
+- **Backup and restore runbook.** Authored (PR-X) in `docs/operations.md` (the "Backup and disaster recovery" section): five incident-response scenarios, the manual `pg_dump` procedure, recovery objectives, and a quarterly restore-drill procedure. The first *verified* restore drill is scheduled for the week before launch, when real data and `pg_dump`/Pro tooling are in place. **Launch-blocking dependency:** upgrade Supabase from Free to Pro before launch so daily backups and PITR are active.
 - **RLS smoke-test script.** A script that probes the API from anon and authenticated contexts, asserting that sensitive data is not exposed where it shouldn't be. The script is committed to the repo and runs as a manual verification before launch.
 - **Accessibility pass.** WCAG 2.2 AA compliance check across all user-facing pages. Keyboard navigation, screen reader labels, color contrast, focus indicators.
 - **Load testing.** A bounded load test against the staging environment to validate that the platform holds under modest concurrent load (10-50 simultaneous users for a marketplace at launch is realistic).
