@@ -171,28 +171,9 @@ The named principles Servyou is built on:
 
 **Operational rule:** when designing schema changes or UI, verify the change respects these four principles. Make new profile fields optional unless they are universal identity (name, email, date of birth, city, language).
 
-### Pending Schema Migrations from Pillar 4 Appendix A
+### Schema Migrations from Pillar 4 Appendix A — applied
 
-These are committed in Layer 4 documentation but NOT YET applied to the database. Sequenced into Phase 9 or Phase 10, each with full Step 0 discovery, founder approval gate, and manual click-through per CLAUDE.md migration discipline.
-
-**Orders table expansion (Layer 4 §4.6):**
-- Status enum expands from 3 values (`pending`/`completed`/`cancelled`) to 8 values: `pending` → `accepted` → `prepared` → `dispatched` → `in_delivery` → `arrived` → `received`, with `cancelled` as parallel terminal state. The current `completed` renames to `received`.
-- New column `cancelled_by` (nullable enum: `'buyer'`/`'seller'`), set only when status = cancelled.
-- New column `cancellation_reason` (nullable text), required for post-dispatch buyer cancellation.
-- New column `received_at` (nullable timestamp), set when buyer confirms receipt.
-- New read-only view: buyer-cancellation-history, RLS restricts to buyer themselves + admin only.
-- Other transition timestamps (accepted_at, prepared_at, dispatched_at, arrived_at) deferred post-launch — useful analytics later, premature optimization now.
-
-**Shop owner profile expansion (Layer 4 §4.3):**
-- 4 new optional columns on `shops`: `shop_type` (enum: `'physical'`/`'online_only'`/`'dropshipper'`), `delivery_setup` (enum: `'self_delivery'`/`'third_party'`/`'buyer_pickup'`), `working_hours` (text), `location_detail` (text).
-- 2 new child tables: `shop_payment_methods` (shop_id + method enum + optional note), `shop_categories` (shop_id + category_id).
-
-**Freelancer profile expansion (Layer 4 §4.4):**
-- 3 new optional columns on `freelancer_profiles`: `working_hours` (text), `current_workplace` (text), `preferred_payment_method` (enum/text).
-- 3 new child tables: `freelancer_tools`, `freelancer_education` (institution, degree, field, year_start, year_end), `freelancer_certifications` (name, issuer, year, optional credential URL).
-- Note: `freelancer_skills` child table already exists, kept as-is.
-
-**Implementation rules for these migrations:** All new columns nullable per Configurable Workspace Principle. All new child tables follow existing `freelancer_skills` RLS pattern (owner can edit, public can read). Verify RLS test coverage. Migrations must happen as separate focused PRs, never bundled with feature work.
+These schema additions, formerly tracked here as "pending," are all applied to production. The shop-owner profile expansion (`shop_type`, `delivery_setup`, `working_hours`, `location_detail`, plus the `shop_payment_methods` and `shop_categories` child tables) shipped in PR-E; the freelancer profile expansion (`working_hours`, `current_workplace`, `preferred_payment_method`, plus `freelancer_tools`, `freelancer_education`, `freelancer_certifications` child tables) shipped in PR-F; the orders-table lifecycle expansion (8-value status, `cancelled_by`, `cancellation_reason`, `received_at`, and the buyer-cancellation-history view) shipped in the orders lifecycle PRs. Schema is complete through migration 32 — see `db/migrations/` and `docs/data-model.md` for the source of truth.
 
 ### Pillar 4 COD Friction-Reduction Features (Pillar 4 §4.14)
 
@@ -219,7 +200,7 @@ Three MVP features locked, requiring UI work in Phase 9 or earlier coding phases
 - Phase 8 Subtask 3 — Arabic translations (`ar.ts`), needs fluent Tunisian Arabic reader
 - Phase 9 — Admin dashboard + reports + statistics (most security-sensitive remaining phase)
 - Phase 10 — Polish + Sentry + Turnstile + lawyer review of legal docs (FR + AR)
-- Pillar 4 Appendix A schema migrations sequenced into Phase 9 or Phase 10
+- Pillar 4 Appendix A schema migrations — applied through migration 32 (see `db/migrations/`)
 
 **Step 2 — User-facing Pillars (deep focused work, fresh sessions only):**
 - Pillar 5 (Content and Marketing Strategy) — social, ads, content positioning

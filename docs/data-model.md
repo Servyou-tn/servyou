@@ -73,10 +73,11 @@ The `shops` table holds one row per shop, linked to its owner.
 | delivery_setup | enum | `'self_delivery'`, `'third_party'`, `'buyer_pickup'` — nullable |
 | working_hours | text | nullable, free-form |
 | location_detail | text | nullable, free-form for neighborhood or pickup address |
+| preferred_carriers | text | nullable, free-form for naming preferred Tunisian delivery carriers (First Delivery, Aramex, Mylerz, …) |
 
 The `shop_type = 'dropshipper'` value is reserved for **domestic** Tunisian dropshippers sourcing from Tunisian suppliers. International dropshipping is out of MVP scope; future support would add a new value like `'international_dropshipper'` with the regulatory and trust infrastructure in place.
 
-Two child tables capture multi-value shop attributes. The `shop_payment_methods` table holds one row per accepted payment method (method enum: `'cod'`, `'bank_transfer'`, `'d17'`, `'konnect'`, `'other'`). The `shop_categories` table holds one row per category specialty, linking shop_id to category_id.
+Two child tables capture multi-value shop attributes. The `shop_payment_methods` table holds one row per accepted payment method (method enum: `'cod'`, `'bank_transfer'`, `'d17'`, `'flouci'`, `'konnect'`, `'other'`). The `shop_categories` table holds one row per category specialty, linking shop_id to category_id.
 
 The `products` table holds one row per product, linked to its shop and to a category. Dropshipping-friendly stock handling via `tracks_stock` boolean plus `stock_count` integer (meaningful only when tracks_stock is true). Status enum: `'active'`, `'hidden'`, `'sold_out'`. Units sold is always calculated live from the orders table, never stored as a separate counter.
 
