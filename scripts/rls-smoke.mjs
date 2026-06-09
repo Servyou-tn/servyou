@@ -260,6 +260,56 @@ async function main() {
     check('E4 non-admin owner CANNOT set shops.admin_hidden_at (enforce_admin_marker_lock trigger)', !!row && row.admin_hidden_at === null, 'admin_hidden_at: ' + (row ? row.admin_hidden_at : '?') + (error ? ' (update errored as expected: ' + error.message + ')' : ' (no error returned)'))
   }
 
+  console.log('\nPhase 5b — Section F: privilege-escalation protection (PR-Z, post-audit CRIT-1 + IMP-1)')
+  // Each F asserts BOTH that the authenticated probe is REJECTED and that the protected state is
+  // UNCHANGED. Rejection may come from the column-level GRANT (plan-time 42501) or the guard
+  // trigger (42501/23514) — both are valid, so we assert on the OUTCOME, not the message text.
+  {
+    // F1 — a non-admin cannot self-grant is_admin (the confirmed CRIT-1 vector).
+    const { error } = await a.from('profiles').update({ is_admin: true }).eq('id', aliceId)
+    const { data } = await admin.from('profiles').select('is_admin').eq('id', aliceId).single()
+    check('F1 non-admin CANNOT self-grant is_admin', !!error && !!data && data.is_admin === false, 'err=' + (error ? 'yes' : 'NONE') + ' is_admin=' + (data ? data.is_admin : '?'))
+  }
+  {
+    // F2 — a suspended user cannot self-clear their suspension. charlie (admin) suspends alice first.
+    await c.rpc('admin_suspend_user', { target_user_id: aliceId, reason: 'F2 setup' })
+    const { error } = await a.from('profiles').update({ suspended_at: null, suspended_reason: null }).eq('id', aliceId)
+    const { data } = await admin.from('profiles').select('suspended_at').eq('id', aliceId).single()
+    check('F2 suspended user CANNOT self-unsuspend', !!error && !!data && data.suspended_at !== null, 'err=' + (error ? 'yes' : 'NONE') + ' suspended_at=' + (data ? data.suspended_at : '?'))
+    await c.rpc('admin_unsuspend_user', { target_user_id: aliceId }) // cleanup
+  }
+  {
+    // F3 — the 18+ DB age gate. bob (seller_type null) is the clean consumer->seller transition.
+    await admin.from('profiles').update({ date_of_birth: '2010-01-01' }).eq('id', bobId) // under 18
+    const under = await b.from('profiles').update({ seller_type: 'freelancer' }).eq('id', bobId)
+    const { data: afterUnder } = await admin.from('profiles').select('seller_type').eq('id', bobId).single()
+    await admin.from('profiles').update({ date_of_birth: '2000-01-01' }).eq('id', bobId) // 18+
+    const over = await b.from('profiles').update({ seller_type: 'freelancer' }).eq('id', bobId)
+    const { data: afterOver } = await admin.from('profiles').select('seller_type').eq('id', bobId).single()
+    check('F3 under-18 BLOCKED from becoming a seller, 18+ ALLOWED (control)',
+      !!under.error && !!afterUnder && afterUnder.seller_type === null && !over.error && !!afterOver && afterOver.seller_type === 'freelancer',
+      'under: err=' + (under.error ? 'yes' : 'NONE') + ' type=' + (afterUnder ? afterUnder.seller_type : '?') + ' | over: err=' + (over.error ? over.error.message : 'none') + ' type=' + (afterOver ? afterOver.seller_type : '?'))
+  }
+  {
+    // F4 — a buyer cannot reassign their order to a different seller (IMP-1).
+    const { error } = await b.from('orders').update({ seller_id: charlieId }).eq('id', order.id)
+    const { data } = await admin.from('orders').select('seller_id').eq('id', order.id).single()
+    check('F4 buyer CANNOT reassign order seller_id', !!error && !!data && data.seller_id === aliceId, 'err=' + (error ? 'yes' : 'NONE') + ' seller_id==alice? ' + (data ? (data.seller_id === aliceId) : '?'))
+  }
+  {
+    // F5 — a buyer cannot change order quantity post-creation (IMP-1).
+    const { error } = await b.from('orders').update({ quantity: 999 }).eq('id', order.id)
+    const { data } = await admin.from('orders').select('quantity').eq('id', order.id).single()
+    check('F5 buyer CANNOT change order quantity', !!error && !!data && data.quantity !== 999, 'err=' + (error ? 'yes' : 'NONE') + ' quantity=' + (data ? data.quantity : '?'))
+  }
+  {
+    // F6 — regression control: a buyer CAN still cancel a pending order (lifecycle columns stay writable).
+    const { data: pend } = await admin.from('orders').insert({ buyer_id: bobId, seller_id: aliceId, order_type: 'product', product_id: product.id, status: 'pending' }).select('id').single()
+    const { error } = await b.from('orders').update({ status: 'cancelled', cancelled_by: 'buyer', cancellation_reason: 'F6 regression' }).eq('id', pend.id).eq('status', 'pending')
+    const { data } = await admin.from('orders').select('status').eq('id', pend.id).single()
+    check('F6 buyer CAN still cancel a pending order (regression control)', !error && !!data && data.status === 'cancelled', 'err=' + (error ? error.message : 'none') + ' status=' + (data ? data.status : '?'))
+  }
+
   console.log('\nPhase 6 — teardown')
   await teardown()
   const remaining = await findTestUserIds()

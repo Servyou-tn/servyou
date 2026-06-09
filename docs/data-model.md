@@ -165,6 +165,27 @@ The `reports` table holds one row per report: reporter_id, target_type enum (`'s
 
 RLS on reports: the reporter creates and reads their own; admins read all and update (to resolve). The acknowledgment-and-outcome flow makes reporting a real case rather than a cosmetic button — the user sees their problem treated seriously.
 
+## Admin, moderation, disputes, and the audit log
+
+The admin layer (Phase 9) adds moderation, dispute resolution, user suspension, and a forensic audit log on top of the marketplace core. Admin status is the `profiles.is_admin` boolean, read by the `is_admin()` SECURITY DEFINER function that gates every admin policy and RPC.
+
+**User suspension.** `profiles.suspended_at` (nullable timestamptz) and `suspended_reason` (nullable text) mark a suspended account, with a CHECK requiring a reason when suspended. Suspension is written only through the `admin_suspend_user(target, reason)` / `admin_unsuspend_user(target)` SECURITY DEFINER RPCs (admin-gated, self-suspend blocked, audit-logged). Platform-wide enforcement of the suspended state lives in `middleware.ts`.
+
+**Content moderation.** `shops`, `products`, `service_listings`, `freelancer_profiles`, and `job_posts` each carry `admin_hidden_at` (nullable timestamptz) + `admin_hidden_reason` (nullable text), with a CHECK requiring a reason when set. Only admins set or clear the marker — enforced by `enforce_admin_moderation_lock` (products/service_listings, which also have a seller `status='hidden'`) and `enforce_admin_marker_lock` (shops/freelancer_profiles/job_posts). `admin_hide_content` / `admin_unhide_content` SECURITY DEFINER RPCs are the only write path; public surfaces filter `admin_hidden_at IS NULL` at the application layer.
+
+**Disputes.** The `disputes` table is a report scoped to a specific order: `order_id` (FK → orders ON DELETE CASCADE), `created_by_role` (`'buyer'`/`'seller'`), `reason` (enum: `not_delivered`/`wrong_item`/`damaged`/`payment_refused`/`buyer_unreachable`/`other`), `description`, `status` (`open`/`under_review`/`resolved`/`dismissed`), `outcome` (`sided_buyer`/`sided_seller`/`compromise`, set iff resolved), `admin_note` (required on a terminal state), and timestamps. A partial unique index permits one active dispute per order. RLS: the order's parties and admins read; a party creates (role matching their identity on the order, order past `pending`); admin updates. Resolution is informational at MVP (no payment rail, no money movement).
+
+**Audit log.** `admin_audit_log` is the immutable forensic record of every state-changing admin action: `admin_id` (FK → profiles ON DELETE RESTRICT), `action` + `target_type` (free text), `target_id`, `before_state` / `after_state` (jsonb), `note`, `created_at`. RLS: admin-only SELECT; INSERT gated by `is_admin() AND admin_id = auth.uid()`; **no UPDATE and no DELETE policy** — entries are permanent. The `log_admin_action(...)` SECURITY DEFINER RPC is the write path; the four admin content/user RPCs log in-transaction, while the report/dispute server actions log best-effort after their UPDATE commits.
+
+## Column-level write protection (the privileged-column locks)
+
+RLS gates rows, not columns — so on owner-writable tables, privileged columns must be protected at the column-privilege and trigger layers as well. A column-level `REVOKE` does **not** subtract from a pre-existing table-level grant in PostgreSQL, so the pattern is an allow-list inversion: revoke table `UPDATE`, then grant back only the columns the app legitimately edits. Two tables carry these locks (added in PR-Z to close the 2026-06-09 audit's CRIT-1 and IMP-1):
+
+- **`profiles`.** `authenticated` holds `UPDATE` only on `full_name, city, language, phone, seller_type`. `is_admin`, `suspended_at`, `suspended_reason`, `date_of_birth`, and `email` are not authenticated-writable — they change only through the admin SECURITY DEFINER RPCs (running as owner) or the service role. `enforce_profile_admin_marker_lock` is the defense-in-depth trigger; `enforce_seller_type_age_gate` enforces the 18+ rule at the DB layer when `seller_type` is set.
+- **`orders`.** `authenticated` holds `UPDATE` only on the lifecycle columns `status, cancelled_by, cancellation_reason, received_at`; the identity columns (`buyer_id, seller_id, product_id, service_listing_id, order_type, quantity, buyer_note, delivery_*`) are frozen after creation (column grant + `enforce_order_identity_lock`). The role-gating trigger continues to govern status transitions.
+
+The trigger bypass cascade for all three locks is: `auth.uid() IS NULL` (service-role / SQL-editor / cron) → allow; `is_admin()` (admin RPC paths) → allow; otherwise a protected-column change raises `42501`. These locks are exercised by `scripts/rls-smoke.mjs` section F.
+
 ## Migration discipline
 
 Every schema change goes through Supabase's `apply_migration` tool, which records the migration in `supabase_migrations.schema_migrations` and runs the SQL transactionally. Failures are clean — partial application is impossible.
