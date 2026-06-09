@@ -135,3 +135,181 @@ Sentry events are proxied through `/monitoring` (set via `tunnelRoute`) to dodge
 blockers. `src/middleware.ts` uses a closed-allowlist matcher that does **not** include
 `/monitoring`, so the tunnel is unobstructed. If the middleware matcher is ever widened,
 keep `/monitoring` excluded or browser events will silently stop arriving.
+
+## Backup and disaster recovery
+
+### Current state at launch readiness
+
+Production data scale at this milestone: ~13 MB total, ~15 user rows across all tables.
+The platform is **pre-launch**; real user-data accumulation starts after public launch.
+This runbook captures the procedures **now** so they exist before they are needed; the
+first *verified* restore drill is scheduled for the week before launch, when real data
+exists and the founder has local `pg_dump` tooling and the Supabase Pro upgrade in place.
+
+### What Supabase guarantees automatically
+
+Discovery (via the Supabase management API) confirmed the Servyou organization is on the
+**Free plan** (org `lqktujslqhiyzqnvgnol`, project `xggomcitqrkaylqezjjz`, Postgres 17,
+eu-central-1 Frankfurt). This is the most important fact in this runbook: **the Free plan
+does not include point-in-time recovery (PITR), and self-serve daily backup/restore is not
+available in the dashboard** — so until the Pro upgrade lands, the manual `pg_dump` below
+is the *primary* safety net, not a belt-and-suspenders extra.
+
+Confirm the live backup posture any time in the dashboard:
+https://supabase.com/dashboard/project/xggomcitqrkaylqezjjz/database/backups
+
+- **Free plan (today):** no PITR; no founder-restorable daily backups in the dashboard.
+  Real-incident recovery depends on Supabase support plus the manual `pg_dump` backups
+  described below.
+- **Pro plan (target before launch):** daily backups with 7-day retention included; PITR
+  available as a paid add-on (restore to any point within the retention window).
+
+**Launch-blocking action item:** upgrade Supabase to Pro before opening signup to real
+users, so daily backups and PITR are active before real data exists. Sequenced alongside
+the Vercel Pro upgrade on the launch checklist.
+
+### Recovery objectives
+
+- **RPO** (Recovery Point Objective — max acceptable data loss): up to 24 hours on
+  Free-tier daily backups; under 1 hour on Pro PITR. Pre-launch this is not material;
+  post-launch it drives the Pro-upgrade timing.
+- **RTO** (Recovery Time Objective — max time to restore): committed at **4 hours** from
+  incident detection during the launch phase.
+
+### Incident response procedures
+
+#### Scenario 1 — Single row accidentally deleted or modified
+
+The most common incident type. If on Pro with PITR: identify the timestamp just before the
+bad change and request a point-in-time restore via the dashboard or support. If on Free:
+restore from the most recent daily backup (loses any data written between that backup and
+the incident).
+
+For development drops or test-data deletions, prefer manually re-creating the affected row
+(e.g. via the Supabase SQL editor) when feasible — a full DB restore is far too heavy for a
+single-row incident.
+
+#### Scenario 2 — Table dropped or wiped
+
+Higher-stakes version of Scenario 1. Always restore from backup; never attempt manual
+re-creation of bulk data.
+
+1. Immediately put up a maintenance banner on the platform. *(Followup: add a
+   maintenance-mode toggle to the admin dashboard — not built yet.)*
+2. Identify the latest backup before the incident from the Supabase dashboard.
+3. Initiate the restore via the dashboard.
+4. Once complete, run `npm run rls-smoke` against the restored database to confirm the RLS
+   posture survived.
+5. Spot-check a few sample reads of expected data via the SQL editor.
+6. Remove the maintenance banner.
+
+#### Scenario 3 — Migration corrupted data
+
+The most likely real-world incident during the solo-founder phase. A forward fix is almost
+always cleaner than a restore:
+
+1. Identify the corrupting migration.
+2. Write a **revert migration** that undoes the data damage and reverts any schema change.
+3. Apply via the Supabase MCP `apply_migration` **with founder approval** (per CLAUDE.md's
+   migration discipline — never auto-applied).
+4. Mirror the SQL to `db/migrations/`.
+5. Document in the migration's comment what was reverted and why.
+
+Full DB restore is the fallback only if the corrupting migration is unrevertable (e.g. a
+`DROP` that lost data the migration did not preserve).
+
+#### Scenario 4 — Full database loss (Supabase outage with data damage)
+
+Worst case. Contact Supabase support immediately via the dashboard or support@supabase.com.
+Supabase maintains infrastructure-level backups beyond what the dashboard exposes; their
+support can restore in catastrophic scenarios.
+
+In parallel: pull the latest manual logical backup from offsite storage (see "Manual backup
+procedure" below) and prepare a fresh project provision as the disaster-recovery
+alternative if Supabase's own restore takes longer than the RTO allows.
+
+#### Scenario 5 — Accidental admin action (the most likely incident type)
+
+Wrong moderation, wrong suspension, wrong content hide. Because a solo admin is a single
+point of failure for misclicks, this is the most likely incident — and the
+`admin_audit_log` is the recovery foundation.
+
+1. Identify the action in the audit log:
+   ```sql
+   SELECT * FROM admin_audit_log
+    WHERE admin_id = '<admin_uuid>'
+    ORDER BY created_at DESC
+    LIMIT 20;
+   ```
+2. Reverse via the appropriate admin RPC — `admin_unhide_content` or `admin_unsuspend_user`.
+   Each writes a new audit row capturing the reversal.
+3. Notify the affected user with a courtesy message explaining the error.
+
+### Manual backup procedure (belt-and-suspenders)
+
+Before any high-risk operation (a migration that might corrupt data, or a large bulk
+operation), take a manual logical backup. Requires `pg_dump` installed locally — it ships
+with the Postgres client tools (https://www.postgresql.org/download/). *(Not yet installed
+on the founder's machine as of this writing; install before the first drill.)*
+
+```bash
+pg_dump "postgresql://postgres.xggomcitqrkaylqezjjz:[DB_PASSWORD]@aws-0-eu-central-1.pooler.supabase.com:6543/postgres" \
+  --format=custom \
+  --no-owner \
+  --no-privileges \
+  --file=servyou-backup-$(date +%Y%m%d-%H%M).dump
+```
+
+`[DB_PASSWORD]` is the database password from the secrets manager — never hard-code it or
+commit it. Store the resulting `.dump` file in offline storage (an encrypted external
+drive, or private cloud storage with a retention policy). **Do not commit `.dump` files to
+git.**
+
+Suggested retention: daily manual backups kept for 7 days during the launch phase; weekly
+for 90 days post-launch.
+
+### Routine verification schedule
+
+- **Monthly:** confirm the latest automated backup exists in the Supabase dashboard; record
+  the timestamp in the verification log below.
+- **Quarterly:** execute the restore drill below.
+- **Before any high-risk migration:** take a manual `pg_dump`.
+- **First mandatory drill:** scheduled for the week before public launch (estimated late
+  July to mid-August 2026), when real data exists and tooling is in place. It verifies that
+  these procedures actually work.
+
+### Restore drill procedure (for the quarterly drill)
+
+What to execute when running the quarterly drill (the first runs the week before launch):
+
+1. Take a fresh manual `pg_dump` (procedure above).
+2. Provision a throwaway Postgres instance — either local Docker:
+   ```bash
+   docker run --name servyou-restore-test -e POSTGRES_PASSWORD=test -p 5433:5432 -d postgres:17
+   ```
+   or a Supabase branch (`create_branch` via MCP after `confirm_cost`; ~$0.32/day —
+   **destroy it when done**).
+3. Restore the dump:
+   ```bash
+   pg_restore --no-owner --no-privileges \
+     --dbname=postgresql://postgres:test@localhost:5433/postgres \
+     servyou-backup-<date>.dump
+   ```
+4. Verify schema: `psql ... -c "\dt"` against the restored DB shows the expected tables
+   (all 33+ migrations' objects).
+5. Verify RLS posture: run `npm run rls-smoke` against the restored DB (temporarily swap
+   the `NEXT_PUBLIC_SUPABASE_*` / `SUPABASE_SERVICE_ROLE_KEY` env vars to point at the
+   restore target; record the swapped values used so the next drill is repeatable).
+6. Verify sample data integrity: spot-check a few critical rows match production.
+7. Capture timing: how long from "I need to restore" to "verified working schema"?
+8. Update the verification log with the date, outcome, and any issues found — **we want to
+   find issues during drills, not incidents.**
+9. Destroy the throwaway DB (Docker `rm -f`, or `delete_branch`).
+
+### Verification log
+
+| Date | Type | Outcome | Time taken | Notes |
+|------|------|---------|------------|-------|
+| 2026-06-09 | Runbook authored | — | — | Pre-launch documentation. Org confirmed on Supabase **Free** plan; Pro upgrade + first verified restore drill scheduled for the week before launch. |
+
+Append a new row for each future verification.
