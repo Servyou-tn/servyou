@@ -467,6 +467,7 @@ export const fr: Record<string, string> = {
   'admin.reports.target_type_service':            "Service",
   'admin.reports.target_type_job_post':           "Offre d'emploi",
   'admin.reports.target_type_user':               "Utilisateur",
+  'admin.reports.suspend_section_title':          "Suspendre l'utilisateur signalé",
   'admin.reports.action_claim':                   "Prendre en charge",
   'admin.reports.action_resolve':                 "Marquer comme résolu",
   'admin.reports.field_reporter':                 "Signalé par",

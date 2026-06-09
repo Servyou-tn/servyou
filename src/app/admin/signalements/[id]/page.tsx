@@ -8,6 +8,8 @@ import { ResolveForm } from './ResolveForm'
 import { DismissForm } from './DismissForm'
 import { HideForm } from './HideForm'
 import { UnhideButton } from './UnhideButton'
+import { SuspendReportedUserForm } from './SuspendReportedUserForm'
+import { UnsuspendReportedUserButton } from './UnsuspendReportedUserButton'
 import type { ModerationTargetType } from '../actions'
 
 type Props = { params: Promise<{ id: string }> }
@@ -44,14 +46,16 @@ type Report = {
 }
 
 // Base route per target_type. target_id maps to each route's natural id
-// (shop id, product id, freelancer_profile id, service_listing id, job_post id),
-// consistent with the existing public routes. 'user' has no page yet (PR-L adds it).
+// (shop id, product id, freelancer_profile id, service_listing id, job_post id).
+// Content types link to their public pages (new tab); 'user' links to the admin user
+// detail page (/admin/utilisateurs/[id]) — internal, same tab.
 const TARGET_ROUTES: Record<string, string> = {
   shop: '/boutique',
   product: '/produit',
   freelancer_profile: '/freelance',
   service: '/service',
   job_post: '/missions',
+  user: '/admin/utilisateurs',
 }
 
 function formatDate(value: string, lang: Lang): string {
@@ -98,6 +102,25 @@ export default async function ReportDetailPage({ params }: Props) {
     .from('public_profiles').select('full_name').eq('id', r.reporter_id).single()
   const reporterName = (reporter as { full_name: string } | null)?.full_name ?? '—'
 
+  // Current admin — used only to block self-suspend in the UI (the RPC blocks it too).
+  const { data: { user: me } } = await supabase.auth.getUser()
+
+  // For user-targeted reports, fetch the target's profile to show their name and drive
+  // the suspend section. Permitted by the "Admin reads all profiles" SELECT policy
+  // (migration 23). A null targetUser means the row is gone.
+  type TargetUser = { full_name: string | null; suspended_at: string | null; suspended_reason: string | null }
+  let targetUser: TargetUser | null = null
+  if (r.target_type === 'user') {
+    const { data: tu, error: tuError } = await supabase
+      .from('profiles')
+      .select('full_name, suspended_at, suspended_reason')
+      .eq('id', r.target_id)
+      .maybeSingle()
+    if (tuError) console.error('[admin/signalements/[id]] target user fetch error:', tuError)
+    targetUser = (tu as TargetUser | null) ?? null
+  }
+  const isSelfTarget = r.target_type === 'user' && me?.id === r.target_id
+
   const targetBase = TARGET_ROUTES[r.target_type]
   const targetUrl = targetBase ? `${targetBase}/${r.target_id}` : null
 
@@ -142,7 +165,11 @@ export default async function ReportDetailPage({ params }: Props) {
             <dt className="font-medium text-gray-500">{tr('admin.reports.field_target')}</dt>
             <dd className="mt-1 text-gray-800">
               {tr('admin.reports.target_type_' + r.target_type)}
-              {targetUrl ? (
+              {r.target_type === 'user' && targetUrl ? (
+                <Link href={targetUrl} className="ms-2 text-blue-600 hover:underline">
+                  {targetUser?.full_name ?? r.target_id}
+                </Link>
+              ) : targetUrl ? (
                 <Link href={targetUrl} target="_blank" rel="noopener noreferrer" className="ms-2 text-blue-600 hover:underline">
                   {tr('admin.reports.target_view')}
                 </Link>
@@ -189,6 +216,36 @@ export default async function ReportDetailPage({ params }: Props) {
               </div>
             ) : (
               <HideForm targetType={r.target_type as ModerationTargetType} targetId={r.target_id} reportId={r.id} />
+            )}
+          </div>
+        )}
+
+        {r.target_type === 'user' && (
+          <div className="space-y-3 border-t border-gray-100 pt-4">
+            <h2 className="text-sm font-semibold uppercase tracking-wide text-gray-500">
+              {tr('admin.reports.suspend_section_title')}
+            </h2>
+            {targetUser === null ? (
+              <p className="text-sm text-gray-500">{tr('admin.users.error_not_found')}</p>
+            ) : isSelfTarget ? (
+              <p className="text-sm text-gray-500">{tr('admin.users.self_action_blocked')}</p>
+            ) : targetUser.suspended_at ? (
+              <div className="space-y-3">
+                <div className="space-y-1 rounded border border-red-200 bg-red-50 p-3">
+                  <p className="text-sm font-medium text-red-700">{tr('admin.users.status_suspended')}</p>
+                  <p className="text-sm text-red-800">
+                    <span className="font-medium">{tr('admin.users.field_suspended_at')}:</span>{' '}
+                    {formatDate(targetUser.suspended_at, lang)}
+                  </p>
+                  <p className="text-sm text-red-800">
+                    <span className="font-medium">{tr('admin.users.field_suspended_reason')}:</span>{' '}
+                    {targetUser.suspended_reason}
+                  </p>
+                </div>
+                <UnsuspendReportedUserButton targetUserId={r.target_id} reportId={r.id} />
+              </div>
+            ) : (
+              <SuspendReportedUserForm targetUserId={r.target_id} reportId={r.id} />
             )}
           </div>
         )}

@@ -500,6 +500,7 @@ export const ar: Record<string, string> = {
   'admin.reports.target_type_service':            "خدمة",
   'admin.reports.target_type_job_post':           "مهمة",
   'admin.reports.target_type_user':               "مستخدم",
+  'admin.reports.suspend_section_title':          "تعليق المستخدم المُبلَّغ عنه",
   'admin.reports.action_claim':                   "تولّي المعالجة",
   'admin.reports.action_resolve':                 "تحديد كمُعالَج",
   'admin.reports.field_reporter':                 "أبلغ عنه",
