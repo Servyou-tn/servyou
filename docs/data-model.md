@@ -141,7 +141,7 @@ A CHECK constraint enforces that exactly one of `product_id` / `service_listing_
 
 The trigger uses `RAISE EXCEPTION` with French error messages, which surface to the user directly. The RLS UPDATE policy above the trigger is intentionally wide (`buyer_id = auth.uid() OR seller_id = auth.uid()`) — narrow gating belongs in the trigger because it depends on the diff between OLD and NEW.
 
-**The buyer-cancellation-history view** (pending future migration) aggregates cancellations per buyer for the post-launch buyer-rating system. The view is read-only and built from the orders table; it stores no new data.
+**The buyer-cancellation-history view** aggregates cancellations per buyer for the post-launch buyer-rating system. Read-only, built from the orders table, it stores no new data: one row per buyer with `buyer_id`, `total_orders`, `cancellations_total` (any initiator), `cancellations_by_buyer` (`cancelled_by='buyer'`), `cancellations_by_buyer_after_pivot` (buyer-initiated where a reason was required — the serial-refuser metric, using `cancellation_reason IS NOT NULL` as a proxy for post-pivot until per-transition timestamps ship), and `last_buyer_cancelled_at`. It is `security_invoker=true`, inheriting orders RLS: a buyer sees their own global stats, an admin sees all, a seller sees only the slice of orders they share with that buyer.
 
 RLS on orders: only the buyer and the seller of a given order can SELECT it (delivery data is private). Only the buyer can INSERT (buyer_id must equal auth.uid()). Either party can UPDATE (subject to trigger gating).
 
