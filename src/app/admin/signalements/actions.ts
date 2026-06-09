@@ -224,3 +224,70 @@ export async function dismissReport(reportId: string, adminNote: string): Promis
   revalidatePath('/admin/signalements/' + reportId)
   return { success: true }
 }
+
+// --- Inline user suspension (user-targeted reports) -------------------------
+// Report-local wrappers around admin_suspend_user / admin_unsuspend_user (the same
+// SECURITY DEFINER functions /admin/utilisateurs uses), mirroring how hideContent/
+// unhideContent re-wrap admin_hide_content here. The difference from the utilisateurs
+// actions is the revalidate target: these refresh the report detail page (where the
+// action is invoked) as well as the user surfaces. The functions RAISE on every
+// failure mode (admin gate, self-suspend, empty reason, already/not-suspended), so a
+// null error genuinely means the state changed — no rowcount guard needed.
+
+function translateSuspendError(message: string): string {
+  if (message.includes('Forbidden')) return 'admin.users.error_forbidden'
+  if (message.includes('cannot suspend themselves')) return 'admin.users.error_self_suspend'
+  if (message.includes('reason is required')) return 'admin.users.suspend_reason_required'
+  if (message.includes('already suspended')) return 'admin.users.error_already_suspended'
+  if (message.includes('not currently suspended')) return 'admin.users.error_not_suspended'
+  return 'common.error_generic'
+}
+
+export async function suspendReportedUser(
+  targetUserId: string,
+  reason: string,
+  reportId: string,
+): Promise<ReportActionResult> {
+  const trimmed = reason.trim()
+  if (trimmed.length === 0) {
+    return { success: false, error: 'admin.users.suspend_reason_required' }
+  }
+
+  const supabase = await createClient()
+  const { error } = await supabase.rpc('admin_suspend_user', {
+    target_user_id: targetUserId,
+    reason: trimmed,
+  })
+  if (error) {
+    console.error('[admin/signalements] suspendReportedUser error:', error)
+    return { success: false, error: translateSuspendError(error.message) }
+  }
+
+  // Suspension changed global state: refresh the report page (we're on it) and the
+  // user surfaces so they aren't stale on the next visit. The suspended user is signed
+  // out by middleware.ts on their next protected-route request (no service-role
+  // signout here — the service role key stays out of app code).
+  revalidatePath('/admin/signalements/' + reportId)
+  revalidatePath('/admin/utilisateurs')
+  revalidatePath('/admin/utilisateurs/' + targetUserId)
+  return { success: true }
+}
+
+export async function unsuspendReportedUser(
+  targetUserId: string,
+  reportId: string,
+): Promise<ReportActionResult> {
+  const supabase = await createClient()
+  const { error } = await supabase.rpc('admin_unsuspend_user', {
+    target_user_id: targetUserId,
+  })
+  if (error) {
+    console.error('[admin/signalements] unsuspendReportedUser error:', error)
+    return { success: false, error: translateSuspendError(error.message) }
+  }
+
+  revalidatePath('/admin/signalements/' + reportId)
+  revalidatePath('/admin/utilisateurs')
+  revalidatePath('/admin/utilisateurs/' + targetUserId)
+  return { success: true }
+}
