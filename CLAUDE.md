@@ -200,7 +200,7 @@ Three MVP features locked, requiring UI work in Phase 9 or earlier coding phases
 - Phase 8 Subtask 3 — Arabic translations (`ar.ts`), needs fluent Tunisian Arabic reader
 - Phase 9 — Admin dashboard + reports + statistics (most security-sensitive remaining phase)
 - Phase 10 — Polish + Sentry + Turnstile + lawyer review of legal docs (FR + AR)
-- Pillar 4 Appendix A schema migrations sequenced into Phase 9 or Phase 10
+- Pillar 4 Appendix A schema migrations — applied through migration 32 (see `db/migrations/`)
 
 **Step 2 — User-facing Pillars (deep focused work, fresh sessions only):**
 - Pillar 5 (Content and Marketing Strategy) — social, ads, content positioning
