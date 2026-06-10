@@ -127,6 +127,40 @@ export const fr: Record<string, string> = {
   'nav.menu_close':      "Fermer le menu",
   'nav.switch_language': "Changer de langue",
   'nav.aria_primary':    "Navigation principale",
+
+  // ─── Landing page (marketing, logged-out) — Hero + Founder Note (PR-LP1) ─────
+  'landing.hero.label':         "Plateforme tunisienne",
+  'landing.hero.headline':      "Une vraie maison pour l'économie tunisienne",
+  'landing.hero.subheadline':   "Achetez, vendez, et travaillez en dinars tunisiens. Paiement à la livraison, services en français et en arabe, vos données hébergées en Europe.",
+  'landing.hero.cta_primary':   "Créer un compte gratuit",
+  'landing.hero.cta_secondary': "Découvrir la plateforme",
+  // Hero phone — mock order cards
+  'landing.hero.mock.bag_title':  "Sac en cuir artisanal",
+  'landing.hero.mock.bag_meta':   "45 TND • Tunis",
+  'landing.hero.mock.bag_badge':  "Demande envoyée",
+  'landing.hero.mock.logo_title': "Design de logo",
+  'landing.hero.mock.logo_meta':  "120 TND • Sami K., Sfax",
+  'landing.hero.mock.logo_badge': "Acceptée",
+  'landing.hero.mock.web_title':  "Développement site web",
+  'landing.hero.mock.web_meta':   "1500 TND • DevTunisia, Tunis",
+  'landing.hero.mock.web_badge':  "En cours",
+  // Hero — floating badges
+  'landing.badge.commission':   "0% commission",
+  'landing.badge.governorates': "24 gouvernorats",
+  'landing.badge.tunisian':     "Tunisien à 100%",
+  // Trust band
+  'landing.trust.governorates_value': "24",
+  'landing.trust.governorates':       "gouvernorats servis",
+  'landing.trust.categories_value':   "14",
+  'landing.trust.categories':         "catégories",
+  'landing.trust.commission_value':   "0%",
+  'landing.trust.commission':         "de commission au lancement",
+  'landing.trust.data_value':         "Europe",
+  'landing.trust.data':               "données hébergées",
+  // Founder note
+  'landing.founder.label': "FONDATEUR",
+  'landing.founder.name':  "Moatez Z.",
+  'landing.founder.quote': "« Servyou est construit en Tunisie, par un Tunisien, pour les Tunisiens. Nous n'avons pas de financement extérieur, pas d'actionnaires étrangers, et aucun investisseur à satisfaire. Notre seul engagement est envers vous. »",
   // Language names stay in their own language by accessibility convention (a
   // screen reader announces each natively). Identical value in fr.ts and ar.ts.
   'nav.language_french': "Français",

@@ -1,5 +1,5 @@
 import type { Metadata } from "next"
-import { Geist, Geist_Mono } from "next/font/google"
+import { Inter, Geist_Mono } from "next/font/google"
 import "./globals.css"
 import { getLang } from "@/lib/i18n/server"
 import { LangProvider } from "@/components/LangProvider"
@@ -7,8 +7,8 @@ import { Header } from "@/components/layout/Header"
 import { createClient } from "@/lib/supabase/server"
 import type { SellerType } from "@/lib/layout/select-variant"
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
 })
 
@@ -50,7 +50,7 @@ export default async function RootLayout({
     <html
       lang={lang}
       dir={lang === 'ar' ? 'rtl' : 'ltr'}
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${inter.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
         <LangProvider lang={lang}>

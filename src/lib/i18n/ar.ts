@@ -159,6 +159,40 @@ export const ar: Record<string, string> = {
   'nav.menu_close':      "إغلاق القائمة",
   'nav.switch_language': "تغيير اللغة",
   'nav.aria_primary':    "التنقل الرئيسي",
+
+  // ─── Landing page (marketing) — MSA, FLAGGED for fluent review (PR-LP1) ──────
+  'landing.hero.label':         "منصة تونسية",
+  'landing.hero.headline':      "بيت حقيقي للاقتصاد التونسي",
+  'landing.hero.subheadline':   "اشترِ، وبِع، واعمل بالدينار التونسي. الدفع عند الاستلام، خدمات بالفرنسية والعربية، وبياناتك مستضافة في أوروبا.",
+  'landing.hero.cta_primary':   "أنشئ حسابًا مجانيًا",
+  'landing.hero.cta_secondary': "اكتشف المنصة",
+  // Hero phone — mock order cards
+  'landing.hero.mock.bag_title':  "حقيبة جلدية يدوية الصنع",
+  'landing.hero.mock.bag_meta':   "45 د.ت • تونس",
+  'landing.hero.mock.bag_badge':  "تم إرسال الطلب",
+  'landing.hero.mock.logo_title': "تصميم شعار",
+  'landing.hero.mock.logo_meta':  "120 د.ت • سامي ك.، صفاقس",
+  'landing.hero.mock.logo_badge': "مقبول",
+  'landing.hero.mock.web_title':  "تطوير موقع ويب",
+  'landing.hero.mock.web_meta':   "1500 د.ت • DevTunisia، تونس",
+  'landing.hero.mock.web_badge':  "قيد التنفيذ",
+  // Hero — floating badges
+  'landing.badge.commission':   "0٪ عمولة",
+  'landing.badge.governorates': "24 ولاية",
+  'landing.badge.tunisian':     "تونسي 100٪",
+  // Trust band
+  'landing.trust.governorates_value': "24",
+  'landing.trust.governorates':       "ولاية مَخدومة",
+  'landing.trust.categories_value':   "14",
+  'landing.trust.categories':         "فئة",
+  'landing.trust.commission_value':   "0٪",
+  'landing.trust.commission':         "عمولة عند الإطلاق",
+  'landing.trust.data_value':         "أوروبا",
+  'landing.trust.data':               "استضافة البيانات",
+  // Founder note
+  'landing.founder.label': "المؤسِّس",
+  'landing.founder.name':  "معتز ز.",
+  'landing.founder.quote': "«صُمِّم Servyou في تونس، على يد تونسي، من أجل التونسيين. لا تمويل خارجي لدينا، ولا مساهمون أجانب، ولا مستثمرون نُرضيهم. التزامنا الوحيد هو تجاهكم.»",
   // Language names stay native (identical to fr.ts) by accessibility convention.
   'nav.language_french': "Français",
   'nav.language_arabic': "العربية",
