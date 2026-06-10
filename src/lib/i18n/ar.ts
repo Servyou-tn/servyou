@@ -142,6 +142,27 @@ export const ar: Record<string, string> = {
   'nav.login':           "تسجيل الدخول",
   'nav.signup':          "إنشاء حساب",
 
+  // ─── Navigation (production Header — three variants) ──────────────────────────
+  // MSA, matching the style above. FLAGGED for fluent Tunisian-Arabic review as
+  // Phase 8 follow-up (see PR description).
+  'nav.home':            "الرئيسية",
+  'nav.browse':          "تصفّح",
+  'nav.dashboard':       "لوحة التحكم",
+  'nav.products':        "المنتجات",
+  'nav.services':        "الخدمات",
+  'nav.workspace_orders':"الطلبات",
+  'nav.jobs':            "عروض العمل",
+  'nav.responses':       "الردود",
+  'nav.account':         "حسابي",
+  'nav.signup_short':    "إنشاء حساب",
+  'nav.menu_open':       "فتح القائمة",
+  'nav.menu_close':      "إغلاق القائمة",
+  'nav.switch_language': "تغيير اللغة",
+  'nav.aria_primary':    "التنقل الرئيسي",
+  // Language names stay native (identical to fr.ts) by accessibility convention.
+  'nav.language_french': "Français",
+  'nav.language_arabic': "العربية",
+
   // ─── Homepage ────────────────────────────────────────────────────────────────
   'home.hero':               "اعثر على المنتجات والخدمات في تونس",
   'home.search_placeholder': "ابحث عن منتج أو خدمة…",

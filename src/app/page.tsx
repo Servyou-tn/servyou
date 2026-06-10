@@ -7,15 +7,8 @@ export default async function HomePage() {
   const supabase = await createClient()
   const lang = await getLang()
 
-  const { data: { user } } = await supabase.auth.getUser()
-
-  let sellerType: string | null = null
-  if (user) {
-    const { data: profile } = await supabase
-      .from('profiles').select('seller_type').eq('id', user.id).single()
-    sellerType = profile?.seller_type ?? null
-  }
-
+  // Navigation now lives in the shared <Header> (root layout); this page only
+  // renders discovery content.
   const [{ data: categories }, { data: recentProducts }, { data: recentServices }] = await Promise.all([
     supabase.from('categories').select('id, name_fr, slug').order('name_fr'),
     supabase.from('products')
@@ -35,34 +28,6 @@ export default async function HomePage() {
 
   return (
     <main className="min-h-screen bg-gray-50">
-
-      {/* User area */}
-      <div className="bg-white border-b border-gray-200 px-4 py-4">
-        <div className="max-w-4xl mx-auto flex flex-wrap items-center justify-between gap-3">
-          <span className="font-bold text-gray-800 text-lg">Servyou</span>
-          {user ? (
-            <div className="flex flex-wrap items-center gap-2 text-sm">
-              <Link href="/profile" className="text-gray-600 hover:underline">{t('nav.profile', lang)}</Link>
-              <Link href="/mes-demandes" className="text-gray-600 hover:underline">{t('nav.orders', lang)}</Link>
-              <Link href="/mes-favoris" className="text-gray-600 hover:underline">{t('nav.favorites', lang)}</Link>
-              <Link href="/mes-missions" className="text-gray-600 hover:underline">{t('nav.missions', lang)}</Link>
-              {sellerType === 'shop_owner' && <Link href="/ma-boutique" className="text-gray-600 hover:underline">{t('nav.shop', lang)}</Link>}
-              {sellerType === 'freelancer' && <Link href="/mon-profil-freelance" className="text-gray-600 hover:underline">{t('nav.freelance_space', lang)}</Link>}
-              {sellerType === 'freelancer' && <Link href="/mes-reponses" className="text-gray-600 hover:underline">{t('nav.my_responses', lang)}</Link>}
-              {sellerType === null && <Link href="/devenir-vendeur" className="text-blue-600 hover:underline">{t('nav.become_seller', lang)}</Link>}
-              <form action="/auth/signout" method="POST" className="inline">
-                <button type="submit" className="text-red-500 hover:underline">{t('nav.logout', lang)}</button>
-              </form>
-            </div>
-          ) : (
-            <div className="flex gap-3 text-sm items-center">
-              <Link href="/missions" className="text-gray-600 hover:underline">{t('nav.missions_board', lang)}</Link>
-              <Link href="/login" className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-1.5 rounded transition-colors">{t('nav.login', lang)}</Link>
-              <Link href="/signup" className="border border-gray-300 hover:bg-gray-50 text-gray-700 px-4 py-1.5 rounded transition-colors">{t('nav.signup', lang)}</Link>
-            </div>
-          )}
-        </div>
-      </div>
 
       <div className="max-w-4xl mx-auto px-4 py-10 space-y-12">
 

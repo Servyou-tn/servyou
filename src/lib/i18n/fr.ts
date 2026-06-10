@@ -109,6 +109,29 @@ export const fr: Record<string, string> = {
   'nav.login':           "Se connecter",
   'nav.signup':          "Créer un compte",
 
+  // ─── Navigation (production Header — three variants) ──────────────────────────
+  // Snake_case to match the established convention above. Reuses nav.profile /
+  // nav.orders / nav.favorites / nav.login / nav.logout / nav.become_seller /
+  // nav.missions_board where the label already exists.
+  'nav.home':            "Accueil",
+  'nav.browse':          "Parcourir",
+  'nav.dashboard':       "Tableau de bord",
+  'nav.products':        "Produits",
+  'nav.services':        "Services",
+  'nav.workspace_orders':"Commandes",          // distinct from nav.orders ("Mes demandes")
+  'nav.jobs':            "Offres d'emploi",     // freelance workspace label for /missions
+  'nav.responses':       "Réponses",
+  'nav.account':         "Mon compte",
+  'nav.signup_short':    "S'inscrire",
+  'nav.menu_open':       "Ouvrir le menu",
+  'nav.menu_close':      "Fermer le menu",
+  'nav.switch_language': "Changer de langue",
+  'nav.aria_primary':    "Navigation principale",
+  // Language names stay in their own language by accessibility convention (a
+  // screen reader announces each natively). Identical value in fr.ts and ar.ts.
+  'nav.language_french': "Français",
+  'nav.language_arabic': "العربية",
+
   // ─── Homepage ────────────────────────────────────────────────────────────────
   'home.hero':               "Trouvez des produits et services en Tunisie",
   'home.search_placeholder': "Rechercher un produit ou service…",

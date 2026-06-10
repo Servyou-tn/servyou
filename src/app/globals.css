@@ -3,6 +3,21 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+
+  /* ── Brand tokens (seed of the real token system; formalized in Phase 2 Step 2.2) ──
+     First production design tokens. Named semantically so components reference
+     intent (--surface-pill), never raw hex. Introduced by the production Header. */
+  --brand-primary: #1E3A8A;          /* "Serv" navy */
+  --brand-accent: #2563EB;           /* "you" bright blue, CTAs */
+  --brand-accent-light: #7DAEED;     /* light blue, subtle accents */
+  --surface-base: #FFFFFF;
+  --surface-subtle: #F8FAFC;
+  --surface-pill: #F1F5F9;           /* the gray pill capsule background */
+  --surface-pill-active: #FFFFFF;    /* the active-page white sub-pill */
+  --text-primary: #0F172A;
+  --text-muted: #64748B;
+  --border-subtle: #E2E8F0;
+  --status-dot-success: #10B981;     /* the small green dot in the active pill */
 }
 
 @theme inline {
@@ -10,6 +25,20 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+
+  /* Expose the brand tokens as Tailwind utilities (bg-surface-pill,
+     text-text-muted, outline-brand-accent, etc.). */
+  --color-brand-primary: var(--brand-primary);
+  --color-brand-accent: var(--brand-accent);
+  --color-brand-accent-light: var(--brand-accent-light);
+  --color-surface-base: var(--surface-base);
+  --color-surface-subtle: var(--surface-subtle);
+  --color-surface-pill: var(--surface-pill);
+  --color-surface-pill-active: var(--surface-pill-active);
+  --color-text-primary: var(--text-primary);
+  --color-text-muted: var(--text-muted);
+  --color-border-subtle: var(--border-subtle);
+  --color-status-dot-success: var(--status-dot-success);
 }
 
 @media (prefers-color-scheme: dark) {
