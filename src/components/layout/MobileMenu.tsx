@@ -110,7 +110,7 @@ export function MobileMenu({
             className="absolute inset-y-0 end-0 flex w-full max-w-sm flex-col bg-surface-base p-5 shadow-xl"
           >
             <div className="flex items-center justify-between">
-              <Wordmark className="text-xl" />
+              <Wordmark />
               <button
                 ref={closeRef}
                 type="button"

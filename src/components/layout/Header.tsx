@@ -45,8 +45,8 @@ export function Header({
       >
         {/* Left — brand */}
         <div className="flex items-center md:justify-start">
-          <Link href="/" aria-label="Servyou" className={`rounded-md ${FOCUS_RING}`}>
-            <Wordmark className="text-xl" />
+          <Link href="/" aria-label="Servyou" className={`inline-flex items-center rounded-md ${FOCUS_RING}`}>
+            <Wordmark />
           </Link>
         </div>
 
@@ -82,7 +82,7 @@ export function Header({
           <LanguageToggle />
 
           {/* md+ : auth CTAs (public) or account dropdown */}
-          <div className="hidden md:flex md:items-center md:gap-2">
+          <div className="hidden md:flex md:items-center md:gap-3">
             {state.variant === 'public' ? (
               <>
                 <Link
