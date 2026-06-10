@@ -27,6 +27,7 @@ export function MobileMenu({
   const [open, setOpen] = useState(false)
   const triggerRef = useRef<HTMLButtonElement>(null)
   const closeRef = useRef<HTMLButtonElement>(null)
+  const panelRef = useRef<HTMLDivElement>(null)
 
   const links = navLinks(state)
   const active = activeHref(links, pathname)
@@ -63,6 +64,24 @@ export function MobileMenu({
     triggerRef.current?.focus()
   }
 
+  // Keep Tab focus inside the overlay while it's open (the panel is aria-modal).
+  function onPanelKeyDown(e: React.KeyboardEvent) {
+    if (e.key !== 'Tab') return
+    const focusables = panelRef.current?.querySelectorAll<HTMLElement>(
+      'a[href], button:not([disabled])',
+    )
+    if (!focusables || focusables.length === 0) return
+    const first = focusables[0]
+    const last = focusables[focusables.length - 1]
+    if (e.shiftKey && document.activeElement === first) {
+      e.preventDefault()
+      last.focus()
+    } else if (!e.shiftKey && document.activeElement === last) {
+      e.preventDefault()
+      first.focus()
+    }
+  }
+
   const rowClass = `rounded-lg px-4 py-3 text-base font-medium transition-colors ${FOCUS_RING}`
 
   return (
@@ -85,7 +104,11 @@ export function MobileMenu({
             onClick={close}
             aria-hidden="true"
           />
-          <div className="absolute inset-y-0 end-0 flex w-full max-w-sm flex-col bg-surface-base p-5 shadow-xl">
+          <div
+            ref={panelRef}
+            onKeyDown={onPanelKeyDown}
+            className="absolute inset-y-0 end-0 flex w-full max-w-sm flex-col bg-surface-base p-5 shadow-xl"
+          >
             <div className="flex items-center justify-between">
               <Wordmark className="text-xl" />
               <button
