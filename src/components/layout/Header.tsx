@@ -54,11 +54,14 @@ export function Header({
     >
       <nav
         aria-label={t('nav.aria_primary', lang)}
-        className={`mx-auto flex items-center justify-between gap-3 py-3 md:grid md:grid-cols-[1fr_auto_1fr] md:gap-4 ${
+        className={
           isLanding
-            ? 'mt-6 max-w-6xl rounded-full border border-[rgba(15,23,42,0.08)] bg-white px-6 shadow-lg'
-            : 'max-w-7xl px-4 lg:px-6'
-        }`}
+            ? // Compact floating pill: shrink-wraps to content (w-fit), centered
+              // (mx-auto), tight padding + a single gap-6 between the three zones.
+              'mx-auto mt-6 flex w-fit items-center gap-6 rounded-full border border-[rgba(15,23,42,0.08)] bg-white px-4 py-2 shadow-lg'
+            : // Standard full-width bar on every other route.
+              'mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3 md:grid md:grid-cols-[1fr_auto_1fr] md:gap-4 lg:px-6'
+        }
       >
         {/* Left — brand */}
         <div className="flex items-center md:justify-start">
