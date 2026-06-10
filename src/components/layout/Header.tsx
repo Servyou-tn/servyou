@@ -93,7 +93,7 @@ export function Header({
                 </Link>
                 <Link
                   href="/signup"
-                  className={`rounded-full border border-brand-accent px-4 py-2 text-sm font-semibold text-brand-accent transition-colors hover:bg-brand-accent hover:text-white ${FOCUS_RING}`}
+                  className={`rounded-full bg-brand-primary px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#152C6B] ${FOCUS_RING}`}
                 >
                   {t('nav.signup_short', lang)}
                 </Link>

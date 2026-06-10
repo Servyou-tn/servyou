@@ -10,9 +10,14 @@ export type NavLink = { href: string; key: string }
 /** Center-pill links for the resolved variant. Routes are the real ones that exist. */
 export function navLinks(state: HeaderState): NavLink[] {
   if (state.variant === 'public') {
+    // Boutiques / Freelances / À propos point to landing-page anchor sections
+    // that ship in later PRs; until then the links render and scroll to nothing.
     return [
       { href: '/', key: 'nav.home' },
+      { href: '/#boutiques', key: 'nav.shops' },
+      { href: '/#freelances', key: 'nav.freelancers' },
       { href: '/missions', key: 'nav.missions_board' },
+      { href: '/#a-propos', key: 'nav.about' },
     ]
   }
 

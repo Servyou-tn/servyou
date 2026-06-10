@@ -156,7 +156,7 @@ export function MobileMenu({
                   <Link
                     href="/signup"
                     onClick={() => setOpen(false)}
-                    className={`${rowClass} border border-brand-accent text-center font-semibold text-brand-accent hover:bg-brand-accent hover:text-white`}
+                    className={`${rowClass} bg-brand-primary text-center font-semibold text-white hover:bg-[#152C6B]`}
                   >
                     {t('nav.signup_short', lang)}
                   </Link>

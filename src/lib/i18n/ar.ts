@@ -159,6 +159,9 @@ export const ar: Record<string, string> = {
   'nav.menu_close':      "إغلاق القائمة",
   'nav.switch_language': "تغيير اللغة",
   'nav.aria_primary':    "التنقل الرئيسي",
+  'nav.shops':           "المتاجر",
+  'nav.freelancers':     "المستقلون",
+  'nav.about':           "من نحن",
 
   // ─── Landing page (marketing) — MSA, FLAGGED for fluent review (PR-LP1) ──────
   'landing.hero.label':         "منصة تونسية",

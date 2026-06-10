@@ -127,6 +127,9 @@ export const fr: Record<string, string> = {
   'nav.menu_close':      "Fermer le menu",
   'nav.switch_language': "Changer de langue",
   'nav.aria_primary':    "Navigation principale",
+  'nav.shops':           "Boutiques",
+  'nav.freelancers':     "Freelances",
+  'nav.about':           "À propos",
 
   // ─── Landing page (marketing, logged-out) — Hero + Founder Note (PR-LP1) ─────
   'landing.hero.label':         "Plateforme tunisienne",
