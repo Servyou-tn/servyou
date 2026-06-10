@@ -540,7 +540,10 @@ export default function LandingV1Page() {
               </div>
             </div>
 
-            <div className="order-first md:order-last">
+            {/* DOM order (text → visual) gives the correct layout at both breakpoints:
+                mobile stacks headline/sub/CTA first then the visual below (CTA stays
+                within the first screen height); desktop puts text left, visual right. */}
+            <div>
               <HeroVisual />
             </div>
           </div>
