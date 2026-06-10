@@ -39,7 +39,8 @@ const badgePill =
 export function Hero({ lang }: { lang: Lang }) {
   return (
     <>
-      <section style={{ background: 'linear-gradient(to bottom, var(--surface-base), var(--surface-subtle))' }}>
+      {/* Transparent so the page's fixed sky-blue backdrop shows through. */}
+      <section>
         <div className="mx-auto max-w-7xl px-6 py-20 lg:py-28">
           <div className="grid items-center gap-12 lg:grid-cols-2">
             {/* Left — text */}

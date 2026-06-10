@@ -37,11 +37,28 @@ export function Header({
   const links = navLinks(state)
   const active = activeHref(links, pathname)
 
+  // The marketing landing page (/) gets a distinct treatment: a white floating
+  // capsule on a transparent header (the page paints a soft-blue backdrop behind
+  // it), and a bright-blue Sign-up button. Every other route keeps the standard
+  // full-width bar. Logged-in users are redirected off / so this is always the
+  // public variant there.
+  const isLanding = pathname === '/'
+
   return (
-    <header className="sticky top-0 z-40 border-b border-border-subtle bg-surface-base/95 backdrop-blur supports-[backdrop-filter]:bg-surface-base/80">
+    <header
+      className={`sticky top-0 z-40 ${
+        isLanding
+          ? ''
+          : 'border-b border-border-subtle bg-surface-base/95 backdrop-blur supports-[backdrop-filter]:bg-surface-base/80'
+      }`}
+    >
       <nav
         aria-label={t('nav.aria_primary', lang)}
-        className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3 md:grid md:grid-cols-[1fr_auto_1fr] md:gap-4 lg:px-6"
+        className={`mx-auto flex items-center justify-between gap-3 py-3 md:grid md:grid-cols-[1fr_auto_1fr] md:gap-4 ${
+          isLanding
+            ? 'mt-6 max-w-6xl rounded-full border border-[rgba(15,23,42,0.08)] bg-white px-6 shadow-lg'
+            : 'max-w-7xl px-4 lg:px-6'
+        }`}
       >
         {/* Left — brand */}
         <div className="flex items-center md:justify-start">
@@ -87,13 +104,15 @@ export function Header({
               <>
                 <Link
                   href="/login"
-                  className={`rounded-full px-3 py-2 text-sm font-medium text-text-muted transition-colors hover:text-text-primary ${FOCUS_RING}`}
+                  className={`whitespace-nowrap rounded-full px-3 py-2 text-sm font-medium text-text-muted transition-colors hover:text-text-primary ${FOCUS_RING}`}
                 >
                   {t('nav.login', lang)}
                 </Link>
                 <Link
                   href="/signup"
-                  className={`rounded-full bg-brand-primary px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#152C6B] ${FOCUS_RING}`}
+                  className={`whitespace-nowrap rounded-full px-4 py-2 text-sm font-semibold text-white transition-colors ${
+                    isLanding ? 'bg-brand-accent hover:bg-[#1D4ED8]' : 'bg-brand-primary hover:bg-[#152C6B]'
+                  } ${FOCUS_RING}`}
                 >
                   {t('nav.signup_short', lang)}
                 </Link>

@@ -28,6 +28,14 @@ export default async function HomePage() {
 
   return (
     <main>
+      {/* Soft sky-blue → white backdrop. `fixed` so it also sits behind the
+          floating navbar capsule (the Header lives in the root layout, above
+          <main>, so a gradient on <main> alone wouldn't reach it). Landing-only. */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none fixed inset-0 -z-10"
+        style={{ background: 'linear-gradient(to bottom, #E0F2FE 0%, #FFFFFF 60%)' }}
+      />
       <Hero lang={lang} />
       <FounderNote lang={lang} />
     </main>
