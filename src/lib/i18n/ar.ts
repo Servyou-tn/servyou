@@ -222,6 +222,16 @@ export const ar: Record<string, string> = {
   'landing.journey.freelancers_body':     "أدرِج خدماتك بأسعار شفّافة. تصفّح لوحة عروض العمل التي ينشرها عملاء تونسيون يحتاجون مهاراتك. ردَّ بسعرك ومهلتك. النظام يمنع الإزعاج — بحد أقصى 10 ردود لكل عرض، و5 ردود نشطة لكل مستقل.",
   'landing.journey.freelancers_cta':      "إنشاء ملفّي كمستقل",
 
+  // ─── Landing — Section 6 (How it works) ─────────────────────────────────────
+  'landing.how.step1_title': "اعثر",
+  'landing.how.step1_body':  "تصفّح المتاجر والمستقلين التونسيين، دون تسجيل.",
+  'landing.how.step2_title': "اطلب",
+  'landing.how.step2_body':  "قدِّم طلبًا مجانيًا. لا التزام ولا دفع في هذه المرحلة.",
+  'landing.how.step3_title': "استلم",
+  'landing.how.step3_body':  "يتواصل معك البائع، وينظّم التوصيل، ويُحضر طلبك.",
+  'landing.how.step4_title': "ادفع",
+  'landing.how.step4_body':  "عند الاستلام، بالدينار، دون وسيط ودون مفاجآت.",
+
   // Language names stay native (identical to fr.ts) by accessibility convention.
   'nav.language_french': "Français",
   'nav.language_arabic': "العربية",

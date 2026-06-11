@@ -190,6 +190,16 @@ export const fr: Record<string, string> = {
   'landing.journey.freelancers_body':     "Listez vos services avec prix transparents. Parcourez le tableau d'offres d'emploi posté par des clients tunisiens qui ont besoin de vos compétences. Répondez avec votre prix et votre délai. Le système empêche le spam — maximum 10 réponses par offre, 5 réponses actives par freelance.",
   'landing.journey.freelancers_cta':      "Créer mon profil freelance",
 
+  // ─── Landing — Section 6 (How it works) ─────────────────────────────────────
+  'landing.how.step1_title': "Trouvez",
+  'landing.how.step1_body':  "Parcourez les boutiques et les freelances tunisiens, sans inscription.",
+  'landing.how.step2_title': "Demandez",
+  'landing.how.step2_body':  "Soumettez une demande gratuite. Aucun engagement, aucun paiement à ce stade.",
+  'landing.how.step3_title': "Recevez",
+  'landing.how.step3_body':  "Le vendeur vous contacte, organise la livraison, et apporte votre commande.",
+  'landing.how.step4_title': "Payez",
+  'landing.how.step4_body':  "À la livraison, en dinars, sans intermédiaire et sans surprise.",
+
   // Language names stay in their own language by accessibility convention (a
   // screen reader announces each natively). Identical value in fr.ts and ar.ts.
   'nav.language_french': "Français",
