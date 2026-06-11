@@ -212,6 +212,20 @@ export const fr: Record<string, string> = {
   'landing.faq.q5': "Pourquoi français et arabe, mais pas anglais ?",
   'landing.faq.a5': "Servyou est conçu pour les Tunisiens d'abord. Le français et l'arabe couvrent l'usage quotidien. L'anglais arrivera plus tard si la communauté le demande.",
 
+  // ─── Landing — Section 8 (Final CTA + footer) ───────────────────────────────
+  'landing.final.heading':              "Tunis mérite une vraie place du marché. Nous la construisons. Rejoignez-nous.",
+  'landing.footer.founder_credit':      "Construit en Tunisie par Moatez Z.",
+  'landing.footer.col_discover':        "Découvrir",
+  'landing.footer.col_servyou':         "Servyou",
+  'landing.footer.col_legal':           "Légal",
+  'landing.footer.contact':             "Contact",
+  'landing.footer.faq':                 "FAQ",
+  'landing.footer.legal_terms':         "Conditions d'utilisation",
+  'landing.footer.legal_privacy':       "Confidentialité",
+  'landing.footer.legal_cookies':       "Cookies",
+  'landing.footer.legal_accessibility': "Accessibilité",
+  'landing.footer.copyright':           "© 2026 Servyou. Tous droits réservés.",
+
   // Language names stay in their own language by accessibility convention (a
   // screen reader announces each natively). Identical value in fr.ts and ar.ts.
   'nav.language_french': "Français",

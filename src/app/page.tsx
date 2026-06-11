@@ -8,6 +8,7 @@ import { Benefits } from '@/components/landing/Benefits'
 import { Journeys } from '@/components/landing/Journeys'
 import { HowItWorks } from '@/components/landing/HowItWorks'
 import { Faq } from '@/components/landing/Faq'
+import { FinalCtaFooter } from '@/components/landing/FinalCtaFooter'
 
 // The public marketing landing page (logged-out visitors only). Logged-in users
 // are redirected to their role home before any marketing renders.
@@ -48,6 +49,7 @@ export default async function HomePage() {
       <Journeys lang={lang} />
       <HowItWorks lang={lang} />
       <Faq lang={lang} />
+      <FinalCtaFooter lang={lang} />
     </main>
   )
 }
