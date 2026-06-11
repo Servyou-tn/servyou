@@ -39,6 +39,32 @@ export function CheckIcon(props: SVGProps<SVGSVGElement>) {
   )
 }
 
+export function WalletIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg {...stroke} {...props}>
+      <path d="M21 12V7H5a2 2 0 0 1 0-4h14v4" />
+      <path d="M3 5v14a2 2 0 0 0 2 2h16v-5" />
+      <path d="M18 12a2 2 0 0 0 0 4h4v-4Z" />
+    </svg>
+  )
+}
+
+export function ShieldIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg {...stroke} {...props}>
+      <path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z" />
+    </svg>
+  )
+}
+
+export function ChevronDownIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg {...stroke} {...props}>
+      <path d="m6 9 6 6 6-6" />
+    </svg>
+  )
+}
+
 // Stylized Tunisian flag mark: red rounded square with a white crescent (the
 // crescent is carved by overlapping a red circle over a white one).
 export function TunisiaFlagIcon(props: SVGProps<SVGSVGElement>) {

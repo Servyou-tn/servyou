@@ -168,6 +168,14 @@ export const fr: Record<string, string> = {
   'landing.problem.headline': "Le commerce tunisien mérite mieux qu'Instagram et WhatsApp",
   'landing.problem.body':     "Aujourd'hui, les Tunisiens vendent sur Instagram avec des captures d'écran de virements bancaires. Ils prennent les commandes dans des DM WhatsApp qui se perdent parmi mille autres messages. Ils ne savent plus qui a payé, qui ne l'a pas fait, ni ce qu'ils ont promis de livrer. Il n'existe aucune plateforme conçue pour la Tunisie, en dinars tunisiens, avec les signaux de confiance dont le vrai commerce a besoin. Jusqu'à maintenant.",
 
+  // ─── Landing — Section 4 (Three benefits) ───────────────────────────────────
+  'landing.benefits.tunisian_title': "Tunisien d'abord",
+  'landing.benefits.tunisian_body':  "Conçu pour la Tunisie, pas adapté depuis ailleurs. Tous les prix en dinars. Livraison dans les 24 gouvernorats. Paiement à la livraison universel, parce que c'est comme ça que la Tunisie achète.",
+  'landing.benefits.pricing_title':  "Honnête sur les prix",
+  'landing.benefits.pricing_body':   "Pas de commission cachée. Pas de frais surprise. Pas d'algorithme qui prend une part. Ce que vous voyez est ce que vous payez, et ce que le vendeur affiche est ce qu'il reçoit.",
+  'landing.benefits.data_title':     "Vos données, votre maison",
+  'landing.benefits.data_body':      "Vos informations restent en Europe, jamais revendues à des annonceurs. Pas de pisteurs tiers, pas de publicités ciblées, pas d'IA qui apprend sur votre dos. Vos données vous appartiennent.",
+
   // Language names stay in their own language by accessibility convention (a
   // screen reader announces each natively). Identical value in fr.ts and ar.ts.
   'nav.language_french': "Français",
