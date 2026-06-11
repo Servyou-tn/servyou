@@ -68,7 +68,7 @@ export function Header({
         {/* Left — brand */}
         <div className="flex items-center md:justify-start">
           <Link href="/" aria-label="Servyou" className={`inline-flex items-center rounded-md ${FOCUS_RING}`}>
-            <Wordmark className="h-16" />
+            <Wordmark className={isLanding ? 'h-20' : 'h-16'} />
           </Link>
         </div>
 
@@ -130,8 +130,10 @@ export function Header({
                 </Link>
                 <Link
                   href="/signup"
-                  className={`whitespace-nowrap rounded-full px-4 py-2 text-sm font-semibold text-white transition-colors ${
-                    isLanding ? 'bg-brand-accent hover:bg-[#1D4ED8]' : 'bg-brand-primary hover:bg-[#152C6B]'
+                  className={`whitespace-nowrap rounded-full font-semibold text-white transition-colors ${
+                    isLanding
+                      ? 'px-6 py-2.5 text-base bg-brand-accent hover:bg-[#1D4ED8]'
+                      : 'px-4 py-2 text-sm bg-brand-primary hover:bg-[#152C6B]'
                   } ${FOCUS_RING}`}
                 >
                   {t('nav.signup_short', lang)}
