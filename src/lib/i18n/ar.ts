@@ -196,6 +196,10 @@ export const ar: Record<string, string> = {
   'landing.founder.label': "المؤسِّس",
   'landing.founder.name':  "معتز ز.",
   'landing.founder.quote': "«صُمِّم Servyou في تونس، على يد تونسي، من أجل التونسيين. لا تمويل خارجي لدينا، ولا مساهمون أجانب، ولا مستثمرون نُرضيهم. التزامنا الوحيد هو تجاهكم.»",
+  // ─── Landing — Section 3 (Problem agitation) ────────────────────────────────
+  'landing.problem.headline': "التجارة التونسية تستحق أفضل من إنستغرام وواتساب",
+  'landing.problem.body':     "اليوم، يبيع التونسيون على إنستغرام بلقطات شاشة للتحويلات البنكية. يستقبلون الطلبات في رسائل واتساب الخاصة التي تضيع بين آلاف الرسائل الأخرى. لم يعودوا يعرفون مَن دفع ومَن لم يدفع، ولا ما وعدوا بتسليمه. لا توجد منصة مصمَّمة لتونس، بالدينار التونسي، تحمل إشارات الثقة التي تحتاجها التجارة الحقيقية. حتى الآن.",
+
   // Language names stay native (identical to fr.ts) by accessibility convention.
   'nav.language_french': "Français",
   'nav.language_arabic': "العربية",

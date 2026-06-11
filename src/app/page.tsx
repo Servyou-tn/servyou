@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { getLang } from '@/lib/i18n/server'
 import { Hero } from '@/components/landing/Hero'
 import { FounderNote } from '@/components/landing/FounderNote'
+import { Problem } from '@/components/landing/Problem'
 
 // The public marketing landing page (logged-out visitors only). Logged-in users
 // are redirected to their role home before any marketing renders.
@@ -38,6 +39,7 @@ export default async function HomePage() {
       />
       <Hero lang={lang} />
       <FounderNote lang={lang} />
+      <Problem lang={lang} />
     </main>
   )
 }

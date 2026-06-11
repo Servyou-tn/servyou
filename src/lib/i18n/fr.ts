@@ -164,6 +164,10 @@ export const fr: Record<string, string> = {
   'landing.founder.label': "FONDATEUR",
   'landing.founder.name':  "Moatez Z.",
   'landing.founder.quote': "« Servyou est construit en Tunisie, par un Tunisien, pour les Tunisiens. Nous n'avons pas de financement extérieur, pas d'actionnaires étrangers, et aucun investisseur à satisfaire. Notre seul engagement est envers vous. »",
+  // ─── Landing — Section 3 (Problem agitation) ────────────────────────────────
+  'landing.problem.headline': "Le commerce tunisien mérite mieux qu'Instagram et WhatsApp",
+  'landing.problem.body':     "Aujourd'hui, les Tunisiens vendent sur Instagram avec des captures d'écran de virements bancaires. Ils prennent les commandes dans des DM WhatsApp qui se perdent parmi mille autres messages. Ils ne savent plus qui a payé, qui ne l'a pas fait, ni ce qu'ils ont promis de livrer. Il n'existe aucune plateforme conçue pour la Tunisie, en dinars tunisiens, avec les signaux de confiance dont le vrai commerce a besoin. Jusqu'à maintenant.",
+
   // Language names stay in their own language by accessibility convention (a
   // screen reader announces each natively). Identical value in fr.ts and ar.ts.
   'nav.language_french': "Français",
