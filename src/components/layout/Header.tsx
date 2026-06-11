@@ -58,9 +58,9 @@ export function Header({
           isLanding
             ? // Compact floating pill: shrink-wraps to content (w-fit), centered
               // (mx-auto), tight padding + a single gap-5 between the three zones
-              // (logo · nav links · auth cluster). items-center vertically centers
-              // the tall wordmark against the smaller text elements.
-              'mx-auto mt-6 flex w-fit items-center gap-5 rounded-full border border-[rgba(15,23,42,0.08)] bg-white px-5 py-2.5 shadow-lg'
+              // (logo · nav links · auth cluster). Low py keeps it a long, short
+              // horizontal pill; items-center centers the logo against the text.
+              'mx-auto mt-6 flex w-fit items-center gap-5 rounded-full border border-[rgba(15,23,42,0.08)] bg-white px-5 py-1.5 shadow-lg'
             : // Standard full-width bar on every other route.
               'mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3 md:grid md:grid-cols-[1fr_auto_1fr] md:gap-4 lg:px-6'
         }
@@ -68,7 +68,7 @@ export function Header({
         {/* Left — brand */}
         <div className="flex items-center md:justify-start">
           <Link href="/" aria-label="Servyou" className={`inline-flex items-center rounded-md ${FOCUS_RING}`}>
-            <Wordmark className={isLanding ? 'h-24' : 'h-16'} />
+            <Wordmark className="h-16" />
           </Link>
         </div>
 
