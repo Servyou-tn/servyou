@@ -70,9 +70,17 @@ export function Header({
           </Link>
         </div>
 
-        {/* Center — pill capsule (md+) */}
+        {/* Center — nav links (md+). On the landing capsule they sit directly on
+            the white pill (no gray group background); every other route keeps the
+            gray surface-pill group. The active link wears a tinted sub-pill +
+            green dot — white on the standard bar, surface-pill (#F1F5F9) on the
+            white landing capsule so it stays visible. */}
         <div className="hidden md:flex md:justify-center">
-          <ul className="flex items-center gap-1 rounded-full bg-surface-pill p-1">
+          <ul
+            className={`flex items-center gap-1 ${
+              isLanding ? '' : 'rounded-full bg-surface-pill p-1'
+            }`}
+          >
             {links.map(l => {
               const isActive = l.href === active
               return (
@@ -82,7 +90,9 @@ export function Header({
                     aria-current={isActive ? 'page' : undefined}
                     className={`flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-sm font-medium transition-colors ${
                       isActive
-                        ? 'bg-surface-pill-active text-text-primary shadow-sm'
+                        ? isLanding
+                          ? 'bg-surface-pill text-text-primary'
+                          : 'bg-surface-pill-active text-text-primary shadow-sm'
                         : 'text-text-muted hover:text-text-primary'
                     } ${FOCUS_RING}`}
                   >
@@ -97,12 +107,15 @@ export function Header({
           </ul>
         </div>
 
-        {/* Right — actions */}
-        <div className="flex items-center justify-end gap-2 md:gap-3">
+        {/* Right — actions. On the landing capsule every top-level zone is an even
+            gap-6 apart (FR/AR · Se connecter · S'inscrire), matching the gap-6 the
+            capsule already sets between logo, nav links, and this cluster. Other
+            routes keep their tighter gap-2/gap-3 action spacing. */}
+        <div className={`flex items-center justify-end ${isLanding ? 'gap-6' : 'gap-2 md:gap-3'}`}>
           <LanguageToggle />
 
           {/* md+ : auth CTAs (public) or account dropdown */}
-          <div className="hidden md:flex md:items-center md:gap-3">
+          <div className={`hidden md:flex md:items-center ${isLanding ? 'gap-6' : 'md:gap-3'}`}>
             {state.variant === 'public' ? (
               <>
                 <Link

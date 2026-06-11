@@ -2,7 +2,11 @@ import type { NextConfig } from "next";
 import { withSentryConfig } from "@sentry/nextjs";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  // Hide the Next.js dev-tools indicator — the floating circle with the Next "N"
+  // logo that renders bottom-left under `next dev`. It is dev-only chrome (never
+  // present in a production build) and was overlapping the public landing page in
+  // localhost review. Disabling it makes localhost match production.
+  devIndicators: false,
 };
 
 // Sentry build-time options. Source-map upload runs only when SENTRY_AUTH_TOKEN is set
