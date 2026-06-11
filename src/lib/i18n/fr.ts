@@ -176,6 +176,20 @@ export const fr: Record<string, string> = {
   'landing.benefits.data_title':     "Vos données, votre maison",
   'landing.benefits.data_body':      "Vos informations restent en Europe, jamais revendues à des annonceurs. Pas de pisteurs tiers, pas de publicités ciblées, pas d'IA qui apprend sur votre dos. Vos données vous appartiennent.",
 
+  // ─── Landing — Section 5 (Three journeys) ───────────────────────────────────
+  'landing.journey.buyers_label':         "Pour les acheteurs",
+  'landing.journey.buyers_headline':      "Découvrez des produits et services tunisiens, sans inscription.",
+  'landing.journey.buyers_body':          "Parcourez les boutiques et les freelances tunisiens librement. Trouvez ce qui vous intéresse, demandez en un clic, payez à la livraison. Suivez votre commande à travers les huit étapes du cycle de vie — de la demande jusqu'à la réception — depuis votre tableau de bord « Mes demandes ».",
+  'landing.journey.buyers_cta':           "Parcourir les produits",
+  'landing.journey.shops_label':          "Pour les boutiques",
+  'landing.journey.shops_headline':       "Votre boutique professionnelle en cinq minutes.",
+  'landing.journey.shops_body':           "Créez votre boutique gratuitement. Listez vos produits avec photos et prix. Partagez le lien unique sur Instagram, WhatsApp, ou Facebook. Recevez et gérez vos commandes depuis un tableau de bord conçu pour les vendeurs tunisiens — pas pour des startups américaines.",
+  'landing.journey.shops_cta':            "Créer ma boutique",
+  'landing.journey.freelancers_label':    "Pour les freelances",
+  'landing.journey.freelancers_headline': "Construisez votre profil professionnel, trouvez vos prochains clients.",
+  'landing.journey.freelancers_body':     "Listez vos services avec prix transparents. Parcourez le tableau d'offres d'emploi posté par des clients tunisiens qui ont besoin de vos compétences. Répondez avec votre prix et votre délai. Le système empêche le spam — maximum 10 réponses par offre, 5 réponses actives par freelance.",
+  'landing.journey.freelancers_cta':      "Créer mon profil freelance",
+
   // Language names stay in their own language by accessibility convention (a
   // screen reader announces each natively). Identical value in fr.ts and ar.ts.
   'nav.language_french': "Français",

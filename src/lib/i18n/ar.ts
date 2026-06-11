@@ -208,6 +208,20 @@ export const ar: Record<string, string> = {
   'landing.benefits.data_title':     "بياناتك، بيتك",
   'landing.benefits.data_body':      "تبقى معلوماتك في أوروبا، ولا تُباع أبدًا للمعلِنين. لا متتبِّعون من جهات خارجية، ولا إعلانات موجَّهة، ولا ذكاء اصطناعي يتعلّم على حسابك. بياناتك مِلكك.",
 
+  // ─── Landing — Section 5 (Three journeys) ───────────────────────────────────
+  'landing.journey.buyers_label':         "للمشترين",
+  'landing.journey.buyers_headline':      "اكتشف منتجات وخدمات تونسية، دون تسجيل.",
+  'landing.journey.buyers_body':          "تصفّح المتاجر والمستقلين التونسيين بحرية. اعثر على ما يهمّك، واطلبه بنقرة واحدة، وادفع عند الاستلام. تابِع طلبك عبر مراحل دورة الحياة الثماني — من الطلب حتى الاستلام — من لوحة «طلباتي».",
+  'landing.journey.buyers_cta':           "تصفّح المنتجات",
+  'landing.journey.shops_label':          "للمتاجر",
+  'landing.journey.shops_headline':       "متجرك الاحترافي في خمس دقائق.",
+  'landing.journey.shops_body':           "أنشئ متجرك مجانًا. أدرِج منتجاتك بالصور والأسعار. شارِك الرابط الفريد على إنستغرام أو واتساب أو فيسبوك. استقبِل طلباتك وأدِرها من لوحة تحكّم مصمَّمة للبائعين التونسيين — لا للشركات الناشئة الأمريكية.",
+  'landing.journey.shops_cta':            "إنشاء متجري",
+  'landing.journey.freelancers_label':    "للمستقلّين",
+  'landing.journey.freelancers_headline': "ابنِ ملفّك المهني، واعثر على عملائك القادمين.",
+  'landing.journey.freelancers_body':     "أدرِج خدماتك بأسعار شفّافة. تصفّح لوحة عروض العمل التي ينشرها عملاء تونسيون يحتاجون مهاراتك. ردَّ بسعرك ومهلتك. النظام يمنع الإزعاج — بحد أقصى 10 ردود لكل عرض، و5 ردود نشطة لكل مستقل.",
+  'landing.journey.freelancers_cta':      "إنشاء ملفّي كمستقل",
+
   // Language names stay native (identical to fr.ts) by accessibility convention.
   'nav.language_french': "Français",
   'nav.language_arabic': "العربية",

@@ -5,6 +5,7 @@ import { Hero } from '@/components/landing/Hero'
 import { FounderNote } from '@/components/landing/FounderNote'
 import { Problem } from '@/components/landing/Problem'
 import { Benefits } from '@/components/landing/Benefits'
+import { Journeys } from '@/components/landing/Journeys'
 
 // The public marketing landing page (logged-out visitors only). Logged-in users
 // are redirected to their role home before any marketing renders.
@@ -42,6 +43,7 @@ export default async function HomePage() {
       <FounderNote lang={lang} />
       <Problem lang={lang} />
       <Benefits lang={lang} />
+      <Journeys lang={lang} />
     </main>
   )
 }
