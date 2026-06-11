@@ -200,6 +200,18 @@ export const fr: Record<string, string> = {
   'landing.how.step4_title': "Payez",
   'landing.how.step4_body':  "À la livraison, en dinars, sans intermédiaire et sans surprise.",
 
+  // ─── Landing — Section 7 (FAQ) ──────────────────────────────────────────────
+  'landing.faq.q1': "Comment Servyou empêche-t-il les arnaques ?",
+  'landing.faq.a1': "Tous les vendeurs sont vérifiés à l'inscription. Les acheteurs peuvent signaler tout problème, et notre équipe agit dans les 48 heures. Le paiement à la livraison vous protège : vous payez uniquement quand vous recevez et vérifiez le produit.",
+  'landing.faq.q2': "Et si le produit livré n'est pas ce que j'ai commandé ?",
+  'landing.faq.a2': "Vous pouvez refuser la livraison. Aucun paiement n'est exigé tant que vous n'avez pas confirmé la réception en bon état.",
+  'landing.faq.q3': "Servyou prend-il une commission ?",
+  'landing.faq.a3': "Non. Au lancement, Servyou est entièrement gratuit pour tous — acheteurs, boutiques, et freelances. Tout futur changement de tarification sera annoncé clairement, avec un préavis et sans surprise. Jamais de frais cachés.",
+  'landing.faq.q4': "Mes données sont-elles vendues à des tiers ?",
+  'landing.faq.a4': "Jamais. Vos données restent hébergées en Europe (Frankfurt) et ne sont partagées qu'avec les vendeurs avec qui vous interagissez directement. Pas de pisteurs tiers, pas de publicités ciblées.",
+  'landing.faq.q5': "Pourquoi français et arabe, mais pas anglais ?",
+  'landing.faq.a5': "Servyou est conçu pour les Tunisiens d'abord. Le français et l'arabe couvrent l'usage quotidien. L'anglais arrivera plus tard si la communauté le demande.",
+
   // Language names stay in their own language by accessibility convention (a
   // screen reader announces each natively). Identical value in fr.ts and ar.ts.
   'nav.language_french': "Français",

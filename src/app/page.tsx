@@ -7,6 +7,7 @@ import { Problem } from '@/components/landing/Problem'
 import { Benefits } from '@/components/landing/Benefits'
 import { Journeys } from '@/components/landing/Journeys'
 import { HowItWorks } from '@/components/landing/HowItWorks'
+import { Faq } from '@/components/landing/Faq'
 
 // The public marketing landing page (logged-out visitors only). Logged-in users
 // are redirected to their role home before any marketing renders.
@@ -46,6 +47,7 @@ export default async function HomePage() {
       <Benefits lang={lang} />
       <Journeys lang={lang} />
       <HowItWorks lang={lang} />
+      <Faq lang={lang} />
     </main>
   )
 }
