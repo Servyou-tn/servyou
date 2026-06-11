@@ -134,7 +134,7 @@ export const fr: Record<string, string> = {
   // ─── Landing page (marketing, logged-out) — Hero + Founder Note (PR-LP1) ─────
   'landing.hero.label':         "Plateforme tunisienne",
   'landing.hero.headline':      "Une vraie maison pour l'économie tunisienne",
-  'landing.hero.subheadline':   "Achetez, vendez, et travaillez en dinars tunisiens. Paiement à la livraison, services en français et en arabe, vos données hébergées en Europe.",
+  'landing.hero.subheadline':   "Vendez, achetez, travaillez — en dinars, en confiance, en Tunisien. Paiement à la livraison, français et arabe, conçu pour la façon dont nous faisons vraiment du commerce.",
   'landing.hero.cta_primary':   "Créer un compte gratuit",
   'landing.hero.cta_secondary': "Découvrir la plateforme",
   // Hero phone — mock order cards
@@ -157,37 +157,37 @@ export const fr: Record<string, string> = {
   'landing.trust.categories_value':   "14",
   'landing.trust.categories':         "catégories",
   'landing.trust.commission_value':   "0%",
-  'landing.trust.commission':         "de commission au lancement",
-  'landing.trust.data_value':         "Europe",
-  'landing.trust.data':               "données hébergées",
+  'landing.trust.commission':         "de commission",
+  'landing.trust.data_value':         "Paiement",
+  'landing.trust.data':               "à la livraison",
   // Founder note
   'landing.founder.label': "FONDATEUR",
   'landing.founder.name':  "Moatez Z.",
-  'landing.founder.quote': "« Servyou est construit en Tunisie, par un Tunisien, pour les Tunisiens. Nous n'avons pas de financement extérieur, pas d'actionnaires étrangers, et aucun investisseur à satisfaire. Notre seul engagement est envers vous. »",
+  'landing.founder.quote': "« J'ai construit Servyou parce que la Tunisie mérite mieux que des DM Instagram et des cahiers d'orders. Pas de financement étranger, pas d'actionnaires à satisfaire — un Tunisien qui construit pour les Tunisiens. Notre seul engagement est envers vous. »",
   // ─── Landing — Section 3 (Problem agitation) ────────────────────────────────
   'landing.problem.headline': "Le commerce tunisien mérite mieux qu'Instagram et WhatsApp",
-  'landing.problem.body':     "Aujourd'hui, les Tunisiens vendent sur Instagram avec des captures d'écran de virements bancaires. Ils prennent les commandes dans des DM WhatsApp qui se perdent parmi mille autres messages. Ils ne savent plus qui a payé, qui ne l'a pas fait, ni ce qu'ils ont promis de livrer. Il n'existe aucune plateforme conçue pour la Tunisie, en dinars tunisiens, avec les signaux de confiance dont le vrai commerce a besoin. Jusqu'à maintenant.",
+  'landing.problem.body':     "Aujourd'hui, les Tunisiens vendent sur Instagram avec des captures d'écran de virements. Ils prennent les commandes dans des DM WhatsApp qui se perdent parmi mille autres messages. Ils notent ce qu'ils doivent livrer sur un cahier qui ne se connecte à rien. Ils ne savent plus qui a payé, qui doit encore payer, qui attend toujours. Notre économie numérique existe — son infrastructure, non. Servyou la construit.",
 
   // ─── Landing — Section 4 (Three benefits) ───────────────────────────────────
   'landing.benefits.tunisian_title': "Tunisien d'abord",
-  'landing.benefits.tunisian_body':  "Conçu pour la Tunisie, pas adapté depuis ailleurs. Tous les prix en dinars. Livraison dans les 24 gouvernorats. Paiement à la livraison universel, parce que c'est comme ça que la Tunisie achète.",
+  'landing.benefits.tunisian_body':  "Conçu pour la Tunisie, par un Tunisien — pas adapté depuis ailleurs. Dinars, gouvernorats, paiement à la livraison : la façon dont nous faisons vraiment du commerce. Pas une copie d'Amazon ou de Shopify. Une plateforme qui parle notre langue, dès la première seconde.",
   'landing.benefits.pricing_title':  "Honnête sur les prix",
-  'landing.benefits.pricing_body':   "Pas de commission cachée. Pas de frais surprise. Pas d'algorithme qui prend une part. Ce que vous voyez est ce que vous payez, et ce que le vendeur affiche est ce qu'il reçoit.",
+  'landing.benefits.pricing_body':   "0% de commission au lancement. Pas de frais cachés. Pas d'algorithme qui prend une part en silence. Ce que vous voyez est ce que vous payez. Ce que le vendeur affiche est ce qu'il reçoit. Tout changement futur sera annoncé clairement, jamais en surprise.",
   'landing.benefits.data_title':     "Vos données, votre maison",
-  'landing.benefits.data_body':      "Vos informations restent en Europe, jamais revendues à des annonceurs. Pas de pisteurs tiers, pas de publicités ciblées, pas d'IA qui apprend sur votre dos. Vos données vous appartiennent.",
+  'landing.benefits.data_body':      "Jamais revendues, jamais exploitées. Pas de pisteurs tiers, pas de publicité ciblée, pas d'IA qui apprend sur votre dos. Protégées selon les standards les plus stricts. Vos informations vous appartiennent, point.",
 
   // ─── Landing — Section 5 (Three journeys) ───────────────────────────────────
   'landing.journey.buyers_label':         "Pour les acheteurs",
   'landing.journey.buyers_headline':      "Découvrez des produits et services tunisiens, sans inscription.",
-  'landing.journey.buyers_body':          "Parcourez les boutiques et les freelances tunisiens librement. Trouvez ce qui vous intéresse, demandez en un clic, payez à la livraison. Suivez votre commande à travers les huit étapes du cycle de vie — de la demande jusqu'à la réception — depuis votre tableau de bord « Mes demandes ».",
+  'landing.journey.buyers_body':          "Pas besoin de créer un compte pour regarder. Parcourez les boutiques et les freelances tunisiens librement. Trouvez ce qui vous intéresse, demandez en un clic, payez à la livraison — quand vous voyez ce que vous achetez. Suivez votre commande à travers les huit étapes du cycle de vie — de la demande jusqu'à la réception — depuis votre tableau de bord « Mes demandes ».",
   'landing.journey.buyers_cta':           "Parcourir les produits",
   'landing.journey.shops_label':          "Pour les boutiques",
   'landing.journey.shops_headline':       "Votre boutique professionnelle en cinq minutes.",
-  'landing.journey.shops_body':           "Créez votre boutique gratuitement. Listez vos produits avec photos et prix. Partagez le lien unique sur Instagram, WhatsApp, ou Facebook. Recevez et gérez vos commandes depuis un tableau de bord conçu pour les vendeurs tunisiens — pas pour des startups américaines.",
+  'landing.journey.shops_body':           "Créez votre boutique gratuitement. Listez vos produits avec photos et prix. Partagez le lien unique dans vos bios Instagram, TikTok, WhatsApp, Facebook. Les commandes arrivent ici, organisées, depuis un tableau de bord conçu pour les vendeurs tunisiens — pas pour des startups américaines.",
   'landing.journey.shops_cta':            "Créer ma boutique",
   'landing.journey.freelancers_label':    "Pour les freelances",
   'landing.journey.freelancers_headline': "Construisez votre profil professionnel, trouvez vos prochains clients.",
-  'landing.journey.freelancers_body':     "Listez vos services avec prix transparents. Parcourez le tableau d'offres d'emploi posté par des clients tunisiens qui ont besoin de vos compétences. Répondez avec votre prix et votre délai. Le système empêche le spam — maximum 10 réponses par offre, 5 réponses actives par freelance.",
+  'landing.journey.freelancers_body':     "Listez vos services avec prix transparents. Parcourez le tableau d'offres d'emploi posté par des clients tunisiens qui ont besoin de vos compétences. Vérifiez chaque client par WhatsApp avant de vous engager. Répondez avec votre prix et votre délai — le système empêche le spam (10 réponses maximum par offre, 5 réponses actives par freelance).",
   'landing.journey.freelancers_cta':      "Créer mon profil freelance",
 
   // ─── Landing — Section 6 (How it works) ─────────────────────────────────────
@@ -208,12 +208,17 @@ export const fr: Record<string, string> = {
   'landing.faq.q3': "Servyou prend-il une commission ?",
   'landing.faq.a3': "Non. Au lancement, Servyou est entièrement gratuit pour tous — acheteurs, boutiques, et freelances. Tout futur changement de tarification sera annoncé clairement, avec un préavis et sans surprise. Jamais de frais cachés.",
   'landing.faq.q4': "Mes données sont-elles vendues à des tiers ?",
-  'landing.faq.a4': "Jamais. Vos données restent hébergées en Europe (Frankfurt) et ne sont partagées qu'avec les vendeurs avec qui vous interagissez directement. Pas de pisteurs tiers, pas de publicités ciblées.",
+  'landing.faq.a4': "Jamais. Vos informations sont partagées uniquement avec les vendeurs avec qui vous interagissez directement. Pas de pisteurs tiers, pas de publicité ciblée. Servyou applique les standards de protection des données les plus stricts au monde — le RGPD européen.",
   'landing.faq.q5': "Pourquoi français et arabe, mais pas anglais ?",
   'landing.faq.a5': "Servyou est conçu pour les Tunisiens d'abord. Le français et l'arabe couvrent l'usage quotidien. L'anglais arrivera plus tard si la communauté le demande.",
+  'landing.faq.q6': "Comment Servyou gagne-t-il de l'argent alors ?",
+  'landing.faq.a6': "Au lancement, Servyou est entièrement gratuit. Notre priorité est de construire l'économie d'abord, pas d'extraire de la valeur tout de suite. Quand un modèle de revenus sera nécessaire, il sera annoncé clairement à l'avance — jamais en surprise, jamais caché. Notre engagement de transparence sur l'argent est définitif.",
 
   // ─── Landing — Section 8 (Final CTA + footer) ───────────────────────────────
-  'landing.final.heading':              "Tunis mérite une vraie place du marché. Nous la construisons. Rejoignez-nous.",
+  'landing.final.heading':              "La Tunisie mérite une vraie place de marché. Nous la construisons — un commerçant à la fois.",
+  'landing.final.subtitle':             "L'infrastructure de l'économie numérique tunisienne commence ici.",
+  'landing.final.trust':                "Paiement à la livraison · 0% commission · 30 secondes pour s'inscrire",
+  'landing.footer.tagline':             "Vendez, achetez, travaillez — en Tunisien.",
   'landing.footer.founder_credit':      "Construit en Tunisie par Moatez Z.",
   'landing.footer.col_discover':        "Découvrir",
   'landing.footer.col_servyou':         "Servyou",

@@ -63,6 +63,9 @@ export function FinalCtaFooter({ lang }: { lang: Lang }) {
           <h2 className="text-4xl font-bold leading-tight tracking-tight text-text-primary">
             {t('landing.final.heading', lang)}
           </h2>
+          <p className="mx-auto mt-5 max-w-[560px] text-lg leading-relaxed text-text-muted">
+            {t('landing.final.subtitle', lang)}
+          </p>
           <div className="mt-10 flex justify-center">
             <Link
               href="/signup"
@@ -72,6 +75,7 @@ export function FinalCtaFooter({ lang }: { lang: Lang }) {
               <ArrowRightIcon className="h-5 w-5" />
             </Link>
           </div>
+          <p className="mt-5 text-sm font-medium text-text-muted">{t('landing.final.trust', lang)}</p>
         </div>
       </section>
 
@@ -87,7 +91,7 @@ export function FinalCtaFooter({ lang }: { lang: Lang }) {
                 <Image src="/brand/logo/servyou-navbar.png" alt="Servyou" width={1536} height={1024} className="h-9 w-auto" />
               </span>
               <p className="mt-4 max-w-[260px] text-sm leading-relaxed text-slate-300">
-                {t('landing.hero.headline', lang)}
+                {t('landing.footer.tagline', lang)}
               </p>
               <p className="mt-3 text-sm text-slate-400">{t('landing.footer.founder_credit', lang)}</p>
             </div>

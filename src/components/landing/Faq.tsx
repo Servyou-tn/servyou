@@ -1,7 +1,7 @@
 import { t, type Lang } from '@/lib/i18n'
 import { ChevronDownIcon } from './icons'
 
-// Section 7 — FAQ. Five template questions, all closed by default, built on
+// Section 7 — FAQ. Six questions, all closed by default, built on
 // native <details>/<summary> so it needs zero client JS (the chevron rotates via
 // the CSS `group-open` variant). Pale-slate background; carries the #faq anchor
 // the footer links to. No section heading: the template defines only the Q&A.
@@ -11,6 +11,7 @@ const faqs = [
   { qKey: 'landing.faq.q3', aKey: 'landing.faq.a3' },
   { qKey: 'landing.faq.q4', aKey: 'landing.faq.a4' },
   { qKey: 'landing.faq.q5', aKey: 'landing.faq.a5' },
+  { qKey: 'landing.faq.q6', aKey: 'landing.faq.a6' },
 ] as const
 
 export function Faq({ lang }: { lang: Lang }) {
