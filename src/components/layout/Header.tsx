@@ -57,8 +57,10 @@ export function Header({
         className={
           isLanding
             ? // Compact floating pill: shrink-wraps to content (w-fit), centered
-              // (mx-auto), tight padding + a single gap-6 between the three zones.
-              'mx-auto mt-6 flex w-fit items-center gap-6 rounded-full border border-[rgba(15,23,42,0.08)] bg-white px-4 py-2 shadow-lg'
+              // (mx-auto), tight padding + a single gap-5 between the three zones
+              // (logo · nav links · auth cluster). items-center vertically centers
+              // the tall wordmark against the smaller text elements.
+              'mx-auto mt-6 flex w-fit items-center gap-5 rounded-full border border-[rgba(15,23,42,0.08)] bg-white px-5 py-2.5 shadow-lg'
             : // Standard full-width bar on every other route.
               'mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3 md:grid md:grid-cols-[1fr_auto_1fr] md:gap-4 lg:px-6'
         }
@@ -66,7 +68,7 @@ export function Header({
         {/* Left — brand */}
         <div className="flex items-center md:justify-start">
           <Link href="/" aria-label="Servyou" className={`inline-flex items-center rounded-md ${FOCUS_RING}`}>
-            <Wordmark />
+            <Wordmark className={isLanding ? 'h-24' : 'h-16'} />
           </Link>
         </div>
 
@@ -88,7 +90,9 @@ export function Header({
                   <Link
                     href={l.href}
                     aria-current={isActive ? 'page' : undefined}
-                    className={`flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-sm font-medium transition-colors ${
+                    className={`flex items-center gap-1.5 rounded-full px-3.5 py-1.5 font-medium transition-colors ${
+                      isLanding ? 'text-base' : 'text-sm'
+                    } ${
                       isActive
                         ? isLanding
                           ? 'bg-surface-pill text-text-primary'
@@ -107,15 +111,15 @@ export function Header({
           </ul>
         </div>
 
-        {/* Right — actions. On the landing capsule every top-level zone is an even
-            gap-6 apart (FR/AR · Se connecter · S'inscrire), matching the gap-6 the
-            capsule already sets between logo, nav links, and this cluster. Other
-            routes keep their tighter gap-2/gap-3 action spacing. */}
-        <div className={`flex items-center justify-end ${isLanding ? 'gap-6' : 'gap-2 md:gap-3'}`}>
-          <LanguageToggle />
+        {/* Right — actions. On the public landing capsule the FR/AR toggle is
+            omitted (the footer carries the language switch instead), so the
+            cluster is just Se connecter · S'inscrire, kept tight at gap-3. Every
+            other variant keeps the inline LanguageToggle and its own spacing. */}
+        <div className={`flex items-center justify-end ${isLanding ? 'gap-3' : 'gap-2 md:gap-3'}`}>
+          {!isLanding && <LanguageToggle />}
 
           {/* md+ : auth CTAs (public) or account dropdown */}
-          <div className={`hidden md:flex md:items-center ${isLanding ? 'gap-6' : 'md:gap-3'}`}>
+          <div className={`hidden md:flex md:items-center ${isLanding ? 'gap-3' : 'md:gap-3'}`}>
             {state.variant === 'public' ? (
               <>
                 <Link
