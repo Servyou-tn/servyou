@@ -81,9 +81,17 @@ describe('selectVariant', () => {
 })
 
 describe('navLinks', () => {
-  it('public shows only routes that exist (Accueil + Missions)', () => {
+  it('public links: Accueil, Boutiques/Freelances/À propos anchors, Missions', () => {
+    // Boutiques/Freelances/À propos scroll to the landing-page anchor sections
+    // (#boutiques, #freelances, #a-propos) shipped with the marketing page.
     const links = navLinks({ hidden: false, variant: 'public' })
-    expect(links.map(l => l.href)).toEqual(['/', '/missions'])
+    expect(links.map(l => l.href)).toEqual([
+      '/',
+      '/#boutiques',
+      '/#freelances',
+      '/missions',
+      '/#a-propos',
+    ])
   })
 
   it('freelance workspace points Commandes/Réponses at their real routes', () => {

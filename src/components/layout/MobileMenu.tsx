@@ -110,7 +110,7 @@ export function MobileMenu({
             className="absolute inset-y-0 end-0 flex w-full max-w-sm flex-col bg-surface-base p-5 shadow-xl"
           >
             <div className="flex items-center justify-between">
-              <Wordmark className="text-xl" />
+              <Wordmark />
               <button
                 ref={closeRef}
                 type="button"
@@ -156,7 +156,7 @@ export function MobileMenu({
                   <Link
                     href="/signup"
                     onClick={() => setOpen(false)}
-                    className={`${rowClass} border border-brand-accent text-center font-semibold text-brand-accent hover:bg-brand-accent hover:text-white`}
+                    className={`${rowClass} bg-brand-primary text-center font-semibold text-white hover:bg-[#152C6B]`}
                   >
                     {t('nav.signup_short', lang)}
                   </Link>

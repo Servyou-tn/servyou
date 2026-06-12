@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:is(.dark *));
+
 :root {
   --background: #ffffff;
   --foreground: #171717;
@@ -9,7 +11,9 @@
      intent (--surface-pill), never raw hex. Introduced by the production Header. */
   --brand-primary: #1E3A8A;          /* "Serv" navy */
   --brand-accent: #2563EB;           /* "you" bright blue, CTAs */
-  --brand-accent-light: #7DAEED;     /* light blue, subtle accents */
+  --brand-accent-light: #3B82F6;     /* royal blue — energy layer (motion) */
+  --brand-sky:          #BFDBFE;     /* sky blue — atmosphere layer (surfaces) */
+  --brand-ice:          #EFF6FF;     /* ice blue — luminance layer (backgrounds) */
   --surface-base: #FFFFFF;
   --surface-subtle: #F8FAFC;
   --surface-pill: #F1F5F9;           /* the gray pill capsule background */
@@ -23,7 +27,7 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
+  --font-sans: var(--font-inter);
   --font-mono: var(--font-geist-mono);
 
   /* Expose the brand tokens as Tailwind utilities (bg-surface-pill,
@@ -31,6 +35,8 @@
   --color-brand-primary: var(--brand-primary);
   --color-brand-accent: var(--brand-accent);
   --color-brand-accent-light: var(--brand-accent-light);
+  --color-brand-sky: var(--brand-sky);
+  --color-brand-ice: var(--brand-ice);
   --color-surface-base: var(--surface-base);
   --color-surface-subtle: var(--surface-subtle);
   --color-surface-pill: var(--surface-pill);
@@ -51,5 +57,38 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
 }
+
+/* ── Hero motion (Magic UI beam composition) ──
+   Pulsing luminous halo behind the central S logo. */
+@keyframes glow-pulse {
+  0%, 100% { transform: scale(1); opacity: 0.75; }
+  50%      { transform: scale(1.15); opacity: 1; }
+}
+.animate-glow-pulse { animation: glow-pulse 4s ease-in-out infinite; }
+
+/* Second, larger halo behind the S — a 2s-offset start gives a "sonar" ripple.
+   Keyframe animates scale+opacity ONLY; the div's Tailwind -translate-x/y-1/2
+   centres it (avoids a translate-property vs transform double-shift). */
+@keyframes halo-outer {
+  0%, 100% { transform: scale(1);   opacity: 0.25; }
+  50%      { transform: scale(1.3); opacity: 0.10; }
+}
+.animate-halo-outer { animation: halo-outer 5s ease-in-out infinite; animation-delay: 2s; }
+
+/* Layer 7 — reduced motion. The JS-driven pieces (Particles, BorderBeam) are
+   gated in the component via useReducedMotion(); this covers the CSS halos. */
+@media (prefers-reduced-motion: reduce) {
+  .animate-glow-pulse,
+  .animate-halo-outer { animation: none; }
+}
+
+/* ── Hero flip-card grow ──
+   Smoothly animate ONLY the card's width/height on the open/close size change.
+   Scoped to width,height (not transform) so it never fights Motion's rotateY. */
+.flip-size { transition: width 0.5s ease, height 0.5s ease; }
+@media (prefers-reduced-motion: reduce) {
+  .flip-size { transition: width 0.3s ease, height 0.3s ease; }
+}
+

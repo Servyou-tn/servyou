@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { useEffect, useState } from 'react'
 import { usePathname } from 'next/navigation'
 import { useLang } from '@/components/LangProvider'
 import { t } from '@/lib/i18n'
@@ -31,38 +32,100 @@ export function Header({
   const pathname = usePathname()
   const lang = useLang()
 
+  // Active-link detection needs the URL hash too, because several public nav
+  // links are same-page section anchors ('/#boutiques', '/#freelances',
+  // '/#a-propos'). usePathname() drops the hash, and Next's <Link> navigates a
+  // same-page hash via history.pushState — which fires neither `hashchange` nor
+  // `popstate`. So we track the hash three ways: an onClick on each nav link
+  // (the in-app click, set below), the hashchange/popstate listeners (manual
+  // edits + back/forward), and a re-read on every pathname change (deep links +
+  // route navigation). Starts '' to match the server render, then syncs on mount.
+  const [hash, setHash] = useState('')
+  useEffect(() => {
+    const read = () => setHash(window.location.hash)
+    window.addEventListener('hashchange', read)
+    window.addEventListener('popstate', read)
+    return () => {
+      window.removeEventListener('hashchange', read)
+      window.removeEventListener('popstate', read)
+    }
+  }, [])
+  useEffect(() => {
+    setHash(window.location.hash)
+  }, [pathname])
+
   const state = selectVariant({ isLoggedIn, sellerType, pathname })
   if (state.hidden) return null
 
   const links = navLinks(state)
-  const active = activeHref(links, pathname)
+  const active = activeHref(links, pathname, hash)
+
+  // The marketing landing page (/) gets a distinct treatment: a white floating
+  // capsule on a transparent header (the page paints a soft-blue backdrop behind
+  // it), and a bright-blue Sign-up button. Every other route keeps the standard
+  // full-width bar. Logged-in users are redirected off / so this is always the
+  // public variant there.
+  const isLanding = pathname === '/'
 
   return (
-    <header className="sticky top-0 z-40 border-b border-border-subtle bg-surface-base/95 backdrop-blur supports-[backdrop-filter]:bg-surface-base/80">
+    <header
+      className={`sticky top-0 z-40 ${
+        isLanding
+          ? ''
+          : 'border-b border-border-subtle bg-surface-base/95 backdrop-blur supports-[backdrop-filter]:bg-surface-base/80'
+      }`}
+    >
       <nav
         aria-label={t('nav.aria_primary', lang)}
-        className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3 md:grid md:grid-cols-[1fr_auto_1fr] md:gap-4 lg:px-6"
+        className={
+          isLanding
+            ? // Compact floating pill: shrink-wraps to content (w-fit), centered
+              // (mx-auto), a single gap-5 between the three zones (logo · nav
+              // links · auth cluster). A FIXED h-18 (72px) locks the capsule
+              // height so it can't grow with its anchors — items-center vertical-
+              // centers every zone inside it; px-5 keeps the horizontal padding.
+              'mx-auto mt-2 flex h-18 w-fit items-center gap-5 rounded-full border border-[rgba(15,23,42,0.08)] bg-white px-5 shadow-lg'
+            : // Standard full-width bar on every other route.
+              'mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3 md:grid md:grid-cols-[1fr_auto_1fr] md:gap-4 lg:px-6'
+        }
       >
         {/* Left — brand */}
         <div className="flex items-center md:justify-start">
-          <Link href="/" aria-label="Servyou" className={`rounded-md ${FOCUS_RING}`}>
-            <Wordmark className="text-xl" />
+          <Link href="/" aria-label="Servyou" className={`inline-flex items-center rounded-md ${FOCUS_RING}`}>
+            <Wordmark className={isLanding ? 'h-18' : 'h-16'} />
           </Link>
         </div>
 
-        {/* Center — pill capsule (md+) */}
+        {/* Center — nav links (md+). On the landing capsule they sit directly on
+            the white pill (no gray group background); every other route keeps the
+            gray surface-pill group. The active link wears a tinted sub-pill +
+            green dot — white on the standard bar, surface-pill (#F1F5F9) on the
+            white landing capsule so it stays visible. */}
         <div className="hidden md:flex md:justify-center">
-          <ul className="flex items-center gap-1 rounded-full bg-surface-pill p-1">
+          <ul
+            className={`flex items-center gap-1 ${
+              isLanding ? '' : 'rounded-full bg-surface-pill p-1'
+            }`}
+          >
             {links.map(l => {
               const isActive = l.href === active
+              // The '#…' part of the href (or '' for a plain route). Set on click
+              // so the active pill moves immediately, before any hashchange fires.
+              const hashIndex = l.href.indexOf('#')
+              const linkHash = hashIndex === -1 ? '' : l.href.slice(hashIndex)
               return (
                 <li key={l.href}>
                   <Link
                     href={l.href}
+                    onClick={() => setHash(linkHash)}
                     aria-current={isActive ? 'page' : undefined}
-                    className={`flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-sm font-medium transition-colors ${
+                    className={`flex items-center gap-1.5 rounded-full px-3.5 py-1.5 font-medium transition-colors ${
+                      isLanding ? 'text-base' : 'text-sm'
+                    } ${
                       isActive
-                        ? 'bg-surface-pill-active text-text-primary shadow-sm'
+                        ? isLanding
+                          ? 'bg-surface-pill text-text-primary'
+                          : 'bg-surface-pill-active text-text-primary shadow-sm'
                         : 'text-text-muted hover:text-text-primary'
                     } ${FOCUS_RING}`}
                   >
@@ -77,23 +140,30 @@ export function Header({
           </ul>
         </div>
 
-        {/* Right — actions */}
-        <div className="flex items-center justify-end gap-2 md:gap-3">
-          <LanguageToggle />
+        {/* Right — actions. On the public landing capsule the FR/AR toggle is
+            omitted (the footer carries the language switch instead), so the
+            cluster is just Se connecter · S'inscrire, kept tight at gap-3. Every
+            other variant keeps the inline LanguageToggle and its own spacing. */}
+        <div className={`flex items-center justify-end ${isLanding ? 'gap-3' : 'gap-2 md:gap-3'}`}>
+          {!isLanding && <LanguageToggle />}
 
           {/* md+ : auth CTAs (public) or account dropdown */}
-          <div className="hidden md:flex md:items-center md:gap-2">
+          <div className={`hidden md:flex md:items-center ${isLanding ? 'gap-3' : 'md:gap-3'}`}>
             {state.variant === 'public' ? (
               <>
                 <Link
                   href="/login"
-                  className={`rounded-full px-3 py-2 text-sm font-medium text-text-muted transition-colors hover:text-text-primary ${FOCUS_RING}`}
+                  className={`whitespace-nowrap rounded-full px-3 py-2 text-sm font-medium text-text-muted transition-colors hover:text-text-primary ${FOCUS_RING}`}
                 >
                   {t('nav.login', lang)}
                 </Link>
                 <Link
                   href="/signup"
-                  className={`rounded-full border border-brand-accent px-4 py-2 text-sm font-semibold text-brand-accent transition-colors hover:bg-brand-accent hover:text-white ${FOCUS_RING}`}
+                  className={`whitespace-nowrap rounded-full font-semibold text-white transition-colors ${
+                    isLanding
+                      ? 'inline-flex h-10 items-center px-5 text-sm bg-brand-accent hover:bg-[#1D4ED8]'
+                      : 'px-4 py-2 text-sm bg-brand-primary hover:bg-[#152C6B]'
+                  } ${FOCUS_RING}`}
                 >
                   {t('nav.signup_short', lang)}
                 </Link>

@@ -10,9 +10,14 @@ export type NavLink = { href: string; key: string }
 /** Center-pill links for the resolved variant. Routes are the real ones that exist. */
 export function navLinks(state: HeaderState): NavLink[] {
   if (state.variant === 'public') {
+    // Boutiques / Freelances / À propos point to landing-page anchor sections
+    // that ship in later PRs; until then the links render and scroll to nothing.
     return [
       { href: '/', key: 'nav.home' },
+      { href: '/#boutiques', key: 'nav.shops' },
+      { href: '/#freelances', key: 'nav.freelancers' },
       { href: '/missions', key: 'nav.missions_board' },
+      { href: '/#a-propos', key: 'nav.about' },
     ]
   }
 
@@ -60,16 +65,25 @@ export function accountItems(sellerType: SellerType): AccountItem[] {
   return items
 }
 
-/** The single active link for the current pathname, by longest-prefix match.
+/** The single active link for the current pathname + hash, by longest-prefix match.
+ *  Three kinds of link:
+ *   - Anchor links (e.g. '/#boutiques') light up only on an EXACT pathname+hash
+ *     match, so clicking a section anchor moves the active pill off Accueil.
+ *   - The home link '/' lights up only on '/' with NO section hash (so it dims
+ *     once you scroll into a section anchor).
+ *   - Regular route links match by longest pathname prefix, ignoring the hash.
  *  Longest-prefix avoids two links lighting up at once (e.g. the dashboard index
- *  vs a nested sub-page that shares its prefix). Returns the matching href or null. */
-export function activeHref(links: NavLink[], pathname: string): string | null {
+ *  vs a nested sub-page that shares its prefix). `hash` includes its leading '#'
+ *  (or '' for none). Returns the matching href or null. */
+export function activeHref(links: NavLink[], pathname: string, hash = ''): string | null {
+  const current = pathname + hash
   let best: string | null = null
   let bestLen = -1
   for (const link of links) {
-    const matches =
-      link.href === '/'
-        ? pathname === '/'
+    const matches = link.href.includes('#')
+      ? current === link.href
+      : link.href === '/'
+        ? pathname === '/' && hash === ''
         : pathname === link.href || pathname.startsWith(link.href + '/')
     if (matches && link.href.length > bestLen) {
       best = link.href

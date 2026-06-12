@@ -1,11 +1,19 @@
-// Two-tone text wordmark. The launch prototype's SVG no longer exists (its branch
-// was disposable), so this is the clean text mark per the brief's fallback:
-// "Serv" in brand navy, "you" in brand accent. Screen readers read "Servyou".
-export function Wordmark({ className = '' }: { className?: string }) {
+import Image from 'next/image'
+
+// The real Servyou logo. Rendered via next/image with `priority` because it sits
+// above the fold on every page (the Header is in the root layout). Source is
+// 1536×1024 (3:2). The caller controls the height via `className` (default h-16
+// ≈ 64px). `block w-auto` keeps the aspect ratio and drops the inline-image
+// baseline gap so the logo centers cleanly. Used by both Header and mobile overlay.
+export function Wordmark({ className = 'h-16' }: { className?: string }) {
   return (
-    <span className={`font-bold leading-none tracking-tight ${className}`}>
-      <span className="text-brand-primary">Serv</span>
-      <span className="text-brand-accent">you</span>
-    </span>
+    <Image
+      src="/brand/logo/servyou-navbar.png"
+      alt="Servyou"
+      width={1536}
+      height={1024}
+      priority
+      className={`block w-auto ${className}`}
+    />
   )
 }
