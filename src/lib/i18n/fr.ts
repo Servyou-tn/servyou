@@ -209,6 +209,11 @@ export const fr: Record<string, string> = {
   'landing.howItWorks.tabs.freelancer': "Freelancer",
   'landing.howItWorks.tabs.boutique':   "Boutique",
 
+  // Floating step icons — universal across roles; alt text per meta-step
+  'landing.howItWorks.icons.step1.alt': "Création de compte",
+  'landing.howItWorks.icons.step2.alt': "Recherche et négociation",
+  'landing.howItWorks.icons.step3.alt': "Livraison et paiement",
+
   // Client journey
   'landing.howItWorks.client.step1.title':   "Inscrivez-vous",
   'landing.howItWorks.client.step1.tagline': "Votre compte, en quelques secondes.",

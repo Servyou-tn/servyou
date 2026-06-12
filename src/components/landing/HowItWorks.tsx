@@ -1,6 +1,7 @@
 'use client'
 
 import { useId, useRef, useState, type KeyboardEvent } from 'react'
+import Image from 'next/image'
 import { Manrope } from 'next/font/google'
 import { AnimatePresence, motion, useReducedMotion, type Variants } from 'motion/react'
 import { t, type Lang } from '@/lib/i18n'
@@ -15,11 +16,13 @@ const manrope = Manrope({
   display: 'swap',
 })
 
-// Three typographic steps — the step NUMBER is the visual anchor (no icons).
+// Three steps. The icon is a universal meta-step (Setup → Engage → Transact) that
+// is the SAME across all 3 roles — only the copy swaps. So the icon is part of the
+// stable column, not the role-keyed card.
 const steps = [
-  { number: '01', key: 'step1' },
-  { number: '02', key: 'step2' },
-  { number: '03', key: 'step3' },
+  { number: '01', key: 'step1', icon: '/brand/icons/how-it-works/step-01-account.png' },
+  { number: '02', key: 'step2', icon: '/brand/icons/how-it-works/step-02-dealing.png' },
+  { number: '03', key: 'step3', icon: '/brand/icons/how-it-works/step-03-delivery-payment.png' },
 ] as const
 
 // The three audiences the section switches between. 'client' is the default.
@@ -70,49 +73,53 @@ export function HowItWorks({ lang }: { lang: Lang }) {
     tabRefs.current[wrapped]?.focus()
   }
 
-  // Role-swap transition. Reduced motion → instant swap (no fade, no slide).
+  // Per-card role-swap transition. Reduced motion → instant swap (no fade/slide).
+  // `visible` is index-aware so the three cards still stagger in by 50ms.
   const cardVariants: Variants = reduce
     ? { hidden: { opacity: 1 }, visible: { opacity: 1 }, exit: { opacity: 1 } }
     : {
         hidden: { opacity: 0, y: 8 },
-        visible: { opacity: 1, y: 0, transition: { duration: 0.2, ease: 'easeOut' } },
+        visible: (i: number) => ({
+          opacity: 1,
+          y: 0,
+          transition: { duration: 0.2, ease: 'easeOut', delay: i * 0.05 },
+        }),
         exit: { opacity: 0, transition: { duration: 0.15, ease: 'easeOut' } },
       }
-  // Stagger the cards in by 50ms; exit them together.
-  const gridVariants: Variants = {
-    hidden: {},
-    visible: { transition: { staggerChildren: reduce ? 0 : 0.05 } },
-    exit: { transition: { staggerChildren: 0 } },
-  }
 
   return (
     <section
       id="comment-ca-marche"
-      className={`${manrope.variable} relative w-full overflow-hidden bg-white pt-12 pb-16 md:pt-16 md:pb-24`}
+      className={`${manrope.variable} relative w-full overflow-hidden bg-[var(--brand-primary)] pt-12 pb-16 md:pt-16 md:pb-24`}
     >
-      {/* Subtle dot pattern (kept — matches the hero's identity). */}
+      {/* Gentle radial depth: a soft brand-accent glow at centre fading into the navy. */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-0 bg-[radial-gradient(var(--brand-sky)_1px,_transparent_1px)] bg-[size:24px_24px] opacity-30"
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(37,99,235,0.08),_transparent_70%)]"
+      />
+      {/* Subtle dot texture for the dark context — the hero's pattern, inverted to
+          --brand-sky at very low opacity (off-token #7DAEED swapped for the token). */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(var(--brand-sky)_1px,_transparent_1px)] bg-[size:24px_24px] opacity-[0.04]"
       />
 
       <div className="relative z-10 mx-auto max-w-7xl px-6">
-        {/* Section title (promoted from the old eyebrow; headline + subtitle removed). */}
+        {/* Section title — white on the navy ground. */}
         <BlurFade delay={0} {...fade} inView>
-          <h2 className={`${display} mb-8 text-center text-2xl font-semibold tracking-[-0.02em] text-[var(--text-primary)] md:text-[32px]`}>
+          <h2 className={`${display} mb-8 text-center text-2xl font-semibold tracking-[-0.02em] text-white md:text-[32px]`}>
             {t('landing.howItWorks.title', lang)}
           </h2>
         </BlurFade>
 
-        {/* Role toggle — Upwork-style outlined sliding pill. The indicator uses a
-            shared layoutId, so framer-motion glides it between buttons with spring
-            physics. Rendered without a transform-ancestor (no BlurFade wrapper) so
-            the layout projection stays accurate. */}
+        {/* Role toggle — Upwork-style outlined sliding pill, floating as a raised white
+            element above the navy. Rendered without a transform-ancestor (no BlurFade
+            wrapper) so the layoutId projection stays accurate. */}
         <div className="mb-12 flex justify-center">
           <div
             role="tablist"
             aria-label={t('landing.howItWorks.tabsAriaLabel', lang)}
-            className="isolate inline-flex rounded-full border border-[var(--border-subtle)] bg-[var(--surface-base)] p-1"
+            className="isolate inline-flex rounded-full border border-[var(--border-subtle)] bg-[var(--surface-base)] p-1 shadow-[0_4px_12px_rgba(0,0,0,0.08)]"
           >
             {roles.map((role, index) => {
               const selected = activeRole === role
@@ -155,51 +162,69 @@ export function HowItWorks({ lang }: { lang: Lang }) {
           </div>
         </div>
 
-        {/* Three typographic cards, driven by activeRole (1 col mobile, 3 cols tablet+).
-            AnimatePresence (mode="wait", keyed by role) handles the fade-swap; the
-            animated wrapper div keeps the card's own hover transform intact. */}
+        {/* Cards. The grid is the STABLE tabpanel (so aria-controls never dangles). Each
+            column is a stable wrapper holding (a) a static floating icon that survives
+            role changes, and (b) a per-column AnimatePresence that fade-swaps only the
+            card copy. Extra top margin gives the protruding icons breathing room. */}
         <BlurFade delay={0.2} {...fade} inView>
-          <AnimatePresence mode="wait" initial={false}>
-            <motion.div
-              key={activeRole}
-              id={`${tabsId}-panel`}
-              role="tabpanel"
-              aria-labelledby={`${tabsId}-tab-${activeRole}`}
-              className="mx-auto grid max-w-6xl grid-cols-1 gap-6 md:grid-cols-3"
-              variants={gridVariants}
-              initial="hidden"
-              animate="visible"
-              exit="exit"
-            >
-              {steps.map((step) => (
-                <motion.div key={step.number} className="h-full" variants={cardVariants}>
-                  <article className="flex h-full flex-col rounded-2xl border border-[var(--border-subtle)] bg-[var(--surface-base)] p-8 text-start shadow-sm transition-all duration-[250ms] ease-out hover:-translate-y-1 hover:shadow-md motion-reduce:transition-none md:min-h-[380px]">
-                    {/* Top strip: ÉTAPE label + big number */}
-                    <div className="flex items-start justify-between">
-                      <span className={`${display} text-xs font-semibold uppercase tracking-widest text-[var(--brand-accent)]`}>
-                        {t('landing.howItWorks.stepLabel', lang)}
-                      </span>
-                      <span className={`${display} text-[64px] font-bold leading-none text-[var(--brand-accent-light)]`}>
-                        {step.number}
-                      </span>
-                    </div>
+          <div
+            id={`${tabsId}-panel`}
+            role="tabpanel"
+            aria-labelledby={`${tabsId}-tab-${activeRole}`}
+            className="mx-auto mt-6 grid max-w-6xl grid-cols-1 gap-6 md:grid-cols-3"
+          >
+            {steps.map((step, i) => (
+              <div key={step.number} className="relative">
+                {/* Floating circular icon — universal across roles, stays static on swap. */}
+                <div className="absolute left-1/2 top-0 z-20 flex h-24 w-24 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-[var(--surface-base)] shadow-[0_8px_20px_rgba(15,23,42,0.10)]">
+                  <Image
+                    src={step.icon}
+                    width={128}
+                    height={128}
+                    alt={t(`landing.howItWorks.icons.${step.key}.alt`, lang)}
+                    className="h-16 w-16 select-none"
+                    draggable={false}
+                  />
+                </div>
 
-                    <h3 className={`${display} mt-8 text-2xl font-bold text-[var(--text-primary)] md:text-[28px]`}>
-                      {t(`landing.howItWorks.${activeRole}.${step.key}.title`, lang)}
-                    </h3>
+                <AnimatePresence mode="wait" initial={false}>
+                  <motion.div
+                    key={activeRole}
+                    className="h-full"
+                    custom={i}
+                    variants={cardVariants}
+                    initial="hidden"
+                    animate="visible"
+                    exit="exit"
+                  >
+                    <article className="flex h-full flex-col rounded-2xl bg-[var(--surface-base)] px-8 pb-8 pt-16 text-start shadow-[0_8px_24px_rgba(15,23,42,0.12)] transition-all duration-[250ms] ease-out hover:-translate-y-1 hover:shadow-[0_16px_40px_rgba(15,23,42,0.18)] motion-reduce:transition-none md:min-h-[380px]">
+                      {/* Top strip: ÉTAPE label + big number */}
+                      <div className="flex items-start justify-between">
+                        <span className={`${display} text-xs font-semibold uppercase tracking-widest text-[var(--brand-accent)]`}>
+                          {t('landing.howItWorks.stepLabel', lang)}
+                        </span>
+                        <span className={`${display} text-[64px] font-bold leading-none text-[var(--brand-accent-light)]`}>
+                          {step.number}
+                        </span>
+                      </div>
 
-                    <p className="mt-2 max-w-[90%] text-[17px] font-semibold text-[var(--text-primary)]">
-                      {t(`landing.howItWorks.${activeRole}.${step.key}.tagline`, lang)}
-                    </p>
+                      <h3 className={`${display} mt-8 text-2xl font-bold text-[var(--text-primary)] md:text-[28px]`}>
+                        {t(`landing.howItWorks.${activeRole}.${step.key}.title`, lang)}
+                      </h3>
 
-                    <p className="mt-4 text-[15px] font-normal leading-[1.6] text-[var(--text-muted)]">
-                      {t(`landing.howItWorks.${activeRole}.${step.key}.body`, lang)}
-                    </p>
-                  </article>
-                </motion.div>
-              ))}
-            </motion.div>
-          </AnimatePresence>
+                      <p className="mt-2 max-w-[90%] text-[17px] font-semibold text-[var(--text-primary)]">
+                        {t(`landing.howItWorks.${activeRole}.${step.key}.tagline`, lang)}
+                      </p>
+
+                      <p className="mt-4 text-[15px] font-normal leading-[1.6] text-[var(--text-muted)]">
+                        {t(`landing.howItWorks.${activeRole}.${step.key}.body`, lang)}
+                      </p>
+                    </article>
+                  </motion.div>
+                </AnimatePresence>
+              </div>
+            ))}
+          </div>
         </BlurFade>
       </div>
     </section>

@@ -241,6 +241,11 @@ export const ar: Record<string, string> = {
   'landing.howItWorks.tabs.freelancer': "مستقل",
   'landing.howItWorks.tabs.boutique':   "متجر",
 
+  // Floating step icons — universal across roles; alt text per meta-step
+  'landing.howItWorks.icons.step1.alt': "إنشاء الحساب",
+  'landing.howItWorks.icons.step2.alt': "البحث والتفاوض",
+  'landing.howItWorks.icons.step3.alt': "التسليم والدفع",
+
   // Client journey
   'landing.howItWorks.client.step1.title':   "سجّلوا حسابكم",
   'landing.howItWorks.client.step1.tagline': "حسابكم، في ثوانٍ.",
