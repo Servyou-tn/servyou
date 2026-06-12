@@ -231,15 +231,20 @@ export const ar: Record<string, string> = {
   'landing.journey.freelancers_body':     "أدرِج خدماتك بأسعار شفّافة. تصفّح لوحة عروض العمل التي ينشرها عملاء تونسيون يحتاجون مهاراتك. تحقّق من كل عميل عبر واتساب قبل أن تلتزم. ردَّ بسعرك ومهلتك — النظام يمنع الإزعاج (بحد أقصى 10 ردود لكل عرض، و5 ردود نشطة لكل مستقل).",
   'landing.journey.freelancers_cta':      "إنشاء ملفّي كمستقل",
 
-  // ─── Landing — Section 6 (How it works) ─────────────────────────────────────
-  'landing.how.step1_title': "اعثر",
-  'landing.how.step1_body':  "تصفّح المتاجر والمستقلين التونسيين، دون تسجيل.",
-  'landing.how.step2_title': "اطلب",
-  'landing.how.step2_body':  "قدِّم طلبًا مجانيًا. لا التزام ولا دفع في هذه المرحلة.",
-  'landing.how.step3_title': "استلم",
-  'landing.how.step3_body':  "يتواصل معك البائع، وينظّم التوصيل، ويُحضر طلبك.",
-  'landing.how.step4_title': "ادفع",
-  'landing.how.step4_body':  "عند الاستلام، بالدينار، دون وسيط ودون مفاجآت.",
+  // ─── Landing — Section 2 (Comment ça marche) — 3 typographic step cards ──────
+  'landing.howItWorks.eyebrow':       "كيف تعمل المنصة",
+  'landing.howItWorks.headline':      "الشراء على Servyou. في 3 خطوات، دون مفاجآت.",
+  'landing.howItWorks.subtitle':      "من الاكتشاف إلى الدفع، كل خطوة تحميكم.",
+  'landing.howItWorks.stepLabel':     "خطوة",
+  'landing.howItWorks.step1.title':   "اعثروا",
+  'landing.howItWorks.step1.tagline': "كل تونس، في مكان واحد.",
+  'landing.howItWorks.step1.body':    "متاجر، مستقلون ومهام من 24 ولاية — كلها تونسية، كلها موثَّقة. لا خوارزمية أجنبية تقرّر ما ترونه.",
+  'landing.howItWorks.step2.title':   "اسألوا",
+  'landing.howItWorks.step2.tagline': "تكلّموا مع البائع، كما في الواقع.",
+  'landing.howItWorks.step2.body':    "اطرحوا أسئلتكم، تفاوضوا على السعر، اطلبوا صوراً إضافية. أنتم تتحدّثون إلى بائع تونسي حقيقي — لا روبوت، ولا خدمة عملاء في الطرف الآخر من العالم.",
+  'landing.howItWorks.step3.title':   "استلموا وادفعوا",
+  'landing.howItWorks.step3.tagline': "عند التسليم، أمام بابكم.",
+  'landing.howItWorks.step3.body':    "نقداً، بالبطاقة، أو بتحويل — أنتم تختارون عند وصول الطلب. إذا كان هناك خلل، لا تدفعون. الأمر بهذه البساطة.",
 
   // ─── Landing — Section 7 (FAQ) ──────────────────────────────────────────────
   'landing.faq.q1': "كيف يمنع Servyou عمليات الاحتيال؟",

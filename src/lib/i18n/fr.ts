@@ -199,15 +199,20 @@ export const fr: Record<string, string> = {
   'landing.journey.freelancers_body':     "Listez vos services avec prix transparents. Parcourez le tableau d'offres d'emploi posté par des clients tunisiens qui ont besoin de vos compétences. Vérifiez chaque client par WhatsApp avant de vous engager. Répondez avec votre prix et votre délai — le système empêche le spam (10 réponses maximum par offre, 5 réponses actives par freelance).",
   'landing.journey.freelancers_cta':      "Créer mon profil freelance",
 
-  // ─── Landing — Section 6 (How it works) ─────────────────────────────────────
-  'landing.how.step1_title': "Trouvez",
-  'landing.how.step1_body':  "Parcourez les boutiques et les freelances tunisiens, sans inscription.",
-  'landing.how.step2_title': "Demandez",
-  'landing.how.step2_body':  "Soumettez une demande gratuite. Aucun engagement, aucun paiement à ce stade.",
-  'landing.how.step3_title': "Recevez",
-  'landing.how.step3_body':  "Le vendeur vous contacte, organise la livraison, et apporte votre commande.",
-  'landing.how.step4_title': "Payez",
-  'landing.how.step4_body':  "À la livraison, en dinars, sans intermédiaire et sans surprise.",
+  // ─── Landing — Section 2 (Comment ça marche) — 3 typographic step cards ──────
+  'landing.howItWorks.eyebrow':       "COMMENT ÇA MARCHE",
+  'landing.howItWorks.headline':      "Acheter sur Servyou. En 3 étapes, sans surprise.",
+  'landing.howItWorks.subtitle':      "De la découverte au paiement, chaque étape vous protège.",
+  'landing.howItWorks.stepLabel':     "ÉTAPE",
+  'landing.howItWorks.step1.title':   "Trouvez",
+  'landing.howItWorks.step1.tagline': "Toute la Tunisie, en un seul endroit.",
+  'landing.howItWorks.step1.body':    "Boutiques, freelances et missions de 24 gouvernorats — toutes tunisiennes, toutes vérifiées. Pas d'algorithme étranger qui décide ce que vous voyez.",
+  'landing.howItWorks.step2.title':   "Demandez",
+  'landing.howItWorks.step2.tagline': "Parlez au vendeur, comme en vrai.",
+  'landing.howItWorks.step2.body':    "Posez vos questions, négociez le prix, demandez une photo de plus. Vous parlez à un vrai vendeur tunisien — pas à un bot, pas à un service client à l'autre bout du monde.",
+  'landing.howItWorks.step3.title':   "Recevez & Payez",
+  'landing.howItWorks.step3.tagline': "À la livraison, à votre porte.",
+  'landing.howItWorks.step3.body':    "Cash, carte ou virement — vous choisissez au moment où la commande arrive. Si quelque chose ne va pas, vous ne payez pas. C'est aussi simple que ça.",
 
   // ─── Landing — Section 7 (FAQ) ──────────────────────────────────────────────
   'landing.faq.q1': "Comment Servyou empêche-t-il les arnaques ?",
