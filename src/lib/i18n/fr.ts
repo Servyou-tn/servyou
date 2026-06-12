@@ -200,13 +200,11 @@ export const fr: Record<string, string> = {
   'landing.journey.freelancers_cta':      "Créer mon profil freelance",
 
   // ─── Landing — Section 2 (Comment ça marche) — 3 typographic step cards ──────
-  'landing.howItWorks.eyebrow':       "COMMENT ÇA MARCHE",
-  'landing.howItWorks.headline':      "Acheter sur Servyou. En 3 étapes, sans surprise.",
-  'landing.howItWorks.subtitle':      "De la découverte au paiement, chaque étape vous protège.",
+  'landing.howItWorks.title':         "Comment ça marche",
   'landing.howItWorks.stepLabel':     "ÉTAPE",
 
   // Role toggle (segmented control) — accessible name + button labels
-  'landing.howItWorks.tabsAriaLabel':   "Choisissez votre rôle",
+  'landing.howItWorks.tabsAriaLabel':   "Choisir votre rôle",
   'landing.howItWorks.tabs.client':     "Client",
   'landing.howItWorks.tabs.freelancer': "Freelancer",
   'landing.howItWorks.tabs.boutique':   "Boutique",

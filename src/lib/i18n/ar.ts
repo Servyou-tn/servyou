@@ -232,9 +232,7 @@ export const ar: Record<string, string> = {
   'landing.journey.freelancers_cta':      "إنشاء ملفّي كمستقل",
 
   // ─── Landing — Section 2 (Comment ça marche) — 3 typographic step cards ──────
-  'landing.howItWorks.eyebrow':       "كيف تعمل المنصة",
-  'landing.howItWorks.headline':      "الشراء على Servyou. في 3 خطوات، دون مفاجآت.",
-  'landing.howItWorks.subtitle':      "من الاكتشاف إلى الدفع، كل خطوة تحميكم.",
+  'landing.howItWorks.title':         "كيف تعمل المنصة",
   'landing.howItWorks.stepLabel':     "خطوة",
 
   // Role toggle (segmented control) — accessible name + button labels

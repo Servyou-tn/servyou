@@ -6,7 +6,7 @@ import { AnimatePresence, motion, useReducedMotion, type Variants } from 'motion
 import { t, type Lang } from '@/lib/i18n'
 import { BlurFade } from '@/components/magicui/blur-fade'
 
-// Manrope for the headline + card numerals/titles, scoped via --font-display (same
+// Manrope for the title + card numerals/titles, scoped via --font-display (same
 // pattern as the hero, so this section reads as a continuation).
 const manrope = Manrope({
   subsets: ['latin'],
@@ -88,7 +88,7 @@ export function HowItWorks({ lang }: { lang: Lang }) {
   return (
     <section
       id="comment-ca-marche"
-      className={`${manrope.variable} relative w-full overflow-hidden bg-white py-16 md:py-24`}
+      className={`${manrope.variable} relative w-full overflow-hidden bg-white pt-12 pb-16 md:pt-16 md:pb-24`}
     >
       {/* Subtle dot pattern (kept — matches the hero's identity). */}
       <div
@@ -97,59 +97,63 @@ export function HowItWorks({ lang }: { lang: Lang }) {
       />
 
       <div className="relative z-10 mx-auto max-w-7xl px-6">
-        {/* Header (unchanged) */}
+        {/* Section title (promoted from the old eyebrow; headline + subtitle removed). */}
         <BlurFade delay={0} {...fade} inView>
-          <div className="mb-16 text-center">
-            <span className="mb-4 inline-block text-sm font-semibold uppercase tracking-widest text-[var(--brand-accent)]">
-              {t('landing.howItWorks.eyebrow', lang)}
-            </span>
-            <h2 className={`${display} mb-6 text-4xl font-bold leading-tight text-[var(--text-primary)] md:text-5xl lg:text-6xl`}>
-              {t('landing.howItWorks.headline', lang)}
-            </h2>
-            <p className="mx-auto max-w-2xl text-lg leading-relaxed text-[var(--text-muted)] md:text-xl">
-              {t('landing.howItWorks.subtitle', lang)}
-            </p>
-          </div>
+          <h2 className={`${display} mb-8 text-center text-2xl font-semibold tracking-[-0.02em] text-[var(--text-primary)] md:text-[32px]`}>
+            {t('landing.howItWorks.title', lang)}
+          </h2>
         </BlurFade>
 
-        {/* Role toggle — segmented control. Centered; 48px below it before the cards
-            (the header keeps its mb-16 above). */}
-        <BlurFade delay={0.15} {...fade} inView>
-          <div className="mb-12 flex justify-center">
-            <div
-              role="tablist"
-              aria-label={t('landing.howItWorks.tabsAriaLabel', lang)}
-              className="inline-flex gap-1 rounded-full border border-[var(--border-subtle)] bg-[var(--surface-subtle)] p-1.5"
-            >
-              {roles.map((role, index) => {
-                const selected = activeRole === role
-                return (
-                  <button
-                    key={role}
-                    ref={(el) => {
-                      tabRefs.current[index] = el
-                    }}
-                    type="button"
-                    role="tab"
-                    id={`${tabsId}-tab-${role}`}
-                    aria-selected={selected}
-                    aria-controls={`${tabsId}-panel`}
-                    tabIndex={selected ? 0 : -1}
-                    onClick={() => setActiveRole(role)}
-                    onKeyDown={(e) => onTabKeyDown(e, index)}
-                    className={`${display} cursor-pointer rounded-full px-6 py-2.5 text-[15px] font-semibold transition-all duration-200 ease-out ${
-                      selected
-                        ? 'bg-[var(--brand-accent)] text-white shadow-[0_2px_8px_rgba(37,99,235,0.25)]'
-                        : 'bg-transparent text-[var(--text-primary)] hover:bg-black/[0.04]'
-                    }`}
-                  >
-                    {t(`landing.howItWorks.tabs.${role}`, lang)}
-                  </button>
-                )
-              })}
-            </div>
+        {/* Role toggle — Upwork-style outlined sliding pill. The indicator uses a
+            shared layoutId, so framer-motion glides it between buttons with spring
+            physics. Rendered without a transform-ancestor (no BlurFade wrapper) so
+            the layout projection stays accurate. */}
+        <div className="mb-12 flex justify-center">
+          <div
+            role="tablist"
+            aria-label={t('landing.howItWorks.tabsAriaLabel', lang)}
+            className="isolate inline-flex rounded-full border border-[var(--border-subtle)] bg-[var(--surface-base)] p-1"
+          >
+            {roles.map((role, index) => {
+              const selected = activeRole === role
+              return (
+                <button
+                  key={role}
+                  ref={(el) => {
+                    tabRefs.current[index] = el
+                  }}
+                  type="button"
+                  role="tab"
+                  id={`${tabsId}-tab-${role}`}
+                  aria-selected={selected}
+                  aria-controls={`${tabsId}-panel`}
+                  tabIndex={selected ? 0 : -1}
+                  onClick={() => setActiveRole(role)}
+                  onKeyDown={(e) => onTabKeyDown(e, index)}
+                  className={`${display} relative cursor-pointer rounded-full px-7 py-2.5 text-[15px] outline-none transition-colors duration-200 ease-out focus-visible:ring-2 focus-visible:ring-[var(--brand-accent)] ${
+                    selected
+                      ? 'font-semibold text-[var(--text-primary)]'
+                      : 'font-medium text-[var(--text-muted)] hover:text-[var(--text-primary)]'
+                  }`}
+                >
+                  {selected && (
+                    <motion.span
+                      layoutId="roleToggleIndicator"
+                      aria-hidden="true"
+                      className="absolute inset-0 -z-10 rounded-full border-[1.5px] border-[var(--brand-primary)] bg-transparent"
+                      transition={
+                        reduce
+                          ? { duration: 0 }
+                          : { type: 'spring', stiffness: 400, damping: 30 }
+                      }
+                    />
+                  )}
+                  <span className="relative z-10">{t(`landing.howItWorks.tabs.${role}`, lang)}</span>
+                </button>
+              )
+            })}
           </div>
-        </BlurFade>
+        </div>
 
         {/* Three typographic cards, driven by activeRole (1 col mobile, 3 cols tablet+).
             AnimatePresence (mode="wait", keyed by role) handles the fade-swap; the
