@@ -204,15 +204,45 @@ export const fr: Record<string, string> = {
   'landing.howItWorks.headline':      "Acheter sur Servyou. En 3 étapes, sans surprise.",
   'landing.howItWorks.subtitle':      "De la découverte au paiement, chaque étape vous protège.",
   'landing.howItWorks.stepLabel':     "ÉTAPE",
-  'landing.howItWorks.step1.title':   "Trouvez",
-  'landing.howItWorks.step1.tagline': "Toute la Tunisie, en un seul endroit.",
-  'landing.howItWorks.step1.body':    "Boutiques, freelances et missions de 24 gouvernorats — toutes tunisiennes, toutes vérifiées. Pas d'algorithme étranger qui décide ce que vous voyez.",
-  'landing.howItWorks.step2.title':   "Demandez",
-  'landing.howItWorks.step2.tagline': "Parlez au vendeur, comme en vrai.",
-  'landing.howItWorks.step2.body':    "Posez vos questions, négociez le prix, demandez une photo de plus. Vous parlez à un vrai vendeur tunisien — pas à un bot, pas à un service client à l'autre bout du monde.",
-  'landing.howItWorks.step3.title':   "Recevez & Payez",
-  'landing.howItWorks.step3.tagline': "À la livraison, à votre porte.",
-  'landing.howItWorks.step3.body':    "Cash, carte ou virement — vous choisissez au moment où la commande arrive. Si quelque chose ne va pas, vous ne payez pas. C'est aussi simple que ça.",
+
+  // Role toggle (segmented control) — accessible name + button labels
+  'landing.howItWorks.tabsAriaLabel':   "Choisissez votre rôle",
+  'landing.howItWorks.tabs.client':     "Client",
+  'landing.howItWorks.tabs.freelancer': "Freelancer",
+  'landing.howItWorks.tabs.boutique':   "Boutique",
+
+  // Client journey (the original consumer copy)
+  'landing.howItWorks.client.step1.title':   "Trouvez",
+  'landing.howItWorks.client.step1.tagline': "Toute la Tunisie, en un seul endroit.",
+  'landing.howItWorks.client.step1.body':    "Boutiques, freelances et missions de 24 gouvernorats — toutes tunisiennes, toutes vérifiées. Pas d'algorithme étranger qui décide ce que vous voyez.",
+  'landing.howItWorks.client.step2.title':   "Demandez",
+  'landing.howItWorks.client.step2.tagline': "Parlez au vendeur, comme en vrai.",
+  'landing.howItWorks.client.step2.body':    "Posez vos questions, négociez le prix, demandez une photo de plus. Vous parlez à un vrai vendeur tunisien — pas à un bot, pas à un service client à l'autre bout du monde.",
+  'landing.howItWorks.client.step3.title':   "Recevez & Payez",
+  'landing.howItWorks.client.step3.tagline': "À la livraison, à votre porte.",
+  'landing.howItWorks.client.step3.body':    "Cash, carte ou virement — vous choisissez au moment où la commande arrive. Si quelque chose ne va pas, vous ne payez pas. C'est aussi simple que ça.",
+
+  // TODO: replace placeholder copy — real freelancer/boutique journeys pending
+  'landing.howItWorks.freelancer.step1.title':   "Trouvez",
+  'landing.howItWorks.freelancer.step1.tagline': "Toute la Tunisie, en un seul endroit.",
+  'landing.howItWorks.freelancer.step1.body':    "Boutiques, freelances et missions de 24 gouvernorats — toutes tunisiennes, toutes vérifiées. Pas d'algorithme étranger qui décide ce que vous voyez.",
+  'landing.howItWorks.freelancer.step2.title':   "Demandez",
+  'landing.howItWorks.freelancer.step2.tagline': "Parlez au vendeur, comme en vrai.",
+  'landing.howItWorks.freelancer.step2.body':    "Posez vos questions, négociez le prix, demandez une photo de plus. Vous parlez à un vrai vendeur tunisien — pas à un bot, pas à un service client à l'autre bout du monde.",
+  'landing.howItWorks.freelancer.step3.title':   "Recevez & Payez",
+  'landing.howItWorks.freelancer.step3.tagline': "À la livraison, à votre porte.",
+  'landing.howItWorks.freelancer.step3.body':    "Cash, carte ou virement — vous choisissez au moment où la commande arrive. Si quelque chose ne va pas, vous ne payez pas. C'est aussi simple que ça.",
+
+  // TODO: replace placeholder copy — real freelancer/boutique journeys pending
+  'landing.howItWorks.boutique.step1.title':   "Trouvez",
+  'landing.howItWorks.boutique.step1.tagline': "Toute la Tunisie, en un seul endroit.",
+  'landing.howItWorks.boutique.step1.body':    "Boutiques, freelances et missions de 24 gouvernorats — toutes tunisiennes, toutes vérifiées. Pas d'algorithme étranger qui décide ce que vous voyez.",
+  'landing.howItWorks.boutique.step2.title':   "Demandez",
+  'landing.howItWorks.boutique.step2.tagline': "Parlez au vendeur, comme en vrai.",
+  'landing.howItWorks.boutique.step2.body':    "Posez vos questions, négociez le prix, demandez une photo de plus. Vous parlez à un vrai vendeur tunisien — pas à un bot, pas à un service client à l'autre bout du monde.",
+  'landing.howItWorks.boutique.step3.title':   "Recevez & Payez",
+  'landing.howItWorks.boutique.step3.tagline': "À la livraison, à votre porte.",
+  'landing.howItWorks.boutique.step3.body':    "Cash, carte ou virement — vous choisissez au moment où la commande arrive. Si quelque chose ne va pas, vous ne payez pas. C'est aussi simple que ça.",
 
   // ─── Landing — Section 7 (FAQ) ──────────────────────────────────────────────
   'landing.faq.q1': "Comment Servyou empêche-t-il les arnaques ?",

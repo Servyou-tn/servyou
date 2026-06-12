@@ -236,15 +236,45 @@ export const ar: Record<string, string> = {
   'landing.howItWorks.headline':      "الشراء على Servyou. في 3 خطوات، دون مفاجآت.",
   'landing.howItWorks.subtitle':      "من الاكتشاف إلى الدفع، كل خطوة تحميكم.",
   'landing.howItWorks.stepLabel':     "خطوة",
-  'landing.howItWorks.step1.title':   "اعثروا",
-  'landing.howItWorks.step1.tagline': "كل تونس، في مكان واحد.",
-  'landing.howItWorks.step1.body':    "متاجر، مستقلون ومهام من 24 ولاية — كلها تونسية، كلها موثَّقة. لا خوارزمية أجنبية تقرّر ما ترونه.",
-  'landing.howItWorks.step2.title':   "اسألوا",
-  'landing.howItWorks.step2.tagline': "تكلّموا مع البائع، كما في الواقع.",
-  'landing.howItWorks.step2.body':    "اطرحوا أسئلتكم، تفاوضوا على السعر، اطلبوا صوراً إضافية. أنتم تتحدّثون إلى بائع تونسي حقيقي — لا روبوت، ولا خدمة عملاء في الطرف الآخر من العالم.",
-  'landing.howItWorks.step3.title':   "استلموا وادفعوا",
-  'landing.howItWorks.step3.tagline': "عند التسليم، أمام بابكم.",
-  'landing.howItWorks.step3.body':    "نقداً، بالبطاقة، أو بتحويل — أنتم تختارون عند وصول الطلب. إذا كان هناك خلل، لا تدفعون. الأمر بهذه البساطة.",
+
+  // Role toggle (segmented control) — accessible name + button labels
+  'landing.howItWorks.tabsAriaLabel':   "اختاروا دوركم",
+  'landing.howItWorks.tabs.client':     "زبون",
+  'landing.howItWorks.tabs.freelancer': "مستقل",
+  'landing.howItWorks.tabs.boutique':   "متجر",
+
+  // Client journey (the original consumer copy)
+  'landing.howItWorks.client.step1.title':   "اعثروا",
+  'landing.howItWorks.client.step1.tagline': "كل تونس، في مكان واحد.",
+  'landing.howItWorks.client.step1.body':    "متاجر، مستقلون ومهام من 24 ولاية — كلها تونسية، كلها موثَّقة. لا خوارزمية أجنبية تقرّر ما ترونه.",
+  'landing.howItWorks.client.step2.title':   "اسألوا",
+  'landing.howItWorks.client.step2.tagline': "تكلّموا مع البائع، كما في الواقع.",
+  'landing.howItWorks.client.step2.body':    "اطرحوا أسئلتكم، تفاوضوا على السعر، اطلبوا صوراً إضافية. أنتم تتحدّثون إلى بائع تونسي حقيقي — لا روبوت، ولا خدمة عملاء في الطرف الآخر من العالم.",
+  'landing.howItWorks.client.step3.title':   "استلموا وادفعوا",
+  'landing.howItWorks.client.step3.tagline': "عند التسليم، أمام بابكم.",
+  'landing.howItWorks.client.step3.body':    "نقداً، بالبطاقة، أو بتحويل — أنتم تختارون عند وصول الطلب. إذا كان هناك خلل، لا تدفعون. الأمر بهذه البساطة.",
+
+  // TODO: replace placeholder copy — real freelancer/boutique journeys pending
+  'landing.howItWorks.freelancer.step1.title':   "اعثروا",
+  'landing.howItWorks.freelancer.step1.tagline': "كل تونس، في مكان واحد.",
+  'landing.howItWorks.freelancer.step1.body':    "متاجر، مستقلون ومهام من 24 ولاية — كلها تونسية، كلها موثَّقة. لا خوارزمية أجنبية تقرّر ما ترونه.",
+  'landing.howItWorks.freelancer.step2.title':   "اسألوا",
+  'landing.howItWorks.freelancer.step2.tagline': "تكلّموا مع البائع، كما في الواقع.",
+  'landing.howItWorks.freelancer.step2.body':    "اطرحوا أسئلتكم، تفاوضوا على السعر، اطلبوا صوراً إضافية. أنتم تتحدّثون إلى بائع تونسي حقيقي — لا روبوت، ولا خدمة عملاء في الطرف الآخر من العالم.",
+  'landing.howItWorks.freelancer.step3.title':   "استلموا وادفعوا",
+  'landing.howItWorks.freelancer.step3.tagline': "عند التسليم، أمام بابكم.",
+  'landing.howItWorks.freelancer.step3.body':    "نقداً، بالبطاقة، أو بتحويل — أنتم تختارون عند وصول الطلب. إذا كان هناك خلل، لا تدفعون. الأمر بهذه البساطة.",
+
+  // TODO: replace placeholder copy — real freelancer/boutique journeys pending
+  'landing.howItWorks.boutique.step1.title':   "اعثروا",
+  'landing.howItWorks.boutique.step1.tagline': "كل تونس، في مكان واحد.",
+  'landing.howItWorks.boutique.step1.body':    "متاجر، مستقلون ومهام من 24 ولاية — كلها تونسية، كلها موثَّقة. لا خوارزمية أجنبية تقرّر ما ترونه.",
+  'landing.howItWorks.boutique.step2.title':   "اسألوا",
+  'landing.howItWorks.boutique.step2.tagline': "تكلّموا مع البائع، كما في الواقع.",
+  'landing.howItWorks.boutique.step2.body':    "اطرحوا أسئلتكم، تفاوضوا على السعر، اطلبوا صوراً إضافية. أنتم تتحدّثون إلى بائع تونسي حقيقي — لا روبوت، ولا خدمة عملاء في الطرف الآخر من العالم.",
+  'landing.howItWorks.boutique.step3.title':   "استلموا وادفعوا",
+  'landing.howItWorks.boutique.step3.tagline': "عند التسليم، أمام بابكم.",
+  'landing.howItWorks.boutique.step3.body':    "نقداً، بالبطاقة، أو بتحويل — أنتم تختارون عند وصول الطلب. إذا كان هناك خلل، لا تدفعون. الأمر بهذه البساطة.",
 
   // ─── Landing — Section 7 (FAQ) ──────────────────────────────────────────────
   'landing.faq.q1': "كيف يمنع Servyou عمليات الاحتيال؟",
