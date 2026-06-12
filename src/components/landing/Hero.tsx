@@ -205,6 +205,26 @@ export function Hero({ lang }: { lang: Lang }) {
             })}
           </div>
         </div>
+
+        {/* Trust band — the hero's closing element (NOT a separate section). A subtle
+            border-top separates it from the orbital composition above. Two numbers +
+            two keywords (mixed rhythm) keep it from reading as a stat-dump. */}
+        <BlurFade delay={0.4} inView>
+          <div className={`${manrope.variable} relative z-10 mx-auto mt-16 max-w-5xl border-t border-[var(--border-subtle)] px-6 py-8`}>
+            <div className="mx-auto grid grid-cols-2 gap-6 text-center md:flex md:items-center md:gap-0 md:divide-x md:divide-[var(--border-subtle)]">
+              {(['item1', 'item2', 'item3', 'item4'] as const).map((item) => (
+                <div key={item} className="md:flex-1 md:px-4">
+                  <div className="font-[family-name:var(--font-display)] text-[22px] font-bold leading-none tracking-[-0.02em] text-[var(--text-primary)] md:text-[28px]">
+                    {t(`landing.hero.trustBand.${item}.number`, lang)}
+                  </div>
+                  <div className="mt-1.5 font-[family-name:var(--font-display)] text-[12px] font-medium uppercase leading-[1.4] tracking-[0.02em] text-[var(--text-muted)] md:text-[13px]">
+                    {t(`landing.hero.trustBand.${item}.label`, lang)}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </BlurFade>
       </section>
   )
 }

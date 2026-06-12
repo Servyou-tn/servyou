@@ -201,6 +201,16 @@ export const ar: Record<string, string> = {
   'landing.hero.mock.web_title':  "تطوير موقع ويب",
   'landing.hero.mock.web_meta':   "1500 د.ت • DevTunisia، تونس",
   'landing.hero.mock.web_badge':  "قيد التنفيذ",
+
+  // Hero — trust band (closing element of the hero section)
+  'landing.hero.trustBand.item1.number': "24",
+  'landing.hero.trustBand.item1.label':  "ولاية مغطّاة",
+  'landing.hero.trustBand.item2.number': "0%",
+  'landing.hero.trustBand.item2.label':  "عمولة عند الإطلاق",
+  'landing.hero.trustBand.item3.number': "الدفع",
+  'landing.hero.trustBand.item3.label':  "عند التسليم",
+  'landing.hero.trustBand.item4.number': "أوروبا",
+  'landing.hero.trustBand.item4.label':  "بياناتكم محمية",
   // Hero — floating badges
   'landing.badge.commission':   "0٪ عمولة",
   'landing.badge.governorates': "24 ولاية",
@@ -259,7 +269,7 @@ export const ar: Record<string, string> = {
   // Freelancer journey
   'landing.howItWorks.freelancer.step1.title':   "قدّموا أنفسكم",
   'landing.howItWorks.freelancer.step1.tagline': "مساحة واحدة لكلّ ما يمثّلكم.",
-  'landing.howItWorks.freelancer.step1.body':    "المهارات، الأعمال، الأدوات، الشهادات — مساحة عملكم الحقيقية، لا مجرّد ملفّ. اربطوا Behance أو LinkedIn أو GitHub: العملاء يرون كلّ ما تتقنونه في مكان واحد.",
+  'landing.howItWorks.freelancer.step1.body':    "سواء كنتم مطوّرين، مصمّمين، صانعي محتوى UGC أو مصوّرين — مساحة عملكم الحقيقية تجمع المهارات، الأعمال، الأدوات والشهادات. اربطوا Behance أو LinkedIn أو GitHub. العملاء التونسيون يجدونكم بما تتقنونه.",
   'landing.howItWorks.freelancer.step2.title':   "احصلوا على مهامكم",
   'landing.howItWorks.freelancer.step2.tagline': "العمل يأتي إليكم.",
   'landing.howItWorks.freelancer.step2.body':    "اعرضوا خدماتكم، أو ردّوا على المهام التي ينشرها العملاء. أنتم تحدّدون أسعاركم، أنتم تختارون عملاءكم — لا سباق للعروض، ولا حرب أسعار.",

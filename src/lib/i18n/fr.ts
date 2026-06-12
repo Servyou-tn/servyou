@@ -169,6 +169,16 @@ export const fr: Record<string, string> = {
   'landing.hero.mock.web_title':  "Développement site web",
   'landing.hero.mock.web_meta':   "1500 TND • DevTunisia, Tunis",
   'landing.hero.mock.web_badge':  "En cours",
+
+  // Hero — trust band (closing element of the hero section)
+  'landing.hero.trustBand.item1.number': "24",
+  'landing.hero.trustBand.item1.label':  "gouvernorats servis",
+  'landing.hero.trustBand.item2.number': "0%",
+  'landing.hero.trustBand.item2.label':  "de commission au lancement",
+  'landing.hero.trustBand.item3.number': "Paiement",
+  'landing.hero.trustBand.item3.label':  "à la livraison",
+  'landing.hero.trustBand.item4.number': "Europe",
+  'landing.hero.trustBand.item4.label':  "vos données protégées",
   // Hero — floating badges
   'landing.badge.commission':   "0% commission",
   'landing.badge.governorates': "24 gouvernorats",
@@ -227,7 +237,7 @@ export const fr: Record<string, string> = {
   // Freelancer journey
   'landing.howItWorks.freelancer.step1.title':   "Présentez-vous",
   'landing.howItWorks.freelancer.step1.tagline': "Un seul espace pour tout ce qui vous représente.",
-  'landing.howItWorks.freelancer.step1.body':    "Compétences, portfolio, outils, certifications — votre vrai espace de travail, pas un simple profil. Liez votre Behance, LinkedIn ou GitHub : les clients voient tout ce que vous savez faire au même endroit.",
+  'landing.howItWorks.freelancer.step1.body':    "Que vous soyez développeur, designer, créateur UGC ou photographe — votre vrai espace de travail rassemble compétences, portfolio, outils et certifications. Liez Behance, LinkedIn ou GitHub. Les clients tunisiens vous trouvent par ce que vous faites.",
   'landing.howItWorks.freelancer.step2.title':   "Décrochez vos missions",
   'landing.howItWorks.freelancer.step2.tagline': "Le travail vient à vous.",
   'landing.howItWorks.freelancer.step2.body':    "Listez vos services, ou répondez aux missions publiées par les clients. Vous fixez vos prix, vous choisissez vos clients — pas de course aux propositions, pas de guerre des tarifs.",
