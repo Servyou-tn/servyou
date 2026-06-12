@@ -201,7 +201,6 @@ export const fr: Record<string, string> = {
 
   // ─── Landing — Section 2 (Comment ça marche) — 3 typographic step cards ──────
   'landing.howItWorks.title':         "Comment ça marche",
-  'landing.howItWorks.stepLabel':     "ÉTAPE",
 
   // Role toggle (segmented control) — accessible name + button labels
   'landing.howItWorks.tabsAriaLabel':   "Choisir votre rôle",
@@ -246,6 +245,17 @@ export const fr: Record<string, string> = {
   'landing.howItWorks.boutique.step3.title':   "Livrez & Encaissez",
   'landing.howItWorks.boutique.step3.tagline': "Payé à la livraison, en dinars.",
   'landing.howItWorks.boutique.step3.body':    "Les commandes arrivent organisées — client, produit, adresse, téléphone. Vous gardez 100% de ce que vous vendez. 0% de commission au lancement.",
+
+  // CTA labels — role + step specific (hrefs live in HowItWorks.tsx; routes aren't translatable)
+  'landing.howItWorks.client.step1.cta':     "Créer mon compte",
+  'landing.howItWorks.client.step2.cta':     "Explorer Servyou",
+  'landing.howItWorks.client.step3.cta':     "Voir nos garanties",
+  'landing.howItWorks.freelancer.step1.cta': "Devenir freelance",
+  'landing.howItWorks.freelancer.step2.cta': "Parcourir les missions",
+  'landing.howItWorks.freelancer.step3.cta': "Comment être payé",
+  'landing.howItWorks.boutique.step1.cta':   "Ouvrir ma boutique",
+  'landing.howItWorks.boutique.step2.cta':   "Voir un exemple",
+  'landing.howItWorks.boutique.step3.cta':   "Tarifs et commission",
 
   // ─── Landing — Section 7 (FAQ) ──────────────────────────────────────────────
   'landing.faq.q1': "Comment Servyou empêche-t-il les arnaques ?",

@@ -233,7 +233,6 @@ export const ar: Record<string, string> = {
 
   // ─── Landing — Section 2 (Comment ça marche) — 3 typographic step cards ──────
   'landing.howItWorks.title':         "كيف تعمل المنصة",
-  'landing.howItWorks.stepLabel':     "خطوة",
 
   // Role toggle (segmented control) — accessible name + button labels
   'landing.howItWorks.tabsAriaLabel':   "اختاروا دوركم",
@@ -278,6 +277,17 @@ export const ar: Record<string, string> = {
   'landing.howItWorks.boutique.step3.title':   "سلّموا واقبضوا",
   'landing.howItWorks.boutique.step3.tagline': "الدفع عند التسليم، بالدينار.",
   'landing.howItWorks.boutique.step3.body':    "الطلبات تصل منظَّمة — العميل، المنتج، العنوان، الهاتف. تحتفظون بـ 100% ممّا تبيعون. 0% عمولة عند الإطلاق.",
+
+  // CTA labels — role + step specific (hrefs live in HowItWorks.tsx; routes aren't translatable)
+  'landing.howItWorks.client.step1.cta':     "إنشاء حسابي",
+  'landing.howItWorks.client.step2.cta':     "اكتشفوا Servyou",
+  'landing.howItWorks.client.step3.cta':     "ضماناتنا",
+  'landing.howItWorks.freelancer.step1.cta': "كونوا مستقلّاً",
+  'landing.howItWorks.freelancer.step2.cta': "تصفّحوا المهام",
+  'landing.howItWorks.freelancer.step3.cta': "كيف تُدفعون",
+  'landing.howItWorks.boutique.step1.cta':   "افتحوا متجركم",
+  'landing.howItWorks.boutique.step2.cta':   "شاهدوا مثالاً",
+  'landing.howItWorks.boutique.step3.cta':   "الأسعار والعمولة",
 
   // ─── Landing — Section 7 (FAQ) ──────────────────────────────────────────────
   'landing.faq.q1': "كيف يمنع Servyou عمليات الاحتيال؟",
