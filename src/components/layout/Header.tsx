@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { useEffect, useState } from 'react'
 import { usePathname } from 'next/navigation'
 import { useLang } from '@/components/LangProvider'
 import { t } from '@/lib/i18n'
@@ -31,11 +32,33 @@ export function Header({
   const pathname = usePathname()
   const lang = useLang()
 
+  // Active-link detection needs the URL hash too, because several public nav
+  // links are same-page section anchors ('/#boutiques', '/#freelances',
+  // '/#a-propos'). usePathname() drops the hash, and Next's <Link> navigates a
+  // same-page hash via history.pushState — which fires neither `hashchange` nor
+  // `popstate`. So we track the hash three ways: an onClick on each nav link
+  // (the in-app click, set below), the hashchange/popstate listeners (manual
+  // edits + back/forward), and a re-read on every pathname change (deep links +
+  // route navigation). Starts '' to match the server render, then syncs on mount.
+  const [hash, setHash] = useState('')
+  useEffect(() => {
+    const read = () => setHash(window.location.hash)
+    window.addEventListener('hashchange', read)
+    window.addEventListener('popstate', read)
+    return () => {
+      window.removeEventListener('hashchange', read)
+      window.removeEventListener('popstate', read)
+    }
+  }, [])
+  useEffect(() => {
+    setHash(window.location.hash)
+  }, [pathname])
+
   const state = selectVariant({ isLoggedIn, sellerType, pathname })
   if (state.hidden) return null
 
   const links = navLinks(state)
-  const active = activeHref(links, pathname)
+  const active = activeHref(links, pathname, hash)
 
   // The marketing landing page (/) gets a distinct treatment: a white floating
   // capsule on a transparent header (the page paints a soft-blue backdrop behind
@@ -57,10 +80,11 @@ export function Header({
         className={
           isLanding
             ? // Compact floating pill: shrink-wraps to content (w-fit), centered
-              // (mx-auto), tight padding + a single gap-5 between the three zones
-              // (logo · nav links · auth cluster). Low py keeps it a long, short
-              // horizontal pill; items-center centers the logo against the text.
-              'mx-auto mt-3 flex w-fit items-center gap-5 rounded-full border border-[rgba(15,23,42,0.08)] bg-white px-5 py-1.5 shadow-lg'
+              // (mx-auto), a single gap-5 between the three zones (logo · nav
+              // links · auth cluster). A FIXED h-18 (72px) locks the capsule
+              // height so it can't grow with its anchors — items-center vertical-
+              // centers every zone inside it; px-5 keeps the horizontal padding.
+              'mx-auto mt-2 flex h-18 w-fit items-center gap-5 rounded-full border border-[rgba(15,23,42,0.08)] bg-white px-5 shadow-lg'
             : // Standard full-width bar on every other route.
               'mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3 md:grid md:grid-cols-[1fr_auto_1fr] md:gap-4 lg:px-6'
         }
@@ -68,7 +92,7 @@ export function Header({
         {/* Left — brand */}
         <div className="flex items-center md:justify-start">
           <Link href="/" aria-label="Servyou" className={`inline-flex items-center rounded-md ${FOCUS_RING}`}>
-            <Wordmark className={isLanding ? 'h-20' : 'h-16'} />
+            <Wordmark className={isLanding ? 'h-18' : 'h-16'} />
           </Link>
         </div>
 
@@ -85,10 +109,15 @@ export function Header({
           >
             {links.map(l => {
               const isActive = l.href === active
+              // The '#…' part of the href (or '' for a plain route). Set on click
+              // so the active pill moves immediately, before any hashchange fires.
+              const hashIndex = l.href.indexOf('#')
+              const linkHash = hashIndex === -1 ? '' : l.href.slice(hashIndex)
               return (
                 <li key={l.href}>
                   <Link
                     href={l.href}
+                    onClick={() => setHash(linkHash)}
                     aria-current={isActive ? 'page' : undefined}
                     className={`flex items-center gap-1.5 rounded-full px-3.5 py-1.5 font-medium transition-colors ${
                       isLanding ? 'text-base' : 'text-sm'
@@ -132,7 +161,7 @@ export function Header({
                   href="/signup"
                   className={`whitespace-nowrap rounded-full font-semibold text-white transition-colors ${
                     isLanding
-                      ? 'px-6 py-2.5 text-base bg-brand-accent hover:bg-[#1D4ED8]'
+                      ? 'inline-flex h-10 items-center px-5 text-sm bg-brand-accent hover:bg-[#1D4ED8]'
                       : 'px-4 py-2 text-sm bg-brand-primary hover:bg-[#152C6B]'
                   } ${FOCUS_RING}`}
                 >

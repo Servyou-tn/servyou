@@ -2,7 +2,6 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { getLang } from '@/lib/i18n/server'
 import { Hero } from '@/components/landing/Hero'
-import { FounderNote } from '@/components/landing/FounderNote'
 import { Problem } from '@/components/landing/Problem'
 import { Benefits } from '@/components/landing/Benefits'
 import { Journeys } from '@/components/landing/Journeys'
@@ -34,20 +33,20 @@ export default async function HomePage() {
 
   return (
     <main>
-      {/* Soft sky-blue → white backdrop. `fixed` so it also sits behind the
-          floating navbar capsule (the Header lives in the root layout, above
-          <main>, so a gradient on <main> alone wouldn't reach it). Landing-only. */}
+      {/* Pure white at the very top so the floating navbar capsule sits on white
+          (the Header lives in the root layout above <main>; the blue band there was
+          this backdrop, not the hero). A soft sky-blue atmosphere returns lower
+          down, then fades back to white. `fixed` so it reaches behind the navbar. */}
       <div
         aria-hidden="true"
         className="pointer-events-none fixed inset-0 -z-10"
-        style={{ background: 'linear-gradient(to bottom, #E0F2FE 0%, #FFFFFF 60%)' }}
+        style={{ background: 'linear-gradient(to bottom, #FFFFFF 0%, #FFFFFF 14%, #E0F2FE 38%, #FFFFFF 72%)' }}
       />
       <Hero lang={lang} />
-      <FounderNote lang={lang} />
+      <HowItWorks lang={lang} />
       <Problem lang={lang} />
       <Benefits lang={lang} />
       <Journeys lang={lang} />
-      <HowItWorks lang={lang} />
       <Faq lang={lang} />
       <FinalCtaFooter lang={lang} />
     </main>
