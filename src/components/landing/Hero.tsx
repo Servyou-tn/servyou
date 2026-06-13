@@ -258,7 +258,21 @@ function FlipBack({
       </div>
       <Link
         href={href}
-        onClick={e => e.stopPropagation()}
+        onClick={(e) => {
+          e.stopPropagation()
+          // Next's Link hash-navigation bypasses CSS scroll-behavior:smooth, so we
+          // smooth-scroll in-page anchors ourselves (reduced motion honoured).
+          // Route hrefs (no leading '#') fall through to default Link navigation.
+          if (href.startsWith('#')) {
+            const target = document.getElementById(href.slice(1))
+            if (target) {
+              e.preventDefault()
+              const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+              target.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' })
+              history.pushState(null, '', href)
+            }
+          }
+        }}
         className="group relative mx-auto flex w-full max-w-[180px] items-center justify-between gap-2 rounded-full py-1 pl-4 pr-1 text-xs font-semibold text-white sm:whitespace-nowrap"
         style={{
           background: 'linear-gradient(135deg, var(--brand-accent) 0%, var(--brand-primary) 100%)',

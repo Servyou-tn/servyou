@@ -60,6 +60,16 @@ body {
   font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
 }
 
+/* Smooth in-page anchor scrolling (e.g. the hero "Comment ça marche" CTA jumping
+   to the #comment-ca-marche section). Gated on no-preference to honour the
+   project's reduced-motion posture (Hero/HowItWorks/Categories all suppress
+   motion the same way). */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
 /* ── Hero motion (Magic UI beam composition) ──
    Pulsing luminous halo behind the central S logo. */
 @keyframes glow-pulse {
