@@ -4,7 +4,7 @@ import { navLinks, accountItems, activeHref } from './nav-config'
 
 describe('selectVariant', () => {
   it('hides the Header on every auth route (chromeless auth)', () => {
-    for (const p of ['/login', '/signup', '/forgot-password', '/update-password', '/connexion']) {
+    for (const p of ['/login', '/signup', '/forgot-password', '/update-password', '/connexion', '/verifier-email']) {
       expect(selectVariant({ isLoggedIn: false, sellerType: null, pathname: p }).hidden).toBe(true)
       // also hidden even if somehow logged in
       expect(selectVariant({ isLoggedIn: true, sellerType: 'shop_owner', pathname: p }).hidden).toBe(true)
