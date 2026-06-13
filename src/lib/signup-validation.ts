@@ -5,6 +5,9 @@
 // unit-tested and reused by the new-password recovery form. These are app-layer
 // UX convenience: the 16+ gate is not DB-enforced (the 18+ sell gate is).
 export const MIN_SIGNUP_AGE = 16
+// Sellers (shop owners, freelancers) must be 18+ to sign up via their Step-2 page;
+// the DB separately enforces 18+ when seller_type is actually set at /devenir-*.
+export const MIN_SELLER_AGE = 18
 
 export const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
@@ -29,11 +32,13 @@ export function computeAge(dateOfBirth: string, now: Date = new Date()): number 
   return age
 }
 
-/** True when the date of birth is a valid date and the person is 16 or older. */
-export function isOldEnoughToSignup(dateOfBirth: string, now: Date = new Date()): boolean {
+/** True when the date of birth is valid and the person is at least `minAge`.
+ *  minAge is explicit (no default) so every caller picks the right role gate:
+ *  consumers MIN_SIGNUP_AGE (16), sellers MIN_SELLER_AGE (18) — see ROLE_CONFIG. */
+export function isOldEnoughToSignup(dateOfBirth: string, minAge: number, now: Date = new Date()): boolean {
   const dob = parseDate(dateOfBirth)
   if (Number.isNaN(dob.getTime())) return false
-  return computeAge(dateOfBirth, now) >= MIN_SIGNUP_AGE
+  return computeAge(dateOfBirth, now) >= minAge
 }
 
 export type PasswordStrength = 'weak' | 'medium' | 'strong'

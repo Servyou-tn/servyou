@@ -7,8 +7,8 @@ import { createClient } from '@/lib/supabase/client'
 import { useLang } from '@/components/LangProvider'
 import { t } from '@/lib/i18n'
 import { GOVERNORATES } from '@/lib/tunisia-governorates'
-import { SIGNUP_ROLE_KEY, roleDestination, type SignupRole } from '@/lib/signup-role'
-import { computeAge, isValidEmail, isValidPassword, passwordStrength, MIN_SIGNUP_AGE } from '@/lib/signup-validation'
+import { SIGNUP_ROLE_KEY, roleConfig, type SignupRole } from '@/lib/signup-role'
+import { computeAge, isValidEmail, isValidPassword, passwordStrength } from '@/lib/signup-validation'
 import { FOCUS_RING } from '@/components/layout/styles'
 
 // ── Google OAuth: built but DISABLED this sprint ──────────────────────────────
@@ -116,6 +116,7 @@ export function SignupForm({ role }: { role: SignupRole }) {
   const router = useRouter()
   const lang = useLang()
   const isRtl = lang === 'ar'
+  const config = roleConfig(role)
 
   const [fullName, setFullName] = useState('')
   const [email, setEmail] = useState('')
@@ -130,13 +131,13 @@ export function SignupForm({ role }: { role: SignupRole }) {
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
 
-  // Latest selectable DOB is today − 16y, so the native picker nudges toward the
-  // age gate (validation still enforces it). Computed once on mount.
+  // Latest selectable DOB is today − minAge (16 consumer / 18 seller), so the
+  // native picker nudges toward the role's age gate (validation still enforces it).
   const maxDob = useMemo(() => {
     const d = new Date()
-    d.setFullYear(d.getFullYear() - 16)
+    d.setFullYear(d.getFullYear() - config.minAge)
     return d.toISOString().slice(0, 10)
-  }, [])
+  }, [config.minAge])
 
   const strength = password ? passwordStrength(password) : null
   const inputBase = `${display} w-full rounded-xl border bg-white px-4 py-3 text-[15px] text-[var(--text-primary)] outline-none transition-colors placeholder:text-[var(--text-muted)]/70 ${FOCUS_RING}`
@@ -161,8 +162,8 @@ export function SignupForm({ role }: { role: SignupRole }) {
 
     if (!dateOfBirth || Number.isNaN(new Date(dateOfBirth).getTime()))
       e.dateOfBirth = t('signup.form.errors.dateOfBirthInvalid', lang)
-    else if (computeAge(dateOfBirth) < MIN_SIGNUP_AGE)
-      e.dateOfBirth = t('signup.form.errors.dateOfBirthTooYoung', lang)
+    else if (computeAge(dateOfBirth) < config.minAge)
+      e.dateOfBirth = t(config.ageErrorKey, lang)
 
     if (!city) e.city = t('signup.form.errors.cityRequired', lang)
     return e
@@ -241,7 +242,7 @@ export function SignupForm({ role }: { role: SignupRole }) {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(roleDestination(role))}`,
+        redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(config.destination)}`,
       },
     })
     if (error) {
@@ -372,7 +373,7 @@ export function SignupForm({ role }: { role: SignupRole }) {
           id="dateOfBirth"
           label={t('signup.form.fields.dateOfBirth.label', lang)}
           error={fieldErrors.dateOfBirth}
-          help={t('signup.form.fields.dateOfBirth.helper', lang)}
+          help={t(config.ageHelperKey, lang)}
         >
           <input
             id="dateOfBirth"

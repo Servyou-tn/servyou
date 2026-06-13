@@ -6,6 +6,7 @@ import {
   isValidPassword,
   passwordStrength,
   MIN_SIGNUP_AGE,
+  MIN_SELLER_AGE,
 } from '@/lib/signup-validation'
 
 // Local-constructed reference "now" so the age boundary tests are timezone-stable.
@@ -23,22 +24,32 @@ describe('computeAge', () => {
   })
 })
 
-describe('isOldEnoughToSignup (16+ gate)', () => {
-  it('passes someone who turns 16 today', () => {
-    expect(isOldEnoughToSignup('2010-06-13', NOW)).toBe(true)
+describe('isOldEnoughToSignup (role-specific age gate)', () => {
+  it('passes someone who turns 16 today for the 16+ gate', () => {
+    expect(isOldEnoughToSignup('2010-06-13', 16, NOW)).toBe(true)
   })
-  it('fails someone one day short of 16', () => {
-    expect(isOldEnoughToSignup('2010-06-14', NOW)).toBe(false)
+  it('fails one day short of 16 for the 16+ gate', () => {
+    expect(isOldEnoughToSignup('2010-06-14', 16, NOW)).toBe(false)
   })
-  it('fails someone clearly under 16', () => {
-    expect(isOldEnoughToSignup('2015-01-01', NOW)).toBe(false)
+  it('passes someone who turns 18 today for the 18+ gate', () => {
+    expect(isOldEnoughToSignup('2008-06-13', 18, NOW)).toBe(true)
   })
-  it('fails closed on an invalid or empty date', () => {
-    expect(isOldEnoughToSignup('', NOW)).toBe(false)
-    expect(isOldEnoughToSignup('not-a-date', NOW)).toBe(false)
+  it('fails one day short of 18 for the 18+ gate', () => {
+    expect(isOldEnoughToSignup('2008-06-14', 18, NOW)).toBe(false)
   })
-  it('uses 16 as the minimum age', () => {
+  it('a 16-year-old fails the 18+ seller gate', () => {
+    expect(isOldEnoughToSignup('2010-06-13', 18, NOW)).toBe(false)
+  })
+  it('a clearly-of-age person passes the 18+ gate', () => {
+    expect(isOldEnoughToSignup('2005-01-01', 18, NOW)).toBe(true)
+  })
+  it('fails closed on an invalid or empty date regardless of minAge', () => {
+    expect(isOldEnoughToSignup('', 16, NOW)).toBe(false)
+    expect(isOldEnoughToSignup('not-a-date', 18, NOW)).toBe(false)
+  })
+  it('exposes both age floors (16 consumer, 18 seller)', () => {
     expect(MIN_SIGNUP_AGE).toBe(16)
+    expect(MIN_SELLER_AGE).toBe(18)
   })
 })
 
