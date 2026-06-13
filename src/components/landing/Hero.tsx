@@ -79,7 +79,7 @@ export function Hero({ lang }: { lang: Lang }) {
     // Radial luminance background — a small ellipse whose bright point sits at 65%
     // down the section, so the top ~35% is pure white before any blue tint.
     // overflow-hidden contains the ambient particles.
-    <section className="relative overflow-hidden bg-[radial-gradient(ellipse_70%_50%_at_50%_65%,_var(--brand-ice)_0%,_white_65%)] pb-6 pt-12">
+    <section className="relative overflow-hidden bg-[radial-gradient(ellipse_70%_50%_at_50%_65%,_var(--brand-ice)_0%,_white_65%)] pb-20 pt-12 md:pb-[120px]">
         {/* Belt-and-braces with the constrained gradient: a solid white strip pinned
             to the top of the section guarantees the hero's top 160px has no blue. */}
         <div className="pointer-events-none absolute left-0 right-0 top-0 z-0 h-40 bg-white" aria-hidden="true" />

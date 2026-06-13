@@ -160,8 +160,10 @@ export function HowItWorks({ lang }: { lang: Lang }) {
 
         <div className="relative z-10">
           {/* Role toggle — Upwork-style outlined sliding pill, floating as a raised
-              white element. No BlurFade wrapper so the layoutId projection stays accurate. */}
-          <div className="mb-12 flex justify-center">
+              white element. No BlurFade wrapper so the layoutId projection stays accurate.
+              Large mb so the floating 3D icons below clear the toggle (80px desktop /
+              64px mobile gap — the icons sit half-above their cards in this space). */}
+          <div className="mb-28 flex justify-center md:mb-32">
             <div
               role="tablist"
               aria-label={t('landing.howItWorks.tabsAriaLabel', lang)}
