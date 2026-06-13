@@ -1,6 +1,6 @@
 'use client'
 
-import { Suspense, useState, type FormEvent } from 'react'
+import { Suspense, useEffect, useState, type FormEvent } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
@@ -8,6 +8,9 @@ import { useLang } from '@/components/LangProvider'
 import { t } from '@/lib/i18n'
 import { isValidEmail } from '@/lib/signup-validation'
 import { isValidInternalPath } from '@/lib/internal-path'
+import { SpinnerIcon, GoogleIcon, CheckCircleIcon } from '@/components/auth/Icons'
+import { PasswordField } from '@/components/auth/PasswordField'
+import { display, labelClass, errorClass, inputBase, primaryBtn } from '@/components/auth/field-styles'
 import { FOCUS_RING } from '@/components/layout/styles'
 import { SuspendedBanner } from './SuspendedBanner'
 
@@ -17,64 +20,29 @@ import { SuspendedBanner } from './SuspendedBanner'
 // docs/migrations/auth-migration-supabase-dashboard-changes.md (§ Future: Google).
 const ENABLE_GOOGLE_OAUTH: boolean = false
 
-const display = 'font-[family-name:var(--font-display)]'
-
-// Inline icons (lucide paths) kept local for now; when the new-password form
-// (Commit 4) becomes the 3rd consumer, these + the field styling move to shared
-// src/components/auth/ primitives (rule of three).
-function EyeIcon({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
-      <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
-      <circle cx="12" cy="12" r="3" />
-    </svg>
-  )
-}
-function EyeOffIcon({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
-      <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24" />
-      <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68" />
-      <path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61" />
-      <line x1="2" x2="22" y1="2" y2="22" />
-    </svg>
-  )
-}
-function SpinnerIcon({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden="true">
-      <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth={4} className="opacity-25" />
-      <path d="M12 2a10 10 0 0 1 10 10" stroke="currentColor" strokeWidth={4} strokeLinecap="round" />
-    </svg>
-  )
-}
-function GoogleIcon({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" className={className} aria-hidden="true">
-      <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
-      <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
-      <path fill="#FBBC05" d="M5.84 14.09A6.6 6.6 0 0 1 5.49 12c0-.73.13-1.43.35-2.09V7.07H2.18A11 11 0 0 0 1 12c0 1.78.43 3.45 1.18 4.93l3.66-2.84z" />
-      <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84C6.71 7.31 9.14 5.38 12 5.38z" />
-    </svg>
-  )
-}
-
-const labelClass = `${display} mb-1.5 block text-sm font-semibold text-white`
-const errorClass = 'mt-1.5 text-sm text-red-300'
-
-export function SigninForm() {
+export function SigninForm({ showResetSuccess = false }: { showResetSuccess?: boolean }) {
   const supabase = createClient()
   const router = useRouter()
   const lang = useLang()
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [showPassword, setShowPassword] = useState(false)
   const [emailError, setEmailError] = useState('')
   const [formError, setFormError] = useState('')
   const [loading, setLoading] = useState(false)
 
-  const inputBase = `${display} w-full rounded-xl border bg-white px-4 py-3 text-[15px] text-[var(--text-primary)] outline-none transition-colors placeholder:text-[var(--text-muted)]/70 ${FOCUS_RING}`
+  // Success banner after a password reset (redirected here from /nouveau-mot-de-passe
+  // with ?passwordReset=success — read server-side and passed as a prop, so it's
+  // SSR-correct). Auto-hides after 8s; also dismissed on first form interaction
+  // (onFocusCapture below). The setState lives in the timeout callback, not the
+  // effect body, so it doesn't trip react-hooks/set-state-in-effect.
+  const [bannerDismissed, setBannerDismissed] = useState(false)
+  const showResetBanner = showResetSuccess && !bannerDismissed
+  useEffect(() => {
+    if (!showResetBanner) return
+    const id = setTimeout(() => setBannerDismissed(true), 8000)
+    return () => clearTimeout(id)
+  }, [showResetBanner])
 
   async function handleSubmit(ev: FormEvent) {
     ev.preventDefault()
@@ -155,6 +123,16 @@ export function SigninForm() {
         <SuspendedBanner />
       </Suspense>
 
+      {showResetBanner ? (
+        <div role="status" className="mb-5 flex items-start gap-3 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+          <CheckCircleIcon className="mt-0.5 h-5 w-5 shrink-0 text-emerald-600" />
+          <div>
+            <p className="font-semibold">{t('signin.passwordResetSuccess.title', lang)}</p>
+            <p className="mt-0.5 text-emerald-700">{t('signin.passwordResetSuccess.message', lang)}</p>
+          </div>
+        </div>
+      ) : null}
+
       {ENABLE_GOOGLE_OAUTH ? (
         <>
           <button
@@ -173,7 +151,7 @@ export function SigninForm() {
         </>
       ) : null}
 
-      <form onSubmit={handleSubmit} noValidate className="space-y-4">
+      <form onSubmit={handleSubmit} noValidate className="space-y-4" onFocusCapture={() => setBannerDismissed(true)}>
         <div>
           <label htmlFor="email" className={labelClass}>
             {t('signin.fields.email.label', lang)}
@@ -198,28 +176,13 @@ export function SigninForm() {
         </div>
 
         <div>
-          <label htmlFor="password" className={labelClass}>
-            {t('signin.fields.password.label', lang)}
-          </label>
-          <div className="relative">
-            <input
-              id="password"
-              type={showPassword ? 'text' : 'password'}
-              autoComplete="current-password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className={`${inputBase} border-[var(--border-subtle)] pe-12`}
-            />
-            <button
-              type="button"
-              onClick={() => setShowPassword((v) => !v)}
-              aria-label={t(showPassword ? 'signin.fields.password.hidePassword' : 'signin.fields.password.showPassword', lang)}
-              aria-pressed={showPassword}
-              className={`absolute inset-y-0 end-0 flex w-12 items-center justify-center rounded-e-xl text-[var(--text-muted)] transition-colors hover:text-[var(--text-primary)] ${FOCUS_RING}`}
-            >
-              {showPassword ? <EyeOffIcon className="h-5 w-5" /> : <EyeIcon className="h-5 w-5" />}
-            </button>
-          </div>
+          <PasswordField
+            id="password"
+            label={t('signin.fields.password.label', lang)}
+            value={password}
+            onChange={setPassword}
+            autoComplete="current-password"
+          />
           <div className="mt-2 text-end">
             <Link href="/mot-de-passe-oublie" className="text-[13px] font-medium text-blue-300 hover:underline">
               {t('signin.forgotPassword', lang)}
@@ -233,11 +196,7 @@ export function SigninForm() {
           </p>
         ) : null}
 
-        <button
-          type="submit"
-          disabled={loading}
-          className={`${display} inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-[var(--brand-accent)] text-[15px] font-semibold text-white transition-colors hover:bg-[#1D4ED8] disabled:cursor-not-allowed disabled:opacity-70 ${FOCUS_RING}`}
-        >
+        <button type="submit" disabled={loading} className={primaryBtn}>
           {loading ? (
             <>
               <SpinnerIcon className="h-5 w-5 animate-spin" />

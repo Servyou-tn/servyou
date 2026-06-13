@@ -466,6 +466,42 @@ export const fr: Record<string, string> = {
   'verifyEmail.state3.resend':       "Envoyer un nouveau lien",
   'verifyEmail.state3.backToSignin': "Retour à la connexion",
 
+  // ─── Password reset success banner (shown on /connexion) ────────────────────
+  'signin.passwordResetSuccess.title':   "Mot de passe réinitialisé.",
+  'signin.passwordResetSuccess.message': "Connectez-vous avec votre nouveau mot de passe.",
+
+  // ─── Forgot password (/mot-de-passe-oublie) ─────────────────────────────────
+  'forgotPassword.title':    "Mot de passe oublié ?",
+  'forgotPassword.subtitle': "Entrez votre email et nous vous enverrons un lien pour réinitialiser votre mot de passe.",
+  'forgotPassword.fields.email.label':       "E-mail",
+  'forgotPassword.fields.email.placeholder': "vous@exemple.com",
+  'forgotPassword.submit':     "Envoyer le lien",
+  'forgotPassword.submitting': "Envoi en cours…",
+  'forgotPassword.errors.generic': "Une erreur s'est produite. Veuillez réessayer.",
+  'forgotPassword.success.title':        "Vérifiez votre email.",
+  'forgotPassword.success.body':         "Si un compte existe avec cet email, vous recevrez un lien pour réinitialiser votre mot de passe dans quelques minutes.",
+  'forgotPassword.success.checkSpam':    "L'email peut prendre quelques minutes. Vérifiez aussi votre dossier de spam.",
+  'forgotPassword.success.backToSignin': "Retour à la connexion",
+  'forgotPassword.footer.remembered': "Vous vous souvenez de votre mot de passe ?",
+  'forgotPassword.footer.signinLink': "Se connecter",
+
+  // ─── New password (/nouveau-mot-de-passe) ───────────────────────────────────
+  'newPassword.title':    "Nouveau mot de passe.",
+  'newPassword.subtitle': "Choisissez un mot de passe fort pour sécuriser votre compte.",
+  'newPassword.fields.password.label':        "Nouveau mot de passe",
+  'newPassword.fields.password.helper':       "Minimum 8 caractères, avec au moins 1 lettre et 1 chiffre",
+  'newPassword.fields.confirmPassword.label': "Confirmer le nouveau mot de passe",
+  'newPassword.submit':     "Réinitialiser le mot de passe",
+  'newPassword.submitting': "Réinitialisation…",
+  'newPassword.errors.mismatch':     "Les mots de passe ne correspondent pas.",
+  'newPassword.errors.updateFailed': "Erreur lors de la mise à jour. Réessayez.",
+  'newPassword.errors.weakPassword': "Le mot de passe doit contenir au moins 8 caractères, avec 1 lettre et 1 chiffre.",
+  'newPassword.invalid.title':        "Lien invalide.",
+  'newPassword.invalid.subtitle':     "Ce lien de réinitialisation a expiré ou a déjà été utilisé.",
+  'newPassword.invalid.body':         "Demandez un nouveau lien pour réinitialiser votre mot de passe.",
+  'newPassword.invalid.requestNew':   "Demander un nouveau lien",
+  'newPassword.invalid.backToSignin': "Retour à la connexion",
+
   // ─── Auth — forgot / reset password ─────────────────────────────────────────
   'auth.forgot_title':      "Mot de passe oublié",
   'auth.forgot_hint':       "Entrez votre e-mail pour recevoir un lien de réinitialisation.",

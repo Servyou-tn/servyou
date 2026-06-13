@@ -11,7 +11,8 @@ import { SIGNUP_ROLE_KEY, asSignupRole } from '@/lib/signup-role'
 import { nextDestinationAfterVerify } from '@/lib/verify-email'
 import type { SellerType } from '@/lib/layout/select-variant'
 import { AuthShell } from '@/components/auth/AuthShell'
-import { FOCUS_RING } from '@/components/layout/styles'
+import { MailIcon, CheckCircleIcon, AlertCircleIcon, SpinnerIcon } from '@/components/auth/Icons'
+import { display, labelClass, inputBase, primaryBtn } from '@/components/auth/field-styles'
 
 // Initial state is decided server-side from the URL (?error / ?code / ?email) so
 // the first paint is correct; the client listener then flips to 'verified' once a
@@ -19,46 +20,8 @@ import { FOCUS_RING } from '@/components/layout/styles'
 export type VerifyInitialView = 'pending' | 'loading' | 'failed'
 type View = VerifyInitialView | 'verified'
 
-const display = 'font-[family-name:var(--font-display)]'
 const AUTO_REDIRECT_SECONDS = 3
 const RESEND_COOLDOWN_SECONDS = 30
-const labelClass = `${display} mb-1.5 block text-sm font-semibold text-white`
-const primaryBtn = `${display} inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-[var(--brand-accent)] text-[15px] font-semibold text-white transition-colors hover:bg-[#1D4ED8] disabled:cursor-not-allowed disabled:opacity-70 ${FOCUS_RING}`
-const inputBase = `${display} w-full rounded-xl border bg-white px-4 py-3 text-[15px] text-[var(--text-primary)] outline-none transition-colors placeholder:text-[var(--text-muted)]/70 ${FOCUS_RING}`
-
-function MailIcon({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
-      <rect width="20" height="16" x="2" y="4" rx="2" />
-      <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
-    </svg>
-  )
-}
-function CheckCircleIcon({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
-      <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
-      <path d="m9 11 3 3L22 4" />
-    </svg>
-  )
-}
-function AlertCircleIcon({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
-      <circle cx="12" cy="12" r="10" />
-      <line x1="12" x2="12" y1="8" y2="12" />
-      <line x1="12" x2="12.01" y1="16" y2="16" />
-    </svg>
-  )
-}
-function SpinnerIcon({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden="true">
-      <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth={4} className="opacity-25" />
-      <path d="M12 2a10 10 0 0 1 10 10" stroke="currentColor" strokeWidth={4} strokeLinecap="round" />
-    </svg>
-  )
-}
 
 // Resend-with-cooldown: shared by State 1 and State 3. Starts the 30s cooldown on
 // every attempt (spam-resistant even on error) and auto-hides success after 5s.

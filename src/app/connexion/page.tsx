@@ -8,8 +8,13 @@ import { SigninForm } from './components/SigninForm'
 // AuthFunnelLayout (title on white, navy box, footer on white). Narrower box than
 // signup (480px) since it is only two fields. Replaces the legacy /login, which
 // stays live until Commit 5 repoints references and Commit 6 deletes the file.
-export default async function ConnexionPage() {
+export default async function ConnexionPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>
+}) {
   const lang = await getLang()
+  const sp = await searchParams
   return (
     <AuthFunnelLayout
       maxWidthClass="max-w-[480px]"
@@ -24,7 +29,7 @@ export default async function ConnexionPage() {
         </>
       }
     >
-      <SigninForm />
+      <SigninForm showResetSuccess={sp.passwordReset === 'success'} />
     </AuthFunnelLayout>
   )
 }

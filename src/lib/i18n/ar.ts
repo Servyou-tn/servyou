@@ -497,6 +497,42 @@ export const ar: Record<string, string> = {
   'verifyEmail.state3.resend':       "إرسال رابط جديد",
   'verifyEmail.state3.backToSignin': "العودة إلى تسجيل الدخول",
 
+  // ─── Password reset success banner (shown on /connexion) ────────────────────
+  'signin.passwordResetSuccess.title':   "تمت إعادة تعيين كلمة المرور.",
+  'signin.passwordResetSuccess.message': "سجّلوا الدخول بكلمة المرور الجديدة.",
+
+  // ─── Forgot password (/mot-de-passe-oublie) ─────────────────────────────────
+  'forgotPassword.title':    "نسيتم كلمة المرور ؟",
+  'forgotPassword.subtitle': "أدخلوا بريدكم الإلكتروني وسنرسل لكم رابطاً لإعادة تعيين كلمة المرور.",
+  'forgotPassword.fields.email.label':       "البريد الإلكتروني",
+  'forgotPassword.fields.email.placeholder': "vous@exemple.com",
+  'forgotPassword.submit':     "إرسال الرابط",
+  'forgotPassword.submitting': "جارٍ الإرسال…",
+  'forgotPassword.errors.generic': "حدث خطأ ما. يرجى المحاولة مرة أخرى.",
+  'forgotPassword.success.title':        "تحقّقوا من بريدكم.",
+  'forgotPassword.success.body':         "إذا كان هناك حساب مرتبط بهذا البريد، ستتلقّون رابطاً لإعادة تعيين كلمة المرور خلال دقائق.",
+  'forgotPassword.success.checkSpam':    "قد يستغرق وصول البريد بضع دقائق. تحقّقوا أيضاً من مجلد الرسائل غير المرغوب فيها.",
+  'forgotPassword.success.backToSignin': "العودة إلى تسجيل الدخول",
+  'forgotPassword.footer.remembered': "تتذكّرون كلمة المرور ؟",
+  'forgotPassword.footer.signinLink': "تسجيل الدخول",
+
+  // ─── New password (/nouveau-mot-de-passe) ───────────────────────────────────
+  'newPassword.title':    "كلمة مرور جديدة.",
+  'newPassword.subtitle': "اختاروا كلمة مرور قوية لحماية حسابكم.",
+  'newPassword.fields.password.label':        "كلمة المرور الجديدة",
+  'newPassword.fields.password.helper':       "8 أحرف على الأقل، مع حرف واحد ورقم واحد على الأقل",
+  'newPassword.fields.confirmPassword.label': "تأكيد كلمة المرور الجديدة",
+  'newPassword.submit':     "إعادة تعيين كلمة المرور",
+  'newPassword.submitting': "جارٍ إعادة التعيين…",
+  'newPassword.errors.mismatch':     "كلمتا المرور غير متطابقتين.",
+  'newPassword.errors.updateFailed': "حدث خطأ أثناء التحديث. أعيدوا المحاولة.",
+  'newPassword.errors.weakPassword': "يجب أن تحتوي كلمة المرور على 8 أحرف على الأقل، مع حرف ورقم.",
+  'newPassword.invalid.title':        "رابط غير صالح.",
+  'newPassword.invalid.subtitle':     "انتهت صلاحية رابط إعادة التعيين هذا أو تم استخدامه بالفعل.",
+  'newPassword.invalid.body':         "اطلبوا رابطاً جديداً لإعادة تعيين كلمة المرور.",
+  'newPassword.invalid.requestNew':   "طلب رابط جديد",
+  'newPassword.invalid.backToSignin': "العودة إلى تسجيل الدخول",
+
   // ─── Auth — forgot / reset password ─────────────────────────────────────────
   'auth.forgot_title':      "نسيت كلمة المرور",
   'auth.forgot_hint':       "أدخل بريدك الإلكتروني لتلقّي رابط إعادة التعيين.",
