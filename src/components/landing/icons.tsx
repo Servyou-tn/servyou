@@ -131,6 +131,16 @@ export function PaletteIcon(props: SVGProps<SVGSVGElement>) {
   )
 }
 
+export function LayoutIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg {...stroke} strokeWidth={1.75} {...props}>
+      <rect width="18" height="18" x="3" y="3" rx="2" />
+      <path d="M3 9h18" />
+      <path d="M9 21V9" />
+    </svg>
+  )
+}
+
 export function MegaphoneIcon(props: SVGProps<SVGSVGElement>) {
   return (
     <svg {...stroke} strokeWidth={1.75} {...props}>

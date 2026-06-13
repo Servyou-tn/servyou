@@ -176,18 +176,17 @@ export const fr: Record<string, string> = {
   'landing.badge.tunisian':     "Tunisien à 100%",
 
   // ─── Landing — Categories grid (between Hero and Section 2) ──────────────────
-  'landing.categories.title':    "Tout ce que vous pouvez faire sur Servyou.",
-  'landing.categories.subtitle': "Boutiques, freelances, créateurs — neuf catégories, une seule plateforme.",
+  'landing.categories.title':    "Neuf catégories. Une seule plateforme.",
   'landing.categories.items.mode':      "Mode & Style",
   'landing.categories.items.beaute':    "Beauté & Cosmétiques",
   'landing.categories.items.tech':      "Électronique & Tech",
   'landing.categories.items.maison':    "Maison & Lifestyle",
   'landing.categories.items.video':     "Vidéo & UGC",
   'landing.categories.items.design':    "Design & Graphisme",
+  'landing.categories.items.uiux':      "UI/UX Design",
   'landing.categories.items.marketing': "Marketing & Social Media",
   'landing.categories.items.dev':       "Développement & IA",
   'landing.categories.items.audio':     "Voix-off & Audio",
-  'landing.categories.viewAll':  "Voir toutes les catégories",
 
   // ─── Landing — Section 3 (Problem agitation) ────────────────────────────────
   'landing.problem.headline': "Le commerce tunisien mérite mieux qu'Instagram et WhatsApp",

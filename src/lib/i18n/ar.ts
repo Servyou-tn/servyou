@@ -208,18 +208,17 @@ export const ar: Record<string, string> = {
   'landing.badge.tunisian':     "تونسي 100٪",
 
   // ─── Landing — Categories grid (between Hero and Section 2) ──────────────────
-  'landing.categories.title':    "كل ما يمكنكم القيام به على Servyou.",
-  'landing.categories.subtitle': "متاجر، مستقلّون، صانعو محتوى — تسع فئات، منصّة واحدة.",
+  'landing.categories.title':    "تسع فئات. منصّة واحدة.",
   'landing.categories.items.mode':      "الموضة والأناقة",
   'landing.categories.items.beaute':    "الجمال ومستحضرات التجميل",
   'landing.categories.items.tech':      "الإلكترونيات والتكنولوجيا",
   'landing.categories.items.maison':    "المنزل ونمط الحياة",
   'landing.categories.items.video':     "الفيديو والمحتوى UGC",
   'landing.categories.items.design':    "التصميم والغرافيك",
+  'landing.categories.items.uiux':      "تصميم UI/UX",
   'landing.categories.items.marketing': "التسويق ووسائل التواصل",
   'landing.categories.items.dev':       "البرمجة والذكاء الاصطناعي",
   'landing.categories.items.audio':     "التعليق الصوتي والصوت",
-  'landing.categories.viewAll':  "تصفّحوا كل الفئات",
 
   // ─── Landing — Section 3 (Problem agitation) ────────────────────────────────
   'landing.problem.headline': "التجارة التونسية تستحق أفضل من إنستغرام وواتساب",
