@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { getLang } from '@/lib/i18n/server'
 import { Hero } from '@/components/landing/Hero'
+import { Categories } from '@/components/landing/Categories'
 import { Problem } from '@/components/landing/Problem'
 import { Benefits } from '@/components/landing/Benefits'
 import { Journeys } from '@/components/landing/Journeys'
@@ -43,6 +44,7 @@ export default async function HomePage() {
         style={{ background: 'linear-gradient(to bottom, #FFFFFF 0%, #FFFFFF 14%, #E0F2FE 38%, #FFFFFF 72%)' }}
       />
       <Hero lang={lang} />
+      <Categories lang={lang} />
       <HowItWorks lang={lang} />
       <Problem lang={lang} />
       <Benefits lang={lang} />

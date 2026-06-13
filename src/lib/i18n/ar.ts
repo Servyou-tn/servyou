@@ -202,19 +202,25 @@ export const ar: Record<string, string> = {
   'landing.hero.mock.web_meta':   "1500 د.ت • DevTunisia، تونس",
   'landing.hero.mock.web_badge':  "قيد التنفيذ",
 
-  // Hero — trust band (closing element of the hero section)
-  'landing.hero.trustBand.item1.number': "24",
-  'landing.hero.trustBand.item1.label':  "ولاية مغطّاة",
-  'landing.hero.trustBand.item2.number': "0%",
-  'landing.hero.trustBand.item2.label':  "عمولة عند الإطلاق",
-  'landing.hero.trustBand.item3.number': "الدفع",
-  'landing.hero.trustBand.item3.label':  "عند التسليم",
-  'landing.hero.trustBand.item4.number': "أوروبا",
-  'landing.hero.trustBand.item4.label':  "بياناتكم محمية",
   // Hero — floating badges
   'landing.badge.commission':   "0٪ عمولة",
   'landing.badge.governorates': "24 ولاية",
   'landing.badge.tunisian':     "تونسي 100٪",
+
+  // ─── Landing — Categories grid (between Hero and Section 2) ──────────────────
+  'landing.categories.title':    "كل ما يمكنكم القيام به على Servyou.",
+  'landing.categories.subtitle': "متاجر، مستقلّون، صانعو محتوى — تسع فئات، منصّة واحدة.",
+  'landing.categories.items.mode':      "الموضة والأناقة",
+  'landing.categories.items.beaute':    "الجمال ومستحضرات التجميل",
+  'landing.categories.items.tech':      "الإلكترونيات والتكنولوجيا",
+  'landing.categories.items.maison':    "المنزل ونمط الحياة",
+  'landing.categories.items.video':     "الفيديو والمحتوى UGC",
+  'landing.categories.items.design':    "التصميم والغرافيك",
+  'landing.categories.items.marketing': "التسويق ووسائل التواصل",
+  'landing.categories.items.dev':       "البرمجة والذكاء الاصطناعي",
+  'landing.categories.items.audio':     "التعليق الصوتي والصوت",
+  'landing.categories.viewAll':  "تصفّحوا كل الفئات",
+
   // ─── Landing — Section 3 (Problem agitation) ────────────────────────────────
   'landing.problem.headline': "التجارة التونسية تستحق أفضل من إنستغرام وواتساب",
   'landing.problem.body':     "اليوم، يبيع التونسيون على إنستغرام بلقطات شاشة للتحويلات. يستقبلون الطلبات في رسائل واتساب الخاصة التي تضيع بين آلاف الرسائل الأخرى. يدوّنون ما عليهم تسليمه في دفتر لا يتصل بأي شيء. لم يعودوا يعرفون مَن دفع، ومَن لا يزال عليه أن يدفع، ومَن لا يزال ينتظر. اقتصادنا الرقمي موجود — أما بنيته التحتية فلا. Servyou يبنيها.",

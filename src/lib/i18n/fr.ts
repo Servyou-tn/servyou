@@ -170,19 +170,25 @@ export const fr: Record<string, string> = {
   'landing.hero.mock.web_meta':   "1500 TND • DevTunisia, Tunis",
   'landing.hero.mock.web_badge':  "En cours",
 
-  // Hero — trust band (closing element of the hero section)
-  'landing.hero.trustBand.item1.number': "24",
-  'landing.hero.trustBand.item1.label':  "gouvernorats servis",
-  'landing.hero.trustBand.item2.number': "0%",
-  'landing.hero.trustBand.item2.label':  "de commission au lancement",
-  'landing.hero.trustBand.item3.number': "Paiement",
-  'landing.hero.trustBand.item3.label':  "à la livraison",
-  'landing.hero.trustBand.item4.number': "Europe",
-  'landing.hero.trustBand.item4.label':  "vos données protégées",
   // Hero — floating badges
   'landing.badge.commission':   "0% commission",
   'landing.badge.governorates': "24 gouvernorats",
   'landing.badge.tunisian':     "Tunisien à 100%",
+
+  // ─── Landing — Categories grid (between Hero and Section 2) ──────────────────
+  'landing.categories.title':    "Tout ce que vous pouvez faire sur Servyou.",
+  'landing.categories.subtitle': "Boutiques, freelances, créateurs — neuf catégories, une seule plateforme.",
+  'landing.categories.items.mode':      "Mode & Style",
+  'landing.categories.items.beaute':    "Beauté & Cosmétiques",
+  'landing.categories.items.tech':      "Électronique & Tech",
+  'landing.categories.items.maison':    "Maison & Lifestyle",
+  'landing.categories.items.video':     "Vidéo & UGC",
+  'landing.categories.items.design':    "Design & Graphisme",
+  'landing.categories.items.marketing': "Marketing & Social Media",
+  'landing.categories.items.dev':       "Développement & IA",
+  'landing.categories.items.audio':     "Voix-off & Audio",
+  'landing.categories.viewAll':  "Voir toutes les catégories",
+
   // ─── Landing — Section 3 (Problem agitation) ────────────────────────────────
   'landing.problem.headline': "Le commerce tunisien mérite mieux qu'Instagram et WhatsApp",
   'landing.problem.body':     "Aujourd'hui, les Tunisiens vendent sur Instagram avec des captures d'écran de virements. Ils prennent les commandes dans des DM WhatsApp qui se perdent parmi mille autres messages. Ils notent ce qu'ils doivent livrer sur un cahier qui ne se connecte à rien. Ils ne savent plus qui a payé, qui doit encore payer, qui attend toujours. Notre économie numérique existe — son infrastructure, non. Servyou la construit.",
