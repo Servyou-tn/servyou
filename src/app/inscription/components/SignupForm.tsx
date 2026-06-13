@@ -73,9 +73,9 @@ function GoogleIcon({ className }: { className?: string }) {
   )
 }
 
-const labelClass = `${display} mb-1.5 block text-sm font-semibold text-[var(--text-primary)]`
-const helpClass = 'mt-1.5 text-[13px] leading-snug text-[var(--text-muted)]'
-const errorClass = 'mt-1.5 text-sm text-red-600'
+const labelClass = `${display} mb-1.5 block text-sm font-semibold text-white`
+const helpClass = 'mt-1.5 text-[13px] leading-snug text-blue-200'
+const errorClass = 'mt-1.5 text-sm text-red-300'
 
 // label + control + helper/error molecule. Helper hides once an error shows.
 function Field({
@@ -259,13 +259,13 @@ export function SignupForm({ role }: { role: SignupRole }) {
       .map((part, i) => {
         if (part === '{terms}')
           return (
-            <Link key={i} href="/conditions-utilisation" target="_blank" rel="noopener noreferrer" className="font-semibold text-[var(--brand-accent)] hover:underline">
+            <Link key={i} href="/conditions-utilisation" target="_blank" rel="noopener noreferrer" className="font-semibold text-blue-300 hover:underline">
               {t('signup.form.legalTerms', lang)}
             </Link>
           )
         if (part === '{privacy}')
           return (
-            <Link key={i} href="/politique-confidentialite" target="_blank" rel="noopener noreferrer" className="font-semibold text-[var(--brand-accent)] hover:underline">
+            <Link key={i} href="/politique-confidentialite" target="_blank" rel="noopener noreferrer" className="font-semibold text-blue-300 hover:underline">
               {t('signup.form.legalPrivacy', lang)}
             </Link>
           )
@@ -274,17 +274,9 @@ export function SignupForm({ role }: { role: SignupRole }) {
   }
 
   const strengthColor = strength === 'strong' ? 'bg-emerald-500' : strength === 'medium' ? 'bg-amber-400' : 'bg-red-400'
-  const strengthText = strength === 'strong' ? 'text-emerald-600' : strength === 'medium' ? 'text-amber-600' : 'text-red-600'
 
   return (
     <>
-      <h1 className={`${display} text-center text-[24px] font-bold leading-[1.15] tracking-[-0.02em] text-[var(--text-primary)] md:text-[32px]`}>
-        {t(`signup.form.titles.${role}`, lang)}
-      </h1>
-      <p className={`${display} mb-7 mt-2 text-center text-base text-[var(--text-muted)]`}>
-        {t('signup.form.subtitle', lang)}
-      </p>
-
       {ENABLE_GOOGLE_OAUTH ? (
         <>
           <button
@@ -296,9 +288,9 @@ export function SignupForm({ role }: { role: SignupRole }) {
             {t('signup.form.googleButton', lang)}
           </button>
           <div className="my-5 flex items-center gap-3" aria-hidden="true">
-            <span className="h-px flex-1 bg-[var(--border-subtle)]" />
-            <span className="text-[13px] font-medium uppercase tracking-wide text-[var(--text-muted)]">{t('signup.form.divider', lang)}</span>
-            <span className="h-px flex-1 bg-[var(--border-subtle)]" />
+            <span className="h-px flex-1 bg-white/20" />
+            <span className="text-[13px] font-medium uppercase tracking-wide text-blue-200">{t('signup.form.divider', lang)}</span>
+            <span className="h-px flex-1 bg-white/20" />
           </div>
         </>
       ) : null}
@@ -368,9 +360,9 @@ export function SignupForm({ role }: { role: SignupRole }) {
                   return <span key={i} className={`h-1.5 flex-1 rounded-full ${filled ? strengthColor : 'bg-[var(--border-subtle)]'}`} />
                 })}
               </div>
-              <p className="mt-1 text-[13px] text-[var(--text-muted)]">
+              <p className="mt-1 text-[13px] text-blue-200">
                 {t('signup.form.fields.password.strengthLabel', lang)}{' '}
-                <span className={`font-semibold ${strengthText}`}>{t(`signup.form.fields.password.strength.${strength}`, lang)}</span>
+                <span className="font-semibold text-white">{t(`signup.form.fields.password.strength.${strength}`, lang)}</span>
               </p>
             </div>
           ) : null}
@@ -425,7 +417,7 @@ export function SignupForm({ role }: { role: SignupRole }) {
           </select>
         </Field>
 
-        <p className={`${display} pt-1 text-[13px] leading-relaxed text-[var(--text-muted)]`}>{renderLegal()}</p>
+        <p className={`${display} pt-1 text-[13px] leading-relaxed text-white/75`}>{renderLegal()}</p>
 
         {formError ? (
           <p role="alert" className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
@@ -450,13 +442,6 @@ export function SignupForm({ role }: { role: SignupRole }) {
           )}
         </button>
       </form>
-
-      <p className={`${display} mt-6 text-center text-[15px] text-[var(--text-muted)]`}>
-        {t('signup.form.signInPrompt', lang)}{' '}
-        <Link href="/connexion" className="font-semibold text-[var(--brand-accent)] hover:underline">
-          {t('signup.form.signInLink', lang)}
-        </Link>
-      </p>
     </>
   )
 }

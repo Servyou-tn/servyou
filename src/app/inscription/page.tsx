@@ -2,11 +2,11 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { getLang } from '@/lib/i18n/server'
 import { t } from '@/lib/i18n'
-import { AuthShell } from '@/components/auth/AuthShell'
+import { AuthFunnelLayout } from '@/components/auth/AuthFunnelLayout'
 
-// `display` = the Manrope display voice. AuthShell sets --font-display on its root,
-// so this works on every element rendered as AuthShell children. No 'use client':
-// pure presentation + routing (hover lift, focus ring, reduced-motion are all CSS).
+// `display` = the Manrope display voice; AuthFunnelLayout sets --font-display on
+// its <main>, so it applies to everything rendered here. No 'use client': pure
+// presentation + routing (hover lift, focus ring, reduced-motion are all CSS).
 const display = 'font-[family-name:var(--font-display)]'
 
 // Inline ArrowRight (lucide's exact path) — the project deliberately avoids the
@@ -39,28 +39,32 @@ const ROLE_CARDS = [
   { key: 'freelancer', href: '/inscription/freelancer', icon: '/brand/icons/icon-freelancer.png' },
 ] as const
 
-// Step 1 — the role intent picker. Uses the shared AuthShell chrome (centered logo,
-// pale-blue card) so it stays visually identical to the Step-2 forms. The 3 role
-// cards keep their white surface, so they read as white tiles on the blue card.
+// Step 1 — the role intent picker. Title/subtitle render on the white page (in
+// AuthFunnelLayout's header); the 3 white role cards sit inside the navy box and
+// pop against it; the "already registered" link sits on white below the box.
 export default async function InscriptionPage() {
   const lang = await getLang()
   const isRtl = lang === 'ar'
 
   return (
-    <AuthShell maxWidthClass="max-w-[720px]">
-      <h1
-        className={`${display} text-center text-[28px] font-bold leading-[1.15] tracking-[-0.025em] text-[var(--text-primary)] md:text-[36px]`}
-      >
-        {t('signup.intent.title', lang)}
-      </h1>
-      <p
-        className={`${display} mb-8 mt-2 text-center text-base font-medium text-[var(--text-muted)] md:mb-10 md:text-lg`}
-      >
-        {t('signup.intent.subtitle', lang)}
-      </p>
-
+    <AuthFunnelLayout
+      maxWidthClass="max-w-[720px]"
+      title={t('signup.intent.title', lang)}
+      subtitle={t('signup.intent.subtitle', lang)}
+      footer={
+        <>
+          {t('signup.intent.alreadyAccount', lang)}{' '}
+          <Link
+            href="/connexion"
+            className="rounded font-semibold text-[var(--brand-accent)] outline-none hover:underline focus-visible:ring-2 focus-visible:ring-[var(--brand-accent)] focus-visible:ring-offset-2"
+          >
+            {t('signup.intent.signInLink', lang)}
+          </Link>
+        </>
+      }
+    >
       {/* 3 role cards: stacked on mobile, a 3-up grid on md+. The grid's inline
-          axis reverses automatically under <html dir="rtl">. */}
+          axis reverses automatically under <html dir="rtl">. White cards on navy. */}
       <ul className="flex flex-col gap-3 md:grid md:grid-cols-3 md:gap-4">
         {ROLE_CARDS.map(({ key, href, icon }) => {
           const label = t(`signup.intent.cards.${key}.label`, lang)
@@ -96,19 +100,6 @@ export default async function InscriptionPage() {
           )
         })}
       </ul>
-
-      {/* Already-registered fallback. */}
-      <p
-        className={`${display} mt-6 text-center text-[15px] font-medium text-[var(--text-muted)] md:mt-8`}
-      >
-        {t('signup.intent.alreadyAccount', lang)}{' '}
-        <Link
-          href="/connexion"
-          className="rounded font-semibold text-[var(--brand-accent)] outline-none hover:underline focus-visible:ring-2 focus-visible:ring-[var(--brand-accent)] focus-visible:ring-offset-2"
-        >
-          {t('signup.intent.signInLink', lang)}
-        </Link>
-      </p>
-    </AuthShell>
+    </AuthFunnelLayout>
   )
 }
