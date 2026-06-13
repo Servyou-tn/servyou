@@ -385,6 +385,24 @@ export const ar: Record<string, string> = {
   'signup.error_email_exists': "هذا البريد الإلكتروني مُستخدَم بالفعل. يرجى تسجيل الدخول أو استخدام عنوان آخر.",
   'signup.error_invalid_email':"بريد إلكتروني غير صالح.",
 
+  // ─── Signup — role intent (Step 1: /inscription) ────────────────────────────
+  'signup.intent.title':    "مرحباً بكم في Servyou.",
+  'signup.intent.subtitle': "كيف ترغبون في استخدامها ؟",
+  'signup.intent.cards.consumer.label':       "شراء",
+  'signup.intent.cards.consumer.description': "اكتشفوا منتجات وخدمات تونسية، الدفع عند التسليم.",
+  'signup.intent.cards.consumer.cta':         "متابعة",
+  'signup.intent.cards.consumer.iconAlt':     "الشراء على Servyou",
+  'signup.intent.cards.shopOwner.label':       "بيع",
+  'signup.intent.cards.shopOwner.description': "افتحوا متجركم الإلكتروني. 0% عمولة عند الإطلاق.",
+  'signup.intent.cards.shopOwner.cta':         "متابعة",
+  'signup.intent.cards.shopOwner.iconAlt':     "البيع على Servyou",
+  'signup.intent.cards.freelancer.label':       "عمل حرّ",
+  'signup.intent.cards.freelancer.description': "اعرضوا خدماتكم. مطوّرون، مصمّمون، صانعو محتوى UGC.",
+  'signup.intent.cards.freelancer.cta':         "متابعة",
+  'signup.intent.cards.freelancer.iconAlt':     "العمل الحر على Servyou",
+  'signup.intent.alreadyAccount': "سجّلتم مسبقاً ؟",
+  'signup.intent.signInLink':     "تسجيل الدخول",
+
   // ─── Auth — forgot / reset password ─────────────────────────────────────────
   'auth.forgot_title':      "نسيت كلمة المرور",
   'auth.forgot_hint':       "أدخل بريدك الإلكتروني لتلقّي رابط إعادة التعيين.",

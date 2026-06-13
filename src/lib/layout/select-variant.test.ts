@@ -11,6 +11,14 @@ describe('selectVariant', () => {
     }
   })
 
+  it('hides the Header across the signup funnel (/inscription owns its minimal navbar)', () => {
+    for (const p of ['/inscription', '/inscription/consumer', '/inscription/shop-owner', '/inscription/freelancer']) {
+      expect(selectVariant({ isLoggedIn: false, sellerType: null, pathname: p }).hidden).toBe(true)
+    }
+    // a sibling that merely shares the prefix is NOT under the funnel
+    expect(selectVariant({ isLoggedIn: false, sellerType: null, pathname: '/inscriptionx' }).hidden).toBe(false)
+  })
+
   it('hides the Header across the admin section (AdminSidebar owns admin nav)', () => {
     expect(selectVariant({ isLoggedIn: true, sellerType: null, pathname: '/admin' }).hidden).toBe(true)
     expect(selectVariant({ isLoggedIn: true, sellerType: null, pathname: '/admin/utilisateurs' }).hidden).toBe(true)

@@ -33,6 +33,9 @@ export function selectVariant({
 }): HeaderState {
   if (isUnder(pathname, '/admin')) return { hidden: true, variant: 'public' }
   if (AUTH_ROUTES.includes(pathname)) return { hidden: true, variant: 'public' }
+  // The signup funnel (role intent + the role-branded Step-2 forms) is chromeless
+  // too — each page carries its own minimal logo-only navbar to stay focused.
+  if (isUnder(pathname, '/inscription')) return { hidden: true, variant: 'public' }
 
   if (!isLoggedIn) return { hidden: false, variant: 'public' }
 

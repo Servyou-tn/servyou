@@ -354,6 +354,24 @@ export const fr: Record<string, string> = {
   'signup.error_email_exists': "Cette adresse e-mail est déjà utilisée. Veuillez vous connecter ou utiliser une autre adresse.",
   'signup.error_invalid_email':"Adresse e-mail invalide.",
 
+  // ─── Signup — role intent (Step 1: /inscription) ────────────────────────────
+  'signup.intent.title':    "Bienvenue sur Servyou.",
+  'signup.intent.subtitle': "Comment voulez-vous l'utiliser ?",
+  'signup.intent.cards.consumer.label':       "Acheter",
+  'signup.intent.cards.consumer.description': "Découvrir des produits et services tunisiens, payer à la livraison.",
+  'signup.intent.cards.consumer.cta':         "Continuer",
+  'signup.intent.cards.consumer.iconAlt':     "Acheter sur Servyou",
+  'signup.intent.cards.shopOwner.label':       "Vendre",
+  'signup.intent.cards.shopOwner.description': "Ouvrir votre boutique en ligne. 0% de commission au lancement.",
+  'signup.intent.cards.shopOwner.cta':         "Continuer",
+  'signup.intent.cards.shopOwner.iconAlt':     "Vendre sur Servyou",
+  'signup.intent.cards.freelancer.label':       "Freelance",
+  'signup.intent.cards.freelancer.description': "Proposer vos services. Développeur, designer, créateur UGC.",
+  'signup.intent.cards.freelancer.cta':         "Continuer",
+  'signup.intent.cards.freelancer.iconAlt':     "Freelance sur Servyou",
+  'signup.intent.alreadyAccount': "Déjà inscrit ?",
+  'signup.intent.signInLink':     "Se connecter",
+
   // ─── Auth — forgot / reset password ─────────────────────────────────────────
   'auth.forgot_title':      "Mot de passe oublié",
   'auth.forgot_hint':       "Entrez votre e-mail pour recevoir un lien de réinitialisation.",
