@@ -132,7 +132,7 @@ export function HowItWorks({ lang }: { lang: Lang }) {
   return (
     <section
       id="comment-ca-marche"
-      className={`${manrope.variable} w-full bg-[var(--surface-base)] px-6 pt-12 pb-16 md:pt-16 md:pb-24`}
+      className={`${manrope.variable} w-full bg-[var(--surface-base)] px-6 pt-7 pb-16 md:pt-10 md:pb-24`}
     >
       {/* Section title — navy on the white page, OUTSIDE the navy container so it
           reads as a sibling of the Categories title (same Manrope scale/weight/
@@ -145,7 +145,7 @@ export function HowItWorks({ lang }: { lang: Lang }) {
 
       {/* Navy rounded container — a dark "card" floating inside the white page
           (Linear / ClickUp pattern), now content-only: role toggle + cards. */}
-      <div className="relative mx-auto max-w-7xl overflow-hidden rounded-[32px] bg-[var(--brand-primary)] px-6 pt-10 pb-12 md:px-12 md:pt-14 md:pb-20">
+      <div className="relative mx-auto max-w-7xl overflow-hidden rounded-[32px] bg-[var(--brand-primary)] px-6 pt-7 pb-12 md:px-12 md:pt-10 md:pb-20">
         {/* Gentle radial depth: a soft brand-accent glow at centre fading to navy. */}
         <div
           aria-hidden="true"

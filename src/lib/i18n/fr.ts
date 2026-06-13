@@ -176,7 +176,7 @@ export const fr: Record<string, string> = {
   'landing.badge.tunisian':     "Tunisien à 100%",
 
   // ─── Landing — Categories grid (between Hero and Section 2) ──────────────────
-  'landing.categories.title':    "Neuf catégories. Une seule plateforme.",
+  'landing.categories.title':    "Vendre, acheter, créer — ici.",
   'landing.categories.items.mode':      "Mode & Style",
   'landing.categories.items.beaute':    "Beauté & Cosmétiques",
   'landing.categories.items.tech':      "Électronique & Tech",

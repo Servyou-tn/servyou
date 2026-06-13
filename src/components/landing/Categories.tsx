@@ -72,7 +72,7 @@ export function Categories({ lang }: { lang: Lang }) {
     // Section 2). The grid mirrors automatically under <html dir="rtl">.
     <section
       aria-labelledby={headingId}
-      className={`${manrope.variable} bg-[var(--surface-base)] pt-8 pb-14 md:pt-12 md:pb-20`}
+      className={`${manrope.variable} bg-[var(--surface-base)] pt-8 pb-10 md:pt-12 md:pb-14`}
     >
       <div className="mx-auto max-w-7xl px-4 md:px-6">
         <h2

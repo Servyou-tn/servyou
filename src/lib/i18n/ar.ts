@@ -208,7 +208,7 @@ export const ar: Record<string, string> = {
   'landing.badge.tunisian':     "تونسي 100٪",
 
   // ─── Landing — Categories grid (between Hero and Section 2) ──────────────────
-  'landing.categories.title':    "تسع فئات. منصّة واحدة.",
+  'landing.categories.title':    "بيع، شراء، إبداع — هنا.",
   'landing.categories.items.mode':      "الموضة والأناقة",
   'landing.categories.items.beaute':    "الجمال ومستحضرات التجميل",
   'landing.categories.items.tech':      "الإلكترونيات والتكنولوجيا",
