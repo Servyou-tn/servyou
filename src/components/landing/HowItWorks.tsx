@@ -145,7 +145,7 @@ export function HowItWorks({ lang }: { lang: Lang }) {
 
       {/* Navy rounded container — a dark "card" floating inside the white page
           (Linear / ClickUp pattern), now content-only: role toggle + cards. */}
-      <div className="relative mx-auto max-w-7xl overflow-hidden rounded-[32px] bg-[var(--brand-primary)] px-6 pt-7 pb-12 md:px-12 md:pt-10 md:pb-20">
+      <div className="relative mx-auto max-w-7xl overflow-hidden rounded-[32px] bg-[var(--brand-primary)] px-6 pt-3 pb-12 md:px-12 md:pt-5 md:pb-20">
         {/* Gentle radial depth: a soft brand-accent glow at centre fading to navy. */}
         <div
           aria-hidden="true"
