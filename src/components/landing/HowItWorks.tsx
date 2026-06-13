@@ -132,11 +132,20 @@ export function HowItWorks({ lang }: { lang: Lang }) {
   return (
     <section
       id="comment-ca-marche"
-      className={`${manrope.variable} w-full px-4 pt-6 pb-16 md:px-6`}
+      className={`${manrope.variable} w-full bg-[var(--surface-base)] px-6 pt-12 pb-16 md:pt-16 md:pb-24`}
     >
+      {/* Section title — navy on the white page, OUTSIDE the navy container so it
+          reads as a sibling of the Categories title (same Manrope scale/weight/
+          colour/letter-spacing). */}
+      <BlurFade delay={0} {...fade} inView>
+        <h2 className={`${display} mx-auto mb-8 max-w-[720px] text-balance text-center text-[30px] font-bold leading-[1.15] tracking-[-0.025em] text-[var(--text-primary)] md:mb-12 md:text-[40px]`}>
+          {t('landing.howItWorks.title', lang)}
+        </h2>
+      </BlurFade>
+
       {/* Navy rounded container — a dark "card" floating inside the white page
-          (Linear / ClickUp pattern), not an edge-to-edge band. */}
-      <div className="relative mx-auto max-w-7xl overflow-hidden rounded-[32px] bg-[var(--brand-primary)] px-6 py-12 md:px-12 md:py-20">
+          (Linear / ClickUp pattern), now content-only: role toggle + cards. */}
+      <div className="relative mx-auto max-w-7xl overflow-hidden rounded-[32px] bg-[var(--brand-primary)] px-6 pt-10 pb-12 md:px-12 md:pt-14 md:pb-20">
         {/* Gentle radial depth: a soft brand-accent glow at centre fading to navy. */}
         <div
           aria-hidden="true"
@@ -150,13 +159,6 @@ export function HowItWorks({ lang }: { lang: Lang }) {
         />
 
         <div className="relative z-10">
-          {/* Section title — white on the navy ground. */}
-          <BlurFade delay={0} {...fade} inView>
-            <h2 className={`${display} mb-8 text-center text-2xl font-semibold tracking-[-0.02em] text-white md:text-[32px]`}>
-              {t('landing.howItWorks.title', lang)}
-            </h2>
-          </BlurFade>
-
           {/* Role toggle — Upwork-style outlined sliding pill, floating as a raised
               white element. No BlurFade wrapper so the layoutId projection stays accurate. */}
           <div className="mb-12 flex justify-center">
