@@ -27,7 +27,7 @@ export default function DemandeServicePage() {
   useEffect(() => {
     async function load() {
       const { data: { user } } = await supabase.auth.getUser()
-      if (!user) { router.replace('/login'); return }
+      if (!user) { router.replace('/connexion'); return }
 
       const { data: service } = await supabase
         .from('service_listings')
@@ -61,7 +61,7 @@ export default function DemandeServicePage() {
     setError('')
 
     const { data: { user } } = await supabase.auth.getUser()
-    if (!user) { router.replace('/login'); return }
+    if (!user) { router.replace('/connexion'); return }
 
     setSaving(true)
 

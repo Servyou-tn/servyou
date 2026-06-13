@@ -45,7 +45,7 @@ export function FavoriteButton({ item_type, item_id }: Props) {
   }, [item_id, item_type])
 
   async function handleToggle() {
-    if (!loggedIn) { router.push('/login'); return }
+    if (!loggedIn) { router.push('/connexion'); return }
     if (toggling) return
     setToggling(true)
 
@@ -55,7 +55,7 @@ export function FavoriteButton({ item_type, item_id }: Props) {
       setFavoriteId(null)
     } else {
       const { data: { user } } = await supabase.auth.getUser()
-      if (!user) { router.push('/login'); return }
+      if (!user) { router.push('/connexion'); return }
 
       const col = item_type === 'product' ? 'product_id' : 'service_listing_id'
       const { data } = await supabase

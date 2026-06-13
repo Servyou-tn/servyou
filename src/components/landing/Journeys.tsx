@@ -36,7 +36,7 @@ const journeys: Journey[] = [
     headlineKey: 'landing.journey.shops_headline',
     bodyKey: 'landing.journey.shops_body',
     ctaKey: 'landing.journey.shops_cta',
-    href: '/signup?role=shop',
+    href: '/inscription',
     accent: 'bg-brand-primary',
   },
   {
@@ -46,7 +46,7 @@ const journeys: Journey[] = [
     headlineKey: 'landing.journey.freelancers_headline',
     bodyKey: 'landing.journey.freelancers_body',
     ctaKey: 'landing.journey.freelancers_cta',
-    href: '/signup?role=freelancer',
+    href: '/inscription',
     accent: 'bg-status-dot-success',
   },
 ]

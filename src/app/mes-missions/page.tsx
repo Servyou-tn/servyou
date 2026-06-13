@@ -53,7 +53,7 @@ export default function MesMissionsPage() {
   useEffect(() => {
     async function load() {
       const { data: { user } } = await supabase.auth.getUser()
-      if (!user) { router.replace('/login'); return }
+      if (!user) { router.replace('/connexion'); return }
 
       const { data, error: postsError } = await supabase
         .from('job_posts')

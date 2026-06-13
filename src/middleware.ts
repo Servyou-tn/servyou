@@ -8,7 +8,7 @@ import { createServerClient } from '@supabase/ssr'
 // behavior platform-wide). Only the suspended branch writes to the response.
 //
 // A suspended, logged-in user hitting any matched (authenticated-only) route is
-// signed out (sb-* auth cookies cleared) and redirected to /login?suspended=1, where
+// signed out (sb-* auth cookies cleared) and redirected to /connexion?suspended=1, where
 // a generic banner explains. Anonymous and active users sail through — their existing
 // per-page checks handle "is the user logged in" for their own contexts.
 export async function middleware(request: NextRequest) {
@@ -42,7 +42,7 @@ export async function middleware(request: NextRequest) {
 
   if (!profile || !profile.suspended_at) return NextResponse.next()
 
-  const redirectUrl = new URL('/login', request.url)
+  const redirectUrl = new URL('/connexion', request.url)
   redirectUrl.searchParams.set('suspended', '1')
   const response = NextResponse.redirect(redirectUrl)
   // Clear the Supabase auth cookies so the next request is unauthenticated.
@@ -59,7 +59,7 @@ export async function middleware(request: NextRequest) {
 export const config = {
   // Closed-by-default allowlist of authenticated-only prefixes. /foo/:path* matches
   // the base /foo and its children. Public browse pages, the auth flows, and
-  // /login (the bounce target — matching it would loop) are deliberately excluded.
+  // /connexion (the bounce target — matching it would loop) are deliberately excluded.
   matcher: [
     '/admin/:path*',
     '/ma-boutique/:path*',

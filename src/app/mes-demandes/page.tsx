@@ -10,7 +10,7 @@ export default async function MesDemandesPage() {
   const supabase = await createClient()
   const lang = await getLang()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
+  if (!user) redirect('/connexion')
 
   const { data: orders } = await supabase
     .from('orders')

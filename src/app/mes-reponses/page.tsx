@@ -10,7 +10,7 @@ export default async function MesReponsesPage() {
   const supabase = await createClient()
   const lang = await getLang()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
+  if (!user) redirect('/connexion')
 
   const { data: profile } = await supabase
     .from('profiles').select('seller_type').eq('id', user.id).single()

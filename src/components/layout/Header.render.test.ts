@@ -38,7 +38,7 @@ describe('Header render smoke — every variant initial-renders without throwing
     const out = html({ isLoggedIn: false, sellerType: null, fullName: null }, '/')
     expect(out).toContain('Navigation principale')
     expect(out).toContain('href="/missions"')
-    expect(out).toContain('href="/signup"')
+    expect(out).toContain('href="/inscription"')
     expect(out).not.toContain('aria-label="Mon compte"')
   })
 
@@ -66,8 +66,8 @@ describe('Header render smoke — every variant initial-renders without throwing
   it('hidden contexts render nothing (admin section + auth pages)', () => {
     expect(html({ isLoggedIn: true, sellerType: null, fullName: 'X' }, '/admin')).toBe('')
     expect(html({ isLoggedIn: true, sellerType: 'shop_owner', fullName: 'X' }, '/admin/litiges')).toBe('')
-    expect(html({ isLoggedIn: false, sellerType: null, fullName: null }, '/login')).toBe('')
-    expect(html({ isLoggedIn: false, sellerType: null, fullName: null }, '/signup')).toBe('')
+    expect(html({ isLoggedIn: false, sellerType: null, fullName: null }, '/connexion')).toBe('')
+    expect(html({ isLoggedIn: false, sellerType: null, fullName: null }, '/inscription')).toBe('')
   })
 
   it('active page wears aria-current + the green status dot', () => {

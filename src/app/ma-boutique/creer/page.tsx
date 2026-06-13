@@ -19,7 +19,7 @@ export default function CreerBoutiquePage() {
   useEffect(() => {
     async function check() {
       const { data: { user } } = await supabase.auth.getUser()
-      if (!user) { router.replace('/login'); return }
+      if (!user) { router.replace('/connexion'); return }
 
       const { data: profile } = await supabase
         .from('profiles').select('seller_type').eq('id', user.id).single()

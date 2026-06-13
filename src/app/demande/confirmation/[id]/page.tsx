@@ -18,7 +18,7 @@ export default async function OrderDetailPage({ params }: Props) {
   const lang = await getLang()
 
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
+  if (!user) redirect('/connexion')
 
   const { data: order, error } = await supabase
     .from('orders')

@@ -29,9 +29,9 @@ const manrope = Manrope({
 // (icon-chat/payment/shield are JPEG under a .png name — sharp decodes them; the
 // opaque white square hides on the white card until re-exported transparent.)
 const heroIcons = [
-  { src: 'icon-shop',       key: 'shop',       href: '/signup?role=shop',       pos: 'left-[20%] top-[26%]', curvature: 50,  beamDelay: 0 },   // 10 o'clock
+  { src: 'icon-shop',       key: 'shop',       href: '/inscription',       pos: 'left-[20%] top-[26%]', curvature: 50,  beamDelay: 0 },   // 10 o'clock
   { src: 'icon-payment',    key: 'payment',    href: '#faq',                    pos: 'left-1/2 top-[18%]',   curvature: 30,  beamDelay: 0.5 }, // 12 o'clock
-  { src: 'icon-freelancer', key: 'freelancer', href: '/signup?role=freelancer', pos: 'left-[80%] top-[26%]', curvature: 50,  beamDelay: 1 },   //  2 o'clock
+  { src: 'icon-freelancer', key: 'freelancer', href: '/inscription', pos: 'left-[80%] top-[26%]', curvature: 50,  beamDelay: 1 },   //  2 o'clock
   { src: 'icon-cart',       key: 'cart',       href: '/',                       pos: 'left-[80%] top-[74%]', curvature: -50, beamDelay: 1.5 }, //  4 o'clock  (moved from 6)
   { src: 'icon-verified',   key: 'verified',   href: '#comment-ca-marche',      pos: 'left-1/2 top-[82%]',   curvature: -30, beamDelay: 2 },   //  6 o'clock  (new; curves up)
   { src: 'icon-shield',     key: 'shield',     href: '#a-propos',               pos: 'left-[20%] top-[74%]', curvature: -50, beamDelay: 2.5 }, //  8 o'clock

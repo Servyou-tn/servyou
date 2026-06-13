@@ -147,14 +147,14 @@ export function MobileMenu({
               {state.variant === 'public' ? (
                 <div className="flex flex-col gap-2">
                   <Link
-                    href="/login"
+                    href="/connexion"
                     onClick={() => setOpen(false)}
                     className={`${rowClass} text-center text-text-primary hover:bg-surface-subtle`}
                   >
                     {t('nav.login', lang)}
                   </Link>
                   <Link
-                    href="/signup"
+                    href="/inscription"
                     onClick={() => setOpen(false)}
                     className={`${rowClass} bg-brand-primary text-center font-semibold text-white hover:bg-[#152C6B]`}
                   >

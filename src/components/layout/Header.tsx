@@ -152,13 +152,13 @@ export function Header({
             {state.variant === 'public' ? (
               <>
                 <Link
-                  href="/login"
+                  href="/connexion"
                   className={`whitespace-nowrap rounded-full px-3 py-2 text-sm font-medium text-text-muted transition-colors hover:text-text-primary ${FOCUS_RING}`}
                 >
                   {t('nav.login', lang)}
                 </Link>
                 <Link
-                  href="/signup"
+                  href="/inscription"
                   className={`whitespace-nowrap rounded-full font-semibold text-white transition-colors ${
                     isLanding
                       ? 'inline-flex h-10 items-center px-5 text-sm bg-brand-accent hover:bg-[#1D4ED8]'

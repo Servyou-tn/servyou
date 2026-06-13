@@ -36,7 +36,7 @@ export default function PosterMissionPage() {
   useEffect(() => {
     async function init() {
       const { data: { user } } = await supabase.auth.getUser()
-      if (!user) { router.replace('/login'); return }
+      if (!user) { router.replace('/connexion'); return }
 
       const { data: cats } = await supabase
         .from('categories').select('id, name_fr').order('name_fr')
@@ -77,7 +77,7 @@ export default function PosterMissionPage() {
     setSubmitting(true)
 
     const { data: { user } } = await supabase.auth.getUser()
-    if (!user) { router.replace('/login'); return }
+    if (!user) { router.replace('/connexion'); return }
 
     if (!profilePhone) {
       if (!isValidPhone(phoneInput)) {
