@@ -452,6 +452,26 @@ export const ar: Record<string, string> = {
   'signup.form.errors.generic':             "حدث خطأ ما. يرجى المحاولة مرة أخرى.",
   'signup.form.errors.googleFailed':        "فشل تسجيل الدخول عبر Google. يرجى المحاولة مرة أخرى.",
 
+  // ─── Sign in (/connexion) ───────────────────────────────────────────────────
+  'signin.title':    "مرحباً بعودتك.",
+  'signin.subtitle': "سجّل الدخول إلى حسابك على Servyou.",
+  'signin.fields.email.label':           "البريد الإلكتروني",
+  'signin.fields.email.placeholder':     "vous@exemple.com",
+  'signin.fields.password.label':        "كلمة المرور",
+  'signin.fields.password.showPassword': "إظهار كلمة المرور",
+  'signin.fields.password.hidePassword': "إخفاء كلمة المرور",
+  'signin.forgotPassword': "نسيت كلمة المرور ؟",
+  'signin.submit':         "تسجيل الدخول",
+  'signin.submitting':     "جارٍ تسجيل الدخول…",
+  'signin.noAccount':      "ليس لديك حساب بعد ؟",
+  'signin.signupLink':     "إنشاء حساب",
+  'signin.errors.invalidCredentials': "البريد الإلكتروني أو كلمة المرور غير صحيحة.",
+  'signin.errors.generic':            "حدث خطأ ما. يرجى المحاولة مرة أخرى.",
+  'signin.errors.invalidEmail':       "صيغة البريد الإلكتروني غير صحيحة.",
+  'signin.suspended.title':   "حساب موقوف",
+  'signin.suspended.message': "تم إيقاف حسابك. لا يمكنك تسجيل الدخول في الوقت الحالي.",
+  'signin.suspended.contact': "لأي استفسار، تواصل مع دعم Servyou.",
+
   // ─── Auth — forgot / reset password ─────────────────────────────────────────
   'auth.forgot_title':      "نسيت كلمة المرور",
   'auth.forgot_hint':       "أدخل بريدك الإلكتروني لتلقّي رابط إعادة التعيين.",

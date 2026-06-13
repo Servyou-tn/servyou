@@ -421,6 +421,26 @@ export const fr: Record<string, string> = {
   'signup.form.errors.generic':             "Une erreur s'est produite. Veuillez réessayer.",
   'signup.form.errors.googleFailed':        "La connexion avec Google a échoué. Veuillez réessayer.",
 
+  // ─── Sign in (/connexion) ───────────────────────────────────────────────────
+  'signin.title':    "Bon retour.",
+  'signin.subtitle': "Connectez-vous à votre compte Servyou.",
+  'signin.fields.email.label':           "E-mail",
+  'signin.fields.email.placeholder':     "vous@exemple.com",
+  'signin.fields.password.label':        "Mot de passe",
+  'signin.fields.password.showPassword': "Afficher le mot de passe",
+  'signin.fields.password.hidePassword': "Masquer le mot de passe",
+  'signin.forgotPassword': "Mot de passe oublié ?",
+  'signin.submit':         "Se connecter",
+  'signin.submitting':     "Connexion en cours…",
+  'signin.noAccount':      "Pas encore de compte ?",
+  'signin.signupLink':     "Créer un compte",
+  'signin.errors.invalidCredentials': "E-mail ou mot de passe incorrect.",
+  'signin.errors.generic':            "Une erreur s'est produite. Veuillez réessayer.",
+  'signin.errors.invalidEmail':       "Format d'email invalide.",
+  'signin.suspended.title':   "Compte suspendu",
+  'signin.suspended.message': "Votre compte a été suspendu. Vous ne pouvez pas vous connecter pour le moment.",
+  'signin.suspended.contact': "Pour toute question, contactez le support Servyou.",
+
   // ─── Auth — forgot / reset password ─────────────────────────────────────────
   'auth.forgot_title':      "Mot de passe oublié",
   'auth.forgot_hint':       "Entrez votre e-mail pour recevoir un lien de réinitialisation.",
