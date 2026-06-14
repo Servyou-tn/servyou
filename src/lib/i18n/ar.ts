@@ -685,6 +685,31 @@ export const ar: Record<string, string> = {
   'service.note_ph':         "صِف حاجتك وقيودك وأسئلتك…",
   'service.whatsapp_buy_message': "مرحبًا، أنا مهتم بخدمتك «{title}» على Servyou.",
 
+  // ─── Consumer dashboard (/mon-espace) ────────────────────────────────────────
+  // PENDING AR (Phase 8): values below are the French source text as placeholders,
+  // mirrored exactly so the parity test passes. Replace with Tunisian Arabic in the
+  // Phase 8 translation pass — do NOT treat these as translated.
+  'consumer.dashboard.greeting.title':       "Bonjour, {name}",
+  'consumer.dashboard.greeting.hello':       "Bonjour !",
+  'consumer.dashboard.greeting.subtitle':    "Voici un aperçu de votre activité sur Servyou.",
+  'consumer.dashboard.orders.heading':       "Mes commandes en cours",
+  'consumer.dashboard.orders.viewAll':       "Voir toutes mes commandes",
+  'consumer.dashboard.orders.count_one':     "{n} commande en cours",
+  'consumer.dashboard.orders.count_many':    "{n} commandes en cours",
+  'consumer.dashboard.orders.confirm_count': "{n} à confirmer",
+  'consumer.dashboard.orders.empty_title':   "Aucune commande en cours",
+  'consumer.dashboard.orders.empty_subtitle':"Vous n'avez pas encore de commandes actives. Parcourez le marché pour découvrir des produits et services.",
+  'consumer.dashboard.orders.empty_cta':     "Parcourir le marché",
+  'consumer.dashboard.actions.heading':      "Actions rapides",
+  'consumer.dashboard.actions.browse_title': "Parcourir le marché",
+  'consumer.dashboard.actions.browse_sub':   "Découvrir produits et services",
+  'consumer.dashboard.actions.post_title':   "Poster une mission",
+  'consumer.dashboard.actions.post_sub':     "Trouvez un freelance pour votre besoin",
+  'consumer.dashboard.actions.favs_title':   "Mes favoris",
+  'consumer.dashboard.actions.favs_sub':     "Retrouvez vos articles sauvegardés",
+  'consumer.dashboard.actions.seller_title': "Devenir vendeur",
+  'consumer.dashboard.actions.seller_sub':   "Ouvrez une boutique ou créez un profil freelance",
+
   // ─── Orders — my orders + confirmation ───────────────────────────────────────
   'orders.title':              "طلباتي",
   'orders.buyer_detail_title': "تفاصيل الطلب",
