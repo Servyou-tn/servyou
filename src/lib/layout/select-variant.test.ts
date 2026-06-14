@@ -97,63 +97,59 @@ describe('selectVariant', () => {
 })
 
 describe('navLinks', () => {
-  it('public links: Accueil, Boutiques/Freelances/À propos anchors, Missions', () => {
-    // Boutiques/Freelances/À propos scroll to the landing-page anchor sections
-    // (#boutiques, #freelances, #a-propos) shipped with the marketing page.
+  it('public links: Accueil + Boutiques/Freelances/À propos anchors (Missions removed)', () => {
+    // The /missions job board was removed in the design-phase reset; the remaining
+    // anchors scroll to the landing-page sections.
     const links = navLinks({ hidden: false, variant: 'public' })
     expect(links.map(l => l.href)).toEqual([
       '/',
       '/#boutiques',
       '/#freelances',
-      '/missions',
       '/#a-propos',
     ])
   })
 
-  it('freelance workspace points Commandes/Réponses at their real routes', () => {
-    const links = navLinks({ hidden: false, variant: 'workspace', workspace: 'freelance' })
-    const byKey = Object.fromEntries(links.map(l => [l.key, l.href]))
-    expect(byKey['nav.workspace_orders']).toBe('/mon-profil-freelance/demandes')
-    expect(byKey['nav.responses']).toBe('/mes-reponses')
-    expect(byKey['nav.jobs']).toBe('/missions')
+  it('consumer center nav is just Accueil (utility pages removed)', () => {
+    const links = navLinks({ hidden: false, variant: 'consumer' })
+    expect(links.map(l => l.href)).toEqual(['/'])
+  })
+
+  it('workspace variants have no center links (dashboards removed, to be rebuilt)', () => {
+    expect(navLinks({ hidden: false, variant: 'workspace', workspace: 'shop' })).toEqual([])
+    expect(navLinks({ hidden: false, variant: 'workspace', workspace: 'freelance' })).toEqual([])
   })
 })
 
 describe('accountItems', () => {
-  it('offers "Devenir vendeur" only when the user has no seller role', () => {
-    const consumer = accountItems(null).filter(i => i.kind === 'link').map(i => (i as { href: string }).href)
-    expect(consumer).toContain('/devenir-vendeur')
-
-    const shop = accountItems('shop_owner').filter(i => i.kind === 'link').map(i => (i as { href: string }).href)
-    expect(shop).not.toContain('/devenir-vendeur')
-  })
-
-  it('always ends with a divider then logout', () => {
-    const items = accountItems('freelancer')
-    expect(items[items.length - 2].kind).toBe('divider')
-    expect(items[items.length - 1].kind).toBe('logout')
+  it('is just logout for every role (profile + become-seller removed in the reset)', () => {
+    for (const role of [null, 'shop_owner', 'freelancer'] as const) {
+      expect(accountItems(role)).toEqual([{ kind: 'logout', key: 'nav.logout' }])
+    }
   })
 })
 
 describe('activeHref (longest-prefix match)', () => {
-  const shop = navLinks({ hidden: false, variant: 'workspace', workspace: 'shop' })
+  // Synthetic link set (kept routes) exercising the three match kinds independently
+  // of nav-config's current contents.
+  const links = [
+    { href: '/', key: 'home' },
+    { href: '/#boutiques', key: 'shops' },
+    { href: '/admin', key: 'a' },
+    { href: '/admin/litiges', key: 'b' },
+  ]
 
-  it('highlights only the dashboard on the dashboard index', () => {
-    expect(activeHref(shop, '/ma-boutique')).toBe('/ma-boutique')
+  it('matches "/" exactly only, and the anchor on an exact pathname+hash', () => {
+    expect(activeHref(links, '/')).toBe('/')
+    expect(activeHref(links, '/', '#boutiques')).toBe('/#boutiques')
   })
 
-  it('highlights the nested page, not the index, when on a sub-route', () => {
-    expect(activeHref(shop, '/ma-boutique/produits')).toBe('/ma-boutique/produits')
-    expect(activeHref(shop, '/ma-boutique/produits/nouveau')).toBe('/ma-boutique/produits')
-  })
-
-  it('matches "/" exactly only', () => {
-    const consumer = navLinks({ hidden: false, variant: 'consumer' })
-    expect(activeHref(consumer, '/')).toBe('/')
-    expect(activeHref(consumer, '/mes-favoris')).toBe('/mes-favoris')
+  it('highlights the nested page, not the index, on a sub-route (longest prefix)', () => {
+    expect(activeHref(links, '/admin')).toBe('/admin')
+    expect(activeHref(links, '/admin/litiges')).toBe('/admin/litiges')
+    expect(activeHref(links, '/admin/litiges/abc')).toBe('/admin/litiges')
   })
 
   it('returns null when nothing matches', () => {
-    expect(activeHref(shop, '/some/other/page')).toBeNull()
+    expect(activeHref(links, '/some/other/page')).toBeNull()
   })
 })

@@ -57,7 +57,7 @@ export function SigninForm({ showResetSuccess = false }: { showResetSuccess?: bo
 
     setLoading(true)
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
+      const { error } = await supabase.auth.signInWithPassword({
         email: email.trim().toLowerCase(),
         password,
       })
@@ -79,24 +79,9 @@ export function SigninForm({ showResetSuccess = false }: { showResetSuccess?: bo
         return
       }
 
-      // 2) Otherwise route by role. seller_type is owner-readable under RLS.
-      const userId = data.user?.id
-      if (userId) {
-        const { data: profile, error: profileError } = await supabase
-          .from('profiles')
-          .select('seller_type')
-          .eq('id', userId)
-          .single()
-        if (profileError) console.error('[SigninForm] profile fetch error:', profileError)
-        if (profile?.seller_type === 'shop_owner') {
-          router.push('/ma-boutique')
-          return
-        }
-        if (profile?.seller_type === 'freelancer') {
-          router.push('/mon-profil-freelance')
-          return
-        }
-      }
+      // 2) Otherwise everyone lands on the marketplace landing. Role dashboards were
+      //    removed in the design-phase reset and will get their own redirects when
+      //    rebuilt; until then there is one destination for all roles.
       router.push('/')
     } catch (err) {
       console.error('[SigninForm] signin error:', err)

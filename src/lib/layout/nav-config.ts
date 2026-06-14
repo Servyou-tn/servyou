@@ -16,36 +16,20 @@ export function navLinks(state: HeaderState): NavLink[] {
       { href: '/', key: 'nav.home' },
       { href: '/#boutiques', key: 'nav.shops' },
       { href: '/#freelances', key: 'nav.freelancers' },
-      { href: '/missions', key: 'nav.missions_board' },
       { href: '/#a-propos', key: 'nav.about' },
     ]
   }
 
   if (state.variant === 'consumer') {
-    return [
-      { href: '/', key: 'nav.browse' },
-      { href: '/mes-demandes', key: 'nav.orders' },
-      { href: '/mes-favoris', key: 'nav.favorites' },
-    ]
+    // /mes-demandes and /mes-favoris were removed in the design-phase reset; the
+    // consumer center nav is just Accueil until the account-utility pages return.
+    return [{ href: '/', key: 'nav.browse' }]
   }
 
-  // workspace
-  if (state.workspace === 'shop') {
-    return [
-      { href: '/ma-boutique', key: 'nav.dashboard' },
-      { href: '/ma-boutique/produits', key: 'nav.products' },
-      { href: '/ma-boutique/commandes', key: 'nav.workspace_orders' },
-    ]
-  }
-
-  // workspace freelance
-  return [
-    { href: '/mon-profil-freelance', key: 'nav.dashboard' },
-    { href: '/mon-profil-freelance/services', key: 'nav.services' },
-    { href: '/mon-profil-freelance/demandes', key: 'nav.workspace_orders' },
-    { href: '/missions', key: 'nav.jobs' },
-    { href: '/mes-reponses', key: 'nav.responses' },
-  ]
+  // Workspace variants are currently unreachable — the shop-owner and freelancer
+  // dashboards were removed in the design-phase reset (their routes 404). They will
+  // be rebuilt with their own nav; until then they resolve to no center-pill links.
+  return []
 }
 
 export type AccountItem =
@@ -53,16 +37,12 @@ export type AccountItem =
   | { kind: 'divider' }
   | { kind: 'logout'; key: string }
 
-/** Account-dropdown items (consumer + workspace share this).
- *  "Devenir vendeur" shows only when the user has no seller role yet. */
-export function accountItems(sellerType: SellerType): AccountItem[] {
-  const items: AccountItem[] = [{ kind: 'link', href: '/profile', key: 'nav.profile' }]
-  if (sellerType === null) {
-    items.push({ kind: 'link', href: '/devenir-vendeur', key: 'nav.become_seller' })
-  }
-  items.push({ kind: 'divider' })
-  items.push({ kind: 'logout', key: 'nav.logout' })
-  return items
+/** Account-dropdown items. /profile and /devenir-vendeur were removed in the
+ *  design-phase reset, so for now the menu is just logout; account-utility links
+ *  (profile, orders, favorites, become-seller) return here as they are rebuilt.
+ *  The sellerType param is kept for the call sites and for that future branching. */
+export function accountItems(_sellerType: SellerType): AccountItem[] {
+  return [{ kind: 'logout', key: 'nav.logout' }]
 }
 
 /** The single active link for the current pathname + hash, by longest-prefix match.

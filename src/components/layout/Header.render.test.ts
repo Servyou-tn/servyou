@@ -34,33 +34,28 @@ function html(
 }
 
 describe('Header render smoke — every variant initial-renders without throwing', () => {
-  it('public: brand + Missions + signup CTA, and NO account button', () => {
+  it('public: brand + nav anchors + signup CTA, and NO account button', () => {
     const out = html({ isLoggedIn: false, sellerType: null, fullName: null }, '/')
     expect(out).toContain('Navigation principale')
-    expect(out).toContain('href="/missions"')
+    expect(out).toContain('href="/#boutiques"')
     expect(out).toContain('href="/inscription"')
     expect(out).not.toContain('aria-label="Mon compte"')
   })
 
-  it('consumer: account button + consumer links + rendered initials', () => {
-    const out = html({ isLoggedIn: true, sellerType: null, fullName: 'Amine Test' }, '/mes-demandes')
+  it('consumer: account button + rendered initials (utility links removed)', () => {
+    const out = html({ isLoggedIn: true, sellerType: null, fullName: 'Amine Test' }, '/')
     expect(out).toContain('aria-label="Mon compte"')
-    expect(out).toContain('href="/mes-favoris"')
     expect(out).toContain('AT') // initials from "Amine Test"
   })
 
-  it('workspace shop: dashboard + produits + commandes', () => {
+  it('workspace shop renders the account button (no center links — dashboard removed)', () => {
     const out = html({ isLoggedIn: true, sellerType: 'shop_owner', fullName: 'X' }, '/ma-boutique')
-    expect(out).toContain('href="/ma-boutique/produits"')
-    expect(out).toContain('href="/ma-boutique/commandes"')
     expect(out).toContain('aria-label="Mon compte"')
   })
 
-  it('workspace freelance (no name → avatar fallback): services + demandes + reponses', () => {
+  it('workspace freelance (no name → avatar fallback) renders the account button', () => {
     const out = html({ isLoggedIn: true, sellerType: 'freelancer', fullName: null }, '/mon-profil-freelance')
-    expect(out).toContain('href="/mon-profil-freelance/services"')
-    expect(out).toContain('href="/mon-profil-freelance/demandes"')
-    expect(out).toContain('href="/mes-reponses"')
+    expect(out).toContain('aria-label="Mon compte"')
   })
 
   it('hidden contexts render nothing (admin section + auth pages)', () => {
