@@ -52,7 +52,7 @@ export function MarcheSidebar() {
   // Shared row geometry for every nav row. Collapsed rows center their icon;
   // expanded rows left-align icon + label. Interaction styles (transition, focus,
   // hover) are added per-row so the disabled rows opt out of them.
-  const row = `flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium ${
+  const row = `flex items-center gap-3 rounded-xl px-4 py-2.5 text-[14px] font-medium ${
     expanded ? '' : 'justify-center'
   }`
 
@@ -129,7 +129,7 @@ export function MarcheSidebar() {
               key={item.key}
               aria-disabled="true"
               title={t('marche.sidebar.coming_soon', lang)}
-              className={`${row} cursor-not-allowed select-none text-text-muted opacity-60`}
+              className={`${row} cursor-not-allowed select-none text-[#8B8B8B] opacity-60`}
             >
               <item.Icon className="h-5 w-5 shrink-0" aria-hidden="true" />
               {expanded && <span className="whitespace-nowrap">{t(item.key, lang)}</span>}
@@ -139,7 +139,7 @@ export function MarcheSidebar() {
 
         {/* Footer — its top border is the divider before Déconnexion. Logout posts
             to the existing signout route (mirrors the dashboard sidebar's pattern). */}
-        <div className="border-t border-border-subtle px-3 pb-4 pt-4">
+        <div className="mt-4 border-t border-border-subtle px-3 pb-4 pt-4">
           <form action="/auth/signout" method="POST">
             <button
               type="submit"

@@ -16,6 +16,7 @@ function one<T>(embed: T | T[] | null | undefined): T | null {
 type ProductRow = {
   id: string
   title: string
+  description: string | null
   price_tnd: number | string
   shops:
     | { name: string | null; city: string | null }
@@ -31,7 +32,7 @@ export const getActiveProducts = cache(async (q?: string): Promise<ProductListin
   const supabase = await createClient()
   let query = supabase
     .from('products')
-    .select('id, title, price_tnd, shops!inner(name, city), product_images(image_url, display_order)')
+    .select('id, title, description, price_tnd, shops!inner(name, city), product_images(image_url, display_order)')
     .eq('status', 'active')
     .order('created_at', { ascending: false })
     .limit(LIMIT)
@@ -53,6 +54,7 @@ export const getActiveProducts = cache(async (q?: string): Promise<ProductListin
     return {
       id: row.id,
       title: row.title,
+      description: row.description ?? null,
       price_tnd: Number(row.price_tnd),
       image_url: primary?.image_url ?? null,
       shop: { name: shop?.name ?? '', city: shop?.city ?? null },
@@ -63,8 +65,9 @@ export const getActiveProducts = cache(async (q?: string): Promise<ProductListin
 type ServiceRow = {
   id: string
   title: string
+  description: string | null
   starting_price_tnd: number | string | null
-  created_at: string
+  delivery_time: string | null
   freelancer_profiles:
     | { profile_id: string; city: string | null }
     | { profile_id: string; city: string | null }[]
@@ -80,7 +83,7 @@ export const getActiveServices = cache(async (q?: string): Promise<ServiceListin
   const supabase = await createClient()
   let query = supabase
     .from('service_listings')
-    .select('id, title, starting_price_tnd, created_at, freelancer_profiles!inner(profile_id, city)')
+    .select('id, title, description, starting_price_tnd, delivery_time, freelancer_profiles!inner(profile_id, city)')
     .eq('status', 'active')
     .order('created_at', { ascending: false })
     .limit(LIMIT)
@@ -121,12 +124,13 @@ export const getActiveServices = cache(async (q?: string): Promise<ServiceListin
     return {
       id: row.id,
       title: row.title,
+      description: row.description ?? null,
       price_starting: row.starting_price_tnd != null ? Number(row.starting_price_tnd) : null,
+      delivery_time: row.delivery_time ?? null,
       freelancer: {
         full_name: (fp?.profile_id ? names.get(fp.profile_id) : '') ?? '',
         city: fp?.city ?? null,
       },
-      created_at: row.created_at,
     }
   })
 })

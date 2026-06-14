@@ -3,22 +3,26 @@
 import Link from 'next/link'
 import { useLang } from '@/components/LangProvider'
 import { t } from '@/lib/i18n'
-import { FOCUS_RING, CARD_SHADOW } from '@/components/layout/styles'
+import { FOCUS_RING, CARD_SHADOW, HOVER_SHADOW } from '@/components/layout/styles'
 import { FavoriteButton } from '@/components/FavoriteButton'
-import { initials, frenchRelativeAdded } from './listing-utils'
+import { ArrowRightIcon } from './icons'
+import { initials } from './listing-utils'
 
 export type ServiceListing = {
   id: string
   title: string
+  description: string | null
   price_starting: number | null
+  delivery_time: string | null
   freelancer: { full_name: string; city: string | null }
-  created_at: string
 }
 
-// Horizontal service row (one per line): a square initials avatar (no avatar column
-// exists in the schema, so initials are the only option) · title + "name · city" ·
-// starting price + relative time, with the favorite heart floating at the top-right
-// corner. The heart sits outside the navigation Link, so favoriting never navigates.
+// Vertical service card sharing the product card's DNA (same shell, shadow, radius and
+// typography). The square top area is a gradient tile with the freelancer's initials (no
+// avatar column exists in the schema). Content block mirrors the product card; the bottom
+// row shows the starting price + delivery time on the left and a black circular CTA on the
+// right. Heart is a sibling of the Link; the rest links to the detail page (/services/[id],
+// which 404s until that route is rebuilt).
 export function ServiceListingCard({ service }: { service: ServiceListing }) {
   const lang = useLang()
 
@@ -28,40 +32,52 @@ export function ServiceListingCard({ service }: { service: ServiceListing }) {
       ? t('listing.service.startingPrice', lang, { price: start })
       : t('listing.service.priceOnRequest', lang)
 
-  const subtitle = [service.freelancer.full_name, service.freelancer.city]
-    .filter(Boolean)
-    .join(' · ')
-
-  const addedLabel = t('listing.service.relativeAdded', lang, {
-    time: frenchRelativeAdded(service.created_at),
-  })
+  const meta = [service.freelancer.full_name, service.freelancer.city].filter(Boolean).join(' · ')
 
   return (
     <div
-      className={`relative rounded-2xl bg-white p-5 transition-colors hover:bg-zinc-50/50 ${CARD_SHADOW}`}
+      className={`relative overflow-hidden rounded-2xl bg-white transition-all duration-300 ease-out ${CARD_SHADOW} ${HOVER_SHADOW}`}
     >
-      <Link
-        href={`/services/${service.id}`}
-        className={`flex items-center gap-4 rounded-2xl ${FOCUS_RING}`}
-      >
+      <Link href={`/services/${service.id}`} className={`block ${FOCUS_RING}`}>
+        {/* Gradient initials tile — the service equivalent of the product image. */}
         <div
-          className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-brand-sky text-xl font-semibold text-brand-primary"
+          className="flex aspect-square w-full items-center justify-center overflow-hidden bg-linear-to-br from-[#F4F4F4] to-[#E8E8E8]"
           aria-hidden="true"
         >
-          {initials(service.freelancer.full_name)}
+          <span className="text-[48px] font-bold text-[#0A0A0A]">
+            {initials(service.freelancer.full_name)}
+          </span>
         </div>
-        <div className="min-w-0 flex-1">
-          <p className="line-clamp-1 text-lg font-semibold text-text-primary">{service.title}</p>
-          <p className="line-clamp-1 text-sm text-text-muted">{subtitle}</p>
-        </div>
-        {/* pe-8 keeps the price/time clear of the heart pinned to the top-right corner. */}
-        <div className="shrink-0 pe-8 text-end">
-          <p className="text-base font-semibold text-text-primary">{priceLabel}</p>
-          <p className="mt-0.5 text-xs text-text-muted">{addedLabel}</p>
+
+        <div className="space-y-2 p-5">
+          <p className="line-clamp-1 text-base font-semibold leading-tight text-[#0A0A0A]">
+            {service.title}
+          </p>
+          <p className="line-clamp-2 min-h-[40px] text-[13px] leading-[1.5] text-[#8B8B8B]">
+            {service.description}
+          </p>
+          {meta && <p className="line-clamp-1 text-xs font-medium text-[#8B8B8B]">{meta}</p>}
+          <div className="mt-2 flex items-end justify-between">
+            <div className="min-w-0">
+              <p className="text-[15px] font-bold text-[#0A0A0A]">{priceLabel}</p>
+              {service.delivery_time && (
+                <p className="mt-0.5 text-xs text-[#B8B8B8]">
+                  {t('listing.service.deliveryTime', lang, { time: service.delivery_time })}
+                </p>
+              )}
+            </div>
+            <span
+              aria-hidden="true"
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#0A0A0A] text-white transition-all duration-200 hover:scale-105 hover:bg-[#1A1A1A]"
+            >
+              <ArrowRightIcon className="h-4 w-4" />
+            </span>
+          </div>
         </div>
       </Link>
 
-      <div className="absolute end-2 top-2">
+      {/* Favorite heart over the tile — sibling of the Link so it never navigates. */}
+      <div className="absolute right-3 top-3 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 backdrop-blur-sm transition-all duration-200 hover:scale-105 hover:bg-white">
         <FavoriteButton item_type="service" item_id={service.id} />
       </div>
     </div>

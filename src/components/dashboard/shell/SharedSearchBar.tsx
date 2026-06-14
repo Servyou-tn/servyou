@@ -4,7 +4,7 @@ import { useRef, useState, type FormEvent, type KeyboardEvent } from 'react'
 import { useRouter } from 'next/navigation'
 import { useLang } from '@/components/LangProvider'
 import { t } from '@/lib/i18n'
-import { FOCUS_RING, CARD_SHADOW } from '@/components/layout/styles'
+import { FOCUS_RING, CARD_SHADOW, HOVER_SHADOW } from '@/components/layout/styles'
 import { SearchIcon } from '@/components/dashboard/consumer/icons'
 
 type SearchType = 'product' | 'service'
@@ -58,22 +58,22 @@ export function SharedSearchBar({
     navigate(next, query)
   }
 
-  // Each toggle segment is its own rounded-full pill: filled brand-accent when active,
-  // transparent with a quiet zinc hover when not.
-  const pill = `rounded-full px-4 py-2 text-sm font-medium transition-colors ${FOCUS_RING}`
+  // Each toggle segment is its own rounded-full pill inside the gray track: filled
+  // brand-accent when active (the only brand color in the bar), plain dark text when not.
+  const segment = `rounded-full px-5 py-1.5 text-[13px] font-medium transition-all duration-200 ${FOCUS_RING}`
 
   return (
-    // Pill-shaped white bar: search icon (breathing room on the left), the input, then
-    // the Produits/Services segmented toggle on the right. Premium soft shadow shared
-    // with the sidebar and listing cards. Search + toggle only — nothing else.
+    // Premium pill: search icon (breathing room on the left), the input, then the
+    // Produits/Services segmented toggle on a soft gray track. Whisper shadow at rest,
+    // lifting on hover/focus-within. Search + toggle only — nothing else.
     <form
       onSubmit={onSubmit}
-      className={`flex h-14 w-full items-center gap-2 rounded-full bg-white pl-4 pr-2 ${CARD_SHADOW}`}
+      className={`flex h-14 w-full items-center rounded-full bg-white transition-all duration-300 ease-out ${CARD_SHADOW} ${HOVER_SHADOW} focus-within:shadow-[0_8px_24px_rgba(0,0,0,0.08)]`}
     >
       <button
         type="submit"
         aria-label={t('home.search_btn', lang)}
-        className={`inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-text-muted transition-colors hover:bg-surface-pill ${FOCUS_RING}`}
+        className={`ml-5 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[#8B8B8B] ${FOCUS_RING}`}
       >
         <SearchIcon className="h-5 w-5" aria-hidden="true" />
       </button>
@@ -84,16 +84,19 @@ export function SharedSearchBar({
         onChange={(e) => setQuery(e.target.value)}
         aria-label={t('home.search_btn', lang)}
         placeholder={t('dashboard.topbar.searchPlaceholder', lang)}
-        className="min-w-0 flex-1 border-0 bg-transparent px-2 text-[15px] text-text-primary outline-none placeholder:text-text-muted"
+        className="min-w-0 flex-1 border-0 bg-transparent px-3 text-[14px] text-[#0A0A0A] outline-none placeholder:text-[#8B8B8B]"
       />
-      <fieldset className="flex shrink-0 items-center gap-1" onKeyDown={onToggleKeyDown}>
+      <fieldset
+        className="mr-2 flex h-10 shrink-0 items-center gap-1 rounded-full bg-[#F4F4F4] p-1"
+        onKeyDown={onToggleKeyDown}
+      >
         <legend className="sr-only">{t('home.search_btn', lang)}</legend>
         <button
           ref={productRef}
           type="button"
           aria-pressed={type === 'product'}
           onClick={() => selectType('product')}
-          className={`${pill} ${type === 'product' ? 'bg-brand-accent text-white' : 'text-text-muted hover:bg-zinc-100'}`}
+          className={`${segment} ${type === 'product' ? 'bg-brand-accent text-white shadow-sm' : 'text-[#0A0A0A]'}`}
         >
           {t('common.products_section', lang)}
         </button>
@@ -102,7 +105,7 @@ export function SharedSearchBar({
           type="button"
           aria-pressed={type === 'service'}
           onClick={() => selectType('service')}
-          className={`${pill} ${type === 'service' ? 'bg-brand-accent text-white' : 'text-text-muted hover:bg-zinc-100'}`}
+          className={`${segment} ${type === 'service' ? 'bg-brand-accent text-white shadow-sm' : 'text-[#0A0A0A]'}`}
         >
           {t('common.services_section', lang)}
         </button>
