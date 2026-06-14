@@ -4,8 +4,6 @@ import "./globals.css"
 import { getLang } from "@/lib/i18n/server"
 import { LangProvider } from "@/components/LangProvider"
 import { Header } from "@/components/layout/Header"
-import { createClient } from "@/lib/supabase/server"
-import type { SellerType } from "@/lib/layout/select-variant"
 
 const inter = Inter({
   variable: "--font-inter",
@@ -29,23 +27,6 @@ export default async function RootLayout({
 }>) {
   const lang = await getLang()
 
-  // Server-only facts the client Header needs to choose its variant and render
-  // the account avatar. One getUser() + one indexed PK lookup per request.
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  let sellerType: SellerType = null
-  let fullName: string | null = null
-  if (user) {
-    const { data: profile, error } = await supabase
-      .from('profiles')
-      .select('seller_type, full_name')
-      .eq('id', user.id)
-      .single()
-    if (error) console.error('[layout] profile fetch error:', error)
-    sellerType = (profile?.seller_type as SellerType) ?? null
-    fullName = profile?.full_name ?? null
-  }
-
   return (
     <html
       lang={lang}
@@ -54,7 +35,11 @@ export default async function RootLayout({
     >
       <body className="min-h-full flex flex-col">
         <LangProvider lang={lang}>
-          <Header isLoggedIn={!!user} sellerType={sellerType} fullName={fullName} />
+          {/* Marketing navbar — renders only on the landing page (/), identically
+              for every visitor. It no longer needs the session, so the layout does
+              no per-request auth/profile fetch. The sellerType/fullName props feed
+              the preserved account-avatar branch for the future per-role navbars. */}
+          <Header sellerType={null} fullName={null} />
           {children}
         </LangProvider>
       </body>

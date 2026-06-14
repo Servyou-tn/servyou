@@ -18,14 +18,13 @@ import { FOCUS_RING } from './styles'
 // page wears a white sub-pill with a green status dot.
 //
 // Client component on the AdminSidebar precedent: it needs the live pathname for
-// both variant selection and active-link highlighting. The server layout supplies
-// the server-only facts (session, role, name) as props.
+// both visibility (landing-only) and active-link highlighting. `sellerType`/`fullName`
+// are kept for the preserved account-avatar branch (unused while the navbar is
+// marketing-only) so the per-role navbars can be rebuilt on this foundation later.
 export function Header({
-  isLoggedIn,
   sellerType,
   fullName,
 }: {
-  isLoggedIn: boolean
   sellerType: SellerType
   fullName: string | null
 }) {
@@ -54,17 +53,17 @@ export function Header({
     setHash(window.location.hash)
   }, [pathname])
 
-  const state = selectVariant({ isLoggedIn, sellerType, pathname })
+  const state = selectVariant({ pathname })
   if (state.hidden) return null
 
   const links = navLinks(state)
   const active = activeHref(links, pathname, hash)
 
-  // The marketing landing page (/) gets a distinct treatment: a white floating
-  // capsule on a transparent header (the page paints a soft-blue backdrop behind
-  // it), and a bright-blue Sign-up button. Every other route keeps the standard
-  // full-width bar. Logged-in users are redirected off / so this is always the
-  // public variant there.
+  // The navbar only renders on the marketing landing page (/), so this is always
+  // the landing treatment: a white floating capsule on a transparent header (the
+  // page paints a soft-blue backdrop behind it) with a bright-blue Sign-up button.
+  // The standard full-width-bar branch below is preserved for the future per-role
+  // navbars. The variant is always 'public' here, identically for every visitor.
   const isLanding = pathname === '/'
 
   return (

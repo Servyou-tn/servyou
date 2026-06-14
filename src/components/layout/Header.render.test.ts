@@ -4,11 +4,11 @@ import { createElement } from 'react'
 import { LangProvider } from '@/components/LangProvider'
 import type { SellerType } from '@/lib/layout/select-variant'
 
-// A render-only smoke: pure-logic tests + the anonymous SSR check never exercise
-// the LOGGED-IN render branches (account avatar, workspace pills, mobile account
-// section). This renders every variant to a string and asserts the right surface
-// shows up — catching a render-time throw or bad map before the founder's manual
-// pass. Interaction (dropdown open, keyboard nav, overlay) is out of scope here.
+// A render-only smoke: the marketing navbar renders only on '/', identically for
+// every visitor. This renders it on '/' (with and without seller data) and on a
+// spread of other routes, asserting the right surface shows up — catching a
+// render-time throw or bad map before the founder's manual pass. Interaction
+// (dropdown open, keyboard nav, overlay) is out of scope here.
 
 const nav = vi.hoisted(() => ({ path: '/' }))
 
@@ -26,47 +26,49 @@ vi.mock('next/link', () => ({
 const { Header } = await import('./Header')
 
 function html(
-  props: { isLoggedIn: boolean; sellerType: SellerType; fullName: string | null },
+  props: { sellerType: SellerType; fullName: string | null },
   path: string,
 ): string {
   nav.path = path
   return renderToString(createElement(LangProvider, { lang: 'fr' }, createElement(Header, props)))
 }
 
-describe('Header render smoke — every variant initial-renders without throwing', () => {
-  it('public: brand + nav anchors + signup CTA, and NO account button', () => {
-    const out = html({ isLoggedIn: false, sellerType: null, fullName: null }, '/')
+describe('Header render smoke — marketing navbar, landing-only, same for every visitor', () => {
+  it('"/": brand + nav anchors + Missions + signup CTA, and NO account button', () => {
+    const out = html({ sellerType: null, fullName: null }, '/')
     expect(out).toContain('Navigation principale')
     expect(out).toContain('href="/#boutiques"')
+    expect(out).toContain('href="/missions"')
     expect(out).toContain('href="/inscription"')
     expect(out).not.toContain('aria-label="Mon compte"')
   })
 
-  it('consumer: account button + rendered initials (utility links removed)', () => {
-    const out = html({ isLoggedIn: true, sellerType: null, fullName: 'Amine Test' }, '/')
-    expect(out).toContain('aria-label="Mon compte"')
-    expect(out).toContain('AT') // initials from "Amine Test"
+  it('"/": renders the SAME public navbar even with seller data present (no avatar variant)', () => {
+    // req 2: a logged-in seller on the landing page gets the public navbar, never
+    // the account dropdown. The Header takes no auth flag, so this is structural —
+    // the test guards against a future change re-introducing the variant.
+    const out = html({ sellerType: 'shop_owner', fullName: 'Amine Test' }, '/')
+    expect(out).not.toContain('aria-label="Mon compte"')
+    expect(out).toContain('href="/inscription"') // public CTA, not the avatar
   })
 
-  it('workspace shop renders the account button (no center links — dashboard removed)', () => {
-    const out = html({ isLoggedIn: true, sellerType: 'shop_owner', fullName: 'X' }, '/ma-boutique')
-    expect(out).toContain('aria-label="Mon compte"')
-  })
-
-  it('workspace freelance (no name → avatar fallback) renders the account button', () => {
-    const out = html({ isLoggedIn: true, sellerType: 'freelancer', fullName: null }, '/mon-profil-freelance')
-    expect(out).toContain('aria-label="Mon compte"')
-  })
-
-  it('hidden contexts render nothing (admin section + auth pages)', () => {
-    expect(html({ isLoggedIn: true, sellerType: null, fullName: 'X' }, '/admin')).toBe('')
-    expect(html({ isLoggedIn: true, sellerType: 'shop_owner', fullName: 'X' }, '/admin/litiges')).toBe('')
-    expect(html({ isLoggedIn: false, sellerType: null, fullName: null }, '/connexion')).toBe('')
-    expect(html({ isLoggedIn: false, sellerType: null, fullName: null }, '/inscription')).toBe('')
+  it('renders nothing on every route other than "/" (each owns its own nav)', () => {
+    for (const p of [
+      '/admin',
+      '/admin/litiges',
+      '/connexion',
+      '/inscription',
+      '/mon-espace',
+      '/ma-boutique',
+      '/mon-profil-freelance',
+      '/missions',
+    ]) {
+      expect(html({ sellerType: 'shop_owner', fullName: 'X' }, p)).toBe('')
+    }
   })
 
   it('active page wears aria-current + the green status dot', () => {
-    const out = html({ isLoggedIn: false, sellerType: null, fullName: null }, '/')
+    const out = html({ sellerType: null, fullName: null }, '/')
     expect(out).toContain('aria-current="page"')
     expect(out).toContain('status-dot-success')
   })
