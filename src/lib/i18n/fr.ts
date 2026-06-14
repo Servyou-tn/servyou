@@ -705,6 +705,7 @@ export const fr: Record<string, string> = {
   'listing.service.priceOnRequest':  "Prix sur demande",
   'listing.service.relativeAdded':   "ajouté il y a {time}",
   'listing.service.deliveryTime':    "Livraison : {time}",
+  'listing.service.by':              "par {name}",
   'listing.product.viewAction':      "Voir",
   'sidebar.expanded.servyou':        "ServYou",
 
