@@ -4,7 +4,7 @@ import { useRef, useState, type FormEvent, type KeyboardEvent } from 'react'
 import { useRouter } from 'next/navigation'
 import { useLang } from '@/components/LangProvider'
 import { t } from '@/lib/i18n'
-import { FOCUS_RING } from '@/components/layout/styles'
+import { FOCUS_RING, CARD_SHADOW } from '@/components/layout/styles'
 import { SearchIcon } from '@/components/dashboard/consumer/icons'
 
 type SearchType = 'product' | 'service'
@@ -58,16 +58,24 @@ export function SharedSearchBar({
     navigate(next, query)
   }
 
-  const pill = `rounded-lg px-4 py-2 text-sm font-medium transition-colors ${FOCUS_RING}`
+  // Each toggle segment is its own rounded-full pill: filled brand-accent when active,
+  // transparent with a quiet zinc hover when not.
+  const pill = `rounded-full px-4 py-2 text-sm font-medium transition-colors ${FOCUS_RING}`
 
   return (
-    <form onSubmit={onSubmit} className="flex h-11 w-full items-center gap-1 rounded-xl border border-border-subtle bg-white px-2">
+    // Pill-shaped white bar: search icon (breathing room on the left), the input, then
+    // the Produits/Services segmented toggle on the right. Premium soft shadow shared
+    // with the sidebar and listing cards. Search + toggle only — nothing else.
+    <form
+      onSubmit={onSubmit}
+      className={`flex h-14 w-full items-center gap-2 rounded-full bg-white pl-4 pr-2 ${CARD_SHADOW}`}
+    >
       <button
         type="submit"
         aria-label={t('home.search_btn', lang)}
-        className={`inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-text-muted transition-colors hover:bg-surface-pill ${FOCUS_RING}`}
+        className={`inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-text-muted transition-colors hover:bg-surface-pill ${FOCUS_RING}`}
       >
-        <SearchIcon className="h-4 w-4" aria-hidden="true" />
+        <SearchIcon className="h-5 w-5" aria-hidden="true" />
       </button>
       <input
         type="search"
@@ -76,7 +84,7 @@ export function SharedSearchBar({
         onChange={(e) => setQuery(e.target.value)}
         aria-label={t('home.search_btn', lang)}
         placeholder={t('dashboard.topbar.searchPlaceholder', lang)}
-        className="min-w-0 flex-1 border-0 bg-transparent px-1 text-[15px] text-text-primary outline-none placeholder:text-text-muted"
+        className="min-w-0 flex-1 border-0 bg-transparent px-2 text-[15px] text-text-primary outline-none placeholder:text-text-muted"
       />
       <fieldset className="flex shrink-0 items-center gap-1" onKeyDown={onToggleKeyDown}>
         <legend className="sr-only">{t('home.search_btn', lang)}</legend>
@@ -85,7 +93,7 @@ export function SharedSearchBar({
           type="button"
           aria-pressed={type === 'product'}
           onClick={() => selectType('product')}
-          className={`${pill} ${type === 'product' ? 'bg-brand-accent text-white' : 'text-text-muted hover:bg-surface-pill'}`}
+          className={`${pill} ${type === 'product' ? 'bg-brand-accent text-white' : 'text-text-muted hover:bg-zinc-100'}`}
         >
           {t('common.products_section', lang)}
         </button>
@@ -94,7 +102,7 @@ export function SharedSearchBar({
           type="button"
           aria-pressed={type === 'service'}
           onClick={() => selectType('service')}
-          className={`${pill} ${type === 'service' ? 'bg-brand-accent text-white' : 'text-text-muted hover:bg-surface-pill'}`}
+          className={`${pill} ${type === 'service' ? 'bg-brand-accent text-white' : 'text-text-muted hover:bg-zinc-100'}`}
         >
           {t('common.services_section', lang)}
         </button>

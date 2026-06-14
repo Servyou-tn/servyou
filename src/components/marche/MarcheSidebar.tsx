@@ -6,7 +6,7 @@ import { useState } from 'react'
 import { usePathname } from 'next/navigation'
 import { useLang } from '@/components/LangProvider'
 import { t } from '@/lib/i18n'
-import { FOCUS_RING } from '@/components/layout/styles'
+import { FOCUS_RING, CARD_SHADOW } from '@/components/layout/styles'
 import {
   StorefrontIcon,
   PackageIcon,
@@ -60,7 +60,7 @@ export function MarcheSidebar() {
     // sticky full-height rail; the p-4 is the floating gap around the white card.
     <aside className="sticky top-0 h-screen shrink-0 p-4">
       <div
-        className={`flex h-full flex-col overflow-hidden rounded-3xl bg-white shadow-lg transition-all duration-200 ease-out motion-reduce:transition-none ${
+        className={`flex h-full flex-col overflow-hidden rounded-3xl bg-white ${CARD_SHADOW} transition-all duration-200 ease-out motion-reduce:transition-none ${
           expanded ? 'w-56' : 'w-16'
         }`}
       >

@@ -738,6 +738,7 @@ export const ar: Record<string, string> = {
   'listing.service.startingPrice':   "à partir de {price} TND",
   'listing.service.priceOnRequest':  "Prix sur demande",
   'listing.service.relativeAdded':   "ajouté il y a {time}",
+  'listing.product.viewAction':      "Voir",
   'sidebar.expanded.servyou':        "ServYou",
 
   // ─── Marketplace browse (/marche) — PENDING AR (Phase 8), French placeholders ──
@@ -747,6 +748,8 @@ export const ar: Record<string, string> = {
   'marche.sidebar.missions':         "Mes missions",
   'marche.sidebar.parametres':       "Mes paramètres",
   'marche.sidebar.coming_soon':      "Bientôt disponible",
+  'marche.empty.products':           "Pas encore de produits disponibles. Revenez bientôt.",
+  'marche.empty.services':           "Pas encore de services disponibles. Revenez bientôt.",
 
   // ─── Orders — my orders + confirmation ───────────────────────────────────────
   'orders.title':              "طلباتي",

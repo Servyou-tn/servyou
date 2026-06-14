@@ -1,7 +1,8 @@
-// Scopes the marketplace's cool gray-blue background to /marche (and its future
-// sub-routes) only — the landing page and every other route keep their own
-// backgrounds. The global Header (root layout) already hides itself off '/', so
-// /marche has no top bar yet; its own top bar ships in a follow-up commit.
+// Scopes the marketplace background to /marche (and its future sub-routes) only —
+// the landing page and every other route keep their own backgrounds. bg-neutral-200
+// is a truly neutral gray (no blue tilt) so the pure-white floating cards pop. The
+// global Header (root layout) already hides itself off '/', so /marche's only top
+// bar is the search row inside its page.
 export default function MarcheLayout({ children }: { children: React.ReactNode }) {
-  return <div className="min-h-screen bg-slate-200">{children}</div>
+  return <div className="min-h-screen bg-neutral-200">{children}</div>
 }
