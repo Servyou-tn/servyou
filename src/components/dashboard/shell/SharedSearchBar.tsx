@@ -10,14 +10,17 @@ import { SearchIcon } from '@/components/dashboard/consumer/icons'
 type SearchType = 'product' | 'service'
 
 // Text input + binary Produits/Services segmented toggle. One catalog at a time.
-// Submitting (Enter or the search button) navigates to /recherche?q=&type=; toggling
-// a catalog navigates immediately. Both /mon-espace's top bar and /recherche use it.
+// Submitting (Enter or the search button) navigates to `${basePath}?q=&type=`; toggling
+// a catalog navigates immediately. `basePath` defaults to /recherche (the original
+// results page); /marche passes its own path so the search stays on that page.
 export function SharedSearchBar({
   initialQuery = '',
   initialType = 'product',
+  basePath = '/recherche',
 }: {
   initialQuery?: string
   initialType?: SearchType
+  basePath?: string
 }) {
   const router = useRouter()
   const lang = useLang()
@@ -31,7 +34,7 @@ export function SharedSearchBar({
     const q = nextQuery.trim()
     if (q) params.set('q', q)
     params.set('type', nextType)
-    router.push(`/recherche?${params.toString()}`)
+    router.push(`${basePath}?${params.toString()}`)
   }
 
   function onSubmit(e: FormEvent) {

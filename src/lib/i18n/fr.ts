@@ -708,6 +708,11 @@ export const fr: Record<string, string> = {
 
   // ─── Marketplace browse (/marche) ────────────────────────────────────────────
   'marche.sidebar.marche':           "Marché",
+  'marche.sidebar.commandes':        "Mes commandes",
+  'marche.sidebar.favoris':          "Mes favoris",
+  'marche.sidebar.missions':         "Mes missions",
+  'marche.sidebar.parametres':       "Mes paramètres",
+  'marche.sidebar.coming_soon':      "Bientôt disponible",
 
   // ─── Orders — my orders + confirmation ───────────────────────────────────────
   'orders.title':              "Mes demandes",
