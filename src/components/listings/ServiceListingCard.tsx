@@ -50,17 +50,17 @@ export function ServiceListingCard({ service }: { service: ServiceListing }) {
       >
         {/* LEFT — circle avatar (photo when available, else initial) + name underneath. */}
         <div className="flex w-24 shrink-0 flex-col items-center">
-          <div className="relative flex h-20 w-20 items-center justify-center overflow-hidden rounded-full bg-linear-to-br from-[#F4F4F4] to-[#E8E8E8]">
+          <div className="relative flex h-16 w-16 items-center justify-center overflow-hidden rounded-full bg-linear-to-br from-[#F4F4F4] to-[#E8E8E8]">
             {service.freelancer.avatar_url ? (
               <Image
                 src={service.freelancer.avatar_url}
                 alt={service.freelancer.full_name}
                 fill
-                sizes="80px"
+                sizes="64px"
                 className="object-cover"
               />
             ) : (
-              <span className="text-2xl font-bold text-[#0A0A0A]" aria-hidden="true">
+              <span className="text-xl font-bold text-[#0A0A0A]" aria-hidden="true">
                 {firstLetter}
               </span>
             )}
@@ -90,9 +90,10 @@ export function ServiceListingCard({ service }: { service: ServiceListing }) {
           )}
         </div>
 
-        {/* RIGHT — top spacer clears the absolute heart, then price/delivery, arrow at bottom. */}
-        <div className="flex shrink-0 flex-col items-end justify-between gap-3 self-stretch">
-          <div className="h-9 w-9 shrink-0" aria-hidden="true" />
+        {/* RIGHT — compact stack: price/delivery then the arrow CTA. pt-8 keeps the price
+            clear of the absolute heart pinned to the top-right corner (no full spacer, no
+            justify-between stretching the card). */}
+        <div className="flex shrink-0 flex-col items-end gap-2 pt-8">
           <div className="text-end">
             <p className="text-[15px] font-bold text-[#0A0A0A]">{priceLabel}</p>
             {service.delivery_time && (
