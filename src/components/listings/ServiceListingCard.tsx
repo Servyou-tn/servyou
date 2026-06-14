@@ -25,7 +25,9 @@ export type ServiceListing = {
 // The favorite heart floats at the top-right corner (a sibling of the Link, so it never
 // navigates). The avatar renders the freelancer photo when an avatar_url exists (no such
 // column in the schema yet, so it falls to the first initial today). Same premium
-// white-card DNA (CARD_SHADOW, rounded-2xl, hover lift) and locked palette as products.
+// white-card DNA (CARD_SHADOW, hover lift) and locked palette as products, but a softer
+// rounded-3xl radius that echoes the circular avatar (products keep rounded-2xl for their
+// rectangular images). items-start anchors the avatar to the top-left, name underneath.
 export function ServiceListingCard({ service }: { service: ServiceListing }) {
   const lang = useLang()
 
@@ -39,12 +41,12 @@ export function ServiceListingCard({ service }: { service: ServiceListing }) {
 
   return (
     <div
-      className={`relative rounded-2xl bg-white transition-all duration-300 ease-out ${CARD_SHADOW} ${HOVER_SHADOW}`}
+      className={`relative rounded-3xl bg-white transition-all duration-300 ease-out ${CARD_SHADOW} ${HOVER_SHADOW}`}
     >
       <Link
         href={`/services/${service.id}`}
         aria-label={service.title}
-        className={`flex items-start gap-5 rounded-2xl p-5 ${FOCUS_RING}`}
+        className={`flex items-start gap-5 rounded-3xl p-5 ${FOCUS_RING}`}
       >
         {/* LEFT — circle avatar (photo when available, else initial) + name underneath. */}
         <div className="flex w-24 shrink-0 flex-col items-center">
