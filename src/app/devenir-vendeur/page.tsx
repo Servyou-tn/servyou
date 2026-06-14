@@ -30,7 +30,7 @@ export default function DevenirVendeurPage() {
   useEffect(() => {
     async function load() {
       const { data: { user } } = await supabase.auth.getUser()
-      if (!user) { router.replace('/login'); return }
+      if (!user) { router.replace('/connexion'); return }
 
       setUserId(user.id)
 

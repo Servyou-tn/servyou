@@ -32,7 +32,7 @@ export default function ProfilePage() {
     async function load() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) {
-        router.replace('/login')
+        router.replace('/connexion')
         return
       }
 
@@ -63,7 +63,7 @@ export default function ProfilePage() {
 
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) {
-      router.replace('/login')
+      router.replace('/connexion')
       return
     }
 

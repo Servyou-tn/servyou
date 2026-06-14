@@ -9,7 +9,7 @@ export default async function MesFavorisPage() {
   const supabase = await createClient()
   const lang = await getLang()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
+  if (!user) redirect('/connexion')
 
   const { data: favorites } = await supabase
     .from('favorites')

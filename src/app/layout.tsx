@@ -1,12 +1,14 @@
 import type { Metadata } from "next"
-import { Geist, Geist_Mono } from "next/font/google"
+import { Inter, Geist_Mono } from "next/font/google"
 import "./globals.css"
 import { getLang } from "@/lib/i18n/server"
 import { LangProvider } from "@/components/LangProvider"
-import { LanguageSwitcher } from "@/components/LanguageSwitcher"
+import { Header } from "@/components/layout/Header"
+import { createClient } from "@/lib/supabase/server"
+import type { SellerType } from "@/lib/layout/select-variant"
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
 })
 
@@ -27,19 +29,33 @@ export default async function RootLayout({
 }>) {
   const lang = await getLang()
 
+  // Server-only facts the client Header needs to choose its variant and render
+  // the account avatar. One getUser() + one indexed PK lookup per request.
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  let sellerType: SellerType = null
+  let fullName: string | null = null
+  if (user) {
+    const { data: profile, error } = await supabase
+      .from('profiles')
+      .select('seller_type, full_name')
+      .eq('id', user.id)
+      .single()
+    if (error) console.error('[layout] profile fetch error:', error)
+    sellerType = (profile?.seller_type as SellerType) ?? null
+    fullName = profile?.full_name ?? null
+  }
+
   return (
     <html
       lang={lang}
       dir={lang === 'ar' ? 'rtl' : 'ltr'}
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${inter.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
         <LangProvider lang={lang}>
+          <Header isLoggedIn={!!user} sellerType={sellerType} fullName={fullName} />
           {children}
-          {/* Always-visible language switcher — Phase 8 Subtask 1 */}
-          <div className="fixed bottom-4 end-4 z-50 bg-white border border-gray-200 rounded-lg shadow-md px-2 py-1.5">
-            <LanguageSwitcher />
-          </div>
         </LangProvider>
       </body>
     </html>

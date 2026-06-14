@@ -19,7 +19,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   useEffect(() => {
     async function check() {
       const { data: { user } } = await supabase.auth.getUser()
-      if (!user) { router.replace('/login'); return }
+      if (!user) { router.replace('/connexion'); return }
 
       // Owner-read RLS lets a user read their own row, so this resolves the
       // caller's admin flag. The real authorization boundary is RLS/is_admin()

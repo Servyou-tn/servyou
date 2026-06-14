@@ -81,7 +81,7 @@ export function RespondForm({ jobPostId, jobPostTitle, consumerPhone, currentRes
     setSubmitting(true)
 
     const { data: { user } } = await supabase.auth.getUser()
-    if (!user) { router.push('/login'); return }
+    if (!user) { router.push('/connexion'); return }
 
     if (!profilePhone) {
       if (!isValidPhone(phoneInput)) {

@@ -38,7 +38,7 @@ export default function ModifierMissionPage() {
   useEffect(() => {
     async function init() {
       const { data: { user } } = await supabase.auth.getUser()
-      if (!user) { router.replace('/login'); return }
+      if (!user) { router.replace('/connexion'); return }
 
       const [{ data: post }, { data: cats }] = await Promise.all([
         supabase.from('job_posts').select('*').eq('id', id).eq('consumer_id', user.id).single(),

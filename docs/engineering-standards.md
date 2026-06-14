@@ -20,7 +20,7 @@ Servyou's security posture is defense-in-depth, anchored to OWASP standards.
 
 **Rate limiting at the edge.** Vercel's per-IP rate limiting is enabled on auth endpoints. Heavier rate limiting (Cloudflare or Vercel Pro features) is deferred to Phase 10 polish before public launch.
 
-**Bot protection.** Cloudflare Turnstile is added on `/signup` and `/login` in Phase 10, before opening to real users.
+**Bot protection.** Cloudflare Turnstile is added on `/inscription` and `/connexion` in Phase 10, before opening to real users.
 
 **Error monitoring.** Sentry is added in Phase 10, so production errors are visible without requiring users to report them.
 

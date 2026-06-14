@@ -29,7 +29,7 @@ export default function DemandeAchatPage() {
   useEffect(() => {
     async function load() {
       const { data: { user } } = await supabase.auth.getUser()
-      if (!user) { router.replace('/login'); return }
+      if (!user) { router.replace('/connexion'); return }
 
       const [{ data: product }, { data: profile }] = await Promise.all([
         supabase.from('products')
@@ -70,7 +70,7 @@ export default function DemandeAchatPage() {
     if (isNaN(qty) || qty < 1) { setError(t('product.error_quantity', lang)); return }
 
     const { data: { user } } = await supabase.auth.getUser()
-    if (!user) { router.replace('/login'); return }
+    if (!user) { router.replace('/connexion'); return }
 
     setSaving(true)
 

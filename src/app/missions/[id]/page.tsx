@@ -95,7 +95,7 @@ export default async function MissionDetailPage({ params }: Props) {
   if (!user) {
     respondSection = (
       <div className="bg-blue-50 border border-blue-200 rounded p-4 text-sm text-blue-700">
-        <Link href="/login" className="font-medium hover:underline">{t('job.login_to_respond', lang)}</Link>
+        <Link href="/connexion" className="font-medium hover:underline">{t('job.login_to_respond', lang)}</Link>
         {' '}{t('job.login_suffix', lang)}
       </div>
     )
