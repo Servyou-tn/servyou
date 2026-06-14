@@ -740,6 +740,9 @@ export const ar: Record<string, string> = {
   'listing.service.relativeAdded':   "ajouté il y a {time}",
   'sidebar.expanded.servyou':        "ServYou",
 
+  // ─── Marketplace browse (/marche) — PENDING AR (Phase 8), French placeholder ──
+  'marche.sidebar.marche':           "Marché",
+
   // ─── Orders — my orders + confirmation ───────────────────────────────────────
   'orders.title':              "طلباتي",
   'orders.buyer_detail_title': "تفاصيل الطلب",
