@@ -31,7 +31,7 @@ export function ListingResults(props: Props) {
   }
 
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
       {props.items.map((p, i) => (
         <BlurFade key={p.id} delay={i * 0.05} duration={0.2} {...fade} inView>
           <ProductListingCard product={p} />

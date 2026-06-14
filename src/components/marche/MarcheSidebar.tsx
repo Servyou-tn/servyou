@@ -37,15 +37,19 @@ const DISABLED_ITEMS: { key: string; Icon: IconCmp }[] = [
   { key: 'marche.sidebar.parametres', Icon: SettingsIcon },
 ]
 
-// The /marche marketplace sidebar — a fresh, collapsible floating card (NOT the
-// dashboard sidebar, which is reserved for the seller dashboards). Default
-// collapsed (64px icon rail); an explicit chevron toggle expands it to 224px with
-// labels. State is purely in-memory (useState) — no URL/localStorage. The chevron
-// is the only expand/collapse control; the live nav item stays a plain link.
-export function MarcheSidebar() {
+// The /marche marketplace sidebar — a fresh floating card (NOT the dashboard sidebar,
+// which is reserved for the seller dashboards). Collapses to a 64px icon rail or expands
+// to 224px with labels. When the parent passes `forceCollapsed`, the state follows URL
+// intent (the /marche pages drive it from ?type) and the chevron is hidden; when the prop
+// is omitted, the chevron toggles internal state — preserving the original toggleable
+// behavior for any future non-/marche caller.
+export function MarcheSidebar({ forceCollapsed }: { forceCollapsed?: boolean }) {
   const lang = useLang()
   const pathname = usePathname()
-  const [expanded, setExpanded] = useState(false)
+  const [internalExpanded, setInternalExpanded] = useState(false)
+
+  const controlled = forceCollapsed !== undefined
+  const expanded = controlled ? !forceCollapsed : internalExpanded
 
   const active = pathname === ACTIVE_ITEM.href || pathname.startsWith(ACTIVE_ITEM.href + '/')
 
@@ -92,19 +96,21 @@ export function MarcheSidebar() {
               className="h-12 w-12"
             />
           )}
-          <button
-            type="button"
-            onClick={() => setExpanded((v) => !v)}
-            aria-label={expanded ? t('nav.menu_close', lang) : t('nav.menu_open', lang)}
-            aria-expanded={expanded}
-            className={`inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-text-muted transition-colors hover:bg-surface-pill hover:text-text-primary ${FOCUS_RING}`}
-          >
-            {expanded ? (
-              <ChevronLeftIcon className="h-5 w-5 rtl:-scale-x-100" />
-            ) : (
-              <ChevronRightIcon className="h-5 w-5 rtl:-scale-x-100" />
-            )}
-          </button>
+          {!controlled && (
+            <button
+              type="button"
+              onClick={() => setInternalExpanded((v) => !v)}
+              aria-label={expanded ? t('nav.menu_close', lang) : t('nav.menu_open', lang)}
+              aria-expanded={expanded}
+              className={`inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-text-muted transition-colors hover:bg-surface-pill hover:text-text-primary ${FOCUS_RING}`}
+            >
+              {expanded ? (
+                <ChevronLeftIcon className="h-5 w-5 rtl:-scale-x-100" />
+              ) : (
+                <ChevronRightIcon className="h-5 w-5 rtl:-scale-x-100" />
+              )}
+            </button>
+          )}
         </div>
 
         {/* Nav — the live Marché link, then the disabled account-utility items. */}

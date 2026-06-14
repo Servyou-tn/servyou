@@ -72,6 +72,7 @@ type ServiceRow = {
     | { profile_id: string; city: string | null }
     | { profile_id: string; city: string | null }[]
     | null
+  categories: { name_fr: string } | { name_fr: string }[] | null
 }
 
 // Active services for the /marche list. Freelancer display names come from the
@@ -83,7 +84,7 @@ export const getActiveServices = cache(async (q?: string): Promise<ServiceListin
   const supabase = await createClient()
   let query = supabase
     .from('service_listings')
-    .select('id, title, description, starting_price_tnd, delivery_time, freelancer_profiles!inner(profile_id, city)')
+    .select('id, title, description, starting_price_tnd, delivery_time, freelancer_profiles!inner(profile_id, city), categories(name_fr)')
     .eq('status', 'active')
     .order('created_at', { ascending: false })
     .limit(LIMIT)
@@ -121,12 +122,14 @@ export const getActiveServices = cache(async (q?: string): Promise<ServiceListin
 
   return rows.map((row) => {
     const fp = one(row.freelancer_profiles)
+    const cat = one(row.categories)
     return {
       id: row.id,
       title: row.title,
       description: row.description ?? null,
       price_starting: row.starting_price_tnd != null ? Number(row.starting_price_tnd) : null,
       delivery_time: row.delivery_time ?? null,
+      category: cat ? { name_fr: cat.name_fr } : null,
       freelancer: {
         full_name: (fp?.profile_id ? names.get(fp.profile_id) : '') ?? '',
         city: fp?.city ?? null,

@@ -31,7 +31,9 @@ export default async function MarchePage({
 
   return (
     <div className="flex">
-      <MarcheSidebar />
+      {/* Product browsing wants full width for the 4-col grid → collapsed; services
+          (and the default view) keep the nav context visible → expanded. */}
+      <MarcheSidebar forceCollapsed={type === 'product'} />
       <main className="flex-1 p-6 lg:p-8">
         <div className="mx-auto max-w-7xl">
           {/* Top bar — search + Produits/Services toggle only; reflects the URL state. */}

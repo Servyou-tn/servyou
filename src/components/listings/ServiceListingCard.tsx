@@ -7,7 +7,6 @@ import { t } from '@/lib/i18n'
 import { FOCUS_RING, CARD_SHADOW, HOVER_SHADOW } from '@/components/layout/styles'
 import { FavoriteButton } from '@/components/FavoriteButton'
 import { ArrowRightIcon } from './icons'
-import { initials } from './listing-utils'
 
 export type ServiceListing = {
   id: string
@@ -15,16 +14,18 @@ export type ServiceListing = {
   description: string | null
   price_starting: number | null
   delivery_time: string | null
+  category?: { name_fr: string } | null
   freelancer: { full_name: string; city: string | null; avatar_url?: string | null }
 }
 
-// Horizontal service row (bakery-style, one per line): circle avatar on the left, content
-// in the middle, price/delivery + arrow CTA on the right, the favorite heart at the
-// top-right corner. Person-led — services are about who you hire — vs the image-led
-// product grid. Same premium white-card DNA (CARD_SHADOW, rounded-2xl, hover lift) as
-// products. The avatar renders the freelancer photo when an avatar_url exists (no such
-// column in the schema yet, so it always falls to initials today). The heart is a sibling
-// of the Link, so toggling a favorite never navigates.
+// Horizontal service card (Upwork-style freelancer row, one per line):
+//   LEFT  — circle avatar with the freelancer's name underneath (leads with who you hire)
+//   MID   — category tag pill, service title, description, city
+//   RIGHT — starting price + delivery time, with the arrow CTA pinned to the bottom
+// The favorite heart floats at the top-right corner (a sibling of the Link, so it never
+// navigates). The avatar renders the freelancer photo when an avatar_url exists (no such
+// column in the schema yet, so it falls to the first initial today). Same premium
+// white-card DNA (CARD_SHADOW, rounded-2xl, hover lift) and locked palette as products.
 export function ServiceListingCard({ service }: { service: ServiceListing }) {
   const lang = useLang()
 
@@ -34,10 +35,7 @@ export function ServiceListingCard({ service }: { service: ServiceListing }) {
       ? t('listing.service.startingPrice', lang, { price: start })
       : t('listing.service.priceOnRequest', lang)
 
-  const byName = service.freelancer.full_name
-    ? t('listing.service.by', lang, { name: service.freelancer.full_name })
-    : null
-  const meta = [byName, service.freelancer.city].filter(Boolean).join(' · ')
+  const firstLetter = (service.freelancer.full_name.trim()[0] ?? '?').toUpperCase()
 
   return (
     <div
@@ -46,40 +44,57 @@ export function ServiceListingCard({ service }: { service: ServiceListing }) {
       <Link
         href={`/services/${service.id}`}
         aria-label={service.title}
-        className={`flex items-center gap-5 rounded-2xl p-5 ${FOCUS_RING}`}
+        className={`flex items-start gap-5 rounded-2xl p-5 ${FOCUS_RING}`}
       >
-        {/* Circle avatar — freelancer photo when available, else initials. */}
-        <div className="relative flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-full bg-linear-to-br from-[#F4F4F4] to-[#E8E8E8]">
-          {service.freelancer.avatar_url ? (
-            <Image
-              src={service.freelancer.avatar_url}
-              alt={service.freelancer.full_name}
-              fill
-              sizes="80px"
-              className="object-cover"
-            />
-          ) : (
-            <span className="text-2xl font-bold text-[#0A0A0A]" aria-hidden="true">
-              {initials(service.freelancer.full_name)}
-            </span>
+        {/* LEFT — circle avatar (photo when available, else initial) + name underneath. */}
+        <div className="flex w-24 shrink-0 flex-col items-center">
+          <div className="relative flex h-20 w-20 items-center justify-center overflow-hidden rounded-full bg-linear-to-br from-[#F4F4F4] to-[#E8E8E8]">
+            {service.freelancer.avatar_url ? (
+              <Image
+                src={service.freelancer.avatar_url}
+                alt={service.freelancer.full_name}
+                fill
+                sizes="80px"
+                className="object-cover"
+              />
+            ) : (
+              <span className="text-2xl font-bold text-[#0A0A0A]" aria-hidden="true">
+                {firstLetter}
+              </span>
+            )}
+          </div>
+          {service.freelancer.full_name && (
+            <p className="mt-2 line-clamp-1 w-full text-center text-xs font-medium text-[#0A0A0A]">
+              {service.freelancer.full_name}
+            </p>
           )}
         </div>
 
-        {/* Middle — title, description, "par {name} · {city}" meta. */}
-        <div className="min-w-0 flex-1 space-y-1">
-          <p className="line-clamp-1 text-base font-semibold text-[#0A0A0A]">{service.title}</p>
-          <p className="line-clamp-2 min-h-[40px] text-[13px] leading-[1.5] text-[#8B8B8B]">
+        {/* MIDDLE — category pill, title, description, city. */}
+        <div className="min-w-0 flex-1">
+          {service.category?.name_fr && (
+            <span className="inline-block rounded-full bg-[#F4F4F4] px-3 py-1 text-[11px] font-medium text-[#1A1A1A]">
+              {service.category.name_fr}
+            </span>
+          )}
+          <p className="mt-2 line-clamp-1 text-[17px] font-bold leading-tight text-[#0A0A0A]">
+            {service.title}
+          </p>
+          <p className="mt-2 line-clamp-2 text-[13px] leading-[1.5] text-[#8B8B8B]">
             {service.description}
           </p>
-          {meta && <p className="line-clamp-1 text-xs font-medium text-[#8B8B8B]">{meta}</p>}
+          {service.freelancer.city && (
+            <p className="mt-2 text-xs text-[#8B8B8B]">{service.freelancer.city}</p>
+          )}
         </div>
 
-        {/* Right — price + delivery (top), arrow CTA (bottom). pt-8 clears the heart. */}
-        <div className="flex shrink-0 flex-col items-end justify-between gap-3 self-stretch pt-8">
+        {/* RIGHT — top spacer clears the absolute heart, then price/delivery, arrow at bottom. */}
+        <div className="flex shrink-0 flex-col items-end justify-between gap-3 self-stretch">
+          <div className="h-9 w-9 shrink-0" aria-hidden="true" />
           <div className="text-end">
             <p className="text-[15px] font-bold text-[#0A0A0A]">{priceLabel}</p>
             {service.delivery_time && (
-              <p className="mt-0.5 text-xs text-[#B8B8B8]">
+              <p className="mt-1 text-xs text-[#B8B8B8]">
                 {t('listing.service.deliveryTime', lang, { time: service.delivery_time })}
               </p>
             )}
