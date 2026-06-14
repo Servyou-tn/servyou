@@ -19,6 +19,14 @@ describe('selectVariant', () => {
     expect(selectVariant({ isLoggedIn: false, sellerType: null, pathname: '/inscriptionx' }).hidden).toBe(false)
   })
 
+  it('hides the Header on the consumer dashboard (/mon-espace owns its own shell)', () => {
+    expect(selectVariant({ isLoggedIn: true, sellerType: null, pathname: '/mon-espace' }).hidden).toBe(true)
+    // sub-routes of the dashboard shell are hidden too
+    expect(selectVariant({ isLoggedIn: true, sellerType: null, pathname: '/mon-espace/parametres' }).hidden).toBe(true)
+    // a sibling that merely shares the prefix is NOT under the shell
+    expect(selectVariant({ isLoggedIn: true, sellerType: null, pathname: '/mon-espacex' }).hidden).toBe(false)
+  })
+
   it('hides the Header across the admin section (AdminSidebar owns admin nav)', () => {
     expect(selectVariant({ isLoggedIn: true, sellerType: null, pathname: '/admin' }).hidden).toBe(true)
     expect(selectVariant({ isLoggedIn: true, sellerType: null, pathname: '/admin/utilisateurs' }).hidden).toBe(true)

@@ -40,6 +40,10 @@ export function selectVariant({
   // The signup funnel (role intent + the role-branded Step-2 forms) is chromeless
   // too — each page carries its own minimal logo-only navbar to stay focused.
   if (isUnder(pathname, '/inscription')) return { hidden: true, variant: 'public' }
+  // The dashboard shell (/mon-espace, and future role dashboards under it) owns its
+  // own sidebar + top bar, so the global Header is hidden there — same pattern as
+  // /admin above. The shell's own layout enforces the consumer-only role guard.
+  if (isUnder(pathname, '/mon-espace')) return { hidden: true, variant: 'public' }
 
   if (!isLoggedIn) return { hidden: false, variant: 'public' }
 

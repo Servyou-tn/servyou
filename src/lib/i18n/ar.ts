@@ -710,6 +710,27 @@ export const ar: Record<string, string> = {
   'consumer.dashboard.actions.seller_title': "Devenir vendeur",
   'consumer.dashboard.actions.seller_sub':   "Ouvrez une boutique ou créez un profil freelance",
 
+  // ─── Dashboard shell (/mon-espace) — PENDING AR (Phase 8), French placeholders ──
+  'dashboard.sidebar.monEspace':                "Mon espace",
+  'dashboard.sidebar.mesCommandes':             "Mes commandes",
+  'dashboard.sidebar.mesFavoris':               "Mes favoris",
+  'dashboard.sidebar.mesMissions':              "Mes missions",
+  'dashboard.sidebar.monProfil':                "Mon profil",
+  'dashboard.sidebar.devenirVendeur':           "Devenir vendeur",
+  'dashboard.sidebar.deconnexion':              "Déconnexion",
+  'dashboard.topbar.searchPlaceholder':         "Rechercher un produit ou service…",
+  'dashboard.topbar.notifications':             "Notifications",
+  'dashboard.topbar.notificationsEmpty':        "Aucune notification",
+  'dashboard.rightRail.profile.ordersLabel':    "commandes",
+  'dashboard.rightRail.profile.missionsLabel':  "missions",
+  'dashboard.rightRail.missions.heading':       "Mes missions actives",
+  'dashboard.rightRail.missions.responses':     "{count} réponses · {budget}",
+  'dashboard.rightRail.missions.viewAll':       "Voir tout",
+  'dashboard.rightRail.missions.empty_title':   "Aucune mission active",
+  'dashboard.rightRail.missions.empty_subtitle':"Postez une mission pour trouver un freelance.",
+  'dashboard.rightRail.missions.empty_cta':     "Poster une mission",
+  'dashboard.rightRail.categories.heading':     "Catégories",
+
   // ─── Orders — my orders + confirmation ───────────────────────────────────────
   'orders.title':              "طلباتي",
   'orders.buyer_detail_title': "تفاصيل الطلب",
