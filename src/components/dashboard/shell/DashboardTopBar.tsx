@@ -6,7 +6,8 @@ import { t } from '@/lib/i18n'
 import { FOCUS_RING } from '@/components/layout/styles'
 import { Wordmark } from '@/components/layout/Wordmark'
 import { MenuIcon } from '@/components/layout/icons'
-import { SearchIcon, BellIcon } from '@/components/dashboard/consumer/icons'
+import { BellIcon } from '@/components/dashboard/consumer/icons'
+import { SharedSearchBar } from './SharedSearchBar'
 
 // Column-local top bar (not page-wide). Desktop/tablet: marketplace search + bell.
 // Mobile: hamburger + logo + bell (search lives in the marketplace itself there).
@@ -57,25 +58,10 @@ export function DashboardTopBar({
       {/* Mobile: logo */}
       <Wordmark className="h-7 md:hidden" />
 
-      {/* Desktop/tablet: search */}
-      <form action="/recherche" method="GET" className="hidden max-w-[480px] flex-1 md:flex">
-        <label htmlFor="dashboard-search" className="sr-only">
-          {t('dashboard.topbar.searchPlaceholder', lang)}
-        </label>
-        <div className="relative w-full">
-          <SearchIcon
-            className="pointer-events-none absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text-muted"
-            aria-hidden="true"
-          />
-          <input
-            id="dashboard-search"
-            name="q"
-            type="search"
-            placeholder={t('dashboard.topbar.searchPlaceholder', lang)}
-            className={`w-full rounded-xl border border-border-subtle bg-white py-2.5 pe-4 ps-10 text-sm text-text-primary outline-none transition-colors placeholder:text-text-muted ${FOCUS_RING}`}
-          />
-        </div>
-      </form>
+      {/* Desktop/tablet: shared search bar (text input + Produits/Services toggle) */}
+      <div className="hidden max-w-[720px] flex-1 md:block">
+        <SharedSearchBar />
+      </div>
 
       {/* Bell + notifications popover */}
       <div ref={bellWrapRef} className="relative ms-auto">

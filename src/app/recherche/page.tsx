@@ -1,117 +1,129 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { getLang } from '@/lib/i18n/server'
-import { t } from '@/lib/i18n'
-import { DirArrow } from '@/components/DirArrow'
+import { t, type Lang } from '@/lib/i18n'
+import { SharedSearchBar } from '@/components/dashboard/shell/SharedSearchBar'
+import { ListingResults } from '@/components/listings/ListingResults'
+import { SearchIcon } from '@/components/dashboard/consumer/icons'
+import type { ProductListing } from '@/components/listings/ProductListingCard'
+import type { ServiceListing } from '@/components/listings/ServiceListingCard'
 
-type Props = { searchParams: Promise<{ q?: string }> }
+// Unified, PUBLIC search results page (no auth — guests must browse without an
+// account). Reads ?q & ?type; the SharedSearchBar drives both. Stays a root route
+// with the global Header; it is NOT inside the (dashboard) shell.
+export const metadata: Metadata = {
+  title: 'Recherche — Servyou',
+}
+
+type Props = { searchParams: Promise<{ q?: string; type?: string }> }
+
+type ServiceRow = {
+  id: string
+  title: string
+  starting_price_tnd: number | null
+  created_at: string
+  freelancer_profiles: { city: string | null; profiles: { full_name: string } | null } | null
+}
+
+type ProductRow = {
+  id: string
+  title: string
+  price_tnd: number
+  created_at: string
+  shops: { name: string; city: string | null } | null
+}
+
+function EmptyState({ lang }: { lang: Lang }) {
+  return (
+    <div className="rounded-xl border border-border-subtle bg-white p-8 text-center">
+      <SearchIcon className="mx-auto h-12 w-12 text-text-muted" aria-hidden="true" />
+      <p className="mt-4 text-base font-semibold text-text-primary">{t('recherche.empty.title', lang)}</p>
+      <p className="mx-auto mt-1 max-w-md text-sm text-text-muted">{t('recherche.empty.subtitle', lang)}</p>
+      <Link
+        href="/"
+        className="mt-5 inline-flex items-center justify-center rounded-xl bg-brand-accent px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#1D4ED8]"
+      >
+        {t('recherche.empty.cta', lang)}
+      </Link>
+    </div>
+  )
+}
 
 export default async function RecherchePage({ searchParams }: Props) {
-  const { q } = await searchParams
-  const query = q?.trim() ?? ''
-  const supabase = await createClient()
+  const sp = await searchParams
+  const query = sp.q?.trim() ?? ''
+  const type: 'product' | 'service' = sp.type === 'service' ? 'service' : 'product'
   const lang = await getLang()
-
-  if (!query) {
-    return (
-      <main className="min-h-screen bg-gray-50 px-4 py-12">
-        <div className="max-w-3xl mx-auto">
-          <h1 className="text-2xl font-bold text-gray-800 mb-6">{t('search.title', lang)}</h1>
-          <p className="text-gray-500">{t('search.enter_term', lang)}</p>
-          <div className="mt-4">
-            <form action="/recherche" method="GET" className="flex gap-2 max-w-md">
-              <input name="q" type="text" autoFocus placeholder={t('search.placeholder', lang)}
-                className="flex-1 border border-gray-300 rounded px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
-              <button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-5 py-2 rounded text-sm transition-colors">
-                {t('home.search_btn', lang)}
-              </button>
-            </form>
-          </div>
-        </div>
-      </main>
-    )
-  }
-
+  const supabase = await createClient()
   const pattern = `%${query}%`
 
-  const [{ data: products }, { data: services }] = await Promise.all([
-    supabase.from('products')
-      // !inner + admin_hidden_at IS NULL drops products of admin-moderated shops.
-      .select('id, title, price_tnd, shops!inner(name, city)')
+  let products: ProductListing[] = []
+  let services: ServiceListing[] = []
+
+  if (type === 'service') {
+    let qb = supabase
+      .from('service_listings')
+      .select('id, title, starting_price_tnd, created_at, freelancer_profiles!inner(city, profiles:public_profiles(full_name))')
       .eq('status', 'active')
-      .ilike('title', pattern)
-      .is('shops.admin_hidden_at', null)
-      .order('created_at', { ascending: false })
-      .limit(20),
-    supabase.from('service_listings')
-      .select('id, title, starting_price_tnd, freelancer_profiles!inner(city, profiles:public_profiles(full_name))')
-      .eq('status', 'active')
-      .ilike('title', pattern)
       .is('freelancer_profiles.admin_hidden_at', null)
       .order('created_at', { ascending: false })
-      .limit(20),
-  ])
+      .limit(30)
+    if (query) qb = qb.ilike('title', pattern)
+    const { data, error } = await qb
+    if (error) console.error('[recherche] services fetch error:', error)
+    services = ((data as unknown as ServiceRow[]) ?? []).map((s) => ({
+      id: s.id,
+      title: s.title,
+      price_starting: s.starting_price_tnd,
+      created_at: s.created_at,
+      freelancer: {
+        full_name: s.freelancer_profiles?.profiles?.full_name ?? '—',
+        city: s.freelancer_profiles?.city ?? null,
+      },
+    }))
+  } else {
+    let qb = supabase
+      .from('products')
+      .select('id, title, price_tnd, created_at, shops!inner(name, city)')
+      .eq('status', 'active')
+      .is('shops.admin_hidden_at', null)
+      .order('created_at', { ascending: false })
+      .limit(30)
+    if (query) qb = qb.ilike('title', pattern)
+    const { data, error } = await qb
+    if (error) console.error('[recherche] products fetch error:', error)
+    products = ((data as unknown as ProductRow[]) ?? []).map((p) => ({
+      id: p.id,
+      title: p.title,
+      price_tnd: p.price_tnd,
+      created_at: p.created_at,
+      shop: { name: p.shops?.name ?? '—', city: p.shops?.city ?? null },
+    }))
+  }
 
-  const totalResults = (products?.length ?? 0) + (services?.length ?? 0)
-  const resultLabel = totalResults === 1 ? t('category.result_singular', lang) : t('category.result_plural', lang)
+  const count = type === 'service' ? services.length : products.length
+  const resultWord = count === 1 ? t('category.result_singular', lang) : t('category.result_plural', lang)
+  const countLine = query
+    ? `${count} ${resultWord} ${t('search.result_for', lang)} « ${query} »`
+    : `${count} ${resultWord}`
 
   return (
-    <main className="min-h-screen bg-gray-50 px-4 py-12">
-      <div className="max-w-3xl mx-auto">
-        <div className="mb-6">
-          <form action="/recherche" method="GET" className="flex gap-2 max-w-md mb-4">
-            <input name="q" type="text" defaultValue={query}
-              className="flex-1 border border-gray-300 rounded px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
-            <button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-5 py-2 rounded text-sm transition-colors">
-              {t('home.search_btn', lang)}
-            </button>
-          </form>
-          <p className="text-sm text-gray-500">
-            {totalResults} {resultLabel} {t('search.result_for', lang)} «&nbsp;{query}&nbsp;»
-          </p>
+    <main className="min-h-screen bg-surface-subtle px-4 py-8 md:px-6 md:py-10">
+      <div className="mx-auto max-w-3xl">
+        <div className="max-w-[720px]">
+          <SharedSearchBar initialQuery={query} initialType={type} />
         </div>
-
-        {products && products.length > 0 && (
-          <section className="mb-10">
-            <h2 className="text-lg font-semibold text-gray-700 mb-3">{t('common.products_section', lang)}</h2>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-              {(products as unknown as { id: string; title: string; price_tnd: number; shops: { name: string; city: string } | null }[]).map(p => (
-                <Link key={p.id} href={`/produit/${p.id}`}
-                  className="bg-white rounded-lg shadow p-4 hover:shadow-md transition-shadow flex flex-col gap-1">
-                  <p className="font-medium text-gray-800 text-sm line-clamp-2">{p.title}</p>
-                  <p className="text-blue-700 font-semibold text-sm">{Number(p.price_tnd).toFixed(2)} TND</p>
-                  {p.shops && <p className="text-xs text-gray-500">{p.shops.name} · {p.shops.city}</p>}
-                </Link>
-              ))}
-            </div>
-          </section>
-        )}
-
-        {services && services.length > 0 && (
-          <section className="mb-10">
-            <h2 className="text-lg font-semibold text-gray-700 mb-3">{t('common.services_section', lang)}</h2>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-              {(services as unknown as { id: string; title: string; starting_price_tnd: number; freelancer_profiles: { city: string | null; profiles: { full_name: string } | null } | null }[]).map(s => {
-                const fp = s.freelancer_profiles
-                const name = fp?.profiles?.full_name
-                return (
-                  <Link key={s.id} href={`/service/${s.id}`}
-                    className="bg-white rounded-lg shadow p-4 hover:shadow-md transition-shadow flex flex-col gap-1">
-                    <p className="font-medium text-gray-800 text-sm line-clamp-2">{s.title}</p>
-                    <p className="text-blue-700 font-semibold text-sm">{t('home.from_price', lang)} {Number(s.starting_price_tnd).toFixed(2)} TND</p>
-                    {(name || fp?.city) && <p className="text-xs text-gray-500">{name ?? ''}{name && fp?.city ? ' · ' : ''}{fp?.city ?? ''}</p>}
-                  </Link>
-                )
-              })}
-            </div>
-          </section>
-        )}
-
-        {totalResults === 0 && (
-          <p className="text-gray-500">{t('search.no_results', lang)}</p>
-        )}
-
-        <Link href="/" className="text-sm text-blue-600 hover:underline"><DirArrow lang={lang} direction="back" />{' '}{t('common.back_home', lang)}</Link>
+        <p className="mt-4 text-sm text-text-muted">{countLine}</p>
+        <div className="mt-5">
+          {count === 0 ? (
+            <EmptyState lang={lang} />
+          ) : type === 'service' ? (
+            <ListingResults type="service" items={services} />
+          ) : (
+            <ListingResults type="product" items={products} />
+          )}
+        </div>
       </div>
     </main>
   )

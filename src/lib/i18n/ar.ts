@@ -731,6 +731,15 @@ export const ar: Record<string, string> = {
   'dashboard.rightRail.missions.empty_cta':     "Poster une mission",
   'dashboard.rightRail.categories.heading':     "Catégories",
 
+  // ─── Search bar + listings (/recherche) — PENDING AR (Phase 8), French placeholders ──
+  'recherche.empty.title':           "Aucun résultat",
+  'recherche.empty.subtitle':        "Essayez d'autres mots-clés ou parcourez les catégories.",
+  'recherche.empty.cta':             "Parcourir les catégories",
+  'listing.service.startingPrice':   "à partir de {price} TND",
+  'listing.service.priceOnRequest':  "Prix sur demande",
+  'listing.service.relativeAdded':   "ajouté il y a {time}",
+  'sidebar.expanded.servyou':        "ServYou",
+
   // ─── Orders — my orders + confirmation ───────────────────────────────────────
   'orders.title':              "طلباتي",
   'orders.buyer_detail_title': "تفاصيل الطلب",

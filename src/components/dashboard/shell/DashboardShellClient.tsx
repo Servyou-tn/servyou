@@ -72,8 +72,8 @@ export function DashboardShellClient({
   return (
     <div className="flex min-h-screen">
       {/* Persistent sidebar (md+) */}
-      <aside className="sticky top-0 hidden h-screen shrink-0 border-e border-border-subtle bg-surface-base md:flex md:w-[72px] lg:w-60">
-        <DashboardSidebar variant="desktop" />
+      <aside className="sticky top-0 hidden h-screen shrink-0 p-3 md:flex md:w-[280px]">
+        <DashboardSidebar />
       </aside>
 
       {/* Right region: top bar, then main + rail */}
@@ -111,10 +111,10 @@ export function DashboardShellClient({
           <div
             ref={panelRef}
             onKeyDown={onPanelKeyDown}
-            className="absolute inset-y-0 start-0 flex w-60 flex-col bg-surface-base shadow-xl"
+            className="absolute inset-y-0 start-0 flex w-[280px] flex-col p-3"
           >
             <DashboardSidebar
-              variant="mobile-drawer"
+              inDrawer
               closeRef={closeRef}
               onClose={closeDrawer}
               onNavigate={() => setDrawerOpen(false)}
