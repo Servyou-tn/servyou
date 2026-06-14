@@ -35,12 +35,12 @@ type StepKey = (typeof steps)[number]['key']
 // back to "/" with a TODO so they get wired when the pages ship.
 const ctaHref: Record<Role, Record<StepKey, string>> = {
   client: {
-    step1: '/', // TODO: route doesn't exist yet, fallback to / (intended: signup — real route is /signup)
+    step1: '/', // TODO: route doesn't exist yet, fallback to / (intended: signup — real route is /inscription)
     step2: '/', // "Explorer Servyou" → homepage (intended destination)
     step3: '/', // TODO: route doesn't exist yet, fallback to / (intended: /securite)
   },
   freelancer: {
-    step1: '/', // TODO: route doesn't exist yet, fallback to / (intended: /devenir-freelance — real entry is /signup?role=freelancer)
+    step1: '/', // TODO: route doesn't exist yet, fallback to / (intended: /devenir-freelance — real entry is /inscription/freelancer)
     step2: '/missions',
     step3: '/', // TODO: route doesn't exist yet, fallback to / (intended: /faq)
   },

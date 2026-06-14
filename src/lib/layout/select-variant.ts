@@ -14,10 +14,11 @@ export type HeaderState = {
 }
 
 // Auth flows render chromeless (modern SaaS pattern); /admin/* is owned by AdminSidebar.
-// Old routes stay until Commit 6 deletes them; new branded auth routes are added
-// as each page ships so it renders chromeless immediately (AuthFunnelLayout owns
-// its own minimal page). /inscription/* is handled by the isUnder check below.
-const AUTH_ROUTES = ['/login', '/signup', '/forgot-password', '/update-password', '/connexion', '/verifier-email', '/mot-de-passe-oublie', '/nouveau-mot-de-passe']
+// The branded auth routes each own their minimal AuthFunnelLayout page, so the Header
+// stays hidden across them. The four legacy auth routes were decommissioned and now
+// permanently redirect (308) via next.config, so only the branded routes remain here.
+// /inscription/* is handled by the isUnder check below.
+const AUTH_ROUTES = ['/connexion', '/verifier-email', '/mot-de-passe-oublie', '/nouveau-mot-de-passe']
 
 /** True when `pathname` is exactly `base` or a child of it — with a real path boundary
  *  so that e.g. "/ma-boutiquex" does NOT count as under "/ma-boutique". */
