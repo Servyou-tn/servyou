@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useLang } from '@/components/LangProvider'
 import { t } from '@/lib/i18n'
-import { FOCUS_RING } from '@/components/layout/styles'
+import { SegmentedControl, type SegmentedControlOption } from '@/components/ui/segmented-control'
 import { OrderCard } from './OrderCard'
 import type { MyOrder } from '@/lib/marche/my-data'
 
@@ -24,30 +24,26 @@ function matches(o: MyOrder, f: Filter): boolean {
   return o.status !== 'received' && o.status !== 'cancelled'
 }
 
-// Client-side filter chips over the buyer's orders (instant, no round-trip).
+// Client-side filtering over the buyer's orders (instant, no round-trip).
 export function MesCommandesList({ orders }: { orders: MyOrder[] }) {
   const lang = useLang()
   const [filter, setFilter] = useState<Filter>('all')
   const visible = orders.filter((o) => matches(o, filter))
 
+  const filterOptions: SegmentedControlOption<Filter>[] = FILTERS.map((f) => ({
+    value: f.key,
+    label: t(f.labelKey, lang),
+  }))
+
   return (
     <div>
-      <div className="mb-6 flex flex-wrap gap-2">
-        {FILTERS.map((f) => (
-          <button
-            key={f.key}
-            type="button"
-            onClick={() => setFilter(f.key)}
-            aria-pressed={filter === f.key}
-            className={`rounded-full px-4 py-1.5 text-[13px] font-medium transition-colors ${FOCUS_RING} ${
-              filter === f.key
-                ? 'bg-brand-accent text-white'
-                : 'border border-border-subtle bg-white text-text-muted hover:bg-surface-pill'
-            }`}
-          >
-            {t(f.labelKey, lang)}
-          </button>
-        ))}
+      <div className="mb-6">
+        <SegmentedControl
+          options={filterOptions}
+          value={filter}
+          onChange={setFilter}
+          ariaLabel={t('marche.sidebar.commandes', lang)}
+        />
       </div>
 
       <div className="flex flex-col gap-4">

@@ -1,11 +1,12 @@
 'use client'
 
-import { useRef, useState, type FormEvent, type KeyboardEvent } from 'react'
+import { useState, type FormEvent } from 'react'
 import { useRouter } from 'next/navigation'
 import { useLang } from '@/components/LangProvider'
 import { t } from '@/lib/i18n'
 import { FOCUS_RING, CARD_SHADOW, HOVER_SHADOW } from '@/components/layout/styles'
 import { SearchIcon } from '@/components/dashboard/consumer/icons'
+import { SegmentedControl, type SegmentedControlOption } from '@/components/ui/segmented-control'
 
 type SearchType = 'product' | 'service'
 
@@ -32,8 +33,6 @@ export function SharedSearchBar({
   const lang = useLang()
   const [query, setQuery] = useState(initialQuery)
   const [type, setType] = useState<SearchType>(initialType)
-  const productRef = useRef<HTMLButtonElement>(null)
-  const serviceRef = useRef<HTMLButtonElement>(null)
 
   function navigate(nextType: SearchType, nextQuery: string) {
     const params = new URLSearchParams()
@@ -54,19 +53,10 @@ export function SharedSearchBar({
     navigate(next, query)
   }
 
-  // Left/Right arrows move between the two toggle options (segmented-control pattern).
-  function onToggleKeyDown(e: KeyboardEvent) {
-    if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return
-    e.preventDefault()
-    const next: SearchType = type === 'product' ? 'service' : 'product'
-    setType(next)
-    ;(next === 'product' ? productRef : serviceRef).current?.focus()
-    navigate(next, query)
-  }
-
-  // Each toggle segment is its own rounded-full pill inside the gray track: filled
-  // brand-accent when active (the only brand color in the bar), plain dark text when not.
-  const segment = `rounded-full px-5 py-1.5 text-[13px] font-medium transition-all duration-200 ${FOCUS_RING}`
+  const typeOptions: SegmentedControlOption<SearchType>[] = [
+    { value: 'product', label: t('common.products_section', lang) },
+    { value: 'service', label: t('common.services_section', lang) },
+  ]
 
   return (
     // Premium pill: search icon (breathing room on the left), the input, then the
@@ -94,30 +84,13 @@ export function SharedSearchBar({
         placeholder={t('dashboard.topbar.searchPlaceholder', lang)}
         className="min-w-0 flex-1 border-0 bg-transparent px-3 text-[14px] text-[#0A0A0A] outline-none placeholder:text-[#8B8B8B]"
       />
-      <fieldset
-        className="mr-2 flex h-10 shrink-0 items-center gap-1 rounded-full bg-[#F4F4F4] p-1"
-        onKeyDown={onToggleKeyDown}
-      >
-        <legend className="sr-only">{t('home.search_btn', lang)}</legend>
-        <button
-          ref={productRef}
-          type="button"
-          aria-pressed={type === 'product'}
-          onClick={() => selectType('product')}
-          className={`${segment} ${type === 'product' ? 'bg-brand-accent text-white shadow-sm' : 'text-[#0A0A0A]'}`}
-        >
-          {t('common.products_section', lang)}
-        </button>
-        <button
-          ref={serviceRef}
-          type="button"
-          aria-pressed={type === 'service'}
-          onClick={() => selectType('service')}
-          className={`${segment} ${type === 'service' ? 'bg-brand-accent text-white shadow-sm' : 'text-[#0A0A0A]'}`}
-        >
-          {t('common.services_section', lang)}
-        </button>
-      </fieldset>
+      <SegmentedControl
+        options={typeOptions}
+        value={type}
+        onChange={selectType}
+        ariaLabel={t('home.search_btn', lang)}
+        className="mr-2 shrink-0"
+      />
     </form>
   )
 }

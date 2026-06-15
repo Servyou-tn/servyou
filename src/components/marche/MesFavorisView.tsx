@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useLang } from '@/components/LangProvider'
 import { t } from '@/lib/i18n'
-import { FOCUS_RING } from '@/components/layout/styles'
+import { SegmentedControl, type SegmentedControlOption } from '@/components/ui/segmented-control'
 import { ListingResults } from '@/components/listings/ListingResults'
 import { EmptyState } from './EmptyState'
 import { HeartIcon } from './icons'
@@ -25,30 +25,20 @@ export function MesFavorisView({
   const lang = useLang()
   const [type, setType] = useState<FavType>('product')
 
-  const segment = (active: boolean) =>
-    `rounded-full px-5 py-1.5 text-[13px] font-medium transition-all duration-200 ${FOCUS_RING} ${
-      active ? 'bg-brand-accent text-white shadow-sm' : 'text-[#0A0A0A]'
-    }`
+  const typeOptions: SegmentedControlOption<FavType>[] = [
+    { value: 'product', label: t('common.products_section', lang) },
+    { value: 'service', label: t('common.services_section', lang) },
+  ]
 
   return (
     <div>
-      <div className="mb-6 inline-flex h-10 items-center gap-1 rounded-full bg-[#F4F4F4] p-1">
-        <button
-          type="button"
-          aria-pressed={type === 'product'}
-          onClick={() => setType('product')}
-          className={segment(type === 'product')}
-        >
-          {t('common.products_section', lang)}
-        </button>
-        <button
-          type="button"
-          aria-pressed={type === 'service'}
-          onClick={() => setType('service')}
-          className={segment(type === 'service')}
-        >
-          {t('common.services_section', lang)}
-        </button>
+      <div className="mb-6">
+        <SegmentedControl
+          options={typeOptions}
+          value={type}
+          onChange={setType}
+          ariaLabel={t('favorites.title', lang)}
+        />
       </div>
 
       {type === 'product' ? (
