@@ -1,6 +1,7 @@
 import type { Metadata } from "next"
 import { Inter, Geist_Mono } from "next/font/google"
 import "./globals.css"
+import { Toaster } from "sonner"
 import { getLang } from "@/lib/i18n/server"
 import { LangProvider } from "@/components/LangProvider"
 import { Header } from "@/components/layout/Header"
@@ -41,6 +42,8 @@ export default async function RootLayout({
               the preserved account-avatar branch for the future per-role navbars. */}
           <Header sellerType={null} fullName={null} />
           {children}
+          {/* App-wide toast portal — single source for success/error feedback. */}
+          <Toaster position="top-center" richColors />
         </LangProvider>
       </body>
     </html>
