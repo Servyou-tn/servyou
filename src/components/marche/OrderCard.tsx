@@ -1,12 +1,14 @@
 'use client'
 
 import Image from 'next/image'
+import Link from 'next/link'
 import { useLang } from '@/components/LangProvider'
 import { t } from '@/lib/i18n'
 import { OrderStatusBadge } from './OrderStatusBadge'
 import { OrderLifecycleStepper } from '@/components/OrderLifecycleStepper'
 import { statusLabelKey, type OrderStatus } from '@/lib/types/order-status'
 import { PackageIcon } from '@/components/dashboard/consumer/icons'
+import { FOCUS_RING } from '@/components/layout/styles'
 import type { MyOrder } from '@/lib/marche/my-data'
 
 function amount(n: number): string {
@@ -15,8 +17,8 @@ function amount(n: number): string {
 
 // Full-width order row (buyer view). The orders table stores no price snapshot, so the
 // amount is best-effort: products show price × quantity (~X TND), services show their
-// "from" starting price, and a now-unreadable item shows "Prix indisponible". The card
-// does not link anywhere — order detail pages are a later pass (no dead links).
+// "from" starting price, and a now-unreadable item shows "Prix indisponible". The whole
+// row links to the order-detail page (/mes-commandes/[id]).
 export function OrderCard({ order }: { order: MyOrder }) {
   const lang = useLang()
 
@@ -41,7 +43,10 @@ export function OrderCard({ order }: { order: MyOrder }) {
   }
 
   return (
-    <div className="card-premium p-6">
+    <Link
+      href={`/mes-commandes/${order.id}`}
+      className={`card-premium block cursor-pointer p-6 transition hover:bg-slate-50 ${FOCUS_RING}`}
+    >
       <div className="flex flex-col gap-4 sm:flex-row">
         {/* Left — product thumbnail or service "S" avatar (consistent with /marche). */}
         <div className="shrink-0">
@@ -94,6 +99,6 @@ export function OrderCard({ order }: { order: MyOrder }) {
           received_at={order.received_at}
         />
       </div>
-    </div>
+    </Link>
   )
 }
