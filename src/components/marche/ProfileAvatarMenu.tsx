@@ -86,7 +86,7 @@ export function ProfileAvatarMenu({
           </div>
 
           <DropdownMenuItem asChild className={itemBase}>
-            <Link href="/profil">
+            <Link href="/mon-compte">
               <User className="mr-2 h-4 w-4 text-text-muted" aria-hidden="true" />
               {t('nav.profile', lang)}
             </Link>
