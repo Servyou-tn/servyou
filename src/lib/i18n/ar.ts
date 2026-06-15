@@ -655,6 +655,18 @@ export const ar: Record<string, string> = {
   'product.sold_by':        "يُباع من قبل",
   'product.buy_cta':        "طلب الشراء",
   'product.stock_in_stock': "{n} في المخزون",
+
+  // Redesigned /produits/[id] detail page
+  'product.detail.cta':             "اطلب هذا المنتج",
+  'product.detail.description':     "الوصف",
+  'product.detail.see_more':        "عرض المزيد",
+  'product.detail.see_less':        "عرض أقل",
+  'product.detail.share':           "مشاركة",
+  'product.detail.link_copied':     "تم نسخ الرابط !",
+  'product.detail.no_images':       "لا توجد صورة",
+  'product.detail.stock_low':       "بقي {n} فقط في المخزون",
+  'product.detail.related_shop':    "مزيد من منتجات هذا المتجر",
+  'product.detail.related_similar': "منتجات مشابهة",
   // Purchase form
   'product.order_title':       "طلب شراء",
   'product.order_prefix':      "المنتج:",

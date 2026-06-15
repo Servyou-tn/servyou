@@ -624,6 +624,18 @@ export const fr: Record<string, string> = {
   'product.sold_by':        "Vendu par",
   'product.buy_cta':        "Demander à acheter",
   'product.stock_in_stock': "{n} en stock",
+
+  // Redesigned /produits/[id] detail page
+  'product.detail.cta':             "Demander ce produit",
+  'product.detail.description':     "Description",
+  'product.detail.see_more':        "Voir plus",
+  'product.detail.see_less':        "Voir moins",
+  'product.detail.share':           "Partager",
+  'product.detail.link_copied':     "Lien copié !",
+  'product.detail.no_images':       "Aucune image",
+  'product.detail.stock_low':       "Plus que {n} en stock",
+  'product.detail.related_shop':    "Plus de produits de cette boutique",
+  'product.detail.related_similar': "Produits similaires",
   // Purchase form
   'product.order_title':       "Demande d'achat",
   'product.order_prefix':      "Produit :",
