@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, type ReactNode } from 'react'
 import Image from 'next/image'
 import { motion, useReducedMotion } from 'motion/react'
 import { ImageIcon } from 'lucide-react'
@@ -8,11 +8,23 @@ import { useLang } from '@/components/LangProvider'
 import { t } from '@/lib/i18n'
 import { FOCUS_RING } from '@/components/layout/styles'
 
-// Image gallery for the product detail page. Primary image + thumbnail row; clicking a
-// thumbnail swaps the primary with a short crossfade. A counter pill (n/total) sits over
-// the primary when there are multiple images. Thumbnails scroll horizontally on narrow
-// screens (tap to switch — the touch equivalent of swiping). No-image → placeholder.
-export function ProductGallery({ images, title }: { images: { url: string }[]; title: string }) {
+// Generic image gallery (product photos / service work samples). Primary image +
+// thumbnail row; clicking a thumbnail swaps the primary with a short crossfade. A counter
+// pill (n/total) sits over the primary when there are multiple images. Thumbnails scroll
+// horizontally on narrow screens (tap to switch — the touch equivalent of swiping). The
+// empty state is overridable (emptyIcon/emptyLabel) so callers can phrase it per domain
+// ("Aucune image" for products, "Aucun aperçu disponible" for services).
+export function ProductGallery({
+  images,
+  title,
+  emptyIcon,
+  emptyLabel,
+}: {
+  images: { url: string }[]
+  title: string
+  emptyIcon?: ReactNode
+  emptyLabel?: string
+}) {
   const lang = useLang()
   const reduce = useReducedMotion()
   const [active, setActive] = useState(0)
@@ -21,8 +33,8 @@ export function ProductGallery({ images, title }: { images: { url: string }[]; t
     return (
       <div className="outline-brand rounded-2xl bg-white p-4">
         <div className="flex aspect-square w-full flex-col items-center justify-center gap-3 rounded-xl bg-slate-50 text-text-muted">
-          <ImageIcon className="h-12 w-12" aria-hidden="true" />
-          <p className="text-sm">{t('product.detail.no_images', lang)}</p>
+          {emptyIcon ?? <ImageIcon className="h-12 w-12" aria-hidden="true" />}
+          <p className="text-sm">{emptyLabel ?? t('product.detail.no_images', lang)}</p>
         </div>
       </div>
     )

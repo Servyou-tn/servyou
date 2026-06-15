@@ -690,6 +690,11 @@ export const ar: Record<string, string> = {
   'service.offered_by':      "مقدَّمة من",
   'service.from_price':      "ابتداءً من",
   'service.buy_cta':         "طلب هذه الخدمة",
+  // Redesigned /services/[id] detail page
+  'service.detail.deliveryIn':         "يتم التسليم في {time}",
+  'service.detail.noPreview':          "لا توجد معاينة متاحة",
+  'service.detail.moreFromFreelancer': "مزيد من خدمات هذا المستقل",
+  'service.detail.similarServices':    "خدمات مشابهة",
   // Service request form
   'service.order_title':     "طلب خدمة",
   'service.order_prefix':    "الخدمة:",

@@ -659,6 +659,12 @@ export const fr: Record<string, string> = {
   'service.offered_by':      "Proposé par",
   'service.from_price':      "À partir de",
   'service.buy_cta':         "Demander ce service",
+  // Redesigned /services/[id] detail page (reuses service.offered_by / from_price / buy_cta
+  // and the generic product.detail.* description/share keys)
+  'service.detail.deliveryIn':         "Délivré en {time}",
+  'service.detail.noPreview':          "Aucun aperçu disponible",
+  'service.detail.moreFromFreelancer': "Plus de services de ce freelance",
+  'service.detail.similarServices':    "Services similaires",
   // Service request form
   'service.order_title':     "Demande de service",
   'service.order_prefix':    "Service :",
