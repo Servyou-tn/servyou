@@ -1,24 +1,25 @@
 import type { Metadata } from 'next'
-import { getLang } from '@/lib/i18n/server'
-import { t } from '@/lib/i18n'
-import { CARD_SHADOW } from '@/components/layout/styles'
+import { redirect } from 'next/navigation'
+import { MarcheLayout } from '@/components/marche/MarcheLayout'
+import { ParametresForm } from '@/components/parametres/ParametresForm'
+import { getShellUser } from '@/lib/marche/shell-user'
+import { getCurrentProfile } from '@/lib/marche/mon-compte'
 
 export const metadata: Metadata = { title: 'Paramètres — Servyou' }
 
-// Stub page so the /marche top bar's Settings gear (and the profile dropdown's
-// "Paramètres" item) resolve to a real route instead of a 404. The full settings
-// surface returns in a follow-up commit; until then this mirrors the sidebar's
-// "Bientôt disponible" treatment of the same item.
+// Consumer settings (auth-gated → /connexion?next=/parametres). Four sections built on
+// the /mon-compte template: Notifications + Visibilité + Comptes connectés are
+// "Bientôt disponible" placeholders (post-MVP); Confidentialité→export and Langue work.
 export default async function ParametresPage() {
-  const lang = await getLang()
+  const shell = await getShellUser()
+  if (!shell) redirect('/connexion?next=/parametres')
+
+  const profile = await getCurrentProfile()
+  if (!profile) redirect('/connexion?next=/parametres')
+
   return (
-    <main className="mx-auto max-w-2xl px-6 py-16">
-      <div className={`rounded-2xl bg-white p-12 text-center ${CARD_SHADOW}`}>
-        <h1 className="text-lg font-semibold text-text-primary">
-          {t('marche.sidebar.parametres', lang)}
-        </h1>
-        <p className="mt-2 text-sm text-text-muted">{t('marche.sidebar.coming_soon', lang)}</p>
-      </div>
-    </main>
+    <MarcheLayout user={shell.topBarUser}>
+      <ParametresForm profile={profile} />
+    </MarcheLayout>
   )
 }
