@@ -40,7 +40,7 @@ export function ServiceListingCard({ service }: { service: ServiceListing }) {
   const firstLetter = (service.freelancer.full_name.trim()[0] ?? '?').toUpperCase()
 
   return (
-    <div className="card-premium relative">
+    <div className="card-premium outline-brand relative">
       <Link
         href={`/services/${service.id}`}
         aria-label={service.title}

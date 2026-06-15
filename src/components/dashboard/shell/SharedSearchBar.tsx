@@ -74,7 +74,7 @@ export function SharedSearchBar({
     // lifting on hover/focus-within. Search + toggle only — nothing else.
     <form
       onSubmit={onSubmit}
-      className={`flex h-14 w-full items-center rounded-full transition-all duration-300 ease-out ${
+      className={`outline-brand flex h-14 w-full items-center rounded-full transition-all duration-300 ease-out ${
         scrolled ? 'bg-white/80 backdrop-blur-md' : 'bg-white'
       } ${CARD_SHADOW} ${HOVER_SHADOW} focus-within:shadow-[0_8px_24px_rgba(0,0,0,0.08)]`}
     >

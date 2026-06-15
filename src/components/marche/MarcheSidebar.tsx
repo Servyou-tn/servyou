@@ -28,12 +28,14 @@ export function MarcheSidebar() {
   const lang = useLang()
   const pathname = usePathname()
 
-  const row = 'flex items-center gap-3 rounded-xl px-4 py-2.5 text-[14px] font-medium'
+  // Pill nav items matching the top bar's "Mes paramètres" button: rounded-full, h-11,
+  // px-4, white bg + subtle border + soft shadow (active = brand-accent tinted, same shape).
+  const navBase = `flex h-11 items-center gap-2 rounded-full px-4 text-sm font-medium transition-all duration-200 ease-out ${FOCUS_RING}`
 
   return (
     // sticky full-height rail; the p-4 is the floating gap around the white card.
     <aside className="sticky top-0 hidden h-screen shrink-0 p-4 lg:block">
-      <div className={`flex h-full w-56 flex-col overflow-hidden rounded-3xl bg-white ${CARD_SHADOW}`}>
+      <div className={`outline-brand flex h-full w-56 flex-col overflow-hidden rounded-3xl bg-white ${CARD_SHADOW}`}>
         {/* Header — brand wordmark PNG (never a text wordmark). object-cover crops the
             asset's transparent top/bottom bands to a readable ink height. */}
         <div className="flex items-center border-b border-border-subtle px-3 pb-4 pt-4">
@@ -46,8 +48,8 @@ export function MarcheSidebar() {
           />
         </div>
 
-        {/* Nav — all four destinations, active by longest-prefix match. */}
-        <nav aria-label={t('nav.aria_primary', lang)} className="flex-1 space-y-1 px-3 pt-4">
+        {/* Nav — all four destinations as pills, active by longest-prefix match. */}
+        <nav aria-label={t('nav.aria_primary', lang)} className="flex flex-1 flex-col gap-2 px-3 pt-4">
           {NAV_ITEMS.map((item) => {
             const active = pathname === item.href || pathname.startsWith(item.href + '/')
             return (
@@ -55,13 +57,13 @@ export function MarcheSidebar() {
                 key={item.href}
                 href={item.href}
                 aria-current={active ? 'page' : undefined}
-                className={`${row} transition-colors ${FOCUS_RING} ${
+                className={`${navBase} ${
                   active
-                    ? 'bg-brand-accent/10 text-brand-accent'
-                    : 'text-text-muted hover:bg-surface-pill hover:text-text-primary'
+                    ? 'border border-brand-accent/30 bg-brand-accent/10 text-brand-accent shadow-sm'
+                    : 'border border-border-subtle bg-white text-text-primary shadow-sm hover:bg-slate-50 hover:shadow-md'
                 }`}
               >
-                <item.Icon className="h-5 w-5 shrink-0" aria-hidden="true" />
+                <item.Icon className="h-4 w-4 shrink-0" aria-hidden="true" />
                 <span className="whitespace-nowrap">{t(item.key, lang)}</span>
               </Link>
             )
