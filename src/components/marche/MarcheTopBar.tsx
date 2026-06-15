@@ -12,10 +12,10 @@ import { ProfileAvatarMenu, type TopBarUser } from './ProfileAvatarMenu'
 
 type SearchType = 'product' | 'service'
 
-// True once the marketplace content has scrolled more than 8px under the bar — the
-// trigger for the translucent backdrop-blur surface. Plain window-scroll listener:
-// /marche scrolls the window (the main column is normal flow), so scrollY is the
-// signal. setState bails out when the boolean is unchanged, so this stays cheap.
+// True once content has scrolled more than 8px under the bar — the trigger for the
+// bar's translucent surface. Plain window-scroll listener: the marche shell scrolls the
+// window (the main column is normal flow), so scrollY is the signal. setState bails out
+// when the boolean is unchanged, so this stays cheap.
 function useScrolled(threshold = 8): boolean {
   const [scrolled, setScrolled] = useState(false)
   useEffect(() => {
@@ -27,11 +27,13 @@ function useScrolled(threshold = 8): boolean {
   return scrolled
 }
 
-// The /marche sticky top bar: the existing search pill (left, visually unchanged)
-// and a circular icon cluster (right) — Settings, a visual-only notification bell,
-// and the profile avatar menu. Both float as one unit, pinned at top:16px, and gain
-// a bg-white/80 + backdrop-blur surface once cards scroll underneath so they stay
-// legible. Mobile (<768px) hides the cluster; that pass comes after this commit.
+// The marche shell's sticky top bar — flush to the top of the viewport (top:0), spanning
+// the content column (right of the sidebar). At rest it's transparent and the pill +
+// icon cluster float over the page; once content scrolls underneath, the WHOLE bar gains
+// a bg-white/80 + backdrop-blur surface and a bottom border so what passes under stays
+// legible. Left: the global marketplace search pill (solid white, the bar supplies the
+// blur now). Right: Settings (pill with label ≥xl, icon-only below), a visual-only bell,
+// and the profile avatar menu. The cluster is hidden below md (mobile gets its own pass).
 export function MarcheTopBar({
   user,
   initialType,
@@ -44,59 +46,64 @@ export function MarcheTopBar({
   const lang = useLang()
   const scrolled = useScrolled()
 
-  // Shared 44×44 circular button surface (WCAG-safe touch target). The hover scale
-  // and active press are motion-safe (the prefers-reduced-motion query) so they
-  // self-disable for users who ask for reduced motion. The resting surface tracks
-  // the scroll state so the cluster blurs in step with the pill.
-  const iconButtonClass = cn(
-    'inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full',
-    'border border-border-subtle shadow-sm transition-all duration-150 ease-out',
-    'hover:bg-slate-50 hover:shadow-md',
+  // Shared circular-button surface (44px tall, WCAG touch target). Hover scale + active
+  // press are motion-safe (the prefers-reduced-motion query) so they self-disable.
+  const iconBtnBase = cn(
+    'inline-flex h-11 items-center justify-center rounded-full border border-border-subtle bg-white shadow-sm',
+    'transition-all duration-150 ease-out hover:bg-slate-50 hover:shadow-md',
     'motion-safe:hover:scale-[1.04] motion-safe:active:scale-[0.96]',
     FOCUS_RING,
-    scrolled ? 'bg-white/80 backdrop-blur-md' : 'bg-white',
   )
+  const circleBtn = cn(iconBtnBase, 'w-11')
 
   return (
-    <div className="sticky top-4 z-40 flex items-center gap-4">
-      {/* Left element — the existing pill, kept visually identical; only the scroll
-          surface is threaded through so it blurs with the cluster. */}
-      <div className="min-w-0 max-w-2xl flex-1">
-        <SharedSearchBar
-          basePath="/marche"
-          initialType={initialType}
-          initialQuery={initialQuery}
-          scrolled={scrolled}
-        />
-      </div>
+    <div
+      className={cn(
+        'sticky top-0 z-40 border-b transition-colors duration-200 ease-out',
+        scrolled
+          ? 'border-border-subtle bg-white/80 backdrop-blur-md'
+          : 'border-transparent bg-transparent',
+      )}
+    >
+      <div className="mx-auto flex max-w-7xl items-center gap-4 px-6 py-3 lg:px-8">
+        {/* Left — the global marketplace search pill (kept solid white; the bar provides
+            the scroll blur). */}
+        <div className="min-w-0 max-w-2xl flex-1">
+          <SharedSearchBar basePath="/marche" initialType={initialType} initialQuery={initialQuery} />
+        </div>
 
-      {/* Right element — the icon cluster. Hidden below md (mobile gets a dedicated
-          pass after this commit); shown on tablet and desktop. */}
-      <div className="hidden shrink-0 items-center gap-3 md:flex">
-        <Link
-          href="/parametres"
-          aria-label={t('marche.sidebar.parametres', lang)}
-          className={iconButtonClass}
-        >
-          <Settings className="h-5 w-5 text-text-primary" aria-hidden="true" />
-        </Link>
+        {/* Right — the icon cluster. Hidden below md (mobile pass is separate). */}
+        <div className="hidden shrink-0 items-center gap-3 md:flex">
+          {/* Settings — a pill (gear + label) ≥xl, collapsing to an icon-only circle below
+              xl to save width. */}
+          <Link
+            href="/parametres"
+            aria-label={t('marche.sidebar.parametres', lang)}
+            className={cn(iconBtnBase, 'w-11 gap-2 xl:w-auto xl:px-4')}
+          >
+            <Settings className="h-4 w-4 text-text-primary" aria-hidden="true" />
+            <span className="hidden text-sm font-medium text-text-primary xl:inline">
+              {t('marche.sidebar.parametres', lang)}
+            </span>
+          </Link>
 
-        <button
-          type="button"
-          // TODO: Real notifications system — see roadmap.md, post-MVP. Visual-only
-          // for now: the bell shows an unread dot but opens no panel.
-          onClick={() => console.log('Notifications coming soon')}
-          aria-label={`${t('dashboard.topbar.notifications', lang)} — ${t('marche.sidebar.coming_soon', lang)}`}
-          className={cn(iconButtonClass, 'relative')}
-        >
-          <Bell className="h-5 w-5 text-text-primary" aria-hidden="true" />
-          <span
-            aria-hidden="true"
-            className="absolute right-[10px] top-[10px] h-2 w-2 rounded-full bg-red-500 ring-2 ring-white"
-          />
-        </button>
+          <button
+            type="button"
+            // TODO: Real notifications system — see roadmap.md, post-MVP. Visual-only
+            // for now: the bell shows an unread dot but opens no panel.
+            onClick={() => console.log('Notifications coming soon')}
+            aria-label={`${t('dashboard.topbar.notifications', lang)} — ${t('marche.sidebar.coming_soon', lang)}`}
+            className={cn(circleBtn, 'relative')}
+          >
+            <Bell className="h-5 w-5 text-text-primary" aria-hidden="true" />
+            <span
+              aria-hidden="true"
+              className="absolute right-[10px] top-[10px] h-2 w-2 rounded-full bg-red-500 ring-2 ring-white"
+            />
+          </button>
 
-        <ProfileAvatarMenu user={user} triggerClassName={iconButtonClass} />
+          <ProfileAvatarMenu user={user} triggerClassName={circleBtn} />
+        </div>
       </div>
     </div>
   )

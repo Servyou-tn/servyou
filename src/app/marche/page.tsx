@@ -1,11 +1,9 @@
-import { MarcheSidebar } from '@/components/marche/MarcheSidebar'
-import { MarcheTopBar } from '@/components/marche/MarcheTopBar'
-import type { TopBarUser } from '@/components/marche/ProfileAvatarMenu'
+import { MarcheLayout } from '@/components/marche/MarcheLayout'
 import { ListingResults } from '@/components/listings/ListingResults'
 import { getActiveProducts, getActiveServices } from '@/lib/marche/data'
+import { getShellUser } from '@/lib/marche/shell-user'
 import { CARD_SHADOW } from '@/components/layout/styles'
 import { PackageIcon, BriefcaseIcon } from '@/components/marche/icons'
-import { createClient } from '@/lib/supabase/server'
 import { getLang } from '@/lib/i18n/server'
 import { t } from '@/lib/i18n'
 
@@ -27,25 +25,10 @@ export default async function MarchePage({
 
   const lang = await getLang()
 
-  // /marche is public, so the user may be logged out — the top bar renders the
-  // cluster either way (logged-out shows a "Se connecter" avatar). Read the own
-  // profile row for the display name; profiles is owner-only read, so this resolves
-  // only for the signed-in user. getUser's "no session" case is expected here and
-  // intentionally not surfaced as an error.
-  const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-  let topBarUser: TopBarUser | null = null
-  if (user) {
-    const { data: profile, error: profileError } = await supabase
-      .from('profiles')
-      .select('full_name')
-      .eq('id', user.id)
-      .maybeSingle()
-    if (profileError) console.error('[MarchePage] profile fetch failed', profileError)
-    topBarUser = { id: user.id, email: user.email ?? '', full_name: profile?.full_name ?? null }
-  }
+  // /marche is public — the top bar renders either way (logged-out shows the
+  // "Se connecter" avatar). getShellUser returns null when there's no session.
+  const shell = await getShellUser()
+  const topBarUser = shell?.topBarUser ?? null
 
   const products = type === 'product' ? await getActiveProducts(q) : []
   const services = type === 'service' ? await getActiveServices(q) : []
@@ -53,46 +36,33 @@ export default async function MarchePage({
   const isEmpty = type === 'product' ? products.length === 0 : services.length === 0
 
   return (
-    <div className="flex">
-      {/* Product browsing wants full width for the 4-col grid → collapsed; services
-          (and the default view) keep the nav context visible → expanded. */}
-      <MarcheSidebar forceCollapsed={type === 'product'} />
-      <main className="flex-1 p-6 lg:p-8">
-        <div className="mx-auto max-w-7xl">
-          {/* Sticky top bar — search pill + icon cluster (Settings, Bell, Profile);
-              reflects the URL state. */}
-          <MarcheTopBar user={topBarUser} initialType={type} initialQuery={q} />
-
-          <div className="mt-8">
-            {isEmpty ? (
-              <div className={`rounded-2xl bg-white p-12 text-center ${CARD_SHADOW}`}>
-                <div className="mx-auto max-w-md">
-                  {type === 'product' ? (
-                    <PackageIcon className="mx-auto h-10 w-10 text-[#B8B8B8]" aria-hidden="true" />
-                  ) : (
-                    <BriefcaseIcon className="mx-auto h-10 w-10 text-[#B8B8B8]" aria-hidden="true" />
-                  )}
-                  <p className="mt-4 text-base font-semibold text-[#0A0A0A]">
-                    {t(type === 'product' ? 'marche.empty.products' : 'marche.empty.services', lang)}
-                  </p>
-                  <p className="mt-2 text-[13px] text-[#8B8B8B]">
-                    {t(
-                      type === 'product'
-                        ? 'marche.empty.products_subtitle'
-                        : 'marche.empty.services_subtitle',
-                      lang,
-                    )}
-                  </p>
-                </div>
-              </div>
-            ) : type === 'product' ? (
-              <ListingResults type="product" items={products} />
+    <MarcheLayout user={topBarUser} searchType={type} searchQuery={q}>
+      {isEmpty ? (
+        <div className={`rounded-2xl bg-white p-12 text-center ${CARD_SHADOW}`}>
+          <div className="mx-auto max-w-md">
+            {type === 'product' ? (
+              <PackageIcon className="mx-auto h-10 w-10 text-[#B8B8B8]" aria-hidden="true" />
             ) : (
-              <ListingResults type="service" items={services} />
+              <BriefcaseIcon className="mx-auto h-10 w-10 text-[#B8B8B8]" aria-hidden="true" />
             )}
+            <p className="mt-4 text-base font-semibold text-[#0A0A0A]">
+              {t(type === 'product' ? 'marche.empty.products' : 'marche.empty.services', lang)}
+            </p>
+            <p className="mt-2 text-[13px] text-[#8B8B8B]">
+              {t(
+                type === 'product'
+                  ? 'marche.empty.products_subtitle'
+                  : 'marche.empty.services_subtitle',
+                lang,
+              )}
+            </p>
           </div>
         </div>
-      </main>
-    </div>
+      ) : type === 'product' ? (
+        <ListingResults type="product" items={products} />
+      ) : (
+        <ListingResults type="service" items={services} />
+      )}
+    </MarcheLayout>
   )
 }

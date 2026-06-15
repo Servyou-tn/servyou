@@ -1,0 +1,373 @@
+import { createClient } from '@/lib/supabase/server'
+import type { ProductListing } from '@/components/listings/ProductListingCard'
+import type { ServiceListing } from '@/components/listings/ServiceListingCard'
+
+// Server reads for the account pages (/mes-commandes, /mes-favoris, /mes-missions).
+// Each is owner-scoped (buyer_id / user_id / consumer_id = me) and re-guarded by RLS;
+// the explicit .eq() keeps the intent clear and, for orders, narrows the buyer+seller
+// RLS read to the buyer slice. Errors are captured and surfaced (never a silent []).
+
+// PostgREST returns a to-one embed as a single object, but some paths surface it as a
+// one-element array — normalize to a single record (or null). Mirrors lib/marche/data.ts.
+function one<T>(embed: T | T[] | null | undefined): T | null {
+  if (Array.isArray(embed)) return embed[0] ?? null
+  return embed ?? null
+}
+
+function primaryImage(images: { image_url: string; display_order: number }[] | null): string | null {
+  if (!images || images.length === 0) return null
+  return [...images].sort((a, b) => a.display_order - b.display_order)[0]?.image_url ?? null
+}
+
+// ─── /mes-commandes ─────────────────────────────────────────────────────────────
+
+// The orders table stores no price snapshot, so the displayed amount is best-effort:
+// products show price_tnd × quantity (price_kind 'total'); services have only a "from"
+// starting price (price_kind 'from'); a now-unreadable item (e.g. hidden by its seller)
+// yields title=null and price_kind 'unavailable'.
+export type MyOrder = {
+  id: string
+  order_type: 'product' | 'service'
+  status: string
+  quantity: number
+  cancelled_by: string | null
+  cancellation_reason: string | null
+  received_at: string | null
+  created_at: string
+  title: string | null
+  image_url: string | null
+  category: string | null
+  seller_name: string | null
+  seller_city: string | null
+  unit_price: number | null
+  total: number | null
+  price_kind: 'total' | 'from' | 'unavailable'
+}
+
+type OrderRow = {
+  id: string
+  order_type: 'product' | 'service'
+  status: string
+  quantity: number
+  cancelled_by: string | null
+  cancellation_reason: string | null
+  received_at: string | null
+  created_at: string
+  products:
+    | {
+        title: string
+        price_tnd: number | string
+        shops: { name: string | null; city: string | null } | { name: string | null; city: string | null }[] | null
+        categories: { name_fr: string } | { name_fr: string }[] | null
+        product_images: { image_url: string; display_order: number }[] | null
+      }
+    | null
+  service_listings:
+    | {
+        title: string
+        starting_price_tnd: number | string | null
+        freelancer_profiles: { profile_id: string; city: string | null } | { profile_id: string; city: string | null }[] | null
+        categories: { name_fr: string } | { name_fr: string }[] | null
+      }
+    | null
+}
+
+export async function getMyOrders(userId: string): Promise<MyOrder[]> {
+  const supabase = await createClient()
+  const { data, error } = await supabase
+    .from('orders')
+    .select(
+      `id, order_type, status, quantity, cancelled_by, cancellation_reason, received_at, created_at,
+       products ( title, price_tnd, shops ( name, city ), categories ( name_fr ), product_images ( image_url, display_order ) ),
+       service_listings ( title, starting_price_tnd, freelancer_profiles ( profile_id, city ), categories ( name_fr ) )`,
+    )
+    .eq('buyer_id', userId)
+    .order('created_at', { ascending: false })
+
+  if (error) {
+    console.error('[my-data] orders fetch error:', error)
+    return []
+  }
+
+  const rows = (data ?? []) as unknown as OrderRow[]
+
+  // Resolve freelancer display names for service orders (profiles is owner-only;
+  // names come from the public_profiles view — same pattern as lib/marche/data.ts).
+  const profileIds = [
+    ...new Set(
+      rows
+        .filter((r) => r.order_type === 'service')
+        .map((r) => one(r.service_listings)?.freelancer_profiles)
+        .map((fp) => one(fp)?.profile_id)
+        .filter((id): id is string => Boolean(id)),
+    ),
+  ]
+  const names = new Map<string, string>()
+  if (profileIds.length > 0) {
+    const { data: profiles, error: pErr } = await supabase
+      .from('public_profiles')
+      .select('id, full_name')
+      .in('id', profileIds)
+    if (pErr) console.error('[my-data] orders public_profiles error:', pErr)
+    for (const p of (profiles ?? []) as { id: string; full_name: string | null }[]) {
+      names.set(p.id, p.full_name ?? '')
+    }
+  }
+
+  return rows.map((row): MyOrder => {
+    if (row.order_type === 'product') {
+      const p = one(row.products)
+      if (!p) {
+        return baseUnavailable(row)
+      }
+      const shop = one(p.shops)
+      const unit = Number(p.price_tnd)
+      return {
+        ...baseFields(row),
+        title: p.title,
+        image_url: primaryImage(p.product_images),
+        category: one(p.categories)?.name_fr ?? null,
+        seller_name: shop?.name ?? null,
+        seller_city: shop?.city ?? null,
+        unit_price: unit,
+        total: Number.isFinite(unit) ? unit * row.quantity : null,
+        price_kind: 'total',
+      }
+    }
+    const s = one(row.service_listings)
+    if (!s) {
+      return baseUnavailable(row)
+    }
+    const fp = one(s.freelancer_profiles)
+    const starting = s.starting_price_tnd != null ? Number(s.starting_price_tnd) : null
+    return {
+      ...baseFields(row),
+      title: s.title,
+      image_url: null,
+      category: one(s.categories)?.name_fr ?? null,
+      seller_name: (fp?.profile_id ? names.get(fp.profile_id) : null) || null,
+      seller_city: fp?.city ?? null,
+      unit_price: starting,
+      total: null,
+      price_kind: 'from',
+    }
+  })
+}
+
+function baseFields(row: OrderRow) {
+  return {
+    id: row.id,
+    order_type: row.order_type,
+    status: row.status,
+    quantity: row.quantity,
+    cancelled_by: row.cancelled_by,
+    cancellation_reason: row.cancellation_reason,
+    received_at: row.received_at,
+    created_at: row.created_at,
+  }
+}
+
+function baseUnavailable(row: OrderRow): MyOrder {
+  return {
+    ...baseFields(row),
+    title: null,
+    image_url: null,
+    category: null,
+    seller_name: null,
+    seller_city: null,
+    unit_price: null,
+    total: null,
+    price_kind: 'unavailable',
+  }
+}
+
+// ─── /mes-favoris ───────────────────────────────────────────────────────────────
+
+type FavoriteRow = {
+  item_type: 'product' | 'service'
+  created_at: string
+  products:
+    | {
+        id: string
+        title: string
+        description: string | null
+        price_tnd: number | string
+        shops: { name: string | null; city: string | null } | { name: string | null; city: string | null }[] | null
+        product_images: { image_url: string; display_order: number }[] | null
+      }
+    | null
+  service_listings:
+    | {
+        id: string
+        title: string
+        description: string | null
+        starting_price_tnd: number | string | null
+        delivery_time: string | null
+        freelancer_profiles: { profile_id: string; city: string | null } | { profile_id: string; city: string | null }[] | null
+        categories: { name_fr: string } | { name_fr: string }[] | null
+      }
+    | null
+}
+
+// Favorited products + services, each shaped into the exact card type /marche uses so
+// ListingResults can render them unchanged. An item the viewer can no longer read
+// (e.g. a product its seller hid) embeds as null and is dropped from the list.
+export async function getMyFavorites(
+  userId: string,
+): Promise<{ products: ProductListing[]; services: ServiceListing[] }> {
+  const supabase = await createClient()
+  const { data, error } = await supabase
+    .from('favorites')
+    .select(
+      `item_type, created_at,
+       products ( id, title, description, price_tnd, shops ( name, city ), product_images ( image_url, display_order ) ),
+       service_listings ( id, title, description, starting_price_tnd, delivery_time, freelancer_profiles ( profile_id, city ), categories ( name_fr ) )`,
+    )
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false })
+
+  if (error) {
+    console.error('[my-data] favorites fetch error:', error)
+    return { products: [], services: [] }
+  }
+
+  const rows = (data ?? []) as unknown as FavoriteRow[]
+
+  const products: ProductListing[] = []
+  const serviceRows: { id: string; title: string; description: string | null; price_starting: number | null; delivery_time: string | null; category: { name_fr: string } | null; profileId: string | null; city: string | null }[] = []
+
+  for (const row of rows) {
+    if (row.item_type === 'product') {
+      const p = one(row.products)
+      if (!p) continue
+      const shop = one(p.shops)
+      products.push({
+        id: p.id,
+        title: p.title,
+        description: p.description ?? null,
+        price_tnd: Number(p.price_tnd),
+        image_url: primaryImage(p.product_images),
+        shop: { name: shop?.name ?? '', city: shop?.city ?? null },
+      })
+    } else {
+      const s = one(row.service_listings)
+      if (!s) continue
+      const fp = one(s.freelancer_profiles)
+      serviceRows.push({
+        id: s.id,
+        title: s.title,
+        description: s.description ?? null,
+        price_starting: s.starting_price_tnd != null ? Number(s.starting_price_tnd) : null,
+        delivery_time: s.delivery_time ?? null,
+        category: one(s.categories) ? { name_fr: one(s.categories)!.name_fr } : null,
+        profileId: fp?.profile_id ?? null,
+        city: fp?.city ?? null,
+      })
+    }
+  }
+
+  // Resolve freelancer names from public_profiles (owner-only profiles → view).
+  const profileIds = [...new Set(serviceRows.map((s) => s.profileId).filter((id): id is string => Boolean(id)))]
+  const names = new Map<string, string>()
+  if (profileIds.length > 0) {
+    const { data: profiles, error: pErr } = await supabase
+      .from('public_profiles')
+      .select('id, full_name')
+      .in('id', profileIds)
+    if (pErr) console.error('[my-data] favorites public_profiles error:', pErr)
+    for (const p of (profiles ?? []) as { id: string; full_name: string | null }[]) {
+      names.set(p.id, p.full_name ?? '')
+    }
+  }
+
+  const services: ServiceListing[] = serviceRows.map((s) => ({
+    id: s.id,
+    title: s.title,
+    description: s.description,
+    price_starting: s.price_starting,
+    delivery_time: s.delivery_time,
+    category: s.category,
+    freelancer: {
+      full_name: (s.profileId ? names.get(s.profileId) : '') ?? '',
+      city: s.city,
+    },
+  }))
+
+  return { products, services }
+}
+
+// ─── /mes-missions ──────────────────────────────────────────────────────────────
+
+export type MyMission = {
+  id: string
+  title: string
+  description: string | null
+  budget_min: number | null
+  budget_max: number | null
+  city: string | null
+  is_remote: boolean
+  deadline: string | null
+  status: 'open' | 'filled' | 'expired' | 'deleted'
+  created_at: string
+  category: string | null
+  response_count: number
+}
+
+type MissionRow = {
+  id: string
+  title: string
+  description: string | null
+  budget_min: number | string | null
+  budget_max: number | string | null
+  city: string | null
+  is_remote: boolean | null
+  deadline: string | null
+  status: 'open' | 'filled' | 'expired' | 'deleted'
+  created_at: string
+  categories: { name_fr: string } | { name_fr: string }[] | null
+  job_responses: { count: number }[] | null
+}
+
+export async function getMyMissions(userId: string): Promise<MyMission[]> {
+  const supabase = await createClient()
+  const { data, error } = await supabase
+    .from('job_posts')
+    .select(
+      `id, title, description, budget_min, budget_max, city, is_remote, deadline, status, created_at,
+       categories ( name_fr ), job_responses ( count )`,
+    )
+    .eq('consumer_id', userId)
+    .neq('status', 'deleted')
+    .order('created_at', { ascending: false })
+
+  if (error) {
+    console.error('[my-data] missions fetch error:', error)
+    return []
+  }
+
+  return ((data ?? []) as unknown as MissionRow[]).map((row) => ({
+    id: row.id,
+    title: row.title,
+    description: row.description ?? null,
+    budget_min: row.budget_min != null ? Number(row.budget_min) : null,
+    budget_max: row.budget_max != null ? Number(row.budget_max) : null,
+    city: row.city ?? null,
+    is_remote: Boolean(row.is_remote),
+    deadline: row.deadline ?? null,
+    status: row.status,
+    created_at: row.created_at,
+    category: one(row.categories)?.name_fr ?? null,
+    response_count: row.job_responses?.[0]?.count ?? 0,
+  }))
+}
+
+// Categories for the create-mission select. Public-readable reference data.
+export async function getCategories(): Promise<{ id: string; name_fr: string }[]> {
+  const supabase = await createClient()
+  const { data, error } = await supabase.from('categories').select('id, name_fr').order('name_fr')
+  if (error) {
+    console.error('[my-data] categories fetch error:', error)
+    return []
+  }
+  return (data ?? []) as { id: string; name_fr: string }[]
+}
