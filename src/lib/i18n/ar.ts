@@ -907,6 +907,12 @@ export const ar: Record<string, string> = {
   'devenir.freelance.already.headline':  "أنت مستقل بالفعل على Servyou",
   'devenir.freelance.already.subheadline':"واصل إدارة ملفك كمستقل من مساحتك المخصّصة.",
   'devenir.freelance.already.manage':    "إدارة ملفي كمستقل",
+
+  // Avatar dropdown — role-upgrade discovery
+  'profileMenu.devenirVendeur':    "كن بائعًا",
+  'profileMenu.devenirFreelance':  "كن مستقلًّا",
+  'profileMenu.espaceVendeur':     "مساحتي كبائع",
+  'profileMenu.espaceFreelance':   "مساحتي كمستقل",
   // Service request form
   'service.order_title':     "طلب خدمة",
   'service.order_prefix':    "الخدمة:",

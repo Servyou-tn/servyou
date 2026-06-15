@@ -15,13 +15,18 @@ export async function getShellUser(): Promise<{ id: string; topBarUser: TopBarUs
 
   const { data: profile, error } = await supabase
     .from('profiles')
-    .select('full_name')
+    .select('full_name, seller_type')
     .eq('id', user.id)
     .maybeSingle()
   if (error) console.error('[shell-user] profile fetch failed', error)
 
   return {
     id: user.id,
-    topBarUser: { id: user.id, email: user.email ?? '', full_name: profile?.full_name ?? null },
+    topBarUser: {
+      id: user.id,
+      email: user.email ?? '',
+      full_name: profile?.full_name ?? null,
+      seller_type: (profile?.seller_type as 'shop_owner' | 'freelancer' | null) ?? null,
+    },
   }
 }

@@ -877,6 +877,12 @@ export const fr: Record<string, string> = {
   'devenir.freelance.already.headline':  "Vous êtes déjà freelance sur Servyou",
   'devenir.freelance.already.subheadline':"Continuez à gérer votre profil freelance dans votre espace dédié.",
   'devenir.freelance.already.manage':    "Gérer mon profil freelance",
+
+  // Avatar dropdown — role-upgrade discovery
+  'profileMenu.devenirVendeur':    "Devenir vendeur",
+  'profileMenu.devenirFreelance':  "Devenir freelance",
+  'profileMenu.espaceVendeur':     "Mon espace vendeur",
+  'profileMenu.espaceFreelance':   "Mon espace freelance",
   // Service request form
   'service.order_title':     "Demande de service",
   'service.order_prefix':    "Service :",

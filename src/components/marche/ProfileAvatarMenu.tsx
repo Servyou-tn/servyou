@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useRef } from 'react'
-import { LogOut, Settings, User } from 'lucide-react'
+import { LogOut, Settings, User, Store, Briefcase } from 'lucide-react'
 import { useLang } from '@/components/LangProvider'
 import { t } from '@/lib/i18n'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
@@ -14,7 +14,12 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 
-export type TopBarUser = { id: string; email: string; full_name: string | null }
+export type TopBarUser = {
+  id: string
+  email: string
+  full_name: string | null
+  seller_type: 'shop_owner' | 'freelancer' | null
+}
 
 // "Moatez Zaier" → "MZ", "moatez@servyou.tn" → "M", single word → first letter,
 // empty → "?". Email falls back to the local part before deriving the letter.
@@ -98,6 +103,46 @@ export function ProfileAvatarMenu({
               {t('marche.sidebar.parametres', lang)}
             </Link>
           </DropdownMenuItem>
+
+          <DropdownMenuSeparator className="bg-border-subtle" />
+
+          {/* Role-upgrade discovery (Path A — strict single role at MVP). Consumer sees
+              both upgrade paths; a seller sees only their own workspace link. The
+              workspace routes (/ma-boutique, /mon-profil-freelance) 404 until built. */}
+          {user.seller_type === null && (
+            <>
+              <DropdownMenuItem asChild className={itemBase}>
+                <Link href="/devenir-vendeur">
+                  <Store className="mr-2 h-4 w-4 text-text-muted" aria-hidden="true" />
+                  {t('profileMenu.devenirVendeur', lang)}
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild className={itemBase}>
+                <Link href="/devenir-freelance">
+                  <Briefcase className="mr-2 h-4 w-4 text-text-muted" aria-hidden="true" />
+                  {t('profileMenu.devenirFreelance', lang)}
+                </Link>
+              </DropdownMenuItem>
+            </>
+          )}
+
+          {user.seller_type === 'shop_owner' && (
+            <DropdownMenuItem asChild className={itemBase}>
+              <Link href="/ma-boutique">
+                <Store className="mr-2 h-4 w-4 text-text-muted" aria-hidden="true" />
+                {t('profileMenu.espaceVendeur', lang)}
+              </Link>
+            </DropdownMenuItem>
+          )}
+
+          {user.seller_type === 'freelancer' && (
+            <DropdownMenuItem asChild className={itemBase}>
+              <Link href="/mon-profil-freelance">
+                <Briefcase className="mr-2 h-4 w-4 text-text-muted" aria-hidden="true" />
+                {t('profileMenu.espaceFreelance', lang)}
+              </Link>
+            </DropdownMenuItem>
+          )}
 
           <DropdownMenuSeparator className="bg-border-subtle" />
 
