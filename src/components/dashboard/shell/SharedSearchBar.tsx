@@ -17,10 +17,16 @@ export function SharedSearchBar({
   initialQuery = '',
   initialType = 'product',
   basePath = '/recherche',
+  scrolled = false,
 }: {
   initialQuery?: string
   initialType?: SearchType
   basePath?: string
+  // When true (the /marche sticky top bar, once content has scrolled under it), the
+  // pill swaps its solid white surface for a translucent blurred one so cards reading
+  // underneath stay legible. Defaults to false — every other caller (e.g. /recherche)
+  // keeps the original solid bg-white, untouched.
+  scrolled?: boolean
 }) {
   const router = useRouter()
   const lang = useLang()
@@ -68,7 +74,9 @@ export function SharedSearchBar({
     // lifting on hover/focus-within. Search + toggle only — nothing else.
     <form
       onSubmit={onSubmit}
-      className={`flex h-14 w-full items-center rounded-full bg-white transition-all duration-300 ease-out ${CARD_SHADOW} ${HOVER_SHADOW} focus-within:shadow-[0_8px_24px_rgba(0,0,0,0.08)]`}
+      className={`flex h-14 w-full items-center rounded-full transition-all duration-300 ease-out ${
+        scrolled ? 'bg-white/80 backdrop-blur-md' : 'bg-white'
+      } ${CARD_SHADOW} ${HOVER_SHADOW} focus-within:shadow-[0_8px_24px_rgba(0,0,0,0.08)]`}
     >
       <button
         type="submit"

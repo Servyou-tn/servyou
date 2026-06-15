@@ -12,8 +12,6 @@ import {
   PackageIcon,
   HeartIcon,
   BriefcaseIcon,
-  SettingsIcon,
-  LogOutIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
 } from './icons'
@@ -34,7 +32,6 @@ const DISABLED_ITEMS: { key: string; Icon: IconCmp }[] = [
   { key: 'marche.sidebar.commandes', Icon: PackageIcon },
   { key: 'marche.sidebar.favoris', Icon: HeartIcon },
   { key: 'marche.sidebar.missions', Icon: BriefcaseIcon },
-  { key: 'marche.sidebar.parametres', Icon: SettingsIcon },
 ]
 
 // The /marche marketplace sidebar — a fresh floating card (NOT the dashboard sidebar,
@@ -142,22 +139,6 @@ export function MarcheSidebar({ forceCollapsed }: { forceCollapsed?: boolean }) 
             </div>
           ))}
         </nav>
-
-        {/* Footer — its top border is the divider before Déconnexion. Logout posts
-            to the existing signout route (mirrors the dashboard sidebar's pattern). */}
-        <div className="mt-4 border-t border-border-subtle px-3 pb-4 pt-4">
-          <form action="/auth/signout" method="POST">
-            <button
-              type="submit"
-              aria-label={expanded ? undefined : t('nav.logout', lang)}
-              title={expanded ? undefined : t('nav.logout', lang)}
-              className={`${row} w-full text-text-muted transition-colors hover:bg-surface-pill hover:text-text-primary ${FOCUS_RING}`}
-            >
-              <LogOutIcon className="h-5 w-5 shrink-0" aria-hidden="true" />
-              {expanded && <span className="whitespace-nowrap">{t('nav.logout', lang)}</span>}
-            </button>
-          </form>
-        </div>
       </div>
     </aside>
   )

@@ -1,9 +1,11 @@
 import { MarcheSidebar } from '@/components/marche/MarcheSidebar'
-import { SharedSearchBar } from '@/components/dashboard/shell/SharedSearchBar'
+import { MarcheTopBar } from '@/components/marche/MarcheTopBar'
+import type { TopBarUser } from '@/components/marche/ProfileAvatarMenu'
 import { ListingResults } from '@/components/listings/ListingResults'
 import { getActiveProducts, getActiveServices } from '@/lib/marche/data'
 import { CARD_SHADOW } from '@/components/layout/styles'
 import { PackageIcon, BriefcaseIcon } from '@/components/marche/icons'
+import { createClient } from '@/lib/supabase/server'
 import { getLang } from '@/lib/i18n/server'
 import { t } from '@/lib/i18n'
 
@@ -24,6 +26,27 @@ export default async function MarchePage({
   const q = (rawQ ?? '').trim()
 
   const lang = await getLang()
+
+  // /marche is public, so the user may be logged out — the top bar renders the
+  // cluster either way (logged-out shows a "Se connecter" avatar). Read the own
+  // profile row for the display name; profiles is owner-only read, so this resolves
+  // only for the signed-in user. getUser's "no session" case is expected here and
+  // intentionally not surfaced as an error.
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  let topBarUser: TopBarUser | null = null
+  if (user) {
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('full_name')
+      .eq('id', user.id)
+      .maybeSingle()
+    if (profileError) console.error('[MarchePage] profile fetch failed', profileError)
+    topBarUser = { id: user.id, email: user.email ?? '', full_name: profile?.full_name ?? null }
+  }
+
   const products = type === 'product' ? await getActiveProducts(q) : []
   const services = type === 'service' ? await getActiveServices(q) : []
 
@@ -36,10 +59,9 @@ export default async function MarchePage({
       <MarcheSidebar forceCollapsed={type === 'product'} />
       <main className="flex-1 p-6 lg:p-8">
         <div className="mx-auto max-w-7xl">
-          {/* Top bar — search + Produits/Services toggle only; reflects the URL state. */}
-          <div className="max-w-2xl">
-            <SharedSearchBar basePath="/marche" initialType={type} initialQuery={q} />
-          </div>
+          {/* Sticky top bar — search pill + icon cluster (Settings, Bell, Profile);
+              reflects the URL state. */}
+          <MarcheTopBar user={topBarUser} initialType={type} initialQuery={q} />
 
           <div className="mt-8">
             {isEmpty ? (
