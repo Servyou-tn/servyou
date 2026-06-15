@@ -68,12 +68,12 @@ body {
 @layer components {
   .card-premium {
     background-color: #fff;
-    border: 1px solid rgba(37, 99, 235, 0.12);
+    border: 1px solid rgba(37, 99, 235, 0.18);
     border-radius: 1rem; /* 16px — matches the existing rounded-2xl card radius */
     box-shadow:
-      0 1px 3px rgba(37, 99, 235, 0.08),
-      0 8px 24px -8px rgba(37, 99, 235, 0.14),
-      0 24px 48px -24px rgba(37, 99, 235, 0.10);
+      0 1px 3px rgba(37, 99, 235, 0.10),
+      0 8px 24px -8px rgba(37, 99, 235, 0.18),
+      0 24px 48px -24px rgba(37, 99, 235, 0.14);
     transition: transform 200ms ease-out, box-shadow 200ms ease-out;
   }
 
