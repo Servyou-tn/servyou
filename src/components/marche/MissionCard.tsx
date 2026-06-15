@@ -2,7 +2,6 @@
 
 import { useLang } from '@/components/LangProvider'
 import { t } from '@/lib/i18n'
-import { CARD_SHADOW } from '@/components/layout/styles'
 import { MAX_RESPONSES_PER_POST } from '@/lib/job-constants'
 import { tndPrice } from '@/components/listings/listing-utils'
 import type { MyMission } from '@/lib/marche/my-data'
@@ -31,7 +30,7 @@ export function MissionCard({ mission }: { mission: MyMission }) {
   const budget = budgetLabel(mission.budget_min, mission.budget_max)
 
   return (
-    <div className={`rounded-2xl border border-border-subtle bg-white p-6 ${CARD_SHADOW}`}>
+    <div className="card-premium p-6">
       <div className="flex items-start justify-between gap-3">
         <p className="min-w-0 flex-1 truncate text-base font-semibold text-text-primary">
           {mission.title}

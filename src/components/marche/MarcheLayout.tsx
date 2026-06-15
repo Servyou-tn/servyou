@@ -22,7 +22,7 @@ export function MarcheLayout({
   children: ReactNode
 }) {
   return (
-    <div className="flex min-h-screen">
+    <div className="flex min-h-screen bg-white">
       <MarcheSidebar />
       <main className="min-w-0 flex-1">
         <MarcheTopBar user={user} initialType={searchType} initialQuery={searchQuery} />

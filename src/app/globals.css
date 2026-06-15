@@ -60,6 +60,42 @@ body {
   font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
 }
 
+/* ── Premium card treatment ──
+   One source of truth for every floating card across the marche shell (product,
+   service, order, mission cards). Blue-tinted (brand-accent #2563EB) border + a
+   three-layer blue-tinted shadow + a subtle hover lift. Cards add this one class
+   and keep only their layout utilities (padding, overflow, position). */
+@layer components {
+  .card-premium {
+    background-color: #fff;
+    border: 1px solid rgba(37, 99, 235, 0.12);
+    border-radius: 1rem; /* 16px — matches the existing rounded-2xl card radius */
+    box-shadow:
+      0 1px 3px rgba(37, 99, 235, 0.08),
+      0 8px 24px -8px rgba(37, 99, 235, 0.14),
+      0 24px 48px -24px rgba(37, 99, 235, 0.10);
+    transition: transform 200ms ease-out, box-shadow 200ms ease-out;
+  }
+
+  .card-premium:hover {
+    transform: translateY(-2px);
+    box-shadow:
+      0 1px 3px rgba(37, 99, 235, 0.10),
+      0 12px 32px -8px rgba(37, 99, 235, 0.18),
+      0 32px 64px -24px rgba(37, 99, 235, 0.14);
+  }
+}
+
+/* Honour reduced motion: no lift, no transition. */
+@media (prefers-reduced-motion: reduce) {
+  .card-premium {
+    transition: none;
+  }
+  .card-premium:hover {
+    transform: none;
+  }
+}
+
 /* Smooth in-page anchor scrolling (e.g. the hero "Comment ça marche" CTA jumping
    to the #comment-ca-marche section). Gated on no-preference to honour the
    project's reduced-motion posture (Hero/HowItWorks/Categories all suppress

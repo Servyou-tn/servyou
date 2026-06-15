@@ -3,7 +3,6 @@
 import Image from 'next/image'
 import { useLang } from '@/components/LangProvider'
 import { t } from '@/lib/i18n'
-import { CARD_SHADOW } from '@/components/layout/styles'
 import { OrderStatusBadge } from './OrderStatusBadge'
 import { OrderLifecycleStepper } from '@/components/OrderLifecycleStepper'
 import { statusLabelKey, type OrderStatus } from '@/lib/types/order-status'
@@ -42,7 +41,7 @@ export function OrderCard({ order }: { order: MyOrder }) {
   }
 
   return (
-    <div className={`rounded-2xl border border-border-subtle bg-white p-6 ${CARD_SHADOW}`}>
+    <div className="card-premium p-6">
       <div className="flex flex-col gap-4 sm:flex-row">
         {/* Left — product thumbnail or service "S" avatar (consistent with /marche). */}
         <div className="shrink-0">

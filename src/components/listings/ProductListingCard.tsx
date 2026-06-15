@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import Image from 'next/image'
-import { FOCUS_RING, CARD_SHADOW, HOVER_SHADOW } from '@/components/layout/styles'
+import { FOCUS_RING } from '@/components/layout/styles'
 import { FavoriteButton } from '@/components/FavoriteButton'
 import { PackageIcon } from '@/components/dashboard/consumer/icons'
 import { ArrowUpRightIcon } from './icons'
@@ -27,9 +27,7 @@ export function ProductListingCard({ product }: { product: ProductListing }) {
   const meta = [product.shop.name, product.shop.city].filter(Boolean).join(' · ')
 
   return (
-    <div
-      className={`relative overflow-hidden rounded-2xl bg-white transition-all duration-300 ease-out ${CARD_SHADOW} ${HOVER_SHADOW}`}
-    >
+    <div className="card-premium relative overflow-hidden">
       <Link href={`/produits/${product.id}`} className={`block ${FOCUS_RING}`}>
         {/* Image area — fills the card's rounded top corners (no padding). */}
         <div className="relative aspect-square w-full overflow-hidden bg-[#F4F4F4]">

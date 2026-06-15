@@ -4,7 +4,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { useLang } from '@/components/LangProvider'
 import { t } from '@/lib/i18n'
-import { FOCUS_RING, CARD_SHADOW, HOVER_SHADOW } from '@/components/layout/styles'
+import { FOCUS_RING } from '@/components/layout/styles'
 import { FavoriteButton } from '@/components/FavoriteButton'
 import { ArrowRightIcon } from './icons'
 
@@ -40,9 +40,7 @@ export function ServiceListingCard({ service }: { service: ServiceListing }) {
   const firstLetter = (service.freelancer.full_name.trim()[0] ?? '?').toUpperCase()
 
   return (
-    <div
-      className={`relative rounded-3xl bg-white transition-all duration-300 ease-out ${CARD_SHADOW} ${HOVER_SHADOW}`}
-    >
+    <div className="card-premium relative">
       <Link
         href={`/services/${service.id}`}
         aria-label={service.title}
