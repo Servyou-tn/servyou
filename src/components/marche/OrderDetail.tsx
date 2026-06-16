@@ -405,7 +405,7 @@ export function OrderDetail({ order }: { order: OrderDetailData }) {
               onClick={contactSeller}
               disabled={revealing}
               className={cn(
-                'inline-flex h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-full bg-[#25D366] text-base font-semibold text-white shadow-md transition-colors hover:bg-[#1DA851] disabled:cursor-not-allowed disabled:opacity-60',
+                'inline-flex h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-full bg-[#25D366] text-base font-semibold text-text-primary shadow-md transition-colors hover:bg-[#1DA851] disabled:cursor-not-allowed disabled:opacity-60',
                 FOCUS_RING,
               )}
             >
