@@ -1,9 +1,11 @@
 'use client'
 
+import Link from 'next/link'
 import { useLang } from '@/components/LangProvider'
 import { t } from '@/lib/i18n'
 import { MAX_RESPONSES_PER_POST } from '@/lib/job-constants'
 import { tndPrice } from '@/components/listings/listing-utils'
+import { FOCUS_RING } from '@/components/layout/styles'
 import type { MyMission } from '@/lib/marche/my-data'
 
 function budgetLabel(min: number | null, max: number | null): string | null {
@@ -14,8 +16,8 @@ function budgetLabel(min: number | null, max: number | null): string | null {
 }
 
 // Full-width mission row (consumer's own posts). Same visual DNA as the order cards. The
-// responses badge turns amber once the 10-response fairness cap is reached. The card does
-// not link anywhere — a mission detail page is a later pass (no dead links).
+// responses badge turns amber once the 10-response fairness cap is reached. The whole row
+// links to the mission detail page (/mes-missions/[id]).
 export function MissionCard({ mission }: { mission: MyMission }) {
   const lang = useLang()
 
@@ -30,7 +32,10 @@ export function MissionCard({ mission }: { mission: MyMission }) {
   const budget = budgetLabel(mission.budget_min, mission.budget_max)
 
   return (
-    <div className="card-premium p-6">
+    <Link
+      href={`/mes-missions/${mission.id}`}
+      className={`block card-premium p-6 transition-colors hover:bg-slate-50 ${FOCUS_RING}`}
+    >
       <div className="flex items-start justify-between gap-3">
         <p className="min-w-0 flex-1 truncate text-base font-semibold text-text-primary">
           {mission.title}
@@ -61,6 +66,6 @@ export function MissionCard({ mission }: { mission: MyMission }) {
         {mission.city && <span className="text-text-muted">{mission.city}</span>}
         {mission.is_remote && <span className="text-text-muted">{t('mission.form.remote_label', lang)}</span>}
       </div>
-    </div>
+    </Link>
   )
 }
