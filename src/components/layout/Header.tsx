@@ -24,9 +24,14 @@ import { FOCUS_RING } from './styles'
 export function Header({
   sellerType,
   fullName,
+  forceShow = false,
 }: {
   sellerType: SellerType
   fullName: string | null
+  // The (marketing) content pages (/a-propos, /contact, /faq) mount the Header through
+  // MarketingShell and need it visible even though selectVariant hides it off '/'. On
+  // those routes isLanding is false, so it renders the standard full-width bar variant.
+  forceShow?: boolean
 }) {
   const pathname = usePathname()
   const lang = useLang()
@@ -54,7 +59,7 @@ export function Header({
   }, [pathname])
 
   const state = selectVariant({ pathname })
-  if (state.hidden) return null
+  if (state.hidden && !forceShow) return null
 
   const links = navLinks(state)
   const active = activeHref(links, pathname, hash)

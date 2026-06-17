@@ -11,7 +11,15 @@ import { buildSearchQuery } from './search-url'
 // URL-driven pagination (?page=) so the browser back button replays pages. Prev/next are
 // real <Link>s when navigable and inert <span>s at the boundaries (aria-disabled). All
 // other search params are preserved across page changes.
-export function SearchPagination({ page, totalPages }: { page: number; totalPages: number }) {
+export function SearchPagination({
+  page,
+  totalPages,
+  basePath = '/recherche',
+}: {
+  page: number
+  totalPages: number
+  basePath?: string
+}) {
   const sp = useSearchParams()
   const lang = useLang()
 
@@ -19,7 +27,7 @@ export function SearchPagination({ page, totalPages }: { page: number; totalPage
 
   function hrefFor(target: number) {
     const qs = buildSearchQuery(sp, { page: target })
-    return qs ? `/recherche?${qs}` : '/recherche'
+    return qs ? `${basePath}?${qs}` : basePath
   }
 
   const prevDisabled = page <= 1

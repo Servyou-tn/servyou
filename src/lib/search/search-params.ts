@@ -73,6 +73,24 @@ export function parseSearchParams(
   }
 }
 
+/**
+ * Category-id precedence. The /categories/[slug] page resolves its slug to a single id
+ * and passes it directly; /recherche resolves the ?categorie= slugs to ids. An explicit
+ * categoryId always wins (and skips the slug lookup entirely).
+ */
+export function pickCategoryIds(
+  categoryId: string | null | undefined,
+  slugResolvedIds: string[] | null,
+): string[] | null {
+  if (categoryId) return [categoryId]
+  return slugResolvedIds
+}
+
+/** The opposite catalog — powers the "Voir l'autre type" toggle on the empty state. */
+export function otherType(type: SearchType): SearchType {
+  return type === 'product' ? 'service' : 'product'
+}
+
 /** Weighted match score: title hit 2×, description hit 1×. Empty term → 0. */
 export function scoreListing(
   title: string | null,

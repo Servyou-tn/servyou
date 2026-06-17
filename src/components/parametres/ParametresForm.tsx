@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
+import Link from 'next/link'
 import { toast } from 'sonner'
 import { Bell, Shield, Languages, Link2, Download } from 'lucide-react'
 import { useLang } from '@/components/LangProvider'
@@ -14,8 +15,8 @@ import type { CurrentProfile } from '@/lib/marche/mon-compte'
 
 type Lang = 'fr' | 'ar'
 
-// Disabled placeholder switch (the notification/visibility prefs have no backing columns
-// and no sending system yet). Module-level so it isn't re-created each render.
+// Disabled placeholder switch (the marketing pref has no backing column and no sending
+// system yet). Module-level so it isn't re-created each render.
 function Toggle({ checked, label }: { checked: boolean; label: string }) {
   return (
     <button
@@ -60,8 +61,8 @@ export function ParametresForm({ profile }: { profile: CurrentProfile }) {
     const previous = selectedLang
     setSelectedLang(next)
     startLang(async () => {
-      // Reuse updateProfileAction — it validates the full set, so pass the current
-      // values for the unchanged fields and only vary language.
+      // Reuse updateProfileAction — it validates the full set, so pass the current values
+      // for the unchanged fields and only vary language.
       const res = await updateProfileAction({
         fullName: profile.full_name,
         phone: profile.phone ?? '',
@@ -79,6 +80,7 @@ export function ParametresForm({ profile }: { profile: CurrentProfile }) {
   const sectionHeader = 'mb-4 flex items-center gap-2'
   const sectionTitle = 'text-lg font-semibold text-text-primary'
   const card = 'card-premium outline-brand mb-6 rounded-2xl bg-white p-6'
+  const inlineLink = cn('rounded text-sm font-medium text-brand-accent hover:underline', FOCUS_RING)
 
   return (
     <div className="mx-auto max-w-3xl">
@@ -87,79 +89,7 @@ export function ParametresForm({ profile }: { profile: CurrentProfile }) {
         <p className="mt-1 text-base text-text-muted">{t('parametres.subtitle', lang)}</p>
       </div>
 
-      {/* ── Section 1: Notifications (disabled placeholders) ── */}
-      <section className={card}>
-        <div className={sectionHeader}>
-          <Bell className="h-5 w-5 text-brand-accent" aria-hidden="true" />
-          <h2 className={sectionTitle}>{t('parametres.notif.title', lang)}</h2>
-          <ComingSoonBadge label={comingSoon} />
-        </div>
-        <p className="mb-4 text-sm text-text-muted">{t('parametres.notif.help', lang)}</p>
-
-        <div className="space-y-4">
-          <div className="flex items-start justify-between gap-4">
-            <div className="min-w-0">
-              <p className="text-sm font-medium text-text-primary">{t('parametres.notif.orders', lang)}</p>
-              <p className="mt-0.5 text-xs text-text-muted">{t('parametres.notif.ordersHelp', lang)}</p>
-            </div>
-            <Toggle checked={false} label={t('parametres.notif.orders', lang)} />
-          </div>
-          <div className="flex items-start justify-between gap-4">
-            <div className="min-w-0">
-              <p className="text-sm font-medium text-text-primary">{t('parametres.notif.marketing', lang)}</p>
-              <p className="mt-0.5 text-xs text-text-muted">{t('parametres.notif.marketingHelp', lang)}</p>
-            </div>
-            <Toggle checked={false} label={t('parametres.notif.marketing', lang)} />
-          </div>
-        </div>
-      </section>
-
-      {/* ── Section 2: Confidentialité ── */}
-      <section className={card}>
-        <div className={sectionHeader}>
-          <Shield className="h-5 w-5 text-brand-accent" aria-hidden="true" />
-          <h2 className={sectionTitle}>{t('parametres.privacy.title', lang)}</h2>
-        </div>
-        <p className="mb-6 text-sm text-text-muted">{t('parametres.privacy.help', lang)}</p>
-
-        {/* A — Visibilité (disabled) */}
-        <div>
-          <div className="flex items-center gap-2">
-            <h3 className="text-base font-semibold text-text-primary">
-              {t('parametres.privacy.visibilityTitle', lang)}
-            </h3>
-            <ComingSoonBadge label={comingSoon} />
-          </div>
-          <p className="mt-1 text-sm text-text-muted">{t('parametres.privacy.visibilityHelp', lang)}</p>
-          <div className="mt-3 flex items-center justify-between gap-4">
-            <p className="text-sm font-medium text-text-primary">
-              {t('parametres.privacy.visibilityToggle', lang)}
-            </p>
-            <Toggle checked={false} label={t('parametres.privacy.visibilityToggle', lang)} />
-          </div>
-        </div>
-
-        <div className="my-4 border-t border-border-subtle" />
-
-        {/* B — Export de données (working) */}
-        <div>
-          <h3 className="text-base font-semibold text-text-primary">{t('parametres.privacy.exportTitle', lang)}</h3>
-          <p className="mt-1 text-sm text-text-muted">{t('parametres.privacy.exportHelp', lang)}</p>
-          <button
-            type="button"
-            onClick={() => setExportOpen(true)}
-            className={cn(
-              'mt-4 inline-flex h-11 items-center gap-2 rounded-full border border-border-subtle bg-white px-6 text-sm font-medium text-text-primary transition-colors hover:bg-slate-50',
-              FOCUS_RING,
-            )}
-          >
-            <Download className="h-4 w-4" aria-hidden="true" />
-            {t('parametres.privacy.exportBtn', lang)}
-          </button>
-        </div>
-      </section>
-
-      {/* ── Section 3: Langue (working) ── */}
+      {/* ── §1: Préférences — langue (working) ── */}
       <section className={card}>
         <div className={sectionHeader}>
           <Languages className="h-5 w-5 text-brand-accent" aria-hidden="true" />
@@ -175,7 +105,78 @@ export function ParametresForm({ profile }: { profile: CurrentProfile }) {
         <p className="mt-3 text-xs text-text-muted">{t('parametres.lang.effect', lang)}</p>
       </section>
 
-      {/* ── Section 4: Comptes connectés (disabled placeholders) ── */}
+      {/* ── §2: Notifications — orders always-on (read-only), marketing coming soon ── */}
+      <section className={card}>
+        <div className={sectionHeader}>
+          <Bell className="h-5 w-5 text-brand-accent" aria-hidden="true" />
+          <h2 className={sectionTitle}>{t('parametres.notif.title', lang)}</h2>
+        </div>
+
+        <div className="space-y-4">
+          {/* Order updates — always on, read-only */}
+          <div className="flex items-start justify-between gap-4">
+            <div className="min-w-0">
+              <p className="text-sm font-medium text-text-primary">{t('parametres.notif.orders', lang)}</p>
+              <p className="mt-0.5 text-xs text-text-muted">{t('parametres.notif.ordersHelp', lang)}</p>
+            </div>
+            <span className="shrink-0 rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-700">
+              {t('parametres.notif.ordersActive', lang)}
+            </span>
+          </div>
+
+          {/* Marketing — disabled placeholder */}
+          <div className="flex items-start justify-between gap-4">
+            <div className="min-w-0">
+              <p className="text-sm font-medium text-text-primary">{t('parametres.notif.marketing', lang)}</p>
+              <p className="mt-0.5 text-xs text-text-muted">{t('parametres.notif.marketingHelp', lang)}</p>
+            </div>
+            <Toggle checked={false} label={t('parametres.notif.marketing', lang)} />
+          </div>
+        </div>
+      </section>
+
+      {/* ── §3: Confidentialité et données ── */}
+      <section className={card}>
+        <div className={sectionHeader}>
+          <Shield className="h-5 w-5 text-brand-accent" aria-hidden="true" />
+          <h2 className={sectionTitle}>{t('parametres.privacy.title', lang)}</h2>
+        </div>
+        <p className="text-sm leading-relaxed text-text-muted">{t('parametres.privacy.help', lang)}</p>
+        <Link href="/confidentialite" className={cn('mt-3 inline-block', inlineLink)}>
+          {t('parametres.privacy.policyLink', lang)}
+        </Link>
+
+        <div className="my-5 border-t border-border-subtle" />
+
+        {/* Export de données (working) */}
+        <div>
+          <h3 className="text-base font-semibold text-text-primary">{t('parametres.privacy.exportTitle', lang)}</h3>
+          <p className="mt-1 text-sm text-text-muted">{t('parametres.privacy.exportHelp', lang)}</p>
+          <button
+            type="button"
+            onClick={() => setExportOpen(true)}
+            className={cn(
+              'mt-4 inline-flex h-11 items-center gap-2 rounded-full border border-border-subtle bg-white px-6 text-sm font-medium text-text-primary transition-colors hover:bg-slate-50',
+              FOCUS_RING,
+            )}
+          >
+            <Download className="h-4 w-4" aria-hidden="true" />
+            {t('parametres.privacy.exportBtn', lang)}
+          </button>
+        </div>
+
+        <div className="my-5 border-t border-border-subtle" />
+
+        {/* Account deletion lives on /mon-compte */}
+        <div>
+          <p className="text-sm text-text-muted">{t('parametres.privacy.deleteHelp', lang)}</p>
+          <Link href="/mon-compte" className={cn('mt-1 inline-block', inlineLink)}>
+            {t('parametres.privacy.deleteLink', lang)} →
+          </Link>
+        </div>
+      </section>
+
+      {/* ── §4: Comptes connectés (disabled placeholders) ── */}
       <section className={card}>
         <div className={sectionHeader}>
           <Link2 className="h-5 w-5 text-brand-accent" aria-hidden="true" />

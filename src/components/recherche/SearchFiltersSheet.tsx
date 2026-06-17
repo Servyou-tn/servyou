@@ -13,6 +13,8 @@ type Props = {
   selectedVille: string[]
   prixMin: number | null
   prixMax: number | null
+  basePath?: string
+  showCategory?: boolean
 }
 
 // Mobile-only entry to the filter form: a "Filtres" button (with an active-count badge)
@@ -26,6 +28,8 @@ export function SearchFiltersSheet({
   selectedVille,
   prixMin,
   prixMax,
+  basePath = '/recherche',
+  showCategory = true,
 }: Props) {
   const [open, setOpen] = useState(false)
   const lang = useLang()
@@ -83,6 +87,8 @@ export function SearchFiltersSheet({
               prixMin={prixMin}
               prixMax={prixMax}
               mode="sheet"
+              basePath={basePath}
+              showCategory={showCategory}
               onApplied={() => setOpen(false)}
             />
           </div>

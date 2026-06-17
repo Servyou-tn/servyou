@@ -13,8 +13,10 @@ import { describe, it, expect } from 'vitest'
 import {
   compareRanked,
   ilikePattern,
+  otherType,
   paginate,
   parseSearchParams,
+  pickCategoryIds,
   scoreListing,
   type Ranked,
 } from './search-params'
@@ -135,6 +137,30 @@ describe('paginate', () => {
     const { totalPages, safePage } = paginate(0, 1, 20)
     expect(totalPages).toBe(1)
     expect(safePage).toBe(1)
+  })
+})
+
+describe('pickCategoryIds', () => {
+  it('uses an explicit categoryId directly (the /categories/[slug] path)', () => {
+    expect(pickCategoryIds('cat-uuid', null)).toEqual(['cat-uuid'])
+  })
+
+  it('lets an explicit categoryId win over slug-resolved ids', () => {
+    expect(pickCategoryIds('cat-uuid', ['slug-a', 'slug-b'])).toEqual(['cat-uuid'])
+  })
+
+  it('falls back to slug-resolved ids when no categoryId (the /recherche path)', () => {
+    expect(pickCategoryIds(null, ['slug-a'])).toEqual(['slug-a'])
+    expect(pickCategoryIds(undefined, null)).toBeNull()
+    // empty slug-resolution (filter given but matched nothing) is preserved → zero results
+    expect(pickCategoryIds(undefined, [])).toEqual([])
+  })
+})
+
+describe('otherType', () => {
+  it('toggles product ↔ service', () => {
+    expect(otherType('product')).toBe('service')
+    expect(otherType('service')).toBe('product')
   })
 })
 

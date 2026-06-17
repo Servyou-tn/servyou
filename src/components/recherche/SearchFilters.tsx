@@ -20,6 +20,11 @@ type Props = {
   // draft until the "Appliquer" button is pressed.
   mode: 'inline' | 'sheet'
   onApplied?: () => void
+  // Where filter changes navigate. /recherche by default; /categories/[slug] passes its
+  // own path so the slug stays in the URL.
+  basePath?: string
+  // /categories/[slug] hides the Catégorie section (the slug already locks the category).
+  showCategory?: boolean
 }
 
 // The shared filter form (category / city / price). Used in the desktop sidebar and,
@@ -33,6 +38,8 @@ export function SearchFilters({
   prixMax,
   mode,
   onApplied,
+  basePath = '/recherche',
+  showCategory = true,
 }: Props) {
   const router = useRouter()
   const sp = useSearchParams()
@@ -55,7 +62,7 @@ export function SearchFilters({
       { categorie: c, ville: v, prix_min: lo === '' ? null : lo, prix_max: hi === '' ? null : hi },
       { resetPage: true },
     )
-    router.push(qs ? `/recherche?${qs}` : '/recherche')
+    router.push(qs ? `${basePath}?${qs}` : basePath)
     onApplied?.()
   }
 
@@ -82,7 +89,7 @@ export function SearchFilters({
         { categorie: null, ville: null, prix_min: null, prix_max: null },
         { resetPage: true },
       )
-      router.push(qs ? `/recherche?${qs}` : '/recherche')
+      router.push(qs ? `${basePath}?${qs}` : basePath)
       onApplied?.()
     }
   }
@@ -96,8 +103,8 @@ export function SearchFilters({
         <p className="text-base font-bold text-[#0A0A0A]">{t('search.filters.title', lang)}</p>
       )}
 
-      {/* Catégorie */}
-      {categories.length > 0 && (
+      {/* Catégorie — hidden on /categories/[slug], where the slug already locks it. */}
+      {showCategory && categories.length > 0 && (
         <fieldset className="space-y-2">
           <legend className={heading}>{t('search.filters.category', lang)}</legend>
           <div className="max-h-44 space-y-0.5 overflow-y-auto pr-1">

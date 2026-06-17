@@ -5,6 +5,7 @@ import {
   compareRanked,
   ilikePattern,
   paginate,
+  pickCategoryIds,
   scoreListing,
   type SearchParams,
   type SearchType,
@@ -249,20 +250,25 @@ async function fetchServices(
 
 // ── Public entry point ──────────────────────────────────────────────────────────
 
-export async function searchMarketplace(params: SearchParams): Promise<SearchOutcome> {
+export async function searchMarketplace(
+  params: SearchParams,
+  opts: { categoryId?: string } = {},
+): Promise<SearchOutcome> {
   const supabase = await createClient()
 
-  // Resolve category slugs → ids once (the categories table is shared by both catalogs).
-  // null = no category filter; [] = filter given but matched nothing → zero results.
-  let categoryIds: string[] | null = null
-  if (params.categorie.length > 0) {
+  // The /categories/[slug] page passes a resolved categoryId directly; /recherche resolves
+  // the ?categorie= slugs to ids here. An explicit categoryId wins and skips the lookup.
+  // For slug resolution: null = no filter; [] = filter given but matched nothing → zero.
+  let slugResolvedIds: string[] | null = null
+  if (!opts.categoryId && params.categorie.length > 0) {
     const { data, error } = await supabase
       .from('categories')
       .select('id')
       .in('slug', params.categorie)
     if (error) console.error('[search] category resolve error:', error)
-    categoryIds = ((data ?? []) as { id: string }[]).map((r) => r.id)
+    slugResolvedIds = ((data ?? []) as { id: string }[]).map((r) => r.id)
   }
+  const categoryIds = pickCategoryIds(opts.categoryId, slugResolvedIds)
 
   // Single-catalog search: only the active type is fetched (the type switch lives in the
   // top search-bar toggle now, so there are no cross-catalog tab counts to compute).

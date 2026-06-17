@@ -4,7 +4,6 @@ import "./globals.css"
 import { Toaster } from "sonner"
 import { getLang } from "@/lib/i18n/server"
 import { LangProvider } from "@/components/LangProvider"
-import { Header } from "@/components/layout/Header"
 
 const inter = Inter({
   variable: "--font-inter",
@@ -36,11 +35,10 @@ export default async function RootLayout({
     >
       <body className="min-h-full flex flex-col">
         <LangProvider lang={lang}>
-          {/* Marketing navbar — renders only on the landing page (/), identically
-              for every visitor. It no longer needs the session, so the layout does
-              no per-request auth/profile fetch. The sellerType/fullName props feed
-              the preserved account-avatar branch for the future per-role navbars. */}
-          <Header sellerType={null} fullName={null} />
+          {/* The marketing navbar (Header) is no longer mounted here. It only ever
+              renders on the landing page, so it now lives inside the landing branch of
+              `/` (src/app/page.tsx) — this keeps it OFF the logged-in consumer homepage,
+              which renders the /marche shell (its own top bar) on the same `/` route. */}
           {children}
           {/* App-wide toast portal — single source for success/error feedback. */}
           <Toaster position="top-center" richColors />
