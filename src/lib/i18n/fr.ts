@@ -1575,6 +1575,16 @@ export const fr: Record<string, string> = {
   'search.pagination.prev':      "Précédent",
   'search.pagination.next':      "Suivant",
   'search.pagination.pageOf':    "Page {current} sur {total}",
+  // Bare /recherche (no query, no filters): a landing block, not a browse grid —
+  // the two marketplaces (/marche/produits, /marche/services) own browse-by-default now.
+  'search.landing.title':        "Que recherchez-vous ?",
+  'search.landing.subtitle':     "Tapez votre recherche dans la barre en haut, ou parcourez directement nos marketplaces.",
+  'search.landing.browseProducts': "Voir tous les Produits",
+  'search.landing.browseServices': "Voir tous les Services",
+  // Cross-side compass: nudge the user to flip the Produits/Services toggle when the
+  // active side is empty (zero) or thin (<4). {current}/{other} are the localized side labels.
+  'search.otherSide.zero':       "Aucun résultat dans {current}. Voir si « {query} » existe dans {other} →",
+  'search.otherSide.weak':       "Vous ne trouvez pas ce que vous cherchez ? Essayez l'autre côté — basculez sur {other}.",
 
   // ─── Category browse page (/categories/[slug]) ───────────────────────────────
   'category.breadcrumb.home':            "Accueil",

@@ -1,12 +1,14 @@
 'use client'
 
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { Bell, Settings } from 'lucide-react'
 import { useLang } from '@/components/LangProvider'
 import { t } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
 import { FOCUS_RING } from '@/components/layout/styles'
+import { marcheEngineHref, resolveMarcheSidebarNav } from '@/lib/marche/marche-routing'
 import { SharedSearchBar } from '@/components/dashboard/shell/SharedSearchBar'
 import { ProfileAvatarMenu, type TopBarUser } from './ProfileAvatarMenu'
 
@@ -45,6 +47,11 @@ export function MarcheTopBar({
 }) {
   const lang = useLang()
   const scrolled = useScrolled()
+  const pathname = usePathname()
+  // On the two browse engines the toggle is the cross-engine compass (Produits ⇄ Services).
+  // Off them (/recherche, /categories, the account pages) it stays the search-scope toggle —
+  // omitting toggleHref leaves SharedSearchBar's original /recherche behavior untouched.
+  const { onMarche } = resolveMarcheSidebarNav(pathname)
 
   // Shared circular-button surface (44px tall, WCAG touch target). Hover scale + active
   // press are motion-safe (the prefers-reduced-motion query) so they self-disable.
@@ -72,7 +79,12 @@ export function MarcheTopBar({
           {/* Header search is the primary typed-query entry point — it lands on
               /recherche (the full search results surface), NOT /marche. /marche keeps its
               own inline ?q= handling for now; a later cleanup commit removes that dead path. */}
-          <SharedSearchBar basePath="/recherche" initialType={initialType} initialQuery={initialQuery} />
+          <SharedSearchBar
+            basePath="/recherche"
+            initialType={initialType}
+            initialQuery={initialQuery}
+            toggleHref={onMarche ? marcheEngineHref : undefined}
+          />
         </div>
 
         {/* Right — the icon cluster. Hidden below md (mobile pass is separate). */}

@@ -8,9 +8,10 @@ import type { FilterCategory } from './SearchFilters'
 // The only empty state on /recherche: zero results. Two wordings — "Aucun résultat pour
 // « … »" when a query is active, "Aucun résultat" when only filters narrowed it to zero.
 // The recovery action is context-aware so it's never a dead click:
-//   • filters active        → "Effacer les filtres" (clears filters, keeps the query)
+//   • query active           → the cross-side nudge is PRIMARY: maybe it's on the other
+//                              side of the Produits/Services toggle (one click flips + re-runs)
+//   • filters active         → "Effacer les filtres" (clears filters, keeps the query)
 //   • query only, no filters → "Parcourir tout"     (clears the query, keeps the tab)
-//   • both query AND filters → both, staged: clear filters first, then browse all
 // Popular-category chips (a fresh browse of that category) are always offered.
 type Props = {
   lang: Lang
@@ -19,6 +20,11 @@ type Props = {
   hasFilters: boolean
   clearFiltersHref: string // clears category/city/price, keeps the query
   browseAllHref: string // clears the query AND filters, keeps the type tab
+  // Cross-side compass: flip the toggle (keep query + filters). currentLabel/otherLabel are
+  // the localized "Produits"/"Services" side names.
+  currentLabel: string
+  otherLabel: string
+  otherSideHref: string
 }
 
 export function SearchEmptyState({
@@ -28,6 +34,9 @@ export function SearchEmptyState({
   hasFilters,
   clearFiltersHref,
   browseAllHref,
+  currentLabel,
+  otherLabel,
+  otherSideHref,
 }: Props) {
   const hasQuery = query !== ''
 
@@ -62,13 +71,19 @@ export function SearchEmptyState({
 
         {/* Context-aware recovery actions (see the component note above). */}
         <div className="mt-6 flex flex-col items-center gap-3">
+          {/* Query present → lead with the cross-side nudge: maybe it lives on the other side. */}
+          {hasQuery && (
+            <Link href={otherSideHref} className={primary}>
+              {t('search.otherSide.zero', lang, { current: currentLabel, query, other: otherLabel })}
+            </Link>
+          )}
           {hasFilters && (
-            <Link href={clearFiltersHref} className={primary}>
+            <Link href={clearFiltersHref} className={hasQuery ? textLink : primary}>
               {t('search.filters.clear', lang)}
             </Link>
           )}
           {(hasQuery || !hasFilters) && (
-            <Link href={browseAllHref} className={hasFilters ? textLink : primary}>
+            <Link href={browseAllHref} className={hasQuery || hasFilters ? textLink : primary}>
               {t('search.empty.browseAll', lang)}
             </Link>
           )}

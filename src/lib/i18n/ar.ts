@@ -1608,6 +1608,14 @@ export const ar: Record<string, string> = {
   'search.pagination.prev':      "السابق",
   'search.pagination.next':      "التالي",
   'search.pagination.pageOf':    "صفحة {current} من {total}",
+  // Bare /recherche landing block (translated from the finished French; Phase 8 review).
+  'search.landing.title':        "عمّ تبحث؟",
+  'search.landing.subtitle':     "اكتب بحثك في الشريط أعلاه، أو تصفّح أسواقنا مباشرة.",
+  'search.landing.browseProducts': "عرض كل المنتجات",
+  'search.landing.browseServices': "عرض كل الخدمات",
+  // Cross-side compass nudge ({current}/{other} are the localized side labels).
+  'search.otherSide.zero':       "لا نتائج في {current}. تحقّق ممّا إذا كان « {query} » موجوداً في {other} ←",
+  'search.otherSide.weak':       "لم تجد ما تبحث عنه؟ جرّب الجانب الآخر — انتقل إلى {other}.",
 
   // ─── Category browse page (/categories/[slug]) ───────────────────────────────
   'category.breadcrumb.home':            "الرئيسية",

@@ -19,6 +19,7 @@ export function SharedSearchBar({
   initialType = 'product',
   basePath = '/recherche',
   scrolled = false,
+  toggleHref,
 }: {
   initialQuery?: string
   initialType?: SearchType
@@ -28,6 +29,12 @@ export function SharedSearchBar({
   // underneath stay legible. Defaults to false — every other caller (e.g. /recherche)
   // keeps the original solid bg-white, untouched.
   scrolled?: boolean
+  // When provided, toggling the catalog navigates to `toggleHref(nextType)` instead of
+  // re-running the search at `basePath` — the marketplace browse engines pass this so the
+  // toggle becomes the cross-engine compass (Produits ⇄ Services). The text-search submit
+  // still targets `basePath` (→ /recherche). Omitted everywhere else (/recherche, the
+  // dashboard), where the toggle re-runs the search at `basePath` — behavior unchanged.
+  toggleHref?: (type: SearchType) => string
 }) {
   const router = useRouter()
   const lang = useLang()
@@ -49,7 +56,14 @@ export function SharedSearchBar({
 
   function selectType(next: SearchType) {
     if (next === type) return
+    // Optimistic local update so the active pill is correct immediately, whether or not the
+    // shell remounts on the navigation that follows.
     setType(next)
+    if (toggleHref) {
+      // Cross-engine compass: jump to the clean other browse engine (no carried query).
+      router.push(toggleHref(next))
+      return
+    }
     navigate(next, query)
   }
 
