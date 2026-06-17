@@ -1587,6 +1587,27 @@ export const ar: Record<string, string> = {
   'search.result_for':  "عن",
   'search.no_results':  "لا توجد نتائج لهذا البحث. جرّب كلمة أخرى.",
 
+  // ─── Search results page (/recherche) ────────────────────────────────────────
+  'search.resultsCount':         "{count} نتيجة لـ « {query} »",
+  'search.clear':                "مسح البحث",
+  'search.filters.title':        "تصفية",
+  'search.filters.category':     "الفئة",
+  'search.filters.city':         "المدينة",
+  'search.filters.price':        "السعر (د.ت)",
+  'search.filters.priceMin':     "الأدنى",
+  'search.filters.priceMax':     "الأقصى",
+  'search.filters.apply':        "تطبيق",
+  'search.filters.clear':        "مسح الفلاتر",
+  'search.filters.close':        "إغلاق",
+  'search.empty.noResults':      "لا توجد نتائج لـ « {query} »",
+  'search.empty.filtered':       "لا توجد نتائج",
+  'search.empty.subtitle':       "عدّل بحثك أو تصفّح فئاتنا الشائعة.",
+  'search.empty.browseAll':      "تصفّح الكل",
+  'search.pagination.label':     "ترقيم الصفحات",
+  'search.pagination.prev':      "السابق",
+  'search.pagination.next':      "التالي",
+  'search.pagination.pageOf':    "صفحة {current} من {total}",
+
   // ─── Disputes (litiges) — party-facing creation + display (PR-P3) ────────────
   'dispute.section_title':                "نزاع حول هذا الطلب",
   'dispute.button_create':                "فتح نزاع",

@@ -1,0 +1,286 @@
+import { createClient } from '@/lib/supabase/server'
+import type { ProductListing } from '@/components/listings/ProductListingCard'
+import type { ServiceListing } from '@/components/listings/ServiceListingCard'
+import {
+  compareRanked,
+  ilikePattern,
+  paginate,
+  scoreListing,
+  type SearchParams,
+  type SearchType,
+} from './search-params'
+
+// The /recherche query layer. /marche is the browse surface (newest-first, single
+// catalog); /recherche is the typed-query surface: ILIKE match on title+description,
+// refinable by category / city / price, sortable, paginated. Search is single-type
+// (Produits OR Services) — the 'Tous' tab was deliberately dropped at MVP, so there is
+// no cross-type merge: pertinence runs within one catalog.
+//
+// Ranking is intentionally simple: a case-insensitive ILIKE filter at the DB, then a
+// weighted score in JS (title match 2×, description match 1×). Upgrade to pg_trgm or
+// Postgres full-text search when search volume justifies the index cost — not before.
+//
+// The pure URL/ranking/pagination helpers live in ./search-params (re-exported below) so
+// they can be unit-tested without this module's Supabase server-client dependency.
+export {
+  parseSearchParams,
+  scoreListing,
+  compareRanked,
+  paginate,
+  ilikePattern,
+  SEARCH_SORTS,
+  PER_PAGE,
+} from './search-params'
+export type { SearchParams, SearchType, SearchSort, Ranked } from './search-params'
+
+// Pre-launch fetch cap. The catalog is small, so we pull the full filtered set (up to
+// this many rows of the *active* type) and score/sort/paginate in JS — same small-data
+// posture as /marche's LIMIT 30. The other catalog only needs a count for its tab badge.
+// Revisit (DB-side ranking + range pagination) when a real catalog outgrows this.
+const FETCH_CAP = 500
+
+export type SearchOutcome = {
+  type: SearchType
+  // Exactly one of these carries the current page's slice; the other is empty.
+  products: ProductListing[]
+  services: ServiceListing[]
+  totalCount: number // total matches of the active type (drives the count + pagination)
+  totalPages: number
+  page: number // the clamped, in-range page actually shown
+}
+
+// ── Row shapes + mapping (mirror lib/marche/data.ts) ────────────────────────────
+
+function one<T>(embed: T | T[] | null | undefined): T | null {
+  if (Array.isArray(embed)) return embed[0] ?? null
+  return embed ?? null
+}
+
+type ProductRow = {
+  id: string
+  title: string
+  description: string | null
+  price_tnd: number | string
+  created_at: string
+  shops:
+    | { name: string | null; city: string | null }
+    | { name: string | null; city: string | null }[]
+    | null
+  product_images: { image_url: string; display_order: number }[] | null
+}
+
+function mapProduct(row: ProductRow): ProductListing {
+  const shop = one(row.shops)
+  const primary = [...(row.product_images ?? [])].sort(
+    (a, b) => a.display_order - b.display_order,
+  )[0]
+  return {
+    id: row.id,
+    title: row.title,
+    description: row.description ?? null,
+    price_tnd: Number(row.price_tnd),
+    image_url: primary?.image_url ?? null,
+    shop: { name: shop?.name ?? '', city: shop?.city ?? null },
+  }
+}
+
+type ServiceRow = {
+  id: string
+  title: string
+  description: string | null
+  starting_price_tnd: number | string | null
+  delivery_time: string | null
+  created_at: string
+  freelancer_profiles:
+    | { profile_id: string; city: string | null }
+    | { profile_id: string; city: string | null }[]
+    | null
+  categories: { name_fr: string } | { name_fr: string }[] | null
+}
+
+// ── Filter application (shared by full-fetch and head-count queries) ─────────────
+
+type AnyQuery = {
+  or: (f: string) => AnyQuery
+  in: (col: string, vals: readonly (string | number)[]) => AnyQuery
+  gte: (col: string, v: number) => AnyQuery
+  lte: (col: string, v: number) => AnyQuery
+}
+
+function applyProductFilters<Q extends AnyQuery>(
+  q: Q,
+  params: SearchParams,
+  categoryIds: string[] | null,
+): Q {
+  let out = q
+  if (params.q) {
+    const p = ilikePattern(params.q)
+    if (p) out = out.or(`title.ilike.${p},description.ilike.${p}`) as Q
+  }
+  if (categoryIds) out = out.in('category_id', categoryIds) as Q
+  if (params.ville.length) out = out.in('shops.city', params.ville) as Q
+  if (params.prixMin != null) out = out.gte('price_tnd', params.prixMin) as Q
+  if (params.prixMax != null) out = out.lte('price_tnd', params.prixMax) as Q
+  return out
+}
+
+function applyServiceFilters<Q extends AnyQuery>(
+  q: Q,
+  params: SearchParams,
+  categoryIds: string[] | null,
+): Q {
+  let out = q
+  if (params.q) {
+    const p = ilikePattern(params.q)
+    if (p) out = out.or(`title.ilike.${p},description.ilike.${p}`) as Q
+  }
+  if (categoryIds) out = out.in('category_id', categoryIds) as Q
+  if (params.ville.length) out = out.in('freelancer_profiles.city', params.ville) as Q
+  if (params.prixMin != null) out = out.gte('starting_price_tnd', params.prixMin) as Q
+  if (params.prixMax != null) out = out.lte('starting_price_tnd', params.prixMax) as Q
+  return out
+}
+
+// ── Per-type fetch (full, mapped, scored, sorted) ───────────────────────────────
+
+type Supabase = Awaited<ReturnType<typeof createClient>>
+
+async function fetchProducts(
+  supabase: Supabase,
+  params: SearchParams,
+  categoryIds: string[] | null,
+): Promise<ProductListing[]> {
+  let query = supabase
+    .from('products')
+    .select(
+      'id, title, description, price_tnd, created_at, category_id, shops!inner(name, city), product_images(image_url, display_order)',
+    )
+    .eq('status', 'active')
+    .limit(FETCH_CAP)
+  query = applyProductFilters(query as unknown as AnyQuery, params, categoryIds) as unknown as typeof query
+
+  const { data, error } = await query
+  if (error) {
+    console.error('[search] products fetch error:', error)
+    return []
+  }
+
+  const rows = (data ?? []) as unknown as ProductRow[]
+  return rows
+    .map((row) => ({
+      listing: mapProduct(row),
+      score: scoreListing(row.title, row.description, params.q),
+      price: Number(row.price_tnd),
+      createdAt: row.created_at,
+    }))
+    .sort((a, b) => compareRanked(a, b, params.tri))
+    .map((r) => r.listing)
+}
+
+async function fetchServices(
+  supabase: Supabase,
+  params: SearchParams,
+  categoryIds: string[] | null,
+): Promise<ServiceListing[]> {
+  let query = supabase
+    .from('service_listings')
+    .select(
+      'id, title, description, starting_price_tnd, delivery_time, created_at, category_id, freelancer_profiles!inner(profile_id, city), categories(name_fr)',
+    )
+    .eq('status', 'active')
+    .limit(FETCH_CAP)
+  query = applyServiceFilters(query as unknown as AnyQuery, params, categoryIds) as unknown as typeof query
+
+  const { data, error } = await query
+  if (error) {
+    console.error('[search] services fetch error:', error)
+    return []
+  }
+
+  const rows = (data ?? []) as unknown as ServiceRow[]
+
+  // Freelancer display names come from public_profiles (profiles.full_name is owner-only;
+  // a nested embed would return null for every service the viewer doesn't own).
+  const profileIds = [
+    ...new Set(
+      rows
+        .map((r) => one(r.freelancer_profiles)?.profile_id)
+        .filter((id): id is string => Boolean(id)),
+    ),
+  ]
+  const names = new Map<string, string>()
+  if (profileIds.length > 0) {
+    const { data: profiles, error: profilesError } = await supabase
+      .from('public_profiles')
+      .select('id, full_name')
+      .in('id', profileIds)
+    if (profilesError) console.error('[search] public_profiles fetch error:', profilesError)
+    for (const p of (profiles ?? []) as { id: string; full_name: string | null }[]) {
+      names.set(p.id, p.full_name ?? '')
+    }
+  }
+
+  return rows
+    .map((row) => {
+      const fp = one(row.freelancer_profiles)
+      const cat = one(row.categories)
+      const listing: ServiceListing = {
+        id: row.id,
+        title: row.title,
+        description: row.description ?? null,
+        price_starting: row.starting_price_tnd != null ? Number(row.starting_price_tnd) : null,
+        delivery_time: row.delivery_time ?? null,
+        category: cat ? { name_fr: cat.name_fr } : null,
+        freelancer: {
+          full_name: (fp?.profile_id ? names.get(fp.profile_id) : '') ?? '',
+          city: fp?.city ?? null,
+        },
+      }
+      return {
+        listing,
+        score: scoreListing(row.title, row.description, params.q),
+        price: row.starting_price_tnd != null ? Number(row.starting_price_tnd) : null,
+        createdAt: row.created_at,
+      }
+    })
+    .sort((a, b) => compareRanked(a, b, params.tri))
+    .map((r) => r.listing)
+}
+
+// ── Public entry point ──────────────────────────────────────────────────────────
+
+export async function searchMarketplace(params: SearchParams): Promise<SearchOutcome> {
+  const supabase = await createClient()
+
+  // Resolve category slugs → ids once (the categories table is shared by both catalogs).
+  // null = no category filter; [] = filter given but matched nothing → zero results.
+  let categoryIds: string[] | null = null
+  if (params.categorie.length > 0) {
+    const { data, error } = await supabase
+      .from('categories')
+      .select('id')
+      .in('slug', params.categorie)
+    if (error) console.error('[search] category resolve error:', error)
+    categoryIds = ((data ?? []) as { id: string }[]).map((r) => r.id)
+  }
+
+  // Single-catalog search: only the active type is fetched (the type switch lives in the
+  // top search-bar toggle now, so there are no cross-catalog tab counts to compute).
+  const items =
+    params.type === 'product'
+      ? await fetchProducts(supabase, params, categoryIds)
+      : await fetchServices(supabase, params, categoryIds)
+
+  const total = items.length
+  const { totalPages, safePage, start, end } = paginate(total, params.page)
+  const slice = items.slice(start, end)
+
+  return {
+    type: params.type,
+    products: params.type === 'product' ? (slice as ProductListing[]) : [],
+    services: params.type === 'service' ? (slice as ServiceListing[]) : [],
+    totalCount: total,
+    totalPages,
+    page: safePage,
+  }
+}

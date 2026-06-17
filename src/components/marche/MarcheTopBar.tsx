@@ -69,7 +69,10 @@ export function MarcheTopBar({
         {/* Left — the global marketplace search pill (kept solid white; the bar provides
             the scroll blur). */}
         <div className="min-w-0 max-w-2xl flex-1">
-          <SharedSearchBar basePath="/marche" initialType={initialType} initialQuery={initialQuery} />
+          {/* Header search is the primary typed-query entry point — it lands on
+              /recherche (the full search results surface), NOT /marche. /marche keeps its
+              own inline ?q= handling for now; a later cleanup commit removes that dead path. */}
+          <SharedSearchBar basePath="/recherche" initialType={initialType} initialQuery={initialQuery} />
         </div>
 
         {/* Right — the icon cluster. Hidden below md (mobile pass is separate). */}

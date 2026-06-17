@@ -1554,6 +1554,27 @@ export const fr: Record<string, string> = {
   'search.result_for':  "pour",
   'search.no_results':  "Aucun résultat pour cette recherche. Essayez un autre terme.",
 
+  // ─── Search results page (/recherche) ────────────────────────────────────────
+  'search.resultsCount':         "{count} résultats pour « {query} »",
+  'search.clear':                "Effacer la recherche",
+  'search.filters.title':        "Filtres",
+  'search.filters.category':     "Catégorie",
+  'search.filters.city':         "Ville",
+  'search.filters.price':        "Prix (TND)",
+  'search.filters.priceMin':     "Min",
+  'search.filters.priceMax':     "Max",
+  'search.filters.apply':        "Appliquer",
+  'search.filters.clear':        "Effacer les filtres",
+  'search.filters.close':        "Fermer",
+  'search.empty.noResults':      "Aucun résultat pour « {query} »",
+  'search.empty.filtered':       "Aucun résultat",
+  'search.empty.subtitle':       "Ajustez votre recherche ou parcourez nos catégories populaires.",
+  'search.empty.browseAll':      "Parcourir tout",
+  'search.pagination.label':     "Pagination",
+  'search.pagination.prev':      "Précédent",
+  'search.pagination.next':      "Suivant",
+  'search.pagination.pageOf':    "Page {current} sur {total}",
+
   // ─── Disputes (litiges) — party-facing creation + display (PR-P3) ────────────
   'dispute.section_title':                "Litige sur cette commande",
   'dispute.button_create':                "Ouvrir un litige",
