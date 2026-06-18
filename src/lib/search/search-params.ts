@@ -91,17 +91,32 @@ export function otherType(type: SearchType): SearchType {
   return type === 'product' ? 'service' : 'product'
 }
 
-/** Weighted match score: title hit 2×, description hit 1×. Empty term → 0. */
+/**
+ * Strip diacritics via NFD normalization (é→e, ç→c, à→a, …). This mirrors the write-time
+ * `unaccent` applied in the FTS generated column, so a query the app accent-strips here
+ * lines up with the accent-stripped lexemes stored in `search_vector`. Non-Latin scripts
+ * (e.g. Arabic, which carries meaning in its marks) pass through unchanged — NFD only
+ * decomposes Latin combining diacritics in the U+0300–U+036F range.
+ */
+export function stripAccents(s: string): string {
+  return s.normalize('NFD').replace(/[̀-ͯ]/g, '')
+}
+
+/**
+ * Weighted match score: title hit 2×, description hit 1×. Empty term → 0. Accent- and
+ * case-insensitive (both sides are stripAccents+lowercased) so JS ordering stays aligned
+ * with the accent-insensitive FTS filter that selected these rows in the first place.
+ */
 export function scoreListing(
   title: string | null,
   description: string | null,
   term: string,
 ): number {
-  const needle = term.trim().toLowerCase()
+  const needle = stripAccents(term.trim().toLowerCase())
   if (!needle) return 0
   let score = 0
-  if ((title ?? '').toLowerCase().includes(needle)) score += 2
-  if ((description ?? '').toLowerCase().includes(needle)) score += 1
+  if (stripAccents((title ?? '').toLowerCase()).includes(needle)) score += 2
+  if (stripAccents((description ?? '').toLowerCase()).includes(needle)) score += 1
   return score
 }
 

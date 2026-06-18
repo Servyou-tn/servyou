@@ -18,6 +18,7 @@ import {
   parseSearchParams,
   pickCategoryIds,
   scoreListing,
+  stripAccents,
   type Ranked,
 } from './search-params'
 
@@ -79,6 +80,33 @@ describe('scoreListing', () => {
   it('is case-insensitive and 0 for an empty term', () => {
     expect(scoreListing('SAC', null, 'sac')).toBe(2)
     expect(scoreListing('Sac', 'sac', '')).toBe(0)
+  })
+
+  it('is accent-insensitive on both sides (matches FTS recall)', () => {
+    // accented field, plain query
+    expect(scoreListing('Crème hydratante', null, 'creme')).toBe(2)
+    // plain field, accented query
+    expect(scoreListing('Creme', null, 'crème')).toBe(2)
+    expect(scoreListing('Réparation', 'écran cassé', 'ecran')).toBe(1)
+  })
+})
+
+describe('stripAccents', () => {
+  it('folds Latin diacritics to their base letters', () => {
+    expect(stripAccents('é')).toBe('e')
+    expect(stripAccents('Téléphone')).toBe('Telephone')
+    expect(stripAccents('çà')).toBe('ca')
+  })
+
+  it('leaves unaccented text untouched and handles the empty string', () => {
+    expect(stripAccents('iphone')).toBe('iphone')
+    expect(stripAccents('')).toBe('')
+  })
+
+  it('passes non-Latin scripts (Arabic) through without throwing', () => {
+    const arabic = 'تصميم شعار'
+    expect(() => stripAccents(arabic)).not.toThrow()
+    expect(stripAccents(arabic)).toBe(arabic)
   })
 })
 

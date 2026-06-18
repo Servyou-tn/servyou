@@ -3,29 +3,37 @@ import type { ProductListing } from '@/components/listings/ProductListingCard'
 import type { ServiceListing } from '@/components/listings/ServiceListingCard'
 import {
   compareRanked,
-  ilikePattern,
   paginate,
   pickCategoryIds,
   scoreListing,
+  stripAccents,
   type SearchParams,
   type SearchType,
 } from './search-params'
 
 // The /recherche query layer. /marche is the browse surface (newest-first, single
-// catalog); /recherche is the typed-query surface: ILIKE match on title+description,
+// catalog); /recherche is the typed-query surface: FTS match on title+description,
 // refinable by category / city / price, sortable, paginated. Search is single-type
 // (Produits OR Services) — the 'Tous' tab was deliberately dropped at MVP, so there is
 // no cross-type merge: pertinence runs within one catalog.
 //
-// Ranking is intentionally simple: a case-insensitive ILIKE filter at the DB, then a
-// weighted score in JS (title match 2×, description match 1×). Upgrade to pg_trgm or
-// Postgres full-text search when search volume justifies the index cost — not before.
+// Search strategy: Postgres FTS via tsvector columns (title weighted A, description
+// weighted B) with GIN indexes and websearch_to_tsquery. Accent normalization happens at
+// write time via unaccent in the generated column, and at query time via NFD strip on the
+// client. The DB does the *matching*; ordering still runs in JS (compareRanked) so the
+// four sorts — pertinence (weighted-score heuristic), recent, prix_asc, prix_desc — share
+// one tested code path and null prices ("sur devis") sort last consistently in both price
+// directions. The A/B setweight is stored in the vector for a future ts_rank ordering but
+// does NOT affect today's ordering (that's the JS scoreListing heuristic above). True
+// ts_rank ordering is a deliberate follow-up (needs an RPC/raw query; not worth it at this
+// catalog size).
 //
 // The pure URL/ranking/pagination helpers live in ./search-params (re-exported below) so
 // they can be unit-tested without this module's Supabase server-client dependency.
 export {
   parseSearchParams,
   scoreListing,
+  stripAccents,
   compareRanked,
   paginate,
   ilikePattern,
@@ -102,10 +110,27 @@ type ServiceRow = {
 // ── Filter application (shared by full-fetch and head-count queries) ─────────────
 
 type AnyQuery = {
-  or: (f: string) => AnyQuery
   in: (col: string, vals: readonly (string | number)[]) => AnyQuery
   gte: (col: string, v: number) => AnyQuery
   lte: (col: string, v: number) => AnyQuery
+  textSearch: (
+    col: string,
+    query: string,
+    opts: { type: 'websearch'; config: string },
+  ) => AnyQuery
+}
+
+// The full-text match: accent-strip the query (to align with the unaccent'd lexemes in
+// search_vector) then hand it to websearch_to_tsquery, which AND-joins the words and is
+// order-independent — so "iphone pro" and "pro iphone" both match a row carrying both
+// words. Empty-after-strip queries skip the clause (filters still apply on their own).
+function applySearch<Q extends AnyQuery>(q: Q, term: string): Q {
+  const qNormalized = stripAccents(term.trim())
+  if (!qNormalized) return q
+  return q.textSearch('search_vector', qNormalized, {
+    type: 'websearch',
+    config: 'simple',
+  }) as Q
 }
 
 function applyProductFilters<Q extends AnyQuery>(
@@ -113,11 +138,7 @@ function applyProductFilters<Q extends AnyQuery>(
   params: SearchParams,
   categoryIds: string[] | null,
 ): Q {
-  let out = q
-  if (params.q) {
-    const p = ilikePattern(params.q)
-    if (p) out = out.or(`title.ilike.${p},description.ilike.${p}`) as Q
-  }
+  let out = applySearch(q, params.q)
   if (categoryIds) out = out.in('category_id', categoryIds) as Q
   if (params.ville.length) out = out.in('shops.city', params.ville) as Q
   if (params.prixMin != null) out = out.gte('price_tnd', params.prixMin) as Q
@@ -130,11 +151,7 @@ function applyServiceFilters<Q extends AnyQuery>(
   params: SearchParams,
   categoryIds: string[] | null,
 ): Q {
-  let out = q
-  if (params.q) {
-    const p = ilikePattern(params.q)
-    if (p) out = out.or(`title.ilike.${p},description.ilike.${p}`) as Q
-  }
+  let out = applySearch(q, params.q)
   if (categoryIds) out = out.in('category_id', categoryIds) as Q
   if (params.ville.length) out = out.in('freelancer_profiles.city', params.ville) as Q
   if (params.prixMin != null) out = out.gte('starting_price_tnd', params.prixMin) as Q
