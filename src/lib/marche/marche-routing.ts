@@ -26,6 +26,17 @@ export function marcheEngineHref(type: SearchType): string {
   return MARCHE_ENGINE_PATHS[type]
 }
 
+/**
+ * The consumer-homepage destination for a catalog type. The homepage (/) is itself a
+ * browse surface (greeting + the type's grid), so its top-bar toggle switches the catalog
+ * in place via ?type= instead of leaving for the /marche engines. Product is the canonical
+ * default → bare `/` (parseSearchParams treats an absent type as product); service carries
+ * the explicit ?type=service.
+ */
+export function homeEngineHref(type: SearchType): string {
+  return type === 'service' ? '/?type=service' : '/'
+}
+
 export type MarcheSidebarNav = {
   /** On any /marche route → the Marché accordion is expanded. */
   onMarche: boolean

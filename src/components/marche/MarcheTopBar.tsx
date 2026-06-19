@@ -1,14 +1,13 @@
 'use client'
 
-import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
-import { Bell, Settings } from 'lucide-react'
+import { Bell } from 'lucide-react'
 import { useLang } from '@/components/LangProvider'
 import { t } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
 import { FOCUS_RING } from '@/components/layout/styles'
-import { marcheEngineHref, resolveMarcheSidebarNav } from '@/lib/marche/marche-routing'
+import { marcheEngineHref, homeEngineHref, resolveMarcheSidebarNav } from '@/lib/marche/marche-routing'
 import { SharedSearchBar } from '@/components/dashboard/shell/SharedSearchBar'
 import { ProfileAvatarMenu, type TopBarUser } from './ProfileAvatarMenu'
 
@@ -33,25 +32,35 @@ function useScrolled(threshold = 8): boolean {
 // the content column (right of the sidebar). At rest it's transparent and the pill +
 // icon cluster float over the page; once content scrolls underneath, the WHOLE bar gains
 // a bg-white/80 + backdrop-blur surface and a bottom border so what passes under stays
-// legible. Left: the global marketplace search pill (solid white, the bar supplies the
-// blur now). Right: Settings (pill with label ≥xl, icon-only below), a visual-only bell,
-// and the profile avatar menu. The cluster is hidden below md (mobile gets its own pass).
+// legible. Right cluster (pinned hard right, one tight group): the global marketplace
+// search pill, then a visual-only bell, then the profile avatar menu (whose dropdown is
+// the single canonical door to /parametres). Bell + avatar show ≥md; the search stays
+// visible at every width (mobile owns their small-screen treatment in a separate pass).
+// Left slot: an optional welcome (greeting + quiet subtitle) — ONLY the consumer homepage
+// passes `heading`/`subtitle`; every other page leaves it empty so the cluster is the
+// bar's only content.
 export function MarcheTopBar({
   user,
   initialType,
   initialQuery,
+  heading,
+  subtitle,
 }: {
   user: TopBarUser | null
   initialType: SearchType
   initialQuery: string
+  heading?: string
+  subtitle?: string
 }) {
   const lang = useLang()
   const scrolled = useScrolled()
   const pathname = usePathname()
   // On the two browse engines the toggle is the cross-engine compass (Produits ⇄ Services).
-  // Off them (/recherche, /categories, the account pages) it stays the search-scope toggle —
-  // omitting toggleHref leaves SharedSearchBar's original /recherche behavior untouched.
+  // On the consumer homepage (/) it switches the home catalog in place via ?type=. Off both
+  // (/recherche, /categories, the account pages) it stays the search-scope toggle — omitting
+  // toggleHref leaves SharedSearchBar's original /recherche behavior untouched.
   const { onMarche } = resolveMarcheSidebarNav(pathname)
+  const onHome = pathname === '/'
 
   // Shared circular-button surface (44px tall, WCAG touch target). Hover scale + active
   // press are motion-safe (the prefers-reduced-motion query) so they self-disable.
@@ -73,34 +82,31 @@ export function MarcheTopBar({
       )}
     >
       <div className="mx-auto flex max-w-7xl items-center gap-4 px-6 py-3 lg:px-8">
-        {/* Left — the global marketplace search pill (kept solid white; the bar provides
-            the scroll blur). */}
-        <div className="min-w-0 max-w-2xl flex-1">
-          {/* Header search is the primary typed-query entry point — it lands on
-              /recherche (the full search results surface), NOT /marche. /marche keeps its
-              own inline ?q= handling for now; a later cleanup commit removes that dead path. */}
-          <SharedSearchBar
-            basePath="/recherche"
-            initialType={initialType}
-            initialQuery={initialQuery}
-            toggleHref={onMarche ? marcheEngineHref : undefined}
-          />
-        </div>
+        {/* Left slot — the homepage welcome (greeting + quiet subtitle), vertically
+            centered with the right cluster. Only the consumer homepage passes these;
+            every other page omits them, leaving the slot empty. */}
+        {(heading || subtitle) && (
+          <div className="min-w-0 flex-1">
+            {heading && (
+              <h1 className="truncate text-2xl font-bold text-[#0A0A0A] md:text-3xl">{heading}</h1>
+            )}
+            {subtitle && <p className="mt-0.5 truncate text-xs text-[#6B6B6B]">{subtitle}</p>}
+          </div>
+        )}
 
-        {/* Right — the icon cluster. Hidden below md (mobile pass is separate). */}
-        <div className="hidden shrink-0 items-center gap-3 md:flex">
-          {/* Settings — a pill (gear + label) ≥xl, collapsing to an icon-only circle below
-              xl to save width. */}
-          <Link
-            href="/parametres"
-            aria-label={t('marche.sidebar.parametres', lang)}
-            className={cn(iconBtnBase, 'w-11 gap-2 xl:w-auto xl:px-4')}
-          >
-            <Settings className="h-4 w-4 text-text-primary" aria-hidden="true" />
-            <span className="hidden text-sm font-medium text-text-primary xl:inline">
-              {t('marche.sidebar.parametres', lang)}
-            </span>
-          </Link>
+        {/* Right cluster — search pill + bell + avatar, pinned hard right as one tight
+            group. ml-auto (≥md) carries it right even when the welcome slot is empty; on
+            mobile it stretches (flex-1) so the search stays usable. Search is the primary
+            typed-query entry point — it lands on /recherche. Bell + avatar show ≥md. */}
+        <div className="flex min-w-0 flex-1 items-center gap-3 md:ml-auto md:flex-none">
+          <div className="min-w-0 flex-1 md:w-80 md:flex-none lg:w-96">
+            <SharedSearchBar
+              basePath="/recherche"
+              initialType={initialType}
+              initialQuery={initialQuery}
+              toggleHref={onMarche ? marcheEngineHref : onHome ? homeEngineHref : undefined}
+            />
+          </div>
 
           <button
             type="button"
@@ -108,7 +114,7 @@ export function MarcheTopBar({
             // for now: the bell shows an unread dot but opens no panel.
             onClick={() => console.log('Notifications coming soon')}
             aria-label={`${t('dashboard.topbar.notifications', lang)} — ${t('marche.sidebar.coming_soon', lang)}`}
-            className={cn(circleBtn, 'relative')}
+            className={cn(circleBtn, 'relative hidden shrink-0 md:inline-flex')}
           >
             <Bell className="h-5 w-5 text-text-primary" aria-hidden="true" />
             <span
@@ -117,7 +123,9 @@ export function MarcheTopBar({
             />
           </button>
 
-          <ProfileAvatarMenu user={user} triggerClassName={circleBtn} />
+          <div className="hidden shrink-0 md:block">
+            <ProfileAvatarMenu user={user} triggerClassName={circleBtn} />
+          </div>
         </div>
       </div>
     </div>

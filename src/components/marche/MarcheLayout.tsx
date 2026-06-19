@@ -20,19 +20,31 @@ export function MarcheLayout({
   searchType = 'product',
   searchQuery = '',
   sidebarFilter,
+  heading,
+  subtitle,
   children,
 }: {
   user: TopBarUser | null
   searchType?: SearchType
   searchQuery?: string
   sidebarFilter?: ReactNode
+  // Optional top-bar welcome (greeting + quiet subtitle), shown in the bar's left slot.
+  // Only the consumer homepage passes these; every other page omits them.
+  heading?: string
+  subtitle?: string
   children: ReactNode
 }) {
   return (
     <div className="flex min-h-screen bg-white">
       <MarcheSidebar sidebarFilter={sidebarFilter} />
       <main className="min-w-0 flex-1">
-        <MarcheTopBar user={user} initialType={searchType} initialQuery={searchQuery} />
+        <MarcheTopBar
+          user={user}
+          initialType={searchType}
+          initialQuery={searchQuery}
+          heading={heading}
+          subtitle={subtitle}
+        />
         <div className="mx-auto max-w-7xl px-6 py-6 lg:px-8 lg:py-8">{children}</div>
       </main>
     </div>

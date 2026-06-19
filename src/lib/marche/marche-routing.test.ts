@@ -8,6 +8,7 @@
 import { describe, it, expect } from 'vitest'
 import {
   marcheEngineHref,
+  homeEngineHref,
   marcheRedirectTarget,
   resolveMarcheSidebarNav,
 } from './marche-routing'
@@ -71,6 +72,19 @@ describe('marcheEngineHref', () => {
     expect(marcheEngineHref('service')).not.toBe(marcheEngineHref('product'))
     expect(marcheEngineHref('product')).toBe('/marche/produits')
     expect(marcheEngineHref('service')).toBe('/marche/services')
+  })
+})
+
+// The consumer-homepage toggle destination: switches the home catalog in place via ?type=.
+// Product is the canonical default (bare `/`); service carries the explicit ?type=service.
+describe('homeEngineHref', () => {
+  it('maps product to the bare homepage and service to ?type=service', () => {
+    expect(homeEngineHref('product')).toBe('/')
+    expect(homeEngineHref('service')).toBe('/?type=service')
+  })
+
+  it('the two types resolve to distinct homepage destinations', () => {
+    expect(homeEngineHref('product')).not.toBe(homeEngineHref('service'))
   })
 })
 

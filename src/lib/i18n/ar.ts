@@ -984,7 +984,7 @@ export const ar: Record<string, string> = {
   'marche.sidebar.commandes':        "Mes commandes",
   'marche.sidebar.favoris':          "Mes favoris",
   'marche.sidebar.missions':         "Mes missions",
-  'marche.sidebar.parametres':       "Mes paramètres",
+  'marche.sidebar.parametres':       "Paramètres",
   'marche.sidebar.coming_soon':      "Bientôt disponible",
   'marche.empty.products':           "Pas encore de produits disponibles",
   'marche.empty.products_subtitle':  "Revenez bientôt — de nouveaux articles arrivent.",

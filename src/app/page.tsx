@@ -10,7 +10,8 @@ import { Journeys } from '@/components/landing/Journeys'
 import { HowItWorks } from '@/components/landing/HowItWorks'
 import { Faq } from '@/components/landing/Faq'
 import { FinalCtaFooter } from '@/components/landing/FinalCtaFooter'
-import { getConsumerHomepageData } from '@/lib/homepage/homepage-data'
+import { getActiveProducts, getActiveServices } from '@/lib/marche/data'
+import type { SearchType } from '@/lib/search/search-params'
 import { ConsumerHomepage } from '@/components/home/ConsumerHomepage'
 
 // / branches by viewer:
@@ -18,7 +19,11 @@ import { ConsumerHomepage } from '@/components/home/ConsumerHomepage'
 //   • logged-in consumer (seller_type = null, not admin) → discovery homepage
 //   • logged-in shop owner / freelancer / admin → marketing landing (their role
 //     dashboards have their own entry points; there is no / redirect to preserve today)
-export default async function HomePage() {
+export default async function HomePage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>
+}) {
   const lang = await getLang()
 
   const supabase = await createClient()
@@ -38,7 +43,13 @@ export default async function HomePage() {
     const isAdmin = Boolean(profile?.is_admin)
 
     if (sellerType === null && !isAdmin) {
-      const data = await getConsumerHomepageData(user.id)
+      // The home IS the marketplace browse: the top-bar toggle drives ?type= in place.
+      // Product is the canonical default; only ?type=service flips to the services catalog.
+      const sp = await searchParams
+      const rawType = Array.isArray(sp.type) ? sp.type[0] : sp.type
+      const type: SearchType = rawType === 'service' ? 'service' : 'product'
+      const products = type === 'product' ? await getActiveProducts() : []
+      const services = type === 'service' ? await getActiveServices() : []
       return (
         <ConsumerHomepage
           user={{
@@ -48,7 +59,9 @@ export default async function HomePage() {
             seller_type: null,
           }}
           fullName={profile?.full_name ?? null}
-          data={data}
+          type={type}
+          products={products}
+          services={services}
           lang={lang}
         />
       )
