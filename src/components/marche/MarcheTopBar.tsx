@@ -3,7 +3,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Bell } from 'lucide-react'
 import { useLang } from '@/components/LangProvider'
 import { t } from '@/lib/i18n'
@@ -58,6 +58,21 @@ export function MarcheTopBar({
   const onHome = pathname === '/'
   const hasWelcome = Boolean(heading || subtitle)
 
+  // Publish the bar's live height into --marche-topbar-h so the sidebar can stick directly
+  // beneath it. The bar's height varies (the homepage welcome makes it taller than the browse
+  // pages, and it reflows by breakpoint), so we measure rather than hardcode an offset.
+  const barRef = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    const el = barRef.current
+    if (!el) return
+    const publish = () =>
+      document.documentElement.style.setProperty('--marche-topbar-h', `${el.offsetHeight}px`)
+    publish()
+    const observer = new ResizeObserver(publish)
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [])
+
   // The active toggle option — the catalog type the page is on (fed by the page), or the
   // navigation-only type when the user is on its route.
   const activeToggle: ToggleType = pathname.startsWith('/boutiques')
@@ -82,6 +97,7 @@ export function MarcheTopBar({
 
   return (
     <div
+      ref={barRef}
       className={cn(
         'sticky top-0 z-40 border-b transition-colors duration-200 ease-out',
         scrolled
@@ -89,7 +105,9 @@ export function MarcheTopBar({
           : 'border-transparent bg-transparent',
       )}
     >
-      <div className="mx-auto flex max-w-7xl flex-col gap-2 px-4 py-3 md:flex-row md:items-center md:gap-4 md:px-6 lg:gap-6 lg:px-8">
+      {/* Full width — the bar spans across the sidebar + content columns below, so the logo
+          anchors the true far left. */}
+      <div className="flex w-full flex-col gap-2 px-4 py-3 md:flex-row md:items-center md:gap-4 md:px-6 lg:gap-6 lg:px-8">
         {/* Welcome — home only. Mobile: its own row above the controls. Desktop: between the logo
             and the search (md:order-2), and never truncates (it truncates on mobile only). */}
         {hasWelcome && (
@@ -113,10 +131,10 @@ export function MarcheTopBar({
             <Image
               src="/brand/logo/servyou-hero.png"
               alt="Servyou"
-              width={44}
-              height={44}
+              width={48}
+              height={48}
               priority
-              className="h-11 w-auto"
+              className="h-12 w-auto"
             />
           </Link>
 
