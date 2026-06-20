@@ -89,7 +89,7 @@ export function SidebarSelectFilter({
         }`}
       >
         <div className="overflow-hidden">
-          <div role="radiogroup" aria-label={groupLabel} className="pb-3">
+          <div role="radiogroup" aria-label={groupLabel} className="space-y-0.5 pb-3">
             {options.map((o) => (
               <label
                 key={o.value}
@@ -100,7 +100,10 @@ export function SidebarSelectFilter({
                   name={`${panelId}-${paramName}`}
                   checked={o.value === current}
                   onChange={() => select(o.value)}
-                  className={`h-4 w-4 shrink-0 border-border-subtle text-brand-accent ${FOCUS_RING}`}
+                  // Minimal, native-free control to match the Marché checkboxes' light weight
+                  // (no heavy native radio "ring"): a small outlined circle that fills with
+                  // brand-accent when selected.
+                  className={`h-4 w-4 shrink-0 cursor-pointer appearance-none rounded-full border border-border-subtle bg-white transition-colors checked:border-brand-accent checked:bg-brand-accent ${FOCUS_RING}`}
                 />
                 <span className="line-clamp-1">{o.label}</span>
               </label>
