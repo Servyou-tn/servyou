@@ -96,14 +96,13 @@ function SidebarNavItem({
     return (
       <div className="flex flex-col">
         <div className={`${NAV_BASE} ${pill} justify-between`}>
-          <Link
-            href={href}
-            aria-current={active ? 'page' : undefined}
-            className={`flex min-w-0 flex-1 items-center gap-2 rounded-full ${FOCUS_RING}`}
-          >
+          {/* The expandable item is always the active route, so the label is a no-op (no
+              pointless re-navigation to the page you're already on). The chevron button beside
+              it is the ONLY interactive control — it toggles the filter panel. */}
+          <span aria-current="page" className="flex min-w-0 flex-1 items-center gap-2">
             <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />
             <span className="whitespace-nowrap">{label}</span>
-          </Link>
+          </span>
           <button
             type="button"
             onClick={onToggle}
