@@ -7,7 +7,9 @@ import { useEffect, useState, type ReactNode } from 'react'
 import { ChevronDown } from 'lucide-react'
 import { useLang } from '@/components/LangProvider'
 import { t } from '@/lib/i18n'
-import { FOCUS_RING, CARD_SHADOW } from '@/components/layout/styles'
+import { cn } from '@/lib/utils'
+import { CARD_SHADOW } from '@/components/layout/styles'
+import { interactiveSurface, FOCUS_RING } from '@/components/ui/interactive-surface'
 import { marcheEngineHref, resolveMarcheSidebarNav } from '@/lib/marche/marche-routing'
 import { StorefrontIcon, PackageIcon, HeartIcon, BriefcaseIcon } from './icons'
 import { SidebarSelectFilter } from './SidebarSelectFilter'
@@ -50,13 +52,9 @@ const MARCHE_PANEL_ID = 'sidebar-marche-filter'
 const COMMANDES_PANEL_ID = 'sidebar-commandes-filter'
 const FAVORIS_PANEL_ID = 'sidebar-favoris-filter'
 
-// Shared pill styling — one source of truth so every nav item (Marché + the account
-// destinations) is byte-identical. Active items get the blue treatment; idle items the
-// white pill with a hover lift.
-const NAV_BASE = `flex h-11 items-center gap-2 rounded-full px-4 text-sm font-medium transition-all duration-200 ease-out ${FOCUS_RING}`
-const ACTIVE_PILL = 'border border-brand-accent/30 bg-brand-accent/10 text-brand-accent shadow-sm'
-const IDLE_PILL =
-  'border border-border-subtle bg-white text-text-primary shadow-sm hover:bg-slate-50 hover:shadow-md'
+// The pill layout (shape + padding + text). The surface (height, idle/active/hover, focus) comes
+// from the shared interactiveSurface() — one source of truth across the sidebar + top bar.
+const NAV_LAYOUT = 'flex items-center gap-2 rounded-full px-4 text-sm font-medium'
 
 // One sidebar nav item — a navigating pill (icon + label) with a unified chevron affordance.
 // Filter-bearing items always show a down-chevron (˅ collapsed → ^ expanded). When the item is
@@ -92,7 +90,6 @@ function SidebarNavItem({
   hideAria?: string
   filterContent?: ReactNode
 }) {
-  const pill = active ? ACTIVE_PILL : IDLE_PILL
   const chevronColor = active ? 'text-brand-accent' : 'text-text-muted'
 
   const labelInner = (
@@ -105,7 +102,7 @@ function SidebarNavItem({
   if (expandable) {
     return (
       <div className="flex flex-col">
-        <div className={`${NAV_BASE} ${pill} justify-between`}>
+        <div className={cn(NAV_LAYOUT, interactiveSurface(active), 'justify-between')}>
           {/* The label navigates (to go to that page) when inactive; on the active route it's a
               no-op — you're already there. Either way the chevron button beside it is the ONLY
               control that toggles the filter panel. */}
@@ -160,7 +157,7 @@ function SidebarNavItem({
     <Link
       href={href}
       aria-current={active ? 'page' : undefined}
-      className={`${NAV_BASE} ${pill} ${filterBearing ? 'justify-between' : ''}`}
+      className={cn(NAV_LAYOUT, interactiveSurface(active), filterBearing && 'justify-between')}
     >
       <span className="flex min-w-0 items-center gap-2">{labelInner}</span>
       {filterBearing && (

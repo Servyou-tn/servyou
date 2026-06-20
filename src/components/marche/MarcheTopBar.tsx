@@ -6,7 +6,7 @@ import { Bell } from 'lucide-react'
 import { useLang } from '@/components/LangProvider'
 import { t } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
-import { FOCUS_RING } from '@/components/layout/styles'
+import { interactiveSurface, SURFACE_HOVER, FOCUS_RING } from '@/components/ui/interactive-surface'
 import { toggleDestination } from '@/lib/marche/marche-routing'
 import type { SearchType, ToggleType } from '@/lib/search/search-params'
 import { SegmentedToggle } from './SegmentedToggle'
@@ -61,11 +61,16 @@ export function MarcheTopBar({
       : initialType
   const hrefFor = (type: ToggleType) => toggleDestination(type, { onHome })
 
-  // Shared circular-button surface (44px tall, WCAG touch target).
-  const circleBtn = cn(
-    'inline-flex h-11 w-11 items-center justify-center rounded-full border border-border-subtle bg-white shadow-sm',
-    'transition-all duration-150 ease-out hover:bg-slate-50 hover:shadow-md',
-    'motion-safe:hover:scale-[1.04] motion-safe:active:scale-[0.96]',
+  // Bell — same white circular surface as the pills (idle + hover + focus). Avatar — the
+  // brand-blue circle inside IS the visual, so its wrapper carries only the shared hover lift
+  // + focus ring (no white bg/border) for keyboard-nav consistency.
+  const bellBtn = cn(
+    'relative inline-flex w-11 shrink-0 items-center justify-center rounded-full',
+    interactiveSurface(false),
+  )
+  const avatarBtn = cn(
+    'inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full',
+    SURFACE_HOVER,
     FOCUS_RING,
   )
 
@@ -111,7 +116,7 @@ export function MarcheTopBar({
             // TODO: Real notifications system — see roadmap.md, post-MVP. Visual-only for now.
             onClick={() => console.log('Notifications coming soon')}
             aria-label={`${t('dashboard.topbar.notifications', lang)} — ${t('marche.sidebar.coming_soon', lang)}`}
-            className={cn(circleBtn, 'relative shrink-0')}
+            className={bellBtn}
           >
             <Bell className="h-5 w-5 text-text-primary" aria-hidden="true" />
             <span
@@ -121,7 +126,7 @@ export function MarcheTopBar({
           </button>
 
           <div className="shrink-0">
-            <ProfileAvatarMenu user={user} triggerClassName={circleBtn} />
+            <ProfileAvatarMenu user={user} triggerClassName={avatarBtn} />
           </div>
         </div>
       </div>

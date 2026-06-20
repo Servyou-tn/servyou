@@ -4,6 +4,7 @@ import { useRef, useState, type FormEvent } from 'react'
 import { useRouter } from 'next/navigation'
 import { Search, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { interactiveSurface } from '@/components/ui/interactive-surface'
 import type { ToggleType } from '@/lib/search/search-params'
 
 // Compact, premium search pill that expands on focus (Google-style). On desktop it's ~200px
@@ -38,7 +39,11 @@ export function ExpandableSearch({
     <form
       onSubmit={onSubmit}
       className={cn(
-        'group flex h-11 items-center gap-2 rounded-full border border-border-subtle bg-white px-3.5 transition-all duration-300 ease-out',
+        // Same surface as a pill (h-11, white, border, shadow, hover) — just the search shape.
+        'group flex items-center gap-2 rounded-full px-3.5',
+        interactiveSurface(false),
+        // A 300ms width transition (overrides the surface's 200ms) for the smooth expand.
+        'transition-all duration-300 ease-out',
         'focus-within:border-brand-accent/50 focus-within:shadow-sm focus-within:ring-4 focus-within:ring-brand-accent/10',
         // Mobile: full width (own row). Desktop: compact, expanding on focus / when it has a value.
         'w-full',
