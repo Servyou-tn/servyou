@@ -107,8 +107,10 @@ export function MarcheTopBar({
       )}
     >
       {/* Logo (far left) · spacer · right cluster. Mobile (<md) is a two-row grid; md+ is one
-          flex row. The bar spans full width across the sidebar + content columns below. */}
-      <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-3 gap-y-2 px-4 py-3 md:flex md:w-full md:gap-x-4 md:px-6 lg:gap-x-6 lg:px-8">
+          flex row. The bar spans full width across the sidebar + content columns below. The LEFT
+          padding is tighter than the right so the logo hugs the viewport edge while the right
+          cluster keeps its normal inset. */}
+      <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-3 gap-y-2 py-3 pl-2 pr-4 md:flex md:w-full md:gap-x-4 md:pl-3 md:pr-6 lg:gap-x-6 lg:pl-4 lg:pr-8">
         {/* S logo — alone on the far left. Clean mark (no border/shadow/hover), Link home.
             Slightly larger on desktop where it balances against the welcome heading. */}
         <Link
@@ -119,10 +121,10 @@ export function MarcheTopBar({
           <Image
             src="/brand/logo/servyou-hero.png"
             alt="Servyou"
-            width={80}
-            height={80}
+            width={96}
+            height={96}
             priority
-            className="h-14 w-auto md:h-20"
+            className="h-16 w-auto md:h-24"
           />
         </Link>
 
