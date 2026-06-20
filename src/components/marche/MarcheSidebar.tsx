@@ -102,7 +102,7 @@ export function MarcheSidebar({ sidebarFilter }: { sidebarFilter?: ReactNode }) 
                   className={`-mr-1 flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-full text-text-muted transition-colors hover:bg-black/5 ${FOCUS_RING}`}
                 >
                   <ChevronDown
-                    className={`h-4 w-4 transition-transform duration-200 ease-in-out ${filtersOpen ? '' : 'rotate-180'}`}
+                    className={`h-4 w-4 transition-transform duration-200 ease-in-out ${filtersOpen ? 'rotate-180' : ''}`}
                     aria-hidden="true"
                   />
                 </button>
