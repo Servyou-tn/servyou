@@ -4,7 +4,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect, useState, type ReactNode } from 'react'
-import { ChevronDown, ChevronRight } from 'lucide-react'
+import { ChevronDown } from 'lucide-react'
 import { useLang } from '@/components/LangProvider'
 import { t } from '@/lib/i18n'
 import { FOCUS_RING, CARD_SHADOW } from '@/components/layout/styles'
@@ -13,11 +13,10 @@ import { StorefrontIcon, PackageIcon, HeartIcon, BriefcaseIcon } from './icons'
 
 type IconCmp = (props: React.SVGProps<SVGSVGElement>) => React.ReactElement
 
-// The three account destinations under the Marché accordion. Each lights up by
-// longest-prefix match (so /mes-missions/nouvelle keeps "Mes missions" active). When a page
-// passes a `sidebarFilter`, the matching active item expands to host it — `showAria`/`hideAria`
-// (hardcoded French, per the established pattern) label its chevron. Mes missions has none: no
-// sidebar filter today, so it stays a plain link (a separate future PR).
+// The three account destinations. Each lights up by longest-prefix match (so
+// /mes-missions/nouvelle keeps "Mes missions" active). Filter-bearing items carry
+// `showAria`/`hideAria` (hardcoded French) for their chevron; Mes missions has none (no
+// sidebar filter today — a separate future PR), so it renders without a chevron.
 const ACCOUNT_ITEMS: {
   key: string
   href: string
@@ -44,48 +43,141 @@ const ACCOUNT_ITEMS: {
 
 const PRODUITS_HREF = marcheEngineHref('product')
 
-// The Marché filter panel's id — referenced by its chevron toggle's aria-controls.
+// The Marché filter panel's id + the account item's filter-panel id (only one of each is
+// ever expanded at a time) — referenced by their chevron toggles' aria-controls.
 const FILTER_PANEL_ID = 'marche-sidebar-filters'
-
-// The expandable account item's filter-panel id (only one account item expands at a time).
 const ACCOUNT_FILTER_PANEL_ID = 'consumer-sidebar-account-filter'
+
+// Shared pill styling — one source of truth so every nav item (Marché + the account
+// destinations) is byte-identical. Active items get the blue treatment; idle items the
+// white pill with a hover lift.
+const NAV_BASE = `flex h-11 items-center gap-2 rounded-full px-4 text-sm font-medium transition-all duration-200 ease-out ${FOCUS_RING}`
+const ACTIVE_PILL = 'border border-brand-accent/30 bg-brand-accent/10 text-brand-accent shadow-sm'
+const IDLE_PILL =
+  'border border-border-subtle bg-white text-text-primary shadow-sm hover:bg-slate-50 hover:shadow-md'
+
+// One sidebar nav item — a navigating pill (icon + label) with a unified chevron affordance:
+// filter-bearing items always show a down-chevron (˅ collapsed → ^ expanded, the accordion
+// convention). When the item is the active route AND its page supplied a filter, the chevron
+// becomes a SEPARATE toggle button that expands the filter panel below (an <a> can't contain a
+// <button>, hence the split). Otherwise the chevron is a decorative "has filters" hint on the
+// nav link. Non-filter-bearing items (Mes missions) show no chevron.
+function SidebarNavItem({
+  href,
+  Icon,
+  label,
+  active,
+  filterBearing,
+  expandable,
+  open,
+  onToggle,
+  panelId,
+  showAria,
+  hideAria,
+  filterContent,
+}: {
+  href: string
+  Icon: IconCmp
+  label: string
+  active: boolean
+  filterBearing: boolean
+  expandable: boolean
+  open?: boolean
+  onToggle?: () => void
+  panelId?: string
+  showAria?: string
+  hideAria?: string
+  filterContent?: ReactNode
+}) {
+  const pill = active ? ACTIVE_PILL : IDLE_PILL
+  const chevronColor = active ? 'text-brand-accent' : 'text-text-muted'
+
+  if (expandable) {
+    return (
+      <div className="flex flex-col">
+        <div className={`${NAV_BASE} ${pill} justify-between`}>
+          <Link
+            href={href}
+            aria-current={active ? 'page' : undefined}
+            className={`flex min-w-0 flex-1 items-center gap-2 rounded-full ${FOCUS_RING}`}
+          >
+            <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />
+            <span className="whitespace-nowrap">{label}</span>
+          </Link>
+          <button
+            type="button"
+            onClick={onToggle}
+            aria-expanded={open}
+            aria-controls={panelId}
+            aria-label={open ? hideAria : showAria}
+            className={`-mr-1 flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-full ${chevronColor} transition-colors hover:bg-brand-accent/10 ${FOCUS_RING}`}
+          >
+            <ChevronDown
+              className={`h-4 w-4 transition-transform duration-200 ease-in-out ${open ? 'rotate-180' : ''}`}
+              aria-hidden="true"
+            />
+          </button>
+        </div>
+        {/* grid-rows 1fr→0fr animates height to auto; opacity fades; inert drops the clipped
+            filter out of the tab order when collapsed. */}
+        <div
+          id={panelId}
+          inert={!open}
+          className={`grid transition-all duration-200 ease-in-out ${
+            open ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'
+          }`}
+        >
+          <div className="overflow-hidden">
+            <div className="pl-3 pt-1.5">
+              <div className="px-0.5 pb-1">{filterContent}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // Not expandable — a navigating pill. Filter-bearing items still show a decorative
+  // down-chevron so the "has filters" affordance reads the same on every route.
+  return (
+    <Link
+      href={href}
+      aria-current={active ? 'page' : undefined}
+      className={`${NAV_BASE} ${pill} ${filterBearing ? 'justify-between' : ''}`}
+    >
+      <span className="flex min-w-0 items-center gap-2">
+        <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />
+        <span className="whitespace-nowrap">{label}</span>
+      </span>
+      {filterBearing && (
+        <ChevronDown className={`h-4 w-4 shrink-0 ${chevronColor}`} aria-hidden="true" />
+      )}
+    </Link>
+  )
+}
 
 // The marche shell sidebar — a floating full-height white card (NOT the dashboard sidebar,
 // which is reserved for the seller dashboards). Locked to 224px on desktop; hidden below lg
 // (mobile drawer is a separate pass).
 //
-// Marché is an accordion: on any /marche/* route it expands and shows ONLY the active
-// engine's sub-item (Produits OR Services — never both), carrying that engine's filter
-// panel (`sidebarFilter`, fed by the page) beneath it. Each engine shows only its own side
-// of the marketplace; switching engines is the top-bar toggle's job, not the sidebar's. On
-// every other route it collapses to a single pill linking to the default (Produits) engine.
-// The filter only appears here — /recherche and /categories keep their own right-column
-// filter, and never pass `sidebarFilter`.
+// Every nav item is a SidebarNavItem (above). Filter-bearing items (Marché, Mes commandes,
+// Mes favoris) always show a down-chevron; on the active route, when the page supplies a
+// `sidebarFilter`, the chevron toggles the filter panel below (the same panel the page fed).
+// Marché's filter is fed only on /marche/*; the account filters only on their own routes.
+// /recherche and /categories keep their own right-column filter and never pass `sidebarFilter`.
 export function MarcheSidebar({ sidebarFilter }: { sidebarFilter?: ReactNode }) {
   const lang = useLang()
   const pathname = usePathname()
-
-  // Expansion is route-derived (no separate toggle state): being on a browse route IS the
-  // expanded state, so clicking Marché — which navigates to /marche/produits — expands it.
   const { onMarche } = resolveMarcheSidebarNav(pathname)
 
-  // The filter panel below the Marché button is collapsible via its chevron. Open by default;
-  // no persistence — switching engine (a pathname change) resets it back to open. Refining
-  // filters only changes the query string (same pathname), so it leaves the panel as-is.
+  // Marché's filter is open by default (matching the browse-by-default surface); the account
+  // filter is collapsed by default. No persistence — a route change resets both.
   const [filtersOpen, setFiltersOpen] = useState(true)
-  // The active account item (Mes commandes / Mes favoris) can expand to reveal its sidebar
-  // filter — collapsed by default. Like the Marché panel, a route change resets it.
   const [accountFilterOpen, setAccountFilterOpen] = useState(false)
   useEffect(() => {
     setFiltersOpen(true)
     setAccountFilterOpen(false)
   }, [pathname])
-
-  const navBase = `flex h-11 items-center gap-2 rounded-full px-4 text-sm font-medium transition-all duration-200 ease-out ${FOCUS_RING}`
-  const activePill =
-    'border border-brand-accent/30 bg-brand-accent/10 text-brand-accent shadow-sm'
-  const idlePill =
-    'border border-border-subtle bg-white text-text-primary shadow-sm hover:bg-slate-50 hover:shadow-md'
 
   return (
     <aside className="sticky top-0 hidden h-screen shrink-0 p-4 lg:block">
@@ -107,126 +199,42 @@ export function MarcheSidebar({ sidebarFilter }: { sidebarFilter?: ReactNode }) 
           aria-label={t('nav.aria_primary', lang)}
           className="flex flex-1 flex-col gap-2 overflow-y-auto px-3 pb-4 pt-4"
         >
-          {/* ── Marché accordion ── */}
-          {onMarche ? (
-            <div className="flex flex-col">
-              {/* Group header (expanded). The label area links to the default Produits engine;
-                  the chevron is a SEPARATE button that toggles the filter panel below (it can't
-                  be nested inside the Link — an <a> can't contain a <button>). */}
-              <div className={`${navBase} ${idlePill} justify-between`}>
-                <Link
-                  href={PRODUITS_HREF}
-                  className={`flex min-w-0 flex-1 items-center gap-2 rounded-full ${FOCUS_RING}`}
-                >
-                  <StorefrontIcon className="h-4 w-4 shrink-0" aria-hidden="true" />
-                  <span className="whitespace-nowrap">{t('marche.sidebar.marche', lang)}</span>
-                </Link>
-                <button
-                  type="button"
-                  onClick={() => setFiltersOpen((open) => !open)}
-                  aria-expanded={filtersOpen}
-                  aria-controls={FILTER_PANEL_ID}
-                  aria-label={filtersOpen ? 'Masquer les filtres' : 'Afficher les filtres'}
-                  className={`-mr-1 flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-full text-text-muted transition-colors hover:bg-black/5 ${FOCUS_RING}`}
-                >
-                  <ChevronDown
-                    className={`h-4 w-4 transition-transform duration-200 ease-in-out ${filtersOpen ? 'rotate-180' : ''}`}
-                    aria-hidden="true"
-                  />
-                </button>
-              </div>
-
-              {/* Filter panel — the active engine's filters. The Produits/Services sub-toggle
-                  was removed (redundant with the top-bar engine toggle); the panel now holds
-                  only the filter groups. Collapsible via the chevron: the grid-rows 1fr→0fr
-                  trick animates height to auto with no magic number, paired with opacity for a
-                  soft fade; `inert` drops the clipped content out of the tab order when closed. */}
-              <div
-                id={FILTER_PANEL_ID}
-                inert={!filtersOpen}
-                className={`grid transition-all duration-200 ease-in-out ${
-                  filtersOpen ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'
-                }`}
-              >
-                <div className="overflow-hidden">
-                  <div className="pl-3 pt-1.5">
-                    {sidebarFilter && <div className="px-0.5 pb-1">{sidebarFilter}</div>}
-                  </div>
-                </div>
-              </div>
-            </div>
-          ) : (
-            // Collapsed — a single Marché pill linking to the default Produits engine.
-            <Link href={PRODUITS_HREF} className={`${navBase} ${idlePill} justify-between`}>
-              <span className="flex items-center gap-2">
-                <StorefrontIcon className="h-4 w-4 shrink-0" aria-hidden="true" />
-                <span className="whitespace-nowrap">{t('marche.sidebar.marche', lang)}</span>
-              </span>
-              <ChevronRight className="h-4 w-4 shrink-0 text-text-muted" aria-hidden="true" />
-            </Link>
-          )}
+          {/* ── Marché ── */}
+          <SidebarNavItem
+            href={PRODUITS_HREF}
+            Icon={StorefrontIcon}
+            label={t('marche.sidebar.marche', lang)}
+            active={onMarche}
+            filterBearing
+            expandable={onMarche && Boolean(sidebarFilter)}
+            open={filtersOpen}
+            onToggle={() => setFiltersOpen((open) => !open)}
+            panelId={FILTER_PANEL_ID}
+            showAria="Afficher les filtres"
+            hideAria="Masquer les filtres"
+            filterContent={sidebarFilter}
+          />
 
           {/* ── Account destinations ── */}
           {ACCOUNT_ITEMS.map((item) => {
             const active = pathname === item.href || pathname.startsWith(item.href + '/')
-            // The active item expands to host its sidebar filter (only commandes/favoris pass
-            // one). Same split as the Marché header: the label Link navigates, the chevron
-            // toggles. Mes missions (no showAria, no sidebarFilter) stays a plain link.
-            const expandable = active && Boolean(sidebarFilter) && Boolean(item.showAria)
-
-            if (expandable) {
-              return (
-                <div key={item.href} className="flex flex-col">
-                  <div className={`${navBase} ${activePill} justify-between`}>
-                    <Link
-                      href={item.href}
-                      aria-current="page"
-                      className={`flex min-w-0 flex-1 items-center gap-2 rounded-full ${FOCUS_RING}`}
-                    >
-                      <item.Icon className="h-4 w-4 shrink-0" aria-hidden="true" />
-                      <span className="whitespace-nowrap">{t(item.key, lang)}</span>
-                    </Link>
-                    <button
-                      type="button"
-                      onClick={() => setAccountFilterOpen((open) => !open)}
-                      aria-expanded={accountFilterOpen}
-                      aria-controls={ACCOUNT_FILTER_PANEL_ID}
-                      aria-label={accountFilterOpen ? item.hideAria : item.showAria}
-                      className={`-mr-1 flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-full text-brand-accent transition-colors hover:bg-brand-accent/10 ${FOCUS_RING}`}
-                    >
-                      <ChevronDown
-                        className={`h-4 w-4 transition-transform duration-200 ease-in-out ${accountFilterOpen ? 'rotate-180' : ''}`}
-                        aria-hidden="true"
-                      />
-                    </button>
-                  </div>
-                  <div
-                    id={ACCOUNT_FILTER_PANEL_ID}
-                    inert={!accountFilterOpen}
-                    className={`grid transition-all duration-200 ease-in-out ${
-                      accountFilterOpen ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'
-                    }`}
-                  >
-                    <div className="overflow-hidden">
-                      <div className="pl-3 pt-1.5">
-                        <div className="px-0.5 pb-1">{sidebarFilter}</div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )
-            }
-
+            const filterBearing = Boolean(item.showAria)
             return (
-              <Link
+              <SidebarNavItem
                 key={item.href}
                 href={item.href}
-                aria-current={active ? 'page' : undefined}
-                className={`${navBase} ${active ? activePill : idlePill}`}
-              >
-                <item.Icon className="h-4 w-4 shrink-0" aria-hidden="true" />
-                <span className="whitespace-nowrap">{t(item.key, lang)}</span>
-              </Link>
+                Icon={item.Icon}
+                label={t(item.key, lang)}
+                active={active}
+                filterBearing={filterBearing}
+                expandable={active && filterBearing && Boolean(sidebarFilter)}
+                open={accountFilterOpen}
+                onToggle={() => setAccountFilterOpen((open) => !open)}
+                panelId={ACCOUNT_FILTER_PANEL_ID}
+                showAria={item.showAria}
+                hideAria={item.hideAria}
+                filterContent={sidebarFilter}
+              />
             )
           })}
         </nav>

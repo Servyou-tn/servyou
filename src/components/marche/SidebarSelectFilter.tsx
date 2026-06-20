@@ -100,10 +100,12 @@ export function SidebarSelectFilter({
                   name={`${panelId}-${paramName}`}
                   checked={o.value === current}
                   onChange={() => select(o.value)}
-                  // Minimal, native-free control to match the Marché checkboxes' light weight
-                  // (no heavy native radio "ring"): a small outlined circle that fills with
-                  // brand-accent when selected.
-                  className={`h-4 w-4 shrink-0 cursor-pointer appearance-none rounded-full border border-border-subtle bg-white transition-colors checked:border-brand-accent checked:bg-brand-accent ${FOCUS_RING}`}
+                  // Minimal, native-free control matching the Marché checkboxes' light weight
+                  // (no heavy native radio "ring", no chunky solid fill): a small outlined
+                  // circle with a small brand-accent centre dot when selected. bg-clip-content
+                  // + p-[3px] confines the checked fill to the inner content box (the dot),
+                  // leaving the border as the outline.
+                  className={`h-4 w-4 shrink-0 cursor-pointer appearance-none rounded-full border border-border-subtle bg-white bg-clip-content p-[3px] transition-colors checked:border-brand-accent checked:bg-brand-accent ${FOCUS_RING}`}
                 />
                 <span className="line-clamp-1">{o.label}</span>
               </label>
