@@ -26,11 +26,13 @@ function useScrolled(threshold = 8): boolean {
   return scrolled
 }
 
-// The marche shell's sticky top bar. Three zones at ≥md — left (the homepage welcome, when
-// present), center (the 4-option segmented toggle + a compact expandable search), right (bell +
-// avatar). The two outer zones share equal flex-grow so the center cluster stays mathematically
-// centered whether or not a welcome is present. On mobile the welcome stacks above and the
-// toggle + search + bell + avatar share one row (the toggle scrolls if the pills overflow).
+// The marche shell's sticky top bar.
+//
+// Layout — at md+ a single flex row split into two anchored clusters: LEFT (the homepage
+// welcome, when present, + the compact search) and RIGHT (the 4-option segmented toggle + bell
+// + avatar), pushed apart by the toggle's auto-margin so empty space sits between them. The
+// welcome never truncates on desktop. On mobile it's a two-row grid: welcome + bell/avatar on
+// the first row, full-width search + the (horizontally-scrolling) toggle on the second.
 export function MarcheTopBar({
   user,
   initialType,
@@ -50,8 +52,8 @@ export function MarcheTopBar({
   const onHome = pathname === '/'
   const hasWelcome = Boolean(heading || subtitle)
 
-  // The active toggle option — the catalog type the page is on (product/service, fed by the
-  // page), or the navigation-only type when the user is on its route.
+  // The active toggle option — the catalog type the page is on (fed by the page), or the
+  // navigation-only type when the user is on its route.
   const activeToggle: ToggleType = pathname.startsWith('/boutiques')
     ? 'shop'
     : pathname.startsWith('/freelances')
@@ -76,50 +78,50 @@ export function MarcheTopBar({
           : 'border-transparent bg-transparent',
       )}
     >
-      <div className="mx-auto flex max-w-7xl flex-col gap-2 px-4 py-3 md:flex-row md:items-center md:gap-4 md:px-6 lg:px-8">
-        {/* Left zone — the homepage welcome (greeting + quiet subtitle). On mobile it's its own
-            row above (only when present); at md+ it always takes an equal flex share (empty when
-            absent) so the centered cluster never shifts. */}
-        <div className={cn('min-w-0 md:flex-1', hasWelcome ? 'block' : 'hidden md:block')}>
-          {hasWelcome && (
-            <div className="min-w-0">
-              {heading && (
-                <h1 className="truncate text-2xl font-bold text-[#0A0A0A] md:text-3xl">{heading}</h1>
-              )}
-              {subtitle && <p className="mt-0.5 truncate text-xs text-[#6B6B6B]">{subtitle}</p>}
-            </div>
-          )}
+      <div className="mx-auto grid max-w-7xl grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3 gap-y-3 px-4 py-3 md:flex md:gap-4 md:px-6 lg:gap-6 lg:px-8">
+        {/* Welcome — home only. Mobile: row 1 / col 1. Desktop: leftmost, and never truncates
+            (it truncates on mobile only, where space is genuinely tight). */}
+        {hasWelcome && (
+          <div className="col-start-1 row-start-1 min-w-0 md:order-1 md:shrink-0">
+            {heading && (
+              <h1 className="truncate text-xl font-bold leading-tight text-[#0A0A0A] md:overflow-visible md:text-2xl lg:text-3xl">
+                {heading}
+              </h1>
+            )}
+            {subtitle && <p className="mt-0.5 truncate text-xs text-[#6B6B6B]">{subtitle}</p>}
+          </div>
+        )}
+
+        {/* Search — mobile: row 2 / col 1 (full width). Desktop: next to the welcome. */}
+        <div className="col-start-1 row-start-2 min-w-0 md:order-2 md:shrink-0">
+          <ExpandableSearch currentType={activeToggle} initialQuery={initialQuery} />
         </div>
 
-        {/* Controls — on mobile one flex row (toggle + search grow, bell + avatar pinned right);
-            at md+ `md:contents` dissolves this wrapper so the center and right become direct zones
-            of the outer row, completing the left/center/right centering. */}
-        <div className="flex min-w-0 items-center gap-2 md:contents">
-          {/* Center zone — segmented toggle + compact expandable search. */}
-          <div className="flex min-w-0 flex-1 items-center gap-2 md:flex-none md:justify-center md:gap-3">
-            <SegmentedToggle value={activeToggle} hrefFor={hrefFor} />
-            <ExpandableSearch currentType={activeToggle} initialQuery={initialQuery} />
-          </div>
+        {/* Toggle — mobile: row 2 / col 2 (scrolls if its pills overflow). Desktop: pushed to the
+            right edge via ml-auto, sitting next to the bell. It's the only cluster allowed to
+            shrink/scroll, so the welcome + search never get squeezed. */}
+        <div className="col-start-2 row-start-2 min-w-0 max-w-[44vw] justify-self-end md:order-3 md:ml-auto md:max-w-none md:justify-self-auto">
+          <SegmentedToggle value={activeToggle} hrefFor={hrefFor} />
+        </div>
 
-          {/* Right zone — bell + avatar, pinned to the far-right edge. */}
-          <div className="flex shrink-0 items-center justify-end gap-2 md:flex-1 md:gap-3">
-            <button
-              type="button"
-              // TODO: Real notifications system — see roadmap.md, post-MVP. Visual-only for now.
-              onClick={() => console.log('Notifications coming soon')}
-              aria-label={`${t('dashboard.topbar.notifications', lang)} — ${t('marche.sidebar.coming_soon', lang)}`}
-              className={cn(circleBtn, 'relative shrink-0')}
-            >
-              <Bell className="h-5 w-5 text-text-primary" aria-hidden="true" />
-              <span
-                aria-hidden="true"
-                className="absolute right-[10px] top-[10px] h-2 w-2 rounded-full bg-red-500 ring-2 ring-white"
-              />
-            </button>
+        {/* Bell + avatar — mobile: row 1 / col 2. Desktop: rightmost. */}
+        <div className="col-start-2 row-start-1 flex shrink-0 items-center justify-end gap-2 md:order-4 md:gap-3">
+          <button
+            type="button"
+            // TODO: Real notifications system — see roadmap.md, post-MVP. Visual-only for now.
+            onClick={() => console.log('Notifications coming soon')}
+            aria-label={`${t('dashboard.topbar.notifications', lang)} — ${t('marche.sidebar.coming_soon', lang)}`}
+            className={cn(circleBtn, 'relative shrink-0')}
+          >
+            <Bell className="h-5 w-5 text-text-primary" aria-hidden="true" />
+            <span
+              aria-hidden="true"
+              className="absolute right-[10px] top-[10px] h-2 w-2 rounded-full bg-red-500 ring-2 ring-white"
+            />
+          </button>
 
-            <div className="shrink-0">
-              <ProfileAvatarMenu user={user} triggerClassName={circleBtn} />
-            </div>
+          <div className="shrink-0">
+            <ProfileAvatarMenu user={user} triggerClassName={circleBtn} />
           </div>
         </div>
       </div>

@@ -5,7 +5,6 @@ import { useEffect, useState } from 'react'
 import { useLang } from '@/components/LangProvider'
 import { t } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
-import { FOCUS_RING } from '@/components/layout/styles'
 import type { ToggleType } from '@/lib/search/search-params'
 
 // The top-bar 4-option segmented toggle: Produits / Services / Boutiques / Freelances. Every
@@ -41,7 +40,7 @@ export function SegmentedToggle({
     <div
       role="group"
       aria-label="Type de contenu"
-      className="inline-flex min-w-0 max-w-full items-center overflow-x-auto rounded-full bg-surface-pill p-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+      className="inline-flex min-w-0 max-w-full items-center overflow-x-auto rounded-full border border-border-subtle/40 bg-surface-pill p-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
     >
       {options.map((o) => {
         const isActive = o.value === active
@@ -52,11 +51,11 @@ export function SegmentedToggle({
             onClick={() => setActive(o.value)}
             aria-current={isActive ? 'true' : undefined}
             className={cn(
-              'shrink-0 whitespace-nowrap rounded-full px-4 py-2 text-sm font-medium transition-all duration-200',
-              FOCUS_RING,
+              'relative shrink-0 whitespace-nowrap rounded-full px-4 py-1.5 text-sm font-medium leading-none tracking-tight transition-all duration-200 ease-out',
+              'outline-none focus-visible:ring-2 focus-visible:ring-brand-accent/40 focus-visible:ring-offset-1',
               isActive
                 ? 'bg-brand-accent text-white shadow-sm'
-                : 'text-text-muted hover:text-text-primary',
+                : 'text-text-muted hover:bg-white/60 hover:text-text-primary',
             )}
           >
             {o.label}
