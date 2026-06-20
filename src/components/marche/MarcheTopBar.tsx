@@ -1,5 +1,7 @@
 'use client'
 
+import Image from 'next/image'
+import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { Bell } from 'lucide-react'
@@ -28,11 +30,15 @@ function useScrolled(threshold = 8): boolean {
 
 // The marche shell's sticky top bar.
 //
-// Layout — at md+ a single flex row split into two anchored clusters: LEFT (the homepage
-// welcome, when present, + the compact search) and RIGHT (the 4-option segmented toggle + bell
-// + avatar), pushed apart by the toggle's auto-margin so empty space sits between them. The
-// welcome never truncates on desktop. On mobile it's a two-row grid: welcome + bell/avatar on
-// the first row, full-width search + the (horizontally-scrolling) toggle on the second.
+// The S brand mark anchors the far left (it moved here from the sidebar, so it stays visible on
+// mobile where the sidebar is hidden). It's a clean image in a Link home — no button chrome.
+//
+// Layout — at md+ a single flex row: LEFT (logo → welcome, when present → compact search) and
+// RIGHT (the 4-option segmented toggle → bell → avatar), pushed apart by the toggle's auto-margin
+// so empty space sits between them. The welcome never truncates on desktop. On mobile the
+// welcome (home only) stacks on its own row above one control row: logo, search, the
+// (horizontally-scrolling) toggle, bell, avatar. The controls share a wrapper that dissolves at
+// md+ (md:contents) so each becomes a zone of the outer row, ordered by `order`.
 export function MarcheTopBar({
   user,
   initialType,
@@ -83,11 +89,11 @@ export function MarcheTopBar({
           : 'border-transparent bg-transparent',
       )}
     >
-      <div className="mx-auto grid max-w-7xl grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3 gap-y-3 px-4 py-3 md:flex md:gap-4 md:px-6 lg:gap-6 lg:px-8">
-        {/* Welcome — home only. Mobile: row 1 / col 1. Desktop: leftmost, and never truncates
-            (it truncates on mobile only, where space is genuinely tight). */}
+      <div className="mx-auto flex max-w-7xl flex-col gap-2 px-4 py-3 md:flex-row md:items-center md:gap-4 md:px-6 lg:gap-6 lg:px-8">
+        {/* Welcome — home only. Mobile: its own row above the controls. Desktop: between the logo
+            and the search (md:order-2), and never truncates (it truncates on mobile only). */}
         {hasWelcome && (
-          <div className="col-start-1 row-start-1 min-w-0 md:order-1 md:shrink-0">
+          <div className="min-w-0 md:order-2 md:shrink-0">
             {heading && (
               <h1 className="truncate text-xl font-bold leading-tight text-[#0A0A0A] md:overflow-visible md:text-2xl lg:text-3xl">
                 {heading}
@@ -97,36 +103,54 @@ export function MarcheTopBar({
           </div>
         )}
 
-        {/* Search — mobile: row 2 / col 1 (full width). Desktop: next to the welcome. */}
-        <div className="col-start-1 row-start-2 min-w-0 md:order-2 md:shrink-0">
-          <ExpandableSearch currentType={activeToggle} initialQuery={initialQuery} />
-        </div>
-
-        {/* Toggle — mobile: row 2 / col 2 (scrolls if its pills overflow). Desktop: pushed to the
-            right edge via ml-auto, sitting next to the bell. It's the only cluster allowed to
-            shrink/scroll, so the welcome + search never get squeezed. */}
-        <div className="col-start-2 row-start-2 min-w-0 max-w-[44vw] justify-self-end md:order-3 md:ml-auto md:max-w-none md:justify-self-auto">
-          <SegmentedToggle value={activeToggle} hrefFor={hrefFor} />
-        </div>
-
-        {/* Bell + avatar — mobile: row 1 / col 2. Desktop: rightmost. */}
-        <div className="col-start-2 row-start-1 flex shrink-0 items-center justify-end gap-2 md:order-4 md:gap-3">
-          <button
-            type="button"
-            // TODO: Real notifications system — see roadmap.md, post-MVP. Visual-only for now.
-            onClick={() => console.log('Notifications coming soon')}
-            aria-label={`${t('dashboard.topbar.notifications', lang)} — ${t('marche.sidebar.coming_soon', lang)}`}
-            className={bellBtn}
-          >
-            <Bell className="h-5 w-5 text-text-primary" aria-hidden="true" />
-            <span
-              aria-hidden="true"
-              className="absolute right-[10px] top-[10px] h-2 w-2 rounded-full bg-red-500 ring-2 ring-white"
+        {/* Controls — mobile: one flex row [logo, search, toggle, bell, avatar]. md+: md:contents
+            dissolves this wrapper so each child becomes a zone of the outer row, ordered logo(1) →
+            welcome(2) → search(3) → (ml-auto) toggle(4) → bell + avatar(5). */}
+        <div className="flex min-w-0 items-center gap-2 md:contents">
+          {/* S logo — the brand anchor, far left. A clean mark (no border/shadow/hover), in a
+              Link home. h-11 matches the unified interactive-surface height; the asset is square. */}
+          <Link href="/" aria-label="Servyou" className="flex shrink-0 items-center md:order-1">
+            <Image
+              src="/brand/logo/servyou-hero.png"
+              alt="Servyou"
+              width={44}
+              height={44}
+              priority
+              className="h-11 w-auto"
             />
-          </button>
+          </Link>
 
-          <div className="shrink-0">
-            <ProfileAvatarMenu user={user} triggerClassName={avatarBtn} />
+          {/* Search — mobile: takes the remaining row width. Desktop: next to the welcome. */}
+          <div className="min-w-0 flex-1 md:order-3 md:flex-none">
+            <ExpandableSearch currentType={activeToggle} initialQuery={initialQuery} />
+          </div>
+
+          {/* Toggle — scrolls if its pills overflow. Desktop: pushed to the right edge via ml-auto,
+              sitting next to the bell. It's the only cluster allowed to shrink/scroll, so the logo
+              + welcome + search never get squeezed. */}
+          <div className="min-w-0 max-w-[44vw] shrink md:order-4 md:ml-auto md:max-w-none md:shrink-0">
+            <SegmentedToggle value={activeToggle} hrefFor={hrefFor} />
+          </div>
+
+          {/* Bell + avatar — rightmost. */}
+          <div className="flex shrink-0 items-center gap-2 md:order-5 md:gap-3">
+            <button
+              type="button"
+              // TODO: Real notifications system — see roadmap.md, post-MVP. Visual-only for now.
+              onClick={() => console.log('Notifications coming soon')}
+              aria-label={`${t('dashboard.topbar.notifications', lang)} — ${t('marche.sidebar.coming_soon', lang)}`}
+              className={bellBtn}
+            >
+              <Bell className="h-5 w-5 text-text-primary" aria-hidden="true" />
+              <span
+                aria-hidden="true"
+                className="absolute right-[10px] top-[10px] h-2 w-2 rounded-full bg-red-500 ring-2 ring-white"
+              />
+            </button>
+
+            <div className="shrink-0">
+              <ProfileAvatarMenu user={user} triggerClassName={avatarBtn} />
+            </div>
           </div>
         </div>
       </div>

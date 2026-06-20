@@ -1,6 +1,5 @@
 'use client'
 
-import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect, useState, type ReactNode } from 'react'
@@ -251,18 +250,7 @@ export function MarcheSidebar({ sidebarFilter }: { sidebarFilter?: ReactNode }) 
   return (
     <aside className="sticky top-0 hidden h-screen shrink-0 p-4 lg:block">
       <div className={`outline-brand flex h-full w-56 flex-col overflow-hidden rounded-3xl bg-white ${CARD_SHADOW}`}>
-        {/* Header — brand wordmark PNG (never a text wordmark). object-cover crops the
-            asset's transparent bands to a readable ink height. */}
-        <div className="flex items-center border-b border-border-subtle px-3 pb-4 pt-4">
-          <Image
-            src="/brand/logo/servyou-navbar.png"
-            alt="Servyou"
-            width={160}
-            height={48}
-            className="h-12 w-40 object-cover"
-          />
-        </div>
-
+        {/* The brand mark moved to the top bar's far left; the sidebar starts with its nav. */}
         {/* Nav scrolls internally — an open filter panel can be tall. */}
         <nav
           aria-label={t('nav.aria_primary', lang)}
