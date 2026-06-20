@@ -51,12 +51,13 @@ export function SegmentedToggle({
             href={hrefFor(o.value)}
             onClick={() => setActive(o.value)}
             aria-current={isActive ? 'true' : undefined}
-            // Same pill family as the sidebar account buttons (MarcheSidebar's NAV_BASE +
-            // IDLE_PILL): identical rounded-full shape, border-border-subtle, px-4, shadow, hover
-            // (bg-slate-50 + lift), and FOCUS_RING — just a tighter py for the shorter top bar.
-            // Inactive matches the sidebar idle pill exactly; active keeps the solid brand fill.
+            // Byte-identical to the sidebar account buttons (MarcheSidebar's NAV_BASE +
+            // IDLE_PILL) — same h-11 height, rounded-full shape, border-border-subtle, px-4,
+            // bg-white, shadow-sm, hover (bg-slate-50 + shadow lift), and FOCUS_RING. The extra
+            // shrink-0/whitespace-nowrap are layout-only (the toggle is a horizontal scroll row)
+            // and don't change the surface. Active keeps the solid brand fill, same size.
             className={cn(
-              'shrink-0 cursor-pointer whitespace-nowrap rounded-full px-4 py-1.5 text-sm font-medium transition-all duration-200 ease-out',
+              'flex h-11 shrink-0 cursor-pointer items-center gap-2 whitespace-nowrap rounded-full px-4 text-sm font-medium transition-all duration-200 ease-out',
               FOCUS_RING,
               isActive
                 ? 'border border-brand-accent bg-brand-accent text-white shadow-sm'
