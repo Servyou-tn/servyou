@@ -10,13 +10,14 @@ import { t } from '@/lib/i18n'
 import { FOCUS_RING, CARD_SHADOW } from '@/components/layout/styles'
 import { marcheEngineHref, resolveMarcheSidebarNav } from '@/lib/marche/marche-routing'
 import { StorefrontIcon, PackageIcon, HeartIcon, BriefcaseIcon } from './icons'
+import { SidebarSelectFilter } from './SidebarSelectFilter'
 
 type IconCmp = (props: React.SVGProps<SVGSVGElement>) => React.ReactElement
 
 // The three account destinations. Each lights up by longest-prefix match (so
 // /mes-missions/nouvelle keeps "Mes missions" active). Filter-bearing items carry
 // `showAria`/`hideAria` (hardcoded French) for their chevron; Mes missions has none (no
-// sidebar filter today — a separate future PR), so it renders without a chevron.
+// sidebar filter), so it renders without a chevron.
 const ACCOUNT_ITEMS: {
   key: string
   href: string
@@ -43,10 +44,11 @@ const ACCOUNT_ITEMS: {
 
 const PRODUITS_HREF = marcheEngineHref('product')
 
-// The Marché filter panel's id + the account item's filter-panel id (only one of each is
-// ever expanded at a time) — referenced by their chevron toggles' aria-controls.
-const FILTER_PANEL_ID = 'marche-sidebar-filters'
-const ACCOUNT_FILTER_PANEL_ID = 'consumer-sidebar-account-filter'
+// Each expandable button's filter-panel id — referenced by its chevron's aria-controls.
+// Distinct ids because several panels can be open at once.
+const MARCHE_PANEL_ID = 'sidebar-marche-filter'
+const COMMANDES_PANEL_ID = 'sidebar-commandes-filter'
+const FAVORIS_PANEL_ID = 'sidebar-favoris-filter'
 
 // Shared pill styling — one source of truth so every nav item (Marché + the account
 // destinations) is byte-identical. Active items get the blue treatment; idle items the
@@ -56,12 +58,13 @@ const ACTIVE_PILL = 'border border-brand-accent/30 bg-brand-accent/10 text-brand
 const IDLE_PILL =
   'border border-border-subtle bg-white text-text-primary shadow-sm hover:bg-slate-50 hover:shadow-md'
 
-// One sidebar nav item — a navigating pill (icon + label) with a unified chevron affordance:
-// filter-bearing items always show a down-chevron (˅ collapsed → ^ expanded, the accordion
-// convention). When the item is the active route AND its page supplied a filter, the chevron
-// becomes a SEPARATE toggle button that expands the filter panel below (an <a> can't contain a
-// <button>, hence the split). Otherwise the chevron is a decorative "has filters" hint on the
-// nav link. Non-filter-bearing items (Mes missions) show no chevron.
+// One sidebar nav item — a navigating pill (icon + label) with a unified chevron affordance.
+// Filter-bearing items always show a down-chevron (˅ collapsed → ^ expanded). When the item is
+// `expandable`, the chevron is a SEPARATE toggle button (an <a> can't contain a <button>) that
+// opens the filter panel below, and the label is a <Link> that still navigates — UNLESS the item
+// is the active route, where the label is a no-op (you're already there). When not expandable,
+// the whole pill is a navigating Link with a decorative "has filters" chevron. Non-filter-bearing
+// items (Mes missions) show no chevron.
 function SidebarNavItem({
   href,
   Icon,
@@ -92,17 +95,32 @@ function SidebarNavItem({
   const pill = active ? ACTIVE_PILL : IDLE_PILL
   const chevronColor = active ? 'text-brand-accent' : 'text-text-muted'
 
+  const labelInner = (
+    <>
+      <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />
+      <span className="whitespace-nowrap">{label}</span>
+    </>
+  )
+
   if (expandable) {
     return (
       <div className="flex flex-col">
         <div className={`${NAV_BASE} ${pill} justify-between`}>
-          {/* The expandable item is always the active route, so the label is a no-op (no
-              pointless re-navigation to the page you're already on). The chevron button beside
-              it is the ONLY interactive control — it toggles the filter panel. */}
-          <span aria-current="page" className="flex min-w-0 flex-1 items-center gap-2">
-            <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />
-            <span className="whitespace-nowrap">{label}</span>
-          </span>
+          {/* The label navigates (to go to that page) when inactive; on the active route it's a
+              no-op — you're already there. Either way the chevron button beside it is the ONLY
+              control that toggles the filter panel. */}
+          {active ? (
+            <span aria-current="page" className="flex min-w-0 flex-1 items-center gap-2">
+              {labelInner}
+            </span>
+          ) : (
+            <Link
+              href={href}
+              className={`flex min-w-0 flex-1 items-center gap-2 rounded-full ${FOCUS_RING}`}
+            >
+              {labelInner}
+            </Link>
+          )}
           <button
             type="button"
             onClick={onToggle}
@@ -144,10 +162,7 @@ function SidebarNavItem({
       aria-current={active ? 'page' : undefined}
       className={`${NAV_BASE} ${pill} ${filterBearing ? 'justify-between' : ''}`}
     >
-      <span className="flex min-w-0 items-center gap-2">
-        <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />
-        <span className="whitespace-nowrap">{label}</span>
-      </span>
+      <span className="flex min-w-0 items-center gap-2">{labelInner}</span>
       {filterBearing && (
         <ChevronDown className={`h-4 w-4 shrink-0 ${chevronColor}`} aria-hidden="true" />
       )}
@@ -159,24 +174,82 @@ function SidebarNavItem({
 // which is reserved for the seller dashboards). Locked to 224px on desktop; hidden below lg
 // (mobile drawer is a separate pass).
 //
-// Every nav item is a SidebarNavItem (above). Filter-bearing items (Marché, Mes commandes,
-// Mes favoris) always show a down-chevron; on the active route, when the page supplies a
-// `sidebarFilter`, the chevron toggles the filter panel below (the same panel the page fed).
-// Marché's filter is fed only on /marche/*; the account filters only on their own routes.
-// /recherche and /categories keep their own right-column filter and never pass `sidebarFilter`.
+// Every nav item is a SidebarNavItem. Each filter-bearing button has its OWN open state, so
+// several panels can be open at once. Mes commandes (Statut) and Mes favoris (Type) carry
+// simple URL-param filters built right here, so they expand on ANY route — a selection writes
+// its param to the CURRENT url (basePath={pathname}), so off their own page it never navigates
+// (the param sits harmlessly and the page ignores it). Marché's filter needs server-fetched
+// categories, so it stays scoped to /marche/* and is fed via `sidebarFilter`. A route change
+// resets every panel.
 export function MarcheSidebar({ sidebarFilter }: { sidebarFilter?: ReactNode }) {
   const lang = useLang()
   const pathname = usePathname()
   const { onMarche } = resolveMarcheSidebarNav(pathname)
 
-  // Marché's filter is open by default (matching the browse-by-default surface); the account
-  // filter is collapsed by default. No persistence — a route change resets both.
-  const [filtersOpen, setFiltersOpen] = useState(true)
-  const [accountFilterOpen, setAccountFilterOpen] = useState(false)
+  // Independent open state per filter-bearing button (no mutex — multiple can be open). Marché
+  // opens by default on its browse surface; the account filters start collapsed. A route change
+  // resets all three.
+  const [marcheOpen, setMarcheOpen] = useState(true)
+  const [commandesOpen, setCommandesOpen] = useState(false)
+  const [favorisOpen, setFavorisOpen] = useState(false)
   useEffect(() => {
-    setFiltersOpen(true)
-    setAccountFilterOpen(false)
+    setMarcheOpen(true)
+    setCommandesOpen(false)
+    setFavorisOpen(false)
   }, [pathname])
+
+  // The two simple filters, built in the sidebar so they expand on every route. basePath is the
+  // current path: on their own page the param filters the list; elsewhere it's a harmless no-op
+  // param (no navigation). The radios still respond either way.
+  const statutFilter = (
+    <SidebarSelectFilter
+      paramName="statut"
+      groupLabel="Statut"
+      defaultValue="all"
+      basePath={pathname}
+      ariaShow="Afficher le filtre Statut"
+      ariaHide="Masquer le filtre Statut"
+      options={[
+        { value: 'all', label: t('mescommandes.filter.all', lang) },
+        { value: 'active', label: t('mescommandes.filter.active', lang) },
+        { value: 'delivered', label: t('mescommandes.filter.delivered', lang) },
+        { value: 'cancelled', label: t('mescommandes.filter.cancelled', lang) },
+      ]}
+    />
+  )
+  const typeFilter = (
+    <SidebarSelectFilter
+      paramName="type"
+      groupLabel="Type"
+      defaultValue="product"
+      basePath={pathname}
+      ariaShow="Afficher le filtre Type"
+      ariaHide="Masquer le filtre Type"
+      options={[
+        { value: 'product', label: t('common.products_section', lang) },
+        { value: 'service', label: t('common.services_section', lang) },
+      ]}
+    />
+  )
+
+  // Per-account-item filter wiring (Mes missions has none → not expandable, plain link).
+  const accountFilters: Record<
+    string,
+    { open: boolean; toggle: () => void; content: ReactNode; panelId: string }
+  > = {
+    '/mes-commandes': {
+      open: commandesOpen,
+      toggle: () => setCommandesOpen((o) => !o),
+      content: statutFilter,
+      panelId: COMMANDES_PANEL_ID,
+    },
+    '/mes-favoris': {
+      open: favorisOpen,
+      toggle: () => setFavorisOpen((o) => !o),
+      content: typeFilter,
+      panelId: FAVORIS_PANEL_ID,
+    },
+  }
 
   return (
     <aside className="sticky top-0 hidden h-screen shrink-0 p-4 lg:block">
@@ -193,12 +266,12 @@ export function MarcheSidebar({ sidebarFilter }: { sidebarFilter?: ReactNode }) 
           />
         </div>
 
-        {/* Nav scrolls internally — the active engine's filter panel can be tall. */}
+        {/* Nav scrolls internally — an open filter panel can be tall. */}
         <nav
           aria-label={t('nav.aria_primary', lang)}
           className="flex flex-1 flex-col gap-2 overflow-y-auto px-3 pb-4 pt-4"
         >
-          {/* ── Marché ── */}
+          {/* ── Marché (filter scoped to /marche/*) ── */}
           <SidebarNavItem
             href={PRODUITS_HREF}
             Icon={StorefrontIcon}
@@ -206,9 +279,9 @@ export function MarcheSidebar({ sidebarFilter }: { sidebarFilter?: ReactNode }) 
             active={onMarche}
             filterBearing
             expandable={onMarche && Boolean(sidebarFilter)}
-            open={filtersOpen}
-            onToggle={() => setFiltersOpen((open) => !open)}
-            panelId={FILTER_PANEL_ID}
+            open={marcheOpen}
+            onToggle={() => setMarcheOpen((o) => !o)}
+            panelId={MARCHE_PANEL_ID}
             showAria="Afficher les filtres"
             hideAria="Masquer les filtres"
             filterContent={sidebarFilter}
@@ -218,6 +291,7 @@ export function MarcheSidebar({ sidebarFilter }: { sidebarFilter?: ReactNode }) 
           {ACCOUNT_ITEMS.map((item) => {
             const active = pathname === item.href || pathname.startsWith(item.href + '/')
             const filterBearing = Boolean(item.showAria)
+            const filter = accountFilters[item.href]
             return (
               <SidebarNavItem
                 key={item.href}
@@ -226,13 +300,13 @@ export function MarcheSidebar({ sidebarFilter }: { sidebarFilter?: ReactNode }) 
                 label={t(item.key, lang)}
                 active={active}
                 filterBearing={filterBearing}
-                expandable={active && filterBearing && Boolean(sidebarFilter)}
-                open={accountFilterOpen}
-                onToggle={() => setAccountFilterOpen((open) => !open)}
-                panelId={ACCOUNT_FILTER_PANEL_ID}
+                expandable={Boolean(filter)}
+                open={filter?.open}
+                onToggle={filter?.toggle}
+                panelId={filter?.panelId}
                 showAria={item.showAria}
                 hideAria={item.hideAria}
-                filterContent={sidebarFilter}
+                filterContent={filter?.content}
               />
             )
           })}
