@@ -11,7 +11,29 @@ import {
   homeEngineHref,
   marcheRedirectTarget,
   resolveMarcheSidebarNav,
+  toggleDestination,
 } from './marche-routing'
+
+// The 4-option top-bar toggle destination. Catalog types switch in place on the homepage (?type=)
+// and resolve to their browse engine elsewhere; the two navigation-only types jump to their routes.
+describe('toggleDestination', () => {
+  it('routes the navigation-only types to their (forthcoming) list routes', () => {
+    expect(toggleDestination('shop', { onHome: false })).toBe('/boutiques')
+    expect(toggleDestination('shop', { onHome: true })).toBe('/boutiques')
+    expect(toggleDestination('freelance', { onHome: false })).toBe('/freelances')
+    expect(toggleDestination('freelance', { onHome: true })).toBe('/freelances')
+  })
+
+  it('switches the catalog in place on the homepage', () => {
+    expect(toggleDestination('product', { onHome: true })).toBe('/')
+    expect(toggleDestination('service', { onHome: true })).toBe('/?type=service')
+  })
+
+  it('resolves catalog types to the browse engine off the homepage', () => {
+    expect(toggleDestination('product', { onHome: false })).toBe('/marche/produits')
+    expect(toggleDestination('service', { onHome: false })).toBe('/marche/services')
+  })
+})
 
 describe('marcheRedirectTarget', () => {
   it('defaults a bare /marche to the Produits engine', () => {

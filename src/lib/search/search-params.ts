@@ -4,6 +4,14 @@
 // module graph. See search-params.test.ts.
 
 export type SearchType = 'product' | 'service'
+
+// The top-bar segmented toggle has four destinations: the two catalog types (which drive
+// ?type= and the browse engines) plus two navigation-only targets (boutiques, freelances).
+// Kept SEPARATE from SearchType on purpose — the search/marketplace/filter layer stays binary
+// (product|service), so extending it here doesn't cascade into Record<SearchType> tables or
+// the product/service fetch split. shop/freelance are routing-only.
+export type ToggleType = SearchType | 'shop' | 'freelance'
+
 export type SearchSort = 'pertinence' | 'recent' | 'prix_asc' | 'prix_desc'
 
 export const SEARCH_SORTS: readonly SearchSort[] = ['pertinence', 'recent', 'prix_asc', 'prix_desc']

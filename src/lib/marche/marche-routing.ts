@@ -2,7 +2,7 @@
 // two engines (/marche/produits, /marche/services); /marche itself is now a redirect.
 // Kept dependency-free so it is unit-tested directly (see marche-routing.test.ts).
 
-import type { SearchType } from '@/lib/search/search-params'
+import type { SearchType, ToggleType } from '@/lib/search/search-params'
 
 // The two browse-engine routes, keyed by catalog type. The single source of truth for
 // "where does each engine live" — the redirect resolver, the cross-engine toggle, and the
@@ -35,6 +35,19 @@ export function marcheEngineHref(type: SearchType): string {
  */
 export function homeEngineHref(type: SearchType): string {
   return type === 'service' ? '/?type=service' : '/'
+}
+
+/**
+ * The destination for a top-bar segmented-toggle option. The two catalog types switch the
+ * catalog in place on the homepage (?type=) and resolve to their browse engine everywhere else
+ * (in place on /marche, a navigation from anywhere else). The two navigation-only types jump
+ * to their list routes (built in a later PR — temporarily 404).
+ */
+export function toggleDestination(type: ToggleType, ctx: { onHome: boolean }): string {
+  if (type === 'shop') return '/boutiques'
+  if (type === 'freelance') return '/freelances'
+  // Narrowed to 'product' | 'service' here.
+  return ctx.onHome ? homeEngineHref(type) : marcheEngineHref(type)
 }
 
 export type MarcheSidebarNav = {

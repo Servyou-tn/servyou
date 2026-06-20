@@ -7,16 +7,14 @@ import { useLang } from '@/components/LangProvider'
 import { t } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
 import { FOCUS_RING } from '@/components/layout/styles'
-import { marcheEngineHref, homeEngineHref, resolveMarcheSidebarNav } from '@/lib/marche/marche-routing'
-import { SharedSearchBar } from '@/components/dashboard/shell/SharedSearchBar'
+import { toggleDestination } from '@/lib/marche/marche-routing'
+import type { SearchType, ToggleType } from '@/lib/search/search-params'
+import { SegmentedToggle } from './SegmentedToggle'
+import { ExpandableSearch } from './ExpandableSearch'
 import { ProfileAvatarMenu, type TopBarUser } from './ProfileAvatarMenu'
 
-type SearchType = 'product' | 'service'
-
-// True once content has scrolled more than 8px under the bar — the trigger for the
-// bar's translucent surface. Plain window-scroll listener: the marche shell scrolls the
-// window (the main column is normal flow), so scrollY is the signal. setState bails out
-// when the boolean is unchanged, so this stays cheap.
+// True once content has scrolled more than 8px under the bar — the trigger for the bar's
+// translucent surface. The marche shell scrolls the window, so scrollY is the signal.
 function useScrolled(threshold = 8): boolean {
   const [scrolled, setScrolled] = useState(false)
   useEffect(() => {
@@ -28,17 +26,11 @@ function useScrolled(threshold = 8): boolean {
   return scrolled
 }
 
-// The marche shell's sticky top bar — flush to the top of the viewport (top:0), spanning
-// the content column (right of the sidebar). At rest it's transparent and the pill +
-// icon cluster float over the page; once content scrolls underneath, the WHOLE bar gains
-// a bg-white/80 + backdrop-blur surface and a bottom border so what passes under stays
-// legible. Right cluster (pinned hard right, one tight group): the global marketplace
-// search pill, then a visual-only bell, then the profile avatar menu (whose dropdown is
-// the single canonical door to /parametres). Bell + avatar show ≥md; the search stays
-// visible at every width (mobile owns their small-screen treatment in a separate pass).
-// Left slot: an optional welcome (greeting + quiet subtitle) — ONLY the consumer homepage
-// passes `heading`/`subtitle`; every other page leaves it empty so the cluster is the
-// bar's only content.
+// The marche shell's sticky top bar. Three zones at ≥md — left (the homepage welcome, when
+// present), center (the 4-option segmented toggle + a compact expandable search), right (bell +
+// avatar). The two outer zones share equal flex-grow so the center cluster stays mathematically
+// centered whether or not a welcome is present. On mobile the welcome stacks above and the
+// toggle + search + bell + avatar share one row (the toggle scrolls if the pills overflow).
 export function MarcheTopBar({
   user,
   initialType,
@@ -55,25 +47,25 @@ export function MarcheTopBar({
   const lang = useLang()
   const scrolled = useScrolled()
   const pathname = usePathname()
-  // On the two browse engines the toggle is the cross-engine compass (Produits ⇄ Services).
-  // On the consumer homepage (/) it switches the home catalog in place via ?type=. Off both
-  // (/recherche, /categories, the account pages) it stays the search-scope toggle — omitting
-  // toggleHref leaves SharedSearchBar's original /recherche behavior untouched.
-  const { onMarche } = resolveMarcheSidebarNav(pathname)
   const onHome = pathname === '/'
-  // Drives the left zone: shown inline on mobile only when a welcome is actually present, and
-  // always taking an equal flex share at md+ so the centered search never shifts.
   const hasWelcome = Boolean(heading || subtitle)
 
-  // Shared circular-button surface (44px tall, WCAG touch target). Hover scale + active
-  // press are motion-safe (the prefers-reduced-motion query) so they self-disable.
-  const iconBtnBase = cn(
-    'inline-flex h-11 items-center justify-center rounded-full border border-border-subtle bg-white shadow-sm',
+  // The active toggle option — the catalog type the page is on (product/service, fed by the
+  // page), or the navigation-only type when the user is on its route.
+  const activeToggle: ToggleType = pathname.startsWith('/boutiques')
+    ? 'shop'
+    : pathname.startsWith('/freelances')
+      ? 'freelance'
+      : initialType
+  const hrefFor = (type: ToggleType) => toggleDestination(type, { onHome })
+
+  // Shared circular-button surface (44px tall, WCAG touch target).
+  const circleBtn = cn(
+    'inline-flex h-11 w-11 items-center justify-center rounded-full border border-border-subtle bg-white shadow-sm',
     'transition-all duration-150 ease-out hover:bg-slate-50 hover:shadow-md',
     'motion-safe:hover:scale-[1.04] motion-safe:active:scale-[0.96]',
     FOCUS_RING,
   )
-  const circleBtn = cn(iconBtnBase, 'w-11')
 
   return (
     <div
@@ -84,16 +76,11 @@ export function MarcheTopBar({
           : 'border-transparent bg-transparent',
       )}
     >
-      {/* Three zones (≥md): left = welcome, center = search, right = bell + avatar. The two
-          outer zones share an equal flex-grow, so the fixed-width center stays mathematically
-          centered whether or not a welcome is present — the welcome never pushes the search
-          off-center. On mobile the right zone is hidden and the search stretches; the left zone
-          shows inline only when a welcome exists (otherwise it collapses away so the search
-          keeps full width). */}
-      <div className="mx-auto flex max-w-7xl items-center gap-4 px-6 py-3 lg:px-8">
-        {/* Left zone — the homepage welcome (greeting + quiet subtitle), left-aligned. Only the
-            consumer homepage passes heading/subtitle. */}
-        <div className={cn('min-w-0 items-center md:flex md:flex-1', hasWelcome ? 'flex' : 'hidden')}>
+      <div className="mx-auto flex max-w-7xl flex-col gap-2 px-4 py-3 md:flex-row md:items-center md:gap-4 md:px-6 lg:px-8">
+        {/* Left zone — the homepage welcome (greeting + quiet subtitle). On mobile it's its own
+            row above (only when present); at md+ it always takes an equal flex share (empty when
+            absent) so the centered cluster never shifts. */}
+        <div className={cn('min-w-0 md:flex-1', hasWelcome ? 'block' : 'hidden md:block')}>
           {hasWelcome && (
             <div className="min-w-0">
               {heading && (
@@ -104,37 +91,35 @@ export function MarcheTopBar({
           )}
         </div>
 
-        {/* Center zone — the search pill (the primary typed-query entry point → /recherche).
-            Fixed width at md+ (unchanged); stretches on mobile. */}
-        <div className="min-w-0 flex-1 md:w-96 md:flex-none lg:w-[30rem]">
-          <SharedSearchBar
-            basePath="/recherche"
-            initialType={initialType}
-            initialQuery={initialQuery}
-            toggleHref={onMarche ? marcheEngineHref : onHome ? homeEngineHref : undefined}
-          />
-        </div>
+        {/* Controls — on mobile one flex row (toggle + search grow, bell + avatar pinned right);
+            at md+ `md:contents` dissolves this wrapper so the center and right become direct zones
+            of the outer row, completing the left/center/right centering. */}
+        <div className="flex min-w-0 items-center gap-2 md:contents">
+          {/* Center zone — segmented toggle + compact expandable search. */}
+          <div className="flex min-w-0 flex-1 items-center gap-2 md:flex-none md:justify-center md:gap-3">
+            <SegmentedToggle value={activeToggle} hrefFor={hrefFor} />
+            <ExpandableSearch currentType={activeToggle} initialQuery={initialQuery} />
+          </div>
 
-        {/* Right zone — bell + avatar, pinned to the far-right edge. md+ only (hidden on mobile,
-            as today). */}
-        <div className="hidden items-center justify-end gap-3 md:flex md:flex-1">
-          <button
-            type="button"
-            // TODO: Real notifications system — see roadmap.md, post-MVP. Visual-only
-            // for now: the bell shows an unread dot but opens no panel.
-            onClick={() => console.log('Notifications coming soon')}
-            aria-label={`${t('dashboard.topbar.notifications', lang)} — ${t('marche.sidebar.coming_soon', lang)}`}
-            className={cn(circleBtn, 'relative hidden shrink-0 md:inline-flex')}
-          >
-            <Bell className="h-5 w-5 text-text-primary" aria-hidden="true" />
-            <span
-              aria-hidden="true"
-              className="absolute right-[10px] top-[10px] h-2 w-2 rounded-full bg-red-500 ring-2 ring-white"
-            />
-          </button>
+          {/* Right zone — bell + avatar, pinned to the far-right edge. */}
+          <div className="flex shrink-0 items-center justify-end gap-2 md:flex-1 md:gap-3">
+            <button
+              type="button"
+              // TODO: Real notifications system — see roadmap.md, post-MVP. Visual-only for now.
+              onClick={() => console.log('Notifications coming soon')}
+              aria-label={`${t('dashboard.topbar.notifications', lang)} — ${t('marche.sidebar.coming_soon', lang)}`}
+              className={cn(circleBtn, 'relative shrink-0')}
+            >
+              <Bell className="h-5 w-5 text-text-primary" aria-hidden="true" />
+              <span
+                aria-hidden="true"
+                className="absolute right-[10px] top-[10px] h-2 w-2 rounded-full bg-red-500 ring-2 ring-white"
+              />
+            </button>
 
-          <div className="hidden shrink-0 md:block">
-            <ProfileAvatarMenu user={user} triggerClassName={circleBtn} />
+            <div className="shrink-0">
+              <ProfileAvatarMenu user={user} triggerClassName={circleBtn} />
+            </div>
           </div>
         </div>
       </div>
