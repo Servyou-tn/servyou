@@ -7,10 +7,10 @@ import { cn } from '@/lib/utils'
 import { interactiveSurface } from '@/components/ui/interactive-surface'
 import type { ToggleType } from '@/lib/search/search-params'
 
-// Compact, premium search pill that expands on focus (Google-style). On desktop it's ~200px
+// Compact, premium search pill that expands on focus (Google-style). On desktop it's ~280px
 // collapsed and grows to ~420px while focused OR while it holds a value (so blurring with
-// content keeps it open; blurring empty collapses it). On mobile it's full-width (its own row,
-// no expand). Focus paints a brand-accent border + soft ring glow and tints the icon. The clear
+// content keeps it open; blurring empty collapses it). On mobile it's full-width (filling its
+// grid cell). Focus paints a brand-accent border + soft ring glow and tints the icon. The clear
 // (×) button shows only when there's a value. Enter submits to /recherche?q=&type=<toggle type>.
 export function ExpandableSearch({
   currentType,
@@ -45,9 +45,10 @@ export function ExpandableSearch({
         // A 300ms width transition (overrides the surface's 200ms) for the smooth expand.
         'transition-all duration-300 ease-out',
         'focus-within:border-brand-accent/50 focus-within:shadow-sm focus-within:ring-4 focus-within:ring-brand-accent/10',
-        // Mobile: full width (own row). Desktop: compact, expanding on focus / when it has a value.
+        // Mobile: full width (fills its row-1 grid cell). Desktop: compact (~280px), expanding to
+        // ~420px on focus / while it holds a value.
         'w-full',
-        expanded ? 'md:w-[420px] md:max-w-[40vw]' : 'md:w-[200px]',
+        expanded ? 'md:w-[420px] md:max-w-[40vw]' : 'md:w-[280px]',
       )}
     >
       <Search

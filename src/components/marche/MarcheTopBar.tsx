@@ -30,15 +30,16 @@ function useScrolled(threshold = 8): boolean {
 
 // The marche shell's sticky top bar.
 //
-// The S brand mark anchors the far left (it moved here from the sidebar, so it stays visible on
-// mobile where the sidebar is hidden). It's a clean image in a Link home — no button chrome.
+// The S brand mark stands ALONE on the far left (it moved here from the sidebar, so it stays
+// visible on mobile where the sidebar is hidden). It's a clean image in a Link home — no chrome.
 //
-// Layout — at md+ a single flex row: LEFT (logo → welcome, when present → compact search) and
-// RIGHT (the 4-option segmented toggle → bell → avatar), pushed apart by the toggle's auto-margin
-// so empty space sits between them. The welcome never truncates on desktop. On mobile the
-// welcome (home only) stacks on its own row above one control row: logo, search, the
-// (horizontally-scrolling) toggle, bell, avatar. The controls share a wrapper that dissolves at
-// md+ (md:contents) so each becomes a zone of the outer row, ordered by `order`.
+// Layout — at md+ a single flex row: the logo, then a flex spacer, then everything else clustered
+// on the right in order [welcome (home only) → search → 4-pill toggle → bell → avatar]. The
+// toggle is the one shrinkable member (it scrolls internally), so when the row gets tight the
+// spacer collapses and the pills scroll rather than the page overflowing. On mobile (<md) it's a
+// two-row grid: row 1 = logo + search + bell/avatar, row 2 = the toggle full-width (scrolls); the
+// welcome is hidden (the in-page heading covers it there). The right cluster is one wrapper that
+// is `display:contents` on mobile (its members place straight into the grid) and a flex at md+.
 export function MarcheTopBar({
   user,
   initialType,
@@ -105,53 +106,59 @@ export function MarcheTopBar({
           : 'border-transparent bg-transparent',
       )}
     >
-      {/* Full width — the bar spans across the sidebar + content columns below, so the logo
-          anchors the true far left. */}
-      <div className="flex w-full flex-col gap-2 px-4 py-3 md:flex-row md:items-center md:gap-4 md:px-6 lg:gap-6 lg:px-8">
-        {/* Welcome — home only. Mobile: its own row above the controls. Desktop: between the logo
-            and the search (md:order-2), and never truncates (it truncates on mobile only). */}
-        {hasWelcome && (
-          <div className="min-w-0 md:order-2 md:shrink-0">
-            {heading && (
-              <h1 className="truncate text-xl font-bold leading-tight text-[#0A0A0A] md:overflow-visible md:text-2xl lg:text-3xl">
-                {heading}
-              </h1>
-            )}
-            {subtitle && <p className="mt-0.5 truncate text-xs text-[#6B6B6B]">{subtitle}</p>}
-          </div>
-        )}
+      {/* Logo (far left) · spacer · right cluster. Mobile (<md) is a two-row grid; md+ is one
+          flex row. The bar spans full width across the sidebar + content columns below. */}
+      <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-3 gap-y-2 px-4 py-3 md:flex md:w-full md:gap-x-4 md:px-6 lg:gap-x-6 lg:px-8">
+        {/* S logo — alone on the far left. Clean mark (no border/shadow/hover), Link home.
+            Slightly larger on desktop where it balances against the welcome heading. */}
+        <Link
+          href="/"
+          aria-label="Servyou"
+          className="col-start-1 row-start-1 flex shrink-0 items-center"
+        >
+          <Image
+            src="/brand/logo/servyou-hero.png"
+            alt="Servyou"
+            width={56}
+            height={56}
+            priority
+            className="h-12 w-auto md:h-14"
+          />
+        </Link>
 
-        {/* Controls — mobile: one flex row [logo, search, toggle, bell, avatar]. md+: md:contents
-            dissolves this wrapper so each child becomes a zone of the outer row, ordered logo(1) →
-            welcome(2) → search(3) → (ml-auto) toggle(4) → bell + avatar(5). */}
-        <div className="flex min-w-0 items-center gap-2 md:contents">
-          {/* S logo — the brand anchor, far left. A clean mark (no border/shadow/hover), in a
-              Link home. h-11 matches the unified interactive-surface height; the asset is square. */}
-          <Link href="/" aria-label="Servyou" className="flex shrink-0 items-center md:order-1">
-            <Image
-              src="/brand/logo/servyou-hero.png"
-              alt="Servyou"
-              width={48}
-              height={48}
-              priority
-              className="h-12 w-auto"
-            />
-          </Link>
+        {/* Spacer (md+ only) — pushes the cluster to the right so the logo stands alone. */}
+        <div aria-hidden className="hidden md:block md:flex-1" />
 
-          {/* Search — mobile: takes the remaining row width. Desktop: next to the welcome. */}
-          <div className="min-w-0 flex-1 md:order-3 md:flex-none">
+        {/* Right cluster — welcome → search → pills → bell → avatar. display:contents on mobile
+            (members fall into the grid below); a flex group at md+ (md:min-w-0 lets the pills
+            inside shrink/scroll when the row is tight). */}
+        <div className="contents md:flex md:min-w-0 md:items-center md:gap-4">
+          {/* Welcome — home only, md+ only (the in-page heading serves mobile). Compact, capped,
+              and truncating so a long name never dominates or breaks the row. */}
+          {hasWelcome && (
+            <div className="hidden min-w-0 md:block md:max-w-[200px] md:shrink-0">
+              {heading && (
+                <h1 className="truncate text-lg font-bold leading-tight text-[#0A0A0A] md:text-xl">
+                  {heading}
+                </h1>
+              )}
+              {subtitle && <p className="mt-0.5 truncate text-xs text-[#6B6B6B]">{subtitle}</p>}
+            </div>
+          )}
+
+          {/* Search — mobile: row 1, between the logo and the bell/avatar. md+: before the pills. */}
+          <div className="col-start-2 row-start-1 min-w-0 md:shrink-0">
             <ExpandableSearch currentType={activeToggle} initialQuery={initialQuery} />
           </div>
 
-          {/* Toggle — scrolls if its pills overflow. Desktop: pushed to the right edge via ml-auto,
-              sitting next to the bell. It's the only cluster allowed to shrink/scroll, so the logo
-              + welcome + search never get squeezed. */}
-          <div className="min-w-0 max-w-[44vw] shrink md:order-4 md:ml-auto md:max-w-none md:shrink-0">
+          {/* Pills — mobile: full-width second row (scrolls). md+: after the search; the one
+              member allowed to shrink so it scrolls (rather than overflowing) when space is tight. */}
+          <div className="col-span-full row-start-2 min-w-0 md:row-auto">
             <SegmentedToggle value={activeToggle} hrefFor={hrefFor} />
           </div>
 
-          {/* Bell + avatar — rightmost. */}
-          <div className="flex shrink-0 items-center gap-2 md:order-5 md:gap-3">
+          {/* Bell + avatar — mobile: row 1, far right. md+: end of the cluster. */}
+          <div className="col-start-3 row-start-1 flex shrink-0 items-center justify-self-end gap-2 md:gap-3">
             <button
               type="button"
               // TODO: Real notifications system — see roadmap.md, post-MVP. Visual-only for now.
