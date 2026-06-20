@@ -4,6 +4,7 @@ import { useEffect, useId, useState } from 'react'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { ChevronDown } from 'lucide-react'
 import { FOCUS_RING } from '@/components/layout/styles'
+import { FilterControl } from '@/components/ui/filter-control'
 
 export type SelectOption = { value: string; label: string }
 
@@ -95,17 +96,11 @@ export function SidebarSelectFilter({
                 key={o.value}
                 className="flex cursor-pointer items-center gap-2.5 py-1.5 text-sm text-[#0A0A0A]"
               >
-                <input
+                <FilterControl
                   type="radio"
                   name={`${panelId}-${paramName}`}
                   checked={o.value === current}
                   onChange={() => select(o.value)}
-                  // Minimal, native-free control matching the Marché checkboxes' light weight
-                  // (no heavy native radio "ring", no chunky solid fill): a small outlined
-                  // circle with a small brand-accent centre dot when selected. bg-clip-content
-                  // + p-[3px] confines the checked fill to the inner content box (the dot),
-                  // leaving the border as the outline.
-                  className={`h-4 w-4 shrink-0 cursor-pointer appearance-none rounded-full border border-border-subtle bg-white bg-clip-content p-[3px] transition-colors checked:border-brand-accent checked:bg-brand-accent ${FOCUS_RING}`}
                 />
                 <span className="line-clamp-1">{o.label}</span>
               </label>

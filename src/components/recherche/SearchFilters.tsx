@@ -6,6 +6,7 @@ import { ChevronDown } from 'lucide-react'
 import { useLang } from '@/components/LangProvider'
 import { t } from '@/lib/i18n'
 import { FOCUS_RING } from '@/components/layout/styles'
+import { FilterControl } from '@/components/ui/filter-control'
 import { GOVERNORATES } from '@/lib/tunisia-governorates'
 import { buildSearchQuery } from './search-url'
 
@@ -188,11 +189,10 @@ export function SearchFilters({
           key={c.slug}
           className="flex cursor-pointer items-center gap-2.5 py-1.5 text-sm text-[#0A0A0A]"
         >
-          <input
+          <FilterControl
             type="checkbox"
             checked={cat.includes(c.slug)}
             onChange={() => toggleCat(c.slug)}
-            className={`h-4 w-4 shrink-0 rounded border-border-subtle text-brand-accent ${FOCUS_RING}`}
           />
           <span className="line-clamp-1">{lang === 'ar' ? c.name_ar : c.name_fr}</span>
         </label>
@@ -207,11 +207,10 @@ export function SearchFilters({
           key={g.value}
           className="flex cursor-pointer items-center gap-2.5 py-1.5 text-sm text-[#0A0A0A]"
         >
-          <input
+          <FilterControl
             type="checkbox"
             checked={ville.includes(g.value)}
             onChange={() => toggleVille(g.value)}
-            className={`h-4 w-4 shrink-0 rounded border-border-subtle text-brand-accent ${FOCUS_RING}`}
           />
           <span className="line-clamp-1">{lang === 'ar' ? g.ar : g.fr}</span>
         </label>
