@@ -61,6 +61,9 @@ export function MarcheTopBar({
   // toggleHref leaves SharedSearchBar's original /recherche behavior untouched.
   const { onMarche } = resolveMarcheSidebarNav(pathname)
   const onHome = pathname === '/'
+  // Drives the left zone: shown inline on mobile only when a welcome is actually present, and
+  // always taking an equal flex share at md+ so the centered search never shifts.
+  const hasWelcome = Boolean(heading || subtitle)
 
   // Shared circular-button surface (44px tall, WCAG touch target). Hover scale + active
   // press are motion-safe (the prefers-reduced-motion query) so they self-disable.
@@ -81,33 +84,40 @@ export function MarcheTopBar({
           : 'border-transparent bg-transparent',
       )}
     >
+      {/* Three zones (≥md): left = welcome, center = search, right = bell + avatar. The two
+          outer zones share an equal flex-grow, so the fixed-width center stays mathematically
+          centered whether or not a welcome is present — the welcome never pushes the search
+          off-center. On mobile the right zone is hidden and the search stretches; the left zone
+          shows inline only when a welcome exists (otherwise it collapses away so the search
+          keeps full width). */}
       <div className="mx-auto flex max-w-7xl items-center gap-4 px-6 py-3 lg:px-8">
-        {/* Left slot — the homepage welcome (greeting + quiet subtitle), vertically
-            centered with the right cluster. Only the consumer homepage passes these;
-            every other page omits them, leaving the slot empty. */}
-        {(heading || subtitle) && (
-          <div className="min-w-0 flex-1">
-            {heading && (
-              <h1 className="truncate text-2xl font-bold text-[#0A0A0A] md:text-3xl">{heading}</h1>
-            )}
-            {subtitle && <p className="mt-0.5 truncate text-xs text-[#6B6B6B]">{subtitle}</p>}
-          </div>
-        )}
+        {/* Left zone — the homepage welcome (greeting + quiet subtitle), left-aligned. Only the
+            consumer homepage passes heading/subtitle. */}
+        <div className={cn('min-w-0 items-center md:flex md:flex-1', hasWelcome ? 'flex' : 'hidden')}>
+          {hasWelcome && (
+            <div className="min-w-0">
+              {heading && (
+                <h1 className="truncate text-2xl font-bold text-[#0A0A0A] md:text-3xl">{heading}</h1>
+              )}
+              {subtitle && <p className="mt-0.5 truncate text-xs text-[#6B6B6B]">{subtitle}</p>}
+            </div>
+          )}
+        </div>
 
-        {/* Right cluster — search pill + bell + avatar, pinned hard right as one tight
-            group. ml-auto (≥md) carries it right even when the welcome slot is empty; on
-            mobile it stretches (flex-1) so the search stays usable. Search is the primary
-            typed-query entry point — it lands on /recherche. Bell + avatar show ≥md. */}
-        <div className="flex min-w-0 flex-1 items-center gap-3 md:ml-auto md:flex-none">
-          <div className="min-w-0 flex-1 md:w-80 md:flex-none lg:w-96">
-            <SharedSearchBar
-              basePath="/recherche"
-              initialType={initialType}
-              initialQuery={initialQuery}
-              toggleHref={onMarche ? marcheEngineHref : onHome ? homeEngineHref : undefined}
-            />
-          </div>
+        {/* Center zone — the search pill (the primary typed-query entry point → /recherche).
+            Fixed width at md+ (unchanged); stretches on mobile. */}
+        <div className="min-w-0 flex-1 md:w-96 md:flex-none lg:w-[30rem]">
+          <SharedSearchBar
+            basePath="/recherche"
+            initialType={initialType}
+            initialQuery={initialQuery}
+            toggleHref={onMarche ? marcheEngineHref : onHome ? homeEngineHref : undefined}
+          />
+        </div>
 
+        {/* Right zone — bell + avatar, pinned to the far-right edge. md+ only (hidden on mobile,
+            as today). */}
+        <div className="hidden items-center justify-end gap-3 md:flex md:flex-1">
           <button
             type="button"
             // TODO: Real notifications system — see roadmap.md, post-MVP. Visual-only
