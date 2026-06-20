@@ -1,20 +1,18 @@
 'use client'
 
-import { useState } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { useLang } from '@/components/LangProvider'
 import { t } from '@/lib/i18n'
-import { SegmentedControl, type SegmentedControlOption } from '@/components/ui/segmented-control'
 import { ListingResults } from '@/components/listings/ListingResults'
 import { EmptyState } from './EmptyState'
 import { HeartIcon } from './icons'
 import type { ProductListing } from '@/components/listings/ProductListingCard'
 import type { ServiceListing } from '@/components/listings/ServiceListingCard'
 
-type FavType = 'product' | 'service'
-
-// Favorites view: the same Produits/Services segmented toggle as /marche, rendering the
-// reused product grid / service list. Unfavoriting a card refreshes the server data
-// (FavoriteButton calls router.refresh()), so the item drops from the list.
+// Favorites view: the Produits/Services choice now lives in the sidebar (the "Mes favoris"
+// expandable group writes ?type=); this view reads that param and renders the reused product
+// grid / service list. An absent/unknown param means "Produits". Unfavoriting a card refreshes
+// the server data (FavoriteButton calls router.refresh()), so the item drops from the list.
 export function MesFavorisView({
   products,
   services,
@@ -23,24 +21,11 @@ export function MesFavorisView({
   services: ServiceListing[]
 }) {
   const lang = useLang()
-  const [type, setType] = useState<FavType>('product')
-
-  const typeOptions: SegmentedControlOption<FavType>[] = [
-    { value: 'product', label: t('common.products_section', lang) },
-    { value: 'service', label: t('common.services_section', lang) },
-  ]
+  const sp = useSearchParams()
+  const type = sp.get('type') === 'service' ? 'service' : 'product'
 
   return (
     <div>
-      <div className="mb-6">
-        <SegmentedControl
-          options={typeOptions}
-          value={type}
-          onChange={setType}
-          ariaLabel={t('favorites.title', lang)}
-        />
-      </div>
-
       {type === 'product' ? (
         products.length > 0 ? (
           <ListingResults type="product" items={products} />

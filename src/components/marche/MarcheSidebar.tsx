@@ -14,17 +14,41 @@ import { StorefrontIcon, PackageIcon, HeartIcon, BriefcaseIcon } from './icons'
 type IconCmp = (props: React.SVGProps<SVGSVGElement>) => React.ReactElement
 
 // The three account destinations under the Marché accordion. Each lights up by
-// longest-prefix match (so /mes-missions/nouvelle keeps "Mes missions" active).
-const ACCOUNT_ITEMS: { key: string; href: string; Icon: IconCmp }[] = [
-  { key: 'marche.sidebar.commandes', href: '/mes-commandes', Icon: PackageIcon },
-  { key: 'marche.sidebar.favoris', href: '/mes-favoris', Icon: HeartIcon },
+// longest-prefix match (so /mes-missions/nouvelle keeps "Mes missions" active). When a page
+// passes a `sidebarFilter`, the matching active item expands to host it — `showAria`/`hideAria`
+// (hardcoded French, per the established pattern) label its chevron. Mes missions has none: no
+// sidebar filter today, so it stays a plain link (a separate future PR).
+const ACCOUNT_ITEMS: {
+  key: string
+  href: string
+  Icon: IconCmp
+  showAria?: string
+  hideAria?: string
+}[] = [
+  {
+    key: 'marche.sidebar.commandes',
+    href: '/mes-commandes',
+    Icon: PackageIcon,
+    showAria: 'Afficher les filtres de commandes',
+    hideAria: 'Masquer les filtres de commandes',
+  },
+  {
+    key: 'marche.sidebar.favoris',
+    href: '/mes-favoris',
+    Icon: HeartIcon,
+    showAria: 'Afficher les filtres de favoris',
+    hideAria: 'Masquer les filtres de favoris',
+  },
   { key: 'marche.sidebar.missions', href: '/mes-missions', Icon: BriefcaseIcon },
 ]
 
 const PRODUITS_HREF = marcheEngineHref('product')
 
-// The collapsible filter panel's id — referenced by the chevron toggle's aria-controls.
+// The Marché filter panel's id — referenced by its chevron toggle's aria-controls.
 const FILTER_PANEL_ID = 'marche-sidebar-filters'
+
+// The expandable account item's filter-panel id (only one account item expands at a time).
+const ACCOUNT_FILTER_PANEL_ID = 'consumer-sidebar-account-filter'
 
 // The marche shell sidebar — a floating full-height white card (NOT the dashboard sidebar,
 // which is reserved for the seller dashboards). Locked to 224px on desktop; hidden below lg
@@ -49,8 +73,12 @@ export function MarcheSidebar({ sidebarFilter }: { sidebarFilter?: ReactNode }) 
   // no persistence — switching engine (a pathname change) resets it back to open. Refining
   // filters only changes the query string (same pathname), so it leaves the panel as-is.
   const [filtersOpen, setFiltersOpen] = useState(true)
+  // The active account item (Mes commandes / Mes favoris) can expand to reveal its sidebar
+  // filter — collapsed by default. Like the Marché panel, a route change resets it.
+  const [accountFilterOpen, setAccountFilterOpen] = useState(false)
   useEffect(() => {
     setFiltersOpen(true)
+    setAccountFilterOpen(false)
   }, [pathname])
 
   const navBase = `flex h-11 items-center gap-2 rounded-full px-4 text-sm font-medium transition-all duration-200 ease-out ${FOCUS_RING}`
@@ -141,6 +169,54 @@ export function MarcheSidebar({ sidebarFilter }: { sidebarFilter?: ReactNode }) 
           {/* ── Account destinations ── */}
           {ACCOUNT_ITEMS.map((item) => {
             const active = pathname === item.href || pathname.startsWith(item.href + '/')
+            // The active item expands to host its sidebar filter (only commandes/favoris pass
+            // one). Same split as the Marché header: the label Link navigates, the chevron
+            // toggles. Mes missions (no showAria, no sidebarFilter) stays a plain link.
+            const expandable = active && Boolean(sidebarFilter) && Boolean(item.showAria)
+
+            if (expandable) {
+              return (
+                <div key={item.href} className="flex flex-col">
+                  <div className={`${navBase} ${activePill} justify-between`}>
+                    <Link
+                      href={item.href}
+                      aria-current="page"
+                      className={`flex min-w-0 flex-1 items-center gap-2 rounded-full ${FOCUS_RING}`}
+                    >
+                      <item.Icon className="h-4 w-4 shrink-0" aria-hidden="true" />
+                      <span className="whitespace-nowrap">{t(item.key, lang)}</span>
+                    </Link>
+                    <button
+                      type="button"
+                      onClick={() => setAccountFilterOpen((open) => !open)}
+                      aria-expanded={accountFilterOpen}
+                      aria-controls={ACCOUNT_FILTER_PANEL_ID}
+                      aria-label={accountFilterOpen ? item.hideAria : item.showAria}
+                      className={`-mr-1 flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-full text-brand-accent transition-colors hover:bg-brand-accent/10 ${FOCUS_RING}`}
+                    >
+                      <ChevronDown
+                        className={`h-4 w-4 transition-transform duration-200 ease-in-out ${accountFilterOpen ? 'rotate-180' : ''}`}
+                        aria-hidden="true"
+                      />
+                    </button>
+                  </div>
+                  <div
+                    id={ACCOUNT_FILTER_PANEL_ID}
+                    inert={!accountFilterOpen}
+                    className={`grid transition-all duration-200 ease-in-out ${
+                      accountFilterOpen ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'
+                    }`}
+                  >
+                    <div className="overflow-hidden">
+                      <div className="pl-3 pt-1.5">
+                        <div className="px-0.5 pb-1">{sidebarFilter}</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )
+            }
+
             return (
               <Link
                 key={item.href}
