@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react'
 import { useLang } from '@/components/LangProvider'
 import { t } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
+import { FOCUS_RING } from '@/components/layout/styles'
 import type { ToggleType } from '@/lib/search/search-params'
 
 // The top-bar 4-option segmented toggle: Produits / Services / Boutiques / Freelances. Every
@@ -50,14 +51,16 @@ export function SegmentedToggle({
             href={hrefFor(o.value)}
             onClick={() => setActive(o.value)}
             aria-current={isActive ? 'true' : undefined}
-            // Every pill is its own visible button (white bg + border) — no shared container
-            // background, so the four read as four buttons, not "1 button + 3 text labels".
+            // Same pill family as the sidebar account buttons (MarcheSidebar's NAV_BASE +
+            // IDLE_PILL): identical rounded-full shape, border-border-subtle, px-4, shadow, hover
+            // (bg-slate-50 + lift), and FOCUS_RING — just a tighter py for the shorter top bar.
+            // Inactive matches the sidebar idle pill exactly; active keeps the solid brand fill.
             className={cn(
-              'shrink-0 cursor-pointer whitespace-nowrap rounded-full border px-4 py-2 text-sm font-medium transition-all duration-200',
-              'outline-none focus-visible:ring-2 focus-visible:ring-brand-accent/30 focus-visible:ring-offset-1',
+              'shrink-0 cursor-pointer whitespace-nowrap rounded-full px-4 py-1.5 text-sm font-medium transition-all duration-200 ease-out',
+              FOCUS_RING,
               isActive
-                ? 'border-brand-accent bg-brand-accent text-white shadow-sm'
-                : 'border-border-subtle bg-white text-text-primary hover:border-slate-300 hover:bg-surface-subtle',
+                ? 'border border-brand-accent bg-brand-accent text-white shadow-sm'
+                : 'border border-border-subtle bg-white text-text-primary shadow-sm hover:bg-slate-50 hover:shadow-md',
             )}
           >
             {o.label}
