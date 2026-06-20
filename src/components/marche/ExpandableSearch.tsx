@@ -36,50 +36,56 @@ export function ExpandableSearch({
   }
 
   return (
-    <form
-      onSubmit={onSubmit}
-      className={cn(
-        // Same surface as a pill (h-11, white, border, shadow, hover) — just the search shape.
-        'group flex items-center gap-2 rounded-full px-3.5',
-        interactiveSurface(false),
-        // A 300ms width transition (overrides the surface's 200ms) for the smooth expand.
-        'transition-all duration-300 ease-out',
-        'focus-within:border-brand-accent/50 focus-within:shadow-sm focus-within:ring-4 focus-within:ring-brand-accent/10',
-        // Mobile: full width (fills its row-1 grid cell). Desktop: compact (~280px), expanding to
-        // ~420px on focus / while it holds a value.
-        'w-full',
-        expanded ? 'md:w-[420px] md:max-w-[40vw]' : 'md:w-[280px]',
-      )}
-    >
-      <Search
-        className="h-4 w-4 shrink-0 text-text-muted transition-colors group-focus-within:text-brand-accent"
-        aria-hidden="true"
-      />
-      <input
-        ref={inputRef}
-        type="search"
-        name="q"
-        value={query}
-        onChange={(e) => setQuery(e.target.value)}
-        onFocus={() => setFocused(true)}
-        onBlur={() => setFocused(false)}
-        aria-label="Rechercher"
-        placeholder="Rechercher…"
-        className="min-w-0 flex-1 border-none bg-transparent p-0 text-sm text-text-primary outline-none placeholder:text-text-muted [&::-webkit-search-cancel-button]:hidden"
-      />
-      {hasValue && (
-        <button
-          type="button"
-          onClick={() => {
-            setQuery('')
-            inputRef.current?.focus()
-          }}
-          aria-label="Effacer la recherche"
-          className="inline-flex shrink-0 cursor-pointer items-center justify-center rounded-full text-text-muted transition-colors hover:text-text-primary"
-        >
-          <X className="h-3.5 w-3.5" aria-hidden="true" />
-        </button>
-      )}
-    </form>
+    // Footprint — a fixed-width flex slot (full on mobile; the 280px collapsed size on desktop).
+    // It never changes width, so the pills / bell / avatar that sit after it never move by a pixel.
+    // relative anchors the form, which grows LEFTWARD (right edge pinned) over the welcome on focus.
+    <div className="relative h-11 w-full md:w-[280px]">
+      <form
+        onSubmit={onSubmit}
+        className={cn(
+          // Same surface as a pill (h-11, white, border, shadow, hover) — just the search shape.
+          // Right-anchored overlay: the right edge is pinned to the slot; the width grows left.
+          'group absolute right-0 top-0 z-10 flex h-11 items-center gap-2 rounded-full px-3.5',
+          interactiveSurface(false),
+          // 300ms transition (overrides the surface's 200ms) for the smooth right-anchored expand.
+          'transition-all duration-300 ease-out',
+          'focus-within:border-brand-accent/50 focus-within:shadow-sm focus-within:ring-4 focus-within:ring-brand-accent/10',
+          // Mobile: full width (fills the slot). Desktop: 280px collapsed → 420px expanded, growing
+          // leftward because the right edge is pinned.
+          'w-full',
+          expanded ? 'md:w-[420px] md:max-w-[40vw]' : 'md:w-[280px]',
+        )}
+      >
+        <Search
+          className="h-4 w-4 shrink-0 text-text-muted transition-colors group-focus-within:text-brand-accent"
+          aria-hidden="true"
+        />
+        <input
+          ref={inputRef}
+          type="search"
+          name="q"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          onFocus={() => setFocused(true)}
+          onBlur={() => setFocused(false)}
+          aria-label="Rechercher"
+          placeholder="Rechercher…"
+          className="min-w-0 flex-1 border-none bg-transparent p-0 text-sm text-text-primary outline-none placeholder:text-text-muted [&::-webkit-search-cancel-button]:hidden"
+        />
+        {hasValue && (
+          <button
+            type="button"
+            onClick={() => {
+              setQuery('')
+              inputRef.current?.focus()
+            }}
+            aria-label="Effacer la recherche"
+            className="inline-flex shrink-0 cursor-pointer items-center justify-center rounded-full text-text-muted transition-colors hover:text-text-primary"
+          >
+            <X className="h-3.5 w-3.5" aria-hidden="true" />
+          </button>
+        )}
+      </form>
+    </div>
   )
 }

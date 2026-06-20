@@ -119,10 +119,10 @@ export function MarcheTopBar({
           <Image
             src="/brand/logo/servyou-hero.png"
             alt="Servyou"
-            width={56}
-            height={56}
+            width={80}
+            height={80}
             priority
-            className="h-12 w-auto md:h-14"
+            className="h-14 w-auto md:h-20"
           />
         </Link>
 
