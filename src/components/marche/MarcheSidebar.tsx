@@ -22,7 +22,6 @@ const ACCOUNT_ITEMS: { key: string; href: string; Icon: IconCmp }[] = [
 ]
 
 const PRODUITS_HREF = marcheEngineHref('product')
-const SERVICES_HREF = marcheEngineHref('service')
 
 // The collapsible filter panel's id — referenced by the chevron toggle's aria-controls.
 const FILTER_PANEL_ID = 'marche-sidebar-filters'
@@ -44,7 +43,7 @@ export function MarcheSidebar({ sidebarFilter }: { sidebarFilter?: ReactNode }) 
 
   // Expansion is route-derived (no separate toggle state): being on a browse route IS the
   // expanded state, so clicking Marché — which navigates to /marche/produits — expands it.
-  const { onMarche, produitsActive, servicesActive } = resolveMarcheSidebarNav(pathname)
+  const { onMarche } = resolveMarcheSidebarNav(pathname)
 
   // The filter panel below the Marché button is collapsible via its chevron. Open by default;
   // no persistence — switching engine (a pathname change) resets it back to open. Refining
@@ -55,7 +54,6 @@ export function MarcheSidebar({ sidebarFilter }: { sidebarFilter?: ReactNode }) 
   }, [pathname])
 
   const navBase = `flex h-11 items-center gap-2 rounded-full px-4 text-sm font-medium transition-all duration-200 ease-out ${FOCUS_RING}`
-  const subBase = `flex h-9 items-center gap-2 rounded-full px-3.5 text-[13px] font-medium transition-all duration-200 ease-out ${FOCUS_RING}`
   const activePill =
     'border border-brand-accent/30 bg-brand-accent/10 text-brand-accent shadow-sm'
   const idlePill =
@@ -110,8 +108,9 @@ export function MarcheSidebar({ sidebarFilter }: { sidebarFilter?: ReactNode }) 
                 </button>
               </div>
 
-              {/* Filter panel — ONLY the active engine's sub-item renders (engine isolation),
-                  with its filter beneath. Collapsible via the chevron: the grid-rows 1fr→0fr
+              {/* Filter panel — the active engine's filters. The Produits/Services sub-toggle
+                  was removed (redundant with the top-bar engine toggle); the panel now holds
+                  only the filter groups. Collapsible via the chevron: the grid-rows 1fr→0fr
                   trick animates height to auto with no magic number, paired with opacity for a
                   soft fade; `inert` drops the clipped content out of the tab order when closed. */}
               <div
@@ -122,25 +121,8 @@ export function MarcheSidebar({ sidebarFilter }: { sidebarFilter?: ReactNode }) 
                 }`}
               >
                 <div className="overflow-hidden">
-                  <div className="flex flex-col gap-1.5 pl-3 pt-1.5">
-                    {produitsActive && (
-                      <>
-                        <Link href={PRODUITS_HREF} aria-current="page" className={`${subBase} ${activePill}`}>
-                          <PackageIcon className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-                          <span className="whitespace-nowrap">{t('common.products_section', lang)}</span>
-                        </Link>
-                        {sidebarFilter && <div className="px-0.5 pb-1">{sidebarFilter}</div>}
-                      </>
-                    )}
-                    {servicesActive && (
-                      <>
-                        <Link href={SERVICES_HREF} aria-current="page" className={`${subBase} ${activePill}`}>
-                          <BriefcaseIcon className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-                          <span className="whitespace-nowrap">{t('common.services_section', lang)}</span>
-                        </Link>
-                        {sidebarFilter && <div className="px-0.5 pb-1">{sidebarFilter}</div>}
-                      </>
-                    )}
+                  <div className="pl-3 pt-1.5">
+                    {sidebarFilter && <div className="px-0.5 pb-1">{sidebarFilter}</div>}
                   </div>
                 </div>
               </div>
