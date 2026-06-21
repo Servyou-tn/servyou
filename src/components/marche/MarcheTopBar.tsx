@@ -8,12 +8,7 @@ import { Bell } from 'lucide-react'
 import { useLang } from '@/components/LangProvider'
 import { t } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
-import {
-  interactiveSurface,
-  SURFACE_HEIGHT,
-  SURFACE_HOVER,
-  FOCUS_RING,
-} from '@/components/ui/interactive-surface'
+import { interactiveSurface, SURFACE_HOVER, FOCUS_RING } from '@/components/ui/interactive-surface'
 import { toggleDestination } from '@/lib/marche/marche-routing'
 import type { SearchType, ToggleType } from '@/lib/search/search-params'
 import { SegmentedToggle } from './SegmentedToggle'
@@ -127,12 +122,12 @@ export function MarcheTopBar({
           <Image
             src="/brand/logo/servyou-hero.png"
             alt="Servyou"
-            width={44}
-            height={44}
+            width={56}
+            height={56}
             priority
-            // Locked to the shared interactive-surface height so the logo is always flush with
-            // the pills / search / bell / avatar — same baseline, no overhang, no future drift.
-            className={cn(SURFACE_HEIGHT, 'w-auto')}
+            // A touch taller than the controls for brand presence (top-aligned via the row's
+            // md:items-start, so it shares their top edge with only a small overhang below).
+            className="h-12 w-auto md:h-14"
           />
         </Link>
 
