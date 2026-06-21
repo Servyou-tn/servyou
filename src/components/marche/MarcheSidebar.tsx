@@ -248,7 +248,7 @@ export function MarcheSidebar({ sidebarFilter }: { sidebarFilter?: ReactNode }) 
   }
 
   return (
-    <aside className="sticky top-[var(--marche-topbar-h,4.5rem)] hidden h-[calc(100vh_-_var(--marche-topbar-h,4.5rem))] shrink-0 self-start px-4 pb-4 pt-8 lg:block">
+    <aside className="sticky top-[var(--marche-topbar-h,4.5rem)] hidden h-[calc(100vh_-_var(--marche-topbar-h,4.5rem))] shrink-0 self-start px-4 pb-4 pt-4 lg:block">
       <div className={`outline-brand flex h-full w-56 flex-col overflow-hidden rounded-3xl bg-white ${CARD_SHADOW}`}>
         {/* The brand mark moved to the top bar's far left; the sidebar starts with its nav. */}
         {/* Nav scrolls internally — an open filter panel can be tall. */}

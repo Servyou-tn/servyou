@@ -50,7 +50,9 @@ export function MarcheLayout({
       <div className="flex flex-1">
         <MarcheSidebar sidebarFilter={sidebarFilter} />
         <main className="min-w-0 flex-1">
-          <div className="mx-auto max-w-7xl px-6 py-6 lg:px-8 lg:py-8">{children}</div>
+          {/* Tight top inset (~16px) so the content sits just under the navbar; bottom keeps its
+              breathing room. The sidebar's pt is matched to this so their tops line up. */}
+          <div className="mx-auto max-w-7xl px-6 pb-6 pt-4 lg:px-8 lg:pb-8">{children}</div>
         </main>
       </div>
     </div>

@@ -117,15 +117,15 @@ export function MarcheTopBar({
         <Link
           href="/"
           aria-label="Servyou"
-          className="col-start-1 row-start-1 flex shrink-0 items-center"
+          className="col-start-1 row-start-1 flex shrink-0 items-start"
         >
           <Image
             src="/brand/logo/servyou-hero.png"
             alt="Servyou"
-            width={96}
-            height={96}
+            width={64}
+            height={64}
             priority
-            className="h-16 w-auto md:h-24"
+            className="h-12 w-auto md:h-16"
           />
         </Link>
 
