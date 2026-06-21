@@ -109,8 +109,9 @@ export function MarcheTopBar({
       {/* Logo (far left) · spacer · right cluster. Mobile (<md) is a two-row grid; md+ is one
           flex row. The bar spans full width across the sidebar + content columns below. The LEFT
           padding is tighter than the right so the logo hugs the viewport edge while the right
-          cluster keeps its normal inset. */}
-      <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-3 gap-y-2 py-3 pl-2 pr-4 md:flex md:w-full md:gap-x-4 md:pl-3 md:pr-6 lg:gap-x-6 lg:pl-4 lg:pr-8">
+          cluster keeps its normal inset. On desktop the row top-aligns (md:items-start) so every
+          element sits at the 12px top padding instead of centering low against the tall logo. */}
+      <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-3 gap-y-2 py-3 pl-2 pr-4 md:flex md:w-full md:items-start md:gap-x-4 md:pl-3 md:pr-6 lg:gap-x-6 lg:pl-4 lg:pr-8">
         {/* S logo — alone on the far left. Clean mark (no border/shadow/hover), Link home.
             Slightly larger on desktop where it balances against the welcome heading. */}
         <Link
