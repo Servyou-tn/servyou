@@ -19,7 +19,6 @@ function params(overrides: Partial<SearchParams> = {}): SearchParams {
     q: '',
     type: 'product',
     categorie: [],
-    ville: [],
     prixMin: null,
     prixMax: null,
     tri: 'pertinence',
@@ -39,7 +38,6 @@ describe('shouldShowSearchLanding', () => {
 
   it('is false when a filter is active even without a query', () => {
     expect(shouldShowSearchLanding(params({ categorie: ['mode'] }))).toBe(false)
-    expect(shouldShowSearchLanding(params({ ville: ['Tunis'] }))).toBe(false)
     expect(shouldShowSearchLanding(params({ prixMin: 10 }))).toBe(false)
     expect(shouldShowSearchLanding(params({ prixMax: 10 }))).toBe(false)
   })
@@ -49,7 +47,6 @@ describe('searchHasFilters', () => {
   it('detects each refinement independently', () => {
     expect(searchHasFilters(params())).toBe(false)
     expect(searchHasFilters(params({ categorie: ['x'] }))).toBe(true)
-    expect(searchHasFilters(params({ ville: ['Sfax'] }))).toBe(true)
     expect(searchHasFilters(params({ prixMin: 5 }))).toBe(true)
     expect(searchHasFilters(params({ prixMax: 5 }))).toBe(true)
   })

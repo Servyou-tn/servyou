@@ -77,7 +77,7 @@ export function resolveMarcheSidebarNav(pathname: string): MarcheSidebarNav {
 
 /**
  * Resolve a hit on /marche to its engine, preserving the refinement params so old
- * shareable links (e.g. /marche?type=service&q=logo&ville=Tunis) still land correctly.
+ * shareable links (e.g. /marche?type=service&q=logo&categorie=design) still land correctly.
  * `type` routes to the engine and is then dropped (the route IS the type); `page` is
  * dropped too (a fresh engine view starts at page 1). Default engine is Produits.
  */
@@ -85,7 +85,7 @@ export function marcheRedirectTarget(
   sp: Record<string, string | string[] | undefined>,
 ): string {
   const type: SearchType = first(sp.type) === 'service' ? 'service' : 'product'
-  const carry = ['q', 'categorie', 'ville', 'prix_min', 'prix_max', 'tri'] as const
+  const carry = ['q', 'categorie', 'prix_min', 'prix_max', 'tri'] as const
   const params = new URLSearchParams()
   for (const key of carry) {
     const v = first(sp[key])

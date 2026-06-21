@@ -10,7 +10,6 @@ import { SearchFilters, type FilterCategory } from './SearchFilters'
 type Props = {
   categories: FilterCategory[]
   selectedCategorie: string[]
-  selectedVille: string[]
   prixMin: number | null
   prixMax: number | null
   basePath?: string
@@ -25,7 +24,6 @@ type Props = {
 export function SearchFiltersSheet({
   categories,
   selectedCategorie,
-  selectedVille,
   prixMin,
   prixMax,
   basePath = '/recherche',
@@ -34,10 +32,7 @@ export function SearchFiltersSheet({
   const [open, setOpen] = useState(false)
   const lang = useLang()
 
-  const activeCount =
-    selectedCategorie.length +
-    selectedVille.length +
-    (prixMin != null || prixMax != null ? 1 : 0)
+  const activeCount = selectedCategorie.length + (prixMin != null || prixMax != null ? 1 : 0)
 
   return (
     <>
@@ -83,7 +78,6 @@ export function SearchFiltersSheet({
             <SearchFilters
               categories={categories}
               selectedCategorie={selectedCategorie}
-              selectedVille={selectedVille}
               prixMin={prixMin}
               prixMax={prixMax}
               mode="sheet"

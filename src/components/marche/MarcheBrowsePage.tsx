@@ -57,24 +57,19 @@ export async function MarcheBrowsePage({
 
   const isEmpty = result.totalCount === 0
   const hasFilters =
-    params.categorie.length > 0 ||
-    params.ville.length > 0 ||
-    params.prixMin != null ||
-    params.prixMax != null
+    params.categorie.length > 0 || params.prixMin != null || params.prixMax != null
 
   const engine = ENGINE[type]
   const base = engine.base
 
-  // Current params (category/city/price/sort) → the "Effacer les filtres" escape hatch.
+  // Current params (category/price/sort) → the "Effacer les filtres" escape hatch.
   const current = new URLSearchParams()
   if (params.categorie.length) current.set('categorie', params.categorie.join(','))
-  if (params.ville.length) current.set('ville', params.ville.join(','))
   if (params.prixMin != null) current.set('prix_min', String(params.prixMin))
   if (params.prixMax != null) current.set('prix_max', String(params.prixMax))
   if (params.tri !== 'pertinence') current.set('tri', params.tri)
   const clearQs = buildSearchQuery(current, {
     categorie: null,
-    ville: null,
     prix_min: null,
     prix_max: null,
   })
@@ -86,7 +81,6 @@ export async function MarcheBrowsePage({
       mode="inline"
       categories={categories}
       selectedCategorie={params.categorie}
-      selectedVille={params.ville}
       prixMin={params.prixMin}
       prixMax={params.prixMax}
       basePath={base}
@@ -109,7 +103,6 @@ export async function MarcheBrowsePage({
         <SearchFiltersSheet
           categories={categories}
           selectedCategorie={params.categorie}
-          selectedVille={params.ville}
           prixMin={params.prixMin}
           prixMax={params.prixMax}
           basePath={base}

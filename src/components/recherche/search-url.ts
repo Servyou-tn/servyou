@@ -9,7 +9,7 @@ export type ParamPatch = Record<string, string | number | string[] | null | unde
  *
  * - Empty values (null, undefined, '', []) DELETE their key — so toggling a filter off
  *   cleanly removes it from the URL.
- * - Array values are written comma-joined (?ville=Tunis,Sfax).
+ * - Array values are written comma-joined (?categorie=mode,tech).
  * - `resetPage` drops the page param when a filter/sort changes (a new result set always
  *   starts at page 1); it is ignored when the patch itself sets `page` (pagination).
  * - `page=1` is always stripped as URL noise (page 1 is the implicit default).

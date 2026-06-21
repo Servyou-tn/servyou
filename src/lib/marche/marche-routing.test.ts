@@ -54,7 +54,6 @@ describe('marcheRedirectTarget', () => {
       type: 'service',
       q: 'logo',
       categorie: 'design-creation',
-      ville: 'Tunis',
       prix_min: '20',
       prix_max: '200',
       tri: 'recent',
@@ -64,7 +63,6 @@ describe('marcheRedirectTarget', () => {
     const qs = new URLSearchParams(target.split('?')[1])
     expect(qs.get('q')).toBe('logo')
     expect(qs.get('categorie')).toBe('design-creation')
-    expect(qs.get('ville')).toBe('Tunis')
     expect(qs.get('prix_min')).toBe('20')
     expect(qs.get('prix_max')).toBe('200')
     expect(qs.get('tri')).toBe('recent')

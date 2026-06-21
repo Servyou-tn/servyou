@@ -29,7 +29,6 @@ describe('parseSearchParams', () => {
       q: '',
       type: 'product',
       categorie: [],
-      ville: [],
       prixMin: null,
       prixMax: null,
       tri: 'pertinence',
@@ -44,9 +43,9 @@ describe('parseSearchParams', () => {
     expect(parseSearchParams({ type: 'garbage' }).type).toBe('product')
   })
 
-  it('parses multi-value categorie/ville (comma-joined and repeated)', () => {
+  it('parses multi-value categorie (comma-joined and repeated)', () => {
     expect(parseSearchParams({ categorie: 'mode,tech' }).categorie).toEqual(['mode', 'tech'])
-    expect(parseSearchParams({ ville: ['Tunis', 'Sfax'] }).ville).toEqual(['Tunis', 'Sfax'])
+    expect(parseSearchParams({ categorie: ['mode', 'tech'] }).categorie).toEqual(['mode', 'tech'])
     // blanks are dropped
     expect(parseSearchParams({ categorie: 'mode,,' }).categorie).toEqual(['mode'])
   })

@@ -3,7 +3,7 @@
 import { Check } from 'lucide-react'
 import { FOCUS_RING } from '@/components/layout/styles'
 
-// The one filter control used by every consumer filter — the Marché Catégorie/Ville
+// The one filter control used by every consumer filter — the Marché Catégorie
 // checkboxes and the Statut/Type radios. An appearance-none square outline box with a small
 // brand-accent Check icon centred when selected, and NO background fill. Checkboxes and radios
 // render IDENTICALLY (same square, size, border, and check) — modern filter UX drops the radio

@@ -23,7 +23,6 @@ export type SearchParams = {
   q: string
   type: SearchType
   categorie: string[] // category slugs
-  ville: string[] // canonical governorate values (profiles.city / shops.city)
   prixMin: number | null
   prixMax: number | null
   tri: SearchSort
@@ -34,7 +33,7 @@ function firstParam(v: string | string[] | undefined): string | undefined {
   return Array.isArray(v) ? v[0] : v
 }
 
-// Accept both repeated params (?ville=a&ville=b) and comma-joined (?ville=a,b).
+// Accept both repeated params (?categorie=a&categorie=b) and comma-joined (?categorie=a,b).
 function listParam(v: string | string[] | undefined): string[] {
   const raw = Array.isArray(v) ? v : v != null ? [v] : []
   return raw
@@ -73,7 +72,6 @@ export function parseSearchParams(
     q: (firstParam(sp.q) ?? '').trim(),
     type,
     categorie: listParam(sp.categorie),
-    ville: listParam(sp.ville),
     prixMin: toNum(firstParam(sp.prix_min)),
     prixMax: toNum(firstParam(sp.prix_max)),
     tri,

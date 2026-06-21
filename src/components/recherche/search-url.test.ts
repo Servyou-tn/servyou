@@ -19,12 +19,12 @@ describe('buildSearchQuery', () => {
   })
 
   it('writes array values comma-joined', () => {
-    const out = buildSearchQuery('q=sac', { ville: ['Tunis', 'Sfax'] })
-    expect(new URLSearchParams(out).get('ville')).toBe('Tunis,Sfax')
+    const out = buildSearchQuery('q=sac', { categorie: ['mode', 'tech'] })
+    expect(new URLSearchParams(out).get('categorie')).toBe('mode,tech')
   })
 
   it('deletes a key when the value is empty (null / "" / [])', () => {
-    expect(new URLSearchParams(buildSearchQuery('q=sac&ville=Tunis', { ville: null })).has('ville')).toBe(false)
+    expect(new URLSearchParams(buildSearchQuery('q=sac&tri=recent', { tri: null })).has('tri')).toBe(false)
     expect(new URLSearchParams(buildSearchQuery('q=sac&prix_min=10', { prix_min: '' })).has('prix_min')).toBe(false)
     expect(new URLSearchParams(buildSearchQuery('q=sac&categorie=mode', { categorie: [] })).has('categorie')).toBe(false)
   })

@@ -9,14 +9,9 @@ import type { SearchParams } from './search-params'
 // but add a one-line helper suggesting the other side.
 export const WEAK_RESULT_MAX = 4
 
-/** Any category / city / price refinement active (the query `q` is tracked separately). */
+/** Any category / price refinement active (the query `q` is tracked separately). */
 export function searchHasFilters(p: SearchParams): boolean {
-  return (
-    p.categorie.length > 0 ||
-    p.ville.length > 0 ||
-    p.prixMin != null ||
-    p.prixMax != null
-  )
+  return p.categorie.length > 0 || p.prixMin != null || p.prixMax != null
 }
 
 /**

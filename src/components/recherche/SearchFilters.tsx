@@ -7,7 +7,6 @@ import { useLang } from '@/components/LangProvider'
 import { t } from '@/lib/i18n'
 import { FOCUS_RING } from '@/components/layout/styles'
 import { FilterControl } from '@/components/ui/filter-control'
-import { GOVERNORATES } from '@/lib/tunisia-governorates'
 import { buildSearchQuery } from './search-url'
 
 export type FilterCategory = { slug: string; name_fr: string; name_ar: string }
@@ -15,7 +14,6 @@ export type FilterCategory = { slug: string; name_fr: string; name_ar: string }
 type Props = {
   categories: FilterCategory[]
   selectedCategorie: string[]
-  selectedVille: string[]
   prixMin: number | null
   prixMax: number | null
   // 'inline' (desktop sidebar) applies on every change; 'sheet' (mobile) batches the
@@ -94,7 +92,7 @@ function CollapsibleGroup({
   )
 }
 
-// The shared filter form (category / city / price). On desktop ('inline') each group is an
+// The shared filter form (category / price). On desktop ('inline') each group is an
 // independently collapsible Upwork-style row — all collapsed by default; a collapsed group
 // with active selections shows a count badge (or "actif" for the price range). In the mobile
 // bottom sheet ('sheet') the groups stay as always-open fieldsets (the collapse pattern
@@ -103,7 +101,6 @@ function CollapsibleGroup({
 export function SearchFilters({
   categories,
   selectedCategorie,
-  selectedVille,
   prixMin,
   prixMax,
   mode,
@@ -118,7 +115,6 @@ export function SearchFilters({
   const groupId = useId()
 
   const [cat, setCat] = useState<string[]>(selectedCategorie)
-  const [ville, setVille] = useState<string[]>(selectedVille)
   const [min, setMin] = useState(prixMin != null ? String(prixMin) : '')
   const [max, setMax] = useState(prixMax != null ? String(prixMax) : '')
 
@@ -127,24 +123,21 @@ export function SearchFilters({
   // closed. Refining filters only changes the query string (same pathname), so it leaves the
   // open/closed state alone. (Same pathname-reset pattern as the Marché chevron toggle.)
   const [categorieOpen, setCategorieOpen] = useState(false)
-  const [villeOpen, setVilleOpen] = useState(false)
   const [prixOpen, setPrixOpen] = useState(false)
   useEffect(() => {
     setCategorieOpen(false)
-    setVilleOpen(false)
     setPrixOpen(false)
   }, [pathname])
 
-  const hasActive = cat.length > 0 || ville.length > 0 || min.trim() !== '' || max.trim() !== ''
+  const hasActive = cat.length > 0 || min.trim() !== '' || max.trim() !== ''
 
-  function apply(next: { cat?: string[]; ville?: string[]; min?: string; max?: string }) {
+  function apply(next: { cat?: string[]; min?: string; max?: string }) {
     const c = next.cat ?? cat
-    const v = next.ville ?? ville
     const lo = (next.min ?? min).trim()
     const hi = (next.max ?? max).trim()
     const qs = buildSearchQuery(
       sp,
-      { categorie: c, ville: v, prix_min: lo === '' ? null : lo, prix_max: hi === '' ? null : hi },
+      { categorie: c, prix_min: lo === '' ? null : lo, prix_max: hi === '' ? null : hi },
       { resetPage: true },
     )
     router.push(qs ? `${basePath}?${qs}` : basePath)
@@ -157,21 +150,14 @@ export function SearchFilters({
     if (mode === 'inline') apply({ cat: next })
   }
 
-  function toggleVille(value: string) {
-    const next = ville.includes(value) ? ville.filter((s) => s !== value) : [...ville, value]
-    setVille(next)
-    if (mode === 'inline') apply({ ville: next })
-  }
-
   function clearAll() {
     setCat([])
-    setVille([])
     setMin('')
     setMax('')
     if (mode === 'inline') {
       const qs = buildSearchQuery(
         sp,
-        { categorie: null, ville: null, prix_min: null, prix_max: null },
+        { categorie: null, prix_min: null, prix_max: null },
         { resetPage: true },
       )
       router.push(qs ? `${basePath}?${qs}` : basePath)
@@ -195,24 +181,6 @@ export function SearchFilters({
             onChange={() => toggleCat(c.slug)}
           />
           <span className="line-clamp-1">{lang === 'ar' ? c.name_ar : c.name_fr}</span>
-        </label>
-      ))}
-    </div>
-  )
-
-  const villeList = (
-    <div className="max-h-44 space-y-0.5 overflow-y-auto pr-1">
-      {GOVERNORATES.map((g) => (
-        <label
-          key={g.value}
-          className="flex cursor-pointer items-center gap-2.5 py-1.5 text-sm text-[#0A0A0A]"
-        >
-          <FilterControl
-            type="checkbox"
-            checked={ville.includes(g.value)}
-            onChange={() => toggleVille(g.value)}
-          />
-          <span className="line-clamp-1">{lang === 'ar' ? g.ar : g.fr}</span>
         </label>
       ))}
     </div>
@@ -279,10 +247,6 @@ export function SearchFilters({
           </fieldset>
         )}
         <fieldset className="space-y-2">
-          <legend className={heading}>{t('search.filters.city', lang)}</legend>
-          {villeList}
-        </fieldset>
-        <fieldset className="space-y-2">
           <legend className={heading}>{t('search.filters.price', lang)}</legend>
           {prixInputs}
         </fieldset>
@@ -318,17 +282,6 @@ export function SearchFilters({
             {categoryList}
           </CollapsibleGroup>
         )}
-        <CollapsibleGroup
-          label={t('search.filters.city', lang)}
-          badge={ville.length > 0 ? String(ville.length) : null}
-          open={villeOpen}
-          onToggle={() => setVilleOpen((o) => !o)}
-          panelId={`${groupId}-ville`}
-          ariaShow="Afficher les villes"
-          ariaHide="Masquer les villes"
-        >
-          {villeList}
-        </CollapsibleGroup>
         <CollapsibleGroup
           label={t('search.filters.price', lang)}
           badge={prixActive ? 'actif' : null}

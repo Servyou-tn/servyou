@@ -50,22 +50,18 @@ export default async function CategoryPage({
   // Description deferred — the categories table has no description_fr/_ar columns yet
   // (migration logged in docs/follow-ups.md), so no description block is rendered.
 
-  const hasFilters =
-    sParams.ville.length > 0 || sParams.prixMin != null || sParams.prixMax != null
+  const hasFilters = sParams.prixMin != null || sParams.prixMax != null
 
-  // Current params (type + city + price + non-default sort) for the filter/empty hrefs.
+  // Current params (type + price + non-default sort) for the filter/empty hrefs.
   const current = new URLSearchParams()
   if (sParams.type === 'service') current.set('type', 'service')
-  if (sParams.ville.length) current.set('ville', sParams.ville.join(','))
   if (sParams.prixMin != null) current.set('prix_min', String(sParams.prixMin))
   if (sParams.prixMax != null) current.set('prix_max', String(sParams.prixMax))
   if (sParams.tri !== 'pertinence') current.set('tri', sParams.tri)
 
   const base = `/categories/${category.slug}`
   const hrefFrom = (qs: string) => (qs ? `${base}?${qs}` : base)
-  const clearFiltersHref = hrefFrom(
-    buildSearchQuery(current, { ville: null, prix_min: null, prix_max: null }),
-  )
+  const clearFiltersHref = hrefFrom(buildSearchQuery(current, { prix_min: null, prix_max: null }))
   const switchTypeHref = hrefFrom(buildSearchQuery(current, { type: otherType(sParams.type) }))
 
   return (
@@ -95,7 +91,6 @@ export default async function CategoryPage({
         <SearchFiltersSheet
           categories={[]}
           selectedCategorie={[]}
-          selectedVille={sParams.ville}
           prixMin={sParams.prixMin}
           prixMax={sParams.prixMax}
           basePath={base}
@@ -104,14 +99,13 @@ export default async function CategoryPage({
       </div>
 
       <div className="flex gap-6">
-        {/* Desktop filter sidebar (≥lg) — city + price only. */}
+        {/* Desktop filter sidebar (≥lg) — price only. */}
         <aside className="hidden w-60 shrink-0 lg:block">
           <div className="card-premium p-5">
             <SearchFilters
               mode="inline"
               categories={[]}
               selectedCategorie={[]}
-              selectedVille={sParams.ville}
               prixMin={sParams.prixMin}
               prixMax={sParams.prixMax}
               basePath={base}

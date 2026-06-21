@@ -140,7 +140,6 @@ function applyProductFilters<Q extends AnyQuery>(
 ): Q {
   let out = applySearch(q, params.q)
   if (categoryIds) out = out.in('category_id', categoryIds) as Q
-  if (params.ville.length) out = out.in('shops.city', params.ville) as Q
   if (params.prixMin != null) out = out.gte('price_tnd', params.prixMin) as Q
   if (params.prixMax != null) out = out.lte('price_tnd', params.prixMax) as Q
   return out
@@ -153,7 +152,6 @@ function applyServiceFilters<Q extends AnyQuery>(
 ): Q {
   let out = applySearch(q, params.q)
   if (categoryIds) out = out.in('category_id', categoryIds) as Q
-  if (params.ville.length) out = out.in('freelancer_profiles.city', params.ville) as Q
   if (params.prixMin != null) out = out.gte('starting_price_tnd', params.prixMin) as Q
   if (params.prixMax != null) out = out.lte('starting_price_tnd', params.prixMax) as Q
   return out
