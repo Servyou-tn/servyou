@@ -1,11 +1,9 @@
 import type { Metadata } from "next"
 import { Inter, Geist_Mono } from "next/font/google"
 import "./globals.css"
+import { Toaster } from "sonner"
 import { getLang } from "@/lib/i18n/server"
 import { LangProvider } from "@/components/LangProvider"
-import { Header } from "@/components/layout/Header"
-import { createClient } from "@/lib/supabase/server"
-import type { SellerType } from "@/lib/layout/select-variant"
 
 const inter = Inter({
   variable: "--font-inter",
@@ -29,23 +27,6 @@ export default async function RootLayout({
 }>) {
   const lang = await getLang()
 
-  // Server-only facts the client Header needs to choose its variant and render
-  // the account avatar. One getUser() + one indexed PK lookup per request.
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  let sellerType: SellerType = null
-  let fullName: string | null = null
-  if (user) {
-    const { data: profile, error } = await supabase
-      .from('profiles')
-      .select('seller_type, full_name')
-      .eq('id', user.id)
-      .single()
-    if (error) console.error('[layout] profile fetch error:', error)
-    sellerType = (profile?.seller_type as SellerType) ?? null
-    fullName = profile?.full_name ?? null
-  }
-
   return (
     <html
       lang={lang}
@@ -54,8 +35,13 @@ export default async function RootLayout({
     >
       <body className="min-h-full flex flex-col">
         <LangProvider lang={lang}>
-          <Header isLoggedIn={!!user} sellerType={sellerType} fullName={fullName} />
+          {/* The marketing navbar (Header) is no longer mounted here. It only ever
+              renders on the landing page, so it now lives inside the landing branch of
+              `/` (src/app/page.tsx) — this keeps it OFF the logged-in consumer homepage,
+              which renders the /marche shell (its own top bar) on the same `/` route. */}
           {children}
+          {/* App-wide toast portal — single source for success/error feedback. */}
+          <Toaster position="top-center" richColors />
         </LangProvider>
       </body>
     </html>

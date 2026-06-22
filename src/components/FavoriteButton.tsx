@@ -12,7 +12,7 @@ type Props = {
 }
 
 export function FavoriteButton({ item_type, item_id }: Props) {
-  const supabase = createClient()
+  const [supabase] = useState(() => createClient())
   const router = useRouter()
   const lang = useLang()
 
@@ -42,7 +42,7 @@ export function FavoriteButton({ item_type, item_id }: Props) {
       setLoading(false)
     }
     init()
-  }, [item_id, item_type])
+  }, [item_id, item_type, supabase])
 
   async function handleToggle() {
     if (!loggedIn) { router.push('/connexion'); return }
@@ -57,7 +57,6 @@ export function FavoriteButton({ item_type, item_id }: Props) {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { router.push('/connexion'); return }
 
-      const col = item_type === 'product' ? 'product_id' : 'service_listing_id'
       const { data } = await supabase
         .from('favorites')
         .insert({
@@ -72,6 +71,9 @@ export function FavoriteButton({ item_type, item_id }: Props) {
       if (data) { setFavorited(true); setFavoriteId(data.id) }
     }
 
+    // Re-fetch server components so a server-rendered list (e.g. /mes-favoris) drops the
+    // item the moment it's unfavorited. Harmless elsewhere (e.g. /marche just re-reads).
+    router.refresh()
     setToggling(false)
   }
 
@@ -93,9 +95,7 @@ export function FavoriteButton({ item_type, item_id }: Props) {
       title={label}
       aria-label={label}
       className={`p-2 rounded-full transition-colors text-xl leading-none disabled:opacity-50 ${
-        favorited
-          ? 'text-red-500 hover:text-red-400'
-          : 'text-gray-400 hover:text-red-400'
+        favorited ? 'text-red-500' : 'text-[#8B8B8B]'
       }`}
     >
       {favorited ? '♥' : '♡'}

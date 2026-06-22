@@ -13,45 +13,16 @@ export type HeaderState = {
   workspace?: WorkspaceKind
 }
 
-// Auth flows render chromeless (modern SaaS pattern); /admin/* is owned by AdminSidebar.
-// The branded auth routes each own their minimal AuthFunnelLayout page, so the Header
-// stays hidden across them. The four legacy auth routes were decommissioned and now
-// permanently redirect (308) via next.config, so only the branded routes remain here.
-// /inscription/* is handled by the isUnder check below.
-const AUTH_ROUTES = ['/connexion', '/verifier-email', '/mot-de-passe-oublie', '/nouveau-mot-de-passe']
-
-/** True when `pathname` is exactly `base` or a child of it — with a real path boundary
- *  so that e.g. "/ma-boutiquex" does NOT count as under "/ma-boutique". */
-function isUnder(pathname: string, base: string): boolean {
-  return pathname === base || pathname.startsWith(base + '/')
-}
-
-export function selectVariant({
-  isLoggedIn,
-  sellerType,
-  pathname,
-}: {
-  isLoggedIn: boolean
-  sellerType: SellerType
-  pathname: string
-}): HeaderState {
-  if (isUnder(pathname, '/admin')) return { hidden: true, variant: 'public' }
-  if (AUTH_ROUTES.includes(pathname)) return { hidden: true, variant: 'public' }
-  // The signup funnel (role intent + the role-branded Step-2 forms) is chromeless
-  // too — each page carries its own minimal logo-only navbar to stay focused.
-  if (isUnder(pathname, '/inscription')) return { hidden: true, variant: 'public' }
-
-  if (!isLoggedIn) return { hidden: false, variant: 'public' }
-
-  // Workspace nav only when the role matches the workspace route. A logged-in user
-  // whose role doesn't match is mid-redirect (the page guards bounce them), so show
-  // the neutral consumer nav rather than a workspace they don't own.
-  if (sellerType === 'shop_owner' && isUnder(pathname, '/ma-boutique')) {
-    return { hidden: false, variant: 'workspace', workspace: 'shop' }
-  }
-  if (sellerType === 'freelancer' && isUnder(pathname, '/mon-profil-freelance')) {
-    return { hidden: false, variant: 'workspace', workspace: 'freelance' }
-  }
-
-  return { hidden: false, variant: 'consumer' }
+// The shared Header is now a marketing-only navbar: it renders ONLY on the landing
+// page ('/'), and renders identically for logged-in and logged-out visitors (no
+// consumer/workspace variant, no account avatar). Every other route is chromeless
+// here — each owns its own nav (AdminSidebar, the auth funnels, future role
+// dashboards). Visibility no longer depends on auth or role, only on the pathname.
+//
+// The `variant`/`workspace` machinery and the consumer/workspace nav-config branches
+// are intentionally preserved (unused for now) so the per-role navbars can be rebuilt
+// on this foundation when the role dashboards return.
+export function selectVariant({ pathname }: { pathname: string }): HeaderState {
+  if (pathname === '/') return { hidden: false, variant: 'public' }
+  return { hidden: true, variant: 'public' }
 }
