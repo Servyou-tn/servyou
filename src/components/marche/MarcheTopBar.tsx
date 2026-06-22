@@ -35,30 +35,26 @@ function useScrolled(threshold = 8): boolean {
 // visible on mobile where the sidebar is hidden). It's a clean image in a Link home — no chrome.
 //
 // Layout — at md+ a single flex row: the logo, then a flex spacer, then everything else clustered
-// on the right in order [welcome (home only) → search → toggle → language → bell → avatar]. The
-// toggle is the one shrinkable member (it scrolls internally), so when the row gets tight the
-// spacer collapses and the pills scroll rather than the page overflowing. On mobile (<md) it's a
-// two-row grid: row 1 = logo + search + language/bell/avatar, row 2 = the toggle full-width (scrolls); the
-// welcome is hidden (the in-page heading covers it there). The right cluster is one wrapper that
-// is `display:contents` on mobile (its members place straight into the grid) and a flex at md+.
+// on the right in order [search → toggle → language → bell → avatar]. The toggle is the one
+// shrinkable member (it scrolls internally), so when the row gets tight the spacer collapses and
+// the pills scroll rather than the page overflowing. On mobile (<md) it's a two-row grid: row 1 =
+// logo + search + language/bell/avatar, row 2 = the toggle full-width (scrolls). The per-page
+// subtitle that used to live here now renders as the animated PageHeader below the bar. The right
+// cluster is one wrapper that is `display:contents` on mobile (its members place straight into the
+// grid) and a flex at md+.
 export function MarcheTopBar({
   user,
   initialType,
   initialQuery,
-  heading,
-  subtitle,
 }: {
   user: TopBarUser | null
   initialType: SearchType
   initialQuery: string
-  heading?: string
-  subtitle?: string
 }) {
   const lang = useLang()
   const scrolled = useScrolled()
   const pathname = usePathname()
   const onHome = pathname === '/'
-  const hasWelcome = Boolean(heading || subtitle)
 
   // Publish the bar's live height into --marche-topbar-h so the sidebar can stick directly
   // beneath it. The bar's height varies (the homepage welcome makes it taller than the browse
@@ -130,23 +126,10 @@ export function MarcheTopBar({
         {/* Spacer (md+ only) — pushes the cluster to the right so the logo stands alone. */}
         <div aria-hidden className="hidden md:block md:flex-1" />
 
-        {/* Right cluster — welcome → search → pills → bell → avatar. display:contents on mobile
+        {/* Right cluster — search → pills → bell → avatar. display:contents on mobile
             (members fall into the grid below); a flex group at md+ (md:min-w-0 lets the pills
             inside shrink/scroll when the row is tight). */}
         <div className="contents md:flex md:min-w-0 md:items-center md:gap-4">
-          {/* Welcome — home only, md+ only (the in-page heading serves mobile). Compact, capped,
-              and truncating so a long name never dominates or breaks the row. */}
-          {hasWelcome && (
-            <div className="hidden min-w-0 md:block md:max-w-[200px] md:shrink-0">
-              {heading && (
-                <h1 className="truncate text-lg font-bold leading-tight text-[#0A0A0A] md:text-xl">
-                  {heading}
-                </h1>
-              )}
-              {subtitle && <p className="mt-0.5 truncate text-xs text-[#6B6B6B]">{subtitle}</p>}
-            </div>
-          )}
-
           {/* Search — mobile: row 1, between the logo and the bell/avatar. md+: before the pills. */}
           <div className="col-start-2 row-start-1 min-w-0 md:shrink-0">
             <ExpandableSearch currentType={initialType} initialQuery={initialQuery} />

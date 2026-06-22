@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { MarcheLayout } from '@/components/marche/MarcheLayout'
 import { PageHeader } from '@/components/marche/PageHeader'
+import { PageHeader as PageSubtitle } from '@/components/shared/PageHeader'
 import { EmptyState } from '@/components/marche/EmptyState'
 import { MissionCard } from '@/components/marche/MissionCard'
 import { getShellUser } from '@/lib/marche/shell-user'
@@ -49,11 +50,16 @@ export default async function MesMissionsPage({
 
   return (
     <MarcheLayout user={shell.topBarUser}>
-      <PageHeader
-        title={t('marche.sidebar.missions', lang)}
-        countLabel={missions.length > 0 ? t('mesmissions.count', lang, { n: missions.length }) : undefined}
-        action={missions.length > 0 ? newButton : undefined}
+      <PageSubtitle
+        subtitle={t('page_header.missions.subtitle', lang)}
+        emphasisWord={t('page_header.missions.emphasis', lang)}
       />
+      {missions.length > 0 && (
+        <PageHeader
+          countLabel={t('mesmissions.count', lang, { n: missions.length })}
+          action={newButton}
+        />
+      )}
 
       {missions.length === 0 ? (
         <EmptyState

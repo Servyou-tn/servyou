@@ -14,6 +14,7 @@ import { buildSearchQuery } from '@/components/recherche/search-url'
 import { SearchFilters } from '@/components/recherche/SearchFilters'
 import { SearchFiltersSheet } from '@/components/recherche/SearchFiltersSheet'
 import { Pagination } from '@/components/shared/Pagination'
+import { PageHeader } from '@/components/shared/PageHeader'
 import { SearchEmptyState } from '@/components/recherche/SearchEmptyState'
 import { SearchLanding } from '@/components/recherche/SearchLanding'
 
@@ -112,17 +113,23 @@ export default async function RecherchePage({
       {/* Query echo + clear-search — only when a query actually matched something
           (suppressed on zero results, where the empty card speaks). */}
       {showQueryEcho && (
-        <div className="mb-4 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-          <h1 className="text-lg font-bold text-[#0A0A0A]">
-            {t('search.resultsCount', lang, { count: result.totalCount, query: params.q })}
-          </h1>
-          <Link
-            href={clearSearchHref}
-            className={`rounded text-[13px] font-medium text-[#6B6B6B] underline-offset-2 hover:underline ${FOCUS_RING}`}
-          >
-            {t('search.clear', lang)}
-          </Link>
-        </div>
+        <>
+          <PageHeader
+            subtitle={t('page_header.recherche.subtitle', lang, {
+              count: result.totalCount,
+              query: params.q,
+            })}
+            emphasisWord={t('page_header.recherche.emphasis', lang, { count: result.totalCount })}
+          />
+          <div className="mb-4 mt-3 flex justify-end">
+            <Link
+              href={clearSearchHref}
+              className={`rounded text-[13px] font-medium text-[#6B6B6B] underline-offset-2 hover:underline ${FOCUS_RING}`}
+            >
+              {t('search.clear', lang)}
+            </Link>
+          </div>
+        </>
       )}
 
       {/* Mobile: the filters live behind a button + bottom sheet (hidden ≥lg). */}

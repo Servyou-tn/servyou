@@ -5,6 +5,7 @@ import { ListingResults } from '@/components/listings/ListingResults'
 import { SearchFilters } from '@/components/recherche/SearchFilters'
 import { SearchFiltersSheet } from '@/components/recherche/SearchFiltersSheet'
 import { Pagination } from '@/components/shared/Pagination'
+import { PageHeader } from '@/components/shared/PageHeader'
 import { buildSearchQuery } from '@/components/recherche/search-url'
 import { getShellUser } from '@/lib/marche/shell-user'
 import { getFilterCategoriesForType } from '@/lib/marche/filter-categories'
@@ -25,13 +26,15 @@ const ENGINE = {
     base: '/marche/produits',
     emptyKey: 'marche.empty.products',
     emptySubKey: 'marche.empty.products_subtitle',
-    titleKey: 'common.products_section',
+    subtitleKey: 'page_header.produits.subtitle',
+    emphasisKey: 'page_header.produits.emphasis',
   },
   service: {
     base: '/marche/services',
     emptyKey: 'marche.empty.services',
     emptySubKey: 'marche.empty.services_subtitle',
-    titleKey: 'common.services_section',
+    subtitleKey: 'page_header.services.subtitle',
+    emphasisKey: 'page_header.services.emphasis',
   },
 } as const
 
@@ -96,7 +99,10 @@ export async function MarcheBrowsePage({
       searchQuery={params.q}
       sidebarFilter={sidebarFilter}
     >
-      <h1 className="mb-5 text-2xl font-bold text-text-primary">{t(engine.titleKey, lang)}</h1>
+      <PageHeader
+        subtitle={t(engine.subtitleKey, lang)}
+        emphasisWord={t(engine.emphasisKey, lang)}
+      />
 
       {/* Mobile: filters behind a button + bottom sheet (the desktop filter is in the sidebar). */}
       <div className="mb-4 lg:hidden">

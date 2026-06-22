@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 import { MarcheLayout } from '@/components/marche/MarcheLayout'
 import { PageHeader } from '@/components/marche/PageHeader'
+import { PageHeader as PageSubtitle } from '@/components/shared/PageHeader'
 import { MesFavorisView } from '@/components/marche/MesFavorisView'
 import { SidebarSelectFilter } from '@/components/marche/SidebarSelectFilter'
 import { getShellUser } from '@/lib/marche/shell-user'
@@ -70,10 +71,13 @@ export default async function MesFavorisPage({
 
   return (
     <MarcheLayout user={shell.topBarUser} sidebarFilter={typeFilter}>
-      <PageHeader
-        title={t('favorites.title', lang)}
-        countLabel={viewCount > 0 ? t('mesfavoris.count', lang, { n: viewCount }) : undefined}
+      <PageSubtitle
+        subtitle={t('page_header.favoris.subtitle', lang)}
+        emphasisWord={t('page_header.favoris.emphasis', lang)}
       />
+      {viewCount > 0 && (
+        <PageHeader countLabel={t('mesfavoris.count', lang, { n: viewCount })} />
+      )}
       <MesFavorisView
         view={view}
         combined={combinedPage}
