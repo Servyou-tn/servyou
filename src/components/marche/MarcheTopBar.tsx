@@ -116,13 +116,13 @@ export function MarcheTopBar({
           <Image
             src="/brand/logo/servyou-navbar.png"
             alt="Servyou"
-            width={153}
-            height={44}
+            width={125}
+            height={36}
             priority
-            // The full wordmark (S + ServYou) sits at the shared control height (h-11),
-            // top-aligned via the row's md:items-start. w-auto preserves the asset's natural
-            // ≈3.5:1 ratio (1218×350) so it never stretches; the wider mark fills the left zone the lone S left empty.
-            className="h-11 w-auto"
+            // The full wordmark (S + ServYou) sits one notch under the control height (h-9) so it
+            // doesn't dominate the row; top-aligned via the row's md:items-start. The props keep the
+            // asset's natural ≈3.5:1 ratio (1218×350) and w-auto follows it, so it never stretches.
+            className="h-9 w-auto"
           />
         </Link>
 
