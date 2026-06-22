@@ -40,13 +40,9 @@ export function homeEngineHref(type: SearchType): string {
 /**
  * The destination for a top-bar segmented-toggle option. The two catalog types switch the
  * catalog in place on the homepage (?type=) and resolve to their browse engine everywhere else
- * (in place on /marche, a navigation from anywhere else). The two navigation-only types jump
- * to their list routes (built in a later PR — temporarily 404).
+ * (in place on /marche, a navigation from anywhere else).
  */
 export function toggleDestination(type: ToggleType, ctx: { onHome: boolean }): string {
-  if (type === 'shop') return '/boutiques'
-  if (type === 'freelance') return '/freelances'
-  // Narrowed to 'product' | 'service' here.
   return ctx.onHome ? homeEngineHref(type) : marcheEngineHref(type)
 }
 

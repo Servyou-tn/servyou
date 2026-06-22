@@ -34,7 +34,7 @@ function useScrolled(threshold = 8): boolean {
 // visible on mobile where the sidebar is hidden). It's a clean image in a Link home — no chrome.
 //
 // Layout — at md+ a single flex row: the logo, then a flex spacer, then everything else clustered
-// on the right in order [welcome (home only) → search → 4-pill toggle → bell → avatar]. The
+// on the right in order [welcome (home only) → search → toggle → bell → avatar]. The
 // toggle is the one shrinkable member (it scrolls internally), so when the row gets tight the
 // spacer collapses and the pills scroll rather than the page overflowing. On mobile (<md) it's a
 // two-row grid: row 1 = logo + search + bell/avatar, row 2 = the toggle full-width (scrolls); the
@@ -74,13 +74,7 @@ export function MarcheTopBar({
     return () => observer.disconnect()
   }, [])
 
-  // The active toggle option — the catalog type the page is on (fed by the page), or the
-  // navigation-only type when the user is on its route.
-  const activeToggle: ToggleType = pathname.startsWith('/boutiques')
-    ? 'shop'
-    : pathname.startsWith('/freelances')
-      ? 'freelance'
-      : initialType
+  // The active toggle option is the catalog type the page is on (fed by the page).
   const hrefFor = (type: ToggleType) => toggleDestination(type, { onHome })
 
   // Bell — same white circular surface as the pills (idle + hover + focus). Avatar — the
@@ -153,13 +147,13 @@ export function MarcheTopBar({
 
           {/* Search — mobile: row 1, between the logo and the bell/avatar. md+: before the pills. */}
           <div className="col-start-2 row-start-1 min-w-0 md:shrink-0">
-            <ExpandableSearch currentType={activeToggle} initialQuery={initialQuery} />
+            <ExpandableSearch currentType={initialType} initialQuery={initialQuery} />
           </div>
 
           {/* Pills — mobile: full-width second row (scrolls). md+: after the search; the one
               member allowed to shrink so it scrolls (rather than overflowing) when space is tight. */}
           <div className="col-span-full row-start-2 min-w-0 md:row-auto">
-            <SegmentedToggle value={activeToggle} hrefFor={hrefFor} />
+            <SegmentedToggle value={initialType} hrefFor={hrefFor} />
           </div>
 
           {/* Bell + avatar — mobile: row 1, far right. md+: end of the cluster. */}

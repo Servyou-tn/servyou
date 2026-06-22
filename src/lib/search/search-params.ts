@@ -5,12 +5,10 @@
 
 export type SearchType = 'product' | 'service'
 
-// The top-bar segmented toggle has four destinations: the two catalog types (which drive
-// ?type= and the browse engines) plus two navigation-only targets (boutiques, freelances).
-// Kept SEPARATE from SearchType on purpose — the search/marketplace/filter layer stays binary
-// (product|service), so extending it here doesn't cascade into Record<SearchType> tables or
-// the product/service fetch split. shop/freelance are routing-only.
-export type ToggleType = SearchType | 'shop' | 'freelance'
+// The top-bar segmented toggle drives the two catalog types (?type= + the browse engines).
+// Aliased to SearchType so the toggle/topbar/search components keep one shared name; the
+// boutiques/freelances pills were removed (their list pages don't exist yet).
+export type ToggleType = SearchType
 
 export type SearchSort = 'pertinence' | 'recent' | 'prix_asc' | 'prix_desc'
 

@@ -8,14 +8,13 @@ import { cn } from '@/lib/utils'
 import { interactiveSurface } from '@/components/ui/interactive-surface'
 import type { ToggleType } from '@/lib/search/search-params'
 
-// The top-bar 4-option segmented toggle: Produits / Services / Boutiques / Freelances. Every
-// option is a navigation (in-place ?type= on the homepage and on /marche for the catalog
-// types; a route jump for boutiques/freelances), so the pills are accessible <Link>s styled as
-// a segmented control — Tab moves through them and Enter activates (the right semantics + a11y
-// for navigation). The active option is highlighted in brand-accent; an optimistic local state
-// flips the highlight instantly on click, then re-syncs to the route-derived `value`.
+// The top-bar 2-option segmented toggle: Produits / Services. Each option is an in-place ?type=
+// navigation (on the homepage and on /marche), so the pills are accessible <Link>s styled as a
+// segmented control — Tab moves through them and Enter activates (the right semantics + a11y for
+// navigation). The active option is highlighted in brand-accent; an optimistic local state flips
+// the highlight instantly on click, then re-syncs to the route-derived `value`.
 //
-// On narrow screens the track scrolls horizontally (scrollbar hidden) so all four pills stay
+// On narrow screens the track scrolls horizontally (scrollbar hidden) so both pills stay
 // reachable without a menu.
 export function SegmentedToggle({
   value,
@@ -28,13 +27,9 @@ export function SegmentedToggle({
   const [active, setActive] = useState<ToggleType>(value)
   useEffect(() => setActive(value), [value])
 
-  // Produits/Services keep their i18n keys; Boutiques/Freelances are hardcoded French (no key
-  // yet — the list pages arrive in a later PR; an i18n pass can fold them in then).
   const options: { value: ToggleType; label: string }[] = [
     { value: 'product', label: t('common.products_section', lang) },
     { value: 'service', label: t('common.services_section', lang) },
-    { value: 'shop', label: 'Boutiques' },
-    { value: 'freelance', label: 'Freelances' },
   ]
 
   return (
