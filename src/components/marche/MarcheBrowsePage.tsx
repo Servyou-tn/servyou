@@ -4,7 +4,7 @@ import { PackageIcon, BriefcaseIcon } from './icons'
 import { ListingResults } from '@/components/listings/ListingResults'
 import { SearchFilters } from '@/components/recherche/SearchFilters'
 import { SearchFiltersSheet } from '@/components/recherche/SearchFiltersSheet'
-import { SearchPagination } from '@/components/recherche/SearchPagination'
+import { Pagination } from '@/components/shared/Pagination'
 import { buildSearchQuery } from '@/components/recherche/search-url'
 import { getShellUser } from '@/lib/marche/shell-user'
 import { getFilterCategoriesForType } from '@/lib/marche/filter-categories'
@@ -137,7 +137,7 @@ export async function MarcheBrowsePage({
             <ListingResults type="service" items={result.services} />
           )}
           <div className="mt-8">
-            <SearchPagination page={result.page} totalPages={result.totalPages} basePath={base} />
+            <Pagination page={result.page} totalPages={result.totalPages} basePath={base} />
           </div>
         </>
       )}

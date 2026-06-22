@@ -2,6 +2,8 @@ import type { ReactNode } from 'react'
 import { MarcheSidebar } from './MarcheSidebar'
 import { MarcheTopBar } from './MarcheTopBar'
 import type { TopBarUser } from './ProfileAvatarMenu'
+import { Footer } from '@/components/layout/Footer'
+import { getLang } from '@/lib/i18n/server'
 
 type SearchType = 'product' | 'service'
 
@@ -19,7 +21,7 @@ type SearchType = 'product' | 'service'
 // `sidebarFilter` is the scoped filter panel for an active browse engine: the engine page
 // builds it (server-fetched, type-scoped categories) and the sidebar slots it beneath the
 // active Produits/Services sub-item. Every other page omits it.
-export function MarcheLayout({
+export async function MarcheLayout({
   user,
   searchType = 'product',
   searchQuery = '',
@@ -38,6 +40,7 @@ export function MarcheLayout({
   subtitle?: string
   children: ReactNode
 }) {
+  const lang = await getLang()
   return (
     <div className="flex min-h-screen flex-col bg-white">
       <MarcheTopBar
@@ -55,6 +58,8 @@ export function MarcheLayout({
           <div className="mx-auto max-w-7xl px-6 pb-6 pt-4 lg:px-8 lg:pb-8">{children}</div>
         </main>
       </div>
+      {/* Shared site footer — full-width below the sidebar+content row, on every marche page. */}
+      <Footer lang={lang} />
     </div>
   )
 }

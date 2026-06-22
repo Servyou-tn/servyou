@@ -13,7 +13,7 @@ import { isWeakResult, shouldShowSearchLanding } from '@/lib/search/recherche-lo
 import { buildSearchQuery } from '@/components/recherche/search-url'
 import { SearchFilters } from '@/components/recherche/SearchFilters'
 import { SearchFiltersSheet } from '@/components/recherche/SearchFiltersSheet'
-import { SearchPagination } from '@/components/recherche/SearchPagination'
+import { Pagination } from '@/components/shared/Pagination'
 import { SearchEmptyState } from '@/components/recherche/SearchEmptyState'
 import { SearchLanding } from '@/components/recherche/SearchLanding'
 
@@ -184,7 +184,7 @@ export default async function RecherchePage({
               )}
 
               <div className="mt-8">
-                <SearchPagination page={result.page} totalPages={result.totalPages} />
+                <Pagination page={result.page} totalPages={result.totalPages} basePath="/recherche" />
               </div>
             </>
           )}

@@ -11,7 +11,7 @@ import { searchMarketplace } from '@/lib/search/search-marketplace'
 import { buildSearchQuery } from '@/components/recherche/search-url'
 import { SearchFilters } from '@/components/recherche/SearchFilters'
 import { SearchFiltersSheet } from '@/components/recherche/SearchFiltersSheet'
-import { SearchPagination } from '@/components/recherche/SearchPagination'
+import { Pagination } from '@/components/shared/Pagination'
 import { getCategoryBySlug, getSubcategories } from '@/lib/categories/category-data'
 import { SubcategoryStrip } from '@/components/categories/SubcategoryStrip'
 import { CategoryEmptyState } from '@/components/categories/CategoryEmptyState'
@@ -133,7 +133,7 @@ export default async function CategoryPage({
                 <ListingResults type="service" items={result.services} />
               )}
               <div className="mt-8">
-                <SearchPagination page={result.page} totalPages={result.totalPages} basePath={base} />
+                <Pagination page={result.page} totalPages={result.totalPages} basePath={base} />
               </div>
             </>
           )}

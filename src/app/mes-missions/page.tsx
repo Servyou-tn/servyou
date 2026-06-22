@@ -7,6 +7,8 @@ import { EmptyState } from '@/components/marche/EmptyState'
 import { MissionCard } from '@/components/marche/MissionCard'
 import { getShellUser } from '@/lib/marche/shell-user'
 import { getMyMissions } from '@/lib/marche/my-data'
+import { paginate } from '@/lib/search/search-params'
+import { Pagination } from '@/components/shared/Pagination'
 import { getLang } from '@/lib/i18n/server'
 import { t } from '@/lib/i18n'
 import { FOCUS_RING } from '@/components/layout/styles'
@@ -14,13 +16,27 @@ import { BriefcaseIcon } from '@/components/marche/icons'
 
 export const metadata: Metadata = { title: 'Mes missions — Servyou' }
 
-// The consumer's own job posts + response counts. Auth-gated (own data).
-export default async function MesMissionsPage() {
+// The consumer's own job posts + response counts. Auth-gated (own data). The full set is
+// fetched and paginated in JS (?page=) via the shared helper — same posture as the search
+// engines; the count + empty-state read the full list, only the rendered grid is the slice.
+export default async function MesMissionsPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>
+}) {
   const shell = await getShellUser()
   if (!shell) redirect('/connexion')
 
   const lang = await getLang()
   const missions = await getMyMissions(shell.id)
+
+  const sp = await searchParams
+  const rawPage = Array.isArray(sp.page) ? sp.page[0] : sp.page
+  const { totalPages, safePage, start, end } = paginate(
+    missions.length,
+    Math.max(1, Number.parseInt(rawPage ?? '1', 10) || 1),
+  )
+  const pageMissions = missions.slice(start, end)
 
   const newButton = (
     <Link
@@ -46,11 +62,16 @@ export default async function MesMissionsPage() {
           cta={{ label: t('mesmissions.empty_cta', lang), href: '/mes-missions/nouvelle' }}
         />
       ) : (
-        <div className="flex flex-col gap-4">
-          {missions.map((m) => (
-            <MissionCard key={m.id} mission={m} />
-          ))}
-        </div>
+        <>
+          <div className="flex flex-col gap-4">
+            {pageMissions.map((m) => (
+              <MissionCard key={m.id} mission={m} />
+            ))}
+          </div>
+          <div className="mt-8">
+            <Pagination page={safePage} totalPages={totalPages} basePath="/mes-missions" />
+          </div>
+        </>
       )}
     </MarcheLayout>
   )
