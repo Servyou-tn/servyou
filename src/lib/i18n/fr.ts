@@ -1030,6 +1030,9 @@ export const fr: Record<string, string> = {
   'favorites.back':          "Accueil",
   'favorites.no_products':   "Aucun produit en favoris.",
   'favorites.no_services':   "Aucun service en favoris.",
+  'favorites.empty':         "Vous n'avez pas encore de favoris.",
+  // Sidebar Type filter (Tous = combined view; Produits/Services reuse common.*_section)
+  'favorites.filter.all':    "Tous",
   // FavoriteButton component
   'favorites.add':           "Ajouter aux favoris",
   'favorites.remove':        "Retirer des favoris",

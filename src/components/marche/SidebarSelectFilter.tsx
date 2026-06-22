@@ -22,6 +22,7 @@ export function SidebarSelectFilter({
   basePath,
   ariaShow,
   ariaHide,
+  resetPageOnSelect = false,
 }: {
   paramName: string
   groupLabel: string
@@ -30,6 +31,10 @@ export function SidebarSelectFilter({
   basePath: string
   ariaShow: string
   ariaHide: string
+  // When set, changing the selection drops ?page= — the new filter is a different list, so it
+  // must restart at page 1 rather than landing on a clamped page. Opt-in (off by default) so
+  // existing call sites keep their behavior.
+  resetPageOnSelect?: boolean
 }) {
   const router = useRouter()
   const sp = useSearchParams()
@@ -52,6 +57,7 @@ export function SidebarSelectFilter({
     const params = new URLSearchParams(sp.toString())
     if (value === defaultValue) params.delete(paramName)
     else params.set(paramName, value)
+    if (resetPageOnSelect) params.delete('page')
     const qs = params.toString()
     router.push(qs ? `${basePath}?${qs}` : basePath)
   }

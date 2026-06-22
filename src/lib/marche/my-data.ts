@@ -209,12 +209,20 @@ type FavoriteRow = {
     | null
 }
 
+// One favorited item, tagged by kind, for the combined "Tous" view (which interleaves products
+// and services in a single recency-ordered list).
+export type FavoriteItem =
+  | { kind: 'product'; item: ProductListing }
+  | { kind: 'service'; item: ServiceListing }
+
 // Favorited products + services, each shaped into the exact card type /marche uses so
 // ListingResults can render them unchanged. An item the viewer can no longer read
-// (e.g. a product its seller hid) embeds as null and is dropped from the list.
+// (e.g. a product its seller hid) embeds as null and is dropped from the list. `combined` holds
+// both kinds interleaved in favorited-at-DESC order (the query order) for the "Tous" view; the
+// split `products`/`services` arrays preserve that same order within each kind.
 export async function getMyFavorites(
   userId: string,
-): Promise<{ products: ProductListing[]; services: ServiceListing[] }> {
+): Promise<{ products: ProductListing[]; services: ServiceListing[]; combined: FavoriteItem[] }> {
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('favorites')
@@ -228,13 +236,15 @@ export async function getMyFavorites(
 
   if (error) {
     console.error('[my-data] favorites fetch error:', error)
-    return { products: [], services: [] }
+    return { products: [], services: [], combined: [] }
   }
 
   const rows = (data ?? []) as unknown as FavoriteRow[]
 
   const products: ProductListing[] = []
   const serviceRows: { id: string; title: string; description: string | null; price_starting: number | null; delivery_time: string | null; category: { name_fr: string } | null; profileId: string | null; city: string | null }[] = []
+  // The global favorited-at-DESC order across both kinds (drives the combined "Tous" list).
+  const order: { kind: 'product' | 'service'; id: string }[] = []
 
   for (const row of rows) {
     if (row.item_type === 'product') {
@@ -249,6 +259,7 @@ export async function getMyFavorites(
         image_url: primaryImage(p.product_images),
         shop: { name: shop?.name ?? '', city: shop?.city ?? null },
       })
+      order.push({ kind: 'product', id: p.id })
     } else {
       const s = one(row.service_listings)
       if (!s) continue
@@ -263,6 +274,7 @@ export async function getMyFavorites(
         profileId: fp?.profile_id ?? null,
         city: fp?.city ?? null,
       })
+      order.push({ kind: 'service', id: s.id })
     }
   }
 
@@ -293,7 +305,23 @@ export async function getMyFavorites(
     },
   }))
 
-  return { products, services }
+  // Rebuild the interleaved recency order from the per-kind lists (keyed by id within each kind,
+  // so a hypothetical cross-table id clash can't mismatch). Skipped (null) embeds are absent
+  // from `order`, so they fall out of `combined` too.
+  const productById = new Map(products.map((p) => [p.id, p]))
+  const serviceById = new Map(services.map((s) => [s.id, s]))
+  const combined: FavoriteItem[] = []
+  for (const o of order) {
+    if (o.kind === 'product') {
+      const p = productById.get(o.id)
+      if (p) combined.push({ kind: 'product', item: p })
+    } else {
+      const s = serviceById.get(o.id)
+      if (s) combined.push({ kind: 'service', item: s })
+    }
+  }
+
+  return { products, services, combined }
 }
 
 // ─── /mes-missions ──────────────────────────────────────────────────────────────

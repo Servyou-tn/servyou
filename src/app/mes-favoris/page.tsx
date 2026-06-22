@@ -14,10 +14,10 @@ import { t } from '@/lib/i18n'
 export const metadata: Metadata = { title: 'Mes favoris — Servyou' }
 
 // The user's favorited products + services. Auth-gated (own data). The sidebar Type filter
-// writes ?type=product|service; each tab paginates independently in JS (?page=) via the shared
-// helper. The header count + the Type filter read the full set; only the rendered grid is the
-// active tab's page slice. ?type values stay product|service to match SidebarSelectFilter and
-// MesFavorisView (the locked note said produits/services, but those would break the tab switch).
+// writes ?type=product|service (absent = the default "Tous"/all view). Tous shows products +
+// services interleaved by recency (the combined list); each kind keeps its own ?type= view. One
+// ?page= paginates whichever list the filter selects, via the shared paginate() helper; changing
+// the filter resets the page (different list). The header count reflects the active filter.
 export default async function MesFavorisPage({
   searchParams,
 }: {
@@ -27,37 +27,41 @@ export default async function MesFavorisPage({
   if (!shell) redirect('/connexion')
 
   const lang = await getLang()
-  const { products, services } = await getMyFavorites(shell.id)
+  const { products, services, combined } = await getMyFavorites(shell.id)
   const total = products.length + services.length
 
   const sp = await searchParams
   const rawType = Array.isArray(sp.type) ? sp.type[0] : sp.type
-  const activeType: 'product' | 'service' = rawType === 'service' ? 'service' : 'product'
+  const view: 'all' | 'product' | 'service' =
+    rawType === 'product' || rawType === 'service' ? rawType : 'all'
   const rawPage = Array.isArray(sp.page) ? sp.page[0] : sp.page
 
-  const activeCount = activeType === 'service' ? services.length : products.length
+  // Paginate the active list: the combined recency list for Tous, the single kind otherwise.
+  const activeLen =
+    view === 'product' ? products.length : view === 'service' ? services.length : combined.length
   const { totalPages, safePage, start, end } = paginate(
-    activeCount,
+    activeLen,
     Math.max(1, Number.parseInt(rawPage ?? '1', 10) || 1),
   )
-  // Hand MesFavorisView only the active tab's page slice (it picks by ?type=); the other tab
-  // renders on its own navigation, so it stays empty here. Slice each typed array in its own
-  // branch so the element types stay narrow (no ProductListing | ServiceListing union).
-  const productsPage = activeType === 'product' ? products.slice(start, end) : []
-  const servicesPage = activeType === 'service' ? services.slice(start, end) : []
+  const productsPage = view === 'product' ? products.slice(start, end) : []
+  const servicesPage = view === 'service' ? services.slice(start, end) : []
+  const combinedPage = view === 'all' ? combined.slice(start, end) : []
 
-  // The Produits/Services choice lives in the sidebar (the "Mes favoris" expandable group).
-  // It writes ?type=; MesFavorisView reads it. Only offered when there are favorites.
+  // Counter reflects the currently-filtered view (combined total / products / services).
+  const viewCount = view === 'product' ? products.length : view === 'service' ? services.length : total
+
   const typeFilter =
     total > 0 ? (
       <SidebarSelectFilter
         paramName="type"
         groupLabel="Type"
-        defaultValue="product"
+        defaultValue="all"
         basePath="/mes-favoris"
+        resetPageOnSelect
         ariaShow="Afficher le filtre Type"
         ariaHide="Masquer le filtre Type"
         options={[
+          { value: 'all', label: t('favorites.filter.all', lang) },
           { value: 'product', label: t('common.products_section', lang) },
           { value: 'service', label: t('common.services_section', lang) },
         ]}
@@ -68,9 +72,17 @@ export default async function MesFavorisPage({
     <MarcheLayout user={shell.topBarUser} sidebarFilter={typeFilter}>
       <PageHeader
         title={t('favorites.title', lang)}
-        countLabel={total > 0 ? t('mesfavoris.count', lang, { n: total }) : undefined}
+        countLabel={viewCount > 0 ? t('mesfavoris.count', lang, { n: viewCount }) : undefined}
       />
-      <MesFavorisView products={productsPage} services={servicesPage} />
+      <MesFavorisView
+        view={view}
+        combined={combinedPage}
+        products={productsPage}
+        services={servicesPage}
+        productTotal={products.length}
+        serviceTotal={services.length}
+        lang={lang}
+      />
       <div className="mt-8">
         <Pagination page={safePage} totalPages={totalPages} basePath="/mes-favoris" />
       </div>

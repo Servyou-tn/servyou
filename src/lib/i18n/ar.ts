@@ -1063,6 +1063,9 @@ export const ar: Record<string, string> = {
   'favorites.back':          "الرئيسية",
   'favorites.no_products':   "لا توجد منتجات في المفضّلة.",
   'favorites.no_services':   "لا توجد خدمات في المفضّلة.",
+  'favorites.empty':         "ليس لديك أي مفضّلات بعد.",
+  // Sidebar Type filter (Tous = combined view; Produits/Services reuse common.*_section)
+  'favorites.filter.all':    "الكل",
   // FavoriteButton component
   'favorites.add':           "إضافة إلى المفضّلة",
   'favorites.remove':        "إزالة من المفضّلة",
