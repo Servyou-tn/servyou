@@ -11,6 +11,7 @@ import { cn } from '@/lib/utils'
 import { interactiveSurface, SURFACE_HOVER, FOCUS_RING } from '@/components/ui/interactive-surface'
 import { toggleDestination } from '@/lib/marche/marche-routing'
 import type { SearchType, ToggleType } from '@/lib/search/search-params'
+import { LanguageToggle } from '@/components/layout/LanguageToggle'
 import { SegmentedToggle } from './SegmentedToggle'
 import { ExpandableSearch } from './ExpandableSearch'
 import { ProfileAvatarMenu, type TopBarUser } from './ProfileAvatarMenu'
@@ -34,10 +35,10 @@ function useScrolled(threshold = 8): boolean {
 // visible on mobile where the sidebar is hidden). It's a clean image in a Link home — no chrome.
 //
 // Layout — at md+ a single flex row: the logo, then a flex spacer, then everything else clustered
-// on the right in order [welcome (home only) → search → toggle → bell → avatar]. The
+// on the right in order [welcome (home only) → search → toggle → language → bell → avatar]. The
 // toggle is the one shrinkable member (it scrolls internally), so when the row gets tight the
 // spacer collapses and the pills scroll rather than the page overflowing. On mobile (<md) it's a
-// two-row grid: row 1 = logo + search + bell/avatar, row 2 = the toggle full-width (scrolls); the
+// two-row grid: row 1 = logo + search + language/bell/avatar, row 2 = the toggle full-width (scrolls); the
 // welcome is hidden (the in-page heading covers it there). The right cluster is one wrapper that
 // is `display:contents` on mobile (its members place straight into the grid) and a flex at md+.
 export function MarcheTopBar({
@@ -157,8 +158,11 @@ export function MarcheTopBar({
             <SegmentedToggle value={initialType} hrefFor={hrefFor} />
           </div>
 
-          {/* Bell + avatar — mobile: row 1, far right. md+: end of the cluster. */}
+          {/* Language toggle + bell + avatar — mobile: row 1, far right. md+: end of the cluster.
+              The shared FR|AR LanguageToggle leads the group (left of the bell); the flex gap here
+              (gap-2 / md:gap-3) spaces it from the bell exactly as the bell is spaced from the avatar. */}
           <div className="col-start-3 row-start-1 flex shrink-0 items-center justify-self-end gap-2 md:gap-3">
+            <LanguageToggle />
             <button
               type="button"
               // TODO: Real notifications system — see roadmap.md, post-MVP. Visual-only for now.
