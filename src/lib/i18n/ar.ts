@@ -980,7 +980,7 @@ export const ar: Record<string, string> = {
   'sidebar.expanded.servyou':        "ServYou",
 
   // ─── Marketplace browse (/marche) — PENDING AR (Phase 8), French placeholders ──
-  'marche.sidebar.marche':           "Marché",
+  'marche.sidebar.marche':           "الرئيسية",
   'marche.sidebar.commandes':        "Mes commandes",
   'marche.sidebar.favoris':          "Mes favoris",
   'marche.sidebar.missions':         "Mes missions",

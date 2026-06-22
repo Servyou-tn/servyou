@@ -947,7 +947,7 @@ export const fr: Record<string, string> = {
   'sidebar.expanded.servyou':        "ServYou",
 
   // ─── Marketplace browse (/marche) ────────────────────────────────────────────
-  'marche.sidebar.marche':           "Marché",
+  'marche.sidebar.marche':           "Accueil",
   'marche.sidebar.commandes':        "Mes commandes",
   'marche.sidebar.favoris':          "Mes favoris",
   'marche.sidebar.missions':         "Mes missions",
