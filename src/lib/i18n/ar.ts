@@ -1012,10 +1012,18 @@ export const ar: Record<string, string> = {
   'marche.sidebar.missions':         "Mes missions",
   'marche.sidebar.parametres':       "Paramètres",
   'marche.sidebar.coming_soon':      "Bientôt disponible",
+  // Top-bar segmented toggle pills (navbar only). Distinct from common.*_section.
+  'marche.toggle.find_products':     "البحث عن منتجات",
+  'marche.toggle.find_services':     "البحث عن خدمات",
   'marche.empty.products':           "Pas encore de produits disponibles",
   'marche.empty.products_subtitle':  "Revenez bientôt — de nouveaux articles arrivent.",
   'marche.empty.services':           "Pas encore de services disponibles",
   'marche.empty.services_subtitle':  "Revenez bientôt — de nouveaux services arrivent.",
+
+  // ─── Help / support dropdown (top bar) ───────────────────────────────────────
+  'help.dropdown.aria_label':        "مساعدة",
+  'help.dropdown.faq':               "الأسئلة الشائعة",
+  'help.dropdown.contact':           "اتصل بنا",
 
   // ─── Orders — my orders + confirmation ───────────────────────────────────────
   'orders.title':              "طلباتي",

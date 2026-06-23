@@ -27,9 +27,12 @@ export function SegmentedToggle({
   const [active, setActive] = useState<ToggleType>(value)
   useEffect(() => setActive(value), [value])
 
+  // Navbar-only labels ("Trouver des Produits/Services"). These are deliberately distinct from
+  // the generic common.products_section / common.services_section used by the sidebar filter,
+  // search results, and favorites — renaming the pills must not touch those surfaces.
   const options: { value: ToggleType; label: string }[] = [
-    { value: 'product', label: t('common.products_section', lang) },
-    { value: 'service', label: t('common.services_section', lang) },
+    { value: 'product', label: t('marche.toggle.find_products', lang) },
+    { value: 'service', label: t('marche.toggle.find_services', lang) },
   ]
 
   return (

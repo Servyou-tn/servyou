@@ -14,6 +14,7 @@ import type { SearchType, ToggleType } from '@/lib/search/search-params'
 import { LanguageToggle } from '@/components/layout/LanguageToggle'
 import { SegmentedToggle } from './SegmentedToggle'
 import { ExpandableSearch } from './ExpandableSearch'
+import { HelpDropdown } from './HelpDropdown'
 import { ProfileAvatarMenu, type TopBarUser } from './ProfileAvatarMenu'
 
 // True once content has scrolled more than 8px under the bar — the trigger for the bar's
@@ -34,14 +35,14 @@ function useScrolled(threshold = 8): boolean {
 // The S brand mark stands ALONE on the far left (it moved here from the sidebar, so it stays
 // visible on mobile where the sidebar is hidden). It's a clean image in a Link home — no chrome.
 //
-// Layout — at md+ a single flex row: the logo, then a flex spacer, then everything else clustered
-// on the right in order [search → toggle → language → bell → avatar]. The toggle is the one
-// shrinkable member (it scrolls internally), so when the row gets tight the spacer collapses and
-// the pills scroll rather than the page overflowing. On mobile (<md) it's a two-row grid: row 1 =
-// logo + search + language/bell/avatar, row 2 = the toggle full-width (scrolls). The per-page
-// subtitle that used to live here now renders as the animated PageHeader below the bar. The right
-// cluster is one wrapper that is `display:contents` on mobile (its members place straight into the
-// grid) and a flex at md+.
+// Layout — at md+ a single flex row: the logo and the search sit together on the left, then a flex
+// spacer, then the right cluster in order [toggle → help → language → bell → avatar]. The toggle is
+// the one shrinkable member (it scrolls internally), so when the row gets tight the spacer collapses
+// and the pills scroll rather than the page overflowing. On mobile (<md) it's a two-row grid: row 1 =
+// logo + search + language/bell/avatar (help is md+ only), row 2 = the toggle full-width (scrolls).
+// The per-page subtitle that used to live here now renders as the animated PageHeader below the bar.
+// The right cluster is one wrapper that is `display:contents` on mobile (its members place straight
+// into the grid) and a flex at md+.
 export function MarcheTopBar({
   user,
   initialType,
@@ -81,6 +82,13 @@ export function MarcheTopBar({
     'relative inline-flex w-11 shrink-0 items-center justify-center rounded-full',
     interactiveSurface(false),
   )
+  // Help — same white circular surface as the bell, but md+ only: the mobile top row already
+  // carries logo + search + language/bell/avatar, and a 4th 44px icon would squeeze the search
+  // to nothing at 375px. FAQ + Contact stay reachable on mobile via the footer.
+  const helpBtn = cn(
+    'hidden w-11 shrink-0 items-center justify-center rounded-full md:inline-flex',
+    interactiveSurface(false),
+  )
   const avatarBtn = cn(
     'inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full',
     SURFACE_HOVER,
@@ -102,7 +110,7 @@ export function MarcheTopBar({
           padding is tighter than the right so the logo hugs the viewport edge while the right
           cluster keeps its normal inset. On desktop the row top-aligns (md:items-start) so every
           element sits at the 12px top padding instead of centering low against the tall logo. */}
-      <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-3 gap-y-2 py-3 pl-2 pr-4 md:flex md:w-full md:items-start md:gap-x-4 md:pl-3 md:pr-6 lg:gap-x-6 lg:pl-4 lg:pr-8">
+      <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-3 gap-y-2 py-3 pl-2 pr-4 md:flex md:w-full md:items-start md:gap-x-6 md:pl-3 md:pr-6 lg:gap-x-8 lg:pl-4 lg:pr-8">
         {/* S logo — alone on the far left. Clean mark (no border/shadow/hover), Link home.
             Slightly larger on desktop where it balances against the welcome heading. */}
         <Link
@@ -123,28 +131,32 @@ export function MarcheTopBar({
           />
         </Link>
 
-        {/* Spacer (md+ only) — pushes the cluster to the right so the logo stands alone. */}
+        {/* Search — mobile: row 1 (col 2), between the logo and the icon cluster (unchanged). md+:
+            sits right after the logo; the flex-1 spacer below pushes the rest of the cluster to the
+            right edge, so the wordmark and search read as one left-aligned group. */}
+        <div className="col-start-2 row-start-1 min-w-0 md:shrink-0">
+          <ExpandableSearch currentType={initialType} initialQuery={initialQuery} />
+        </div>
+
+        {/* Spacer (md+ only) — between the search and the right cluster, so logo + search stay on
+            the left while the pills/help/language/bell/avatar push to the right edge. */}
         <div aria-hidden className="hidden md:block md:flex-1" />
 
-        {/* Right cluster — search → pills → bell → avatar. display:contents on mobile
+        {/* Right cluster — pills → help → language → bell → avatar. display:contents on mobile
             (members fall into the grid below); a flex group at md+ (md:min-w-0 lets the pills
             inside shrink/scroll when the row is tight). */}
         <div className="contents md:flex md:min-w-0 md:items-center md:gap-4">
-          {/* Search — mobile: row 1, between the logo and the bell/avatar. md+: before the pills. */}
-          <div className="col-start-2 row-start-1 min-w-0 md:shrink-0">
-            <ExpandableSearch currentType={initialType} initialQuery={initialQuery} />
-          </div>
-
-          {/* Pills — mobile: full-width second row (scrolls). md+: after the search; the one
+          {/* Pills — mobile: full-width second row (scrolls). md+: leads the right cluster; the one
               member allowed to shrink so it scrolls (rather than overflowing) when space is tight. */}
           <div className="col-span-full row-start-2 min-w-0 md:row-auto">
             <SegmentedToggle value={initialType} hrefFor={hrefFor} />
           </div>
 
-          {/* Language toggle + bell + avatar — mobile: row 1, far right. md+: end of the cluster.
-              The shared FR|AR LanguageToggle leads the group (left of the bell); the flex gap here
-              (gap-2 / md:gap-3) spaces it from the bell exactly as the bell is spaced from the avatar. */}
+          {/* Help + language + bell + avatar — mobile: row 1, far right (help is md+ only, so the
+              mobile trio is unchanged). md+: end of the cluster, help leading. The flex gap here
+              (gap-2 / md:gap-3) spaces each icon from the next consistently. */}
           <div className="col-start-3 row-start-1 flex shrink-0 items-center justify-self-end gap-2 md:gap-3">
+            <HelpDropdown triggerClassName={helpBtn} />
             <LanguageToggle />
             <button
               type="button"

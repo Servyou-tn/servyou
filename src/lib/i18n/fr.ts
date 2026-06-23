@@ -979,10 +979,20 @@ export const fr: Record<string, string> = {
   'marche.sidebar.missions':         "Mes missions",
   'marche.sidebar.parametres':       "Paramètres",
   'marche.sidebar.coming_soon':      "Bientôt disponible",
+  // Top-bar segmented toggle pills (navbar only — distinct from the generic
+  // common.products_section / common.services_section labels used by the sidebar
+  // filter, search results, and favorites, which stay "Produits" / "Services").
+  'marche.toggle.find_products':     "Trouver des Produits",
+  'marche.toggle.find_services':     "Trouver des Services",
   'marche.empty.products':           "Pas encore de produits disponibles",
   'marche.empty.products_subtitle':  "Revenez bientôt — de nouveaux articles arrivent.",
   'marche.empty.services':           "Pas encore de services disponibles",
   'marche.empty.services_subtitle':  "Revenez bientôt — de nouveaux services arrivent.",
+
+  // ─── Help / support dropdown (top bar) ───────────────────────────────────────
+  'help.dropdown.aria_label':        "Aide",
+  'help.dropdown.faq':               "FAQ",
+  'help.dropdown.contact':           "Contact",
 
   // ─── Orders — my orders + confirmation ───────────────────────────────────────
   'orders.title':              "Mes demandes",
