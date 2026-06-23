@@ -1015,6 +1015,9 @@ export const ar: Record<string, string> = {
   // Top-bar segmented toggle pills (navbar only). Distinct from common.*_section.
   'marche.toggle.find_products':     "البحث عن منتجات",
   'marche.toggle.find_services':     "البحث عن خدمات",
+  // Top-bar primary CTA (post a mission). Label collapses to icon-only at md; aria stays full.
+  'marche.cta.publish_project':      "نشر مشروع",
+  'marche.cta.publish_project_aria': "نشر مشروع",
   'marche.empty.products':           "Pas encore de produits disponibles",
   'marche.empty.products_subtitle':  "Revenez bientôt — de nouveaux articles arrivent.",
   'marche.empty.services':           "Pas encore de services disponibles",

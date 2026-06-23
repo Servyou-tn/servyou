@@ -984,6 +984,9 @@ export const fr: Record<string, string> = {
   // filter, search results, and favorites, which stay "Produits" / "Services").
   'marche.toggle.find_products':     "Trouver des Produits",
   'marche.toggle.find_services':     "Trouver des Services",
+  // Top-bar primary CTA (post a mission). Label collapses to icon-only at md; aria stays full.
+  'marche.cta.publish_project':      "Publier un projet",
+  'marche.cta.publish_project_aria': "Publier un projet",
   'marche.empty.products':           "Pas encore de produits disponibles",
   'marche.empty.products_subtitle':  "Revenez bientôt — de nouveaux articles arrivent.",
   'marche.empty.services':           "Pas encore de services disponibles",

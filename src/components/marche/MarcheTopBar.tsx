@@ -12,7 +12,8 @@ import { interactiveSurface, SURFACE_HOVER, FOCUS_RING } from '@/components/ui/i
 import { toggleDestination } from '@/lib/marche/marche-routing'
 import type { SearchType, ToggleType } from '@/lib/search/search-params'
 import { LanguageToggle } from '@/components/layout/LanguageToggle'
-import { SegmentedToggle } from './SegmentedToggle'
+import { NavTextLinks } from './NavTextLinks'
+import { PublishProjectCTA } from './PublishProjectCTA'
 import { ExpandableSearch } from './ExpandableSearch'
 import { HelpDropdown } from './HelpDropdown'
 import { ProfileAvatarMenu, type TopBarUser } from './ProfileAvatarMenu'
@@ -35,14 +36,14 @@ function useScrolled(threshold = 8): boolean {
 // The S brand mark stands ALONE on the far left (it moved here from the sidebar, so it stays
 // visible on mobile where the sidebar is hidden). It's a clean image in a Link home — no chrome.
 //
-// Layout — at md+ a single flex row: the logo and the search sit together on the left, then a flex
-// spacer, then the right cluster in order [toggle → help → language → bell → avatar]. The toggle is
-// the one shrinkable member (it scrolls internally), so when the row gets tight the spacer collapses
-// and the pills scroll rather than the page overflowing. On mobile (<md) it's a two-row grid: row 1 =
-// logo + search + language/bell/avatar (help is md+ only), row 2 = the toggle full-width (scrolls).
-// The per-page subtitle that used to live here now renders as the animated PageHeader below the bar.
-// The right cluster is one wrapper that is `display:contents` on mobile (its members place straight
-// into the grid) and a flex at md+.
+// Layout — at md+ a single flex row: the logo, the search, the two marketplace text links (xl+ only)
+// and the "Publier un projet" CTA sit on the left, then a flex spacer, then the right icon cluster
+// [help → language → bell → avatar]. The SEARCH is the one flexible member (md:w-[280px], shrinks
+// under pressure); the logo, CTA and cluster are all shrink-0, so the bar can never overflow — when
+// the row tightens, the spacer collapses and then the search narrows. On mobile (<md) it's a two-row
+// grid: row 1 = logo + search + language/bell/avatar (help is md+ only), row 2 = the CTA (the text
+// links are hidden below xl; the sidebar is the marketplace switcher there). The per-page subtitle
+// that used to live here renders as the animated PageHeader below the bar.
 export function MarcheTopBar({
   user,
   initialType,
@@ -131,50 +132,50 @@ export function MarcheTopBar({
           />
         </Link>
 
-        {/* Search — mobile: row 1 (col 2), between the logo and the icon cluster (unchanged). md+:
-            sits right after the logo; the flex-1 spacer below pushes the rest of the cluster to the
-            right edge, so the wordmark and search read as one left-aligned group. */}
-        <div className="col-start-2 row-start-1 min-w-0 md:shrink-0">
+        {/* Search — mobile: row 1 (col 2), between the logo and the icon cluster. md+: sits right
+            after the logo. This wrapper carries the desktop width (md:w-[280px]) and is the row's
+            ONE flexible member — no shrink-0, so under pressure it narrows while everything else
+            holds, making the bar overflow-proof. The flex-1 spacer below keeps it left-grouped. */}
+        <div className="col-start-2 row-start-1 min-w-0 md:w-[280px]">
           <ExpandableSearch currentType={initialType} initialQuery={initialQuery} />
         </div>
 
-        {/* Spacer (md+ only) — between the search and the right cluster, so logo + search stay on
-            the left while the pills/help/language/bell/avatar push to the right edge. */}
+        {/* Marketplace text links — xl+ only (the row can't hold them alongside search + CTA +
+            cluster below ~1280px). Routing + active state unchanged from the old pills. */}
+        <NavTextLinks value={initialType} hrefFor={hrefFor} />
+
+        {/* "Publier un projet" CTA — the money button, always visible. Mobile: its own row (row 2),
+            full label. md+: inline after the text links (icon-only at md, full label at lg+). */}
+        <div className="col-span-full row-start-2 flex shrink-0 md:row-auto">
+          <PublishProjectCTA />
+        </div>
+
+        {/* Spacer (md+ only) — between the left group and the right cluster, so logo/search/links/
+            CTA stay left while help/language/bell/avatar push to the right edge. */}
         <div aria-hidden className="hidden md:block md:flex-1" />
 
-        {/* Right cluster — pills → help → language → bell → avatar. display:contents on mobile
-            (members fall into the grid below); a flex group at md+ (md:min-w-0 lets the pills
-            inside shrink/scroll when the row is tight). */}
-        <div className="contents md:flex md:min-w-0 md:items-center md:gap-4">
-          {/* Pills — mobile: full-width second row (scrolls). md+: leads the right cluster; the one
-              member allowed to shrink so it scrolls (rather than overflowing) when space is tight. */}
-          <div className="col-span-full row-start-2 min-w-0 md:row-auto">
-            <SegmentedToggle value={initialType} hrefFor={hrefFor} />
-          </div>
+        {/* Help + language + bell + avatar — mobile: row 1, far right (help is md+ only, so the
+            mobile trio is unchanged). md+: end of the row, help leading. The flex gap here
+            (gap-2 / md:gap-3) spaces each icon from the next consistently. */}
+        <div className="col-start-3 row-start-1 flex shrink-0 items-center justify-self-end gap-2 md:gap-3">
+          <HelpDropdown triggerClassName={helpBtn} />
+          <LanguageToggle />
+          <button
+            type="button"
+            // TODO: Real notifications system — see roadmap.md, post-MVP. Visual-only for now.
+            onClick={() => console.log('Notifications coming soon')}
+            aria-label={`${t('dashboard.topbar.notifications', lang)} — ${t('marche.sidebar.coming_soon', lang)}`}
+            className={bellBtn}
+          >
+            <Bell className="h-5 w-5 text-text-primary" aria-hidden="true" />
+            <span
+              aria-hidden="true"
+              className="absolute right-[10px] top-[10px] h-2 w-2 rounded-full bg-red-500 ring-2 ring-white"
+            />
+          </button>
 
-          {/* Help + language + bell + avatar — mobile: row 1, far right (help is md+ only, so the
-              mobile trio is unchanged). md+: end of the cluster, help leading. The flex gap here
-              (gap-2 / md:gap-3) spaces each icon from the next consistently. */}
-          <div className="col-start-3 row-start-1 flex shrink-0 items-center justify-self-end gap-2 md:gap-3">
-            <HelpDropdown triggerClassName={helpBtn} />
-            <LanguageToggle />
-            <button
-              type="button"
-              // TODO: Real notifications system — see roadmap.md, post-MVP. Visual-only for now.
-              onClick={() => console.log('Notifications coming soon')}
-              aria-label={`${t('dashboard.topbar.notifications', lang)} — ${t('marche.sidebar.coming_soon', lang)}`}
-              className={bellBtn}
-            >
-              <Bell className="h-5 w-5 text-text-primary" aria-hidden="true" />
-              <span
-                aria-hidden="true"
-                className="absolute right-[10px] top-[10px] h-2 w-2 rounded-full bg-red-500 ring-2 ring-white"
-              />
-            </button>
-
-            <div className="shrink-0">
-              <ProfileAvatarMenu user={user} triggerClassName={avatarBtn} />
-            </div>
+          <div className="shrink-0">
+            <ProfileAvatarMenu user={user} triggerClassName={avatarBtn} />
           </div>
         </div>
       </div>
