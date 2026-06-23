@@ -7,14 +7,16 @@ export function PageHeader({
   countLabel,
   action,
 }: {
-  title: string
+  // Optional: the animated shared/PageHeader now owns the title role on these pages, so this
+  // row often renders only the count pill + action (e.g. the "Nouvelle mission" button).
+  title?: string
   countLabel?: string
   action?: ReactNode
 }) {
   return (
     <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
       <div className="flex items-center gap-3">
-        <h1 className="text-2xl font-bold text-text-primary">{title}</h1>
+        {title && <h1 className="text-2xl font-bold text-text-primary">{title}</h1>}
         {countLabel && (
           <span className="rounded-full bg-surface-pill px-3 py-1 text-xs font-medium text-text-muted">
             {countLabel}

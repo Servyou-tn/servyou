@@ -12,6 +12,7 @@ import { buildSearchQuery } from '@/components/recherche/search-url'
 import { SearchFilters } from '@/components/recherche/SearchFilters'
 import { SearchFiltersSheet } from '@/components/recherche/SearchFiltersSheet'
 import { Pagination } from '@/components/shared/Pagination'
+import { PageHeader } from '@/components/shared/PageHeader'
 import { getCategoryBySlug, getSubcategories } from '@/lib/categories/category-data'
 import { SubcategoryStrip } from '@/components/categories/SubcategoryStrip'
 import { CategoryEmptyState } from '@/components/categories/CategoryEmptyState'
@@ -81,7 +82,10 @@ export default async function CategoryPage({
         <span className="font-medium text-[#0A0A0A]">{name}</span>
       </nav>
 
-      <h1 className="mb-5 text-2xl font-bold text-[#0A0A0A]">{name}</h1>
+      <PageHeader
+        subtitle={t('page_header.categories.subtitle', lang, { count: result.totalCount, category: name })}
+        emphasisWord={t('page_header.categories.emphasis', lang, { count: result.totalCount })}
+      />
 
       {/* Sub-category drill-down — renders nothing while the taxonomy is flat. */}
       <SubcategoryStrip items={subcategories} lang={lang} />

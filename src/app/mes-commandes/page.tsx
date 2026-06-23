@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 import { MarcheLayout } from '@/components/marche/MarcheLayout'
 import { PageHeader } from '@/components/marche/PageHeader'
+import { PageHeader as PageSubtitle } from '@/components/shared/PageHeader'
 import { EmptyState } from '@/components/marche/EmptyState'
 import { MesCommandesList } from '@/components/marche/MesCommandesList'
 import { SidebarSelectFilter } from '@/components/marche/SidebarSelectFilter'
@@ -77,10 +78,13 @@ export default async function MesCommandesPage({
 
   return (
     <MarcheLayout user={shell.topBarUser} sidebarFilter={statutFilter}>
-      <PageHeader
-        title={t('marche.sidebar.commandes', lang)}
-        countLabel={orders.length > 0 ? t('mescommandes.count', lang, { n: orders.length }) : undefined}
+      <PageSubtitle
+        subtitle={t('page_header.commandes.subtitle', lang)}
+        emphasisWord={t('page_header.commandes.emphasis', lang)}
       />
+      {orders.length > 0 && (
+        <PageHeader countLabel={t('mescommandes.count', lang, { n: orders.length })} />
+      )}
 
       {orders.length === 0 ? (
         <EmptyState

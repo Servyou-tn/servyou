@@ -979,6 +979,32 @@ export const ar: Record<string, string> = {
   'listing.product.viewAction':      "Voir",
   'sidebar.expanded.servyou':        "ServYou",
 
+  // ─── PageHeader — per-page animated subtitle (best-effort MSA, review pending) ──
+  'page_header.accueil.subtitle':            "اكتشف جديد Servyou",
+  'page_header.accueil.emphasis':            "جديد",
+  'page_header.produits.subtitle':           "اعثر على ما تحتاجه",
+  'page_header.produits.emphasis':           "تحتاجه",
+  'page_header.services.subtitle':           "اعثر على المستقل المناسب",
+  'page_header.services.emphasis':           "المستقل",
+  'page_header.recherche.subtitle':          "{count} نتيجة عن « {query} »",
+  'page_header.recherche.emphasis':          "{count} نتيجة",
+  'page_header.categories.subtitle':         "{count} منتج في {category}",
+  'page_header.categories.emphasis':         "{count} منتج",
+  'page_header.favoris.subtitle':            "استعرض عناصرك المحفوظة",
+  'page_header.favoris.emphasis':            "المحفوظة",
+  'page_header.commandes.subtitle':          "تابع طلباتك الجارية",
+  'page_header.commandes.emphasis':          "الجارية",
+  'page_header.missions.subtitle':           "أدِر مهامك وردودها",
+  'page_header.missions.emphasis':           "وردودها",
+  'page_header.nouvelle_mission.subtitle':   "صِف ما تبحث عنه",
+  'page_header.nouvelle_mission.emphasis':   "تبحث",
+  'page_header.mon_compte.subtitle':         "أدِر معلوماتك الشخصية",
+  'page_header.mon_compte.emphasis':         "الشخصية",
+  'page_header.parametres.subtitle':         "خصّص تجربتك",
+  'page_header.parametres.emphasis':         "تجربتك",
+  'page_header.profil.subtitle':             "ملفك على Servyou",
+  'page_header.profil.emphasis':             "ملفك",
+
   // ─── Marketplace browse (/marche) — PENDING AR (Phase 8), French placeholders ──
   'marche.sidebar.marche':           "الرئيسية",
   'marche.sidebar.commandes':        "Mes commandes",
@@ -986,10 +1012,21 @@ export const ar: Record<string, string> = {
   'marche.sidebar.missions':         "Mes missions",
   'marche.sidebar.parametres':       "Paramètres",
   'marche.sidebar.coming_soon':      "Bientôt disponible",
+  // Top-bar segmented toggle pills (navbar only). Distinct from common.*_section.
+  'marche.toggle.find_products':     "البحث عن منتجات",
+  'marche.toggle.find_services':     "البحث عن خدمات",
+  // Top-bar primary CTA (post a mission). Label collapses to icon-only at md; aria stays full.
+  'marche.cta.publish_project':      "نشر مشروع",
+  'marche.cta.publish_project_aria': "نشر مشروع",
   'marche.empty.products':           "Pas encore de produits disponibles",
   'marche.empty.products_subtitle':  "Revenez bientôt — de nouveaux articles arrivent.",
   'marche.empty.services':           "Pas encore de services disponibles",
   'marche.empty.services_subtitle':  "Revenez bientôt — de nouveaux services arrivent.",
+
+  // ─── Help / support dropdown (top bar) ───────────────────────────────────────
+  'help.dropdown.aria_label':        "مساعدة",
+  'help.dropdown.faq':               "الأسئلة الشائعة",
+  'help.dropdown.contact':           "اتصل بنا",
 
   // ─── Orders — my orders + confirmation ───────────────────────────────────────
   'orders.title':              "طلباتي",

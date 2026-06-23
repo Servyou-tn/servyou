@@ -946,6 +946,32 @@ export const fr: Record<string, string> = {
   'listing.product.viewAction':      "Voir",
   'sidebar.expanded.servyou':        "ServYou",
 
+  // ─── PageHeader — per-page animated subtitle (consumer dashboard shell) ──────
+  'page_header.accueil.subtitle':            "Découvrez les nouveautés de Servyou",
+  'page_header.accueil.emphasis':            "nouveautés",
+  'page_header.produits.subtitle':           "Trouvez ce dont vous avez besoin",
+  'page_header.produits.emphasis':           "besoin",
+  'page_header.services.subtitle':           "Trouvez le freelance qu'il vous faut",
+  'page_header.services.emphasis':           "freelance",
+  'page_header.recherche.subtitle':          "{count} résultats pour « {query} »",
+  'page_header.recherche.emphasis':          "{count} résultats",
+  'page_header.categories.subtitle':         "{count} produits dans {category}",
+  'page_header.categories.emphasis':         "{count} produits",
+  'page_header.favoris.subtitle':            "Retrouvez vos articles sauvegardés",
+  'page_header.favoris.emphasis':            "sauvegardés",
+  'page_header.commandes.subtitle':          "Suivez vos commandes en cours",
+  'page_header.commandes.emphasis':          "en cours",
+  'page_header.missions.subtitle':           "Gérez vos missions et réponses",
+  'page_header.missions.emphasis':           "réponses",
+  'page_header.nouvelle_mission.subtitle':   "Décrivez ce que vous cherchez",
+  'page_header.nouvelle_mission.emphasis':   "cherchez",
+  'page_header.mon_compte.subtitle':         "Gérez vos informations personnelles",
+  'page_header.mon_compte.emphasis':         "personnelles",
+  'page_header.parametres.subtitle':         "Personnalisez votre expérience",
+  'page_header.parametres.emphasis':         "expérience",
+  'page_header.profil.subtitle':             "Votre profil Servyou",
+  'page_header.profil.emphasis':             "profil",
+
   // ─── Marketplace browse (/marche) ────────────────────────────────────────────
   'marche.sidebar.marche':           "Accueil",
   'marche.sidebar.commandes':        "Mes commandes",
@@ -953,10 +979,23 @@ export const fr: Record<string, string> = {
   'marche.sidebar.missions':         "Mes missions",
   'marche.sidebar.parametres':       "Paramètres",
   'marche.sidebar.coming_soon':      "Bientôt disponible",
+  // Top-bar segmented toggle pills (navbar only — distinct from the generic
+  // common.products_section / common.services_section labels used by the sidebar
+  // filter, search results, and favorites, which stay "Produits" / "Services").
+  'marche.toggle.find_products':     "Trouver des Produits",
+  'marche.toggle.find_services':     "Trouver des Services",
+  // Top-bar primary CTA (post a mission). Label collapses to icon-only at md; aria stays full.
+  'marche.cta.publish_project':      "Publier un projet",
+  'marche.cta.publish_project_aria': "Publier un projet",
   'marche.empty.products':           "Pas encore de produits disponibles",
   'marche.empty.products_subtitle':  "Revenez bientôt — de nouveaux articles arrivent.",
   'marche.empty.services':           "Pas encore de services disponibles",
   'marche.empty.services_subtitle':  "Revenez bientôt — de nouveaux services arrivent.",
+
+  // ─── Help / support dropdown (top bar) ───────────────────────────────────────
+  'help.dropdown.aria_label':        "Aide",
+  'help.dropdown.faq':               "FAQ",
+  'help.dropdown.contact':           "Contact",
 
   // ─── Orders — my orders + confirmation ───────────────────────────────────────
   'orders.title':              "Mes demandes",

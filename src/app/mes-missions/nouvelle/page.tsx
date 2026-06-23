@@ -4,6 +4,7 @@ import { MarcheLayout } from '@/components/marche/MarcheLayout'
 import { MissionForm } from '@/components/marche/MissionForm'
 import { getShellUser } from '@/lib/marche/shell-user'
 import { getCategories } from '@/lib/marche/my-data'
+import { PageHeader } from '@/components/shared/PageHeader'
 import { getLang } from '@/lib/i18n/server'
 import { t } from '@/lib/i18n'
 
@@ -20,10 +21,10 @@ export default async function NouvelleMissionPage() {
 
   return (
     <MarcheLayout user={shell.topBarUser}>
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-text-primary">{t('mission.create.title', lang)}</h1>
-        <p className="mt-1 text-sm text-text-muted">{t('mission.create.subtitle', lang)}</p>
-      </div>
+      <PageHeader
+        subtitle={t('page_header.nouvelle_mission.subtitle', lang)}
+        emphasisWord={t('page_header.nouvelle_mission.emphasis', lang)}
+      />
       <MissionForm categories={categories} />
     </MarcheLayout>
   )

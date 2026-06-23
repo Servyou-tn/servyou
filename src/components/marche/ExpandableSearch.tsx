@@ -103,15 +103,16 @@ export function ExpandableSearch({
   return (
     <>
       {/* Trigger — a compact search pill. Same shared surface as the toggle pills + sidebar
-          buttons (h-11, white, border, lifted shadow, hover, focus ring). Fixed width, so it
-          never competes for horizontal space: nothing around it moves, ever. */}
+          buttons (h-11, white, border, lifted shadow, hover, focus ring). Always w-full: the
+          desktop 280px width + shrink behaviour now live on the wrapper in MarcheTopBar, so the
+          search is the row's one flexible member and the bar can never overflow. */}
       <button
         ref={triggerRef}
         type="button"
         onClick={() => setOpen(true)}
         aria-label="Ouvrir la recherche"
         className={cn(
-          'group flex w-full items-center gap-2 rounded-full px-3.5 md:w-[280px]',
+          'group flex w-full items-center gap-2 rounded-full px-3.5',
           interactiveSurface(false),
         )}
       >

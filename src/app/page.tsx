@@ -58,7 +58,6 @@ export default async function HomePage({
             full_name: profile?.full_name ?? null,
             seller_type: null,
           }}
-          fullName={profile?.full_name ?? null}
           type={type}
           products={products}
           services={services}

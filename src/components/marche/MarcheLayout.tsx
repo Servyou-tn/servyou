@@ -26,30 +26,18 @@ export async function MarcheLayout({
   searchType = 'product',
   searchQuery = '',
   sidebarFilter,
-  heading,
-  subtitle,
   children,
 }: {
   user: TopBarUser | null
   searchType?: SearchType
   searchQuery?: string
   sidebarFilter?: ReactNode
-  // Optional top-bar welcome (greeting + quiet subtitle), shown in the bar's left slot.
-  // Only the consumer homepage passes these; every other page omits them.
-  heading?: string
-  subtitle?: string
   children: ReactNode
 }) {
   const lang = await getLang()
   return (
     <div className="flex min-h-screen flex-col bg-white">
-      <MarcheTopBar
-        user={user}
-        initialType={searchType}
-        initialQuery={searchQuery}
-        heading={heading}
-        subtitle={subtitle}
-      />
+      <MarcheTopBar user={user} initialType={searchType} initialQuery={searchQuery} />
       <div className="flex flex-1">
         <MarcheSidebar sidebarFilter={sidebarFilter} />
         <main className="min-w-0 flex-1">
