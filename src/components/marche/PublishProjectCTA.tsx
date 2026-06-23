@@ -10,10 +10,11 @@ import { interactiveSurface } from '@/components/ui/interactive-surface'
 // "Publier un projet" — the primary call-to-action in the consumer top bar, linking to the
 // post-a-mission form. Built as a "loud sibling" of the sidebar nav buttons: it reuses the SAME
 // interactiveSurface(true) helper the sidebar's active items use, so it inherits their structural
-// DNA exactly — rounded-full pill, h-11, brand-accent/40 border, soft shadow, focus ring — plus the
-// shared NAV layout tokens (px-4, gap-2, text-sm font-medium, h-4 icon). Only the FILL differs: a
-// permanent SOLID brand-accent background with white text + icon, the loudest reading of v4's
-// "slightly louder fill" so it still functions as a primary CTA.
+// DNA — rounded-full pill, brand-accent/40 border, soft shadow, focus ring, text-sm font-medium —
+// but COMPACTED one size step to feel native to the navbar's tighter density: h-10 (vs the sidebar's
+// h-11), px-3.5, gap-1.5, h-3.5 icon. The font stays text-sm (legibility, not shrunk with the box).
+// Only the FILL differs from the sidebar's active tint: a permanent SOLID brand-accent background
+// with white text + icon, the loudest reading of "louder fill" so it still functions as a primary CTA.
 //
 // Why solid white-on-blue instead of the sidebar's tint: the literal v4 spec (brand-accent text on a
 // louder brand-accent tint) fails WCAG AA — text-brand-accent on bg-brand-accent/20 is ~3.9:1
@@ -38,14 +39,15 @@ export function PublishProjectCTA() {
       href="/mes-missions/nouvelle"
       aria-label={t('marche.cta.publish_project_aria', lang)}
       className={cn(
-        'inline-flex shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-full px-4 text-sm font-medium',
+        'inline-flex shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-full px-3.5 text-sm font-medium',
         interactiveSurface(true),
-        // Override the active TINT with a solid brand-accent fill + white text/icon (the icon
-        // inherits currentColor). Hover lifts via shadow only — no fill change, so contrast holds.
-        'bg-brand-accent text-white hover:shadow-[0_4px_12px_rgba(37,99,235,0.30)] active:scale-[0.98] motion-reduce:active:scale-100',
+        // Override interactiveSurface's h-11 → h-10 (one step down for navbar density), and its
+        // active TINT with a solid brand-accent fill + white text/icon (the icon inherits
+        // currentColor). Hover lifts via shadow only — no fill change, so contrast holds at 5.2:1.
+        'h-10 bg-brand-accent text-white hover:shadow-[0_4px_12px_rgba(37,99,235,0.30)] active:scale-[0.98] motion-reduce:active:scale-100',
       )}
     >
-      <Plus className="h-4 w-4 shrink-0" aria-hidden="true" />
+      <Plus className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
       <span className="md:hidden lg:inline">{t('marche.cta.publish_project', lang)}</span>
     </Link>
   )
