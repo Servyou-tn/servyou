@@ -36,12 +36,14 @@ function useScrolled(threshold = 8): boolean {
 // The S brand mark stands ALONE on the far left (it moved here from the sidebar, so it stays
 // visible on mobile where the sidebar is hidden). It's a clean image in a Link home — no chrome.
 //
-// Layout — at md+ a single flex row: the logo, the search, the two marketplace text links (xl+ only)
-// and the "Publier un projet" CTA sit on the left, then a flex spacer, then the right icon cluster
-// [help → language → bell → avatar]. The SEARCH is the one flexible member (md:w-[280px], shrinks
-// under pressure); the logo, CTA and cluster are all shrink-0, so the bar can never overflow — when
-// the row tightens, the spacer collapses and then the search narrows. On mobile (<md) it's a two-row
-// grid: row 1 = logo + search + language/bell/avatar (help is md+ only), row 2 = the CTA (the text
+// Layout — at md+ a single flex row: the logo sits anchored on the far left, then a flex spacer,
+// then the whole right group [search → text links (xl+ only) → "Publier un projet" CTA → icon
+// cluster (help → language → bell → avatar)] pushed to the right edge. So the empty space falls
+// between the wordmark and the search, not inside the right group. The SEARCH is the one flexible
+// member (md:w-[280px], shrinks under pressure); the logo, CTA and cluster are all shrink-0, so the
+// bar can never overflow — when the row tightens, the spacer collapses and then the search narrows.
+// On mobile (<md) it's a two-row grid: row 1 = logo + search + language/bell/avatar (help is md+
+// only), row 2 = the CTA (the text
 // links are hidden below xl; the sidebar is the marketplace switcher there). The per-page subtitle
 // that used to live here renders as the animated PageHeader below the bar.
 export function MarcheTopBar({
@@ -132,10 +134,16 @@ export function MarcheTopBar({
           />
         </Link>
 
-        {/* Search — mobile: row 1 (col 2), between the logo and the icon cluster. md+: sits right
-            after the logo. This wrapper carries the desktop width (md:w-[280px]) and is the row's
-            ONE flexible member — no shrink-0, so under pressure it narrows while everything else
-            holds, making the bar overflow-proof. The flex-1 spacer below keeps it left-grouped. */}
+        {/* Spacer (md+ only) — sits between the logo and the right group, so the wordmark stays
+            anchored on the far left while the search / text links / CTA / icons all push toward the
+            right edge as one group. On mobile it's hidden; the grid keeps logo + search + icons on
+            row 1. (This replaced the old "search hugs the wordmark" anchoring from b50ca2b.) */}
+        <div aria-hidden className="hidden md:block md:flex-1" />
+
+        {/* Search — mobile: row 1 (col 2), between the logo and the icon cluster. md+: leads the
+            right group. This wrapper carries the desktop width (md:w-[280px]) and is the row's ONE
+            flexible member — no shrink-0, so under pressure it narrows while everything else holds,
+            making the bar overflow-proof. */}
         <div className="col-start-2 row-start-1 min-w-0 md:w-[280px]">
           <ExpandableSearch currentType={initialType} initialQuery={initialQuery} />
         </div>
@@ -145,14 +153,11 @@ export function MarcheTopBar({
         <NavTextLinks value={initialType} hrefFor={hrefFor} />
 
         {/* "Publier un projet" CTA — the money button, always visible. Mobile: its own row (row 2),
-            full label. md+: inline after the text links (icon-only at md, full label at lg+). */}
+            full label. md+: the last member of the right group, sitting just before the icon
+            cluster with the normal gap (no large space between them). Icon-only at md, full at lg+. */}
         <div className="col-span-full row-start-2 flex shrink-0 md:row-auto">
           <PublishProjectCTA />
         </div>
-
-        {/* Spacer (md+ only) — between the left group and the right cluster, so logo/search/links/
-            CTA stay left while help/language/bell/avatar push to the right edge. */}
-        <div aria-hidden className="hidden md:block md:flex-1" />
 
         {/* Help + language + bell + avatar — mobile: row 1, far right (help is md+ only, so the
             mobile trio is unchanged). md+: end of the row, help leading. The flex gap here
