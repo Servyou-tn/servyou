@@ -979,6 +979,26 @@ export const fr: Record<string, string> = {
   'marche.sidebar.missions':         "Mes missions",
   'marche.sidebar.parametres':       "Paramètres",
   'marche.sidebar.coming_soon':      "Bientôt disponible",
+
+  // ── Freelancer workspace (PR-F1.1) ──
+  'sidebar.freelance.profile':       "Profil",
+  'sidebar.freelance.services':      "Services",
+  'sidebar.freelance.requests':      "Demandes",
+  'sidebar.freelance.responses':     "Réponses",
+  'sidebar.freelance.saved':         "Missions sauvegardées",
+  'page_header.mon_profil_freelance.subtitle':   "Gérez votre activité freelance",
+  'page_header.mon_profil_freelance.emphasis':   "activité",
+  'freelance.dashboard.metric.active_services':  "Services actifs",
+  'freelance.dashboard.metric.pending_requests': "Demandes en attente",
+  'freelance.dashboard.metric.sent_responses':   "Réponses envoyées",
+  'freelance.dashboard.metric.saved_missions':   "Missions sauvegardées",
+  'freelance.dashboard.action.add_service':      "Ajouter un service",
+  'freelance.dashboard.action.browse_missions':  "Voir les missions",
+  'freelance.dashboard.action.edit_profile':     "Modifier mon profil",
+  'freelance.dashboard.recent_activity.title':   "Activité récente",
+  'freelance.dashboard.recent_activity.empty':   "Aucune activité récente",
+  'freelance.dashboard.no_profile.title':        "Créez votre profil pour commencer",
+  'freelance.dashboard.no_profile.cta':          "Créer mon profil",
   // Top-bar segmented toggle pills (navbar only — distinct from the generic
   // common.products_section / common.services_section labels used by the sidebar
   // filter, search results, and favorites, which stay "Produits" / "Services").
