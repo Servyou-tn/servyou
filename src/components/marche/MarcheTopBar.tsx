@@ -75,8 +75,14 @@ export function MarcheTopBar({
     return () => observer.disconnect()
   }, [])
 
-  // The active toggle option is the catalog type the page is on (fed by the page).
-  const hrefFor = (type: ToggleType) => toggleDestination(type, { onHome })
+  // The active toggle option is the catalog type the page is on (fed by the page). Role-aware
+  // destination: a freelancer's "Trouver des Services" link points at the job board (/emplois)
+  // — their primary services surface is finding missions — while everyone else keeps the services
+  // marketplace. Href-only: the link's active-state highlight (type-based, page-fed) is unchanged,
+  // so it simply won't light up on /emplois (accepted for v1).
+  const isFreelancer = user?.seller_type === 'freelancer'
+  const hrefFor = (type: ToggleType) =>
+    type === 'service' && isFreelancer ? '/emplois' : toggleDestination(type, { onHome })
 
   // Bell — same white circular surface as the pills (idle + hover + focus). Avatar — the
   // brand-blue circle inside IS the visual, so its wrapper carries only the shared hover lift
