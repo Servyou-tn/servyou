@@ -7,7 +7,7 @@ import { Popover as PopoverPrimitive } from 'radix-ui'
 import { useLang } from '@/components/LangProvider'
 import { t } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
-import { FOCUS_RING } from '@/components/layout/styles'
+import { FOCUS_RING, STICKY_FILTER_BAR } from '@/components/layout/styles'
 import { FilterControl } from '@/components/ui/filter-control'
 import { buildSearchQuery } from '@/components/recherche/search-url'
 import type { FilterCategory } from '@/components/recherche/SearchFilters'
@@ -272,7 +272,7 @@ export function JobBoardFiltersBar({ categories, cityOptions, skillOptions, sele
   const postedCount = selected.postedWithin != null ? 1 : 0
 
   return (
-    <div className="mb-6 flex items-center gap-2 overflow-x-auto pb-1">
+    <div className={`${STICKY_FILTER_BAR} mb-6 flex items-center gap-2 overflow-x-auto py-3`}>
       {catOptions.length > 0 && (
         <FilterChip label={t('emplois.filters.category', lang)} count={selected.categories.length}>
           {(close) => (
