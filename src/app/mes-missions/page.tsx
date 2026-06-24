@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { MarcheLayout } from '@/components/marche/MarcheLayout'
+import { FreelancerLayout } from '@/components/freelance/FreelancerLayout'
 import { PageHeader } from '@/components/marche/PageHeader'
 import { PageHeader as PageSubtitle } from '@/components/shared/PageHeader'
 import { EmptyState } from '@/components/marche/EmptyState'
@@ -48,12 +49,14 @@ export default async function MesMissionsPage({
     </Link>
   )
 
-  return (
-    <MarcheLayout user={shell.topBarUser}>
-      <PageSubtitle
-        subtitle={t('page_header.missions.subtitle', lang)}
-        emphasisWord={t('page_header.missions.emphasis', lang)}
-      />
+  const isFreelancer = shell.topBarUser.seller_type === 'freelancer'
+  const subtitle = t('page_header.missions.subtitle', lang)
+  const emphasis = t('page_header.missions.emphasis', lang)
+
+  // Shared body — the count header + missions grid (or empty state). The subtitle PageHeader is
+  // mounted by FreelancerLayout for freelancers, or here for everyone else (MarcheLayout owns none).
+  const body = (
+    <>
       {missions.length > 0 && (
         <PageHeader
           countLabel={t('mesmissions.count', lang, { n: missions.length })}
@@ -79,6 +82,23 @@ export default async function MesMissionsPage({
           </div>
         </>
       )}
+    </>
+  )
+
+  // A freelancer is also a buyer — they keep their FreelancerSidebar here (the locked
+  // sidebar-persistence rule). Everyone else gets the consumer MarcheLayout, unchanged.
+  if (isFreelancer) {
+    return (
+      <FreelancerLayout user={shell.topBarUser} subtitle={subtitle} emphasisWord={emphasis}>
+        {body}
+      </FreelancerLayout>
+    )
+  }
+
+  return (
+    <MarcheLayout user={shell.topBarUser}>
+      <PageSubtitle subtitle={subtitle} emphasisWord={emphasis} />
+      {body}
     </MarcheLayout>
   )
 }

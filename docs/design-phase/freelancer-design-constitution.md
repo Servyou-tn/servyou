@@ -54,16 +54,34 @@ This is not aesthetic preference — it is the **Unified Workspace Principle** f
 - aria-labels on every interactive element
 - Semantic HTML
 
-### Sidebar persistence (LOCKED 2026-06-25)
+### Sidebar persistence (LOCKED 2026-06-25, EXTENDED 2026-06-25)
 
-The FreelancerSidebar appears on EVERY page in the freelancer space, without exception. This includes the freelancer dashboard, profile pages, services pages, demandes, réponses, missions sauvegardées, and the job board /emplois.
+The FreelancerSidebar appears on EVERY page when `user.seller_type === 'freelancer'`, without exception. The target end-state includes:
+- All freelancer-workspace routes (`/mon-profil-freelance/*`)
+- The job board (`/emplois`)
+- The consumer marketplace (`/marche/produits`, `/marche/services`)
+- The consumer buyer pages (`/mes-commandes`, `/mes-favoris`, `/mes-missions`)
+- The homepage / landing for logged-in freelancers
 
-A freelancer never sees the MarcheSidebar inside their workspace. Browse pages that serve multiple roles (currently /emplois) dispatch layout shells per role:
+A freelancer never sees the MarcheSidebar inside their workspace. The FreelancerSidebar contains BOTH freelancer-specific items AND the universal buyer baseline items (Mes commandes, Mes favoris, Mes missions), separated by a visual divider. This reflects the platform's role model: every freelancer is also a buyer.
 
-- `user.seller_type === 'freelancer'` → FreelancerLayout
-- everyone else → MarcheLayout (consumer sidebar)
+Pages that serve multiple roles dispatch layout shells per role (the uniform pattern):
 
-This is the Unified Workspace Principle made concrete. Future browse-style pages that serve freelancers follow the same dispatch pattern.
+    const shell = await getShellUser()
+    const isFreelancer = shell?.topBarUser.seller_type === 'freelancer'
+    // freelancer → FreelancerLayout (owns the PageHeader); everyone else → MarcheLayout
+
+The MarcheSidebar is preserved unchanged for consumers, anonymous users, and (future) shop owners. The consumer experience is non-regressed.
+
+**Rollout status (honest scope).** The rule above is the target end-state, reached incrementally. Dispatched so far: `/emplois` and `/mes-missions` (the header-bearing, filter-free pages), plus the FreelancerSidebar +3 buyer-baseline items + divider.
+
+Pending — deferred to dedicated follow-up PRs (the dispatch is blocked on real structural work, not yet applied):
+
+- **PR-F1.1f** — `/marche/produits`, `/marche/services`: the MarcheBrowsePage engine must be reworked to relocate its filters to a horizontal bar (matching `/emplois`) before the layout can dispatch.
+- **PR-F1.1g** — bare detail/settings pages (`/services/[id]`, `/produits/[id]`, `/mes-commandes/[id]`, `/mes-missions/[id]`, `/mes-missions/nouvelle`, `/parametres`, `/mon-compte`, `/demander/[id]`): FreelancerLayout's "owns the header" rule must be amended to allow a bare mode (no forced PageHeader). Constitution amendment required.
+- **PR-F1.1h** — `/mes-commandes`, `/mes-favoris`: need the filter-relocation pattern from F1.1f (their Statut/Type filters are injected into MarcheSidebar).
+- **PR-F1.1i** — homepage `/` for logged-in freelancers: currently the marketing landing; the freelancer-aware home deserves product design.
+- `/recherche` and `/categories/[slug]` also pending: they pass `searchType`/`searchQuery` to MarcheLayout (navbar search box + toggle state), which FreelancerLayout does not carry.
 
 ## What DIFFERS by role (the only role-aware code)
 
