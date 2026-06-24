@@ -98,3 +98,69 @@ export async function getMyServices(freelancerProfileId: string): Promise<Servic
     }
   })
 }
+
+// The 14 platform categories for the service form's dropdown (id needed to store category_id).
+export async function getServiceCategories(): Promise<
+  { id: string; name_fr: string; name_ar: string }[]
+> {
+  const supabase = await createClient()
+  const { data, error } = await supabase
+    .from('categories')
+    .select('id, name_fr, name_ar')
+    .order('name_fr')
+  if (error) {
+    console.error('[services-data] categories error:', error)
+    return []
+  }
+  return (data ?? []) as { id: string; name_fr: string; name_ar: string }[]
+}
+
+// Form-shaped values for the edit page (all strings, ready to seed the controlled inputs). Scoped
+// to the owner via the freelancer_profile_id .eq() — a non-owned / missing id returns null so the
+// page can notFound() (RLS SELECT is public, so this .eq() is the ownership gate for the edit view).
+export type ServiceEditValues = {
+  id: string
+  title: string
+  categoryId: string
+  description: string
+  startingPrice: string
+  deliveryTime: string
+  status: string
+}
+
+export async function getServiceForEdit(
+  serviceId: string,
+  freelancerProfileId: string,
+): Promise<ServiceEditValues | null> {
+  const supabase = await createClient()
+  const { data, error } = await supabase
+    .from('service_listings')
+    .select('id, title, description, category_id, starting_price_tnd, delivery_time, status')
+    .eq('id', serviceId)
+    .eq('freelancer_profile_id', freelancerProfileId)
+    .maybeSingle()
+  if (error) {
+    console.error('[services-data] service for edit error:', error)
+    return null
+  }
+  if (!data) return null
+
+  const r = data as {
+    id: string
+    title: string
+    description: string | null
+    category_id: string | null
+    starting_price_tnd: string | number | null
+    delivery_time: string | null
+    status: string
+  }
+  return {
+    id: r.id,
+    title: r.title,
+    categoryId: r.category_id ?? '',
+    description: r.description ?? '',
+    startingPrice: r.starting_price_tnd != null ? String(r.starting_price_tnd) : '',
+    deliveryTime: r.delivery_time ?? '',
+    status: r.status,
+  }
+}
