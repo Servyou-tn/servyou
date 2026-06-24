@@ -1066,6 +1066,7 @@ export const ar: Record<string, string> = {
   'emplois.card.skills_more':            "+{n}",
   'emplois.empty.title':                 "لا توجد مهام متاحة",
   'emplois.empty.description':           "عُد قريبًا لاكتشاف فرص جديدة.",
+  'emplois.results_count':               "{count} نتيجة",
   // Top-bar segmented toggle pills (navbar only). Distinct from common.*_section.
   'marche.toggle.find_products':     "البحث عن منتجات",
   'marche.toggle.find_services':     "البحث عن خدمات",

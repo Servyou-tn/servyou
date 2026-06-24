@@ -54,6 +54,17 @@ This is not aesthetic preference — it is the **Unified Workspace Principle** f
 - aria-labels on every interactive element
 - Semantic HTML
 
+### Sidebar persistence (LOCKED 2026-06-25)
+
+The FreelancerSidebar appears on EVERY page in the freelancer space, without exception. This includes the freelancer dashboard, profile pages, services pages, demandes, réponses, missions sauvegardées, and the job board /emplois.
+
+A freelancer never sees the MarcheSidebar inside their workspace. Browse pages that serve multiple roles (currently /emplois) dispatch layout shells per role:
+
+- `user.seller_type === 'freelancer'` → FreelancerLayout
+- everyone else → MarcheLayout (consumer sidebar)
+
+This is the Unified Workspace Principle made concrete. Future browse-style pages that serve freelancers follow the same dispatch pattern.
+
 ## What DIFFERS by role (the only role-aware code)
 
 ### Layout shell

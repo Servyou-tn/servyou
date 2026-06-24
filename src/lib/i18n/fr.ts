@@ -1033,6 +1033,7 @@ export const fr: Record<string, string> = {
   'emplois.card.skills_more':            "+{n}",
   'emplois.empty.title':                 "Aucune mission disponible",
   'emplois.empty.description':           "Revenez bientôt pour découvrir de nouvelles opportunités.",
+  'emplois.results_count':               "{count} résultats",
   // Top-bar segmented toggle pills (navbar only — distinct from the generic
   // common.products_section / common.services_section labels used by the sidebar
   // filter, search results, and favorites, which stay "Produits" / "Services").
