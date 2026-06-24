@@ -26,6 +26,7 @@ export const fr: Record<string, string> = {
   'common.mark_arrived_service':   "Marquer livré",
   'common.whatsapp_contact':       "Contacter sur WhatsApp",
   'common.message_label':          "Message :",
+  'common.view_details':           "Voir détails",
   // Order / service-request statuses
   'common.status_pending':         "En attente",
   // 8-stage lifecycle
@@ -996,6 +997,9 @@ export const fr: Record<string, string> = {
   'freelance.dashboard.action.add_service':      "Ajouter un service",
   'freelance.dashboard.action.browse_missions':  "Voir les missions",
   'freelance.dashboard.action.edit_profile':     "Modifier mon profil",
+  'freelance.dashboard.actions_required.title':   "Actions requises",
+  'freelance.dashboard.actions_required.view_all': "Voir toutes",
+  'freelance.dashboard.actions_required.empty':    "Excellent travail, vous êtes à jour !",
   'freelance.dashboard.recent_activity.title':   "Activité récente",
   'freelance.dashboard.recent_activity.empty':   "Aucune activité récente",
   'freelance.dashboard.no_profile.title':        "Créez votre profil pour commencer",

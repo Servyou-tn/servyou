@@ -59,6 +59,7 @@ export const ar: Record<string, string> = {
   'common.mark_arrived_service':   "تحديد كمُسلَّم",
   'common.whatsapp_contact':       "التواصل عبر واتساب",
   'common.message_label':          "الرسالة:",
+  'common.view_details':           "عرض التفاصيل",
   // Order / service-request statuses
   'common.status_pending':         "قيد الانتظار",
   // 8-stage lifecycle
@@ -1029,6 +1030,9 @@ export const ar: Record<string, string> = {
   'freelance.dashboard.action.add_service':      "إضافة خدمة",
   'freelance.dashboard.action.browse_missions':  "تصفح المهام",
   'freelance.dashboard.action.edit_profile':     "تعديل ملفي",
+  'freelance.dashboard.actions_required.title':   "إجراءات مطلوبة",
+  'freelance.dashboard.actions_required.view_all': "عرض الكل",
+  'freelance.dashboard.actions_required.empty':    "عمل ممتاز، أنت على اطّلاع بكل شيء!",
   'freelance.dashboard.recent_activity.title':   "النشاط الأخير",
   'freelance.dashboard.recent_activity.empty':   "لا يوجد نشاط حديث",
   'freelance.dashboard.no_profile.title':        "أنشئ ملفك للبدء",

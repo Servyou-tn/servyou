@@ -18,6 +18,15 @@ export type RecentServiceRequest = {
   requesterName: string | null
 }
 
+// One pending service demande surfaced in the dashboard's "Actions requises" section.
+export type PendingDemande = {
+  id: string
+  created_at: string
+  serviceTitle: string | null
+  buyerName: string | null
+  buyerCity: string | null
+}
+
 export type FreelancerDashboard = {
   // null when the freelancer has upgraded but not yet created their freelancer_profiles row.
   profile: { id: string; headline: string | null } | null
@@ -131,4 +140,62 @@ export async function getFreelancerDashboard(userId: string): Promise<Freelancer
     },
     recentRequests,
   }
+}
+
+// The N most recent PENDING service demandes — the dashboard's highest-revenue section
+// (every pending demande is income sitting idle). Pending = waiting on the freelancer's
+// accept/decline. status is a CHECK-constrained text column (no order_status enum), and
+// 'pending' is its first value.
+//
+// IMPORTANT — `userId` is the freelancer's auth uid (profiles.id), NOT freelancer_profiles.id.
+// orders.seller_id → profiles.id (the auth uid; verified against migrations and proven by
+// getFreelancerDashboard's pending count above). Passing fp.id here would silently return [].
+export async function getRecentPendingDemandes(
+  userId: string,
+  limit = 3,
+): Promise<PendingDemande[]> {
+  const supabase = await createClient()
+
+  const { data: rows, error } = await supabase
+    .from('orders')
+    .select('id, created_at, buyer_id, service_listings ( title )')
+    .eq('seller_id', userId)
+    .eq('order_type', 'service')
+    .eq('status', 'pending')
+    .order('created_at', { ascending: false })
+    .limit(limit)
+  if (error) {
+    console.error('[freelance/dashboard] pending demandes error:', error)
+    return []
+  }
+
+  const orderRows = (rows ?? []) as unknown as {
+    id: string
+    created_at: string
+    buyer_id: string
+    service_listings: { title: string } | { title: string }[] | null
+  }[]
+
+  // Buyer name + city — profiles is owner-only, so both come from the public_profiles view
+  // via a single .in() lookup (the established cross-user read pattern).
+  const buyerIds = [...new Set(orderRows.map((r) => r.buyer_id).filter(Boolean))]
+  const buyers = new Map<string, { name: string | null; city: string | null }>()
+  if (buyerIds.length > 0) {
+    const { data: profiles, error: buyersError } = await supabase
+      .from('public_profiles')
+      .select('id, full_name, city')
+      .in('id', buyerIds)
+    if (buyersError) console.error('[freelance/dashboard] buyer names error:', buyersError)
+    for (const p of (profiles ?? []) as { id: string; full_name: string | null; city: string | null }[]) {
+      buyers.set(p.id, { name: p.full_name ?? null, city: p.city ?? null })
+    }
+  }
+
+  return orderRows.map((r) => ({
+    id: r.id,
+    created_at: r.created_at,
+    serviceTitle: one(r.service_listings)?.title ?? null,
+    buyerName: buyers.get(r.buyer_id)?.name ?? null,
+    buyerCity: buyers.get(r.buyer_id)?.city ?? null,
+  }))
 }

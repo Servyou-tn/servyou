@@ -1,10 +1,12 @@
 import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
+import { AlertCircle, CheckCircle2 } from 'lucide-react'
 import { FreelancerLayout } from '@/components/freelance/FreelancerLayout'
 import { OrderStatusBadge } from '@/components/marche/OrderStatusBadge'
+import { EmptyState } from '@/components/marche/EmptyState'
 import { getShellUser } from '@/lib/marche/shell-user'
-import { getFreelancerDashboard } from '@/lib/freelance/dashboard-data'
+import { getFreelancerDashboard, getRecentPendingDemandes } from '@/lib/freelance/dashboard-data'
 import { statusLabelKey, type OrderStatus } from '@/lib/types/order-status'
 import { getLang } from '@/lib/i18n/server'
 import { t } from '@/lib/i18n'
@@ -48,6 +50,10 @@ export default async function MonProfilFreelancePage() {
     )
   }
 
+  // Profile exists → surface the pending demandes awaiting the freelancer's response.
+  // seller_id keys on the auth uid (shell.id), not the freelancer_profiles row id.
+  const pendingDemandes = await getRecentPendingDemandes(shell.id)
+
   const m = dash.metrics
   const stats: { label: string; value: string; muted?: boolean }[] = [
     { label: t('freelance.dashboard.metric.active_services', lang), value: String(m.activeServices) },
@@ -82,6 +88,64 @@ export default async function MonProfilFreelancePage() {
           </div>
         ))}
       </div>
+
+      {/* a2) Actions requises — pending service demandes awaiting the freelancer's response.
+          Restrained per constitution: an amber icon + label signal attention, no loud color block. */}
+      <section className="mt-8">
+        <div className="mb-3 flex items-center justify-between gap-4">
+          <h2 className="flex items-center gap-2 text-base font-semibold text-text-primary">
+            <AlertCircle className="h-5 w-5 text-amber-500" aria-hidden="true" />
+            {t('freelance.dashboard.actions_required.title', lang)}
+          </h2>
+          {pendingDemandes.length > 0 && (
+            <Link
+              href="/mon-profil-freelance/commandes?status=pending"
+              className="whitespace-nowrap text-sm font-medium text-brand-accent hover:underline"
+            >
+              {t('freelance.dashboard.actions_required.view_all', lang)}
+            </Link>
+          )}
+        </div>
+
+        {pendingDemandes.length === 0 ? (
+          <EmptyState
+            icon={<CheckCircle2 className="mx-auto h-12 w-12" strokeWidth={1.5} aria-hidden="true" />}
+            message={t('freelance.dashboard.actions_required.empty', lang)}
+          />
+        ) : (
+          <ul className="space-y-3">
+            {pendingDemandes.map((demande) => (
+              <li
+                key={demande.id}
+                className="flex items-center justify-between gap-4 rounded-2xl border border-border-subtle bg-white p-4"
+              >
+                <div className="min-w-0 flex-1">
+                  <h3 className="truncate text-sm font-medium text-text-primary">
+                    {demande.serviceTitle ?? '—'}
+                  </h3>
+                  <p className="mt-1 text-xs text-text-muted">
+                    {[demande.buyerName || '—', demande.buyerCity, new Date(demande.created_at).toLocaleDateString('fr-FR')]
+                      .filter(Boolean)
+                      .join(' · ')}
+                  </p>
+                </div>
+                <div className="flex items-center gap-3">
+                  <OrderStatusBadge
+                    status="pending"
+                    label={t(statusLabelKey('pending', 'service'), lang)}
+                  />
+                  <Link
+                    href={`/mon-profil-freelance/commandes/${demande.id}`}
+                    className="whitespace-nowrap text-sm font-medium text-brand-accent hover:underline"
+                  >
+                    {t('common.view_details', lang)}
+                  </Link>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
 
       {/* b) Quick actions — secondary brand-tinted outline pills (not the loud solid CTA) */}
       <div className="mt-6 flex flex-wrap gap-3">
