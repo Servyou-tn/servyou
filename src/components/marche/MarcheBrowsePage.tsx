@@ -1,5 +1,7 @@
 import Link from 'next/link'
 import { MarcheLayout } from './MarcheLayout'
+import { FreelancerLayout } from '@/components/freelance/FreelancerLayout'
+import { MarcheFiltersBar } from '@/components/freelance/MarcheFiltersBar'
 import { PackageIcon, BriefcaseIcon } from './icons'
 import { ListingResults } from '@/components/listings/ListingResults'
 import { SearchFilters } from '@/components/recherche/SearchFilters'
@@ -52,6 +54,9 @@ export async function MarcheBrowsePage({
 
   const shell = await getShellUser()
   const topBarUser = shell?.topBarUser ?? null
+  // A freelancer keeps their FreelancerSidebar here too (sidebar-persistence rule) and gets the
+  // horizontal filter bar instead of the sidebar-injected filters. Consumer/anon path is unchanged.
+  const isFreelancer = topBarUser?.seller_type === 'freelancer'
 
   const [categories, result] = await Promise.all([
     getFilterCategoriesForType(type),
@@ -92,6 +97,61 @@ export async function MarcheBrowsePage({
 
   const Icon = type === 'product' ? PackageIcon : BriefcaseIcon
 
+  // The results body (empty state, or cards + pagination) — shared by both layout branches.
+  const content = isEmpty ? (
+    <div className={`rounded-2xl bg-white p-12 text-center ${CARD_SHADOW}`}>
+      <div className="mx-auto max-w-md">
+        <Icon className="mx-auto h-10 w-10 text-[#B8B8B8]" aria-hidden="true" />
+        <p className="mt-4 text-base font-semibold text-text-primary">
+          {t(hasFilters ? 'search.empty.filtered' : engine.emptyKey, lang)}
+        </p>
+        <p className="mt-2 text-[13px] text-text-muted">
+          {t(hasFilters ? 'search.empty.subtitle' : engine.emptySubKey, lang)}
+        </p>
+        {hasFilters && (
+          <Link
+            href={clearFiltersHref}
+            className={`mt-5 inline-flex items-center rounded-full bg-brand-accent px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-brand-accent/90 ${FOCUS_RING}`}
+          >
+            {t('search.filters.clear', lang)}
+          </Link>
+        )}
+      </div>
+    </div>
+  ) : (
+    <>
+      {result.type === 'product' ? (
+        <ListingResults type="product" items={result.products} />
+      ) : (
+        <ListingResults type="service" items={result.services} />
+      )}
+      <div className="mt-8">
+        <Pagination page={result.page} totalPages={result.totalPages} basePath={base} />
+      </div>
+    </>
+  )
+
+  // Freelancer → FreelancerLayout (owns the PageHeader) + horizontal filter bar; no sidebar filter.
+  if (isFreelancer) {
+    return (
+      <FreelancerLayout
+        user={topBarUser}
+        subtitle={t(engine.subtitleKey, lang)}
+        emphasisWord={t(engine.emphasisKey, lang)}
+      >
+        <MarcheFiltersBar
+          basePath={base}
+          categories={categories}
+          selectedCategorie={params.categorie}
+          prixMin={params.prixMin}
+          prixMax={params.prixMax}
+        />
+        {content}
+      </FreelancerLayout>
+    )
+  }
+
+  // Consumer / anonymous — UNCHANGED: MarcheLayout with the sidebar-injected filter + mobile sheet.
   return (
     <MarcheLayout
       user={topBarUser}
@@ -115,38 +175,7 @@ export async function MarcheBrowsePage({
         />
       </div>
 
-      {isEmpty ? (
-        <div className={`rounded-2xl bg-white p-12 text-center ${CARD_SHADOW}`}>
-          <div className="mx-auto max-w-md">
-            <Icon className="mx-auto h-10 w-10 text-[#B8B8B8]" aria-hidden="true" />
-            <p className="mt-4 text-base font-semibold text-text-primary">
-              {t(hasFilters ? 'search.empty.filtered' : engine.emptyKey, lang)}
-            </p>
-            <p className="mt-2 text-[13px] text-text-muted">
-              {t(hasFilters ? 'search.empty.subtitle' : engine.emptySubKey, lang)}
-            </p>
-            {hasFilters && (
-              <Link
-                href={clearFiltersHref}
-                className={`mt-5 inline-flex items-center rounded-full bg-brand-accent px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-brand-accent/90 ${FOCUS_RING}`}
-              >
-                {t('search.filters.clear', lang)}
-              </Link>
-            )}
-          </div>
-        </div>
-      ) : (
-        <>
-          {result.type === 'product' ? (
-            <ListingResults type="product" items={result.products} />
-          ) : (
-            <ListingResults type="service" items={result.services} />
-          )}
-          <div className="mt-8">
-            <Pagination page={result.page} totalPages={result.totalPages} basePath={base} />
-          </div>
-        </>
-      )}
+      {content}
     </MarcheLayout>
   )
 }
