@@ -1015,7 +1015,6 @@ export const ar: Record<string, string> = {
   'marche.sidebar.coming_soon':      "Bientôt disponible",
 
   // ── Freelancer workspace (PR-F1.1) — AR provided as MSA, pending Phase 8 native review ──
-  'sidebar.freelance.home':          "الرئيسية",
   'sidebar.freelance.dashboard':     "لوحة التحكم",
   'sidebar.freelance.services':      "الخدمات",
   'sidebar.freelance.requests':      "الطلبات",
@@ -1037,6 +1036,17 @@ export const ar: Record<string, string> = {
   'freelance.dashboard.recent_activity.empty':   "لا يوجد نشاط حديث",
   'freelance.dashboard.no_profile.title':        "أنشئ ملفك للبدء",
   'freelance.dashboard.no_profile.cta':          "إنشاء ملفي",
+  // ── Freelancer services list (PR-F2) ──
+  'freelance.services.subtitle':                 "خدماتك المعروضة",
+  'freelance.services.emphasis':                 "خدماتك",
+  'freelance.services.total':                    "{count} خدمة إجمالاً",
+  'freelance.services.add':                      "إضافة خدمة",
+  'freelance.services.create_first':             "إنشاء خدمتي الأولى",
+  'freelance.services.empty':                    "لم تنشئ أي خدمة بعد. ابدأ بإضافة خدمتك الأولى لعرضها على العملاء.",
+  'freelance.services.card.requests_received':   "{count} طلب مستلَم",
+  'freelance.services.card.edit':                "تعديل",
+  'freelance.services.card.status.active':       "نشطة",
+  'freelance.services.card.status.hidden':       "مخفية",
   // ── Job board (/emplois) ──
   'page_header.emplois.subtitle':        "اعثر على مهمتك القادمة",
   'page_header.emplois.emphasis':        "مهمتك",

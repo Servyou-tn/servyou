@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Home, LayoutDashboard, Briefcase, Inbox, MessageSquare, Bookmark, Package, Heart, Folder, type LucideIcon } from 'lucide-react'
+import { LayoutDashboard, Briefcase, Inbox, MessageSquare, Bookmark, Package, Heart, Folder, type LucideIcon } from 'lucide-react'
 import { useLang } from '@/components/LangProvider'
 import { t } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
@@ -14,18 +14,12 @@ import { interactiveSurface } from '@/components/ui/interactive-surface'
 // active tint + focus ring), differing ONLY in its items. There are no filter panels here, so
 // every item is a plain navigating pill — much simpler than MarcheSidebar's expandable machinery.
 //
-// Active matching is per-item (NOT longest-prefix). "Accueil" → / matches the home route exactly;
-// "Dashboard" lights up on the dashboard AND the profile create/edit pages; each deeper section
-// owns its own subtree. 4 of the 6 destinations (services / commandes / reponses /
-// missions-sauvegardees) ship in later PRs (F1.2+ / F2) — they navigate now and light up once
-// their pages land; the items are locked by the Freelancer Design Constitution.
+// Active matching is per-item (NOT longest-prefix). "Dashboard" is the freelancer's home — it
+// lights up on the dashboard AND the profile create/edit pages; each deeper section owns its own
+// subtree. (Accueil was removed in PR-F2: per Upwork/Fiverr/Malt convention the dashboard IS the
+// home.) Sections whose pages haven't shipped yet still navigate and light up once they land; the
+// items are locked by the Freelancer Design Constitution.
 const ITEMS: { key: string; href: string; Icon: LucideIcon; match: (p: string) => boolean }[] = [
-  {
-    key: 'sidebar.freelance.home',
-    href: '/',
-    Icon: Home,
-    match: (p) => p === '/',
-  },
   {
     key: 'sidebar.freelance.dashboard',
     href: '/mon-profil-freelance',

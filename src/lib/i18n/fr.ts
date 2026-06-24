@@ -982,7 +982,6 @@ export const fr: Record<string, string> = {
   'marche.sidebar.coming_soon':      "Bientôt disponible",
 
   // ── Freelancer workspace (PR-F1.1) ──
-  'sidebar.freelance.home':          "Accueil",
   'sidebar.freelance.dashboard':     "Dashboard",
   'sidebar.freelance.services':      "Services",
   'sidebar.freelance.requests':      "Demandes",
@@ -1004,6 +1003,17 @@ export const fr: Record<string, string> = {
   'freelance.dashboard.recent_activity.empty':   "Aucune activité récente",
   'freelance.dashboard.no_profile.title':        "Créez votre profil pour commencer",
   'freelance.dashboard.no_profile.cta':          "Créer mon profil",
+  // ── Freelancer services list (PR-F2) ──
+  'freelance.services.subtitle':                 "Vos services proposés",
+  'freelance.services.emphasis':                 "services",
+  'freelance.services.total':                    "{count} service(s) au total",
+  'freelance.services.add':                      "Ajouter un service",
+  'freelance.services.create_first':             "Créer mon premier service",
+  'freelance.services.empty':                    "Vous n'avez pas encore créé de service. Commencez par ajouter votre premier service pour le proposer aux clients.",
+  'freelance.services.card.requests_received':   "{count} demandes reçues",
+  'freelance.services.card.edit':                "Modifier",
+  'freelance.services.card.status.active':       "Actif",
+  'freelance.services.card.status.hidden':       "Masqué",
   // ── Job board (/emplois) ──
   'page_header.emplois.subtitle':        "Trouvez votre prochaine mission",
   'page_header.emplois.emphasis':        "mission",
