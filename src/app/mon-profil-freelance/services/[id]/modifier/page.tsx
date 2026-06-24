@@ -53,6 +53,10 @@ export default async function ModifierServicePage({
           startingPrice: service.startingPrice,
           deliveryTime: service.deliveryTime,
           status: service.status,
+          deliverables: service.deliverables,
+          revisions: service.revisions,
+          tags: service.tags,
+          buyerBriefing: service.buyerBriefing,
         }}
       />
     </FreelancerLayout>

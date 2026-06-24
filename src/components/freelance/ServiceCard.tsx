@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { Inbox, Pencil } from 'lucide-react'
+import { Inbox, Pencil, ListChecks, RefreshCw } from 'lucide-react'
 import { useLang } from '@/components/LangProvider'
 import { t } from '@/lib/i18n'
 import { FOCUS_RING } from '@/components/layout/styles'
@@ -53,6 +53,19 @@ export function ServiceCard({ service }: { service: ServiceRow }) {
       {service.descriptionPreview && (
         <p className="mt-1 line-clamp-1 text-sm text-text-muted">{service.descriptionPreview}</p>
       )}
+
+      {/* Deliverables + revisions summary (tags are kept off the card — detail page only). */}
+      <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-text-muted">
+        <span className="inline-flex items-center gap-1">
+          <ListChecks className="h-3 w-3" aria-hidden="true" />
+          {t('freelance.services.card.deliverables_count', lang, { count: service.deliverablesCount })}
+        </span>
+        <span aria-hidden="true">·</span>
+        <span className="inline-flex items-center gap-1">
+          <RefreshCw className="h-3 w-3" aria-hidden="true" />
+          {t('freelance.services.card.revisions_count', lang, { count: service.revisionsCount })}
+        </span>
+      </div>
 
       {/* Request count + Modifier action. */}
       <div className="mt-3 flex items-center justify-between gap-3">

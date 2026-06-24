@@ -52,6 +52,10 @@ export async function createService(input: ServiceInput): Promise<ServiceActionR
       starting_price_tnd: v.value.starting_price_tnd,
       delivery_time: v.value.delivery_time,
       status: v.value.status,
+      deliverables: v.value.deliverables,
+      revisions_count: v.value.revisions_count,
+      tags: v.value.tags,
+      buyer_briefing: v.value.buyer_briefing,
     })
     .select('id')
 
@@ -90,7 +94,11 @@ export async function updateService(
       starting_price_tnd: v.value.starting_price_tnd,
       delivery_time: v.value.delivery_time,
       status: v.value.status,
-      updated_at: new Date().toISOString(),
+      deliverables: v.value.deliverables,
+      revisions_count: v.value.revisions_count,
+      tags: v.value.tags,
+      buyer_briefing: v.value.buyer_briefing,
+      // updated_at is owned by the service_listings_set_updated_at trigger (verified in discovery).
     })
     .eq('id', serviceId)
     .eq('freelancer_profile_id', fpId)

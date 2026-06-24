@@ -14,6 +14,8 @@ export type ServiceRow = {
   status: string // 'active' | 'hidden'
   categoryName: string | null
   requestCount: number
+  deliverablesCount: number
+  revisionsCount: number
   createdAt: string
 }
 
@@ -44,6 +46,8 @@ type RawService = {
   starting_price_tnd: string | number | null
   status: string
   created_at: string
+  deliverables: string[] | null
+  revisions_count: number | null
   categories: { name_fr: string } | { name_fr: string }[] | null
 }
 
@@ -56,7 +60,9 @@ export async function getMyServices(freelancerProfileId: string): Promise<Servic
 
   const { data, error } = await supabase
     .from('service_listings')
-    .select('id, title, description, starting_price_tnd, status, created_at, categories ( name_fr )')
+    .select(
+      'id, title, description, starting_price_tnd, status, created_at, deliverables, revisions_count, categories ( name_fr )',
+    )
     .eq('freelancer_profile_id', freelancerProfileId)
     .order('created_at', { ascending: false })
   if (error) {
@@ -94,6 +100,8 @@ export async function getMyServices(freelancerProfileId: string): Promise<Servic
       status: r.status,
       categoryName: one(r.categories)?.name_fr ?? null,
       requestCount: counts.get(r.id) ?? 0,
+      deliverablesCount: (r.deliverables ?? []).length,
+      revisionsCount: r.revisions_count ?? 0,
       createdAt: r.created_at,
     }
   })
@@ -126,6 +134,10 @@ export type ServiceEditValues = {
   startingPrice: string
   deliveryTime: string
   status: string
+  deliverables: string[]
+  revisions: string
+  tags: string[]
+  buyerBriefing: string
 }
 
 export async function getServiceForEdit(
@@ -135,7 +147,9 @@ export async function getServiceForEdit(
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('service_listings')
-    .select('id, title, description, category_id, starting_price_tnd, delivery_time, status')
+    .select(
+      'id, title, description, category_id, starting_price_tnd, delivery_time, status, deliverables, revisions_count, tags, buyer_briefing',
+    )
     .eq('id', serviceId)
     .eq('freelancer_profile_id', freelancerProfileId)
     .maybeSingle()
@@ -153,6 +167,10 @@ export async function getServiceForEdit(
     starting_price_tnd: string | number | null
     delivery_time: string | null
     status: string
+    deliverables: string[] | null
+    revisions_count: number | null
+    tags: string[] | null
+    buyer_briefing: string | null
   }
   return {
     id: r.id,
@@ -162,5 +180,9 @@ export async function getServiceForEdit(
     startingPrice: r.starting_price_tnd != null ? String(r.starting_price_tnd) : '',
     deliveryTime: r.delivery_time ?? '',
     status: r.status,
+    deliverables: r.deliverables ?? [],
+    revisions: r.revisions_count != null ? String(r.revisions_count) : '1',
+    tags: r.tags ?? [],
+    buyerBriefing: r.buyer_briefing ?? '',
   }
 }

@@ -23,6 +23,10 @@ export type ServiceDetailData = {
   category: string | null
   categoryId: string | null
   freelancerProfileId: string | null
+  deliverables: string[]
+  revisionsCount: number
+  tags: string[]
+  buyerBriefing: string | null
   media: { url: string }[]
   freelancer: { name: string; city: string | null; headline: string | null } | null
 }
@@ -35,6 +39,10 @@ type DetailRow = {
   delivery_time: string | null
   category_id: string | null
   freelancer_profile_id: string | null
+  deliverables: string[] | null
+  revisions_count: number | null
+  tags: string[] | null
+  buyer_briefing: string | null
   categories: { name_fr: string } | { name_fr: string }[] | null
   freelancer_profiles:
     | { id: string; profile_id: string | null; city: string | null; headline: string | null }
@@ -49,6 +57,7 @@ export const getServiceDetail = cache(async (id: string): Promise<ServiceDetailD
     .from('service_listings')
     .select(
       `id, title, description, starting_price_tnd, delivery_time, status, category_id, freelancer_profile_id,
+       deliverables, revisions_count, tags, buyer_briefing,
        categories ( name_fr ),
        freelancer_profiles!inner ( id, profile_id, city, headline, admin_hidden_at ),
        service_media ( media_url, media_type, display_order )`,
@@ -93,6 +102,10 @@ export const getServiceDetail = cache(async (id: string): Promise<ServiceDetailD
     category: one(row.categories)?.name_fr ?? null,
     categoryId: row.category_id,
     freelancerProfileId: row.freelancer_profile_id,
+    deliverables: row.deliverables ?? [],
+    revisionsCount: row.revisions_count ?? 0,
+    tags: row.tags ?? [],
+    buyerBriefing: row.buyer_briefing ?? null,
     media,
     freelancer: fp ? { name, city: fp.city ?? null, headline: fp.headline ?? null } : null,
   }

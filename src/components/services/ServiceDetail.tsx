@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { ArrowRight, Share2, Clock, Check, Briefcase } from 'lucide-react'
+import { ArrowRight, Share2, Clock, Check, Briefcase, CheckCircle, RefreshCw } from 'lucide-react'
 import { useLang } from '@/components/LangProvider'
 import { t } from '@/lib/i18n'
 import { FOCUS_RING } from '@/components/layout/styles'
@@ -118,12 +118,18 @@ export function ServiceDetail({
                 {t('listing.service.priceOnRequest', lang)}
               </p>
             )}
-            {service.deliveryTime && (
-              <span className="mt-2 inline-flex items-center gap-1 rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-brand-accent">
-                <Clock className="h-3.5 w-3.5" aria-hidden="true" />
-                {t('service.detail.deliveryIn', lang, { time: service.deliveryTime })}
+            <div className="mt-2 flex flex-wrap gap-2">
+              {service.deliveryTime && (
+                <span className="inline-flex items-center gap-1 rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-brand-accent">
+                  <Clock className="h-3.5 w-3.5" aria-hidden="true" />
+                  {t('service.detail.deliveryIn', lang, { time: service.deliveryTime })}
+                </span>
+              )}
+              <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-text-muted">
+                <RefreshCw className="h-3.5 w-3.5" aria-hidden="true" />
+                {t('freelance.services.detail.revisions.label', lang, { count: service.revisionsCount })}
               </span>
-            )}
+            </div>
           </div>
 
           {/* D — freelancer block (non-clickable: /freelance/[slug] not rebuilt yet) */}
@@ -198,6 +204,35 @@ export function ServiceDetail({
           </section>
         )}
 
+        {/* 3.1b — "Ce qui est inclus" deliverables checklist */}
+        {service.deliverables.length > 0 && (
+          <section className="card-premium mt-6 rounded-2xl bg-white p-6">
+            <h2 className="text-lg font-semibold text-text-primary">
+              {t('freelance.services.detail.deliverables.title', lang)}
+            </h2>
+            <ul className="mt-3 space-y-2">
+              {service.deliverables.map((d, i) => (
+                <li key={i} className="flex items-start gap-2 text-base text-text-primary">
+                  <CheckCircle className="mt-0.5 h-5 w-5 shrink-0 text-green-600" aria-hidden="true" />
+                  <span>{d}</span>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+
+        {/* 3.1c — "Avant de commencer" buyer briefing (line breaks preserved) */}
+        {service.buyerBriefing && (
+          <section className="card-premium mt-6 rounded-2xl bg-white p-6">
+            <h2 className="text-lg font-semibold text-text-primary">
+              {t('freelance.services.detail.briefing.title', lang)}
+            </h2>
+            <p className="mt-3 whitespace-pre-wrap text-base leading-relaxed text-text-primary">
+              {service.buyerBriefing}
+            </p>
+          </section>
+        )}
+
         {/* 3.2 — freelancer block (informational; non-clickable until /freelance is rebuilt) */}
         {service.freelancer && (
           <section className="card-premium mt-6 flex items-center gap-4 rounded-2xl bg-white p-6">
@@ -222,6 +257,27 @@ export function ServiceDetail({
             <div className="flex flex-col gap-4">
               {related.map((s) => (
                 <ServiceListingCard key={s.id} service={s} />
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* 3.4 — tags (search keywords). Links start the /recherche?tag= URL contract now, even
+            though search-by-tag itself is deferred (PR-F2.X.search). */}
+        {service.tags.length > 0 && (
+          <section className="mt-8">
+            <h2 className="mb-3 text-lg font-semibold text-text-primary">
+              {t('freelance.services.detail.tags.title', lang)}
+            </h2>
+            <div className="flex flex-wrap gap-2">
+              {service.tags.map((tag) => (
+                <Link
+                  key={tag}
+                  href={`/recherche?tag=${encodeURIComponent(tag)}`}
+                  className={`inline-flex items-center rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-blue-700 transition-colors hover:bg-blue-100 ${FOCUS_RING}`}
+                >
+                  {tag}
+                </Link>
               ))}
             </div>
           </section>
