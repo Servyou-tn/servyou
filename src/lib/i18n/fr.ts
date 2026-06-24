@@ -981,7 +981,8 @@ export const fr: Record<string, string> = {
   'marche.sidebar.coming_soon':      "Bientôt disponible",
 
   // ── Freelancer workspace (PR-F1.1) ──
-  'sidebar.freelance.profile':       "Profil",
+  'sidebar.freelance.home':          "Accueil",
+  'sidebar.freelance.dashboard':     "Dashboard",
   'sidebar.freelance.services':      "Services",
   'sidebar.freelance.requests':      "Demandes",
   'sidebar.freelance.responses':     "Réponses",

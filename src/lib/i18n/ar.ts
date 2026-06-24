@@ -1014,7 +1014,8 @@ export const ar: Record<string, string> = {
   'marche.sidebar.coming_soon':      "Bientôt disponible",
 
   // ── Freelancer workspace (PR-F1.1) — AR provided as MSA, pending Phase 8 native review ──
-  'sidebar.freelance.profile':       "ملفي",
+  'sidebar.freelance.home':          "الرئيسية",
+  'sidebar.freelance.dashboard':     "لوحة التحكم",
   'sidebar.freelance.services':      "الخدمات",
   'sidebar.freelance.requests':      "الطلبات",
   'sidebar.freelance.responses':     "الردود",

@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { User, Briefcase, Inbox, MessageSquare, Bookmark, type LucideIcon } from 'lucide-react'
+import { Home, LayoutDashboard, Briefcase, Inbox, MessageSquare, Bookmark, type LucideIcon } from 'lucide-react'
 import { useLang } from '@/components/LangProvider'
 import { t } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
@@ -14,16 +14,22 @@ import { interactiveSurface } from '@/components/ui/interactive-surface'
 // active tint + focus ring), differing ONLY in its items. There are no filter panels here, so
 // every item is a plain navigating pill — much simpler than MarcheSidebar's expandable machinery.
 //
-// Active matching is per-item (NOT longest-prefix) because every route nests under
-// /mon-profil-freelance: "Profil" lights up on the dashboard AND the profile create/edit pages,
-// while each deeper section owns its own subtree. 4 of the 5 destinations (services / commandes /
-// reponses / missions-sauvegardees) ship in later PRs (F1.2+ / F2) — they navigate now and light
-// up once their pages land; the items are locked by the Freelancer Design Constitution.
+// Active matching is per-item (NOT longest-prefix). "Accueil" → / matches the home route exactly;
+// "Dashboard" lights up on the dashboard AND the profile create/edit pages; each deeper section
+// owns its own subtree. 4 of the 6 destinations (services / commandes / reponses /
+// missions-sauvegardees) ship in later PRs (F1.2+ / F2) — they navigate now and light up once
+// their pages land; the items are locked by the Freelancer Design Constitution.
 const ITEMS: { key: string; href: string; Icon: LucideIcon; match: (p: string) => boolean }[] = [
   {
-    key: 'sidebar.freelance.profile',
+    key: 'sidebar.freelance.home',
+    href: '/',
+    Icon: Home,
+    match: (p) => p === '/',
+  },
+  {
+    key: 'sidebar.freelance.dashboard',
     href: '/mon-profil-freelance',
-    Icon: User,
+    Icon: LayoutDashboard,
     match: (p) =>
       p === '/mon-profil-freelance' ||
       p.startsWith('/mon-profil-freelance/creer') ||
