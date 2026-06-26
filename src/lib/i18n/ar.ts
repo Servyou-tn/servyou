@@ -1018,12 +1018,15 @@ export const ar: Record<string, string> = {
   // ParametresForm). The other marche.sidebar.* stay French pending the Phase 8 AR pass.
   'marche.sidebar.coming_soon':      "قريباً",
 
-  // ── Freelancer workspace (PR-F1.1) — AR provided as MSA, pending Phase 8 native review ──
+  // ── Freelancer workspace (PR-F1.1; restructured PR-F2.3.2 — unified 2-group sidebar) ──
+  'sidebar.freelance.workspace_section': "مساحة العمل الحر",
+  'sidebar.freelance.personal_section':  "المساحة الشخصية",
   'sidebar.freelance.dashboard':     "لوحة التحكم",
-  'sidebar.freelance.services':      "الخدمات",
-  'sidebar.freelance.requests':      "الطلبات",
-  'sidebar.freelance.responses':     "الردود",
+  'sidebar.freelance.services':      "خدماتي",
+  'sidebar.freelance.requests':      "الطلبات المستلمة",
+  'sidebar.freelance.responses':     "عروضي",
   'sidebar.freelance.saved':         "المهام المحفوظة",
+  'sidebar.freelance.public_profile': "الملف الشخصي العام",
   'page_header.mon_profil_freelance.subtitle':   "أدر نشاطك كمستقل",
   'page_header.mon_profil_freelance.emphasis':   "نشاطك",
   'freelance.dashboard.metric.active_services':  "الخدمات النشطة",

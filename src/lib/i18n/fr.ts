@@ -982,12 +982,15 @@ export const fr: Record<string, string> = {
   'marche.sidebar.parametres':       "Paramètres",
   'marche.sidebar.coming_soon':      "Bientôt disponible",
 
-  // ── Freelancer workspace (PR-F1.1) ──
-  'sidebar.freelance.dashboard':     "Dashboard",
-  'sidebar.freelance.services':      "Services",
-  'sidebar.freelance.requests':      "Demandes",
-  'sidebar.freelance.responses':     "Réponses",
+  // ── Freelancer workspace (PR-F1.1; restructured PR-F2.3.2 — unified 2-group sidebar) ──
+  'sidebar.freelance.workspace_section': "Mon espace freelance",
+  'sidebar.freelance.personal_section':  "Mon espace personnel",
+  'sidebar.freelance.dashboard':     "Tableau de bord",
+  'sidebar.freelance.services':      "Mes services",
+  'sidebar.freelance.requests':      "Demandes reçues",
+  'sidebar.freelance.responses':     "Mes propositions",
   'sidebar.freelance.saved':         "Missions sauvegardées",
+  'sidebar.freelance.public_profile': "Profil public",
   'page_header.mon_profil_freelance.subtitle':   "Gérez votre activité freelance",
   'page_header.mon_profil_freelance.emphasis':   "activité",
   'freelance.dashboard.metric.active_services':  "Services actifs",

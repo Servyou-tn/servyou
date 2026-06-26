@@ -2,30 +2,29 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, Briefcase, Inbox, MessageSquare, Bookmark, type LucideIcon } from 'lucide-react'
+import { LayoutDashboard, Briefcase, Inbox, Send, Bookmark, User, Package, Heart, Folder, type LucideIcon } from 'lucide-react'
 import { useLang } from '@/components/LangProvider'
 import { t } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
 import { CARD_SHADOW } from '@/components/layout/styles'
 import { interactiveSurface } from '@/components/ui/interactive-surface'
 
-// The freelancer workspace sidebar — visually identical to MarcheSidebar (the same floating
-// full-height white card, the same rounded-full interactiveSurface() pills, the same brand-accent
-// active tint + focus ring), differing ONLY in its items. There are no filter panels here, so
-// every item is a plain navigating pill — much simpler than MarcheSidebar's expandable machinery.
+type NavItem = { key: string; href: string; Icon: LucideIcon; match: (p: string) => boolean }
+
+// The freelancer workspace sidebar — same floating white card / rounded-full interactiveSurface()
+// pills / brand-accent active tint + focus ring as MarcheSidebar, differing ONLY in its items.
 //
-// Active matching is per-item (NOT longest-prefix). "Dashboard" is the freelancer's home — it
-// lights up on the dashboard AND the profile create/edit pages; each deeper section owns its own
-// subtree. (Accueil was removed in PR-F2: per Upwork/Fiverr/Malt convention the dashboard IS the
-// home.) Sections whose pages haven't shipped yet still navigate and light up once they land; the
-// items are locked by the Freelancer Design Constitution.
+// STRUCTURE (LOCKED, PR-F2.3.2 — Servyou's Unified Sidebar Principle): two groups under a divider,
+// each with a section heading. Top = the role-specific freelancer workspace; bottom = the universal
+// personal (consumer) workspace, because every freelancer is also a buyer. This supersedes F2.3.1's
+// move of the consumer items into the avatar dropdown — founder-directed. Future PRs add the page
+// CONTENT behind these routes; they do NOT change this navigation.
 //
-// SCOPE — seller actions ONLY (PR-F2.3.1). The universal buyer-baseline items (Mes commandes,
-// Mes favoris, Mes missions) moved OUT of this sidebar into the top-right avatar menu's
-// "Mon compte" section — the freelancer workspace stays focused on selling, while the
-// freelancer-as-buyer surfaces stay reachable from the global account menu (every freelancer is
-// also a buyer). Per standards-reference §9 Standard E (one PR, one focus).
-const ITEMS: { key: string; href: string; Icon: LucideIcon; match: (p: string) => boolean }[] = [
+// Active matching is per-item (NOT longest-prefix): "Tableau de bord" is the freelancer's home (it
+// lights up on the dashboard + the profile create/edit pages); each deeper section owns its subtree.
+// Routes /commandes, /reponses and /profil-public 404/placeholder until their pages ship — the items
+// still navigate and light up once they land.
+const WORKSPACE_ITEMS: NavItem[] = [
   {
     key: 'sidebar.freelance.dashboard',
     href: '/mon-profil-freelance',
@@ -48,9 +47,10 @@ const ITEMS: { key: string; href: string; Icon: LucideIcon; match: (p: string) =
     match: (p) => p.startsWith('/mon-profil-freelance/commandes'),
   },
   {
+    // Label "Mes propositions" (Upwork's "Proposals"); route + key stay /reponses / .responses.
     key: 'sidebar.freelance.responses',
     href: '/mon-profil-freelance/reponses',
-    Icon: MessageSquare,
+    Icon: Send,
     match: (p) => p.startsWith('/mon-profil-freelance/reponses'),
   },
   {
@@ -59,17 +59,51 @@ const ITEMS: { key: string; href: string; Icon: LucideIcon; match: (p: string) =
     Icon: Bookmark,
     match: (p) => p.startsWith('/mon-profil-freelance/missions-sauvegardees'),
   },
+  {
+    // Route ships in a later PR — 404 until then (expected).
+    key: 'sidebar.freelance.public_profile',
+    href: '/mon-profil-freelance/profil-public',
+    Icon: User,
+    match: (p) => p.startsWith('/mon-profil-freelance/profil-public'),
+  },
+]
+
+// The universal personal (consumer) workspace — every freelancer is also a buyer. REUSES
+// MarcheSidebar's account keys + routes (single source of truth). Match = exact-or-subtree.
+const PERSONAL_ITEMS: NavItem[] = [
+  {
+    key: 'marche.sidebar.commandes',
+    href: '/mes-commandes',
+    Icon: Package,
+    match: (p) => p === '/mes-commandes' || p.startsWith('/mes-commandes/'),
+  },
+  {
+    key: 'marche.sidebar.favoris',
+    href: '/mes-favoris',
+    Icon: Heart,
+    match: (p) => p === '/mes-favoris' || p.startsWith('/mes-favoris/'),
+  },
+  {
+    key: 'marche.sidebar.missions',
+    href: '/mes-missions',
+    Icon: Folder,
+    match: (p) => p === '/mes-missions' || p.startsWith('/mes-missions/'),
+  },
 ]
 
 // Same pill layout as MarcheSidebar: shape + padding + text. The surface (height, idle/hover/
 // active treatment, focus ring) comes from the shared interactiveSurface() — one source of truth.
 const NAV_LAYOUT = 'flex items-center gap-2 rounded-full px-4 text-sm font-medium'
+// Section heading: small muted uppercase label, aligned with the item label text. Display-only —
+// it labels its group via role="group" + aria-labelledby (SR users get the grouping without it
+// being announced as a control). text-start (default) keeps it logical for RTL.
+const HEADING = 'px-4 text-[11px] font-semibold uppercase tracking-wide text-text-muted'
 
 export function FreelancerSidebar() {
   const lang = useLang()
   const pathname = usePathname()
 
-  const renderItem = (item: { key: string; href: string; Icon: LucideIcon; match: (p: string) => boolean }) => {
+  const renderItem = (item: NavItem) => {
     const active = item.match(pathname)
     const Icon = item.Icon
     return (
@@ -90,9 +124,25 @@ export function FreelancerSidebar() {
       <div className={`outline-brand flex h-full w-56 flex-col overflow-hidden rounded-3xl bg-white ${CARD_SHADOW}`}>
         <nav
           aria-label={t('nav.aria_primary', lang)}
-          className="flex flex-1 flex-col gap-2 overflow-y-auto px-3 pb-4 pt-4"
+          className="flex flex-1 flex-col overflow-y-auto px-3 pb-4 pt-4"
         >
-          {ITEMS.map(renderItem)}
+          {/* Group 1 — freelancer workspace (role-specific) */}
+          <div role="group" aria-labelledby="fl-sidebar-workspace" className="flex flex-col gap-2">
+            <p id="fl-sidebar-workspace" className={HEADING}>
+              {t('sidebar.freelance.workspace_section', lang)}
+            </p>
+            {WORKSPACE_ITEMS.map(renderItem)}
+          </div>
+
+          <hr aria-hidden="true" className="my-3 h-px border-0 bg-border-subtle" />
+
+          {/* Group 2 — universal personal (consumer) workspace */}
+          <div role="group" aria-labelledby="fl-sidebar-personal" className="flex flex-col gap-2">
+            <p id="fl-sidebar-personal" className={HEADING}>
+              {t('sidebar.freelance.personal_section', lang)}
+            </p>
+            {PERSONAL_ITEMS.map(renderItem)}
+          </div>
         </nav>
       </div>
     </aside>
