@@ -69,7 +69,12 @@ export const getServiceDetail = cache(async (id: string): Promise<ServiceDetailD
     .maybeSingle()
 
   if (error) {
-    console.error('[service-detail] fetch error:', error)
+    // A09: log explicit fields, never the raw PostgrestError object. PostgrestError extends Error,
+    // whose `message`/`stack` are non-enumerable, so a serializing log pipeline (Vercel/Next) renders
+    // the object as "{}" — a useless, alarming log. The service itself is critical → fail closed (null
+    // → not-found). RLS on every read here is open to anon (verified), so this should not fire in
+    // normal operation; if it does, these fields make it actionable.
+    console.error('[service-detail] fetch error:', error.message, error.code, error.details)
     return null
   }
   if (!data) return null
@@ -84,7 +89,8 @@ export const getServiceDetail = cache(async (id: string): Promise<ServiceDetailD
       .select('full_name')
       .eq('id', fp.profile_id)
       .maybeSingle()
-    if (pErr) console.error('[service-detail] public_profiles error:', pErr)
+    // Non-critical (name only) → log explicit fields and continue with an empty name.
+    if (pErr) console.error('[service-detail] public_profiles error:', pErr.message, pErr.code)
     name = prof?.full_name ?? ''
   }
 
@@ -151,7 +157,8 @@ export async function getRelatedServices(opts: {
     .limit(8)
 
   if (error) {
-    console.error('[service-detail] related fetch error:', error)
+    // Non-critical (related strip) → log explicit fields and continue with an empty list.
+    console.error('[service-detail] related fetch error:', error.message, error.code, error.details)
     return []
   }
 
@@ -170,7 +177,7 @@ export async function getRelatedServices(opts: {
       .from('public_profiles')
       .select('id, full_name')
       .in('id', profileIds)
-    if (pErr) console.error('[service-detail] related public_profiles error:', pErr)
+    if (pErr) console.error('[service-detail] related public_profiles error:', pErr.message, pErr.code)
     for (const p of (profiles ?? []) as { id: string; full_name: string | null }[]) {
       names.set(p.id, p.full_name ?? '')
     }

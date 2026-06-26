@@ -915,6 +915,7 @@ export const ar: Record<string, string> = {
   'profileMenu.devenirFreelance':  "كن مستقلًّا",
   'profileMenu.espaceVendeur':     "مساحتي كبائع",
   'profileMenu.espaceFreelance':   "مساحتي كمستقل",
+  'profileMenu.accountSection':    "حسابي",
   // Service request form
   'service.order_title':     "طلب خدمة",
   'service.order_prefix':    "الخدمة:",
@@ -1012,7 +1013,10 @@ export const ar: Record<string, string> = {
   'marche.sidebar.favoris':          "Mes favoris",
   'marche.sidebar.missions':         "Mes missions",
   'marche.sidebar.parametres':       "Paramètres",
-  'marche.sidebar.coming_soon':      "Bientôt disponible",
+  // coming_soon is the one key in this otherwise-deferred block translated now (PR-F2.3.1):
+  // it leaks into AR-complete surfaces (freelancer dashboard tile, navbar bell, profil,
+  // ParametresForm). The other marche.sidebar.* stay French pending the Phase 8 AR pass.
+  'marche.sidebar.coming_soon':      "قريباً",
 
   // ── Freelancer workspace (PR-F1.1) — AR provided as MSA, pending Phase 8 native review ──
   'sidebar.freelance.dashboard':     "لوحة التحكم",
@@ -1036,6 +1040,19 @@ export const ar: Record<string, string> = {
   'freelance.dashboard.recent_activity.empty':   "لا يوجد نشاط حديث",
   'freelance.dashboard.no_profile.title':        "أنشئ ملفك للبدء",
   'freelance.dashboard.no_profile.cta':          "إنشاء ملفي",
+  // ── Freelancer placeholder pages: Réponses + Missions sauvegardées (PR-F2.3.1) ──
+  'page_header.freelance_responses.subtitle':    "تابع ردودك على المهام",
+  'page_header.freelance_responses.emphasis':    "ردودك",
+  'page_header.freelance_saved.subtitle':        "استرجع مهامك المحفوظة",
+  'page_header.freelance_saved.emphasis':        "المحفوظة",
+  'freelance.reponses.empty_title':              "لا توجد ردود بعد",
+  'freelance.reponses.empty_description':        "لم ترد بعد على أي مهمة. تصفّح المهام المتاحة وأرسل أول عرض لك.",
+  'freelance.reponses.empty_cta':                "تصفّح المهام",
+  'freelance.reponses.coming_soon_note':         "متابعة تفاصيل ردودك ستتوفّر قريباً.",
+  'freelance.missions_sauvegardees.empty_title':       "لا توجد مهام محفوظة",
+  'freelance.missions_sauvegardees.empty_description': "لا توجد مهام محفوظة في الوقت الحالي. احفظ المهام المثيرة للاهتمام لإيجادها بسهولة لاحقاً.",
+  'freelance.missions_sauvegardees.empty_cta':         "تصفّح المهام",
+  'freelance.missions_sauvegardees.coming_soon_note':  "حفظ المهام سيتوفّر قريباً.",
   // ── Freelancer services list (PR-F2) ──
   'freelance.services.subtitle':                 "خدماتك المعروضة",
   'freelance.services.emphasis':                 "خدماتك",
@@ -1084,6 +1101,7 @@ export const ar: Record<string, string> = {
   'freelance.services.form.deliverables.errors.min':    "مطلوب 3 مخرجات على الأقل",
   'freelance.services.form.deliverables.errors.max':    "8 مخرجات كحد أقصى",
   'freelance.services.form.deliverables.errors.length': "بين 5 و150 حرفًا",
+  'freelance.services.form.deliverables.warning_initial': "هذه الحقول جديدة — أضف 3 مخرجات على الأقل للنشر",
   'freelance.services.form.revisions.label':          "المراجعات المشمولة",
   'freelance.services.form.revisions.helper':         "عدد المراجعات المجانية ضمن السعر",
   'freelance.services.form.revisions.errors.range':   "بين 0 و10 مراجعات",
@@ -1094,6 +1112,7 @@ export const ar: Record<string, string> = {
   'freelance.services.form.tags.errors.min':          "مطلوب 3 كلمات مفتاحية على الأقل",
   'freelance.services.form.tags.errors.max':          "5 كلمات مفتاحية كحد أقصى",
   'freelance.services.form.tags.errors.format':       "أحرف صغيرة وأرقام وشرطات فقط (2-30 حرفًا)",
+  'freelance.services.form.tags.warning_initial':     "هذه الحقول جديدة — أضف 3 كلمات مفتاحية على الأقل للنشر",
   'freelance.services.form.briefing.label':           "قبل أن نبدأ",
   'freelance.services.form.briefing.helper':          "تعليمات حول ما يجب أن يوفّره العميل (اختياري)",
   'freelance.services.form.briefing.placeholder':     "مثال: الشعار الحالي، دليل الهوية، أمثلة مرحّب بها…",
@@ -1139,8 +1158,8 @@ export const ar: Record<string, string> = {
   'marche.toggle.find_products':     "البحث عن منتجات",
   'marche.toggle.find_services':     "البحث عن خدمات",
   // Top-bar primary CTA (post a mission). Label collapses to icon-only at md; aria stays full.
-  'marche.cta.publish_project':      "نشر مشروع",
-  'marche.cta.publish_project_aria': "نشر مشروع",
+  'marche.cta.publish_mission':      "نشر مهمة",
+  'marche.cta.publish_mission_aria': "نشر مهمة",
   'marche.empty.products':           "Pas encore de produits disponibles",
   'marche.empty.products_subtitle':  "Revenez bientôt — de nouveaux articles arrivent.",
   'marche.empty.services':           "Pas encore de services disponibles",

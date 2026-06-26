@@ -59,8 +59,11 @@ export function ServiceForm({
   const [pending, startTransition] = useTransition()
   const [formError, setFormError] = useState<string | null>(null)
 
-  // On edit, surface the "min required" nudge for backfilled rows (0 deliverables / 0 tags)
-  // immediately on load — not on first submit. The submit button stays enabled.
+  // On edit, seed the "min required" nudge for backfilled rows (< 3 deliverables / < 3 tags) on
+  // load — the submit button stays enabled. Per standards-reference §6, that seeded nudge renders
+  // AMBER (a gentle "these fields are new") until the user interacts with the field OR attempts a
+  // submit, then it escalates to RED. The flags below drive that escalation; the validator itself
+  // is untouched (it still runs only on submit).
   const [fieldErrors, setFieldErrors] = useState<Partial<Record<ServiceField, string>>>(() => {
     const e: Partial<Record<ServiceField, string>> = {}
     if (mode === 'edit') {
@@ -70,6 +73,9 @@ export function ServiceForm({
     }
     return e
   })
+  const [deliverablesTouched, setDeliverablesTouched] = useState(false)
+  const [tagsTouched, setTagsTouched] = useState(false)
+  const [submitAttempted, setSubmitAttempted] = useState(false)
 
   const [title, setTitle] = useState(initialValues?.title ?? '')
   const [categoryId, setCategoryId] = useState(initialValues?.categoryId ?? '')
@@ -90,6 +96,7 @@ export function ServiceForm({
   function onSubmit(e: React.FormEvent) {
     e.preventDefault()
     setFormError(null)
+    setSubmitAttempted(true) // any submit escalates seeded amber nudges to red
     const input = {
       title,
       categoryId,
@@ -131,16 +138,23 @@ export function ServiceForm({
     })
   }
 
-  // ── Deliverables handlers ──
-  const setDeliverableAt = (i: number, val: string) =>
+  // ── Deliverables handlers ── (each interaction escalates the seeded nudge from amber to red)
+  const setDeliverableAt = (i: number, val: string) => {
+    setDeliverablesTouched(true)
     setDeliverables((d) => d.map((x, idx) => (idx === i ? val : x)))
-  const addDeliverable = () =>
+  }
+  const addDeliverable = () => {
+    setDeliverablesTouched(true)
     setDeliverables((d) => (d.length < DELIVERABLES_MAX ? [...d, ''] : d))
-  const removeDeliverable = (i: number) =>
+  }
+  const removeDeliverable = (i: number) => {
+    setDeliverablesTouched(true)
     setDeliverables((d) => (d.length > DELIVERABLES_MIN_ROWS ? d.filter((_, idx) => idx !== i) : d))
+  }
 
-  // ── Tags handlers ──
+  // ── Tags handlers ── (each interaction escalates the seeded nudge from amber to red)
   function commitTag() {
+    setTagsTouched(true)
     const raw = tagInput.trim().toLowerCase()
     setTagInput('')
     if (!raw) return
@@ -162,12 +176,16 @@ export function ServiceForm({
       commitTag()
     }
   }
-  const removeTag = (tag: string) => setTags((tg) => tg.filter((x) => x !== tag))
+  const removeTag = (tag: string) => {
+    setTagsTouched(true)
+    setTags((tg) => tg.filter((x) => x !== tag))
+  }
 
   const field = `w-full rounded-xl border border-border-subtle bg-white px-4 py-2.5 text-sm text-text-primary outline-none transition-colors placeholder:text-text-muted focus:border-brand-accent ${FOCUS_RING}`
   const label = 'mb-1.5 block text-sm font-medium text-text-primary'
   const helperCls = 'mt-1 text-xs text-text-muted'
   const errorCls = 'mt-1 text-xs text-red-600'
+  const amberCls = 'mt-1 text-xs text-amber-700'
 
   const note = (id: string, errKey: string | undefined, helperKey: string) =>
     errKey ? (
@@ -180,7 +198,14 @@ export function ServiceForm({
       </p>
     )
 
-  const tagsErrKey = tagError ?? fieldErrors.tags
+  // Red vs amber for the two seeded nudges. A seeded min-error shows AMBER until the field is
+  // touched or a submit is attempted, then RED. tagError (a format/max error produced by typing)
+  // is itself an interaction → always red.
+  const showDeliverablesRed =
+    Boolean(fieldErrors.deliverables) && (deliverablesTouched || submitAttempted)
+  const showTagsRed =
+    Boolean(tagError) || (Boolean(fieldErrors.tags) && (tagsTouched || submitAttempted))
+  const tagsNoteKey = tagError ?? fieldErrors.tags
 
   return (
     <form onSubmit={onSubmit} className={`max-w-2xl rounded-2xl bg-white p-6 sm:p-8 ${CARD_SHADOW}`}>
@@ -282,7 +307,14 @@ export function ServiceForm({
             </button>
           </div>
           {fieldErrors.deliverables ? (
-            <p className={errorCls}>{t(fieldErrors.deliverables, lang)}</p>
+            <p className={showDeliverablesRed ? errorCls : amberCls}>
+              {t(
+                showDeliverablesRed
+                  ? fieldErrors.deliverables
+                  : 'freelance.services.form.deliverables.warning_initial',
+                lang,
+              )}
+            </p>
           ) : (
             <p className={helperCls}>{t('freelance.services.form.deliverables.helper', lang)}</p>
           )}
@@ -391,12 +423,14 @@ export function ServiceForm({
             onKeyDown={onTagKeyDown}
             onBlur={commitTag}
             placeholder={t('freelance.services.form.tags.placeholder', lang)}
-            aria-invalid={Boolean(tagsErrKey)}
+            aria-invalid={showTagsRed}
             className={field}
           />
           <div className="mt-1 flex items-center justify-between gap-3">
-            {tagsErrKey ? (
-              <p className={errorCls}>{t(tagsErrKey, lang)}</p>
+            {tagsNoteKey ? (
+              <p className={showTagsRed ? errorCls : amberCls}>
+                {t(showTagsRed ? tagsNoteKey : 'freelance.services.form.tags.warning_initial', lang)}
+              </p>
             ) : (
               <p className={helperCls}>{t('freelance.services.form.tags.helper', lang)}</p>
             )}

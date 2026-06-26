@@ -7,8 +7,11 @@ import { t } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
 import { interactiveSurface } from '@/components/ui/interactive-surface'
 
-// "Publier un projet" — the primary call-to-action in the consumer top bar, linking to the
-// post-a-mission form. Built as a "loud sibling" of the sidebar nav buttons: it reuses the SAME
+// "Publier une mission" — the primary call-to-action in the top bar, linking to the post-a-mission
+// form (renamed from "Publier un projet" in PR-F2.3.1 to kill the semantic ambiguity that sent
+// freelancers expecting service creation into the consumer mission flow). The component/file name
+// stays PublishProjectCTA (a rename is out of this PR's scope). Built as a "loud sibling" of the
+// sidebar nav buttons: it reuses the SAME
 // interactiveSurface(true) helper the sidebar's active items use, so it inherits their structural
 // DNA — rounded-full pill, brand-accent/40 border, soft shadow, focus ring, text-sm font-medium —
 // but COMPACTED one size step to feel native to the navbar's tighter density: h-10 (vs the sidebar's
@@ -37,7 +40,7 @@ export function PublishProjectCTA() {
   return (
     <Link
       href="/mes-missions/nouvelle"
-      aria-label={t('marche.cta.publish_project_aria', lang)}
+      aria-label={t('marche.cta.publish_mission_aria', lang)}
       className={cn(
         'inline-flex shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-full px-3.5 text-sm font-medium',
         interactiveSurface(true),
@@ -48,7 +51,7 @@ export function PublishProjectCTA() {
       )}
     >
       <Plus className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-      <span className="md:hidden lg:inline">{t('marche.cta.publish_project', lang)}</span>
+      <span className="md:hidden lg:inline">{t('marche.cta.publish_mission', lang)}</span>
     </Link>
   )
 }

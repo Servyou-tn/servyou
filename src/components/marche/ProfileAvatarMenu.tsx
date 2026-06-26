@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useRef } from 'react'
-import { LogOut, Settings, User, Store, Briefcase } from 'lucide-react'
+import { LogOut, Settings, User, Store, Briefcase, Package, Heart, Folder } from 'lucide-react'
 import { useLang } from '@/components/LangProvider'
 import { t } from '@/lib/i18n'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
@@ -10,6 +10,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
@@ -143,6 +144,34 @@ export function ProfileAvatarMenu({
               </Link>
             </DropdownMenuItem>
           )}
+
+          <DropdownMenuSeparator className="bg-border-subtle" />
+
+          {/* Mon compte — the universal buyer-baseline pages (every user is also a buyer).
+              Relocated here from the freelancer sidebar in PR-F2.3.1 so the workspace stays
+              seller-focused while these stay reachable from the global account menu. Reuses the
+              existing marche.sidebar.* keys + routes (single source of truth). */}
+          <DropdownMenuLabel className="text-xs font-medium text-text-muted">
+            {t('profileMenu.accountSection', lang)}
+          </DropdownMenuLabel>
+          <DropdownMenuItem asChild className={itemBase}>
+            <Link href="/mes-commandes">
+              <Package className="mr-2 h-4 w-4 text-text-muted" aria-hidden="true" />
+              {t('marche.sidebar.commandes', lang)}
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem asChild className={itemBase}>
+            <Link href="/mes-favoris">
+              <Heart className="mr-2 h-4 w-4 text-text-muted" aria-hidden="true" />
+              {t('marche.sidebar.favoris', lang)}
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem asChild className={itemBase}>
+            <Link href="/mes-missions">
+              <Folder className="mr-2 h-4 w-4 text-text-muted" aria-hidden="true" />
+              {t('marche.sidebar.missions', lang)}
+            </Link>
+          </DropdownMenuItem>
 
           <DropdownMenuSeparator className="bg-border-subtle" />
 

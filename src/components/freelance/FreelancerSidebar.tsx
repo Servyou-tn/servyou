@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, Briefcase, Inbox, MessageSquare, Bookmark, Package, Heart, Folder, type LucideIcon } from 'lucide-react'
+import { LayoutDashboard, Briefcase, Inbox, MessageSquare, Bookmark, type LucideIcon } from 'lucide-react'
 import { useLang } from '@/components/LangProvider'
 import { t } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
@@ -19,6 +19,12 @@ import { interactiveSurface } from '@/components/ui/interactive-surface'
 // subtree. (Accueil was removed in PR-F2: per Upwork/Fiverr/Malt convention the dashboard IS the
 // home.) Sections whose pages haven't shipped yet still navigate and light up once they land; the
 // items are locked by the Freelancer Design Constitution.
+//
+// SCOPE — seller actions ONLY (PR-F2.3.1). The universal buyer-baseline items (Mes commandes,
+// Mes favoris, Mes missions) moved OUT of this sidebar into the top-right avatar menu's
+// "Mon compte" section — the freelancer workspace stays focused on selling, while the
+// freelancer-as-buyer surfaces stay reachable from the global account menu (every freelancer is
+// also a buyer). Per standards-reference §9 Standard E (one PR, one focus).
 const ITEMS: { key: string; href: string; Icon: LucideIcon; match: (p: string) => boolean }[] = [
   {
     key: 'sidebar.freelance.dashboard',
@@ -55,34 +61,6 @@ const ITEMS: { key: string; href: string; Icon: LucideIcon; match: (p: string) =
   },
 ]
 
-// The universal buyer-baseline items — every freelancer is also a buyer, so their consumer-side
-// pages hang off the same sidebar (below a divider). REUSED i18n keys + routes from MarcheSidebar's
-// account items; lucide icons here (matching the 6 above) — Folder for "Mes missions" so it doesn't
-// collide with the Briefcase already used by "Services". Match = exact-or-subtree (same as
-// MarcheSidebar's account items). NOTE: only /mes-missions currently dispatches to FreelancerLayout;
-// /mes-commandes + /mes-favoris still render MarcheSidebar until PR-F1.1h, so these items are
-// primarily navigation there (the destination's own sidebar flips). Documented in the constitution.
-const BUYER_ITEMS: { key: string; href: string; Icon: LucideIcon; match: (p: string) => boolean }[] = [
-  {
-    key: 'marche.sidebar.commandes',
-    href: '/mes-commandes',
-    Icon: Package,
-    match: (p) => p === '/mes-commandes' || p.startsWith('/mes-commandes/'),
-  },
-  {
-    key: 'marche.sidebar.favoris',
-    href: '/mes-favoris',
-    Icon: Heart,
-    match: (p) => p === '/mes-favoris' || p.startsWith('/mes-favoris/'),
-  },
-  {
-    key: 'marche.sidebar.missions',
-    href: '/mes-missions',
-    Icon: Folder,
-    match: (p) => p === '/mes-missions' || p.startsWith('/mes-missions/'),
-  },
-]
-
 // Same pill layout as MarcheSidebar: shape + padding + text. The surface (height, idle/hover/
 // active treatment, focus ring) comes from the shared interactiveSurface() — one source of truth.
 const NAV_LAYOUT = 'flex items-center gap-2 rounded-full px-4 text-sm font-medium'
@@ -115,9 +93,6 @@ export function FreelancerSidebar() {
           className="flex flex-1 flex-col gap-2 overflow-y-auto px-3 pb-4 pt-4"
         >
           {ITEMS.map(renderItem)}
-          {/* Divider between the freelancer-workspace items and the universal buyer-baseline items. */}
-          <div className="my-2 h-px bg-border-subtle" aria-hidden="true" />
-          {BUYER_ITEMS.map(renderItem)}
         </nav>
       </div>
     </aside>
