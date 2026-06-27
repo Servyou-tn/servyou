@@ -47,5 +47,7 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# Claude Code local tooling (never commit)
-.claude/
+# Claude Code framework is TRACKED in git (.claude/CLAUDE.md + .claude/skills/).
+# Only user-specific local files are ignored:
+.claude/settings.local.json
+.claude/scheduled_tasks.lock
