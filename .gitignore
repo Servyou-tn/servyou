@@ -51,3 +51,6 @@ next-env.d.ts
 # Only user-specific local files are ignored:
 .claude/settings.local.json
 .claude/scheduled_tasks.lock
+
+# local CC preview/QA screenshot artifacts (not source)
+.preview-screenshots/
