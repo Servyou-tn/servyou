@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
-import { MarcheLayout } from '@/components/marche/MarcheLayout'
+import { AppShell } from '@/components/shell/AppShell'
 import { PageHeader } from '@/components/marche/PageHeader'
 import { PageHeader as PageSubtitle } from '@/components/shared/PageHeader'
 import { EmptyState } from '@/components/marche/EmptyState'
@@ -77,7 +77,7 @@ export default async function MesCommandesPage({
     ) : undefined
 
   return (
-    <MarcheLayout user={shell.topBarUser} sidebarFilter={statutFilter}>
+    <AppShell user={shell.topBarUser} pageToolbar={statutFilter}>
       <PageSubtitle
         subtitle={t('page_header.commandes.subtitle', lang)}
         emphasisWord={t('page_header.commandes.emphasis', lang)}
@@ -100,6 +100,6 @@ export default async function MesCommandesPage({
           </div>
         </>
       )}
-    </MarcheLayout>
+    </AppShell>
   )
 }

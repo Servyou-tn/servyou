@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
-import { MarcheLayout } from '@/components/marche/MarcheLayout'
+import { AppShell } from '@/components/shell/AppShell'
 import { OrderDetail } from '@/components/marche/OrderDetail'
 import { getShellUser } from '@/lib/marche/shell-user'
 import { getOrderDetail } from '@/lib/marche/order-detail'
@@ -32,7 +32,7 @@ export default async function CommandeDetailPage({ params }: Props) {
   const order = await getOrderDetail(id, shell.id)
   if (!order) {
     return (
-      <MarcheLayout user={shell.topBarUser}>
+      <AppShell user={shell.topBarUser}>
         <div className={`mx-auto max-w-md rounded-2xl bg-white p-12 text-center ${CARD_SHADOW}`}>
           <h1 className="text-lg font-semibold text-text-primary">{t('orders.not_found', lang)}</h1>
           <p className="mt-2 text-sm text-text-muted">{t('orders.detail_not_found_desc', lang)}</p>
@@ -43,13 +43,13 @@ export default async function CommandeDetailPage({ params }: Props) {
             {t('orders.detail_back', lang)}
           </Link>
         </div>
-      </MarcheLayout>
+      </AppShell>
     )
   }
 
   return (
-    <MarcheLayout user={shell.topBarUser}>
+    <AppShell user={shell.topBarUser}>
       <OrderDetail order={order} />
-    </MarcheLayout>
+    </AppShell>
   )
 }
