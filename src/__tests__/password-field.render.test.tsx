@@ -9,7 +9,7 @@ import { PasswordField } from '@/components/auth/PasswordField'
 // strength meter only when asked. The show/hide click is a plain useState toggle,
 // verified in the manual pass.
 function render(props: Parameters<typeof PasswordField>[0]): string {
-  return renderToString(createElement(LangProvider, { lang: 'fr', children: createElement(PasswordField, props) }))
+  return renderToString(<LangProvider lang="fr">{createElement(PasswordField, props)}</LangProvider>)
 }
 
 const noop = () => {}

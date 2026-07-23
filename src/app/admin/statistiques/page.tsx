@@ -25,6 +25,7 @@ export default async function StatistiquesPage() {
   const tr = (key: string): string => t(key, lang)
   const supabase = await createClient()
 
+  // eslint-disable-next-line react-hooks/purity -- Date.now() here is request-time evaluation in an async Server Component (rendered once per request), not an impure client-render call.
   const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
 
   const [

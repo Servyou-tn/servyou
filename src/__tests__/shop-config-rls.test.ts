@@ -79,7 +79,6 @@ async function teardown() {
 }
 
 let ownerId: string
-let otherId: string
 let shopId: string
 let catA: string
 let catB: string
@@ -91,7 +90,7 @@ beforeAll(async () => {
   await teardown() // teardown-first: recover from any crashed prior run
 
   ownerId = await createUser(OWNER_EMAIL)
-  otherId = await createUser(OTHER_EMAIL)
+  await createUser(OTHER_EMAIL)
 
   // The shop owned by ownerId, created via service role (bypasses RLS for setup).
   const { data: shop, error: shopErr } = await admin

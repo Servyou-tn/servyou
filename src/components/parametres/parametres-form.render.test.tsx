@@ -21,7 +21,7 @@ const profile = {
 } as unknown as CurrentProfile
 
 function html(): string {
-  return renderToString(createElement(LangProvider, { lang: 'fr', children: createElement(ParametresForm, { profile }) }))
+  return renderToString(<LangProvider lang="fr">{createElement(ParametresForm, { profile })}</LangProvider>)
 }
 
 describe('ParametresForm', () => {

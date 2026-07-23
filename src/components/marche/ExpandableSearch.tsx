@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState, type FormEvent } from 'react'
+import { useEffect, useRef, useState, useSyncExternalStore, type FormEvent } from 'react'
 import { createPortal } from 'react-dom'
 import { useRouter } from 'next/navigation'
 import { Search } from 'lucide-react'
@@ -27,19 +27,19 @@ export function ExpandableSearch({
   const router = useRouter()
   const [open, setOpen] = useState(false)
   const [query, setQuery] = useState(initialQuery)
-  const [mounted, setMounted] = useState(false)
-  const [isMac, setIsMac] = useState(false)
+  // Client-only gate (portal + platform hint) via useSyncExternalStore: server snapshot false,
+  // client snapshot true — identical to the old mount-effect, but no setState-in-effect. The
+  // platform never changes after mount, so subscribe is a no-op.
+  const mounted = useSyncExternalStore(() => () => {}, () => true, () => false)
+  const isMac = useSyncExternalStore(
+    () => () => {},
+    () => typeof navigator !== 'undefined' && /Mac|iPhone|iPad|iPod/.test(navigator.platform),
+    () => false,
+  )
   const triggerRef = useRef<HTMLButtonElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const dialogRef = useRef<HTMLDivElement>(null)
   const prevOpen = useRef(false)
-
-  // Client-only: gate the portal + the keyboard hint until mounted (avoids any SSR/hydration
-  // mismatch from document.body and the platform-specific ⌘K / Ctrl+K label).
-  useEffect(() => {
-    setMounted(true)
-    setIsMac(typeof navigator !== 'undefined' && /Mac|iPhone|iPad|iPod/.test(navigator.platform))
-  }, [])
 
   // ⌘K (Mac) / Ctrl+K (Windows/Linux) toggles the palette from anywhere. The navbar is on every
   // consumer page, so this listener is effectively page-global.

@@ -29,10 +29,9 @@ const { MarketingShell } = await import('./MarketingShell')
 
 function html(): string {
   return renderToString(
-    createElement(
-      LangProvider,
-      { lang: 'fr', children: createElement(MarketingShell, { lang: 'fr', children: 'PAGE_CONTENT' }) },
-    ),
+    <LangProvider lang="fr">
+      <MarketingShell lang="fr">PAGE_CONTENT</MarketingShell>
+    </LangProvider>,
   )
 }
 

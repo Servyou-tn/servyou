@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { useEffect, useState, type ReactNode } from 'react'
+import { useState, type ReactNode } from 'react'
 import { ChevronDown } from 'lucide-react'
 import { useLang } from '@/components/LangProvider'
 import { t } from '@/lib/i18n'
@@ -188,11 +188,15 @@ export function MarcheSidebar({ sidebarFilter }: { sidebarFilter?: ReactNode }) 
   const [marcheOpen, setMarcheOpen] = useState(true)
   const [commandesOpen, setCommandesOpen] = useState(false)
   const [favorisOpen, setFavorisOpen] = useState(false)
-  useEffect(() => {
+  // Reset the open-states on route change without an effect (React's adjust-state-during-
+  // render pattern): compare against the previous pathname.
+  const [prevPathname, setPrevPathname] = useState(pathname)
+  if (prevPathname !== pathname) {
+    setPrevPathname(pathname)
     setMarcheOpen(true)
     setCommandesOpen(false)
     setFavorisOpen(false)
-  }, [pathname])
+  }
 
   // The two simple filters, built in the sidebar so they expand on every route. basePath is the
   // current path: on their own page the param filters the list; elsewhere it's a harmless no-op

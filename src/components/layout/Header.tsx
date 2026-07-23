@@ -54,9 +54,14 @@ export function Header({
       window.removeEventListener('popstate', read)
     }
   }, [])
-  useEffect(() => {
-    setHash(window.location.hash)
-  }, [pathname])
+  // Re-sync the hash from the URL on route change without an effect (adjust state during
+  // render). The hashchange/popstate listener above + the per-link onClick cover the other two
+  // paths; a same-page-anchor <Link> fires neither event, so those stay.
+  const [prevPathname, setPrevPathname] = useState(pathname)
+  if (prevPathname !== pathname) {
+    setPrevPathname(pathname)
+    if (typeof window !== 'undefined') setHash(window.location.hash)
+  }
 
   const state = selectVariant({ pathname })
   if (state.hidden && !forceShow) return null

@@ -1,7 +1,6 @@
 'use client'
 
 import Link from 'next/link'
-import { useEffect, useState } from 'react'
 import { useLang } from '@/components/LangProvider'
 import { t } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
@@ -26,9 +25,7 @@ export function NavTextLinks({
   hrefFor: (type: ToggleType) => string
 }) {
   const lang = useLang()
-  const [active, setActive] = useState<ToggleType>(value)
-  useEffect(() => setActive(value), [value])
-
+  // Active link is derived directly from the route-fed `value` prop — no mirrored state.
   const options: { value: ToggleType; label: string }[] = [
     { value: 'product', label: t('marche.toggle.find_products', lang) },
     { value: 'service', label: t('marche.toggle.find_services', lang) },
@@ -37,12 +34,11 @@ export function NavTextLinks({
   return (
     <div className="hidden h-11 shrink-0 items-center gap-x-7 xl:flex">
       {options.map((o) => {
-        const isActive = o.value === active
+        const isActive = o.value === value
         return (
           <Link
             key={o.value}
             href={hrefFor(o.value)}
-            onClick={() => setActive(o.value)}
             aria-current={isActive ? 'page' : undefined}
             // Underline = an ::after bar inset to the middle 80%, scaled from its left edge. Active →
             // shown (scale-x-100) in brand-accent; inactive → hidden (scale-x-0), sliding in on hover

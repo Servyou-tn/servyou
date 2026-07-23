@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useId, useState } from 'react'
+import { useId, useState } from 'react'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { ChevronDown } from 'lucide-react'
 import { FOCUS_RING } from '@/components/layout/styles'
@@ -49,9 +49,12 @@ export function SidebarSelectFilter({
   // Collapsed by default; reset on route change (no persistence across pages). Switching the
   // value only changes the query string (same pathname), so it leaves the group open.
   const [open, setOpen] = useState(false)
-  useEffect(() => {
+  // Reset the open-state on route change without an effect (adjust state during render).
+  const [prevPathname, setPrevPathname] = useState(pathname)
+  if (prevPathname !== pathname) {
+    setPrevPathname(pathname)
     setOpen(false)
-  }, [pathname])
+  }
 
   function select(value: string) {
     const params = new URLSearchParams(sp.toString())

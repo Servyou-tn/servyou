@@ -86,9 +86,9 @@ export async function createDispute(
     return { success: false, error: 'dispute.error_generic' }
   }
 
-  // Revalidate the caller's order surface. The party UIs re-fetch their own dispute
-  // client-side (OrderDisputeSection), so this is belt-and-suspenders for any
-  // server-rendered consumer.
+  // Revalidate the caller's order surface so a server-rendered dispute view refreshes.
+  // (The party-side dispute UI was removed as a v2-teardown orphan; the paths below are
+  // the pre-v2 order surfaces and are rebuilt with the E3 order redesign.)
   if (role === 'buyer') {
     revalidatePath('/demande/confirmation/' + orderId)
   } else if (order.order_type === 'product') {

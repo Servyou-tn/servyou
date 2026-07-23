@@ -42,6 +42,7 @@ export function LanguageToggle() {
 
   function switchTo(next: Lang) {
     if (next === lang || pending) return
+    // eslint-disable-next-line react-hooks/immutability -- document.cookie is set inside the switchTo click handler (event time), not during render; this is an event-time side effect, not a render mutation.
     document.cookie = `${LANG_COOKIE}=${next}; path=/; max-age=31536000; SameSite=Lax`
     startTransition(() => router.refresh())
 

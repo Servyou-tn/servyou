@@ -73,7 +73,6 @@ async function teardown() {
 }
 
 let ownerId: string
-let otherId: string
 let profileId: string
 let ownerClient: SupabaseClient
 let otherClient: SupabaseClient
@@ -83,7 +82,7 @@ beforeAll(async () => {
   await teardown() // teardown-first: recover from any crashed prior run
 
   ownerId = await createUser(OWNER_EMAIL)
-  otherId = await createUser(OTHER_EMAIL)
+  await createUser(OTHER_EMAIL)
 
   // The freelancer profile owned by ownerId (service role bypasses RLS for setup).
   const { data: profile, error: profErr } = await admin
