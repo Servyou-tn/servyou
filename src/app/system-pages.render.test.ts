@@ -30,7 +30,7 @@ const ErrorPage = (await import('./error')).default
 describe('not-found (404)', () => {
   it('renders the title and recovery actions', async () => {
     const el = await NotFound()
-    const out = renderToString(createElement(LangProvider, { lang: 'fr' }, el))
+    const out = renderToString(createElement(LangProvider, { lang: 'fr', children: el }))
     // renderToString HTML-escapes apostrophes; assert on apostrophe-free fragments.
     expect(out).toContain('Cette page')
     expect(out).toContain('existe pas')
@@ -45,8 +45,7 @@ describe('error (500)', () => {
     const out = renderToString(
       createElement(
         LangProvider,
-        { lang: 'fr' },
-        createElement(ErrorPage, { error: new Error('boom'), reset: () => {} }),
+        { lang: 'fr', children: createElement(ErrorPage, { error: new Error('boom'), reset: () => {} }) },
       ),
     )
     expect(out).toContain('Une erreur') // apostrophe in "s'est" is escaped by renderToString

@@ -31,8 +31,7 @@ function html(): string {
   return renderToString(
     createElement(
       LangProvider,
-      { lang: 'fr' },
-      createElement(MarketingShell, { lang: 'fr', children: 'PAGE_CONTENT' }),
+      { lang: 'fr', children: createElement(MarketingShell, { lang: 'fr', children: 'PAGE_CONTENT' }) },
     ),
   )
 }
