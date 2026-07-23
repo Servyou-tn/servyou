@@ -130,7 +130,7 @@ export function SigninForm({ showResetSuccess = false }: { showResetSuccess?: bo
           </button>
           <div className="my-5 flex items-center gap-3" aria-hidden="true">
             <span className="h-px flex-1 bg-white/20" />
-            <span className="text-[13px] font-medium uppercase tracking-wide text-blue-200">{t('signup.form.divider', lang)}</span>
+            <span className="text-[13px] font-medium uppercase tracking-wide text-brand-blue-200">{t('signup.form.divider', lang)}</span>
             <span className="h-px flex-1 bg-white/20" />
           </div>
         </>
@@ -169,7 +169,7 @@ export function SigninForm({ showResetSuccess = false }: { showResetSuccess?: bo
             autoComplete="current-password"
           />
           <div className="mt-2 text-end">
-            <Link href="/mot-de-passe-oublie" className="text-[13px] font-medium text-blue-300 hover:underline">
+            <Link href="/mot-de-passe-oublie" className="text-[13px] font-medium text-brand-blue-300 hover:underline">
               {t('signin.forgotPassword', lang)}
             </Link>
           </div>

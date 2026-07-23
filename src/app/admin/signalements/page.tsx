@@ -28,7 +28,7 @@ function truncate(value: string | null, max = 80): string {
 
 const STATUS_BADGE: Record<string, string> = {
   open: 'bg-amber-50 text-amber-700',
-  under_review: 'bg-blue-50 text-blue-700',
+  under_review: 'bg-brand-blue-50 text-brand-blue-700',
   resolved: 'bg-green-50 text-green-700',
   // 'dismissed' is filtered out of the pending queue today; kept for consistency and
   // a future "show closed reports" view.
@@ -97,7 +97,7 @@ export default async function ReportsQueuePage() {
                     {/* Stretched link: after:absolute after:inset-0 makes this anchor's
                         hit area cover the whole (relative) row, so the entire row
                         navigates while staying a real, keyboard-activatable <a>. */}
-                    <Link href={`/admin/signalements/${r.id}`} className="font-medium text-blue-600 after:absolute after:inset-0 hover:underline">
+                    <Link href={`/admin/signalements/${r.id}`} className="font-medium text-brand-blue-600 after:absolute after:inset-0 hover:underline">
                       {nameById.get(r.reporter_id) ?? '—'}
                     </Link>
                   </td>

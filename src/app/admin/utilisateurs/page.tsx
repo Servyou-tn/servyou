@@ -77,7 +77,7 @@ export default async function UsersListPage() {
               {rows.map(u => (
                 <tr key={u.id} className="hover:bg-gray-50">
                   <td className="px-4 py-3">
-                    <Link href={`/admin/utilisateurs/${u.id}`} className="font-medium text-blue-600 hover:underline">
+                    <Link href={`/admin/utilisateurs/${u.id}`} className="font-medium text-brand-blue-600 hover:underline">
                       {u.full_name ?? '—'}
                     </Link>
                   </td>

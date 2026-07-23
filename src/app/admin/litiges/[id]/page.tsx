@@ -32,7 +32,7 @@ function formatDate(value: string, lang: Lang): string {
 
 const STATUS_BADGE: Record<string, string> = {
   open: 'bg-amber-50 text-amber-700',
-  under_review: 'bg-blue-50 text-blue-700',
+  under_review: 'bg-brand-blue-50 text-brand-blue-700',
   resolved: 'bg-green-50 text-green-700',
   dismissed: 'bg-gray-100 text-gray-600',
 }
@@ -55,7 +55,7 @@ export default async function DisputeDetailPage({ params }: Props) {
     return (
       <div className="max-w-2xl space-y-4">
         <p className="text-sm text-gray-700">{tr('admin.disputes.error_not_found')}</p>
-        <Link href="/admin/litiges" className="inline-block text-sm text-blue-600 hover:underline">
+        <Link href="/admin/litiges" className="inline-block text-sm text-brand-blue-600 hover:underline">
           {tr('admin.disputes.back_to_queue')}
         </Link>
       </div>
@@ -76,7 +76,7 @@ export default async function DisputeDetailPage({ params }: Props) {
 
   return (
     <div className="max-w-2xl space-y-6">
-      <Link href="/admin/litiges" className="inline-block text-sm text-blue-600 hover:underline">
+      <Link href="/admin/litiges" className="inline-block text-sm text-brand-blue-600 hover:underline">
         {tr('admin.disputes.back_to_queue')}
       </Link>
 

@@ -46,11 +46,11 @@ export function ForgotPasswordForm() {
   if (submitted) {
     return (
       <div className="flex flex-col items-center text-center">
-        <CheckCircleIcon className="mb-5 h-12 w-12 text-blue-200" />
+        <CheckCircleIcon className="mb-5 h-12 w-12 text-brand-blue-200" />
         <h2 className="text-lg font-semibold text-white">{t('forgotPassword.success.title', lang)}</h2>
         <p className="mt-2 text-[15px] leading-relaxed text-white">{t('forgotPassword.success.body', lang)}</p>
-        <p className="mt-4 text-[13px] text-blue-200">{t('forgotPassword.success.checkSpam', lang)}</p>
-        <Link ref={backLinkRef} href="/connexion" className="mt-6 text-[13px] font-medium text-blue-300 hover:underline">
+        <p className="mt-4 text-[13px] text-brand-blue-200">{t('forgotPassword.success.checkSpam', lang)}</p>
+        <Link ref={backLinkRef} href="/connexion" className="mt-6 text-[13px] font-medium text-brand-blue-300 hover:underline">
           {t('forgotPassword.success.backToSignin', lang)}
         </Link>
       </div>

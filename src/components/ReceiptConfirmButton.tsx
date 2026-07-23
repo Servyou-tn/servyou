@@ -55,7 +55,7 @@ export function ReceiptConfirmButton({ orderId }: Props) {
       <button
         onClick={confirmReceipt}
         disabled={isSubmitting}
-        className="bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white text-sm font-medium px-4 py-2 rounded transition-colors"
+        className="bg-brand-blue-600 hover:bg-brand-blue-700 disabled:opacity-60 text-white text-sm font-medium px-4 py-2 rounded transition-colors"
       >
         {isSubmitting ? t('common.submitting', lang) : t('common.confirm_receipt_action', lang)}
       </button>

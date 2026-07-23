@@ -42,10 +42,10 @@ export function bucketOrders(
 // excludes them. Colours are raw Tailwind utilities (no new design tokens).
 export const STATUS_BADGE_CLASS: Record<OrderStatus, string> = {
   pending: 'bg-slate-100 text-slate-700',
-  accepted: 'bg-blue-100 text-blue-800',
-  prepared: 'bg-blue-100 text-blue-800',
-  dispatched: 'bg-blue-100 text-blue-800',
-  in_delivery: 'bg-blue-100 text-blue-800',
+  accepted: 'bg-brand-blue-100 text-brand-blue-800',
+  prepared: 'bg-brand-blue-100 text-brand-blue-800',
+  dispatched: 'bg-brand-blue-100 text-brand-blue-800',
+  in_delivery: 'bg-brand-blue-100 text-brand-blue-800',
   arrived: 'bg-amber-100 text-amber-800',
   received: 'bg-emerald-100 text-emerald-800',
   cancelled: 'bg-red-100 text-red-700',

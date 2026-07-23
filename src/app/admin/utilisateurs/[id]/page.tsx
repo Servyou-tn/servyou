@@ -65,7 +65,7 @@ export default async function UserDetailPage({ params }: Props) {
     return (
       <div className="max-w-2xl space-y-4">
         <p className="text-sm text-gray-700">{tr('admin.users.error_not_found')}</p>
-        <Link href="/admin/utilisateurs" className="inline-block text-sm text-blue-600 hover:underline">
+        <Link href="/admin/utilisateurs" className="inline-block text-sm text-brand-blue-600 hover:underline">
           {tr('admin.users.back_to_list')}
         </Link>
       </div>
@@ -97,7 +97,7 @@ export default async function UserDetailPage({ params }: Props) {
 
   return (
     <div className="max-w-2xl space-y-6">
-      <Link href="/admin/utilisateurs" className="inline-block text-sm text-blue-600 hover:underline">
+      <Link href="/admin/utilisateurs" className="inline-block text-sm text-brand-blue-600 hover:underline">
         {tr('admin.users.back_to_list')}
       </Link>
 
@@ -139,12 +139,12 @@ export default async function UserDetailPage({ params }: Props) {
         {(shopId || freelancerId) && (
           <div className="flex flex-wrap gap-4 pt-1 text-sm">
             {shopId && (
-              <Link href={`/boutique/${shopId}`} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+              <Link href={`/boutique/${shopId}`} target="_blank" rel="noopener noreferrer" className="text-brand-blue-600 hover:underline">
                 {tr('admin.users.shop_link')}
               </Link>
             )}
             {freelancerId && (
-              <Link href={`/freelance/${freelancerId}`} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+              <Link href={`/freelance/${freelancerId}`} target="_blank" rel="noopener noreferrer" className="text-brand-blue-600 hover:underline">
                 {tr('admin.users.freelancer_link')}
               </Link>
             )}

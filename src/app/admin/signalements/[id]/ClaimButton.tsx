@@ -29,7 +29,7 @@ export function ClaimButton({ reportId }: { reportId: string }) {
         type="button"
         onClick={onClick}
         disabled={pending}
-        className="rounded border border-blue-600 px-4 py-2 text-sm font-semibold text-blue-700 transition-colors hover:bg-blue-50 disabled:opacity-50"
+        className="rounded border border-brand-blue-600 px-4 py-2 text-sm font-semibold text-brand-blue-700 transition-colors hover:bg-brand-blue-50 disabled:opacity-50"
       >
         {tr('admin.reports.action_claim')}
       </button>

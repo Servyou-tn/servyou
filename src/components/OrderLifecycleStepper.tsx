@@ -42,12 +42,12 @@ export function OrderLifecycleStepper({
           const done = !isCancelled && i < currentIndex
           const current = !isCancelled && i === currentIndex
           const nodeCls = current
-            ? 'bg-blue-600 text-white border-blue-600'
+            ? 'bg-brand-blue-600 text-white border-brand-blue-600'
             : done
             ? 'bg-green-100 text-green-700 border-green-300'
             : 'bg-gray-100 text-gray-400 border-gray-200'
           const labelCls = current
-            ? 'text-blue-700 font-medium'
+            ? 'text-brand-blue-700 font-medium'
             : done
             ? 'text-green-700'
             : 'text-gray-400'

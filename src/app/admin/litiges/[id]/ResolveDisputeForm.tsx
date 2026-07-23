@@ -70,7 +70,7 @@ export function ResolveDisputeForm({ disputeId }: { disputeId: string }) {
       <button
         type="submit"
         disabled={pending || outcome === '' || note.trim().length === 0}
-        className="rounded bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-blue-700 disabled:opacity-50"
+        className="rounded bg-brand-blue-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-brand-blue-700 disabled:opacity-50"
       >
         {tr('admin.disputes.action_resolve')}
       </button>
