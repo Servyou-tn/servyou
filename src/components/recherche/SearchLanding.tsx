@@ -14,7 +14,7 @@ export function SearchLanding({ lang }: { lang: Lang }) {
   return (
     <div className={`rounded-2xl bg-white p-12 text-center ${CARD_SHADOW}`}>
       <div className="mx-auto max-w-md">
-        <Search className="mx-auto h-10 w-10 text-[#B8B8B8]" aria-hidden="true" />
+        <Search className="mx-auto h-10 w-10 text-icon-muted" aria-hidden="true" />
         <h1 className="mt-4 text-xl font-bold text-text-primary">{t('search.landing.title', lang)}</h1>
         <p className="mt-2 text-[13px] text-text-muted">{t('search.landing.subtitle', lang)}</p>
         <div className="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row">

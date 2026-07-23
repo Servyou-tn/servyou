@@ -41,19 +41,19 @@ export function SearchEmptyState({
   const hasQuery = query !== ''
 
   const primary = `inline-flex items-center rounded-full bg-brand-accent px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-brand-accent/90 ${FOCUS_RING}`
-  const textLink = `rounded text-[13px] font-medium text-[#6B6B6B] underline-offset-2 hover:underline ${FOCUS_RING}`
+  const textLink = `rounded text-[13px] font-medium text-text-muted underline-offset-2 hover:underline ${FOCUS_RING}`
 
   return (
     <div className={`rounded-2xl bg-white p-12 text-center ${CARD_SHADOW}`}>
       <div className="mx-auto max-w-md">
-        <SearchX className="mx-auto h-10 w-10 text-[#B8B8B8]" aria-hidden="true" />
+        <SearchX className="mx-auto h-10 w-10 text-icon-muted" aria-hidden="true" />
 
-        <p className="mt-4 text-base font-semibold text-[#0A0A0A]">
+        <p className="mt-4 text-base font-semibold text-text-primary">
           {hasQuery
             ? t('search.empty.noResults', lang, { query })
             : t('search.empty.filtered', lang)}
         </p>
-        <p className="mt-2 text-[13px] text-[#6B6B6B]">{t('search.empty.subtitle', lang)}</p>
+        <p className="mt-2 text-[13px] text-text-muted">{t('search.empty.subtitle', lang)}</p>
 
         {categories.length > 0 && (
           <div className="mt-5 flex flex-wrap justify-center gap-2">
@@ -61,7 +61,7 @@ export function SearchEmptyState({
               <Link
                 key={c.slug}
                 href={`/recherche?categorie=${encodeURIComponent(c.slug)}`}
-                className={`inline-flex items-center rounded-full border border-border-subtle bg-white px-4 py-2 text-[13px] font-medium text-[#0A0A0A] transition-colors hover:bg-slate-50 ${FOCUS_RING}`}
+                className={`inline-flex items-center rounded-full border border-border-subtle bg-white px-4 py-2 text-[13px] font-medium text-text-primary transition-colors hover:bg-slate-50 ${FOCUS_RING}`}
               >
                 {lang === 'ar' ? c.name_ar : c.name_fr}
               </Link>

@@ -260,7 +260,7 @@ export function OrderDetail({ order }: { order: OrderDetailData }) {
               {order.item.imageUrl ? (
                 <Image src={order.item.imageUrl} alt="" fill sizes="96px" className="object-cover" />
               ) : (
-                <span className="grid h-full w-full place-items-center text-[#B8B8B8]">
+                <span className="grid h-full w-full place-items-center text-icon-muted">
                   {order.orderType === 'product' ? (
                     <Package className="h-8 w-8" aria-hidden="true" />
                   ) : (

@@ -58,13 +58,13 @@ export function ServiceListingCard({ service }: { service: ServiceListing }) {
                 className="object-cover"
               />
             ) : (
-              <span className="text-xl font-bold text-[#0A0A0A]" aria-hidden="true">
+              <span className="text-xl font-bold text-text-primary" aria-hidden="true">
                 {firstLetter}
               </span>
             )}
           </div>
           {service.freelancer.full_name && (
-            <p className="mt-2 line-clamp-1 w-full text-center text-xs font-medium text-[#0A0A0A]">
+            <p className="mt-2 line-clamp-1 w-full text-center text-xs font-medium text-text-primary">
               {service.freelancer.full_name}
             </p>
           )}
@@ -73,18 +73,18 @@ export function ServiceListingCard({ service }: { service: ServiceListing }) {
         {/* MIDDLE — category pill, title, description, city. */}
         <div className="min-w-0 flex-1">
           {service.category?.name_fr && (
-            <span className="inline-block rounded-full bg-[#F4F4F4] px-3 py-1 text-[11px] font-medium text-[#1A1A1A]">
+            <span className="inline-block rounded-full bg-[#F4F4F4] px-3 py-1 text-[11px] font-medium text-text-primary">
               {service.category.name_fr}
             </span>
           )}
-          <p className="mt-2 line-clamp-1 text-[17px] font-bold leading-tight text-[#0A0A0A]">
+          <p className="mt-2 line-clamp-1 text-[17px] font-bold leading-tight text-text-primary">
             {service.title}
           </p>
-          <p className="mt-2 line-clamp-2 text-[13px] leading-[1.5] text-[#8B8B8B]">
+          <p className="mt-2 line-clamp-2 text-[13px] leading-[1.5] text-text-muted">
             {service.description}
           </p>
           {service.freelancer.city && (
-            <p className="mt-2 text-xs text-[#8B8B8B]">{service.freelancer.city}</p>
+            <p className="mt-2 text-xs text-text-muted">{service.freelancer.city}</p>
           )}
         </div>
 
@@ -93,16 +93,16 @@ export function ServiceListingCard({ service }: { service: ServiceListing }) {
             justify-between stretching the card). */}
         <div className="flex shrink-0 flex-col items-end gap-2 pt-8">
           <div className="text-end">
-            <p className="text-[15px] font-bold text-[#0A0A0A]">{priceLabel}</p>
+            <p className="text-[15px] font-bold text-text-primary">{priceLabel}</p>
             {service.delivery_time && (
-              <p className="mt-1 text-xs text-[#B8B8B8]">
+              <p className="mt-1 text-xs text-icon-muted">
                 {t('listing.service.deliveryTime', lang, { time: service.delivery_time })}
               </p>
             )}
           </div>
           <span
             aria-hidden="true"
-            className="flex h-9 w-9 items-center justify-center rounded-full bg-[#0A0A0A] text-white transition-all duration-200 hover:scale-105 hover:bg-[#1A1A1A]"
+            className="flex h-9 w-9 items-center justify-center rounded-full bg-text-primary text-white transition-all duration-200 hover:scale-105 hover:bg-text-primary"
           >
             <ArrowRightIcon className="h-4 w-4" />
           </span>

@@ -85,7 +85,7 @@ export function SharedSearchBar({
       <button
         type="submit"
         aria-label={t('home.search_btn', lang)}
-        className={`ml-5 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[#8B8B8B] ${FOCUS_RING}`}
+        className={`ml-5 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-text-muted ${FOCUS_RING}`}
       >
         <SearchIcon className="h-5 w-5" aria-hidden="true" />
       </button>
@@ -96,7 +96,7 @@ export function SharedSearchBar({
         onChange={(e) => setQuery(e.target.value)}
         aria-label={t('home.search_btn', lang)}
         placeholder={t('dashboard.topbar.searchPlaceholder', lang)}
-        className="min-w-0 flex-1 border-0 bg-transparent px-3 text-[14px] text-[#0A0A0A] outline-none placeholder:text-[#8B8B8B]"
+        className="min-w-0 flex-1 border-0 bg-transparent px-3 text-[14px] text-text-primary outline-none placeholder:text-text-muted"
       />
       <SegmentedControl
         options={typeOptions}

@@ -29,7 +29,7 @@ export default async function FaqPage() {
         <h1 className="text-3xl font-bold tracking-tight text-text-primary md:text-5xl">
           {t('faq.headline', lang)}
         </h1>
-        <p className="mx-auto mt-4 max-w-xl text-lg text-[#6B6B6B]">{t('faq.subtitle', lang)}</p>
+        <p className="mx-auto mt-4 max-w-xl text-lg text-text-muted">{t('faq.subtitle', lang)}</p>
       </div>
 
       <div className="mt-10">

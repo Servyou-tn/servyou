@@ -37,7 +37,7 @@ export function FaqView({ categories }: { categories: ResolvedCategory[] }) {
       {/* Search */}
       <div className="relative">
         <Search
-          className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[#6B6B6B]"
+          className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-text-muted"
           aria-hidden="true"
         />
         <input
@@ -46,13 +46,13 @@ export function FaqView({ categories }: { categories: ResolvedCategory[] }) {
           onChange={(e) => setQuery(e.target.value)}
           placeholder={t('faq.search.placeholder', lang)}
           aria-label={t('faq.search.placeholder', lang)}
-          className={`w-full rounded-full border border-border-subtle bg-white py-3 pl-12 pr-4 text-sm text-[#0A0A0A] placeholder:text-[#6B6B6B] ${FOCUS_RING}`}
+          className={`w-full rounded-full border border-border-subtle bg-white py-3 pl-12 pr-4 text-sm text-text-primary placeholder:text-text-muted ${FOCUS_RING}`}
         />
       </div>
 
       {filtered.length === 0 ? (
         <div className="mt-10 rounded-2xl border border-border-subtle bg-white p-8 text-center">
-          <p className="text-sm text-[#6B6B6B]">{t('faq.search.noResults', lang)}</p>
+          <p className="text-sm text-text-muted">{t('faq.search.noResults', lang)}</p>
           <Link
             href="/contact"
             className={`mt-3 inline-block rounded text-sm font-semibold text-brand-accent hover:underline ${FOCUS_RING}`}
@@ -78,12 +78,12 @@ export function FaqView({ categories }: { categories: ResolvedCategory[] }) {
                       >
                         <span className="text-sm font-medium text-text-primary">{item.q}</span>
                         <ChevronDown
-                          className={`h-5 w-5 shrink-0 text-[#6B6B6B] transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
+                          className={`h-5 w-5 shrink-0 text-text-muted transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
                           aria-hidden="true"
                         />
                       </button>
                       {isOpen && (
-                        <div className="px-5 pb-4 text-sm leading-relaxed text-[#6B6B6B]">{item.a}</div>
+                        <div className="px-5 pb-4 text-sm leading-relaxed text-text-muted">{item.a}</div>
                       )}
                     </div>
                   )

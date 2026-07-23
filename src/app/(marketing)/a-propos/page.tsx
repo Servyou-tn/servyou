@@ -24,7 +24,7 @@ export default async function AProposPage() {
         <h1 className="text-3xl font-bold leading-tight tracking-tight text-text-primary md:text-5xl">
           {t('about.headline', lang)}
         </h1>
-        <p className="mt-4 text-lg text-[#6B6B6B]">{t('about.subtitle', lang)}</p>
+        <p className="mt-4 text-lg text-text-muted">{t('about.subtitle', lang)}</p>
       </div>
 
       {/* Story (founder voice) */}
@@ -46,7 +46,7 @@ export default async function AProposPage() {
             <div key={v.n} className="rounded-2xl border border-border-subtle bg-white p-6">
               <span className="text-2xl font-bold text-brand-accent">{v.n}</span>
               <h3 className="mt-3 text-base font-bold text-text-primary">{t(v.title, lang)}</h3>
-              <p className="mt-2 text-[14px] leading-relaxed text-[#6B6B6B]">{t(v.body, lang)}</p>
+              <p className="mt-2 text-[14px] leading-relaxed text-text-muted">{t(v.body, lang)}</p>
             </div>
           ))}
         </div>

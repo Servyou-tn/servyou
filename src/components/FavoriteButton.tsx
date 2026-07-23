@@ -95,7 +95,7 @@ export function FavoriteButton({ item_type, item_id }: Props) {
       title={label}
       aria-label={label}
       className={`p-2 rounded-full transition-colors text-xl leading-none disabled:opacity-50 ${
-        favorited ? 'text-red-500' : 'text-[#8B8B8B]'
+        favorited ? 'text-red-500' : 'text-text-muted'
       }`}
     >
       {favorited ? '♥' : '♡'}

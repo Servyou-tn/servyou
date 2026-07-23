@@ -38,7 +38,7 @@ export function CopyableEmail({ email }: { email: string }) {
         {copied ? (
           <Check className="h-4 w-4 text-green-600" aria-hidden="true" />
         ) : (
-          <Copy className="h-4 w-4 text-[#6B6B6B]" aria-hidden="true" />
+          <Copy className="h-4 w-4 text-text-muted" aria-hidden="true" />
         )}
       </button>
     </div>

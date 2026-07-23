@@ -17,7 +17,7 @@ const SUBJECTS = [
 ] as const
 
 const fieldClass = (invalid: boolean) =>
-  `w-full rounded-xl border bg-white px-4 py-3 text-sm text-[#0A0A0A] placeholder:text-[#6B6B6B] ${FOCUS_RING} ${
+  `w-full rounded-xl border bg-white px-4 py-3 text-sm text-text-primary placeholder:text-text-muted ${FOCUS_RING} ${
     invalid ? 'border-red-400' : 'border-border-subtle'
   }`
 
@@ -134,7 +134,7 @@ export function ContactForm() {
         />
         <div className="mt-1 flex items-center justify-between">
           {errors.message ? errorText('contact.form.error.message') : <span />}
-          <span className="text-xs text-[#6B6B6B]">
+          <span className="text-xs text-text-muted">
             {t('contact.form.counter', lang, { count: message.length })}
           </span>
         </div>

@@ -30,7 +30,7 @@ export function CategoryEmptyState({
   browseAllHref,
 }: Props) {
   const primary = `inline-flex items-center rounded-full bg-brand-accent px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-brand-accent/90 ${FOCUS_RING}`
-  const textLink = `rounded text-[13px] font-medium text-[#6B6B6B] underline-offset-2 hover:underline ${FOCUS_RING}`
+  const textLink = `rounded text-[13px] font-medium text-text-muted underline-offset-2 hover:underline ${FOCUS_RING}`
 
   // "Voir les services" when currently on products, and vice-versa.
   const switchLabel =
@@ -41,10 +41,10 @@ export function CategoryEmptyState({
   return (
     <div className={`rounded-2xl bg-white p-12 text-center ${CARD_SHADOW}`}>
       <div className="mx-auto max-w-md">
-        <Inbox className="mx-auto h-10 w-10 text-[#B8B8B8]" aria-hidden="true" />
+        <Inbox className="mx-auto h-10 w-10 text-icon-muted" aria-hidden="true" />
 
-        <p className="mt-4 text-base font-semibold text-[#0A0A0A]">{t('category.empty.title', lang)}</p>
-        <p className="mt-2 text-[13px] text-[#6B6B6B]">{t('category.empty.subtitle', lang)}</p>
+        <p className="mt-4 text-base font-semibold text-text-primary">{t('category.empty.title', lang)}</p>
+        <p className="mt-2 text-[13px] text-text-muted">{t('category.empty.subtitle', lang)}</p>
 
         <div className="mt-6 flex flex-col items-center gap-3">
           {hasFilters && (

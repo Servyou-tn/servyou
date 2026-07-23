@@ -73,7 +73,7 @@ export function SidebarSelectFilter({
         aria-expanded={open}
         aria-controls={panelId}
         aria-label={open ? ariaHide : ariaShow}
-        className={`flex w-full cursor-pointer items-center justify-between gap-2 py-3 text-left text-[13px] font-semibold uppercase tracking-wide text-[#6B6B6B] transition-colors hover:text-[#0A0A0A] ${FOCUS_RING}`}
+        className={`flex w-full cursor-pointer items-center justify-between gap-2 py-3 text-left text-[13px] font-semibold uppercase tracking-wide text-text-muted transition-colors hover:text-text-primary ${FOCUS_RING}`}
       >
         <span className="flex items-baseline gap-1.5">
           <span>{groupLabel}</span>
@@ -83,7 +83,7 @@ export function SidebarSelectFilter({
           )}
         </span>
         <ChevronDown
-          className={`h-4 w-4 shrink-0 text-[#6B6B6B] transition-transform duration-200 ease-in-out ${
+          className={`h-4 w-4 shrink-0 text-text-muted transition-transform duration-200 ease-in-out ${
             open ? 'rotate-180' : ''
           }`}
           aria-hidden="true"
@@ -103,7 +103,7 @@ export function SidebarSelectFilter({
             {options.map((o) => (
               <label
                 key={o.value}
-                className="flex cursor-pointer items-center gap-2.5 py-1.5 text-sm text-[#0A0A0A]"
+                className="flex cursor-pointer items-center gap-2.5 py-1.5 text-sm text-text-primary"
               >
                 <FilterControl
                   type="radio"

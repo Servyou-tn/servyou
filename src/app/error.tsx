@@ -26,11 +26,11 @@ export default function Error({
   return (
     <MarketingShell lang={lang}>
       <div className="mx-auto max-w-2xl px-6 py-24 text-center">
-        <AlertTriangle className="mx-auto h-12 w-12 text-[#B8B8B8]" aria-hidden="true" />
+        <AlertTriangle className="mx-auto h-12 w-12 text-icon-muted" aria-hidden="true" />
         <h1 className="mt-4 text-3xl font-bold tracking-tight text-text-primary">
           {t('system.error.title', lang)}
         </h1>
-        <p className="mx-auto mt-3 max-w-md text-base leading-relaxed text-[#6B6B6B]">
+        <p className="mx-auto mt-3 max-w-md text-base leading-relaxed text-text-muted">
           {t('system.error.subtitle', lang)}
         </p>
         {/* TODO Phase 10: display error reference ID (error.digest) here when monitoring is wired. */}
@@ -51,7 +51,7 @@ export default function Error({
           </Link>
           <Link
             href="/contact"
-            className={`rounded text-sm font-medium text-[#6B6B6B] hover:underline ${FOCUS_RING}`}
+            className={`rounded text-sm font-medium text-text-muted hover:underline ${FOCUS_RING}`}
           >
             {t('system.error.contact', lang)}
           </Link>
