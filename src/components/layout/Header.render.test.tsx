@@ -30,7 +30,7 @@ function html(
   path: string,
 ): string {
   nav.path = path
-  return renderToString(createElement(LangProvider, { lang: 'fr', children: createElement(Header, props) }))
+  return renderToString(<LangProvider lang="fr">{createElement(Header, props)}</LangProvider>)
 }
 
 describe('Header render smoke — marketing navbar, landing-only, same for every visitor', () => {

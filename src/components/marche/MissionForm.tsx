@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
+import Link from 'next/link'
 import { useLang } from '@/components/LangProvider'
 import { t } from '@/lib/i18n'
 import { GOVERNORATES } from '@/lib/tunisia-governorates'
@@ -182,12 +183,12 @@ export function MissionForm({ categories }: { categories: { id: string; name_fr:
           >
             {pending ? t('mission.form.submitting', lang) : t('mission.form.submit', lang)}
           </button>
-          <a
+          <Link
             href="/mes-missions"
             className={`inline-flex items-center rounded-full px-5 py-2.5 text-sm font-medium text-text-muted transition-colors hover:bg-surface-pill ${FOCUS_RING}`}
           >
             {t('mission.form.cancel', lang)}
-          </a>
+          </Link>
         </div>
       </div>
     </form>
