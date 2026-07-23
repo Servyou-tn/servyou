@@ -25,9 +25,13 @@ const url = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
 const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 
-if (!url || !serviceKey || !anonKey) {
-  throw new Error('Missing NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, or NEXT_PUBLIC_SUPABASE_ANON_KEY')
-}
+// Creds injected via loadEnv/.env.local. Absent in CI / credential-less runs by design —
+// describe.skipIf(!hasCreds) skips the suite and the hooks no-op instead of throwing.
+const hasCreds = Boolean(
+  process.env.NEXT_PUBLIC_SUPABASE_URL &&
+  process.env.SUPABASE_SERVICE_ROLE_KEY &&
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+)
 
 // File-specific email prefix so teardown is surgical and never collides with the
 // rls-smoke script (alice/bob/charlie) or the freelancer-config test (frl-cfg-).
@@ -37,12 +41,12 @@ const OWNER_EMAIL = `${EMAIL_PREFIX}owner${EMAIL_SUFFIX}`
 const OTHER_EMAIL = `${EMAIL_PREFIX}other${EMAIL_SUFFIX}`
 const PASSWORD = 'Rls-Config-Test-7k2!' // ephemeral test users only; never a real account
 
-const admin: SupabaseClient = createClient(url, serviceKey, {
-  auth: { autoRefreshToken: false, persistSession: false },
-})
-const anon: SupabaseClient = createClient(url, anonKey, {
-  auth: { autoRefreshToken: false, persistSession: false },
-})
+const admin: SupabaseClient = hasCreds
+  ? createClient(url, serviceKey, { auth: { autoRefreshToken: false, persistSession: false } })
+  : (undefined as unknown as SupabaseClient)
+const anon: SupabaseClient = hasCreds
+  ? createClient(url, anonKey, { auth: { autoRefreshToken: false, persistSession: false } })
+  : (undefined as unknown as SupabaseClient)
 
 async function signIn(email: string): Promise<SupabaseClient> {
   const client = createClient(url, anonKey, { auth: { autoRefreshToken: false, persistSession: false } })
@@ -83,6 +87,7 @@ let ownerClient: SupabaseClient
 let otherClient: SupabaseClient
 
 beforeAll(async () => {
+  if (!hasCreds) return
   await teardown() // teardown-first: recover from any crashed prior run
 
   ownerId = await createUser(OWNER_EMAIL)
@@ -114,12 +119,13 @@ beforeAll(async () => {
 }, 60000)
 
 afterAll(async () => {
+  if (!hasCreds) return
   await teardown()
 }, 60000)
 
 // ─── shop_payment_methods: public read, owner-only write ──────────────────────
 
-describe('shop_payment_methods RLS', () => {
+describe.skipIf(!hasCreds)('shop_payment_methods RLS', () => {
   it('anon CAN read shop_payment_methods (public read)', async () => {
     const { data, error } = await anon
       .from('shop_payment_methods').select('id, method').eq('shop_id', shopId).eq('method', 'cod')
@@ -142,7 +148,7 @@ describe('shop_payment_methods RLS', () => {
 
 // ─── shop_categories: public read, owner-only write ───────────────────────────
 
-describe('shop_categories RLS', () => {
+describe.skipIf(!hasCreds)('shop_categories RLS', () => {
   it('anon CAN read shop_categories (public read)', async () => {
     const { data, error } = await anon
       .from('shop_categories').select('id, category_id').eq('shop_id', shopId).eq('category_id', catA)

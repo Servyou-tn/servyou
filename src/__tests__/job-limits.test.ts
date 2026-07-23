@@ -18,13 +18,14 @@ import { MAX_RESPONSES_PER_POST, MAX_ACTIVE_RESPONSES_PER_FREELANCER } from '@/l
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
 
-if (!url || !serviceKey) {
-  throw new Error('Missing NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY in environment')
-}
+// Creds injected via loadEnv/.env.local. Absent in CI / credential-less runs by design —
+// describe.skipIf(!hasCreds) skips the suite and the hooks no-op instead of throwing.
+// (Re-reads process.env so the ! assertions above don't mask a genuine check.)
+const hasCreds = Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY)
 
-const admin: SupabaseClient = createClient(url, serviceKey, {
-  auth: { autoRefreshToken: false, persistSession: false },
-})
+const admin: SupabaseClient = hasCreds
+  ? createClient(url, serviceKey, { auth: { autoRefreshToken: false, persistSession: false } })
+  : (undefined as unknown as SupabaseClient)
 
 // IDs collected during setup for teardown
 const testUserIds: string[] = []
@@ -73,11 +74,13 @@ let consumerId: string
 let freelancerId: string
 
 beforeAll(async () => {
+  if (!hasCreds) return
   consumerId = await createTestUser()
   freelancerId = await createTestUser()
 }, 60000)
 
 afterAll(async () => {
+  if (!hasCreds) return
   // Clean up responses, then posts, then users
   if (testPostIds.length > 0) {
     await admin.from('job_responses').delete().in('job_post_id', testPostIds)
@@ -89,7 +92,7 @@ afterAll(async () => {
   }
 }, 60000)
 
-describe('Trigger: self-response blocked', () => {
+describe.skipIf(!hasCreds)('Trigger: self-response blocked', () => {
   it('consumer cannot respond to their own post', async () => {
     const postId = await createTestPost(consumerId)
     const { ok, msg } = await tryRespond(consumerId, postId)
@@ -98,7 +101,7 @@ describe('Trigger: self-response blocked', () => {
   })
 })
 
-describe('Trigger: duplicate response blocked', () => {
+describe.skipIf(!hasCreds)('Trigger: duplicate response blocked', () => {
   it('second response to the same post is rejected', async () => {
     const postId = await createTestPost(consumerId)
     const first = await tryRespond(freelancerId, postId)
@@ -110,7 +113,7 @@ describe('Trigger: duplicate response blocked', () => {
   })
 })
 
-describe(`Trigger: max ${MAX_RESPONSES_PER_POST} responses per post`, () => {
+describe.skipIf(!hasCreds)(`Trigger: max ${MAX_RESPONSES_PER_POST} responses per post`, () => {
   it(`${MAX_RESPONSES_PER_POST + 1}th response is rejected`, async () => {
     const postId = await createTestPost(consumerId)
 
@@ -131,7 +134,7 @@ describe(`Trigger: max ${MAX_RESPONSES_PER_POST} responses per post`, () => {
   }, 120000)
 })
 
-describe(`Trigger: max ${MAX_ACTIVE_RESPONSES_PER_FREELANCER} active responses per freelancer`, () => {
+describe.skipIf(!hasCreds)(`Trigger: max ${MAX_ACTIVE_RESPONSES_PER_FREELANCER} active responses per freelancer`, () => {
   it(`${MAX_ACTIVE_RESPONSES_PER_FREELANCER + 1}th active response is rejected`, async () => {
     const busyFreelancer = await createTestUser()
 
@@ -152,7 +155,7 @@ describe(`Trigger: max ${MAX_ACTIVE_RESPONSES_PER_FREELANCER} active responses p
   }, 120000)
 })
 
-describe('Trigger: filled/expired post response does NOT count toward active cap', () => {
+describe.skipIf(!hasCreds)('Trigger: filled/expired post response does NOT count toward active cap', () => {
   it('response on a filled post is excluded from active count', async () => {
     const capFreelancer = await createTestUser()
 

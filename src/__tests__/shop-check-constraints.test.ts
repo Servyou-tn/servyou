@@ -19,18 +19,18 @@ import { createClient, SupabaseClient } from '@supabase/supabase-js'
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
 
-if (!url || !serviceKey) {
-  throw new Error('Missing NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY')
-}
+// Creds injected via loadEnv/.env.local. Absent in CI / credential-less runs by design —
+// describe.skipIf(!hasCreds) skips the suite and the hooks no-op instead of throwing.
+const hasCreds = Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY)
 
 const EMAIL_SUFFIX = '@rls-smoke.servyou.invalid'
 const EMAIL_PREFIX = 'shop-chk-'
 const OWNER_EMAIL = `${EMAIL_PREFIX}owner${EMAIL_SUFFIX}`
 const PASSWORD = 'Rls-Config-Test-7k2!' // ephemeral test user only; never a real account
 
-const admin: SupabaseClient = createClient(url, serviceKey, {
-  auth: { autoRefreshToken: false, persistSession: false },
-})
+const admin: SupabaseClient = hasCreds
+  ? createClient(url, serviceKey, { auth: { autoRefreshToken: false, persistSession: false } })
+  : (undefined as unknown as SupabaseClient)
 
 async function teardown() {
   const { data, error } = await admin
@@ -46,6 +46,7 @@ let ownerId: string
 let shopId: string
 
 beforeAll(async () => {
+  if (!hasCreds) return
   await teardown() // teardown-first: recover from any crashed prior run
 
   const { data: user, error: userErr } = await admin.auth.admin.createUser({
@@ -65,10 +66,11 @@ beforeAll(async () => {
 }, 60000)
 
 afterAll(async () => {
+  if (!hasCreds) return
   await teardown()
 }, 60000)
 
-describe('shops CHECK constraints', () => {
+describe.skipIf(!hasCreds)('shops CHECK constraints', () => {
   it('rejects an out-of-set shop_type', async () => {
     const { error } = await admin
       .from('shops').insert({ owner_id: ownerId, name: 'Bad Type Shop', shop_type: 'invalid_value' })
@@ -84,7 +86,7 @@ describe('shops CHECK constraints', () => {
   })
 })
 
-describe('shop_payment_methods CHECK constraint', () => {
+describe.skipIf(!hasCreds)('shop_payment_methods CHECK constraint', () => {
   it('rejects an out-of-set payment method (paypal)', async () => {
     const { error } = await admin
       .from('shop_payment_methods').insert({ shop_id: shopId, method: 'paypal' })
