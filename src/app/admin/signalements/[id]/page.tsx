@@ -66,7 +66,7 @@ function formatDate(value: string, lang: Lang): string {
 
 const STATUS_BADGE: Record<string, string> = {
   open: 'bg-amber-50 text-amber-700',
-  under_review: 'bg-blue-50 text-blue-700',
+  under_review: 'bg-brand-blue-50 text-brand-blue-700',
   resolved: 'bg-green-50 text-green-700',
   dismissed: 'bg-gray-100 text-gray-600',
 }
@@ -89,7 +89,7 @@ export default async function ReportDetailPage({ params }: Props) {
     return (
       <div className="max-w-2xl space-y-4">
         <p className="text-sm text-gray-700">{tr('admin.reports.error_not_found')}</p>
-        <Link href="/admin/signalements" className="inline-block text-sm text-blue-600 hover:underline">
+        <Link href="/admin/signalements" className="inline-block text-sm text-brand-blue-600 hover:underline">
           {tr('admin.reports.back_to_queue')}
         </Link>
       </div>
@@ -144,7 +144,7 @@ export default async function ReportDetailPage({ params }: Props) {
 
   return (
     <div className="max-w-2xl space-y-6">
-      <Link href="/admin/signalements" className="inline-block text-sm text-blue-600 hover:underline">
+      <Link href="/admin/signalements" className="inline-block text-sm text-brand-blue-600 hover:underline">
         {tr('admin.reports.back_to_queue')}
       </Link>
 
@@ -166,11 +166,11 @@ export default async function ReportDetailPage({ params }: Props) {
             <dd className="mt-1 text-gray-800">
               {tr('admin.reports.target_type_' + r.target_type)}
               {r.target_type === 'user' && targetUrl ? (
-                <Link href={targetUrl} className="ms-2 text-blue-600 hover:underline">
+                <Link href={targetUrl} className="ms-2 text-brand-blue-600 hover:underline">
                   {targetUser?.full_name ?? r.target_id}
                 </Link>
               ) : targetUrl ? (
-                <Link href={targetUrl} target="_blank" rel="noopener noreferrer" className="ms-2 text-blue-600 hover:underline">
+                <Link href={targetUrl} target="_blank" rel="noopener noreferrer" className="ms-2 text-brand-blue-600 hover:underline">
                   {tr('admin.reports.target_view')}
                 </Link>
               ) : (

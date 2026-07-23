@@ -106,8 +106,8 @@ export function NewPasswordForm({ initialView }: { initialView: NewPasswordIniti
         <AuthShell variant="navy" maxWidthClass="max-w-[480px]">
           {view === 'checking' ? (
             <div className="flex flex-col items-center text-center">
-              <SpinnerIcon className="h-10 w-10 animate-spin text-blue-200" />
-              <p className="mt-4 text-sm text-blue-200">{t('common.loading', lang)}</p>
+              <SpinnerIcon className="h-10 w-10 animate-spin text-brand-blue-200" />
+              <p className="mt-4 text-sm text-brand-blue-200">{t('common.loading', lang)}</p>
             </div>
           ) : view === 'invalid' ? (
             <div className="flex flex-col items-center text-center">
@@ -116,7 +116,7 @@ export function NewPasswordForm({ initialView }: { initialView: NewPasswordIniti
               <Link ref={requestNewRef} href="/mot-de-passe-oublie" className={`mt-6 ${primaryBtn}`}>
                 {t('newPassword.invalid.requestNew', lang)}
               </Link>
-              <Link href="/connexion" className="mt-4 text-[13px] font-medium text-blue-300 hover:underline">
+              <Link href="/connexion" className="mt-4 text-[13px] font-medium text-brand-blue-300 hover:underline">
                 {t('newPassword.invalid.backToSignin', lang)}
               </Link>
             </div>

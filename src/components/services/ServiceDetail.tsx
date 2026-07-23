@@ -119,7 +119,7 @@ export function ServiceDetail({
               </p>
             )}
             {service.deliveryTime && (
-              <span className="mt-2 inline-flex items-center gap-1 rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-brand-accent">
+              <span className="mt-2 inline-flex items-center gap-1 rounded-full bg-brand-blue-50 px-3 py-1 text-xs font-medium text-brand-accent">
                 <Clock className="h-3.5 w-3.5" aria-hidden="true" />
                 {t('service.detail.deliveryIn', lang, { time: service.deliveryTime })}
               </span>

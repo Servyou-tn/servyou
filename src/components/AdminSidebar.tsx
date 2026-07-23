@@ -43,7 +43,7 @@ export function AdminSidebar({ t }: Props) {
                 href={item.href}
                 aria-current={active ? 'page' : undefined}
                 className={`whitespace-nowrap rounded px-3 py-2 text-sm font-medium transition-colors ${
-                  active ? 'bg-blue-50 text-blue-700' : 'text-gray-700 hover:bg-gray-50'
+                  active ? 'bg-brand-blue-50 text-brand-blue-700' : 'text-gray-700 hover:bg-gray-50'
                 }`}
               >
                 {label}

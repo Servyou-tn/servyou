@@ -9,7 +9,7 @@
   /* ═══ Brand color primitives (raw hex) — ServYou Design-Build Rules (CLAUDE.md §2–§3, v2 token vocabulary;
      canonical: docs/servyou-claude-code-design-rules.md §3). Corrected to Figma v2 in PR-DS-3a (2026-07-23). ═══ */
   /* Blue scale. 600 = primary CTA / link / active / focus · 800 = "Serv" wordmark navy · 950 = deepest sidebar. */
-  --brand-blue-50:  #EFF4FF;   --brand-blue-100: #DBE6FE;
+  --brand-blue-50:  #EFF4FF;   --brand-blue-100: #DBE6FE;   --brand-blue-200: #BCCFFC;   --brand-blue-300: #8FAEF9;
   --brand-blue-500: #3B82F6;   --brand-blue-600: #1F5FE0;   --brand-blue-700: #1A48B8;
   --brand-blue-800: #1E3A8A;   --brand-blue-900: #15296B;   --brand-blue-950: #0B1A3D;
   --brand-blue-600-rgb: 31 95 224;   /* = #1F5FE0 as an rgb triplet, for rgb(… / α) tints (see .card-premium) */
@@ -114,8 +114,8 @@
   --color-status-dot-success: var(--status-dot-success);
 
   /* ── Primitives → color utilities (bg-/text-/border-/outline-…). ── */
-  /* Blue scale (600/800/950 special-purpose; 200/300/400/900 exist in Figma, add on demand). */
-  --color-brand-blue-50:  var(--brand-blue-50);   --color-brand-blue-100: var(--brand-blue-100);
+  /* Blue scale (600/800/950 special-purpose; 200/300 added in DS-3b-1 for the auth funnel; 400/900 in Figma, add on demand). */
+  --color-brand-blue-50:  var(--brand-blue-50);   --color-brand-blue-100: var(--brand-blue-100);   --color-brand-blue-200: var(--brand-blue-200);   --color-brand-blue-300: var(--brand-blue-300);
   --color-brand-blue-500: var(--brand-blue-500);  --color-brand-blue-600: var(--brand-blue-600);
   --color-brand-blue-700: var(--brand-blue-700);  --color-brand-blue-800: var(--brand-blue-800);
   --color-brand-blue-900: var(--brand-blue-900);  --color-brand-blue-950: var(--brand-blue-950);

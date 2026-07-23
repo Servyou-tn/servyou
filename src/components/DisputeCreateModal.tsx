@@ -110,7 +110,7 @@ export function DisputeCreateModal({ orderId, isOpen, onClose, onCreated }: Prop
           <button
             type="submit"
             disabled={!canSubmit}
-            className="rounded bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-blue-700 disabled:opacity-60"
+            className="rounded bg-brand-blue-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-brand-blue-700 disabled:opacity-60"
           >
             {submitting ? tr('common.submitting') : tr('dispute.action_submit')}
           </button>

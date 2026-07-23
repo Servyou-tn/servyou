@@ -18,7 +18,7 @@ function formatDate(value: string, lang: Lang): string {
 
 const STATUS_BADGE: Record<string, string> = {
   open: 'bg-amber-50 text-amber-700',
-  under_review: 'bg-blue-50 text-blue-700',
+  under_review: 'bg-brand-blue-50 text-brand-blue-700',
   resolved: 'bg-green-50 text-green-700',
   dismissed: 'bg-gray-100 text-gray-600',
 }
@@ -73,7 +73,7 @@ export default async function DisputesQueuePage() {
                     {/* Stretched link: after:absolute after:inset-0 makes this anchor's
                         hit area cover the whole (relative) row while staying a real,
                         keyboard-activatable <a>. */}
-                    <Link href={`/admin/litiges/${d.id}`} className="font-mono text-xs font-medium text-blue-600 after:absolute after:inset-0 hover:underline">
+                    <Link href={`/admin/litiges/${d.id}`} className="font-mono text-xs font-medium text-brand-blue-600 after:absolute after:inset-0 hover:underline">
                       {d.id.slice(0, 8)}
                     </Link>
                   </td>

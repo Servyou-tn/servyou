@@ -169,7 +169,7 @@ export function VerifyEmailFlow({
 
   const resendStatus =
     resend.status === 'success' ? (
-      <p aria-live="polite" className="mt-4 text-[13px] text-blue-200">
+      <p aria-live="polite" className="mt-4 text-[13px] text-brand-blue-200">
         {t('verifyEmail.state1.resendSuccess', lang)}
       </p>
     ) : resend.status === 'error' ? (
@@ -195,8 +195,8 @@ export function VerifyEmailFlow({
         <AuthShell variant="navy" maxWidthClass="max-w-[480px]">
           {view === 'loading' ? (
             <div className="flex flex-col items-center text-center">
-              <SpinnerIcon className="h-10 w-10 animate-spin text-blue-200" />
-              <p className="mt-4 text-sm text-blue-200">{t('common.loading', lang)}</p>
+              <SpinnerIcon className="h-10 w-10 animate-spin text-brand-blue-200" />
+              <p className="mt-4 text-sm text-brand-blue-200">{t('common.loading', lang)}</p>
             </div>
           ) : view === 'verified' ? (
             <div className="flex flex-col items-center text-center">
@@ -205,7 +205,7 @@ export function VerifyEmailFlow({
               <button ref={continueRef} type="button" onClick={() => void doContinue()} className={`mt-6 ${primaryBtn}`}>
                 {t('verifyEmail.state2.continue', lang)}
               </button>
-              <p aria-live="polite" className="mt-4 text-[13px] text-blue-200">
+              <p aria-live="polite" className="mt-4 text-[13px] text-brand-blue-200">
                 {t('verifyEmail.state2.autoRedirect', lang, { seconds: autoSeconds })}
               </p>
             </div>
@@ -244,14 +244,14 @@ export function VerifyEmailFlow({
                     : t('verifyEmail.state3.resend', lang)}
                 </span>
               </button>
-              <Link href="/connexion" className="mt-4 text-[13px] font-medium text-blue-300 hover:underline">
+              <Link href="/connexion" className="mt-4 text-[13px] font-medium text-brand-blue-300 hover:underline">
                 {t('verifyEmail.state3.backToSignin', lang)}
               </Link>
             </div>
           ) : (
             // 'pending' — State 1
             <div className="flex flex-col items-center text-center">
-              <MailIcon className="mb-6 h-16 w-16 text-blue-200" />
+              <MailIcon className="mb-6 h-16 w-16 text-brand-blue-200" />
               <p className="text-[15px] leading-relaxed text-white">
                 {state1Body[0]}
                 <strong className="font-semibold text-white">{emailDisplay}</strong>
@@ -270,7 +270,7 @@ export function VerifyEmailFlow({
                     : t('verifyEmail.state1.resend', lang)}
                 </span>
               </button>
-              <p className="mt-4 text-[13px] text-blue-200">{t('verifyEmail.state1.checkSpam', lang)}</p>
+              <p className="mt-4 text-[13px] text-brand-blue-200">{t('verifyEmail.state1.checkSpam', lang)}</p>
             </div>
           )}
         </AuthShell>

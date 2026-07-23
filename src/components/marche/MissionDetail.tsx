@@ -185,7 +185,7 @@ export function MissionDetail({ mission }: { mission: MissionDetailData }) {
   }
 
   const statusBadge = {
-    open: { cls: 'bg-blue-100 text-blue-700', label: t('missions.detail.status_open', lang) },
+    open: { cls: 'bg-brand-blue-100 text-brand-blue-700', label: t('missions.detail.status_open', lang) },
     filled: { cls: 'bg-green-100 text-green-700', label: t('missions.detail.status_filled', lang) },
     expired: { cls: 'bg-slate-200 text-slate-700', label: t('missions.detail.status_expired', lang) },
   }[display]

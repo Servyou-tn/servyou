@@ -208,13 +208,13 @@ export function SignupForm({ role }: { role: SignupRole }) {
       .map((part, i) => {
         if (part === '{terms}')
           return (
-            <Link key={i} href="/conditions-utilisation" target="_blank" rel="noopener noreferrer" className="font-semibold text-blue-300 hover:underline">
+            <Link key={i} href="/conditions-utilisation" target="_blank" rel="noopener noreferrer" className="font-semibold text-brand-blue-300 hover:underline">
               {t('signup.form.legalTerms', lang)}
             </Link>
           )
         if (part === '{privacy}')
           return (
-            <Link key={i} href="/politique-confidentialite" target="_blank" rel="noopener noreferrer" className="font-semibold text-blue-300 hover:underline">
+            <Link key={i} href="/politique-confidentialite" target="_blank" rel="noopener noreferrer" className="font-semibold text-brand-blue-300 hover:underline">
               {t('signup.form.legalPrivacy', lang)}
             </Link>
           )
@@ -236,7 +236,7 @@ export function SignupForm({ role }: { role: SignupRole }) {
           </button>
           <div className="my-5 flex items-center gap-3" aria-hidden="true">
             <span className="h-px flex-1 bg-white/20" />
-            <span className="text-[13px] font-medium uppercase tracking-wide text-blue-200">{t('signup.form.divider', lang)}</span>
+            <span className="text-[13px] font-medium uppercase tracking-wide text-brand-blue-200">{t('signup.form.divider', lang)}</span>
             <span className="h-px flex-1 bg-white/20" />
           </div>
         </>

@@ -42,7 +42,7 @@ export function CsvExportButton() {
         type="button"
         onClick={onClick}
         disabled={pending}
-        className="rounded bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-blue-700 disabled:opacity-50"
+        className="rounded bg-brand-blue-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-brand-blue-700 disabled:opacity-50"
       >
         {pending ? tr('admin.statistiques.csv_export_pending') : tr('admin.statistiques.csv_export_button')}
       </button>
