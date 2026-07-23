@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
-import { MarcheLayout } from '@/components/marche/MarcheLayout'
+import { AppShell } from '@/components/shell/AppShell'
 import { PageHeader } from '@/components/marche/PageHeader'
 import { PageHeader as PageSubtitle } from '@/components/shared/PageHeader'
 import { MesFavorisView } from '@/components/marche/MesFavorisView'
@@ -70,7 +70,7 @@ export default async function MesFavorisPage({
     ) : undefined
 
   return (
-    <MarcheLayout user={shell.topBarUser} sidebarFilter={typeFilter}>
+    <AppShell user={shell.topBarUser} pageToolbar={typeFilter}>
       <PageSubtitle
         subtitle={t('page_header.favoris.subtitle', lang)}
         emphasisWord={t('page_header.favoris.emphasis', lang)}
@@ -90,6 +90,6 @@ export default async function MesFavorisPage({
       <div className="mt-8">
         <Pagination page={safePage} totalPages={totalPages} basePath="/mes-favoris" />
       </div>
-    </MarcheLayout>
+    </AppShell>
   )
 }

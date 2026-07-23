@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
-import { MarcheLayout } from '@/components/marche/MarcheLayout'
+import { AppShell } from '@/components/shell/AppShell'
 import { MissionDetail } from '@/components/marche/MissionDetail'
 import { getShellUser } from '@/lib/marche/shell-user'
 import { getMissionDetail } from '@/lib/marche/mission-detail'
@@ -32,7 +32,7 @@ export default async function MissionDetailPage({ params }: Props) {
   const mission = await getMissionDetail(id, shell.id)
   if (!mission) {
     return (
-      <MarcheLayout user={shell.topBarUser}>
+      <AppShell user={shell.topBarUser}>
         <div className={`mx-auto max-w-md rounded-2xl bg-white p-12 text-center ${CARD_SHADOW}`}>
           <h1 className="text-lg font-semibold text-text-primary">{t('missions.detail.not_found', lang)}</h1>
           <p className="mt-2 text-sm text-text-muted">{t('missions.detail.not_found_desc', lang)}</p>
@@ -43,13 +43,13 @@ export default async function MissionDetailPage({ params }: Props) {
             {t('missions.detail.back', lang)}
           </Link>
         </div>
-      </MarcheLayout>
+      </AppShell>
     )
   }
 
   return (
-    <MarcheLayout user={shell.topBarUser}>
+    <AppShell user={shell.topBarUser}>
       <MissionDetail mission={mission} />
-    </MarcheLayout>
+    </AppShell>
   )
 }

@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
-import { MarcheLayout } from '@/components/marche/MarcheLayout'
+import { AppShell } from '@/components/shell/AppShell'
 import { PageHeader } from '@/components/marche/PageHeader'
 import { PageHeader as PageSubtitle } from '@/components/shared/PageHeader'
 import { EmptyState } from '@/components/marche/EmptyState'
@@ -49,7 +49,7 @@ export default async function MesMissionsPage({
   )
 
   return (
-    <MarcheLayout user={shell.topBarUser}>
+    <AppShell user={shell.topBarUser}>
       <PageSubtitle
         subtitle={t('page_header.missions.subtitle', lang)}
         emphasisWord={t('page_header.missions.emphasis', lang)}
@@ -79,6 +79,6 @@ export default async function MesMissionsPage({
           </div>
         </>
       )}
-    </MarcheLayout>
+    </AppShell>
   )
 }

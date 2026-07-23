@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
-import { MarcheLayout } from '@/components/marche/MarcheLayout'
+import { AppShell } from '@/components/shell/AppShell'
 import { MonCompteForm } from '@/components/mon-compte/MonCompteForm'
 import { PageHeader } from '@/components/shared/PageHeader'
 import { getShellUser } from '@/lib/marche/shell-user'
@@ -23,12 +23,12 @@ export default async function MonComptePage() {
   const lang = await getLang()
 
   return (
-    <MarcheLayout user={shell.topBarUser}>
+    <AppShell user={shell.topBarUser}>
       <PageHeader
         subtitle={t('page_header.mon_compte.subtitle', lang)}
         emphasisWord={t('page_header.mon_compte.emphasis', lang)}
       />
       <MonCompteForm profile={profile} />
-    </MarcheLayout>
+    </AppShell>
   )
 }

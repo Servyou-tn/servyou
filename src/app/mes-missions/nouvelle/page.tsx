@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
-import { MarcheLayout } from '@/components/marche/MarcheLayout'
+import { AppShell } from '@/components/shell/AppShell'
 import { MissionForm } from '@/components/marche/MissionForm'
 import { getShellUser } from '@/lib/marche/shell-user'
 import { getCategories } from '@/lib/marche/my-data'
@@ -20,12 +20,12 @@ export default async function NouvelleMissionPage() {
   const categories = await getCategories()
 
   return (
-    <MarcheLayout user={shell.topBarUser}>
+    <AppShell user={shell.topBarUser}>
       <PageHeader
         subtitle={t('page_header.nouvelle_mission.subtitle', lang)}
         emphasisWord={t('page_header.nouvelle_mission.emphasis', lang)}
       />
       <MissionForm categories={categories} />
-    </MarcheLayout>
+    </AppShell>
   )
 }
