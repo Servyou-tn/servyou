@@ -28,20 +28,24 @@ const url = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
 const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 
-if (!url || !serviceKey || !anonKey) {
-  throw new Error('Missing NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, or NEXT_PUBLIC_SUPABASE_ANON_KEY')
-}
+// Creds injected via loadEnv/.env.local. Absent in CI / credential-less runs by design —
+// describe.skipIf(!hasCreds) skips the suite and the hooks no-op instead of throwing.
+const hasCreds = Boolean(
+  process.env.NEXT_PUBLIC_SUPABASE_URL &&
+  process.env.SUPABASE_SERVICE_ROLE_KEY &&
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+)
 
 const EMAIL_SUFFIX = '@rls-smoke.servyou.invalid'
 const EMAIL_PREFIX = 'bch-'
 const PASSWORD = 'Rls-Config-Test-7k2!' // ephemeral test users only; never a real account
 
-const admin: SupabaseClient = createClient(url, serviceKey, {
-  auth: { autoRefreshToken: false, persistSession: false },
-})
-const anon: SupabaseClient = createClient(url, anonKey, {
-  auth: { autoRefreshToken: false, persistSession: false },
-})
+const admin: SupabaseClient = hasCreds
+  ? createClient(url, serviceKey, { auth: { autoRefreshToken: false, persistSession: false } })
+  : (undefined as unknown as SupabaseClient)
+const anon: SupabaseClient = hasCreds
+  ? createClient(url, anonKey, { auth: { autoRefreshToken: false, persistSession: false } })
+  : (undefined as unknown as SupabaseClient)
 
 async function signIn(email: string): Promise<SupabaseClient> {
   const client = createClient(url, anonKey, { auth: { autoRefreshToken: false, persistSession: false } })
@@ -121,6 +125,7 @@ let vSellerRow: Record<string, unknown>           // as sellerV1 (own-relationsh
 let vUnrelatedRows: unknown[]                       // as an unrelated user
 
 beforeAll(async () => {
+  if (!hasCreds) return
   await teardown() // teardown-first: recover from any crashed prior run
 
   // ── CORRECTNESS fixture: buyerC has 4 orders against one seller ──────────────
@@ -171,12 +176,13 @@ beforeAll(async () => {
 }, 90000)
 
 afterAll(async () => {
+  if (!hasCreds) return
   await teardown()
 }, 60000)
 
 // ─── COUNTING correctness ─────────────────────────────────────────────────────
 
-describe('buyer_cancellation_history — counting', () => {
+describe.skipIf(!hasCreds)('buyer_cancellation_history — counting', () => {
   it('total_orders counts every order the buyer placed', () => {
     expect(Number(cRow.total_orders)).toBe(4)
   })
@@ -202,7 +208,7 @@ describe('buyer_cancellation_history — counting', () => {
 
 // ─── VISIBILITY (security_invoker boundary) ───────────────────────────────────
 
-describe('buyer_cancellation_history — visibility', () => {
+describe.skipIf(!hasCreds)('buyer_cancellation_history — visibility', () => {
   it('buyer sees their own GLOBAL stats across all sellers', () => {
     expect(Number(vBuyerRow.cancellations_by_buyer_after_pivot)).toBe(2)
   })

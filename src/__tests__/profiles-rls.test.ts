@@ -18,16 +18,20 @@ const url = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
 const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 
-if (!url || !serviceKey || !anonKey) {
-  throw new Error('Missing NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, or NEXT_PUBLIC_SUPABASE_ANON_KEY')
-}
+// Creds injected via loadEnv/.env.local. Absent in CI / credential-less runs by design —
+// describe.skipIf(!hasCreds) skips the suite and the hooks no-op instead of throwing.
+const hasCreds = Boolean(
+  process.env.NEXT_PUBLIC_SUPABASE_URL &&
+  process.env.SUPABASE_SERVICE_ROLE_KEY &&
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+)
 
-const admin: SupabaseClient = createClient(url, serviceKey, {
-  auth: { autoRefreshToken: false, persistSession: false },
-})
-const anon: SupabaseClient = createClient(url, anonKey, {
-  auth: { autoRefreshToken: false, persistSession: false },
-})
+const admin: SupabaseClient = hasCreds
+  ? createClient(url, serviceKey, { auth: { autoRefreshToken: false, persistSession: false } })
+  : (undefined as unknown as SupabaseClient)
+const anon: SupabaseClient = hasCreds
+  ? createClient(url, anonKey, { auth: { autoRefreshToken: false, persistSession: false } })
+  : (undefined as unknown as SupabaseClient)
 
 function freshAnonClient() {
   return createClient(url, anonKey, { auth: { autoRefreshToken: false, persistSession: false } })
@@ -68,6 +72,7 @@ let clientA: SupabaseClient
 let clientFreelancer: SupabaseClient
 
 beforeAll(async () => {
+  if (!hasCreds) return
   userA = await createUser()
   userB = await createUser('+21698765432')
   consumer = await createUser('+21698888888')
@@ -78,6 +83,7 @@ beforeAll(async () => {
 }, 60000)
 
 afterAll(async () => {
+  if (!hasCreds) return
   if (testPostIds.length > 0) {
     await admin.from('job_responses').delete().in('job_post_id', testPostIds)
     await admin.from('job_posts').delete().in('id', testPostIds)
@@ -89,7 +95,7 @@ afterAll(async () => {
 
 // ─── profiles: owner-only read ────────────────────────────────────────────────
 
-describe('profiles RLS: owner-only isolation', () => {
+describe.skipIf(!hasCreds)('profiles RLS: owner-only isolation', () => {
   it('anon reads zero rows from profiles', async () => {
     const { data, error } = await anon.from('profiles').select('id, phone, date_of_birth')
     expect(error).toBeNull()
@@ -114,7 +120,7 @@ describe('profiles RLS: owner-only isolation', () => {
 
 // ─── public_profiles: safe fields readable by everyone ────────────────────────
 
-describe('public_profiles: safe fields always readable', () => {
+describe.skipIf(!hasCreds)('public_profiles: safe fields always readable', () => {
   it('anon can read full_name and city from public_profiles', async () => {
     const { data, error } = await anon
       .from('public_profiles').select('id, full_name, city').eq('id', userB.id)
@@ -134,7 +140,7 @@ describe('public_profiles: safe fields always readable', () => {
 
 // ─── get_contact_phone: gated by relationship ─────────────────────────────────
 
-describe('get_contact_phone: relationship-gated access', () => {
+describe.skipIf(!hasCreds)('get_contact_phone: relationship-gated access', () => {
   it('returns null with no relationship', async () => {
     const { data, error } = await clientA.rpc('get_contact_phone', { target: userB.id })
     expect(error).toBeNull()

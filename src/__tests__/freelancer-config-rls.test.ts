@@ -21,9 +21,13 @@ const url = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
 const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 
-if (!url || !serviceKey || !anonKey) {
-  throw new Error('Missing NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, or NEXT_PUBLIC_SUPABASE_ANON_KEY')
-}
+// Creds injected via loadEnv/.env.local. Absent in CI / credential-less runs by design —
+// describe.skipIf(!hasCreds) skips the suite and the hooks no-op instead of throwing.
+const hasCreds = Boolean(
+  process.env.NEXT_PUBLIC_SUPABASE_URL &&
+  process.env.SUPABASE_SERVICE_ROLE_KEY &&
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+)
 
 const EMAIL_SUFFIX = '@rls-smoke.servyou.invalid'
 const EMAIL_PREFIX = 'frl-cfg-'
@@ -31,12 +35,12 @@ const OWNER_EMAIL = `${EMAIL_PREFIX}owner${EMAIL_SUFFIX}`
 const OTHER_EMAIL = `${EMAIL_PREFIX}other${EMAIL_SUFFIX}`
 const PASSWORD = 'Rls-Config-Test-7k2!' // ephemeral test users only; never a real account
 
-const admin: SupabaseClient = createClient(url, serviceKey, {
-  auth: { autoRefreshToken: false, persistSession: false },
-})
-const anon: SupabaseClient = createClient(url, anonKey, {
-  auth: { autoRefreshToken: false, persistSession: false },
-})
+const admin: SupabaseClient = hasCreds
+  ? createClient(url, serviceKey, { auth: { autoRefreshToken: false, persistSession: false } })
+  : (undefined as unknown as SupabaseClient)
+const anon: SupabaseClient = hasCreds
+  ? createClient(url, anonKey, { auth: { autoRefreshToken: false, persistSession: false } })
+  : (undefined as unknown as SupabaseClient)
 
 async function signIn(email: string): Promise<SupabaseClient> {
   const client = createClient(url, anonKey, { auth: { autoRefreshToken: false, persistSession: false } })
@@ -75,6 +79,7 @@ let ownerClient: SupabaseClient
 let otherClient: SupabaseClient
 
 beforeAll(async () => {
+  if (!hasCreds) return
   await teardown() // teardown-first: recover from any crashed prior run
 
   ownerId = await createUser(OWNER_EMAIL)
@@ -102,12 +107,13 @@ beforeAll(async () => {
 }, 60000)
 
 afterAll(async () => {
+  if (!hasCreds) return
   await teardown()
 }, 60000)
 
 // ─── freelancer_tools: public read, owner-only write ──────────────────────────
 
-describe('freelancer_tools RLS', () => {
+describe.skipIf(!hasCreds)('freelancer_tools RLS', () => {
   it('anon CAN read freelancer_tools (public read)', async () => {
     const { data, error } = await anon
       .from('freelancer_tools').select('id, name').eq('freelancer_id', profileId).eq('name', 'Figma')
@@ -130,7 +136,7 @@ describe('freelancer_tools RLS', () => {
 
 // ─── freelancer_education: public read, owner-only write ───────────────────────
 
-describe('freelancer_education RLS', () => {
+describe.skipIf(!hasCreds)('freelancer_education RLS', () => {
   it('anon CAN read freelancer_education (public read)', async () => {
     const { data, error } = await anon
       .from('freelancer_education').select('id, institution')
@@ -154,7 +160,7 @@ describe('freelancer_education RLS', () => {
 
 // ─── freelancer_certifications: public read, owner-only write ──────────────────
 
-describe('freelancer_certifications RLS', () => {
+describe.skipIf(!hasCreds)('freelancer_certifications RLS', () => {
   it('anon CAN read freelancer_certifications (public read)', async () => {
     const { data, error } = await anon
       .from('freelancer_certifications').select('id, name').eq('freelancer_id', profileId).eq('name', 'PMP')
