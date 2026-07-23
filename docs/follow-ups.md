@@ -137,3 +137,9 @@ trigger to do it.
   config (`'simple'` / `pg_trgm`) for a multilingual FR/EN/AR catalog. Ranking via
   `ts_rank` is not expressible through supabase-js — either keep the existing JS weighted
   scorer over a `.textSearch()` filter, or add a `SECURITY INVOKER` RPC.
+
+## DS-3b lint — architectural follow-ups (deferred from chore/fix-lint #75, 2026-07-23)
+
+🔴 **#1 — OrderDisputeSection fetches disputes in a client `useEffect`** (`src/components/OrderDisputeSection.tsx:39`, `react-hooks/set-state-in-effect`). Violates our own "no `useEffect` for data fetching" standard. **Fix:** move the disputes fetch to a Server Component (pass `disputes` as props from the order-detail page) or a server action. Own PR. *(This is the sole remaining committed lint ERROR after chore/fix-lint — the lint gate stays red on it until this lands.)*
+
+🔴 **#2 — Admin route authorization is client-side only (SECURITY)** (`src/app/admin/layout.tsx:36`, `react-hooks/exhaustive-deps`). The layout's `useEffect` reads `profile.is_admin` client-side and `router.replace('/')`s non-admins — **UX, not access control.** `middleware.ts` matches `/admin/:path*` but enforces **only the suspended state, NOT `is_admin`.** **So admin routes ARE reachable before the client check runs:** a non-admin loads the admin shell (sees the loading spinner), then is redirected. The real boundary today is **RLS at the data layer** (admin reads require `is_admin()` per policy), so admin *data* is server-protected — but there is **no server-side route guard.** **Fix:** add a server-side admin gate (a server-component check in the admin layout, or extend `middleware.ts` to gate `/admin` by `is_admin`), so authorization isn't a client redirect. Own PR.

@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useId, useState, type ReactNode } from 'react'
+import { useId, useState, type ReactNode } from 'react'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { ChevronDown } from 'lucide-react'
 import { useLang } from '@/components/LangProvider'
@@ -124,10 +124,13 @@ export function SearchFilters({
   // open/closed state alone. (Same pathname-reset pattern as the Marché chevron toggle.)
   const [categorieOpen, setCategorieOpen] = useState(false)
   const [prixOpen, setPrixOpen] = useState(false)
-  useEffect(() => {
+  // Reset the open-states on route change without an effect (adjust state during render).
+  const [prevPathname, setPrevPathname] = useState(pathname)
+  if (prevPathname !== pathname) {
+    setPrevPathname(pathname)
     setCategorieOpen(false)
     setPrixOpen(false)
-  }, [pathname])
+  }
 
   const hasActive = cat.length > 0 || min.trim() !== '' || max.trim() !== ''
 
