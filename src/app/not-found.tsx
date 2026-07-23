@@ -29,7 +29,7 @@ export default async function NotFound() {
         <h1 className="mt-4 text-3xl font-bold tracking-tight text-text-primary">
           {t('system.notFound.title', lang)}
         </h1>
-        <p className="mx-auto mt-3 max-w-md text-base leading-relaxed text-[#6B6B6B]">
+        <p className="mx-auto mt-3 max-w-md text-base leading-relaxed text-text-muted">
           {t('system.notFound.subtitle', lang)}
         </p>
 
@@ -42,14 +42,14 @@ export default async function NotFound() {
           </Link>
           <Link
             href="/contact"
-            className={`rounded text-sm font-medium text-[#6B6B6B] hover:underline ${FOCUS_RING}`}
+            className={`rounded text-sm font-medium text-text-muted hover:underline ${FOCUS_RING}`}
           >
             {t('system.notFound.contact', lang)}
           </Link>
         </div>
 
         <div className="mt-12">
-          <p className="text-[12px] font-semibold uppercase tracking-wide text-[#6B6B6B]">
+          <p className="text-[12px] font-semibold uppercase tracking-wide text-text-muted">
             {t('system.notFound.linksHeading', lang)}
           </p>
           <div className="mt-3 flex flex-wrap justify-center gap-2">

@@ -59,7 +59,7 @@ function CollapsibleGroup({
         aria-expanded={open}
         aria-controls={panelId}
         aria-label={open ? ariaHide : ariaShow}
-        className={`flex w-full cursor-pointer items-center justify-between gap-2 py-3 text-left text-[13px] font-semibold uppercase tracking-wide text-[#6B6B6B] transition-colors hover:text-[#0A0A0A] ${FOCUS_RING}`}
+        className={`flex w-full cursor-pointer items-center justify-between gap-2 py-3 text-left text-[13px] font-semibold uppercase tracking-wide text-text-muted transition-colors hover:text-text-primary ${FOCUS_RING}`}
       >
         <span className="flex items-baseline gap-1.5">
           <span>{label}</span>
@@ -69,7 +69,7 @@ function CollapsibleGroup({
           )}
         </span>
         <ChevronDown
-          className={`h-4 w-4 shrink-0 text-[#6B6B6B] transition-transform duration-200 ease-in-out ${
+          className={`h-4 w-4 shrink-0 text-text-muted transition-transform duration-200 ease-in-out ${
             open ? 'rotate-180' : ''
           }`}
           aria-hidden="true"
@@ -168,7 +168,7 @@ export function SearchFilters({
     }
   }
 
-  const heading = 'text-[13px] font-semibold uppercase tracking-wide text-[#6B6B6B]'
+  const heading = 'text-[13px] font-semibold uppercase tracking-wide text-text-muted'
 
   // ── Group contents (identical inputs in both modes) ─────────────────────────────
   const categoryList = (
@@ -176,7 +176,7 @@ export function SearchFilters({
       {categories.map((c) => (
         <label
           key={c.slug}
-          className="flex cursor-pointer items-center gap-2.5 py-1.5 text-sm text-[#0A0A0A]"
+          className="flex cursor-pointer items-center gap-2.5 py-1.5 text-sm text-text-primary"
         >
           <FilterControl
             type="checkbox"
@@ -204,10 +204,10 @@ export function SearchFilters({
           onChange={(e) => setMin(e.target.value)}
           onBlur={() => mode === 'inline' && apply({})}
           placeholder={t('search.filters.priceMin', lang)}
-          className={`w-full rounded-xl border border-border-subtle bg-white px-3 py-2 text-sm text-[#0A0A0A] placeholder:text-[#6B6B6B] ${FOCUS_RING}`}
+          className={`w-full rounded-xl border border-border-subtle bg-white px-3 py-2 text-sm text-text-primary placeholder:text-text-muted ${FOCUS_RING}`}
         />
       </div>
-      <span aria-hidden="true" className="text-[#6B6B6B]">
+      <span aria-hidden="true" className="text-text-muted">
         –
       </span>
       <div className="flex-1">
@@ -223,7 +223,7 @@ export function SearchFilters({
           onChange={(e) => setMax(e.target.value)}
           onBlur={() => mode === 'inline' && apply({})}
           placeholder={t('search.filters.priceMax', lang)}
-          className={`w-full rounded-xl border border-border-subtle bg-white px-3 py-2 text-sm text-[#0A0A0A] placeholder:text-[#6B6B6B] ${FOCUS_RING}`}
+          className={`w-full rounded-xl border border-border-subtle bg-white px-3 py-2 text-sm text-text-primary placeholder:text-text-muted ${FOCUS_RING}`}
         />
       </div>
     </div>
@@ -233,7 +233,7 @@ export function SearchFilters({
     <button
       type="button"
       onClick={clearAll}
-      className={`block w-full rounded-full px-4 py-2 text-center text-[13px] font-medium text-[#6B6B6B] underline-offset-2 hover:underline ${FOCUS_RING}`}
+      className={`block w-full rounded-full px-4 py-2 text-center text-[13px] font-medium text-text-muted underline-offset-2 hover:underline ${FOCUS_RING}`}
     >
       {t('search.filters.clear', lang)}
     </button>

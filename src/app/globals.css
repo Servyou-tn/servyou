@@ -24,6 +24,7 @@
   --surface-base:     #FFFFFF;  --surface-subtle: #F8FAFC;   --surface-elevated: #FFFFFF;
   --text-primary:   #0F172A;   --text-secondary: #475569;   --text-muted: #64748B;   --text-inverse: #FFFFFF;
   --border-subtle:  #E2E8F0;   --border-strong:  #CBD5E1;   --border-focus: var(--brand-blue-600);
+  --icon-muted:     #B8B8B8;   /* neutral placeholder / empty-state icon grey — sits between text-muted #64748B and border-strong #CBD5E1 (DS-3b-2) */
   --success-500: #16A34A;  --success-100: #DCFCE7;
   --warning-500: #F59E0B;  --warning-100: #FEF3C7;
   --danger-500:  #E5484D;  --danger-100:  #FDE5E5;
@@ -131,6 +132,7 @@
   --color-surface-elevated: var(--surface-elevated);
   --color-text-secondary: var(--text-secondary);  --color-text-inverse: var(--text-inverse);
   --color-border-strong: var(--border-strong);     --color-border-focus: var(--border-focus);
+  --color-icon-muted: var(--icon-muted);
   --color-success-500: var(--success-500);  --color-success-100: var(--success-100);
   --color-warning-500: var(--warning-500);  --color-warning-100: var(--warning-100);
   --color-danger-500: var(--danger-500);    --color-danger-100: var(--danger-100);

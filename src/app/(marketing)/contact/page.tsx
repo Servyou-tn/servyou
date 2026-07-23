@@ -21,7 +21,7 @@ export default async function ContactPage() {
         <h1 className="text-3xl font-bold tracking-tight text-text-primary md:text-5xl">
           {t('contact.headline', lang)}
         </h1>
-        <p className="mx-auto mt-4 max-w-xl text-lg text-[#6B6B6B]">{t('contact.subtitle', lang)}</p>
+        <p className="mx-auto mt-4 max-w-xl text-lg text-text-muted">{t('contact.subtitle', lang)}</p>
       </div>
 
       {/* Contact methods */}
@@ -35,7 +35,7 @@ export default async function ContactPage() {
           <div className="mt-2 flex justify-center">
             <CopyableEmail email="bonjour@servyou.tn" />
           </div>
-          <p className="mt-2 text-xs text-[#6B6B6B]">{t('contact.methods.email.response', lang)}</p>
+          <p className="mt-2 text-xs text-text-muted">{t('contact.methods.email.response', lang)}</p>
         </div>
 
         {/* WhatsApp — TODO: Moatez to confirm public WhatsApp number (value + wa.me digits). */}
@@ -58,7 +58,7 @@ export default async function ContactPage() {
             <Globe className="h-5 w-5" aria-hidden="true" />
           </div>
           <p className="mt-3 text-sm font-bold text-text-primary">{t('contact.methods.social.label', lang)}</p>
-          <p className="mt-2 text-sm text-[#6B6B6B]">{t('contact.methods.social.soon', lang)}</p>
+          <p className="mt-2 text-sm text-text-muted">{t('contact.methods.social.soon', lang)}</p>
         </div>
       </div>
 

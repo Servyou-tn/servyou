@@ -40,7 +40,7 @@ export function ConsumerHomepage({
       {isEmpty ? (
         <div className={`rounded-2xl bg-white p-12 text-center ${CARD_SHADOW}`}>
           <div className="mx-auto max-w-md">
-            <Icon className="mx-auto h-10 w-10 text-[#B8B8B8]" aria-hidden="true" />
+            <Icon className="mx-auto h-10 w-10 text-icon-muted" aria-hidden="true" />
             <p className="mt-4 text-base font-semibold text-text-primary">
               {t(type === 'product' ? 'marche.empty.products' : 'marche.empty.services', lang)}
             </p>

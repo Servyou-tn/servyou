@@ -124,7 +124,7 @@ export default async function RecherchePage({
           <div className="mb-4 mt-3 flex justify-end">
             <Link
               href={clearSearchHref}
-              className={`rounded text-[13px] font-medium text-[#6B6B6B] underline-offset-2 hover:underline ${FOCUS_RING}`}
+              className={`rounded text-[13px] font-medium text-text-muted underline-offset-2 hover:underline ${FOCUS_RING}`}
             >
               {t('search.clear', lang)}
             </Link>

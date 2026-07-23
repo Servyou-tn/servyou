@@ -130,7 +130,7 @@ export function ProductRequestForm({
                 <Image src={product.imageUrl} alt="" fill sizes="64px" className="object-cover" />
               </span>
             ) : (
-              <span className="grid h-16 w-16 shrink-0 place-items-center rounded-lg bg-slate-100 text-[#B8B8B8]">
+              <span className="grid h-16 w-16 shrink-0 place-items-center rounded-lg bg-slate-100 text-icon-muted">
                 <PackageIcon className="h-7 w-7" aria-hidden="true" />
               </span>
             )}

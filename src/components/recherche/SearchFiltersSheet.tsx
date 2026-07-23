@@ -39,7 +39,7 @@ export function SearchFiltersSheet({
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className={`inline-flex h-11 items-center gap-2 rounded-full border border-border-subtle bg-white px-4 text-sm font-medium text-[#0A0A0A] shadow-sm transition-colors hover:bg-slate-50 ${FOCUS_RING}`}
+        className={`inline-flex h-11 items-center gap-2 rounded-full border border-border-subtle bg-white px-4 text-sm font-medium text-text-primary shadow-sm transition-colors hover:bg-slate-50 ${FOCUS_RING}`}
       >
         <SlidersHorizontal className="h-4 w-4" aria-hidden="true" />
         {t('search.filters.title', lang)}
@@ -64,12 +64,12 @@ export function SearchFiltersSheet({
             className="absolute inset-x-0 bottom-0 max-h-[85vh] overflow-y-auto rounded-t-3xl bg-white p-6 shadow-xl"
           >
             <div className="mb-4 flex items-center justify-between">
-              <h2 className="text-lg font-bold text-[#0A0A0A]">{t('search.filters.title', lang)}</h2>
+              <h2 className="text-lg font-bold text-text-primary">{t('search.filters.title', lang)}</h2>
               <button
                 type="button"
                 onClick={() => setOpen(false)}
                 aria-label={t('search.filters.close', lang)}
-                className={`inline-flex h-9 w-9 items-center justify-center rounded-full text-[#0A0A0A] hover:bg-slate-100 ${FOCUS_RING}`}
+                className={`inline-flex h-9 w-9 items-center justify-center rounded-full text-text-primary hover:bg-slate-100 ${FOCUS_RING}`}
               >
                 <X className="h-5 w-5" aria-hidden="true" />
               </button>

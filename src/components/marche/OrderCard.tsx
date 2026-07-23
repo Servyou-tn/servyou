@@ -57,11 +57,11 @@ export function OrderCard({ order }: { order: MyOrder }) {
               </div>
             ) : (
               <div className="flex h-16 w-16 items-center justify-center rounded-xl bg-[#F4F4F4]">
-                <PackageIcon className="h-7 w-7 text-[#B8B8B8]" aria-hidden="true" />
+                <PackageIcon className="h-7 w-7 text-icon-muted" aria-hidden="true" />
               </div>
             )
           ) : (
-            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-linear-to-br from-[#F4F4F4] to-[#E8E8E8] text-xl font-bold text-[#0A0A0A]">
+            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-linear-to-br from-[#F4F4F4] to-[#E8E8E8] text-xl font-bold text-text-primary">
               S
             </div>
           )}
@@ -70,7 +70,7 @@ export function OrderCard({ order }: { order: MyOrder }) {
         {/* Middle — category chip, title, seller meta, date. */}
         <div className="min-w-0 flex-1">
           {order.category && (
-            <span className="inline-block rounded-full bg-[#F4F4F4] px-3 py-1 text-[11px] font-medium text-[#1A1A1A]">
+            <span className="inline-block rounded-full bg-[#F4F4F4] px-3 py-1 text-[11px] font-medium text-text-primary">
               {order.category}
             </span>
           )}

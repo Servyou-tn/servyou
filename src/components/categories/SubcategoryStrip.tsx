@@ -13,7 +13,7 @@ export function SubcategoryStrip({ items, lang }: { items: Subcategory[]; lang: 
 
   return (
     <section className="mb-6">
-      <p className="mb-2 text-[13px] font-semibold uppercase tracking-wide text-[#6B6B6B]">
+      <p className="mb-2 text-[13px] font-semibold uppercase tracking-wide text-text-muted">
         {t('category.subcategories.label', lang)}
       </p>
       <div className="flex gap-3 overflow-x-auto pb-1">
@@ -33,7 +33,7 @@ export function SubcategoryStrip({ items, lang }: { items: Subcategory[]; lang: 
                   {(name.trim()[0] ?? '?').toUpperCase()}
                 </span>
               </div>
-              <span className="line-clamp-1 text-sm font-medium text-[#0A0A0A]">{name}</span>
+              <span className="line-clamp-1 text-sm font-medium text-text-primary">{name}</span>
             </Link>
           )
         })}
