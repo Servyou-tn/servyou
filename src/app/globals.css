@@ -6,22 +6,35 @@
   --background: #ffffff;
   --foreground: #171717;
 
-  /* ═══ Design system Section 2.1 — Color primitives (raw values) ═══ */
-  --brand-navy-900: #0F172A;   --brand-navy-800: #1E293B;   --brand-navy-700: #1E3A8A;
-  --brand-blue-600: #2563EB;   --brand-blue-500: #3B82F6;
-  --brand-blue-100: #DBEAFE;   --brand-blue-50:  #EFF6FF;
+  /* ═══ Brand color primitives (raw hex) — ServYou Design-Build Rules (CLAUDE.md §2–§3, v2 token vocabulary;
+     canonical: docs/servyou-claude-code-design-rules.md §3). Corrected to Figma v2 in PR-DS-3a (2026-07-23). ═══ */
+  /* Blue scale. 600 = primary CTA / link / active / focus · 800 = "Serv" wordmark navy · 950 = deepest sidebar. */
+  --brand-blue-50:  #EFF4FF;   --brand-blue-100: #DBE6FE;
+  --brand-blue-500: #3B82F6;   --brand-blue-600: #1F5FE0;   --brand-blue-700: #1A48B8;
+  --brand-blue-800: #1E3A8A;   --brand-blue-900: #15296B;   --brand-blue-950: #0B1A3D;
+  --brand-blue-600-rgb: 31 95 224;   /* = #1F5FE0 as an rgb triplet, for rgb(… / α) tints (see .card-premium) */
+
+  /* Indigo scale — the signature accent (verified / premium / info). 50·100·500·700 tier per DS §3. */
+  --brand-indigo-50:  #EFEEFE;   --brand-indigo-100: #DEDCFD;
+  --brand-indigo-500: #5B57F2;   --brand-indigo-700: #3A35AD;
+
+  /* Off-system slate carried from v1 (no v2 brand slot; not part of the scale) — unchanged, out of DS-3a scope. */
+  --brand-navy-800: #1E293B;
+
   --surface-base:     #FFFFFF;  --surface-subtle: #F8FAFC;   --surface-elevated: #FFFFFF;
   --text-primary:   #0F172A;   --text-secondary: #475569;   --text-muted: #64748B;   --text-inverse: #FFFFFF;
-  --border-subtle:  #E2E8F0;   --border-strong:  #CBD5E1;   --border-focus: #2563EB;
-  --success-500: #10B981;  --success-100: #D1FAE5;
+  --border-subtle:  #E2E8F0;   --border-strong:  #CBD5E1;   --border-focus: var(--brand-blue-600);
+  --success-500: #16A34A;  --success-100: #DCFCE7;
   --warning-500: #F59E0B;  --warning-100: #FEF3C7;
-  --danger-500:  #EF4444;  --danger-100:  #FEE2E2;
-  --info-purple-500: #8B5CF6;  --info-purple-100: #EDE9FE;
+  --danger-500:  #E5484D;  --danger-100:  #FDE5E5;
   --rating-yellow: #FBBF24;
 
-  /* ═══ Section 2.2 — Semantic tokens (meaning layer → primitives). :root only; no utilities
-     generated (components use the primitive utilities, e.g. bg-success-100 text-success-500). ═══ */
-  --sidebar-bg: var(--brand-navy-900);  --sidebar-text: var(--text-inverse);
+  /* WhatsApp brand (documented exception — dark label on this green). */
+  --wa-brand: #25D366;  --wa-brand-hover: #1DA851;
+
+  /* ═══ Semantic tokens (meaning → primitive). :root only; components use the primitive utilities
+     (e.g. bg-success-100 text-success-500) or the aliases below. ═══ */
+  --sidebar-bg: var(--brand-blue-950);  --sidebar-text: var(--text-inverse);   /* v2 deepest navy; Sidebar.tsx still uses bg-brand-navy-900 — rewire in DS-3b */
   --sidebar-text-muted: #64748B;        --sidebar-item-hover: rgba(255,255,255,0.05);
   --sidebar-item-active-bg: var(--brand-blue-600);  --sidebar-item-active-text: var(--text-inverse);
   --sidebar-divider: rgba(255,255,255,0.08);
@@ -33,48 +46,48 @@
   --tile-icon-blue-bg: var(--brand-blue-100);   --tile-icon-blue-fg: var(--brand-blue-600);
   --tile-icon-green-bg: var(--success-100);     --tile-icon-green-fg: var(--success-500);
   --tile-icon-orange-bg: var(--warning-100);    --tile-icon-orange-fg: var(--warning-500);
-  --tile-icon-purple-bg: var(--info-purple-100);--tile-icon-purple-fg: var(--info-purple-500);
+  --tile-icon-purple-bg: var(--brand-indigo-100);--tile-icon-purple-fg: var(--brand-indigo-500);  /* "purple" slot now indigo (v2) */
   --tile-icon-red-bg: var(--danger-100);        --tile-icon-red-fg: var(--danger-500);
   --tile-icon-yellow-bg: var(--warning-100);    --tile-icon-yellow-fg: var(--rating-yellow);
   --pill-active-bg: var(--success-100);     --pill-active-fg: var(--success-500);
   --pill-pending-bg: var(--warning-100);    --pill-pending-fg: var(--warning-500);
-  --pill-paused-bg: var(--info-purple-100); --pill-paused-fg: var(--info-purple-500);
+  --pill-paused-bg: var(--brand-indigo-100); --pill-paused-fg: var(--brand-indigo-500);
   --pill-draft-bg: #F1F5F9;                 --pill-draft-fg: var(--text-secondary);
   --pill-cancelled-bg: var(--danger-100);   --pill-cancelled-fg: var(--danger-500);
   --pill-delivered-bg: var(--success-100);  --pill-delivered-fg: var(--success-500);
   --pill-in-transit-bg: var(--brand-blue-100); --pill-in-transit-fg: var(--brand-blue-600);
   --pill-processing-bg: var(--warning-100); --pill-processing-fg: var(--warning-500);
-  --pill-completed-bg: var(--info-purple-100); --pill-completed-fg: var(--info-purple-500);
+  --pill-completed-bg: var(--brand-indigo-100); --pill-completed-fg: var(--brand-indigo-500);
   --verified-blue-bg: var(--brand-blue-600);--verified-blue-fg: var(--text-inverse);
   --verified-green-bg: var(--success-100);  --verified-green-fg: var(--success-500);
   --online-dot: var(--success-500);
-  --chart-line-primary: var(--brand-blue-600);  --chart-line-secondary: var(--brand-navy-700);
+  --chart-line-primary: var(--brand-blue-600);  --chart-line-secondary: var(--brand-blue-800);
   --chart-grid: var(--border-subtle);           --chart-axis-label: var(--text-muted);
 
-  /* ═══ Section 2.4 — Spacing reference (numeric utilities p-1..p-24 already match the 8-pt grid) ═══ */
+  /* ═══ Spacing reference (8-pt grid; numeric utilities p-1..p-24 already match) ═══ */
   --space-0: 0; --space-1: 4px; --space-2: 8px; --space-3: 12px; --space-4: 16px; --space-5: 20px;
   --space-6: 24px; --space-8: 32px; --space-10: 40px; --space-12: 48px; --space-16: 64px; --space-20: 80px; --space-24: 96px;
 
-  /* ═══ Section 2.6 — Shadow scale (reference). Borders-not-shadows system: only the card shadow
-     gets a utility (shadow-card, in @theme). Overlays use built-in shadow-md/lg/xl (near-identical):
+  /* ═══ Shadow scale (reference). Borders-not-shadows: only the card shadow gets a utility (shadow-card,
+     in @theme). Overlays use built-in shadow-md/lg/xl (near-identical):
        xs  0 1px 2px 0 rgba(0,0,0,0.04)        (= --shadow-card / --card-shadow)
        sm  0 1px 3px 0 rgba(0,0,0,0.06)
        md  0 4px 6px -1px rgba(0,0,0,0.08)
        lg  0 10px 15px -3px rgba(0,0,0,0.10)
        xl  0 20px 25px -5px rgba(0,0,0,0.12)                                                       ═══ */
 
-  /* ═══ Section 2.7 — Motion (distinct names; built-in ease-* utilities intentionally untouched).
+  /* ═══ Motion (distinct names; built-in ease-* utilities intentionally untouched).
      Use via duration-150/250/400 (bare numbers) or duration-[var(--motion-base)] / ease-[var(--ease-smooth)]. ═══ */
   --motion-fast: 150ms; --motion-base: 250ms; --motion-slow: 400ms;
   --ease-smooth: cubic-bezier(0.16, 1, 0.3, 1);   --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
 
-  /* ── Pre-existing brand aliases → now point at the new primitives (identical values, zero visual
-     change). Landing page / marche shell / .card-premium depend on these. Deprecated in PR-DS-3
-     when components migrate to the primitive tokens (DS Section 8.2). ── */
-  --brand-primary: var(--brand-navy-700);   --brand-accent: var(--brand-blue-600);
+  /* ── Brand aliases → primitives (identical values unless noted). Landing / marche shell / .card-premium
+     depend on these utility names; kept stable. Components migrate to primitive tokens in DS-3b. ── */
+  --brand-primary: var(--brand-blue-800);   --brand-accent: var(--brand-blue-600);
   --brand-accent-light: var(--brand-blue-500);  --brand-ice: var(--brand-blue-50);
-  --brand-sky: #BFDBFE;                      /* landing-specific; no Section-2 equivalent — kept literal */
+  --brand-sky: #BFDBFE;                      /* landing-specific; no v2 scale equivalent — kept literal */
   --surface-pill: #F1F5F9;  --surface-pill-active: #FFFFFF;   /* landing/marche-specific — kept literal */
+  --surface-placeholder: #F4F4F4;   /* image/avatar/thumb fallback fill — promoted from the #F4F4F4 component literal (DS-3a; no Figma source, chosen over #E8E8E8 which is only a gradient stop) */
   --status-dot-success: var(--success-500);
 }
 
@@ -84,8 +97,7 @@
   --font-sans: var(--font-inter);
   --font-mono: var(--font-geist-mono);
 
-  /* Expose the brand tokens as Tailwind utilities (bg-surface-pill,
-     text-text-muted, outline-brand-accent, etc.). */
+  /* Brand aliases → utilities (bg-brand-accent, text-brand-primary, bg-surface-pill, …). */
   --color-brand-primary: var(--brand-primary);
   --color-brand-accent: var(--brand-accent);
   --color-brand-accent-light: var(--brand-accent-light);
@@ -95,47 +107,57 @@
   --color-surface-subtle: var(--surface-subtle);
   --color-surface-pill: var(--surface-pill);
   --color-surface-pill-active: var(--surface-pill-active);
+  --color-surface-placeholder: var(--surface-placeholder);
   --color-text-primary: var(--text-primary);
   --color-text-muted: var(--text-muted);
   --color-border-subtle: var(--border-subtle);
   --color-status-dot-success: var(--status-dot-success);
 
-  /* ── DS 2.1 primitives → color utilities (bg-/text-/border-/outline-…). text-primary, text-muted,
-        surface-base, surface-subtle, border-subtle already mapped above — not re-declared. ── */
-  --color-brand-navy-900: var(--brand-navy-900);  --color-brand-navy-800: var(--brand-navy-800);  --color-brand-navy-700: var(--brand-navy-700);
-  --color-brand-blue-600: var(--brand-blue-600);  --color-brand-blue-500: var(--brand-blue-500);
-  --color-brand-blue-100: var(--brand-blue-100);  --color-brand-blue-50:  var(--brand-blue-50);
+  /* ── Primitives → color utilities (bg-/text-/border-/outline-…). ── */
+  /* Blue scale (600/800/950 special-purpose; 200/300/400/900 exist in Figma, add on demand). */
+  --color-brand-blue-50:  var(--brand-blue-50);   --color-brand-blue-100: var(--brand-blue-100);
+  --color-brand-blue-500: var(--brand-blue-500);  --color-brand-blue-600: var(--brand-blue-600);
+  --color-brand-blue-700: var(--brand-blue-700);  --color-brand-blue-800: var(--brand-blue-800);
+  --color-brand-blue-900: var(--brand-blue-900);  --color-brand-blue-950: var(--brand-blue-950);
+  /* Indigo scale. */
+  --color-brand-indigo-50:  var(--brand-indigo-50);   --color-brand-indigo-100: var(--brand-indigo-100);
+  --color-brand-indigo-500: var(--brand-indigo-500);  --color-brand-indigo-700: var(--brand-indigo-700);
+  /* Compat: legacy navy utility names retained (components still reference these — rewire in DS-3b).
+     bg-brand-navy-900 → text-primary #0F172A (sidebar, token page) · text-brand-navy-700 → blue/800 #1E3A8A. */
+  --color-brand-navy-900: var(--text-primary);  --color-brand-navy-800: var(--brand-navy-800);  --color-brand-navy-700: var(--brand-blue-800);
+  /* WhatsApp. */
+  --color-wa-brand: var(--wa-brand);  --color-wa-brand-hover: var(--wa-brand-hover);
+  /* Neutrals / semantic. */
   --color-surface-elevated: var(--surface-elevated);
   --color-text-secondary: var(--text-secondary);  --color-text-inverse: var(--text-inverse);
   --color-border-strong: var(--border-strong);     --color-border-focus: var(--border-focus);
   --color-success-500: var(--success-500);  --color-success-100: var(--success-100);
   --color-warning-500: var(--warning-500);  --color-warning-100: var(--warning-100);
   --color-danger-500: var(--danger-500);    --color-danger-100: var(--danger-100);
-  --color-info-purple-500: var(--info-purple-500);  --color-info-purple-100: var(--info-purple-100);
   --color-rating-yellow: var(--rating-yellow);
 
-  /* ── DS 2.3 typography → text-* utilities (font-size + line-height + weight together).
-        Exact px per founder direction 2026-06-27; line-heights/weights per Section 2.3. ── */
-  --text-display: 2.375rem;    --text-display--line-height: 1.2;   --text-display--font-weight: 700;   /* 38px */
-  --text-h1: 1.875rem;         --text-h1--line-height: 1.25;       --text-h1--font-weight: 700;         /* 30px */
-  --text-h2: 1.4375rem;        --text-h2--line-height: 1.3;        --text-h2--font-weight: 700;         /* 23px */
-  --text-h3: 1.1875rem;        --text-h3--line-height: 1.4;        --text-h3--font-weight: 600;         /* 19px */
-  --text-h4: 1rem;             --text-h4--line-height: 1.4;        --text-h4--font-weight: 600;         /* 16px */
-  --text-body-lg: 1rem;        --text-body-lg--line-height: 1.6;   --text-body-lg--font-weight: 400;    /* 16px */
-  --text-body: 0.9375rem;      --text-body--line-height: 1.5;      --text-body--font-weight: 400;       /* 15px */
-  --text-body-sm: 0.8125rem;   --text-body-sm--line-height: 1.5;   --text-body-sm--font-weight: 400;    /* 13px */
-  --text-caption: 0.75rem;     --text-caption--line-height: 1.4;   --text-caption--font-weight: 400;    /* 12px */
+  /* ── Typography → text-* utilities (size + line-height + weight). Sizes aligned to Figma v2 in
+        PR-DS-3a (2026-07-23) — SUPERSEDES the earlier 2026-06-27 smaller ramp. Line-heights/weights unchanged. ── */
+  --text-display: 2.75rem;     --text-display--line-height: 1.2;   --text-display--font-weight: 700;   /* 44px */
+  --text-h1: 2rem;             --text-h1--line-height: 1.25;       --text-h1--font-weight: 700;         /* 32px */
+  --text-h2: 1.5rem;           --text-h2--line-height: 1.3;        --text-h2--font-weight: 700;         /* 24px */
+  --text-h3: 1.25rem;          --text-h3--line-height: 1.4;        --text-h3--font-weight: 600;         /* 20px */
+  --text-h4: 1rem;             --text-h4--line-height: 1.4;        --text-h4--font-weight: 600;         /* 16px (Figma untokenized — unchanged) */
+  --text-body-lg: 1.125rem;    --text-body-lg--line-height: 1.6;   --text-body-lg--font-weight: 400;    /* 18px */
+  --text-body: 1rem;           --text-body--line-height: 1.5;      --text-body--font-weight: 400;       /* 16px */
+  --text-body-sm: 0.875rem;    --text-body-sm--line-height: 1.5;   --text-body-sm--font-weight: 400;    /* 14px */
+  --text-caption: 0.75rem;     --text-caption--line-height: 1.4;   --text-caption--font-weight: 400;    /* 12px (unchanged) */
   --text-label: 0.875rem;      --text-label--line-height: 1.4;     --text-label--font-weight: 500;      /* 14px */
-  --text-stat-number: 1.875rem;--text-stat-number--line-height: 1.2; --text-stat-number--font-weight: 700; /* 30px */
+  --text-stat-number: 1.875rem;--text-stat-number--line-height: 1.2; --text-stat-number--font-weight: 700; /* 30px (Figma untokenized — unchanged) */
   --text-button: 0.875rem;     --text-button--line-height: 1.2;    --text-button--font-weight: 500;     /* 14px */
   --text-section-cap: 0.75rem; --text-section-cap--line-height: 1.4; --text-section-cap--font-weight: 600; --text-section-cap--letter-spacing: 0.05em; /* 12px; add `uppercase` in component */
 
-  /* ── DS 2.4/2.5/2.6 semantic aliases → utilities (distinct names; no built-in scale overridden) ── */
+  /* ── Semantic spacing/radius/shadow aliases (distinct names; no built-in scale overridden) ── */
   --spacing-card: 1.5rem;      /* p-card = 24px (canonical card padding) */
   --spacing-section: 2rem;     /* gap-section = 32px (desktop section gap) */
   --radius-card: 0.75rem;      /* rounded-card = 12px */
   --radius-pill: 9999px;       /* rounded-pill (pills, avatars) */
-  --shadow-card: 0 1px 2px 0 rgba(0,0,0,0.04);  /* shadow-card (= DS --shadow-xs) */
+  --shadow-card: 0 1px 2px 0 rgba(0,0,0,0.04);  /* shadow-card (= DS shadow-xs) */
 }
 
 @media (prefers-color-scheme: dark) {
@@ -151,34 +173,35 @@ body {
   font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
 }
 
-/* Arabic typography — Cairo (design system Section 2.3, locked). LTR keeps Inter; only RTL switches. */
+/* Arabic typography — Cairo (CLAUDE.md §2, locked). LTR keeps Inter; only RTL switches. */
 [dir="rtl"] body {
   font-family: var(--font-cairo), ui-sans-serif, system-ui, sans-serif;
 }
 
 /* ── Premium card treatment ──
    One source of truth for every floating card across the marche shell (product,
-   service, order, mission cards). Blue-tinted (brand-accent #2563EB) border + a
-   three-layer blue-tinted shadow + a subtle hover lift. Cards add this one class
-   and keep only their layout utilities (padding, overflow, position). */
+   service, order, mission cards). Blue-tinted (brand/blue-600 #1F5FE0, bound via
+   --brand-blue-600-rgb) border + a three-layer blue-tinted shadow + a subtle hover
+   lift. Cards add this one class and keep only their layout utilities (padding,
+   overflow, position). */
 @layer components {
   .card-premium {
     background-color: #fff;
-    border: 1px solid rgba(37, 99, 235, 0.18);
+    border: 1px solid rgb(var(--brand-blue-600-rgb) / 0.18);
     border-radius: 1rem; /* 16px — matches the existing rounded-2xl card radius */
     box-shadow:
-      0 1px 3px rgba(37, 99, 235, 0.10),
-      0 8px 24px -8px rgba(37, 99, 235, 0.18),
-      0 24px 48px -24px rgba(37, 99, 235, 0.14);
+      0 1px 3px rgb(var(--brand-blue-600-rgb) / 0.10),
+      0 8px 24px -8px rgb(var(--brand-blue-600-rgb) / 0.18),
+      0 24px 48px -24px rgb(var(--brand-blue-600-rgb) / 0.14);
     transition: transform 200ms ease-out, box-shadow 200ms ease-out;
   }
 
   .card-premium:hover {
     transform: translateY(-2px);
     box-shadow:
-      0 1px 3px rgba(37, 99, 235, 0.10),
-      0 12px 32px -8px rgba(37, 99, 235, 0.18),
-      0 32px 64px -24px rgba(37, 99, 235, 0.14);
+      0 1px 3px rgb(var(--brand-blue-600-rgb) / 0.10),
+      0 12px 32px -8px rgb(var(--brand-blue-600-rgb) / 0.18),
+      0 32px 64px -24px rgb(var(--brand-blue-600-rgb) / 0.14);
   }
 
   /* Stronger, visible blue outline (Change A) — used on top of .card-premium
@@ -187,12 +210,12 @@ body {
      transform + box-shadow too so it does NOT clobber card-premium's hover lift
      when both classes sit on the same card. */
   .outline-brand {
-    border: 1px solid rgba(37, 99, 235, 0.40);
+    border: 1px solid rgb(var(--brand-blue-600-rgb) / 0.40);
     transition: border-color 200ms ease-out, transform 200ms ease-out, box-shadow 200ms ease-out;
   }
 
   .outline-brand:hover {
-    border-color: rgba(37, 99, 235, 0.55);
+    border-color: rgb(var(--brand-blue-600-rgb) / 0.55);
   }
 }
 
@@ -282,4 +305,3 @@ body {
   .ph-reveal { animation: none; opacity: 1; transform: none; filter: none; }
   .ph-underline { animation: none; width: 80%; }
 }
-
