@@ -73,14 +73,15 @@ export function ServiceListingCard({ service }: { service: ServiceListing }) {
         {/* MIDDLE — category pill, title, description, city. */}
         <div className="min-w-0 flex-1">
           {service.category?.name_fr && (
-            <span className="inline-block rounded-full bg-[#F4F4F4] px-3 py-1 text-[11px] font-medium text-text-primary">
+            <span className="inline-block rounded-full bg-[#F4F4F4] px-3 py-1 text-caption font-medium text-text-primary">
               {service.category.name_fr}
             </span>
           )}
+          {/* text-[17px] retained: sits between body(16) and body-lg(18), no clean tier; card slated for Figma rebuild (DS-3b-3) */}
           <p className="mt-2 line-clamp-1 text-[17px] font-bold leading-tight text-text-primary">
             {service.title}
           </p>
-          <p className="mt-2 line-clamp-2 text-[13px] leading-[1.5] text-text-muted">
+          <p className="mt-2 line-clamp-2 text-body-sm leading-[1.5] text-text-muted">
             {service.description}
           </p>
           {service.freelancer.city && (
@@ -93,7 +94,7 @@ export function ServiceListingCard({ service }: { service: ServiceListing }) {
             justify-between stretching the card). */}
         <div className="flex shrink-0 flex-col items-end gap-2 pt-8">
           <div className="text-end">
-            <p className="text-[15px] font-bold text-text-primary">{priceLabel}</p>
+            <p className="text-body font-bold text-text-primary">{priceLabel}</p>
             {service.delivery_time && (
               <p className="mt-1 text-xs text-icon-muted">
                 {t('listing.service.deliveryTime', lang, { time: service.delivery_time })}

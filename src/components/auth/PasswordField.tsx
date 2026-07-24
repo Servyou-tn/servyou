@@ -86,7 +86,7 @@ export function PasswordField({
               return <span key={i} className={`h-1.5 flex-1 rounded-full ${filled ? strengthColor : 'bg-[var(--border-subtle)]'}`} />
             })}
           </div>
-          <p className="mt-1 text-[13px] text-brand-blue-200">
+          <p className="mt-1 text-body-sm text-brand-blue-200">
             {t('signup.form.fields.password.strengthLabel', lang)}{' '}
             <span className="font-semibold text-white">{t(`signup.form.fields.password.strength.${strength}`, lang)}</span>
           </p>

@@ -19,6 +19,7 @@ export function GreetingHeader({ firstName }: { firstName: string | null }) {
   return (
     <BlurFade delay={0} inView>
       <header className="mb-10 md:mb-12">
+        {/* responsive pair retained: md:text-[40px] has no clean tier; half-tokenizing would break the mobile→desktop ramp (DS-3b-3) */}
         <h1
           className={`${display} text-[30px] font-bold leading-[1.15] tracking-[-0.025em] text-[var(--text-primary)] md:text-[40px]`}
         >

@@ -95,6 +95,7 @@ export function PageHeader({
     <div className="border-b border-border-subtle bg-surface-base pb-8 pt-6 md:pb-10 md:pt-8">
       {/* aria-label carries the whole phrase to a screen reader (read once); the per-unit spans
           are aria-hidden so it never reads letter-by-letter. */}
+      {/* responsive pair retained: text-[17px]/md:text-[20px] — half-tokenizing would break the mobile→desktop ramp (DS-3b-3) */}
       <h1
         aria-label={subtitle}
         className="text-[17px] font-medium leading-[1.2] tracking-[-0.01em] text-text-primary md:text-[20px]"

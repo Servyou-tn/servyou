@@ -169,11 +169,11 @@ export function VerifyEmailFlow({
 
   const resendStatus =
     resend.status === 'success' ? (
-      <p aria-live="polite" className="mt-4 text-[13px] text-brand-blue-200">
+      <p aria-live="polite" className="mt-4 text-body-sm text-brand-blue-200">
         {t('verifyEmail.state1.resendSuccess', lang)}
       </p>
     ) : resend.status === 'error' ? (
-      <p aria-live="polite" className="mt-4 text-[13px] text-red-300">
+      <p aria-live="polite" className="mt-4 text-body-sm text-red-300">
         {t('verifyEmail.state1.resendError', lang)}
       </p>
     ) : null
@@ -183,6 +183,7 @@ export function VerifyEmailFlow({
   return (
     <>
       <header className="px-4 pt-12 text-center md:pt-16">
+        {/* responsive pair retained: md:text-[40px] has no clean tier; half-tokenizing would break the mobile→desktop ramp (DS-3b-3) */}
         <h1 className={`${display} mx-auto max-w-[720px] text-balance text-[30px] font-bold leading-[1.15] tracking-[-0.025em] text-[var(--text-primary)] md:text-[40px]`}>
           {header.title}
         </h1>
@@ -201,18 +202,18 @@ export function VerifyEmailFlow({
           ) : view === 'verified' ? (
             <div className="flex flex-col items-center text-center">
               <CheckCircleIcon className="mb-6 h-16 w-16 text-green-400" />
-              <p className="text-[15px] leading-relaxed text-white">{t('verifyEmail.state2.body', lang)}</p>
+              <p className="text-body leading-relaxed text-white">{t('verifyEmail.state2.body', lang)}</p>
               <button ref={continueRef} type="button" onClick={() => void doContinue()} className={`mt-6 ${primaryBtn}`}>
                 {t('verifyEmail.state2.continue', lang)}
               </button>
-              <p aria-live="polite" className="mt-4 text-[13px] text-brand-blue-200">
+              <p aria-live="polite" className="mt-4 text-body-sm text-brand-blue-200">
                 {t('verifyEmail.state2.autoRedirect', lang, { seconds: autoSeconds })}
               </p>
             </div>
           ) : view === 'failed' ? (
             <div className="flex flex-col items-center text-center">
               <AlertCircleIcon className="mb-6 h-16 w-16 text-amber-400" />
-              <p className="text-[15px] leading-relaxed text-white">{t('verifyEmail.state3.body', lang)}</p>
+              <p className="text-body leading-relaxed text-white">{t('verifyEmail.state3.body', lang)}</p>
               <div className="mt-6 w-full text-start">
                 <label htmlFor="resend-email" className={labelClass}>
                   {t('verifyEmail.state3.emailLabel', lang)}
@@ -244,7 +245,7 @@ export function VerifyEmailFlow({
                     : t('verifyEmail.state3.resend', lang)}
                 </span>
               </button>
-              <Link href="/connexion" className="mt-4 text-[13px] font-medium text-brand-blue-300 hover:underline">
+              <Link href="/connexion" className="mt-4 text-body-sm font-medium text-brand-blue-300 hover:underline">
                 {t('verifyEmail.state3.backToSignin', lang)}
               </Link>
             </div>
@@ -252,7 +253,7 @@ export function VerifyEmailFlow({
             // 'pending' — State 1
             <div className="flex flex-col items-center text-center">
               <MailIcon className="mb-6 h-16 w-16 text-brand-blue-200" />
-              <p className="text-[15px] leading-relaxed text-white">
+              <p className="text-body leading-relaxed text-white">
                 {state1Body[0]}
                 <strong className="font-semibold text-white">{emailDisplay}</strong>
                 {state1Body[1] ?? ''}
@@ -270,7 +271,7 @@ export function VerifyEmailFlow({
                     : t('verifyEmail.state1.resend', lang)}
                 </span>
               </button>
-              <p className="mt-4 text-[13px] text-brand-blue-200">{t('verifyEmail.state1.checkSpam', lang)}</p>
+              <p className="mt-4 text-body-sm text-brand-blue-200">{t('verifyEmail.state1.checkSpam', lang)}</p>
             </div>
           )}
         </AuthShell>

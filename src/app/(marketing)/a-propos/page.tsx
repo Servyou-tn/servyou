@@ -46,7 +46,7 @@ export default async function AProposPage() {
             <div key={v.n} className="rounded-2xl border border-border-subtle bg-white p-6">
               <span className="text-2xl font-bold text-brand-accent">{v.n}</span>
               <h3 className="mt-3 text-base font-bold text-text-primary">{t(v.title, lang)}</h3>
-              <p className="mt-2 text-[14px] leading-relaxed text-text-muted">{t(v.body, lang)}</p>
+              <p className="mt-2 text-body-sm leading-relaxed text-text-muted">{t(v.body, lang)}</p>
             </div>
           ))}
         </div>

@@ -57,6 +57,7 @@ export function AdminSidebar({ t }: Props) {
               className="flex items-center gap-2 whitespace-nowrap rounded px-3 py-2 text-sm font-medium text-gray-400"
             >
               {label}
+              {/* text-[10px] retained: no sub-caption tier in the v2 ramp; revisit in the component audit (DS-3b-3) */}
               <span className="rounded-full bg-gray-100 px-2 py-0.5 text-[10px] uppercase tracking-wide text-gray-400">
                 {t('admin.nav.coming_soon')}
               </span>

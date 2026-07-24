@@ -71,7 +71,7 @@ export default async function CategoryPage({
           TODO link it when the /categories index page exists. */}
       <nav
         aria-label={t('category.breadcrumb.categories', lang)}
-        className="mb-3 flex flex-wrap items-center gap-1.5 text-[13px] text-text-muted"
+        className="mb-3 flex flex-wrap items-center gap-1.5 text-body-sm text-text-muted"
       >
         <Link href="/" className={`rounded hover:underline ${FOCUS_RING}`}>
           {t('category.breadcrumb.home', lang)}

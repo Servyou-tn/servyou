@@ -70,7 +70,7 @@ export function OrderCard({ order }: { order: MyOrder }) {
         {/* Middle — category chip, title, seller meta, date. */}
         <div className="min-w-0 flex-1">
           {order.category && (
-            <span className="inline-block rounded-full bg-[#F4F4F4] px-3 py-1 text-[11px] font-medium text-text-primary">
+            <span className="inline-block rounded-full bg-[#F4F4F4] px-3 py-1 text-caption font-medium text-text-primary">
               {order.category}
             </span>
           )}
@@ -84,7 +84,7 @@ export function OrderCard({ order }: { order: MyOrder }) {
 
         {/* Right — amount + status badge. */}
         <div className="flex shrink-0 flex-col items-start gap-2 sm:items-end">
-          <p className="text-[15px] font-bold text-brand-primary">{priceLabel}</p>
+          <p className="text-body font-bold text-brand-primary">{priceLabel}</p>
           <OrderStatusBadge status={order.status} label={statusLabel} />
         </div>
       </div>

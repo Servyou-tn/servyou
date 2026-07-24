@@ -75,6 +75,7 @@ export function Categories({ lang }: { lang: Lang }) {
       className={`${manrope.variable} bg-[var(--surface-base)] pt-8 pb-10 md:pt-12 md:pb-14`}
     >
       <div className="mx-auto max-w-7xl px-4 md:px-6">
+        {/* responsive pair retained: md:text-[40px] has no clean tier; half-tokenizing would break the mobile→desktop ramp (DS-3b-3) */}
         <h2
           id={headingId}
           className={`${display} mx-auto mb-8 max-w-[720px] text-balance text-center text-[30px] font-bold leading-[1.15] tracking-[-0.025em] text-[var(--text-primary)] md:mb-12 md:text-[40px]`}

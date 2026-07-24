@@ -49,7 +49,7 @@ export default async function NotFound() {
         </div>
 
         <div className="mt-12">
-          <p className="text-[12px] font-semibold uppercase tracking-wide text-text-muted">
+          <p className="text-caption font-semibold uppercase tracking-wide text-text-muted">
             {t('system.notFound.linksHeading', lang)}
           </p>
           <div className="mt-3 flex flex-wrap justify-center gap-2">
@@ -57,7 +57,7 @@ export default async function NotFound() {
               <Link
                 key={l.href}
                 href={l.href}
-                className={`inline-flex items-center rounded-full border border-border-subtle bg-white px-4 py-2 text-[13px] font-medium text-text-primary transition-colors hover:bg-slate-50 ${FOCUS_RING}`}
+                className={`inline-flex items-center rounded-full border border-border-subtle bg-white px-4 py-2 text-body-sm font-medium text-text-primary transition-colors hover:bg-slate-50 ${FOCUS_RING}`}
               >
                 {t(l.key, lang)}
               </Link>

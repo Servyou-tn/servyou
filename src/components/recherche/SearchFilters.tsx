@@ -59,7 +59,7 @@ function CollapsibleGroup({
         aria-expanded={open}
         aria-controls={panelId}
         aria-label={open ? ariaHide : ariaShow}
-        className={`flex w-full cursor-pointer items-center justify-between gap-2 py-3 text-left text-[13px] font-semibold uppercase tracking-wide text-text-muted transition-colors hover:text-text-primary ${FOCUS_RING}`}
+        className={`flex w-full cursor-pointer items-center justify-between gap-2 py-3 text-left text-body-sm font-semibold uppercase tracking-wide text-text-muted transition-colors hover:text-text-primary ${FOCUS_RING}`}
       >
         <span className="flex items-baseline gap-1.5">
           <span>{label}</span>
@@ -168,7 +168,7 @@ export function SearchFilters({
     }
   }
 
-  const heading = 'text-[13px] font-semibold uppercase tracking-wide text-text-muted'
+  const heading = 'text-body-sm font-semibold uppercase tracking-wide text-text-muted'
 
   // ── Group contents (identical inputs in both modes) ─────────────────────────────
   const categoryList = (
@@ -233,7 +233,7 @@ export function SearchFilters({
     <button
       type="button"
       onClick={clearAll}
-      className={`block w-full rounded-full px-4 py-2 text-center text-[13px] font-medium text-text-muted underline-offset-2 hover:underline ${FOCUS_RING}`}
+      className={`block w-full rounded-full px-4 py-2 text-center text-body-sm font-medium text-text-muted underline-offset-2 hover:underline ${FOCUS_RING}`}
     >
       {t('search.filters.clear', lang)}
     </button>

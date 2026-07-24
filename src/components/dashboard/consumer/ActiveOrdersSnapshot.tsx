@@ -33,7 +33,7 @@ function StatusBadge({ status, orderType }: { status: string; orderType: string 
   const className = STATUS_BADGE_CLASS[status as OrderStatus] ?? 'bg-slate-100 text-slate-700'
   return (
     <span
-      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[12px] font-medium leading-snug ${className}`}
+      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-caption font-medium leading-snug ${className}`}
     >
       {t(statusLabelKey(status, orderType), lang)}
     </span>
@@ -53,8 +53,8 @@ function OrderCard({ order }: { order: OrderCardData }) {
       </div>
 
       <div className="min-w-0 flex-1">
-        <p className="truncate text-[15px] font-semibold text-[var(--text-primary)]">{order.title}</p>
-        <div className="mt-1 flex flex-wrap items-center gap-2 text-[13px] text-[var(--text-muted)]">
+        <p className="truncate text-body font-semibold text-[var(--text-primary)]">{order.title}</p>
+        <div className="mt-1 flex flex-wrap items-center gap-2 text-body-sm text-[var(--text-muted)]">
           <StatusBadge status={order.status} orderType={order.order_type} />
           <span>{order.dateLabel}</span>
         </div>
@@ -121,6 +121,7 @@ export function ActiveOrdersSnapshot({ orders }: { orders: OrderCardData[] }) {
   return (
     <BlurFade delay={0.1} inView>
       <section className="mb-10 md:mb-12">
+        {/* responsive pair retained: md:text-[28px] has no clean tier; half-tokenizing would break the mobile→desktop ramp (DS-3b-3) */}
         <h2 className={`${display} mb-2 text-[22px] font-bold text-[var(--text-primary)] md:text-[28px]`}>
           {t('consumer.dashboard.orders.heading', lang)}
         </h2>

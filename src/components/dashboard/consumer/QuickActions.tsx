@@ -54,6 +54,7 @@ export function QuickActions({ showBecomeSeller }: { showBecomeSeller: boolean }
   return (
     <section className="mb-10">
       <BlurFade delay={0.2} inView>
+        {/* responsive pair retained: md:text-[28px] has no clean tier; half-tokenizing would break the mobile→desktop ramp (DS-3b-3) */}
         <h2 className={`${display} mb-4 text-[22px] font-bold text-[var(--text-primary)] md:text-[28px]`}>
           {t('consumer.dashboard.actions.heading', lang)}
         </h2>
@@ -67,10 +68,10 @@ export function QuickActions({ showBecomeSeller }: { showBecomeSeller: boolean }
               className={`block rounded-xl bg-white p-5 shadow-[0_24px_64px_rgba(15,23,42,0.08)] transition-all duration-200 hover:scale-[1.02] hover:shadow-[0_28px_72px_rgba(15,23,42,0.12)] ${FOCUS_RING}`}
             >
               <action.Icon className="h-8 w-8 text-[var(--brand-accent)]" />
-              <p className={`${display} mt-3 text-[15px] font-semibold text-[var(--text-primary)]`}>
+              <p className={`${display} mt-3 text-body font-semibold text-[var(--text-primary)]`}>
                 {t(action.titleKey, lang)}
               </p>
-              <p className="mt-1 text-[13px] text-[var(--text-muted)]">{t(action.subKey, lang)}</p>
+              <p className="mt-1 text-body-sm text-[var(--text-muted)]">{t(action.subKey, lang)}</p>
             </Link>
           </BlurFade>
         ))}

@@ -124,7 +124,7 @@ export default async function RecherchePage({
           <div className="mb-4 mt-3 flex justify-end">
             <Link
               href={clearSearchHref}
-              className={`rounded text-[13px] font-medium text-text-muted underline-offset-2 hover:underline ${FOCUS_RING}`}
+              className={`rounded text-body-sm font-medium text-text-muted underline-offset-2 hover:underline ${FOCUS_RING}`}
             >
               {t('search.clear', lang)}
             </Link>
@@ -183,7 +183,7 @@ export default async function RecherchePage({
                 <div className="mt-6 text-center">
                   <Link
                     href={otherSideHref}
-                    className={`inline-block rounded-xl border border-border-subtle bg-surface-subtle px-4 py-3 text-[13px] text-text-muted transition-colors hover:bg-slate-100 ${FOCUS_RING}`}
+                    className={`inline-block rounded-xl border border-border-subtle bg-surface-subtle px-4 py-3 text-body-sm text-text-muted transition-colors hover:bg-slate-100 ${FOCUS_RING}`}
                   >
                     {t('search.otherSide.weak', lang, { other: otherLabel })}
                   </Link>

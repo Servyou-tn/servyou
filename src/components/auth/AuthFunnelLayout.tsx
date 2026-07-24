@@ -45,6 +45,7 @@ export function AuthFunnelLayout({
           (same scale/weight as the landing section titles). 48px top mobile / 64px
           desktop. Centering works identically in LTR and RTL. */}
       <header className="px-4 pt-12 text-center md:pt-16">
+        {/* responsive pair retained: md:text-[40px] has no clean tier; half-tokenizing would break the mobile→desktop ramp (DS-3b-3) */}
         <h1
           className={`${display} mx-auto max-w-[720px] text-balance text-[30px] font-bold leading-[1.15] tracking-[-0.025em] text-[var(--text-primary)] md:text-[40px]`}
         >
@@ -69,7 +70,7 @@ export function AuthFunnelLayout({
       {/* Footer link on white, below the box. */}
       {footer ? (
         <footer
-          className={`${display} px-4 pb-6 pt-8 text-center text-[15px] font-medium text-[var(--text-muted)] md:pb-8 md:pt-12`}
+          className={`${display} px-4 pb-6 pt-8 text-center text-body font-medium text-[var(--text-muted)] md:pb-8 md:pt-12`}
         >
           {footer}
         </footer>
