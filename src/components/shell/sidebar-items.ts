@@ -8,7 +8,7 @@ import {
   Store,
   Package,
   Heart,
-  BarChart3,
+  Megaphone,
   Settings,
   HelpCircle,
 } from 'lucide-react'
@@ -31,14 +31,19 @@ const DISCOVER: SidebarSectionDef = {
     { key: 'shell.sidebar.marketplace', href: '/marche', icon: Store },
     { key: 'shell.sidebar.orders', href: '/mes-commandes', icon: Package },
     { key: 'shell.sidebar.favorites', href: '/mes-favoris', icon: Heart },
+    // "Mes annonces" per Figma 611:45637 (110:3863). VOCAB DRIFT: the label is "Mes annonces"
+    // but the job-posting list route is /mes-missions today — kept as-is (not renamed here);
+    // reconcile annonces↔missions in a vocab pass (see docs/follow-ups.md).
+    { key: 'shell.sidebar.listings', href: '/mes-missions', icon: Megaphone },
   ],
 }
 
-// ── Outils & compte — shared by every role ──
+// ── Outils & compte — shared by every role. "Statistiques" removed: absent from the Figma
+//    frame (611:45637). The /statistiques route still exists but is no longer linked from the
+//    shell (its only nav entry) — reachable by URL until it gets its own IA decision. ──
 const TOOLS: SidebarSectionDef = {
   labelKey: 'shell.sidebar.section.tools',
   items: [
-    { key: 'shell.sidebar.statistics', href: '/statistiques', icon: BarChart3 },
     { key: 'shell.sidebar.settings', href: '/parametres', icon: Settings },
     { key: 'shell.sidebar.help', href: '/aide', icon: HelpCircle },
   ],

@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import type { Ref } from 'react'
 import { usePathname } from 'next/navigation'
-import { X } from 'lucide-react'
+import { Rocket, X } from 'lucide-react'
 import { useLang } from '@/components/LangProvider'
 import { t } from '@/lib/i18n'
 import { FOCUS_RING } from '@/components/layout/styles'
@@ -77,6 +77,21 @@ export function Sidebar({
                 onNavigate={onNavigate}
               />
             ))}
+            {/* "Devenir vendeur" promo (Figma 611:45637 → 110:3874): only for a consumer
+                (seller_type null; role is 'consumer' logged-out too). Hidden for sellers. */}
+            {role === 'consumer' && section.labelKey === 'shell.sidebar.section.discover' && (
+              <Link
+                href="/devenir-vendeur"
+                onClick={onNavigate}
+                className={`mt-1 flex flex-col gap-2 rounded-xl bg-brand-blue-600 p-4 text-text-inverse transition-colors hover:bg-brand-blue-700 ${FOCUS_RING}`}
+              >
+                <Rocket className="h-6 w-6 shrink-0" aria-hidden="true" />
+                <span className="text-h4">{t('shell.sidebar.sellerCta.title', lang)}</span>
+                <span className="text-body-sm text-brand-blue-100">
+                  {t('shell.sidebar.sellerCta.subtitle', lang)}
+                </span>
+              </Link>
+            )}
           </SidebarSection>
         ))}
       </nav>

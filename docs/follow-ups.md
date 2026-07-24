@@ -181,6 +181,16 @@ Trigger: a dependency-hygiene chore, or when the Dependabot PRs land.
 - **Why deferred:** Backfilling tags + making them required is a create/edit-flow change, not a browse-page change.
 - **Trigger:** Make `tags` required (or strongly prompted) in **H6 (create service) / H7 (edit service)**; once real listings carry tags, **remove the category-chip fallback** in `ServiceListingCard`.
 
+### Sidebar IA drift surfaced by the v2-shell adoption (feat/rebuild-marche-services)
+- **"Mes annonces" → /mes-missions vocab drift.** The sidebar item added per Figma `611:45637`
+  is labelled "Mes annonces" but routes to `/mes-missions` (the job-posting list). Reconcile the
+  vocabulary (annonces vs missions) in a naming pass; not renamed in the shell PR to avoid moving
+  a live route. Lives in `sidebar-items.ts`.
+- **/statistiques is now nav-orphaned.** "Statistiques" was removed from the shell sidebar (absent
+  from the Figma). The `/statistiques` page still exists and builds, but the shell was its only nav
+  entry — it's now URL-only until it gets its own IA decision (a freelancer-stats surface). Don't
+  delete the route without that decision.
+
 ### Scope-A deferrals from the services rebuild (UI parity, no data)
 - **Freelances lens:** the Services/Freelances toggle renders with Freelances **disabled ("bientôt")** — the Freelances view + its data layer + cards + `/freelance` pages don't exist yet. Trigger: the freelancer-world build.
 - **Grid/list view toggle:** the Figma filter bar has a grid/list display toggle; the rebuild ships **grid only**. Trigger: if a list density is wanted post-launch.
