@@ -153,6 +153,8 @@ export function MobileMenu({
                   >
                     {t('nav.login', lang)}
                   </Link>
+                  {/* Hover #152C6B stays literal — 3 units off brand-blue-900 #15296B, no exact
+                      token; mirrors the desktop Header signup-CTA hover (decided, DS-3b-4). */}
                   <Link
                     href="/inscription"
                     onClick={() => setOpen(false)}

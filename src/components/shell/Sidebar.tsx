@@ -34,7 +34,7 @@ export function Sidebar({
   const sections = sidebarSectionsForRole(role)
 
   return (
-    <div className="flex h-full w-full flex-col bg-brand-navy-900 px-4 py-6 text-text-inverse">
+    <div className="flex h-full w-full flex-col bg-brand-blue-950 px-4 py-6 text-text-inverse">
       {/* Logo block (80px). Text wordmark — the navbar PNG's navy "Serv" vanishes on the dark
           ground, so we reuse the colored-span wordmark (DashboardSidebar precedent). A dedicated
           dark-bg logo asset is a logged brand-assets follow-up. */}

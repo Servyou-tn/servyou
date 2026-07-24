@@ -39,6 +39,7 @@ export const AnimatedBeam: React.FC<AnimatedBeamProps> = ({
   pathColor = "gray",
   pathWidth = 2,
   pathOpacity = 0.2,
+  // vendored magicui defaults; Servyou overrides both gradient colours at the call site (Hero.tsx). Not tokens.
   gradientStartColor = "#ffaa40",
   gradientStopColor = "#9c40ff",
   repeat = Infinity,

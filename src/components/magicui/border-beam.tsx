@@ -56,6 +56,7 @@ export const BorderBeam = ({
   size = 50,
   delay = 0,
   duration = 6,
+  // vendored magicui defaults; Servyou overrides both colours at the call site (Hero.tsx). Not tokens.
   colorFrom = "#ffaa40",
   colorTo = "#9c40ff",
   transition,

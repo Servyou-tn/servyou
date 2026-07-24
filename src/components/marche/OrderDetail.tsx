@@ -399,7 +399,8 @@ export function OrderDetail({ order }: { order: OrderDetailData }) {
           <p className="mb-4 text-xs uppercase tracking-wide text-text-muted">{t('orders.detail_actions', lang)}</p>
 
           <div className="flex flex-col gap-3">
-            {/* WhatsApp — always available for contact throughout the lifecycle. */}
+            {/* WhatsApp — always available for contact throughout the lifecycle. #25D366 / #1DA851
+                are WhatsApp brand green, a documented literal exception (mirror --wa-brand). */}
             <button
               type="button"
               onClick={contactSeller}

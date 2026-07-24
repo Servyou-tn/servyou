@@ -84,6 +84,7 @@ export const Particles: React.FC<ParticlesProps> = ({
   ease = 50,
   size = 0.4,
   refresh = false,
+  // vendored magicui default; every Servyou call site overrides `color` (Hero.tsx). Not a token.
   color = "#ffffff",
   vx = 0,
   vy = 0,
