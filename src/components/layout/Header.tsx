@@ -166,6 +166,9 @@ export function Header({
                 >
                   {t('nav.login', lang)}
                 </Link>
+                {/* Signup CTA. Hover shades stay literal: #152C6B (non-landing, on bg-brand-primary)
+                    sits 3 units off brand-blue-900 #15296B — no exact token, kept as-is (decided).
+                    #1D4ED8 (landing, on bg-brand-accent) is a stray old blue-700 — logged follow-up. */}
                 <Link
                   href="/inscription"
                   className={`whitespace-nowrap rounded-full font-semibold text-white transition-colors ${

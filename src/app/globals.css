@@ -35,7 +35,7 @@
 
   /* ═══ Semantic tokens (meaning → primitive). :root only; components use the primitive utilities
      (e.g. bg-success-100 text-success-500) or the aliases below. ═══ */
-  --sidebar-bg: var(--brand-blue-950);  --sidebar-text: var(--text-inverse);   /* v2 deepest navy; Sidebar.tsx still uses bg-brand-navy-900 — rewire in DS-3b */
+  --sidebar-bg: var(--brand-blue-950);  --sidebar-text: var(--text-inverse);   /* v2 deepest navy #0B1A3D; Sidebar.tsx consumes it via bg-brand-blue-950 (rewired DS-3b-4, was bg-brand-navy-900 → #0F172A) */
   --sidebar-text-muted: #64748B;        --sidebar-item-hover: rgba(255,255,255,0.05);
   --sidebar-item-active-bg: var(--brand-blue-600);  --sidebar-item-active-text: var(--text-inverse);
   --sidebar-divider: rgba(255,255,255,0.08);
@@ -88,7 +88,7 @@
   --brand-accent-light: var(--brand-blue-500);  --brand-ice: var(--brand-blue-50);
   --brand-sky: #BFDBFE;                      /* landing-specific; no v2 scale equivalent — kept literal */
   --surface-pill: #F1F5F9;  --surface-pill-active: #FFFFFF;   /* landing/marche-specific — kept literal */
-  --surface-placeholder: #F4F4F4;   /* image/avatar/thumb fallback fill — promoted from the #F4F4F4 component literal (DS-3a; no Figma source, chosen over #E8E8E8 which is only a gradient stop) */
+  --surface-placeholder: #F4F4F4;   /* image/avatar/thumb fallback fill — promoted from the #F4F4F4 component literal (DS-3a; no Figma source, chosen over #E8E8E8 which is only a gradient stop). DS-3b-4: #E8E8E8 re-checked against figma-registry — no source, so no token; the 3 gradient stops stay literal. */
   --status-dot-success: var(--success-500);
 }
 

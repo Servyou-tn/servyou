@@ -180,7 +180,8 @@ export function ArrowUpRightIcon(props: SVGProps<SVGSVGElement>) {
 }
 
 // Stylized Tunisian flag mark: red rounded square with a white crescent (the
-// crescent is carved by overlapping a red circle over a white one).
+// crescent is carved by overlapping a red circle over a white one). The #E70013 red
+// + #FFFFFF are the flag's own colours — kept literal, never tokenized. (DS-3b-4)
 export function TunisiaFlagIcon(props: SVGProps<SVGSVGElement>) {
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" {...props}>

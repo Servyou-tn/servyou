@@ -81,7 +81,8 @@ function LandingView({ lang }: { lang: Lang }) {
       {/* Pure white at the very top so the floating navbar capsule sits on white
           (the Header lives in the root layout above <main>; the blue band there was
           this backdrop, not the hero). A soft sky-blue atmosphere returns lower
-          down, then fades back to white. `fixed` so it reaches behind the navbar. */}
+          down, then fades back to white. `fixed` so it reaches behind the navbar.
+          The #FFFFFF / #E0F2FE stops are a decorative backdrop (E0F2FE ≈ sky-100, no v2 token) — literal. */}
       <div
         aria-hidden="true"
         className="pointer-events-none fixed inset-0 -z-10"

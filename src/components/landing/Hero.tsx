@@ -83,14 +83,16 @@ export function Hero({ lang }: { lang: Lang }) {
         {/* Belt-and-braces with the constrained gradient: a solid white strip pinned
             to the top of the section guarantees the hero's top 160px has no blue. */}
         <div className="pointer-events-none absolute left-0 right-0 top-0 z-0 h-40 bg-white" aria-hidden="true" />
-        {/* Layer 1 — ambient drifting particles (disabled under reduced motion) */}
+        {/* Layer 1 — ambient drifting particles (disabled under reduced motion). `color` is a
+            literal #1F5FE0 (mirrors --brand-blue-600): magicui Particles parses it via hexToRgb()
+            for the <canvas>, which can't resolve a CSS var(), so a hex is required here. (DS-3b-4) */}
         {!reduce && (
           <Particles
             className="absolute inset-0 z-0"
             quantity={isMobile ? 30 : 80}
             ease={80}
             size={0.6}
-            color="#2563EB"
+            color="#1F5FE0"
             refresh={false}
           />
         )}
@@ -129,7 +131,10 @@ export function Hero({ lang }: { lang: Lang }) {
             />
 
             {/* Layer 5 — gradient light beams from each icon into the S (behind the
-                icons + S). Staggered delays so the energy flows in sequence. */}
+                icons + S). Staggered delays so the energy flows in sequence. Beam colours are
+                literal hex — magicui writes them to SVG <stop stop-color> attributes, which don't
+                resolve CSS var(): #1F5FE0 mirrors --brand-blue-600, #3B82F6 = --brand-blue-500.
+                (pathColor's old-blue rgba tint is out of DS-3b-4 scope — logged.) */}
             {heroIcons.map((icon, i) => (
               <AnimatedBeam
                 key={`beam-${icon.src}`}
@@ -139,7 +144,7 @@ export function Hero({ lang }: { lang: Lang }) {
                 curvature={icon.curvature}
                 duration={4}
                 delay={icon.beamDelay}
-                gradientStartColor="#2563EB"
+                gradientStartColor="#1F5FE0"
                 gradientStopColor="#3B82F6"
                 pathColor="rgba(37,99,235,0.22)"
                 pathWidth={2}
@@ -160,12 +165,15 @@ export function Hero({ lang }: { lang: Lang }) {
                   priority
                   className="h-28 w-28 drop-shadow-[0_10px_28px_rgba(15,23,42,0.20)] sm:h-32 sm:w-32"
                 />
+                {/* colorFrom #1F5FE0 mirrors --brand-blue-600; colorTo #7DAEED is a lighter beam
+                    tail with no v2 token. Kept literal so all three hero beams read identically
+                    (magicui pipes these into CSS custom props). (DS-3b-4) */}
                 {!reduce && (
                   <BorderBeam
                     size={70}
                     duration={12}
                     borderWidth={2}
-                    colorFrom="#2563EB"
+                    colorFrom="#1F5FE0"
                     colorTo="#7DAEED"
                   />
                 )}

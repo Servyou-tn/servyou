@@ -7,8 +7,8 @@ import { t, type Lang } from '@/lib/i18n'
 // alternate with the white founder note above it.
 
 // Left panel — four overlapping messaging-app notification blobs (Instagram /
-// WhatsApp / Facebook / TikTok), each with an unread-count badge. Brand-agnostic
-// tints; mock-only hexes.
+// WhatsApp / Facebook / TikTok), each with an unread-count badge. The tints are
+// external-brand / mock hexes — deliberately NOT design tokens; leave literal. (DS-3b-4)
 const chaosBlobs = [
   { tint: 'bg-[#E1306C]', rotate: '-rotate-6', count: '12' },
   { tint: 'bg-[#25D366]', rotate: 'rotate-3', count: '7' },
@@ -52,7 +52,7 @@ export function Problem({ lang }: { lang: Lang }) {
             </div>
           </div>
 
-          {/* Arrow divider */}
+          {/* Arrow divider — decorative slate stroke #94A3B8 (slate-400); no v2 brand token, stays literal. */}
           <div className="hidden place-items-center lg:grid" aria-hidden="true">
             <svg viewBox="0 0 24 24" fill="none" stroke="#94A3B8" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="h-8 w-8">
               <path d="M5 12h14" />

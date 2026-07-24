@@ -358,7 +358,8 @@ export function MissionDetail({ mission }: { mission: MissionDetailData }) {
                       </p>
                     </div>
 
-                    {/* Contact */}
+                    {/* Contact — WhatsApp CTA. #25D366 / #1DA851 are WhatsApp brand green, a
+                        documented literal exception (mirror --wa-brand / --wa-brand-hover). */}
                     <div className="shrink-0">
                       <button
                         type="button"
