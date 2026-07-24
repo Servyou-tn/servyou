@@ -81,10 +81,10 @@ export function MesFavorisView({
         f.kind === 'product' ? (
           <ProductListingCard key={`p-${f.item.id}`} product={f.item} />
         ) : (
-          // Services keep their full-width row layout by spanning every grid column.
-          <div key={`s-${f.item.id}`} className="sm:col-span-2 lg:col-span-4">
-            <ServiceListingCard service={f.item} />
-          </div>
+          // ServiceListingCard is now the v3.7 vertical grid card, so services sit as normal
+          // grid cells (no longer a spanned full-width row). F1 favorites gets its own Figma
+          // rebuild later; this keeps the shared card sized correctly in the meantime.
+          <ServiceListingCard key={`s-${f.item.id}`} service={f.item} />
         ),
       )}
     </div>

@@ -19,7 +19,7 @@ export function AppShellClient({
   rightRail,
   children,
 }: {
-  user: TopBarUser
+  user: TopBarUser | null
   role: ShellRole
   pageToolbar?: ReactNode
   rightRail?: ReactNode

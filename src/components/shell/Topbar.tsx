@@ -25,7 +25,7 @@ export function Topbar({
   onOpenDrawer,
   hamburgerRef,
 }: {
-  user: TopBarUser
+  user: TopBarUser | null
   role: ShellRole
   onOpenDrawer: () => void
   hamburgerRef: Ref<HTMLButtonElement>
@@ -68,10 +68,10 @@ export function Topbar({
         {/* Mobile spacer — pushes the cluster to the end when the inline search is hidden. */}
         <div className="flex-1 md:hidden" aria-hidden="true" />
 
-        {/* Icon cluster — language · notifications · user. */}
+        {/* Icon cluster — language · notifications (auth only) · user. */}
         <div className="flex shrink-0 items-center gap-2">
           <LanguageToggle />
-          <TopbarNotifications />
+          {user ? <TopbarNotifications /> : null}
           <TopbarUserMenu user={user} role={role} />
         </div>
       </div>

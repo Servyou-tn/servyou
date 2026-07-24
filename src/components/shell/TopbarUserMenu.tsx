@@ -27,9 +27,29 @@ const ROLE_KEY: Record<ShellRole, string> = {
 // Topbar user cluster (design system Section 3.3): avatar + name + role label + caret, opening a
 // Radix dropdown (View public profile / Settings / Logout). Below md the name + role + caret hide
 // and only the avatar shows. Logout reuses the existing /auth/signout route via a hidden form.
-export function TopbarUserMenu({ user, role }: { user: TopBarUser; role: ShellRole }) {
+export function TopbarUserMenu({ user, role }: { user: TopBarUser | null; role: ShellRole }) {
   const lang = useLang()
   const signOutFormRef = useRef<HTMLFormElement>(null)
+
+  // Public marketplace pages (e.g. /marche/services) render this shell logged-out: no menu,
+  // just a "Se connecter" affordance — the person glyph linking to /connexion, mirroring the
+  // legacy ProfileAvatarMenu. Authenticated workspace pages always pass a non-null user.
+  if (!user) {
+    return (
+      <Link
+        href="/connexion"
+        aria-label={t('nav.login', lang)}
+        className={cn(
+          'inline-flex w-11 shrink-0 items-center justify-center rounded-full',
+          SURFACE_HOVER,
+          FOCUS_RING,
+        )}
+      >
+        <User className="h-5 w-5 text-text-primary" aria-hidden="true" />
+      </Link>
+    )
+  }
+
   const displayName = user.full_name?.trim() || user.email.split('@')[0]
   const itemBase = 'cursor-pointer text-text-primary focus:bg-surface-subtle focus:text-text-primary'
 

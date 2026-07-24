@@ -1,12 +1,10 @@
 'use client'
 
-import Image from 'next/image'
 import Link from 'next/link'
 import { useLang } from '@/components/LangProvider'
 import { t } from '@/lib/i18n'
-import { FOCUS_RING } from '@/components/layout/styles'
+import { CARD_SHADOW, HOVER_SHADOW, FOCUS_RING } from '@/components/layout/styles'
 import { FavoriteButton } from '@/components/FavoriteButton'
-import { ArrowRightIcon } from './icons'
 
 export type ServiceListing = {
   id: string
@@ -14,106 +12,111 @@ export type ServiceListing = {
   description: string | null
   price_starting: number | null
   delivery_time: string | null
-  category?: { name_fr: string } | null
-  freelancer: { full_name: string; city: string | null; avatar_url?: string | null }
+  // Optional so the other producers of this shared type (homepage getActiveServices,
+  // favorites, D2 related) compile unchanged — only /marche/services supplies them today.
+  tags?: string[]
+  category?: { name_fr: string; name_ar?: string } | null
+  freelancer: { full_name: string; city: string | null }
 }
 
-// Horizontal service card (Upwork-style freelancer row, one per line):
-//   LEFT  — circle avatar with the freelancer's name underneath (leads with who you hire)
-//   MID   — category tag pill, service title, description, city
-//   RIGHT — starting price + delivery time, with the arrow CTA pinned to the bottom
-// The favorite heart floats at the top-right corner (a sibling of the Link, so it never
-// navigates). The avatar renders the freelancer photo when an avatar_url exists (no such
-// column in the schema yet, so it falls to the first initial today). Same premium
-// white-card DNA (CARD_SHADOW, hover lift) and locked palette as products, but a softer
-// rounded-3xl radius that echoes the circular avatar (products keep rounded-2xl for their
-// rectangular images). items-start anchors the avatar to the top-left, name underneath.
+// Vertical service grid card — measured to Figma "Service Card" v3.7 (124:6200 / variant
+// 123:6120). FIXED height 279 (width fills the grid column), 2px blue-600 outline, radius/xl.
+//   colorBlock (fills)  — SPACE_BETWEEN: topGroup (title[2-line clamp] + description[3-line
+//                         clamp]) at the top, one chip row pinned to the bottom; the gap
+//                         between them flexes.  Favorite heart is corner-anchored at inset 16.
+//   footer (89, pinned) — left cluster: avatar + name; right cluster is a VERTICAL stack,
+//                         raw price on top, "Voir le service" beneath (no "À partir de").
+// Rating / verified are drawn in Figma but deferred; avatars have no data source (no
+// avatar_url column) → initial. CHIP LABEL: the Figma shows human skill words, but the
+// `tags` column stores unlabeled slugs ("identite-visuelle") with no label map, so — per
+// founder direction, not title-casing slugs — the chip renders the localized *category*
+// name until tags carry real labels (see docs/follow-ups.md).
+//
+// OFF-TOKEN VALUES (no Servyou token equals the measured Figma value — flagged per the
+// no-arbitrary rule): card height 279, price 17px, CTA radius 10 (radius/lg exists but isn't
+// wired as a utility), chip radius 6 (rounded-md = exact 6px). See the PR report.
 export function ServiceListingCard({ service }: { service: ServiceListing }) {
   const lang = useLang()
 
   const start = service.price_starting != null ? Number(service.price_starting) : 0
   const priceLabel =
     start > 0
-      ? t('listing.service.startingPrice', lang, { price: start })
+      ? t('listing.service.priceRaw', lang, { price: start })
       : t('listing.service.priceOnRequest', lang)
 
   const firstLetter = (service.freelancer.full_name.trim()[0] ?? '?').toUpperCase()
 
+  // Human, localized label only. Tags are unlabeled slugs today (see note above).
+  const categoryLabel = service.category
+    ? lang === 'ar' && service.category.name_ar
+      ? service.category.name_ar
+      : service.category.name_fr
+    : null
+
   return (
-    <div className="card-premium outline-brand relative">
+    <article
+      className={`relative flex h-[279px] flex-col overflow-hidden rounded-xl border-2 border-brand-blue-600 bg-white transition-[transform,box-shadow] duration-200 ease-out hover:-translate-y-0.5 motion-reduce:transition-none motion-reduce:hover:translate-y-0 ${CARD_SHADOW} ${HOVER_SHADOW}`}
+    >
       <Link
         href={`/services/${service.id}`}
         aria-label={service.title}
-        className={`flex items-start gap-5 rounded-3xl p-5 ${FOCUS_RING}`}
+        className={`flex flex-1 flex-col rounded-xl ${FOCUS_RING}`}
       >
-        {/* LEFT — circle avatar (photo when available, else initial) + name underneath. */}
-        <div className="flex w-24 shrink-0 flex-col items-center">
-          <div className="relative flex h-16 w-16 items-center justify-center overflow-hidden rounded-full bg-linear-to-br from-[#F4F4F4] to-[#E8E8E8]">
-            {service.freelancer.avatar_url ? (
-              <Image
-                src={service.freelancer.avatar_url}
-                alt={service.freelancer.full_name}
-                fill
-                sizes="64px"
-                className="object-cover"
-              />
-            ) : (
-              <span className="text-xl font-bold text-text-primary" aria-hidden="true">
-                {firstLetter}
+        {/* colorBlock — fills, SPACE_BETWEEN; pad T16 R16 B4 L16, gap 12. */}
+        <div className="flex flex-1 flex-col justify-between gap-3 pt-4 pe-4 pb-1 ps-4">
+          {/* topGroup — gap 12. */}
+          <div className="flex flex-col gap-3">
+            {/* title: 16/Semi Bold, 2-line clamp; pe-8 clears the corner heart. */}
+            <h3 className="line-clamp-2 pe-8 text-h4 text-brand-blue-800">{service.title}</h3>
+            {service.description && (
+              <p className="line-clamp-3 text-body-sm text-text-secondary">{service.description}</p>
+            )}
+          </div>
+          {/* skillChips — pinned to the bottom of colorBlock by SPACE_BETWEEN. */}
+          {categoryLabel && (
+            <div className="flex flex-wrap gap-2">
+              <span className="inline-block rounded-md bg-brand-blue-50 px-2 py-1 text-caption font-medium text-brand-blue-700">
+                {categoryLabel}
+              </span>
+            </div>
+          )}
+        </div>
+
+        {/* footer — pinned; pad T12 R16 B16 L16, gap 12, items-end. */}
+        <div className="flex items-end justify-between gap-3 pt-3 pe-4 pb-4 ps-4">
+          {/* leftCluster — avatar + name, gap 8. */}
+          <div className="flex min-w-0 items-center gap-2">
+            <span
+              aria-hidden="true"
+              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-surface-placeholder text-body-sm font-semibold text-text-primary"
+            >
+              {firstLetter}
+            </span>
+            {service.freelancer.full_name && (
+              <span className="truncate text-body-sm text-brand-blue-800">
+                {service.freelancer.full_name}
               </span>
             )}
           </div>
-          {service.freelancer.full_name && (
-            <p className="mt-2 line-clamp-1 w-full text-center text-xs font-medium text-text-primary">
-              {service.freelancer.full_name}
-            </p>
-          )}
-        </div>
-
-        {/* MIDDLE — category pill, title, description, city. */}
-        <div className="min-w-0 flex-1">
-          {service.category?.name_fr && (
-            <span className="inline-block rounded-full bg-[#F4F4F4] px-3 py-1 text-caption font-medium text-text-primary">
-              {service.category.name_fr}
+          {/* rightStack — vertical: price on top, CTA beneath, gap 8. */}
+          <div className="flex shrink-0 flex-col items-end gap-2">
+            <span className="text-[17px] font-semibold leading-tight text-brand-blue-800">
+              {priceLabel}
             </span>
-          )}
-          {/* text-[17px] retained: sits between body(16) and body-lg(18), no clean tier; card slated for Figma rebuild (DS-3b-3) */}
-          <p className="mt-2 line-clamp-1 text-[17px] font-bold leading-tight text-text-primary">
-            {service.title}
-          </p>
-          <p className="mt-2 line-clamp-2 text-body-sm leading-[1.5] text-text-muted">
-            {service.description}
-          </p>
-          {service.freelancer.city && (
-            <p className="mt-2 text-xs text-text-muted">{service.freelancer.city}</p>
-          )}
-        </div>
-
-        {/* RIGHT — compact stack: price/delivery then the arrow CTA. pt-8 keeps the price
-            clear of the absolute heart pinned to the top-right corner (no full spacer, no
-            justify-between stretching the card). */}
-        <div className="flex shrink-0 flex-col items-end gap-2 pt-8">
-          <div className="text-end">
-            <p className="text-body font-bold text-text-primary">{priceLabel}</p>
-            {service.delivery_time && (
-              <p className="mt-1 text-xs text-icon-muted">
-                {t('listing.service.deliveryTime', lang, { time: service.delivery_time })}
-              </p>
-            )}
+            <span className="inline-flex h-8 items-center rounded-[10px] bg-brand-blue-600 px-3 text-body-sm font-medium text-white">
+              {t('listing.service.viewCta', lang)}
+            </span>
           </div>
-          <span
-            aria-hidden="true"
-            className="flex h-9 w-9 items-center justify-center rounded-full bg-text-primary text-white transition-all duration-200 hover:scale-105 hover:bg-text-primary"
-          >
-            <ArrowRightIcon className="h-4 w-4" />
-          </span>
         </div>
       </Link>
 
-      {/* Favorite heart at the top-right corner — sibling of the Link so it never navigates. */}
-      <div className="absolute end-3 top-3 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 backdrop-blur-sm transition-all duration-200 hover:scale-105 hover:bg-white">
+      {/* Favorite heart — corner-anchored at the colorBlock content inset (16px pad + 2px
+          border = 18 from the card edge, top-aligned with the title). The wrapper offset
+          (end-2 / top-2.5) is calibrated to land the shared FavoriteButton's ♡ text glyph
+          (14×24, not a 20px icon) at that inset. A Link sibling so it never navigates. */}
+      <div className="absolute end-2 top-2.5 z-10">
         <FavoriteButton item_type="service" item_id={service.id} />
       </div>
-    </div>
+    </article>
   )
 }
