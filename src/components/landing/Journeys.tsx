@@ -59,7 +59,7 @@ function MockDashboard({ accent }: { accent: string }) {
       <div className="flex items-center gap-2 border-b border-border-subtle pb-3">
         <span className={`h-2.5 w-2.5 rounded-full ${accent}`} />
         <span className="h-2.5 w-24 rounded-full bg-slate-200" />
-        <span className="ml-auto h-2.5 w-10 rounded-full bg-slate-200" />
+        <span className="ms-auto h-2.5 w-10 rounded-full bg-slate-200" />
       </div>
       <div className="mt-3 flex flex-col gap-3">
         {[0, 1, 2].map(i => (

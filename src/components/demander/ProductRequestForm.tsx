@@ -296,7 +296,7 @@ export function ProductRequestForm({
                   placeholder={t('demander.field.note_ph', lang)}
                   className={cn(fieldBase, 'resize-y border-border-subtle focus:border-brand-accent')}
                 />
-                <p className="mt-1 text-right text-xs text-text-muted">{note.length}/500</p>
+                <p className="mt-1 text-end text-xs text-text-muted">{note.length}/500</p>
               </div>
             </div>
 

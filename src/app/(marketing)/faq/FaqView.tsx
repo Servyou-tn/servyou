@@ -37,7 +37,7 @@ export function FaqView({ categories }: { categories: ResolvedCategory[] }) {
       {/* Search */}
       <div className="relative">
         <Search
-          className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-text-muted"
+          className="pointer-events-none absolute start-4 top-1/2 h-5 w-5 -translate-y-1/2 text-text-muted"
           aria-hidden="true"
         />
         <input
@@ -46,7 +46,7 @@ export function FaqView({ categories }: { categories: ResolvedCategory[] }) {
           onChange={(e) => setQuery(e.target.value)}
           placeholder={t('faq.search.placeholder', lang)}
           aria-label={t('faq.search.placeholder', lang)}
-          className={`w-full rounded-full border border-border-subtle bg-white py-3 pl-12 pr-4 text-sm text-text-primary placeholder:text-text-muted ${FOCUS_RING}`}
+          className={`w-full rounded-full border border-border-subtle bg-white py-3 ps-12 pe-4 text-sm text-text-primary placeholder:text-text-muted ${FOCUS_RING}`}
         />
       </div>
 

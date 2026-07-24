@@ -123,7 +123,7 @@ function SidebarNavItem({
             aria-expanded={open}
             aria-controls={panelId}
             aria-label={open ? hideAria : showAria}
-            className={`-mr-1 flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-full ${chevronColor} transition-colors hover:bg-brand-accent/10 ${FOCUS_RING}`}
+            className={`-me-1 flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-full ${chevronColor} transition-colors hover:bg-brand-accent/10 ${FOCUS_RING}`}
           >
             <ChevronDown
               className={`h-4 w-4 transition-transform duration-200 ease-in-out ${open ? 'rotate-180' : ''}`}
@@ -141,7 +141,7 @@ function SidebarNavItem({
           }`}
         >
           <div className="overflow-hidden">
-            <div className="pl-3 pt-1.5">
+            <div className="ps-3 pt-1.5">
               <div className="px-0.5 pb-1">{filterContent}</div>
             </div>
           </div>

@@ -85,7 +85,7 @@ export function SharedSearchBar({
       <button
         type="submit"
         aria-label={t('home.search_btn', lang)}
-        className={`ml-5 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-text-muted ${FOCUS_RING}`}
+        className={`ms-5 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-text-muted ${FOCUS_RING}`}
       >
         <SearchIcon className="h-5 w-5" aria-hidden="true" />
       </button>
@@ -103,7 +103,7 @@ export function SharedSearchBar({
         value={type}
         onChange={selectType}
         ariaLabel={t('home.search_btn', lang)}
-        className="mr-2 shrink-0"
+        className="me-2 shrink-0"
       />
     </form>
   )

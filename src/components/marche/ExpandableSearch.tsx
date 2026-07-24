@@ -117,7 +117,7 @@ export function ExpandableSearch({
         )}
       >
         <Search className="h-4 w-4 shrink-0 text-text-muted" aria-hidden="true" />
-        <span className="min-w-0 flex-1 truncate text-left text-sm text-text-muted">Rechercher…</span>
+        <span className="min-w-0 flex-1 truncate text-start text-sm text-text-muted">Rechercher…</span>
         {mounted && (
           <kbd className="hidden shrink-0 items-center rounded border border-border-subtle bg-surface-subtle px-1.5 py-0.5 font-sans text-caption font-medium text-text-muted md:inline-flex">
             {isMac ? '⌘K' : 'Ctrl K'}
