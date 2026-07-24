@@ -119,7 +119,7 @@ export function ExpandableSearch({
         <Search className="h-4 w-4 shrink-0 text-text-muted" aria-hidden="true" />
         <span className="min-w-0 flex-1 truncate text-left text-sm text-text-muted">Rechercher…</span>
         {mounted && (
-          <kbd className="hidden shrink-0 items-center rounded border border-border-subtle bg-surface-subtle px-1.5 py-0.5 font-sans text-[11px] font-medium text-text-muted md:inline-flex">
+          <kbd className="hidden shrink-0 items-center rounded border border-border-subtle bg-surface-subtle px-1.5 py-0.5 font-sans text-caption font-medium text-text-muted md:inline-flex">
             {isMac ? '⌘K' : 'Ctrl K'}
           </kbd>
         )}
@@ -170,13 +170,13 @@ export function ExpandableSearch({
                   {/* Footer hints */}
                   <div className="mt-3 flex items-center justify-between text-xs text-text-muted">
                     <span className="flex items-center gap-1.5">
-                      <kbd className="rounded border border-border-subtle bg-surface-subtle px-1.5 py-0.5 font-sans text-[11px]">
+                      <kbd className="rounded border border-border-subtle bg-surface-subtle px-1.5 py-0.5 font-sans text-caption">
                         Échap
                       </kbd>
                       pour fermer
                     </span>
                     <span className="flex items-center gap-1.5">
-                      <kbd className="rounded border border-border-subtle bg-surface-subtle px-1.5 py-0.5 font-sans text-[11px]">
+                      <kbd className="rounded border border-border-subtle bg-surface-subtle px-1.5 py-0.5 font-sans text-caption">
                         Entrée
                       </kbd>
                       pour rechercher

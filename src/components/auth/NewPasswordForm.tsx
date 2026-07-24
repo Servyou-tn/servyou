@@ -94,6 +94,7 @@ export function NewPasswordForm({ initialView }: { initialView: NewPasswordIniti
   return (
     <>
       <header className="px-4 pt-12 text-center md:pt-16">
+        {/* responsive pair retained: md:text-[40px] has no clean tier; half-tokenizing would break the mobile→desktop ramp (DS-3b-3) */}
         <h1 className={`${display} mx-auto max-w-[720px] text-balance text-[30px] font-bold leading-[1.15] tracking-[-0.025em] text-[var(--text-primary)] md:text-[40px]`}>
           {header.title}
         </h1>
@@ -112,11 +113,11 @@ export function NewPasswordForm({ initialView }: { initialView: NewPasswordIniti
           ) : view === 'invalid' ? (
             <div className="flex flex-col items-center text-center">
               <AlertCircleIcon className="mb-6 h-16 w-16 text-amber-400" />
-              <p className="text-[15px] leading-relaxed text-white">{t('newPassword.invalid.body', lang)}</p>
+              <p className="text-body leading-relaxed text-white">{t('newPassword.invalid.body', lang)}</p>
               <Link ref={requestNewRef} href="/mot-de-passe-oublie" className={`mt-6 ${primaryBtn}`}>
                 {t('newPassword.invalid.requestNew', lang)}
               </Link>
-              <Link href="/connexion" className="mt-4 text-[13px] font-medium text-brand-blue-300 hover:underline">
+              <Link href="/connexion" className="mt-4 text-body-sm font-medium text-brand-blue-300 hover:underline">
                 {t('newPassword.invalid.backToSignin', lang)}
               </Link>
             </div>

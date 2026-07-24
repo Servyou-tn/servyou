@@ -122,7 +122,7 @@ export async function MarcheBrowsePage({
             <p className="mt-4 text-base font-semibold text-text-primary">
               {t(hasFilters ? 'search.empty.filtered' : engine.emptyKey, lang)}
             </p>
-            <p className="mt-2 text-[13px] text-text-muted">
+            <p className="mt-2 text-body-sm text-text-muted">
               {t(hasFilters ? 'search.empty.subtitle' : engine.emptySubKey, lang)}
             </p>
             {hasFilters && (

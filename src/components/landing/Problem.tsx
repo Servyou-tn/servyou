@@ -39,6 +39,7 @@ export function Problem({ lang }: { lang: Lang }) {
                   aria-hidden="true"
                 >
                   <span className="h-6 w-6 rounded-full bg-white/40" />
+                  {/* text-[10px] retained: no sub-caption tier in the v2 ramp; revisit in the component audit (DS-3b-3) */}
                   <span className="absolute -right-1.5 -top-1.5 grid h-5 min-w-5 place-items-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
                     {b.count}
                   </span>

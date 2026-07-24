@@ -96,7 +96,7 @@ export function SharedSearchBar({
         onChange={(e) => setQuery(e.target.value)}
         aria-label={t('home.search_btn', lang)}
         placeholder={t('dashboard.topbar.searchPlaceholder', lang)}
-        className="min-w-0 flex-1 border-0 bg-transparent px-3 text-[14px] text-text-primary outline-none placeholder:text-text-muted"
+        className="min-w-0 flex-1 border-0 bg-transparent px-3 text-body-sm text-text-primary outline-none placeholder:text-text-muted"
       />
       <SegmentedControl
         options={typeOptions}

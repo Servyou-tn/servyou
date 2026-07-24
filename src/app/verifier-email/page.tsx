@@ -36,7 +36,7 @@ export default async function VerifierEmailPage({
   return (
     <main id="main-content" className={`${manrope.variable} flex min-h-screen flex-col bg-white`}>
       <VerifyEmailFlow initialView={initialView} initialEmail={initialEmail} />
-      <footer className={`${display} px-4 pb-6 pt-8 text-center text-[15px] font-medium text-[var(--text-muted)] md:pb-8 md:pt-12`}>
+      <footer className={`${display} px-4 pb-6 pt-8 text-center text-body font-medium text-[var(--text-muted)] md:pb-8 md:pt-12`}>
         {helpParts[0]}
         <Link href="/contact" className="font-semibold text-[var(--brand-accent)] hover:underline">
           {t('verifyEmail.footer.contact', lang)}

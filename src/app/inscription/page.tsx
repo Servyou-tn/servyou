@@ -84,14 +84,15 @@ export default async function InscriptionPage() {
                   draggable={false}
                   className="mb-4 h-16 w-16 select-none object-contain transition-transform duration-[250ms] ease-out motion-safe:group-hover:scale-105 motion-reduce:transition-none md:mb-6 md:h-20 md:w-20"
                 />
+                {/* responsive pair retained: literal md:text-[22px] on a default text-xl base; leave both halves (DS-3b-3) */}
                 <span className="text-xl font-bold tracking-[-0.01em] text-[var(--text-primary)] md:text-[22px]">
                   {label}
                 </span>
-                <p className="mt-2 max-w-[220px] text-[13px] font-normal leading-[1.5] text-[var(--text-muted)] md:text-sm">
+                <p className="mt-2 max-w-[220px] text-body-sm font-normal leading-[1.5] text-[var(--text-muted)] md:text-sm">
                   {description}
                 </p>
                 {/* CTA hint — pushed to the card bottom (mt-auto), 24px min gap (pt-6). */}
-                <span className="mt-auto inline-flex items-center gap-1 pt-6 text-[13px] font-semibold text-[var(--brand-accent)]">
+                <span className="mt-auto inline-flex items-center gap-1 pt-6 text-body-sm font-semibold text-[var(--brand-accent)]">
                   {t(`signup.intent.cards.${key}.cta`, lang)}
                   <ArrowRight className={`h-3.5 w-3.5 shrink-0 ${isRtl ? 'rotate-180' : ''}`} />
                 </span>

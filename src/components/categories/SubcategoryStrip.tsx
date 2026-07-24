@@ -13,7 +13,7 @@ export function SubcategoryStrip({ items, lang }: { items: Subcategory[]; lang: 
 
   return (
     <section className="mb-6">
-      <p className="mb-2 text-[13px] font-semibold uppercase tracking-wide text-text-muted">
+      <p className="mb-2 text-body-sm font-semibold uppercase tracking-wide text-text-muted">
         {t('category.subcategories.label', lang)}
       </p>
       <div className="flex gap-3 overflow-x-auto pb-1">

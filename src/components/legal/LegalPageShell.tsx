@@ -14,13 +14,13 @@ function BodyBlocks({ body }: { body: string }) {
     <>
       {parseLegalBody(body).map((block, i) =>
         block.type === 'ul' ? (
-          <ul key={i} className="my-3 list-disc space-y-1.5 ps-5 text-[15px] leading-relaxed text-text-primary">
+          <ul key={i} className="my-3 list-disc space-y-1.5 ps-5 text-body leading-relaxed text-text-primary">
             {block.items.map((item, j) => (
               <li key={j}>{item}</li>
             ))}
           </ul>
         ) : (
-          <p key={i} className="my-3 text-[15px] leading-relaxed text-text-primary">
+          <p key={i} className="my-3 text-body leading-relaxed text-text-primary">
             {block.text}
           </p>
         ),
@@ -48,7 +48,7 @@ export function LegalPageShell({ doc, lang }: { doc: LegalDocStructure; lang: La
       <h1 className="text-3xl font-bold tracking-tight text-text-primary md:text-4xl">
         {t(doc.titleKey, lang)}
       </h1>
-      <p className="mt-2 text-[13px] text-text-muted">
+      <p className="mt-2 text-body-sm text-text-muted">
         {t('legal.updatedLabel', lang)} {t('legal.updatedDate', lang)}
       </p>
 
@@ -92,7 +92,7 @@ export function LegalPageShell({ doc, lang }: { doc: LegalDocStructure; lang: La
       <div className="mt-10 lg:grid lg:grid-cols-[220px_1fr] lg:gap-10">
         <nav aria-label={t('legal.toc', lang)} className="mb-8 lg:mb-0">
           <div className="lg:sticky lg:top-24">
-            <p className="text-[12px] font-semibold uppercase tracking-wide text-text-muted">
+            <p className="text-caption font-semibold uppercase tracking-wide text-text-muted">
               {t('legal.toc', lang)}
             </p>
             <ol className="mt-3 space-y-2">
@@ -100,7 +100,7 @@ export function LegalPageShell({ doc, lang }: { doc: LegalDocStructure; lang: La
                 <li key={s.id}>
                   <a
                     href={`#${s.id}`}
-                    className={`rounded text-[13px] leading-snug text-text-muted transition-colors hover:text-brand-accent ${FOCUS_RING}`}
+                    className={`rounded text-body-sm leading-snug text-text-muted transition-colors hover:text-brand-accent ${FOCUS_RING}`}
                   >
                     {i + 1}. {t(s.titleKey, lang)}
                   </a>
@@ -120,7 +120,7 @@ export function LegalPageShell({ doc, lang }: { doc: LegalDocStructure; lang: La
               <h2 className="text-xl font-bold text-text-primary">
                 {i + 1}. {t(s.titleKey, lang)}
               </h2>
-              <p className="mt-2 text-[15px] font-medium italic text-text-muted">{t(s.openerKey, lang)}</p>
+              <p className="mt-2 text-body font-medium italic text-text-muted">{t(s.openerKey, lang)}</p>
               <div className="mt-3">
                 <BodyBlocks body={t(s.bodyKey, lang)} />
               </div>

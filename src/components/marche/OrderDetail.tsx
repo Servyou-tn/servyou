@@ -271,7 +271,7 @@ export function OrderDetail({ order }: { order: OrderDetailData }) {
             </div>
             <div className="min-w-0 flex-1">
               {order.item.category && (
-                <span className="inline-block rounded-full bg-slate-100 px-3 py-1 text-[11px] font-medium text-text-primary">
+                <span className="inline-block rounded-full bg-slate-100 px-3 py-1 text-caption font-medium text-text-primary">
                   {order.item.category}
                 </span>
               )}

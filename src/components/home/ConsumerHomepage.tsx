@@ -44,7 +44,7 @@ export function ConsumerHomepage({
             <p className="mt-4 text-base font-semibold text-text-primary">
               {t(type === 'product' ? 'marche.empty.products' : 'marche.empty.services', lang)}
             </p>
-            <p className="mt-2 text-[13px] text-text-muted">
+            <p className="mt-2 text-body-sm text-text-muted">
               {t(
                 type === 'product'
                   ? 'marche.empty.products_subtitle'

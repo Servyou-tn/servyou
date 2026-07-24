@@ -138,6 +138,7 @@ export function HowItWorks({ lang }: { lang: Lang }) {
           reads as a sibling of the Categories title (same Manrope scale/weight/
           colour/letter-spacing). */}
       <BlurFade delay={0} {...fade} inView>
+        {/* responsive pair retained: md:text-[40px] has no clean tier; half-tokenizing would break the mobile→desktop ramp (DS-3b-3) */}
         <h2 className={`${display} mx-auto mb-8 max-w-[720px] text-balance text-center text-[30px] font-bold leading-[1.15] tracking-[-0.025em] text-[var(--text-primary)] md:mb-12 md:text-[40px]`}>
           {t('landing.howItWorks.title', lang)}
         </h2>
@@ -185,7 +186,7 @@ export function HowItWorks({ lang }: { lang: Lang }) {
                     tabIndex={selected ? 0 : -1}
                     onClick={() => setActiveRole(role)}
                     onKeyDown={(e) => onTabKeyDown(e, index)}
-                    className={`${display} relative cursor-pointer rounded-full px-7 py-2.5 text-[15px] outline-none transition-colors duration-200 ease-out focus-visible:ring-2 focus-visible:ring-[var(--brand-accent)] ${
+                    className={`${display} relative cursor-pointer rounded-full px-7 py-2.5 text-body outline-none transition-colors duration-200 ease-out focus-visible:ring-2 focus-visible:ring-[var(--brand-accent)] ${
                       selected
                         ? 'font-semibold text-[var(--text-primary)]'
                         : 'font-medium text-[var(--text-muted)] hover:text-[var(--text-primary)]'
@@ -245,15 +246,17 @@ export function HowItWorks({ lang }: { lang: Lang }) {
                       exit="exit"
                     >
                       <article className="flex h-full flex-col rounded-2xl bg-[var(--surface-base)] px-8 pb-8 pt-16 text-start shadow-[0_8px_24px_rgba(15,23,42,0.12)] transition-all duration-[250ms] ease-out hover:-translate-y-1 hover:shadow-[0_16px_40px_rgba(15,23,42,0.18)] motion-reduce:transition-none md:min-h-[420px]">
+                        {/* responsive pair retained: literal md:text-[28px] on a default text-2xl base; leave both halves (DS-3b-3) */}
                         <h3 className={`${display} text-2xl font-bold text-[var(--text-primary)] md:text-[28px]`}>
                           {t(`landing.howItWorks.${activeRole}.${step.key}.title`, lang)}
                         </h3>
 
+                        {/* text-[17px] retained: sits between body(16) and body-lg(18), no clean tier (DS-3b-3) */}
                         <p className="mt-2 max-w-[90%] text-[17px] font-semibold text-[var(--text-primary)]">
                           {t(`landing.howItWorks.${activeRole}.${step.key}.tagline`, lang)}
                         </p>
 
-                        <p className="mt-4 text-[15px] font-normal leading-[1.6] text-[var(--text-muted)]">
+                        <p className="mt-4 text-body font-normal leading-[1.6] text-[var(--text-muted)]">
                           {t(`landing.howItWorks.${activeRole}.${step.key}.body`, lang)}
                         </p>
 

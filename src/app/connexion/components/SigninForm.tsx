@@ -123,14 +123,14 @@ export function SigninForm({ showResetSuccess = false }: { showResetSuccess?: bo
           <button
             type="button"
             onClick={handleGoogle}
-            className={`${display} inline-flex h-12 w-full items-center justify-center gap-3 rounded-xl border border-[var(--border-subtle)] bg-white text-[15px] font-semibold text-[var(--text-primary)] transition-colors hover:bg-[var(--surface-subtle)] ${FOCUS_RING}`}
+            className={`${display} inline-flex h-12 w-full items-center justify-center gap-3 rounded-xl border border-[var(--border-subtle)] bg-white text-body font-semibold text-[var(--text-primary)] transition-colors hover:bg-[var(--surface-subtle)] ${FOCUS_RING}`}
           >
             <GoogleIcon className="h-5 w-5" />
             {t('signup.form.googleButton', lang)}
           </button>
           <div className="my-5 flex items-center gap-3" aria-hidden="true">
             <span className="h-px flex-1 bg-white/20" />
-            <span className="text-[13px] font-medium uppercase tracking-wide text-brand-blue-200">{t('signup.form.divider', lang)}</span>
+            <span className="text-body-sm font-medium uppercase tracking-wide text-brand-blue-200">{t('signup.form.divider', lang)}</span>
             <span className="h-px flex-1 bg-white/20" />
           </div>
         </>
@@ -169,7 +169,7 @@ export function SigninForm({ showResetSuccess = false }: { showResetSuccess?: bo
             autoComplete="current-password"
           />
           <div className="mt-2 text-end">
-            <Link href="/mot-de-passe-oublie" className="text-[13px] font-medium text-brand-blue-300 hover:underline">
+            <Link href="/mot-de-passe-oublie" className="text-body-sm font-medium text-brand-blue-300 hover:underline">
               {t('signin.forgotPassword', lang)}
             </Link>
           </div>
