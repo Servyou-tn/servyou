@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { MarcheLayout } from './MarcheLayout'
+import { AppShell } from '@/components/shell/AppShell'
 import { BriefcaseIcon } from './icons'
 import { ServicesLensToggle } from './ServicesLensToggle'
 import { ServicesFilterBar } from './ServicesFilterBar'
@@ -65,7 +65,7 @@ export async function ServicesBrowsePage({
   const clearFiltersHref = clearQs ? `${BASE}?${clearQs}` : BASE
 
   return (
-    <MarcheLayout user={topBarUser} searchType="service" searchQuery={params.q}>
+    <AppShell user={topBarUser}>
       <div className="flex flex-col gap-6">
         <div className="flex flex-col gap-4">
           <ServicesLensToggle lang={lang} />
@@ -122,6 +122,6 @@ export async function ServicesBrowsePage({
           </>
         )}
       </div>
-    </MarcheLayout>
+    </AppShell>
   )
 }

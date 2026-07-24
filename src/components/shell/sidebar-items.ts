@@ -26,7 +26,9 @@ export type SidebarSectionDef = { labelKey: string; items: SidebarItemDef[] }
 const DISCOVER: SidebarSectionDef = {
   labelKey: 'shell.sidebar.section.discover',
   items: [
-    { key: 'shell.sidebar.marketplace', href: '/marche/produits', icon: Store },
+    // /marche (redirects to the produits engine) so the item lights on BOTH marketplace
+    // engines — /marche/produits and /marche/services — via the isActiveRoute prefix match.
+    { key: 'shell.sidebar.marketplace', href: '/marche', icon: Store },
     { key: 'shell.sidebar.orders', href: '/mes-commandes', icon: Package },
     { key: 'shell.sidebar.favorites', href: '/mes-favoris', icon: Heart },
   ],

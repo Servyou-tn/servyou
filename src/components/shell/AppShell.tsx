@@ -3,11 +3,13 @@ import type { TopBarUser } from '@/components/marche/ProfileAvatarMenu'
 import { AppShellClient } from './AppShellClient'
 import type { ShellRole } from './sidebar-items'
 
-// The authenticated workspace shell (design system Sections 3.1–3.4): a dark-navy sidebar with a
-// role-conditional IA + a white topbar, wrapping the personal workspace pages. PUBLIC marketplace
-// pages keep MarcheLayout — the two shells coexist by founder direction 2026-06-27. This Server
-// wrapper derives the role from seller_type and hands off to the client frame (drawer + active
-// route). `user` is fetched by each page (getShellUser), mirroring the old MarcheLayout contract.
+// The v2 workspace shell (design system Sections 3.1–3.4): a dark-navy sidebar with a
+// role-conditional IA + a white topbar. Originally auth-only (the two shells coexisting per
+// founder direction 2026-06-27), but the marketplace rebuild moves PUBLIC pages onto it too —
+// so `user` is now nullable: logged-out renders the consumer IA + a "Se connecter" topbar
+// affordance (Topbar / TopbarUserMenu handle the null). Legacy public pages still on MarcheLayout
+// migrate as they're rebuilt. This Server wrapper derives the role from seller_type (consumer
+// when logged-out) and hands off to the client frame. `user` is fetched by each page (getShellUser).
 function roleFromSellerType(sellerType: TopBarUser['seller_type']): ShellRole {
   if (sellerType === 'freelancer') return 'freelancer'
   if (sellerType === 'shop_owner') return 'shop_owner'
@@ -20,7 +22,7 @@ export function AppShell({
   rightRail,
   children,
 }: {
-  user: TopBarUser
+  user: TopBarUser | null
   pageToolbar?: ReactNode
   rightRail?: ReactNode
   children: ReactNode
@@ -28,7 +30,7 @@ export function AppShell({
   return (
     <AppShellClient
       user={user}
-      role={roleFromSellerType(user.seller_type)}
+      role={roleFromSellerType(user?.seller_type ?? null)}
       pageToolbar={pageToolbar}
       rightRail={rightRail}
     >
