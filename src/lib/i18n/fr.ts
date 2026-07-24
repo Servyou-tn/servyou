@@ -939,6 +939,7 @@ export const fr: Record<string, string> = {
   'recherche.empty.subtitle':        "Essayez d'autres mots-clés ou parcourez les catégories.",
   'recherche.empty.cta':             "Parcourir les catégories",
   'listing.service.startingPrice':   "à partir de {price} TND",
+  'listing.service.priceRaw':        "{price} TND",
   'listing.service.priceOnRequest':  "Prix sur demande",
   'listing.service.relativeAdded':   "ajouté il y a {time}",
   'listing.service.deliveryTime':    "Livraison : {time}",

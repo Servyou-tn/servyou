@@ -19,76 +19,72 @@ export type ServiceListing = {
   freelancer: { full_name: string; city: string | null }
 }
 
-// Vertical service grid card (Figma "Service Card" v3.7 — 124:6200). White, 2px blue-600
-// outline, rounded-xl. Two stacked blocks:
-//   TOP    — title + favorite heart (heart floats top-end as a Link sibling so it never
-//            navigates), description (3-line clamp), and up to three skill chips.
-//   FOOTER — the freelancer (avatar initial + name) on the start edge, the starting price
-//            and a "Voir le service" CTA on the end edge.
-// The whole card is one Link to the service detail (D2). Rating + verified badge are drawn
-// in Figma but deferred (Phase 3+) — not rendered. Avatars have no data source yet (no
-// avatar_url column anywhere), so the avatar is always the freelancer's initial.
+// Vertical service grid card — measured to Figma "Service Card" v3.7 (124:6200 / variant
+// 123:6120). FIXED height 279 (width fills the grid column), 2px blue-600 outline, radius/xl.
+//   colorBlock (fills)  — SPACE_BETWEEN: topGroup (title[2-line clamp] + description[3-line
+//                         clamp]) at the top, one chip row pinned to the bottom; the gap
+//                         between them flexes.  Favorite heart is corner-anchored at inset 16.
+//   footer (89, pinned) — left cluster: avatar + name; right cluster is a VERTICAL stack,
+//                         raw price on top, "Voir le service" beneath (no "À partir de").
+// Rating / verified are drawn in Figma but deferred; avatars have no data source (no
+// avatar_url column) → initial. CHIP LABEL: the Figma shows human skill words, but the
+// `tags` column stores unlabeled slugs ("identite-visuelle") with no label map, so — per
+// founder direction, not title-casing slugs — the chip renders the localized *category*
+// name until tags carry real labels (see docs/follow-ups.md).
 //
-// CHIPS FALLBACK (stopgap): the card is designed around per-service skill tags, but the
-// `tags` column ships mostly empty today, so an empty tags list falls back to a single
-// category chip rather than leaving the card blank. This fallback is temporary — remove it
-// once H6/H7 make tags required and real listings carry them (see docs/follow-ups.md).
+// OFF-TOKEN VALUES (no Servyou token equals the measured Figma value — flagged per the
+// no-arbitrary rule): card height 279, price 17px, CTA radius 10 (radius/lg exists but isn't
+// wired as a utility), chip radius 6 (rounded-md = exact 6px). See the PR report.
 export function ServiceListingCard({ service }: { service: ServiceListing }) {
   const lang = useLang()
 
   const start = service.price_starting != null ? Number(service.price_starting) : 0
   const priceLabel =
     start > 0
-      ? t('listing.service.startingPrice', lang, { price: start })
+      ? t('listing.service.priceRaw', lang, { price: start })
       : t('listing.service.priceOnRequest', lang)
 
   const firstLetter = (service.freelancer.full_name.trim()[0] ?? '?').toUpperCase()
 
-  const tags = service.tags ?? []
+  // Human, localized label only. Tags are unlabeled slugs today (see note above).
   const categoryLabel = service.category
     ? lang === 'ar' && service.category.name_ar
       ? service.category.name_ar
       : service.category.name_fr
     : null
-  // Real skills when present; the category label as a single chip otherwise (stopgap above).
-  const chips = tags.length > 0 ? tags.slice(0, 3) : categoryLabel ? [categoryLabel] : []
 
   return (
     <article
-      className={`relative flex flex-col overflow-hidden rounded-xl border-2 border-brand-blue-600 bg-white transition-[transform,box-shadow] duration-200 ease-out hover:-translate-y-0.5 motion-reduce:transition-none motion-reduce:hover:translate-y-0 ${CARD_SHADOW} ${HOVER_SHADOW}`}
+      className={`relative flex h-[279px] flex-col overflow-hidden rounded-xl border-2 border-brand-blue-600 bg-white transition-[transform,box-shadow] duration-200 ease-out hover:-translate-y-0.5 motion-reduce:transition-none motion-reduce:hover:translate-y-0 ${CARD_SHADOW} ${HOVER_SHADOW}`}
     >
       <Link
         href={`/services/${service.id}`}
         aria-label={service.title}
         className={`flex flex-1 flex-col rounded-xl ${FOCUS_RING}`}
       >
-        {/* TOP block — title/description/chips, spaced to the block's full height. */}
-        <div className="flex flex-1 flex-col justify-between gap-3 px-4 pb-1 pt-4">
+        {/* colorBlock — fills, SPACE_BETWEEN; pad T16 R16 B4 L16, gap 12. */}
+        <div className="flex flex-1 flex-col justify-between gap-3 pt-4 pe-4 pb-1 ps-4">
+          {/* topGroup — gap 12. */}
           <div className="flex flex-col gap-3">
-            {/* pe-8 reserves room for the heart pinned at the top-end corner. */}
-            <h3 className="line-clamp-2 pe-8 text-base font-semibold leading-snug text-brand-blue-800">
-              {service.title}
-            </h3>
+            {/* title: 16/Semi Bold, 2-line clamp; pe-8 clears the corner heart. */}
+            <h3 className="line-clamp-2 pe-8 text-h4 text-brand-blue-800">{service.title}</h3>
             {service.description && (
               <p className="line-clamp-3 text-body-sm text-text-secondary">{service.description}</p>
             )}
           </div>
-          {chips.length > 0 && (
+          {/* skillChips — pinned to the bottom of colorBlock by SPACE_BETWEEN. */}
+          {categoryLabel && (
             <div className="flex flex-wrap gap-2">
-              {chips.map((chip) => (
-                <span
-                  key={chip}
-                  className="inline-block rounded-md bg-brand-blue-50 px-2 py-1 text-caption font-medium text-brand-blue-700"
-                >
-                  {chip}
-                </span>
-              ))}
+              <span className="inline-block rounded-md bg-brand-blue-50 px-2 py-1 text-caption font-medium text-brand-blue-700">
+                {categoryLabel}
+              </span>
             </div>
           )}
         </div>
 
-        {/* FOOTER — freelancer (start) · price + CTA (end). */}
-        <div className="flex items-end justify-between gap-3 px-4 pb-4 pt-3">
+        {/* footer — pinned; pad T12 R16 B16 L16, gap 12, items-end. */}
+        <div className="flex items-end justify-between gap-3 pt-3 pe-4 pb-4 ps-4">
+          {/* leftCluster — avatar + name, gap 8. */}
           <div className="flex min-w-0 items-center gap-2">
             <span
               aria-hidden="true"
@@ -102,17 +98,23 @@ export function ServiceListingCard({ service }: { service: ServiceListing }) {
               </span>
             )}
           </div>
+          {/* rightStack — vertical: price on top, CTA beneath, gap 8. */}
           <div className="flex shrink-0 flex-col items-end gap-2">
-            <span className="text-body-lg font-semibold text-brand-blue-800">{priceLabel}</span>
-            <span className="inline-flex items-center rounded-lg bg-brand-blue-600 px-3 py-1.5 text-body-sm font-medium text-white">
+            <span className="text-[17px] font-semibold leading-tight text-brand-blue-800">
+              {priceLabel}
+            </span>
+            <span className="inline-flex h-8 items-center rounded-[10px] bg-brand-blue-600 px-3 text-body-sm font-medium text-white">
               {t('listing.service.viewCta', lang)}
             </span>
           </div>
         </div>
       </Link>
 
-      {/* Favorite heart — a Link sibling pinned to the top-end corner so it never navigates. */}
-      <div className="absolute end-2 top-2 z-10">
+      {/* Favorite heart — corner-anchored at the colorBlock content inset (16px pad + 2px
+          border = 18 from the card edge, top-aligned with the title). The wrapper offset
+          (end-2 / top-2.5) is calibrated to land the shared FavoriteButton's ♡ text glyph
+          (14×24, not a 20px icon) at that inset. A Link sibling so it never navigates. */}
+      <div className="absolute end-2 top-2.5 z-10">
         <FavoriteButton item_type="service" item_id={service.id} />
       </div>
     </article>

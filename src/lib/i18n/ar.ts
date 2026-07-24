@@ -974,6 +974,7 @@ export const ar: Record<string, string> = {
   // startingPrice / priceOnRequest / viewCta localized for the /marche/services rebuild;
   // relativeAdded / deliveryTime / by stay French pending the Phase 8 AR batch.
   'listing.service.startingPrice':   "ابتداءً من {price} د.ت",
+  'listing.service.priceRaw':        "{price} د.ت",
   'listing.service.priceOnRequest':  "السعر عند الطلب",
   'listing.service.relativeAdded':   "ajouté il y a {time}",
   'listing.service.deliveryTime':    "Livraison : {time}",
