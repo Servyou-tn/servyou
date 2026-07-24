@@ -59,7 +59,7 @@ function CollapsibleGroup({
         aria-expanded={open}
         aria-controls={panelId}
         aria-label={open ? ariaHide : ariaShow}
-        className={`flex w-full cursor-pointer items-center justify-between gap-2 py-3 text-left text-body-sm font-semibold uppercase tracking-wide text-text-muted transition-colors hover:text-text-primary ${FOCUS_RING}`}
+        className={`flex w-full cursor-pointer items-center justify-between gap-2 py-3 text-start text-body-sm font-semibold uppercase tracking-wide text-text-muted transition-colors hover:text-text-primary ${FOCUS_RING}`}
       >
         <span className="flex items-baseline gap-1.5">
           <span>{label}</span>
@@ -172,7 +172,7 @@ export function SearchFilters({
 
   // ── Group contents (identical inputs in both modes) ─────────────────────────────
   const categoryList = (
-    <div className="max-h-44 space-y-0.5 overflow-y-auto pr-1">
+    <div className="max-h-44 space-y-0.5 overflow-y-auto pe-1">
       {categories.map((c) => (
         <label
           key={c.slug}

@@ -92,14 +92,14 @@ export function ProfileAvatarMenu({
 
           <DropdownMenuItem asChild className={itemBase}>
             <Link href="/mon-compte">
-              <User className="mr-2 h-4 w-4 text-text-muted" aria-hidden="true" />
+              <User className="me-2 h-4 w-4 text-text-muted" aria-hidden="true" />
               {t('nav.profile', lang)}
             </Link>
           </DropdownMenuItem>
 
           <DropdownMenuItem asChild className={itemBase}>
             <Link href="/parametres">
-              <Settings className="mr-2 h-4 w-4 text-text-muted" aria-hidden="true" />
+              <Settings className="me-2 h-4 w-4 text-text-muted" aria-hidden="true" />
               {t('marche.sidebar.parametres', lang)}
             </Link>
           </DropdownMenuItem>
@@ -113,13 +113,13 @@ export function ProfileAvatarMenu({
             <>
               <DropdownMenuItem asChild className={itemBase}>
                 <Link href="/devenir-vendeur">
-                  <Store className="mr-2 h-4 w-4 text-text-muted" aria-hidden="true" />
+                  <Store className="me-2 h-4 w-4 text-text-muted" aria-hidden="true" />
                   {t('profileMenu.devenirVendeur', lang)}
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild className={itemBase}>
                 <Link href="/devenir-freelance">
-                  <Briefcase className="mr-2 h-4 w-4 text-text-muted" aria-hidden="true" />
+                  <Briefcase className="me-2 h-4 w-4 text-text-muted" aria-hidden="true" />
                   {t('profileMenu.devenirFreelance', lang)}
                 </Link>
               </DropdownMenuItem>
@@ -129,7 +129,7 @@ export function ProfileAvatarMenu({
           {user.seller_type === 'shop_owner' && (
             <DropdownMenuItem asChild className={itemBase}>
               <Link href="/ma-boutique">
-                <Store className="mr-2 h-4 w-4 text-text-muted" aria-hidden="true" />
+                <Store className="me-2 h-4 w-4 text-text-muted" aria-hidden="true" />
                 {t('profileMenu.espaceVendeur', lang)}
               </Link>
             </DropdownMenuItem>
@@ -138,7 +138,7 @@ export function ProfileAvatarMenu({
           {user.seller_type === 'freelancer' && (
             <DropdownMenuItem asChild className={itemBase}>
               <Link href="/mon-profil-freelance">
-                <Briefcase className="mr-2 h-4 w-4 text-text-muted" aria-hidden="true" />
+                <Briefcase className="me-2 h-4 w-4 text-text-muted" aria-hidden="true" />
                 {t('profileMenu.espaceFreelance', lang)}
               </Link>
             </DropdownMenuItem>
@@ -153,7 +153,7 @@ export function ProfileAvatarMenu({
             }}
             className="cursor-pointer text-red-600 focus:bg-red-50 focus:text-red-600"
           >
-            <LogOut className="mr-2 h-4 w-4 text-red-600" aria-hidden="true" />
+            <LogOut className="me-2 h-4 w-4 text-red-600" aria-hidden="true" />
             {t('nav.logout', lang)}
           </DropdownMenuItem>
         </DropdownMenuContent>

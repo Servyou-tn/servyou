@@ -111,7 +111,7 @@ export function ServiceListingCard({ service }: { service: ServiceListing }) {
       </Link>
 
       {/* Favorite heart at the top-right corner — sibling of the Link so it never navigates. */}
-      <div className="absolute right-3 top-3 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 backdrop-blur-sm transition-all duration-200 hover:scale-105 hover:bg-white">
+      <div className="absolute end-3 top-3 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 backdrop-blur-sm transition-all duration-200 hover:scale-105 hover:bg-white">
         <FavoriteButton item_type="service" item_id={service.id} />
       </div>
     </div>

@@ -113,7 +113,7 @@ export function MarcheTopBar({
           padding is tighter than the right so the logo hugs the viewport edge while the right
           cluster keeps its normal inset. On desktop the row top-aligns (md:items-start) so every
           element sits at the 12px top padding instead of centering low against the tall logo. */}
-      <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-3 gap-y-2 py-3 pl-2 pr-4 md:flex md:w-full md:items-start md:gap-x-6 md:pl-3 md:pr-6 lg:gap-x-8 lg:pl-4 lg:pr-8">
+      <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-3 gap-y-2 py-3 ps-2 pe-4 md:flex md:w-full md:items-start md:gap-x-6 md:ps-3 md:pe-6 lg:gap-x-8 lg:ps-4 lg:pe-8">
         {/* S logo — alone on the far left. Clean mark (no border/shadow/hover), Link home.
             Slightly larger on desktop where it balances against the welcome heading. */}
         <Link
@@ -175,7 +175,7 @@ export function MarcheTopBar({
             <Bell className="h-5 w-5 text-text-primary" aria-hidden="true" />
             <span
               aria-hidden="true"
-              className="absolute right-[10px] top-[10px] h-2 w-2 rounded-full bg-red-500 ring-2 ring-white"
+              className="absolute end-[10px] top-[10px] h-2 w-2 rounded-full bg-red-500 ring-2 ring-white"
             />
           </button>
 

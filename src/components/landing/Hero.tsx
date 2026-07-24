@@ -281,7 +281,7 @@ function FlipBack({
             }
           }
         }}
-        className="group relative mx-auto flex w-full max-w-[180px] items-center justify-between gap-2 rounded-full py-1 pl-4 pr-1 text-xs font-semibold text-white sm:whitespace-nowrap"
+        className="group relative mx-auto flex w-full max-w-[180px] items-center justify-between gap-2 rounded-full py-1 ps-4 pe-1 text-xs font-semibold text-white sm:whitespace-nowrap"
         style={{
           background: 'linear-gradient(135deg, var(--brand-accent) 0%, var(--brand-primary) 100%)',
           boxShadow: 'inset 0 1px 0 var(--brand-accent-light), 0 4px 12px rgba(37, 99, 235, 0.3)',

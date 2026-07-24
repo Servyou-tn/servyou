@@ -59,7 +59,7 @@ function Row({ label, value, muted = false }: { label: string; value: string; mu
   return (
     <div className="flex justify-between gap-4 border-b border-border-subtle py-3 last:border-0">
       <dt className="shrink-0 text-sm text-text-muted">{label}</dt>
-      <dd className={cn('text-right text-sm', muted ? 'text-text-muted' : 'text-text-primary')}>{value}</dd>
+      <dd className={cn('text-end text-sm', muted ? 'text-text-muted' : 'text-text-primary')}>{value}</dd>
     </div>
   )
 }
@@ -287,7 +287,7 @@ export function OrderDetail({ order }: { order: OrderDetailData }) {
                 </p>
               )}
             </div>
-            <div className="shrink-0 text-right">{priceNode}</div>
+            <div className="shrink-0 text-end">{priceNode}</div>
           </div>
         </div>
 
