@@ -99,12 +99,16 @@ type ServiceRow = {
   description: string | null
   starting_price_tnd: number | string | null
   delivery_time: string | null
+  tags: string[] | null
   created_at: string
   freelancer_profiles:
     | { profile_id: string; city: string | null }
     | { profile_id: string; city: string | null }[]
     | null
-  categories: { name_fr: string } | { name_fr: string }[] | null
+  categories:
+    | { name_fr: string; name_ar: string }
+    | { name_fr: string; name_ar: string }[]
+    | null
 }
 
 // ── Filter application (shared by full-fetch and head-count queries) ─────────────
@@ -201,7 +205,7 @@ async function fetchServices(
   let query = supabase
     .from('service_listings')
     .select(
-      'id, title, description, starting_price_tnd, delivery_time, created_at, category_id, freelancer_profiles!inner(profile_id, city), categories(name_fr)',
+      'id, title, description, starting_price_tnd, delivery_time, tags, created_at, category_id, freelancer_profiles!inner(profile_id, city), categories(name_fr, name_ar)',
     )
     .eq('status', 'active')
     .limit(FETCH_CAP)
@@ -246,7 +250,11 @@ async function fetchServices(
         description: row.description ?? null,
         price_starting: row.starting_price_tnd != null ? Number(row.starting_price_tnd) : null,
         delivery_time: row.delivery_time ?? null,
-        category: cat ? { name_fr: cat.name_fr } : null,
+        // Skill chips on the v3.7 card. Column exists but is sparsely populated today
+        // (most listings ship with []), so the card falls back to the category label —
+        // see ServiceListingCard. Backfill lands when H6/H7 make tags required.
+        tags: row.tags ?? [],
+        category: cat ? { name_fr: cat.name_fr, name_ar: cat.name_ar } : null,
         freelancer: {
           full_name: (fp?.profile_id ? names.get(fp.profile_id) : '') ?? '',
           city: fp?.city ?? null,

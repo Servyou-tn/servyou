@@ -212,14 +212,16 @@ export function ServiceDetail({
           </section>
         )}
 
-        {/* 3.3 — related services (ServiceListingCard is a full-width row, so vertical
-            stack rather than a horizontal carousel) */}
+        {/* 3.3 — related services. ServiceListingCard is now the v3.7 vertical grid card
+            (rebuilt for /marche/services), so these sit in a responsive grid rather than a
+            full-width stack. D2 gets its own Figma rebuild later; this keeps the shared card
+            from stretching in the meantime. */}
         {related.length > 0 && (
           <section className="mt-8">
             <h2 className="mb-4 text-lg font-semibold text-text-primary">
               {t('service.detail.similarServices', lang)}
             </h2>
-            <div className="flex flex-col gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {related.map((s) => (
                 <ServiceListingCard key={s.id} service={s} />
               ))}

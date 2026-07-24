@@ -16,11 +16,11 @@ export function ListingResults(props: Props) {
   const reduce = useReducedMotion()
   const fade = { offset: reduce ? 0 : 6, blur: reduce ? '0px' : '6px' }
 
-  // Products browse as a responsive 1/2/3/4-per-row image grid; services list as
-  // full-width horizontal rows, one per line (person-led hire rhythm).
+  // Products browse as a responsive 1/2/4-per-row image grid; services as a 1/2/3-per-row
+  // grid of vertical v3.7 cards (Figma 611:45637 — three columns on desktop).
   if (props.type === 'service') {
     return (
-      <div className="flex flex-col gap-4">
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {props.items.map((s, i) => (
           <BlurFade key={s.id} delay={i * 0.05} duration={0.2} {...fade} inView>
             <ServiceListingCard service={s} />

@@ -1,12 +1,12 @@
-import { MarcheBrowsePage } from '@/components/marche/MarcheBrowsePage'
+import { ServicesBrowsePage } from '@/components/marche/ServicesBrowsePage'
 
-// Engine 2 — the services marketplace (services + freelancers). Freelancers strip is a
-// fast-follow (Scope A); today this is the services browse-by-default surface, with the
-// scoped category filter in the sidebar. Public, no auth gate.
+// Engine 2 — the services marketplace, rebuilt to the v3.7 Figma (611:45637). Forked off the
+// shared MarcheBrowsePage (which still powers /marche/produits) so the two rebuild
+// independently. Public, no auth gate. The Freelances lens is a fast-follow (Scope A).
 export default function ServicesPage({
   searchParams,
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>
 }) {
-  return <MarcheBrowsePage type="service" searchParams={searchParams} />
+  return <ServicesBrowsePage searchParams={searchParams} />
 }
