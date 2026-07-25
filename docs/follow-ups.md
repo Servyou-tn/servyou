@@ -195,3 +195,13 @@ Trigger: a dependency-hygiene chore, or when the Dependabot PRs land.
 - **Freelances lens:** the Services/Freelances toggle renders with Freelances **disabled ("bientôt")** — the Freelances view + its data layer + cards + `/freelance` pages don't exist yet. Trigger: the freelancer-world build.
 - **Grid/list view toggle:** the Figma filter bar has a grid/list display toggle; the rebuild ships **grid only**. Trigger: if a list density is wanted post-launch.
 - **AR Phase 8 residue:** `listing.service.{relativeAdded,deliveryTime,by}` (unused by this page) and the broader `/recherche` + `marche.*` French placeholders remain — this PR localized only the keys `/marche/services` renders. Trigger: the Phase 8 AR pass.
+
+### Design-system token gaps (from the shell exact-match, PR #84)
+Two measured Figma values have no exact DS token, so they ship as bracketed utilities. Wire them
+as tokens in a later DS pass, then replace the brackets:
+- **radius 10** — the radius scale is 8 (`rounded-lg`) / 12 (`rounded-card`). Nav items, topbar
+  search, filter selects, the lens/lang toggles, and the card CTA all measure **10** and use
+  `rounded-[10px]`. Add `--radius-*: 0.625rem` → `rounded-<name>`.
+- **section-cap letter-spacing** — `--text-section-cap--letter-spacing` is `0.05em`; the Figma
+  section label (611:45637) measures **0.06em**. `SidebarSection` overrides with `tracking-[0.06em]`.
+  Correct the token to `0.06em` and drop the override.
