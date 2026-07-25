@@ -7,8 +7,10 @@ import type { ReactNode } from 'react'
 export function SidebarSection({ label, children }: { label: string; children: ReactNode }) {
   return (
     <div>
-      <p className="px-3 pb-2 text-section-cap uppercase text-brand-blue-300">{label}</p>
-      <div className="space-y-1">{children}</div>
+      {/* Section Label: 32h box, pad 12/12/8 (Figma 611:45637) — pt-3 gives the top breathing
+          room; items sit 2px apart (gap 2) beneath. */}
+      <p className="px-3 pt-3 pb-2 text-section-cap uppercase text-brand-blue-300">{label}</p>
+      <div className="space-y-0.5">{children}</div>
     </div>
   )
 }

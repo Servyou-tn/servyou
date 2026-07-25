@@ -23,7 +23,8 @@ export function TopbarNotifications() {
           type="button"
           aria-label={t('shell.topbar.notifications.title', lang)}
           className={cn(
-            'inline-flex w-11 shrink-0 items-center justify-center rounded-full',
+            // Figma 611:45637 IconButton: 40×40, radius 10 (icon 20).
+            'inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-[10px]',
             interactiveSurface(false),
           )}
         >

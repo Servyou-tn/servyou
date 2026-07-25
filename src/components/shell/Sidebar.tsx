@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import type { Ref } from 'react'
 import { usePathname } from 'next/navigation'
 import { Rocket, X } from 'lucide-react'
@@ -35,19 +36,25 @@ export function Sidebar({
 
   return (
     <div className="flex h-full w-full flex-col bg-brand-blue-950 px-4 pb-6 text-text-inverse">
-      {/* Logo band (72px, top-aligned — Figma 611:45637 S-mark band; no top padding). Text
-          wordmark — the navbar PNG's navy "Serv" vanishes on the dark ground, so we reuse the
-          colored-span wordmark (DashboardSidebar precedent). A dedicated dark-bg logo asset is a
-          logged brand-assets follow-up. */}
-      <div className="flex h-[72px] items-center justify-between">
+      {/* Logo band (208×72, top-aligned, pad L12 — Figma 611:45637 S-mark band → Lockup 123×32,
+          gap 8): the 32px S-mark + "ServYou" wordmark, BOTH words #FFFFFF on the navy ground (the
+          two-tone Serv/You treatment is for light surfaces only). shrink-0 so the band never
+          compresses on a short viewport; ps-3 aligns the mark with the nav items at 28px. */}
+      <div className="flex h-[72px] shrink-0 items-center justify-between ps-3">
         <Link
           href="/"
           onClick={onNavigate}
           aria-label="Servyou"
-          className={`rounded-pill text-xl font-bold tracking-tight ${FOCUS_RING}`}
+          className={`flex items-center gap-2 rounded-pill ${FOCUS_RING}`}
         >
-          <span className="text-white">Serv</span>
-          <span className="text-brand-accent-light">You</span>
+          <Image
+            src="/brand/logo/servyou-s-mark.png"
+            alt=""
+            width={32}
+            height={32}
+            className="h-8 w-8 shrink-0"
+          />
+          <span className="text-xl font-bold tracking-tight text-white">ServYou</span>
         </Link>
         {inDrawer ? (
           <button
@@ -64,7 +71,7 @@ export function Sidebar({
 
       <nav
         aria-label={t('nav.aria_primary', lang)}
-        className="mt-2 flex flex-1 flex-col gap-6"
+        className="mt-3 flex flex-1 flex-col gap-6"
       >
         {sections.map((section) => (
           <SidebarSection key={section.labelKey} label={t(section.labelKey, lang)}>

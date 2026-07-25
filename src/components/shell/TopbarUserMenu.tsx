@@ -40,7 +40,8 @@ export function TopbarUserMenu({ user, role }: { user: TopBarUser | null; role: 
         href="/connexion"
         aria-label={t('nav.login', lang)}
         className={cn(
-          'inline-flex w-11 shrink-0 items-center justify-center rounded-full',
+          // Match the bell IconButton (Figma 40×40 r10) for a consistent topbar icon cluster.
+          'inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-[10px]',
           SURFACE_HOVER,
           FOCUS_RING,
         )}
@@ -68,7 +69,7 @@ export function TopbarUserMenu({ user, role }: { user: TopBarUser | null; role: 
               </AvatarFallback>
             </Avatar>
             <span className="hidden text-start md:flex md:flex-col md:leading-tight">
-              <span className="text-body-sm font-medium text-text-primary">{displayName}</span>
+              <span className="text-body font-medium leading-tight text-text-primary">{displayName}</span>
               <span className="text-caption text-text-muted">{t(ROLE_KEY[role], lang)}</span>
             </span>
             <ChevronDown className="hidden h-4 w-4 shrink-0 text-text-muted md:block" aria-hidden="true" />

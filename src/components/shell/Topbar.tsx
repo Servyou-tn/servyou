@@ -33,7 +33,7 @@ export function Topbar({
   const lang = useLang()
   return (
     <header className="sticky top-0 z-30 border-b border-border-subtle bg-white">
-      <div className="flex h-16 items-center gap-3 px-4 md:px-6">
+      <div className="flex h-16 items-center gap-4 px-4 md:px-6">
         {/* Hamburger — below lg, where the sidebar is a drawer. */}
         <button
           ref={hamburgerRef}
@@ -60,16 +60,17 @@ export function Topbar({
           />
         </Link>
 
-        {/* Search — inline on md+ (the sidebar fills the desktop start edge). */}
-        <div className="hidden min-w-0 flex-1 md:block md:max-w-md">
+        {/* Search — inline on md+, fills the row like the Figma (search sz=FILL), capped so it
+            doesn't balloon past ~Figma width on very wide monitors. */}
+        <div className="hidden min-w-0 flex-1 md:block md:max-w-3xl">
           <TopbarSearch />
         </div>
 
         {/* Mobile spacer — pushes the cluster to the end when the inline search is hidden. */}
         <div className="flex-1 md:hidden" aria-hidden="true" />
 
-        {/* Icon cluster — language · notifications (auth only) · user. */}
-        <div className="flex shrink-0 items-center gap-2">
+        {/* Icon cluster — language · notifications (auth only) · user. gap 16 per the Figma. */}
+        <div className="flex shrink-0 items-center gap-4">
           <LanguageToggle />
           {user ? <TopbarNotifications /> : null}
           <TopbarUserMenu user={user} role={role} />
