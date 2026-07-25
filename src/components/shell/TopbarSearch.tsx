@@ -5,7 +5,6 @@ import { usePathname, useRouter } from 'next/navigation'
 import { Search } from 'lucide-react'
 import { useLang } from '@/components/LangProvider'
 import { t } from '@/lib/i18n'
-import { cn } from '@/lib/utils'
 import { searchPlaceholderKey } from './shell-search'
 
 // Topbar search (design system Section 3.3). The placeholder is context-aware via the current
@@ -30,16 +29,15 @@ export function TopbarSearch() {
         className="pointer-events-none absolute inset-y-0 start-3 my-auto h-4 w-4 text-text-muted"
         aria-hidden="true"
       />
+      {/* Plain template (not cn) so text-body-sm survives — tailwind-merge collapses it against
+          the text-{color} class and would otherwise drop the 14px size (see LanguageToggle). */}
       <input
         type="search"
         value={q}
         onChange={(e) => setQ(e.target.value)}
         placeholder={placeholder}
         aria-label={placeholder}
-        className={cn(
-          'h-10 w-full rounded-lg border border-border-subtle bg-surface-subtle ps-9 pe-3 text-body-sm text-text-primary placeholder:text-text-muted',
-          'focus-visible:border-border-focus focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent/30',
-        )}
+        className="h-10 w-full rounded-[10px] border border-border-subtle bg-surface-subtle ps-9 pe-3 text-body-sm text-text-primary placeholder:text-text-muted focus-visible:border-border-focus focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent/30"
       />
     </form>
   )

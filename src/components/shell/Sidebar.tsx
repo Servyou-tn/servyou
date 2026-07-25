@@ -34,11 +34,12 @@ export function Sidebar({
   const sections = sidebarSectionsForRole(role)
 
   return (
-    <div className="flex h-full w-full flex-col bg-brand-blue-950 px-4 py-6 text-text-inverse">
-      {/* Logo block (80px). Text wordmark — the navbar PNG's navy "Serv" vanishes on the dark
-          ground, so we reuse the colored-span wordmark (DashboardSidebar precedent). A dedicated
-          dark-bg logo asset is a logged brand-assets follow-up. */}
-      <div className="flex h-20 items-center justify-between">
+    <div className="flex h-full w-full flex-col bg-brand-blue-950 px-4 pb-6 text-text-inverse">
+      {/* Logo band (72px, top-aligned — Figma 611:45637 S-mark band; no top padding). Text
+          wordmark — the navbar PNG's navy "Serv" vanishes on the dark ground, so we reuse the
+          colored-span wordmark (DashboardSidebar precedent). A dedicated dark-bg logo asset is a
+          logged brand-assets follow-up. */}
+      <div className="flex h-[72px] items-center justify-between">
         <Link
           href="/"
           onClick={onNavigate}
@@ -63,7 +64,7 @@ export function Sidebar({
 
       <nav
         aria-label={t('nav.aria_primary', lang)}
-        className="mt-2 flex flex-1 flex-col gap-6 overflow-y-auto"
+        className="mt-2 flex flex-1 flex-col gap-6"
       >
         {sections.map((section) => (
           <SidebarSection key={section.labelKey} label={t(section.labelKey, lang)}>

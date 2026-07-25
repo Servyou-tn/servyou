@@ -1001,6 +1001,8 @@ export const fr: Record<string, string> = {
   'services.lens.soon':              "Bientôt",
   'services.filters.searchPlaceholder': "Rechercher un service…",
   'services.filters.categoryAll':    "Toutes les catégories",
+  'services.filters.ville':          "Ville",
+  'services.filters.cityAll':        "Toutes les villes",
   'services.filters.priceTrigger':   "Prix",
   'services.filters.currency':       "TND",
   'services.filters.clearAll':       "Tout effacer",
@@ -1667,6 +1669,7 @@ export const fr: Record<string, string> = {
   'search.pagination.prev':      "Précédent",
   'search.pagination.next':      "Suivant",
   'search.pagination.pageOf':    "Page {current} sur {total}",
+  'search.pagination.showing':   "Affichage {start} à {end} sur {total}",
   // Bare /recherche (no query, no filters): a landing block, not a browse grid —
   // the two marketplaces (/marche/produits, /marche/services) own browse-by-default now.
   'search.landing.title':        "Que recherchez-vous ?",
@@ -2011,7 +2014,7 @@ export const fr: Record<string, string> = {
   'shell.topbar.search.default':          "Rechercher...",
   'shell.topbar.search.services':         "Rechercher mes services...",
   'shell.topbar.search.missions':         "Rechercher des missions...",
-  'shell.topbar.search.products':         "Rechercher des produits...",
+  'shell.topbar.search.products':         "Rechercher une boutique, un produit…",
   'shell.topbar.search.engagements':      "Rechercher mes engagements...",
   'shell.topbar.search.proposals':        "Rechercher mes propositions...",
   'shell.topbar.search.orders':           "Rechercher mes commandes...",

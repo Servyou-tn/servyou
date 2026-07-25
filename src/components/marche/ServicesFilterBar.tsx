@@ -19,15 +19,19 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 
 // The desktop (lg+) filter bar for /marche/services — the Figma moves filtering out of the
-// sidebar into a top bar (611:45644): in-page search, a single-select Catégorie dropdown, a
-// Prix range popover, and a sort dropdown, with a row of dismissible active-filter chips
-// beneath. Every control writes to the URL (buildSearchQuery → router.push); the server page
-// re-fetches. Ville is intentionally absent — it needs a data-layer param that does not exist
-// yet (deferred; see docs/follow-ups.md). Mobile keeps the existing SearchFiltersSheet.
+// sidebar into a top bar (611:45644): an in-page search, single-select Catégorie / Ville
+// dropdowns, a Prix range popover, and a sort dropdown (all radius 10, border-strong / #cbd5e1,
+// content-hug width), with a row of dismissible active-filter chips beneath. Every control writes
+// to the URL (buildSearchQuery → router.push); the server page re-fetches. City lives on
+// freelancer_profiles and is filterable via the services→freelancer join. The Figma's icon-only
+// grid/list view toggle is intentionally omitted (no list-card layout is designed yet — logged
+// follow-up). Mobile keeps the existing SearchFiltersSheet (Ville parity there is a follow-up).
 
 type Props = {
   categories: FilterCategory[]
+  cities: string[]
   selectedCategorie: string[]
+  ville: string | null
   prixMin: number | null
   prixMax: number | null
   tri: SearchSort
@@ -40,7 +44,7 @@ type Props = {
 const SORT_OPTIONS: SearchSort[] = ['recent', 'prix_asc', 'prix_desc']
 
 const TRIGGER =
-  'inline-flex h-10 items-center justify-between gap-2 rounded-lg border border-border-subtle bg-white px-4 text-body-sm transition-colors hover:border-border-strong'
+  'inline-flex h-10 items-center justify-between gap-2 rounded-[10px] border border-border-strong bg-white px-4 text-body-sm transition-colors hover:border-text-muted'
 
 // The dropdown-menu / popover primitives default to shadcn tokens (bg-popover, bg-accent, …)
 // that aren't wired in this project, so — like the shell's own menus — we override with app
@@ -52,7 +56,9 @@ const POPOVER_CONTENT = 'rounded-xl border border-border-subtle bg-white text-te
 
 export function ServicesFilterBar({
   categories,
+  cities,
   selectedCategorie,
+  ville,
   prixMin,
   prixMax,
   tri,
@@ -90,7 +96,8 @@ export function ServicesFilterBar({
     return `≤ ${prixMax} ${cur}`
   }
 
-  const hasActive = selectedCategorie.length > 0 || priceActive || q.trim() !== ''
+  const hasActive =
+    selectedCategorie.length > 0 || Boolean(ville) || priceActive || q.trim() !== ''
 
   return (
     <div className="flex flex-col gap-3">
@@ -105,7 +112,7 @@ export function ServicesFilterBar({
           role="search"
         >
           <div
-            className={`flex h-10 items-center gap-2 rounded-lg border border-border-subtle bg-white px-4 focus-within:border-border-strong`}
+            className={`flex h-10 items-center gap-2 rounded-[10px] border border-border-strong bg-white px-4 focus-within:border-brand-blue-600`}
           >
             <Search className="h-4 w-4 shrink-0 text-text-muted" aria-hidden="true" />
             <input
@@ -122,7 +129,7 @@ export function ServicesFilterBar({
         {/* Catégorie — single-select. */}
         <DropdownMenu>
           <DropdownMenuTrigger
-            className={`${TRIGGER} min-w-40 ${activeCategory ? 'text-text-primary' : 'text-text-muted'} ${FOCUS_RING}`}
+            className={`${TRIGGER} ${activeCategory ? 'text-text-primary' : 'text-text-muted'} ${FOCUS_RING}`}
           >
             <span className="truncate">
               {activeCategory ? catName(activeCategory) : t('search.filters.category', lang)}
@@ -143,6 +150,35 @@ export function ServicesFilterBar({
               {categories.map((c) => (
                 <DropdownMenuRadioItem key={c.slug} value={c.slug} className={MENU_ITEM}>
                   {label(c)}
+                </DropdownMenuRadioItem>
+              ))}
+            </DropdownMenuRadioGroup>
+          </DropdownMenuContent>
+        </DropdownMenu>
+
+        {/* Ville — single-select city (freelancer city; DB-driven, only cities with active
+            listings). */}
+        <DropdownMenu>
+          <DropdownMenuTrigger
+            className={`${TRIGGER} ${ville ? 'text-text-primary' : 'text-text-muted'} ${FOCUS_RING}`}
+          >
+            <span className="truncate">{ville ?? t('services.filters.ville', lang)}</span>
+            <ChevronDown className="h-4 w-4 shrink-0 text-text-muted" aria-hidden="true" />
+          </DropdownMenuTrigger>
+          <DropdownMenuContent
+            align="start"
+            className={`max-h-80 w-56 overflow-y-auto ${MENU_CONTENT}`}
+          >
+            <DropdownMenuRadioGroup
+              value={ville ?? ''}
+              onValueChange={(v) => push({ ville: v || null })}
+            >
+              <DropdownMenuRadioItem value="" className={MENU_ITEM}>
+                {t('services.filters.cityAll', lang)}
+              </DropdownMenuRadioItem>
+              {cities.map((c) => (
+                <DropdownMenuRadioItem key={c} value={c} className={MENU_ITEM}>
+                  {c}
                 </DropdownMenuRadioItem>
               ))}
             </DropdownMenuRadioGroup>
@@ -201,7 +237,7 @@ export function ServicesFilterBar({
 
         {/* Trier par — sort. */}
         <DropdownMenu>
-          <DropdownMenuTrigger className={`${TRIGGER} min-w-40 text-text-primary ${FOCUS_RING}`}>
+          <DropdownMenuTrigger className={`${TRIGGER} text-text-primary ${FOCUS_RING}`}>
             <span className="truncate">
               {t('services.sort.label', lang)} : {t(`services.sort.${sortValue}`, lang)}
             </span>
@@ -236,6 +272,9 @@ export function ServicesFilterBar({
               lang={lang}
             />
           ))}
+          {ville && (
+            <FilterChip label={ville} onRemove={() => push({ ville: null })} lang={lang} />
+          )}
           {priceActive && (
             <FilterChip
               label={priceChipLabel()}
@@ -245,7 +284,7 @@ export function ServicesFilterBar({
           )}
           <button
             type="button"
-            onClick={() => push({ categorie: null, prix_min: null, prix_max: null, q: null })}
+            onClick={() => push({ categorie: null, ville: null, prix_min: null, prix_max: null, q: null })}
             className={`rounded-full px-3 py-1 text-body-sm font-semibold text-brand-accent underline-offset-2 hover:underline ${FOCUS_RING}`}
           >
             {t('services.filters.clearAll', lang)}

@@ -9,6 +9,7 @@ import { Pagination } from '@/components/shared/Pagination'
 import { buildSearchQuery } from '@/components/recherche/search-url'
 import { getShellUser } from '@/lib/marche/shell-user'
 import { getFilterCategoriesForType } from '@/lib/marche/filter-categories'
+import { getServiceCities } from '@/lib/marche/filter-cities'
 import { parseSearchParams } from '@/lib/search/search-params'
 import { searchMarketplace } from '@/lib/search/search-marketplace'
 import { getLang } from '@/lib/i18n/server'
@@ -16,6 +17,10 @@ import { t } from '@/lib/i18n'
 import { CARD_SHADOW, FOCUS_RING } from '@/components/layout/styles'
 
 const BASE = '/marche/services'
+// The services grid is a 3-up × 4-row page in the Figma (611:45637 caption "Affichage 1 à 12
+// sur N") — so this surface overrides the shared 20/page default with 12. Kept local (not a
+// global PER_PAGE change) so /recherche and /categories service results are unaffected.
+const SERVICE_PER_PAGE = 12
 
 // Engine 2 rebuilt to the v3.7 Figma (611:45637 desktop / 621:49740 mobile). The services
 // marketplace, forked off the shared MarcheBrowsePage so /marche/produits keeps its current
@@ -37,14 +42,16 @@ export async function ServicesBrowsePage({
   const shell = await getShellUser()
   const topBarUser = shell?.topBarUser ?? null
 
-  const [categories, result] = await Promise.all([
+  const [categories, cities, result] = await Promise.all([
     getFilterCategoriesForType('service'),
-    searchMarketplace(params),
+    getServiceCities(),
+    searchMarketplace(params, { perPage: SERVICE_PER_PAGE }),
   ])
 
   const isEmpty = result.totalCount === 0
   const hasFilters =
     params.categorie.length > 0 ||
+    params.ville != null ||
     params.prixMin != null ||
     params.prixMax != null ||
     params.q.trim() !== ''
@@ -53,12 +60,14 @@ export async function ServicesBrowsePage({
   const current = new URLSearchParams()
   if (params.q.trim()) current.set('q', params.q)
   if (params.categorie.length) current.set('categorie', params.categorie.join(','))
+  if (params.ville) current.set('ville', params.ville)
   if (params.prixMin != null) current.set('prix_min', String(params.prixMin))
   if (params.prixMax != null) current.set('prix_max', String(params.prixMax))
   if (params.tri !== 'pertinence') current.set('tri', params.tri)
   const clearQs = buildSearchQuery(current, {
     q: null,
     categorie: null,
+    ville: null,
     prix_min: null,
     prix_max: null,
   })
@@ -74,7 +83,9 @@ export async function ServicesBrowsePage({
           <div className="hidden lg:block">
             <ServicesFilterBar
               categories={categories}
+              cities={cities}
               selectedCategorie={params.categorie}
+              ville={params.ville}
               prixMin={params.prixMin}
               prixMax={params.prixMax}
               tri={params.tri}
@@ -117,7 +128,13 @@ export async function ServicesBrowsePage({
           <>
             <ListingResults type="service" items={result.services} />
             <div className="mt-2">
-              <Pagination page={result.page} totalPages={result.totalPages} basePath={BASE} />
+              <Pagination
+                page={result.page}
+                totalPages={result.totalPages}
+                basePath={BASE}
+                totalItems={result.totalCount}
+                perPage={result.perPage}
+              />
             </div>
           </>
         )}

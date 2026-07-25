@@ -29,6 +29,7 @@ describe('parseSearchParams', () => {
       q: '',
       type: 'product',
       categorie: [],
+      ville: null,
       prixMin: null,
       prixMax: null,
       tri: 'pertinence',

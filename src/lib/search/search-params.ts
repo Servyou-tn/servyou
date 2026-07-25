@@ -21,6 +21,7 @@ export type SearchParams = {
   q: string
   type: SearchType
   categorie: string[] // category slugs
+  ville: string | null // freelancer city (services browse); null = no city filter
   prixMin: number | null
   prixMax: number | null
   tri: SearchSort
@@ -70,6 +71,7 @@ export function parseSearchParams(
     q: (firstParam(sp.q) ?? '').trim(),
     type,
     categorie: listParam(sp.categorie),
+    ville: (firstParam(sp.ville) ?? '').trim() || null,
     prixMin: toNum(firstParam(sp.prix_min)),
     prixMax: toNum(firstParam(sp.prix_max)),
     tri,

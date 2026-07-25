@@ -19,6 +19,7 @@ function params(overrides: Partial<SearchParams> = {}): SearchParams {
     q: '',
     type: 'product',
     categorie: [],
+    ville: null,
     prixMin: null,
     prixMax: null,
     tri: 'pertinence',
