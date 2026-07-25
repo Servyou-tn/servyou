@@ -12,7 +12,7 @@ import type { CSSProperties, ReactNode } from 'react'
 // LTR (French): each WORD is kept intact (no mid-word wrap) and split into per-character spans
 // that cascade in. RTL (Arabic, detected by script): each word animates as ONE block — Arabic is
 // cursive, so per-character spans would force isolated, broken letterforms. The emphasisWord
-// (first occurrence) renders in brand-accent and keeps the same stagger; an underline draws last.
+// (first occurrence) renders in brand-blue-600 and keeps the same stagger; an underline draws last.
 
 const INITIAL_MS = 80 // gap before the first unit starts
 const STEP_MS = 30 // per-character stagger
@@ -58,7 +58,7 @@ export function PageHeader({
       nodes.push(
         <span key={`w${ti}`} className="ph-word">
           <span
-            className={`ph-reveal${isEmphasis(wordStart) ? ' text-brand-accent' : ''}`}
+            className={`ph-reveal${isEmphasis(wordStart) ? ' text-brand-blue-600' : ''}`}
             style={{ animationDelay: delayFor(wordStart) } as CSSProperties}
           >
             {tok}
@@ -73,7 +73,7 @@ export function PageHeader({
         chars.push(
           <span
             key={ci}
-            className={`ph-reveal${isEmphasis(gi) ? ' text-brand-accent' : ''}`}
+            className={`ph-reveal${isEmphasis(gi) ? ' text-brand-blue-600' : ''}`}
             style={{ animationDelay: delayFor(gi) } as CSSProperties}
           >
             {tok[ci]}

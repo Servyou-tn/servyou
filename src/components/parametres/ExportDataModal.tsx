@@ -73,7 +73,7 @@ export function ExportDataModal({ email, onClose }: { email: string; onClose: ()
             onClick={onConfirm}
             disabled={pending}
             className={cn(
-              'inline-flex h-10 items-center rounded-full bg-brand-accent px-4 text-sm font-semibold text-white transition-colors hover:bg-brand-accent-light disabled:opacity-60',
+              'inline-flex h-10 items-center rounded-full bg-brand-blue-600 px-4 text-sm font-semibold text-white transition-colors hover:bg-brand-blue-500 disabled:opacity-60',
               FOCUS_RING,
             )}
           >

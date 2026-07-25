@@ -44,7 +44,7 @@ export function SearchFiltersSheet({
         <SlidersHorizontal className="h-4 w-4" aria-hidden="true" />
         {t('search.filters.title', lang)}
         {activeCount > 0 && (
-          <span className="ms-1 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-brand-accent px-1.5 text-xs font-semibold text-white">
+          <span className="ms-1 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-brand-blue-600 px-1.5 text-xs font-semibold text-white">
             {activeCount}
           </span>
         )}

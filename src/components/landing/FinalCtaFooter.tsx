@@ -22,7 +22,7 @@ export function FinalCtaFooter({ lang }: { lang: Lang }) {
           <div className="mt-10 flex justify-center">
             <Link
               href="/inscription"
-              className={`inline-flex h-14 items-center gap-2 rounded-full bg-brand-accent px-8 text-base font-semibold text-white transition-all hover:scale-[1.02] hover:bg-brand-primary ${FOCUS_RING}`}
+              className={`inline-flex h-14 items-center gap-2 rounded-full bg-brand-blue-600 px-8 text-base font-semibold text-white transition-all hover:scale-[1.02] hover:bg-brand-blue-800 ${FOCUS_RING}`}
             >
               {t('landing.hero.cta_primary', lang)}
               <ArrowRightIcon className="h-5 w-5" />

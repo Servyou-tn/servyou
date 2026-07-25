@@ -4,8 +4,8 @@ import type { ReactNode } from 'react'
 // the centered title/subtitle, and the footer link live in AuthFunnelLayout.
 //
 // Default variant 'navy' reproduces the landing page's "Comment ca marche" navy
-// container (HowItWorks.tsx) pixel-for-pixel: the --brand-primary base, a soft
-// brand-accent center glow, and a faint brand-sky dot texture, all clipped to the
+// container (HowItWorks.tsx) pixel-for-pixel: the --brand-blue-800 base, a soft
+// brand-blue-600 center glow, and a faint brand-sky dot texture, all clipped to the
 // rounded corners. Inner controls (form inputs, role cards) stay white, so they
 // read as bright "windows" on the navy. The 'white' variant keeps the earlier
 // pale-ice treatment as a fallback; no page currently uses it.
@@ -30,9 +30,9 @@ export function AuthShell({
 
   return (
     <div
-      className={`relative w-full ${maxWidthClass} overflow-hidden rounded-3xl bg-[var(--brand-primary)] p-8 shadow-[0_32px_80px_-16px_rgba(15,23,42,0.25)] md:p-14`}
+      className={`relative w-full ${maxWidthClass} overflow-hidden rounded-3xl bg-[var(--brand-blue-800)] p-8 shadow-[0_32px_80px_-16px_rgba(15,23,42,0.25)] md:p-14`}
     >
-      {/* Soft brand-accent glow at centre fading to navy — copied from HowItWorks. */}
+      {/* Soft brand-blue-600 glow at centre fading to navy — copied from HowItWorks. */}
       <div
         aria-hidden="true"
         className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(37,99,235,0.08),_transparent_70%)]"

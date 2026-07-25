@@ -139,7 +139,7 @@ export function ActiveOrdersSnapshot({ orders }: { orders: OrderCardData[] }) {
             <div className="mt-4">
               <Link
                 href="/mes-demandes"
-                className={`inline-flex items-center gap-1 rounded text-sm font-medium text-[var(--brand-accent)] hover:underline ${FOCUS_RING}`}
+                className={`inline-flex items-center gap-1 rounded text-sm font-medium text-[var(--brand-blue-600)] hover:underline ${FOCUS_RING}`}
               >
                 {t('consumer.dashboard.orders.viewAll', lang)}
                 <ArrowRightIcon className="h-4 w-4" />

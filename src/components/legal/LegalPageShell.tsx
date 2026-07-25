@@ -64,7 +64,7 @@ export function LegalPageShell({ doc, lang }: { doc: LegalDocStructure; lang: La
         <ul className="mt-3 space-y-2">
           {summaryLines.map((line, i) => (
             <li key={i} className="flex gap-2 text-sm leading-relaxed text-text-muted">
-              <span aria-hidden="true" className="text-brand-accent">
+              <span aria-hidden="true" className="text-brand-blue-600">
                 •
               </span>
               <span>{line}</span>
@@ -75,12 +75,12 @@ export function LegalPageShell({ doc, lang }: { doc: LegalDocStructure; lang: La
 
       {/* Vos droits en un coup d'œil (privacy only) */}
       {rightsLines.length > 0 && (
-        <section className="mt-6 rounded-2xl border border-brand-accent/30 bg-brand-accent/5 p-6">
+        <section className="mt-6 rounded-2xl border border-brand-blue-600/30 bg-brand-blue-600/5 p-6">
           <h2 className="text-base font-bold text-text-primary">{t('legal.rights.heading', lang)}</h2>
           <ul className="mt-3 grid gap-2.5 sm:grid-cols-2">
             {rightsLines.map((line, i) => (
               <li key={i} className="flex gap-2 text-sm text-text-primary">
-                <Check className="mt-0.5 h-4 w-4 shrink-0 text-brand-accent" aria-hidden="true" />
+                <Check className="mt-0.5 h-4 w-4 shrink-0 text-brand-blue-600" aria-hidden="true" />
                 <span>{line}</span>
               </li>
             ))}
@@ -100,7 +100,7 @@ export function LegalPageShell({ doc, lang }: { doc: LegalDocStructure; lang: La
                 <li key={s.id}>
                   <a
                     href={`#${s.id}`}
-                    className={`rounded text-body-sm leading-snug text-text-muted transition-colors hover:text-brand-accent ${FOCUS_RING}`}
+                    className={`rounded text-body-sm leading-snug text-text-muted transition-colors hover:text-brand-blue-600 ${FOCUS_RING}`}
                   >
                     {i + 1}. {t(s.titleKey, lang)}
                   </a>

@@ -158,7 +158,7 @@ export function MobileMenu({
                   <Link
                     href="/inscription"
                     onClick={() => setOpen(false)}
-                    className={`${rowClass} bg-brand-primary text-center font-semibold text-white hover:bg-[#152C6B]`}
+                    className={`${rowClass} bg-brand-blue-800 text-center font-semibold text-white hover:bg-[#152C6B]`}
                   >
                     {t('nav.signup_short', lang)}
                   </Link>

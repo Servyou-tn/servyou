@@ -65,10 +65,9 @@
   --motion-fast: 150ms; --motion-base: 250ms; --motion-slow: 400ms;
   --ease-smooth: cubic-bezier(0.16, 1, 0.3, 1);   --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
 
-  /* ── Brand aliases → primitives (identical values unless noted). Landing / marche shell / .card-premium
-     depend on these utility names; kept stable. Components migrate to primitive tokens in DS-3b. ── */
-  --brand-primary: var(--brand-blue-800);   --brand-accent: var(--brand-blue-600);
-  --brand-accent-light: var(--brand-blue-500);  --brand-ice: var(--brand-blue-50);
+  /* --brand-ice retained (aliased to blue-50; landing-only). The three legacy brand aliases were
+     renamed to their brand-blue-800/600/500 primitives across the codebase in STEP 4. */
+  --brand-ice: var(--brand-blue-50);
   --brand-sky: #BFDBFE;                      /* landing-specific; no v2 scale equivalent — kept literal */
   --surface-pill: #F1F5F9;  --surface-pill-active: #FFFFFF;   /* landing/marche-specific — kept literal */
   --surface-placeholder: #F4F4F4;   /* image/avatar/thumb fallback fill — promoted from the #F4F4F4 component literal (DS-3a; no Figma source, chosen over #E8E8E8 which is only a gradient stop). DS-3b-4: #E8E8E8 re-checked against figma-registry — no source, so no token; the 3 gradient stops stay literal. */
@@ -83,10 +82,8 @@
 
   /* Colour utilities (--color-brand-blue-*, surface/text/border, success/warning/danger/info,
      rating-yellow, wa-*) are GENERATED in ./tokens.css from Figma. Kept below: app-specific
-     utilities with no Figma variable, plus the --brand-* aliases (renamed to primitives in STEP 4). */
-  --color-brand-primary: var(--brand-primary);
-  --color-brand-accent: var(--brand-accent);
-  --color-brand-accent-light: var(--brand-accent-light);
+     utilities with no Figma variable. (The three legacy brand aliases were renamed to their
+     brand-blue-800/600/500 primitives in STEP 4 and removed.) */
   --color-brand-sky: var(--brand-sky);
   --color-brand-ice: var(--brand-ice);
   --color-surface-pill: var(--surface-pill);
@@ -260,7 +257,7 @@ body {
   bottom: -4px;
   height: 2px;
   width: 0;
-  background: var(--brand-accent);
+  background: var(--brand-blue-600);
   border-radius: 1px;
   animation: ph-underline 400ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }

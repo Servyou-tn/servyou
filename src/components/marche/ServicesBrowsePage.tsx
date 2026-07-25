@@ -106,7 +106,7 @@ export async function ServicesBrowsePage({
               {hasFilters && (
                 <Link
                   href={clearFiltersHref}
-                  className={`mt-5 inline-flex items-center rounded-full bg-brand-accent px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-brand-accent/90 ${FOCUS_RING}`}
+                  className={`mt-5 inline-flex items-center rounded-full bg-brand-blue-600 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-brand-blue-600/90 ${FOCUS_RING}`}
                 >
                   {t('services.filters.clearAll', lang)}
                 </Link>

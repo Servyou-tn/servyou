@@ -5,7 +5,7 @@ import { FOCUS_RING } from '@/components/layout/styles'
 import { MarketingShell } from '@/components/layout/MarketingShell'
 
 const primaryBtn = (focus: string) =>
-  `inline-flex h-12 items-center justify-center rounded-full bg-brand-accent px-6 text-sm font-semibold text-white transition-colors hover:bg-brand-primary ${focus}`
+  `inline-flex h-12 items-center justify-center rounded-full bg-brand-blue-600 px-6 text-sm font-semibold text-white transition-colors hover:bg-brand-blue-800 ${focus}`
 const secondaryBtn = (focus: string) =>
   `inline-flex h-12 items-center justify-center rounded-full border border-border-subtle bg-white px-6 text-sm font-semibold text-text-primary transition-colors hover:bg-slate-50 ${focus}`
 
@@ -23,7 +23,7 @@ export default async function NotFound() {
   return (
     <MarketingShell lang={lang}>
       <div className="mx-auto max-w-2xl px-6 py-24 text-center">
-        <p className="text-7xl font-bold text-brand-primary/20" aria-hidden="true">
+        <p className="text-7xl font-bold text-brand-blue-800/20" aria-hidden="true">
           {t('system.notFound.code', lang)}
         </p>
         <h1 className="mt-4 text-3xl font-bold tracking-tight text-text-primary">

@@ -55,7 +55,7 @@ export function SegmentedControl<T extends string>({
             {isActive && (
               <motion.span
                 layoutId={`segmented-pill-${indicatorId}`}
-                className="absolute inset-0 rounded-full bg-brand-accent"
+                className="absolute inset-0 rounded-full bg-brand-blue-600"
                 transition={reduce ? { duration: 0 } : { type: 'spring', stiffness: 380, damping: 30 }}
                 aria-hidden="true"
               />

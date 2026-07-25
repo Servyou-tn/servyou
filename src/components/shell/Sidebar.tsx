@@ -46,7 +46,7 @@ export function Sidebar({
           className={`rounded-pill text-xl font-bold tracking-tight ${FOCUS_RING}`}
         >
           <span className="text-white">Serv</span>
-          <span className="text-brand-accent-light">You</span>
+          <span className="text-brand-blue-500">You</span>
         </Link>
         {inDrawer ? (
           <button

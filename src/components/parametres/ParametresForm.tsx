@@ -80,7 +80,7 @@ export function ParametresForm({ profile }: { profile: CurrentProfile }) {
   const sectionHeader = 'mb-4 flex items-center gap-2'
   const sectionTitle = 'text-lg font-semibold text-text-primary'
   const card = 'card-premium outline-brand mb-6 rounded-2xl bg-white p-6'
-  const inlineLink = cn('rounded text-sm font-medium text-brand-accent hover:underline', FOCUS_RING)
+  const inlineLink = cn('rounded text-sm font-medium text-brand-blue-600 hover:underline', FOCUS_RING)
 
   return (
     <div className="mx-auto max-w-3xl">
@@ -92,7 +92,7 @@ export function ParametresForm({ profile }: { profile: CurrentProfile }) {
       {/* ── §1: Préférences — langue (working) ── */}
       <section className={card}>
         <div className={sectionHeader}>
-          <Languages className="h-5 w-5 text-brand-accent" aria-hidden="true" />
+          <Languages className="h-5 w-5 text-brand-blue-600" aria-hidden="true" />
           <h2 className={sectionTitle}>{t('parametres.lang.title', lang)}</h2>
         </div>
         <p className="mb-4 text-sm text-text-muted">{t('parametres.lang.help', lang)}</p>
@@ -108,7 +108,7 @@ export function ParametresForm({ profile }: { profile: CurrentProfile }) {
       {/* ── §2: Notifications — orders always-on (read-only), marketing coming soon ── */}
       <section className={card}>
         <div className={sectionHeader}>
-          <Bell className="h-5 w-5 text-brand-accent" aria-hidden="true" />
+          <Bell className="h-5 w-5 text-brand-blue-600" aria-hidden="true" />
           <h2 className={sectionTitle}>{t('parametres.notif.title', lang)}</h2>
         </div>
 
@@ -138,7 +138,7 @@ export function ParametresForm({ profile }: { profile: CurrentProfile }) {
       {/* ── §3: Confidentialité et données ── */}
       <section className={card}>
         <div className={sectionHeader}>
-          <Shield className="h-5 w-5 text-brand-accent" aria-hidden="true" />
+          <Shield className="h-5 w-5 text-brand-blue-600" aria-hidden="true" />
           <h2 className={sectionTitle}>{t('parametres.privacy.title', lang)}</h2>
         </div>
         <p className="text-sm leading-relaxed text-text-muted">{t('parametres.privacy.help', lang)}</p>
@@ -179,7 +179,7 @@ export function ParametresForm({ profile }: { profile: CurrentProfile }) {
       {/* ── §4: Comptes connectés (disabled placeholders) ── */}
       <section className={card}>
         <div className={sectionHeader}>
-          <Link2 className="h-5 w-5 text-brand-accent" aria-hidden="true" />
+          <Link2 className="h-5 w-5 text-brand-blue-600" aria-hidden="true" />
           <h2 className={sectionTitle}>{t('parametres.social.title', lang)}</h2>
           <ComingSoonBadge label={comingSoon} />
         </div>

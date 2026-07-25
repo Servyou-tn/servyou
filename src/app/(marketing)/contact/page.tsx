@@ -9,7 +9,7 @@ export const metadata: Metadata = { title: 'Contact — Servyou' }
 
 const cardClass = 'rounded-2xl border border-border-subtle bg-white p-6 text-center'
 const iconWrap =
-  'mx-auto flex h-11 w-11 items-center justify-center rounded-full bg-brand-accent/10 text-brand-accent'
+  'mx-auto flex h-11 w-11 items-center justify-center rounded-full bg-brand-blue-600/10 text-brand-blue-600'
 
 export default async function ContactPage() {
   const lang = await getLang()
@@ -46,7 +46,7 @@ export default async function ContactPage() {
           <p className="mt-3 text-sm font-bold text-text-primary">{t('contact.methods.whatsapp.label', lang)}</p>
           <a
             href="https://wa.me/216XXXXXXXX"
-            className="mt-2 inline-block text-sm font-medium text-brand-accent hover:underline"
+            className="mt-2 inline-block text-sm font-medium text-brand-blue-600 hover:underline"
           >
             {t('contact.methods.whatsapp.value', lang)}
           </a>

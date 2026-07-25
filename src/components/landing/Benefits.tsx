@@ -2,7 +2,7 @@ import { t, type Lang } from '@/lib/i18n'
 import { MapPinIcon, WalletIcon, ShieldIcon } from './icons'
 
 // Section 4 — the three Servyou benefits (Cultivo three-card pattern). Icons in
-// brand-primary navy per the template. White background, 16px-radius cards with
+// brand-blue-800 navy per the template. White background, 16px-radius cards with
 // a subtle border that lifts on hover. No section heading: the template defines
 // only the three cards.
 const cards = [
@@ -21,7 +21,7 @@ export function Benefits({ lang }: { lang: Lang }) {
               key={titleKey}
               className="rounded-2xl border border-border-subtle bg-surface-base p-8 shadow-sm transition-shadow hover:shadow-md"
             >
-              <div className="grid h-12 w-12 place-items-center rounded-xl bg-brand-primary/10 text-brand-primary">
+              <div className="grid h-12 w-12 place-items-center rounded-xl bg-brand-blue-800/10 text-brand-blue-800">
                 <Icon className="h-6 w-6" />
               </div>
               <h3 className="mt-6 text-xl font-bold text-text-primary">{t(titleKey, lang)}</h3>

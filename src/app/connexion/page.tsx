@@ -23,7 +23,7 @@ export default async function ConnexionPage({
       footer={
         <>
           {t('signin.noAccount', lang)}{' '}
-          <Link href="/inscription" className="font-semibold text-[var(--brand-accent)] hover:underline">
+          <Link href="/inscription" className="font-semibold text-[var(--brand-blue-600)] hover:underline">
             {t('signin.signupLink', lang)}
           </Link>
         </>

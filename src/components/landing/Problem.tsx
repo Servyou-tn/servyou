@@ -65,7 +65,7 @@ export function Problem({ lang }: { lang: Lang }) {
             <div className="flex h-full flex-col justify-center gap-3" aria-hidden="true">
               {[
                 'bg-status-dot-success',
-                'bg-brand-accent',
+                'bg-brand-blue-600',
                 'bg-[#F59E0B]',
               ].map((dot, i) => (
                 <div key={i} className="flex items-center gap-3 rounded-xl bg-surface-subtle p-3">

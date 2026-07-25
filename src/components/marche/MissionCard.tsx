@@ -57,7 +57,7 @@ export function MissionCard({ mission }: { mission: MyMission }) {
         <span className="text-text-muted">{dateLabel}</span>
         <span
           className={`rounded-full px-2.5 py-1 font-medium ${
-            capReached ? 'bg-amber-100 text-amber-700' : 'bg-brand-accent/10 text-brand-accent'
+            capReached ? 'bg-amber-100 text-amber-700' : 'bg-brand-blue-600/10 text-brand-blue-600'
           }`}
         >
           {t('mesmissions.responses', lang, { n: mission.response_count, max: MAX_RESPONSES_PER_POST })}

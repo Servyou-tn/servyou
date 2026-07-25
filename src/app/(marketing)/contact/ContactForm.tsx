@@ -143,7 +143,7 @@ export function ContactForm() {
       <button
         type="submit"
         disabled={submitting}
-        className={`inline-flex h-12 items-center justify-center rounded-full bg-brand-accent px-6 text-sm font-semibold text-white transition-colors hover:bg-brand-primary disabled:opacity-60 ${FOCUS_RING}`}
+        className={`inline-flex h-12 items-center justify-center rounded-full bg-brand-blue-600 px-6 text-sm font-semibold text-white transition-colors hover:bg-brand-blue-800 disabled:opacity-60 ${FOCUS_RING}`}
       >
         {submitting ? t('contact.form.submitting', lang) : t('contact.form.submit', lang)}
       </button>

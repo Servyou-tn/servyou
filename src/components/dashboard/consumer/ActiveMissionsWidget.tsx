@@ -47,7 +47,7 @@ export function ActiveMissionsWidget({ missions }: { missions: MissionItem[] }) 
             </p>
             <Link
               href="/poster-mission"
-              className={`mt-3 inline-flex items-center justify-center rounded-lg bg-brand-accent px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-[#1D4ED8] ${FOCUS_RING}`}
+              className={`mt-3 inline-flex items-center justify-center rounded-lg bg-brand-blue-600 px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-[#1D4ED8] ${FOCUS_RING}`}
             >
               {t('dashboard.rightRail.missions.empty_cta', lang)}
             </Link>
@@ -69,7 +69,7 @@ export function ActiveMissionsWidget({ missions }: { missions: MissionItem[] }) 
             </ul>
             <Link
               href="/mes-missions"
-              className={`mt-3 inline-flex items-center gap-1 rounded text-xs font-medium text-brand-accent hover:underline ${FOCUS_RING}`}
+              className={`mt-3 inline-flex items-center gap-1 rounded text-xs font-medium text-brand-blue-600 hover:underline ${FOCUS_RING}`}
             >
               {t('dashboard.rightRail.missions.viewAll', lang)}
               <ArrowRightIcon className="h-3.5 w-3.5" aria-hidden="true" />

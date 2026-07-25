@@ -73,7 +73,7 @@ export function ProfileAvatarMenu({
         <DropdownMenuTrigger asChild>
           <button type="button" className={triggerClassName} aria-label={t('nav.account', lang)}>
             <Avatar className="h-10 w-10">
-              <AvatarFallback className="bg-brand-primary text-sm font-medium text-white">
+              <AvatarFallback className="bg-brand-blue-800 text-sm font-medium text-white">
                 {getInitials(user.full_name || user.email)}
               </AvatarFallback>
             </Avatar>

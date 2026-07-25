@@ -63,7 +63,7 @@ export function TopbarUserMenu({ user, role }: { user: TopBarUser | null; role: 
             className={cn('flex items-center gap-2 rounded-full p-1 md:pe-2.5', SURFACE_HOVER, FOCUS_RING)}
           >
             <Avatar className="h-10 w-10">
-              <AvatarFallback className="bg-brand-primary text-sm font-medium text-white">
+              <AvatarFallback className="bg-brand-blue-800 text-sm font-medium text-white">
                 {getInitials(user.full_name || user.email)}
               </AvatarFallback>
             </Avatar>

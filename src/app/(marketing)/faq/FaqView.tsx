@@ -55,7 +55,7 @@ export function FaqView({ categories }: { categories: ResolvedCategory[] }) {
           <p className="text-sm text-text-muted">{t('faq.search.noResults', lang)}</p>
           <Link
             href="/contact"
-            className={`mt-3 inline-block rounded text-sm font-semibold text-brand-accent hover:underline ${FOCUS_RING}`}
+            className={`mt-3 inline-block rounded text-sm font-semibold text-brand-blue-600 hover:underline ${FOCUS_RING}`}
           >
             {t('faq.search.contactLink', lang)}
           </Link>

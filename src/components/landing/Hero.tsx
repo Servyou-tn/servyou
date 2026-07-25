@@ -102,9 +102,9 @@ export function Hero({ lang }: { lang: Lang }) {
           <BlurFade delay={0.1} inView>
             <h1 className="mx-auto max-w-5xl font-[family-name:var(--font-display)] text-2xl font-bold leading-[1.15] tracking-tight lg:text-3xl xl:text-4xl">
               <span className="text-[var(--text-primary)]">{t('landing.hero.h1_chez', lang)}</span>
-              <span className="text-[var(--brand-accent)]">{t('landing.hero.h1_brand', lang)}</span>
+              <span className="text-[var(--brand-blue-600)]">{t('landing.hero.h1_brand', lang)}</span>
               <span className="text-[var(--text-primary)]">{t('landing.hero.h1_middle', lang)}</span>
-              <span className="text-[var(--brand-accent)]">{t('landing.hero.h1_accent', lang)}</span>
+              <span className="text-[var(--brand-blue-600)]">{t('landing.hero.h1_accent', lang)}</span>
             </h1>
           </BlurFade>
           <BlurFade delay={0.25} inView>
@@ -283,8 +283,8 @@ function FlipBack({
         }}
         className="group relative mx-auto flex w-full max-w-[180px] items-center justify-between gap-2 rounded-full py-1 ps-4 pe-1 text-xs font-semibold text-white sm:whitespace-nowrap"
         style={{
-          background: 'linear-gradient(135deg, var(--brand-accent) 0%, var(--brand-primary) 100%)',
-          boxShadow: 'inset 0 1px 0 var(--brand-accent-light), 0 4px 12px rgba(37, 99, 235, 0.3)',
+          background: 'linear-gradient(135deg, var(--brand-blue-600) 0%, var(--brand-blue-800) 100%)',
+          boxShadow: 'inset 0 1px 0 var(--brand-blue-500), 0 4px 12px rgba(37, 99, 235, 0.3)',
         }}
       >
         <span>{cta}</span>
@@ -343,7 +343,7 @@ function FlipIcon({
     onKeyDown,
   }
   const ring =
-    'outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-accent)] focus-visible:ring-offset-2'
+    'outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-blue-600)] focus-visible:ring-offset-2'
   const front =
     'absolute inset-0 overflow-hidden rounded-2xl border border-[var(--brand-sky)]/30 bg-white shadow-[0_4px_16px_rgba(15,23,42,0.08),inset_0_1px_2px_rgba(191,219,254,0.4)]'
   const back =

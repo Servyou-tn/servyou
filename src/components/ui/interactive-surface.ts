@@ -22,17 +22,17 @@ export const SURFACE_IDLE =
 export const SURFACE_HOVER =
   'transition-all duration-200 ease-out hover:bg-slate-50 hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)]'
 
-// The selected treatment — a light brand-accent tint (Linear / Vercel / Stripe pattern), NOT a
+// The selected treatment — a light brand-blue-600 tint (Linear / Vercel / Stripe pattern), NOT a
 // solid fill. A selected surface is stable: it keeps the tint, no hover swap. Same lifted shadow
 // as idle (it's last in the cn() chain for active, so it must carry the upgraded depth too).
 export const SURFACE_ACTIVE =
-  'bg-brand-accent/10 border-brand-accent/40 text-brand-accent shadow-[0_2px_8px_rgba(0,0,0,0.06)]'
+  'bg-brand-blue-600/10 border-brand-blue-600/40 text-brand-blue-600 shadow-[0_2px_8px_rgba(0,0,0,0.06)]'
 
 // The shared focus ring (re-exported so call sites import everything from one place).
 export { FOCUS_RING }
 
 // The composed surface — height + idle white surface + focus ring, plus EITHER the hover lift
-// (inactive) or the brand-accent tint (active). cn() ensures the active tint reliably overrides
+// (inactive) or the brand-blue-600 tint (active). cn() ensures the active tint reliably overrides
 // the idle bg/border/text (tailwind-merge keeps the last of each conflicting utility — a raw
 // string would let the CSS cascade pick the winner unpredictably). Call sites add shape +
 // padding (a label pill, an icon circle, the search wrapper).

@@ -29,7 +29,7 @@ export function SubcategoryStrip({ items, lang }: { items: Subcategory[]; lang: 
                 className="flex h-20 items-center justify-center rounded-xl bg-linear-to-br from-[#F4F4F4] to-[#E8E8E8]"
                 aria-hidden="true"
               >
-                <span className="text-2xl font-bold text-brand-accent">
+                <span className="text-2xl font-bold text-brand-blue-600">
                   {(name.trim()[0] ?? '?').toUpperCase()}
                 </span>
               </div>

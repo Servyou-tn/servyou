@@ -17,7 +17,7 @@ export default async function MotDePasseOubliePage() {
       footer={
         <>
           {t('forgotPassword.footer.remembered', lang)}{' '}
-          <Link href="/connexion" className="font-semibold text-[var(--brand-accent)] hover:underline">
+          <Link href="/connexion" className="font-semibold text-[var(--brand-blue-600)] hover:underline">
             {t('forgotPassword.footer.signinLink', lang)}
           </Link>
         </>

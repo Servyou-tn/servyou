@@ -38,7 +38,7 @@ export function TopbarSearch() {
         aria-label={placeholder}
         className={cn(
           'h-10 w-full rounded-lg border border-border-subtle bg-surface-subtle ps-9 pe-3 text-body-sm text-text-primary placeholder:text-text-muted',
-          'focus-visible:border-border-focus focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent/30',
+          'focus-visible:border-border-focus focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue-600/30',
         )}
       />
     </form>

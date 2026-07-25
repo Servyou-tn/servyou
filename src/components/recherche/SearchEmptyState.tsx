@@ -40,7 +40,7 @@ export function SearchEmptyState({
 }: Props) {
   const hasQuery = query !== ''
 
-  const primary = `inline-flex items-center rounded-full bg-brand-accent px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-brand-accent/90 ${FOCUS_RING}`
+  const primary = `inline-flex items-center rounded-full bg-brand-blue-600 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-brand-blue-600/90 ${FOCUS_RING}`
   const textLink = `rounded text-body-sm font-medium text-text-muted underline-offset-2 hover:underline ${FOCUS_RING}`
 
   return (

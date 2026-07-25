@@ -42,7 +42,7 @@ export default async function MesMissionsPage({
   const newButton = (
     <Link
       href="/mes-missions/nouvelle"
-      className={`inline-flex items-center rounded-full bg-brand-accent px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-brand-accent-light ${FOCUS_RING}`}
+      className={`inline-flex items-center rounded-full bg-brand-blue-600 px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-brand-blue-500 ${FOCUS_RING}`}
     >
       {t('mesmissions.new', lang)}
     </Link>

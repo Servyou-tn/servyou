@@ -27,7 +27,7 @@ const journeys: Journey[] = [
     bodyKey: 'landing.journey.buyers_body',
     ctaKey: 'landing.journey.buyers_cta',
     href: '/',
-    accent: 'bg-brand-accent',
+    accent: 'bg-brand-blue-600',
   },
   {
     id: 'boutiques',
@@ -37,7 +37,7 @@ const journeys: Journey[] = [
     bodyKey: 'landing.journey.shops_body',
     ctaKey: 'landing.journey.shops_cta',
     href: '/inscription',
-    accent: 'bg-brand-primary',
+    accent: 'bg-brand-blue-800',
   },
   {
     id: 'freelances',
@@ -89,7 +89,7 @@ export function Journeys({ lang }: { lang: Lang }) {
           >
             {/* Text */}
             <div className={j.reversed ? 'lg:order-2' : 'lg:order-1'}>
-              <p className="text-sm font-semibold uppercase tracking-[0.1em] text-brand-accent">
+              <p className="text-sm font-semibold uppercase tracking-[0.1em] text-brand-blue-600">
                 {t(j.labelKey, lang)}
               </p>
               <h3 className="mt-3 max-w-[440px] text-3xl font-bold leading-tight tracking-tight text-text-primary">
@@ -100,7 +100,7 @@ export function Journeys({ lang }: { lang: Lang }) {
               </p>
               <Link
                 href={j.href}
-                className={`mt-6 inline-flex items-center gap-2 rounded-md text-base font-semibold text-brand-accent transition-colors hover:text-brand-primary ${FOCUS_RING}`}
+                className={`mt-6 inline-flex items-center gap-2 rounded-md text-base font-semibold text-brand-blue-600 transition-colors hover:text-brand-blue-800 ${FOCUS_RING}`}
               >
                 {t(j.ctaKey, lang)}
                 <ArrowRightIcon className="h-5 w-5" />

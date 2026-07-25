@@ -1,2 +1,9 @@
 *.sql text eol=lf
 *.md text eol=lf
+
+# Generated design-token files + the VRT harness must be LF on every platform, so the tokens CI
+# gate (git diff --exit-code src/styles/tokens.css) can't fail on a Windows-CRLF vs Linux-LF mismatch.
+tokens/tokens.json eol=lf
+src/styles/tokens.css eol=lf
+scripts/tokens/*.mjs eol=lf
+scripts/vrt/*.mjs eol=lf
