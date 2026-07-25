@@ -54,7 +54,7 @@ export function Sidebar({
             height={32}
             className="h-8 w-8 shrink-0"
           />
-          <span className="text-xl font-bold tracking-tight text-white">ServYou</span>
+          <span className="text-xl font-bold text-white">ServYou</span>
         </Link>
         {inDrawer ? (
           <button
@@ -71,7 +71,7 @@ export function Sidebar({
 
       <nav
         aria-label={t('nav.aria_primary', lang)}
-        className="mt-3 flex flex-1 flex-col gap-6"
+        className="mt-3 flex flex-1 flex-col gap-0.5"
       >
         {sections.map((section) => (
           <SidebarSection key={section.labelKey} label={t(section.labelKey, lang)}>
@@ -91,11 +91,11 @@ export function Sidebar({
               <Link
                 href="/devenir-vendeur"
                 onClick={onNavigate}
-                className={`mt-1 flex flex-col gap-2 rounded-xl bg-brand-blue-600 p-4 text-text-inverse transition-colors hover:bg-brand-blue-700 ${FOCUS_RING}`}
+                className={`flex flex-col gap-2 rounded-xl bg-brand-blue-600 p-4 text-text-inverse transition-colors hover:bg-brand-blue-700 ${FOCUS_RING}`}
               >
                 <Rocket className="h-6 w-6 shrink-0" aria-hidden="true" />
                 <span className="text-h4">{t('shell.sidebar.sellerCta.title', lang)}</span>
-                <span className="text-body-sm text-brand-blue-100">
+                <span className="text-body-sm leading-5 text-brand-blue-100">
                   {t('shell.sidebar.sellerCta.subtitle', lang)}
                 </span>
               </Link>
