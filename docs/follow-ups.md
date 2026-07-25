@@ -205,3 +205,8 @@ as tokens in a later DS pass, then replace the brackets:
 - **section-cap letter-spacing** — `--text-section-cap--letter-spacing` is `0.05em`; the Figma
   section label (611:45637) measures **0.06em**. `SidebarSection` overrides with `tracking-[0.06em]`.
   Correct the token to `0.06em` and drop the override.
+- **avatar placeholder grey** — the Figma topbar avatar fill is **#cbd5e1**; the DS avatar/thumb
+  fallback token `--surface-placeholder` is **#f4f4f4** (lighter). `TopbarUserMenu` uses
+  `bg-border-strong` (the exact #cbd5e1 colour) as a stopgap. Reconcile: add an
+  `avatar-placeholder` surface token at #cbd5e1 (or decide the fallback grey), then replace the
+  border-token-as-background.

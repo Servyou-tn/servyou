@@ -60,9 +60,8 @@ export function Topbar({
           />
         </Link>
 
-        {/* Search — inline on md+, fills the row like the Figma (search sz=FILL), capped so it
-            doesn't balloon past ~Figma width on very wide monitors. */}
-        <div className="hidden min-w-0 flex-1 md:block md:max-w-3xl">
+        {/* Search — inline on md+, fills the row (Figma 611:45640 search sz=FILL). */}
+        <div className="hidden min-w-0 flex-1 md:block">
           <TopbarSearch />
         </div>
 

@@ -28,7 +28,7 @@ export function TopbarNotifications() {
             interactiveSurface(false),
           )}
         >
-          <Bell className="h-5 w-5 text-text-primary" aria-hidden="true" />
+          <Bell className="h-5 w-5 text-text-muted" aria-hidden="true" />
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent

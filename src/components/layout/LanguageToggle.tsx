@@ -62,7 +62,7 @@ export function LanguageToggle() {
             // Plain template (not cn) so text-body-sm survives — tailwind-merge collapses it
             // against the text-{color} classes and would otherwise drop the 14px size to 16px.
             className={`inline-flex h-6 items-center justify-center rounded-lg px-3 text-body-sm font-medium transition-colors ${
-              active ? 'bg-white text-text-primary shadow-sm' : 'text-text-muted hover:text-text-primary'
+              active ? 'bg-white text-text-primary' : 'text-text-secondary hover:text-text-primary'
             } ${FOCUS_RING}`}
           >
             {label}

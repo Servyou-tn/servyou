@@ -64,12 +64,15 @@ export function TopbarUserMenu({ user, role }: { user: TopBarUser | null; role: 
             className={cn('flex items-center gap-2 rounded-full p-1 md:pe-2.5', SURFACE_HOVER, FOCUS_RING)}
           >
             <Avatar className="h-10 w-10">
-              <AvatarFallback className="bg-brand-primary text-sm font-medium text-white">
+              {/* Figma 611:45640 avatar fill #cbd5e1 (bg-border-strong). We keep initials (no
+                  avatar_url data) over the Figma's generic person-glyph — more useful; the initials
+                  use text-primary #0f172a for AA on the grey (white would be ~1.3:1, fails). */}
+              <AvatarFallback className="bg-border-strong text-sm font-medium text-text-primary">
                 {getInitials(user.full_name || user.email)}
               </AvatarFallback>
             </Avatar>
             <span className="hidden text-start md:flex md:flex-col md:leading-tight">
-              <span className="text-body font-medium leading-tight text-text-primary">{displayName}</span>
+              <span className="text-body font-medium leading-snug text-text-primary">{displayName}</span>
               <span className="text-caption text-text-muted">{t(ROLE_KEY[role], lang)}</span>
             </span>
             <ChevronDown className="hidden h-4 w-4 shrink-0 text-text-muted md:block" aria-hidden="true" />
