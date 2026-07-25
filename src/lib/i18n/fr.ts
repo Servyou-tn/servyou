@@ -2031,6 +2031,11 @@ export const fr: Record<string, string> = {
   'placeholders.comingSoon.title':              "Bientôt disponible",
   'placeholders.comingSoon.freelanceWorkspace': "L'espace freelance arrive prochainement",
   'placeholders.comingSoon.statistics':         "Le tableau de performance arrive prochainement",
+  'placeholders.comingSoon.marketplace':        "Le marché arrive prochainement",
+  'placeholders.comingSoon.orders':             "Vos commandes arrivent prochainement",
+  'placeholders.comingSoon.favorites':          "Vos favoris arrivent prochainement",
+  'placeholders.comingSoon.account':            "Votre compte arrive prochainement",
+  'placeholders.comingSoon.request':            "La demande en ligne arrive prochainement",
 
   // ─── Aide (Help center) (PR-DS-2) ───────────────────────────────────────────
   'aide.title':            "Centre d'aide",
