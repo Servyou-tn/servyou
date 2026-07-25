@@ -10,7 +10,9 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:integration": "vitest run --config vitest.integration.config.ts",
-    "rls-smoke": "node --env-file=.env.local scripts/rls-smoke.mjs"
+    "rls-smoke": "node --env-file=.env.local scripts/rls-smoke.mjs",
+    "tokens:pull": "node scripts/tokens/pull.mjs",
+    "tokens:build": "node scripts/tokens/build.mjs"
   },
   "dependencies": {
     "@sentry/nextjs": "^10.56.0",
@@ -34,6 +36,7 @@
     "@vitest/ui": "^4.1.8",
     "eslint": "^9",
     "eslint-config-next": "16.2.7",
+    "style-dictionary": "^5.5.0",
     "tailwindcss": "^4",
     "typescript": "^5",
     "vitest": "^4.1.8"
