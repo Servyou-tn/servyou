@@ -59,8 +59,8 @@ const cardBase =
   `${display} group relative flex h-full min-h-[140px] flex-col justify-between rounded-3xl p-5 outline-none ` +
   'border border-[var(--border-subtle)] bg-[var(--surface-base)] ' +
   'transition-all duration-[250ms] ease-out motion-safe:hover:-translate-y-1 ' +
-  'hover:border-[var(--brand-accent)] hover:shadow-[0_12px_32px_rgba(15,23,42,0.08)] ' +
-  'focus-visible:ring-2 focus-visible:ring-[var(--brand-accent)] focus-visible:ring-offset-2 ' +
+  'hover:border-[var(--brand-blue-600)] hover:shadow-[0_12px_32px_rgba(15,23,42,0.08)] ' +
+  'focus-visible:ring-2 focus-visible:ring-[var(--brand-blue-600)] focus-visible:ring-offset-2 ' +
   'motion-reduce:transition-none md:min-h-[160px] md:p-7'
 
 export function Categories({ lang }: { lang: Lang }) {
@@ -97,7 +97,7 @@ export function Categories({ lang }: { lang: Lang }) {
               >
                 <Icon
                   aria-hidden="true"
-                  className="h-8 w-8 text-[var(--brand-accent)] transition-colors duration-[250ms] ease-out group-hover:text-[var(--brand-primary)] motion-reduce:transition-none md:h-9 md:w-9"
+                  className="h-8 w-8 text-[var(--brand-blue-600)] transition-colors duration-[250ms] ease-out group-hover:text-[var(--brand-blue-800)] motion-reduce:transition-none md:h-9 md:w-9"
                 />
                 <span className="mt-auto text-base font-semibold leading-[1.3] tracking-[-0.01em] text-[var(--text-primary)] md:text-lg">
                   {t(`landing.categories.items.${id}`, lang)}

@@ -25,7 +25,7 @@
 | Client components | **87 / 187** `.tsx` (~47%) | files carrying `'use client'` ÷ all `.tsx` in `src/app`+`src/components` |
 | Raw hex color occurrences | **120** | 56 in `globals.css` (token layer, legit); 64 elsewhere (mostly brand/social/logo literals) |
 | Untokenised bracket utilities | **381** | 98 `[var(--token)]` + 61 `data-[…]` + 17 `-[#hex]` + **204 raw dimension/shadow** values |
-| Genuine color regressions | **3** | `#0F172A` tile (`Problem.tsx:16`), `#9c40ff` ×2 (magicui beams) |
+| Genuine color regressions | **0** (3 flagged → all false positives) | `#0F172A` = deliberate brand-mock tint; `#9c40ff` ×2 = dead overridden magicui defaults (corrected in Step 3, F1 2026-07-25) |
 | RTL physical-direction utilities | **23** | `left-/right-` positioning only; **0** `ml-/mr-/pl-/pr-/text-left/text-right` |
 | Page DS classification | **pre-v2 12 · mixed 2 · untokenised 0 · v2 37** | on each route's own segment tree; `--brand-*` = v2 alias, not a regression |
 | System-state files | loading **0/51** · error **1/51** · not-found **1/51** · global-error **0** | root-only, cascade to children |
@@ -131,7 +131,7 @@ Repo-relative paths. `renders? = yes` unless noted. "guard→/connexion" = rende
 
 **Read this nuance first.** `--brand-primary` / `--brand-accent` / `--brand-accent-light` are **v2 aliases**, not legacy colors — `globals.css:87-88` maps them to `--brand-blue-800/600/500`, and `:102-104` aliases the `@theme` utilities (the file comments at `:85-86, :126` call them transitional, migrating to primitives in "DS-3b"). **So a route flagged "pre-v2" below is flagged for the `brand-*` _naming_ legacy, NOT a color regression** — the rendered values are already v2. Font is **Cairo** (v2); the only `Tajawal` hit is a comment; `info-purple` = **0** occurrences.
 
-**Genuine color regressions (the only ones anywhere): 3** — raw `#0F172A` decorative tile at `landing/Problem.tsx:16`, and purple `#9c40ff` ×2 in magicui beams (`animated-beam.tsx:44`, `border-beam.tsx:61`).
+**Color regressions flagged: 3 — but on inspection (F1, 2026-07-25) all three are FALSE POSITIVES; there are 0 genuine regressions.** The original static hex-scan flagged raw hexes without reading their context: (1) `#0F172A` at `landing/Problem.tsx:16` is a `chaosBlobs` entry the code comment explicitly marks as a deliberate external-brand mock tint ("leave literal"), sitting beside `#E1306C`/`#25D366`/`#1877F2` (Instagram/WhatsApp/Facebook); (2) `#9c40ff` at `magicui/animated-beam.tsx:44` and (3) `magicui/border-beam.tsx:61` are vendored magicui *defaults* that are overridden at the only call site (`landing/Hero.tsx:147-148,176-177` → blue), so they never render. **Lesson:** a raw-hex static audit must check call-site overrides + adjacent comments before calling something a regression.
 
 **Per-route classification** (all 51 `page.tsx`, each judged on its own segment tree):
 - **pre-v2 — 12** (own tree contains `--brand-*` naming): the entire auth/inscription funnel — `/inscription` (+`/consumer`, `/freelancer`, `/shop-owner`), `/connexion`, `/mot-de-passe-oublie`, `/verifier-email` — plus `/mes-missions` + `/[id]` (`hover:bg-brand-accent-light`) and 3 marketing pages (`/a-propos`, `/contact`, `/faq`).
@@ -276,6 +276,38 @@ Read-only audit — nothing below was changed. Ordered by leverage.
 6. **Add system-state coverage:** at minimum a root `loading.tsx` (no loading UI exists anywhere) and a `global-error.tsx`; consider workspace-level `error.tsx`/`not-found.tsx` for `admin` and the marketplace. *(Step 10)*
 7. **Fix stale nav configs** pointing at 404 routes (`/mon-espace`, `/mes-demandes`, `/profile`, `/poster-mission`, `/categorie/[slug]`, `/missions`, `/ma-boutique`, `/mon-profil-freelance`) — or build the targets. *(Step 2)*
 8. **Componentize the inlined Figma primitives** (`Button`, `Input`, `StatTile`, `StatusPill`) — they are the most-repeated inline patterns and a large source of untokenised drift. *(Steps 3, 4)*
-9. **Tokenize the real drift, ignore the false positives.** Fix the 3 genuine color regressions (`#0F172A` tile, `#9c40ff` ×2) and the hardcoded navy set in `Header`/`MobileMenu`; convert the ~204 raw bracket dimensions (concentrated in landing + auth funnels) to tokens. Leave `brand-*` aliases and social/logo hex literals alone — they are not regressions. *(Step 3)*
+9. **Tokenize the real drift.** The 3 originally-flagged "regressions" are false positives (Step 3 — a deliberate mock tint + 2 dead overridden defaults). The real drift is the hardcoded navy set in `Header`/`MobileMenu` and the ~204 raw bracket dimensions (concentrated in landing + auth funnels). Leave `brand-*` aliases and social/logo hex literals alone. *(Step 3)*
 10. **Remove `/design-tokens-verification`** (throwaway dev page, orphan). *(Steps 2, 8)*
 11. **Live 380px sweep of the auth-gated + `/categories/[slug]` routes** to close the Step 8 gap. *(Step 8)*
+
+---
+
+## F1 follow-up — Typography token gap (scheduled)
+
+The F1 token pipeline (2026-07-25, Path D) drives `@theme` from Figma for colours, breakpoints, spacing, radius, and shadow, but **deliberately does NOT emit typography** into `tokens.css`. The full Figma type ramp — including the F1-added `weight/*` + `tracking/*` (all 9 text styles are now fully variable-bound in Figma) — lives in `tokens/tokens.json` (source of truth, guarded by the `tokens:build` tracking em-assertion) but is **not wired** to the app's `text-*` utilities, because the Figma ramp diverges from the shipped app and is incomplete. Wiring it changes shipped pixels and needs founder sign-off on Figma-vs-shipped per step.
+
+**Per-step divergence (Figma ramp vs `globals.css` `--text-*`):**
+
+| Step | Figma line-height | app line-height | Figma weight | app weight |
+|---|---|---|---|---|
+| display | 1.045 (46/44) | 1.2 | 900 | 700 |
+| h1 | 1.1875 (38/32) | 1.25 | 700 | 700 ✓ |
+| h2 | 1.25 (30/24) | 1.3 | 700 | 700 ✓ |
+| h3 | 1.3 (26/20) | 1.4 | 600 | 600 ✓ |
+| body-lg | 1.556 (28/18) | 1.6 | 400 | 400 ✓ |
+| body | 1.625 (26/16) | 1.5 | 400 | 400 ✓ |
+| body-sm | 1.5 (21/14) | 1.5 ✓ | 400 | 400 ✓ |
+| caption | 1.417 (17/12) | 1.4 | 500 | 400 |
+
+Sizes match on every overlapping step; line-heights differ on 6 of 8, weights on `display` + `caption`. Wiring `--text-*` from Figma would shift `text-body` (**×90 uses**, lh 1.5→1.625), `text-h1` (×4), `text-caption` (×9), `text-h3` (×1), and others.
+
+**4 app-only ramp steps with NO Figma equivalent** (would vanish if `--text-*` were regenerated from Figma):
+
+| Utility | Usage count | Figma equivalent |
+|---|---|---|
+| `text-h4` | 2 | none |
+| `text-label` | 4 | none |
+| `text-stat-number` | 1 | none |
+| `text-section-cap` | 7 | none |
+
+Figma also adds an `overline` step (12/17, Medium, +0.04em tracking) the app doesn't use. **Resolution owed:** decide Figma-vs-shipped per step, add the 4 missing steps to the Figma Typography collection (or accept the shipped values as canonical), then wire `--text-*` from `tokens.css` in a dedicated PR behind a VRT gate.

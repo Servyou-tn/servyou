@@ -5,7 +5,7 @@ import { FOCUS_RING } from '@/components/layout/styles'
 
 // The one filter control used by every consumer filter — the Marché Catégorie
 // checkboxes and the Statut/Type radios. An appearance-none square outline box with a small
-// brand-accent Check icon centred when selected, and NO background fill. Checkboxes and radios
+// brand-blue-600 Check icon centred when selected, and NO background fill. Checkboxes and radios
 // render IDENTICALLY (same square, size, border, and check) — modern filter UX drops the radio
 // circle; single- vs multi-select is purely behavioural and never shown in the shape. Single
 // source of truth so the controls never drift apart again.
@@ -34,10 +34,10 @@ export function FilterControl({
         // Always a square outline — both checkboxes and radios render identically (modern
         // filter UX drops the radio circle; single- vs multi-select stays purely behavioural).
         // `type` still drives the real input semantics; only the visual is unified.
-        className={`peer h-4 w-4 cursor-pointer appearance-none rounded-sm border border-border-subtle bg-white transition-colors checked:border-brand-accent ${FOCUS_RING}`}
+        className={`peer h-4 w-4 cursor-pointer appearance-none rounded-sm border border-border-subtle bg-white transition-colors checked:border-brand-blue-600 ${FOCUS_RING}`}
       />
       <Check
-        className="pointer-events-none absolute inset-0 m-auto h-3 w-3 text-brand-accent opacity-0 transition-opacity peer-checked:opacity-100"
+        className="pointer-events-none absolute inset-0 m-auto h-3 w-3 text-brand-blue-600 opacity-0 transition-opacity peer-checked:opacity-100"
         strokeWidth={3}
         aria-hidden="true"
       />

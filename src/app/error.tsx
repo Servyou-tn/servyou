@@ -39,7 +39,7 @@ export default function Error({
           <button
             type="button"
             onClick={() => reset()}
-            className={`inline-flex h-12 items-center justify-center rounded-full bg-brand-accent px-6 text-sm font-semibold text-white transition-colors hover:bg-brand-primary ${FOCUS_RING}`}
+            className={`inline-flex h-12 items-center justify-center rounded-full bg-brand-blue-600 px-6 text-sm font-semibold text-white transition-colors hover:bg-brand-blue-800 ${FOCUS_RING}`}
           >
             {t('system.error.retry', lang)}
           </button>

@@ -44,7 +44,7 @@ export default async function AProposPage() {
         <div className="mt-8 grid gap-6 md:grid-cols-3">
           {VALUES.map((v) => (
             <div key={v.n} className="rounded-2xl border border-border-subtle bg-white p-6">
-              <span className="text-2xl font-bold text-brand-accent">{v.n}</span>
+              <span className="text-2xl font-bold text-brand-blue-600">{v.n}</span>
               <h3 className="mt-3 text-base font-bold text-text-primary">{t(v.title, lang)}</h3>
               <p className="mt-2 text-body-sm leading-relaxed text-text-muted">{t(v.body, lang)}</p>
             </div>
@@ -58,7 +58,7 @@ export default async function AProposPage() {
         <div className="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row">
           <Link
             href="/inscription"
-            className={`inline-flex h-12 items-center justify-center rounded-full bg-brand-accent px-6 text-sm font-semibold text-white transition-colors hover:bg-brand-primary ${FOCUS_RING}`}
+            className={`inline-flex h-12 items-center justify-center rounded-full bg-brand-blue-600 px-6 text-sm font-semibold text-white transition-colors hover:bg-brand-blue-800 ${FOCUS_RING}`}
           >
             {t('about.cta.primary', lang)}
           </Link>

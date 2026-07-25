@@ -56,7 +56,7 @@ export default async function InscriptionPage() {
           {t('signup.intent.alreadyAccount', lang)}{' '}
           <Link
             href="/connexion"
-            className="rounded font-semibold text-[var(--brand-accent)] outline-none hover:underline focus-visible:ring-2 focus-visible:ring-[var(--brand-accent)] focus-visible:ring-offset-2"
+            className="rounded font-semibold text-[var(--brand-blue-600)] outline-none hover:underline focus-visible:ring-2 focus-visible:ring-[var(--brand-blue-600)] focus-visible:ring-offset-2"
           >
             {t('signup.intent.signInLink', lang)}
           </Link>
@@ -74,7 +74,7 @@ export default async function InscriptionPage() {
               <Link
                 href={href}
                 aria-label={`${label} — ${description}`}
-                className={`${display} group relative flex h-full min-h-[140px] cursor-pointer flex-col items-center rounded-[20px] border-[1.5px] border-[var(--border-subtle)] bg-[var(--surface-base)] px-5 py-6 text-center outline-none transition-all duration-[250ms] ease-out hover:border-[var(--brand-accent)] hover:shadow-[0_16px_40px_rgba(37,99,235,0.12)] focus-visible:ring-2 focus-visible:ring-[var(--brand-accent)] focus-visible:ring-offset-2 motion-safe:hover:-translate-y-1 motion-safe:active:scale-[0.99] motion-reduce:transition-none md:min-h-[280px] md:py-8`}
+                className={`${display} group relative flex h-full min-h-[140px] cursor-pointer flex-col items-center rounded-[20px] border-[1.5px] border-[var(--border-subtle)] bg-[var(--surface-base)] px-5 py-6 text-center outline-none transition-all duration-[250ms] ease-out hover:border-[var(--brand-blue-600)] hover:shadow-[0_16px_40px_rgba(37,99,235,0.12)] focus-visible:ring-2 focus-visible:ring-[var(--brand-blue-600)] focus-visible:ring-offset-2 motion-safe:hover:-translate-y-1 motion-safe:active:scale-[0.99] motion-reduce:transition-none md:min-h-[280px] md:py-8`}
               >
                 <Image
                   src={icon}
@@ -92,7 +92,7 @@ export default async function InscriptionPage() {
                   {description}
                 </p>
                 {/* CTA hint — pushed to the card bottom (mt-auto), 24px min gap (pt-6). */}
-                <span className="mt-auto inline-flex items-center gap-1 pt-6 text-body-sm font-semibold text-[var(--brand-accent)]">
+                <span className="mt-auto inline-flex items-center gap-1 pt-6 text-body-sm font-semibold text-[var(--brand-blue-600)]">
                   {t(`signup.intent.cards.${key}.cta`, lang)}
                   <ArrowRight className={`h-3.5 w-3.5 shrink-0 ${isRtl ? 'rotate-180' : ''}`} />
                 </span>

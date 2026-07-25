@@ -44,7 +44,7 @@ export function MissionForm({ categories }: { categories: { id: string; name_fr:
     })
   }
 
-  const field = `w-full rounded-xl border border-border-subtle bg-white px-4 py-2.5 text-sm text-text-primary outline-none transition-colors placeholder:text-text-muted focus:border-brand-accent ${FOCUS_RING}`
+  const field = `w-full rounded-xl border border-border-subtle bg-white px-4 py-2.5 text-sm text-text-primary outline-none transition-colors placeholder:text-text-muted focus:border-brand-blue-600 ${FOCUS_RING}`
   const label = 'mb-1.5 block text-sm font-medium text-text-primary'
 
   return (
@@ -163,7 +163,7 @@ export function MissionForm({ categories }: { categories: { id: string; name_fr:
               type="checkbox"
               checked={isRemote}
               onChange={(e) => setIsRemote(e.target.checked)}
-              className={`h-4 w-4 rounded border-border-subtle text-brand-accent ${FOCUS_RING}`}
+              className={`h-4 w-4 rounded border-border-subtle text-brand-blue-600 ${FOCUS_RING}`}
             />
             {t('mission.form.remote_label', lang)}
           </label>
@@ -179,7 +179,7 @@ export function MissionForm({ categories }: { categories: { id: string; name_fr:
           <button
             type="submit"
             disabled={pending}
-            className={`inline-flex items-center rounded-full bg-brand-accent px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-brand-accent-light disabled:opacity-60 ${FOCUS_RING}`}
+            className={`inline-flex items-center rounded-full bg-brand-blue-600 px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-brand-blue-500 disabled:opacity-60 ${FOCUS_RING}`}
           >
             {pending ? t('mission.form.submitting', lang) : t('mission.form.submit', lang)}
           </button>

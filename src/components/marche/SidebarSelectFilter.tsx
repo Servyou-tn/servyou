@@ -79,7 +79,7 @@ export function SidebarSelectFilter({
           <span>{groupLabel}</span>
           {/* Active selection shown inline only when collapsed (open groups show the radios). */}
           {!open && !isDefault && (
-            <span className="font-semibold normal-case text-brand-accent">· {activeLabel}</span>
+            <span className="font-semibold normal-case text-brand-blue-600">· {activeLabel}</span>
           )}
         </span>
         <ChevronDown

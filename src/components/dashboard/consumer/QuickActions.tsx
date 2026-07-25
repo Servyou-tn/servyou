@@ -67,7 +67,7 @@ export function QuickActions({ showBecomeSeller }: { showBecomeSeller: boolean }
               href={action.href}
               className={`block rounded-xl bg-white p-5 shadow-[0_24px_64px_rgba(15,23,42,0.08)] transition-all duration-200 hover:scale-[1.02] hover:shadow-[0_28px_72px_rgba(15,23,42,0.12)] ${FOCUS_RING}`}
             >
-              <action.Icon className="h-8 w-8 text-[var(--brand-accent)]" />
+              <action.Icon className="h-8 w-8 text-[var(--brand-blue-600)]" />
               <p className={`${display} mt-3 text-body font-semibold text-[var(--text-primary)]`}>
                 {t(action.titleKey, lang)}
               </p>

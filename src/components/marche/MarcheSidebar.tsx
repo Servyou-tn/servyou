@@ -89,7 +89,7 @@ function SidebarNavItem({
   hideAria?: string
   filterContent?: ReactNode
 }) {
-  const chevronColor = active ? 'text-brand-accent' : 'text-text-muted'
+  const chevronColor = active ? 'text-brand-blue-600' : 'text-text-muted'
 
   const labelInner = (
     <>
@@ -123,7 +123,7 @@ function SidebarNavItem({
             aria-expanded={open}
             aria-controls={panelId}
             aria-label={open ? hideAria : showAria}
-            className={`-me-1 flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-full ${chevronColor} transition-colors hover:bg-brand-accent/10 ${FOCUS_RING}`}
+            className={`-me-1 flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-full ${chevronColor} transition-colors hover:bg-brand-blue-600/10 ${FOCUS_RING}`}
           >
             <ChevronDown
               className={`h-4 w-4 transition-transform duration-200 ease-in-out ${open ? 'rotate-180' : ''}`}

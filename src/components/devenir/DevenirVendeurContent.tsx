@@ -27,7 +27,7 @@ export function DevenirVendeurContent({ isAuthenticated }: { isAuthenticated: bo
         subheadline={k('hero.subheadline')}
         primaryCta={{ label: k('hero.primaryCta'), href: createHref }}
         secondaryCta={{ label: k('hero.secondaryCta'), href: '/marche?type=product' }}
-        icon={<Store className="h-32 w-32 text-brand-accent" aria-hidden="true" />}
+        icon={<Store className="h-32 w-32 text-brand-blue-600" aria-hidden="true" />}
       />
       <BenefitGrid
         sectionTitle={k('benefits.title')}

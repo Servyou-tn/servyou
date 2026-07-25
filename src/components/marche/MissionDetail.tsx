@@ -233,7 +233,7 @@ export function MissionDetail({ mission }: { mission: MissionDetailData }) {
         {/* Section A — mission summary */}
         <div className="card-premium outline-brand mb-6 rounded-2xl bg-white p-6">
           <div className="mb-4 flex items-center gap-2">
-            <Briefcase className="h-5 w-5 text-brand-accent" aria-hidden="true" />
+            <Briefcase className="h-5 w-5 text-brand-blue-600" aria-hidden="true" />
             <h2 className="text-lg font-semibold text-text-primary">{t('missions.detail.section_details', lang)}</h2>
           </div>
 
@@ -305,7 +305,7 @@ export function MissionDetail({ mission }: { mission: MissionDetailData }) {
 
         {/* Section B — responses */}
         <div className="mb-4 flex items-center gap-2 lg:mb-0">
-          <MessageSquare className="h-5 w-5 text-brand-accent" aria-hidden="true" />
+          <MessageSquare className="h-5 w-5 text-brand-blue-600" aria-hidden="true" />
           <h2 className="text-lg font-semibold text-text-primary">{t('missions.detail.responses_title', lang)}</h2>
           <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-text-muted">
             {mission.responseCount}
@@ -326,7 +326,7 @@ export function MissionDetail({ mission }: { mission: MissionDetailData }) {
                 <div key={resp.id} className="card-premium outline-brand rounded-2xl bg-white p-6">
                   <div className="flex flex-col gap-4 sm:flex-row">
                     {/* Avatar (initials — no avatar field exists in the schema) */}
-                    <div className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-brand-primary text-base font-medium text-white">
+                    <div className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-brand-blue-800 text-base font-medium text-white">
                       {initials(resp.fullName)}
                     </div>
 
@@ -413,7 +413,7 @@ export function MissionDetail({ mission }: { mission: MissionDetailData }) {
                   type="button"
                   onClick={() => setCloseStep(true)}
                   className={cn(
-                    'inline-flex h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-full bg-brand-accent text-base font-semibold text-white shadow-md transition-colors hover:bg-brand-accent-light',
+                    'inline-flex h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-full bg-brand-blue-600 text-base font-semibold text-white shadow-md transition-colors hover:bg-brand-blue-500',
                     FOCUS_RING,
                   )}
                 >
@@ -429,7 +429,7 @@ export function MissionDetail({ mission }: { mission: MissionDetailData }) {
                       onClick={doClose}
                       disabled={closing}
                       className={cn(
-                        'inline-flex h-10 flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-full bg-brand-accent text-sm font-semibold text-white transition-colors hover:bg-brand-accent-light disabled:cursor-not-allowed disabled:opacity-60',
+                        'inline-flex h-10 flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-full bg-brand-blue-600 text-sm font-semibold text-white transition-colors hover:bg-brand-blue-500 disabled:cursor-not-allowed disabled:opacity-60',
                         FOCUS_RING,
                       )}
                     >

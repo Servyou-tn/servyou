@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "../styles/tokens.css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -6,32 +7,14 @@
   --background: #ffffff;
   --foreground: #171717;
 
-  /* ═══ Brand color primitives (raw hex) — ServYou Design-Build Rules (CLAUDE.md §2–§3, v2 token vocabulary;
-     canonical: docs/servyou-claude-code-design-rules.md §3). Corrected to Figma v2 in PR-DS-3a (2026-07-23). ═══ */
-  /* Blue scale. 600 = primary CTA / link / active / focus · 800 = "Serv" wordmark navy · 950 = deepest sidebar. */
-  --brand-blue-50:  #EFF4FF;   --brand-blue-100: #DBE6FE;   --brand-blue-200: #BCCFFC;   --brand-blue-300: #8FAEF9;
-  --brand-blue-500: #3B82F6;   --brand-blue-600: #1F5FE0;   --brand-blue-700: #1A48B8;
-  --brand-blue-800: #1E3A8A;   --brand-blue-900: #15296B;   --brand-blue-950: #0B1A3D;
-  --brand-blue-600-rgb: 31 95 224;   /* = #1F5FE0 as an rgb triplet, for rgb(… / α) tints (see .card-premium) */
-
-  /* Indigo scale — the signature accent (verified / premium / info). 50·100·500·700 tier per DS §3. */
-  --brand-indigo-50:  #EFEEFE;   --brand-indigo-100: #DEDCFD;
-  --brand-indigo-500: #5B57F2;   --brand-indigo-700: #3A35AD;
-
-  /* Off-system slate carried from v1 (no v2 brand slot; not part of the scale) — unchanged, out of DS-3a scope. */
-  --brand-navy-800: #1E293B;
-
-  --surface-base:     #FFFFFF;  --surface-subtle: #F8FAFC;   --surface-elevated: #FFFFFF;
-  --text-primary:   #0F172A;   --text-secondary: #475569;   --text-muted: #64748B;   --text-inverse: #FFFFFF;
-  --border-subtle:  #E2E8F0;   --border-strong:  #CBD5E1;   --border-focus: var(--brand-blue-600);
-  --icon-muted:     #B8B8B8;   /* neutral placeholder / empty-state icon grey — sits between text-muted #64748B and border-strong #CBD5E1 (DS-3b-2) */
-  --success-500: #16A34A;  --success-100: #DCFCE7;
-  --warning-500: #F59E0B;  --warning-100: #FEF3C7;
-  --danger-500:  #E5484D;  --danger-100:  #FDE5E5;
-  --rating-yellow: #FBBF24;
-
-  /* WhatsApp brand (documented exception — dark label on this green). */
-  --wa-brand: #25D366;  --wa-brand-hover: #1DA851;
+  /* ═══ Colour primitives + spacing/radius/shadow/breakpoints now live in ./tokens.css, GENERATED
+     from the Figma "ServYou — Design System" file (single source of truth; edit Figma, run
+     `npm run tokens:build`). Kept below: app-specific values with no Figma variable + derived helpers. ═══ */
+  --brand-blue-600-rgb: 31 95 224;   /* = --brand-blue-600 #1F5FE0 as an rgb triplet, for rgb(… / α) tints (.card-premium) */
+  --brand-navy-800: #1E293B;         /* off-system slate carried from v1; no v2 brand slot */
+  --surface-elevated: #FFFFFF;       /* app-specific; Figma Neutral has surface/base|subtle|sunken */
+  --border-focus: var(--brand-blue-600);
+  --icon-muted:     #B8B8B8;         /* neutral placeholder / empty-state icon grey (DS-3b-2) */
 
   /* ═══ Semantic tokens (meaning → primitive). :root only; components use the primitive utilities
      (e.g. bg-success-100 text-success-500) or the aliases below. ═══ */
@@ -82,10 +65,9 @@
   --motion-fast: 150ms; --motion-base: 250ms; --motion-slow: 400ms;
   --ease-smooth: cubic-bezier(0.16, 1, 0.3, 1);   --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
 
-  /* ── Brand aliases → primitives (identical values unless noted). Landing / marche shell / .card-premium
-     depend on these utility names; kept stable. Components migrate to primitive tokens in DS-3b. ── */
-  --brand-primary: var(--brand-blue-800);   --brand-accent: var(--brand-blue-600);
-  --brand-accent-light: var(--brand-blue-500);  --brand-ice: var(--brand-blue-50);
+  /* --brand-ice retained (aliased to blue-50; landing-only). The three legacy brand aliases were
+     renamed to their brand-blue-800/600/500 primitives across the codebase in STEP 4. */
+  --brand-ice: var(--brand-blue-50);
   --brand-sky: #BFDBFE;                      /* landing-specific; no v2 scale equivalent — kept literal */
   --surface-pill: #F1F5F9;  --surface-pill-active: #FFFFFF;   /* landing/marche-specific — kept literal */
   --surface-placeholder: #F4F4F4;   /* image/avatar/thumb fallback fill — promoted from the #F4F4F4 component literal (DS-3a; no Figma source, chosen over #E8E8E8 which is only a gradient stop). DS-3b-4: #E8E8E8 re-checked against figma-registry — no source, so no token; the 3 gradient stops stay literal. */
@@ -98,45 +80,22 @@
   --font-sans: var(--font-inter);
   --font-mono: var(--font-geist-mono);
 
-  /* Brand aliases → utilities (bg-brand-accent, text-brand-primary, bg-surface-pill, …). */
-  --color-brand-primary: var(--brand-primary);
-  --color-brand-accent: var(--brand-accent);
-  --color-brand-accent-light: var(--brand-accent-light);
+  /* Colour utilities (--color-brand-blue-*, surface/text/border, success/warning/danger/info,
+     rating-yellow, wa-*) are GENERATED in ./tokens.css from Figma. Kept below: app-specific
+     utilities with no Figma variable. (The three legacy brand aliases were renamed to their
+     brand-blue-800/600/500 primitives in STEP 4 and removed.) */
   --color-brand-sky: var(--brand-sky);
   --color-brand-ice: var(--brand-ice);
-  --color-surface-base: var(--surface-base);
-  --color-surface-subtle: var(--surface-subtle);
   --color-surface-pill: var(--surface-pill);
   --color-surface-pill-active: var(--surface-pill-active);
   --color-surface-placeholder: var(--surface-placeholder);
-  --color-text-primary: var(--text-primary);
-  --color-text-muted: var(--text-muted);
-  --color-border-subtle: var(--border-subtle);
-  --color-status-dot-success: var(--status-dot-success);
-
-  /* ── Primitives → color utilities (bg-/text-/border-/outline-…). ── */
-  /* Blue scale (600/800/950 special-purpose; 200/300 added in DS-3b-1 for the auth funnel; 400/900 in Figma, add on demand). */
-  --color-brand-blue-50:  var(--brand-blue-50);   --color-brand-blue-100: var(--brand-blue-100);   --color-brand-blue-200: var(--brand-blue-200);   --color-brand-blue-300: var(--brand-blue-300);
-  --color-brand-blue-500: var(--brand-blue-500);  --color-brand-blue-600: var(--brand-blue-600);
-  --color-brand-blue-700: var(--brand-blue-700);  --color-brand-blue-800: var(--brand-blue-800);
-  --color-brand-blue-900: var(--brand-blue-900);  --color-brand-blue-950: var(--brand-blue-950);
-  /* Indigo scale. */
-  --color-brand-indigo-50:  var(--brand-indigo-50);   --color-brand-indigo-100: var(--brand-indigo-100);
-  --color-brand-indigo-500: var(--brand-indigo-500);  --color-brand-indigo-700: var(--brand-indigo-700);
-  /* Compat: legacy navy utility names retained (components still reference these — rewire in DS-3b).
-     bg-brand-navy-900 → text-primary #0F172A (sidebar, token page) · text-brand-navy-700 → blue/800 #1E3A8A. */
-  --color-brand-navy-900: var(--text-primary);  --color-brand-navy-800: var(--brand-navy-800);  --color-brand-navy-700: var(--brand-blue-800);
-  /* WhatsApp. */
-  --color-wa-brand: var(--wa-brand);  --color-wa-brand-hover: var(--wa-brand-hover);
-  /* Neutrals / semantic. */
   --color-surface-elevated: var(--surface-elevated);
-  --color-text-secondary: var(--text-secondary);  --color-text-inverse: var(--text-inverse);
-  --color-border-strong: var(--border-strong);     --color-border-focus: var(--border-focus);
+  --color-status-dot-success: var(--status-dot-success);
+  --color-border-focus: var(--border-focus);
   --color-icon-muted: var(--icon-muted);
-  --color-success-500: var(--success-500);  --color-success-100: var(--success-100);
-  --color-warning-500: var(--warning-500);  --color-warning-100: var(--warning-100);
-  --color-danger-500: var(--danger-500);    --color-danger-100: var(--danger-100);
-  --color-rating-yellow: var(--rating-yellow);
+  /* Compat: legacy navy utility names (components still reference these; rewire later).
+     bg-brand-navy-900 → text-primary #0F172A · text-brand-navy-700 → blue/800 #1E3A8A. */
+  --color-brand-navy-900: var(--text-primary);  --color-brand-navy-800: var(--brand-navy-800);  --color-brand-navy-700: var(--brand-blue-800);
 
   /* ── Typography → text-* utilities (size + line-height + weight). Sizes aligned to Figma v2 in
         PR-DS-3a (2026-07-23) — SUPERSEDES the earlier 2026-06-27 smaller ramp. Line-heights/weights unchanged. ── */
@@ -298,7 +257,7 @@ body {
   bottom: -4px;
   height: 2px;
   width: 0;
-  background: var(--brand-accent);
+  background: var(--brand-blue-600);
   border-radius: 1px;
   animation: ph-underline 400ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }

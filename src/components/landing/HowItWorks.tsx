@@ -146,8 +146,8 @@ export function HowItWorks({ lang }: { lang: Lang }) {
 
       {/* Navy rounded container — a dark "card" floating inside the white page
           (Linear / ClickUp pattern), now content-only: role toggle + cards. */}
-      <div className="relative mx-auto max-w-7xl overflow-hidden rounded-[32px] bg-[var(--brand-primary)] px-6 pt-3 pb-12 md:px-12 md:pt-5 md:pb-20">
-        {/* Gentle radial depth: a soft brand-accent glow at centre fading to navy. */}
+      <div className="relative mx-auto max-w-7xl overflow-hidden rounded-[32px] bg-[var(--brand-blue-800)] px-6 pt-3 pb-12 md:px-12 md:pt-5 md:pb-20">
+        {/* Gentle radial depth: a soft brand-blue-600 glow at centre fading to navy. */}
         <div
           aria-hidden="true"
           className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(37,99,235,0.08),_transparent_70%)]"
@@ -186,7 +186,7 @@ export function HowItWorks({ lang }: { lang: Lang }) {
                     tabIndex={selected ? 0 : -1}
                     onClick={() => setActiveRole(role)}
                     onKeyDown={(e) => onTabKeyDown(e, index)}
-                    className={`${display} relative cursor-pointer rounded-full px-7 py-2.5 text-body outline-none transition-colors duration-200 ease-out focus-visible:ring-2 focus-visible:ring-[var(--brand-accent)] ${
+                    className={`${display} relative cursor-pointer rounded-full px-7 py-2.5 text-body outline-none transition-colors duration-200 ease-out focus-visible:ring-2 focus-visible:ring-[var(--brand-blue-600)] ${
                       selected
                         ? 'font-semibold text-[var(--text-primary)]'
                         : 'font-medium text-[var(--text-muted)] hover:text-[var(--text-primary)]'
@@ -196,7 +196,7 @@ export function HowItWorks({ lang }: { lang: Lang }) {
                       <motion.span
                         layoutId="roleToggleIndicator"
                         aria-hidden="true"
-                        className="absolute inset-0 -z-10 rounded-full border-[1.5px] border-[var(--brand-primary)] bg-transparent"
+                        className="absolute inset-0 -z-10 rounded-full border-[1.5px] border-[var(--brand-blue-800)] bg-transparent"
                         transition={
                           reduce
                             ? { duration: 0 }
@@ -260,11 +260,11 @@ export function HowItWorks({ lang }: { lang: Lang }) {
                           {t(`landing.howItWorks.${activeRole}.${step.key}.body`, lang)}
                         </p>
 
-                        {/* CTA — brand-accent pill, bottom-aligned (mt-auto), 24px min gap (pt-6). */}
+                        {/* CTA — brand-blue-600 pill, bottom-aligned (mt-auto), 24px min gap (pt-6). */}
                         <div className="mt-auto pt-6">
                           <Link
                             href={ctaHref[activeRole][step.key]}
-                            className={`${display} group inline-flex items-center gap-2 rounded-full bg-[var(--brand-accent)] px-5 py-3 text-sm font-semibold text-white outline-none transition duration-200 ease-out hover:brightness-95 focus-visible:ring-2 focus-visible:ring-[var(--brand-accent-light)] focus-visible:ring-offset-2`}
+                            className={`${display} group inline-flex items-center gap-2 rounded-full bg-[var(--brand-blue-600)] px-5 py-3 text-sm font-semibold text-white outline-none transition duration-200 ease-out hover:brightness-95 focus-visible:ring-2 focus-visible:ring-[var(--brand-blue-500)] focus-visible:ring-offset-2`}
                           >
                             <span>{t(`landing.howItWorks.${activeRole}.${step.key}.cta`, lang)}</span>
                             <ArrowRight

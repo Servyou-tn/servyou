@@ -38,7 +38,7 @@ export default async function MissionDetailPage({ params }: Props) {
           <p className="mt-2 text-sm text-text-muted">{t('missions.detail.not_found_desc', lang)}</p>
           <Link
             href="/mes-missions"
-            className={`mt-6 inline-flex items-center rounded-full bg-brand-accent px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-brand-accent-light ${FOCUS_RING}`}
+            className={`mt-6 inline-flex items-center rounded-full bg-brand-blue-600 px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-brand-blue-500 ${FOCUS_RING}`}
           >
             {t('missions.detail.back', lang)}
           </Link>

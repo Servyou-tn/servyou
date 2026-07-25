@@ -15,7 +15,7 @@ function initials(name: string | null): string {
     .join('')
 }
 
-// Right-rail card 1. The one place the saturated brand-primary navy appears on the
+// Right-rail card 1. The one place the saturated brand-blue-800 navy appears on the
 // page — an identity anchor. White text on navy throughout.
 export function ProfileCard({
   fullName,
@@ -32,9 +32,9 @@ export function ProfileCard({
 
   return (
     <BlurFade delay={0} inView>
-      <div className="rounded-2xl bg-brand-primary p-5 text-white">
+      <div className="rounded-2xl bg-brand-blue-800 p-5 text-white">
         <div
-          className="flex h-12 w-12 items-center justify-center rounded-full bg-brand-accent text-base font-semibold text-white"
+          className="flex h-12 w-12 items-center justify-center rounded-full bg-brand-blue-600 text-base font-semibold text-white"
           aria-hidden="true"
         >
           {initials(fullName)}

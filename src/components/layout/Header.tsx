@@ -166,15 +166,15 @@ export function Header({
                 >
                   {t('nav.login', lang)}
                 </Link>
-                {/* Signup CTA. Hover shades stay literal: #152C6B (non-landing, on bg-brand-primary)
+                {/* Signup CTA. Hover shades stay literal: #152C6B (non-landing, on bg-brand-blue-800)
                     sits 3 units off brand-blue-900 #15296B — no exact token, kept as-is (decided).
-                    #1D4ED8 (landing, on bg-brand-accent) is a stray old blue-700 — logged follow-up. */}
+                    #1D4ED8 (landing, on bg-brand-blue-600) is a stray old blue-700 — logged follow-up. */}
                 <Link
                   href="/inscription"
                   className={`whitespace-nowrap rounded-full font-semibold text-white transition-colors ${
                     isLanding
-                      ? 'inline-flex h-10 items-center px-5 text-sm bg-brand-accent hover:bg-[#1D4ED8]'
-                      : 'px-4 py-2 text-sm bg-brand-primary hover:bg-[#152C6B]'
+                      ? 'inline-flex h-10 items-center px-5 text-sm bg-brand-blue-600 hover:bg-[#1D4ED8]'
+                      : 'px-4 py-2 text-sm bg-brand-blue-800 hover:bg-[#152C6B]'
                   } ${FOCUS_RING}`}
                 >
                   {t('nav.signup_short', lang)}

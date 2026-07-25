@@ -60,7 +60,7 @@ function FooterColumn({
 
 export function Footer({ lang }: { lang: Lang }) {
   return (
-    <footer id="a-propos" className="scroll-mt-28 bg-brand-primary text-white">
+    <footer id="a-propos" className="scroll-mt-28 bg-brand-blue-800 text-white">
       <div className="mx-auto max-w-7xl px-6 py-16">
         <div className="grid gap-12 lg:grid-cols-[1.5fr_1fr_1fr_1fr]">
           {/* Brand */}

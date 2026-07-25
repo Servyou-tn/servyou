@@ -23,13 +23,13 @@ export function EmptyState({
         <p className="mt-4 text-base font-semibold text-text-primary">{message}</p>
         {cta &&
           (cta.disabled ? (
-            <span className="mt-6 inline-flex cursor-not-allowed select-none items-center rounded-full bg-brand-accent/40 px-5 py-2.5 text-sm font-medium text-white opacity-70">
+            <span className="mt-6 inline-flex cursor-not-allowed select-none items-center rounded-full bg-brand-blue-600/40 px-5 py-2.5 text-sm font-medium text-white opacity-70">
               {cta.label}
             </span>
           ) : (
             <Link
               href={cta.href}
-              className={`mt-6 inline-flex items-center rounded-full bg-brand-accent px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-brand-accent-light ${FOCUS_RING}`}
+              className={`mt-6 inline-flex items-center rounded-full bg-brand-blue-600 px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-brand-blue-500 ${FOCUS_RING}`}
             >
               {cta.label}
             </Link>

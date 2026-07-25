@@ -24,7 +24,7 @@ export function Faq({ lang }: { lang: Lang }) {
               key={qKey}
               className={`group px-6 ${i > 0 ? 'border-t border-border-subtle' : ''}`}
             >
-              <summary className="flex cursor-pointer list-none items-center justify-between gap-4 py-5 text-lg font-semibold text-text-primary transition-colors hover:text-brand-accent [&::-webkit-details-marker]:hidden">
+              <summary className="flex cursor-pointer list-none items-center justify-between gap-4 py-5 text-lg font-semibold text-text-primary transition-colors hover:text-brand-blue-600 [&::-webkit-details-marker]:hidden">
                 {t(qKey, lang)}
                 <ChevronDownIcon className="h-5 w-5 shrink-0 text-text-muted transition-transform duration-200 group-open:rotate-180" />
               </summary>

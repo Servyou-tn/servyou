@@ -26,7 +26,7 @@ export function RoleUpgradeHero({
     <section className="card-premium outline-brand mb-12 rounded-3xl bg-white p-8 md:p-12">
       <div className="grid items-center gap-12 md:grid-cols-2">
         <div>
-          <span className="mb-4 inline-block rounded-full bg-brand-accent/10 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-brand-accent">
+          <span className="mb-4 inline-block rounded-full bg-brand-blue-600/10 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-brand-blue-600">
             {eyebrow}
           </span>
           <h1 className="mb-4 text-4xl font-bold leading-tight text-text-primary md:text-5xl">
@@ -36,7 +36,7 @@ export function RoleUpgradeHero({
           <div className="flex flex-wrap gap-3">
             <Link
               href={primaryCta.href}
-              className={`inline-flex h-12 items-center gap-2 rounded-full bg-brand-accent px-6 font-semibold text-white shadow-md transition-all duration-200 ease-out hover:bg-brand-accent-light hover:shadow-lg ${FOCUS_RING}`}
+              className={`inline-flex h-12 items-center gap-2 rounded-full bg-brand-blue-600 px-6 font-semibold text-white shadow-md transition-all duration-200 ease-out hover:bg-brand-blue-500 hover:shadow-lg ${FOCUS_RING}`}
             >
               {primaryCta.label}
               <ArrowRight className="h-5 w-5 rtl:-scale-x-100" aria-hidden="true" />
@@ -52,7 +52,7 @@ export function RoleUpgradeHero({
           </div>
         </div>
 
-        <div className="flex aspect-square items-center justify-center rounded-2xl bg-brand-accent/5 p-8">
+        <div className="flex aspect-square items-center justify-center rounded-2xl bg-brand-blue-600/5 p-8">
           {icon}
         </div>
       </div>

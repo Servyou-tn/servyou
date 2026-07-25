@@ -8,7 +8,7 @@ import type { Lang } from '@/lib/i18n'
 // marketplaces (/marche/produits, /marche/services) own browse-by-default now, so /recherche
 // is search-specific: prompt the user to type above, or send them to a marketplace.
 export function SearchLanding({ lang }: { lang: Lang }) {
-  const primary = `inline-flex items-center justify-center rounded-full bg-brand-accent px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-brand-accent/90 ${FOCUS_RING}`
+  const primary = `inline-flex items-center justify-center rounded-full bg-brand-blue-600 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-brand-blue-600/90 ${FOCUS_RING}`
   const secondary = `inline-flex items-center justify-center rounded-full border border-border-subtle bg-white px-5 py-2.5 text-sm font-semibold text-text-primary transition-colors hover:bg-slate-50 ${FOCUS_RING}`
 
   return (

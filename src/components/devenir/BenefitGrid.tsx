@@ -19,7 +19,7 @@ export function BenefitGrid({
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
         {benefits.map((b) => (
           <div key={b.title} className="card-premium outline-brand rounded-2xl bg-white p-6">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-accent/10 text-brand-accent">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-blue-600/10 text-brand-blue-600">
               {b.icon}
             </div>
             <h3 className="mt-4 text-lg font-semibold text-text-primary">{b.title}</h3>

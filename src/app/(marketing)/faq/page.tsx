@@ -41,7 +41,7 @@ export default async function FaqPage() {
         <p className="text-lg font-bold text-text-primary">{t('faq.cta.tagline', lang)}</p>
         <Link
           href="/contact"
-          className={`mt-4 inline-flex h-12 items-center justify-center rounded-full bg-brand-accent px-6 text-sm font-semibold text-white transition-colors hover:bg-brand-primary ${FOCUS_RING}`}
+          className={`mt-4 inline-flex h-12 items-center justify-center rounded-full bg-brand-blue-600 px-6 text-sm font-semibold text-white transition-colors hover:bg-brand-blue-800 ${FOCUS_RING}`}
         >
           {t('faq.cta.button', lang)}
         </Link>

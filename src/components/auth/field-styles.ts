@@ -12,4 +12,4 @@ export const errorClass = 'mt-1.5 text-sm text-red-300'
 
 export const inputBase = `${display} w-full rounded-xl border bg-white px-4 py-3 text-body text-[var(--text-primary)] outline-none transition-colors placeholder:text-[var(--text-muted)]/70 ${FOCUS_RING}`
 
-export const primaryBtn = `${display} inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-[var(--brand-accent)] text-body font-semibold text-white transition-colors hover:bg-[#1D4ED8] disabled:cursor-not-allowed disabled:opacity-70 ${FOCUS_RING}`
+export const primaryBtn = `${display} inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-[var(--brand-blue-600)] text-body font-semibold text-white transition-colors hover:bg-[#1D4ED8] disabled:cursor-not-allowed disabled:opacity-70 ${FOCUS_RING}`

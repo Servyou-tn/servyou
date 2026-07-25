@@ -65,7 +65,7 @@ function CollapsibleGroup({
           <span>{label}</span>
           {/* Count badge only when collapsed — open groups show the real selections. */}
           {!open && badge && (
-            <span className="font-semibold normal-case text-brand-accent">({badge})</span>
+            <span className="font-semibold normal-case text-brand-blue-600">({badge})</span>
           )}
         </span>
         <ChevronDown
@@ -257,7 +257,7 @@ export function SearchFilters({
         <button
           type="button"
           onClick={() => apply({})}
-          className={`w-full rounded-full bg-brand-accent px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-brand-accent/90 ${FOCUS_RING}`}
+          className={`w-full rounded-full bg-brand-blue-600 px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-brand-blue-600/90 ${FOCUS_RING}`}
         >
           {t('search.filters.apply', lang)}
         </button>

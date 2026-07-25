@@ -192,7 +192,7 @@ export function ServicesFilterBar({
                 setPriceOpen(false)
                 push({ prix_min: min.trim() || null, prix_max: max.trim() || null })
               }}
-              className={`mt-3 w-full rounded-lg bg-brand-accent px-4 py-2 text-body-sm font-semibold text-white transition-colors hover:bg-brand-accent/90 ${FOCUS_RING}`}
+              className={`mt-3 w-full rounded-lg bg-brand-blue-600 px-4 py-2 text-body-sm font-semibold text-white transition-colors hover:bg-brand-blue-600/90 ${FOCUS_RING}`}
             >
               {t('search.filters.apply', lang)}
             </button>
@@ -246,7 +246,7 @@ export function ServicesFilterBar({
           <button
             type="button"
             onClick={() => push({ categorie: null, prix_min: null, prix_max: null, q: null })}
-            className={`rounded-full px-3 py-1 text-body-sm font-semibold text-brand-accent underline-offset-2 hover:underline ${FOCUS_RING}`}
+            className={`rounded-full px-3 py-1 text-body-sm font-semibold text-brand-blue-600 underline-offset-2 hover:underline ${FOCUS_RING}`}
           >
             {t('services.filters.clearAll', lang)}
           </button>

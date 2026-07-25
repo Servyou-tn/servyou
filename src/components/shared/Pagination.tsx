@@ -44,7 +44,7 @@ export function Pagination({
 
   const cell = 'inline-flex h-9 items-center justify-center rounded-full text-sm transition-colors'
   const numberIdle = cn(cell, 'min-w-9 px-2.5 font-medium text-text-muted hover:bg-surface-subtle', FOCUS_RING)
-  const numberActive = cn(cell, 'min-w-9 px-2.5 font-semibold bg-brand-accent text-white')
+  const numberActive = cn(cell, 'min-w-9 px-2.5 font-semibold bg-brand-blue-600 text-white')
   const arrowEnabled = cn(cell, 'gap-1 px-3 font-medium text-text-primary hover:bg-surface-subtle', FOCUS_RING)
   const arrowDisabled = cn(cell, 'gap-1 px-3 font-medium text-text-muted opacity-50 cursor-not-allowed pointer-events-none')
   const dots = cn(cell, 'min-w-9 px-1 text-text-muted')

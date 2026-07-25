@@ -92,7 +92,7 @@ export function AccountMenu({ sellerType, fullName }: { sellerType: SellerType; 
         aria-label={t('nav.account', lang)}
         className={`inline-flex h-10 items-center gap-1.5 rounded-full ps-1 pe-2 transition-colors hover:bg-surface-pill ${FOCUS_RING}`}
       >
-        <span className="grid h-8 w-8 place-items-center rounded-full bg-brand-primary text-xs font-semibold text-white">
+        <span className="grid h-8 w-8 place-items-center rounded-full bg-brand-blue-800 text-xs font-semibold text-white">
           {ini ? ini : <UserIcon className="h-4 w-4" />}
         </span>
         <ChevronDownIcon

@@ -25,7 +25,7 @@ export function CopyableEmail({ email }: { email: string }) {
     <div className="flex items-center gap-2">
       <a
         href={`mailto:${email}`}
-        className={`rounded text-sm font-medium text-brand-accent hover:underline ${FOCUS_RING}`}
+        className={`rounded text-sm font-medium text-brand-blue-600 hover:underline ${FOCUS_RING}`}
       >
         {email}
       </a>

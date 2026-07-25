@@ -1,0 +1,33 @@
+name: tokens
+
+# Design-token drift gate. On every PR, regenerate src/styles/tokens.css from tokens/tokens.json
+# via Style Dictionary and fail if the committed file differs — this catches a hand-edit of the
+# generated CSS or a tokens.json change that wasn't rebuilt. `tokens:build` also runs the tracking
+# em-assertion (tracking_px / size_px must equal the intended em per ramp step), so a size changed
+# without its tracking fails the build here too.
+#
+# Note: Figma is the source of truth but CI cannot reach Figma Desktop — `tokens:pull` (Figma →
+# tokens.json) is run by a human. This gate verifies json → css only.
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  drift:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'npm'
+      - run: npm ci
+      - name: Regenerate tokens.css (+ tracking em-assertion)
+        run: npm run tokens:build
+      - name: Fail if src/styles/tokens.css drifted from tokens/tokens.json
+        run: |
+          git diff --exit-code -- src/styles/tokens.css \
+            || (echo "::error::tokens.css is out of date. Run 'npm run tokens:build' and commit the result." && exit 1)

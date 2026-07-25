@@ -38,7 +38,7 @@ export default async function VerifierEmailPage({
       <VerifyEmailFlow initialView={initialView} initialEmail={initialEmail} />
       <footer className={`${display} px-4 pb-6 pt-8 text-center text-body font-medium text-[var(--text-muted)] md:pb-8 md:pt-12`}>
         {helpParts[0]}
-        <Link href="/contact" className="font-semibold text-[var(--brand-accent)] hover:underline">
+        <Link href="/contact" className="font-semibold text-[var(--brand-blue-600)] hover:underline">
           {t('verifyEmail.footer.contact', lang)}
         </Link>
         {helpParts[1] ?? ''}

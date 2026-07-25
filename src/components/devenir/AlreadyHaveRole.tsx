@@ -22,7 +22,7 @@ export function AlreadyHaveRole({
       <p className="mx-auto mb-6 max-w-xl text-base text-text-muted">{subheadline}</p>
       <Link
         href={manageHref}
-        className={`inline-flex h-12 items-center rounded-full bg-brand-accent px-6 font-semibold text-white shadow-md transition-all duration-200 ease-out hover:bg-brand-accent-light hover:shadow-lg ${FOCUS_RING}`}
+        className={`inline-flex h-12 items-center rounded-full bg-brand-blue-600 px-6 font-semibold text-white shadow-md transition-all duration-200 ease-out hover:bg-brand-blue-500 hover:shadow-lg ${FOCUS_RING}`}
       >
         {manageLabel}
       </Link>
