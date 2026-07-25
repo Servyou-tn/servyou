@@ -2061,6 +2061,11 @@ export const ar: Record<string, string> = {
   'placeholders.comingSoon.title':              "قريباً",
   'placeholders.comingSoon.freelanceWorkspace': "مساحة المستقل قادمة قريباً",
   'placeholders.comingSoon.statistics':         "لوحة الأداء قادمة قريباً",
+  'placeholders.comingSoon.marketplace':        "السوق قادم قريباً",
+  'placeholders.comingSoon.orders':             "طلباتك قادمة قريباً",
+  'placeholders.comingSoon.favorites':          "مفضّلاتك قادمة قريباً",
+  'placeholders.comingSoon.account':            "حسابك قادم قريباً",
+  'placeholders.comingSoon.request':            "الطلب عبر الإنترنت قادم قريباً",
 
   // ─── Aide (Help center) (PR-DS-2) ───────────────────────────────────────────
   'aide.title':            "مركز المساعدة",
