@@ -321,3 +321,47 @@ The branch's build stalled on the flaky figma-cli bridge; its Phase-1 inventory 
 - **Select** — **no reconciled Select primitive exists.** `ServicesFilterBar` builds its 4 triggers ad-hoc on `ui/dropdown-menu` + `ui/popover` (+ `ui/filter-control`), none reconciled. Figma: Select — Trigger `72:1051` / Panel `72:1094` / Option `72:894`; Filter Bar `150:10825`; Range Slider `143:9517`.
 - **Node IDs for eventual measurement:** Segmented `93:2707`, Filter Bar `150:10825`, Select Trigger `72:1051` (+ Panel `72:1094`, Option `72:894`), Range Slider `143:9517`, Service Card `124:6200`, Pagination `188:14219`, empty state `611:47916`, frame `611:45637`.
 - **Bridge note:** the figma-cli CDP bridge (`connect`) drops after ~1 command and Figma MCP is capped at 6 calls/month on the free Starter plan (not viable). The **Figma REST API** (`GET api.figma.com/v1/files/:key/nodes?ids=…`, `X-Figma-Token`) returns raw `padding`/`itemSpacing`/`absoluteBoundingBox`/`boundVariables` over plain HTTPS with no plugin — the robust path for future measurement (variable *names* still need the CDP bridge or a paid tier; the `/variables/local` name endpoint is Enterprise-gated).
+
+## Visual-gate findings — v2 shell at 375px (from feat/marche-services-rebuild, 2026-07-26)
+
+Surfaced by the 375px gate run over the shell's blast radius. All three are **pre-existing**
+(verified against `2a911f5^`), so per Standard G they are logged, not fixed in the shell PR.
+
+### 🔴 12 of the 20 v2-shell routes cannot be gated without an authenticated session
+- **What:** `AppShell` is mounted at **20** sites (19 `page.tsx` + `ServicesBrowsePage`). Only
+  **/marche/services, /marche/produits, /services/[id]** render it anonymously — the other 12
+  workspace routes 307 → `/connexion`. `AppShell` does render logged-out (consumer IA, per its own
+  header comment), so the shell *code path* is exercised; what is **not** reachable is the
+  **`freelancer` and `shop_owner` sidebar variants** and every workspace page's content reflow.
+- **Consequence:** a sidebar regression that only manifests in a seller IA — a wrong section cap, a
+  clipped nav on a short viewport, a role-specific item — **cannot be caught by an anonymous gate**,
+  and there is no VRT story for any shell component either (the 32 baselines are F2 `Avatar` + F3
+  `Button`/`Input`/`StatusPill` only). The shell is the single most-shared surface in the app and is
+  currently the least gate-covered.
+- **Fix (two options, not exclusive):** (1) a seeded **gate account per `seller_type`** + a scripted
+  login so the sweep can reach the workspace routes; (2) **Storybook stories for `Sidebar` /
+  `SidebarItem` / `SidebarSection` / `Topbar`** at the three roles × 375/1440, which brings the shell
+  under the existing VRT gate and needs no session at all. (2) is cheaper and catches more.
+- **Trigger:** before the next shell-touching PR — this gap recurs on every one.
+
+### Topbar language toggle is a 24px touch target
+- `src/components/layout/LanguageToggle.tsx:64` renders each FR/AR button at `h-6` (**24px**;
+  measured 41×24 and 43×24 at 375px) with **no hit-area expander**. The touch-target rule requires
+  ≥44×44. Pre-existing — `h-6` is byte-identical in `2a911f5^`; that commit only changed the
+  active/idle colours. The fix is the F3 pattern already used next to it: an
+  `absolute -inset-*` `aria-hidden` span (see `TopbarUserMenu.tsx:52`,
+  `TopbarNotifications.tsx:34`), which keeps the measured 24px box while giving a 44px hit region.
+- **Trigger:** the touch-target code pass, or the next topbar-touching PR.
+
+### `TopbarSearch` input is 14px → iOS zoom-on-focus (second instance)
+- `src/components/shell/TopbarSearch.tsx` ships `text-body-sm` (**14px**), below the 16px iOS
+  threshold, so focusing it zooms the viewport on iPhone. This is the **same defect already logged
+  for `SharedSearchBar.tsx:99`** — now confirmed on the v2 topbar too, i.e. it affects every one of
+  the 20 shell routes, not one component. Pre-existing: `text-body-sm` is unchanged across
+  `2a911f5` (that commit swapped `cn()` for a plain template precisely to *stop* tailwind-merge
+  dropping the size, and to move the radius to `rounded-[10px]`).
+- **Note for whoever fixes it:** bumping to 16px is a **visible** change to the topbar and the
+  measured Figma value is 14 — so it needs a design call (16px input text, or a 16px override only
+  under `max-lg`), not a silent token swap.
+- **Trigger:** fold both instances into one pass — the component audit already scoped for
+  `SharedSearchBar`.
