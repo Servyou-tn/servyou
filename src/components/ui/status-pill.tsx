@@ -6,7 +6,7 @@ import { cn } from '@/lib/utils'
 //
 // Role vs status: the three role badges (client / freelance / boutique) are three of the 37 status
 // values and enter through the SAME `status` prop — the primitive NEVER reads seller_type (boundary
-// rule 3b). Call sites resolve seller_type → role (e.g. admin roleKey()) and pass the result.
+// rule 3b). Call sites resolve seller_type → role via the @/lib/roles resolver and pass the result.
 //
 // The LABEL is children, not baked: status labels are scattered per-feature in i18n (fr.ts/ar.ts) and
 // must exist in both FR and AR, so the caller passes the translated text. The primitive owns colour

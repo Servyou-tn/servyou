@@ -1,10 +1,14 @@
+import type { Role } from '@/lib/roles'
+
 // Pure, presentation-free decision for which Header to render on a given route.
 // Kept out of the React tree so it can be unit-tested in isolation (the Header
 // itself is a client component that calls this with the live pathname).
 
 export type HeaderVariant = 'public' | 'consumer' | 'workspace'
 export type WorkspaceKind = 'shop' | 'freelance'
-export type SellerType = 'shop_owner' | 'freelancer' | null
+// The seller_type column's values ARE the resolved Role (consumer = null). Aliased so the header/nav
+// call sites keep the SellerType name while @/lib/roles stays the single source of the union.
+export type SellerType = Role
 
 export type HeaderState = {
   /** When true, no Header chrome renders at all (admin owns its own nav; auth flows are chromeless). */

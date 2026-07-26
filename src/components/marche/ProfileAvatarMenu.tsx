@@ -5,6 +5,7 @@ import { useRef } from 'react'
 import { LogOut, Settings, User, Store, Briefcase } from 'lucide-react'
 import { useLang } from '@/components/LangProvider'
 import { t } from '@/lib/i18n'
+import { resolveRole } from '@/lib/roles'
 import { Avatar } from '@/components/ui/avatar'
 import { getInitials } from '@/components/ui/initials'
 import {
@@ -52,6 +53,7 @@ export function ProfileAvatarMenu({
     )
   }
 
+  const role = resolveRole(user)
   const displayName = user.full_name?.trim() || user.email.split('@')[0]
   const itemBase =
     'cursor-pointer text-text-primary focus:bg-surface-subtle focus:text-text-primary'
@@ -94,7 +96,7 @@ export function ProfileAvatarMenu({
           {/* Role-upgrade discovery (Path A — strict single role at MVP). Consumer sees
               both upgrade paths; a seller sees only their own workspace link. The
               workspace routes (/ma-boutique, /mon-profil-freelance) 404 until built. */}
-          {user.seller_type === null && (
+          {role === null && (
             <>
               <DropdownMenuItem asChild className={itemBase}>
                 <Link href="/devenir-vendeur">
@@ -111,7 +113,7 @@ export function ProfileAvatarMenu({
             </>
           )}
 
-          {user.seller_type === 'shop_owner' && (
+          {role === 'shop_owner' && (
             <DropdownMenuItem asChild className={itemBase}>
               <Link href="/ma-boutique">
                 <Store className="me-2 h-4 w-4 text-text-muted" aria-hidden="true" />
@@ -120,7 +122,7 @@ export function ProfileAvatarMenu({
             </DropdownMenuItem>
           )}
 
-          {user.seller_type === 'freelancer' && (
+          {role === 'freelancer' && (
             <DropdownMenuItem asChild className={itemBase}>
               <Link href="/mon-profil-freelance">
                 <Briefcase className="me-2 h-4 w-4 text-text-muted" aria-hidden="true" />

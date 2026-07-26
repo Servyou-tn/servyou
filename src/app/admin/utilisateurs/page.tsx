@@ -3,6 +3,7 @@ import { getLang } from '@/lib/i18n/server'
 import { t } from '@/lib/i18n'
 import type { Lang } from '@/lib/i18n'
 import { createClient } from '@/lib/supabase/server'
+import { resolveRole, roleI18nKey } from '@/lib/roles'
 
 // NOTE: reads the RAW profiles table (not public_profiles) — the admin needs email
 // and the suspended state, which public_profiles strips. This is allowed only by the
@@ -16,13 +17,6 @@ type ProfileRow = {
   city: string | null
   created_at: string
   suspended_at: string | null
-}
-
-function roleKey(p: { is_admin: boolean; seller_type: string | null }): string {
-  if (p.is_admin) return 'admin.users.role_admin'
-  if (p.seller_type === 'shop_owner') return 'admin.users.role_shop_owner'
-  if (p.seller_type === 'freelancer') return 'admin.users.role_freelancer'
-  return 'admin.users.role_consumer'
 }
 
 function formatDate(value: string, lang: Lang): string {
@@ -82,7 +76,7 @@ export default async function UsersListPage() {
                     </Link>
                   </td>
                   <td className="px-4 py-3 text-gray-700">{u.email ?? '—'}</td>
-                  <td className="px-4 py-3 text-gray-700">{tr(roleKey(u))}</td>
+                  <td className="px-4 py-3 text-gray-700">{tr(roleI18nKey(resolveRole(u), u.is_admin))}</td>
                   <td className="px-4 py-3 text-gray-700">{u.city ?? '—'}</td>
                   <td className="px-4 py-3"><StatusBadge suspended={!!u.suspended_at} tr={tr} /></td>
                   <td className="px-4 py-3 whitespace-nowrap text-gray-600">{formatDate(u.created_at, lang)}</td>
