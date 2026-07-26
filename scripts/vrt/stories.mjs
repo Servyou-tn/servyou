@@ -100,20 +100,37 @@ if (MODE === 'baseline') {
   process.exit(0)
 }
 
-// check: diff current vs committed baseline, then gate on GATE_PCT.
-if (!fs.existsSync(BASELINE) || !fs.readdirSync(BASELINE).some((f) => f.endsWith('.png'))) {
-  server.close()
-  console.error(`No baseline at ${rel(BASELINE)} — run "npm run vrt:stories baseline" and commit it.`)
-  process.exit(1)
-}
-const dif = await run('diff.mjs', [rel(BASELINE), rel(CURRENT)], { THRESH, CDP_PORT: '9353' })
+// check: completeness (missing/orphan over the full sets) + pixel diff over the compared pairs, gate.
 server.close()
-const m = dif.out.match(/max\s+([\d.]+)%/)
-const maxPct = m ? Number(m[1]) : NaN
-if (!Number.isFinite(maxPct)) {
-  console.error('could not parse `max %` from diff.mjs output')
-  process.exit(1)
+const baseFiles = fs.existsSync(BASELINE) ? fs.readdirSync(BASELINE).filter((f) => f.endsWith('.png')) : []
+const curFiles = fs.readdirSync(CURRENT).filter((f) => f.endsWith('.png'))
+const baseSet = new Set(baseFiles), curSet = new Set(curFiles)
+const compared = curFiles.filter((f) => baseSet.has(f)).sort()
+const missing = curFiles.filter((f) => !baseSet.has(f)).sort() // captured now, no committed baseline
+const orphan = baseFiles.filter((f) => !curSet.has(f)).sort()  // committed baseline, nothing renders it
+
+// The false-green hole this closes: diff.mjs pairs on the INTERSECTION, so a captured story with no
+// baseline used to be silently skipped. Never skip — stage every missing PNG for a human to commit and
+// FAIL. An orphan (a deleted/renamed story's stale baseline) fails too, so baselines can't rot silently.
+const TOCOMMIT = path.join(HERE, '__to-commit__')
+fs.rmSync(TOCOMMIT, { recursive: true, force: true })
+if (missing.length) {
+  fs.mkdirSync(TOCOMMIT, { recursive: true })
+  for (const f of missing) fs.copyFileSync(path.join(CURRENT, f), path.join(TOCOMMIT, f))
 }
-const pass = maxPct <= GATE_PCT
-console.log(`\nVRT gate (THRESH=${THRESH}px): max ${maxPct}%  vs  gate ${GATE_PCT}%  →  ${pass ? 'PASS ✓' : 'FAIL ✗'}`)
+
+let maxPct = 0
+if (compared.length) {
+  const dif = await run('diff.mjs', [rel(BASELINE), rel(CURRENT)], { THRESH, CDP_PORT: '9353' })
+  const m = dif.out.match(/max\s+([\d.]+)%/)
+  if (!m) { console.error('could not parse `max %` from diff.mjs output'); process.exit(1) }
+  maxPct = Number(m[1])
+}
+
+console.log(`\nsets: ${compared.length} compared / ${missing.length} missing / ${orphan.length} orphan`)
+if (missing.length) console.log(`MISSING BASELINE (${missing.length}) — download the vrt-baselines-to-commit artifact and commit these to ${rel(BASELINE)}:\n  ${missing.join('\n  ')}`)
+if (orphan.length) console.log(`ORPHAN BASELINE (${orphan.length}) — a story was deleted/renamed; remove these from ${rel(BASELINE)}:\n  ${orphan.join('\n  ')}`)
+
+const pass = missing.length === 0 && orphan.length === 0 && maxPct <= GATE_PCT
+console.log(`\nVRT gate (THRESH=${THRESH}px): max ${maxPct}% vs ${GATE_PCT}% · ${missing.length} missing · ${orphan.length} orphan  →  ${pass ? 'PASS ✓' : 'FAIL ✗'}`)
 process.exit(pass ? 0 : 1)
