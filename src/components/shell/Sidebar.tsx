@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import type { Ref } from 'react'
 import { usePathname } from 'next/navigation'
 import { Rocket, X } from 'lucide-react'
@@ -34,19 +35,27 @@ export function Sidebar({
   const sections = sidebarSectionsForRole(role)
 
   return (
-    <div className="flex h-full w-full flex-col bg-brand-blue-950 px-4 py-6 text-text-inverse">
-      {/* Logo block (80px). Text wordmark — the navbar PNG's navy "Serv" vanishes on the dark
-          ground, so we reuse the colored-span wordmark (DashboardSidebar precedent). A dedicated
-          dark-bg logo asset is a logged brand-assets follow-up. */}
-      <div className="flex h-20 items-center justify-between">
+    <div className="flex h-full w-full flex-col bg-brand-blue-950 px-4 pb-6 text-text-inverse">
+      {/* Logo band — 72px tall, start-pad 12 (Figma 611:45637: band 208×72 → Lockup 123×32, gap 8).
+          The 32px S-mark + "ServYou" wordmark with BOTH words #FFFFFF: the two-tone Serv/You
+          treatment is for light surfaces only, and the navbar PNG's navy "Serv" vanishes on this
+          ground. shrink-0 so the band never compresses on a short viewport; ps-3 aligns the mark
+          with the nav-item icons. */}
+      <div className="flex h-[72px] shrink-0 items-center justify-between ps-3">
         <Link
           href="/"
           onClick={onNavigate}
           aria-label="Servyou"
-          className={`rounded-pill text-xl font-bold tracking-tight ${FOCUS_RING}`}
+          className={`flex items-center gap-2 rounded-pill ${FOCUS_RING}`}
         >
-          <span className="text-white">Serv</span>
-          <span className="text-brand-blue-500">You</span>
+          <Image
+            src="/brand/logo/servyou-s-mark.png"
+            alt=""
+            width={32}
+            height={32}
+            className="h-8 w-8 shrink-0"
+          />
+          <span className="text-xl font-bold text-white">ServYou</span>
         </Link>
         {inDrawer ? (
           <button
@@ -61,9 +70,12 @@ export function Sidebar({
         ) : null}
       </div>
 
+      {/* Section spacing now comes from SidebarSection's own caption padding (pt-3), so the list
+          gap drops to the measured 2px. overflow-y-auto is deliberately KEPT — it is not a Figma
+          value, it stops the nav clipping on a short viewport. */}
       <nav
         aria-label={t('nav.aria_primary', lang)}
-        className="mt-2 flex flex-1 flex-col gap-6 overflow-y-auto"
+        className="mt-3 flex flex-1 flex-col gap-0.5 overflow-y-auto"
       >
         {sections.map((section) => (
           <SidebarSection key={section.labelKey} label={t(section.labelKey, lang)}>
@@ -83,11 +95,11 @@ export function Sidebar({
               <Link
                 href="/devenir-vendeur"
                 onClick={onNavigate}
-                className={`mt-1 flex flex-col gap-2 rounded-xl bg-brand-blue-600 p-4 text-text-inverse transition-colors hover:bg-brand-blue-700 ${FOCUS_RING}`}
+                className={`flex flex-col gap-2 rounded-xl bg-brand-blue-600 p-4 text-text-inverse transition-colors hover:bg-brand-blue-700 ${FOCUS_RING}`}
               >
                 <Rocket className="h-6 w-6 shrink-0" aria-hidden="true" />
                 <span className="text-h4">{t('shell.sidebar.sellerCta.title', lang)}</span>
-                <span className="text-body-sm text-brand-blue-100">
+                <span className="text-body-sm leading-5 text-brand-blue-100">
                   {t('shell.sidebar.sellerCta.subtitle', lang)}
                 </span>
               </Link>
