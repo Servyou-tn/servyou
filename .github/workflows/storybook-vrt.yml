@@ -7,10 +7,12 @@ name: storybook-vrt
 #
 # BASELINES ARE COMMITTED BY A HUMAN, NEVER BY CI. They must be rendered on THIS runner's OS + Chrome
 # (font anti-aliasing is platform-specific), so they cannot come from a Windows/macOS dev machine.
-# Flow: run this workflow with NO baselines committed -> it renders the Linux images, uploads them as
-# the `vrt-baselines-to-commit` artifact, and then FAILS (a gate with no reference must never pass
-# silently). A human downloads that artifact, commits its PNGs to scripts/vrt/__baselines__/ in a PR,
-# and pushes; the job re-runs green and the gate is live for every subsequent PR.
+# Flow: the job ALWAYS captures, then compares the full baseline ∧ current SETS. Any story captured with
+# no committed baseline is uploaded (only the missing PNGs) as the `vrt-baselines-to-commit` artifact and
+# the job FAILS with the story names; a human commits those PNGs to scripts/vrt/__baselines__/ and pushes,
+# and the job re-runs green. This works when new stories are added to an existing gate (a partial baseline
+# set), not only for an empty set. A stale baseline that no story renders fails as an ORPHAN, so baselines
+# cannot rot silently.
 #
 # A one-command task to render baselines inside this runner's container image would be tidier, but
 # Docker was unavailable in the F2 authoring environment, so the artifact-download flow above is the
@@ -48,51 +50,32 @@ jobs:
       - name: Build Storybook (static)
         run: npm run build-storybook
 
-      - name: Detect committed baselines
-        id: base
-        run: |
-          if ls scripts/vrt/__baselines__/*.png >/dev/null 2>&1; then
-            echo "have=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "have=false" >> "$GITHUB_OUTPUT"
-          fi
-
-      # Enforcement — baselines exist → capture the current stories and gate on the diff.
-      - name: Capture + diff against committed baselines (gate)
-        if: steps.base.outputs.have == 'true'
+      # Always capture + check. `vrt:stories check` compares the full baseline ∧ current SETS: a story
+      # captured with no committed baseline FAILS as MISSING (never silently skipped — that was the
+      # false-green hole), a baseline no story renders FAILS as ORPHAN, and it prints the three counts
+      # (compared / missing / orphan). Missing PNGs are staged under scripts/vrt/__to-commit__.
+      - name: Capture + check (gate on diff, missing, and orphan)
         env:
           CHROME_PATH: ${{ steps.chrome.outputs.path }}
           THRESH: '60'
-          # 0.05% — tightened from the provisional 0.3% once CI owned baselines. The measured Linux
-          # story-level noise floor is 0.000% (all 10 snapshots, cross-run; CI run 30205346920), so
-          # this sits far above the floor yet catches component-level regressions. See docs/f2-state.md.
+          # 0.05% — the measured Linux story-level noise floor is 0.000% (CI run 30205346920), so this
+          # sits far above it yet catches a component-level regression. See docs/f2-state.md.
           GATE_PCT: '0.05'
         run: npm run vrt:stories check
 
-      # No baselines yet → render the Linux images for a human to download + commit …
-      - name: No baselines — render Linux images for a human to commit
-        if: steps.base.outputs.have == 'false'
-        env:
-          CHROME_PATH: ${{ steps.chrome.outputs.path }}
-        run: npm run vrt:stories baseline
-
-      - name: Upload rendered baselines (download → commit to scripts/vrt/__baselines__)
-        if: steps.base.outputs.have == 'false'
+      # Missing baselines → upload ONLY the missing PNGs. A human commits them to
+      # scripts/vrt/__baselines__/ in this PR and the job re-runs green. Works for a partial set (new
+      # stories added to an existing gate), not just an empty one — CI still never commits baselines.
+      - name: Upload missing baselines to commit
+        if: failure() && hashFiles('scripts/vrt/__to-commit__/*.png') != ''
         uses: actions/upload-artifact@v4
         with:
           name: vrt-baselines-to-commit
-          path: scripts/vrt/__baselines__/
+          path: scripts/vrt/__to-commit__/
 
-      # … then FAIL. A gate with no committed reference must never report green.
-      - name: Fail — no baselines committed
-        if: steps.base.outputs.have == 'false'
-        run: |
-          echo "::error::No VRT baselines committed. Download the 'vrt-baselines-to-commit' artifact, commit its PNGs to scripts/vrt/__baselines__/ in this PR, and push. The gate fails until baselines exist."
-          exit 1
-
-      # Gate failed on a real diff → upload the current captures so the diff can be eyeballed.
-      - name: Upload current captures on gate failure
-        if: failure() && steps.base.outputs.have == 'true'
+      # Any failure → also upload the current captures so a real diff can be eyeballed.
+      - name: Upload current captures on failure
+        if: failure()
         uses: actions/upload-artifact@v4
         with:
           name: vrt-current-captures

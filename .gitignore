@@ -66,3 +66,4 @@ next-env.d.ts
 .vrt-diff-profile/
 .vrt-stories-profile/
 /scripts/vrt/__current__/
+/scripts/vrt/__to-commit__/

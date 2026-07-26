@@ -22,7 +22,14 @@ const [DIRA, DIRB] = [process.argv[2], process.argv[3]]
 if (!DIRA || !DIRB) { console.error('usage: node scripts/vrt/diff.mjs <dirA> <dirB>'); process.exit(1) }
 const dirA = path.resolve(REPO, DIRA), dirB = path.resolve(REPO, DIRB)
 const pngs = (d) => new Set(fs.readdirSync(d).filter((f) => f.endsWith('.png')))
-const PAIRS = [...pngs(dirA)].filter((f) => pngs(dirB).has(f)).sort()
+const setA = pngs(dirA), setB = pngs(dirB)
+const PAIRS = [...setA].filter((f) => setB.has(f)).sort()
+// dirA is the baseline, dirB the current capture (see stories.mjs). Surface the set mismatch so no
+// caller can silently gate on the intersection alone: a current file with no baseline is MISSING (a
+// new/renamed story needing a committed baseline), a baseline with no current is ORPHAN (a deleted
+// story's stale baseline). diff.mjs stays a reporter — stories.mjs owns the fail.
+const MISSING = [...setB].filter((f) => !setA.has(f)).sort()
+const ORPHAN = [...setA].filter((f) => !setB.has(f)).sort()
 
 function httpJson(p) { return new Promise((res, rej) => { http.get({ host: '127.0.0.1', port: PORT, path: p }, (r) => { let d = ''; r.on('data', (c) => (d += c)); r.on('end', () => res(JSON.parse(d))) }).on('error', rej) }) }
 async function waitFor(fn, n, g) { for (let i = 0; i < n; i++) { try { return await fn() } catch { await new Promise((r) => setTimeout(r, g)) } } throw new Error('timeout') }
@@ -62,6 +69,9 @@ async function main() {
     } catch (e) { console.log('  ', f.padEnd(28), 'ERR', String((e && e.message) || e)) }
   }
   console.log(`max ${maxPct}%`)
+  console.log(`sets: ${PAIRS.length} compared / ${MISSING.length} missing / ${ORPHAN.length} orphan`)
+  if (MISSING.length) console.log(`MISSING baseline:\n  ${MISSING.join('\n  ')}`)
+  if (ORPHAN.length) console.log(`ORPHAN baseline:\n  ${ORPHAN.join('\n  ')}`)
   ws.close(); child.kill()
 }
 main().catch((e) => { console.error('FATAL', e); process.exit(1) })
