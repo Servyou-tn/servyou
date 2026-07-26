@@ -6,16 +6,10 @@ import { useLang } from '@/components/LangProvider'
 import { t } from '@/lib/i18n'
 import { accountItems } from '@/lib/layout/nav-config'
 import type { SellerType } from '@/lib/layout/select-variant'
-import { ChevronDownIcon, UserIcon } from './icons'
+import { ChevronDownIcon } from './icons'
 import { FOCUS_RING } from './styles'
-
-function initials(name: string): string {
-  const parts = name.trim().split(/\s+/).filter(Boolean)
-  if (parts.length === 0) return ''
-  const first = parts[0][0] ?? ''
-  const last = parts.length > 1 ? (parts[parts.length - 1][0] ?? '') : ''
-  return (first + last).toUpperCase()
-}
+import { Avatar } from '@/components/ui/avatar'
+import { getInitials } from '@/components/ui/initials'
 
 // Avatar button → dropdown menu (consumer + workspace share it). Implements the
 // ARIA menu pattern: arrow-key navigation between items, Home/End, Escape and
@@ -29,7 +23,6 @@ export function AccountMenu({ sellerType, fullName }: { sellerType: SellerType; 
   const menuRef = useRef<HTMLDivElement>(null)
 
   const items = accountItems(sellerType)
-  const ini = fullName ? initials(fullName) : ''
 
   // Outside-click + Escape while open.
   useEffect(() => {
@@ -92,9 +85,7 @@ export function AccountMenu({ sellerType, fullName }: { sellerType: SellerType; 
         aria-label={t('nav.account', lang)}
         className={`inline-flex h-10 items-center gap-1.5 rounded-full ps-1 pe-2 transition-colors hover:bg-surface-pill ${FOCUS_RING}`}
       >
-        <span className="grid h-8 w-8 place-items-center rounded-full bg-brand-blue-800 text-xs font-semibold text-white">
-          {ini ? ini : <UserIcon className="h-4 w-4" />}
-        </span>
+        <Avatar size="sm" initials={fullName ? getInitials(fullName) : undefined} />
         <ChevronDownIcon
           className={`h-4 w-4 text-text-muted transition-transform rtl:-scale-x-100 ${open ? 'rotate-180' : ''}`}
         />

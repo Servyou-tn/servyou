@@ -5,6 +5,7 @@ import { useLang } from '@/components/LangProvider'
 import { t } from '@/lib/i18n'
 import { CARD_SHADOW, HOVER_SHADOW, FOCUS_RING } from '@/components/layout/styles'
 import { FavoriteButton } from '@/components/FavoriteButton'
+import { Avatar } from '@/components/ui/avatar'
 
 export type ServiceListing = {
   id: string
@@ -27,7 +28,7 @@ export type ServiceListing = {
 //   footer (89, pinned) — left cluster: avatar + name; right cluster is a VERTICAL stack,
 //                         raw price on top, "Voir le service" beneath (no "À partir de").
 // Rating / verified are drawn in Figma but deferred; avatars have no data source (no
-// avatar_url column) → initial. CHIP LABEL: the Figma shows human skill words, but the
+// avatar_url column) → person-glyph fallback (shared Avatar). CHIP LABEL: the Figma shows human skill words, but the
 // `tags` column stores unlabeled slugs ("identite-visuelle") with no label map, so — per
 // founder direction, not title-casing slugs — the chip renders the localized *category*
 // name until tags carry real labels (see docs/follow-ups.md).
@@ -43,8 +44,6 @@ export function ServiceListingCard({ service }: { service: ServiceListing }) {
     start > 0
       ? t('listing.service.priceRaw', lang, { price: start })
       : t('listing.service.priceOnRequest', lang)
-
-  const firstLetter = (service.freelancer.full_name.trim()[0] ?? '?').toUpperCase()
 
   // Human, localized label only. Tags are unlabeled slugs today (see note above).
   const categoryLabel = service.category
@@ -86,12 +85,7 @@ export function ServiceListingCard({ service }: { service: ServiceListing }) {
         <div className="flex items-end justify-between gap-3 pt-3 pe-4 pb-4 ps-4">
           {/* leftCluster — avatar + name, gap 8. */}
           <div className="flex min-w-0 items-center gap-2">
-            <span
-              aria-hidden="true"
-              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-surface-placeholder text-body-sm font-semibold text-text-primary"
-            >
-              {firstLetter}
-            </span>
+            <Avatar size="sm" />
             {service.freelancer.full_name && (
               <span className="truncate text-body-sm text-brand-blue-800">
                 {service.freelancer.full_name}

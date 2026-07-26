@@ -5,7 +5,8 @@ import { useRef } from 'react'
 import { LogOut, Settings, User, Store, Briefcase } from 'lucide-react'
 import { useLang } from '@/components/LangProvider'
 import { t } from '@/lib/i18n'
-import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import { Avatar } from '@/components/ui/avatar'
+import { getInitials } from '@/components/ui/initials'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,18 +20,6 @@ export type TopBarUser = {
   email: string
   full_name: string | null
   seller_type: 'shop_owner' | 'freelancer' | null
-}
-
-// "Moatez Zaier" → "MZ", "moatez@servyou.tn" → "M", single word → first letter,
-// empty → "?". Email falls back to the local part before deriving the letter.
-export function getInitials(nameOrEmail: string): string {
-  const source = (nameOrEmail ?? '').trim()
-  if (!source) return '?'
-  const base = source.includes('@') ? source.split('@')[0] : source
-  const parts = base.split(/\s+/).filter(Boolean)
-  if (parts.length === 0) return '?'
-  if (parts.length === 1) return (parts[0][0] ?? '?').toUpperCase()
-  return ((parts[0][0] ?? '') + (parts[parts.length - 1][0] ?? '')).toUpperCase()
 }
 
 // The third button in the /marche icon cluster. Logged in → Radix dropdown
@@ -72,11 +61,7 @@ export function ProfileAvatarMenu({
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <button type="button" className={triggerClassName} aria-label={t('nav.account', lang)}>
-            <Avatar className="h-10 w-10">
-              <AvatarFallback className="bg-brand-blue-800 text-sm font-medium text-white">
-                {getInitials(user.full_name || user.email)}
-              </AvatarFallback>
-            </Avatar>
+            <Avatar size="md" initials={getInitials(user.full_name || user.email)} />
           </button>
         </DropdownMenuTrigger>
 

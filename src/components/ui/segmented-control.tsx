@@ -48,7 +48,7 @@ export function SegmentedControl<T extends string>({
             role="tab"
             aria-selected={isActive}
             onClick={() => onChange(option.value)}
-            className={`relative min-w-[80px] flex-1 rounded-full px-4 py-1.5 text-sm font-medium transition-colors duration-200 ${FOCUS_RING} ${
+            className={`relative min-w-20 flex-1 rounded-full px-4 py-1.5 text-sm font-medium transition-colors duration-200 ${FOCUS_RING} ${
               isActive ? 'text-white' : 'text-text-muted hover:text-text-primary'
             }`}
           >

@@ -1,0 +1,100 @@
+name: storybook-vrt
+
+# Visual-regression gate over the Storybook stories (F2). Builds Storybook statically, captures every
+# story at 1440 + 380 with the F1 headless-Chrome harness (scripts/vrt/capture.mjs), and diffs against
+# the baselines committed in scripts/vrt/__baselines__/ (scripts/vrt/diff.mjs, AA-filtered at THRESH=60).
+# A story whose changed-pixel share exceeds GATE_PCT fails the job and blocks merge.
+#
+# BASELINES ARE COMMITTED BY A HUMAN, NEVER BY CI. They must be rendered on THIS runner's OS + Chrome
+# (font anti-aliasing is platform-specific), so they cannot come from a Windows/macOS dev machine.
+# Flow: run this workflow with NO baselines committed -> it renders the Linux images, uploads them as
+# the `vrt-baselines-to-commit` artifact, and then FAILS (a gate with no reference must never pass
+# silently). A human downloads that artifact, commits its PNGs to scripts/vrt/__baselines__/ in a PR,
+# and pushes; the job re-runs green and the gate is live for every subsequent PR.
+#
+# A one-command task to render baselines inside this runner's container image would be tidier, but
+# Docker was unavailable in the F2 authoring environment, so the artifact-download flow above is the
+# supported path. See docs/f2-state.md.
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read # CI never commits baselines — a human does, in a PR.
+
+jobs:
+  vrt:
+    name: Storybook visual regression
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'npm'
+
+      - run: npm ci
+
+      - name: Resolve the runner's Chrome
+        id: chrome
+        run: |
+          CHROME="$(which google-chrome || which google-chrome-stable || which chromium-browser)"
+          test -n "$CHROME" || { echo "::error::No Chrome on the runner"; exit 1; }
+          echo "path=$CHROME" >> "$GITHUB_OUTPUT"
+          "$CHROME" --version
+
+      - name: Build Storybook (static)
+        run: npm run build-storybook
+
+      - name: Detect committed baselines
+        id: base
+        run: |
+          if ls scripts/vrt/__baselines__/*.png >/dev/null 2>&1; then
+            echo "have=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "have=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      # Enforcement — baselines exist → capture the current stories and gate on the diff.
+      - name: Capture + diff against committed baselines (gate)
+        if: steps.base.outputs.have == 'true'
+        env:
+          CHROME_PATH: ${{ steps.chrome.outputs.path }}
+          THRESH: '60'
+          # 0.05% — tightened from the provisional 0.3% once CI owned baselines. The measured Linux
+          # story-level noise floor is 0.000% (all 10 snapshots, cross-run; CI run 30205346920), so
+          # this sits far above the floor yet catches component-level regressions. See docs/f2-state.md.
+          GATE_PCT: '0.05'
+        run: npm run vrt:stories check
+
+      # No baselines yet → render the Linux images for a human to download + commit …
+      - name: No baselines — render Linux images for a human to commit
+        if: steps.base.outputs.have == 'false'
+        env:
+          CHROME_PATH: ${{ steps.chrome.outputs.path }}
+        run: npm run vrt:stories baseline
+
+      - name: Upload rendered baselines (download → commit to scripts/vrt/__baselines__)
+        if: steps.base.outputs.have == 'false'
+        uses: actions/upload-artifact@v4
+        with:
+          name: vrt-baselines-to-commit
+          path: scripts/vrt/__baselines__/
+
+      # … then FAIL. A gate with no committed reference must never report green.
+      - name: Fail — no baselines committed
+        if: steps.base.outputs.have == 'false'
+        run: |
+          echo "::error::No VRT baselines committed. Download the 'vrt-baselines-to-commit' artifact, commit its PNGs to scripts/vrt/__baselines__/ in this PR, and push. The gate fails until baselines exist."
+          exit 1
+
+      # Gate failed on a real diff → upload the current captures so the diff can be eyeballed.
+      - name: Upload current captures on gate failure
+        if: failure() && steps.base.outputs.have == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: vrt-current-captures
+          path: scripts/vrt/__current__/
+          retention-days: 7

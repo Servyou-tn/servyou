@@ -16,14 +16,23 @@ export const INTEGRATION_GLOBS = [
   '**/progressive-phone.integration.test.ts',
 ]
 
+// Tooling artifacts that must never be scanned for tests: the headless-Chrome VRT profiles (a
+// force-installed browser extension ships its own *.spec.js written for jest), the static
+// Storybook build, and the VRT capture dirs. All are gitignored, but vitest scans the filesystem.
+const ARTIFACT_GLOBS = [
+  '**/.vrt-*-profile/**',
+  '**/storybook-static/**',
+  '**/scripts/vrt/__*__/**',
+]
+
 export default defineConfig(({ mode }) => ({
   test: {
     globals: true,
     environment: 'node',
     testTimeout: 30000,
     env: loadEnv(mode, process.cwd(), ''),
-    // Default (unit) run skips the live-DB suites.
-    exclude: [...configDefaults.exclude, ...INTEGRATION_GLOBS],
+    // Default (unit) run skips the live-DB suites + tooling artifacts.
+    exclude: [...configDefaults.exclude, ...INTEGRATION_GLOBS, ...ARTIFACT_GLOBS],
   },
   resolve: {
     alias: {

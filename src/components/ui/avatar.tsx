@@ -1,109 +1,68 @@
-"use client"
+import Image from 'next/image'
+import { User } from 'lucide-react'
+import { cn } from '@/lib/utils'
 
-import * as React from "react"
-import { Avatar as AvatarPrimitive } from "radix-ui"
+// Avatar — the F2 proving primitive. Measured from Figma (COMPONENT_SET 47:1528), token-bound, and
+// compliant with the four shared/ui boundary rules (tokens only, role-agnostic, feature-independent,
+// no CSS property both set and accepted from the caller).
+//
+// Three types (measured, not from the doc):
+//   image     — the picture, clipped to a circle
+//   fallback  — the DEFAULT when there is no image: border-strong circle + person glyph in text-muted
+//   initials  — explicit opt-in: brand-blue-100 circle + brand-blue-600 letters
+// Six sizes match Figma exactly. Online-dot and verified-badge are intentionally omitted (phase-aware).
 
-import { cn } from "@/lib/utils"
+export type AvatarSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl'
 
-function Avatar({
-  className,
-  size = "default",
-  ...props
-}: React.ComponentProps<typeof AvatarPrimitive.Root> & {
-  size?: "default" | "sm" | "lg"
-}) {
-  return (
-    <AvatarPrimitive.Root
-      data-slot="avatar"
-      data-size={size}
-      className={cn(
-        "group/avatar relative flex size-8 shrink-0 overflow-hidden rounded-full select-none data-[size=lg]:size-10 data-[size=sm]:size-6",
-        className
-      )}
-      {...props}
-    />
-  )
+// box sizes = Figma px via Tailwind's spacing scale: 24 · 32 · 40 · 56 · 80 · 120.
+const SIZE: Record<AvatarSize, { box: string; text: string; icon: string }> = {
+  xs: { box: 'size-6', text: 'text-xs', icon: 'size-3' },
+  sm: { box: 'size-8', text: 'text-sm', icon: 'size-4' },
+  md: { box: 'size-10', text: 'text-sm', icon: 'size-5' },
+  lg: { box: 'size-14', text: 'text-lg', icon: 'size-7' },
+  xl: { box: 'size-20', text: 'text-2xl', icon: 'size-10' },
+  '2xl': { box: 'size-30', text: 'text-4xl', icon: 'size-14' },
 }
 
-function AvatarImage({
-  className,
-  ...props
-}: React.ComponentProps<typeof AvatarPrimitive.Image>) {
-  return (
-    <AvatarPrimitive.Image
-      data-slot="avatar-image"
-      className={cn("aspect-square size-full", className)}
-      {...props}
-    />
-  )
+type AvatarProps = {
+  size?: AvatarSize
+  /** Image URL. When present, the picture wins over initials/fallback. */
+  src?: string | null
+  /** Identity — the image alt, and the accessible label when `decorative` is false. */
+  name?: string
+  /** Explicit initials variant. Ignored when `src` is set. Omit to get the person-glyph fallback. */
+  initials?: string
+  /**
+   * Decorative by default — most avatars sit beside a visible name or inside a labelled control, so
+   * the primitive is hidden from assistive tech and its image gets an empty alt (no double-announce).
+   * Pass `decorative={false}` only for a STANDALONE avatar that is the sole identity cue; it is then
+   * exposed as role="img" with `name` as the accessible label.
+   */
+  decorative?: boolean
+  className?: string
 }
 
-function AvatarFallback({
-  className,
-  ...props
-}: React.ComponentProps<typeof AvatarPrimitive.Fallback>) {
-  return (
-    <AvatarPrimitive.Fallback
-      data-slot="avatar-fallback"
-      className={cn(
-        "flex size-full items-center justify-center rounded-full bg-muted text-sm text-muted-foreground group-data-[size=sm]/avatar:text-xs",
-        className
-      )}
-      {...props}
-    />
-  )
-}
-
-function AvatarBadge({ className, ...props }: React.ComponentProps<"span">) {
+export function Avatar({ size = 'md', src, name, initials, decorative = true, className }: AvatarProps) {
+  const s = SIZE[size]
+  const a11y: React.HTMLAttributes<HTMLSpanElement> = decorative
+    ? { 'aria-hidden': true }
+    : { role: 'img', 'aria-label': name || undefined }
   return (
     <span
-      data-slot="avatar-badge"
-      className={cn(
-        "absolute end-0 bottom-0 z-10 inline-flex items-center justify-center rounded-full bg-primary text-primary-foreground ring-2 ring-background select-none",
-        "group-data-[size=sm]/avatar:size-2 group-data-[size=sm]/avatar:[&>svg]:hidden",
-        "group-data-[size=default]/avatar:size-2.5 group-data-[size=default]/avatar:[&>svg]:size-2",
-        "group-data-[size=lg]/avatar:size-3 group-data-[size=lg]/avatar:[&>svg]:size-2",
-        className
+      {...a11y}
+      className={cn('relative inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full', s.box, className)}
+    >
+      {src ? (
+        <Image src={src} alt={decorative ? '' : (name ?? '')} fill sizes="120px" className="object-cover" />
+      ) : initials ? (
+        <span className={cn('flex size-full items-center justify-center bg-brand-blue-100 font-semibold text-brand-blue-600', s.text)} aria-hidden="true">
+          {initials}
+        </span>
+      ) : (
+        <span className="flex size-full items-center justify-center bg-border-strong text-text-muted" aria-hidden="true">
+          <User className={s.icon} />
+        </span>
       )}
-      {...props}
-    />
+    </span>
   )
-}
-
-function AvatarGroup({ className, ...props }: React.ComponentProps<"div">) {
-  return (
-    <div
-      data-slot="avatar-group"
-      className={cn(
-        "group/avatar-group flex -space-x-2 *:data-[slot=avatar]:ring-2 *:data-[slot=avatar]:ring-background",
-        className
-      )}
-      {...props}
-    />
-  )
-}
-
-function AvatarGroupCount({
-  className,
-  ...props
-}: React.ComponentProps<"div">) {
-  return (
-    <div
-      data-slot="avatar-group-count"
-      className={cn(
-        "relative flex size-8 shrink-0 items-center justify-center rounded-full bg-muted text-sm text-muted-foreground ring-2 ring-background group-has-data-[size=lg]/avatar-group:size-10 group-has-data-[size=sm]/avatar-group:size-6 [&>svg]:size-4 group-has-data-[size=lg]/avatar-group:[&>svg]:size-5 group-has-data-[size=sm]/avatar-group:[&>svg]:size-3",
-        className
-      )}
-      {...props}
-    />
-  )
-}
-
-export {
-  Avatar,
-  AvatarImage,
-  AvatarFallback,
-  AvatarBadge,
-  AvatarGroup,
-  AvatarGroupCount,
 }
