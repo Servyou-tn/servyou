@@ -1,6 +1,7 @@
 import { getLang } from '@/lib/i18n/server'
 import type { Lang } from '@/lib/i18n'
 import { createClient } from '@/lib/supabase/server'
+import { resolveRole } from '@/lib/roles'
 import { Header } from '@/components/layout/Header'
 import { Hero } from '@/components/landing/Hero'
 import { Categories } from '@/components/landing/Categories'
@@ -39,10 +40,10 @@ export default async function HomePage({
       .maybeSingle()
     if (error) console.error('[home] profile fetch error:', error)
 
-    const sellerType = (profile?.seller_type as 'shop_owner' | 'freelancer' | null) ?? null
+    const role = resolveRole(profile)
     const isAdmin = Boolean(profile?.is_admin)
 
-    if (sellerType === null && !isAdmin) {
+    if (role === null && !isAdmin) {
       // The home IS the marketplace browse: the top-bar toggle drives ?type= in place.
       // Product is the canonical default; only ?type=service flips to the services catalog.
       const sp = await searchParams

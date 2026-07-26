@@ -1,5 +1,6 @@
 import { roleConfig, type SignupRole } from './signup-role'
 import type { SellerType } from './layout/select-variant'
+import { roleWorkspacePath } from './roles'
 
 // Where to send a user after their email is verified (the State-2 "Continuer").
 // Prefer the signup role intent carried in sessionStorage; if it is absent — the
@@ -11,7 +12,5 @@ export function nextDestinationAfterVerify(
   sellerType: SellerType,
 ): string {
   if (role) return roleConfig(role).destination
-  if (sellerType === 'shop_owner') return '/ma-boutique'
-  if (sellerType === 'freelancer') return '/mon-profil-freelance'
-  return '/'
+  return roleWorkspacePath(sellerType)
 }

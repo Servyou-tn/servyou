@@ -3,6 +3,7 @@ import { getLang } from '@/lib/i18n/server'
 import { t } from '@/lib/i18n'
 import type { Lang } from '@/lib/i18n'
 import { createClient } from '@/lib/supabase/server'
+import { resolveRole, roleI18nKey } from '@/lib/roles'
 import { SuspendForm } from './SuspendForm'
 import { UnsuspendButton } from './UnsuspendButton'
 
@@ -21,13 +22,6 @@ type Profile = {
   created_at: string
   suspended_at: string | null
   suspended_reason: string | null
-}
-
-function roleKey(p: { is_admin: boolean; seller_type: string | null }): string {
-  if (p.is_admin) return 'admin.users.role_admin'
-  if (p.seller_type === 'shop_owner') return 'admin.users.role_shop_owner'
-  if (p.seller_type === 'freelancer') return 'admin.users.role_freelancer'
-  return 'admin.users.role_consumer'
 }
 
 function formatDate(value: string, lang: Lang): string {
@@ -74,16 +68,17 @@ export default async function UserDetailPage({ params }: Props) {
 
   const u = profile as Profile
   const isSelf = me?.id === u.id
+  const role = resolveRole(u)
 
   // Activity: seller links + order/report counts. Counts use head:true (no rows
   // returned, just the count). Run concurrently. Order counts are accurate now that
   // migration 24 ("Admin reads all orders") grants the admin SELECT on all orders;
   // report counts rely on reports' pre-existing is_admin() SELECT policy.
   const [shopRes, freelancerRes, ordersBuyer, ordersSeller, reportsCreated, reportsAgainst] = await Promise.all([
-    u.seller_type === 'shop_owner'
+    role === 'shop_owner'
       ? supabase.from('shops').select('id').eq('owner_id', u.id).maybeSingle()
       : Promise.resolve({ data: null }),
-    u.seller_type === 'freelancer'
+    role === 'freelancer'
       ? supabase.from('freelancer_profiles').select('id').eq('profile_id', u.id).maybeSingle()
       : Promise.resolve({ data: null }),
     supabase.from('orders').select('id', { count: 'exact', head: true }).eq('buyer_id', u.id),
@@ -122,7 +117,7 @@ export default async function UserDetailPage({ params }: Props) {
           <Field label={tr('admin.users.field_dob')} value={u.date_of_birth ? formatDate(u.date_of_birth, lang) : '—'} />
           <Field label={tr('admin.users.field_city')} value={u.city ?? '—'} />
           <Field label={tr('admin.users.field_language')} value={u.language ?? '—'} />
-          <Field label={tr('admin.users.field_role')} value={tr(roleKey(u))} />
+          <Field label={tr('admin.users.field_role')} value={tr(roleI18nKey(role, u.is_admin))} />
           <Field label={tr('admin.users.field_admin')} value={u.is_admin ? 'Oui' : 'Non'} />
           <Field label={tr('admin.users.field_created_at')} value={formatDate(u.created_at, lang)} />
         </dl>

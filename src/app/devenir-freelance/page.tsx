@@ -4,6 +4,7 @@ import { DevenirFreelanceContent } from '@/components/devenir/DevenirFreelanceCo
 import { AlreadyHaveRole } from '@/components/devenir/AlreadyHaveRole'
 import { getShellUser } from '@/lib/marche/shell-user'
 import { getCurrentProfile } from '@/lib/marche/mon-compte'
+import { resolveRole } from '@/lib/roles'
 import { getLang } from '@/lib/i18n/server'
 import { t } from '@/lib/i18n'
 
@@ -23,7 +24,7 @@ export default async function DevenirFreelancePage() {
 
   return (
     <MarcheLayout user={shell?.topBarUser ?? null}>
-      {profile?.seller_type === 'freelancer' ? (
+      {resolveRole(profile) === 'freelancer' ? (
         <AlreadyHaveRole
           headline={t('devenir.freelance.already.headline', lang)}
           subheadline={t('devenir.freelance.already.subheadline', lang)}

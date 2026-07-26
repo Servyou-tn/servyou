@@ -4,6 +4,7 @@ import { DevenirVendeurContent } from '@/components/devenir/DevenirVendeurConten
 import { AlreadyHaveRole } from '@/components/devenir/AlreadyHaveRole'
 import { getShellUser } from '@/lib/marche/shell-user'
 import { getCurrentProfile } from '@/lib/marche/mon-compte'
+import { resolveRole } from '@/lib/roles'
 import { getLang } from '@/lib/i18n/server'
 import { t } from '@/lib/i18n'
 
@@ -23,7 +24,7 @@ export default async function DevenirVendeurPage() {
 
   return (
     <MarcheLayout user={shell?.topBarUser ?? null}>
-      {profile?.seller_type === 'shop_owner' ? (
+      {resolveRole(profile) === 'shop_owner' ? (
         <AlreadyHaveRole
           headline={t('devenir.vendeur.already.headline', lang)}
           subheadline={t('devenir.vendeur.already.subheadline', lang)}

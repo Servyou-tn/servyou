@@ -9,6 +9,7 @@ import { t } from '@/lib/i18n'
 import { isValidEmail } from '@/lib/signup-validation'
 import { SIGNUP_ROLE_KEY, asSignupRole } from '@/lib/signup-role'
 import { nextDestinationAfterVerify } from '@/lib/verify-email'
+import { resolveRole } from '@/lib/roles'
 import type { SellerType } from '@/lib/layout/select-variant'
 import { AuthShell } from '@/components/auth/AuthShell'
 import { MailIcon, CheckCircleIcon, AlertCircleIcon, SpinnerIcon } from '@/components/auth/Icons'
@@ -118,7 +119,7 @@ export function VerifyEmailFlow({
         .eq('id', userId)
         .single()
       if (error) console.error('[VerifyEmail] profile fetch error:', error)
-      sellerType = (profile?.seller_type as SellerType) ?? null
+      sellerType = resolveRole(profile)
     }
     try {
       sessionStorage.removeItem(SIGNUP_ROLE_KEY)
