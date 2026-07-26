@@ -10,8 +10,8 @@
 //   node scripts/vrt/stories.mjs baseline   → capture → scripts/vrt/__baselines__/  (commit this dir)
 //   node scripts/vrt/stories.mjs check      → capture → scripts/vrt/__current__/, diff vs baseline, gate
 // env: THRESH   per-pixel RGB-sum diff for diff.mjs (default 60 — the F1 AA-filter level)
-//      GATE_PCT max % of changed pixels tolerated before FAIL (default 0.3 — above the ~0.13% floor,
-//               matching capture.mjs's own ">= ~0.3%" note; a real recolor is several %)
+//      GATE_PCT max % of changed pixels tolerated before FAIL (default 0.05 — the measured Linux
+//               story-level floor is 0.000%; a real recolor is several %. See docs/f2-state.md)
 //      STATIC_DIR (default storybook-static) · PORT (default 6008) · CHROME_PATH
 import { spawn } from 'node:child_process'
 import http from 'node:http'
@@ -28,7 +28,7 @@ if (MODE !== 'baseline' && MODE !== 'check') {
 const HERE = path.dirname(fileURLToPath(import.meta.url))
 const STATIC = path.resolve(REPO, process.env.STATIC_DIR || 'storybook-static')
 const PORT = Number(process.env.PORT || 6008)
-const GATE_PCT = Number(process.env.GATE_PCT || 0.3)
+const GATE_PCT = Number(process.env.GATE_PCT || 0.05)
 const THRESH = String(process.env.THRESH || 60)
 const BASELINE = path.join(HERE, '__baselines__')
 const CURRENT = path.join(HERE, '__current__')

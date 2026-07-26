@@ -63,7 +63,10 @@ jobs:
         env:
           CHROME_PATH: ${{ steps.chrome.outputs.path }}
           THRESH: '60'
-          GATE_PCT: '0.3'
+          # 0.05% — tightened from the provisional 0.3% once CI owned baselines. The measured Linux
+          # story-level noise floor is 0.000% (all 10 snapshots, cross-run; CI run 30205346920), so
+          # this sits far above the floor yet catches component-level regressions. See docs/f2-state.md.
+          GATE_PCT: '0.05'
         run: npm run vrt:stories check
 
       # No baselines yet → render the Linux images for a human to download + commit …

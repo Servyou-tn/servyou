@@ -88,20 +88,25 @@ was run locally (harness level, same-Chrome both sides): unchanged → `max 0%` 
 end-to-end (Linux-vs-Linux) on the first PR after F2 merges, once baselines are committed per the flow
 above.
 
-## Calibration — `THRESH=60`, gate `0.3%` (PROVISIONAL — must be tightened)
+## Calibration — `THRESH=60`, gate `0.05%` (measured)
 
 `THRESH=60` = the per-pixel RGB-sum AA filter (unchanged from F1). Every story is snapshot at 1440
 and 380.
 
-**The 0.3% gate is provisional and deliberately loose.** It is inherited from F1's *full-page* noise
-floor (~0.134%, measured on image-heavy marketing/marketplace routes dense with anti-aliased edges).
-Storybook stories are isolated components on a plain background, so their real floor is far lower — the
-local both-ways proof already measured the unchanged run at **max 0%** (every 16-band profile
-all-zero) at THRESH=60. A gate sitting well above its true floor lets a *small* regression on a
-*small* component (e.g. a 1–2px shift on the xs/sm avatar) pass unnoticed.
+**The gate threshold is 0.05%, tightened from a provisional 0.3% once CI owned the baselines.** The
+0.3% was inherited from F1's *full-page* noise floor (~0.134%, image-heavy routes dense with
+anti-aliased edges); Storybook stories are isolated components on a plain background, so their real
+floor is far lower. **Measured in CI** (run 30205346920 — a fresh Linux capture diffed against the
+committed Linux baselines, i.e. a cross-run comparison across two Chrome instances): the story-level
+noise floor is **0.000% on every one of the 10 snapshots** (all 16-band profiles zero, no height
+change). 0.05% therefore sits far above the floor — with margin for any rare within-version AA flicker
+a single run can't rule out — while staying tight enough that a component-level regression on even the
+smallest avatar exceeds it.
 
-**Tighten it once CI owns the baselines (owed, F2 → F3):** after the first `main` bootstrap commits the
-Linux baselines, run the gate **twice against unchanged code** on CI, record the **actual per-story
-noise floor** (Linux Chrome renders text AA differently from the Windows figure above, so it must be
-measured there), then drop `GATE_PCT` to just above the highest observed per-story floor. Until then,
-0.3% is a placeholder — do not read it as the calibrated value.
+A whole-frame percentage still cannot catch a *sub-0.05%* single-pixel tweak on the xs avatar (a
+fundamental limit of frame-level pct, not of this threshold); per-band gating would be the tool for
+that, out of scope here.
+
+**Re-baseline after a Chrome-major bump.** The 0.000% floor holds *within* a Chrome version (baselines
+and gate captured on the same runner image). A runner Chrome bump can shift AA and lift the floor —
+delete `scripts/vrt/__baselines__` and re-establish it via the artifact flow above.
