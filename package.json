@@ -12,7 +12,10 @@
     "test:integration": "vitest run --config vitest.integration.config.ts",
     "rls-smoke": "node --env-file=.env.local scripts/rls-smoke.mjs",
     "tokens:pull": "node scripts/tokens/pull.mjs",
-    "tokens:build": "node scripts/tokens/build.mjs"
+    "tokens:build": "node scripts/tokens/build.mjs",
+    "storybook": "storybook dev -p 6006 --no-open",
+    "build-storybook": "storybook build",
+    "vrt:stories": "node scripts/vrt/stories.mjs"
   },
   "dependencies": {
     "@sentry/nextjs": "^10.56.0",
@@ -29,6 +32,7 @@
     "tailwind-merge": "^3.6.0"
   },
   "devDependencies": {
+    "@storybook/nextjs-vite": "^10.5.4",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
@@ -36,6 +40,7 @@
     "@vitest/ui": "^4.1.8",
     "eslint": "^9",
     "eslint-config-next": "16.2.7",
+    "storybook": "^10.5.4",
     "style-dictionary": "^5.5.0",
     "tailwindcss": "^4",
     "typescript": "^5",

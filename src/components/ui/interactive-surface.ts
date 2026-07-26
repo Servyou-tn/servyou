@@ -16,16 +16,19 @@ export const SURFACE_SHAPE_CIRCLE = 'rounded-full'
 // The resting surface: white card with a subtle border + a soft drop-shadow that reads as lifted
 // (not the flat 1px shadow-sm) — the whole interactive family shares this depth.
 export const SURFACE_IDLE =
+  // eslint-disable-next-line shared-ui/no-raw-color -- off-token custom shadow; F3 design decision (docs/f2-state.md)
   'bg-white border border-border-subtle shadow-[0_2px_8px_rgba(0,0,0,0.06)] text-text-primary'
 
 // The hover lift (carries the transition so unhovered → hovered is smooth) — a stronger drop.
 export const SURFACE_HOVER =
+  // eslint-disable-next-line shared-ui/no-raw-color -- off-token custom shadow; F3 design decision (docs/f2-state.md)
   'transition-all duration-200 ease-out hover:bg-slate-50 hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)]'
 
 // The selected treatment — a light brand-blue-600 tint (Linear / Vercel / Stripe pattern), NOT a
 // solid fill. A selected surface is stable: it keeps the tint, no hover swap. Same lifted shadow
 // as idle (it's last in the cn() chain for active, so it must carry the upgraded depth too).
 export const SURFACE_ACTIVE =
+  // eslint-disable-next-line shared-ui/no-raw-color -- off-token custom shadow; F3 design decision (docs/f2-state.md)
   'bg-brand-blue-600/10 border-brand-blue-600/40 text-brand-blue-600 shadow-[0_2px_8px_rgba(0,0,0,0.06)]'
 
 // The shared focus ring (re-exported so call sites import everything from one place).

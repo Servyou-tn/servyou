@@ -6,7 +6,8 @@ import { LogOut, Settings, User, ChevronDown } from 'lucide-react'
 import { useLang } from '@/components/LangProvider'
 import { t } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
-import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import { Avatar } from '@/components/ui/avatar'
+import { getInitials } from '@/components/ui/initials'
 import { SURFACE_HOVER, FOCUS_RING } from '@/components/ui/interactive-surface'
 import {
   DropdownMenu,
@@ -15,7 +16,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { getInitials, type TopBarUser } from '@/components/marche/ProfileAvatarMenu'
+import type { TopBarUser } from '@/components/marche/ProfileAvatarMenu'
 import type { ShellRole } from './sidebar-items'
 
 const ROLE_KEY: Record<ShellRole, string> = {
@@ -62,11 +63,7 @@ export function TopbarUserMenu({ user, role }: { user: TopBarUser | null; role: 
             aria-label={t('nav.account', lang)}
             className={cn('flex items-center gap-2 rounded-full p-1 md:pe-2.5', SURFACE_HOVER, FOCUS_RING)}
           >
-            <Avatar className="h-10 w-10">
-              <AvatarFallback className="bg-brand-blue-800 text-sm font-medium text-white">
-                {getInitials(user.full_name || user.email)}
-              </AvatarFallback>
-            </Avatar>
+            <Avatar size="md" initials={getInitials(user.full_name || user.email)} />
             <span className="hidden text-start md:flex md:flex-col md:leading-tight">
               <span className="text-body-sm font-medium text-text-primary">{displayName}</span>
               <span className="text-caption text-text-muted">{t(ROLE_KEY[role], lang)}</span>

@@ -54,3 +54,15 @@ next-env.d.ts
 
 # local CC preview/QA screenshot artifacts (not source)
 .preview-screenshots/
+
+# Storybook static build (regenerated; never committed)
+/storybook-static/
+
+# VRT (scripts/vrt): headless-Chrome profiles + the throwaway current-run captures.
+# __baselines__ is NOT ignored — it is the gate's reference set, committed by a HUMAN from the Linux
+# images the CI job renders + uploads as an artifact (never pushed by CI; see docs/f2-state.md). A local
+# `vrt:stories baseline` writes there for spot checks only; never commit locally-rendered baselines.
+.vrt-chrome-profile/
+.vrt-diff-profile/
+.vrt-stories-profile/
+/scripts/vrt/__current__/
