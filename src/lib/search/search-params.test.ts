@@ -29,6 +29,7 @@ describe('parseSearchParams', () => {
       q: '',
       type: 'product',
       categorie: [],
+      ville: null,
       prixMin: null,
       prixMax: null,
       tri: 'pertinence',
@@ -48,6 +49,16 @@ describe('parseSearchParams', () => {
     expect(parseSearchParams({ categorie: ['mode', 'tech'] }).categorie).toEqual(['mode', 'tech'])
     // blanks are dropped
     expect(parseSearchParams({ categorie: 'mode,,' }).categorie).toEqual(['mode'])
+  })
+
+  it('normalizes ville to a trimmed city name, or null when absent/blank', () => {
+    expect(parseSearchParams({ ville: 'Sfax' }).ville).toBe('Sfax')
+    expect(parseSearchParams({ ville: '  Ben Arous  ' }).ville).toBe('Ben Arous')
+    // Blank/whitespace-only must collapse to null, not '' — an empty string would be applied
+    // as a real .eq('city', '') predicate and silently return zero results.
+    expect(parseSearchParams({ ville: '' }).ville).toBeNull()
+    expect(parseSearchParams({ ville: '   ' }).ville).toBeNull()
+    expect(parseSearchParams({}).ville).toBeNull()
   })
 
   it('parses prix bounds and clamps page to >= 1', () => {

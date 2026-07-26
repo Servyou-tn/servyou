@@ -19,6 +19,7 @@ function params(overrides: Partial<SearchParams> = {}): SearchParams {
     q: '',
     type: 'product',
     categorie: [],
+    ville: null,
     prixMin: null,
     prixMax: null,
     tri: 'pertinence',
@@ -47,6 +48,7 @@ describe('searchHasFilters', () => {
   it('detects each refinement independently', () => {
     expect(searchHasFilters(params())).toBe(false)
     expect(searchHasFilters(params({ categorie: ['x'] }))).toBe(true)
+    expect(searchHasFilters(params({ ville: 'Sfax' }))).toBe(true)
     expect(searchHasFilters(params({ prixMin: 5 }))).toBe(true)
     expect(searchHasFilters(params({ prixMax: 5 }))).toBe(true)
   })

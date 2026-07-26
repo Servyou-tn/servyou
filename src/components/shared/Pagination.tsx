@@ -21,17 +21,41 @@ export function Pagination({
   page,
   totalPages,
   basePath,
+  totalItems,
+  perPage,
 }: {
   page: number
   totalPages: number
   basePath: string
+  /**
+   * Optional "Affichage {start} à {end} sur {total}" caption (Figma 611:45637). Both must be
+   * supplied together; omit them and the control renders exactly as before — the three other
+   * consumers (/recherche, /categories/[slug], /mes-missions) are deliberately unchanged.
+   */
+  totalItems?: number
+  perPage?: number
 }) {
   const sp = useSearchParams()
   const lang = useLang()
 
-  if (totalPages <= 1) return null
-
   const current = Math.min(Math.max(1, page), totalPages)
+
+  // The caption is meaningful even on a single page ("Affichage 1 à 8 sur 8"), so it is
+  // computed before the one-page early return below.
+  const caption =
+    totalItems != null && perPage != null && totalItems > 0
+      ? t('search.pagination.showing', lang, {
+          start: (current - 1) * perPage + 1,
+          end: Math.min(current * perPage, totalItems),
+          total: totalItems,
+        })
+      : null
+
+  if (totalPages <= 1) {
+    return caption ? (
+      <p className="text-center text-body-sm text-text-muted">{caption}</p>
+    ) : null
+  }
 
   const hrefFor = (target: number) => {
     const qs = buildSearchQuery(sp, { page: target })
@@ -77,37 +101,40 @@ export function Pagination({
     })
 
   return (
-    <nav
-      aria-label={t('search.pagination.label', lang)}
-      className="flex items-center justify-center gap-1.5"
-    >
-      {prevDisabled ? (
-        <span className={arrowDisabled} aria-disabled="true" aria-label={t('search.pagination.prev', lang)}>
-          <ChevronLeft className="h-4 w-4" aria-hidden="true" />
-          <span className="hidden sm:inline">{t('search.pagination.prev', lang)}</span>
-        </span>
-      ) : (
-        <Link href={hrefFor(current - 1)} rel="prev" className={arrowEnabled} aria-label={t('search.pagination.prev', lang)}>
-          <ChevronLeft className="h-4 w-4" aria-hidden="true" />
-          <span className="hidden sm:inline">{t('search.pagination.prev', lang)}</span>
-        </Link>
-      )}
+    <div className="flex flex-col items-center gap-2">
+      {caption && <p className="text-body-sm text-text-muted">{caption}</p>}
+      <nav
+        aria-label={t('search.pagination.label', lang)}
+        className="flex items-center justify-center gap-1.5"
+      >
+        {prevDisabled ? (
+          <span className={arrowDisabled} aria-disabled="true" aria-label={t('search.pagination.prev', lang)}>
+            <ChevronLeft className="h-4 w-4" aria-hidden="true" />
+            <span className="hidden sm:inline">{t('search.pagination.prev', lang)}</span>
+          </span>
+        ) : (
+          <Link href={hrefFor(current - 1)} rel="prev" className={arrowEnabled} aria-label={t('search.pagination.prev', lang)}>
+            <ChevronLeft className="h-4 w-4" aria-hidden="true" />
+            <span className="hidden sm:inline">{t('search.pagination.prev', lang)}</span>
+          </Link>
+        )}
 
-      {/* Desktop window (±1) on >=sm; tighter first·current·last on mobile so it fits 375px. */}
-      <div className="hidden items-center gap-1.5 sm:flex">{numbers(1)}</div>
-      <div className="flex items-center gap-1.5 sm:hidden">{numbers(0)}</div>
+        {/* Desktop window (±1) on >=sm; tighter first·current·last on mobile so it fits 375px. */}
+        <div className="hidden items-center gap-1.5 sm:flex">{numbers(1)}</div>
+        <div className="flex items-center gap-1.5 sm:hidden">{numbers(0)}</div>
 
-      {nextDisabled ? (
-        <span className={arrowDisabled} aria-disabled="true" aria-label={t('search.pagination.next', lang)}>
-          <span className="hidden sm:inline">{t('search.pagination.next', lang)}</span>
-          <ChevronRight className="h-4 w-4" aria-hidden="true" />
-        </span>
-      ) : (
-        <Link href={hrefFor(current + 1)} rel="next" className={arrowEnabled} aria-label={t('search.pagination.next', lang)}>
-          <span className="hidden sm:inline">{t('search.pagination.next', lang)}</span>
-          <ChevronRight className="h-4 w-4" aria-hidden="true" />
-        </Link>
-      )}
-    </nav>
+        {nextDisabled ? (
+          <span className={arrowDisabled} aria-disabled="true" aria-label={t('search.pagination.next', lang)}>
+            <span className="hidden sm:inline">{t('search.pagination.next', lang)}</span>
+            <ChevronRight className="h-4 w-4" aria-hidden="true" />
+          </span>
+        ) : (
+          <Link href={hrefFor(current + 1)} rel="next" className={arrowEnabled} aria-label={t('search.pagination.next', lang)}>
+            <span className="hidden sm:inline">{t('search.pagination.next', lang)}</span>
+            <ChevronRight className="h-4 w-4" aria-hidden="true" />
+          </Link>
+        )}
+      </nav>
+    </div>
   )
 }

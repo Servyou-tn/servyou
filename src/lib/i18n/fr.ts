@@ -1001,6 +1001,8 @@ export const fr: Record<string, string> = {
   'services.lens.soon':              "Bientôt",
   'services.filters.searchPlaceholder': "Rechercher un service…",
   'services.filters.categoryAll':    "Toutes les catégories",
+  'services.filters.ville':          "Ville",
+  'services.filters.cityAll':        "Toutes les villes",
   'services.filters.priceTrigger':   "Prix",
   'services.filters.currency':       "TND",
   'services.filters.clearAll':       "Tout effacer",
@@ -1667,6 +1669,7 @@ export const fr: Record<string, string> = {
   'search.pagination.prev':      "Précédent",
   'search.pagination.next':      "Suivant",
   'search.pagination.pageOf':    "Page {current} sur {total}",
+  'search.pagination.showing':   "Affichage {start} à {end} sur {total}",
   // Bare /recherche (no query, no filters): a landing block, not a browse grid —
   // the two marketplaces (/marche/produits, /marche/services) own browse-by-default now.
   'search.landing.title':        "Que recherchez-vous ?",
