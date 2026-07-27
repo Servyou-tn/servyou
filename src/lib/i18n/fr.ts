@@ -1006,6 +1006,13 @@ export const fr: Record<string, string> = {
   'services.filters.priceTrigger':   "Prix",
   'services.filters.currency':       "TND",
   'services.filters.clearAll':       "Tout effacer",
+  // Services-specific empty state (Figma 611:47916, deltas T2-T4). Deliberately NOT the shared
+  // search.empty.* keys: /recherche spans products + services, so its "Aucun résultat" is right
+  // there and would be wrong here. Likewise the CTA is its own key — services.filters.clearAll
+  // still says "Tout effacer" on the filter-bar chips row, which is what the Figma shows there.
+  'services.empty.filtered':         "Aucun service trouvé",
+  'services.empty.filteredSubtitle': "Essayez d'élargir vos filtres ou de réinitialiser votre recherche.",
+  'services.empty.resetFilters':     "Réinitialiser les filtres",
   'services.filters.removeFilter':   "Retirer le filtre {filter}",
   'services.sort.label':             "Trier par",
   'services.sort.recent':            "Plus récents",
@@ -2019,7 +2026,7 @@ export const fr: Record<string, string> = {
   'shell.topbar.search.proposals':        "Rechercher mes propositions...",
   'shell.topbar.search.orders':           "Rechercher mes commandes...",
   'shell.topbar.role.freelance':          "Freelance",
-  'shell.topbar.role.consumer':           "Consommateur",
+  'shell.topbar.role.consumer':           "Client",
   'shell.topbar.role.shopOwner':          "Vendeur",
   'shell.topbar.menu.viewPublicProfile':  "Voir mon profil public",
   'shell.topbar.menu.settings':           "Paramètres",

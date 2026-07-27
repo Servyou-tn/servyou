@@ -30,7 +30,8 @@ pre-#84 shell, so this is the only surviving record of the exact-match.
 | icon cluster | gap **16px** (`gap-4`) |
 | **icon button** (bell/user) | **40×40** (`h-10 w-10`), **radius 10** (`rounded-[10px]`), icon **20** (`h-5 w-5`); **no fill and no stroke** — an invisible hit box that paints only on hover |
 | **LangToggle** (NOT an icon button) | **93×32** segmented pill: `r=10`, fill `#f1f5f9` (`bg-surface-pill`), pad **4** (`p-1`); two **42×24 / 43×24** segments at `r=8`, label 14/21 Medium, active `#0f172a` on white, idle `#475569` |
-| topbar avatar | `AvatarFallback` fill **#cbd5e1** (`bg-border-strong` stopgap = Figma avatar fill); initials `text-text-primary` (#0f172a) `font-medium` (kept over Figma person-glyph; white initials fail AA ~1.3:1 on the grey) |
+| topbar avatar | **40×40** `rounded-full`; **transparent** ground with **brand-blue-600 (#1f5fe0) initials**, 14/20 semibold. Deliberately NOT Figma's `#cbd5e1` grey shape: that placeholder is the *empty* avatar variant, not the signed-in one — initials identify the person, a grey shape does not. (Row corrected 2026-07-27: it documented `#cbd5e1` with `#0f172a` initials and the page renders neither; the doc drifted at the F2 Avatar migration.) |
+| topbar avatar — badges | Figma layers a **10px green online dot** and a **16px blue verified check** on the avatar. Both are deliberately **absent**: there is no presence system and no verification flow, and rendering either would be inventing a metric (`servyou-phase-aware-features`). Revisit when those features land. |
 | display name | `text-body font-medium leading-snug text-text-primary` |
 
 > **Corrected 2026-07-27.** The icon-button row used to read "(bell/lang/user)", filing the language

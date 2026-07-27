@@ -365,3 +365,31 @@ Surfaced by the 375px gate run over the shell's blast radius. All three are **pr
   under `max-lg`), not a silent token swap.
 - **Trigger:** fold both instances into one pass — the component audit already scoped for
   `SharedSearchBar`.
+
+### `/categories/[slug]` renders empty while the DB has active listings
+- `http://localhost:3000/categories/marketing` renders **"Aucune annonce dans cette catégorie"**,
+  but the database reports **5 active `service_listings`** for that slug:
+  `select c.slug, count(sl.id) from categories c left join service_listings sl on
+  sl.category_id = c.id and sl.status = 'active' group by c.slug` → `marketing = 5`. The page
+  resolves the slug (it returns 200, not 404), then finds nothing.
+- **Pre-existing, not the services-delta branch.** Confirmed by stashing that branch's changes and
+  re-requesting the route on clean `main` — same empty state. The only change that branch makes near
+  this path is a `className` gap on `ListingResults`, which cannot affect a query.
+- **Consequence:** every `/categories/*` landing page is likely dead for services. It also means the
+  shared `ListingResults` service grid has **one consumer that cannot be exercised** — the P11 mobile
+  gap change was verified live on `/marche/services` and `/recherche` only (the consumer homepage is
+  auth-gated).
+- **Suspected area:** how `categories/[slug]/page.tsx` resolves the slug to the id(s) it passes to
+  `searchMarketplace` — parent-vs-child category id, or a type filter — but this was **not chased**;
+  the above is the observation, not a diagnosis.
+- **Trigger:** before any `/categories` rebuild, and before anyone relies on that route's numbers.
+
+### Filter-bar search field is 40px where Figma `611:45644` measures 44
+- The services filter bar renders its search field at `h-10` (**40px**) while the Figma search
+  measures **44**, taller than the 40px selects beside it. Row **P1** of
+  `docs/design/marche-services-deltas.md`.
+- **Deliberately not fixed.** It was built and then **cut by founder direction**: out of scope for
+  the services-delta PR, and 44 makes the search visually inconsistent with the 40px Catégorie /
+  Ville / Prix / Trier-par controls sharing its row. Reinstating it should come with a decision about
+  whether the *selects* move to 44 too, rather than a lone taller field.
+- **Trigger:** whenever the filter row is next revisited as a whole.
