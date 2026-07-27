@@ -2044,7 +2044,7 @@ export const ar: Record<string, string> = {
   'shell.topbar.search.default':          "بحث...",
   'shell.topbar.search.services':         "البحث في خدماتي...",
   'shell.topbar.search.missions':         "البحث عن مهام...",
-  'shell.topbar.search.products':         "البحث عن منتجات...",
+  'shell.topbar.search.products':         "البحث عن متجر أو منتج...",
   'shell.topbar.search.engagements':      "البحث في مهامي...",
   'shell.topbar.search.proposals':        "البحث في عروضي...",
   'shell.topbar.search.orders':           "البحث في مشترياتي...",

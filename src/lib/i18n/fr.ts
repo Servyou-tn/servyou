@@ -2014,7 +2014,7 @@ export const fr: Record<string, string> = {
   'shell.topbar.search.default':          "Rechercher...",
   'shell.topbar.search.services':         "Rechercher mes services...",
   'shell.topbar.search.missions':         "Rechercher des missions...",
-  'shell.topbar.search.products':         "Rechercher des produits...",
+  'shell.topbar.search.products':         "Rechercher une boutique, un produit...",
   'shell.topbar.search.engagements':      "Rechercher mes engagements...",
   'shell.topbar.search.proposals':        "Rechercher mes propositions...",
   'shell.topbar.search.orders':           "Rechercher mes commandes...",

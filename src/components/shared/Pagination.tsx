@@ -51,10 +51,13 @@ export function Pagination({
         })
       : null
 
+  // text-[13px]: the Figma caption measures 13 and the type scale jumps 12 (text-caption) → 14
+  // (text-body-sm), so there is no token for it. Off-token by measurement, not by guess — same
+  // treatment as rounded-[10px] elsewhere in the shell. Logged in docs/follow-ups.md.
+  const captionClass = 'text-[13px] leading-4 text-text-muted'
+
   if (totalPages <= 1) {
-    return caption ? (
-      <p className="text-center text-body-sm text-text-muted">{caption}</p>
-    ) : null
+    return caption ? <p className={cn('text-center', captionClass)}>{caption}</p> : null
   }
 
   const hrefFor = (target: number) => {
@@ -66,12 +69,17 @@ export function Pagination({
   const pageLabel = (n: number) =>
     t('search.pagination.pageOf', lang, { current: n, total: totalPages })
 
-  const cell = 'inline-flex h-9 items-center justify-center rounded-full text-sm transition-colors'
-  const numberIdle = cn(cell, 'min-w-9 px-2.5 font-medium text-text-muted hover:bg-surface-subtle', FOCUS_RING)
-  const numberActive = cn(cell, 'min-w-9 px-2.5 font-semibold bg-brand-blue-600 text-white')
-  const arrowEnabled = cn(cell, 'gap-1 px-3 font-medium text-text-primary hover:bg-surface-subtle', FOCUS_RING)
-  const arrowDisabled = cn(cell, 'gap-1 px-3 font-medium text-text-muted opacity-50 cursor-not-allowed pointer-events-none')
-  const dots = cn(cell, 'min-w-9 px-1 text-text-muted')
+  // Figma 188:14219: every cell is a 36×36 square at radius 8 (rounded-md — tokens.css sets
+  // --radius-md: 8px), NOT a pill. Idle cells carry a 1px border-subtle outline on white; the
+  // active cell is a solid brand-blue-600 fill. Numbers are semibold in both states.
+  const cell =
+    'inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md text-sm font-semibold transition-colors'
+  const numberIdle = cn(cell, 'border border-border-subtle bg-white text-text-secondary hover:bg-surface-subtle', FOCUS_RING)
+  const numberActive = cn(cell, 'bg-brand-blue-600 text-white')
+  // Arrows are icon-only 36×36 boxes with the same border treatment — no text label.
+  const arrowEnabled = cn(cell, 'border border-border-subtle bg-white text-text-secondary hover:bg-surface-subtle', FOCUS_RING)
+  const arrowDisabled = cn(cell, 'border border-border-subtle bg-white text-text-muted opacity-50 cursor-not-allowed pointer-events-none')
+  const dots = cn(cell, 'text-text-muted')
 
   const prevDisabled = current <= 1
   const nextDisabled = current >= totalPages
@@ -101,40 +109,39 @@ export function Pagination({
     })
 
   return (
-    <div className="flex flex-col items-center gap-2">
-      {caption && <p className="text-body-sm text-text-muted">{caption}</p>}
+    // Figma stacks the control VERTICALLY at gap 10: the pages row first, the caption beneath it.
+    <div className="flex flex-col items-center gap-2.5">
       <nav
         aria-label={t('search.pagination.label', lang)}
-        className="flex items-center justify-center gap-1.5"
+        className="flex items-center justify-center gap-1"
       >
+        {/* Prev/next are icon-only in Figma — the visible text label is gone, so aria-label is
+            now the sole accessible name (it already was on mobile, where the label was hidden). */}
         {prevDisabled ? (
           <span className={arrowDisabled} aria-disabled="true" aria-label={t('search.pagination.prev', lang)}>
             <ChevronLeft className="h-4 w-4" aria-hidden="true" />
-            <span className="hidden sm:inline">{t('search.pagination.prev', lang)}</span>
           </span>
         ) : (
           <Link href={hrefFor(current - 1)} rel="prev" className={arrowEnabled} aria-label={t('search.pagination.prev', lang)}>
             <ChevronLeft className="h-4 w-4" aria-hidden="true" />
-            <span className="hidden sm:inline">{t('search.pagination.prev', lang)}</span>
           </Link>
         )}
 
         {/* Desktop window (±1) on >=sm; tighter first·current·last on mobile so it fits 375px. */}
-        <div className="hidden items-center gap-1.5 sm:flex">{numbers(1)}</div>
-        <div className="flex items-center gap-1.5 sm:hidden">{numbers(0)}</div>
+        <div className="hidden items-center gap-1 sm:flex">{numbers(1)}</div>
+        <div className="flex items-center gap-1 sm:hidden">{numbers(0)}</div>
 
         {nextDisabled ? (
           <span className={arrowDisabled} aria-disabled="true" aria-label={t('search.pagination.next', lang)}>
-            <span className="hidden sm:inline">{t('search.pagination.next', lang)}</span>
             <ChevronRight className="h-4 w-4" aria-hidden="true" />
           </span>
         ) : (
           <Link href={hrefFor(current + 1)} rel="next" className={arrowEnabled} aria-label={t('search.pagination.next', lang)}>
-            <span className="hidden sm:inline">{t('search.pagination.next', lang)}</span>
             <ChevronRight className="h-4 w-4" aria-hidden="true" />
           </Link>
         )}
       </nav>
+      {caption && <p className={captionClass}>{caption}</p>}
     </div>
   )
 }
