@@ -11,7 +11,11 @@ import { GOVERNORATES } from '@/lib/tunisia-governorates'
 // on INSERT; the lifecycle trigger only governs UPDATE, so the initial insert passes.
 // The orders table has no total / governorate / timeframe / budget columns, so (per the
 // agreed plan) the governorate is folded into delivery_address and the service timeframe/
-// budget into buyer_note. Validation re-runs server-side — the client checks are UX only.
+// budget into buyer_note. A service request also fills delivery_phone — for a service that
+// column carries the buyer's chosen contact number, not a delivery address.
+// The buyer_note fold is a two-way contract with parseServiceBuyerNote (lib/marche/
+// order-detail.ts); src/__tests__/service-buyer-note-roundtrip.test.ts guards it.
+// Validation re-runs server-side — the client checks are UX only.
 
 export type RequestResult = { ok: true; orderId: string } | { ok: false; error: string }
 
@@ -107,6 +111,8 @@ export type ServiceRequestInput = {
   description: string
   timeframe: string
   budget: string
+  /** Contact number for THIS request — prefilled from profiles.phone, editable. */
+  phone: string
 }
 
 const MIN_DESCRIPTION = 20
@@ -140,6 +146,13 @@ export async function submitServiceRequest(input: ServiceRequestInput): Promise<
     return { ok: false, error: t('demander.toast.error', lang) }
   }
 
+  // Per-order contact choice, not the account phone: the buyer picks which number this
+  // freelancer gets. Stored on the order (delivery_phone) so the choice never leaks into
+  // the next request. Required — a buyer with no profiles.phone is captured here.
+  if (!isValidPhone(input.phone)) {
+    return { ok: false, error: t('demander.error.phoneFormat', lang) }
+  }
+
   const timeframe = input.timeframe.trim()
   const budgetRaw = input.budget.trim()
   let budgetNum: number | null = null
@@ -163,6 +176,7 @@ export async function submitServiceRequest(input: ServiceRequestInput): Promise<
       service_listing_id: input.serviceId,
       product_id: null,
       status: 'pending',
+      delivery_phone: normalizePhone(input.phone),
       buyer_note: note,
     })
     .select('id')

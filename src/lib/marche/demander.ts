@@ -33,6 +33,16 @@ export type ServiceRequestTarget = {
   title: string
   startingPrice: number | null
   deliveryTime: string | null
+  /** Summary-panel chips: the category first, then the freelancer's own tags. */
+  category: string | null
+  tags: string[]
+  /**
+   * The SELLER's instruction template (service_listings.buyer_briefing) — "what the client
+   * must provide before work begins", authored in H6/H7. E1 renders it as guidance above the
+   * description field, never as an input. Null on 20 of 21 rows today, so the null path is
+   * the common one.
+   */
+  buyerBriefing: string | null
   freelancer: { name: string; headline: string | null; city: string | null }
 }
 
@@ -55,6 +65,9 @@ type ServiceRow = {
   title: string
   starting_price_tnd: number | string | null
   delivery_time: string | null
+  buyer_briefing: string | null
+  tags: string[] | null
+  categories: { name_fr: string } | { name_fr: string }[] | null
   freelancer_profiles:
     | { profile_id: string | null; city: string | null; headline: string | null }
     | { profile_id: string | null; city: string | null; headline: string | null }[]
@@ -97,7 +110,8 @@ export const getRequestTarget = cache(async (id: string): Promise<RequestTarget 
   const { data: service, error: sErr } = await supabase
     .from('service_listings')
     .select(
-      `id, title, starting_price_tnd, delivery_time, status,
+      `id, title, starting_price_tnd, delivery_time, status, buyer_briefing, tags,
+       categories ( name_fr ),
        freelancer_profiles!inner ( profile_id, city, headline, admin_hidden_at )`,
     )
     .eq('id', id)
@@ -127,6 +141,9 @@ export const getRequestTarget = cache(async (id: string): Promise<RequestTarget 
         title: row.title,
         startingPrice: row.starting_price_tnd != null ? Number(row.starting_price_tnd) : null,
         deliveryTime: row.delivery_time ?? null,
+        category: one(row.categories)?.name_fr ?? null,
+        tags: row.tags ?? [],
+        buyerBriefing: row.buyer_briefing ?? null,
         freelancer: { name, headline: fp?.headline ?? null, city: fp?.city ?? null },
       },
     }
@@ -134,3 +151,20 @@ export const getRequestTarget = cache(async (id: string): Promise<RequestTarget 
 
   return null
 })
+
+/**
+ * The signed-in buyer's own phone, for prefilling E1's contact field. `profiles` is
+ * owner-only read, so this resolves only for the caller's own row and returns null for a
+ * buyer who has never set one — in which case the field renders empty and required, and the
+ * number they type is captured on the order (not written back to the profile).
+ */
+export async function getBuyerPhone(userId: string): Promise<string | null> {
+  const supabase = await createClient()
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('phone')
+    .eq('id', userId)
+    .maybeSingle()
+  if (error) console.error('[demander] buyer phone fetch error:', error.message, error.code, error.details)
+  return data?.phone ?? null
+}

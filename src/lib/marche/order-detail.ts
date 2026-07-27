@@ -81,6 +81,10 @@ export type OrderDetail = {
   deliveryName: string | null
   deliveryStreet: string | null
   deliveryGovernorate: string | null
+  /**
+   * Product: the delivery contact. Service: the number the buyer chose for THIS request
+   * (E1 prefills profiles.phone but the buyer may override it), so it is set on both types.
+   */
   deliveryPhone: string | null
   buyerNote: string | null
   // Service request details (null for products), unfolded from buyer_note.
@@ -224,7 +228,8 @@ export const getOrderDetail = cache(
       deliveryName: null,
       deliveryStreet: null,
       deliveryGovernorate: null,
-      deliveryPhone: null,
+      // Service orders carry a contact number, not an address (E1 writes it).
+      deliveryPhone: row.delivery_phone,
       buyerNote: row.buyer_note,
       serviceDescription: parsed.description,
       serviceTimeframe: parsed.timeframe,
