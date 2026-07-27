@@ -11,13 +11,16 @@ import { t, type Lang } from '@/lib/i18n'
 // Static markup — no client interaction — so this stays a server component.
 export function ServicesLensToggle({ lang }: { lang: Lang }) {
   return (
+    // self-start: the track is already inline-flex, but its parent in ServicesBrowsePage is a
+    // flex-col, whose default align-items:stretch widened it to the full content row (Figma
+    // 611:45644 hugs its segments — delta S5). inline-flex alone cannot win against stretch.
     <div
       aria-label={t('services.lens.ariaLabel', lang)}
-      className="inline-flex items-center rounded-[10px] bg-surface-pill p-1"
+      className="inline-flex items-center self-start rounded-[10px] bg-surface-pill p-1"
     >
       <span
         aria-current="page"
-        className="inline-flex h-9 items-center gap-2 rounded-lg bg-white px-3 text-body-sm font-medium text-text-primary shadow-sm"
+        className="inline-flex h-9 items-center gap-1 rounded-md bg-white px-3 text-body-sm font-medium text-text-primary shadow-sm"
       >
         <Briefcase className="h-4 w-4" aria-hidden="true" />
         {t('services.lens.services', lang)}
@@ -27,7 +30,7 @@ export function ServicesLensToggle({ lang }: { lang: Lang }) {
         disabled
         aria-disabled="true"
         title={t('services.lens.soon', lang)}
-        className="inline-flex h-9 cursor-not-allowed items-center gap-2 rounded-lg px-3 text-body-sm font-medium text-text-secondary"
+        className="inline-flex h-9 cursor-not-allowed items-center gap-1 rounded-md px-3 text-body-sm font-medium text-text-secondary"
       >
         <Users className="h-4 w-4" aria-hidden="true" />
         {t('services.lens.freelances', lang)}

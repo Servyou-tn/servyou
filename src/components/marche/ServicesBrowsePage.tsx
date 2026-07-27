@@ -14,7 +14,7 @@ import { parseSearchParams } from '@/lib/search/search-params'
 import { searchMarketplace } from '@/lib/search/search-marketplace'
 import { getLang } from '@/lib/i18n/server'
 import { t } from '@/lib/i18n'
-import { CARD_SHADOW, FOCUS_RING } from '@/components/layout/styles'
+import { FOCUS_RING } from '@/components/layout/styles'
 
 const BASE = '/marche/services'
 // The services grid is 3-up × 4 rows in the Figma (611:45637 caption "Affichage 1 à 12 sur N"),
@@ -77,6 +77,13 @@ export async function ServicesBrowsePage({
     <AppShell user={topBarUser}>
       <div className="flex flex-col gap-6">
         <div className="flex flex-col gap-4">
+          {/* Mobile page title (Figma 621:49740 mobile-header, delta S6). Desktop takes its
+              identity from the sidebar's active nav item, so this is below-lg only. Reuses the
+              sidebar's own key rather than adding a second string for the same word. */}
+          <h1 className="text-xl font-semibold text-text-primary lg:hidden">
+            {t('shell.sidebar.marketplace', lang)}
+          </h1>
+
           <ServicesLensToggle lang={lang} />
 
           {/* Desktop: the top filter bar. Mobile: the existing bottom-sheet trigger. */}
@@ -105,24 +112,29 @@ export async function ServicesBrowsePage({
         </div>
 
         {isEmpty ? (
-          <div className={`rounded-2xl bg-white p-12 text-center ${CARD_SHADOW}`}>
-            <div className="mx-auto max-w-md">
-              <BriefcaseIcon className="mx-auto h-10 w-10 text-icon-muted" aria-hidden="true" />
-              <p className="mt-4 text-base font-semibold text-text-primary">
-                {t(hasFilters ? 'search.empty.filtered' : 'marche.empty.services', lang)}
+          // Empty state — Figma 611:47916 (deltas S3, S4, P6-P10, C5, T2-T4). A 1px border-subtle
+          // stroke, NOT the CARD_SHADOW drop shadow it used to carry; pad 48/40; a 112px tinted
+          // circle around the 64px glyph, where it used to be a bare 40px icon.
+          <div className="flex flex-col items-center gap-5 rounded-2xl border border-border-subtle bg-white px-10 py-12 text-center">
+            <span className="flex h-28 w-28 items-center justify-center rounded-full bg-surface-pill">
+              <BriefcaseIcon className="h-16 w-16 text-icon-muted" aria-hidden="true" />
+            </span>
+            <div className="flex max-w-md flex-col gap-2">
+              <p className="text-xl font-semibold text-text-primary">
+                {t(hasFilters ? 'services.empty.filtered' : 'marche.empty.services', lang)}
               </p>
-              <p className="mt-2 text-body-sm text-text-muted">
-                {t(hasFilters ? 'search.empty.subtitle' : 'marche.empty.services_subtitle', lang)}
+              <p className="text-base text-text-muted">
+                {t(hasFilters ? 'services.empty.filteredSubtitle' : 'marche.empty.services_subtitle', lang)}
               </p>
-              {hasFilters && (
-                <Link
-                  href={clearFiltersHref}
-                  className={`mt-5 inline-flex items-center rounded-full bg-brand-blue-600 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-brand-blue-600/90 ${FOCUS_RING}`}
-                >
-                  {t('services.filters.clearAll', lang)}
-                </Link>
-              )}
             </div>
+            {hasFilters && (
+              <Link
+                href={clearFiltersHref}
+                className={`inline-flex h-10 items-center gap-2 rounded-[10px] bg-brand-blue-600 px-4 text-base font-semibold text-white transition-colors hover:bg-brand-blue-600/90 ${FOCUS_RING}`}
+              >
+                {t('services.empty.resetFilters', lang)}
+              </Link>
+            )}
           </div>
         ) : (
           <>

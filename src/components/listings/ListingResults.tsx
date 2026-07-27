@@ -20,7 +20,10 @@ export function ListingResults(props: Props) {
   // grid of vertical v3.7 cards (Figma 611:45637 — three columns on desktop).
   if (props.type === 'service') {
     return (
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      // gap-4 below sm: the 375 frame (621:49740) stacks its cards at 16, while the desktop grid
+      // (611:45637) is 24 — one responsive gap serves both (delta P11). Shared with /recherche,
+      // /categories/[slug] and the consumer homepage, which all gain the tighter mobile stack.
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
         {props.items.map((s, i) => (
           <BlurFade key={s.id} delay={i * 0.05} duration={0.2} {...fade} inView>
             <ServiceListingCard service={s} />
