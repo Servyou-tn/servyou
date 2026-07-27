@@ -33,8 +33,19 @@ import { STATUS_PILL } from './order-status'
 // Controls are 40px, radius 10, border-strong, 16px inset (Figma). `rounded-[10px]` is
 // deliberate: --radius-lg IS 10px in tokens.css but is not wired into @theme, so Tailwind's
 // `rounded-lg` still resolves to its built-in 8px (logged radius follow-up).
+//
+// WIDTH IS CALL-SITE BEHAVIOUR, NOT A FIGMA VALUE. 709:59671 / 709:59672 are authored 148 wide
+// against the PLACEHOLDER text ("Statut", "Trier par"); these triggers show the SELECTED value
+// instead, and "Tous les statuts" needs ~112px on one line against the 90px a 148 control
+// leaves after px-4 + the chevron + the gap. Pinned at 148 the label wrapped to two lines
+// (measured 88×42 inside a 40px control) because nothing stopped it: a hug with no ceiling
+// never truncates, since truncation needs a width to truncate against.
+// Resolution, same as ServicesFilterBar: the label carries `truncate` (its `white-space:
+// nowrap` is the part that actually prevents the wrap) + `min-w-0` so it can shrink inside the
+// flex row, and the trigger hugs its content up to a ceiling. The ceiling is sized so every
+// real label fits on one line and only pathological content truncates.
 const TRIGGER =
-  'inline-flex h-10 items-center justify-between gap-2 rounded-[10px] border border-border-strong bg-white px-4 text-body-sm transition-colors hover:border-text-muted'
+  'inline-flex h-10 shrink-0 items-center justify-between gap-2 rounded-[10px] border border-border-strong bg-white px-4 text-body-sm transition-colors hover:border-text-muted'
 const MENU_CONTENT = 'rounded-xl border border-border-subtle bg-white p-1 text-text-primary shadow-lg'
 const MENU_ITEM =
   'cursor-pointer rounded-lg text-body-sm text-text-primary focus:bg-surface-subtle focus:text-text-primary'
@@ -90,8 +101,10 @@ export function OrdersFilterBar({
       <div className="flex items-center gap-2 lg:gap-3">
         {/* Statut */}
         <DropdownMenu>
-          <DropdownMenuTrigger className={`${TRIGGER} ${FOCUS_RING} flex-1 lg:w-37 lg:flex-none`}>
-            <span className={statut === 'all' ? 'text-text-muted' : 'text-text-primary'}>{statusLabel}</span>
+          <DropdownMenuTrigger className={`${TRIGGER} ${FOCUS_RING} min-w-0 flex-1 lg:max-w-56 lg:flex-none`}>
+            <span className={`min-w-0 truncate ${statut === 'all' ? 'text-text-muted' : 'text-text-primary'}`}>
+              {statusLabel}
+            </span>
             <ChevronDown className="h-[18px] w-[18px] shrink-0 text-text-muted" aria-hidden="true" />
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start" className={MENU_CONTENT}>
@@ -113,8 +126,8 @@ export function OrdersFilterBar({
 
         {/* Trier par */}
         <DropdownMenu>
-          <DropdownMenuTrigger className={`${TRIGGER} ${FOCUS_RING} flex-1 lg:w-37 lg:flex-none`}>
-            <span className="text-text-primary">{t(`mesCommandes.sort.${tri}`, lang)}</span>
+          <DropdownMenuTrigger className={`${TRIGGER} ${FOCUS_RING} min-w-0 flex-1 lg:max-w-56 lg:flex-none`}>
+            <span className="min-w-0 truncate text-text-primary">{t(`mesCommandes.sort.${tri}`, lang)}</span>
             <ChevronDown className="h-[18px] w-[18px] shrink-0 text-text-muted" aria-hidden="true" />
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className={MENU_CONTENT}>

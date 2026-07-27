@@ -128,6 +128,16 @@
   }
 }
 
+/* Reserve the scrollbar gutter so a page that grows past the viewport does not reflow the
+   whole layout sideways. Measured on /mes-commandes: expanding one accordion row introduced a
+   vertical scrollbar and moved EVERY horizontal edge 15px left — the filter search field's
+   right edge went 1088 → 1073, the topbar's 1002 → 987. Expanding a row must change nothing
+   outside that row. `stable` reserves the gutter whether or not the scrollbar is showing, so
+   short and tall pages agree; it is set on the scrolling element (html), not body. */
+html {
+  scrollbar-gutter: stable;
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
