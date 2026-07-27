@@ -416,3 +416,22 @@ All three are founder-decided on the D2 build (`feat/d2-service-detail`, Figma `
   mixed and a freelancer-scoped heading would be factually wrong for most rows. Ships as the
   neutral **"Services similaires"** (`serviceDetail.related`, FR + AR). If the rule ever becomes
   freelancer-only, the Figma heading becomes correct again and this should be revisited.
+
+### `FavoriteButton` is a text glyph where the design wants an icon button
+- `src/components/FavoriteButton.tsx` renders a **`p-2 rounded-full text-xl` button containing a
+  `♡` / `♥` text glyph** (and a `text-gray-300 ♡` in its loading state). Figma wants a **20px
+  stroked icon inside a 44px box**: on D2 the buy box's `icon-heart-btn` is `147×44`, `r=10`,
+  stroke `1 #cbd5e1` on white, holding a `20×20` icon at stroke `2 #64748b` (`666:55479`).
+- A **text glyph is not a substitute for an icon**: it inherits font metrics rather than a fixed
+  box, so it cannot be sized to 20px reliably, its optical weight differs from every other
+  `lucide-react` icon in the app, and it renders differently across platforms and fonts.
+- **Pre-existing and unrelated** to the D2 width collapse fixed in `fix/d2-panel-deltas` — that
+  was a grid-column issue. Confirmed the glyph renders identically in both auth states, so it is
+  not an auth-dependent path either.
+- **Blast radius — 3 consumers**, so this is not a D2-local fix: `ServiceDetail.tsx` (the D2 buy
+  box), `ServiceListingCard.tsx` and `ProductListingCard.tsx` (the card corner hearts, which are
+  a different size and treatment again). A per-page patch would fork the component three ways.
+- **Fix as part of a proper icon-button pass across the app**, alongside the other two open
+  icon-button items already logged here (the `LanguageToggle` 24px touch target, and the F3
+  invisible hit-area pattern) — they share a target shape and should land together.
+- **Trigger:** the icon-button / touch-target pass, or whenever `FavoriteButton` is next opened.

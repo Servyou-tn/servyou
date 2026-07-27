@@ -155,7 +155,13 @@ export function ServiceDetail({
         <span className="text-text-secondary">{service.title}</span>
       </nav>
 
-      <div className="flex flex-col gap-5 lg:grid lg:grid-cols-[750px_minmax(0,1fr)] lg:items-start lg:gap-8">
+      {/* Columns are minmax(0,750px) + a FIXED 354, not a fixed 750 + 1fr. Figma 666:55479 splits
+          1136 as MAIN 750 / SIDEBAR 354, and a hard 750 reproduces that at exactly 1440 — but it
+          cannot shrink, so every pixel lost below 1440 came out of the panel: 354 → 280 at 1366
+          (where the CTA label wrapped to two lines inside its fixed h-12), → 194 at 1280, → 52 at
+          1100, all inside the lg range. Pinning the panel and letting MAIN reflow keeps 750/354
+          exact at 1440 and keeps the panel intact everywhere below it. */}
+      <div className="flex flex-col gap-5 lg:grid lg:grid-cols-[minmax(0,750px)_354px] lg:items-start lg:gap-8">
         {/* titleBlock — 28/36 on desktop, 22/28 on mobile, brand-blue-800. */}
         <div className="order-1 flex flex-col gap-3 lg:order-none lg:col-start-1 lg:row-start-1">
           <h1 className="text-[22px] font-semibold leading-7 text-brand-blue-800 lg:text-[28px] lg:leading-9">
