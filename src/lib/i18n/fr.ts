@@ -1013,6 +1013,28 @@ export const fr: Record<string, string> = {
   'services.empty.filtered':         "Aucun service trouvé",
   'services.empty.filteredSubtitle': "Essayez d'élargir vos filtres ou de réinitialiser votre recherche.",
   'services.empty.resetFilters':     "Réinitialiser les filtres",
+  // D2 — service detail (Figma 666:55479 / 668:55920).
+  'serviceDetail.breadcrumb.home':   "Accueil",
+  'serviceDetail.breadcrumb.services': "Services",
+  'serviceDetail.showMore':          "Voir plus",
+  'serviceDetail.included':          "Ce qui est inclus",
+  'serviceDetail.mode.title':        "Mode de prestation",
+  'serviceDetail.mode.remote':       "À distance",
+  'serviceDetail.mode.onsite':       "Sur place",
+  'serviceDetail.mode.hybrid':       "Hybride",
+  'serviceDetail.priceFrom':         "À partir de",
+  'serviceDetail.deliveredIn':       "Livré en {time}",
+  'serviceDetail.cta':               "Demander ce service",
+  'serviceDetail.viewProfile':       "Voir profil",
+  'serviceDetail.share':             "Copier le lien",
+  'serviceDetail.codNote':           "💬 Paiement à la livraison — négocié directement avec le freelance.",
+  // Figma reads "Autres services de {freelancer}", but the approved rule is category-first with
+  // a newest-active fallback, so the set is mixed and a freelancer-scoped heading would be wrong
+  // for most rows. Neutral heading instead — see the PR body.
+  'serviceDetail.related':           "Services similaires",
+  'serviceDetail.reviews':           "Avis",
+  'serviceDetail.reviewsEmpty':      "Les avis seront bientôt disponibles",
+  'serviceDetail.report':            "Signaler ce service",
   'services.filters.removeFilter':   "Retirer le filtre {filter}",
   'services.sort.label':             "Trier par",
   'services.sort.recent':            "Plus récents",

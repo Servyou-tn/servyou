@@ -1,26 +1,46 @@
 import type { Metadata } from 'next'
-import { Briefcase } from 'lucide-react'
+import { notFound } from 'next/navigation'
 import { AppShell } from '@/components/shell/AppShell'
-import { ComingSoon } from '@/components/shell/ComingSoon'
+import { ServiceDetail } from '@/components/marche/ServiceDetail'
+import { getServiceDetail, getRelatedServices } from '@/lib/marche/service-detail'
 import { getShellUser } from '@/lib/marche/shell-user'
 import { getLang } from '@/lib/i18n/server'
-import { t } from '@/lib/i18n'
 
-export const metadata: Metadata = { title: 'Service — Servyou' }
+// D2 — service detail, rebuilt from Figma 666:55479 (1440) / 668:55920 (375). Replaces the
+// ComingSoon stub left by chore/strip-legacy-consumer-ui, which ignored the [id] entirely.
+// Public route: nullable shell user, no auth gate. getServiceDetail already enforces
+// moderation (status='active' AND the service's own admin_hidden_at IS NULL AND the
+// freelancer's admin_hidden_at IS NULL via the !inner cascade), so a hidden service 404s
+// rather than leaking.
 
-// Legacy service-detail UI stripped (chore/strip-legacy-consumer-ui). Rebuilt from Figma
-// (D2) in a later PR; the route resolves to an honest placeholder in the v2 shell. Public —
-// nullable shell user, no auth gate. The `[id]` segment is ignored by the stub.
-export default async function ServicePage() {
-  const shell = await getShellUser()
-  const lang = await getLang()
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>
+}): Promise<Metadata> {
+  const { id } = await params
+  const service = await getServiceDetail(id)
+  return { title: service ? `${service.title} — Servyou` : 'Service — Servyou' }
+}
+
+export default async function ServicePage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
+  const service = await getServiceDetail(id)
+  if (!service) notFound()
+
+  const [shell, lang, related] = await Promise.all([
+    getShellUser(),
+    getLang(),
+    getRelatedServices({
+      serviceId: service.id,
+      freelancerProfileId: service.freelancerProfileId,
+      categoryId: service.categoryId,
+    }),
+  ])
+
   return (
     <AppShell user={shell?.topBarUser ?? null}>
-      <ComingSoon
-        icon={<Briefcase className="h-12 w-12" aria-hidden="true" />}
-        title={t('placeholders.comingSoon.title', lang)}
-        description={t('placeholders.comingSoon.marketplace', lang)}
-      />
+      <ServiceDetail service={service} related={related} lang={lang} />
     </AppShell>
   )
 }
