@@ -4,7 +4,7 @@ import { Bell } from 'lucide-react'
 import { useLang } from '@/components/LangProvider'
 import { t } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
-import { interactiveSurface } from '@/components/ui/interactive-surface'
+import { SURFACE_HOVER, FOCUS_RING } from '@/components/ui/interactive-surface'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -23,9 +23,14 @@ export function TopbarNotifications() {
           type="button"
           aria-label={t('shell.topbar.notifications.title', lang)}
           className={cn(
-            // Figma 611:45640 IconButton: 40×40, radius 10, icon 20.
+            // Figma 611:45640 IconButton: 40×40, radius 10, icon 20 — and NO fill and NO stroke;
+            // it is an invisible hit box that only paints on hover. interactiveSurface() was wrong
+            // here twice over: it carries bg-white + border + a drop shadow (Figma has none), and
+            // its h-11 beat the h-10 above in the cn() merge, so the bell measured 40×44 instead of
+            // 40×40. Hover + focus only, matching the sibling user icon in TopbarUserMenu.
             'relative inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-[10px]',
-            interactiveSurface(false),
+            SURFACE_HOVER,
+            FOCUS_RING,
           )}
         >
           <Bell className="h-5 w-5 text-text-muted" aria-hidden="true" />
