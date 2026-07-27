@@ -84,9 +84,12 @@ export async function getMyOrders(userId: string): Promise<MyOrder[]> {
     .eq('buyer_id', userId)
     .order('created_at', { ascending: false })
 
+  // A failed query must NEVER degrade to "you have no orders" — that is the worst possible
+  // failure on this page, and the file header above already promised it would not happen.
+  // Throwing surfaces it (error boundary) instead of silently rendering an empty list.
   if (error) {
-    console.error('[my-data] orders fetch error:', error)
-    return []
+    console.error('[my-data] orders fetch error:', error.message, error.code, error.details)
+    throw new Error(`orders fetch failed: ${error.message}`)
   }
 
   const rows = (data ?? []) as unknown as OrderRow[]
