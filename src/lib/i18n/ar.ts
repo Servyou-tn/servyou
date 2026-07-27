@@ -1034,6 +1034,8 @@ export const ar: Record<string, string> = {
   'services.lens.soon':              "قريباً",
   'services.filters.searchPlaceholder': "ابحث عن خدمة…",
   'services.filters.categoryAll':    "كل الفئات",
+  'services.filters.ville':          "المدينة",
+  'services.filters.cityAll':        "كل المدن",
   'services.filters.priceTrigger':   "السعر",
   'services.filters.currency':       "د.ت",
   'services.filters.clearAll':       "مسح الكل",
@@ -1700,6 +1702,7 @@ export const ar: Record<string, string> = {
   'search.pagination.prev':      "السابق",
   'search.pagination.next':      "التالي",
   'search.pagination.pageOf':    "صفحة {current} من {total}",
+  'search.pagination.showing':   "عرض {start} إلى {end} من {total}",
   // Bare /recherche landing block (translated from the finished French; Phase 8 review).
   'search.landing.title':        "عمّ تبحث؟",
   'search.landing.subtitle':     "اكتب بحثك في الشريط أعلاه، أو تصفّح أسواقنا مباشرة.",

@@ -41,12 +41,15 @@ export function TopbarUserMenu({ user, role }: { user: TopBarUser | null; role: 
         href="/connexion"
         aria-label={t('nav.login', lang)}
         className={cn(
-          'inline-flex w-11 shrink-0 items-center justify-center rounded-full',
+          // Matches the bell IconButton (Figma 40×40, radius 10) for a consistent icon cluster.
+          'relative inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-[10px]',
           SURFACE_HOVER,
           FOCUS_RING,
         )}
       >
         <User className="h-5 w-5 text-text-primary" aria-hidden="true" />
+        {/* Mobile touch-target: 40px box → 44px hit region (the F3 Button pattern). */}
+        <span aria-hidden="true" className="absolute -inset-0.5" />
       </Link>
     )
   }
@@ -65,7 +68,9 @@ export function TopbarUserMenu({ user, role }: { user: TopBarUser | null; role: 
           >
             <Avatar size="md" initials={getInitials(user.full_name || user.email)} />
             <span className="hidden text-start md:flex md:flex-col md:leading-tight">
-              <span className="text-body-sm font-medium text-text-primary">{displayName}</span>
+              <span className="text-body font-medium leading-snug text-text-primary">
+                {displayName}
+              </span>
               <span className="text-caption text-text-muted">{t(ROLE_KEY[role], lang)}</span>
             </span>
             <ChevronDown className="hidden h-4 w-4 shrink-0 text-text-muted md:block" aria-hidden="true" />

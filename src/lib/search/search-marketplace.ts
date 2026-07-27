@@ -4,6 +4,7 @@ import type { ServiceListing } from '@/components/listings/ServiceListingCard'
 import {
   compareRanked,
   paginate,
+  PER_PAGE,
   pickCategoryIds,
   scoreListing,
   stripAccents,
@@ -56,6 +57,7 @@ export type SearchOutcome = {
   totalCount: number // total matches of the active type (drives the count + pagination)
   totalPages: number
   page: number // the clamped, in-range page actually shown
+  perPage: number // page size actually applied (a surface may override the shared default)
 }
 
 // ── Row shapes + mapping (mirror lib/marche/data.ts) ────────────────────────────
@@ -114,6 +116,7 @@ type ServiceRow = {
 // ── Filter application (shared by full-fetch and head-count queries) ─────────────
 
 type AnyQuery = {
+  eq: (col: string, v: string | number) => AnyQuery
   in: (col: string, vals: readonly (string | number)[]) => AnyQuery
   gte: (col: string, v: number) => AnyQuery
   lte: (col: string, v: number) => AnyQuery
@@ -156,6 +159,13 @@ function applyServiceFilters<Q extends AnyQuery>(
 ): Q {
   let out = applySearch(q, params.q)
   if (categoryIds) out = out.in('category_id', categoryIds) as Q
+  // City filter — city lives on freelancer_profiles, so the predicate is applied THROUGH the
+  // services→freelancer embed, and only when a city is actually selected. It is never a gate:
+  // with no ?ville=, no city clause is added at all, so listings whose freelancer has a blank
+  // city still appear. (The embed below is `!inner`, but that joins on the FK, not on `city` —
+  // and `service_listings.freelancer_profile_id` is NOT NULL, so the join itself can never drop
+  // a row. Verified against the live catalog: 21 active listings → 21 joined, 0 orphans.)
+  if (params.ville) out = out.eq('freelancer_profiles.city', params.ville) as Q
   if (params.prixMin != null) out = out.gte('starting_price_tnd', params.prixMin) as Q
   if (params.prixMax != null) out = out.lte('starting_price_tnd', params.prixMax) as Q
   return out
@@ -275,7 +285,7 @@ async function fetchServices(
 
 export async function searchMarketplace(
   params: SearchParams,
-  opts: { categoryId?: string } = {},
+  opts: { categoryId?: string; perPage?: number } = {},
 ): Promise<SearchOutcome> {
   const supabase = await createClient()
 
@@ -300,8 +310,9 @@ export async function searchMarketplace(
       ? await fetchProducts(supabase, params, categoryIds)
       : await fetchServices(supabase, params, categoryIds)
 
+  const perPage = opts.perPage ?? PER_PAGE
   const total = items.length
-  const { totalPages, safePage, start, end } = paginate(total, params.page)
+  const { totalPages, safePage, start, end } = paginate(total, params.page, perPage)
   const slice = items.slice(start, end)
 
   return {
@@ -311,5 +322,6 @@ export async function searchMarketplace(
     totalCount: total,
     totalPages,
     page: safePage,
+    perPage,
   }
 }

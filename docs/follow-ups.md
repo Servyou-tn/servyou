@@ -234,3 +234,134 @@ Spot-checking the F3 stories locally on **Windows** headless Chrome, individual 
 
 ### Four separate reads of the SAME current-user profile per render (the real perf item — F4b)
 `getShellUser` (`lib/marche/shell-user.ts:18`), `getDashboardProfile` (`lib/dashboard/data.ts:26`), `getCurrentProfile` (`lib/marche/mon-compte.ts:28`), and the homepage (`app/page.tsx:37`) each issue their **own** `.select(…seller_type…)` against `profiles` for the signed-in user — up to **four round-trips for one profile per render**. This is the genuine redundancy F4a did **not** touch: F4a centralized the role *derivation* (9 sites → the `@/lib/roles` resolver), not the *fetch*. Two of the four are `cache()`'d within a request, but across the shell + page + rail they don't dedupe. **Why deferred:** unifying the current-user profile read belongs with the two-shell consolidation. **This is F4b scope** — recorded now so it survives if F4b slips. **Fix idea:** one `cache()`'d current-user profile reader the shell + page + rail all call; and when a role-ONLY need first appears, add `getUserRole()` to `@/lib/roles` (the pattern is documented in that file) rather than an 8th ad-hoc select.
+
+## /marche/services Phase 2 — follow-ups (from feat/marche-services-rebuild, 2026-07-26)
+
+### 🔴 The Figma radius scale is in `:root` but NOT in `@theme` — `rounded-lg` is still 8px
+- **What:** `src/styles/tokens.css` (generated from Figma) defines the canonical radius ramp,
+  including **`--radius-lg: 10px`**, but it emits them into **`:root`**. Tailwind v4 only turns a
+  custom property into a utility when it is declared inside **`@theme`**, and `globals.css`'s
+  `@theme inline` block adds only `--radius-card` / `--radius-pill` — its comment says so
+  explicitly: *"Semantic spacing/radius/shadow aliases (distinct names; **no built-in scale
+  overridden**)"*. So **`rounded-lg` still resolves to Tailwind's built-in 8px**, and the DS token
+  at 10px is unreachable from a class name. Same mismatch for `--radius-md` (8px token vs. the
+  built-in `rounded-md` 6px).
+- **Consequence:** every surface the Figma measures at radius 10 — sidebar nav items, the topbar
+  search + icon buttons, the filter-bar controls, the lens-toggle track, the card CTA — must ship
+  `rounded-[10px]`. Swapping those to `rounded-lg` looks like a free token cleanup and is actually
+  a silent **2px regression**; nothing catches it (the boundary lint gates colour, not dimension,
+  and the build stays green). This is the `docs/design/marche-services-measurements.md` gap #1,
+  now diagnosed to its root cause.
+- **Why deferred:** the fix — wiring the generated radius scale into `@theme` (or adding a
+  distinct-name alias such as `--radius-control: 10px`, following the `--radius-card` precedent) —
+  **retunes 34 existing `rounded-lg` call sites by +2px**, including the F3 `Button` primitive,
+  whose VRT baselines are committed at the 0.05% threshold. That is a guaranteed gate break and a
+  full re-baseline: a DS PR, not a page rebuild.
+- **Related, check when doing it:** F3's `Button` standardizes on `rounded-lg`. If the Figma
+  measured its radius at 10, the merged primitive already carries this same 2px delta.
+- **Trigger:** a DS radius/token PR that can afford the re-baseline.
+
+### ServiceCard off-token values with no DS equivalent
+- `h-[279px]` (measured card height) and `text-[17px]` (measured price size) in
+  `ServiceListingCard.tsx` have **no token to map to** — forcing them onto a near tier would be
+  worse than a documented raw value, and neither fails CI. Retained deliberately, commented in
+  place. **Trigger:** re-evaluate when the type ramp gets its Figma pass (typography is still the
+  documented token gap — see `docs/frontend-audit.md`).
+
+### Consolidate `ServicesLensToggle` into the shared `SegmentedControl`
+- **What:** `ServicesLensToggle` is a bespoke parallel toggle. It was deliberately **kept** in
+  this PR: the shared `src/components/ui/segmented-control.tsx` supports neither a **disabled
+  option** nor a **"Bientôt" badge**, and both are load-bearing while the Freelances lens is
+  deferred. Adding them is component work that would block a page build.
+- **Trigger:** the F3 Segmented reconciliation batch (see the parked inventory below) — add
+  disabled-option + badge + per-option icon support there, then migrate this toggle.
+
+### `service_listings` has no `is_published` column — the publish gate is `status='active'`
+- **What:** Verified against the live schema: `service_listings` carries `status text NOT NULL`
+  (plus `admin_hidden_at`) and **no `is_published`**. Every consumer surface gates on
+  `status = 'active'`. The locked two-CTA **Save / Publish** model assumes an `is_published` flag
+  per publishable entity, so draft-vs-published is currently encoded in `status` values rather
+  than a dedicated column.
+- **Why deferred:** reconciling the two is a **schema migration** (add the column, backfill from
+  `status`, update every read path + RLS), approval-gated and discovery-first — not a frontend
+  rebuild's scope.
+- **Trigger:** before H6/H7 (create/edit service) ship their real two-CTA footer; fold in the
+  equivalent `products` gate so both catalogs move together.
+
+### Ville filter — mobile parity + /recherche exposure
+- The desktop `ServicesFilterBar` now has a **Ville** dropdown; the mobile `SearchFiltersSheet`
+  does **not**. That sheet is **shared with /recherche**, so adding a city control there changes
+  two surfaces at once and needs its own pass. The `ville` param itself lives in the shared
+  search layer and already applies on /recherche if hand-typed (and now counts in
+  `searchHasFilters`), it is simply not exposed in that UI yet.
+- **Trigger:** fold Ville into the shared filter sheet when /recherche gets its rebuild.
+- **Known ambiguity in the empty state:** the control is hidden when `cities` is empty, and
+  `getServiceCities()` also returns `[]` on a **query error** (logged, per the never-a-silent-
+  empty-list rule). So a transient failure removes the Ville dropdown while Catégorie and Prix
+  still render — it reads as "this page has no city filter" rather than "degraded". Deliberate
+  (it beats a dead control), but do not mistake a missing Ville dropdown for a regression:
+  check the server log for `[filter-cities]` first.
+
+### Avatar placeholder grey (`#cbd5e1`) has no semantic token
+- The Figma topbar avatar fill is **#cbd5e1**; the DS `--surface-placeholder` is **#f4f4f4**. The
+  F2 `Avatar` primitive's person-glyph fallback already paints `bg-border-strong`, which **is**
+  #cbd5e1 — a *border* token used as a background. It wants a slate/300 primitive, and the slate
+  ramp is already logged as missing in the token inventory. **No raw hex was introduced**; the
+  topbar avatar keeps the primitive's Figma-measured `initials` variant (brand-blue-100 /
+  brand-blue-600) rather than being repainted, because the fill lives inside the F2 primitive and
+  changing it would re-baseline the F2 VRT snapshots.
+- **Trigger:** the DS pass that adds the slate ramp — then give the fallback a real
+  `avatar-placeholder` surface token and drop the border-token-as-background.
+
+## F3 batch 2 — Segmented + Select reconciliation (PARKED; inventory from feat/f3-batch2-select-segmented)
+
+The branch's build stalled on the flaky figma-cli bridge; its Phase-1 inventory is preserved here so it survives the branch deletion. Both primitives exist in `src/components/ui/` but were **never measured against Figma → not reconciled** (F3-style). Reconcile in a later batch; the /marche/services rebuild consumes them as-is and inherits the fix.
+
+- **Segmented** — `src/components/ui/segmented-control.tsx` (`'use client'`). Controlled (`value`+`onChange`); `role="tablist"`/`"tab"` + `aria-selected` + `aria-label`; Motion `layoutId` sliding pill + `useId` instance isolation; reduced-motion snap; `FOCUS_RING`; all tokens (`bg-surface-pill` track, `bg-brand-blue-600` active pill, `text-white`/`text-text-muted`, `rounded-full`, `px-4 py-1.5 text-sm font-medium`, `min-w-20`). **2 real consumers:** `SharedSearchBar.tsx:101`, `ParametresForm.tsx:99`. **Keyboard gap:** native `<button>` gives Tab + Enter/Space, but **no arrow-key roving** (the ARIA tabs pattern owes roving `tabindex` — confirm against accessibility.md when reconciling). **Not a consumer:** `ServicesLensToggle` is a *parallel bespoke* toggle (`rounded-lg`, static white pill, disabled "soon" Freelances + badge, per-option icons). **Figma `93:2707`** (18 variants: count[2,3,4] × state[default,focus] × selected, props label1-4 + **icon1-4**) → the primitive **lacks per-option icons** (in Figma, not code → build on reconcile).
+- **Select** — **no reconciled Select primitive exists.** `ServicesFilterBar` builds its 4 triggers ad-hoc on `ui/dropdown-menu` + `ui/popover` (+ `ui/filter-control`), none reconciled. Figma: Select — Trigger `72:1051` / Panel `72:1094` / Option `72:894`; Filter Bar `150:10825`; Range Slider `143:9517`.
+- **Node IDs for eventual measurement:** Segmented `93:2707`, Filter Bar `150:10825`, Select Trigger `72:1051` (+ Panel `72:1094`, Option `72:894`), Range Slider `143:9517`, Service Card `124:6200`, Pagination `188:14219`, empty state `611:47916`, frame `611:45637`.
+- **Bridge note:** the figma-cli CDP bridge (`connect`) drops after ~1 command and Figma MCP is capped at 6 calls/month on the free Starter plan (not viable). The **Figma REST API** (`GET api.figma.com/v1/files/:key/nodes?ids=…`, `X-Figma-Token`) returns raw `padding`/`itemSpacing`/`absoluteBoundingBox`/`boundVariables` over plain HTTPS with no plugin — the robust path for future measurement (variable *names* still need the CDP bridge or a paid tier; the `/variables/local` name endpoint is Enterprise-gated).
+
+## Visual-gate findings — v2 shell at 375px (from feat/marche-services-rebuild, 2026-07-26)
+
+Surfaced by the 375px gate run over the shell's blast radius. All three are **pre-existing**
+(verified against `2a911f5^`), so per Standard G they are logged, not fixed in the shell PR.
+
+### 🔴 12 of the 20 v2-shell routes cannot be gated without an authenticated session
+- **What:** `AppShell` is mounted at **20** sites (19 `page.tsx` + `ServicesBrowsePage`). Only
+  **/marche/services, /marche/produits, /services/[id]** render it anonymously — the other 12
+  workspace routes 307 → `/connexion`. `AppShell` does render logged-out (consumer IA, per its own
+  header comment), so the shell *code path* is exercised; what is **not** reachable is the
+  **`freelancer` and `shop_owner` sidebar variants** and every workspace page's content reflow.
+- **Consequence:** a sidebar regression that only manifests in a seller IA — a wrong section cap, a
+  clipped nav on a short viewport, a role-specific item — **cannot be caught by an anonymous gate**,
+  and there is no VRT story for any shell component either (the 32 baselines are F2 `Avatar` + F3
+  `Button`/`Input`/`StatusPill` only). The shell is the single most-shared surface in the app and is
+  currently the least gate-covered.
+- **Fix (two options, not exclusive):** (1) a seeded **gate account per `seller_type`** + a scripted
+  login so the sweep can reach the workspace routes; (2) **Storybook stories for `Sidebar` /
+  `SidebarItem` / `SidebarSection` / `Topbar`** at the three roles × 375/1440, which brings the shell
+  under the existing VRT gate and needs no session at all. (2) is cheaper and catches more.
+- **Trigger:** before the next shell-touching PR — this gap recurs on every one.
+
+### Topbar language toggle is a 24px touch target
+- `src/components/layout/LanguageToggle.tsx:64` renders each FR/AR button at `h-6` (**24px**;
+  measured 41×24 and 43×24 at 375px) with **no hit-area expander**. The touch-target rule requires
+  ≥44×44. Pre-existing — `h-6` is byte-identical in `2a911f5^`; that commit only changed the
+  active/idle colours. The fix is the F3 pattern already used next to it: an
+  `absolute -inset-*` `aria-hidden` span (see `TopbarUserMenu.tsx:52`,
+  `TopbarNotifications.tsx:34`), which keeps the measured 24px box while giving a 44px hit region.
+- **Trigger:** the touch-target code pass, or the next topbar-touching PR.
+
+### `TopbarSearch` input is 14px → iOS zoom-on-focus (second instance)
+- `src/components/shell/TopbarSearch.tsx` ships `text-body-sm` (**14px**), below the 16px iOS
+  threshold, so focusing it zooms the viewport on iPhone. This is the **same defect already logged
+  for `SharedSearchBar.tsx:99`** — now confirmed on the v2 topbar too, i.e. it affects every one of
+  the 20 shell routes, not one component. Pre-existing: `text-body-sm` is unchanged across
+  `2a911f5` (that commit swapped `cn()` for a plain template precisely to *stop* tailwind-merge
+  dropping the size, and to move the radius to `rounded-[10px]`).
+- **Note for whoever fixes it:** bumping to 16px is a **visible** change to the topbar and the
+  measured Figma value is 14 — so it needs a design call (16px input text, or a 16px override only
+  under `max-lg`), not a silent token swap.
+- **Trigger:** fold both instances into one pass — the component audit already scoped for
+  `SharedSearchBar`.

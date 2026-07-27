@@ -23,11 +23,15 @@ export function TopbarNotifications() {
           type="button"
           aria-label={t('shell.topbar.notifications.title', lang)}
           className={cn(
-            'inline-flex w-11 shrink-0 items-center justify-center rounded-full',
+            // Figma 611:45640 IconButton: 40×40, radius 10, icon 20.
+            'relative inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-[10px]',
             interactiveSurface(false),
           )}
         >
-          <Bell className="h-5 w-5 text-text-primary" aria-hidden="true" />
+          <Bell className="h-5 w-5 text-text-muted" aria-hidden="true" />
+          {/* Mobile touch-target: extends the hit region to 44px without moving a painted pixel
+              (the F3 Button pattern) — the measured box is 40, the WCAG 2.2 minimum is 44. */}
+          <span aria-hidden="true" className="absolute -inset-0.5" />
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent

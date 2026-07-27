@@ -45,12 +45,16 @@ export function ServiceListingCard({ service }: { service: ServiceListing }) {
       ? t('listing.service.priceRaw', lang, { price: start })
       : t('listing.service.priceOnRequest', lang)
 
-  // Human, localized label only. Tags are unlabeled slugs today (see note above).
   const categoryLabel = service.category
     ? lang === 'ar' && service.category.name_ar
       ? service.category.name_ar
       : service.category.name_fr
     : null
+  // Up to 3 skill chips from `tags` (the v3.7 frame shows three). Listings with no tags fall back
+  // to the single localized category label, so the chip row never renders empty — see the note
+  // above on why slugs are not title-cased.
+  const tags = (service.tags ?? []).map((tag) => tag.trim()).filter(Boolean).slice(0, 3)
+  const chips = tags.length > 0 ? tags : categoryLabel ? [categoryLabel] : []
 
   return (
     <article
@@ -71,12 +75,18 @@ export function ServiceListingCard({ service }: { service: ServiceListing }) {
               <p className="line-clamp-3 text-body-sm text-text-secondary">{service.description}</p>
             )}
           </div>
-          {/* skillChips — pinned to the bottom of colorBlock by SPACE_BETWEEN. */}
-          {categoryLabel && (
+          {/* skillChips — up to 3 skill tags (v3.7 frame 611:45637), category label as the
+              fallback. Pinned to the bottom of colorBlock by SPACE_BETWEEN. */}
+          {chips.length > 0 && (
             <div className="flex flex-wrap gap-2">
-              <span className="inline-block rounded-md bg-brand-blue-50 px-2 py-1 text-caption font-medium text-brand-blue-700">
-                {categoryLabel}
-              </span>
+              {chips.map((chip) => (
+                <span
+                  key={chip}
+                  className="inline-block rounded-md bg-brand-blue-50 px-2 py-1 text-caption font-medium text-brand-blue-700"
+                >
+                  {chip}
+                </span>
+              ))}
             </div>
           )}
         </div>
