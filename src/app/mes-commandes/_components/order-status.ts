@@ -46,9 +46,16 @@ export const STAGE_LABEL_KEY: Record<RailStage, string> = {
 }
 
 /**
- * State of each rail stage for a given status. `received` is terminal, so every stage reads
- * completed — there is nothing left to owe. A cancelled order has no rail at all (callers
- * check `isCancelled` first).
+ * State of each rail stage for a given status.
+ *
+ * `received` renders ALL FOUR stages completed, including "Reçue" itself. This is a documented
+ * choice, not a Figma match — 709:59662 only ever mocks the `arrived` row, so there is no frame
+ * to point at. The reasoning: `received` is terminal and owes nothing, and the `current` state
+ * (white circle, blue ring, blue dot) is the rail's signal for "you are here, something is
+ * outstanding". Rendering stage 4 as current on a finished order would imply an action the buyer
+ * still has to take, when the trigger has already closed the row to any further transition.
+ *
+ * A cancelled order has no rail at all (callers check `isCancelled` first).
  */
 export function stageState(status: string, index: number): StageState {
   if (status === 'received') return 'completed'

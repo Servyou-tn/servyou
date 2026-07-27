@@ -581,6 +581,23 @@ the route, its i18n block (`fr.ts` / `ar.ts`, "Order detail page") and its `acti
    `info` (blue). **Green means done.**
 - **Trigger:** next Figma pass on E3 — fix the gender mismatch and repaint the pill.
 
+### The `received` rail renders all four stages completed — a documented choice
+- Figma 709:59662 only ever mocks the `arrived` row, so **there is no frame showing what a
+  finished order's rail looks like**. This is a decision, not a measurement, and it is recorded
+  here because nothing in the design can be pointed at to justify it.
+- **Decision (founder, 2026-07-27): a terminal state owes nothing.** `received` renders every
+  stage — including "Reçue" itself — in the `completed` treatment (blue-600 fill + white check),
+  and the connectors all read `border-strong`.
+- **Why not `current` on stage 4:** the `current` treatment (white circle, 2px blue ring, blue
+  dot) is the rail's signal for *"you are here, something is outstanding"*. On a received order
+  it would imply an action the buyer still has to take, when `check_order_status_transition` has
+  already closed the row — `received` is terminal and raises on any further transition.
+- Verified across all four states against 709:59712 / 59717 / 59722 / 59727; the other three
+  match the frames exactly. Implemented in `stageState()`
+  (`src/app/mes-commandes/_components/order-status.ts`).
+- **Trigger:** if E3 ever gets a `received` frame in Figma, reconcile against it — and if the
+  design disagrees, this reasoning is what has to be argued with.
+
 ### `refresh-registry.js` validation cannot detect a screens-less scan
 - The wrapper "REFUSES to overwrite a good registry with an error/empty scan", but its guard only
   checks `variables >= 50`. A transient CDP hiccup mid-scan produced a registry with **0 screen
