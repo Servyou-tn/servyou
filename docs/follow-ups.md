@@ -393,3 +393,26 @@ Surfaced by the 375px gate run over the shell's blast radius. All three are **pr
   Ville / Prix / Trier-par controls sharing its row. Reinstating it should come with a decision about
   whether the *selects* move to 44 too, rather than a lone taller field.
 - **Trigger:** whenever the filter row is next revisited as a whole.
+
+### D2 — three deliberate non-builds, so a future pass does not read them as oversights
+
+All three are founder-decided on the D2 build (`feat/d2-service-detail`, Figma `666:55479` /
+`668:55920`). None is a defect; each is recorded here because the *absence* is the decision.
+
+- **`revisions_count` is in the data layer with no D2 region — by design.** The column exists and
+  is populated on 21/21 active listings, and `getServiceDetail` returns it as `revisionsCount`.
+  `666:55479` has **no region for it**, and UI that is not designed does not get invented. It is
+  carried for **E1**, where the buyer needs the revision count *before* committing. If you are
+  about to surface it on D2, that is a design decision first, not a wiring task.
+- **D2 has no gallery region, and the `service_media` fetch was removed.** `service_media` exists
+  but holds **zero rows**; the per-service gallery was retired in favour of
+  portfolio-per-freelancer, and neither D2 frame has a gallery. The resurrected
+  `service-detail.ts` was still selecting it, feeding nothing — dead weight the next reader would
+  assume was load-bearing. **If work samples ever return to D2, the Figma design comes first**,
+  then the query.
+- **The related-services heading diverges from the Figma, deliberately.** The frame reads
+  *"Autres services de {freelancer}"*, which assumes a **same-freelancer** rule. The approved rule
+  is **category-first** (category → freelancer → newest active, deduped, cap 3), so the set is
+  mixed and a freelancer-scoped heading would be factually wrong for most rows. Ships as the
+  neutral **"Services similaires"** (`serviceDetail.related`, FR + AR). If the rule ever becomes
+  freelancer-only, the Figma heading becomes correct again and this should be revisited.
