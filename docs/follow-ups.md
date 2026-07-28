@@ -729,3 +729,33 @@ the route, its i18n block (`fr.ts` / `ar.ts`, "Order detail page") and its `acti
   what needs updating here, not the code.
 - **Trigger:** the schema PR that adds `delivery_fee` (bundled with `shops.is_published` +
   `freelancer_profiles.is_published` + the order tracking number).
+
+### ⚠ Tailwind's `leading-normal` is the ratio 1.5 — NOT CSS `line-height: normal`
+- **The trap:** Figma emits `leading-[normal]` (the CSS keyword, ≈1.21 for Inter). Tailwind's
+  `leading-normal` utility is the **ratio 1.5**. Same word, different value, no error either way.
+- **Evidence (G4 delta P1):** on the 28px Bold glance-tile value, `leading-normal` computed to
+  **42px** where Figma's `normal` is **≈34px** — **+8px per tile**, which pushed the measured tile
+  from Figma's 196 to 248 and, combined with a wrapping string, stretched the whole 4-up grid row.
+  `leading-[normal]` (bracketed) is the one that emits the keyword.
+- **Rule:** when a Figma value reads `normal`, write `leading-[normal]`. Reserve bare
+  `leading-normal` for when 1.5 is genuinely intended. Grep before copying either into a new
+  component — this reads as a no-op diff and is worth 8px a line.
+- **Trigger:** any component built from a Figma text style whose line-height is `normal`.
+
+### S4 — topbar is 65px tall against Figma's 64, on every AppShell route
+- `Topbar.tsx:35-36` puts `border-b` on the `<header>` *outside* an inner `div.h-16`, so the total
+  is 64 + 1. The Figma Topbar instance (`475:21223`) is **64 total**.
+- 1px, but it is on ~20 routes and it shifts every page's content down by a pixel against its frame.
+- **Founder call (2026-07-28): this rides with the 375px topbar-overflow fix**, since both are the
+  same component and re-measuring the topbar twice is waste. See the logged-in overflow item above.
+- **Trigger:** the shared-shell PR that fixes the 375 overflow.
+
+### P5 / P6 — the shipped type ramp's line-heights differ from Figma's
+- Measured on G4: **H1 40 vs Figma 38**, **H3 28 vs Figma 26**. Both are the shipped `--text-*`
+  tokens, so this is platform-wide, not a page defect — every H1 and H3 in the app is 2px taller
+  than its frame.
+- This is the already-documented "typography token gap": `scripts/tokens/build.mjs` deliberately
+  does **not** emit typography (its header says so), because the Figma ramp is incomplete and the
+  shipped weights/line-heights diverge. So the fix is not a one-line token edit — it needs the ramp
+  reconciled in Figma first, then emitted, then a re-baseline of every VRT story.
+- **Trigger:** the typography reconciliation PR. Do not patch per-page.

@@ -2152,8 +2152,8 @@ export const fr: Record<string, string> = {
   'aide.faq.a5':           "Ouvrez une fiche produit ou service et utilisez le bouton WhatsApp pour échanger directement.",
 
   // ── G4 — Tableau de bord vendeur (Figma 475:21134 / specimen 484:24205) ──
-  'seller.dashboard.title':               "Bonjour, {shop}",
-  'seller.dashboard.subline':             "Voici ce qui demande votre attention aujourd'hui.",
+  'seller.dashboard.title':               "Bienvenue, {shop} 👋",
+  'seller.dashboard.subline':             "Voici ce qui se passe dans votre boutique aujourd'hui.",
   'seller.dashboard.cta_add_product':     "Ajouter un produit",
 
   'seller.dashboard.tile.pending':        "Commandes à traiter",
@@ -2162,7 +2162,6 @@ export const fr: Record<string, string> = {
   // No delivery_fee column yet, so a true net figure cannot be computed. Never print revenue
   // under a net-profit label — see the phase-aware rule.
   'seller.dashboard.tile.profit_soon':    "Bientôt disponible",
-  'seller.dashboard.tile.profit_sub':     "Commandes livrées",
   'seller.dashboard.tile.week':           "Commandes cette semaine",
   'seller.dashboard.tile.week_sub':       "7 derniers jours",
   'seller.dashboard.tile.products':       "Produits actifs",

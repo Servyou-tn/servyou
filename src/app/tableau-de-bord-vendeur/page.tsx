@@ -125,13 +125,17 @@ export default async function TableauDeBordVendeurPage() {
             />
             {/* Bénéfice net has NO data source: `products` carries no delivery_fee, so a true net
                 figure cannot be computed, and printing revenue under a "net profit" label would be
-                dishonest. Renders as the deferred state until the schema PR lands.
-                ⚑ DIVERGENCE from the measured specimen, which mocks "2 840 TND / Commandes
-                livrées" — founder call, and the phase-aware rule (never invent a metric). */}
+                dishonest. ⚑ DIVERGENCE from the measured specimen, which mocks "2 840 TND /
+                Commandes livrées" — founder call, and the phase-aware rule (never invent a metric).
+
+                The VALUE slot holds an em-dash and the deferred wording moved to the caption line
+                (G4 delta S2). A sentence in a slot designed for a number wrapped to two lines at
+                28px and stretched the whole 4-up grid row. "—" also reads as "no value yet" rather
+                than as zero — unbuilt profit and zero profit are different claims. */}
             <StatTile
               label={t('seller.dashboard.tile.profit', lang)}
-              value={t('seller.dashboard.tile.profit_soon', lang)}
-              subtitle={t('seller.dashboard.tile.profit_sub', lang)}
+              value="—"
+              subtitle={t('seller.dashboard.tile.profit_soon', lang)}
               icon={TrendingUp}
               accent="success"
               muted

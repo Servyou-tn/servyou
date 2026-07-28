@@ -49,9 +49,13 @@ export function StatTile({
       </div>
       <div className="flex w-full flex-col gap-1">
         <p className="text-body-sm font-medium text-text-secondary">{label}</p>
+        {/* leading-[normal], NOT leading-normal. Tailwind's `leading-normal` is the ratio 1.5,
+            which on 28px is 42px — Figma's `leading/normal` is the CSS keyword `normal`, ≈34px for
+            Inter. Same word, different thing, and the 8px difference per tile is what pushed the
+            measured tile from Figma's 196 to 248 (G4 delta P1). */}
         <p
           className={cn(
-            'text-[28px] font-bold leading-normal',
+            'text-[28px] font-bold leading-[normal]',
             muted ? 'text-text-muted' : 'text-brand-blue-800',
           )}
         >

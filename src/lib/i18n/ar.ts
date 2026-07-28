@@ -2176,15 +2176,14 @@ export const ar: Record<string, string> = {
   'aide.faq.a5':           "افتح بطاقة منتج أو خدمة واستخدم زر واتساب للتواصل مباشرة.",
 
   // ── G4 — لوحة تحكم البائع (Figma 475:21134 / specimen 484:24205) ──
-  'seller.dashboard.title':               "مرحباً، {shop}",
-  'seller.dashboard.subline':             "إليك ما يتطلب انتباهك اليوم.",
+  'seller.dashboard.title':               "مرحباً، {shop} 👋",
+  'seller.dashboard.subline':             "إليك ما يجري في متجرك اليوم.",
   'seller.dashboard.cta_add_product':     "إضافة منتج",
 
   'seller.dashboard.tile.pending':        "طلبات قيد المعالجة",
   'seller.dashboard.tile.pending_sub':    "في انتظار إجرائك",
   'seller.dashboard.tile.profit':         "صافي الربح",
   'seller.dashboard.tile.profit_soon':    "قريباً",
-  'seller.dashboard.tile.profit_sub':     "الطلبات المُسلَّمة",
   'seller.dashboard.tile.week':           "طلبات هذا الأسبوع",
   'seller.dashboard.tile.week_sub':       "آخر 7 أيام",
   'seller.dashboard.tile.products':       "المنتجات النشطة",
