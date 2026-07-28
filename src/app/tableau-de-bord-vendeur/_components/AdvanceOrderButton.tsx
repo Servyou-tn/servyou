@@ -3,7 +3,7 @@
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
-import { advanceOrderAction } from '../actions'
+import { advanceOrderAction } from '@/app/actions/orders'
 
 // The smallest interactive leaf on G4 — everything else on this page is a server component.
 // One button = one hop along the seller-owned chain; the TARGET status is derived server-side

@@ -2,7 +2,8 @@
  * G4 — seller dashboard: the transition map, the write path's guards, and the shop_owner IA.
  *
  * WHY THESE THREE. G4 is the first surface that can MOVE an order, so the risk is not layout:
- *   1. `nextSellerStatus` is the UI's copy of `check_order_status_transition`. If it drifts, the
+ *   1. `nextSellerStatus` (now in @/lib/types/order-status, consolidated in G8) is the UI's copy
+ *      of `check_order_status_transition`. If it drifts, the
  *      dashboard offers a button the database will refuse — the failure is invisible until a
  *      seller clicks it. The cases below are transcribed from the live trigger body.
  *   2. `advanceOrderAction` is the first seller write path and the pattern the other nine G pages
@@ -12,7 +13,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { nextSellerStatus } from '@/lib/marche/seller-dashboard'
+import { nextSellerStatus } from '@/lib/types/order-status'
 import { sidebarSectionsForRole } from '@/components/shell/sidebar-items'
 import { roleWorkspacePath } from '@/lib/roles'
 
@@ -27,15 +28,15 @@ describe('nextSellerStatus — product chain', () => {
     ['dispatched', 'in_delivery'],
     ['in_delivery', 'arrived'],
   ])('advances %s -> %s', (from, to) => {
-    expect(nextSellerStatus('product', from)).toBe(to)
+    expect(nextSellerStatus(from as never, 'product')).toBe(to)
   })
 
   it('stops at arrived — `received` is BUYER-only in the trigger', () => {
-    expect(nextSellerStatus('product', 'arrived')).toBeNull()
+    expect(nextSellerStatus('arrived', 'product')).toBeNull()
   })
 
   it.each(['received', 'cancelled'])('offers nothing from the terminal state %s', (s) => {
-    expect(nextSellerStatus('product', s)).toBeNull()
+    expect(nextSellerStatus(s as never, 'product')).toBeNull()
   })
 })
 
@@ -45,17 +46,17 @@ describe('nextSellerStatus — service chain', () => {
     ['pending', 'accepted'],
     ['accepted', 'arrived'],
   ])('advances %s -> %s', (from, to) => {
-    expect(nextSellerStatus('service', from)).toBe(to)
+    expect(nextSellerStatus(from as never, 'service')).toBe(to)
   })
 
   it('stops at arrived — `received` is BUYER-only', () => {
-    expect(nextSellerStatus('service', 'arrived')).toBeNull()
+    expect(nextSellerStatus('arrived', 'service')).toBeNull()
   })
 
   it.each(['prepared', 'dispatched', 'in_delivery'])(
     'never offers the product-only hop %s for a service',
     (s) => {
-      expect(nextSellerStatus('service', s)).toBeNull()
+      expect(nextSellerStatus(s as never, 'service')).toBeNull()
     },
   )
 })
@@ -79,8 +80,9 @@ describe('sidebarSectionsForRole', () => {
     const [activities] = sidebarSectionsForRole('shop_owner')
     const byHref = Object.fromEntries(activities.items.map((i) => [i.href, Boolean(i.disabled)]))
     expect(byHref['/tableau-de-bord-vendeur']).toBe(false)
+    // Enabled in G8 — the page now exists. Mes produits stays disabled until G5.
+    expect(byHref['/commandes-recues']).toBe(false)
     expect(byHref['/mes-produits']).toBe(true)
-    expect(byHref['/commandes-recues']).toBe(true)
   })
 
   it('leaves the freelancer and consumer IAs untouched', () => {
@@ -137,14 +139,14 @@ beforeEach(() => {
 
 describe('advanceOrderAction', () => {
   it('advances the order by exactly one hop, derived server-side', async () => {
-    const { advanceOrderAction } = await import('@/app/tableau-de-bord-vendeur/actions')
+    const { advanceOrderAction } = await import('@/app/actions/orders')
     const res = await advanceOrderAction({ orderId: ORDER.id })
     expect(res.ok).toBe(true)
     expect(state.updates).toEqual([{ status: 'accepted' }])
   })
 
   it('rejects a non-uuid orderId before touching the database', async () => {
-    const { advanceOrderAction } = await import('@/app/tableau-de-bord-vendeur/actions')
+    const { advanceOrderAction } = await import('@/app/actions/orders')
     const res = await advanceOrderAction({ orderId: 'not-a-uuid' })
     expect(res.ok).toBe(false)
     expect(state.updates).toEqual([])
@@ -152,7 +154,7 @@ describe('advanceOrderAction', () => {
 
   it('rejects a logged-out caller', async () => {
     state.user = null
-    const { advanceOrderAction } = await import('@/app/tableau-de-bord-vendeur/actions')
+    const { advanceOrderAction } = await import('@/app/actions/orders')
     const res = await advanceOrderAction({ orderId: ORDER.id })
     expect(res.ok).toBe(false)
     expect(state.updates).toEqual([])
@@ -160,7 +162,7 @@ describe('advanceOrderAction', () => {
 
   it("refuses an order the caller does not sell, and does not confirm it exists", async () => {
     state.order = { ...ORDER, seller_id: 'someone-else' }
-    const { advanceOrderAction } = await import('@/app/tableau-de-bord-vendeur/actions')
+    const { advanceOrderAction } = await import('@/app/actions/orders')
     const res = await advanceOrderAction({ orderId: ORDER.id })
     expect(res.ok).toBe(false)
     expect(state.updates).toEqual([])
@@ -170,7 +172,7 @@ describe('advanceOrderAction', () => {
 
   it('refuses to write when the seller owns no further hop (arrived is buyer-only)', async () => {
     state.order = { ...ORDER, status: 'arrived' }
-    const { advanceOrderAction } = await import('@/app/tableau-de-bord-vendeur/actions')
+    const { advanceOrderAction } = await import('@/app/actions/orders')
     const res = await advanceOrderAction({ orderId: ORDER.id })
     expect(res.ok).toBe(false)
     expect(state.updates).toEqual([])
@@ -178,7 +180,7 @@ describe('advanceOrderAction', () => {
 
   it('never advances a service order down the product chain', async () => {
     state.order = { ...ORDER, order_type: 'service', status: 'accepted' }
-    const { advanceOrderAction } = await import('@/app/tableau-de-bord-vendeur/actions')
+    const { advanceOrderAction } = await import('@/app/actions/orders')
     await advanceOrderAction({ orderId: ORDER.id })
     // 'arrived', never 'prepared'.
     expect(state.updates).toEqual([{ status: 'arrived' }])
@@ -186,7 +188,7 @@ describe('advanceOrderAction', () => {
 
   it("surfaces the trigger's own message when the DB rejects the transition", async () => {
     state.updateError = { message: 'Transition invalide pour une commande produit: pending → prepared.' }
-    const { advanceOrderAction } = await import('@/app/tableau-de-bord-vendeur/actions')
+    const { advanceOrderAction } = await import('@/app/actions/orders')
     const res = await advanceOrderAction({ orderId: ORDER.id })
     expect(res.ok).toBe(false)
     if (!res.ok) expect(res.error).toContain('Transition invalide')
@@ -194,7 +196,7 @@ describe('advanceOrderAction', () => {
 
   it('does not write when the order read fails', async () => {
     state.readError = { message: 'boom' }
-    const { advanceOrderAction } = await import('@/app/tableau-de-bord-vendeur/actions')
+    const { advanceOrderAction } = await import('@/app/actions/orders')
     const res = await advanceOrderAction({ orderId: ORDER.id })
     expect(res.ok).toBe(false)
     expect(state.updates).toEqual([])

@@ -1,8 +1,17 @@
 import type { StatusValue } from '@/components/ui/status-pill'
 import type { Lang } from '@/lib/i18n'
 
-// The service lifecycle as E3 renders it. Pure — no React, no data client — so the mapping is
-// readable in one place and testable.
+// Order presentation helpers, shared by BOTH sides of an order: E3 `/mes-commandes` (buyer) and
+// G8 `/commandes-recues` (seller). Promoted out of `app/mes-commandes/_components/` when G8 became
+// the second consumer — `STATUS_PILL`, `shortRef`, `shortDate`/`longDate` and `stageState` are
+// role-agnostic and were never buyer-specific.
+//
+// NOTE `RAIL_STAGES` IS buyer-shaped: it is the 4-stage SERVICE rail E3 draws. The seller side
+// runs the full 7-step product chain, so G8/G9 use `lifecycleFor()` from `@/lib/types/order-status`
+// instead. Do not widen RAIL_STAGES to serve both — they are different journeys, not one journey
+// at two widths.
+//
+// Pure — no React, no data client — so the mapping is readable in one place and testable.
 //
 // The DB CHECK holds 8 statuses; a SERVICE order can only ever be one of these 5 (the trigger's
 // service chain is pending → accepted → arrived → received, plus cancelled from any non-terminal
@@ -29,12 +38,57 @@ export type StageState = 'completed' | 'current' | 'upcoming'
  *     states identically and the buyer cannot see at a glance whether they still owe a
  *     confirmation. Green means done.
  */
-export const STATUS_PILL: Record<string, { pill: StatusValue; labelKey: string }> = {
+// ⚑ THIS MAP IS ROLE- AND TYPE-AGNOSTIC. `RAIL_STAGES` above is NOT — it is the buyer's 4-stage
+// service rail. The two live in the same file and the distinction has to be explicit, because
+// conflating them is exactly the bug G8 shipped: this map used to hold only the five statuses a
+// SERVICE order can reach, and G8 pointed a seller's PRODUCT inbox at it, so `prepared`,
+// `dispatched` and `in_delivery` rendered no pill at all — three of the seven seller states
+// silently blank. It now covers every status `check_order_status_transition` can produce, plus
+// `refused` for the Figma variant.
+//
+// `arrived` is the one status whose LABEL depends on the order type, which is why this is a
+// function and not a bare record: a service arriving is "Travail livré" (work delivered), a parcel
+// arriving is "Arrivée". Same pill tone, different noun. Call `statusPillFor(status, orderType)`.
+const PILL_BASE: Record<string, { pill: StatusValue; labelKey: string }> = {
   pending: { pill: 'pending', labelKey: 'common.status_pending' },
   accepted: { pill: 'acceptee', labelKey: 'common.status_accepted' },
-  arrived: { pill: 'arrivee', labelKey: 'common.status_arrived_service' },
+  prepared: { pill: 'préparée', labelKey: 'common.status_prepared' },
+  dispatched: { pill: 'expediee', labelKey: 'common.status_dispatched' },
+  in_delivery: { pill: 'in-transit', labelKey: 'common.status_in_delivery' },
+  arrived: { pill: 'arrivee', labelKey: 'common.status_arrived' },
   received: { pill: 'reçue', labelKey: 'common.status_received' },
   cancelled: { pill: 'annulée', labelKey: 'common.status_cancelled' },
+  refused: { pill: 'refusée', labelKey: 'common.status_cancelled' },
+}
+
+/**
+ * Pill token + label key for a status, given the order type.
+ *
+ * `orderType` defaults to 'service' so E3's existing call sites — which only ever render service
+ * orders — keep their exact current labels, including "Travail livré" for `arrived`.
+ */
+export function statusPillFor(
+  status: string,
+  orderType: 'product' | 'service' = 'service',
+): { pill: StatusValue; labelKey: string } | undefined {
+  const base = PILL_BASE[status]
+  if (!base) return undefined
+  if (status === 'arrived' && orderType === 'service') {
+    return { pill: base.pill, labelKey: 'common.status_arrived_service' }
+  }
+  return base
+}
+
+/**
+ * Service-order pill map, kept for E3's existing consumers.
+ * New code should call `statusPillFor` — it covers the full product chain too.
+ */
+export const STATUS_PILL: Record<string, { pill: StatusValue; labelKey: string }> = {
+  pending: PILL_BASE.pending,
+  accepted: PILL_BASE.accepted,
+  arrived: { pill: 'arrivee', labelKey: 'common.status_arrived_service' },
+  received: PILL_BASE.received,
+  cancelled: PILL_BASE.cancelled,
 }
 
 /** Rail labels reuse the same shipped keys, so a status reads identically in pill and rail. */

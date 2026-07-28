@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { ChevronDown, Search, X } from 'lucide-react'
 import { useLang } from '@/components/LangProvider'
 import { t, type Lang } from '@/lib/i18n'
+import { MENU_CONTENT, MENU_ITEM, POPOVER_CONTENT } from '@/components/ui/menu-styles'
 import { FOCUS_RING } from '@/components/layout/styles'
 import { buildSearchQuery } from '@/components/recherche/search-url'
 import type { FilterCategory } from '@/components/recherche/SearchFilters'
@@ -55,13 +56,8 @@ const SORT_OPTIONS: SearchSort[] = ['recent', 'prix_asc', 'prix_desc']
 const TRIGGER =
   'inline-flex h-10 items-center justify-between gap-2 rounded-[10px] border border-border-strong bg-white px-4 text-body-sm transition-colors hover:border-text-muted'
 
-// The dropdown-menu / popover primitives default to shadcn tokens (bg-popover, bg-accent, …)
-// that aren't wired in this project, so — like the shell's own menus — we override with app
-// tokens (bg-white, border-border-subtle, focus:bg-surface-subtle).
-const MENU_CONTENT = 'rounded-xl border border-border-subtle bg-white p-1 text-text-primary shadow-lg'
-const MENU_ITEM =
-  'cursor-pointer rounded-lg text-body-sm text-text-primary focus:bg-surface-subtle focus:text-text-primary'
-const POPOVER_CONTENT = 'rounded-xl border border-border-subtle bg-white text-text-primary shadow-lg'
+// The dropdown-menu / popover overrides moved to components/ui/menu-styles at their third
+// consumer (G8's sort select) — the strings are unchanged, only their home is shared now.
 
 export function ServicesFilterBar({
   categories,
