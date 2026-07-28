@@ -36,11 +36,23 @@ export default async function RootLayout({
 }>) {
   const lang = await getLang()
 
+  // `[scrollbar-gutter:stable]` reserves the scrollbar gutter so a page that grows past the
+  // viewport does not reflow the whole layout sideways. Measured on /mes-commandes: expanding
+  // one accordion row introduced a vertical scrollbar and moved EVERY horizontal edge 15px left
+  // (filter search right 1088 → 1073, topbar 1002 → 987).
+  //
+  // It lives HERE, as a class on the app's root element, and NOT as an `html { … }` rule in
+  // globals.css — `.storybook/preview.ts` imports globals.css by design, so a bare element
+  // selector there also styles every story iframe and moved all 16 desktop VRT baselines (max
+  // 0.697% against a 0.05% gate). Storybook renders isolated components on a centered canvas
+  // with no page to scroll: there is no shift to prevent, so the rule would be pure distortion
+  // — 15px narrower component snapshots, forever, for an app-layout reason. Storybook never
+  // renders this file, so scoping it to this element is the fix.
   return (
     <html
       lang={lang}
       dir={lang === 'ar' ? 'rtl' : 'ltr'}
-      className={`${inter.variable} ${cairo.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${inter.variable} ${cairo.variable} ${geistMono.variable} h-full antialiased [scrollbar-gutter:stable]`}
     >
       <body className="min-h-full flex flex-col">
         <LangProvider lang={lang}>
