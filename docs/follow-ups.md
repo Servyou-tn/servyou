@@ -607,3 +607,25 @@ the route, its i18n block (`fr.ts` / `ar.ts`, "Order detail page") and its `acti
   containing `ERROR reading`.
 - **Trigger:** next time that script is touched. Note both `scripts/figma/` and
   `docs/design/figma-registry.md` are UNTRACKED, so this is a local-tooling item.
+
+### `globals.css` is shared with Storybook — bare element selectors there hit all 32 VRT baselines
+- **What happened:** the E3 expand-reflow fix first landed as `html { scrollbar-gutter: stable }`
+  in `src/app/globals.css` (`3f42247`). `.storybook/preview.ts:4` imports that file **by design**
+  (stories must render through the real F1 token chain), so the rule also applied to every story
+  iframe and shifted **all 16 desktop VRT baselines** — max **0.697%** against a **0.05%** gate.
+  Storybook renders isolated components on a centred canvas with no page to scroll: there was no
+  shift to prevent there, only 15px narrower snapshots forever, for an app-layout reason.
+- **Resolution:** the declaration moved to a `[scrollbar-gutter:stable]` class on the app's root
+  element in `src/app/layout.tsx`, which Storybook never renders. Same computed result in the app
+  (verified: `getComputedStyle(document.documentElement).scrollbarGutter === 'stable'`), zero
+  reach into stories.
+- **The general rule:** `globals.css` is not app-only. A bare element selector (`html`, `body`,
+  `a`, `ul`…) added there is a **global change to the component gate as well**. App-layout
+  concerns belong on an app-owned element/class; only tokens and genuinely universal resets
+  belong in the shared file. A `@layer`/`:root`-scoped custom property is safe; a styled element
+  selector is not.
+- **Fix (optional hardening):** either give Storybook a preview stylesheet that imports only
+  `src/styles/tokens.css`, or add a lint/CI check that fails on new bare element selectors in
+  `globals.css`. Neither was done here — the one-line placement fix is enough for this defect and
+  the split-stylesheet change would need its own re-baseline.
+- **Trigger:** next time anything is added to `globals.css` outside `@theme`/`:root`.
