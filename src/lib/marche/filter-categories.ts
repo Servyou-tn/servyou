@@ -14,11 +14,19 @@ export async function getFilterCategoriesForType(
 ): Promise<FilterCategory[]> {
   const supabase = await createClient()
   const table = type === 'product' ? 'products' : 'service_listings'
+  // The moderated parent differs by catalogue: a product hangs off a shop, a service off a
+  // freelancer profile. Both are filtered so this list can only offer a category that still
+  // has a VISIBLE listing behind it — the option list has to be scoped exactly like the result
+  // query (lib/search/search-marketplace.ts), or moderation leaves a category that returns
+  // nothing. Row + parent, both mechanisms (see lib/marche/data.ts for why status is not enough).
+  const parent = type === 'product' ? 'shops' : 'freelancer_profiles'
 
   const { data: rows, error } = await supabase
     .from(table)
-    .select('category_id')
+    .select(`category_id, ${parent}!inner(admin_hidden_at)`)
     .eq('status', 'active')
+    .is('admin_hidden_at', null)
+    .is(`${parent}.admin_hidden_at`, null)
   if (error) {
     console.error(`[filter-categories] ${table} category_id fetch error:`, error)
     return []

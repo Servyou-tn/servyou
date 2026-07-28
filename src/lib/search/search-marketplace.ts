@@ -180,12 +180,19 @@ async function fetchProducts(
   params: SearchParams,
   categoryIds: string[] | null,
 ): Promise<ProductListing[]> {
+  // Moderation, both mechanisms: `admin_hide_content` sets status='hidden' AND admin_hidden_at
+  // on a product, but on a SHOP it sets admin_hidden_at only and leaves the shop's products at
+  // status='active'. Filtering status alone therefore left a moderated shop's whole catalogue
+  // in /recherche, /marche/produits and /categories — including in totalCount, which is derived
+  // from this fetch. Row + parent are both filtered; same shape as lib/marche/product-detail.ts.
   let query = supabase
     .from('products')
     .select(
-      'id, title, description, price_tnd, created_at, category_id, shops!inner(name, city), product_images(image_url, display_order)',
+      'id, title, description, price_tnd, created_at, category_id, shops!inner(name, city, admin_hidden_at), product_images(image_url, display_order)',
     )
     .eq('status', 'active')
+    .is('admin_hidden_at', null)
+    .is('shops.admin_hidden_at', null)
     .limit(FETCH_CAP)
   query = applyProductFilters(query as unknown as AnyQuery, params, categoryIds) as unknown as typeof query
 
@@ -212,12 +219,17 @@ async function fetchServices(
   params: SearchParams,
   categoryIds: string[] | null,
 ): Promise<ServiceListing[]> {
+  // Moderation, both mechanisms — see fetchProducts above. A freelancer hidden by an admin
+  // keeps every listing at status='active', so the parent predicate is what actually keeps a
+  // moderated freelancer's services out of the marketplace.
   let query = supabase
     .from('service_listings')
     .select(
-      'id, title, description, starting_price_tnd, delivery_time, tags, created_at, category_id, freelancer_profiles!inner(profile_id, city), categories(name_fr, name_ar)',
+      'id, title, description, starting_price_tnd, delivery_time, tags, created_at, category_id, freelancer_profiles!inner(profile_id, city, admin_hidden_at), categories(name_fr, name_ar)',
     )
     .eq('status', 'active')
+    .is('admin_hidden_at', null)
+    .is('freelancer_profiles.admin_hidden_at', null)
     .limit(FETCH_CAP)
   query = applyServiceFilters(query as unknown as AnyQuery, params, categoryIds) as unknown as typeof query
 
