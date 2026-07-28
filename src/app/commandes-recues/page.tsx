@@ -8,6 +8,7 @@ import {
   getSellerOrders,
   ORDER_TABS,
   ORDERS_PER_PAGE,
+  DEFAULT_ORDER_TAB,
   type OrderTab,
   type SellerOrderSort,
 } from '@/lib/marche/seller-orders'
@@ -16,6 +17,7 @@ import { t } from '@/lib/i18n'
 import { FOCUS_RING } from '@/components/layout/styles'
 import { cn } from '@/lib/utils'
 import { OrderActionRow } from './_components/OrderActionRow'
+import { SortSelect } from './_components/SortSelect'
 
 export const metadata: Metadata = { title: 'Commandes reçues — Servyou' }
 
@@ -38,7 +40,7 @@ const ROUTE = '/commandes-recues'
 // here is DERIVED, not measured, and flagged `derived:` at its call site.
 
 function parseTab(v: string | undefined): OrderTab {
-  return (ORDER_TABS as readonly string[]).includes(v ?? '') ? (v as OrderTab) : 'a_traiter'
+  return (ORDER_TABS as readonly string[]).includes(v ?? '') ? (v as OrderTab) : DEFAULT_ORDER_TAB
 }
 
 function parseSort(v: string | undefined): SellerOrderSort {
@@ -68,7 +70,7 @@ export default async function CommandesRecuesPage({
     const q = new URLSearchParams()
     const s = next.statut ?? tab
     const o = next.tri ?? sort
-    if (s !== 'a_traiter') q.set('statut', s)
+    if (s !== DEFAULT_ORDER_TAB) q.set('statut', s)
     if (o !== 'recent') q.set('tri', o)
     // Changing tab or sort resets to page 1 — keeping the old page number would land the seller
     // on an out-of-range page of a different result set.
@@ -91,10 +93,15 @@ export default async function CommandesRecuesPage({
         <div className="flex flex-col gap-4">
           {/* derived: the tab strip scrolls horizontally below-lg rather than wrapping, so the
               active tab stays reachable on a narrow viewport. Desktop is a 1136-wide row. */}
+          {/* Underlined text tabs, measured from Figma 489:25351: a 1px border/subtle rule under
+              the strip, Tab Item h44 px16, active = blue/600 Semi Bold with a 2px blue/600 bottom
+              indicator, inactive = text/muted Medium 16/26. NO count chips on any tab — the frame
+              has none, not even on the active one.
+              derived: the strip scrolls horizontally below-lg so the active tab stays reachable. */}
           <div
             role="tablist"
             aria-label={t('seller.orders.tabs_aria', lang)}
-            className="-mx-1 flex gap-1 overflow-x-auto px-1 pb-1"
+            className="flex overflow-x-auto border-b border-border-subtle"
           >
             {ORDER_TABS.map((key) => {
               const active = key === tab
@@ -105,22 +112,20 @@ export default async function CommandesRecuesPage({
                   role="tab"
                   aria-selected={active}
                   className={cn(
-                    'flex h-11 shrink-0 items-center gap-2 rounded-[10px] px-4 text-body-sm font-medium transition-colors',
+                    'relative flex h-11 shrink-0 items-center justify-center px-4 text-body whitespace-nowrap transition-colors',
                     active
-                      ? 'bg-brand-blue-600 text-text-inverse'
-                      : 'text-text-secondary hover:bg-surface-sunken',
+                      ? 'font-semibold text-brand-blue-600'
+                      : 'font-medium text-text-muted hover:text-text-primary',
                     FOCUS_RING,
                   )}
                 >
                   {t(`seller.orders.tab.${key}`, lang)}
-                  <span
-                    className={cn(
-                      'rounded-full px-1.5 text-caption font-semibold',
-                      active ? 'bg-white/20 text-text-inverse' : 'bg-surface-sunken text-text-muted',
-                    )}
-                  >
-                    {data.counts[key]}
-                  </span>
+                  {active ? (
+                    <span
+                      aria-hidden="true"
+                      className="absolute inset-x-0 bottom-0 h-0.5 bg-brand-blue-600"
+                    />
+                  ) : null}
                 </Link>
               )
             })}
@@ -130,26 +135,15 @@ export default async function CommandesRecuesPage({
             <p className="text-body-sm text-text-secondary">
               {t('seller.orders.count', lang, { count: data.totalCount })}
             </p>
-            {/* Sort is two links rather than a Select: there are exactly two options, and a
-                server-rendered page gets them for free with no client component. */}
-            <div className="flex items-center gap-1">
-              {(['recent', 'oldest'] as const).map((o) => (
-                <Link
-                  key={o}
-                  href={hrefFor({ tri: o })}
-                  aria-current={sort === o ? 'true' : undefined}
-                  className={cn(
-                    'rounded-lg px-3 py-2 text-body-sm transition-colors',
-                    sort === o
-                      ? 'bg-surface-sunken font-semibold text-text-primary'
-                      : 'text-text-secondary hover:bg-surface-sunken',
-                    FOCUS_RING,
-                  )}
-                >
-                  {t(`seller.orders.sort.${o}`, lang)}
-                </Link>
-              ))}
-            </div>
+            <SortSelect
+              value={sort}
+              options={(['recent', 'oldest'] as const).map((o) => ({
+                value: o,
+                label: t(`seller.orders.sort.${o}`, lang),
+                href: hrefFor({ tri: o }),
+              }))}
+              label={t('seller.orders.sort_aria', lang)}
+            />
           </div>
         </div>
 

@@ -14,7 +14,8 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { nextSellerStatus, nextStatus, isCancellable } from '@/lib/types/order-status'
-import { statusesForTab, ORDER_TABS } from '@/lib/marche/seller-orders'
+import { statusesForTab, ORDER_TABS, DEFAULT_ORDER_TAB } from '@/lib/marche/seller-orders'
+import { statusPillFor } from '@/lib/orders/order-status'
 
 // ── 1. The consolidation must not have widened the seller's chain ────────────────────────────
 
@@ -57,6 +58,17 @@ describe('statusesForTab', () => {
 
   it('"all" applies no status predicate', () => {
     expect(statusesForTab('all')).toBeNull()
+  })
+
+  it('matches the Figma 5-tab set, in frame order', () => {
+    expect([...ORDER_TABS]).toEqual(['all', 'a_traiter', 'in_delivery', 'done', 'cancelled'])
+  })
+
+  it('lands on À traiter, not Toutes — the approved divergence from the frame', () => {
+    // The frame's ACTIVE tab is `all`; an inbox that opens on an undifferentiated list does not
+    // answer "what needs me?". Pinned so the divergence is deliberate rather than drift.
+    expect(DEFAULT_ORDER_TAB).toBe('a_traiter')
+    expect(ORDER_TABS[0]).toBe('all')
   })
 
   it('every DB status is reachable from at least one tab', () => {
@@ -188,5 +200,34 @@ describe('cancelOrderAction', () => {
     const res = await cancelOrderAction({ orderId: ID, revalidate: '/evil' })
     expect(res.ok).toBe(false)
     expect(state.updates).toEqual([])
+  })
+})
+
+// ── 4. Status pill coverage — the G8 delta S5 regression guard ────────────────────────────────
+
+describe('statusPillFor', () => {
+  // The bug this pins: STATUS_PILL was E3's SERVICE map (5 keys), and G8 pointed a seller's
+  // PRODUCT inbox at it, so prepared/dispatched/in_delivery rendered NO pill at all — three of
+  // the seven seller states silently blank on screen while the build stayed green.
+  it.each([
+    'pending', 'accepted', 'prepared', 'dispatched', 'in_delivery', 'arrived', 'received', 'cancelled',
+  ])('resolves a pill for %s on a product order', (status) => {
+    const got = statusPillFor(status, 'product')
+    expect(got, `${status} has no pill`).toBeDefined()
+    expect(got!.pill).toBeTruthy()
+    expect(got!.labelKey).toMatch(/^common\.status_/)
+  })
+
+  it('labels `arrived` per order type — a parcel arrives, work is delivered', () => {
+    expect(statusPillFor('arrived', 'product')!.labelKey).toBe('common.status_arrived')
+    expect(statusPillFor('arrived', 'service')!.labelKey).toBe('common.status_arrived_service')
+  })
+
+  it('defaults to the service label so E3 call sites keep their exact wording', () => {
+    expect(statusPillFor('arrived')!.labelKey).toBe('common.status_arrived_service')
+  })
+
+  it('returns undefined for a status that is not a lifecycle value', () => {
+    expect(statusPillFor('not_a_status', 'product')).toBeUndefined()
   })
 })

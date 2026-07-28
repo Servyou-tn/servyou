@@ -9,6 +9,8 @@ export function searchPlaceholderKey(pathname: string): string {
   if (pathname.startsWith('/mes-engagements')) return 'shell.topbar.search.engagements'
   if (pathname.startsWith('/mes-propositions')) return 'shell.topbar.search.proposals'
   if (pathname.startsWith('/mes-commandes')) return 'shell.topbar.search.orders'
+  // The seller's inbox, not the buyer's — a distinct surface with its own noun (G8 delta).
+  if (pathname.startsWith('/commandes-recues')) return 'shell.topbar.search.receivedOrders'
   if (pathname.startsWith('/marche') || pathname.startsWith('/produits')) {
     return 'shell.topbar.search.products'
   }

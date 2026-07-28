@@ -2222,14 +2222,15 @@ export const ar: Record<string, string> = {
 
   // ── G8 — الطلبات الواردة (Figma 489:25211) ──
   'seller.orders.title':                  "الطلبات الواردة",
-  'seller.orders.subline':                "أدِر وتابع طلباتك.",
+  'seller.orders.subline':                "تابع وعالج طلباتك.",
   'seller.orders.tabs_aria':              "تصفية الطلبات حسب الحالة",
   'seller.orders.tab.a_traiter':          "للمعالجة",
   'seller.orders.tab.all':                "الكل",
-  'seller.orders.tab.pending':            "قيد الانتظار",
-  'seller.orders.tab.in_progress':        "قيد التنفيذ",
+  'seller.orders.tab.in_delivery':        "قيد التوصيل",
   'seller.orders.tab.done':               "مكتملة",
   'seller.orders.tab.cancelled':          "ملغاة",
+  'seller.orders.sort_aria':              "ترتيب الطلبات",
+  'shell.topbar.search.receivedOrders':   "ابحث عن طلب وارد...",
   'seller.orders.count':                  "{count} طلب",
   'seller.orders.sort.recent':            "الأحدث",
   'seller.orders.sort.oldest':            "الأقدم",

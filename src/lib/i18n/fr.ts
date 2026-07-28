@@ -2201,14 +2201,15 @@ export const fr: Record<string, string> = {
 
   // ── G8 — Commandes reçues (Figma 489:25211 / specimens 490:25690, 490:26034, 490:26058) ──
   'seller.orders.title':                  "Commandes reçues",
-  'seller.orders.subline':                "Gérez et suivez vos commandes.",
+  'seller.orders.subline':                "Suivez et traitez vos commandes.",
   'seller.orders.tabs_aria':              "Filtrer les commandes par statut",
   'seller.orders.tab.a_traiter':          "À traiter",
   'seller.orders.tab.all':                "Toutes",
-  'seller.orders.tab.pending':            "En attente",
-  'seller.orders.tab.in_progress':        "En cours",
+  'seller.orders.tab.in_delivery':        "En livraison",
   'seller.orders.tab.done':               "Terminées",
   'seller.orders.tab.cancelled':          "Annulées",
+  'seller.orders.sort_aria':              "Trier les commandes",
+  'shell.topbar.search.receivedOrders':   "Rechercher une commande reçue...",
   'seller.orders.count':                  "{count} commande(s)",
   'seller.orders.sort.recent':            "Plus récentes",
   'seller.orders.sort.oldest':            "Plus anciennes",

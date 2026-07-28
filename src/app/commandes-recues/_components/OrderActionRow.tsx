@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { Image as ImageIcon, MapPin, CheckCircle2 } from 'lucide-react'
 import { StatusPill } from '@/components/ui/status-pill'
-import { STATUS_PILL } from '@/lib/orders/order-status'
+import { statusPillFor } from '@/lib/orders/order-status'
 import { nextSellerStatus, isCancellable, type OrderStatus } from '@/lib/types/order-status'
 import { t, type Lang } from '@/lib/i18n'
 import { FOCUS_RING } from '@/components/layout/styles'
@@ -42,7 +42,7 @@ export function OrderActionRow({
   lang: Lang
   detailHref: string
 }) {
-  const pill = STATUS_PILL[order.status]
+  const pill = statusPillFor(order.status, order.orderType)
   const next = nextSellerStatus(order.status, order.orderType)
   const cancellable = isCancellable(order.status)
   const isTerminal = order.status === 'received' || order.status === 'cancelled'

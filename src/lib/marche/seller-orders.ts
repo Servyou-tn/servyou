@@ -13,16 +13,26 @@ import { PRODUCT_LIFECYCLE, type OrderStatus, type OrderType } from '@/lib/types
 /** Rows per page — matches the Figma list (10 rows above the pagination block). */
 export const ORDERS_PER_PAGE = 10
 
-// The status tabs, in frame order. `all` is not a status; the rest are the DB's own values.
-// `à traiter` is the seller-actionable set — the tab the frame opens on, because it answers the
-// only question a seller has when they open this page.
-export const ORDER_TABS = ['a_traiter', 'all', 'pending', 'in_progress', 'done', 'cancelled'] as const
+// The status tabs, in FRAME ORDER (Figma 489:25351): Toutes · À traiter · En livraison ·
+// Terminées · Annulées. Five, not the six G8 first shipped — "En attente" and "En cours" were
+// mine and are merged back into the frame's single "En livraison".
+//
+// ⚑ ONE DELIBERATE DIVERGENCE, founder-approved: the frame's ACTIVE tab is `all`, but the landing
+// tab here is `a_traiter`. An inbox that opens on an undifferentiated list does not answer "what
+// needs me?" — the same reasoning that made G4 action-first. `all` stays FIRST in the strip, as
+// drawn; only the default selection differs. The Figma should absorb this rather than the code
+// matching it.
+export const ORDER_TABS = ['all', 'a_traiter', 'in_delivery', 'done', 'cancelled'] as const
 export type OrderTab = (typeof ORDER_TABS)[number]
+
+/** The tab a bare /commandes-recues lands on. See the divergence note above. */
+export const DEFAULT_ORDER_TAB: OrderTab = 'a_traiter'
 
 // Statuses the SELLER can still advance. Mirrors G4's action centre.
 const ACTIONABLE: OrderStatus[] = ['pending', 'accepted', 'prepared', 'dispatched']
-// Moving, but the next move is not the seller's.
-const IN_PROGRESS: OrderStatus[] = ['accepted', 'prepared', 'dispatched', 'in_delivery', 'arrived']
+// "En livraison" — physically moving. `arrived` belongs here rather than under Terminées: the
+// parcel has landed but the buyer has not confirmed, so the order is not done.
+const IN_DELIVERY: OrderStatus[] = ['in_delivery', 'arrived']
 const DONE: OrderStatus[] = ['received']
 const CANCELLED: OrderStatus[] = ['cancelled']
 
@@ -30,10 +40,8 @@ export function statusesForTab(tab: OrderTab): OrderStatus[] | null {
   switch (tab) {
     case 'a_traiter':
       return ACTIONABLE
-    case 'pending':
-      return ['pending']
-    case 'in_progress':
-      return IN_PROGRESS
+    case 'in_delivery':
+      return IN_DELIVERY
     case 'done':
       return DONE
     case 'cancelled':
@@ -174,10 +182,9 @@ export const getSellerOrders = cache(
 
     const countIn = (set: OrderStatus[]) => all.filter((o) => set.includes(o.status)).length
     const counts: Record<OrderTab, number> = {
-      a_traiter: countIn(ACTIONABLE),
       all: all.length,
-      pending: countIn(['pending']),
-      in_progress: countIn(IN_PROGRESS),
+      a_traiter: countIn(ACTIONABLE),
+      in_delivery: countIn(IN_DELIVERY),
       done: countIn(DONE),
       cancelled: countIn(CANCELLED),
     }
