@@ -87,6 +87,8 @@ export function Sidebar({
                 icon={item.icon}
                 active={isActiveRoute(pathname, item.href)}
                 onNavigate={onNavigate}
+                disabled={item.disabled}
+                soonLabel={item.disabled ? t('shell.sidebar.soon', lang) : undefined}
               />
             ))}
             {/* "Devenir vendeur" promo (Figma 611:45637 → 110:3874): only for a consumer

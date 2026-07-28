@@ -11,7 +11,10 @@ describe('nextDestinationAfterVerify', () => {
     expect(nextDestinationAfterVerify('shopOwner', 'freelancer')).toBe('/devenir-vendeur')
   })
   it('falls back to seller_type when there is no role intent (cross-device)', () => {
-    expect(nextDestinationAfterVerify(null, 'shop_owner')).toBe('/ma-boutique')
+    // G4: was '/ma-boutique', a route that has never existed — this fallback landed a shop owner
+    // verifying email on a second device straight onto a 404. Now the seller dashboard, which does.
+    // '/mon-profil-freelance' is still a 404 and stays pinned here until H2/H3 give it a real page.
+    expect(nextDestinationAfterVerify(null, 'shop_owner')).toBe('/tableau-de-bord-vendeur')
     expect(nextDestinationAfterVerify(null, 'freelancer')).toBe('/mon-profil-freelance')
   })
   it('falls back to home for a consumer-baseline account', () => {

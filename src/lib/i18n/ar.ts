@@ -2115,6 +2115,9 @@ export const ar: Record<string, string> = {
   'shell.sidebar.section.discover':       "اكتشف وتسوّق",
   'shell.sidebar.section.tools':          "أدوات وحساب",
   'shell.sidebar.dashboard':              "لوحة التحكم",
+  'shell.sidebar.products':               "منتجاتي",
+  'shell.sidebar.receivedOrders':         "الطلبات الواردة",
+  'shell.sidebar.soon':                   "قريباً",
   'shell.sidebar.services':               "خدماتي",
   'shell.sidebar.engagements':            "مهامي الجارية",
   'shell.sidebar.proposals':              "عروضي",
@@ -2171,5 +2174,51 @@ export const ar: Record<string, string> = {
   'aide.faq.a4':           "اذهب إلى «الإعدادات» لتحديث معلوماتك الشخصية وتفضيلاتك.",
   'aide.faq.q5':           "كيف أتواصل مع تاجر أو مستقل؟",
   'aide.faq.a5':           "افتح بطاقة منتج أو خدمة واستخدم زر واتساب للتواصل مباشرة.",
+
+  // ── G4 — لوحة تحكم البائع (Figma 475:21134 / specimen 484:24205) ──
+  'seller.dashboard.title':               "مرحباً، {shop}",
+  'seller.dashboard.subline':             "إليك ما يتطلب انتباهك اليوم.",
+  'seller.dashboard.cta_add_product':     "إضافة منتج",
+
+  'seller.dashboard.tile.pending':        "طلبات قيد المعالجة",
+  'seller.dashboard.tile.pending_sub':    "في انتظار إجرائك",
+  'seller.dashboard.tile.profit':         "صافي الربح",
+  'seller.dashboard.tile.profit_soon':    "قريباً",
+  'seller.dashboard.tile.profit_sub':     "الطلبات المُسلَّمة",
+  'seller.dashboard.tile.week':           "طلبات هذا الأسبوع",
+  'seller.dashboard.tile.week_sub':       "آخر 7 أيام",
+  'seller.dashboard.tile.products':       "المنتجات النشطة",
+  'seller.dashboard.tile.products_sub':   "معروضة للبيع",
+
+  'seller.dashboard.ac.title':            "للمعالجة الآن",
+  'seller.dashboard.ac.empty_title':      "كل شيء محدَّث ✓",
+  'seller.dashboard.ac.empty_body':       "لا توجد طلبات قيد الانتظار.",
+  'seller.dashboard.ac.footer':           "عرض كل الطلبات ←",
+
+  'seller.dashboard.advance.accepted':    "تأكيد",
+  'seller.dashboard.advance.prepared':    "تحديد كمُجهَّز",
+  'seller.dashboard.advance.dispatched':  "تحديد كمُرسَل",
+  'seller.dashboard.advance.in_delivery': "تحديد قيد التوصيل",
+  'seller.dashboard.advance.arrived':     "تحديد كمُسلَّم",
+  'seller.dashboard.error_no_transition': "هذا الطلب لم يعد ينتظر أي إجراء منك.",
+
+  'seller.dashboard.monitor.title':       "الطلبات الجارية",
+  'seller.dashboard.monitor.link':        "عرض كل الطلبات ←",
+  'seller.dashboard.monitor.empty_title': "لا توجد طلبات جارية",
+  'seller.dashboard.monitor.empty_body':  "ستظهر هنا الطلبات قيد التوصيل.",
+
+  'seller.dashboard.lowstock.title':      "مخزون منخفض",
+  'seller.dashboard.lowstock.remaining':  "بقي {count} فقط في المخزون",
+  'seller.dashboard.lowstock.empty_title': "المخزون مكتمل",
+  'seller.dashboard.lowstock.empty_body': "لا يوجد منتج تحت {threshold} وحدات.",
+
+  'seller.dashboard.quick.title':         "إجراءات سريعة",
+  'seller.dashboard.quick.addProduct':    "إضافة منتج",
+  'seller.dashboard.quick.viewOrders':    "عرض الطلبات",
+  'seller.dashboard.quick.editShop':      "تعديل متجري",
+  'seller.dashboard.quick.viewPublic':    "عرض متجري العام",
+
+  'seller.dashboard.noshop.title':        "لم يتم إنشاء متجرك بعد",
+  'seller.dashboard.noshop.body':         "أنشئ متجرك لنشر المنتجات واستقبال الطلبات.",
 
 }

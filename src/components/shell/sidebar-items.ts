@@ -7,6 +7,7 @@ import {
   Compass,
   Store,
   Package,
+  Inbox,
   Heart,
   Megaphone,
   Settings,
@@ -19,7 +20,13 @@ import {
 // HIDDEN here on purpose: Messages (Phase 3, no chat yet) and the "Passer à Premium" CTA (no
 // pricing page) — they reappear when those surfaces ship.
 export type ShellRole = 'consumer' | 'freelancer' | 'shop_owner'
-export type SidebarItemDef = { key: string; href: string; icon: LucideIcon }
+export type SidebarItemDef = {
+  key: string
+  href: string
+  icon: LucideIcon
+  // Nav entry whose page is not built yet: renders non-navigable with a "Bientôt" badge.
+  disabled?: boolean
+}
 export type SidebarSectionDef = { labelKey: string; items: SidebarItemDef[] }
 
 // ── Découvrir & achats — shared by every role ──
@@ -62,7 +69,25 @@ const ACTIVITIES: SidebarSectionDef = {
   ],
 }
 
+// ── Mes activités — shop_owner only (Figma 110:4066). Three items, matching the reconciled
+//    shop_owner Sidebar variant: dashboard · products · received orders. "Ma boutique" and
+//    "Statistiques" are deliberately absent from that variant — shop identity lives in the avatar
+//    dropdown, and Stats is cancelled at MVP.
+//
+//    Mes produits (G5) and Commandes reçues (G8) are not built yet, so they ship DISABLED with a
+//    "Bientôt" badge rather than linking to a 404 (founder call). Flip `disabled` off in the PR
+//    that builds each page — the href is already correct. ──
+const SHOP_ACTIVITIES: SidebarSectionDef = {
+  labelKey: 'shell.sidebar.section.activities',
+  items: [
+    { key: 'shell.sidebar.dashboard', href: '/tableau-de-bord-vendeur', icon: LayoutDashboard },
+    { key: 'shell.sidebar.products', href: '/mes-produits', icon: Package, disabled: true },
+    { key: 'shell.sidebar.receivedOrders', href: '/commandes-recues', icon: Inbox, disabled: true },
+  ],
+}
+
 export function sidebarSectionsForRole(role: ShellRole): SidebarSectionDef[] {
   if (role === 'freelancer') return [ACTIVITIES, DISCOVER, TOOLS]
-  return [DISCOVER, TOOLS] // consumer + shop_owner fallback
+  if (role === 'shop_owner') return [SHOP_ACTIVITIES, DISCOVER, TOOLS]
+  return [DISCOVER, TOOLS] // consumer
 }

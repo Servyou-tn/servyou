@@ -17,34 +17,74 @@ export function SidebarItem({
   icon: Icon,
   active,
   onNavigate,
+  disabled,
+  soonLabel,
 }: {
   href: string
   label: string
   icon: LucideIcon
   active: boolean
   onNavigate?: () => void
+  // `disabled` renders the row as a non-navigable <span> carrying a "Bientôt" badge, for a nav
+  // entry whose page is not built yet. Founder call (G4): a nav pointing at 404s is worse than a
+  // nav that admits what is not ready — the shop_owner section ships with its dashboard live and
+  // Mes produits / Commandes reçues disabled until G5 and G8 land. Same affordance as
+  // ServicesLensToggle's deferred Freelances lens, so the two read as one pattern.
+  disabled?: boolean
+  soonLabel?: string
 }) {
+  const content = (
+    <>
+      <Icon
+        className={cn(
+          'h-5 w-5 shrink-0',
+          !active && !disabled && 'text-brand-blue-300',
+          disabled && 'text-brand-blue-300/50',
+        )}
+        aria-hidden="true"
+      />
+      <span
+        className={cn(
+          'truncate text-body-sm',
+          active ? 'font-semibold' : 'font-medium',
+          disabled && 'text-white/50',
+        )}
+      >
+        {label}
+      </span>
+      {disabled && soonLabel ? (
+        <span className="ms-auto shrink-0 rounded-full bg-white/10 px-1.5 py-0.5 text-caption font-semibold text-white/70">
+          {soonLabel}
+        </span>
+      ) : null}
+    </>
+  )
+
+  // Label size AND weight live on the span above: text-body-sm bundles font-weight 400, so the
+  // two must sit together on the leaf — and text-body-sm in this cn() would be dropped by
+  // tailwind-merge against text-white (the documented TopbarSearch gotcha).
+  const base = 'flex h-11 items-center gap-3 rounded-[10px] px-3 transition-colors'
+
+  if (disabled) {
+    return (
+      <span aria-disabled="true" className={cn(base, 'cursor-not-allowed text-white')}>
+        {content}
+      </span>
+    )
+  }
+
   return (
     <Link
       href={href}
       onClick={onNavigate}
       aria-current={active ? 'page' : undefined}
       className={cn(
-        // Label size AND weight live on the span below: text-body-sm bundles font-weight 400, so
-        // the two must sit together on the leaf — and text-body-sm in this cn() would be dropped
-        // by tailwind-merge against text-white (the documented TopbarSearch gotcha).
-        'flex h-11 items-center gap-3 rounded-[10px] px-3 transition-colors',
+        base,
         active ? 'bg-brand-blue-600 text-white' : 'text-white hover:bg-white/5',
         FOCUS_RING,
       )}
     >
-      <Icon
-        className={cn('h-5 w-5 shrink-0', !active && 'text-brand-blue-300')}
-        aria-hidden="true"
-      />
-      <span className={cn('truncate text-body-sm', active ? 'font-semibold' : 'font-medium')}>
-        {label}
-      </span>
+      {content}
     </Link>
   )
 }
