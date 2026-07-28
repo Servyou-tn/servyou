@@ -2,8 +2,9 @@
 
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import { Check, ChevronDown } from 'lucide-react'
+import { ChevronDown } from 'lucide-react'
 import { toast } from 'sonner'
+import { OrderRail } from '@/components/orders/OrderRail'
 import { useLang } from '@/components/LangProvider'
 import { t } from '@/lib/i18n'
 import { createClient } from '@/lib/supabase/client'
@@ -22,7 +23,6 @@ import {
   longDate,
   shortDate,
   shortRef,
-  stageState,
 } from '@/lib/orders/order-status'
 
 // E3 list — the accordion rows (Figma 709:59673 desktop / 710:59952 mobile).
@@ -160,43 +160,17 @@ function OrderRow({
 // completed stage is border-strong, the rest border-subtle.
 function Rail({ status }: { status: string }) {
   const lang = useLang()
+  // The rail treatment now lives in components/orders/OrderRail — extracted in the G9 delta pass
+  // so the seller's detail page could reuse this exact visual language instead of the legacy
+  // OrderLifecycleStepper. E3 keeps its OWN stage set (the 4-stage buyer service rail); only the
+  // rendering is shared, which is why `stages` is a prop.
   return (
-    <ol className="flex items-start">
-      {RAIL_STAGES.map((stage, i) => {
-        const state = stageState(status, i)
-        return (
-          <li key={stage} className="contents">
-            <div className="flex w-16 shrink-0 flex-col items-center gap-2">
-              <span
-                aria-hidden="true"
-                className={
-                  state === 'completed'
-                    ? 'flex h-8 w-8 items-center justify-center rounded-full bg-brand-blue-600'
-                    : state === 'current'
-                      ? 'flex h-8 w-8 items-center justify-center rounded-full border-2 border-brand-blue-600 bg-surface-base'
-                      : 'flex h-8 w-8 items-center justify-center rounded-full border-[1.5px] border-border-strong bg-surface-base'
-                }
-              >
-                {state === 'completed' && <Check className="h-4 w-4 text-text-inverse" />}
-                {state === 'current' && <span className="h-2.5 w-2.5 rounded-full bg-brand-blue-600" />}
-              </span>
-              <span
-                className={`text-center text-caption leading-4 font-medium ${state === 'upcoming' ? 'text-text-muted' : 'text-text-secondary'}`}
-              >
-                {t(STAGE_LABEL_KEY[stage], lang)}
-              </span>
-            </div>
-            {i < RAIL_STAGES.length - 1 && (
-              <div className="mt-4 h-0.5 flex-1" aria-hidden="true">
-                <div
-                  className={`h-full w-full ${state === 'completed' ? 'bg-border-strong' : 'bg-border-subtle'}`}
-                />
-              </div>
-            )}
-          </li>
-        )
-      })}
-    </ol>
+    <OrderRail
+      stages={RAIL_STAGES}
+      status={status}
+      labelKeyFor={(stage) => STAGE_LABEL_KEY[stage as (typeof RAIL_STAGES)[number]]}
+      lang={lang}
+    />
   )
 }
 

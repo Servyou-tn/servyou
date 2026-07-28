@@ -4,12 +4,18 @@ import { notFound } from 'next/navigation'
 import { Package, ChevronRight } from 'lucide-react'
 import { AppShell } from '@/components/shell/AppShell'
 import { StatusPill } from '@/components/ui/status-pill'
-import { OrderLifecycleStepper } from '@/components/OrderLifecycleStepper'
+import { OrderRail } from '@/components/orders/OrderRail'
 import { WhatsAppContactButton } from '@/components/orders/WhatsAppContactButton'
 import { requireShopOwner } from '@/lib/auth/require-seller'
 import { getSellerOrderDetail } from '@/lib/marche/seller-order-detail'
 import { statusPillFor, shortRef, longDate } from '@/lib/orders/order-status'
-import { nextSellerStatus, isCancellable } from '@/lib/types/order-status'
+import {
+  nextSellerStatus,
+  isCancellable,
+  lifecycleFor,
+  statusLabelKey,
+  type OrderStatus,
+} from '@/lib/types/order-status'
 import { getLang } from '@/lib/i18n/server'
 import { t } from '@/lib/i18n'
 import { FOCUS_RING } from '@/components/layout/styles'
@@ -109,12 +115,14 @@ export default async function OrderDetailPage({
           </div>
 
           <section className="rounded-xl border border-border-subtle bg-surface-base p-6">
-            <OrderLifecycleStepper
+            {/* The SELLER's chain — 7 steps for a product, 4 for a service. Deliberately not
+                E3's RAIL_STAGES: that is the buyer's service rail, and showing a seller four
+                steps would be showing them someone else's journey. */}
+            <OrderRail
+              stages={lifecycleFor(order.orderType)}
               status={order.status}
-              order_type={order.orderType}
-              cancelled_by={order.cancelledBy}
-              cancellation_reason={order.cancellationReason}
-              received_at={order.receivedAt}
+              labelKeyFor={(stage) => statusLabelKey(stage as OrderStatus, order.orderType)}
+              lang={lang}
             />
           </section>
         </div>
@@ -282,9 +290,15 @@ export default async function OrderDetailPage({
 
               {next ? (
                 <>
+                  {/* Figma 497:26458 — Button 312×48, full width, filled primary. It and the
+                      WhatsApp button above are the same rank in the frame, so they are the same
+                      size here. `variant`/`fullWidth` keep the row's compact secondary intact. */}
                   <AdvanceOrderButton
                     orderId={order.id}
                     label={t(`seller.orders.advance.${next}`, lang)}
+                    variant="primary"
+                    size="lg"
+                    fullWidth
                   />
                   <p className="text-body-sm text-text-muted">
                     {t(
@@ -312,6 +326,7 @@ export default async function OrderDetailPage({
                   status={order.status}
                   orderType={order.orderType}
                   lang={lang}
+                  asLink
                 />
               ) : null}
             </section>

@@ -10,6 +10,7 @@
 
 import { describe, it, expect } from 'vitest'
 import { buildWhatsAppUrl, toWaDigits, WHATSAPP_MESSAGE_MAX } from '@/lib/orders/whatsapp'
+import { shortRef } from '@/lib/orders/order-status'
 import { fr } from '@/lib/i18n/fr'
 import { ar } from '@/lib/i18n/ar'
 
@@ -109,5 +110,33 @@ describe('the shipped seller template fits the budget in BOTH locales', () => {
         expect(dict[TEMPLATE_KEY]).toContain(`{${k}}`)
       }
     }
+  })
+})
+
+// ── shortRef — one reference, everywhere it appears ───────────────────────────────────────────
+
+describe('shortRef', () => {
+  // Changed shape in the G9 delta pass: it was `id.slice(0, 8)` — eight LOWERCASE characters, no
+  // hash — which nothing rendered on screen, only WhatsApp message bodies. G9 is the first
+  // surface to display a reference, and Figma shows "#A4F729". A seller reading "#A4F729" while
+  // the message they just sent quotes "f14bbb38" is two names for one order; the reference exists
+  // to make the conversation traceable, so it must be ONE string on screen and in the message.
+  it('renders as # + six UPPERCASE hex characters', () => {
+    expect(shortRef('f14bbb38-82c5-44ac-9b8b-fc0547848b98')).toBe('#F14BBB')
+  })
+
+  it('ignores the uuid hyphens rather than counting them as characters', () => {
+    expect(shortRef('ab-cdef-0123')).toBe('#ABCDEF')
+  })
+
+  it('is stable — the same order always yields the same reference', () => {
+    const id = 'b6817c30-ac14-4f04-a058-8623827f6c91'
+    expect(shortRef(id)).toBe(shortRef(id))
+  })
+
+  it('is what the WhatsApp templates interpolate, so both sides quote one string', () => {
+    const ref = shortRef('f14bbb38-82c5-44ac-9b8b-fc0547848b98')
+    const composed = (fr as Record<string, string>)[TEMPLATE_KEY].replace('{ref}', ref)
+    expect(composed).toContain('#F14BBB')
   })
 })

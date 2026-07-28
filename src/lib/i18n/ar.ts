@@ -2279,6 +2279,7 @@ export const ar: Record<string, string> = {
   'seller.orderDetail.client':            "العميل",
   'seller.orderDetail.phone_disclosure':  "بيانات الاتصال ظاهرة لأن لديك طلباً جارياً.",
   'seller.orderDetail.whatsapp_cta':      "التواصل عبر واتساب",
+  'seller.orderDetail.cancel_link':       "إلغاء الطلب",
   'seller.orderDetail.next_step':         "الخطوة التالية",
   'seller.orderDetail.hint_pending':      "أكّد الطلب مع العميل عبر واتساب قبل قبوله.",
   'seller.orderDetail.hint_generic':      "تابع الطلب بعد إتمام هذه الخطوة.",

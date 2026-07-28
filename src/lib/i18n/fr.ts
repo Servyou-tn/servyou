@@ -2259,6 +2259,7 @@ export const fr: Record<string, string> = {
   'seller.orderDetail.client':            "Client",
   'seller.orderDetail.phone_disclosure':  "Coordonnées visibles car vous avez une commande en cours.",
   'seller.orderDetail.whatsapp_cta':      "Contacter sur WhatsApp",
+  'seller.orderDetail.cancel_link':       "Annuler la commande",
   'seller.orderDetail.next_step':         "Prochaine étape",
   'seller.orderDetail.hint_pending':      "Confirmez la commande avec le client sur WhatsApp avant de l'accepter.",
   'seller.orderDetail.hint_generic':      "Faites avancer la commande une fois cette étape terminée.",

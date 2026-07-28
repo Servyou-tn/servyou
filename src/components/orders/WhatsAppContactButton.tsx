@@ -64,13 +64,23 @@ export function WhatsAppContactButton({
         aria-busy={loading || undefined}
         className={cn(
           'inline-flex items-center justify-center gap-2 rounded-[10px] bg-wa-brand font-semibold',
-          'text-text-primary whitespace-nowrap transition-colors hover:brightness-95',
+          'whitespace-nowrap transition-colors hover:brightness-95',
           'disabled:cursor-not-allowed disabled:opacity-60 motion-reduce:transition-none',
           size === 'lg' ? 'h-12 w-full px-4 text-body' : 'h-9 px-4 text-body-sm',
           FOCUS_RING,
         )}
       >
-        {label}
+        {/* ⚑ THE LABEL COLOUR LIVES HERE, ON ITS OWN ELEMENT, AND MUST STAY HERE.
+            tailwind-merge treats every `text-*` utility as ONE group, so a colour and a size in
+            the same merged string collide and the LATER one wins. When `text-text-primary` sat
+            beside `text-body` in the button's own cn(), merge evicted the colour and the label
+            rendered at the inherited rgb(237,237,237) on #25d366 — a measured 1.69:1, which is
+            unreadable, not merely off-spec. The intended #0f172a on that green is 9.00:1.
+            Splitting them across two elements makes the collision impossible rather than
+            order-dependent: reordering the button's classes can no longer bring it back.
+            This is the SECOND time the text-* group has silently evicted a class in this
+            codebase — a size during the /marche/services rebuild, a colour here. */}
+        <span className="text-text-primary">{label}</span>
       </button>
       {error ? (
         <p role="alert" className="text-caption text-danger-500">
