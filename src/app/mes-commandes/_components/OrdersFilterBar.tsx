@@ -21,6 +21,7 @@ import {
   type OrderSort,
 } from '@/lib/marche/my-orders-params'
 import { STATUS_PILL } from '@/lib/orders/order-status'
+import { MENU_CONTENT, MENU_ITEM } from '@/components/ui/menu-styles'
 
 // E3 filter bar — Figma filterBar 709:59669 (search 816 + Statut 148 + Trier par 148, gap 12)
 // and the mobile selRow 710:59949 (two 168 selects under a full-width search).
@@ -46,9 +47,8 @@ import { STATUS_PILL } from '@/lib/orders/order-status'
 // real label fits on one line and only pathological content truncates.
 const TRIGGER =
   'inline-flex h-10 shrink-0 items-center justify-between gap-2 rounded-[10px] border border-border-strong bg-white px-4 text-body-sm transition-colors hover:border-text-muted'
-const MENU_CONTENT = 'rounded-xl border border-border-subtle bg-white p-1 text-text-primary shadow-lg'
-const MENU_ITEM =
-  'cursor-pointer rounded-lg text-body-sm text-text-primary focus:bg-surface-subtle focus:text-text-primary'
+// MENU_CONTENT / MENU_ITEM now live in components/ui/menu-styles — promoted at their third
+// consumer (G8's sort select). Strings unchanged.
 
 export function OrdersFilterBar({
   q,

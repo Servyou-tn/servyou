@@ -197,3 +197,52 @@ precomputed `href` and the page still owns query-param composition.
 
 **Still open by decision:** P4 (typography tokens, platform-wide) and the multi-select checkbox
 column (deferred with the delivery documents).
+
+---
+
+## Follow-up — the sort select's PANEL (same branch, after the pass above)
+
+The delta pass checked the sort **trigger** against Figma and passed it. It never opened the
+control, so it never checked the **panel** — and the panel was wrong in the way only an open
+dropdown reveals.
+
+**Measured before.** The sort was a native `<select>`, so its open list is drawn by the operating
+system: the page had **no `[role="menu"]` in the DOM at all**. Nothing to style, and it inherited
+none of the app's tokens.
+
+**Measured reference** — ServicesFilterBar « Catégorie », the shipped pattern:
+
+| property | Catégorie (reference) | G8 sort, before | G8 sort, after |
+|---|---|---|---|
+| element | `div[role=menu]` | **none — OS-drawn** | `div[role=menu]` ✅ |
+| background | `rgb(255,255,255)` | n/a | `rgb(255,255,255)` ✅ |
+| border | `1px solid rgb(226,232,240)` | n/a | identical ✅ |
+| radius | `12px` | n/a | `12px` ✅ |
+| padding | `4px` | n/a | `4px` ✅ |
+| item element | `div[role=menuitemradio]` | n/a | identical ✅ |
+| item height | `32` | n/a | `32` ✅ |
+| item radius | `10px` | n/a | `10px` ✅ |
+| item padding | `6px 8px 6px 32px` | n/a | identical ✅ |
+| item type | `14px/20px 400` | n/a | identical ✅ |
+| selected | `aria-checked` on the radio item | n/a | `aria-checked` ✅ |
+
+Panel **width** differs by design: Catégorie sets `w-64` and Ville `w-56` explicitly; the sort
+panel carries no width class and sizes to its trigger (150), exactly as E3's Statut does.
+
+**Reconciled to the established pattern:** `DropdownMenu` + `DropdownMenuContent` with the shared
+`MENU_CONTENT` / `MENU_ITEM` overrides and `align="start"`, `DropdownMenuRadioGroup` for
+single-select — the same construction as ServicesFilterBar's Catégorie/Ville and E3's Statut/Trier.
+
+**Both constraints held**, re-measured on the trigger: `min-width 148px` / `max-width 224px` (it
+hugs at 160 for "Plus récentes"), label `white-space: nowrap` + `text-overflow: ellipsis`; and the
+options still carry **precomputed hrefs** — no callback prop crosses the RSC boundary. The
+`onValueChange` handler is created inside the client component, which is a different thing.
+
+**Promotion.** `MENU_CONTENT` / `MENU_ITEM` were duplicated **byte-for-byte** (verified by hash) in
+`ServicesFilterBar` and E3's `OrdersFilterBar`. G8 is the third consumer, which is this project's
+documented threshold, so they moved to `components/ui/menu-styles.ts` with the strings unchanged
+and both existing consumers repointed. The Catégorie panel re-measures identically after the move
+(radius 12, border 1px #e2e8f0, item h32).
+
+**Other selects on G8:** none. The only remaining choice control is the cancel modal's radio group,
+which is a form control inside a dialog, not a dropdown — different pattern, left alone.
