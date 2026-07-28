@@ -15,10 +15,16 @@ type CityRow = {
 
 export async function getServiceCities(): Promise<string[]> {
   const supabase = await createClient()
+  // Moderation: mirror the result query exactly (lib/search/search-marketplace.ts). If a
+  // moderated freelancer's city stayed in this list the picker would offer an option whose
+  // result set is now empty — and before the result query was filtered, selecting it surfaced
+  // precisely the listings moderation was meant to remove. Row + parent, both mechanisms.
   const { data, error } = await supabase
     .from('service_listings')
-    .select('freelancer_profiles!inner(city)')
+    .select('freelancer_profiles!inner(city, admin_hidden_at)')
     .eq('status', 'active')
+    .is('admin_hidden_at', null)
+    .is('freelancer_profiles.admin_hidden_at', null)
   if (error) {
     console.error(
       '[filter-cities] service cities fetch error:',

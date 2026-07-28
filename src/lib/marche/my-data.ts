@@ -186,6 +186,8 @@ function baseUnavailable(row: OrderRow): MyOrder {
 
 // ─── /mes-favoris ───────────────────────────────────────────────────────────────
 
+type HiddenAt = { admin_hidden_at: string | null }
+
 type FavoriteRow = {
   item_type: 'product' | 'service'
   created_at: string
@@ -195,7 +197,12 @@ type FavoriteRow = {
         title: string
         description: string | null
         price_tnd: number | string
-        shops: { name: string | null; city: string | null } | { name: string | null; city: string | null }[] | null
+        status: string
+        admin_hidden_at: string | null
+        shops:
+          | ({ name: string | null; city: string | null } & HiddenAt)
+          | ({ name: string | null; city: string | null } & HiddenAt)[]
+          | null
         product_images: { image_url: string; display_order: number }[] | null
       }
     | null
@@ -206,10 +213,37 @@ type FavoriteRow = {
         description: string | null
         starting_price_tnd: number | string | null
         delivery_time: string | null
-        freelancer_profiles: { profile_id: string; city: string | null } | { profile_id: string; city: string | null }[] | null
+        status: string
+        admin_hidden_at: string | null
+        freelancer_profiles:
+          | ({ profile_id: string; city: string | null } & HiddenAt)
+          | ({ profile_id: string; city: string | null } & HiddenAt)[]
+          | null
         categories: { name_fr: string } | { name_fr: string }[] | null
       }
     | null
+}
+
+// Favorites is the one public read path where moderation CANNOT be pushed into the query.
+// A favorite row points at a product OR a service, so both embeds are nullable to-one joins:
+// `!inner` on either would drop every favorite of the other kind, and a PostgREST filter on a
+// nullable embed's column changes the join semantics rather than the row set. So the predicate
+// is applied here, in code, over the fetched rows — same three conditions the query-side paths
+// use (lib/marche/data.ts): the listing is active, the listing is not itself moderated, and its
+// parent (shop / freelancer profile) is not moderated.
+//
+// This path had NEITHER check before, which made it the only surface that rendered a DIRECTLY
+// hidden listing — elsewhere `status='active'` caught that case incidentally.
+function favoriteIsVisible(
+  listing: { status: string; admin_hidden_at: string | null } | null,
+  parent: HiddenAt | null,
+): boolean {
+  if (!listing) return false
+  if (listing.status !== 'active') return false
+  if (listing.admin_hidden_at !== null) return false
+  // A missing parent means the embed was unreadable (RLS) — fail closed, not open.
+  if (!parent || parent.admin_hidden_at !== null) return false
+  return true
 }
 
 // One favorited item, tagged by kind, for the combined "Tous" view (which interleaves products
@@ -231,8 +265,8 @@ export async function getMyFavorites(
     .from('favorites')
     .select(
       `item_type, created_at,
-       products ( id, title, description, price_tnd, shops ( name, city ), product_images ( image_url, display_order ) ),
-       service_listings ( id, title, description, starting_price_tnd, delivery_time, freelancer_profiles ( profile_id, city ), categories ( name_fr ) )`,
+       products ( id, title, description, price_tnd, status, admin_hidden_at, shops ( name, city, admin_hidden_at ), product_images ( image_url, display_order ) ),
+       service_listings ( id, title, description, starting_price_tnd, delivery_time, status, admin_hidden_at, freelancer_profiles ( profile_id, city, admin_hidden_at ), categories ( name_fr ) )`,
     )
     .eq('user_id', userId)
     .order('created_at', { ascending: false })
@@ -254,6 +288,7 @@ export async function getMyFavorites(
       const p = one(row.products)
       if (!p) continue
       const shop = one(p.shops)
+      if (!favoriteIsVisible(p, shop)) continue
       products.push({
         id: p.id,
         title: p.title,
@@ -267,6 +302,7 @@ export async function getMyFavorites(
       const s = one(row.service_listings)
       if (!s) continue
       const fp = one(s.freelancer_profiles)
+      if (!favoriteIsVisible(s, fp)) continue
       serviceRows.push({
         id: s.id,
         title: s.title,

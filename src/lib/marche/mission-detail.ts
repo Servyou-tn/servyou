@@ -17,6 +17,23 @@ import { JOB_POST_EXPIRY_DAYS, MAX_RESPONSES_PER_POST } from '@/lib/job-constant
 //   - There is no avatar column anywhere → the UI falls back to initials.
 //   - "expired" is never stored on job_posts; the response-limit trigger only blocks new
 //     responses past 30 days. Expiry is therefore computed here from created_at.
+//
+// MODERATION — this file DELIBERATELY does not filter admin_hidden_at. That is a decision, not
+// an omission, and it was made when the public read paths were audited and fixed
+// (fix/moderation-filter):
+//   - The job post itself is the VIEWER'S OWN (consumer_id === currentUserId is enforced above).
+//     An owner must be able to see their own moderated content, with the ModerationBanner
+//     explaining why it is hidden — 404-ing an author out of their own post is the wrong
+//     outcome, and the owner exception is exactly the carve-out the audit preserved.
+//   - The freelancer_profiles read below resolves the people who RESPONDED to that post. That
+//     is a relationship path, not public discovery: the same reasoning that keeps a moderated
+//     shop's products visible in the buyer's order history keeps a moderated freelancer's
+//     existing proposal visible to the author it was sent to. Hiding it would silently erase a
+//     real interaction from the author's view.
+// If you are grepping for admin_hidden_at coverage: the public listing paths are
+// lib/marche/data.ts, lib/marche/filter-cities.ts, lib/marche/filter-categories.ts,
+// lib/marche/my-data.ts (favorites) and lib/search/search-marketplace.ts. This file is not one
+// of them, and src/__tests__/moderation-read-paths.test.ts pins that boundary.
 
 function one<T>(embed: T | T[] | null | undefined): T | null {
   if (Array.isArray(embed)) return embed[0] ?? null
