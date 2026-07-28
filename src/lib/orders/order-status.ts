@@ -1,8 +1,17 @@
 import type { StatusValue } from '@/components/ui/status-pill'
 import type { Lang } from '@/lib/i18n'
 
-// The service lifecycle as E3 renders it. Pure — no React, no data client — so the mapping is
-// readable in one place and testable.
+// Order presentation helpers, shared by BOTH sides of an order: E3 `/mes-commandes` (buyer) and
+// G8 `/commandes-recues` (seller). Promoted out of `app/mes-commandes/_components/` when G8 became
+// the second consumer — `STATUS_PILL`, `shortRef`, `shortDate`/`longDate` and `stageState` are
+// role-agnostic and were never buyer-specific.
+//
+// NOTE `RAIL_STAGES` IS buyer-shaped: it is the 4-stage SERVICE rail E3 draws. The seller side
+// runs the full 7-step product chain, so G8/G9 use `lifecycleFor()` from `@/lib/types/order-status`
+// instead. Do not widen RAIL_STAGES to serve both — they are different journeys, not one journey
+// at two widths.
+//
+// Pure — no React, no data client — so the mapping is readable in one place and testable.
 //
 // The DB CHECK holds 8 statuses; a SERVICE order can only ever be one of these 5 (the trigger's
 // service chain is pending → accepted → arrived → received, plus cancelled from any non-terminal

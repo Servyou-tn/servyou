@@ -39,6 +39,21 @@ export function nextStatus(current: OrderStatus, orderType: OrderType): OrderSta
   return chain[i + 1]
 }
 
+// The next state THE SELLER may drive, or null when the ball is not in their court.
+//
+// This is NOT the same as nextStatus: `received` is buyer-only in
+// `check_order_status_transition` ("Seul l'acheteur peut confirmer la réception"), so the seller's
+// chain stops at `arrived` even though the lifecycle continues. Offering the raw next hop here
+// would render a button the database refuses — which is exactly the drift that having two copies
+// of this logic invited. G4 and G8 both call this one.
+export function nextSellerStatus(
+  current: OrderStatus,
+  orderType: OrderType,
+): OrderStatus | null {
+  const next = nextStatus(current, orderType)
+  return next === 'received' ? null : next
+}
+
 // An order may be cancelled from any non-terminal state. The DB trigger
 // (check_order_status_transition) is the authoritative guard; this is the
 // app-code gate for whether to surface a cancel affordance at all.

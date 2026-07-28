@@ -19,10 +19,10 @@ import { StatusPill, type StatusValue } from '@/components/ui/status-pill'
 import { requireShopOwner } from '@/lib/auth/require-seller'
 import {
   getSellerDashboard,
-  nextSellerStatus,
   LOW_STOCK_THRESHOLD,
   type ActionableOrder,
 } from '@/lib/marche/seller-dashboard'
+import { nextSellerStatus, type OrderStatus, type OrderType } from '@/lib/types/order-status'
 import { getLang } from '@/lib/i18n/server'
 import { t, type Lang } from '@/lib/i18n'
 import { FOCUS_RING } from '@/components/layout/styles'
@@ -66,7 +66,7 @@ function pillFor(status: string): StatusValue {
 // The seller-facing verb for the hop this order is waiting on. Keyed by CURRENT status, since
 // that is what the seller sees; the target is derived server-side in the action.
 function actionLabel(order: ActionableOrder, lang: Lang): string | null {
-  const next = nextSellerStatus(order.orderType, order.status)
+  const next = nextSellerStatus(order.status as OrderStatus, order.orderType as OrderType)
   if (!next) return null
   return t(`seller.dashboard.advance.${next}`, lang)
 }

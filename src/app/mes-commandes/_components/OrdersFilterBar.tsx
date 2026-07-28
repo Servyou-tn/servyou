@@ -20,7 +20,7 @@ import {
   type ServiceOrderStatus,
   type OrderSort,
 } from '@/lib/marche/my-orders-params'
-import { STATUS_PILL } from './order-status'
+import { STATUS_PILL } from '@/lib/orders/order-status'
 
 // E3 filter bar — Figma filterBar 709:59669 (search 816 + Statut 148 + Trier par 148, gap 12)
 // and the mobile selRow 710:59949 (two 168 selects under a full-width search).

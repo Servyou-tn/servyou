@@ -206,23 +206,11 @@ export const getSellerDashboard = cache(
   },
 )
 
-/**
- * The seller's next status for an order, or null when the seller owns no further hop.
- * Mirrors `check_order_status_transition` exactly — the DB is the authority, this is the UI's
- * copy so a button is only ever offered for a transition the trigger will actually accept.
- */
-export function nextSellerStatus(orderType: SellerOrderKind, status: string): string | null {
-  if (orderType === 'service') {
-    if (status === 'pending') return 'accepted'
-    if (status === 'accepted') return 'arrived'
-    return null
-  }
-  if (status === 'pending') return 'accepted'
-  if (status === 'accepted') return 'prepared'
-  if (status === 'prepared') return 'dispatched'
-  if (status === 'dispatched') return 'in_delivery'
-  if (status === 'in_delivery') return 'arrived'
-  return null
-}
+// NOTE there is deliberately no `nextSellerStatus` here any more. G4 shipped one, which duplicated
+// the chains already in `@/lib/types/order-status` (`PRODUCT_LIFECYCLE` / `SERVICE_LIFECYCLE` /
+// `nextStatus`). Two copies of the DB trigger's truth is one too many — they agreed at the time,
+// but the second consumer (G8) would have made a third copy likely. Import `nextStatus` from
+// `@/lib/types/order-status`; it is the same function with the same result, derived from the
+// lifecycle arrays rather than an if-ladder.
 
 export { LOW_STOCK_THRESHOLD, ACTIONABLE, IN_FLIGHT }

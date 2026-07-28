@@ -23,7 +23,7 @@ import {
   shortDate,
   shortRef,
   stageState,
-} from './order-status'
+} from '@/lib/orders/order-status'
 
 // E3 list — the accordion rows (Figma 709:59673 desktop / 710:59952 mobile).
 //
