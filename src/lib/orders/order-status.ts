@@ -111,6 +111,33 @@ export const STAGE_LABEL_KEY: Record<RailStage, string> = {
  *
  * A cancelled order has no rail at all (callers check `isCancelled` first).
  */
+/**
+ * Stage state for an ARBITRARY chain — the generalisation of `stageState`.
+ *
+ * E3's rail walks the 4-stage service chain; the seller's G9 rail walks the 7-step product chain
+ * from `lifecycleFor()`. The VISUAL LANGUAGE is the same (completed / current / upcoming), the
+ * stage set is not, so the chain is a parameter and neither surface owns the other's stages.
+ */
+export function stageStateIn(
+  chain: readonly string[],
+  status: string,
+  index: number,
+): StageState {
+  // A terminal order shows every stage completed — see the note on stageState below.
+  if (status === chain[chain.length - 1]) return 'completed'
+  const current = chain.indexOf(status)
+  if (current === -1) return 'upcoming'
+  if (index < current) return 'completed'
+  if (index === current) return 'current'
+  return 'upcoming'
+}
+
+/**
+ * ⚑ NO LIVE CONSUMER since the G9 delta pass — E3's rail moved to the shared `OrderRail`, which
+ * calls `stageStateIn` with an explicit chain. Kept because it is the documented `received`
+ * behaviour below and removing a public export is its own cleanup; delete it, and this comment,
+ * when the RAIL_STAGES-shaped helpers are next tidied. `stageStateIn` is the one to call.
+ */
 export function stageState(status: string, index: number): StageState {
   if (status === 'received') return 'completed'
   const current = (RAIL_STAGES as readonly string[]).indexOf(status)
@@ -135,7 +162,15 @@ export function canConfirmReceipt(status: string): boolean {
  * unique, stable, already exists, no migration. A real CMD-{year}-{seq} is a logged follow-up.
  */
 export function shortRef(id: string): string {
-  return id.slice(0, 8)
+  // "#A4F729" — the reference as Figma renders it (G9 495:26283) and as both WhatsApp templates
+  // now quote it. Six uppercase hex characters behind a hash.
+  //
+  // This deliberately changed shape in the G9 delta pass. It was `id.slice(0, 8)` — eight
+  // LOWERCASE characters with no hash — which was invisible while the only consumers were
+  // WhatsApp message bodies. G9 is the first surface to put a reference ON SCREEN, and a seller
+  // reading "#A4F729" while the message they just sent quotes "f14bbb38" is two names for one
+  // order. A reference exists to make the conversation traceable, so there is exactly one string.
+  return `#${id.replace(/-/g, '').slice(0, 6).toUpperCase()}`
 }
 
 // Latin digits in both locales: the AR default numbering system is Arabic-Indic, and prices and

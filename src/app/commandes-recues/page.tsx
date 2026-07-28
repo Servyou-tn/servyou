@@ -58,7 +58,7 @@ export default async function CommandesRecuesPage({
 }) {
   const sp = await searchParams
   const lang = await getLang()
-  const { userId, topBarUser } = await requireShopOwner(ROUTE)
+  const { userId, topBarUser, shop } = await requireShopOwner(ROUTE)
 
   const tab = parseTab(first(sp.statut))
   const sort = parseSort(first(sp.tri))
@@ -179,9 +179,8 @@ export default async function CommandesRecuesPage({
                 key={order.id}
                 order={order}
                 lang={lang}
-                // G9 is the next PR; the row already points at its route so the link is correct
-                // the moment that page lands.
                 detailHref={`${ROUTE}/${order.id}`}
+                shopName={shop?.name ?? ''}
               />
             ))}
           </ul>

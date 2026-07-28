@@ -1170,7 +1170,6 @@ export const fr: Record<string, string> = {
   'orders.status_msg_arrived':       "Votre commande est arrivée. Confirmez la réception après l'avoir reçue en main.",
   'orders.status_msg_received':      "Vous avez confirmé la réception le {date}.",
   'orders.status_msg_cancelled':     "Cette commande a été annulée le {date}.",
-  'orders.whatsapp_order_message':   "Bonjour, je vous contacte concernant ma commande sur Servyou : {title}. ID de commande : {id}",
   'orders.phone_reveal_error':       "Impossible de récupérer le numéro du vendeur. Veuillez réessayer.",
   'orders.receive_error':            "La confirmation a échoué. Veuillez réessayer.",
   'orders.receive_success':          "Réception confirmée. Merci d'utiliser Servyou.",
@@ -2218,7 +2217,7 @@ export const fr: Record<string, string> = {
   'seller.orders.view_detail':            "Voir détails",
   'seller.orders.cancelled_reason':       "Motif : {reason}",
   // Keyed by TARGET status — the verb is what the seller is about to do.
-  'seller.orders.advance.accepted':       "Confirmer sur WhatsApp",
+  'seller.orders.advance.accepted':       "Accepter",
   'seller.orders.advance.prepared':       "Marquer préparée",
   'seller.orders.advance.dispatched':     "Marquer expédiée",
   'seller.orders.advance.in_delivery':    "Marquer en livraison",
@@ -2235,5 +2234,43 @@ export const fr: Record<string, string> = {
   'seller.orders.empty_body':             "Les commandes de vos clients apparaîtront ici.",
   'seller.orders.empty_actionable_title': "Tout est à jour",
   'seller.orders.empty_actionable_body':  "Aucune commande n'attend votre action.",
+
+  // ── G9 — Détail de la commande (Figma 495:26112) ──
+  'seller.orderDetail.title':             "Commande {ref}",
+  'seller.orderDetail.breadcrumb_aria':   "Fil d'Ariane",
+  'seller.orderDetail.received_on':       "Reçue le {date}",
+  'seller.orderDetail.created_on':        "Créée le {date}",
+  'seller.orderDetail.product':           "Le produit",
+  'seller.orderDetail.service':           "La prestation",
+  'seller.orderDetail.quantity':          "Quantité : {n}",
+  'seller.orderDetail.unit_price':        "Prix unitaire : {price} TND",
+  'seller.orderDetail.cod_note':          "Paiement à la livraison — le client paie à la réception.",
+  'seller.orderDetail.delivery':          "Livraison",
+  'seller.orderDetail.recipient':         "Destinataire",
+  'seller.orderDetail.address':           "Adresse",
+  'seller.orderDetail.city':              "Ville",
+  'seller.orderDetail.buyer_note':        "Note du client",
+  'seller.orderDetail.buyer_brief':       "Brief du client",
+  'seller.orderDetail.brief_timeframe':   "Délai souhaité : {value}",
+  'seller.orderDetail.brief_budget':      "Budget indiqué : {value} TND",
+  'seller.orderDetail.history':           "Historique de la commande",
+  'seller.orderDetail.cancelled_by_buyer': "Annulée par le client le {date}",
+  'seller.orderDetail.cancelled_by_seller': "Annulée par vous le {date}",
+  'seller.orderDetail.client':            "Client",
+  'seller.orderDetail.phone_disclosure':  "Coordonnées visibles car vous avez une commande en cours.",
+  'seller.orderDetail.whatsapp_cta':      "Contacter sur WhatsApp",
+  'seller.orderDetail.cancel_link':       "Annuler la commande",
+  'seller.orderDetail.next_step':         "Prochaine étape",
+  'seller.orderDetail.hint_pending':      "Confirmez la commande avec le client sur WhatsApp avant de l'accepter.",
+  'seller.orderDetail.hint_generic':      "Faites avancer la commande une fois cette étape terminée.",
+  'seller.orderDetail.no_action':         "Cette commande est terminée.",
+
+  // WhatsApp prefill — seller → buyer. Written to the ARABIC budget (300 chars, asserted in a
+  // test): Arabic percent-encodes at ~4x, French at ~1.5x. Latin tokens sit inside « » at the END
+  // so the order reference never lands mid-RTL — the pattern E3's message already uses.
+  'seller.orders.whatsapp_short':         "WhatsApp",
+  'seller.orders.whatsapp_message':       "Bonjour {buyer}, c'est {shop} au sujet de votre commande « {ref} — {product} ».",
+  'seller.orders.whatsapp_error':         "Impossible de récupérer le numéro. Réessayez.",
+  'seller.orders.whatsapp_none':          "Numéro indisponible pour cette commande.",
 
 }

@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { cancelOrderAction } from '@/app/actions/orders'
 import { requiresCancellationReason, type OrderStatus, type OrderType } from '@/lib/types/order-status'
 import { t, type Lang } from '@/lib/i18n'
+import { FOCUS_RING } from '@/components/layout/styles'
 
 // Seller cancellation — Figma G8 modal specimen 490:26058 (480×660).
 //
@@ -30,11 +31,15 @@ export function CancelOrderButton({
   status,
   orderType,
   lang,
+  asLink,
 }: {
   orderId: string
   status: OrderStatus
   orderType: OrderType
   lang: Lang
+  /** G9's rail renders "Annuler la commande" as a text link at the panel foot (Figma 497:26470),
+   *  not as a button. G8's row keeps the ghost button. */
+  asLink?: boolean
 }) {
   const [open, setOpen] = useState(false)
   const [selected, setSelected] = useState<string>('')
@@ -68,6 +73,17 @@ export function CancelOrderButton({
   }
 
   if (!open) {
+    if (asLink) {
+      return (
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          className={`self-start rounded text-body-sm text-brand-blue-600 hover:underline ${FOCUS_RING}`}
+        >
+          {t('seller.orderDetail.cancel_link', lang)}
+        </button>
+      )
+    }
     return (
       <Button variant="ghost" size="sm" onClick={() => setOpen(true)}>
         {t('seller.orders.cancel', lang)}
@@ -127,8 +143,12 @@ export function CancelOrderButton({
         ) : null}
 
         <div className="flex justify-end gap-3">
+          {/* "Garder la commande", not "Annuler" — in a cancel-confirmation dialog both buttons
+              reading "Annuler" is genuinely ambiguous. These two keys already existed for exactly
+              this pair. (The previous `common.back` did not exist at all and rendered as a raw key
+              — caught by measuring the modal OPEN, which a closed-state check never sees.) */}
           <Button variant="ghost" size="md" onClick={() => setOpen(false)} disabled={pending}>
-            {t('common.back', lang)}
+            {t('common.cancel_keep_action', lang)}
           </Button>
           <Button
             variant="danger"
@@ -137,7 +157,7 @@ export function CancelOrderButton({
             disabled={blocked}
             onClick={submit}
           >
-            {t('seller.orders.cancel_confirm', lang)}
+            {t('common.cancel_confirm_action', lang)}
           </Button>
         </div>
       </div>
