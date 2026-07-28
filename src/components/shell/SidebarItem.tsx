@@ -9,42 +9,89 @@ import { FOCUS_RING } from '@/components/layout/styles'
 // values — #8faef9 clears WCAG AA at ~7:1 on the navy ground, unlike the slate #64748B the DS avoids
 // here); hover = white/5 wash.
 //
-// rounded-[10px]: `--radius-lg` IS 10px in tokens.css but is not wired into @theme, so Tailwind's
-// `rounded-lg` still resolves to its built-in 8px. See the radius follow-up in docs/follow-ups.md.
+// rounded-[10px]: kept as an explicit literal because it is the measured Figma value. (The older
+// note here claimed `rounded-lg` still fell back to Tailwind's built-in 8px — that is STALE.
+// Measured 2026-07-28 on this page: `rounded-lg` computes to 10px, so `--radius-lg` does reach
+// @theme now. Left as a literal rather than churned to `rounded-lg` in a delta-fix PR; swap it
+// when the shell is next touched for its own reasons.)
 export function SidebarItem({
   href,
   label,
   icon: Icon,
   active,
   onNavigate,
+  disabled,
+  soonLabel,
 }: {
   href: string
   label: string
   icon: LucideIcon
   active: boolean
   onNavigate?: () => void
+  // `disabled` renders the row as a non-navigable <span>, for a nav entry whose page is not built
+  // yet. Founder call (G4): a nav pointing at 404s is worse than a nav that admits what is not
+  // ready — the shop_owner section ships with its dashboard live and Mes produits / Commandes
+  // reçues disabled until G5 and G8 land.
+  //
+  // ⚑ The "Bientôt" text badge this used to render INLINE is gone (G4 delta S1). Measured: the row
+  // is 208 wide, `px-3` + the 20px icon + `gap-3` leave exactly 152px for the label, and the badge
+  // took 65 of it — collapsing both labels to 87px, i.e. "Mes pr…" and "Comm…". The affordance now
+  // rides on the muted treatment plus `title` / `aria-disabled`, which costs zero horizontal space
+  // and keeps the locked vocabulary readable. `soonLabel` remains the tooltip text.
+  disabled?: boolean
+  soonLabel?: string
 }) {
+  const content = (
+    <>
+      <Icon
+        className={cn(
+          'h-5 w-5 shrink-0',
+          !active && !disabled && 'text-brand-blue-300',
+          disabled && 'text-brand-blue-300/50',
+        )}
+        aria-hidden="true"
+      />
+      <span
+        className={cn(
+          'truncate text-body-sm',
+          active ? 'font-semibold' : 'font-medium',
+          disabled && 'text-white/50',
+        )}
+      >
+        {label}
+      </span>
+    </>
+  )
+
+  // Label size AND weight live on the span above: text-body-sm bundles font-weight 400, so the
+  // two must sit together on the leaf — and text-body-sm in this cn() would be dropped by
+  // tailwind-merge against text-white (the documented TopbarSearch gotcha).
+  // gap-2.5 (10px), not gap-3 (12px). Measured: the row is 208 wide, so `px-3` (24) + the 20px
+  // icon + the gap is all that stands between the label and its box. At gap-3 the label got 152px
+  // and the longest locked label, "Commandes reçues", needs 153 — a 1px shortfall that still
+  // renders an ellipsis. 10px gives it 154 and every label in every role now fits whole.
+  const base = 'flex h-11 items-center gap-2.5 rounded-[10px] px-3 transition-colors'
+
+  if (disabled) {
+    return (
+      <span aria-disabled="true" title={soonLabel} className={cn(base, 'cursor-not-allowed text-white')}>
+        {content}
+      </span>
+    )
+  }
+
   return (
     <Link
       href={href}
       onClick={onNavigate}
       aria-current={active ? 'page' : undefined}
       className={cn(
-        // Label size AND weight live on the span below: text-body-sm bundles font-weight 400, so
-        // the two must sit together on the leaf — and text-body-sm in this cn() would be dropped
-        // by tailwind-merge against text-white (the documented TopbarSearch gotcha).
-        'flex h-11 items-center gap-3 rounded-[10px] px-3 transition-colors',
+        base,
         active ? 'bg-brand-blue-600 text-white' : 'text-white hover:bg-white/5',
         FOCUS_RING,
       )}
     >
-      <Icon
-        className={cn('h-5 w-5 shrink-0', !active && 'text-brand-blue-300')}
-        aria-hidden="true"
-      />
-      <span className={cn('truncate text-body-sm', active ? 'font-semibold' : 'font-medium')}>
-        {label}
-      </span>
+      {content}
     </Link>
   )
 }

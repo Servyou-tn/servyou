@@ -307,6 +307,12 @@ const OWNER_SCOPED: Record<string, string> = {
   'order-detail.ts': 'single order the viewer is party to',
   'mission-detail.ts': 'author-only view of own post + the freelancers who responded to it',
   'my-data.ts': 'getMyOrders/getMyMissions are owner-scoped; getMyFavorites filters in code',
+  // G4. Reads the SELLER'S OWN shop: their orders (seller_id = me) and their products (shop_id =
+  // my shop). A seller must see their own moderated content behind ModerationBanner, so filtering
+  // here would hide a hidden product from the only person who can act on it. Note the counts are
+  // unaffected either way — admin_hide_content sets status='hidden' on a product, and every count
+  // on this page already filters status='active'.
+  'seller-dashboard.ts': "the seller's own shop — an owner must see their own moderated content",
 }
 
 function readPathFiles(): { name: string; source: string }[] {

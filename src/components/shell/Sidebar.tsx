@@ -75,7 +75,17 @@ export function Sidebar({
           value, it stops the nav clipping on a short viewport. */}
       <nav
         aria-label={t('nav.aria_primary', lang)}
-        className="mt-3 flex flex-1 flex-col gap-0.5 overflow-y-auto"
+        // `overflow-y-auto` STAYS: PR #91 added it so a short viewport scrolls the nav instead of
+        // clipping its last items, and that is still right — measured, the nav's content is 508px
+        // tall and it genuinely overflows below a ~616px viewport (at 600 → scrollHeight 508 vs
+        // clientHeight 492). Removing it would clip "Aide" off the bottom on a laptop.
+        //
+        // What is removed is the SCROLLBAR CHROME, not the scrolling (G4 delta S1). The classic
+        // Windows track is 15px wide and it eats that out of the 208px row, compounding the label
+        // truncation; Figma's sidebar has no track at all. `scrollbar-width:none` (+ the WebKit
+        // pseudo-element) hides the furniture while keeping wheel, trackpad, and keyboard
+        // scrolling intact — so no clip is reintroduced.
+        className="mt-3 flex flex-1 flex-col gap-0.5 overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
       >
         {sections.map((section) => (
           <SidebarSection key={section.labelKey} label={t(section.labelKey, lang)}>
@@ -87,6 +97,8 @@ export function Sidebar({
                 icon={item.icon}
                 active={isActiveRoute(pathname, item.href)}
                 onNavigate={onNavigate}
+                disabled={item.disabled}
+                soonLabel={item.disabled ? t('shell.sidebar.soon', lang) : undefined}
               />
             ))}
             {/* "Devenir vendeur" promo (Figma 611:45637 → 110:3874): only for a consumer

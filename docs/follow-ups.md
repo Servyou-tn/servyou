@@ -675,3 +675,87 @@ the route, its i18n block (`fr.ts` / `ar.ts`, "Order detail page") and its `acti
   that test fail until the filter is added — which is the point.
 - **Trigger:** when the board is built, filter `admin_hidden_at` on the listing query and delete
   the now-obsolete assertion.
+
+## G4 — Tableau de bord vendeur (`feat/g4-seller-dashboard`, 2026-07-28)
+
+### 🔴 Topbar overflows 56px at 375 — but only when LOGGED IN, on every AppShell route
+- **Measured on G4 and reproduced identically on the already-shipped `/marche/services`** (which has
+  its own 375 Figma frame), so this is a shared-shell defect, not a G4 regression:
+  `document.documentElement.scrollWidth` 431 vs `clientWidth` 375 → **56px (FR) / 53px (AR)**.
+  Desktop 1440 is clean (0). Negative control: injecting a 9999px div moved the probe to 9624, so
+  the 0-at-1440 and the 0-when-logged-out results are measurements, not a blind spot.
+- **Culprit:** the topbar's trailing cluster `div.flex.shrink-0.items-center.gap-4` — the FR/AR
+  `LanguageToggle` plus the user menu — measures 212px and is `shrink-0`, so at 375 it pushes the
+  row past the viewport instead of compressing.
+- **Why it was never caught:** logged OUT the same page measures **0 overflow** (the topbar renders
+  a single "Se connecter" button instead of toggle + menu). The earlier audit's "380px 0-overflow,
+  neg-control validated" finding was therefore correct *and* blind to this — it was measured
+  anonymously, and 12 of the 20 shell routes cannot even be reached logged out.
+- **Fix (own PR — shell-wide, not G4's to make):** let the cluster shrink (drop `shrink-0`, or hide
+  the FR/AR toggle behind the mobile drawer below `sm`, which is where the language control already
+  lives on mobile). Re-measure logged in at 375 in both locales afterwards.
+- **Trigger:** next shell-touching PR, or before any seller page ships to mobile users.
+
+### The ten seller pages have NO mobile Figma frames
+- **G1-G9 + D3 are all desktop-only.** The registry holds **13 mobile (375) frames across 160 screen
+  frames**, and every one belongs to a consumer/buyer surface: I1, marketplace services (+Freelances
+  lens), E1, E2, E3 ×2, D2, F1 produits, K1-K4. D4 and H3 are desktop-only too, so the pattern is
+  **the whole seller + profile world has no mobile design**, not a couple of oversights.
+- **Consequence:** every below-`lg` value in `app/tableau-de-bord-vendeur/` is DERIVED, not measured,
+  and each is flagged `derived:` in-code at its call site (single-column collapse, 1/2/4-up tile
+  grid, stacked header, stacked action rows). A later mobile frame will very likely disagree with
+  some of them, and that is a re-measure, not a bug report.
+- **On a market that is 70%+ mobile**, this is worth sizing as one design batch rather than
+  absorbing page-by-page across ten PRs.
+- **Trigger:** before the seller world ships to real users.
+
+### Three buyer-side order transitions still write from client components
+- `mes-commandes/_components/OrdersList.tsx:279` and `components/ReceiptConfirmButton.tsx:33`
+  (both → `received`) and `components/CancelOrderModal.tsx:81` (cancel) call `supabase.update()`
+  directly from `'use client'` components. They are **correct** — RLS plus
+  `check_order_status_transition` enforce every rule server-side — but they bypass the standard
+  that mutations go through a server action with Zod validation.
+- **G4 sets the counter-pattern** (`app/tableau-de-bord-vendeur/actions.ts`: Zod parse → auth →
+  ownership re-check → derived target status → DB trigger as final authority). Migrate the three to
+  match; deliberately NOT touched in the G4 PR, per one-PR-one-focus.
+- **Trigger:** the E3/buyer-orders PR that next touches those files.
+
+### G4 diverges from its own specimen on "Bénéfice net" — deliberately
+- Specimen `484:24205` mocks **"2 840 TND / Commandes livrées"**. Shipped code renders
+  **"Bientôt disponible"** (muted) instead. `products` has no `delivery_fee`, so a true *net* figure
+  cannot be computed, and printing revenue under a net-profit label would be a fabricated metric.
+- Note this contradicts the older build note that the tile was already authored as a
+  "Bientôt disponible" placeholder — the measured specimen shows a mocked number, so the FIGMA is
+  what needs updating here, not the code.
+- **Trigger:** the schema PR that adds `delivery_fee` (bundled with `shops.is_published` +
+  `freelancer_profiles.is_published` + the order tracking number).
+
+### ⚠ Tailwind's `leading-normal` is the ratio 1.5 — NOT CSS `line-height: normal`
+- **The trap:** Figma emits `leading-[normal]` (the CSS keyword, ≈1.21 for Inter). Tailwind's
+  `leading-normal` utility is the **ratio 1.5**. Same word, different value, no error either way.
+- **Evidence (G4 delta P1):** on the 28px Bold glance-tile value, `leading-normal` computed to
+  **42px** where Figma's `normal` is **≈34px** — **+8px per tile**, which pushed the measured tile
+  from Figma's 196 to 248 and, combined with a wrapping string, stretched the whole 4-up grid row.
+  `leading-[normal]` (bracketed) is the one that emits the keyword.
+- **Rule:** when a Figma value reads `normal`, write `leading-[normal]`. Reserve bare
+  `leading-normal` for when 1.5 is genuinely intended. Grep before copying either into a new
+  component — this reads as a no-op diff and is worth 8px a line.
+- **Trigger:** any component built from a Figma text style whose line-height is `normal`.
+
+### S4 — topbar is 65px tall against Figma's 64, on every AppShell route
+- `Topbar.tsx:35-36` puts `border-b` on the `<header>` *outside* an inner `div.h-16`, so the total
+  is 64 + 1. The Figma Topbar instance (`475:21223`) is **64 total**.
+- 1px, but it is on ~20 routes and it shifts every page's content down by a pixel against its frame.
+- **Founder call (2026-07-28): this rides with the 375px topbar-overflow fix**, since both are the
+  same component and re-measuring the topbar twice is waste. See the logged-in overflow item above.
+- **Trigger:** the shared-shell PR that fixes the 375 overflow.
+
+### P5 / P6 — the shipped type ramp's line-heights differ from Figma's
+- Measured on G4: **H1 40 vs Figma 38**, **H3 28 vs Figma 26**. Both are the shipped `--text-*`
+  tokens, so this is platform-wide, not a page defect — every H1 and H3 in the app is 2px taller
+  than its frame.
+- This is the already-documented "typography token gap": `scripts/tokens/build.mjs` deliberately
+  does **not** emit typography (its header says so), because the Figma ramp is incomplete and the
+  shipped weights/line-heights diverge. So the fix is not a one-line token edit — it needs the ramp
+  reconciled in Figma first, then emitted, then a re-baseline of every VRT story.
+- **Trigger:** the typography reconciliation PR. Do not patch per-page.

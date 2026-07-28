@@ -2091,6 +2091,9 @@ export const fr: Record<string, string> = {
   'shell.sidebar.section.discover':       "Découvrir & achats",
   'shell.sidebar.section.tools':          "Outils & compte",
   'shell.sidebar.dashboard':              "Tableau de bord",
+  'shell.sidebar.products':               "Mes produits",
+  'shell.sidebar.receivedOrders':         "Commandes reçues",
+  'shell.sidebar.soon':                   "Bientôt",
   'shell.sidebar.services':               "Mes services",
   'shell.sidebar.engagements':            "Mes engagements",
   'shell.sidebar.proposals':              "Mes propositions",
@@ -2147,5 +2150,53 @@ export const fr: Record<string, string> = {
   'aide.faq.a4':           "Rendez-vous dans « Paramètres » pour mettre à jour vos informations personnelles et vos préférences.",
   'aide.faq.q5':           "Comment contacter un vendeur ou un freelance ?",
   'aide.faq.a5':           "Ouvrez une fiche produit ou service et utilisez le bouton WhatsApp pour échanger directement.",
+
+  // ── G4 — Tableau de bord vendeur (Figma 475:21134 / specimen 484:24205) ──
+  'seller.dashboard.title':               "Bienvenue, {shop} 👋",
+  'seller.dashboard.subline':             "Voici ce qui se passe dans votre boutique aujourd'hui.",
+  'seller.dashboard.cta_add_product':     "Ajouter un produit",
+
+  'seller.dashboard.tile.pending':        "Commandes à traiter",
+  'seller.dashboard.tile.pending_sub':    "En attente de votre action",
+  'seller.dashboard.tile.profit':         "Bénéfice net",
+  // No delivery_fee column yet, so a true net figure cannot be computed. Never print revenue
+  // under a net-profit label — see the phase-aware rule.
+  'seller.dashboard.tile.profit_soon':    "Bientôt disponible",
+  'seller.dashboard.tile.week':           "Commandes cette semaine",
+  'seller.dashboard.tile.week_sub':       "7 derniers jours",
+  'seller.dashboard.tile.products':       "Produits actifs",
+  'seller.dashboard.tile.products_sub':   "En vente",
+
+  'seller.dashboard.ac.title':            "À traiter maintenant",
+  'seller.dashboard.ac.empty_title':      "Tout est à jour ✓",
+  'seller.dashboard.ac.empty_body':       "Aucune commande en attente.",
+  'seller.dashboard.ac.footer':           "Voir toutes les commandes →",
+
+  // Seller-owned transitions. Keyed by TARGET status — the verb is what the seller is about to do.
+  'seller.dashboard.advance.accepted':    "Confirmer",
+  'seller.dashboard.advance.prepared':    "Marquer préparée",
+  'seller.dashboard.advance.dispatched':  "Marquer expédiée",
+  'seller.dashboard.advance.in_delivery': "Marquer en livraison",
+  'seller.dashboard.advance.arrived':     "Marquer livrée",
+  'seller.dashboard.error_no_transition': "Cette commande n'attend plus d'action de votre part.",
+
+  'seller.dashboard.monitor.title':       "Commandes en cours",
+  'seller.dashboard.monitor.link':        "Voir toutes les commandes →",
+  'seller.dashboard.monitor.empty_title': "Aucune commande en cours",
+  'seller.dashboard.monitor.empty_body':  "Les commandes en livraison apparaîtront ici.",
+
+  'seller.dashboard.lowstock.title':      "Stock faible",
+  'seller.dashboard.lowstock.remaining':  "Plus que {count} en stock",
+  'seller.dashboard.lowstock.empty_title': "Stock au complet",
+  'seller.dashboard.lowstock.empty_body': "Aucun produit sous {threshold} unités.",
+
+  'seller.dashboard.quick.title':         "Actions rapides",
+  'seller.dashboard.quick.addProduct':    "Ajouter un produit",
+  'seller.dashboard.quick.viewOrders':    "Voir les commandes",
+  'seller.dashboard.quick.editShop':      "Modifier ma boutique",
+  'seller.dashboard.quick.viewPublic':    "Voir ma boutique publique",
+
+  'seller.dashboard.noshop.title':        "Votre boutique n'est pas encore créée",
+  'seller.dashboard.noshop.body':         "Créez votre boutique pour publier des produits et recevoir des commandes.",
 
 }

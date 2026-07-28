@@ -68,8 +68,10 @@ export function roleToShellRole(role: Role): ShellRole {
 // Exhaustive over Role.
 export function roleWorkspacePath(role: Role): string {
   switch (role) {
+    // G4. Was '/ma-boutique', which has never existed — a shop owner verifying email on a second
+    // device landed on a 404. The dashboard is the shop owner's real home base.
     case 'shop_owner':
-      return '/ma-boutique'
+      return '/tableau-de-bord-vendeur'
     case 'freelancer':
       return '/mon-profil-freelance'
     case null:
