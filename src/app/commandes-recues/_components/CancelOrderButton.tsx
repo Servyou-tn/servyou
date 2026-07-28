@@ -127,8 +127,12 @@ export function CancelOrderButton({
         ) : null}
 
         <div className="flex justify-end gap-3">
+          {/* "Garder la commande", not "Annuler" — in a cancel-confirmation dialog both buttons
+              reading "Annuler" is genuinely ambiguous. These two keys already existed for exactly
+              this pair. (The previous `common.back` did not exist at all and rendered as a raw key
+              — caught by measuring the modal OPEN, which a closed-state check never sees.) */}
           <Button variant="ghost" size="md" onClick={() => setOpen(false)} disabled={pending}>
-            {t('common.back', lang)}
+            {t('common.cancel_keep_action', lang)}
           </Button>
           <Button
             variant="danger"
@@ -137,7 +141,7 @@ export function CancelOrderButton({
             disabled={blocked}
             onClick={submit}
           >
-            {t('seller.orders.cancel_confirm', lang)}
+            {t('common.cancel_confirm_action', lang)}
           </Button>
         </div>
       </div>

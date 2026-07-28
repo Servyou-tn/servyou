@@ -6,6 +6,8 @@ import { nextSellerStatus, isCancellable, type OrderStatus } from '@/lib/types/o
 import { t, type Lang } from '@/lib/i18n'
 import { FOCUS_RING } from '@/components/layout/styles'
 import type { SellerOrder } from '@/lib/marche/seller-orders'
+import { shortRef } from '@/lib/orders/order-status'
+import { WhatsAppContactButton } from '@/components/orders/WhatsAppContactButton'
 import { AdvanceOrderButton } from './AdvanceOrderButton'
 import { CancelOrderButton } from './CancelOrderButton'
 
@@ -27,20 +29,28 @@ import { CancelOrderButton } from './CancelOrderButton'
 //   cancelled    none, and the row grows to carry the reason line (Figma 132 vs 83)
 //   refused      none, same shape as cancelled
 //
-// ⚑ `pending` renders a WHATSAPP-BRANDED confirm where G4's action centre renders a plain
-// "Confirmer" — the same transition, two treatments. Resolved here as: the button performs the
-// real `pending → accepted` transition (the pipeline must move; that is what G8 exists for) and
-// carries the WhatsApp affordance because confirming a COD order by message is the actual
-// Tunisian flow. It does NOT open WhatsApp as a side effect of the mutation — contacting the
-// buyer lives on the detail page, which "Voir détails" reaches. Flagged for the founder.
+// ⚑ CORRECTED in the G9 pass. G8 first shipped `pending`'s wa/brand button as a SKIN on the
+// accept transition. G9's frame settles it: its `pending` specimen puts a WhatsApp Button under
+// "Prochaine étape" with the helper "Confirmez la commande avec le client sur WhatsApp AVANT de
+// préparer le colis". On COD you confirm before you accept, and conflating them means a seller
+// accepts an order they have never discussed. So `pending` now renders TWO controls — WhatsApp
+// (contact) and a separate "Accepter" (transition).
+//
+// Row width, measured before the change: the pending cluster was 490 of 1121 with mid at 581.
+// A third control adds ~104 (button + gap), so the cluster lands at ~594 and mid at ~480 — it
+// fits, but 53% of the row would be controls, so the row uses the SHORT WhatsApp label
+// ("WhatsApp") while G9's larger rail button carries the full sentence.
 export function OrderActionRow({
   order,
   lang,
   detailHref,
+  shopName,
 }: {
   order: SellerOrder
   lang: Lang
   detailHref: string
+  /** Used in the WhatsApp prefill — the buyer needs to know who is messaging them. */
+  shopName: string
 }) {
   const pill = statusPillFor(order.status, order.orderType)
   const next = nextSellerStatus(order.status, order.orderType)
@@ -91,12 +101,24 @@ export function OrderActionRow({
           <CheckCircle2 className="h-5 w-5 text-success-700" aria-hidden="true" />
         ) : null}
 
+        {order.status === 'pending' ? (
+          <WhatsAppContactButton
+            buyerId={order.buyerId}
+            label={t('seller.orders.whatsapp_short', lang)}
+            message={t('seller.orders.whatsapp_message', lang, {
+              buyer: order.buyerName,
+              shop: shopName,
+              ref: shortRef(order.id),
+              product: order.title,
+            })}
+          />
+        ) : null}
+
         {next ? (
           <div className="flex items-center gap-2">
             <AdvanceOrderButton
               orderId={order.id}
               label={t(`seller.orders.advance.${next}`, lang)}
-              whatsappStyle={order.status === 'pending'}
             />
             {cancellable ? (
               <CancelOrderButton
