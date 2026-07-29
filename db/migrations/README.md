@@ -37,7 +37,7 @@ This is a manual mirror of what Supabase tracks internally. The benefit is that 
 
 ## Historical context
 
-These 35 migrations represent the entire schema history of Servyou from initial setup (June 3, 2026) onward. Migrations are listed in chronological order:
+These 45 migrations represent the entire schema history of Servyou from initial setup (June 3, 2026) onward. Migrations are listed in chronological order:
 
 1. **20260603002549_create_profiles_table** — initial `profiles` table with role-based identity (later revised)
 2. **20260603174720_revise_profiles_table_to_layer4** — replaced `role` column with `seller_type`, added `date_of_birth`, `phone`, `is_admin` per Layer 4 design
@@ -77,6 +77,18 @@ These 35 migrations represent the entire schema history of Servyou from initial 
 34. **20260609190541_lock_profiles_privileged_columns** — Closes the privilege-escalation found by the 2026-06-09 backend audit (PR #58, CRIT-1): any authenticated user could `UPDATE profiles SET is_admin = true` (also self-clear `suspended_at`, self-set `seller_type`) on their own row via the REST API, because RLS gates rows not columns and `authenticated` held a table-level UPDATE grant. Two layers. Layer 1 (primary): a column-level REVOKE is a no-op against a pre-existing table-level grant in PostgreSQL, so the table grant is revoked from anon/authenticated and re-granted as an allow-list of only the columns the app edits (`full_name, city, language, phone, seller_type`); `is_admin` / `suspended_at` / `suspended_reason` / `date_of_birth` / `email` are no longer authenticated-writable (changed only by the admin SECURITY DEFINER RPCs running as owner, or by service_role). Layer 2: the `enforce_profile_admin_marker_lock` BEFORE UPDATE trigger as defense-in-depth, bypass cascade `auth.uid() IS NULL` (service-role / SQL editor) → `is_admin()` (admin RPC paths) → else RAISE 42501. The allow-list inversion (a new pattern in this codebase) was identified by the PR-Z 5-lens adversarial review after it caught the original column-only-REVOKE approach as ineffective.
 35. **20260609190755_lock_orders_identity_and_seller_age_gate** — Closes audit IMP-1 (a buyer could reassign `seller_id` / change `quantity` — any non-status column — on their own order; the role-gating trigger only gates status transitions) and adds the DB-level 18+ seller gate (audit IMP-3 / CLAUDE.md "age 18+ to sell must be DB-enforced", previously app-layer only). Same allow-list approach on `orders`: table UPDATE revoked from anon/authenticated and re-granted only on the lifecycle columns (`status, cancelled_by, cancellation_reason, received_at`); identity/delivery/quantity columns frozen. `enforce_order_identity_lock` BEFORE UPDATE trigger as defense-in-depth. `enforce_seller_type_age_gate` BEFORE UPDATE on profiles requires `date_of_birth` present and ≥ 18 when `seller_type` is set (UPDATE-only because seller_type only transitions to non-null via UPDATE — `handle_new_user` always inserts NULL — avoiding any OLD-on-INSERT ambiguity). Both verified by `scripts/rls-smoke.mjs` section F (now 32 assertions).
 
+36. **20260615103000_create_deletion_requests** — `deletion_requests` table recording consumer-initiated, admin-mediated account-deletion requests. Deleting the `auth.users` row is what actually cascades; this table only RECORDS the request (`status='pending'` from the `/mon-compte` flow, admin processes later).
+37. **20260615150000_create_data_exports** — `data_exports` table, the portability sibling of migration 36 (GDPR Art. 20 / Loi organique 2004-63). Same shape: user requests, admin prepares and sets `export_url`/`status`. Partial unique index permits one pending export per user.
+38. **20260618111508_add_fts_to_products_and_service_listings** — accent-insensitive full-text search. Adds the `unaccent` extension plus an IMMUTABLE `f_unaccent(text)` wrapper (raw `unaccent()` is STABLE, which Postgres rejects in index expressions), then `search_vector` **GENERATED STORED** columns + GIN indexes. ⚠ This is the origin of the PR-F2.3 "search_vector trap": the column is generated, **not** trigger-driven.
+39. **20260624230631_service_listings_add_world_class_fields** — lifts `service_listings` toward Fiverr/Upwork parity (PR-F2.3): `deliverables text[]` and siblings, NOT NULL with DEFAULTs so the 8 existing rows backfill cleanly. Deliberately does **not** touch `search_vector` — widening it means DROP + recreate the generated column and its GIN index, deferred to a focused migration.
+40. **20260727101731_add_service_listings_delivery_mode** — `delivery_mode text` on `service_listings` (`remote`/`onsite`/`hybrid`, text + CHECK rather than a Postgres ENUM, matching house convention). Nullable by design: NULL = unspecified, and D2 hides the "Mode de prestation" section. Backs the D↔H field-additions pass.
+41. **20260729111547_orders_snapshot_and_shipment** — freezes order money and identity. Adds `unit_price_tnd numeric(10,2)` + `item_title text` (both derived server-side at INSERT by the new `set_order_snapshot()` BEFORE INSERT trigger, which **overwrites** any client-supplied value), and `carrier` + `tracking_number` for G9's panel-suivi. Fixes two live bugs: `orders` never captured price or title, so a seller editing `products.price_tnd` retroactively rewrote every past order's displayed figure, and both target FKs being `ON DELETE SET NULL` meant deleting a listing stripped the order's price AND title. Extends `enforce_order_identity_lock` with the two frozen columns plus a seller-only, non-terminal-only clause for carrier/tracking. The other three BEFORE UPDATE triggers are untouched; `CREATE OR REPLACE` rebinds the existing trigger in place so the lock is never absent. No backfill — the 14 pre-existing orders keep NULL, because today's price is not the price then.
+42. **20260729111613_order_events** — `order_events`, the append-only order timeline feeding G9's panel-historique and G8's per-state waitTime. Shape is `from_status`/`to_status`, deliberately **not** `admin_audit_log`'s before/after jsonb (a timeline needs transitions, not row diffs). Written only by the new `emit_order_event()` **AFTER INSERT OR UPDATE** trigger — its own trigger, because all four pre-existing ones are BEFORE UPDATE (nothing could emit `'created'`) and they fire alphabetically, which would have logged a null `cancelled_at` on the event that matters most. RLS mirrors the `disputes` SELECT pattern (both parties + admin); no INSERT/UPDATE/DELETE policy.
+43. **20260729111728_order_events_revoke_residual_privileges** — corrects migration 42. The enumerated `revoke insert, update, delete` left **TRUNCATE** granted to `authenticated` via Supabase's schema-level default privileges — a write that bypasses RLS, so the table's "append-only" guarantee was not true as applied. Replaced with `revoke all` + `grant select`. Caught by migration 42's own verification query. The same residual TRUNCATE grant exists platform-wide on every `public` table for both `authenticated` and `anon`; that sweep is logged as its own PR.
+44. **20260729111938_orders_grant_update_on_shipment_columns** — corrects migration 41. Migration 35 replaced the table-level UPDATE grant on `orders` with a column **allow-list** (`status, cancelled_by, cancellation_reason, received_at`), so `carrier` and `tracking_number` shipped with no update grant at all and the seller could not write them through PostgREST — G9's panel-suivi would have been a dead input. Grants UPDATE on exactly those two columns. `unit_price_tnd` and `item_title` are deliberately excluded: the allow-list keeps them frozen at the privilege layer, with `enforce_order_identity_lock` as the second layer.
+
+45. **20260729112636_orders_shipment_columns_product_only** — `orders_shipment_requires_product` CHECK confining `carrier`/`tracking_number` to `order_type='product'`. A service has no parcel, so a tracking number on one is meaningless data a later report would happily aggregate. Written as "not a product ⇒ both null" rather than "product ⇒ not null", because a product order legitimately has no carrier until dispatch — this constrains WHERE the columns may be populated, not WHEN. All 14 existing rows carry NULL in both, so validation passed without a rewrite.
+
 Migration 13 includes a one-row data UPDATE (legacy `'completed'` → `'received'`) because the constraint widening required the legacy row to be reconciled with the new allowed value set. Migration 14 closes the pre-existing wide-open RLS UPDATE policy by adding DB-level transition enforcement above the row-gating policy.
 
 ## Rollback paths
@@ -87,10 +99,37 @@ For reference, the inverse SQL for migrations 13 and 14 (the most recent two) is
 
 ## Verification
 
-To verify this folder is in sync with Supabase's internal migration history:
+Three files carry hand-written timestamps that do **not** match the version Supabase recorded at apply time. The SQL content of each is correct — only the filename version differs:
+
+| File in this folder | Version in `schema_migrations` |
+|---|---|
+| `20260615103000_create_deletion_requests.sql` | `20260615124837` |
+| `20260615150000_create_data_exports.sql` | `20260615132434` |
+| `20260625000000_service_listings_add_world_class_fields.sql` | `20260624230631` |
+
+Renaming them would make a naive check pass, but it rewrites artifacts of already-merged PRs to satisfy a query — the wrong trade. Instead the query below **encodes the three as known-divergent by name**, so a clean run means "in sync, with exactly these three documented exceptions" rather than "in sync" hiding three silent mismatches. If a fourth ever appears, it shows up as a mismatch immediately.
+
+To verify this folder is in sync:
 
 ```sql
-SELECT version, name FROM supabase_migrations.schema_migrations ORDER BY version ASC;
+with known_divergent(db_version, file_version, reason) as (
+  values
+    ('20260615124837', '20260615103000',
+     'hand-written timestamp predates the apply version; content correct'),
+    ('20260615132434', '20260615150000',
+     'hand-written timestamp postdates the apply version; content correct'),
+    ('20260624230631', '20260625000000',
+     'hand-written timestamp postdates the apply version; content correct')
+)
+select
+  coalesce(k.file_version, m.version) || '_' || m.name || '.sql' as expected_file,
+  case
+    when k.db_version is null then 'exact'
+    else 'known-divergent (db ' || m.version || '): ' || k.reason
+  end as status
+from supabase_migrations.schema_migrations m
+left join known_divergent k on k.db_version = m.version
+order by m.version asc;
 ```
 
-The output should match the file list in this folder (excluding the README).
+`expected_file` should match the file list in this folder exactly (excluding this README) — compare against `ls *.sql`. Any row whose status is not `exact` is a documented exception; any *file* that does not appear in `expected_file` is real drift and must be reconciled.
