@@ -1,0 +1,27 @@
+-- Follow-up to orders_snapshot_and_shipment. Caught while mirroring files into
+-- db/migrations/ -- README entry 35 documents an allow-list that the earlier discovery
+-- pass missed.
+--
+-- Migration 20260609190755_lock_orders_identity_and_seller_age_gate revoked the
+-- TABLE-level UPDATE grant on `orders` from anon/authenticated and re-granted it as an
+-- ALLOW-LIST of four lifecycle columns: status, cancelled_by, cancellation_reason,
+-- received_at.
+--
+-- Consequence: `carrier` and `tracking_number` shipped with NO update grant at all, so
+-- the seller could not write them through PostgREST. G9's panel-suivi would have been a
+-- dead input -- precisely the defect the panel was withheld to avoid.
+--
+-- Note this also corrects the threat model in the discovery report: new columns are NOT
+-- buyer-writable by default on this table, because the allow-list already excludes
+-- everything not named. The BEFORE INSERT trigger remains load-bearing, because INSERT
+-- is granted at TABLE level (no column allow-list on insert) -- verified by the forged
+-- insert, which was accepted and overwritten.
+--
+-- unit_price_tnd and item_title are deliberately NOT granted: they must never be
+-- updatable by anyone in `authenticated`. The allow-list keeps them frozen at the
+-- privilege layer, and enforce_order_identity_lock backs that up.
+grant update (carrier, tracking_number) on public.orders to authenticated;
+
+-- The grant opens both columns to the `authenticated` ROLE, which is buyer AND seller.
+-- Narrowing to the seller, and closing terminal states, is what the new clause in
+-- enforce_order_identity_lock does -- a column grant cannot express either rule.
