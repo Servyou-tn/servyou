@@ -61,7 +61,9 @@ trigger to do it.
 
 - **What:** the rail's nodes are `shrink-0`, so they cannot compress. At a 375 viewport the rail's
   container measures **278** while 7 product nodes at `w-14` sum to **392** — a **114px** overflow.
-  Measured, not inferred. The 4-stage E3 buyer rail is milder (4 × 56 = 224, fits).
+  Measured, not inferred. **This is G9-specific: the 4-stage E3 buyer rail fits** — measured 224 in a
+  296 container at 375 (−72 slack), and 320 in 1081 at 1440 (−761). So the defect is the 7-step
+  PRODUCT chain, not the shared component.
 - **Why it is logged rather than fixed:** it is **pre-existing** (`w-14` is unchanged from the G9
   delta pass) and it is what forced the desktop node widening to be **lg-only**: `w-20` unconditional
   would have taken the mobile overflow from 114 to **282**, i.e. made a real defect 2.5× worse in
