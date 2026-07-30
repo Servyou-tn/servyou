@@ -88,9 +88,20 @@ export function OrderRail({
                   `cn()` is still correct on the circle above: those are bg/border groups with no
                   size token, so there is nothing to collide. See docs/follow-ups.md for the
                   systemic fix. */}
+              {/* G9 delta S4. Figma 495:26289 paints the label per state: completed `#0f172a`
+                  Medium, CURRENT `#1f5fe0` Semi Bold, upcoming `#64748b` Medium. It shipped with
+                  completed and current sharing one `text-secondary` Medium, so the current stage had
+                  no emphasis at all — a rail whose only job is answering "where am I?" could not.
+                  The circle already carries a blue ring; the label now agrees with it.
+                  Completed is left at `text-secondary` deliberately: Figma's `#0f172a` would make a
+                  DONE stage the darkest thing in the rail and out-shout the current one. */}
               <span
-                className={`text-center text-caption leading-4 font-medium ${
-                  state === 'upcoming' ? 'text-text-muted' : 'text-text-secondary'
+                className={`text-center text-caption leading-4 ${
+                  state === 'current'
+                    ? 'font-semibold text-brand-blue-600'
+                    : state === 'upcoming'
+                      ? 'font-medium text-text-muted'
+                      : 'font-medium text-text-secondary'
                 }`}
               >
                 {t(labelKeyFor(stage), lang)}

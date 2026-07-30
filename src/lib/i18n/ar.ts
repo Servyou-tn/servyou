@@ -2183,6 +2183,9 @@ export const ar: Record<string, string> = {
   'seller.dashboard.tile.pending_sub':    "في انتظار إجرائك",
   'seller.dashboard.tile.profit':         "صافي الربح",
   'seller.dashboard.tile.profit_soon':    "قريباً",
+  'seller.dashboard.tile.profit_value':   "{amount} د.ت",
+  'seller.dashboard.tile.profit_sub':     "من {count} طلب مُستلَم",
+  'seller.dashboard.tile.profit_partial': "من {measured} من أصل {total} طلب مُستلَم",
   'seller.dashboard.tile.week':           "طلبات هذا الأسبوع",
   'seller.dashboard.tile.week_sub':       "آخر 7 أيام",
   'seller.dashboard.tile.products':       "المنتجات النشطة",
@@ -2284,6 +2287,22 @@ export const ar: Record<string, string> = {
   'seller.orderDetail.hint_pending':      "أكّد الطلب مع العميل عبر واتساب قبل قبوله.",
   'seller.orderDetail.hint_generic':      "تابع الطلب بعد إتمام هذه الخطوة.",
   'seller.orderDetail.no_action':         "هذا الطلب مكتمل.",
+
+  // panel-suivi (Figma 497:26411) — "شركة التوصيل" is read-only; nothing can write `carrier` yet.
+  'seller.orderDetail.shipping':          "تتبّع التوصيل",
+  'seller.orderDetail.carrier':           "شركة التوصيل",
+  'seller.orderDetail.tracking_label':    "رقم التتبّع",
+  'seller.orderDetail.tracking_placeholder': "يُدخَل عند الإرسال",
+  'seller.orderDetail.tracking_helper':   "أدخل رقم التتبّع الذي يمنحه لك الناقل (عند الإرسال).",
+  'seller.orderDetail.tracking_save':     "حفظ",
+  'seller.orderDetail.tracking_saved':    "تم حفظ رقم التتبّع.",
+  'seller.orderDetail.tracking_terminal': "هذا الطلب مكتمل: لا يمكن تعديل التتبّع.",
+  'seller.orderDetail.tracking_product_only': "التتبّع يخصّ طلبات المنتجات فقط.",
+
+  // panel-historique (Figma 504:27042) — `event_status` يستعمل نفس تسمية الحالة المستخدمة في الشارة
+  // والمسار، حتى تتطابق المصطلحات في كل الشاشات.
+  'seller.orderDetail.event_created':     "تم إنشاء الطلب",
+  'seller.orderDetail.event_status':      "الحالة: {status}",
 
   'seller.orders.whatsapp_short':         "واتساب",
   'seller.orders.whatsapp_message':       "مرحباً {buyer}، معك {shop} بخصوص طلبك « {ref} — {product} ».",

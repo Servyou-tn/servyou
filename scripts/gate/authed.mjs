@@ -31,6 +31,7 @@
 import { spawn } from 'node:child_process'
 import http from 'node:http'
 import fs from 'node:fs'
+import os from 'node:os'
 import path from 'node:path'
 import { mintGateCookies } from './session.mjs'
 
@@ -38,7 +39,13 @@ const REPO = process.cwd()
 const CHROME = process.env.CHROME_PATH || 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe'
 const BASE = process.env.BASE || 'http://localhost:3000'
 const PORT = Number(process.env.CDP_PORT || 9338)
-const PROFILE = path.join(REPO, '.gate-chrome-profile')
+// ⚑ OUTSIDE THE REPO, deliberately. A Chrome profile is not just cookies: Chrome auto-registers
+// system-installed extensions into it, and those extensions ship their OWN `*.spec.js` files. With
+// the profile at ./.gate-chrome-profile, `vitest run` collected an Adobe extension's specs and the
+// suite reported 108 failures (`ReferenceError: jest is not defined`) that had nothing to do with
+// this codebase. Gitignoring it does not help — vitest, eslint and tsc walk ignored directories.
+// The OS temp dir keeps a throwaway profile genuinely outside every tool's scan root.
+const PROFILE = process.env.GATE_PROFILE || path.join(os.tmpdir(), 'servyou-gate-chrome-profile')
 
 function arg(name, fallback = null) {
   const i = process.argv.indexOf(`--${name}`)
@@ -151,6 +158,15 @@ async function main() {
   await cdp.send('Emulation.setDeviceMetricsOverride', { width, height, deviceScaleFactor: 1, mobile: false }, sessionId)
   // Static render: the same two determinism fixes capture.mjs relies on.
   await cdp.send('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-reduced-motion', value: 'reduce' }] }, sessionId)
+
+  // ⚑ CLEAR FIRST. The Chrome profile is persistent, so a PREVIOUS run's session survives in it.
+  // @supabase/ssr chunks the auth cookie across `<name>.0` / `.1` past ~3180 bytes, so injecting a
+  // new session over an old one of a different chunk count leaves an orphan chunk behind and the
+  // reader resolves a stale or spliced value — i.e. the page renders as the PREVIOUS account.
+  // Observed for real: a run for the shop owner rendered as the seed buyer and 307'd to
+  // /devenir-vendeur. The auth assertion below caught it, but a measurement must never depend on
+  // that catch. One session per run, and nothing inherited.
+  await cdp.send('Network.clearBrowserCookies', {}, sessionId)
 
   const { host: baseHost } = new URL(BASE)
   for (const c of cookies) {

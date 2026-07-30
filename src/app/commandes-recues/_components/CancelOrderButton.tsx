@@ -75,10 +75,18 @@ export function CancelOrderButton({
   if (!open) {
     if (asLink) {
       return (
+        // G9 delta AC4. Figma 497:26470 paints this `#e5484d`, centres it, and gives it the panel's
+        // full 312 width. It shipped as `brand-blue-600`, start-aligned, hug-width — i.e. a
+        // DESTRUCTIVE action wearing the same colour as "Accepter" directly above it, reading as a
+        // peer of the primary action rather than as the one that ends the order. That is a hazard,
+        // not a colour delta, which is why it is closed here rather than logged.
+        //
+        // NOT `cn()` — `text-body-sm` and `text-danger-500` are a size token and a colour token, and
+        // tailwind-merge would evict the size (see OrderRail's label and docs/follow-ups.md).
         <button
           type="button"
           onClick={() => setOpen(true)}
-          className={`self-start rounded text-body-sm text-brand-blue-600 hover:underline ${FOCUS_RING}`}
+          className={`w-full rounded text-center text-body-sm text-danger-500 hover:underline ${FOCUS_RING}`}
         >
           {t('seller.orderDetail.cancel_link', lang)}
         </button>

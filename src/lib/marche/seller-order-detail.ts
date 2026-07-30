@@ -33,9 +33,27 @@ export type SellerOrderDetail = {
   cancelledBy: string | null
   cancellationReason: string | null
   quantity: number
-  /** Product OR service listing — whichever this order points at. */
+  /**
+   * Product OR service listing — whichever this order points at.
+   *
+   * FROZEN SNAPSHOT FIRST, live join as the fallback. `orders.item_title` is written by
+   * `set_order_snapshot()` (BEFORE INSERT, server-derived, client value discarded), so every order
+   * created after migration 20260729111547 carries its own title and a seller renaming a listing
+   * can no longer rewrite history. The 14 orders that predate the column have NULL and fall through
+   * to the embed, rendering exactly what they render today.
+   *
+   * The fallback is SELF-RETIRING: it serves a closed set of 14 rows that can only shrink, and it
+   * is unreachable for a new order. When those are archived the `??` tails delete with no migration.
+   */
   itemTitle: string
+  /** Same snapshot-first rule as itemTitle — `orders.unit_price_tnd`, then the live join. */
   unitPrice: number | null
+  /** Per-shipment carrier. Product orders only (CHECK orders_shipment_requires_product). */
+  carrier: string | null
+  /** Seller-entered tracking number. Product orders only, same CHECK. */
+  trackingNumber: string | null
+  /** Append-only timeline, OLDEST FIRST (frame order). Empty on the 14 pre-migration orders. */
+  events: OrderEvent[]
   /** buyer profile id — the get_contact_phone target. */
   buyerId: string
   buyerName: string
@@ -47,6 +65,16 @@ export type SellerOrderDetail = {
   /** Free-text note for a product order; the parsed brief for a service one. */
   buyerNote: string | null
   serviceBrief: { description: string; timeframe: string | null; budget: string | null } | null
+}
+
+/** One `order_events` row, as G9's panel-historique consumes it. */
+export type OrderEvent = {
+  eventType: 'created' | 'status_change' | 'print'
+  fromStatus: OrderStatus | null
+  toStatus: OrderStatus | null
+  actorRole: 'buyer' | 'seller' | 'admin' | 'system' | null
+  note: string | null
+  createdAt: string
 }
 
 type Row = {
@@ -65,6 +93,20 @@ type Row = {
   delivery_address: string | null
   delivery_phone: string | null
   buyer_note: string | null
+  item_title: string | null
+  unit_price_tnd: number | string | null
+  carrier: string | null
+  tracking_number: string | null
+  order_events:
+    | {
+        event_type: string
+        from_status: string | null
+        to_status: string | null
+        actor_role: string | null
+        note: string | null
+        created_at: string
+      }[]
+    | null
   products: { title: string; price_tnd: number | string } | { title: string; price_tnd: number | string }[] | null
   service_listings:
     | { title: string; starting_price_tnd: number | string | null }
@@ -92,10 +134,16 @@ export const getSellerOrderDetail = cache(
         `id, status, order_type, created_at, received_at, cancelled_at, cancelled_by,
          cancellation_reason, quantity, buyer_id, seller_id,
          delivery_name, delivery_address, delivery_phone, buyer_note,
+         item_title, unit_price_tnd, carrier, tracking_number,
          products ( title, price_tnd ),
-         service_listings ( title, starting_price_tnd )`,
+         service_listings ( title, starting_price_tnd ),
+         order_events ( event_type, from_status, to_status, actor_role, note, created_at )`,
       )
       .eq('id', orderId)
+      // OLDEST FIRST, matching the frame: Figma's timeline (504:27045/27050/27055) runs 09h12 →
+      // 10h45 → 14h02 top to bottom, which is also the only order a vertical connecting rule reads
+      // correctly in. Sorted by the database, not in JS.
+      .order('created_at', { referencedTable: 'order_events', ascending: true })
       .maybeSingle()
 
     if (error) {
@@ -127,7 +175,9 @@ export const getSellerOrderDetail = cache(
       buyerCity = (profile as { city: string | null }).city
     }
 
-    const rawPrice = product?.price_tnd ?? service?.starting_price_tnd ?? null
+    // Snapshot wins; the live join is the fallback for the 14 orders that predate capture. `??`
+    // not `||` — a legitimately-zero price must not fall through to the live join.
+    const rawPrice = row.unit_price_tnd ?? product?.price_tnd ?? service?.starting_price_tnd ?? null
 
     return {
       id: row.id,
@@ -139,8 +189,18 @@ export const getSellerOrderDetail = cache(
       cancelledBy: row.cancelled_by,
       cancellationReason: row.cancellation_reason,
       quantity: row.quantity ?? 1,
-      itemTitle: product?.title ?? service?.title ?? '',
+      itemTitle: row.item_title ?? product?.title ?? service?.title ?? '',
       unitPrice: rawPrice != null ? Number(rawPrice) : null,
+      carrier: row.carrier,
+      trackingNumber: row.tracking_number,
+      events: (row.order_events ?? []).map((e) => ({
+        eventType: e.event_type as OrderEvent['eventType'],
+        fromStatus: e.from_status as OrderStatus | null,
+        toStatus: e.to_status as OrderStatus | null,
+        actorRole: e.actor_role as OrderEvent['actorRole'],
+        note: e.note,
+        createdAt: e.created_at,
+      })),
       buyerId: row.buyer_id,
       buyerName,
       buyerCity,

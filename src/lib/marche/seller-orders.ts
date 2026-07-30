@@ -65,11 +65,20 @@ export type SellerOrder = {
   cancellationReason: string | null
   cancelledBy: string | null
   /**
-   * Hours the order has been waiting — ONLY for `pending`, and null otherwise.
-   * `orders` carries no per-step timestamps (only created_at / updated_at / received_at /
-   * cancelled_at), so "waiting since" is knowable for pending and unknowable for every other
-   * state. `updated_at` is the last touch of ANYTHING on the row, so deriving a wait from it
-   * would print a confidently wrong number. Founder call: pending only, nothing elsewhere.
+   * Hours the order has been sitting in its CURRENT state, or null when unknowable.
+   *
+   * Was pending-only, derived from `created_at`, because `orders` had no per-step timestamps.
+   * `order_events` now records every transition, so the wait is per-state: the age of the most
+   * recent event that ENTERED the current status.
+   *
+   * Null in three cases, all deliberate:
+   *   1. TERMINAL states (`received` / `cancelled`) — "waiting since" is meaningless on a closed
+   *      order, and "· il y a 340 h" beside a delivered parcel is noise, not information.
+   *   2. The 14 orders that predate `order_events` — no events, nothing to measure. This includes
+   *      the one `pending` order that DID show a wait before, derived from created_at. That
+   *      coincidence only ever held for `pending`, and inventing a number we do not have is worse
+   *      than showing none.
+   *   3. A state with no matching event (e.g. a status set by raw SQL before the trigger existed).
    */
   waitingHours: number | null
 }
@@ -91,13 +100,59 @@ type Row = {
   buyer_id: string
   cancellation_reason: string | null
   cancelled_by: string | null
+  item_title: string | null
   products: { title: string } | { title: string }[] | null
   service_listings: { title: string } | { title: string }[] | null
+  order_events: { to_status: string | null; created_at: string }[] | null
 }
+
+/** Terminal states carry no wait — see SellerOrder.waitingHours case 1. */
+const TERMINAL: readonly OrderStatus[] = ['received', 'cancelled']
 
 function one<T>(embed: T | T[] | null | undefined): T | null {
   if (Array.isArray(embed)) return embed[0] ?? null
   return embed ?? null
+}
+
+/**
+ * Hours since the order ENTERED its current status, from the `order_events` embed.
+ *
+ * ⚑ WHY THIS IS NOT N+1, and why the predicate lives here rather than in SQL.
+ *
+ * The natural SQL is a correlated lateral —
+ *   `left join lateral (select max(created_at) … where e.order_id = o.id and e.to_status = o.status)`
+ * — but PostgREST cannot express `e.to_status = o.status`: an embed filter has no access to the
+ * parent row. So the JOIN stays lateral and only the PREDICATE moves into JS.
+ *
+ * PostgREST compiles the `order_events ( … )` embed into ONE statement with
+ * `LEFT JOIN LATERAL (… json_agg …) ON true`, index-backed by
+ * `order_events_order_id_created_at_idx`. Verified against the live database:
+ *
+ *   Nested Loop Left Join
+ *     ->  Seq Scan on orders o        (Filter: seller_id = …)
+ *     ->  Aggregate
+ *           ->  Sort (created_at DESC)
+ *                 ->  Bitmap Index Scan on order_events_order_id_created_at_idx
+ *
+ * No per-row query and no per-row round trip: G8's total stays at TWO (orders+events, then
+ * public_profiles), unchanged from before this column existed. The cost of moving the predicate is
+ * transferring every event per order instead of one timestamp — bounded by the lifecycle at ~8 rows
+ * (created + 6 product transitions + a terminal) × 10 rows per page, which is exactly the trade the
+ * migration's own index comment endorses.
+ *
+ * Matching on `to_status === status` rather than "the latest event" is deliberate: the CHECK admits
+ * a `'print'` event type, so a future print row must not be mistaken for a state entry.
+ */
+export function waitFor(
+  status: OrderStatus,
+  events: { to_status: string | null; created_at: string }[] | null,
+  now: number,
+): number | null {
+  if (TERMINAL.includes(status)) return null
+  // Already newest-first from the query, so the first match IS max(created_at).
+  const entered = (events ?? []).find((e) => e.to_status === status)
+  if (!entered) return null
+  return Math.max(0, Math.floor((now - new Date(entered.created_at).getTime()) / 3_600_000))
 }
 
 /**
@@ -119,11 +174,15 @@ export const getSellerOrders = cache(
       .from('orders')
       .select(
         `id, status, order_type, created_at, buyer_id, cancellation_reason, cancelled_by,
+         item_title,
          products ( title ),
-         service_listings ( title )`,
+         service_listings ( title ),
+         order_events ( to_status, created_at )`,
       )
       .eq('seller_id', userId)
       .order('created_at', { ascending: false })
+      // Newest first per order, so picking the wait is a `find` on an already-sorted array.
+      .order('created_at', { referencedTable: 'order_events', ascending: false })
 
     // Never degrade to "you have no orders" on a seller's inbox — that reads as "nothing to do"
     // and the seller simply does not ship. Surface it.
@@ -166,17 +225,16 @@ export const getSellerOrders = cache(
         id: r.id,
         status,
         orderType: r.order_type,
-        title: one(r.products)?.title ?? one(r.service_listings)?.title ?? '',
+        // Snapshot wins; the live join is the self-retiring fallback for the 14 pre-migration
+        // orders. See SellerOrderDetail.itemTitle for the full reasoning.
+        title: r.item_title ?? one(r.products)?.title ?? one(r.service_listings)?.title ?? '',
         buyerId: r.buyer_id,
         buyerName: buyer.name,
         buyerCity: buyer.city,
         createdAt: r.created_at,
         cancellationReason: r.cancellation_reason,
         cancelledBy: r.cancelled_by,
-        waitingHours:
-          status === 'pending'
-            ? Math.max(0, Math.floor((now - new Date(r.created_at).getTime()) / 3_600_000))
-            : null,
+        waitingHours: waitFor(status, r.order_events, now),
       }
     })
 

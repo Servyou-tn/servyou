@@ -102,7 +102,7 @@ The labels and the geometry are where it diverges:
 | **S1** | label type | **14 / 20 Inter Medium** | **12 / 16** | ⚠ **CLOSED-PARTIAL** — was 16/16 (`text-caption` evicted by tailwind-merge, see below); now 12/16. **Figma wants 14/20**, so one step remains |
 | **S2** | node gap | **4** | **8** (`gap-2`) | open |
 | **S3** | label colour — completed | **`#0f172a`** | `#475569` (`text-secondary`) | open |
-| **S4** | label colour+weight — current | **`#1f5fe0` Inter Semi Bold** | `#475569` Medium | open — **the "you are here" emphasis is lost entirely** |
+| **S4** | label colour+weight — current | **`#1f5fe0` Inter Semi Bold** | `#475569` Medium | ✅ **CLOSED** — measured after: `rgb(31,95,224)` · weight 600 · 12px |
 | **S5** | label colour — upcoming | `#64748b` Medium | `#64748b` Medium | ✅ |
 | **S6** | node width | **hug-content, 42–77** (`WIDTH_AND_HEIGHT`) | **fixed 80** (`lg:w-20`) | open — see note |
 | **S7** | stepper width | **903.5, centred** in the 1136 panel | **1071, full-width** | open |
@@ -306,11 +306,11 @@ line — which is in Figma too, so nothing is being substituted. Founder call.
 | **AC1** | primary button | 312×48, r10, `#1f5fe0`, label 16/26 Semi Bold `#ffffff` | 305.16×48, r10, `rgb(31,95,224)` | ✅ |
 | **AC2** | print button + stamp | `504:27030` + `504:27041` | absent | **EXCLUDED** (documents PR) |
 | **AC3** | hint | 14/21 `#475569` — copy references the print flow | 14/21 `text-muted` — different copy | ✅ correct given AC2 is excluded |
-| **AC4** | **cancel link** | **`#e5484d` (red), `textAlign: CENTER`, full 312 wide** | **`brand-blue-600`, start-aligned, 144.22 wide** | open — **a destructive action rendered in the primary action colour** |
+| **AC4** | **cancel link** | **`#e5484d` (red), `textAlign: CENTER`, full 312 wide** | was `brand-blue-600`, start-aligned, 144.22 | ✅ **CLOSED** — measured after: `rgb(229,72,77)` · `text-align: center` · **305.16** (full rail width) |
 
-**AC4 is the most serious open item in this pass.** "Annuler la commande" is destructive and Figma
-paints it `#e5484d`; the page paints it the same blue as "Accepter" directly above it. It reads as a
-peer of the primary action rather than as a destructive one.
+**AC4 was the most serious item in this pass.** "Annuler la commande" is destructive and Figma paints
+it `#e5484d`; it shipped the same blue as "Accepter" directly above it, reading as a peer of the
+primary action rather than as the one that ends the order. Closed as a hazard, not a colour delta.
 
 ---
 
@@ -393,10 +393,25 @@ S3, S4, PR6, LV3, CL2, CL4, PR4, LV4, CL1, C1–C5.
 - **panel-suivi's carrier** — value or control. Blocks a faithful build either way.
 - **The hidden stepper `date` layer** — now sourceable from `order_events`.
 
-**Figma fixes owed (code is right, design is stale):**
-- `495:26289` is 77 tall with 56 of content — resize it or unhide the `date` layers.
-- `497:26426` renders a raw phone number that the platform's contact gating forbids.
-- `497:26373` `thumb` is **28×80** — a hug-width sliver where a square thumbnail is plainly intended.
-
 **Out of scope, already logged:** P7/P8 typography tokens (platform-wide); the tailwind-merge
-eviction class; the 375 rail overflow; `received_at`.
+eviction class; the 375 rail overflow; `received_at`; carrier-without-a-surface; S8/S9.
+
+---
+
+## 📐 FIGMA FIXES OWED — the design is stale, the code is right
+
+A named list, for fixing at source. In each of these the page is correct and the frame is not, so a
+future pass that "closes the delta" would be regressing working code toward a Figma bug.
+
+| # | node | what is wrong | fix |
+|---|---|---|---|
+| **F1** | `495:26289` `Order Stepper` | Frame is **77 tall but holds only 56 of content**. It was authored with the per-stage `date` layers visible (`32 + 4 + 20 + 4 + 17 = 77`) and never resized after they were hidden. | Resize the instance to **56** — or unhide the dates and let it stay 77 (see F2). |
+| **F2** | `495:26289` → each `node` → `date` | The per-stage timestamp is **`visible: false` on all seven nodes**. It was hidden because `orders` had no per-step timestamps. **`order_events` now supplies them**, so the layer is buildable for the first time. | Decide: unhide and we build it, or delete and we stop carrying it as a phantom. Currently it is neither designed nor gone. |
+| **F3** | `495:26288` `panel-stepper` | Panel is **125**, which is only correct while F1 is. Once the stepper is 56 the panel is **104** (+2 border = the 106 the page renders). | Falls out of F1 — no separate edit if the panel hugs. |
+| **F4** | `497:26426` `panel-client` → `497:26447` | Renders a **raw phone number, "+216 20 123 456"**, as static text. The platform's contact gating forbids this: `get_contact_phone` is relationship-gated and reveals on click. A server-rendered number would defeat the gate on every seller's screen. | Replace the value row with the reveal affordance the code already ships, or drop the row and keep only the disclosure line. |
+| **F5** | `497:26373` `thumb` | **28×80** — a 28-wide sliver holding a 28×28 icon, inside an 80-tall row. Hug-width on a frame that is plainly meant to be a square thumbnail. | Set it to **80×80** (or whatever the intended square is) so the code has a real target. The page currently ships a bare icon with no container at all, which is a separate open delta (PR2) that cannot be closed until this is decided. |
+| **F6** | `495:26273` `Breadcrumb` | Two layers are `visible: false` (`I…;188:14216` chevron, `I…;188:14218` "Poterie de Nabeul") — leftovers from the component's 3-level demo. Harmless, but they are why the instance reports a wider bounding box than it draws. | Prune, or accept — flagged only so a later measurement is not confused by the width. |
+
+**F1/F2 are the load-bearing pair.** Until they are resolved, the stepper's height has no
+authoritative target: the page matches the frame's *content* exactly (56) and misses its *frame*
+(77) by 21, and only design can say which is intended.
