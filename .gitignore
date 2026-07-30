@@ -67,3 +67,8 @@ next-env.d.ts
 .vrt-stories-profile/
 /scripts/vrt/__current__/
 /scripts/vrt/__to-commit__/
+
+# Gate (scripts/gate): throwaway headless-Chrome profile for the AUTHENTICATED runner. It receives
+# a real minted session cookie at run time, so it must never be committed — that would commit a
+# credential. scripts/gate/session.mjs itself writes nothing to disk.
+.gate-chrome-profile/
