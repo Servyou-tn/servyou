@@ -31,13 +31,14 @@ export function Panel({
           <Icon className={cn('h-5 w-5 shrink-0', iconClassName)} aria-hidden="true" />
         ) : null}
         <h2 className="text-h3 text-text-primary">{title}</h2>
+        {/* ⚑ The link below is NOT `cn()` — same eviction as OrderRail's labels. tailwind-merge
+            files our custom `text-*` size tokens under the catch-all `text-*` colour group, so
+            `text-brand-blue-600` was deleting `text-body-sm` and this link shipped at the
+            inherited 16px instead of 14. A plain template cannot collide. */}
         {link ? (
           <Link
             href={link.href}
-            className={cn(
-              'ms-auto rounded text-body-sm text-brand-blue-600 hover:underline',
-              FOCUS_RING,
-            )}
+            className={`ms-auto rounded text-body-sm text-brand-blue-600 hover:underline ${FOCUS_RING}`}
           >
             {link.label}
           </Link>
