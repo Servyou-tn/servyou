@@ -30,6 +30,7 @@
 
 ## PR discipline
 
+- **Branch FIRST.** Every new piece of work starts with `git fetch origin && git checkout -b <name> origin/main` — **before any file is touched**, before the first migration, before the first edit. Whatever branch is checked out from the last task is the default state, not a signal about this one. Cutting the branch after the work is done is too late: the previous PR's branch is usually still open and under review.
 - **One PR, one focus.** Bugs found out-of-scope during a PR get LOGGED for a future PR, not fixed inline.
 - **One focused commit per PR** (or 2 max if cleanly separated, e.g. migration + app code).
 - **NO `Co-Authored-By` trailers.** Ever.
