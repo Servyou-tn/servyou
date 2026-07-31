@@ -66,7 +66,14 @@ export function TopbarUserMenu({ user, role }: { user: TopBarUser | null; role: 
             aria-label={t('nav.account', lang)}
             className={cn('flex items-center gap-2 rounded-full p-1 md:pe-2.5', SURFACE_HOVER, FOCUS_RING)}
           >
-            <Avatar size="md" initials={getInitials(user.full_name || user.email)} />
+            {/* `src` wins inside the primitive when present, so initials stay the fallback for
+                every user who has not uploaded a photo — which is all of them until they do. */}
+            <Avatar
+              size="md"
+              src={user.avatar_url ?? undefined}
+              name={user.full_name ?? undefined}
+              initials={getInitials(user.full_name || user.email)}
+            />
             <span className="hidden text-start md:flex md:flex-col md:leading-tight">
               <span className="text-body font-medium leading-snug text-text-primary">
                 {displayName}

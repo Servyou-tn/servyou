@@ -15,13 +15,24 @@ import { cn } from '@/lib/utils'
 export type AvatarSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl'
 
 // box sizes = Figma px via Tailwind's spacing scale: 24 · 32 · 40 · 56 · 80 · 120.
-const SIZE: Record<AvatarSize, { box: string; text: string; icon: string }> = {
-  xs: { box: 'size-6', text: 'text-xs', icon: 'size-3' },
-  sm: { box: 'size-8', text: 'text-sm', icon: 'size-4' },
-  md: { box: 'size-10', text: 'text-sm', icon: 'size-5' },
-  lg: { box: 'size-14', text: 'text-lg', icon: 'size-7' },
-  xl: { box: 'size-20', text: 'text-2xl', icon: 'size-10' },
-  '2xl': { box: 'size-30', text: 'text-4xl', icon: 'size-14' },
+//
+// `px` is the rendered CSS width, passed to next/image's `sizes`. It was previously hardcoded to
+// "120px" for ALL six sizes — which never actually executed, because nothing in the app passed
+// `src` until the avatar upload shipped. So this is specifying behaviour that is live for the
+// first time, not changing behaviour that shipped.
+//
+// Per-size matters here specifically because of the market: mobile-first, low-bandwidth Tunisia.
+// A 40px topbar avatar under the old value fetched a 256px-wide source — ~6x the pixels needed, on
+// every authenticated page. The cost is more distinct Vercel cache keys per image (each `w` is its
+// own key), which is affordable now that next.config.ts pins a one-year TTL: a given avatar renders
+// at ~2 sizes in practice (md in the topbar, 2xl on the account page), so ~2 transformations ever.
+const SIZE: Record<AvatarSize, { box: string; text: string; icon: string; px: string }> = {
+  xs: { box: 'size-6', text: 'text-xs', icon: 'size-3', px: '24px' },
+  sm: { box: 'size-8', text: 'text-sm', icon: 'size-4', px: '32px' },
+  md: { box: 'size-10', text: 'text-sm', icon: 'size-5', px: '40px' },
+  lg: { box: 'size-14', text: 'text-lg', icon: 'size-7', px: '56px' },
+  xl: { box: 'size-20', text: 'text-2xl', icon: 'size-10', px: '80px' },
+  '2xl': { box: 'size-30', text: 'text-4xl', icon: 'size-14', px: '120px' },
 }
 
 type AvatarProps = {
@@ -53,7 +64,7 @@ export function Avatar({ size = 'md', src, name, initials, decorative = true, cl
       className={cn('relative inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full', s.box, className)}
     >
       {src ? (
-        <Image src={src} alt={decorative ? '' : (name ?? '')} fill sizes="120px" className="object-cover" />
+        <Image src={src} alt={decorative ? '' : (name ?? '')} fill sizes={s.px} className="object-cover" />
       ) : initials ? (
         <span className={cn('flex size-full items-center justify-center bg-brand-blue-100 font-semibold text-brand-blue-600', s.text)} aria-hidden="true">
           {initials}

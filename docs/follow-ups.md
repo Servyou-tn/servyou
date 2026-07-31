@@ -4,8 +4,152 @@ Tracked deferrals — work intentionally pushed out of the PR that surfaced it, 
 enough context to pick up cold. Each entry: what, why deferred, where it lives, the
 trigger to do it.
 
+## Closed decisions — do NOT "fix" these
+
+Settled deliberately, with the reasoning, so a later pass does not read them as defects and
+undo them. A closed decision is not a deferral.
+
+### ✅ Orders do NOT snapshot a product image — the 48×48 falling back to its icon is CORRECT
+
+- **Decision (founder, 2026-07-31):** `orders` will **not** get an `item_image_url` column.
+- **Why, and this is the whole point:** `item_title` and `unit_price_tnd` are frozen because they
+  are **facts about money and identity** — what was bought and what it cost must survive the
+  product being edited or deleted. **A thumbnail is decorative.** It is not a fact the order needs
+  to be correct.
+- **And freezing would not even work.** A frozen URL does not survive the storage object being
+  deleted. Snapshotting the path buys a **broken image** (a 404'd `<img>`, or alt text under
+  `next/image`) instead of the clean icon placeholder that renders today. That is strictly worse:
+  a broken image reads as a bug, an icon placeholder reads as "no photo".
+- **So the expected behaviour is:** product deleted → `orders.product_id` goes NULL (existing
+  `ON DELETE SET NULL`) → `product_images` rows CASCADE away → the G9 order row renders its
+  **icon placeholder** at `_components/OrderActionRow.tsx:64`, while title and price still render
+  from the snapshot. **This is the design, not a gap.**
+- **Do not** "restore" the thumbnail by adding a snapshot column, and do not copy the image to an
+  order-owned path (that doubles stored bytes for every ordered image against the 1 GB cap that
+  is the binding storage constraint).
+- **Context:** `docs/design/image-storage-discovery.md` §6b. Its §7b trigger analysis
+  (`set_order_snapshot` reads scalars, so any future snapshot column needs a correlated subquery
+  over `product_images` and must not raise when there is no image) stays valid and is worth
+  reading first *if* a snapshot column is ever genuinely justified.
+
 ## Open
 
+### `docs/follow-ups.md` conflicts on every concurrent branch — it needs an append convention
+
+- **What:** this file conflicted **twice in a single session** (2026-07-31), on the same lines, for
+  the same reason: every PR inserts its new entries at the **top of `## Open`**, so any two branches
+  alive at once both rewrite the identical region. First conflict was moving the image-storage work
+  off PR #102's branch; the second was rebasing that branch onto main after #102 merged. Same file,
+  same hunk, twice.
+- **Why it is worse than an ordinary conflict:** the merge is not mechanical. Resolving it means
+  deciding *which entries belong to which PR* — on the first conflict the stash carried #102's five
+  entries into a branch that must not contain them, and keeping "both sides" would have silently
+  duplicated another PR's follow-ups into this one. A careless `--theirs`/`--ours` is wrong in both
+  directions, and the damage (an entry attributed to the wrong PR, or lost entirely) is invisible in
+  review because the file is prose.
+- **Proposed fix — APPEND AT END, not per-PR sections.** New entries go at the *bottom* of `## Open`.
+  Git merges concurrent appends to different tail positions cleanly; concurrent inserts at the same
+  head position never merge. Per-PR sections (`## Follow-ups from PR #NNN`) sound tidier but do
+  **not** fix it: every branch still edits the same section list at the same place unless each new
+  section is appended at the file's tail — at which point the section heading is just decoration on
+  top of the append rule. So: append, and let the entry's own text say which PR raised it.
+  - Trade-off, stated: newest-last is worse to read than newest-first. Mitigate with a dated
+    one-line index at the top if that becomes annoying — an index line is one line, so it still
+    collides, but a one-line conflict is trivial where a 60-line prose conflict is not.
+  - The alternative that actually removes the problem is one file per entry
+    (`docs/follow-ups/<slug>.md`), which cannot conflict at all. Heavier, but worth considering if
+    the append convention still bites.
+- **Deliberately NOT restructured in the two PRs that hit it** (founder call) — reordering the whole
+  file inside a storage PR would bury the change under an unrelated diff, and the restructure wants
+  to land when no other branch is mid-flight or it just causes the conflict it is trying to prevent.
+- **Trigger:** next time two PRs are open at once, or the next time this file conflicts — whichever
+  comes first. Do it on a branch with nothing else in it, when no other PR is open.
+
+### Revisit image hosting after the Supabase Pro / Vercel Pro upgrades
+
+- **What:** Supabase Pro and Vercel Pro are both being purchased before launch (founder,
+  2026-07-31). **On Supabase Pro the Storage image-transformation service becomes available**
+  (100 origin images included, then $5 per 1,000), along with **Smart CDN** (automatic cache
+  invalidation on replace, which the free tier does not have).
+- **Why it is worth revisiting:** today images and their resizing are **split across two systems**
+  — the bytes live in Supabase Storage, the resizing happens in Vercel's optimizer. On Pro they
+  could live in one. That would collapse the `remotePatterns` + `minimumCacheTTL` + `deviceSizes`
+  coupling described in the discovery report §2b into a single provider's cache, and Smart CDN
+  would remove the never-overwrite-the-path rule that the current design depends on.
+- **NOT a reason to change anything now.** The upload-time downscale and the storage RLS are
+  **correct under either arrangement** — the downscale is what protects the storage cap regardless
+  of who resizes, and the path-ownership policies do not care. This is an option to evaluate, not
+  debt to pay down.
+- **Also re-check at that point:** Vercel's Fair Use policy restricts **Hobby to non-commercial
+  personal use**, which is a live question for a COD marketplace (discovery report §2a). The Pro
+  purchase resolves it; note it as resolved when it lands.
+- **Trigger:** after both upgrades are active. Re-run the §2d cost comparison with Pro numbers
+  before moving anything.
+
+### Orphaned storage objects need a reconciliation sweep before the first deletable image surface
+
+- **What:** there is **no transaction spanning Postgres and Supabase Storage**, so a row delete
+  cannot atomically delete its object and a trigger cannot reliably do it either. Orphans are a
+  **reconciliation problem, not a prevention problem.**
+- **Why it is not needed yet:** this PR ships exactly one writer — avatars — and the avatar flow
+  deletes the prior object in the same server action. There is no CASCADE path that strands an
+  avatar object.
+- **Why it becomes needed:** deleting a *shop* cascades to `products` and then to `product_images`
+  — **the DB rows vanish with no application code involved**, so there is no opportunity for an
+  in-action delete to run at all. Same for any raw SQL delete, admin tool, or service-role write.
+- **Shape when built:** delete-in-action for the common path, **plus** a periodic sweep that lists
+  objects and deletes those with no referencing row in the owning table (`product_images`,
+  `profiles.avatar_url`, `shops.logo_url`/`banner_url`, `portfolio_items`). The sweep is
+  **required, not optional** — it is the only thing that catches the CASCADE case.
+- **Simplified by the closed decision above:** because orders do not reference image paths, the
+  sweep's "no referencing row" test stays single-table. No cross-table reference tracking.
+- **Trigger:** the first PR that ships a *deletable* image surface — G5/G6/G7 (products) or G3
+  (shop assets), whichever lands first.
+
+### 🔴 Uploads are capped at 4 MB by Vercel's payload limit — many phone photos cannot be uploaded
+
+- **What:** an avatar is sent through a **server action**, and **Vercel caps a function's request
+  payload at 4.5 MB** (`413 FUNCTION_PAYLOAD_TOO_LARGE`). That is a platform limit — no
+  `bodySizeLimit` value raises it. So `MAX_INPUT_BYTES` is 4 MB, `bodySizeLimit` is `4.4mb`, and a
+  photo above 4 MB is refused with an honest message.
+- **Why this is a real product problem, not a tidy limit:** modern phone cameras routinely produce
+  4–8 MB JPEGs, against a documented **70%+ mobile-first** market. A meaningful share of users will
+  hit the refusal on their first attempt with an ordinary photo. The message is honest but the
+  outcome is still "you cannot set a profile picture".
+- **How it was found:** the authenticated gate, not the unit tests. Next's Server Actions default to
+  a **1 MB** body, so the first real 3.7 MB upload died as `Body exceeded 1 MB limit` → 413 → a
+  **500 through the error boundary**, i.e. a crash page. The unit tests never saw it because they
+  call `normalizeAvatar` directly and never cross the action boundary. Worth remembering as the
+  general lesson: a server action's payload ceiling is invisible to any test that does not go
+  through HTTP.
+- **The fix, and it is the same fix HEIC needs: downscale in the BROWSER before upload.** Resizing
+  to ~1600px client-side puts any phone photo comfortably under 1 MB, which (a) removes the 4.5 MB
+  cliff entirely, (b) makes the server action payload small and fast on mobile data, and (c) is the
+  same code path that would convert HEIC. One change closes both entries.
+  - Do NOT instead route uploads around the action to storage directly to dodge the cap: that
+    trades the limit for a signed-upload flow and loses the server-side re-encode, which is the
+    platform's actual content gate.
+- **Trigger:** before real sellers onboard, or the first report of a failed photo upload. Pair it
+  with the HEIC entry below — one client-side normalize step, both problems.
+
+### HEIC uploads are rejected, not converted — client-side conversion is the real fix
+
+- **What:** the avatar upload action rejects HEIC/HEIF with an explicit FR/AR message pointing the
+  user at the iOS setting. It does **not** convert.
+- **Why this matters more than it sounds:** **HEIC is what an iPhone shoots by default**, against a
+  documented 70%+ mobile-first Tunisian market. So this is not an edge case — it is a meaningful
+  share of real uploads hitting a rejection.
+- **Why rejected rather than converted:** `sharp`'s prebuilt binaries generally lack HEIF decode,
+  so the decode fails inside the very step that is the content gate. A silent failure there would
+  be worse than an explicit refusal.
+- **Why the message is specific rather than generic:** a bare "format non supporté" on the format
+  an iPhone shoots by default reads as the app being broken. The shipped message names the fix:
+  *« Réglages > Appareil photo > Formats > Plus compatible »*.
+- **The real fix:** convert client-side before upload (a browser-side HEIC decoder produces a
+  JPEG/WebP the server can then normalize), so the user never sees a rejection. Costs a client
+  bundle addition, which is why it is not in this PR.
+- **Trigger:** first real report of an iPhone user blocked, or the next avatar/upload UX pass —
+  whichever comes first. Worth measuring the rejection rate before spending the bundle.
 ### `orders.carrier` is seller-writable in the schema with NO surface that can write it
 
 - **What:** migration `20260729111938` grants `UPDATE (carrier, tracking_number)` to

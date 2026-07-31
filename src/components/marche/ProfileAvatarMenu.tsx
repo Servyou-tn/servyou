@@ -21,6 +21,12 @@ export type TopBarUser = {
   email: string
   full_name: string | null
   seller_type: 'shop_owner' | 'freelancer' | null
+  /**
+   * Public URL of the user's uploaded avatar, or null for the initials fallback. Optional so the
+   * legacy shell and test fixtures that predate the storage work keep type-checking; the v2 shell's
+   * TopbarUserMenu passes it to the Avatar primitive's `src`.
+   */
+  avatar_url?: string | null
 }
 
 // The third button in the /marche icon cluster. Logged in → Radix dropdown
