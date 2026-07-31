@@ -27,6 +27,7 @@ export function OrderRail({
   stages,
   status,
   labelKeyFor,
+  timestampFor,
   lang,
 }: {
   /** The chain to walk — `lifecycleFor(orderType)`. */
@@ -34,12 +35,23 @@ export function OrderRail({
   status: string
   /** Stage → i18n key. Kept a prop because product and service label the same stage differently. */
   labelKeyFor: (stage: string) => string
+  /**
+   * Stage → an already-formatted date, or null when that stage has no recorded event.
+   *
+   * OPTIONAL, and that is the whole point: `OrderRail` has two consumers, and E3's buyer rail
+   * (`/mes-commandes`) does not read `order_events`. Omitting the prop leaves E3 rendering exactly
+   * what it renders today — the shared-component blast radius that S8/S9's connector colours are
+   * still blocked on. Formatting is the caller's job so this stays presentational and needs no
+   * locale of its own beyond `lang`.
+   */
+  timestampFor?: (stage: string) => string | null
   lang: Lang
 }) {
   return (
     <ol className="flex items-start">
       {stages.map((stage, i) => {
         const state = stageStateIn(stages, status, i)
+        const timestamp = timestampFor?.(stage) ?? null
         return (
           <li key={stage} className="contents">
             {/* Node width: the rail spans 1071 inside G9's panel and the 6 connectors are
@@ -106,6 +118,36 @@ export function OrderRail({
               >
                 {t(labelKeyFor(stage), lang)}
               </span>
+              {/* Per-stage timestamp, from the `order_events` row whose `to_status` is this stage.
+
+                  ⚑ NO FIGMA SOURCE — and that is deliberate, not an oversight. An earlier delta
+                  pass recorded seven hidden `date` layers on 495:26289; a direct MCP inspection
+                  (2026-07-31) found `hiddenNodes` EMPTY and no such layers. The frame does not
+                  describe this line at all, so the type below is a CODE-SIDE CHOICE:
+                  `text-caption` / `font-medium` / `text-text-muted` is exactly the treatment the
+                  rail already gives its UPCOMING label, which IS Figma-verified (delta S5,
+                  `#64748b` Medium). Reusing an approved combination from this same component beats
+                  inventing one. Design owes a confirmation — F2 in docs/design/g9-deltas-2.md,
+                  which now asks for the layer to be added to the MAIN COMPONENT 140:9067, since
+                  there is nothing to unhide and an instance-level edit would not propagate.
+
+                  Gap: inherited from the container's `gap-2` (8) rather than given a bespoke 4.
+                  Figma's node gaps are a uniform 4 and the code's are a uniform 8 — that is open
+                  delta S2, and it is uniform on BOTH sides. Hard-coding 4 here alone would make the
+                  rail internally inconsistent (8 then 4) and would fight S2's eventual one-line fix.
+
+                  NOT `cn()` — same reason as the label directly above: tailwind-merge files
+                  `text-caption` in the catch-all `text-*` COLOUR group, so merging it with
+                  `text-text-muted` would silently delete the size. A plain template cannot collide.
+
+                  Absent, not blank, when there is no event: no empty element, no placeholder dash.
+                  A stage with nothing recorded renders the label alone and the node simply sits
+                  shorter, which reads as "not recorded" rather than as a missing value. */}
+              {timestamp ? (
+                <span className="text-center text-caption font-medium text-text-muted">
+                  {timestamp}
+                </span>
+              ) : null}
             </div>
             {i < stages.length - 1 ? (
               <div className="mt-4 h-0.5 flex-1" aria-hidden="true">
