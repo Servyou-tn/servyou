@@ -42,7 +42,9 @@ A later pass must not read these as misses. They are **in the Figma and delibera
    entry** (`504:27058`). All three belong to the **delivery-documents PR**; the print RPC was
    explicitly deferred out of the schema PR with `'print'` left in the `order_events` CHECK
    vocabulary.
-3. **The "Confirmée sur WhatsApp" timeline entry** (`504:27053`). Nothing records it, and per the
+3. **The "Confirmée sur WhatsApp" timeline entry** (`504:27052`, the row named `cr` — **corrected
+   2026-07-31 from `504:27053`**, which is only the label text; the parent row also holds the
+   "· 18/07 10h45" stamp). Nothing records it, and per the
    schema discovery we could only ever record *"the seller opened the prefilled link"* — never
    *"a message was sent."* Rendering it would assert a fact we do not have.
 
@@ -58,10 +60,35 @@ The brief asked where the other ~45px go, with three candidates: a bigger gap, a
 or two-line labels. **It is none of them — it is dead space in the Figma.**
 
 Every one of the seven nodes measures **exactly 56 tall**: `circle 32` + `gap 4` + `label 20`. All
-seven. But each node also carries a **third child, `date`, with `visible: false`** — a per-stage
-timestamp (`"6 juil."`, 12/17 Inter Medium `#64748b`). With the dates visible the node would be
-`32 + 4 + 20 + 4 + 17 = 77`. **The `Order Stepper` instance is a fixed-size frame that was authored
-at 77 and never resized after the dates were hidden.**
+seven.
+
+> ## 🔴 RETRACTED, 2026-07-31 — the hidden `date` layers do not exist
+>
+> This section originally continued: *"each node also carries a third child, `date`, with
+> `visible: false` — a per-stage timestamp (`"6 juil."`, 12/17 Inter Medium `#64748b`)… the
+> instance was authored at 77 and never resized after the dates were hidden."*
+>
+> **That is not in the file.** A direct inspection of `495:26289` through the Figma MCP (founder,
+> 2026-07-31) found **31 nodes, seven visible labels, and an EMPTY `hiddenNodes`**. There are no
+> `date` layers, hidden or otherwise. Either the original plugin-bridge read was of a different
+> node, or the layers were never there.
+>
+> I could **not** independently re-verify: the Figma MCP is rate-limited on the Starter plan. This
+> retraction therefore rests on the founder's direct inspection, not on a second reading of mine —
+> recorded that way so the provenance of the correction is as clear as the provenance of the error.
+>
+> **Consequences, each carried through below:**
+> - **The 77-vs-56 dead space is UNEXPLAINED.** "Authored with dates, never resized" was the whole
+>   explanation and it is gone. The cause is now unknown — see F1.
+> - **The `"6 juil."` / 12/17 Medium `#64748b` type spec was never real.** Anything that cited it as
+>   the Figma target — including the built rail's date line — is unsourced. See F2.
+> - **What still holds:** the seven nodes ARE 56 of content, the page's 56/106 IS correct, and
+>   Figma's 125 IS stale. Only the *reason* was wrong, not the measurement.
+>
+> **Method note for later passes:** the original claim came from a plugin-bridge node dump described
+> in this file as "not a cached read". It was still wrong. A structural claim about hidden layers
+> should be confirmed against `hiddenNodes` explicitly, and cited to the exact node id it was read
+> from, before anything is built on it.
 
 So the arithmetic inverts:
 
@@ -71,15 +98,17 @@ So the arithmetic inverts:
 | stepper **frame** height | 77 (21px of it dead) | — |
 | panel height | **125** (= 77 + 48 pad) | **106** (= 56 + 48 pad + 2 border) |
 
-**The page's 106 is correct and Figma's 125 is stale.** Had the panel been "corrected" to 122–125 it
-would have been padded to match hidden layers. This is a **Figma fix, not a code fix**: either
-resize `495:26289` to 56, or unhide the dates.
+**The page's 106 is correct and Figma's 125 is stale** — this conclusion survives the retraction,
+because it rests on the *measured content height* (56 on both sides), not on the explanation for the
+gap. Had the panel been "corrected" to 122–125 it would have been padded to match empty space.
 
-**And the hidden layer is a live opportunity.** That `date` line is exactly the per-step timestamp
-that was unbuildable when G9 shipped — `orders` had no per-step timestamps. **`order_events` now
-provides it.** It stays out of this PR because a hidden Figma layer is not an approved design, but it
-is the cheapest real win available on this screen and it should be a founder call, not a silent
-omission.
+**What does NOT survive is the reason.** The 21px was attributed to hidden `date` layers; those do
+not exist, so the dead space has **no known cause**. Do not repeat the old explanation — see F1.
+
+**The per-step timestamp is still a live opportunity, and it is now BUILT** — but on the data, not
+on a Figma layer. `order_events` supplies a real per-stage timestamp and the rail renders it
+(`feat/g9-rail-timestamps`). Because the frame has no `date` layer to match, the rendered line's
+type is a **code-side choice**, not a Figma target. See F2 for what design still owes.
 
 ---
 
@@ -405,13 +434,48 @@ future pass that "closes the delta" would be regressing working code toward a Fi
 
 | # | node | what is wrong | fix |
 |---|---|---|---|
-| **F1** | `495:26289` `Order Stepper` | Frame is **77 tall but holds only 56 of content**. It was authored with the per-stage `date` layers visible (`32 + 4 + 20 + 4 + 17 = 77`) and never resized after they were hidden. | Resize the instance to **56** — or unhide the dates and let it stay 77 (see F2). |
-| **F2** | `495:26289` → each `node` → `date` | The per-stage timestamp is **`visible: false` on all seven nodes**. It was hidden because `orders` had no per-step timestamps. **`order_events` now supplies them**, so the layer is buildable for the first time. | Decide: unhide and we build it, or delete and we stop carrying it as a phantom. Currently it is neither designed nor gone. |
+| **F1** | `495:26289` `Order Stepper` | Frame is **77 tall but holds only 56 of content** — 21px of dead space. ⚠ **The cause is UNKNOWN.** The previous explanation ("authored with `date` layers visible, never resized") was retracted 2026-07-31: direct MCP inspection found 31 nodes, seven visible labels and an empty `hiddenNodes` — there are no hidden layers to account for it. | Still a **Figma fix, not a code fix** — the page's 56 matches the content exactly. But do not resize on the old rationale: find out what the 21px is first, since a frame that is 21px larger than its content usually means a fixed height set by hand or a stale auto-layout, and that may recur elsewhere in the set. |
+| **F2** | **main component `140:9067`** (`type=product, orientation=horizontal`, in the Order Stepper set) — **not** the instance `495:26289` | 🔴 **The frame has NO timestamp layers at all.** Corrected 2026-07-31: the earlier "seven hidden `date` layers" reading was wrong — `hiddenNodes` is empty. Meanwhile **the page now renders a per-stage timestamp** from `order_events` (`feat/g9-rail-timestamps`). So the code ships a line the design does not describe, and there is nothing to unhide. | **Add the `date` layer to the MAIN COMPONENT `140:9067`, not to the instance** — an instance-level addition would not propagate and would be overridden on the next component update. Design also owes the **type spec**: the built line is currently `text-caption` / 500 / `text-muted` (12px · 16.8 · `#64748b`), chosen code-side to match the rail's own **upcoming-label** treatment (S5, Figma-verified `#64748b` Medium) — it is a defensible inheritance, not a measured target. Confirm or replace it. |
 | **F3** | `495:26288` `panel-stepper` | Panel is **125**, which is only correct while F1 is. Once the stepper is 56 the panel is **104** (+2 border = the 106 the page renders). | Falls out of F1 — no separate edit if the panel hugs. |
 | **F4** | `497:26426` `panel-client` → `497:26447` | Renders a **raw phone number, "+216 20 123 456"**, as static text. The platform's contact gating forbids this: `get_contact_phone` is relationship-gated and reveals on click. A server-rendered number would defeat the gate on every seller's screen. | Replace the value row with the reveal affordance the code already ships, or drop the row and keep only the disclosure line. |
 | **F5** | `497:26373` `thumb` | **28×80** — a 28-wide sliver holding a 28×28 icon, inside an 80-tall row. Hug-width on a frame that is plainly meant to be a square thumbnail. | Set it to **80×80** (or whatever the intended square is) so the code has a real target. The page currently ships a bare icon with no container at all, which is a separate open delta (PR2) that cannot be closed until this is decided. |
+| **F7** | Order Stepper component properties | **Vestigial props from another component.** The set carries `showValues: true`, `minLabel: "20 TND"`, `maxLabel: "250 TND"` — **price-slider properties on an order stepper**. They drive nothing here, but the component's prop panel actively misleads: anyone binding an instance sees TND range controls on a lifecycle rail. Found in the 2026-07-31 MCP inspection. | Delete the three properties from the component set. Check the Range Slider (`143:9517`) first — this looks like a duplicate-and-rename that kept the source's prop schema, so the same may have happened elsewhere in the set. |
 | **F6** | `495:26273` `Breadcrumb` | Two layers are `visible: false` (`I…;188:14216` chevron, `I…;188:14218` "Poterie de Nabeul") — leftovers from the component's 3-level demo. Harmless, but they are why the instance reports a wider bounding box than it draws. | Prune, or accept — flagged only so a later measurement is not confused by the width. |
 
 **F1/F2 are the load-bearing pair.** Until they are resolved, the stepper's height has no
 authoritative target: the page matches the frame's *content* exactly (56) and misses its *frame*
 (77) by 21, and only design can say which is intended.
+
+> ### F2 update — the timestamps are built (2026-07-31, `feat/g9-rail-timestamps`)
+>
+> ⚠ **Revised the same day.** This block originally claimed the built line matched a hidden Figma
+> `date` layer. There is no such layer (see the retraction above), so the Figma column below is gone
+> rather than quietly corrected — there was never anything in it.
+>
+> `order_events` supplies a per-stage timestamp and the rail renders it. **The design does not
+> describe this line at all**, which is what F2 now asks design to fix, in the main component.
+>
+> **Measured, both states, authenticated at 1440:**
+>
+> | | page, order WITH events | page, order with NONE | Figma target |
+> |---|---|---|---|
+> | date type | 12px / 16.8px · w500 · `rgb(100,116,139)` | — (absent) | **none — layer does not exist** |
+> | date content | `"31 juil."` (`day numeric + month short`) | — | **none** |
+> | node height | **81** (`32 + 8 + 16 + 8 + 17`) | **56** (unchanged) | 56 of content in a 77 frame |
+> | rail / panel | **81 / 131** | **56 / 106** (byte-identical to before) | 77 / 125 |
+>
+> **The type is a code-side inheritance, not a match.** `text-caption` + `font-medium` +
+> `text-text-muted` is the same treatment the rail already gives its **upcoming** label, which IS
+> Figma-verified (**S5**, `#64748b` Medium ✅). So the date reuses a token combination already
+> approved on this component rather than inventing one — defensible, but it is design's to confirm.
+>
+> **The 81-vs-77 comparison is now only loosely meaningful**, since 77 is a frame with an
+> unexplained 21px (F1) rather than a content target. Against the frame's *content* (56), the built
+> node adds exactly the date line and its gap: `56 + 8 + 17 = 81`. The two open deltas **S1** (label
+> line-height 16 vs 20) and **S2** (gaps uniform 8 vs uniform 4) still account for the rest of the
+> divergence and are untouched here. The date deliberately inherits the container's `gap-2` rather
+> than hard-coding a bespoke 4, so S2 stays a one-line fix instead of becoming three.
+>
+> **The empty state is the common path, and it did not move.** All 14 pre-migration orders have zero
+> events, so the rail renders label-only at 56/106 — the same numbers it shipped with. Verified on
+> two of them (`f14bbb38`, `33b822ec`), not just one.

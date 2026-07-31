@@ -200,3 +200,36 @@ export function shortDateTime(iso: string, lang: Lang): string {
   const time = d.toLocaleTimeString(LOCALE[lang], { hour: '2-digit', minute: '2-digit', hour12: false })
   return `${date} ${time.replace(':', 'h')}`
 }
+
+/**
+ * Stage → the ISO timestamp at which the order first reached it, derived from `order_events`.
+ *
+ * ONE RULE covers every stage: the event whose `to_status` equals the stage. That works for the
+ * first stage too, without a special case, because `emit_order_event` writes the `created` event
+ * with `to_status = new.status` — so "pending" is stamped by the creation event and every later
+ * stage by its `status_change`. Keyed on `to_status` rather than on `event_type`, which is why the
+ * two event kinds need no branch here.
+ *
+ * FIRST occurrence wins, not last. If a status were ever re-entered, the honest answer to "when did
+ * this order reach Expédiée" is the first time, not the most recent. Callers pass rows already
+ * ordered oldest-first (`seller-order-detail` orders the embed ascending), and the `??=` preserves
+ * that regardless.
+ *
+ * Structurally typed rather than importing `OrderEvent`, so this stays in the lifecycle module
+ * without coupling it to the seller read layer — E3's buyer rail can feed it the same shape.
+ *
+ * Stages with no matching event are simply ABSENT from the result. That is the common case, not the
+ * exception: all 14 pre-migration orders have zero events, and `order_events` only accrues from
+ * transitions made after its trigger landed. A missing key must therefore read as "not recorded",
+ * never as an error — see OrderRail, which renders the label alone.
+ */
+export function stageTimestamps<E extends { toStatus: string | null; createdAt: string }>(
+  events: readonly E[],
+): Record<string, string> {
+  const byStage: Record<string, string> = {}
+  for (const e of events) {
+    if (!e.toStatus) continue
+    byStage[e.toStatus] ??= e.createdAt
+  }
+  return byStage
+}

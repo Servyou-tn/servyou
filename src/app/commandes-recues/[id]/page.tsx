@@ -8,7 +8,7 @@ import { OrderRail } from '@/components/orders/OrderRail'
 import { WhatsAppContactButton } from '@/components/orders/WhatsAppContactButton'
 import { requireShopOwner } from '@/lib/auth/require-seller'
 import { getSellerOrderDetail, type OrderEvent } from '@/lib/marche/seller-order-detail'
-import { statusPillFor, shortRef, longDate, shortDateTime } from '@/lib/orders/order-status'
+import { statusPillFor, shortRef, longDate, shortDate, shortDateTime, stageTimestamps } from '@/lib/orders/order-status'
 import {
   nextSellerStatus,
   isCancellable,
@@ -50,7 +50,8 @@ const LIST = '/commandes-recues'
 //     "breakdown" with nothing to break down.
 //   · The print button, the print stamp and the "Bon de livraison imprimé" timeline entry
 //     (504:27030 / 504:27041 / 504:27058) — the print RPC belongs to the delivery-documents PR.
-//   · The "Confirmée sur WhatsApp" timeline entry (504:27053) — nothing records it, and we could
+//   · The "Confirmée sur WhatsApp" timeline entry (504:27052, the row named `cr` — NOT 504:27053,
+//     which is only its label; the row also carries the "· 18/07 10h45" stamp) — nothing records it, and we could
 //     only ever record that the seller OPENED the prefilled link, never that a message was sent.
 //
 // ⚑ NO MOBILE FRAME. Every below-lg value here is DERIVED, flagged `derived:` at its call site.
@@ -90,6 +91,9 @@ export default async function OrderDetailPage({
   // Missing, invalid id, or an order this user does not sell — all one not-found state, so the
   // response cannot be used to probe whether an order id exists.
   if (!order) notFound()
+
+  // Stage -> ISO of the event that reached it. Empty {} for every pre-migration order.
+  const stageDates = stageTimestamps(order.events)
 
   const pill = statusPillFor(order.status, order.orderType)
   const next = nextSellerStatus(order.status, order.orderType)
@@ -146,10 +150,28 @@ export default async function OrderDetailPage({
             {/* The SELLER's chain — 7 steps for a product, 4 for a service. Deliberately not
                 E3's RAIL_STAGES: that is the buyer's service rail, and showing a seller four
                 steps would be showing them someone else's journey. */}
+            {/* Per-stage timestamps, from the event whose `to_status` is that stage. The map is
+                built ONCE here rather than searched per node, so the rail stays O(stages) instead
+                of O(stages x events).
+
+                ⚑ A stage shows a date only if an event recorded it, which means the CURRENT stage
+                gets one too — it has genuinely been reached and its event exists. Restricting this
+                to strictly-completed stages would hide the one timestamp a seller is most likely to
+                want ("when did this become my problem"). Figma settles nothing here: the frame has
+                no timestamp layer at all (see the F2 retraction in docs/design/g9-deltas-2.md), so
+                the rule follows the DATA — an event happened, so there is a date to show.
+
+                The common case is NO dates at all: every one of the 14 pre-migration orders has
+                zero events, so `stageTimestamps` returns {} and every node renders its label alone.
+                That path is the default, not the fallback. */}
             <OrderRail
               stages={lifecycleFor(order.orderType)}
               status={order.status}
               labelKeyFor={(stage) => statusLabelKey(stage as OrderStatus, order.orderType)}
+              timestampFor={(stage) => {
+                const iso = stageDates[stage]
+                return iso ? shortDate(iso, lang) : null
+              }}
               lang={lang}
             />
           </section>
