@@ -758,6 +758,24 @@ export const fr: Record<string, string> = {
   'monCompte.save':                  "Enregistrer les modifications",
   'monCompte.saving':                "Enregistrement…",
   'monCompte.toast.profileUpdated':  "Profil mis à jour.",
+
+  // Photo de profil (avatar upload). 'monCompte.photo.change' above already existed from the I1
+  // design; these are the strings the working control needs.
+  'monCompte.avatar.title':          "Photo de profil",
+  'monCompte.avatar.help':           "JPEG, PNG, WebP ou AVIF. L'image est redimensionnée automatiquement.",
+  'monCompte.avatar.choose':         "Choisir une photo",
+  'monCompte.avatar.replace':        "Changer la photo",
+  'monCompte.avatar.remove':         "Retirer la photo",
+  'monCompte.avatar.uploading':      "Envoi en cours…",
+  'monCompte.avatar.saved':          "Photo de profil mise à jour.",
+  'monCompte.avatar.removed':        "Photo de profil retirée.",
+  // HEIC is what an iPhone shoots by DEFAULT, so a generic "format non supporté" here would read
+  // as the app being broken. The message names the exact iOS setting that fixes it.
+  'monCompte.avatar.error.heic':     "Format HEIC non pris en charge. Sur iPhone : Réglages > Appareil photo > Formats > Plus compatible.",
+  'monCompte.avatar.error.notImage': "Ce fichier n'est pas une image.",
+  'monCompte.avatar.error.decode':   "Cette image est illisible ou endommagée.",
+  'monCompte.avatar.error.tooLarge': "Image trop volumineuse (15 Mo maximum).",
+  'monCompte.avatar.error.upload':   "L'envoi a échoué. Réessayez.",
   'monCompte.field.currentPassword': "Mot de passe actuel",
   'monCompte.field.newPassword':     "Nouveau mot de passe",
   'monCompte.field.confirmPassword': "Confirmer le nouveau mot de passe",

@@ -788,6 +788,23 @@ export const ar: Record<string, string> = {
   'monCompte.save':                  "حفظ التعديلات",
   'monCompte.saving':                "جارٍ الحفظ…",
   'monCompte.toast.profileUpdated':  "تم تحديث الملف الشخصي.",
+
+  // صورة الملف الشخصي — رفع الصورة. مسار الإعدادات مكتوب كما يظهر في iOS بالعربية.
+  'monCompte.avatar.title':          "صورة الملف الشخصي",
+  'monCompte.avatar.help':           "JPEG أو PNG أو WebP أو AVIF. يتم تصغير الصورة تلقائيًا.",
+  'monCompte.avatar.choose':         "اختيار صورة",
+  'monCompte.avatar.replace':        "تغيير الصورة",
+  'monCompte.avatar.remove':         "إزالة الصورة",
+  'monCompte.avatar.uploading':      "جارٍ الإرسال…",
+  'monCompte.avatar.saved':          "تم تحديث صورة الملف الشخصي.",
+  'monCompte.avatar.removed':        "تمت إزالة صورة الملف الشخصي.",
+  // صيغة HEIC هي الصيغة الافتراضية لكاميرا iPhone، لذلك لا تكفي رسالة عامة — الرسالة تذكر
+  // الإعداد الدقيق الذي يحلّ المشكلة.
+  'monCompte.avatar.error.heic':     "صيغة HEIC غير مدعومة. على iPhone: الإعدادات > الكاميرا > التنسيقات > الأكثر توافقًا.",
+  'monCompte.avatar.error.notImage': "هذا الملف ليس صورة.",
+  'monCompte.avatar.error.decode':   "تعذّرت قراءة هذه الصورة أو أنها تالفة.",
+  'monCompte.avatar.error.tooLarge': "الصورة كبيرة جدًا (15 ميغابايت كحد أقصى).",
+  'monCompte.avatar.error.upload':   "فشل الإرسال. حاول مرة أخرى.",
   'monCompte.field.currentPassword': "كلمة المرور الحالية",
   'monCompte.field.newPassword':     "كلمة المرور الجديدة",
   'monCompte.field.confirmPassword': "تأكيد كلمة المرور الجديدة",
