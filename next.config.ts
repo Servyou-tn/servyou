@@ -8,6 +8,21 @@ const nextConfig: NextConfig = {
   // localhost review. Disabling it makes localhost match production.
   devIndicators: false,
 
+  // Server Actions default to a 1 MB request body. The avatar upload sends a real photo through an
+  // action, so at the default ANY ordinary phone photo exceeded it and Next threw
+  // "Body exceeded 1 MB limit" (413) — which surfaced as a 500 through the error boundary, i.e. a
+  // crash page rather than a message. Caught by the authenticated gate, not by the unit tests: they
+  // call the normalizer directly and never cross the action boundary.
+  //
+  // 4.4 MB, not higher, because VERCEL CAPS A FUNCTION PAYLOAD AT 4.5 MB as a platform limit
+  // (413 FUNCTION_PAYLOAD_TOO_LARGE) that no setting raises. Going above it would make local dev
+  // MORE permissive than production and hide the failure until deploy. This sits just under the
+  // cap, and `MAX_INPUT_BYTES` (4 MB) sits under THIS, so the app's own friendly rejection is
+  // always the thing that fires first.
+  experimental: {
+    serverActions: { bodySizeLimit: '4.4mb' },
+  },
+
   // Allow next/image to optimize remote images served from the Supabase Storage
   // public buckets (product/service display images). Scoped to the public object
   // path so only intended display assets pass. next/image gives free WebP + a

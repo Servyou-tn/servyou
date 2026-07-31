@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { Avatar } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { uploadAvatarAction, removeAvatarAction } from '@/app/mon-compte/actions'
+import { MAX_INPUT_BYTES, MAX_INPUT_MB } from '@/lib/images/limits'
 import { t, type Lang } from '@/lib/i18n'
 import { FOCUS_RING } from '@/components/layout/styles'
 
@@ -37,6 +38,18 @@ export function AvatarUploadCard({
   function submit(file: File) {
     setError(null)
     setNotice(null)
+
+    // Size is checked HERE, before the request, because the server action cannot report this one.
+    // A body over the action's limit is rejected by the framework before any of our code runs, so
+    // it surfaces as a 500 through the error boundary — a crash page instead of a message. Checking
+    // client-side keeps the honest FR/AR string and costs nothing. The server keeps its own
+    // identical check (normalizeAvatar) since a client check is never a gate.
+    if (file.size > MAX_INPUT_BYTES) {
+      setError(t('monCompte.avatar.error.tooLarge', lang, { max: MAX_INPUT_MB }))
+      if (inputRef.current) inputRef.current.value = ''
+      return
+    }
+
     const formData = new FormData()
     formData.append('avatar', file)
     startTransition(async () => {

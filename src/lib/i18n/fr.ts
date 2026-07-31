@@ -774,7 +774,7 @@ export const fr: Record<string, string> = {
   'monCompte.avatar.error.heic':     "Format HEIC non pris en charge. Sur iPhone : Réglages > Appareil photo > Formats > Plus compatible.",
   'monCompte.avatar.error.notImage': "Ce fichier n'est pas une image.",
   'monCompte.avatar.error.decode':   "Cette image est illisible ou endommagée.",
-  'monCompte.avatar.error.tooLarge': "Image trop volumineuse (15 Mo maximum).",
+  'monCompte.avatar.error.tooLarge': "Image trop volumineuse ({max} Mo maximum).",
   'monCompte.avatar.error.upload':   "L'envoi a échoué. Réessayez.",
   'monCompte.field.currentPassword': "Mot de passe actuel",
   'monCompte.field.newPassword':     "Nouveau mot de passe",

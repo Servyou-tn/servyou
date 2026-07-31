@@ -803,7 +803,7 @@ export const ar: Record<string, string> = {
   'monCompte.avatar.error.heic':     "صيغة HEIC غير مدعومة. على iPhone: الإعدادات > الكاميرا > التنسيقات > الأكثر توافقًا.",
   'monCompte.avatar.error.notImage': "هذا الملف ليس صورة.",
   'monCompte.avatar.error.decode':   "تعذّرت قراءة هذه الصورة أو أنها تالفة.",
-  'monCompte.avatar.error.tooLarge': "الصورة كبيرة جدًا (15 ميغابايت كحد أقصى).",
+  'monCompte.avatar.error.tooLarge': "الصورة كبيرة جدًا ({max} ميغابايت كحد أقصى).",
   'monCompte.avatar.error.upload':   "فشل الإرسال. حاول مرة أخرى.",
   'monCompte.field.currentPassword': "كلمة المرور الحالية",
   'monCompte.field.newPassword':     "كلمة المرور الجديدة",

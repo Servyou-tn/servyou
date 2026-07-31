@@ -1,4 +1,5 @@
 import sharp from 'sharp'
+import { AVATAR_MAX_EDGE, MAX_INPUT_BYTES } from './limits'
 
 // Normalizes an arbitrary user upload into ONE canonical WebP original.
 //
@@ -26,20 +27,9 @@ export type NormalizeResult =
   | { ok: true; bytes: Buffer; width: number; height: number }
   | { ok: false; reason: NormalizeFailure }
 
-/**
- * Longest-edge cap for avatars. The largest avatar rendered anywhere is 120px (D4's hero, the `2xl`
- * size in ui/avatar.tsx), so 512 serves every surface at better than 4x. The platform-wide ceiling
- * is 2048 for content images; avatars are deliberately tighter because storing 2048px for a 120px
- * surface spends the 1 GB cap -- the binding constraint -- on pixels nothing ever reads.
- */
-export const AVATAR_MAX_EDGE = 512
-
-/**
- * Pre-decode ceiling on the RAW upload. Deliberately generous relative to the 256 KB bucket limit,
- * because that limit applies to the re-encoded OUTPUT: a legitimate 6 MB phone photo normalizes to
- * well under 256 KB. This bound exists only to refuse absurd inputs before spending memory on them.
- */
-export const MAX_INPUT_BYTES = 15 * 1024 * 1024
+// Re-exported so server-side callers have one import for the whole pipeline. The definitions live
+// in ./limits because the client needs MAX_INPUT_BYTES and must not import `sharp`.
+export { AVATAR_MAX_EDGE, MAX_INPUT_BYTES, MAX_INPUT_MB } from './limits'
 
 /**
  * Identifies a container from its leading bytes. Deliberately not a general-purpose sniffer -- it

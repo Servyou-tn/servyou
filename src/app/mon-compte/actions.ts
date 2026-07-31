@@ -8,7 +8,7 @@ import { getLang } from '@/lib/i18n/server'
 import { t } from '@/lib/i18n'
 import { isValidPhone, normalizePhone } from '@/lib/phone'
 import { GOVERNORATES } from '@/lib/tunisia-governorates'
-import { normalizeAvatar, MAX_INPUT_BYTES, type NormalizeFailure } from '@/lib/images/normalize'
+import { normalizeAvatar, MAX_INPUT_BYTES, MAX_INPUT_MB, type NormalizeFailure } from '@/lib/images/normalize'
 
 export type AccountActionResult = { ok: true } | { ok: false; error: string }
 
@@ -99,13 +99,13 @@ export async function uploadAvatarAction(formData: FormData): Promise<AccountAct
     const code = parsed.error.issues[0]?.message
     return {
       ok: false,
-      error: t(code === 'too_large' ? 'monCompte.avatar.error.tooLarge' : 'monCompte.avatar.error.notImage', lang),
+      error: t(code === 'too_large' ? 'monCompte.avatar.error.tooLarge' : 'monCompte.avatar.error.notImage', lang, { max: MAX_INPUT_MB }),
     }
   }
 
   const normalized = await normalizeAvatar(Buffer.from(await parsed.data.arrayBuffer()))
   if (!normalized.ok) {
-    return { ok: false, error: t(FAILURE_KEY[normalized.reason], lang) }
+    return { ok: false, error: t(FAILURE_KEY[normalized.reason], lang, { max: MAX_INPUT_MB }) }
   }
 
   // A NEW path every time. Never overwrite: on the free tier there is no Smart CDN

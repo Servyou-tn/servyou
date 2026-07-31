@@ -34,6 +34,37 @@ undo them. A closed decision is not a deferral.
 
 ## Open
 
+### `docs/follow-ups.md` conflicts on every concurrent branch — it needs an append convention
+
+- **What:** this file conflicted **twice in a single session** (2026-07-31), on the same lines, for
+  the same reason: every PR inserts its new entries at the **top of `## Open`**, so any two branches
+  alive at once both rewrite the identical region. First conflict was moving the image-storage work
+  off PR #102's branch; the second was rebasing that branch onto main after #102 merged. Same file,
+  same hunk, twice.
+- **Why it is worse than an ordinary conflict:** the merge is not mechanical. Resolving it means
+  deciding *which entries belong to which PR* — on the first conflict the stash carried #102's five
+  entries into a branch that must not contain them, and keeping "both sides" would have silently
+  duplicated another PR's follow-ups into this one. A careless `--theirs`/`--ours` is wrong in both
+  directions, and the damage (an entry attributed to the wrong PR, or lost entirely) is invisible in
+  review because the file is prose.
+- **Proposed fix — APPEND AT END, not per-PR sections.** New entries go at the *bottom* of `## Open`.
+  Git merges concurrent appends to different tail positions cleanly; concurrent inserts at the same
+  head position never merge. Per-PR sections (`## Follow-ups from PR #NNN`) sound tidier but do
+  **not** fix it: every branch still edits the same section list at the same place unless each new
+  section is appended at the file's tail — at which point the section heading is just decoration on
+  top of the append rule. So: append, and let the entry's own text say which PR raised it.
+  - Trade-off, stated: newest-last is worse to read than newest-first. Mitigate with a dated
+    one-line index at the top if that becomes annoying — an index line is one line, so it still
+    collides, but a one-line conflict is trivial where a 60-line prose conflict is not.
+  - The alternative that actually removes the problem is one file per entry
+    (`docs/follow-ups/<slug>.md`), which cannot conflict at all. Heavier, but worth considering if
+    the append convention still bites.
+- **Deliberately NOT restructured in the two PRs that hit it** (founder call) — reordering the whole
+  file inside a storage PR would bury the change under an unrelated diff, and the restructure wants
+  to land when no other branch is mid-flight or it just causes the conflict it is trying to prevent.
+- **Trigger:** next time two PRs are open at once, or the next time this file conflicts — whichever
+  comes first. Do it on a branch with nothing else in it, when no other PR is open.
+
 ### Revisit image hosting after the Supabase Pro / Vercel Pro upgrades
 
 - **What:** Supabase Pro and Vercel Pro are both being purchased before launch (founder,
@@ -74,6 +105,32 @@ undo them. A closed decision is not a deferral.
   sweep's "no referencing row" test stays single-table. No cross-table reference tracking.
 - **Trigger:** the first PR that ships a *deletable* image surface — G5/G6/G7 (products) or G3
   (shop assets), whichever lands first.
+
+### 🔴 Uploads are capped at 4 MB by Vercel's payload limit — many phone photos cannot be uploaded
+
+- **What:** an avatar is sent through a **server action**, and **Vercel caps a function's request
+  payload at 4.5 MB** (`413 FUNCTION_PAYLOAD_TOO_LARGE`). That is a platform limit — no
+  `bodySizeLimit` value raises it. So `MAX_INPUT_BYTES` is 4 MB, `bodySizeLimit` is `4.4mb`, and a
+  photo above 4 MB is refused with an honest message.
+- **Why this is a real product problem, not a tidy limit:** modern phone cameras routinely produce
+  4–8 MB JPEGs, against a documented **70%+ mobile-first** market. A meaningful share of users will
+  hit the refusal on their first attempt with an ordinary photo. The message is honest but the
+  outcome is still "you cannot set a profile picture".
+- **How it was found:** the authenticated gate, not the unit tests. Next's Server Actions default to
+  a **1 MB** body, so the first real 3.7 MB upload died as `Body exceeded 1 MB limit` → 413 → a
+  **500 through the error boundary**, i.e. a crash page. The unit tests never saw it because they
+  call `normalizeAvatar` directly and never cross the action boundary. Worth remembering as the
+  general lesson: a server action's payload ceiling is invisible to any test that does not go
+  through HTTP.
+- **The fix, and it is the same fix HEIC needs: downscale in the BROWSER before upload.** Resizing
+  to ~1600px client-side puts any phone photo comfortably under 1 MB, which (a) removes the 4.5 MB
+  cliff entirely, (b) makes the server action payload small and fast on mobile data, and (c) is the
+  same code path that would convert HEIC. One change closes both entries.
+  - Do NOT instead route uploads around the action to storage directly to dodge the cap: that
+    trades the limit for a signed-upload flow and loses the server-side re-encode, which is the
+    platform's actual content gate.
+- **Trigger:** before real sellers onboard, or the first report of a failed photo upload. Pair it
+  with the HEIC entry below — one client-side normalize step, both problems.
 
 ### HEIC uploads are rejected, not converted — client-side conversion is the real fix
 
