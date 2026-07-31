@@ -4,8 +4,95 @@ Tracked deferrals — work intentionally pushed out of the PR that surfaced it, 
 enough context to pick up cold. Each entry: what, why deferred, where it lives, the
 trigger to do it.
 
+## Closed decisions — do NOT "fix" these
+
+Settled deliberately, with the reasoning, so a later pass does not read them as defects and
+undo them. A closed decision is not a deferral.
+
+### ✅ Orders do NOT snapshot a product image — the 48×48 falling back to its icon is CORRECT
+
+- **Decision (founder, 2026-07-31):** `orders` will **not** get an `item_image_url` column.
+- **Why, and this is the whole point:** `item_title` and `unit_price_tnd` are frozen because they
+  are **facts about money and identity** — what was bought and what it cost must survive the
+  product being edited or deleted. **A thumbnail is decorative.** It is not a fact the order needs
+  to be correct.
+- **And freezing would not even work.** A frozen URL does not survive the storage object being
+  deleted. Snapshotting the path buys a **broken image** (a 404'd `<img>`, or alt text under
+  `next/image`) instead of the clean icon placeholder that renders today. That is strictly worse:
+  a broken image reads as a bug, an icon placeholder reads as "no photo".
+- **So the expected behaviour is:** product deleted → `orders.product_id` goes NULL (existing
+  `ON DELETE SET NULL`) → `product_images` rows CASCADE away → the G9 order row renders its
+  **icon placeholder** at `_components/OrderActionRow.tsx:64`, while title and price still render
+  from the snapshot. **This is the design, not a gap.**
+- **Do not** "restore" the thumbnail by adding a snapshot column, and do not copy the image to an
+  order-owned path (that doubles stored bytes for every ordered image against the 1 GB cap that
+  is the binding storage constraint).
+- **Context:** `docs/design/image-storage-discovery.md` §6b. Its §7b trigger analysis
+  (`set_order_snapshot` reads scalars, so any future snapshot column needs a correlated subquery
+  over `product_images` and must not raise when there is no image) stays valid and is worth
+  reading first *if* a snapshot column is ever genuinely justified.
+
 ## Open
 
+### Revisit image hosting after the Supabase Pro / Vercel Pro upgrades
+
+- **What:** Supabase Pro and Vercel Pro are both being purchased before launch (founder,
+  2026-07-31). **On Supabase Pro the Storage image-transformation service becomes available**
+  (100 origin images included, then $5 per 1,000), along with **Smart CDN** (automatic cache
+  invalidation on replace, which the free tier does not have).
+- **Why it is worth revisiting:** today images and their resizing are **split across two systems**
+  — the bytes live in Supabase Storage, the resizing happens in Vercel's optimizer. On Pro they
+  could live in one. That would collapse the `remotePatterns` + `minimumCacheTTL` + `deviceSizes`
+  coupling described in the discovery report §2b into a single provider's cache, and Smart CDN
+  would remove the never-overwrite-the-path rule that the current design depends on.
+- **NOT a reason to change anything now.** The upload-time downscale and the storage RLS are
+  **correct under either arrangement** — the downscale is what protects the storage cap regardless
+  of who resizes, and the path-ownership policies do not care. This is an option to evaluate, not
+  debt to pay down.
+- **Also re-check at that point:** Vercel's Fair Use policy restricts **Hobby to non-commercial
+  personal use**, which is a live question for a COD marketplace (discovery report §2a). The Pro
+  purchase resolves it; note it as resolved when it lands.
+- **Trigger:** after both upgrades are active. Re-run the §2d cost comparison with Pro numbers
+  before moving anything.
+
+### Orphaned storage objects need a reconciliation sweep before the first deletable image surface
+
+- **What:** there is **no transaction spanning Postgres and Supabase Storage**, so a row delete
+  cannot atomically delete its object and a trigger cannot reliably do it either. Orphans are a
+  **reconciliation problem, not a prevention problem.**
+- **Why it is not needed yet:** this PR ships exactly one writer — avatars — and the avatar flow
+  deletes the prior object in the same server action. There is no CASCADE path that strands an
+  avatar object.
+- **Why it becomes needed:** deleting a *shop* cascades to `products` and then to `product_images`
+  — **the DB rows vanish with no application code involved**, so there is no opportunity for an
+  in-action delete to run at all. Same for any raw SQL delete, admin tool, or service-role write.
+- **Shape when built:** delete-in-action for the common path, **plus** a periodic sweep that lists
+  objects and deletes those with no referencing row in the owning table (`product_images`,
+  `profiles.avatar_url`, `shops.logo_url`/`banner_url`, `portfolio_items`). The sweep is
+  **required, not optional** — it is the only thing that catches the CASCADE case.
+- **Simplified by the closed decision above:** because orders do not reference image paths, the
+  sweep's "no referencing row" test stays single-table. No cross-table reference tracking.
+- **Trigger:** the first PR that ships a *deletable* image surface — G5/G6/G7 (products) or G3
+  (shop assets), whichever lands first.
+
+### HEIC uploads are rejected, not converted — client-side conversion is the real fix
+
+- **What:** the avatar upload action rejects HEIC/HEIF with an explicit FR/AR message pointing the
+  user at the iOS setting. It does **not** convert.
+- **Why this matters more than it sounds:** **HEIC is what an iPhone shoots by default**, against a
+  documented 70%+ mobile-first Tunisian market. So this is not an edge case — it is a meaningful
+  share of real uploads hitting a rejection.
+- **Why rejected rather than converted:** `sharp`'s prebuilt binaries generally lack HEIF decode,
+  so the decode fails inside the very step that is the content gate. A silent failure there would
+  be worse than an explicit refusal.
+- **Why the message is specific rather than generic:** a bare "format non supporté" on the format
+  an iPhone shoots by default reads as the app being broken. The shipped message names the fix:
+  *« Réglages > Appareil photo > Formats > Plus compatible »*.
+- **The real fix:** convert client-side before upload (a browser-side HEIC decoder produces a
+  JPEG/WebP the server can then normalize), so the user never sees a rejection. Costs a client
+  bundle addition, which is why it is not in this PR.
+- **Trigger:** first real report of an iPhone user blocked, or the next avatar/upload UX pass —
+  whichever comes first. Worth measuring the rejection rate before spending the bundle.
 ### `orders.carrier` is seller-writable in the schema with NO surface that can write it
 
 - **What:** migration `20260729111938` grants `UPDATE (carrier, tracking_number)` to
