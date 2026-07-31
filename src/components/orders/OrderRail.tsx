@@ -42,9 +42,23 @@ export function OrderRail({
         const state = stageStateIn(stages, status, i)
         return (
           <li key={stage} className="contents">
-            {/* derived: no mobile frame for G9. The 7-step chain needs a narrower column than
-                E3's 4-stage rail to fit 1136 — w-14 rather than w-16 — and the labels wrap. */}
-            <div className="flex w-14 shrink-0 flex-col items-center gap-2">
+            {/* Node width: the rail spans 1071 inside G9's panel and the 6 connectors are
+                `flex-1`, so they absorb whatever the nodes do not claim. At w-14 (56) they took
+                679 of 1071 while every label was starved into wrapping — the widest, "En
+                livraison", needs ~66 at 12px. w-20 (80) clears it and still leaves the connectors
+                ~85 each. Figma's stepper is 903.5 across 7 nodes; the exact per-node
+                reconciliation is the Figma pass's business, this is the no-wrap floor.
+
+                ⚑ THE WIDENING IS lg-ONLY, and that is not timidity. `shrink-0` means these nodes
+                cannot compress, so 7 × 80 = 560 inside the 278 available at a 375 viewport — an
+                overflow of 282. At w-14 it is 7 × 56 = 392, i.e. 114. BOTH overflow; widening
+                unconditionally would have made a pre-existing mobile defect 2.5× worse to fix a
+                desktop one. Below lg the geometry is therefore left EXACTLY as it shipped (labels
+                wrap, which is the right trade in a 56px column), and the mobile overflow is logged
+                in docs/follow-ups.md rather than half-fixed here.
+                derived: no mobile frame exists for G9, so the below-lg value is inherited, not
+                measured. */}
+            <div className="flex w-14 shrink-0 flex-col items-center gap-2 lg:w-20">
               <span
                 aria-hidden="true"
                 className={cn(
@@ -59,11 +73,36 @@ export function OrderRail({
                   <span className="h-2.5 w-2.5 rounded-full bg-brand-blue-600" />
                 ) : null}
               </span>
+              {/* ⚑ NOT `cn()` — deliberately. tailwind-merge cannot classify our custom
+                  `text-*` SIZE tokens (`text-caption` is neither a built-in size nor an arbitrary
+                  value), so it files them in the catch-all `text-*` COLOUR group. Any merged
+                  string holding both a size token and a colour token therefore drops one, and the
+                  later wins. Here `text-text-secondary` silently deleted `text-caption`, and these
+                  labels shipped at the inherited 16px inside a 16px line box instead of 12/16.
+                  Reproducible in isolation:
+                    twMerge('text-caption text-text-secondary') === 'text-text-secondary'
+                  A plain template makes the collision STRUCTURALLY IMPOSSIBLE rather than
+                  order-dependent: reordering cannot bring it back, because nothing merges. Class
+                  order was never a guard rail — this is the third eviction in this codebase (a size,
+                  then a colour on G9's WhatsApp label, now a size again).
+                  `cn()` is still correct on the circle above: those are bg/border groups with no
+                  size token, so there is nothing to collide. See docs/follow-ups.md for the
+                  systemic fix. */}
+              {/* G9 delta S4. Figma 495:26289 paints the label per state: completed `#0f172a`
+                  Medium, CURRENT `#1f5fe0` Semi Bold, upcoming `#64748b` Medium. It shipped with
+                  completed and current sharing one `text-secondary` Medium, so the current stage had
+                  no emphasis at all — a rail whose only job is answering "where am I?" could not.
+                  The circle already carries a blue ring; the label now agrees with it.
+                  Completed is left at `text-secondary` deliberately: Figma's `#0f172a` would make a
+                  DONE stage the darkest thing in the rail and out-shout the current one. */}
               <span
-                className={cn(
-                  'text-center text-caption leading-4 font-medium',
-                  state === 'upcoming' ? 'text-text-muted' : 'text-text-secondary',
-                )}
+                className={`text-center text-caption leading-4 ${
+                  state === 'current'
+                    ? 'font-semibold text-brand-blue-600'
+                    : state === 'upcoming'
+                      ? 'font-medium text-text-muted'
+                      : 'font-medium text-text-secondary'
+                }`}
               >
                 {t(labelKeyFor(stage), lang)}
               </span>

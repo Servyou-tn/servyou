@@ -99,6 +99,86 @@ export async function advanceOrderAction(input: unknown): Promise<ActionResult> 
   return { ok: true }
 }
 
+// ── Shipment tracking ─────────────────────────────────────────────────────────────────────────
+//
+// G9's panel-suivi (Figma 497:26411). Same three-layer posture as advanceOrderAction: Zod parses,
+// this action re-checks ownership, and the database enforces it again.
+//
+// What the DB enforces independently, so this action is defence in depth and not the only gate:
+//   · a column-level UPDATE grant naming ONLY (carrier, tracking_number) — migration
+//     20260729111938. Nothing else on `orders` is writable through PostgREST by `authenticated`.
+//   · enforce_order_identity_lock rejects the write unless auth.uid() = old.seller_id. A column
+//     grant cannot express that: buyer and seller are BOTH the `authenticated` role.
+//   · the same lock rejects any shipment edit once status is received/cancelled.
+//   · CHECK orders_shipment_requires_product rejects it on a service order.
+//
+// ⚑ CARRIER IS NOT WRITTEN HERE. Figma renders "Société de livraison" as static text and gives an
+// Input only to the tracking number, and there is no surface that can populate `carrier` (see
+// docs/follow-ups.md — shops.preferred_carriers is free text with no edit route). Accepting a
+// carrier here would build a write path for a field no UI collects.
+
+const SetTrackingInput = z.object({
+  orderId: z.string().uuid(),
+  // Trimmed, and empty means CLEAR (a mistyped 12-digit code must be correctable back to nothing).
+  // 80 is the Figma Input's own counter budget (I497:26416;22:520).
+  trackingNumber: z.string().trim().max(80),
+})
+
+export async function setOrderTrackingAction(input: unknown): Promise<ActionResult> {
+  const lang = await getLang()
+  const parsed = SetTrackingInput.safeParse(input)
+  if (!parsed.success) return { ok: false, error: t('common.error_generic', lang) }
+
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return { ok: false, error: t('common.error_generic', lang) }
+
+  const { data: order, error: readError } = await supabase
+    .from('orders')
+    .select('id, seller_id, status, order_type')
+    .eq('id', parsed.data.orderId)
+    .maybeSingle()
+
+  if (readError) {
+    console.error('[setOrderTracking] read error:', readError.message, readError.code, readError.details)
+    return { ok: false, error: t('common.error_generic', lang) }
+  }
+  // Not found and not-yours collapse to one answer, as everywhere else in this file.
+  if (!order || order.seller_id !== user.id) {
+    return { ok: false, error: t('common.error_generic', lang) }
+  }
+
+  // Checked before the round trip even though the CHECK and the lock both enforce it — a clear
+  // message beats a raised constraint, and the UI should never have offered the field here.
+  if (order.order_type !== 'product') {
+    return { ok: false, error: t('seller.orderDetail.tracking_product_only', lang) }
+  }
+  const status = order.status as OrderStatus
+  if (status === 'received' || status === 'cancelled') {
+    return { ok: false, error: t('seller.orderDetail.tracking_terminal', lang) }
+  }
+
+  const value = parsed.data.trackingNumber
+  const { error: updateError } = await supabase
+    .from('orders')
+    .update({ tracking_number: value === '' ? null : value })
+    .eq('id', order.id)
+
+  if (updateError) {
+    console.error('[setOrderTracking] update error:', updateError.message, updateError.code)
+    return { ok: false, error: updateError.message || t('common.error_generic', lang) }
+  }
+
+  // The order id is a Zod-validated uuid, not arbitrary client text, so interpolating it is safe
+  // and precise. SELLER_PATHS deliberately stays a fixed allow-list for the list/dashboard routes —
+  // revalidating a dynamic detail route needs the id, and widening that enum to accept any string
+  // would hand a caller the ability to name any route.
+  revalidatePath(`/commandes-recues/${order.id}`)
+  return { ok: true }
+}
+
 // ── Cancellation ──────────────────────────────────────────────────────────────────────────────
 //
 // Separate from advancing because the rules are genuinely different: cancellation is available

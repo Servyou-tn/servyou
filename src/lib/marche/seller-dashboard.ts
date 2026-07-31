@@ -47,6 +47,31 @@ export type InFlightOrder = {
 
 export type LowStockProduct = { id: string; title: string; stockCount: number }
 
+/**
+ * G4's « Bénéfice net » tile.
+ *
+ * ⚑ GATED ON A SNAPSHOT EXISTING, NOT ON A NON-ZERO SUM. Every delivered order predates
+ * `unit_price_tnd`, so a naive `SUM` prints a confident **0 TND** — which reads as "you earned
+ * nothing", a false claim, rather than "not measured yet". `null` here means *no delivered order
+ * carries a snapshot*, and the tile keeps its em-dash treatment.
+ *
+ * Per the founder ruling the agency's delivery fee is not seller revenue, so net for a shop owner is
+ * `unit_price_tnd × quantity` over delivered orders and the fee plays no part.
+ *
+ * `measuredCount` vs `deliveredCount` exists because the gate alone is not enough: the day the FIRST
+ * snapshot-bearing order is delivered, the tile would flip from "—" to a real number that silently
+ * excludes the 4 delivered orders that predate the column — the same defect one step later. When the
+ * two counts differ the caption says so instead of the value pretending to be complete.
+ */
+export type NetProfit = {
+  /** TND, summed over delivered orders that HAVE a snapshot. */
+  value: number
+  /** Delivered orders counted in `value`. */
+  measuredCount: number
+  /** ALL delivered orders, measured or not. */
+  deliveredCount: number
+}
+
 export type SellerDashboard = {
   pendingCount: number
   ordersThisWeek: number
@@ -54,14 +79,19 @@ export type SellerDashboard = {
   actionable: ActionableOrder[]
   inFlight: InFlightOrder[]
   lowStock: LowStockProduct[]
+  /** null when NO delivered order carries a price snapshot — see NetProfit. */
+  netProfit: NetProfit | null
 }
 
-type OrderRow = {
+export type OrderRow = {
   id: string
   status: string
   order_type: SellerOrderKind
   created_at: string
   buyer_id: string
+  quantity: number | null
+  item_title: string | null
+  unit_price_tnd: number | string | null
   products: { title: string } | { title: string }[] | null
   service_listings: { title: string } | { title: string }[] | null
 }
@@ -71,8 +101,31 @@ function one<T>(embed: T | T[] | null | undefined): T | null {
   return embed ?? null
 }
 
+/**
+ * Frozen snapshot first, live join as the self-retiring fallback for the 14 pre-migration orders.
+ * See SellerOrderDetail.itemTitle for the full reasoning.
+ */
 function titleOf(row: OrderRow): string {
-  return one(row.products)?.title ?? one(row.service_listings)?.title ?? ''
+  return row.item_title ?? one(row.products)?.title ?? one(row.service_listings)?.title ?? ''
+}
+
+/** `received` is the delivered/terminal-success state — the buyer has confirmed receipt. */
+const DELIVERED = 'received'
+
+/** Exported for tests — money logic is must-test per the testing discipline. */
+export function netProfitOf(orders: OrderRow[]): NetProfit | null {
+  const delivered = orders.filter((o) => o.status === DELIVERED)
+  const measured = delivered.filter((o) => o.unit_price_tnd != null)
+  // No snapshot anywhere ⇒ not measured yet. Deliberately NOT a zero — see NetProfit.
+  if (measured.length === 0) return null
+  const value = measured.reduce((sum, o) => sum + Number(o.unit_price_tnd) * (o.quantity ?? 1), 0)
+  return {
+    // Round to the cent: numeric(10,2) × an integer stays exact in Postgres, but it arrives as a
+    // JS float here and a long tail of binary noise must not reach the UI.
+    value: Math.round(value * 100) / 100,
+    measuredCount: measured.length,
+    deliveredCount: delivered.length,
+  }
 }
 
 /**
@@ -88,7 +141,8 @@ export const getSellerDashboard = cache(
     const { data: orderData, error: ordersError } = await supabase
       .from('orders')
       .select(
-        `id, status, order_type, created_at, buyer_id,
+        `id, status, order_type, created_at, buyer_id, quantity,
+         item_title, unit_price_tnd,
          products ( title ),
          service_listings ( title )`,
       )
@@ -202,6 +256,7 @@ export const getSellerDashboard = cache(
           buyerCity: buyer(o.buyer_id).city,
         })),
       lowStock,
+      netProfit: netProfitOf(orders),
     }
   },
 )

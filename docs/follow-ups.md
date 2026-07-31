@@ -6,6 +6,159 @@ trigger to do it.
 
 ## Open
 
+### `orders.carrier` is seller-writable in the schema with NO surface that can write it
+
+- **What:** migration `20260729111938` grants `UPDATE (carrier, tracking_number)` to
+  `authenticated`, and `enforce_order_identity_lock` narrows both to the seller. But **G9's
+  panel-suivi renders the carrier READ-ONLY**, because Figma `497:26411` draws "Société de livraison"
+  as static text in an `lv` block and gives an `Input` only to the tracking number. So the column is
+  writable and nothing writes it — it renders an em-dash on every order.
+- **Why it shipped that way (founder call, and Figma agrees):** the alternative was an input with no
+  source of truth. A per-order carrier free-text box invites seven spellings of "First Delivery" and
+  makes a later rate table or bordereau unjoinable. Shipping a dead input is the exact defect the
+  panel was originally withheld to avoid.
+- **Where it should come from:** `shops.preferred_carriers` **exists** (text, nullable, unused) as a
+  shop-level default. **G3 « Modifier ma boutique » is the surface that should feed it** — the shop
+  owner picks their carriers once, and the order form defaults from that. That makes the per-order
+  value a *selection from a known set* rather than free text, which is what a Select needs and what a
+  future bordereau can join on.
+- **Decide before building:** `preferred_carriers` is a free-text column today. If carriers become a
+  selectable set it wants either a CHECK'd enum or a small lookup table — the discovery report
+  explicitly deferred a `carriers` table as a Phase 3 question. Do not add the G9 Select before that
+  is answered, or the two will disagree.
+- **Trigger:** the G3 shop-edit build, or the delivery-documents PR (whichever lands first — the
+  bordereau needs a carrier per order, so it forces the question).
+
+### G9 stepper connector colours diverge from Figma, held because `OrderRail` has two consumers
+
+- **What:** Figma `495:26289` paints the **traversed** connector `#1f5fe0` (blue/600) and the
+  untraversed one `#cbd5e1` (border/strong). The shipped rail paints them `#cbd5e1` (`border-strong`)
+  and `#e2e8f0` (`border-subtle`) — i.e. Figma marks progress in brand blue, the code marks it in a
+  darker grey. Rows **S8/S9** of `docs/design/g9-deltas-2.md`.
+- **Why deferred:** `OrderRail` is shared. Its current colours are **E3's measured treatment**, and
+  repainting them changes the buyer's rail on `/mes-commandes` against a frame (`709:59662`) that this
+  pass did not measure. That makes it a two-consumer decision, not a delta fix.
+- **Measured on both consumers** (2026-07-30, authenticated, after the `w-14 → lg:w-20` fix), so the
+  next pass does not have to re-measure to scope it:
+  | | G9 (7-step product) | E3 (4-stage service) |
+  |---|---|---|
+  | 1440: nodes / container / slack | 7 × 80 = 560 in 1071 → **−511** | 4 × 80 = 320 in 1081 → **−761** |
+  | 375: nodes / container / slack | 7 × 56 = 392 in 278 → **+114 (overflows)** | 4 × 56 = 224 in 296 → **−72 (fits)** |
+  | labels | 12/16, 0 of 7 wrap at 1440 | 12/16, 0 of 4 wrap at 1440 |
+- **Trigger:** measure `709:59662`'s rail, then repaint both together — or accept the divergence
+  deliberately and record it in the E3 delta file.
+
+### 🔴 tailwind-merge cannot classify our custom `text-*` SIZE tokens, so `cn()` silently drops them
+
+- **What:** `twMerge` recognises a font-size utility either by name (built-in `text-sm`, `text-xl`)
+  or by an arbitrary value (`text-[12px]`). Our design-system sizes are **neither** — `text-h1`,
+  `text-h3`, `text-body`, `text-body-sm`, `text-caption` are `@theme` utilities — so twMerge files
+  them under the catch-all `text-*` **colour** group. Any `cn()` string that pairs a size token with
+  a colour token therefore keeps only the later one, and the loser vanishes with no error, no lint
+  failure and a green build. Reproducible in three lines:
+
+  ```js
+  twMerge('text-caption text-text-secondary')  // → 'text-text-secondary'   size lost
+  twMerge('text-body-sm text-text-muted')      // → 'text-text-muted'       size lost
+  twMerge('text-h3 text-text-primary')         // → 'text-text-primary'     size lost
+  ```
+
+- **Three instances have now SHIPPED**, which is why this is filed as a class and not a bug:
+  1. a **size** evicted during the /marche/services rebuild (`text-body-sm`),
+  2. a **colour** evicted on G9's WhatsApp label (`text-text-primary`, 1.69:1 contrast — an
+     accessibility failure that reached production),
+  3. a **size** again on `OrderRail`'s stepper labels — 12px labels rendered at the inherited 16px
+     inside a 16px line box on **both** G9 and E3.
+- **Full inventory (scanned across every `cn()` site in `src/`): 4.** Two were closed in
+  `feat/orders-snapshot-wiring` because they were visible and one of them was a named G9 delta:
+  | site | loses | state |
+  |---|---|---|
+  | `components/orders/OrderRail.tsx` label | `text-caption` (12→16) | ✅ **closed** — plain template |
+  | `tableau-de-bord-vendeur/_components/Panel.tsx` link | `text-body-sm` (14→16) | ✅ **closed** — plain template |
+  | `app/commandes-recues/page.tsx` tab | `text-body` | ⚠ **open — latent**, inherited size is also 16 so nothing renders wrong *today* |
+  | `app/commandes-recues/_components/SortSelect.tsx` | `text-body` | ⚠ **open — latent**, same |
+  The two open ones are **landmines, not defects**: they are invisible only because 16px happens to
+  be the inherited size. Any future change to the ancestor's size makes them wrong silently.
+- **The local fix used, and why it is the right shape:** drop `cn()` and use a plain template
+  string. Class ORDER is not a guard rail — reordering "fixes" it until the next edit reorders it
+  back, and that is how instance 3 happened after instance 1 was understood. Removing the merge
+  makes the collision **structurally impossible**. `cn()` remains correct wherever there is no
+  size+colour pair (e.g. `OrderRail`'s circle: bg/border groups only). There is precedent:
+  `TopbarSearch` swapped `cn()` for a template for exactly this reason.
+- **Systemic fix — a founder decision, deliberately NOT built here.** Three options, cheapest last:
+  1. **Extend twMerge's config** — `extendTailwindMerge({ extend: { classGroups: { 'font-size': [{ text: ['h1','h2','h3','h4','body','body-lg','body-sm','caption'] }] } } })` in `src/lib/utils.ts`. One
+     edit, fixes every present and future site, and makes `cn()` behave as everyone already assumes.
+     Risk: it changes merge behaviour app-wide, so it wants a VRT run over all 32 baselines.
+  2. **A lint rule** — `eslint-rules/` already exists. Flag any `cn()` argument list containing both
+     a size token and a `text-*` colour token. Catches new instances but fixes none, and cannot see
+     through a variable.
+  3. **Rename the tokens** so twMerge classifies them (e.g. `text-size-caption`). Most invasive —
+     touches every call site in the app — and buys nothing option 1 does not.
+  **Recommendation: option 1 plus option 2** — the config makes `cn()` correct, the lint rule stops
+  anyone reintroducing the pattern in a component that does not use `cn()`.
+- **Trigger:** the next DS/token pass that can afford a VRT re-baseline. Do it before the typography
+  token pass, not after — that pass will touch every one of these strings.
+
+### `OrderRail` overflows its container at 375 (pre-existing, and it bounds the desktop fix)
+
+- **What:** the rail's nodes are `shrink-0`, so they cannot compress. At a 375 viewport the rail's
+  container measures **278** while 7 product nodes at `w-14` sum to **392** — a **114px** overflow.
+  Measured, not inferred. **This is G9-specific: the 4-stage E3 buyer rail fits** — measured 224 in a
+  296 container at 375 (−72 slack), and 320 in 1081 at 1440 (−761). So the defect is the 7-step
+  PRODUCT chain, not the shared component.
+- **Why it is logged rather than fixed:** it is **pre-existing** (`w-14` is unchanged from the G9
+  delta pass) and it is what forced the desktop node widening to be **lg-only**: `w-20` unconditional
+  would have taken the mobile overflow from 114 to **282**, i.e. made a real defect 2.5× worse in
+  order to close a cosmetic one. So below-lg geometry was left byte-identical to what shipped.
+- **The honest fix is a design decision, not a value:** a 7-step rail does not fit 375 at any
+  legible node width (7 × 44 minimum touch-ish column = 308 > 278). It needs either a horizontally
+  scrollable rail, a vertical rail below lg, or a condensed "step 4 of 7" representation. **There is
+  no mobile frame for G9** — nor for any of the ten seller pages — so this cannot be measured, only
+  designed.
+- **Trigger:** whenever G9/E3 get a mobile frame. Fold in the separate 375 shell overflow already
+  logged (the topbar right cluster) — at 375 this page currently reports a **73px** document
+  overflow in total, and the two causes should be separated by measurement, not guessed at.
+
+### 🔴 `received_at` is stamped in app code only — nothing in the database enforces it
+
+- **What:** `orders.received_at` is written at exactly **two client call sites** —
+  `src/components/ReceiptConfirmButton.tsx:33` and
+  `src/app/mes-commandes/_components/OrdersList.tsx:253` — both `.update({ status: 'received',
+  received_at: new Date().toISOString() })`. The latter's own comment says it outright:
+  *"received_at is stamped here because the trigger does not set it."* **No trigger, constraint or
+  default touches the column.** `nextSellerStatus` returns `null` at `received`
+  (`lib/types/order-status.ts:54`), so the seller path provably cannot reach the state — but seeds,
+  raw SQL, service-role writes and any future admin action all can, and all leave it NULL.
+- **Evidence from live data (14 orders):** 4 are at `received`; **only 3 carry a `received_at`, and
+  only 1 of those came from the buyer action.** The tell is timestamp precision —
+  `new Date().toISOString()` yields milliseconds, Postgres arithmetic on `created_at` carries
+  microseconds:
+  | order | `received_at` | verdict |
+  |---|---|---|
+  | `191d4307` | `20:10:58.544` — ms precision, 2s before `updated_at` | real buyer click |
+  | `bdb55a1a` | `.284896` — identical microseconds to its own `created_at` | seeded arithmetic |
+  | `c798df04` | `.407` — same signature as its `created_at` | seeded arithmetic |
+  | `33b822ec` (the only **product** order at `received`) | **NULL** | seeded straight to `received` |
+- **Consequence, and it is user-visible:** G9's title row renders
+  `order.receivedAt ? "Reçue le …" : "Créée le …"` (`commandes-recues/[id]/page.tsx:111-114`). On
+  `33b822ec` — a delivered, terminal order — it renders **"Créée le 3 juin 2026"**. The Figma
+  (`495:26112`) shows "Reçue le …". So this reads as a layout/copy delta and **is not one**: the
+  page is correct and the data is absent. A terminal order with no terminal timestamp.
+- **Why it is urgent rather than cosmetic:** both stamping sites are the buyer-side client
+  `.update()` calls **already logged for migration to server actions**. If that migration moves the
+  status write and not the stamp, every future received order loses its timestamp *silently*, and
+  `admin/statistiques` already aggregates on `received_at` (`.gte('received_at', sevenDaysAgo)`) —
+  so the number quietly under-reports.
+- **Fix:** stamp it in the DB. `check_order_status_transition` is already a BEFORE UPDATE trigger on
+  the right table; a `set_received_at_on_transition` sibling (mirroring the shipped
+  `trg_set_cancelled_at_on_transition`, which solves precisely this problem for `cancelled_at`)
+  makes it unconditional. Note the ordering constraint recorded in `db/migrations/…_order_events`:
+  BEFORE triggers fire in alphabetical name order, so pick a name that sorts before the event
+  emitter or the emitted event will carry a null stamp.
+- **Trigger:** the migration PR that converts the three buyer-side client `.update()` calls to
+  server actions — do both in one pass, since that is the moment the app-side stamp disappears.
+  Backfill is **not** proposed: we do not know when `33b822ec` was received.
+
 ### Audit consumer surfaces for `admin_hidden_at` filtering
 - **What:** The marketplace browse/search queries do not all filter out admin-hidden
   shops/freelancers consistently. `lib/marche/data.ts` (`getActiveProducts` /

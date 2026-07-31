@@ -123,23 +123,49 @@ export default async function TableauDeBordVendeurPage() {
               icon={Inbox}
               accent="blue"
             />
-            {/* Bénéfice net has NO data source: `products` carries no delivery_fee, so a true net
-                figure cannot be computed, and printing revenue under a "net profit" label would be
-                dishonest. ⚑ DIVERGENCE from the measured specimen, which mocks "2 840 TND /
-                Commandes livrées" — founder call, and the phase-aware rule (never invent a metric).
+            {/* Bénéfice net — now sourced from the `unit_price_tnd` snapshot, per the founder ruling
+                that the agency's delivery fee is not seller revenue (so net = price × qty over
+                delivered orders and the fee plays no part).
 
-                The VALUE slot holds an em-dash and the deferred wording moved to the caption line
-                (G4 delta S2). A sentence in a slot designed for a number wrapped to two lines at
-                28px and stretched the whole 4-up grid row. "—" also reads as "no value yet" rather
-                than as zero — unbuilt profit and zero profit are different claims. */}
-            <StatTile
-              label={t('seller.dashboard.tile.profit', lang)}
-              value="—"
-              subtitle={t('seller.dashboard.tile.profit_soon', lang)}
-              icon={TrendingUp}
-              accent="success"
-              muted
-            />
+                ⚑ GATED ON A SNAPSHOT EXISTING, NOT ON A NON-ZERO SUM. Every delivered order predates
+                the column, so a naive SUM prints a confident "0 TND" — which claims the seller earned
+                nothing rather than admitting nothing is measured. `netProfit === null` keeps the
+                em-dash treatment that shipped, unchanged, until a real snapshot lands.
+
+                ⚑ AND THE CAPTION GUARDS THE STEP AFTER THAT. The day the first snapshot-bearing order
+                is delivered the tile flips to a real number that silently EXCLUDES the delivered
+                orders predating the column — the same defect one step later. When `measuredCount`
+                differs from `deliveredCount` the caption says how many are counted instead of letting
+                the value imply completeness. */}
+            {data.netProfit === null ? (
+              <StatTile
+                label={t('seller.dashboard.tile.profit', lang)}
+                value="—"
+                subtitle={t('seller.dashboard.tile.profit_soon', lang)}
+                icon={TrendingUp}
+                accent="success"
+                muted
+              />
+            ) : (
+              <StatTile
+                label={t('seller.dashboard.tile.profit', lang)}
+                value={t('seller.dashboard.tile.profit_value', lang, {
+                  amount: data.netProfit.value.toLocaleString(lang === 'ar' ? 'ar-TN-u-nu-latn' : 'fr-FR'),
+                })}
+                subtitle={
+                  data.netProfit.measuredCount === data.netProfit.deliveredCount
+                    ? t('seller.dashboard.tile.profit_sub', lang, {
+                        count: data.netProfit.deliveredCount,
+                      })
+                    : t('seller.dashboard.tile.profit_partial', lang, {
+                        measured: data.netProfit.measuredCount,
+                        total: data.netProfit.deliveredCount,
+                      })
+                }
+                icon={TrendingUp}
+                accent="success"
+              />
+            )}
             <StatTile
               label={t('seller.dashboard.tile.week', lang)}
               value={String(data.ordersThisWeek)}

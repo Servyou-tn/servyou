@@ -67,3 +67,10 @@ next-env.d.ts
 .vrt-stories-profile/
 /scripts/vrt/__current__/
 /scripts/vrt/__to-commit__/
+
+# Gate (scripts/gate): the authenticated runner's Chrome profile now lives in the OS temp dir, NOT
+# here — Chrome auto-registers system extensions into a profile and their bundled *.spec.js files
+# get collected by `vitest run`, which gitignoring does not prevent (vitest/eslint/tsc walk ignored
+# dirs). This entry stays only to catch a stale directory from before that move; it also held a real
+# minted session cookie, which must never be committed.
+.gate-chrome-profile/

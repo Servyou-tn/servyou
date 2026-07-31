@@ -186,3 +186,17 @@ export function shortDate(iso: string, lang: Lang): string {
 export function longDate(iso: string, lang: Lang): string {
   return new Date(iso).toLocaleDateString(LOCALE[lang], { day: 'numeric', month: 'long', year: 'numeric' })
 }
+
+/**
+ * Timeline stamp — Figma's historique reads "18/07 09h12" (504:27049).
+ *
+ * Built by hand rather than through `toLocaleString`: the frame's separator is the FRENCH hour mark
+ * ("09h12"), which no locale's time format produces — `fr-FR` gives "09:12". Day and month are
+ * zero-padded 2-digit to match, and `LOCALE` keeps the digits Latin in Arabic too.
+ */
+export function shortDateTime(iso: string, lang: Lang): string {
+  const d = new Date(iso)
+  const date = d.toLocaleDateString(LOCALE[lang], { day: '2-digit', month: '2-digit' })
+  const time = d.toLocaleTimeString(LOCALE[lang], { hour: '2-digit', minute: '2-digit', hour12: false })
+  return `${date} ${time.replace(':', 'h')}`
+}

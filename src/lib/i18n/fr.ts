@@ -2158,9 +2158,14 @@ export const fr: Record<string, string> = {
   'seller.dashboard.tile.pending':        "Commandes à traiter",
   'seller.dashboard.tile.pending_sub':    "En attente de votre action",
   'seller.dashboard.tile.profit':         "Bénéfice net",
-  // No delivery_fee column yet, so a true net figure cannot be computed. Never print revenue
-  // under a net-profit label — see the phase-aware rule.
+  // Shown ONLY while no delivered order carries a `unit_price_tnd` snapshot. Never print a 0 here —
+  // "you earned nothing" and "not measured yet" are different claims (phase-aware rule).
   'seller.dashboard.tile.profit_soon':    "Bientôt disponible",
+  'seller.dashboard.tile.profit_value':   "{amount} TND",
+  'seller.dashboard.tile.profit_sub':     "Sur {count} commande(s) livrée(s)",
+  // Used when some delivered orders predate the price snapshot: the value must not imply it covers
+  // all of them.
+  'seller.dashboard.tile.profit_partial': "Sur {measured} des {total} commandes livrées",
   'seller.dashboard.tile.week':           "Commandes cette semaine",
   'seller.dashboard.tile.week_sub':       "7 derniers jours",
   'seller.dashboard.tile.products':       "Produits actifs",
@@ -2264,6 +2269,23 @@ export const fr: Record<string, string> = {
   'seller.orderDetail.hint_pending':      "Confirmez la commande avec le client sur WhatsApp avant de l'accepter.",
   'seller.orderDetail.hint_generic':      "Faites avancer la commande une fois cette étape terminée.",
   'seller.orderDetail.no_action':         "Cette commande est terminée.",
+
+  // panel-suivi (Figma 497:26411). "Société de livraison" is read-only — nothing can write
+  // `carrier` yet, so an input here would be a dead field.
+  'seller.orderDetail.shipping':          "Suivi de livraison",
+  'seller.orderDetail.carrier':           "Société de livraison",
+  'seller.orderDetail.tracking_label':    "Numéro de suivi",
+  'seller.orderDetail.tracking_placeholder': "Sera saisi à l'expédition",
+  'seller.orderDetail.tracking_helper':   "Saisissez le numéro de suivi fourni par votre transporteur (à l'expédition).",
+  'seller.orderDetail.tracking_save':     "Enregistrer",
+  'seller.orderDetail.tracking_saved':    "Numéro de suivi enregistré.",
+  'seller.orderDetail.tracking_terminal': "Cette commande est terminée : le suivi ne peut plus être modifié.",
+  'seller.orderDetail.tracking_product_only': "Le suivi ne s'applique qu'aux commandes de produits.",
+
+  // panel-historique (Figma 504:27042). `event_status` interpolates the SAME lifecycle label the
+  // StatusPill and the rail use, so the vocabulary is identical on all three surfaces.
+  'seller.orderDetail.event_created':     "Commande créée",
+  'seller.orderDetail.event_status':      "Statut : {status}",
 
   // WhatsApp prefill — seller → buyer. Written to the ARABIC budget (300 chars, asserted in a
   // test): Arabic percent-encodes at ~4x, French at ~1.5x. Latin tokens sit inside « » at the END
