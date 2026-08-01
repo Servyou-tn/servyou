@@ -58,6 +58,12 @@ export type LowStockProduct = { id: string; title: string; stockCount: number }
  * Per the founder ruling the agency's delivery fee is not seller revenue, so net for a shop owner is
  * `unit_price_tnd × quantity` over delivered orders and the fee plays no part.
  *
+ * ⚑ THAT RULING IS SCOPED TO `shops.delivery_setup = 'third_party'`, the only MVP mode: the carrier
+ * collects at the door, keeps the fee, and deposits the product price to the seller. `delivery_fee_tnd`
+ * exists on both `products` and `orders` (migration 20260801112027) and is deliberately absent from
+ * this sum. When `self_delivery` ships (Phase 2) the SELLER keeps the fee and this calculation becomes
+ * wrong for those shops — it must be reopened here, not patched at the display layer.
+ *
  * `measuredCount` vs `deliveredCount` exists because the gate alone is not enough: the day the FIRST
  * snapshot-bearing order is delivered, the tile would flip from "—" to a real number that silently
  * excludes the 4 delivered orders that predate the column — the same defect one step later. When the
