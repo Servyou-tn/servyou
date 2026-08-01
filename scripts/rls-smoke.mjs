@@ -44,6 +44,9 @@ const USERS = {
   alice: { email: 'alice' + EMAIL_SUFFIX, fullName: 'RLS Smoke Alice', phone: '+21620000001' },
   bob: { email: 'bob' + EMAIL_SUFFIX, fullName: 'RLS Smoke Bob' },
   charlie: { email: 'charlie' + EMAIL_SUFFIX, fullName: 'RLS Smoke Charlie' },
+  // dina is a FREELANCER (alice is already shop_owner and one profile cannot be both).
+  // She exists only to give the F7 delivery-fee CHECK a real service order to fire on.
+  dina: { email: 'dina' + EMAIL_SUFFIX, fullName: 'RLS Smoke Dina' },
 }
 
 // Service-role client — bypasses RLS. Used for fixtures + teardown ONLY.
@@ -141,6 +144,31 @@ async function main() {
     .select('id')
     .single()
   if (dispErr) throw new Error('dispute insert failed: ' + dispErr.message)
+
+  // dina = freelancer with one service listing, and a SERVICE order from bob. Exists purely so
+  // orders_delivery_fee_requires_product (migration 20260801112027) has a row it can reject:
+  // the CHECK is unreachable on INSERT because set_order_snapshot nulls the fee first, so the
+  // only reachable violation is an UPDATE, and only service_role gets past the identity lock.
+  const dinaId = await createUser('dina')
+  {
+    const { error } = await admin.from('profiles').update({ seller_type: 'freelancer' }).eq('id', dinaId)
+    if (error) throw new Error('dina profile setup failed: ' + error.message)
+  }
+  const { data: fprofile, error: fpErr } = await admin
+    .from('freelancer_profiles').insert({ profile_id: dinaId }).select('id').single()
+  if (fpErr) throw new Error('freelancer_profile insert failed: ' + fpErr.message)
+  const { data: listing, error: listErr } = await admin
+    .from('service_listings')
+    .insert({ freelancer_profile_id: fprofile.id, title: 'RLS Smoke Service', starting_price_tnd: 150, status: 'active' })
+    .select('id')
+    .single()
+  if (listErr) throw new Error('service_listing insert failed: ' + listErr.message)
+  const { data: svcOrder, error: svcErr } = await admin
+    .from('orders')
+    .insert({ buyer_id: bobId, seller_id: dinaId, order_type: 'service', service_listing_id: listing.id, status: 'pending' })
+    .select('id')
+    .single()
+  if (svcErr) throw new Error('service order insert failed: ' + svcErr.message)
 
   const a = await authedClient(USERS.alice.email)
   const b = await authedClient(USERS.bob.email)
@@ -308,6 +336,29 @@ async function main() {
     const { error } = await b.from('orders').update({ status: 'cancelled', cancelled_by: 'buyer', cancellation_reason: 'F6 regression' }).eq('id', pend.id).eq('status', 'pending')
     const { data } = await admin.from('orders').select('status').eq('id', pend.id).single()
     check('F6 buyer CAN still cancel a pending order (regression control)', !error && !!data && data.status === 'cancelled', 'err=' + (error ? error.message : 'none') + ' status=' + (data ? data.status : '?'))
+  }
+  {
+    // F7 — orders_delivery_fee_requires_product, the negative path. A service order must not
+    // be able to carry a carrier fee: a service has no parcel. This is asserted with the
+    // SERVICE ROLE deliberately — enforce_order_identity_lock returns early when auth.uid()
+    // is null, so service_role is the ONLY caller that reaches the CHECK. If the constraint
+    // were missing, this write would land and the failure would be silent.
+    const { error } = await admin.from('orders').update({ delivery_fee_tnd: 9 }).eq('id', svcOrder.id)
+    const { data } = await admin.from('orders').select('delivery_fee_tnd').eq('id', svcOrder.id).single()
+    check('F7 service order CANNOT carry a delivery fee (CHECK)', !!error && !!data && data.delivery_fee_tnd === null, 'err=' + (error ? 'yes' : 'NONE — CHECK missing!') + ' fee=' + (data ? JSON.stringify(data.delivery_fee_tnd) : '?'))
+  }
+  {
+    // F8 — delivery_fee_tnd joined the identity lock's frozen set. A buyer must not be able
+    // to rewrite what they were charged. Same shape as F5 (quantity).
+    const { error } = await b.from('orders').update({ delivery_fee_tnd: 0 }).eq('id', order.id)
+    const { data } = await admin.from('orders').select('delivery_fee_tnd').eq('id', order.id).single()
+    check('F8 buyer CANNOT change order delivery fee', !!error && !!data && Number(data.delivery_fee_tnd) !== 0, 'err=' + (error ? 'yes' : 'NONE') + ' fee=' + (data ? data.delivery_fee_tnd : '?'))
+  }
+  {
+    // F9 — control for F8: the fee was actually frozen at insert, so F8 is testing a real
+    // value rather than passing vacuously on a NULL column.
+    const { data } = await admin.from('orders').select('delivery_fee_tnd').eq('id', order.id).single()
+    check('F9 product order HAS a frozen delivery fee (control for F8)', !!data && data.delivery_fee_tnd !== null && Number(data.delivery_fee_tnd) === 7, 'fee=' + (data ? JSON.stringify(data.delivery_fee_tnd) : '?'))
   }
 
   console.log('\nPhase 6 — teardown')

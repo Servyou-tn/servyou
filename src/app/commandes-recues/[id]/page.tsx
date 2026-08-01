@@ -43,11 +43,12 @@ const LIST = '/commandes-recues'
 //
 // ⚑ STILL ABSENT, and a later pass must NOT read these as misses:
 //   · The price breakdown's "Livraison" and "Total" rows (497:26388/26392) plus their Divider.
-//     `delivery_fee_tnd` was cut from the schema PR pending the per-governorate rate-table
-//     decision, and a COD total that omits the fee is a wrong number. Founder call: the WHOLE
-//     priceBreakdown stays out, not just the two blocked rows — its third row (a bare subtotal)
-//     would restate the "Prix unitaire" line directly above it and present one row as a
-//     "breakdown" with nothing to break down.
+//     UNBLOCKED at the schema level as of migration 20260801112027 — `orders.delivery_fee_tnd`
+//     now carries a per-product fee frozen at insert, so a COD total is finally a right number.
+//     Still absent HERE because the rows are UI work and ship in the G9 breakdown PR (one PR,
+//     one focus). The WHOLE priceBreakdown stays out until then, not just the two rows: its
+//     third row (a bare subtotal) would restate the "Prix unitaire" line directly above it and
+//     present one row as a "breakdown" with nothing to break down.
 //   · The print button, the print stamp and the "Bon de livraison imprimé" timeline entry
 //     (504:27030 / 504:27041 / 504:27058) — the print RPC belongs to the delivery-documents PR.
 //   · The "Confirmée sur WhatsApp" timeline entry (504:27052, the row named `cr` — NOT 504:27053,
@@ -205,8 +206,9 @@ export default async function OrderDetailPage({
                   ) : null}
                 </div>
               </div>
-              {/* The frame's Livraison + Total rows are omitted — no delivery_fee column, and a
-                  total equal to the subtotal would be a wrong number on a COD invoice. */}
+              {/* The frame's Livraison + Total rows are omitted here on purpose. The data exists
+                  (orders.delivery_fee_tnd, migration 20260801112027); the rows are UI and ship in
+                  the G9 breakdown PR. See the header note. */}
               <p className="text-body-sm text-text-muted">{t('seller.orderDetail.cod_note', lang)}</p>
             </section>
 

@@ -11,6 +11,7 @@ export const INTEGRATION_GLOBS = [
   '**/shop-check-constraints.test.ts',
   '**/freelancer-config-rls.test.ts',
   '**/buyer-cancellation-history.test.ts',
+  '**/order-delivery-fee-snapshot.test.ts',
   '**/profiles-rls.test.ts',
   '**/job-limits.test.ts',
   '**/progressive-phone.integration.test.ts',
