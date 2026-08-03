@@ -216,36 +216,32 @@ export default async function OrderDetailPage({
                   26 / 26 / 1 / 25 ⇒ a uniform 8px gap, and 26+8+26+8+1+8+25 = 102 exactly; labels at
                   x0 and every value ending flush at x704 ⇒ label-start, value-end.
 
-                  SIZE IS MEASURED, not inherited from the line above — on TWO independent channels,
-                  both from the get_metadata dump plus artefacts already in the repo. No extra call.
-                  · LINE-HEIGHT. A Figma auto-height text node takes its line-height verbatim as its
-                    height. The registry's ramp (docs/design/figma-registry.md, generated FROM this
-                    file) reads `leading/body-sm = 21` · `leading/body = 26`; the frame's rows are 26.
-                  · ADVANCE WIDTH. Rendering the frame's six measured strings in the app's real Inter
-                    face gives RMS error 1.19px at 16px against 9.02px at 14px — every specimen is
-                    uniformly ~12% short at 14px ("Livraison" 68 measured vs 68.3 at 16px / 59.8 at
-                    14px; "Total" 40 vs 38.2 / 33.4).
-                  ⇒ `text-body`, NOT the `text-body-sm` of the "Prix unitaire" line directly above.
-                  The breakdown is deliberately a step LARGER than that soft line — it is the money
-                  summary. (`leading/h3` is also 26, but `size/h3 = 20` is ruled out by the widths.)
-                  ⚑ Code's `text-body` emits line-height 1.5 ⇒ 24px, against Figma's 26 (1.625): a
-                  real token drift, logged in docs/follow-ups.md, NOT worked around here.
+                  EVERY VALUE HERE IS NOW MEASURED. Nothing in this block is derived, and nothing is
+                  owed a further read. Source: docs/design/g9-deltas-2.md §panel-produit, a live
+                  plugin-bridge node dump taken 2026-07-30 that carried the complete spec —
 
-                  DERIVED-NOT-MEASURED, and why:
-                  · COLOUR on every row — `text-text-secondary` for rows 1-2, `text-text-primary` for
-                    the Total. get_metadata returns geometry only, never fills, so this is the
-                    panel's existing soft-line / emphasis pairing rather than a read value.
-                  · TOTAL ROW EMPHASIS — `font-semibold` at the SAME size as the other rows. The frame
-                    shows the Total reading bolder and `font-semibold` + primary is this panel's
-                    emphasis idiom (it is what `itemTitle` uses). Deliberately NOT a size step: the
-                    Total's box is 25px against the other rows' 26px, so if anything the frame argues
-                    against a larger size, and a 1px delta is equally explained by font-metric
-                    rounding between regular and semibold.
-                  · DIVIDER — `border-t border-border-subtle`, the repo's divider idiom, 1px as
-                    measured. The frame's is a Divider component instance; no such component exists
-                    in code and inventing one is out of scope here.
-                  Owed a REST read (`/v1/files/:key/nodes`), logged in docs/follow-ups.md: the exact
-                  type ramp + fill per row, and whether the 25-vs-26 height is a real size step.
+                    row 1-2  label 16/26 Regular #475569 · value 16/26 Regular #0f172a
+                    Total    label + value 16/25 Inter BOLD #0f172a
+                    Divider  704×1 #e2e8f0
+
+                  ⚑ THIS BLOCK SHIPPED WRONG ONCE. The first build (PR #107) used `text-text-secondary`
+                  for the row VALUES and `font-semibold` for the Total, and its comment here claimed
+                  colour and the 25-vs-26 height were "derived" and owed a REST read. They were never
+                  owed: the spec above already existed, a week earlier, and the build did not grep
+                  docs/design/*-deltas*.md for the node id. Both defects are filed as PB-1/PB-2 in
+                  g9-deltas-3.md and closed here. The method rule that follows from it is in
+                  docs/follow-ups.md: read the delta files before measuring anything in a G-series
+                  region.
+
+                  ⚑ 25 IS A SPEC, NOT ROUNDING. The earlier comment guessed the Total's 25px box
+                  against the rows' 26 was "font-metric rounding between regular and semibold". It is
+                  not — the Total is BOLD and carries its own line-height, which is why it is set
+                  explicitly with `leading-[25px]` rather than inheriting the ramp's 26.
+
+                  Size was reached independently before the delta file was consulted — `leading/body
+                  = 26` matching the frame's 26px rows, plus advance-width RMS 1.19px at 16px against
+                  9.02px at 14px over the frame's six strings — and pass 2's `16/26 Regular` confirms
+                  it exactly. That derivation was sound; only the failure to read the file was not.
 
                   derived: no mobile frame exists, so the rows keep their desktop shape at every
                   width — they are two short items on one line and do not need to stack. */}
@@ -254,11 +250,13 @@ export default async function OrderDetailPage({
                   className="flex flex-col gap-2"
                   aria-label={t('seller.orderDetail.price_aria', lang)}
                 >
+                  {/* Label muted, VALUE primary — the frame contrasts the row rather than painting
+                      both tiers the same. This is PB-1. */}
                   <div className="flex items-baseline justify-between gap-4">
                     <dt className="text-body text-text-secondary">
                       {t('seller.orderDetail.price_line', lang, { n: breakdown.quantity })}
                     </dt>
-                    <dd className="text-body text-text-secondary">
+                    <dd className="text-body text-text-primary">
                       {t('seller.orderDetail.price_amount', lang, { price: breakdown.lineTotal })}
                     </dd>
                   </div>
@@ -266,16 +264,21 @@ export default async function OrderDetailPage({
                     <dt className="text-body text-text-secondary">
                       {t('seller.orderDetail.price_delivery', lang)}
                     </dt>
-                    <dd className="text-body text-text-secondary">
+                    <dd className="text-body text-text-primary">
                       {t('seller.orderDetail.price_amount', lang, { price: breakdown.deliveryFee })}
                     </dd>
                   </div>
                   <div className="border-t border-border-subtle" role="presentation" />
+                  {/* PB-2: Inter BOLD at 16/25. `font-bold` is the frame's weight (700), not the 600
+                      the first build shipped; `leading-[25px]` is the Bold row's own measured
+                      line-height, which is a step tighter than the ramp's 26 and therefore cannot
+                      come from `text-body`. Arbitrary value because no 25 exists in the ramp — it is
+                      a measured one-off, and hard-coding it is honest where a token would be a lie. */}
                   <div className="flex items-baseline justify-between gap-4">
-                    <dt className="text-body font-semibold text-text-primary">
+                    <dt className="text-body font-bold leading-[25px] text-text-primary">
                       {t('seller.orderDetail.price_total', lang)}
                     </dt>
-                    <dd className="text-body font-semibold text-text-primary">
+                    <dd className="text-body font-bold leading-[25px] text-text-primary">
                       {t('seller.orderDetail.price_amount', lang, { price: breakdown.total })}
                     </dd>
                   </div>
