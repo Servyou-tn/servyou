@@ -618,6 +618,34 @@ The branch's build stalled on the flaky figma-cli bridge; its Phase-1 inventory 
 - **Select** — **no reconciled Select primitive exists.** `ServicesFilterBar` builds its 4 triggers ad-hoc on `ui/dropdown-menu` + `ui/popover` (+ `ui/filter-control`), none reconciled. Figma: Select — Trigger `72:1051` / Panel `72:1094` / Option `72:894`; Filter Bar `150:10825`; Range Slider `143:9517`.
 - **Node IDs for eventual measurement:** Segmented `93:2707`, Filter Bar `150:10825`, Select Trigger `72:1051` (+ Panel `72:1094`, Option `72:894`), Range Slider `143:9517`, Service Card `124:6200`, Pagination `188:14219`, empty state `611:47916`, frame `611:45637`.
 - **Bridge note:** the figma-cli CDP bridge (`connect`) drops after ~1 command and Figma MCP is capped at 6 calls/month on the free Starter plan (not viable). The **Figma REST API** (`GET api.figma.com/v1/files/:key/nodes?ids=…`, `X-Figma-Token`) returns raw `padding`/`itemSpacing`/`absoluteBoundingBox`/`boundVariables` over plain HTTPS with no plugin — the robust path for future measurement (variable *names* still need the CDP bridge or a paid tier; the `/variables/local` name endpoint is Enterprise-gated).
+- **⛔ BRIDGE NOTE SUPERSEDED (2026-08-03): the CDP bridge is DEAD, not flaky.** On Figma **126.7.10** the app ignores `--remote-debugging-port` outright — verified from a clean slate (unpatch → all Figma + `figma_agent` processes held down to zero → `figma-cli connect`, which printed `✔ Figma configured` and launched the app ITSELF with the flag on its command line): port 9222 never binds, `netstat` empty, `/json/version` refuses. No relaunch race, no stub-vs-versioned ambiguity — the flag is simply not honoured, so **every recovery recipe in the memory notes is inapplicable on this build** and further transport variations are wasted effort. The **claude.ai Figma MCP is now the primary measurement surface** (file key `jDNjJ8D1gnXiW7Ry3GkN4U`); its Starter quota **does reset on a rolling window** (exhausted 08-01, working again 08-03). It returns geometry only — no padding, itemSpacing, fills or bound variables — so the **REST API above is the fallback for those**, and it is the only route back to a full measurement short of a future Figma build that re-honours the flag.
+
+### 🟡 G9 price breakdown — type/colour owed a REST read (shipped 2026-08-03, feat/g9-price-breakdown)
+
+The block (`497:26383`) was built from a `get_metadata` dump, which returns **geometry only**. Geometry was enough to fix the layout exactly — container 704×102, rows at y 0/34/68/77, heights 26/26/1/25 ⇒ a uniform 8px gap that sums to 102, labels at x0, values flush at x704 — and those values are **measured**. What is **DERIVED-NOT-MEASURED**, flagged as such at the call site in `src/app/commandes-recues/[id]/page.tsx`:
+
+- **Fill (colour) per row.** `text-text-secondary` on rows 1-2, `text-text-primary` on the Total — the panel's existing soft-line/emphasis pairing, not a read value. **Size is NOT owed**: it was settled at `text-body` (16px) on two independent measured channels — `leading/body = 26` matching the frame's 26px rows, and advance-width RMS 1.19px at 16px vs 9.02px at 14px across the frame's six measured strings.
+- **Whether the Total is a SIZE step, not just a weight step.** Its box is 25px against the other rows' 26px. Shipped as weight-only at the same size: a *smaller* box is not evidence of a *larger* type, and a 1px delta is equally explained by font-metric rounding between regular and semibold. A REST read settles it.
+- **The Divider.** Frame uses a Divider component *instance*; no such component exists in code, so it ships as the repo's `border-t border-border-subtle` idiom at the measured 1px.
+
+**Resolve with:** `GET api.figma.com/v1/files/jDNjJ8D1gnXiW7Ry3GkN4U/nodes?ids=497:26383` — `style`/`fills` per text node answers all three at once.
+
+**Also owed (pre-existing, wider than G9):** money is interpolated raw into `"{price} TND"` platform-wide (`seller.orderDetail.unit_price`, `seller.dashboard.tile.profit_value`, and now the breakdown's `price_amount`), so `12.5` renders `12.5 TND` rather than the French `12,50`. The i18n skill's `formatTND` helper (locale-aware `toLocaleString`) exists in the skill doc but **not in the codebase**. Out of scope for one panel; it wants one pass across every money string.
+
+### 🔴 `/commandes-recues/[id]` overflows 58px at 375 — PRE-EXISTING, surfaced by the G9 breakdown gate
+
+Measured on the authenticated route with a real seeded order (`documentElement.scrollWidth 433` vs `clientWidth 375`). **Neither offender is the price breakdown** — its rows are not in the list:
+
+- **`OrderRail` steps** — `flex w-14 shrink-0 flex-col items-center gap-2 lg:w-20`, rightmost edge **433**. A product order's chain is **7** stages; 7 × 56px + gaps exceeds 375 and `shrink-0` forbids any give. Shipped in PR #105 (rail timestamps). A service order (4 stages) would not overflow, which is likely why this was never seen.
+- **Topbar avatar cluster** — `flex shrink-0 items-center gap-4`, rightmost edge **431**.
+
+This is **not covered by** the frontend audit's "380px 0-overflow (negative-control validated)" finding — a different viewport, and more to the point that sweep could not reach the 12 auth-walled routes. Both offenders here exist *only when authenticated* (the rail's 7 product stages, the topbar's name+role avatar cluster), so an anonymous sweep could not have seen either. Treat the audit's overflow result as covering anonymous routes only.
+
+Not fixed in the breakdown PR: the rail is a previous PR's element and the fix is a real responsive decision (horizontal scroll vs a condensed mobile rail vs wrapping), not a one-liner.
+
+### 🟡 `scripts/gate/authed.mjs` cannot set the language cookie — AR half of the visual gate is unreachable through it
+
+`authed.mjs` injects only the session cookies, so there is no way to ask for an Arabic render; every authenticated gate run is implicitly FR. The G9 breakdown's AR/RTL capture needed a throwaway scratchpad runner that imports `mintGateCookies` and adds one `Network.setCookie` for `servyou_lang`. **Fix is ~4 lines** (a `--lang` flag setting that cookie before navigate), deliberately not taken inside a one-panel PR. Until then, any "gated in both languages" claim about an authenticated route is false unless the run says otherwise.
 
 ## Visual-gate findings — v2 shell at 375px (from feat/marche-services-rebuild, 2026-07-26)
 

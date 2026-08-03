@@ -2284,6 +2284,13 @@ export const ar: Record<string, string> = {
   'seller.orderDetail.service':           "الخدمة",
   'seller.orderDetail.quantity':          "الكمية: {n}",
   'seller.orderDetail.unit_price':        "سعر الوحدة: {price} د.ت",
+  // priceBreakdown (Figma 497:26383). Currency follows THIS PANEL, which ships "د.ت" on the
+  // unit_price line directly above — not the file-header note about mirroring fr.ts's "TND".
+  'seller.orderDetail.price_line':        "المنتج (× {n})",
+  'seller.orderDetail.price_delivery':    "التوصيل",
+  'seller.orderDetail.price_total':       "المجموع",
+  'seller.orderDetail.price_amount':      "{price} د.ت",
+  'seller.orderDetail.price_aria':        "تفصيل المبلغ المطلوب تحصيله",
   'seller.orderDetail.cod_note':          "الدفع عند الاستلام — يدفع العميل عند التسليم.",
   'seller.orderDetail.delivery':          "التوصيل",
   'seller.orderDetail.recipient':         "المستلم",

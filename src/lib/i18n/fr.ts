@@ -2267,6 +2267,13 @@ export const fr: Record<string, string> = {
   'seller.orderDetail.service':           "La prestation",
   'seller.orderDetail.quantity':          "Quantité : {n}",
   'seller.orderDetail.unit_price':        "Prix unitaire : {price} TND",
+  // priceBreakdown (Figma 497:26383). `price_line` is the LINE subtotal — quantity × the frozen
+  // unit price — not the unit price, which is why the multiplier is in the label.
+  'seller.orderDetail.price_line':        "Produit (× {n})",
+  'seller.orderDetail.price_delivery':    "Livraison",
+  'seller.orderDetail.price_total':       "Total",
+  'seller.orderDetail.price_amount':      "{price} TND",
+  'seller.orderDetail.price_aria':        "Détail du montant à encaisser",
   'seller.orderDetail.cod_note':          "Paiement à la livraison — le client paie à la réception.",
   'seller.orderDetail.delivery':          "Livraison",
   'seller.orderDetail.recipient':         "Destinataire",

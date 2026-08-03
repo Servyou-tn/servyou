@@ -48,6 +48,23 @@ export type SellerOrderDetail = {
   itemTitle: string
   /** Same snapshot-first rule as itemTitle — `orders.unit_price_tnd`, then the live join. */
   unitPrice: number | null
+  /**
+   * `orders.unit_price_tnd` ALONE — no fallback, deliberately. Distinct from `unitPrice`.
+   *
+   * `unitPrice` may be today's catalogue price via the live join, which is fine for the soft
+   * "Prix unitaire" display line because that line claims nothing about money owed. It is NOT
+   * fine as an invoice input: multiplying a live price by quantity and labelling it the amount
+   * to collect at the door would present a number that was never charged. The price breakdown
+   * therefore gates on THIS field, which is null unless a real snapshot exists.
+   */
+  unitPriceFrozen: number | null
+  /**
+   * `orders.delivery_fee_tnd` — the carrier fee frozen at insert (migration 20260801112027).
+   * NULL for every service order (no parcel, enforced by orders_delivery_fee_requires_product)
+   * and for the 4 product orders that predate the column. No fallback exists or should: the
+   * fee a buyer was quoted is unknowable from today's `products.delivery_fee_tnd`.
+   */
+  deliveryFee: number | null
   /** Per-shipment carrier. Product orders only (CHECK orders_shipment_requires_product). */
   carrier: string | null
   /** Seller-entered tracking number. Product orders only, same CHECK. */
@@ -95,6 +112,7 @@ type Row = {
   buyer_note: string | null
   item_title: string | null
   unit_price_tnd: number | string | null
+  delivery_fee_tnd: number | string | null
   carrier: string | null
   tracking_number: string | null
   order_events:
@@ -134,7 +152,7 @@ export const getSellerOrderDetail = cache(
         `id, status, order_type, created_at, received_at, cancelled_at, cancelled_by,
          cancellation_reason, quantity, buyer_id, seller_id,
          delivery_name, delivery_address, delivery_phone, buyer_note,
-         item_title, unit_price_tnd, carrier, tracking_number,
+         item_title, unit_price_tnd, delivery_fee_tnd, carrier, tracking_number,
          products ( title, price_tnd ),
          service_listings ( title, starting_price_tnd ),
          order_events ( event_type, from_status, to_status, actor_role, note, created_at )`,
@@ -191,6 +209,10 @@ export const getSellerOrderDetail = cache(
       quantity: row.quantity ?? 1,
       itemTitle: row.item_title ?? product?.title ?? service?.title ?? '',
       unitPrice: rawPrice != null ? Number(rawPrice) : null,
+      // NO `??` chain on either of these — see the field docs. A breakdown built on a fallback
+      // would state a total that was never charged.
+      unitPriceFrozen: row.unit_price_tnd != null ? Number(row.unit_price_tnd) : null,
+      deliveryFee: row.delivery_fee_tnd != null ? Number(row.delivery_fee_tnd) : null,
       carrier: row.carrier,
       trackingNumber: row.tracking_number,
       events: (row.order_events ?? []).map((e) => ({
