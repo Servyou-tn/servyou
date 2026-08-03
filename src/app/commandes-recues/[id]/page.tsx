@@ -9,6 +9,7 @@ import { WhatsAppContactButton } from '@/components/orders/WhatsAppContactButton
 import { requireShopOwner } from '@/lib/auth/require-seller'
 import { getSellerOrderDetail, type OrderEvent } from '@/lib/marche/seller-order-detail'
 import { statusPillFor, shortRef, longDate, shortDate, shortDateTime, stageTimestamps } from '@/lib/orders/order-status'
+import { priceBreakdownFor } from '@/lib/orders/price-breakdown'
 import {
   nextSellerStatus,
   isCancellable,
@@ -41,14 +42,13 @@ const LIST = '/commandes-recues'
 // so both are real rather than decorative. Measured against those two nodes in
 // docs/design/g9-deltas-2.md.
 //
+// ⚑ THE PRICE BREAKDOWN NOW SHIPS (497:26383) — it was the last panel withheld for missing data.
+// `orders.delivery_fee_tnd` (migration 20260801112027) made a COD total a right number, so all
+// three rows plus their Divider are real. It renders ONLY on a product order carrying BOTH frozen
+// snapshots; the decision and the arithmetic live in `@/lib/orders/price-breakdown`, tested over
+// all three cases. See the call site for what is measured and what is derived.
+//
 // ⚑ STILL ABSENT, and a later pass must NOT read these as misses:
-//   · The price breakdown's "Livraison" and "Total" rows (497:26388/26392) plus their Divider.
-//     UNBLOCKED at the schema level as of migration 20260801112027 — `orders.delivery_fee_tnd`
-//     now carries a per-product fee frozen at insert, so a COD total is finally a right number.
-//     Still absent HERE because the rows are UI work and ship in the G9 breakdown PR (one PR,
-//     one focus). The WHOLE priceBreakdown stays out until then, not just the two rows: its
-//     third row (a bare subtotal) would restate the "Prix unitaire" line directly above it and
-//     present one row as a "breakdown" with nothing to break down.
 //   · The print button, the print stamp and the "Bon de livraison imprimé" timeline entry
 //     (504:27030 / 504:27041 / 504:27058) — the print RPC belongs to the delivery-documents PR.
 //   · The "Confirmée sur WhatsApp" timeline entry (504:27052, the row named `cr` — NOT 504:27053,
@@ -95,6 +95,10 @@ export default async function OrderDetailPage({
 
   // Stage -> ISO of the event that reached it. Empty {} for every pre-migration order.
   const stageDates = stageTimestamps(order.events)
+
+  // Null on a service order and on any order missing either frozen snapshot — the block is then
+  // absent entirely rather than partially filled. See @/lib/orders/price-breakdown.
+  const breakdown = priceBreakdownFor(order)
 
   const pill = statusPillFor(order.status, order.orderType)
   const next = nextSellerStatus(order.status, order.orderType)
@@ -206,9 +210,77 @@ export default async function OrderDetailPage({
                   ) : null}
                 </div>
               </div>
-              {/* The frame's Livraison + Total rows are omitted here on purpose. The data exists
-                  (orders.delivery_fee_tnd, migration 20260801112027); the rows are UI and ship in
-                  the G9 breakdown PR. See the header note. */}
+              {/* ── priceBreakdown (497:26383) ──
+                  MEASURED off the frame: container 704×102 (the panel's 752 less its 24 padding, so
+                  it is simply full-width here); rows at y 0 / 34 / 68 (Divider) / 77 with heights
+                  26 / 26 / 1 / 25 ⇒ a uniform 8px gap, and 26+8+26+8+1+8+25 = 102 exactly; labels at
+                  x0 and every value ending flush at x704 ⇒ label-start, value-end.
+
+                  SIZE IS MEASURED, not inherited from the line above — on TWO independent channels,
+                  both from the get_metadata dump plus artefacts already in the repo. No extra call.
+                  · LINE-HEIGHT. A Figma auto-height text node takes its line-height verbatim as its
+                    height. The registry's ramp (docs/design/figma-registry.md, generated FROM this
+                    file) reads `leading/body-sm = 21` · `leading/body = 26`; the frame's rows are 26.
+                  · ADVANCE WIDTH. Rendering the frame's six measured strings in the app's real Inter
+                    face gives RMS error 1.19px at 16px against 9.02px at 14px — every specimen is
+                    uniformly ~12% short at 14px ("Livraison" 68 measured vs 68.3 at 16px / 59.8 at
+                    14px; "Total" 40 vs 38.2 / 33.4).
+                  ⇒ `text-body`, NOT the `text-body-sm` of the "Prix unitaire" line directly above.
+                  The breakdown is deliberately a step LARGER than that soft line — it is the money
+                  summary. (`leading/h3` is also 26, but `size/h3 = 20` is ruled out by the widths.)
+                  ⚑ Code's `text-body` emits line-height 1.5 ⇒ 24px, against Figma's 26 (1.625): a
+                  real token drift, logged in docs/follow-ups.md, NOT worked around here.
+
+                  DERIVED-NOT-MEASURED, and why:
+                  · COLOUR on every row — `text-text-secondary` for rows 1-2, `text-text-primary` for
+                    the Total. get_metadata returns geometry only, never fills, so this is the
+                    panel's existing soft-line / emphasis pairing rather than a read value.
+                  · TOTAL ROW EMPHASIS — `font-semibold` at the SAME size as the other rows. The frame
+                    shows the Total reading bolder and `font-semibold` + primary is this panel's
+                    emphasis idiom (it is what `itemTitle` uses). Deliberately NOT a size step: the
+                    Total's box is 25px against the other rows' 26px, so if anything the frame argues
+                    against a larger size, and a 1px delta is equally explained by font-metric
+                    rounding between regular and semibold.
+                  · DIVIDER — `border-t border-border-subtle`, the repo's divider idiom, 1px as
+                    measured. The frame's is a Divider component instance; no such component exists
+                    in code and inventing one is out of scope here.
+                  Owed a REST read (`/v1/files/:key/nodes`), logged in docs/follow-ups.md: the exact
+                  type ramp + fill per row, and whether the 25-vs-26 height is a real size step.
+
+                  derived: no mobile frame exists, so the rows keep their desktop shape at every
+                  width — they are two short items on one line and do not need to stack. */}
+              {breakdown ? (
+                <dl
+                  className="flex flex-col gap-2"
+                  aria-label={t('seller.orderDetail.price_aria', lang)}
+                >
+                  <div className="flex items-baseline justify-between gap-4">
+                    <dt className="text-body text-text-secondary">
+                      {t('seller.orderDetail.price_line', lang, { n: breakdown.quantity })}
+                    </dt>
+                    <dd className="text-body text-text-secondary">
+                      {t('seller.orderDetail.price_amount', lang, { price: breakdown.lineTotal })}
+                    </dd>
+                  </div>
+                  <div className="flex items-baseline justify-between gap-4">
+                    <dt className="text-body text-text-secondary">
+                      {t('seller.orderDetail.price_delivery', lang)}
+                    </dt>
+                    <dd className="text-body text-text-secondary">
+                      {t('seller.orderDetail.price_amount', lang, { price: breakdown.deliveryFee })}
+                    </dd>
+                  </div>
+                  <div className="border-t border-border-subtle" role="presentation" />
+                  <div className="flex items-baseline justify-between gap-4">
+                    <dt className="text-body font-semibold text-text-primary">
+                      {t('seller.orderDetail.price_total', lang)}
+                    </dt>
+                    <dd className="text-body font-semibold text-text-primary">
+                      {t('seller.orderDetail.price_amount', lang, { price: breakdown.total })}
+                    </dd>
+                  </div>
+                </dl>
+              ) : null}
               <p className="text-body-sm text-text-muted">{t('seller.orderDetail.cod_note', lang)}</p>
             </section>
 
