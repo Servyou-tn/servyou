@@ -105,7 +105,22 @@
   --text-h3: 1.25rem;          --text-h3--line-height: 1.4;        --text-h3--font-weight: 600;         /* 20px */
   --text-h4: 1rem;             --text-h4--line-height: 1.4;        --text-h4--font-weight: 600;         /* 16px (Figma untokenized — unchanged) */
   --text-body-lg: 1.125rem;    --text-body-lg--line-height: 1.6;   --text-body-lg--font-weight: 400;    /* 18px */
-  --text-body: 1rem;           --text-body--line-height: 1.5;      --text-body--font-weight: 400;       /* 16px */
+  /* body's line-height is 1.625 (=26px), NOT the 1.5 the rest of the ramp uses. Figma's
+     `leading/body = 26` against `size/body = 16`; the registry (docs/design/figma-registry.md) is
+     generated FROM the file, so this is measured, not chosen. It was 1.5 (=24px) until 2026-08-03
+     — the X-1 drift in docs/design/g9-deltas-3.md.
+
+     ⚑ SCOPE, stated precisely because the delta file's "seven rows" is coarser than this token:
+     this closes the four 16px REGULAR rows (breakdown rows, every `lv` value, the carrier value,
+     the primary button label). It does NOT close h1 (32/38 vs 40) or the panel headings (20/26 vs
+     28) — those are `--text-h1--line-height` and `--text-h3--line-height`, separate drifts left
+     open deliberately. And it moves the two 16px SEMI BOLD rows (item title, client name) from 2px
+     under to 1px over, because Figma pairs 16px Regular with 26 but 16px Semi Bold/Bold with 25 —
+     the same pattern the breakdown's Bold Total shows. A ramp cannot express a per-weight
+     line-height, so those two want an explicit `leading-[25px]` like the Total, not a token change.
+
+     `body-sm` is correct at 1.5 (21 = 14 × 1.5) and is left alone; do not "harmonise" this back. */
+  --text-body: 1rem;           --text-body--line-height: 1.625;    --text-body--font-weight: 400;       /* 16px / 26 */
   --text-body-sm: 0.875rem;    --text-body-sm--line-height: 1.5;   --text-body-sm--font-weight: 400;    /* 14px */
   --text-caption: 0.75rem;     --text-caption--line-height: 1.4;   --text-caption--font-weight: 400;    /* 12px (unchanged) */
   --text-label: 0.875rem;      --text-label--line-height: 1.4;     --text-label--font-weight: 500;      /* 14px */

@@ -620,17 +620,58 @@ The branch's build stalled on the flaky figma-cli bridge; its Phase-1 inventory 
 - **Bridge note:** the figma-cli CDP bridge (`connect`) drops after ~1 command and Figma MCP is capped at 6 calls/month on the free Starter plan (not viable). The **Figma REST API** (`GET api.figma.com/v1/files/:key/nodes?ids=…`, `X-Figma-Token`) returns raw `padding`/`itemSpacing`/`absoluteBoundingBox`/`boundVariables` over plain HTTPS with no plugin — the robust path for future measurement (variable *names* still need the CDP bridge or a paid tier; the `/variables/local` name endpoint is Enterprise-gated).
 - **⛔ BRIDGE NOTE SUPERSEDED (2026-08-03): the CDP bridge is DEAD, not flaky.** On Figma **126.7.10** the app ignores `--remote-debugging-port` outright — verified from a clean slate (unpatch → all Figma + `figma_agent` processes held down to zero → `figma-cli connect`, which printed `✔ Figma configured` and launched the app ITSELF with the flag on its command line): port 9222 never binds, `netstat` empty, `/json/version` refuses. No relaunch race, no stub-vs-versioned ambiguity — the flag is simply not honoured, so **every recovery recipe in the memory notes is inapplicable on this build** and further transport variations are wasted effort. The **claude.ai Figma MCP is now the primary measurement surface** (file key `jDNjJ8D1gnXiW7Ry3GkN4U`); its Starter quota **does reset on a rolling window** (exhausted 08-01, working again 08-03). It returns geometry only — no padding, itemSpacing, fills or bound variables — so the **REST API above is the fallback for those**, and it is the only route back to a full measurement short of a future Figma build that re-honours the flag.
 
-### 🟡 G9 price breakdown — type/colour owed a REST read (shipped 2026-08-03, feat/g9-price-breakdown)
+### 🔴 ~~G9 price breakdown — type/colour owed a REST read~~ → SUPERSEDED 2026-08-03. NOTHING WAS OWED; TWO VALUES SHIPPED WRONG
 
-The block (`497:26383`) was built from a `get_metadata` dump, which returns **geometry only**. Geometry was enough to fix the layout exactly — container 704×102, rows at y 0/34/68/77, heights 26/26/1/25 ⇒ a uniform 8px gap that sums to 102, labels at x0, values flush at x704 — and those values are **measured**. What is **DERIVED-NOT-MEASURED**, flagged as such at the call site in `src/app/commandes-recues/[id]/page.tsx`:
+**This entry was wrong when written, and the correction is a defect, not a doc tidy.** It claimed colour and the Total's height "owe a REST read." They do not: **`docs/design/g9-deltas-2.md` lines 292-295 already carried the full measured `priceBreakdown` spec**, taken off a live plugin-bridge read on 2026-07-30 — a week before the block was built. The build did not consult it. What that spec says, against what shipped:
 
-- **Fill (colour) per row.** `text-text-secondary` on rows 1-2, `text-text-primary` on the Total — the panel's existing soft-line/emphasis pairing, not a read value. **Size is NOT owed**: it was settled at `text-body` (16px) on two independent measured channels — `leading/body = 26` matching the frame's 26px rows, and advance-width RMS 1.19px at 16px vs 9.02px at 14px across the frame's six measured strings.
-- **Whether the Total is a SIZE step, not just a weight step.** Its box is 25px against the other rows' 26px. Shipped as weight-only at the same size: a *smaller* box is not evidence of a *larger* type, and a 1px delta is equally explained by font-metric rounding between regular and semibold. A REST read settles it.
-- **The Divider.** Frame uses a Divider component *instance*; no such component exists in code, so it ships as the repo's `border-t border-border-subtle` idiom at the measured 1px.
+| node | Figma (g9-deltas-2 §panel-produit) | shipped in PR #107 | verdict |
+|---|---|---|---|
+| row 1-2 **labels** | 16/26 Regular `#475569` | 16/24 · 400 · `#475569` | ✅ colour right |
+| row 1-2 **values** | 16/26 Regular **`#0f172a`** | 16/24 · 400 · **`#475569`** | 🔴 **wrong tier** |
+| Total label + value | 16/25 **Inter Bold** `#0f172a` | 16/24 · **600** · `#0f172a` | 🔴 **wrong weight** |
+| Divider | 704×1 `#e2e8f0` | 1px `rgb(226,232,240)` | ✅ |
 
-**Resolve with:** `GET api.figma.com/v1/files/jDNjJ8D1gnXiW7Ry3GkN4U/nodes?ids=497:26383` — `style`/`fills` per text node answers all three at once.
+Both are filed with IDs in **`docs/design/g9-deltas-3.md` (PB-1, PB-2)**. The 25-vs-26 question is also answered there and the answer is **not** the font-metric-rounding hypothesis this entry offered: 25 is the line-height of the **Bold** Total row against the Regular rows' 26. ⚑ **`src/app/commandes-recues/[id]/page.tsx` still asserts the rounding hypothesis in its call-site comment** — owed a correction whenever PB-1/PB-2 are closed.
+
+**What does survive:** the size derivation. `text-body` (16px) was reached from `leading/body = 26` plus advance-width RMS 1.19px at 16px vs 9.02px at 14px — and pass 2's independently-measured `16/26 Regular` confirms it exactly. The two-channel method was sound; the mistake was not reading the delta file that already had the answer.
+
+**Method rule this earns:** before measuring a G-series region, grep `docs/design/*-deltas*.md` for the node id. Three passes of measurement already exist and they are not indexed anywhere else.
 
 **Also owed (pre-existing, wider than G9):** money is interpolated raw into `"{price} TND"` platform-wide (`seller.orderDetail.unit_price`, `seller.dashboard.tile.profit_value`, and now the breakdown's `price_amount`), so `12.5` renders `12.5 TND` rather than the French `12,50`. The i18n skill's `formatTND` helper (locale-aware `toLocaleString`) exists in the skill doc but **not in the codebase**. Out of scope for one panel; it wants one pass across every money string.
+
+### 🔴 The VRT story gate is NON-FUNCTIONAL on this machine — it fails everything, so it detects nothing
+
+Found 2026-08-03 while checking whether the `--text-body--line-height` fix needed a rebaseline.
+
+`node scripts/vrt/stories.mjs check` reports **max 99.87%, all 32 stories FAIL** — including
+`tokens-smoke`, Avatar and StatusPill, none of which use `text-body`. **A negative control settles
+it:** with the token change reverted the gate returns **byte-identical 99.87%**. The committed
+`__baselines__` therefore do not correspond to this machine's rendering at all — consistent with
+`stories.mjs`'s own note that *"the measured Linux story-level floor is 0.000%"*, i.e. they were
+captured on Linux/CI while this is Windows.
+
+**Consequence: the gate is worse than absent.** A gate that fails unconditionally cannot
+distinguish a real regression from its own noise, and the natural response — "just rebaseline" —
+would commit **Windows** baselines over the Linux ones, greening it here while breaking it for CI
+and everyone else. **No rebaseline was taken, deliberately.**
+
+**How to get a real answer meanwhile** (used for the token change, and it works): capture twice on
+the SAME machine and diff those, bypassing the baselines entirely —
+
+```
+node scripts/vrt/stories.mjs check          # before — copy scripts/vrt/__current__ aside
+<make the change>
+node scripts/vrt/stories.mjs check          # after
+THRESH=60 node scripts/vrt/diff.mjs <saved-before-dir> scripts/vrt/__current__
+```
+
+That returned **max 0.000% across all 32** for the line-height change — the token moves none of the
+VRT'd primitives, which is why this PR ships no baseline churn.
+
+**Fix wants a decision:** either pin baseline capture to one platform (a CI job that regenerates
+them, so local runs are advisory only), or make the harness platform-aware (per-platform baseline
+dirs). Until then treat a local `stories.mjs check` result as meaningless and use the
+capture-twice-and-diff method above.
 
 ### 🔴 `/commandes-recues/[id]` overflows 58px at 375 — PRE-EXISTING, surfaced by the G9 breakdown gate
 
