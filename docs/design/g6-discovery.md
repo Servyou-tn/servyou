@@ -335,15 +335,33 @@ ProductListingCard.tsx:34   {product.image_url ? <Image src={product.image_url} 
 public/products/            ABSENT
 ```
 
-`/marche/produits` is a **live, shipped route** (`src/app/marche/produits/`). All **8** rows carry
-`/products/nike.jpg`, `/products/iphone.jpg`, `/products/skincare.jpg`; all 8 belong to the one
-real shop; all have `display_order = 0`. **8 of 9 product cards on the live marketplace are
-rendering a failed image today.** Precisely what is proven: `image_url` is non-null, so the
+All **8** rows carry `/products/nike.jpg`, `/products/iphone.jpg`, `/products/skincare.jpg`; all 8
+belong to the one real shop; all have `display_order = 0`. `image_url` is non-null, so the
 `PackageIcon` placeholder branch **cannot** fire (it is gated on `image_url === null`), and
-`next/image` is handed a path that resolves to a 404. The exact rendered artefact (alt text vs an
-empty box) is browser-dependent and was **not** visually confirmed in this pass — but either way it
-is a failed image where a designed placeholder exists. One look at `/marche/produits` settles the
-cosmetic detail; it does not change the finding.
+`next/image` is handed a path that does not resolve.
+
+> ### ⚠ CORRECTED 2026-08-04 (PR-2 discovery) — two errors in the paragraph this replaces
+>
+> **1. `/marche/produits` is NOT the broken surface. It is a `ComingSoon` stub**, along with
+> `/produits/[id]`, both stripped by PR #83. The import chain traced here is real, but it
+> terminates at **`src/app/page.tsx`**, not at `/marche/produits`. The error came from reasoning
+> along the import chain instead of loading the route.
+>
+> The three genuinely live surfaces, each **verified by loading it**:
+> **`/`** (the home page — `product` is the *canonical default* for authenticated consumers, and a
+> real signed-in consumer session returns 8 cards and 64 broken image refs), **`/recherche?type=product`**,
+> and **`/categories/[slug]`**. All three funnel through `ListingResults` → `ProductListingCard`.
+> `/` is the highest-impact of the three and is reachable by **6 real plain consumers** today.
+>
+> **2. It is 8 of 8, not 8 of 9.** A product was deleted since `image-storage-discovery.md` was
+> written. Live: 8 products, 8 image rows, **zero products with no image** — so the absent-image
+> path is not merely undesigned, it has *never executed in production*.
+>
+> Empirically: `/_next/image?url=%2Fproducts%2Fnike.jpg` → **HTTP 400** (control, a real asset →
+> 200). The visible artefact is browser-dependent and was not confirmed visually.
+>
+> Full analysis, including the three options and the absent-image-state question:
+> **`docs/design/pr2-broken-image-pointers.md`**.
 
 **Recommendation: its own PR, and it is a two-line fix** — `UPDATE product_images SET image_url =
 NULL` is not possible (NOT NULL), so it is `DELETE FROM product_images` for the 8 seed rows, which
