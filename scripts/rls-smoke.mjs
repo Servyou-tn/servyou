@@ -82,10 +82,65 @@ async function findTestUserIds() {
   return data.map((r) => r.id)
 }
 
+// A real 1x1 WebP. The buckets declare allowed_mime_types = ['image/webp'], and while that check
+// reads the CLIENT-DECLARED Content-Type (so arbitrary bytes would pass), sending genuine WebP
+// keeps the fixture honest about what a writer actually uploads.
+const WEBP_1X1 = Buffer.from('UklGRhoAAABXRUJQVlA4TA0AAAAvAAAAEAcQERGIiP4HAA==', 'base64')
+const SMOKE_FOLDER = 'rls-smoke'
+const SHOP_BUCKETS = ['product-images', 'shop-assets']
+
+// Recursive listing — objects live at {shop_id}/{product_id}/{uuid}.webp, so a single .list()
+// returns FOLDERS (id === null), not files.
+async function listAllPaths(bucket, prefix) {
+  const out = []
+  const { data } = await admin.storage.from(bucket).list(prefix, { limit: 1000 })
+  if (!Array.isArray(data)) return out
+  for (const e of data) {
+    const p = prefix ? prefix + '/' + e.name : e.name
+    if (e.id === null) out.push(...(await listAllPaths(bucket, p)))
+    else out.push(p)
+  }
+  return out
+}
+
+// Service-role existence check. Used for the second half of every deny assertion: a storage call
+// that returns an error is NOT proof nothing landed, and `.remove()` on rows the caller cannot see
+// returns success with an empty array rather than an error. The only trustworthy answer comes from
+// a client that bypasses RLS.
+async function objectExists(bucket, path) {
+  const parts = path.split('/')
+  const file = parts.pop()
+  const { data } = await admin.storage.from(bucket).list(parts.join('/'), { limit: 1000 })
+  return Array.isArray(data) && data.some((e) => e.name === file)
+}
+
+// Removes every object under the given shop ids, across both shop-scoped buckets.
+//
+// REQUIRED, not tidiness: profile deletion cascades to `shops` but NOT to `storage.objects` —
+// no transaction spans Postgres and the storage API. Without this, every smoke run would leak
+// orphans into a PRODUCTION bucket, degrading the thing this gate exists to protect.
+async function sweepSmokeStorage(shopIds) {
+  for (const bucket of SHOP_BUCKETS) {
+    for (const shopId of shopIds) {
+      const paths = await listAllPaths(bucket, shopId)
+      if (paths.length === 0) continue
+      const { error } = await admin.storage.from(bucket).remove(paths)
+      if (error) throw new Error('storage sweep failed (' + bucket + '/' + shopId + '): ' + error.message)
+    }
+  }
+}
+
 async function teardown() {
   const ids = await findTestUserIds()
   if (ids.length === 0) return
-  // 1) Audit-log rows first (RESTRICT FK + no DELETE policy → service role only),
+  // 0) Storage FIRST, while the shop rows still exist to tell us which prefixes are ours.
+  //    Deleting the users cascades the shops away, and with them the only record of which
+  //    storage prefixes belonged to this run — the objects would survive with nothing pointing
+  //    at them. Scoped to shops owned by the ephemeral test users, never a bare bucket wipe.
+  const { data: shopRows, error: shopErr } = await admin.from('shops').select('id').in('owner_id', ids)
+  if (shopErr) throw new Error('shop lookup for storage sweep failed: ' + shopErr.message)
+  await sweepSmokeStorage((shopRows ?? []).map((r) => r.id))
+  // 1) Audit-log rows next (RESTRICT FK + no DELETE policy → service role only),
   //    surgically scoped to the ephemeral test-user ids.
   const { error: auditErr } = await admin.from('admin_audit_log').delete().in('admin_id', ids)
   if (auditErr) throw new Error('audit_log cleanup failed: ' + auditErr.message)
@@ -130,6 +185,13 @@ async function main() {
   if (shopErr) throw new Error('shop insert failed: ' + shopErr.message)
   const { data: product, error: prodErr } = await admin.from('products').insert({ shop_id: shop.id, title: 'RLS Smoke Product', price_tnd: 10, status: 'active' }).select('id').single()
   if (prodErr) throw new Error('product insert failed: ' + prodErr.message)
+
+  // A SECOND shop, owned by charlie, so "another shop's path" in Phase 5b is a real foreign shop
+  // rather than a made-up uuid. No constraint ties shops.owner_id to seller_type, so charlie can
+  // hold a shop while staying a plain consumer (and later an admin) for the other phases.
+  const { data: foreignShop, error: fShopErr } = await admin
+    .from('shops').insert({ owner_id: charlieId, name: 'RLS Smoke Foreign Shop' }).select('id').single()
+  if (fShopErr) throw new Error('foreign shop insert failed: ' + fShopErr.message)
   // order bob(buyer) ↔ alice(seller); non-pending so it is a realistic dispute target
   const { data: order, error: ordErr } = await admin
     .from('orders')
@@ -359,6 +421,90 @@ async function main() {
     // value rather than passing vacuously on a NULL column.
     const { data } = await admin.from('orders').select('delivery_fee_tnd').eq('id', order.id).single()
     check('F9 product order HAS a frozen delivery fee (control for F8)', !!data && data.delivery_fee_tnd !== null && Number(data.delivery_fee_tnd) === 7, 'fee=' + (data ? JSON.stringify(data.delivery_fee_tnd) : '?'))
+  }
+
+  // ── Phase 5b — STORAGE RLS on the shop-scoped buckets ───────────────────────────────────────
+  //
+  // These are the assertions whose absence let migration 20260731073614 ship four policies that
+  // could never grant. The bug was an alias capture — `(storage.foldername(name))[1]` inside
+  // `from shops s` bound to shops.name, not storage.objects.name — and it was invisible to every
+  // existing test because NO TEST EVER ATTEMPTED A WRITE. Repaired in 20260804104541.
+  //
+  // Every deny below is verified TWICE: once by what the authenticated client saw, and once by the
+  // service role reporting what actually landed. That pairing is the point — a storage call can
+  // fail for a dozen reasons that have nothing to do with RLS, and `.remove()` on invisible rows
+  // reports success while deleting nothing.
+  console.log('\nPhase 5c — storage RLS (product-images, shop-assets)')
+  {
+    const a = await authedClient(USERS.alice.email)
+    const BUCKET = 'product-images'
+    const ownDir = shop.id + '/' + SMOKE_FOLDER
+    const foreignDir = foreignShop.id + '/' + SMOKE_FOLDER
+    const ownObj = ownDir + '/own.webp'
+    const foreignPlanted = foreignDir + '/planted-by-service-role.webp'
+    const foreignAttempt = foreignDir + '/alice-should-not-land.webp'
+    const rootAttempt = 'alice-should-not-land-at-root.webp'
+    const up = { contentType: 'image/webp', upsert: false }
+
+    // Plant an object under CHARLIE's shop with the service role. This is the positive control
+    // that makes S5's "alice sees nothing" and S7's "alice deletes nothing" meaningful: without a
+    // real object there, both would pass vacuously against an empty folder.
+    const { error: plantErr } = await admin.storage.from(BUCKET).upload(foreignPlanted, WEBP_1X1, up)
+    if (plantErr) throw new Error('planting foreign object failed: ' + plantErr.message)
+
+    // S1 — the assertion that would have caught the bug.
+    {
+      const { error } = await a.storage.from(BUCKET).upload(ownObj, WEBP_1X1, up)
+      const landed = await objectExists(BUCKET, ownObj)
+      check('S1 shop owner CAN upload under their OWN shop path', !error && landed,
+        'err=' + (error ? error.message : 'none') + ' landed=' + landed)
+    }
+    // S2 — foreign shop path, refused, and nothing landed.
+    {
+      const { error } = await a.storage.from(BUCKET).upload(foreignAttempt, WEBP_1X1, up)
+      const landed = await objectExists(BUCKET, foreignAttempt)
+      check('S2 shop owner CANNOT upload under ANOTHER shop path', !!error && !landed,
+        'err=' + (error ? 'yes' : 'NONE') + ' landed=' + landed)
+    }
+    // S3 — bucket root has no shop segment, so foldername()[1] is NULL → denied.
+    {
+      const { error } = await a.storage.from(BUCKET).upload(rootAttempt, WEBP_1X1, up)
+      const landed = await objectExists(BUCKET, rootAttempt)
+      check('S3 shop owner CANNOT upload at bucket ROOT (no shop folder)', !!error && !landed,
+        'err=' + (error ? 'yes' : 'NONE') + ' landed=' + landed)
+    }
+    // S4 — the new SELECT policy. Also the positive control that S1 landed somewhere ALICE can
+    // see, not merely somewhere the service role can see.
+    {
+      const { data, error } = await a.storage.from(BUCKET).list(ownDir, { limit: 100 })
+      const sees = Array.isArray(data) && data.some((e) => e.name === 'own.webp')
+      check('S4 shop owner CAN list their own folder (SELECT policy) and sees S1', !error && sees,
+        'err=' + (error ? error.message : 'none') + ' rows=' + rowCount(data))
+    }
+    // S5 — deny, meaningful only because the service role planted a real object there.
+    {
+      const { data } = await a.storage.from(BUCKET).list(foreignDir, { limit: 100 })
+      const plantedReallyExists = await objectExists(BUCKET, foreignPlanted)
+      check('S5 shop owner CANNOT list ANOTHER shop folder (control: object IS there)',
+        plantedReallyExists && Array.isArray(data) && data.length === 0,
+        'control=' + plantedReallyExists + ' aliceSaw=' + rowCount(data))
+    }
+    // S6 — DELETE on own path, verified by absence rather than by the call's return value.
+    {
+      const { error } = await a.storage.from(BUCKET).remove([ownObj])
+      const stillThere = await objectExists(BUCKET, ownObj)
+      check('S6 shop owner CAN delete their own object', !error && !stillThere,
+        'err=' + (error ? error.message : 'none') + ' stillThere=' + stillThere)
+    }
+    // S7 — the trap. `.remove()` on a row the caller cannot see returns SUCCESS with an empty
+    // array, so asserting on the error would be a false green. The only real assertion is that
+    // the object SURVIVED.
+    {
+      const { error, data } = await a.storage.from(BUCKET).remove([foreignPlanted])
+      const survived = await objectExists(BUCKET, foreignPlanted)
+      check('S7 shop owner CANNOT delete ANOTHER shop object (asserts it SURVIVED)', survived,
+        'survived=' + survived + ' removeErr=' + (error ? 'yes' : 'none') + ' removedRows=' + rowCount(data))
+    }
   }
 
   console.log('\nPhase 6 — teardown')
