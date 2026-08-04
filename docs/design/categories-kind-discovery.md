@@ -195,6 +195,48 @@ The precise number — 14 options on `/mes-missions/nouvelle` — was taken sepa
 
 ---
 
+## 3b. 🔴 Method finding — **byte length is not a change detector.** Do not reuse it.
+
+The baseline above records `bytes=` per surface. **That column turned out to be worthless**, and it
+produced a false positive that cost a real investigation: `/categories/developpement` came back 14
+bytes short after the migration and stayed there across three samples and a clean `.next` restart.
+
+Two **back-to-back identical** requests — same page, same signed-in probe user, nothing changed
+between them:
+
+| run | total | inside `<script>` | visible markup |
+|---:|---:|---:|---:|
+| 1 | 91909 | 55428 | **36481** |
+| 2 | 92007 | 55526 | **36481** |
+
+**~98-byte swing, entirely inside the RSC / dev-mode `<script>` payload; visible markup
+byte-identical.** The 14 bytes were inside the noise floor. (Run 2 landed one byte from the
+original 92006 baseline.) It also retroactively explains an 84-byte swing on
+`/categories/electronique` between two baseline runs with no change between them, which had been
+noticed and set aside.
+
+**Use instead, in order of preference:**
+
+1. **Parsed structure.** `[...html.matchAll(/<option[^>]*>([^<]*)<\/option>/g)]` gave an exact,
+   reproducible count — this is what established that `/mes-missions/nouvelle` offers all 14
+   categories, and it is the number quoted in §0.
+2. **Rendered domain values.** Which known names appear. ⚑ Two traps, both hit in this pass:
+   names are **HTML-escaped** (`Beauté & Soins` → `Beauté &amp; Soins`, which silently
+   under-counted by 5 until fixed), and **short names substring-match** (`Mode` matches inside
+   "Mode de livraison"). It is a change-detector, not a semantic count.
+3. **Visible-markup length** — total minus the concatenated `<script>` blocks. Stable across runs.
+
+Byte length also varies with the **probe user's own identity**: a 5-character-shorter `full_name`
+moved the page by 5 bytes. A probe that creates a fresh ephemeral user must hold the name constant
+between the before and after runs.
+
+⚑ Related, and worth the same warning: mid-verification **every route except `/` began returning
+404**, including `/connexion`. That was `.next` left in a bad state by an earlier `npm run build`
+against a directory `next dev` had been using — not a regression. `rm -rf .next` + restart fixed
+it. Build, then clear `.next`, then restart dev.
+
+---
+
 ## 4. Proposed migration shape
 
 ```
