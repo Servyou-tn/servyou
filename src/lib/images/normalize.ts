@@ -1,5 +1,5 @@
 import sharp from 'sharp'
-import { AVATAR_MAX_EDGE, MAX_INPUT_BYTES } from './limits'
+import { AVATAR_MAX_EDGE, PRODUCT_MAX_EDGE, MAX_INPUT_BYTES } from './limits'
 
 // Normalizes an arbitrary user upload into ONE canonical WebP original.
 //
@@ -29,7 +29,7 @@ export type NormalizeResult =
 
 // Re-exported so server-side callers have one import for the whole pipeline. The definitions live
 // in ./limits because the client needs MAX_INPUT_BYTES and must not import `sharp`.
-export { AVATAR_MAX_EDGE, MAX_INPUT_BYTES, MAX_INPUT_MB } from './limits'
+export { AVATAR_MAX_EDGE, PRODUCT_MAX_EDGE, MAX_INPUT_BYTES, MAX_INPUT_MB } from './limits'
 
 /**
  * Identifies a container from its leading bytes. Deliberately not a general-purpose sniffer -- it
@@ -135,4 +135,23 @@ export async function normalizeAvatar(input: Buffer, maxEdge = AVATAR_MAX_EDGE):
     // file, which is why the sniffer alone is not the gate.
     return { ok: false, reason: 'decode_failed' }
   }
+}
+
+/**
+ * Product-photo variant of the same pipeline.
+ *
+ * Deliberately a THIN WRAPPER and not a copy: the decode / auto-orient / strip-EXIF / re-encode
+ * sequence is the content gate, and a second implementation of it is a second thing to get wrong.
+ * The only difference a product photo wants is the edge cap (PRODUCT_MAX_EDGE 1280 vs the avatar's
+ * 512), which normalizeAvatar already takes as a parameter.
+ *
+ * `normalizeAvatar` keeps its name on purpose. Renaming it to something neutral would touch the
+ * avatar call site and every test that names it, for no behaviour change -- and the name is honest
+ * about which surface the defaults were chosen for.
+ *
+ * ⚑ EXIF-stripping is load-bearing here for the same reason as avatars, and arguably more: a
+ * product photo is taken at the seller's home or shop and is PUBLIC. Do not add withMetadata().
+ */
+export async function normalizeProductImage(input: Buffer): Promise<NormalizeResult> {
+  return normalizeAvatar(input, PRODUCT_MAX_EDGE)
 }

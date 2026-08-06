@@ -16,7 +16,14 @@
 
 import { describe, it, expect } from 'vitest'
 import sharp from 'sharp'
-import { normalizeAvatar, sniffFormat, MAX_INPUT_BYTES, AVATAR_MAX_EDGE } from '@/lib/images/normalize'
+import {
+  normalizeAvatar,
+  normalizeProductImage,
+  sniffFormat,
+  MAX_INPUT_BYTES,
+  AVATAR_MAX_EDGE,
+  PRODUCT_MAX_EDGE,
+} from '@/lib/images/normalize'
 
 /** A real, decodable raster of the requested size. */
 async function realImage(width: number, height: number, format: 'png' | 'jpeg' | 'webp' = 'png') {
@@ -111,6 +118,51 @@ describe('normalizeAvatar — normalization', () => {
     expect(result.width).toBe(AVATAR_MAX_EDGE)
     expect(result.height).toBe(AVATAR_MAX_EDGE / 2) // aspect ratio preserved
     expect(sniffFormat(result.bytes)).toBe('webp')
+  })
+
+  it('normalizeProductImage caps at PRODUCT_MAX_EDGE, not the avatar cap', async () => {
+    // The wrapper's whole job. If it ever stopped passing the edge through, product photos would
+    // silently ship at 512px — visibly soft on D1's full-width gallery, and the kind of regression
+    // that looks like a design problem rather than a code one.
+    const result = await normalizeProductImage(await realImage(2000, 1000))
+    expect(result.ok).toBe(true)
+    if (!result.ok) return
+
+    expect(result.width).toBe(PRODUCT_MAX_EDGE)
+    expect(result.height).toBe(PRODUCT_MAX_EDGE / 2)
+    expect(sniffFormat(result.bytes)).toBe('webp')
+  })
+
+  it('a PRODUCT_MAX_EDGE photo re-encodes under the product-images bucket cap', async () => {
+    // 2 MiB is the bucket's own file_size_limit (migration 20260731073614). This is the assertion
+    // that would have caught the superseded "~2048px" recommendation, which reached 142% of the
+    // cap it was supposed to fit inside. Photographic noise is used deliberately — a flat gradient
+    // compresses to almost nothing and would make this pass vacuously.
+    const BUCKET_LIMIT = 2 * 1024 * 1024
+    const noisy = await sharp({
+      // `background` is required by sharp's Create type even when `noise` supplies the pixels.
+      // (The sibling avatar fixture below omits it and is a pre-existing tsc error — logged, not
+      // fixed here, per one-PR-one-focus.)
+      create: {
+        width: 2200,
+        height: 2200,
+        channels: 3,
+        background: { r: 0, g: 0, b: 0 },
+        noise: { type: 'gaussian', mean: 128, sigma: 60 },
+      },
+    })
+      .jpeg({ quality: 80 })
+      .toBuffer()
+
+    // Guard the fixture: the input gate rejects anything over MAX_INPUT_BYTES, so an oversized
+    // fixture would fail as 'too_large' and never exercise the OUTPUT cap this test is about.
+    expect(noisy.length).toBeLessThan(MAX_INPUT_BYTES)
+
+    const result = await normalizeProductImage(noisy)
+    expect(result.ok).toBe(true)
+    if (!result.ok) return
+    expect(result.width).toBe(PRODUCT_MAX_EDGE)
+    expect(result.bytes.length).toBeLessThan(BUCKET_LIMIT)
   })
 
   it('never upscales a small source', async () => {
