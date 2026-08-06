@@ -1,23 +1,28 @@
 'use client'
 
 import { useState, useTransition } from 'react'
-import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useLang } from '@/components/LangProvider'
 import { t } from '@/lib/i18n'
 import { FOCUS_RING, CARD_SHADOW } from '@/components/layout/styles'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Toggle } from '@/components/ui/toggle'
 import { createProductAction } from '@/app/actions/products'
 import type { ProductCategory } from '@/lib/marche/product-categories'
 import { ImageUploadGrid, type UploadedImage } from './ImageUploadGrid'
 
 // G6 « Ajouter un produit » — Figma 530:31784. Four sections plus a two-CTA footer.
 //
+// Built on the F3 primitives rather than hand-rolled markup (g6-deltas.md D10). That is not a
+// tidiness preference: `Input` already carries `required` (asterisk + aria-required), `helper`,
+// `counter` and `iconEnd` — which is to say it closes D4, D8 and D9 by being used at all, and
+// hand-rolling them a second time would have re-implemented four contracts that already exist.
+// `ServiceRequestForm` is the precedent followed here, not `MissionForm`.
+//
 // ⚑ `productId` IS GENERATED SERVER-SIDE AND ARRIVES AS A PROP. It is not created here and not
 // re-generated on re-render: images upload to `{shop}/{productId}/…` BEFORE the product row exists,
 // so the id has to be stable for the whole life of the form. See docs/design/g6-write-path.md §4a.
-//
-// The category picker is ONE LEVEL. The live `categories` table is flat (parent_id NULL on all 14
-// rows); there is no subcategory to cascade to.
 
 export function ProductForm({
   productId,
@@ -88,10 +93,16 @@ export function ProductForm({
     })
   }
 
-  const field = `w-full rounded-xl border border-border-subtle bg-white px-4 py-2.5 text-sm text-text-primary outline-none transition-colors placeholder:text-text-muted focus:border-brand-blue-600 ${FOCUS_RING}`
-  const label = 'mb-1.5 block text-sm font-medium text-text-primary'
   const section = `rounded-2xl bg-white p-6 sm:p-8 ${CARD_SHADOW}`
   const heading = 'mb-5 text-base font-semibold text-text-primary'
+  const label = 'mb-1.5 block text-sm font-medium text-text-secondary'
+  const selectField = `w-full rounded-lg border border-border-strong bg-surface-base px-4 h-11 text-base text-text-primary outline-none transition-colors focus:border-brand-blue-600 ${FOCUS_RING}`
+  // The in-field currency adornment — the `TND` text node the Price Input composite carries.
+  const suffix = (
+    <span aria-hidden="true" className="shrink-0 text-sm text-text-muted">
+      {t('product.form.currency_suffix', lang)}
+    </span>
+  )
 
   return (
     <form
@@ -101,102 +112,113 @@ export function ProductForm({
       }}
       className="max-w-[760px] space-y-5"
     >
-      {/* ─── 1. Informations de base ─── */}
+      {/* ─── 1. Informations ─── */}
       <section className={section}>
         <h2 className={heading}>{t('product.form.section_basics', lang)}</h2>
         <div className="space-y-5">
-          <div>
-            <label htmlFor="product-title" className={label}>
-              {t('product.form.title_label', lang)}
-            </label>
-            <input
-              id="product-title"
-              type="text"
-              maxLength={100}
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder={t('product.form.title_ph', lang)}
-              className={field}
-            />
-            <p className="mt-1 text-end text-xs text-text-muted">{title.length}/100</p>
-          </div>
+          <Input
+            id="product-title"
+            label={t('product.form.title_label', lang)}
+            helper={t('product.form.title_helper', lang)}
+            placeholder={t('product.form.title_ph', lang)}
+            required
+            counter
+            maxLength={100}
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+          />
 
-          <div>
-            <label htmlFor="product-category" className={label}>
-              {t('product.form.category_label', lang)}
-            </label>
-            <select
-              id="product-category"
-              value={categoryId}
-              onChange={(e) => setCategoryId(e.target.value)}
-              className={field}
-            >
-              <option value="">{t('product.form.category_ph', lang)}</option>
-              {categories.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {/* Falls back to name_fr so a category added without a translation degrades
-                      to French rather than rendering an empty option. */}
-                  {lang === 'ar' ? (c.name_ar ?? c.name_fr) : c.name_fr}
-                </option>
-              ))}
-            </select>
+          {/* ⚑ HALF-WIDTH, deliberately. Sous-catégorie is the one approved divergence (no second
+              taxonomy level exists in the database), so this row has a single occupant. A
+              full-width select next to nothing reads as a missing field — which is exactly what it
+              is until the taxonomy lands. Holding the slot also means no relayout when it arrives. */}
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+            <div>
+              <label htmlFor="product-category" className={label}>
+                {t('product.form.category_label', lang)}
+                <span aria-hidden="true" className="text-danger-500"> *</span>
+              </label>
+              <select
+                id="product-category"
+                aria-required="true"
+                value={categoryId}
+                onChange={(e) => setCategoryId(e.target.value)}
+                className={selectField}
+              >
+                <option value="">{t('product.form.category_ph', lang)}</option>
+                {categories.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {/* Falls back to name_fr so a category added without a translation degrades
+                        to French rather than rendering an empty option. */}
+                    {lang === 'ar' ? (c.name_ar ?? c.name_fr) : c.name_fr}
+                  </option>
+                ))}
+              </select>
+              <p className="mt-1.5 text-sm text-text-muted">
+                {t('product.form.category_helper', lang)}
+              </p>
+            </div>
           </div>
 
           <div>
             <label htmlFor="product-description" className={label}>
               {t('product.form.description_label', lang)}
+              <span aria-hidden="true" className="text-danger-500"> *</span>
             </label>
             <textarea
               id="product-description"
+              aria-required="true"
               rows={5}
               maxLength={2000}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder={t('product.form.description_ph', lang)}
-              className={`${field} resize-y`}
+              className={`w-full resize-y rounded-lg border border-border-strong bg-surface-base px-4 py-3 text-base text-text-primary outline-none transition-colors placeholder:text-text-muted focus:border-brand-blue-600 ${FOCUS_RING}`}
             />
-            <p className="mt-1 text-end text-xs text-text-muted">{description.length}/2000</p>
+            <div className="mt-1.5 flex items-start justify-between gap-2">
+              <p className="text-sm text-text-muted">{t('product.form.description_helper', lang)}</p>
+              <span className="shrink-0 text-sm text-text-muted tabular-nums">
+                {description.length}/2000
+              </span>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* ─── 2. Prix et livraison ─── */}
+      {/* ─── 2. Prix & livraison ─── */}
       <section className={section}>
         <h2 className={heading}>{t('product.form.section_pricing', lang)}</h2>
         <div className="space-y-5">
           <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-            <div>
-              <label htmlFor="product-price" className={label}>
-                {t('product.field_price', lang)}
-              </label>
-              <input
-                id="product-price"
-                type="number"
-                min="0"
-                step="0.01"
-                inputMode="decimal"
-                value={price}
-                onChange={(e) => setPrice(e.target.value)}
-                placeholder="0"
-                className={field}
-              />
-            </div>
-            <div>
-              <label htmlFor="product-delivery" className={label}>
-                {t('product.form.delivery_label', lang)}
-              </label>
-              <input
-                id="product-delivery"
-                type="number"
-                min="0"
-                step="0.01"
-                inputMode="decimal"
-                value={deliveryFee}
-                onChange={(e) => setDeliveryFee(e.target.value)}
-                className={field}
-              />
-              <p className="mt-1.5 text-xs text-text-muted">{t('product.form.delivery_hint', lang)}</p>
-            </div>
+            {/* TND rides INSIDE the field via iconEnd — Input's trailing slot sits within the
+                field border, which is where the Price Input composite puts its TND text node. */}
+            <Input
+              id="product-price"
+              type="number"
+              min="0"
+              step="0.01"
+              inputMode="decimal"
+              label={t('product.form.price_label', lang)}
+              helper={t('product.form.price_helper', lang)}
+              required
+              iconEnd={suffix}
+              placeholder="0"
+              value={price}
+              onChange={(e) => setPrice(e.target.value)}
+            />
+            <Input
+              id="product-delivery"
+              type="number"
+              min="0"
+              step="0.01"
+              inputMode="decimal"
+              label={t('product.form.delivery_label', lang)}
+              helper={t('product.form.delivery_hint', lang)}
+              required
+              iconEnd={suffix}
+              value={deliveryFee}
+              onChange={(e) => setDeliveryFee(e.target.value)}
+            />
           </div>
 
           <p
@@ -215,39 +237,36 @@ export function ProductForm({
       {/* ─── 3. Stock ─── */}
       <section className={section}>
         <h2 className={heading}>{t('product.form.section_stock', lang)}</h2>
-        <label className="flex items-center gap-2 text-sm text-text-primary">
-          <input
-            type="checkbox"
-            checked={tracksStock}
-            onChange={(e) => setTracksStock(e.target.checked)}
-            className={`h-4 w-4 rounded border-border-subtle text-brand-blue-600 ${FOCUS_RING}`}
-          />
-          {t('product.field_stock_manage', lang)}
-        </label>
 
-        {tracksStock ? (
-          <div className="mt-5">
-            <label htmlFor="product-stock" className={label}>
-              {t('product.field_stock_count', lang)}
-            </label>
-            <input
+        {/* role="switch" + aria-checked, Space-activated, knob translates as well as recolouring —
+            a checkbox announced "in a set" where this is an on/off. See ui/toggle.tsx. */}
+        <Toggle
+          checked={tracksStock}
+          onCheckedChange={setTracksStock}
+          label={t('product.form.stock_label', lang)}
+          helper={tracksStock ? undefined : t('product.form.stock_hint_off', lang)}
+        />
+
+        {tracksStock && (
+          <div className="mt-5 sm:max-w-xs">
+            <Input
               id="product-stock"
               type="number"
               min="0"
               step="1"
               inputMode="numeric"
+              label={t('product.field_stock_count', lang)}
+              helper={t('product.form.stock_count_helper', lang)}
+              required
+              placeholder="0"
               value={stockCount}
               onChange={(e) => setStockCount(e.target.value)}
-              placeholder="0"
-              className={`${field} sm:max-w-xs`}
             />
           </div>
-        ) : (
-          <p className="mt-3 text-sm text-text-muted">{t('product.form.stock_hint_off', lang)}</p>
         )}
       </section>
 
-      {/* ─── 4. Photos ─── */}
+      {/* ─── 4. Images ─── */}
       <section className={section}>
         <h2 className={heading}>{t('product.form.section_images', lang)}</h2>
         <ImageUploadGrid productId={productId} onChange={setImages} />
@@ -259,32 +278,24 @@ export function ProductForm({
         </p>
       )}
 
-      {/* ─── Footer: two CTAs. Brouillon is deliberately UNGATED. ─── */}
-      <div className={`sticky bottom-0 flex flex-wrap items-center gap-3 rounded-2xl bg-white p-5 ${CARD_SHADOW}`}>
-        <button
-          type="submit"
-          disabled={pending || !canPublish}
-          className={`inline-flex items-center rounded-full bg-brand-blue-600 px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-brand-blue-500 disabled:opacity-60 ${FOCUS_RING}`}
-        >
-          {pending ? t('product.form.submitting', lang) : t('product.form.publish', lang)}
-        </button>
-        <button
-          type="button"
-          onClick={() => submit(false)}
-          disabled={pending}
-          className={`inline-flex items-center rounded-full border border-border-subtle px-5 py-2.5 text-sm font-medium text-text-primary transition-colors hover:bg-surface-pill disabled:opacity-60 ${FOCUS_RING}`}
-        >
+      {/* ─── Footer: brouillon LEFT, publier RIGHT, and no third control. ───
+          Brouillon is deliberately ungated — an ungated save is the whole reason the two-CTA
+          footer exists. `Annuler` is gone: the sidebar and the breadcrumb both already lead out,
+          and Figma has no third control here.
+          ⚑ Publish ships DISABLED (gated on ≥1 image) and Button's Figma matrix is sparse —
+          `primary/lg/disabled` does not exist — so it stays at the default size `md`. */}
+      <div className={`sticky bottom-0 flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-white p-5 ${CARD_SHADOW}`}>
+        <Button type="button" variant="secondary" onClick={() => submit(false)} disabled={pending}>
           {t('product.form.save_draft', lang)}
-        </button>
-        <Link
-          href="/tableau-de-bord-vendeur"
-          className={`inline-flex items-center rounded-full px-5 py-2.5 text-sm font-medium text-text-muted transition-colors hover:bg-surface-pill ${FOCUS_RING}`}
-        >
-          {t('product.form.cancel', lang)}
-        </Link>
-        {!canPublish && (
-          <p className="w-full text-xs text-text-muted">{t('product.form.publish_gate', lang)}</p>
-        )}
+        </Button>
+        <div className="flex flex-col items-end gap-1.5">
+          <Button type="submit" variant="primary" loading={pending} disabled={!canPublish}>
+            {pending ? t('product.form.submitting', lang) : t('product.form.publish', lang)}
+          </Button>
+          {!canPublish && (
+            <p className="text-xs text-text-muted">{t('product.form.publish_gate', lang)}</p>
+          )}
+        </div>
       </div>
     </form>
   )

@@ -676,23 +676,41 @@ export const ar: Record<string, string> = {
   'product.field_quantity':         "الكمية",
 
   // ─── G6 « إضافة منتج » (/mes-produits/ajouter) ───────────────────────────────
-  // Section headers
-  'product.form.section_basics':    "المعلومات الأساسية",
+  // Page chrome — plain title + subtitle, not PageHeader.
+  'product.form.page_title':        "إضافة منتج",
+  'product.form.page_subtitle':     "صِف منتجك. يمكنك تعديله في أي وقت.",
+  // Breadcrumb. "منتجاتي" is plain text, not a link, until G5 exists.
+  'product.form.crumb_products':    "منتجاتي",
+  'product.form.crumb_current':     "إضافة منتج",
+  // Section headers — mirroring the Figma names.
+  'product.form.section_basics':    "المعلومات",
   'product.form.section_pricing':   "السعر والتوصيل",
   'product.form.section_stock':     "المخزون",
-  'product.form.section_images':    "صور المنتج",
+  'product.form.section_images':    "الصور",
   // Fields
   'product.form.title_label':       "عنوان المنتج",
   'product.form.title_ph':          "مثال: حذاء رياضي من الجلد",
+  'product.form.title_helper':      "عنوان واضح ودقيق يساعد المشترين على العثور عليك.",
   'product.form.category_label':    "الفئة",
   'product.form.category_ph':       "اختر فئة",
+  'product.form.category_helper':   "اختر الفئة الأقرب إلى منتجك.",
   'product.form.description_label': "الوصف",
   'product.form.description_ph':    "صف المنتج ومقاسه ومادته وحالته…",
-  'product.form.delivery_label':    "رسوم التوصيل (د.ت)",
+  'product.form.description_helper': "اذكر المقاس والمادة والحالة وما هو مشمول.",
+  'product.form.price_label':       "السعر",
+  'product.form.price_helper':      "سعر المنتج وحده، دون التوصيل.",
+  'product.form.delivery_label':    "رسوم التوصيل",
   'product.form.delivery_hint':     "7 د.ت هو السعر الأكثر شيوعًا في تونس. يمكنك تغييره.",
+  'product.form.currency_suffix':   "د.ت",
+  'product.form.stock_label':       "أتابع مخزون هذا المنتج",
+  'product.form.stock_count_helper': "سيصبح المنتج «نفد من المخزون» عند 0.",
   'product.form.buyer_total':       "سيدفع العميل: {price} + {fee} = {total} د.ت عند الاستلام",
-  'product.form.stock_hint_off':    "سيبقى المنتج معروضًا على أنه متوفر دائمًا.",
-  // Gallery
+  'product.form.stock_hint_off':    "مخزون غير محدود — يبقى المنتج متوفرًا دائمًا.",
+  // Gallery. Same PARAMETERISED structure as FR — the parts are reordered here, which is exactly
+  // what a concatenated string could not express.
+  'product.form.dropzone_cta':      "اسحب صورك إلى هنا أو تصفّح",
+  'product.form.dropzone_hint':     "{formats} · بحد أقصى {max} صور · بحد أدنى {minEdge} بكسل",
+  'product.form.dropzone_formats':  "PNG, JPG",
   'product.form.images_hint':       "حتى {max} صور. الصورة الأولى ستكون صورة الغلاف.",
   'product.form.images_add':        "إضافة صورة",
   'product.form.images_cover':      "الغلاف",
@@ -1090,8 +1108,6 @@ export const ar: Record<string, string> = {
   'page_header.missions.emphasis':           "وردودها",
   'page_header.nouvelle_mission.subtitle':   "صِف ما تبحث عنه",
   'page_header.nouvelle_mission.emphasis':   "تبحث",
-  'page_header.ajouter_produit.subtitle':    "أضف منتجًا إلى متجرك",
-  'page_header.ajouter_produit.emphasis':    "منتجًا",
   'page_header.mon_compte.subtitle':         "أدِر معلوماتك الشخصية",
   'page_header.mon_compte.emphasis':         "الشخصية",
   'page_header.parametres.subtitle':         "خصّص تجربتك",
