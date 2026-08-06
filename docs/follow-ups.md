@@ -1306,3 +1306,21 @@ work and neither is fixed in it — logged per "one PR, one focus".
   remains the record of what was actually charged. The point of logging it is that the zone work
   is not "just add a table" — it carries a schema change and a backfill of existing orders.
 - **Trigger:** the per-governorate rate-table PR.
+
+### 🔴 The AppShell topbar overflows the viewport at 375px — every shell page, not one
+
+- **Measured on the G6 gate pass (2026-08-06).** At a 375×812 viewport, `document.scrollWidth` is
+  **431px against a 375px viewport — 56px of horizontal overflow.** The outermost offender is the
+  topbar's right-hand cluster, `div.flex.shrink-0.items-center.gap-4`, holding the Radix user-menu
+  button and the 40px avatar.
+- **It is the SHELL, not any one page.** The same 431px and the same offending element were
+  measured on `/commandes-recues`, `/tableau-de-bord-vendeur`, `/mes-missions/nouvelle` and
+  `/mes-produits/ajouter`. No page-level element appears in the offender list on any of them.
+- ⚑ **This is why the earlier frontend audit recorded "380px 0-overflow".** That pass measured at
+  **380px**, where it happens to fit. The defect sits between 375 and 380 — and 375 is the iPhone
+  SE / iPhone mini width, i.e. the narrowest real device, on a platform that is 70%+ mobile.
+- **Not fixed in the G6 PR.** The topbar is shared by 19+ routes; changing it is a shell PR with its
+  own visual gate, not a line in a form PR.
+- **Reproduce:**
+  `node scripts/gate/authed.mjs --email <shop-owner> --route /tableau-de-bord-vendeur --width 375 --height 812 --eval <overflow-probe> --json`
+- **Trigger:** the next shell/topbar PR, or any mobile-polish pass. Gate at **375**, not 380.

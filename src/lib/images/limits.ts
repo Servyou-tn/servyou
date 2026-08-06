@@ -33,6 +33,28 @@ export const MAX_INPUT_BYTES = 4 * 1024 * 1024
 export const AVATAR_MAX_EDGE = 512
 
 /**
+ * Longest-edge cap for product photos, and a MEASURED constraint rather than a judgment call.
+ *
+ * The `product-images` bucket sets `file_size_limit` to 2 MiB (2097152 bytes, migration
+ * 20260731073614). That limit applies to the re-encoded WebP OUTPUT, so the edge cap has to be
+ * chosen against it:
+ *
+ *   edge   worst-case WebP @ q82   share of the 2 MiB bucket cap
+ *   512     89 KB                    4%   (= AVATAR_MAX_EDGE — too small, see below)
+ *   1280   890 KB                   43%   <- this
+ *   2048  2900 KB                  142%   <- OVER the cap. Would fail at upload.
+ *
+ * ⚑ This overturns `image-storage-discovery.md` §2e, which recommended "~2048px" for content
+ * images. The cap and the bucket limit were written in the same PR and never checked against each
+ * other: a 2048px product photo cannot be stored in the bucket meant to hold it.
+ *
+ * Why not reuse AVATAR_MAX_EDGE (512): a product photo is the largest image the marketplace
+ * renders. D1's gallery is a full-width hero, not a 120px circle, so 512 would visibly soften it.
+ * 1280 covers every product surface at better than 2x and still spends under half the per-file cap.
+ */
+export const PRODUCT_MAX_EDGE = 1280
+
+/**
  * The same ceiling in whole megabytes, for the user-facing message. Derived rather than written out
  * so the copy cannot drift from the constant — the gate caught exactly that drift once, when the
  * limit moved 15 MB -> 4 MB and the French string kept saying "15 Mo maximum".
