@@ -429,11 +429,25 @@ export async function getMyMissions(userId: string): Promise<MyMission[]> {
 }
 
 // Categories for the create-mission select. Public-readable reference data.
+//
+// SERVICE-SIDE ONLY. A job post is a freelance mission, so the picker must not offer product
+// categories — before `categories.kind` existed (migration 20260804132447) this select rendered
+// all 14 rows and a consumer could file a mission under "Électronique" or "Beauté & Soins".
+//
+// `categories` is one flat table shared by products, service_listings, job_posts and
+// shop_categories, so `kind` is the only thing that separates them. It is matched with `in` and
+// not with equality because 'both' is a real value: `maison` carries it, on the grounds that
+// ménage / plomberie / bricolage are a real Tunisian market the digital-only service taxonomy has
+// not reached yet. Testing `kind = 'service'` would silently drop it.
 export async function getCategories(): Promise<{ id: string; name_fr: string }[]> {
   const supabase = await createClient()
-  const { data, error } = await supabase.from('categories').select('id, name_fr').order('name_fr')
+  const { data, error } = await supabase
+    .from('categories')
+    .select('id, name_fr')
+    .in('kind', ['service', 'both'])
+    .order('name_fr')
   if (error) {
-    console.error('[my-data] categories fetch error:', error)
+    console.error('[my-data] categories fetch error:', error.message, error.code, error.details)
     return []
   }
   return (data ?? []) as { id: string; name_fr: string }[]
