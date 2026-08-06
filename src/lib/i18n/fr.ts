@@ -645,24 +645,44 @@ export const fr: Record<string, string> = {
   'product.field_quantity':         "Quantité",
 
   // ─── G6 « Ajouter un produit » (/mes-produits/ajouter) ───────────────────────
-  // Section headers
-  'product.form.section_basics':    "Informations de base",
-  'product.form.section_pricing':   "Prix et livraison",
+  // Page chrome — plain title + subtitle, NOT PageHeader (that is the consumer shell's
+  // animated component; see docs/design/g6-deltas.md D2).
+  'product.form.page_title':        "Ajouter un produit",
+  'product.form.page_subtitle':     "Décrivez votre produit. Vous pourrez le modifier à tout moment.",
+  // Breadcrumb. ⚑ "Mes produits" is PLAIN TEXT, not a link — G5 does not exist yet and the
+  // sidebar entry is already disabled. It becomes a link in the G5 PR (deltas D1).
+  'product.form.crumb_products':    "Mes produits",
+  'product.form.crumb_current':     "Ajouter un produit",
+  // Section headers — Figma names, verbatim from the G6 build memory.
+  'product.form.section_basics':    "Informations",
+  'product.form.section_pricing':   "Prix & livraison",
   'product.form.section_stock':     "Stock",
-  'product.form.section_images':    "Photos du produit",
+  'product.form.section_images':    "Images",
   // Fields
   'product.form.title_label':       "Titre du produit",
   'product.form.title_ph':          "Ex. Chaussures de sport en cuir",
+  'product.form.title_helper':      "Un titre clair et précis aide les acheteurs à vous trouver.",
   'product.form.category_label':    "Catégorie",
   'product.form.category_ph':       "Choisir une catégorie",
+  'product.form.category_helper':   "Choisissez la catégorie la plus proche de votre produit.",
   'product.form.description_label': "Description",
   'product.form.description_ph':    "Décrivez le produit, sa taille, sa matière, son état…",
-  'product.form.delivery_label':    "Frais de livraison (TND)",
+  'product.form.description_helper': "Indiquez la taille, la matière, l'état et ce qui est inclus.",
+  'product.form.price_label':       "Prix",
+  'product.form.price_helper':      "Le prix du produit seul, hors livraison.",
+  'product.form.delivery_label':    "Frais de livraison",
   'product.form.delivery_hint':     "7 TND est le tarif le plus courant en Tunisie. Vous pouvez le modifier.",
+  'product.form.currency_suffix':   "TND",
+  'product.form.stock_label':       "Je suis le stock de ce produit",
+  'product.form.stock_count_helper': "Le produit passera en « Rupture de stock » à 0.",
   // Live arithmetic preview — computed client-side, never stored.
   'product.form.buyer_total':       "Le client paiera : {price} + {fee} = {total} TND à la livraison",
-  'product.form.stock_hint_off':    "Le produit restera affiché comme disponible en permanence.",
-  // Gallery
+  'product.form.stock_hint_off':    "Stock illimité — le produit reste disponible en permanence.",
+  // Gallery. ⚑ The hint is PARAMETERISED, not concatenated: Arabic reorders these parts, and a
+  // built-up string cannot be reordered by a translator.
+  'product.form.dropzone_cta':      "Glissez vos images ici ou parcourez",
+  'product.form.dropzone_hint':     "{formats} · max {max} images · min {minEdge}px",
+  'product.form.dropzone_formats':  "PNG, JPG",
   'product.form.images_hint':       "Jusqu'à {max} photos. La première sera la photo de couverture.",
   'product.form.images_add':        "Ajouter une photo",
   'product.form.images_cover':      "Couverture",
@@ -1057,8 +1077,6 @@ export const fr: Record<string, string> = {
   'page_header.missions.emphasis':           "réponses",
   'page_header.nouvelle_mission.subtitle':   "Décrivez ce que vous cherchez",
   'page_header.nouvelle_mission.emphasis':   "cherchez",
-  'page_header.ajouter_produit.subtitle':    "Ajoutez un produit à votre boutique",
-  'page_header.ajouter_produit.emphasis':    "produit",
   'page_header.mon_compte.subtitle':         "Gérez vos informations personnelles",
   'page_header.mon_compte.emphasis':         "personnelles",
   'page_header.parametres.subtitle':         "Personnalisez votre expérience",

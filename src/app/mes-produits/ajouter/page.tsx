@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import { randomUUID } from 'node:crypto'
+import { ChevronRight } from 'lucide-react'
 import { AppShell } from '@/components/shell/AppShell'
-import { PageHeader } from '@/components/shared/PageHeader'
 import { ProductForm } from '@/components/produits/ProductForm'
 import { requireShopOwner } from '@/lib/auth/require-seller'
 import { getProductCategories } from '@/lib/marche/product-categories'
@@ -38,10 +38,7 @@ export default async function AjouterProduitPage() {
   if (!shop) {
     return (
       <AppShell user={topBarUser}>
-        <PageHeader
-          subtitle={t('page_header.ajouter_produit.subtitle', lang)}
-          emphasisWord={t('page_header.ajouter_produit.emphasis', lang)}
-        />
+        <PageIntro lang={lang} />
         <p className="max-w-[760px] rounded-2xl bg-white p-6 text-sm text-text-muted">
           {t('product.error.noShop', lang)}
         </p>
@@ -53,11 +50,40 @@ export default async function AjouterProduitPage() {
 
   return (
     <AppShell user={topBarUser}>
-      <PageHeader
-        subtitle={t('page_header.ajouter_produit.subtitle', lang)}
-        emphasisWord={t('page_header.ajouter_produit.emphasis', lang)}
-      />
+      <PageIntro lang={lang} />
       <ProductForm productId={randomUUID()} categories={categories} />
     </AppShell>
+  )
+}
+
+// Breadcrumb + plain title + subtitle.
+//
+// ⚑ NOT `PageHeader`. That component documents itself as the "premium animated subtitle row for the
+// CONSUMER DASHBOARD SHELL" — it splits the string into per-character reveal spans, colours an
+// emphasis word, draws an underline and wraps the lot in a bordered panel. Correct for /marche,
+// wrong for a seller form, and the source of three separate fidelity deltas at once (g6-deltas.md
+// D2). A form wants a title, not a performance.
+//
+// ⚑ "Mes produits" is PLAIN TEXT, not a link. G5 `/mes-produits` does not exist — the directory
+// holds only `ajouter/` — and the sidebar entry is already `disabled: true`. The trail still tells
+// the seller where they are, which is the job; a link would be the part that is dead. It becomes a
+// real link in the G5 PR (logged in docs/follow-ups.md).
+function PageIntro({ lang }: { lang: Awaited<ReturnType<typeof getLang>> }) {
+  return (
+    <div className="mb-8 max-w-[760px]">
+      <nav aria-label="Fil d'Ariane" className="mb-3">
+        <ol className="flex items-center gap-1.5 text-sm text-text-muted">
+          <li>{t('product.form.crumb_products', lang)}</li>
+          <li aria-hidden="true" className="flex items-center">
+            <ChevronRight className="h-4 w-4 rtl:rotate-180" />
+          </li>
+          <li aria-current="page" className="font-medium text-text-primary">
+            {t('product.form.crumb_current', lang)}
+          </li>
+        </ol>
+      </nav>
+      <h1 className="text-2xl font-semibold text-text-primary">{t('product.form.page_title', lang)}</h1>
+      <p className="mt-1.5 text-sm text-text-muted">{t('product.form.page_subtitle', lang)}</p>
+    </div>
   )
 }
