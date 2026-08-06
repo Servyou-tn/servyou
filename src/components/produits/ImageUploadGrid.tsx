@@ -1,7 +1,6 @@
 'use client'
 
-import { useRef, useState } from 'react'
-import Image from 'next/image'
+import { useEffect, useRef, useState } from 'react'
 import { ImagePlus, X, Loader2, UploadCloud } from 'lucide-react'
 import { useLang } from '@/components/LangProvider'
 import { t } from '@/lib/i18n'
@@ -40,9 +39,11 @@ export type UploadedImage = { path: string; url: string }
 // card and D1's gallery start to look soft. Refusing them would be worse than a soft thumbnail.
 const MIN_RECOMMENDED_EDGE = 1000
 
+// ⚑ A DONE TILE KEEPS ITS `preview` — the local blob: URL — and goes on rendering it for the rest
+// of the session. It does NOT swap to `image.url`. See the note on the done tile's <img>.
 type Tile =
   | { state: 'uploading'; key: string; preview: string }
-  | { state: 'done'; key: string; image: UploadedImage }
+  | { state: 'done'; key: string; image: UploadedImage; preview: string }
   | { state: 'error'; key: string; message: string }
 
 export function ImageUploadGrid({
@@ -56,6 +57,36 @@ export function ImageUploadGrid({
   const inputRef = useRef<HTMLInputElement>(null)
   const [tiles, setTiles] = useState<Tile[]>([])
   const [dragging, setDragging] = useState(false)
+
+  // Every blob: URL this component has minted and not yet released. A ref, not state, because the
+  // unmount cleanup below must see the CURRENT set — a [] effect closes over the first render's
+  // state and would release nothing.
+  const previewsRef = useRef<Set<string>>(new Set())
+
+  // Monotonic counter for React keys. Deliberately NOT Math.random(): the same file can legitimately
+  // be picked twice (name + size collide), so the key needs a tiebreaker, and an impure call in the
+  // component body trips react-hooks/purity under the React Compiler lint.
+  const keySeqRef = useRef(0)
+
+  function mintPreview(file: File) {
+    const url = URL.createObjectURL(file)
+    previewsRef.current.add(url)
+    return url
+  }
+  function revokePreview(url: string) {
+    if (previewsRef.current.delete(url)) URL.revokeObjectURL(url)
+  }
+
+  // Blob URLs are held for the life of the page, so they must be released when the form goes away
+  // (navigating off after a successful create, most often). Without this the bytes stay pinned in
+  // memory until a full reload.
+  useEffect(() => {
+    const held = previewsRef.current
+    return () => {
+      for (const url of held) URL.revokeObjectURL(url)
+      held.clear()
+    }
+  }, [])
 
   const doneCount = tiles.filter((x) => x.state === 'done').length
   const atMax = doneCount + tiles.filter((x) => x.state === 'uploading').length >= MAX_PRODUCT_IMAGES
@@ -74,7 +105,7 @@ export function ImageUploadGrid({
     const accepted = Array.from(files).slice(0, Math.max(0, room))
 
     for (const file of accepted) {
-      const key = `${file.name}-${file.size}-${Math.random().toString(36).slice(2)}`
+      const key = `${file.name}-${file.size}-${(keySeqRef.current += 1)}`
 
       // Rejected before the request is even sent — MAX_INPUT_BYTES lives in limits.ts precisely so
       // the client can do this without importing sharp.
@@ -86,7 +117,7 @@ export function ImageUploadGrid({
         continue
       }
 
-      const preview = URL.createObjectURL(file)
+      const preview = mintPreview(file)
       setTiles((prev) => [...prev, { state: 'uploading', key, preview }])
 
       const fd = new FormData()
@@ -94,13 +125,17 @@ export function ImageUploadGrid({
       fd.append('image', file)
 
       const res = await uploadProductImageAction(fd)
-      URL.revokeObjectURL(preview)
+
+      // ⚑ DO NOT REVOKE ON SUCCESS. The done tile keeps rendering this exact blob: URL, so
+      // revoking here is what would blank it. Only a discarded preview is revoked — a failed
+      // upload below, an explicit remove(), or unmount.
+      if (!res.ok) revokePreview(preview)
 
       setTiles((prev) => {
         const next = prev.map((x): Tile =>
           x.key === key
             ? res.ok
-              ? { state: 'done', key, image: { path: res.path, url: res.url } }
+              ? { state: 'done', key, image: { path: res.path, url: res.url }, preview }
               : { state: 'error', key, message: res.error }
             : x,
         )
@@ -114,6 +149,8 @@ export function ImageUploadGrid({
   }
 
   function remove(key: string) {
+    const gone = tiles.find((x) => x.key === key)
+    if (gone && gone.state !== 'error') revokePreview(gone.preview)
     publish(tiles.filter((x) => x.key !== key))
   }
 
@@ -183,16 +220,21 @@ export function ImageUploadGrid({
 
             {tile.state === 'done' && (
               <>
-                <Image
-                  src={tile.image.url}
-                  alt=""
-                  fill
-                  sizes="(max-width: 640px) 50vw, 25vw"
-                  className="object-cover"
-                />
+                {/* ⚑ THE LOCAL blob:, NOT `tile.image.url`, AND NOT next/image. DELIBERATE.
+                    This is a 96px thumbnail of a file the browser is already holding, so a network
+                    round trip to render it was always the wrong shape — the bytes are in memory and
+                    the preview is already on screen from the uploading state. Keeping it is zero
+                    network, instant, and independent of the image optimizer entirely.
+                    It also sidesteps a real failure: /_next/image 400s on these objects because
+                    Next 16's SSRF guard sees the Supabase host resolve to NAT64 addresses
+                    (64:ff9b::/96) alongside its public ones and refuses the fetch. That is logged
+                    separately — this tile no longer depends on the answer either way.
+                    ⚑ `tile.image.path` is still what gets SUBMITTED. Only the pixels are local. */}
+                {/* eslint-disable-next-line @next/next/no-img-element -- blob: URL; next/image cannot optimize one, and this needs no optimizing */}
+                <img src={tile.preview} alt="" className="h-full w-full object-cover" />
                 {/* Cover badge: insert order IS gallery order, so the first done tile is the cover. */}
                 {i === tiles.findIndex((x) => x.state === 'done') && (
-                  <span className="absolute start-2 top-2 rounded-full bg-brand-blue-600 px-2 py-0.5 text-xs font-medium text-white">
+                  <span className="absolute inset-x-1 top-1 truncate rounded-full bg-brand-blue-600 px-1.5 py-0.5 text-center text-[10px] font-medium leading-tight text-white">
                     {t('product.form.images_cover', lang)}
                   </span>
                 )}
