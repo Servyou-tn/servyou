@@ -724,6 +724,9 @@ export const ar: Record<string, string> = {
   'product.form.submitting':        "جارٍ الحفظ…",
   'product.form.cancel':            "إلغاء",
   'product.form.publish_gate':      "أضف صورة واحدة على الأقل واملأ الحقول المطلوبة للنشر.",
+  // Success toasts — one per footer CTA (see fr.ts for why they must stay distinguishable).
+  'product.created.published':      "تم نشر المنتج. أصبح متاحًا الآن.",
+  'product.created.draft':          "تم حفظ المسودة. لا يراها المشترون بعد.",
   // Errors
   'product.error.notAuth':          "انتهت جلستك. يرجى تسجيل الدخول من جديد.",
   'product.error.noShop':           "يجب عليك إنشاء متجرك أولاً.",
