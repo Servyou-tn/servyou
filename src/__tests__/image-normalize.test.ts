@@ -33,6 +33,16 @@ async function realImage(width: number, height: number, format: 'png' | 'jpeg' |
   return format === 'png' ? img.png().toBuffer() : format === 'jpeg' ? img.jpeg().toBuffer() : img.webp().toBuffer()
 }
 
+/**
+ * The normalizer now returns a Blob, not a Buffer — deliberately, because a Buffer handed to
+ * supabase.storage.upload() is stringified through UTF-8 and destroyed. `sniffFormat` and `sharp`
+ * both want bytes, so tests unwrap here. Reading the blob back is also a real assertion in itself:
+ * it proves the bytes are intact inside the wrapper the upload path actually sends.
+ */
+async function bytesOf(blob: Blob): Promise<Buffer> {
+  return Buffer.from(await blob.arrayBuffer())
+}
+
 /** An ISO-BMFF header with an arbitrary major brand, followed by nothing decodable. */
 function isoBmff(brand: string): Buffer {
   return Buffer.concat([
@@ -117,7 +127,7 @@ describe('normalizeAvatar — normalization', () => {
 
     expect(result.width).toBe(AVATAR_MAX_EDGE)
     expect(result.height).toBe(AVATAR_MAX_EDGE / 2) // aspect ratio preserved
-    expect(sniffFormat(result.bytes)).toBe('webp')
+    expect(sniffFormat(await bytesOf(result.blob))).toBe('webp')
   })
 
   it('normalizeProductImage caps at PRODUCT_MAX_EDGE, not the avatar cap', async () => {
@@ -130,7 +140,7 @@ describe('normalizeAvatar — normalization', () => {
 
     expect(result.width).toBe(PRODUCT_MAX_EDGE)
     expect(result.height).toBe(PRODUCT_MAX_EDGE / 2)
-    expect(sniffFormat(result.bytes)).toBe('webp')
+    expect(sniffFormat(await bytesOf(result.blob))).toBe('webp')
   })
 
   it('a PRODUCT_MAX_EDGE photo re-encodes under the product-images bucket cap', async () => {
@@ -162,7 +172,7 @@ describe('normalizeAvatar — normalization', () => {
     expect(result.ok).toBe(true)
     if (!result.ok) return
     expect(result.width).toBe(PRODUCT_MAX_EDGE)
-    expect(result.bytes.length).toBeLessThan(BUCKET_LIMIT)
+    expect(result.blob.size).toBeLessThan(BUCKET_LIMIT)
   })
 
   it('never upscales a small source', async () => {
@@ -188,7 +198,7 @@ describe('normalizeAvatar — normalization', () => {
     const result = await normalizeAvatar(withGps)
     expect(result.ok).toBe(true)
     if (!result.ok) return
-    expect((await sharp(result.bytes).metadata()).exif).toBeUndefined()
+    expect((await sharp(await bytesOf(result.blob)).metadata()).exif).toBeUndefined()
   })
 
   it('applies EXIF orientation before discarding it, so portrait photos are not sideways', async () => {
@@ -226,6 +236,6 @@ describe('normalizeAvatar — normalization', () => {
     const result = await normalizeAvatar(noisy)
     expect(result.ok).toBe(true)
     if (!result.ok) return
-    expect(result.bytes.byteLength).toBeLessThan(262144)
+    expect(result.blob.size).toBeLessThan(262144)
   })
 })
