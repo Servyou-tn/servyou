@@ -68,6 +68,21 @@ export function ImageUploadGrid({
   // component body trips react-hooks/purity under the React Compiler lint.
   const keySeqRef = useRef(0)
 
+  // ⚑ THE REF IS THE SOURCE OF TRUTH FOR TILE MUTATIONS; `tiles` state exists to drive the render.
+  //
+  // `handleFiles` awaits one upload per file in a loop, so the `tiles` captured in its closure is
+  // stale from the second iteration onward. The functional updater form fixed that staleness, but
+  // it also invited the PARENT NOTIFICATION into the updater — and an updater body runs during
+  // React's render phase, where calling a parent's setState is illegal. React said so out loud:
+  //   "Cannot update a component (`ProductForm`) while rendering a different component
+  //    (`ImageUploadGrid`)"
+  // An impure updater is not a style problem: updaters may be invoked more than once, and are under
+  // StrictMode and concurrent rendering, which would fire `onChange` a second time with the parent
+  // mid-render. Holding the list in a ref lets every mutation compute the next array OUTSIDE the
+  // render phase, so `commit` can set state and notify the parent from the event handler, where
+  // both belong.
+  const tilesRef = useRef<Tile[]>([])
+
   function mintPreview(file: File) {
     const url = URL.createObjectURL(file)
     previewsRef.current.add(url)
@@ -91,9 +106,12 @@ export function ImageUploadGrid({
   const doneCount = tiles.filter((x) => x.state === 'done').length
   const atMax = doneCount + tiles.filter((x) => x.state === 'uploading').length >= MAX_PRODUCT_IMAGES
 
-  // Recomputed from the tile list on every mutation so the parent's ordering always matches what
-  // the seller sees. Derived, never a second source of truth.
-  function publish(next: Tile[]) {
+  // THE ONLY WAY TILES CHANGE. Ref first so the next iteration of an upload loop reads the current
+  // list, then state for the render, then the parent — which is recomputed from the tile list on
+  // every mutation so the parent's ordering always matches what the seller sees. Derived, never a
+  // second source of truth.
+  function commit(next: Tile[]) {
+    tilesRef.current = next
     setTiles(next)
     onChange(next.flatMap((x) => (x.state === 'done' ? [x.image] : [])))
   }
@@ -101,7 +119,13 @@ export function ImageUploadGrid({
   async function handleFiles(files: FileList | null) {
     if (!files || files.length === 0) return
 
-    const room = MAX_PRODUCT_IMAGES - (doneCount + tiles.filter((x) => x.state === 'uploading').length)
+    // From the REF, not from `tiles`: two picks in quick succession would otherwise both measure
+    // against the same pre-upload list and together exceed MAX_PRODUCT_IMAGES.
+    const current = tilesRef.current
+    const room =
+      MAX_PRODUCT_IMAGES -
+      (current.filter((x) => x.state === 'done').length +
+        current.filter((x) => x.state === 'uploading').length)
     const accepted = Array.from(files).slice(0, Math.max(0, room))
 
     for (const file of accepted) {
@@ -110,15 +134,15 @@ export function ImageUploadGrid({
       // Rejected before the request is even sent — MAX_INPUT_BYTES lives in limits.ts precisely so
       // the client can do this without importing sharp.
       if (file.size > MAX_INPUT_BYTES) {
-        setTiles((prev) => [
-          ...prev,
+        commit([
+          ...tilesRef.current,
           { state: 'error', key, message: t('product.image.error.tooLarge', lang, { max: MAX_INPUT_MB }) },
         ])
         continue
       }
 
       const preview = mintPreview(file)
-      setTiles((prev) => [...prev, { state: 'uploading', key, preview }])
+      commit([...tilesRef.current, { state: 'uploading', key, preview }])
 
       const fd = new FormData()
       fd.append('productId', productId)
@@ -131,17 +155,17 @@ export function ImageUploadGrid({
       // upload below, an explicit remove(), or unmount.
       if (!res.ok) revokePreview(preview)
 
-      setTiles((prev) => {
-        const next = prev.map((x): Tile =>
+      // Computed OUTSIDE any updater — see the note on `tilesRef`. `commit` then does the state set
+      // and the parent notification together, from the event handler rather than from a render.
+      commit(
+        tilesRef.current.map((x): Tile =>
           x.key === key
             ? res.ok
               ? { state: 'done', key, image: { path: res.path, url: res.url }, preview }
               : { state: 'error', key, message: res.error }
             : x,
-        )
-        onChange(next.flatMap((x) => (x.state === 'done' ? [x.image] : [])))
-        return next
-      })
+        ),
+      )
     }
 
     // Let the same file be picked again after a removal.
@@ -149,9 +173,9 @@ export function ImageUploadGrid({
   }
 
   function remove(key: string) {
-    const gone = tiles.find((x) => x.key === key)
+    const gone = tilesRef.current.find((x) => x.key === key)
     if (gone && gone.state !== 'error') revokePreview(gone.preview)
-    publish(tiles.filter((x) => x.key !== key))
+    commit(tilesRef.current.filter((x) => x.key !== key))
   }
 
   // 96px per specimen 532:32201, fixed rather than a column fraction.
@@ -232,9 +256,18 @@ export function ImageUploadGrid({
                     ⚑ `tile.image.path` is still what gets SUBMITTED. Only the pixels are local. */}
                 {/* eslint-disable-next-line @next/next/no-img-element -- blob: URL; next/image cannot optimize one, and this needs no optimizing */}
                 <img src={tile.preview} alt="" className="h-full w-full object-cover" />
-                {/* Cover badge: insert order IS gallery order, so the first done tile is the cover. */}
+                {/* Cover badge: insert order IS gallery order, so the first done tile is the cover.
+                    ⚑ BOTTOM, NOT TOP — and that is the specimen (532:32201), not a workaround.
+                    At the top it collided with the remove button: measured, the button occupies
+                    x 59→87 of the 96px tile (`end-2` + 28px wide) and painted OVER the ribbon's
+                    tail, hiding 15.91px of glyphs — "Couverture" read as "Couvertu". It was never
+                    CSS clipping; scrollWidth == clientWidth throughout, so `truncate` never fired
+                    and no ellipsis ever appeared. Two fixes were ruled out by measurement: insetting
+                    the ribbon to clear the button leaves ~38px of content box for a 53.83px string,
+                    which trades occlusion for REAL clipping; and painting the ribbon above the
+                    button eats its hit area. At the bottom the two do not overlap at all. */}
                 {i === tiles.findIndex((x) => x.state === 'done') && (
-                  <span className="absolute inset-x-1 top-1 truncate rounded-full bg-brand-blue-600 px-1.5 py-0.5 text-center text-[10px] font-medium leading-tight text-white">
+                  <span className="absolute inset-x-0 bottom-0 truncate bg-brand-blue-600 px-1.5 py-1 text-center text-[10px] font-medium leading-tight text-white">
                     {t('product.form.images_cover', lang)}
                   </span>
                 )}

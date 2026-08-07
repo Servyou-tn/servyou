@@ -1368,3 +1368,20 @@ work and neither is fixed in it — logged per "one PR, one focus".
 - **Trigger:** whenever a blank image is reported on any surface above, **or** before the next PR
   that ships a new remote-image surface. First step is cheap and unblocks the rest: check whether a
   deployed preview reproduces it, which converts "UNVERIFIED" into a real scope.
+
+### 🟡 The G6 cover ribbon is measured in FR only — AR/RTL is UNTESTED, not passing
+
+- The cover ribbon on the first upload tile (`ImageUploadGrid.tsx`) was moved to the bottom of the
+  tile and verified by hit-test at **1440, FR only**: `elementFromPoint` at the text tail returns the
+  ribbon, the remove button stays hittable, `scrollWidth == clientWidth` (no clipping).
+- **AR was not measured, and is not claimed either way.** `scripts/gate/authed.mjs` cannot set the
+  language cookie — its own follow-up, logged above at "🟡 `scripts/gate/authed.mjs` cannot set the
+  language cookie" — so the AR half of every gate on this surface is unreachable through it.
+- What is *reasoned* but **unverified**: the ribbon is `inset-x-0 bottom-0` (symmetric, so mirroring
+  cannot move it) and the remove button is `end-2 top-2` (mirrors to the start side). They now sit on
+  different rows of the tile — ribbon 74.5→95, button 9→37 of 96 — so the occlusion that motivated
+  the move should be absent in both directions. `الغلاف` measures 23.55px against an 82px content
+  box, so clipping is implausible. **None of that is a measurement.**
+- **Trigger:** whenever the gate learns to set the language cookie, or the next manual AR pass over
+  the seller surfaces — whichever comes first. Measure, then delete this entry or convert it to a
+  defect.
