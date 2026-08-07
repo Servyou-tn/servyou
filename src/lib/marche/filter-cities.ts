@@ -45,3 +45,46 @@ export async function getServiceCities(): Promise<string[]> {
   }
   return [...cities].sort((a, b) => a.localeCompare(b, 'fr'))
 }
+
+type ShopCityRow = {
+  shops: { city: string | null } | { city: string | null }[] | null
+}
+
+// The Ville filter's option list for /marche/produits — the product-side twin of
+// `getServiceCities` above, and deliberately the same shape rather than a generic helper: the two
+// reach city through completely different joins (products→shops vs service_listings→
+// freelancer_profiles) and carry different moderation predicates, so the only thing a shared
+// version could share is the Set-and-sort tail.
+//
+// City lives on `shops`, reached through the same `!inner` embed the search layer uses, so the
+// picker can only ever offer a city that returns results — no dead options.
+export async function getProductCities(): Promise<string[]> {
+  const supabase = await createClient()
+  // Moderation, both mechanisms — mirrors lib/search/search-marketplace.ts's fetchProducts exactly.
+  // `admin_hide_content` sets status='hidden' AND admin_hidden_at on a PRODUCT, but on a SHOP it
+  // sets admin_hidden_at only and leaves the products at status='active'. Filtering status alone
+  // would leave a moderated shop's city in this list, offering an option whose result set is empty.
+  const { data, error } = await supabase
+    .from('products')
+    .select('shops!inner(city, admin_hidden_at)')
+    .eq('status', 'active')
+    .is('admin_hidden_at', null)
+    .is('shops.admin_hidden_at', null)
+  if (error) {
+    console.error(
+      '[filter-cities] product cities fetch error:',
+      error.message,
+      error.code,
+      error.details,
+    )
+    return []
+  }
+
+  const cities = new Set<string>()
+  for (const row of (data ?? []) as unknown as ShopCityRow[]) {
+    const shop = Array.isArray(row.shops) ? row.shops[0] : row.shops
+    const city = shop?.city?.trim()
+    if (city) cities.add(city)
+  }
+  return [...cities].sort((a, b) => a.localeCompare(b, 'fr'))
+}

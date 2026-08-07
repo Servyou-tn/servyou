@@ -22,9 +22,12 @@ const BASE = '/marche/services'
 // PER_PAGE, so /recherche and /categories service results are unaffected.
 const SERVICE_PER_PAGE = 12
 
-// Engine 2 rebuilt to the v3.7 Figma (611:45637 desktop / 621:49740 mobile). The services
-// marketplace, forked off the shared MarcheBrowsePage so /marche/produits keeps its current
-// engine until its own rebuild. The category filter, city/price/sort/page, and public (no
+// Engine 2 rebuilt to the v3.7 Figma (611:45637 desktop / 621:49740 mobile) — the services
+// marketplace. (This used to say it was "forked off the shared MarcheBrowsePage so /marche/produits
+// keeps its current engine until its own rebuild": MarcheBrowsePage no longer exists, deleted in
+// PR #83, and /marche/produits got its own engine in C1. Corrected rather than deleted because the
+// shared-ancestor history explains why this file and ProduitsFilterBar are near-twins.)
+// The category filter, city/price/sort/page, and public (no
 // auth gate) posture all carry over from the shared data layer — only the UI changes:
 // filters move from the sidebar into a top FilterBar (desktop) / bottom sheet (mobile), the
 // cards become a 3-up grid of vertical v3.7 cards, and a Services/Freelances lens toggle sits

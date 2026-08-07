@@ -15,6 +15,11 @@ export type ProductListing = {
   price_tnd: number
   image_url: string | null
   shop: { name: string; city: string | null }
+  // OPTIONAL, and it stays optional. C1's own card (`marche/produits/_components/ProductBrowseCard`)
+  // renders a category chip on the cover; this card does not, and the three surfaces it serves
+  // (/recherche, /categories/[slug], ConsumerHomepage) must not have to supply a field they never
+  // show. Both names travel so the consumer localizes — same shape as ServiceListing.category.
+  category?: { name_fr: string; name_ar?: string } | null
 }
 
 // Vertical product card (Wink-style, pure mono — no brand color inside): a square image

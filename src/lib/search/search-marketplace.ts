@@ -78,10 +78,17 @@ type ProductRow = {
     | { name: string | null; city: string | null }[]
     | null
   product_images: { image_url: string; display_order: number }[] | null
+  // Added for C1's card, which carries a category chip on the cover (Figma 569:39818). Same shape
+  // and same embed the service row already uses — both localized at the card, never here.
+  categories:
+    | { name_fr: string; name_ar: string }
+    | { name_fr: string; name_ar: string }[]
+    | null
 }
 
 function mapProduct(row: ProductRow): ProductListing {
   const shop = one(row.shops)
+  const cat = one(row.categories)
   const primary = [...(row.product_images ?? [])].sort(
     (a, b) => a.display_order - b.display_order,
   )[0]
@@ -92,6 +99,10 @@ function mapProduct(row: ProductRow): ProductListing {
     price_tnd: Number(row.price_tnd),
     image_url: primary?.image_url ?? null,
     shop: { name: shop?.name ?? '', city: shop?.city ?? null },
+    // OPTIONAL on ProductListing, deliberately: `ProductListingCard` and its three surfaces
+    // (/recherche, /categories/[slug], ConsumerHomepage) do not read it and must not have to.
+    // Both names travel; the consumer picks by lang, as ServiceListingCard already does.
+    category: cat ? { name_fr: cat.name_fr, name_ar: cat.name_ar } : null,
   }
 }
 
@@ -147,6 +158,12 @@ function applyProductFilters<Q extends AnyQuery>(
 ): Q {
   let out = applySearch(q, params.q)
   if (categoryIds) out = out.in('category_id', categoryIds) as Q
+  // Ville filters on the SHOP's city through the products→shops join, and only when a city is
+  // picked — never a gate. Mirrors applyServiceFilters' freelancer_profiles.city predicate exactly.
+  // ⚑ This only works because the shops embed is `!inner` (see fetchProducts): on a left join the
+  // predicate would not restrict the parent rows, and every product would come back with a null
+  // embed instead of being filtered out.
+  if (params.ville) out = out.eq('shops.city', params.ville) as Q
   if (params.prixMin != null) out = out.gte('price_tnd', params.prixMin) as Q
   if (params.prixMax != null) out = out.lte('price_tnd', params.prixMax) as Q
   return out
@@ -188,7 +205,7 @@ async function fetchProducts(
   let query = supabase
     .from('products')
     .select(
-      'id, title, description, price_tnd, created_at, category_id, shops!inner(name, city, admin_hidden_at), product_images(image_url, display_order)',
+      'id, title, description, price_tnd, created_at, category_id, shops!inner(name, city, admin_hidden_at), product_images(image_url, display_order), categories(name_fr, name_ar)',
     )
     .eq('status', 'active')
     .is('admin_hidden_at', null)

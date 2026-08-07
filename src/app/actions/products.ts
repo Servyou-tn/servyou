@@ -336,12 +336,15 @@ export async function createProductAction(input: unknown): Promise<ProductAction
 
   // Fixed allow-list, as SELLER_PATHS is in orders.ts — a caller must never get to name a route.
   // G5 /mes-produits is unbuilt, so the dashboard is where the seller lands.
-  //
-  // ⚑ /marche/produits IS NOT REVALIDATED, DELIBERATELY. It was, and it was a no-op: that route
-  // is a ComingSoon stub (src/app/marche/produits/page.tsx) that renders no product data, so the
-  // call cost a cache purge and bought nothing while reading as though the marketplace updated.
-  // Re-add it in the C1 rebuild that makes the route real — not before, or it silently becomes
-  // decoration again.
   revalidatePath('/tableau-de-bord-vendeur')
+  // /marche/produits is a REAL surface as of C1 — it renders the published catalogue from
+  // `searchMarketplace`, so a new product must purge it or the marketplace serves a stale page.
+  //
+  // ⚑ This line was briefly DROPPED (PR #119) and is restored here, and the sequence is the whole
+  // point: while the route was a ComingSoon stub the call revalidated a page holding no product
+  // data — a cache purge that bought nothing while reading as though the marketplace updated. The
+  // rule the two PRs encode together is that a revalidatePath target must actually render the data
+  // being invalidated. Check that before adding the next one.
+  revalidatePath('/marche/produits')
   return { ok: true }
 }
