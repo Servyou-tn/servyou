@@ -1,13 +1,13 @@
 'use client'
 
 import Link from 'next/link'
-import Image from 'next/image'
-import { MapPin, ImageIcon, ShoppingBag } from 'lucide-react'
+import { MapPin, ShoppingBag } from 'lucide-react'
 import { FOCUS_RING } from '@/components/layout/styles'
 import { FavoriteButton } from '@/components/FavoriteButton'
 import { useLang } from '@/components/LangProvider'
 import { tndPrice } from '@/components/listings/listing-utils'
 import type { ProductListing } from '@/components/listings/ProductListingCard'
+import { ProductCoverImage } from './ProductCoverImage'
 
 // C1's product card — Figma 569:39818, measured (272×373).
 //
@@ -47,19 +47,13 @@ export function ProductBrowseCard({ product }: { product: ProductListing }) {
         {/* Cover — FIXED 276px, not an aspect ratio. The frame pins the height so every card in a
             row ends its cover on the same line regardless of the column width the grid resolves to. */}
         <div className="relative h-[276px] w-full overflow-hidden border-b border-border-subtle bg-surface-sunken">
-          {product.image_url ? (
-            <Image
-              src={product.image_url}
-              alt={product.title}
-              fill
-              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-              className="object-cover"
-            />
-          ) : (
-            <div className="flex h-full w-full items-center justify-center" aria-hidden="true">
-              <ImageIcon className="h-12 w-12 text-icon-muted" />
-            </div>
-          )}
+          {/* No ternary here on purpose. "has no photo" and "photo failed to load" are one question
+              answered in one place — see ProductCoverImage. */}
+          <ProductCoverImage
+            src={product.image_url}
+            alt={product.title}
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+          />
 
           {/* Shop badge — top-END in the frame, which is the side the heart does NOT take. */}
           <span className="absolute end-2 top-2 flex h-8 w-8 items-center justify-center rounded-2xl border border-border-subtle bg-white text-xs font-semibold text-brand-blue-800">
