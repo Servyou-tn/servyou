@@ -18,11 +18,19 @@ const ROUTE = '/mes-produits/ajouter'
 // centre and returns to the dashboard. `product.back` ("Retour aux produits") still points at the
 // absent /mes-produits and is deliberately not used here.
 //
-// ⚑ THE PRODUCT UUID IS MINTED HERE, per request, and handed to the form.
+// ⚑ THE PRODUCT UUID IS SEEDED HERE, and the form PINS it on mount.
 // It cannot be generated at insert time (`gen_random_uuid()`) because images upload to
 // `{shop_id}/{productId}/…` BEFORE any row exists — `product_images.product_id` is NOT NULL and its
 // INSERT policy requires the product, but a STORAGE path requires nothing. That inversion is what
 // makes the designed upload-then-submit flow possible at all. See docs/design/g6-write-path.md §4a.
+//
+// ⚑ THIS LINE RUNS ON EVERY RENDER OF THIS SERVER COMPONENT, INCLUDING THE RE-RENDER THAT EVERY
+// SERVER ACTION RESPONSE CARRIES. So the value below is a SEED, not an identity — it legitimately
+// differs between the initial GET and the render that follows an upload. The prop is named
+// `initialProductId` for exactly that reason, and `ProductForm` pins it with `useState` so the id
+// cannot move under images that have already been uploaded. Reading this as "the product id" and
+// consuming it directly is the bug it used to be: uploads landed under two different ids and
+// `createProductAction`'s prefix check rejected every publish.
 //
 // An abandoned form therefore leaves orphaned objects under a productId that never becomes a row.
 // That is the accepted residue; the reconciliation sweep (image-storage-discovery.md §6c) is logged
@@ -51,7 +59,7 @@ export default async function AjouterProduitPage() {
   return (
     <AppShell user={topBarUser}>
       <PageIntro lang={lang} />
-      <ProductForm productId={randomUUID()} categories={categories} />
+      <ProductForm initialProductId={randomUUID()} categories={categories} />
     </AppShell>
   )
 }

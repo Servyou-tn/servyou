@@ -20,17 +20,32 @@ import { ImageUploadGrid, type UploadedImage } from './ImageUploadGrid'
 // hand-rolling them a second time would have re-implemented four contracts that already exist.
 // `ServiceRequestForm` is the precedent followed here, not `MissionForm`.
 //
-// ⚑ `productId` IS GENERATED SERVER-SIDE AND ARRIVES AS A PROP. It is not created here and not
-// re-generated on re-render: images upload to `{shop}/{productId}/…` BEFORE the product row exists,
-// so the id has to be stable for the whole life of the form. See docs/design/g6-write-path.md §4a.
+// ⚑ `productId` IS GENERATED SERVER-SIDE AND ARRIVES AS A SEED. Images upload to
+// `{shop}/{productId}/…` BEFORE the product row exists, so the id has to be stable for the whole
+// life of the form — and the SEED is not, which is why it is pinned below.
+// See docs/design/g6-write-path.md §4a.
 
 export function ProductForm({
-  productId,
+  initialProductId,
   categories,
 }: {
-  productId: string
+  initialProductId: string
   categories: ProductCategory[]
 }) {
+  // ⚑ PINNED ON MOUNT — DO NOT READ `initialProductId` BELOW THIS LINE.
+  //
+  // `page.tsx` mints the seed with `randomUUID()` inside a Server Component's render, and a Server
+  // Action response re-renders that tree. So the PROP CHANGES MID-SESSION while the images already
+  // uploaded under the previous id sit in `ImageUploadGrid`'s state. Submitting then sent paths
+  // under one id and a `productId` under another, and `createProductAction`'s prefix check
+  // (products.ts:213) rejected every publish as "possible tampering" — our own bug wearing a
+  // security label.
+  //
+  // Pinning ties the id to this component's MOUNT, which is the SAME lifetime as the uploaded paths
+  // held in `ImageUploadGrid` — a remount clears both together, so the two can never disagree. That
+  // is the property that makes this structural rather than "does not happen today": there is no
+  // render path that can move the id while leaving the paths behind.
+  const [productId] = useState(initialProductId)
   const lang = useLang()
   const router = useRouter()
   const [pending, startTransition] = useTransition()
