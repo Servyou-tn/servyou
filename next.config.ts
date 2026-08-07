@@ -77,6 +77,19 @@ const nextConfig: NextConfig = {
     // AVIF cannot silently double our transformation count.
     formats: ['image/webp'],
     qualities: [75],
+
+    // ⚑ LOCAL DEV ONLY — never true in a production build.
+    //
+    // Next 16's SSRF guard (`fetchExternalImage`, image-optimizer.js:896) aborts with 400 if ANY
+    // address the upstream host resolves to is private. This machine's DNS64 resolver returns two
+    // NAT64 addresses (64:ff9b::/96) for xggomcitqrkaylqezjjz.supabase.co alongside its real public
+    // Cloudflare IPs, so every Supabase image 400s locally while `remotePatterns` is correct and
+    // matching. The flag skips that guard.
+    //
+    // The NODE_ENV fence is the whole safety story: `next build` sets NODE_ENV=production, so a
+    // deployed bundle always carries `false` and keeps the guard. Do NOT hoist this to an
+    // unconditional `true` to "make it consistent".
+    dangerouslyAllowLocalIP: process.env.NODE_ENV !== 'production',
   },
 
   // Permanent (308) redirects from the decommissioned legacy auth routes to their
