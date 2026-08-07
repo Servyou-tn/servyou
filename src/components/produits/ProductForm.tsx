@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
 import { useLang } from '@/components/LangProvider'
 import { t } from '@/lib/i18n'
 import { FOCUS_RING, CARD_SHADOW } from '@/components/layout/styles'
@@ -103,7 +104,21 @@ export function ProductForm({
         setError(res.error)
         return
       }
+      // ⚑ TWO MESSAGES, BECAUSE THERE ARE TWO CTAs. `publish` maps to status active|hidden
+      // (products.ts:284 — Brouillon is 'hidden'), so a single "Produit publié" would fire on a
+      // draft save and tell the seller their product is live when it is not.
+      //
+      // Fired BEFORE the push, not after: <Toaster> lives in the root layout (layout.tsx:65),
+      // which does not remount on a client-side navigation, so the toast outlives the transition
+      // and is read on the destination. Sonner's 4s default covers the dashboard render.
+      toast.success(t(publish ? 'product.created.published' : 'product.created.draft', lang))
       // G5 /mes-produits is unbuilt, so the dashboard is where a new product is visible.
+      //
+      // 🟡 THE TOAST CONFIRMS CREATION; IT DOES NOT MAKE THE PRODUCT VISIBLE. The dashboard shows
+      // `activeProducts` as a COUNT tile and a low-stock rail that only lists stock <= 5, so a
+      // healthy new product appears nowhere by name. Rebuilding /marche/produits (C1) is what
+      // actually closes that, and it owns the landing-target change — do not repoint this push at
+      // /marche/produits while that route is still a ComingSoon stub.
       router.push('/tableau-de-bord-vendeur')
     })
   }

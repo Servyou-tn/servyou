@@ -1359,6 +1359,23 @@ work and neither is fixed in it — logged per "one PR, one focus".
   - `ui/avatar.tsx` — **inferred, not observed.** Its `src` is a remote URL on the *same* Supabase
     hostname, so it resolves the same way and meets the same guard. Listed because the guard keys on
     the host, not the bucket; nobody has watched an avatar go blank.
+- ✅ **CONFIRMED on `ProductListingCard`, 2026-08-07 — the prediction above was right.** The first
+  real seller-created product (`Baskets Nike Air Force 1 Low en cuir`, `8eff9603-4cb1-4050-ae0e-96fe50f297e0`)
+  went through G6 with five images; its cover (`display_order = 0`) then failed to optimize on `/`,
+  twice, on a clean `.next` at `2b65288`. Verbatim, both occurrences identical but for resolver
+  ordering:
+  ```
+  ⨯ upstream image https://xggomcitqrkaylqezjjz.supabase.co/storage/v1/object/public/
+    product-images/f4757d2d-705c-48c8-bd58-37a35c7bdab3/8eff9603-4cb1-4050-ae0e-96fe50f297e0/
+    0c0c541e-a750-4a29-81cb-995e5b7d3578.webp
+    resolved to private ip ["64:ff9b::6812:260a","64:ff9b::ac40:95f6"]
+  ```
+  Note what this does **not** change: the DB row and the storage object are both intact and correct
+  (5 `product_images` rows, 5 objects under one `shopId/productId/` prefix). The defect is the
+  optimizer round-trip alone. And note what it still does **not** establish — this is the same
+  laptop's DNS64 resolver as before, so **production remains UNVERIFIED**; the second resolver
+  ordering across two otherwise identical requests is DNS round-robin, not new evidence about prod.
+  Carried forward untouched: do not "fix" prod for it, and do not re-audit `remotePatterns`.
 - **If you hit a blank image, this is the first thing to check** — before the bucket, before the
   policies, before the URL. Confirm with the dev-server log line above, or by opening the
   `/_next/image?url=…` URL directly (400) next to the raw Supabase URL (200).

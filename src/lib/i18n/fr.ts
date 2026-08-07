@@ -698,6 +698,11 @@ export const fr: Record<string, string> = {
   'product.form.submitting':        "Enregistrement…",
   'product.form.cancel':            "Annuler",
   'product.form.publish_gate':      "Ajoutez au moins une photo et remplissez les champs requis pour publier.",
+  // Success toasts — one per footer CTA. They must stay distinguishable: "Publier le produit"
+  // writes status='active', "Enregistrer le brouillon" writes 'hidden', and telling a seller their
+  // draft is "en ligne" would be a lie the dashboard does nothing to correct.
+  'product.created.published':      "Produit publié. Il est maintenant en ligne.",
+  'product.created.draft':          "Brouillon enregistré. Il n'est pas encore visible par les acheteurs.",
   // Errors
   'product.error.notAuth':          "Votre session a expiré. Veuillez vous reconnecter.",
   'product.error.noShop':           "Vous devez d'abord créer votre boutique.",
