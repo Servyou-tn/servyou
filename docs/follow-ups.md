@@ -1602,3 +1602,59 @@ work and neither is fixed in it — logged per "one PR, one focus".
   each, and arguably correct since TND is an ISO code rather than copy).
 - **Trigger:** the next PR that touches `tndPrice`, or the first AR-language QA pass on any listing
   surface. Do not fix it on one page.
+
+## Purging corrupt storage objects (`chore/purge-corrupt-product-images`, 2026-08-07)
+
+### What was purged, and why nothing could be salvaged
+
+- **6 objects out of `product-images`, and 5 `product_images` rows**, leaving both at zero:
+  - 5 objects under `f4757d2d…/8eff9603…/` — the entire gallery of the first real seller product
+    ("Baskets Nike Air Force 1 Low en cuir"), 42,145 / 167,182 / 14,335 / 70,524 / 38,261 bytes,
+    each with a `product_images` row at `display_order` 0-4.
+  - 1 object under `f4757d2d…/8e397079…/` (74,410 B) — the deliberate orphan left by the PR #122
+    verification upload, which proved the fix without publishing a product, so it never had a row.
+- **Cause:** a Node `Buffer` passed to `supabase.storage.upload()` was stringified through UTF-8 by
+  storage-js 2.107.0 (`dist/index.mjs:620`), turning every non-UTF-8 byte into U+FFFD. Fixed in
+  PR #122 by sending a `Blob`, which takes the FormData branch (`:610`) instead.
+- ⚑ **Unrecoverable, which is why this was a delete and not a repair.** U+FFFD is a *replacement*,
+  not an escape — the original byte is gone, so there is no inverse transform. `sharp` reports
+  `corrupt header: webp: unable to parse image`, and the damage is visible in the header: the RIFF
+  length field still declares the pre-corruption size (23,310) while the file is 42,145 bytes,
+  ~1.8x inflated. Do not spend time on a recovery script for this class.
+- **Deliberately NOT deleted:** the `products` row itself. Only its photos went — title, `active`
+  status, 10.00 TND, delivery fee, `stock_count` 10 and category Mode are untouched, and
+  `updated_at` was unchanged by the operation (`14:31:46`), which is the cheap proof nothing else
+  in the row moved.
+
+### 🔴 Delete storage objects through the Storage API — NEVER `delete from storage.objects`
+
+- A SQL delete against `storage.objects` removes **only the metadata row**. The physical file stays
+  in the S3 backend: still billed, still counted against the 1 GB free tier, and now invisible to
+  every listing, every sweep and every audit — because all of them enumerate through the metadata
+  table that no longer mentions it.
+- That is strictly worse than the corruption being cleaned up: a corrupt object you can see is a
+  bug, an untracked file you cannot see is a leak with no handle to grab.
+- **Use `supabase.storage.from(bucket).remove([paths])` with explicit paths**, never a prefix
+  wildcard — the blast radius of a cleanup should be readable at a glance in the diff or the script.
+- This applies to any future cleanup: the reconciliation sweep in
+  `docs/design/image-storage-discovery.md` §6c, avatar sweeps, and shop-asset cleanup all inherit
+  the same rule.
+
+### The verification shape that made this trustworthy
+
+Three habits, each of which caught something a naive version would have missed:
+
+- **Check the REVERSE direction before deleting.** The brief was "objects to remove", but "zero
+  dangling pointers" also depends on rows pointing at objects that do not exist. Querying
+  `product_images` rows with no matching `storage.objects` entry returned 0 — so the inventory was
+  complete in both directions, and the delete could not leave a half-cleaned state. A one-directional
+  inventory would have looked equally green while missing that class entirely.
+- ⚑ **`.remove()` FAILS OPEN — never treat its return value as proof.** It returns success with an
+  empty `data` array when it deleted nothing (RLS hiding the rows is the usual reason). Its report
+  said "6 deleted" here, and that was still not evidence. Verification came from three independent
+  angles instead: re-querying `storage.objects` (0 rows), re-querying `product_images` (0 rows), and
+  fetching the public URLs directly (400, not 200) — the last being the only one that proves the
+  bytes left the backend rather than just the index.
+- **Snapshot the row you intend to KEEP, before the delete.** The product row was captured up front
+  precisely so "the product survived intact" could be asserted field by field afterwards instead of
+  eyeballed. `updated_at` matching is what turns "it looks fine" into "nothing touched it".
