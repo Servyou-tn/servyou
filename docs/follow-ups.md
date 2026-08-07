@@ -1324,3 +1324,47 @@ work and neither is fixed in it — logged per "one PR, one focus".
 - **Reproduce:**
   `node scripts/gate/authed.mjs --email <shop-owner> --route /tableau-de-bord-vendeur --width 375 --height 812 --eval <overflow-probe> --json`
 - **Trigger:** the next shell/topbar PR, or any mobile-polish pass. Gate at **375**, not 380.
+
+## G6 image rendering (`fix/g6-figma-fidelity`, 2026-08-06)
+
+### 🔴 `next/image` 400s on EVERY Supabase URL in local dev — NAT64, not `remotePatterns`
+
+- **The symptom is a blank image, and the error message lies about the cause.** Any `<Image>` whose
+  `src` is an `xggomcitqrkaylqezjjz.supabase.co` URL requests `/_next/image?url=<supabase>`, which
+  returns **400**. The `<img>` ends up `complete: true` with `naturalWidth: 0` — a blank tile, no
+  console error at the component. Diagnosed on the G6 upload grid (`ImageUploadGrid`), where three
+  freshly uploaded thumbnails rendered blank.
+- ⚑ **It is NOT the `remotePatterns` allowlist, although the 400 reports the identical message.**
+  Do not re-audit `next.config.ts`. `remotePatterns` is correct and applied — verified three ways:
+  the *resolved* build config contains the entry verbatim, Next's own `matchRemotePattern` returns
+  `true` for this exact pattern + URL, and the `deviceSizes`/`qualities` trimming demonstrably bites
+  on a local image that optimizes fine. All three passed while the 400 persisted.
+- **The actual thrower is `fetchExternalImage` (`image-optimizer.js:916`) — Next 16's SSRF guard.**
+  `xggomcitqrkaylqezjjz.supabase.co` resolves to two **NAT64** addresses (`64:ff9b::/96`) alongside
+  its two public Cloudflare IPs, and the guard aborts if **any** resolved address is private. The
+  dev server logs it verbatim: `resolved to private ip [64:ff9b::…]`.
+- 🟡 **Scope — read this before acting on it.** NAT64 is a property of **this machine's DNS64
+  resolver**, not of the app, the bucket or the URL. So: **it reproduces in local dev, and
+  production behaviour is UNVERIFIED.** Vercel's resolver may return only the public A/AAAA records,
+  in which case prod is unaffected. Nobody has checked. Do not assert either way — and in
+  particular, do not "fix" prod for a defect that may only exist on one laptop.
+- **Only ONE surface is immune, and only by side-stepping the optimizer entirely.** `ImageUploadGrid`
+  now renders the `blob:` URL the browser already holds (commit `d7a94be`) — 96px thumbs of a local
+  file, so the round trip was the wrong shape regardless. That fix does **not** generalise: every
+  surface below renders an image the browser has never seen.
+- **Surfaces still on the unfixed path** (all render remote Supabase URLs through `next/image`):
+  - `/produits/[id]` — **D1's gallery**, images from `src/lib/marche/product-detail.ts`
+  - `ProductListingCard` — via `ListingResults` (marketplace browse + **`/recherche` results**,
+    fed by `src/lib/search/search-marketplace.ts`) and `ConsumerHomepage`
+  - `ui/avatar.tsx` — **inferred, not observed.** Its `src` is a remote URL on the *same* Supabase
+    hostname, so it resolves the same way and meets the same guard. Listed because the guard keys on
+    the host, not the bucket; nobody has watched an avatar go blank.
+- **If you hit a blank image, this is the first thing to check** — before the bucket, before the
+  policies, before the URL. Confirm with the dev-server log line above, or by opening the
+  `/_next/image?url=…` URL directly (400) next to the raw Supabase URL (200).
+- **Escape hatches, if it turns out to need fixing:** `unoptimized` on the specific `<Image>`
+  (currently used **nowhere** in `src`), or a plain `<img>` — both trade away the optimizer, which
+  is why neither was applied blind here.
+- **Trigger:** whenever a blank image is reported on any surface above, **or** before the next PR
+  that ships a new remote-image surface. First step is cheap and unblocks the rest: check whether a
+  deployed preview reproduces it, which converts "UNVERIFIED" into a real scope.

@@ -209,7 +209,16 @@ describe('normalizeAvatar — normalization', () => {
     // The bucket caps objects at 256 KB. A photographic worst case must clear it, or uploads fail
     // at the storage layer after passing every app-side check.
     const noisy = await sharp({
-      create: { width: 1600, height: 1600, channels: 3, noise: { type: 'gaussian', mean: 128, sigma: 60 } },
+      // `background` is required by sharp's Create type even when `noise` supplies the pixels.
+      // Its absence was a real `tsc --noEmit` failure that had CI red on main since at least
+      // 82fb905 (2026-08-04) — the type error, not the runtime, which was always fine.
+      create: {
+        width: 1600,
+        height: 1600,
+        channels: 3,
+        background: { r: 0, g: 0, b: 0 },
+        noise: { type: 'gaussian', mean: 128, sigma: 60 },
+      },
     })
       .jpeg({ quality: 100 })
       .toBuffer()
