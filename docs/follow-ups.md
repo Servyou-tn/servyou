@@ -1385,3 +1385,39 @@ work and neither is fixed in it — logged per "one PR, one focus".
 - **Trigger:** whenever the gate learns to set the language cookie, or the next manual AR pass over
   the seller surfaces — whichever comes first. Measure, then delete this entry or convert it to a
   defect.
+
+### 🔴 A poisoned `.next` presents as a PLAUSIBLE APPLICATION BUG — the tell is the line number
+
+- **The protocol is already written** ("Build clobbers dev `.next`" — stop dev, or build elsewhere,
+  and `rm -rf .next` after). **This entry is not the rule. It is the SYMPTOM**, because the rule did
+  not help: nothing looked like a build problem.
+- **What happened (2026-08-07).** `npm run build` ran with dev stopped — correct — and then
+  `next dev` was started on top of the production `.next` that build had just written. Dev served a
+  **stale client bundle against a fresh server**. Image uploads began failing with
+  *"Une erreur est survenue. Veuillez réessayer."*, two tiles in the error state, `Publier` correctly
+  disabled. Nothing reached storage. It read exactly like a regression in the PR that had just
+  merged.
+- ⚑ **THE DIAGNOSTIC — the line number belonged to NEW code while the behaviour belonged to OLD.**
+  The dev log carried a real React error with a real source frame:
+  ```
+  Cannot update a component (`ProductForm`) while rendering a different component (`ImageUploadGrid`)
+      at src/components/produits/ImageUploadGrid.tsx:149:10
+    > 149 |       fd.append('image', file)
+  ```
+  `fd.append` **is not a setState call**, and the error it was reporting had been *fixed and merged*
+  hours earlier. That mismatch — a current line number under a stale behaviour — is the signature.
+  A stale bundle throws the OLD error and Next maps it onto the CURRENT file, so the frame looks
+  authoritative and points at innocent code.
+- **How it fooled the first read.** The failure had a plausible in-app story: the same PR had renamed
+  a prop (`productId` → `initialProductId`), so a stale chunk reading the old name yields `undefined`
+  → `fd.append('productId', undefined)` → the literal string `"undefined"` → the uuid parse fails →
+  the generic error. Every symptom fits a real code path. **The application explanation was
+  coherent, and still wrong.**
+- **The check, in order.** Before debugging any post-build dev failure: (1) does a logged error's
+  source frame point at a line that could not raise it? (2) does the error correspond to something
+  already fixed? If either is yes — **`rm -rf .next` and restart before reading another line of
+  application code.** Here that alone resolved it: uploads succeeded, and the React warning count
+  went from 1 to **0** in the clean run.
+- **Cost of not checking:** the failure was reported as a live defect, and the diagnosis started at
+  the server action, which was blameless.
+- **Trigger:** any unexplained dev failure whose first appearance follows a `npm run build`.
