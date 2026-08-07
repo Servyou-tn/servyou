@@ -160,13 +160,36 @@ export async function uploadProductImageAction(formData: FormData): Promise<Uplo
   // migration 20260804104541). Both segments are server-derived; neither comes from the caller.
   const path = `${shop.shopId}/${productId.data}/${randomUUID()}.webp`
 
-  const { error: uploadError } = await supabase.storage.from(PRODUCT_BUCKET).upload(path, normalized.bytes, {
+  const { error: uploadError } = await supabase.storage.from(PRODUCT_BUCKET).upload(path, normalized.blob, {
     contentType: 'image/webp',
     cacheControl: PRODUCT_CACHE_CONTROL,
     upsert: false,
   })
   if (uploadError) {
     console.error('[uploadProductImage] storage upload failed:', uploadError.message)
+    return { ok: false, error: t('product.image.error.upload', lang) }
+  }
+
+  // ⚑ READ THE STORED SIZE BACK AND COMPARE. A successful upload() proves the request was accepted,
+  // NOT that the bytes survived — storage-js silently stringified Buffers through UTF-8, so five
+  // images landed ~1.8x inflated and undecodable while every call here returned ok. The whole class
+  // of body-encoding faults changes the object's LENGTH, so one integer comparison catches it at
+  // write time instead of letting it surface to a buyer three screens away.
+  //
+  // This runs on the seller's own client, so it is also an RLS assertion: the SELECT policy
+  // ("product-images: shop owner reads own") gates on the first path segment being one of their
+  // shops, which is the same segment the INSERT policy gated on.
+  const { data: stored, error: infoError } = await supabase.storage.from(PRODUCT_BUCKET).info(path)
+  if (infoError || !stored || stored.size !== normalized.blob.size) {
+    // The object is uploaded but no product_images row will reference it, so it is an orphan for
+    // the reconciliation sweep (image-storage-discovery.md §6c) — the same residue class this
+    // action's header already documents. It is deliberately NOT deleted here: a corrupt object we
+    // can still inspect is worth more than a silent removal, and .remove() fails open.
+    console.error(
+      `[uploadProductImage] INTEGRITY CHECK FAILED — sent ${normalized.blob.size} bytes, ` +
+        `stored ${stored?.size ?? 'unknown'} at ${path}` +
+        (infoError ? ` (info error: ${infoError.message})` : ''),
+    )
     return { ok: false, error: t('product.image.error.upload', lang) }
   }
 

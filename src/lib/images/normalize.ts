@@ -23,8 +23,23 @@ export type NormalizeFailure =
   /** Larger than we are willing to even attempt to decode. */
   | 'too_large'
 
+// ⚑ `blob`, NOT `bytes`, AND THE RENAME IS THE POINT — DO NOT "TIDY" IT BACK.
+//
+// A Node `Buffer` handed to `supabase.storage.upload()` is stringified through UTF-8 by
+// storage-js 2.107.0: it falls to the `body = fileBody` branch (dist/index.mjs:620) and every byte
+// that is not valid UTF-8 becomes U+FFFD. That is lossy and unrecoverable — the object lands ~1.8x
+// inflated with `ef bf bd` littered through it, and no decoder can read it. All five images the
+// first seller uploaded are destroyed this way.
+//
+// A `Blob` takes a DIFFERENT branch (dist/index.mjs:610): storage-js builds FormData and appends
+// the blob, which cannot be stringified.
+//
+// The rename is load-bearing because the type alone would NOT have caught this. storage-js types
+// the body as a broad `FileBody` union that accepts Buffer AND Blob, so changing `bytes: Buffer` to
+// `bytes: Blob` still compiles at every call site and ships the same bug under a new type. Renaming
+// the property is what makes the compiler point at all of them.
 export type NormalizeResult =
-  | { ok: true; bytes: Buffer; width: number; height: number }
+  | { ok: true; blob: Blob; width: number; height: number }
   | { ok: false; reason: NormalizeFailure }
 
 // Re-exported so server-side callers have one import for the whole pipeline. The definitions live
@@ -123,7 +138,15 @@ export async function normalizeAvatar(input: Buffer, maxEdge = AVATAR_MAX_EDGE):
       .webp({ quality: 82 })
       .toBuffer({ resolveWithObject: true })
 
-    return { ok: true, bytes: data, width: info.width, height: info.height }
+    // Wrapped HERE rather than at the two call sites, so there is exactly one place the upload body
+    // is constructed and no caller can reintroduce a raw Buffer. The `type` is what carries the
+    // content type across the FormData branch storage-js takes for a Blob.
+    return {
+      ok: true,
+      blob: new Blob([data], { type: 'image/webp' }),
+      width: info.width,
+      height: info.height,
+    }
   } catch {
     // An ambiguous ISO-BMFF file that fails to decode is, in practice, an HEVC-compressed HEIC --
     // the generic 'mif1'/'msf1' brands are the other way iOS files present. Reporting it as HEIC

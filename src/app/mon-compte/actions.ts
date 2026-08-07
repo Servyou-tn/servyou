@@ -114,13 +114,35 @@ export async function uploadAvatarAction(formData: FormData): Promise<AccountAct
   // this structurally by granting INSERT/DELETE and no UPDATE.
   const path = `${user.id}/${randomUUID()}.webp`
 
-  const { error: uploadError } = await supabase.storage.from(AVATAR_BUCKET).upload(path, normalized.bytes, {
+  const { error: uploadError } = await supabase.storage.from(AVATAR_BUCKET).upload(path, normalized.blob, {
     contentType: 'image/webp',
     cacheControl: AVATAR_CACHE_CONTROL,
     upsert: false,
   })
   if (uploadError) {
     console.error('[uploadAvatarAction] storage upload failed:', uploadError.message)
+    return { ok: false, error: t('monCompte.avatar.error.upload', lang) }
+  }
+
+  // ⚑ READ THE STORED SIZE BACK AND COMPARE — see the twin check in actions/products.ts for the
+  // full reasoning. Short version: upload() returning ok proves the request was accepted, not that
+  // the bytes survived, and every body-encoding fault changes the object's length.
+  //
+  // This path had ZERO objects in storage when the corruption was found, so it was never observed
+  // failing — but it fed the same Buffer through the same storage-js branch as the product path and
+  // would have corrupted the first avatar anyone uploaded. The check goes in for that reason: it is
+  // guarding a defect that had not surfaced yet, not one already seen here.
+  const { data: stored, error: infoError } = await supabase.storage.from(AVATAR_BUCKET).info(path)
+  if (infoError || !stored || stored.size !== normalized.blob.size) {
+    console.error(
+      `[uploadAvatarAction] INTEGRITY CHECK FAILED — sent ${normalized.blob.size} bytes, ` +
+        `stored ${stored?.size ?? 'unknown'} at ${path}` +
+        (infoError ? ` (info error: ${infoError.message})` : ''),
+    )
+    // Unlike the product path, this one CAN clean up safely: the object is unreferenced and this
+    // action already removes it on the adjacent profile-update failure (below), so the behaviour
+    // stays consistent within the file.
+    await supabase.storage.from(AVATAR_BUCKET).remove([path])
     return { ok: false, error: t('monCompte.avatar.error.upload', lang) }
   }
 

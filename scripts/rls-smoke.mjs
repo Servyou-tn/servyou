@@ -86,6 +86,24 @@ async function findTestUserIds() {
 // reads the CLIENT-DECLARED Content-Type (so arbitrary bytes would pass), sending genuine WebP
 // keeps the fixture honest about what a writer actually uploads.
 const WEBP_1X1 = Buffer.from('UklGRhoAAABXRUJQVlA4TA0AAAAvAAAAEAcQERGIiP4HAA==', 'base64')
+// Uploaded as a Blob to mirror what production sends after the storage-blob fix. storage-js 2.107.0
+// sends a Blob as FormData (dist/index.mjs:610) but assigns any other body straight to fetch (:620),
+// where a Node Buffer was stringified through UTF-8 and every non-UTF-8 byte became U+FFFD —
+// destroying all five of the first seller's product images.
+//
+// ⚑ READ THIS BEFORE TRUSTING S1b TO GUARD THAT BUG: IT DOES NOT, AND THE NEGATIVE CONTROL SAYS SO.
+// S1b was run with `WEBP_1X1` (a raw Buffer) deliberately substituted here, and it still PASSED.
+// The corruption is RUNTIME-SPECIFIC: it reproduces in the Next.js server-action runtime (whose
+// patched fetch is the likely cause) and does NOT reproduce in plain Node, where undici handles a
+// Buffer body as binary correctly. This script is plain Node, so it cannot see the fault at all.
+//
+// What actually guards the regression is (1) `NormalizeResult.blob`, which will not compile if a
+// caller reaches for a Buffer, and (2) the post-upload size read-back inside the two server actions,
+// which runs in the runtime that does break. S1b's real value is narrower and still worth having:
+// it is the only end-to-end proof that bytes written to a production bucket come back byte-identical
+// at all — it would catch a storage-side transform, a content-encoding change, or a bad fixture.
+// Do not describe it as the guard for the Buffer bug.
+const WEBP_1X1_BLOB = new Blob([WEBP_1X1], { type: 'image/webp' })
 const SMOKE_FOLDER = 'rls-smoke'
 const SHOP_BUCKETS = ['product-images', 'shop-assets']
 
@@ -454,10 +472,38 @@ async function main() {
 
     // S1 — the assertion that would have caught the bug.
     {
-      const { error } = await a.storage.from(BUCKET).upload(ownObj, WEBP_1X1, up)
+      const { error } = await a.storage.from(BUCKET).upload(ownObj, WEBP_1X1_BLOB, up)
       const landed = await objectExists(BUCKET, ownObj)
       check('S1 shop owner CAN upload under their OWN shop path', !error && landed,
         'err=' + (error ? error.message : 'none') + ' landed=' + landed)
+
+      // S1b — INTEGRITY, not policy. Every assertion in this file until now asked "was the write
+      // permitted?"; none asked "did the bytes survive?". That blind spot is part of how five
+      // corrupt product images reached production with a green gate.
+      //
+      // ⚑ SCOPE, MEASURED NOT ASSUMED: this does NOT catch the Buffer-stringification bug — a
+      // negative control substituting the raw Buffer here still passed, because that fault only
+      // occurs in the Next.js server-action runtime and this script is plain Node. See the note on
+      // WEBP_1X1_BLOB. What it does assert is that bytes written to a PRODUCTION bucket come back
+      // byte-identical, which nothing else in the repo checks.
+      //
+      // Length is the primary signal — a stringified body inflates ~1.8x. The U+FFFD probe names
+      // the mechanism when it fires, so whoever sees this red gets a cause and not just a number.
+      // That probe is a signature check and not a complete one: of the five corrupt objects, only
+      // three carried `ef bf bd` at bytes 4-6 (the other two had ASCII-safe size fields and were
+      // wrecked further in). Byte-identity is the assertion that actually holds.
+      const { data: blob, error: dlErr } = await a.storage.from(BUCKET).download(ownObj)
+      const back = blob ? Buffer.from(await blob.arrayBuffer()) : null
+      const sameLength = back != null && back.byteLength === WEBP_1X1.byteLength
+      const noReplacementChar =
+        back != null && !(back[4] === 0xef && back[5] === 0xbf && back[6] === 0xbd)
+      const identical = back != null && back.equals(WEBP_1X1)
+      check('S1b uploaded bytes survive the round trip (length + no U+FFFD + byte-identical)',
+        sameLength && noReplacementChar && identical,
+        'dl=' + (dlErr ? dlErr.message : 'ok') +
+        ' sent=' + WEBP_1X1.byteLength + ' got=' + (back ? back.byteLength : 'null') +
+        ' bytes4-6=' + (back ? [...back.subarray(4, 7)].map((b) => b.toString(16).padStart(2, '0')).join(' ') : 'n/a') +
+        ' identical=' + identical)
     }
     // S2 — foreign shop path, refused, and nothing landed.
     {
