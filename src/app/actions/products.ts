@@ -77,20 +77,52 @@ const productImageFileSchema = z
  * reconciliation sweep in image-storage-discovery.md §6c is for. This PR is that sweep's trigger;
  * building it here would widen a form PR into a storage-maintenance PR.
  */
+// ⚑ EVERY EARLY RETURN LOGS ITS REASON. Five of the six failure paths here used to return a
+// translated string and log NOTHING, so a failing upload produced a generic tile message and a
+// SILENT server. The G6 upload failure of 2026-08-07 therefore needed a dev-server restart to
+// diagnose, because the record could not say which branch had fired — the storage error was the
+// only one that left a trace, and it was the one that had not happened.
+//
+// A caller-facing string is not a diagnostic. It is deliberately vague (it crosses a trust
+// boundary) and it is translated, so it cannot carry a reason code. The log line is where the
+// reason belongs. Do not remove these to "reduce noise": they only run on a failed upload.
 export async function uploadProductImageAction(formData: FormData): Promise<UploadImageResult> {
   const lang = await getLang()
   const supabase = await createClient()
   const {
     data: { user },
   } = await supabase.auth.getUser()
-  if (!user) return { ok: false, error: t('product.error.notAuth', lang) }
+  if (!user) {
+    console.error('[uploadProductImage] rejected: no authenticated user')
+    return { ok: false, error: t('product.error.notAuth', lang) }
+  }
 
-  const productId = z.string().uuid().safeParse(formData.get('productId'))
-  if (!productId.success) return { ok: false, error: t('common.error_generic', lang) }
+  const rawProductId = formData.get('productId')
+  const productId = z.string().uuid().safeParse(rawProductId)
+  if (!productId.success) {
+    // ⚑ THE RECEIVED VALUE IS LOGGED, not just "invalid uuid". The failure that actually happened
+    // was a client sending the literal string "undefined" — a stale bundle reading a prop that had
+    // been renamed. The value names that in one line; a reason code alone would not have.
+    console.error(
+      `[uploadProductImage] rejected: productId is not a uuid — received ${JSON.stringify(rawProductId)} from user ${user.id}`,
+    )
+    return { ok: false, error: t('common.error_generic', lang) }
+  }
 
-  const parsed = productImageFileSchema.safeParse(formData.get('image'))
+  const rawFile = formData.get('image')
+  const parsed = productImageFileSchema.safeParse(rawFile)
   if (!parsed.success) {
     const code = parsed.error.issues[0]?.message
+    // Name/size/type, because "which file failed?" is the first question asked and the answer was
+    // previously unrecoverable — nothing reaches storage on this path, so there is no object to
+    // inspect afterwards.
+    console.error(
+      `[uploadProductImage] rejected: file failed schema (${code}) — ` +
+        (rawFile instanceof File
+          ? `name=${rawFile.name} size=${rawFile.size} type=${rawFile.type}`
+          : `not a File (${typeof rawFile})`) +
+        ` for user ${user.id}`,
+    )
     return {
       ok: false,
       error: t(
@@ -105,6 +137,7 @@ export async function uploadProductImageAction(formData: FormData): Promise<Uplo
   // a 4 MB photo is not. A caller with no shop should not be able to spend our CPU.
   const shop = await resolveOwnedShopId(supabase, user.id)
   if (!shop.ok) {
+    console.error(`[uploadProductImage] rejected: shop unresolved (${shop.reason}) for user ${user.id}`)
     return {
       ok: false,
       error: t(shop.reason === 'no_shop' ? 'product.error.noShop' : 'common.error_generic', lang),
@@ -113,6 +146,12 @@ export async function uploadProductImageAction(formData: FormData): Promise<Uplo
 
   const normalized = await normalizeProductImage(Buffer.from(await parsed.data.arrayBuffer()))
   if (!normalized.ok) {
+    // `reason` distinguishes HEIC from a non-image from a decode failure — the three are one
+    // generic-looking tile to the seller but three different answers to "is this our bug?".
+    console.error(
+      `[uploadProductImage] rejected: normalize failed (${normalized.reason}) — ` +
+        `name=${parsed.data.name} size=${parsed.data.size} type=${parsed.data.type} for user ${user.id}`,
+    )
     return { ok: false, error: t(FAILURE_KEY[normalized.reason], lang, { max: MAX_INPUT_MB }) }
   }
 
@@ -180,6 +219,13 @@ export async function createProductAction(input: unknown): Promise<ProductAction
   const parsed = CreateProductInput.safeParse(input)
   if (!parsed.success) {
     const issue = parsed.error.issues[0]
+    // Every issue, not just the first — a form that fails validation usually fails it in more than
+    // one place, and the seller sees one generic sentence for all of them. Paths only; the VALUES
+    // are not logged, because this input carries the whole product description.
+    console.error(
+      `[createProduct] rejected: input failed validation — ` +
+        parsed.error.issues.map((i) => `${i.path.join('.') || '(root)'}:${i.message}`).join(', '),
+    )
     if (issue?.message === 'image_required') {
       return { ok: false, error: t('product.error.image_required', lang) }
     }
@@ -191,7 +237,10 @@ export async function createProductAction(input: unknown): Promise<ProductAction
   const {
     data: { user },
   } = await supabase.auth.getUser()
-  if (!user) return { ok: false, error: t('product.error.notAuth', lang) }
+  if (!user) {
+    console.error('[createProduct] rejected: no authenticated user')
+    return { ok: false, error: t('product.error.notAuth', lang) }
+  }
 
   // Ownership is `products.shop_id -> shops.owner_id`; `products` has no owner_id of its own. The
   // shop is resolved from the SESSION and never accepted as an argument — a `shopId` parameter
@@ -199,6 +248,7 @@ export async function createProductAction(input: unknown): Promise<ProductAction
   // belongs before the round trip.
   const shop = await resolveOwnedShopId(supabase, user.id)
   if (!shop.ok) {
+    console.error(`[createProduct] rejected: shop unresolved (${shop.reason}) for user ${user.id}`)
     return {
       ok: false,
       error: t(shop.reason === 'no_shop' ? 'product.error.noShop' : 'common.error_generic', lang),

@@ -686,6 +686,9 @@ export const fr: Record<string, string> = {
   'product.form.images_hint':       "Jusqu'à {max} photos. La première sera la photo de couverture.",
   'product.form.images_add':        "Ajouter une photo",
   'product.form.images_cover':      "Couverture",
+  // One word, deliberately. It labels a 96px tile; the sentence explaining the failure lives in the
+  // list below the grid, where it has the full column width.
+  'product.form.images_failed':     "Échec",
   'product.form.images_remove':     "Retirer cette photo",
   'product.form.images_uploading':  "Envoi en cours…",
   'product.form.images_empty':      "Aucune photo pour le moment.",
