@@ -703,6 +703,33 @@ export const fr: Record<string, string> = {
   // draft is "en ligne" would be a lie the dashboard does nothing to correct.
   'product.created.published':      "Produit publié. Il est maintenant en ligne.",
   'product.created.draft':          "Brouillon enregistré. Il n'est pas encore visible par les acheteurs.",
+  // ─── C1 « Marketplace produits » (/marche/produits) — Figma 569:39769 ───
+  // Lens toggle (578:42513). "Bientôt" marks the deferred Boutiques lens, not a design state.
+  'produits.lens.ariaLabel':        "Choisir la vue",
+  'produits.lens.produits':         "Produits",
+  'produits.lens.boutiques':        "Boutiques",
+  'produits.lens.soon':             "Bientôt",
+  // Filter bar (570:40225)
+  'produits.filters.searchPlaceholder': "Rechercher un produit…",
+  'produits.filters.category':      "Catégorie",
+  'produits.filters.categoryAll':   "Toutes les catégories",
+  'produits.filters.ville':         "Ville",
+  'produits.filters.cityAll':       "Toutes les villes",
+  'produits.filters.priceTrigger':  "Prix",
+  'produits.filters.currency':      "TND",
+  'produits.filters.clearAll':      "Tout effacer",
+  'produits.filters.removeFilter':  "Retirer le filtre {filter}",
+  'produits.sort.label':            "Trier par",
+  'produits.sort.recent':           "Plus récents",
+  'produits.sort.prix_asc':         "Prix croissant",
+  'produits.sort.prix_desc':        "Prix décroissant",
+  // Empty states (571:41125). Two cases: nothing published at all vs filters that match nothing —
+  // telling a buyer "aucun produit" when the catalogue is full but their filter is narrow is wrong.
+  'produits.empty.title':           "Aucun produit pour le moment",
+  'produits.empty.subtitle':        "Les premières boutiques arrivent. Revenez bientôt.",
+  'produits.empty.filtered':        "Aucun produit ne correspond à votre recherche",
+  'produits.empty.filteredSubtitle': "Essayez d'élargir vos filtres ou de changer de catégorie.",
+  'produits.empty.resetFilters':    "Réinitialiser les filtres",
   // Errors
   'product.error.notAuth':          "Votre session a expiré. Veuillez vous reconnecter.",
   'product.error.noShop':           "Vous devez d'abord créer votre boutique.",

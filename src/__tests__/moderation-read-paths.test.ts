@@ -139,6 +139,26 @@ describe('searchMarketplace — products', () => {
     expect(filteredNull('shops.admin_hidden_at')).toBe(true)
     expect(selectFor('products')).toContain('admin_hidden_at')
   })
+
+  // C1 added a Ville control to the products surface. The predicate crosses the shops embed, and
+  // the two ways to get it wrong are both silent: omit it and Ville does nothing while the chip
+  // still says it is applied; write it against a LEFT join and it stops restricting parent rows.
+  it('applies the Ville predicate against the shops embed when a city is picked', async () => {
+    const { parseSearchParams } = await import('@/lib/search/search-params')
+    const { searchMarketplace } = await import('@/lib/search/search-marketplace')
+    const params = { ...parseSearchParams({ ville: 'Tunis' }), type: 'product' as const }
+    await searchMarketplace(params)
+    expect(
+      calls.some((c) => c.method === 'eq' && c.args[0] === 'shops.city' && c.args[1] === 'Tunis'),
+    ).toBe(true)
+    // The predicate is only sound on an inner join — see applyProductFilters.
+    expect(selectFor('products')).toContain('shops!inner')
+  })
+
+  it('does NOT apply a Ville predicate when no city is picked', async () => {
+    await runSearch('product')
+    expect(calls.some((c) => c.method === 'eq' && c.args[0] === 'shops.city')).toBe(false)
+  })
 })
 
 describe('searchMarketplace — services', () => {
@@ -167,6 +187,29 @@ describe('getServiceCities (Ville filter)', () => {
     const { getServiceCities } = await import('@/lib/marche/filter-cities')
     await getServiceCities()
     expect(filteredNull('freelancer_profiles.admin_hidden_at')).toBe(true)
+  })
+})
+
+// The product-side twin, added with C1's /marche/produits rebuild. It reaches city through a
+// COMPLETELY different join (products→shops, not service_listings→freelancer_profiles), so it
+// cannot inherit the coverage above — the parent predicate names a different table.
+describe('getProductCities (Ville filter, /marche/produits)', () => {
+  it('DIRECT HIDE: does not offer a city sourced from a hidden product', async () => {
+    const { getProductCities } = await import('@/lib/marche/filter-cities')
+    await getProductCities()
+    expect(filteredNull('admin_hidden_at')).toBe(true)
+  })
+
+  it('PARENT HIDE: does not offer a moderated shop’s city', async () => {
+    const { getProductCities } = await import('@/lib/marche/filter-cities')
+    await getProductCities()
+    expect(filteredNull('shops.admin_hidden_at')).toBe(true)
+  })
+
+  it('reads city through an !inner shops embed, so a shopless product cannot leak a null', async () => {
+    const { getProductCities } = await import('@/lib/marche/filter-cities')
+    await getProductCities()
+    expect(selectFor('products')).toContain('shops!inner')
   })
 })
 
