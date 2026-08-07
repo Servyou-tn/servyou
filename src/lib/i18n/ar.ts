@@ -714,6 +714,7 @@ export const ar: Record<string, string> = {
   'product.form.images_hint':       "حتى {max} صور. الصورة الأولى ستكون صورة الغلاف.",
   'product.form.images_add':        "إضافة صورة",
   'product.form.images_cover':      "الغلاف",
+  'product.form.images_failed':     "فشل",
   'product.form.images_remove':     "إزالة هذه الصورة",
   'product.form.images_uploading':  "جارٍ الإرسال…",
   'product.form.images_empty':      "لا توجد صور حاليًا.",

@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import { ImagePlus, X, Loader2, UploadCloud } from 'lucide-react'
+import { ImagePlus, X, Loader2, UploadCloud, ImageOff } from 'lucide-react'
 import { useLang } from '@/components/LangProvider'
 import { t } from '@/lib/i18n'
 import { FOCUS_RING } from '@/components/layout/styles'
@@ -44,7 +44,9 @@ const MIN_RECOMMENDED_EDGE = 1000
 type Tile =
   | { state: 'uploading'; key: string; preview: string }
   | { state: 'done'; key: string; image: UploadedImage; preview: string }
-  | { state: 'error'; key: string; message: string }
+  // `fileName` is carried so the failure list below the grid can say WHICH file failed. With up to
+  // MAX_PRODUCT_IMAGES tiles, "3 of these 8 failed" is unusable without the name.
+  | { state: 'error'; key: string; message: string; fileName: string }
 
 export function ImageUploadGrid({
   productId,
@@ -103,6 +105,8 @@ export function ImageUploadGrid({
     }
   }, [])
 
+  // Narrowed to the error variant so the list below can read `fileName` without a second guard.
+  const failed = tiles.flatMap((x) => (x.state === 'error' ? [x] : []))
   const doneCount = tiles.filter((x) => x.state === 'done').length
   const atMax = doneCount + tiles.filter((x) => x.state === 'uploading').length >= MAX_PRODUCT_IMAGES
 
@@ -136,7 +140,12 @@ export function ImageUploadGrid({
       if (file.size > MAX_INPUT_BYTES) {
         commit([
           ...tilesRef.current,
-          { state: 'error', key, message: t('product.image.error.tooLarge', lang, { max: MAX_INPUT_MB }) },
+          {
+            state: 'error',
+            key,
+            message: t('product.image.error.tooLarge', lang, { max: MAX_INPUT_MB }),
+            fileName: file.name,
+          },
         ])
         continue
       }
@@ -162,7 +171,7 @@ export function ImageUploadGrid({
           x.key === key
             ? res.ok
               ? { state: 'done', key, image: { path: res.path, url: res.url }, preview }
-              : { state: 'error', key, message: res.error }
+              : { state: 'error', key, message: res.error, fileName: file.name }
             : x,
         ),
       )
@@ -282,17 +291,44 @@ export function ImageUploadGrid({
               </>
             )}
 
+            {/* ⚑ INVENTED STATE — NOT IN THE DESIGN. Specimen 532:32201 specifies exactly THREE
+                tile states: done (grip + X + cover ribbon), uploading (dimmed + percentage +
+                progress bar), and the dashed "+ Ajouter" tile. It has NO failure state, so this
+                one was designed here, deliberately, and a later fidelity pass should read it as an
+                invention rather than as drift from a spec that never covered it.
+
+                WHY THE MESSAGE IS NOT IN THE TILE. The tile's content box is 72×72 after padding —
+                about two lines at 12px. The messages are full sentences, and the longest is
+                instructional:
+                  "Les photos HEIC ne sont pas prises en charge. Sur iPhone : Réglages > Appareil
+                   photo > Formats > « Plus compatible »."
+                That is 117 characters, and it is the one message a seller MUST be able to read —
+                it tells them how to fix their phone. Measured in the tile it ran to 5 lines and
+                111–119px against 94px of box, spilling 16px past both edges under
+                `overflow-hidden`. line-clamp would "fix" the overflow by truncating hardest
+                exactly the message that most needs reading. So the tile carries an icon and a
+                one-word label, and the sentence goes to the full-width list below the grid.
+
+                The remove control is now the SAME top-end icon button as every other tile. The old
+                text button wrapped "Retirer cette photo" onto three lines inside a 56px box and
+                lost the third to the clip — it rendered as "Retirer cette". */}
             {tile.state === 'error' && (
-              <div className="flex h-full flex-col items-center justify-center gap-2 p-3 text-center">
-                <p className="text-xs text-red-700">{tile.message}</p>
+              <>
+                <div className="flex h-full flex-col items-center justify-center gap-1.5 p-2 text-center">
+                  <ImageOff className="h-6 w-6 text-danger-500" aria-hidden />
+                  <span className="text-xs font-medium text-danger-600">
+                    {t('product.form.images_failed', lang)}
+                  </span>
+                </div>
                 <button
                   type="button"
                   onClick={() => remove(tile.key)}
-                  className={`rounded-full px-2 py-1 text-xs font-medium text-text-muted hover:bg-white ${FOCUS_RING}`}
+                  aria-label={t('product.form.images_remove', lang)}
+                  className={`absolute end-2 top-2 grid h-7 w-7 place-items-center rounded-full bg-black/60 text-white transition-colors hover:bg-black/80 ${FOCUS_RING}`}
                 >
-                  {t('product.form.images_remove', lang)}
+                  <X className="h-4 w-4" aria-hidden />
                 </button>
-              </div>
+              </>
             )}
           </div>
         ))}
@@ -311,6 +347,36 @@ export function ImageUploadGrid({
             </button>
           )}
         </div>
+      )}
+
+      {/* THE FAILURE LIST — the other half of the invented error state above.
+          Full width, so the 117-character HEIC instruction is actually readable, which is the whole
+          reason the message left the 96px tile.
+          ⚑ THE FILENAME IS THE POINT. Up to MAX_PRODUCT_IMAGES upload at once, so when three of
+          eight fail the seller's real question is "which three?" — a message with no name cannot
+          answer it, and the tile it belongs to shows only an icon.
+          ⚑ THE `<bdi>` IS WRAPPED, NOT THE FLEX ITEM ITSELF — measured, not styled by eye.
+          `<bdi>` defaults to `dir="auto"`, which resolves the ELEMENT's direction from its first
+          strong character. A latin filename therefore makes the element LTR, and as a direct child
+          of this flex column it stretches to the full row, so its `text-align: start` resolved to
+          the LEFT — in Arabic the name sat at the far left of a right-aligned list, 582px away
+          from the message describing it. Isolation was right; letting `<bdi>` own the ALIGNMENT
+          was not. The outer `<span>` inherits the page direction (so start = right in AR) and the
+          `<bdi>` isolates only the run, which is the job it is actually for: a latin filename next
+          to Arabic text would otherwise reorder visibly.
+          role="alert" because the previous version announced nothing: the message was clipped text
+          inside overflow-hidden, which is invisible to a screen reader in practice. */}
+      {failed.length > 0 && (
+        <ul role="alert" className="mt-3 space-y-2">
+          {failed.map((f) => (
+            <li key={f.key} className="flex flex-col gap-0.5 text-start">
+              <span className="text-sm font-medium text-text-primary">
+                <bdi>{f.fileName}</bdi>
+              </span>
+              <span className="text-sm text-danger-600">{f.message}</span>
+            </li>
+          ))}
+        </ul>
       )}
 
       <input
