@@ -636,6 +636,29 @@ export const fr: Record<string, string> = {
   'product.detail.stock_low':       "Plus que {n} en stock",
   'product.detail.related_shop':    "Plus de produits de cette boutique",
   'product.detail.related_similar': "Produits similaires",
+  // ─── D1 rebuild (Figma 562:39013) — keys added for the measured regions ───
+  // Breadcrumb: four crumbs, Accueil › Produits › catégorie › titre. Product-scoped rather than
+  // reusing serviceDetail.breadcrumb.* so the two detail pages can diverge without a shared edit.
+  'product.detail.breadcrumb.home':     "Accueil",
+  'product.detail.breadcrumb.products': "Produits",
+  // ⚑ PARAMETERISED, NOT CONCATENATED. Arabic reorders the number and the unit, and a string built
+  // by joining parts in the component cannot be reordered by a translator.
+  'product.detail.delivery_fee':    "+ {fee} TND de livraison",
+  'product.detail.total_cod':       "Total : {total} TND à la livraison",
+  'product.detail.cod_note':        "Paiement à la livraison. Aucune carte requise.",
+  'product.detail.out_of_stock':    "Rupture de stock",
+  'product.detail.cta_sold_out':    "Produit épuisé",
+  'product.detail.save':            "Enregistrer",
+  'product.detail.view_shop':       "Voir la boutique",
+  'product.detail.view_all_products': "Voir tous les produits de cette boutique",
+  'product.detail.reviews':         "Avis",
+  'product.detail.reviews_empty':   "Les avis seront bientôt disponibles.",
+  'product.detail.report':          "Signaler ce produit",
+  // Gallery a11y. The counter is visible; the rest are accessible names for icon-only controls.
+  'product.detail.gallery_counter': "{current} / {total}",
+  'product.detail.gallery_prev':    "Image précédente",
+  'product.detail.gallery_next':    "Image suivante",
+  'product.detail.gallery_thumb':   "Voir l'image {n} sur {total}",
   // Purchase form
   'product.order_title':       "Demande d'achat",
   'product.order_prefix':      "Produit :",
