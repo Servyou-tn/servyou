@@ -1658,3 +1658,88 @@ Three habits, each of which caught something a naive version would have missed:
 - **Snapshot the row you intend to KEEP, before the delete.** The product row was captured up front
   precisely so "the product survived intact" could be asserted field by field afterwards instead of
   eyeballed. `updated_at` matching is what turns "it looks fine" into "nothing touched it".
+
+### 🟡 D1 `/produits/[id]` has NO 375 frame — every responsive value on it is INFERRED
+
+- **What:** D1 was rebuilt (feat/d1-product-detail) from `562:39013`, a **1440 frame plus four
+  DESKTOP specimens** (`563:39552` galerie · `563:39579` rupture · `563:39668` partager ·
+  `563:39705` signaler). There is no mobile frame anywhere on the Screens page. Every desktop
+  number in the build is measured and recorded in `docs/design/d1-discovery.md §2`; **every
+  responsive number is a decision, not a measurement.**
+- **What was inferred** (founder-approved, following D2's pattern rather than inventing a third
+  answer): single column below `lg` · gallery main from 600² to a full-width `aspect-square` ·
+  thumb strip horizontally scrollable (`overflow-x-auto`, inert at `lg` where 368 < 600) ·
+  related row on C1's `grid-cols-1 sm:grid-cols-2 lg:grid-cols-4`.
+- **⚑ This is the SAME gap C1 already carries** — see `docs/design/marche-produits-measurements.md`
+  "Known gaps", which logs that no 375 C1 frame exists either and that its `grid-cols-1` /
+  `sm:grid-cols-2` ramp is inherited verbatim from `ListingResults` with no design source. **Two
+  product surfaces now share one undrawn mobile story.** The services side resolved the analogous
+  question only once it had a 375 frame (`sm:gap-6` desktop / `gap-4` mobile, delta P11).
+- **Trigger:** draw the 375 frames for C1 and D1 together, in one pass, and reconcile both ramps
+  against them. Doing D1 alone would re-create the split it is currently avoiding.
+- **Verified at 375 in a real browser regardless:** strip scrolls (368 vs 343 client), the last
+  thumb is reachable and selectable after scrolling, and `documentElement.scrollWidth` is 375
+  against a 375 viewport — no horizontal overflow. So the inferred layout *works*; it is just not
+  *designed*.
+
+### D2's share control is inert — it links to the page it is already on
+
+- **What:** `ServiceDetail.tsx:91-99` renders the share affordance as
+  `<Link href={`/services/${service.id}`}>` carrying `aria-label={t('serviceDetail.share')}` —
+  which is "Copier le lien". Clicking it navigates to the current page and copies nothing.
+- **Found during:** the D1 build, while looking for a share precedent to follow. **D1 deliberately
+  did NOT reproduce it** — `ShareLinkButton` writes `window.location.href` to the clipboard and
+  toasts `product.detail.link_copied`, using keys that already existed in both locales.
+- **Why deferred:** one PR, one focus. D1 is a product-surface PR and D2 is a different route; the
+  fix is ~15 lines (swap the `<Link>` for the same client component) but it belongs in a PR that
+  can gate D2's own walkthrough.
+- **Trigger:** next time D2 is opened for any reason. `ShareLinkButton` is already generic enough
+  to serve it — only the toast key differs, and `serviceDetail.share` would need a sibling
+  `link_copied` key in fr.ts/ar.ts.
+
+### `ProductBrowseCard` + `ProductCoverImage` are route-local but now serve two routes
+
+- **What:** both live in `src/app/marche/produits/_components/` and are now imported from
+  `src/components/produits/` by D1 — a component in the shared tree reaching **into** an app route's
+  private `_components` folder. It works and it is intentional (founder ruling: import in place, do
+  not move), but the direction of that dependency is backwards.
+- **Why not moved now:** moving them means touching C1's imports inside a D1 PR, and C1 is the
+  surface whose card geometry the whole D1 related-row measurement is calibrated against. The move
+  is mechanical; the risk is that it lands in a PR whose reviewer is looking at a different page.
+- **⚑ `ProductCoverImage` DID gain one additive change here:** an optional `priority` prop
+  defaulting to `false`, so every existing C1 call site renders byte-identically. D1's gallery main
+  image is the page's LCP element and the standards require `priority` above the fold; the
+  alternative was re-inlining the placeholder at the call site, which that component's own header
+  explicitly forbids.
+- **Trigger:** when D3 `/boutique/[slug]` becomes the **third** consumer. At that point move both to
+  `src/components/produits/` in their own PR and update all three import sites together.
+
+### `tndPrice` is locale-blind, and `ar.ts` carries two currency notations
+
+- **What:** `tndPrice` (`listing-utils.ts`) hardcodes Latin `" TND"` and takes no `lang`, so every
+  price on every Arabic page renders `1600 TND`. Meanwhile `ar.ts` uses `د.ت` in **22** places —
+  including `product.form.currency_suffix`, which is the currency adornment inside G6's own price
+  field — while its header comment states the opposite rule: *"Currency code mirrors fr.ts: fr uses
+  'TND', so ar keeps 'TND'."* The file contradicts its own documented convention.
+- **Surfaced by:** D1's price block, which is three adjacent lines — the price through `tndPrice`,
+  then a fee line and a total line through translated templates. Writing `د.ت` in the two new AR
+  templates put **two notations inside one block**. D1 followed the header rule and uses `TND` in
+  both, so the block is internally consistent; it did **not** resolve which notation Servyou
+  actually wants.
+- **Why deferred:** `tndPrice` serves `/recherche`, `/categories/[slug]`, `ConsumerHomepage`, C1 and
+  now D1. Making it locale-aware is a one-line change to the function and a five-surface AR
+  walkthrough — and the *product* question (does an Arabic Servyou page say `TND` or `د.ت`?) is a
+  founder call, not an engineering one. Picking one inside a D1 PR would set platform-wide currency
+  vocabulary from a product-detail page.
+- **Trigger:** the next i18n pass, or the first time a founder reviews an Arabic page with prices.
+  Decide the notation first, then either add `lang` to `tndPrice` or normalise the 22 `د.ت` strings
+  — not both.
+
+### `aria-label="Fil d'Ariane"` is hardcoded French on both detail pages
+
+- **What:** the breadcrumb `<nav>` on `ProductDetail.tsx` and `ServiceDetail.tsx:142` both carry a
+  literal French accessible name, so an Arabic screen-reader user hears "Fil d'Ariane".
+- **Why deferred:** D1 copied D2's existing markup deliberately — matching the precedent was the
+  right call for a rebuild, and diverging on one page would leave the two detail pages announcing
+  their breadcrumbs differently. It is two surfaces and one new i18n key.
+- **Trigger:** fix both together with a `common.breadcrumb.label` key. Cheap; just not a D1 change.

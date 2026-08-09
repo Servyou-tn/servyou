@@ -26,14 +26,20 @@ function Placeholder() {
   )
 }
 
+// ⚑ `priority` is ADDITIVE and defaults to false, so every existing C1 call site renders exactly as
+// before. It exists because D1's gallery main image is the LCP element of the product page and the
+// standards require `priority` above the fold — and the alternative was re-inlining the placeholder
+// at that call site, which the note above explicitly forbids. Extend here, do not fork.
 export function ProductCoverImage({
   src,
   alt,
   sizes,
+  priority = false,
 }: {
   src: string | null
   alt: string
   sizes: string
+  priority?: boolean
 }) {
   // ⚑ WHICH src failed, not merely THAT one did. A boolean would be sticky: this component is
   // rendered from a mapped list, so React reuses the same instance for a different product when
@@ -50,6 +56,7 @@ export function ProductCoverImage({
       alt={alt}
       fill
       sizes={sizes}
+      priority={priority}
       className="object-cover"
       // Fires for a 404, a 400 from the optimizer, a DNS failure, or a decode error — every way the
       // browser can end up with no pixels. The state write is idempotent per src.

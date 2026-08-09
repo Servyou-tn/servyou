@@ -667,6 +667,33 @@ export const ar: Record<string, string> = {
   'product.detail.stock_low':       "بقي {n} فقط في المخزون",
   'product.detail.related_shop':    "مزيد من منتجات هذا المتجر",
   'product.detail.related_similar': "منتجات مشابهة",
+  // ─── D1 rebuild (Figma 562:39013) — AR parity for the measured regions ───
+  'product.detail.breadcrumb.home':     "الرئيسية",
+  'product.detail.breadcrumb.products': "المنتجات",
+  // ⚑ The placeholders sit where Arabic wants them, which is NOT where French puts them — this is
+  // exactly why these two strings are parameterised rather than assembled in the component.
+  //
+  // ⚑ "TND", NOT "د.ت", per the convention stated at the top of this file: "Currency code mirrors
+  // fr.ts: fr uses 'TND', so ar keeps 'TND'." These two lines sit DIRECTLY under the 28px price,
+  // which renders through `tndPrice` — a locale-blind formatter that emits Latin "TND" in both
+  // languages. Writing د.ت here produced three adjacent lines in two notations on the Arabic page.
+  // (This file does carry د.ت in 22 other places, G6's own currency suffix among them — that
+  // inconsistency predates D1 and is logged in docs/follow-ups.md rather than half-fixed here.)
+  'product.detail.delivery_fee':    "+ {fee} TND للتوصيل",
+  'product.detail.total_cod':       "المجموع: {total} TND عند التسليم",
+  'product.detail.cod_note':        "الدفع عند التسليم. لا حاجة لبطاقة بنكية.",
+  'product.detail.out_of_stock':    "نفد المخزون",
+  'product.detail.cta_sold_out':    "المنتج نفد",
+  'product.detail.save':            "حفظ",
+  'product.detail.view_shop':       "زيارة المتجر",
+  'product.detail.view_all_products': "عرض كل منتجات هذا المتجر",
+  'product.detail.reviews':         "التقييمات",
+  'product.detail.reviews_empty':   "ستتوفر التقييمات قريبًا.",
+  'product.detail.report':          "الإبلاغ عن هذا المنتج",
+  'product.detail.gallery_counter': "{current} / {total}",
+  'product.detail.gallery_prev':    "الصورة السابقة",
+  'product.detail.gallery_next':    "الصورة التالية",
+  'product.detail.gallery_thumb':   "عرض الصورة {n} من {total}",
   // Purchase form
   'product.order_title':       "طلب شراء",
   'product.order_prefix':      "المنتج:",
