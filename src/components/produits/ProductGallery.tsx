@@ -97,8 +97,20 @@ export function ProductGallery({
 
         {many && (
           <>
-            {/* Counter — inset 12 bottom-START, and the ONLY overlay that is not a control. */}
-            <span className="absolute bottom-3 start-3 z-10 rounded-md bg-black/60 px-2 py-0.5 text-xs font-medium tabular-nums text-white">
+            {/* Counter — inset 12 bottom-START, and the ONLY overlay that is not a control.
+                ⚑ `dir="ltr"` IS LORE-BEARING, NOT DECORATION. The string is `{current} / {total}`
+                = `1 SPACE / SPACE 5`. The digits are European Numbers but the SPACES around the
+                slash are neutral, so on an RTL page they resolve to the paragraph direction and
+                split "1" and "5" into two separate LTR runs — which the RTL line then lays out
+                right-to-left, rendering « 1 / 5 » as « 5 / 1 ». Caught in the AR browser pass; it
+                read "image 5 of 1". A counter is a formula, not prose: it is LTR in both
+                languages. `dir` also brings `unicode-bidi: isolate` from the UA stylesheet, so the
+                run cannot leak into its neighbours — the same reasoning as the `<bdi>` in
+                ImageUploadGrid.tsx:358. The BADGE still mirrors, because `start-3` is untouched. */}
+            <span
+              dir="ltr"
+              className="absolute bottom-3 start-3 z-10 rounded-md bg-black/60 px-2 py-0.5 text-xs font-medium tabular-nums text-white"
+            >
               {t('product.detail.gallery_counter', lang, {
                 current: String(active + 1),
                 total: String(images.length),
