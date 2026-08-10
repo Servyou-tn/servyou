@@ -338,6 +338,25 @@ dialog, report modal, shop trust panel.
 
 **This is D1's CTA destination**, and its product branch is a `ComingSoon` stub today (§4).
 
+**🔴 SECOND CALL, 2026-08-10 — one `get_metadata`, spent per instruction to close the gap. What it
+actually returned: geometry only, no new information beyond confirming §6a-6d's numbers with
+absolute coordinates (previously several were relative offsets). Two genuinely new facts: the
+frame's own title is `Demander ce produit — 1440`, and the order-summary `thumb` (`589:44225`)
+holds an instance named `icon-image` (`589:44226`, 24×24 @ 20,20) — this SPECIMEN's product has no
+photo, so the frame is drawing the placeholder-glyph state, not a real thumbnail. That is directly
+reusable: it is the same state `ProductCoverImage`'s `Placeholder` already renders for exactly this
+case (§5, D1).**
+
+**⚠ `get_metadata` cannot deliver what was asked for, and this is a tool limit, not an oversight.**
+Its own description: "only includes node IDs, layer types, names, positions and sizes" — no text
+content. Every text node in this frame is named generically (`h3`, `label`, `value`,
+`adresseLabel`, `codText`, `title`, `seller`) — structural names, not copy, the same pattern
+already true of D1's own badge/price rows. **Reading the actual French labels, helper text, and
+required markers needs `get_design_context` or a screenshot — a different call, not spent here.**
+Every label/helper below is therefore sourced from the **founder's own screenshot**, not from
+Figma, and is marked accordingly. Two section headings (`h3` at `589:44116` and `589:44210`) are
+named by **neither** source — genuinely still open; see the flag in §6e.
+
 ### 6a. Node tree
 
 | node | id | x | y | w | h |
@@ -427,6 +446,58 @@ Padding **24** on all sides — every child is `x=24, w=332`, and `24 + 332 + 24
 | — row (**total**) | `589:44242` | 77 | label 101 · value 59 @ x=273 | 8 |
 | `cod` | `589:44245` | 240 | 332 × 66 — text inset 12, 308×42 (2 lines) | 16 |
 | `CTA` | `589:44247` | 322 | **332 × 48** = lg | 16 |
+
+`322 + 48 + 24 pad = **394**` ✓ closes exactly against the box height. CTA copy, from the
+founder's screenshot (not Figma — get_metadata can't read it): **« Confirmer la demande »**.
+
+### 6e. Full field list, top to bottom — 📐 geometry MEASURED, copy FOUNDER-SOURCED
+
+Every label/helper/required-marker below is transcribed from the founder's own screenshot of the
+frame, mapped onto the node IDs in §6c/§6d. **None of it came from Figma** — `get_metadata` cannot
+return text content (see the flag above §6a); reading it directly needs `get_design_context`,
+not spent this pass. Required markers are cross-checked against `submitProductRequest`'s existing
+server-side validation (`src/app/demander/[id]/actions.ts`), which is the authoritative source for
+what is actually enforced, independent of what the frame draws.
+
+| node | field | label (founder) | helper (founder) | required |
+|---|---|---|---|---|
+| `589:44116` h3 | section1 heading | 🔴 **not given by either source** — neither the founder's screenshot nor Figma metadata names it | — | — |
+| `589:44117` Input | destinataire name | « Nom complet du destinataire » | « Modifiable si la commande est livrée à quelqu'un d'autre » | ✅ — `submitProductRequest` rejects an empty `deliveryName` |
+| `589:44134` Input | phone | « Téléphone » + static `+216` prefix | « Le livreur vous contactera à ce numéro » | ✅ — `!isValidPhone(...)` gate |
+| `589:44155` adresseLabel | address group heading | 🔴 **not given by either source** | — | — |
+| `589:44156` Input | street | « Rue et numéro » | *(none stated)* | ✅ — folds into `deliveryAddress`, which `submitProductRequest` rejects empty |
+| `589:44165` Input | quartier | « Quartier » | *(none stated)* | 🔴 **unknown — see the gap below** |
+| `589:44175` Select | ville | « Ville » | *(none stated)* | 🔴 **unknown — see the gap below** |
+| `589:44186` Select | gouvernorat | « Gouvernorat » | *(none stated)* | ✅ — `submitProductRequest` validates against `GOVERNORATES` |
+| `589:44197` Textarea | seller note | « Note pour le vendeur (optionnel) » | 0/300 counter + helper (exact helper copy not stated) | ❌ optional — matches `input.note.trim() \|\| null` |
+| `589:44210` h3 | section2 heading | 🔴 **not given by either source** | — | — |
+| `589:44212` Number Stepper + `589:44222` avail | quantity | « Quantité » (stepper has no own label per the founder's list — the section h3 likely serves as its label, unconfirmed) | « {n} disponibles » | ✅ implicit — always has a value, `qty < 1` rejected |
+
+**🔴 The address group is TWO fields short of what `submitProductRequest` accepts today.**
+`ProductRequestInput` (`actions.ts:27-35`) has exactly `deliveryAddress: string` and
+`governorate: string` — one free-text field plus the validated governorate. It has **no
+`quartier` and no `ville` field**. The frame draws four address controls (street, quartier, ville,
+gouvernorat); the shipped action accepts two. Whoever builds the form must decide: fold
+street+quartier+ville into the one `deliveryAddress` string client-side (zero action changes), or
+extend `ProductRequestInput` with new fields and fold server-side (touches an already-shipped,
+working file). Not resolved here — flagged for the founder, §Step 3 below.
+
+**🔴 « Ville » has no reference dataset anywhere in this codebase — it would ship as free text.**
+`src/lib/tunisia-governorates.ts` supplies the 24 governorates (canonical, already validated
+server-side). `src/lib/marche/filter-cities.ts` looks like a match by name but is not one: it
+returns the **seller's** shop/freelancer city as a browse-filter option list (`getServiceCities` /
+`getProductCities`), scoped to "which cities currently have active listings" — a completely
+different concept from a **buyer's delivery city**, and reading from it would silently couple E1's
+address form to which sellers happen to be active. If the frame's "Ville" `Select` is meant to be
+a true reference-data picker (not free text), that dataset does not exist yet and is new scope.
+
+**🔴 The Textarea's internal geometry (where the 0/300 counter sits inside its 724×173 outer
+box) is not resolvable from `get_metadata`** — it doesn't expand an instance's internals with
+text content. `src/components/produits/ProductForm.tsx`'s description field (label+asterisk /
+`<textarea>` / a row with the helper on one side and a live `{length}/{max}` counter on the
+other, `mt-1.5 flex items-start justify-between gap-2`) is the exact in-repo precedent for a
+textarea-with-counter and is presumably what 173 decomposes into — reusable directly at
+`maxLength={300}` and no `required`, without a further Figma read.
 
 `322 + 48 + 24 pad = **394**` ✓ closes exactly against the box height.
 

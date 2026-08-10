@@ -77,6 +77,10 @@ export type SellerOrderDetail = {
   buyerCity: string | null
   deliveryName: string | null
   deliveryStreet: string
+  /** null on the 4 pre-E1 seed rows; always set on a row this form wrote. Same source as
+   *  the buyer-side OrderDetail — see order-detail.ts's parseDeliveryAddress for the format. */
+  deliveryQuartier: string | null
+  deliveryVille: string | null
   deliveryGovernorate: string | null
   deliveryPhone: string | null
   /** Free-text note for a product order; the parsed brief for a service one. */
@@ -228,6 +232,8 @@ export const getSellerOrderDetail = cache(
       buyerCity,
       deliveryName: row.delivery_name,
       deliveryStreet: addr.street,
+      deliveryQuartier: addr.quartier,
+      deliveryVille: addr.ville,
       deliveryGovernorate: addr.governorate,
       deliveryPhone: row.delivery_phone,
       // A product order's note is free text; a service order's is the folded brief E1 wrote.

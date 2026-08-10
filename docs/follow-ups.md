@@ -1045,6 +1045,14 @@ the route, its i18n block (`fr.ts` / `ar.ts`, "Order detail page") and its `acti
 ## G4 — Tableau de bord vendeur (`feat/g4-seller-dashboard`, 2026-07-28)
 
 ### 🔴 Topbar overflows 56px at 375 — but only when LOGGED IN, on every AppShell route
+- **Also reproduced on E1-product `/demander/[id]` and E2 `/demander/succes` (2026-08-10),
+  authenticated via `scripts/gate/session.mjs`** — same 56px, same offending element
+  (`div.flex.shrink-0.items-center.gap-4`), zero overlap with either page's own content (the
+  overflowing elements are all inside the topbar's trailing cluster; nothing from the form, the
+  summary, or the recap appears in the offender list). Both routes are auth-gated, so — same
+  caveat the entry below already states for 12 other shell routes — they join the set that
+  cannot be overflow-tested anonymously; the "logged out ⇒ 0 overflow" claim could not be
+  re-confirmed on these two specifically, only inferred from every other page it holds on.
 - **Measured on G4 and reproduced identically on the already-shipped `/marche/services`** (which has
   its own 375 Figma frame), so this is a shared-shell defect, not a G4 regression:
   `document.documentElement.scrollWidth` 431 vs `clientWidth` 375 → **56px (FR) / 53px (AR)**.
@@ -1682,6 +1690,18 @@ Three habits, each of which caught something a naive version would have missed:
   against a 375 viewport — no horizontal overflow. So the inferred layout *works*; it is just not
   *designed*.
 
+**🟡 E1-product `/demander/[id]` (product branch) joins this same gap.** Built from `589:43997` —
+one 1440 frame, no mobile specimen anywhere on the Screens page, same as D1's own measurement
+(`docs/design/d1-discovery.md §6`). The stacked layout below `xl:` (order summary first in the
+DOM, form second — E1-service's own `col-start`/`row-start` reorder trick, just moved to a
+different breakpoint per the grid-overflow rulings) is INFERRED from the sibling that does have
+one, not measured. **Three product/service-adjacent surfaces now share one undrawn mobile story**
+(D1, C1, and now E1-product) — the trigger below should draw all three together, not just the
+original two, or a fourth pass will split the reconciliation again.
+
+- **Verification status:** see the PR's own verification section for the actual 375/band results —
+  not restated here to avoid this doc drifting out of sync with what was really measured.
+
 ### D2's share control is inert — it links to the page it is already on
 
 - **What:** `ServiceDetail.tsx:91-99` renders the share affordance as
@@ -1734,6 +1754,21 @@ Three habits, each of which caught something a naive version would have missed:
 - **Trigger:** the next i18n pass, or the first time a founder reviews an Arabic page with prices.
   Decide the notation first, then either add `lang` to `tndPrice` or normalise the 22 `د.ت` strings
   — not both.
+- **🔴 ADDENDUM (E1-product PR, 2026-08-10) — this is not only a notation choice, it is an actual
+  bidi rendering defect, confirmed in a real browser.** `"1600 TND"` is the correct DOM text on
+  every affected page (as the entry above already says), but the VISUAL order under `dir="rtl"` is
+  not "1600 TND" — it renders **"TND 1600"**, the two tokens swapped. Per UAX#9 (rules W7/N1/N2): a
+  digit run (EN) followed by a space then a strong-LTR letter run (the Latin "TND"), with no
+  strong-LTR character preceding the digits, gets reordered so the letter run moves ahead of the
+  number under an RTL paragraph — the identical bug class as D1's gallery counter
+  ([[reference_rtl_numeric_run_reversal]]-shaped, just EN+L instead of EN+neutral+EN). Confirmed
+  live on E1-product's own price rows before they were fixed locally (`dir="ltr"` on each value
+  span, matching D1's counter fix) — **not fixed at the source** in this PR, since `tndPrice` has
+  five OTHER call sites this PR does not touch, and a source-level fix is exactly the "add `lang` to
+  `tndPrice`" work this entry already describes. Whoever picks up this trigger should treat
+  `dir="ltr"` (not merely the `د.ت`-vs-`TND` notation) as part of the fix — a locale-aware
+  `tndPrice` that still lacks bidi isolation will produce a correctly-worded, still-visually-
+  reversed price.
 
 ### `aria-label="Fil d'Ariane"` is hardcoded French on both detail pages
 

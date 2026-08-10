@@ -22,9 +22,16 @@ export type ProductRequestTarget = {
   id: string
   title: string
   price: number
+  /**
+   * `products.delivery_fee_tnd` — the summary's Livraison and Total rows cannot render without
+   * it. Same one-line-on-a-select fix D1 needed for its own price block.
+   */
+  deliveryFee: number
   stockCount: number | null
   tracksStock: boolean
   imageUrl: string | null
+  /** For the breadcrumb (mirrors E1-service's Accueil › Produits › catégorie › titre › Demander). */
+  category: string | null
   shop: { name: string; city: string | null }
 }
 
@@ -54,8 +61,10 @@ type ProductRow = {
   id: string
   title: string
   price_tnd: number | string
+  delivery_fee_tnd: number | string
   tracks_stock: boolean | null
   stock_count: number | null
+  categories: { name_fr: string } | { name_fr: string }[] | null
   shops: { name: string | null; city: string | null } | { name: string | null; city: string | null }[] | null
   product_images: { image_url: string; display_order: number }[] | null
 }
@@ -80,7 +89,8 @@ export const getRequestTarget = cache(async (id: string): Promise<RequestTarget 
   const { data: product, error: pErr } = await supabase
     .from('products')
     .select(
-      `id, title, price_tnd, tracks_stock, stock_count, status,
+      `id, title, price_tnd, delivery_fee_tnd, tracks_stock, stock_count, status,
+       categories ( name_fr ),
        shops!inner ( name, city, admin_hidden_at ),
        product_images ( image_url, display_order )`,
     )
@@ -99,9 +109,11 @@ export const getRequestTarget = cache(async (id: string): Promise<RequestTarget 
         id: row.id,
         title: row.title,
         price: Number(row.price_tnd),
+        deliveryFee: Number(row.delivery_fee_tnd),
         stockCount: row.stock_count,
         tracksStock: Boolean(row.tracks_stock),
         imageUrl: primaryImage(row.product_images),
+        category: one(row.categories)?.name_fr ?? null,
         shop: { name: shop?.name ?? '', city: shop?.city ?? null },
       },
     }
