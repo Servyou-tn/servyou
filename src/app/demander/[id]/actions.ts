@@ -6,6 +6,7 @@ import { getLang } from '@/lib/i18n/server'
 import { t } from '@/lib/i18n'
 import { isValidPhone, normalizePhone } from '@/lib/phone'
 import { GOVERNORATES } from '@/lib/tunisia-governorates'
+import { encodeDeliveryAddress } from '@/lib/marche/order-detail'
 
 // Both actions create an order with status='pending'. RLS enforces buyer_id = auth.uid()
 // on INSERT; the lifecycle trigger only governs UPDATE, so the initial insert passes.
@@ -27,7 +28,13 @@ function one<T>(embed: T | T[] | null | undefined): T | null {
 export type ProductRequestInput = {
   productId: string
   deliveryName: string
-  deliveryAddress: string
+  /** Street + number — "Rue et numéro". */
+  deliveryStreet: string
+  /** Neighbourhood/district — often the only thing that makes a Tunisian address findable. */
+  quartier: string
+  /** Free-text city/town. No reference dataset exists for Tunisian villes (see the founder's
+   *  ruling) — filter-cities.ts is the SELLER's shop-city list, a different concept entirely. */
+  ville: string
   governorate: string
   deliveryPhone: string
   quantity: number
@@ -59,12 +66,14 @@ export async function submitProductRequest(input: ProductRequestInput): Promise<
   if (!sellerId) return { ok: false, error: t('common.error_generic', lang) }
 
   const name = input.deliveryName.trim()
-  const address = input.deliveryAddress.trim()
+  const street = input.deliveryStreet.trim()
+  const quartier = input.quartier.trim()
+  const ville = input.ville.trim()
   const gov = input.governorate.trim()
   const qty = Math.floor(Number(input.quantity))
 
   // Server-side guard (client validates inline for UX; this is the real gate).
-  if (!name || !address || !gov || !isValidPhone(input.deliveryPhone)) {
+  if (!name || !street || !quartier || !ville || !gov || !isValidPhone(input.deliveryPhone)) {
     return { ok: false, error: t('demander.toast.error', lang) }
   }
   if (!GOVERNORATES.some((g) => g.value === gov)) {
@@ -89,7 +98,12 @@ export async function submitProductRequest(input: ProductRequestInput): Promise<
       service_listing_id: null,
       status: 'pending',
       delivery_name: name,
-      delivery_address: `${address}, ${gov}`, // governorate folded in (no dedicated column)
+      // Four logically distinct pieces, ONE text column — encodeDeliveryAddress keeps them
+      // parseable (order-detail.ts) rather than an ad-hoc concat here that could drift from what
+      // parseDeliveryAddress actually expects. delivery_fee_tnd is deliberately NOT set here — the
+      // BEFORE INSERT trigger (set_order_snapshot) reads it from products.delivery_fee_tnd and
+      // discards any client-supplied value, same as unit_price_tnd/item_title below.
+      delivery_address: encodeDeliveryAddress({ street, quartier, ville, governorate: gov }),
       delivery_phone: normalizePhone(input.deliveryPhone),
       quantity: qty,
       buyer_note: input.note.trim() || null,

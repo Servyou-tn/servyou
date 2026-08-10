@@ -793,19 +793,41 @@ export const fr: Record<string, string> = {
   'demander.title.service':        "Confirmer votre demande de service",
   'demander.subtitle.product':     "Paiement à la livraison. Aucune carte requise.",
   'demander.subtitle.service':     "Le freelance vous contactera pour finaliser les détails.",
-  'demander.section.delivery':     "Détails de livraison",
+  // Section headings — per the founder's screenshot (no Figma text call spent; get_metadata
+  // cannot return text content, see d1-discovery.md §6).
+  'demander.section.delivery':     "Coordonnées de livraison",
+  'demander.section.quantity':     "Quantité",
   'demander.section.summary':      "Récapitulatif",
   'demander.field.quantity':       "Quantité",
+  'demander.field.available':      "{n} disponibles",
+  'demander.stepper.decrease':     "Diminuer la quantité",
+  'demander.stepper.increase':     "Augmenter la quantité",
   'demander.field.fullName':       "Nom complet du destinataire",
   'demander.field.fullName_ph':    "Prénom et nom",
-  'demander.field.address':        "Adresse complète",
-  'demander.field.address_ph':     "Rue, numéro, quartier",
+  'demander.field.fullName_helper':"Modifiable si la commande est livrée à quelqu'un d'autre",
+  // ⚑ street/quartier/ville are THREE distinct fields, not one combined address — per the
+  // founder's ruling, folding them into one string "destroys the structure the moment anything
+  // needs to parse it back" (a carrier reading a bon de livraison). Replaces the old single
+  // `demander.field.address` key, which matched a design this route no longer builds.
+  'demander.field.street':         "Rue et numéro",
+  'demander.field.street_ph':      "Ex: 12 Avenue Habib Bourguiba",
+  'demander.field.quartier':       "Quartier",
+  'demander.field.quartier_ph':    "Ex: Ennasr 2",
+  'demander.field.ville':          "Ville",
+  'demander.field.ville_ph':       "Ex: Ariana",
   'demander.field.governorate':    "Gouvernorat",
   'demander.field.governorate_ph': "Choisir un gouvernorat",
   'demander.field.phone':          "Téléphone",
   'demander.field.phone_ph':       "55 123 456",
+  // Distinct from the SERVICE phone helper below (`demander.field.phone_helper`) — a different
+  // channel (a carrier, not WhatsApp) with different wording, not reusable.
+  'demander.field.deliveryPhone_helper': "Le livreur vous contactera à ce numéro",
   'demander.field.note':           "Note pour le vendeur (optionnel)",
   'demander.field.note_ph':        "Une demande particulière ?",
+  // Summary panel row labels (E1 AND E2 share these — same numbers, same words, on both screens).
+  'demander.summary.product':      "Produit (x{n})",
+  'demander.summary.delivery':     "Livraison",
+  'demander.summary.total':        "Total à payer",
   // Service form (E1, Figma 680:56165). Labels/placeholders/helpers are the measured strings.
   'demander.field.description':        "Décrivez votre besoin",
   'demander.field.description_ph':     "Ex: Je souhaite une app mobile pour ma pharmacie avec gestion de stock...",
@@ -850,10 +872,18 @@ export const fr: Record<string, string> = {
   'succes.title':                  "Votre demande a été envoyée ✓",
   'succes.subtext':                "{name} recevra votre demande et vous contactera sur WhatsApp au {phone}.",
   'succes.subtext_generic':        "Votre demande a bien été transmise. Le freelance vous contactera sur WhatsApp.",
+  // Product order — COD delivery, not a WhatsApp negotiation, so `succes.subtext` above is the
+  // wrong channel language. Ships in the SAME PR as the recap below: shipping E1-product without
+  // this means every real product order lands on generic service-flavoured copy.
+  'succes.subtext_product':        "{shop} va préparer votre commande. Vous serez livré(e) à l'adresse indiquée, paiement à la livraison.",
+  'succes.recap.address':          "Adresse de livraison",
   'succes.steps.title':            "Prochaines étapes",
   'succes.steps.1':                "Le freelance reçoit votre demande immédiatement.",
   'succes.steps.2':                "Il vous contacte sur WhatsApp pour discuter les détails et confirmer le tarif.",
   'succes.steps.3':                "Vous vous mettez d'accord et le travail commence. Paiement à la livraison.",
+  'succes.steps.product.1':        "Le vendeur prépare votre commande.",
+  'succes.steps.product.2':        "Elle est remise au livreur pour expédition.",
+  'succes.steps.product.3':        "Vous payez à la livraison, à réception du colis.",
   'succes.cta.orders':             "Voir mes commandes",
   'succes.cta.marketplace':        "Retour au marketplace",
 
@@ -2400,7 +2430,14 @@ export const fr: Record<string, string> = {
   'seller.orderDetail.delivery':          "Livraison",
   'seller.orderDetail.recipient':         "Destinataire",
   'seller.orderDetail.address':           "Adresse",
-  'seller.orderDetail.city':              "Ville",
+  'seller.orderDetail.quartier':          "Quartier",
+  'seller.orderDetail.ville':             "Ville",
+  // 🔴 CORRECTED (E1-product PR): this key rendered `order.deliveryGovernorate`, not a city —
+  // labelling it "Ville" was wrong from the day it shipped, and became actively misleading the
+  // moment a REAL `seller.orderDetail.ville` row (above) landed one line above it in the same
+  // list. One-line fix, in scope: the collision is caused by this exact PR's own addition, not an
+  // unrelated bug picked up along the way. Zero other consumers (grepped).
+  'seller.orderDetail.city':              "Gouvernorat",
   'seller.orderDetail.buyer_note':        "Note du client",
   'seller.orderDetail.buyer_brief':       "Brief du client",
   'seller.orderDetail.brief_timeframe':   "Délai souhaité : {value}",

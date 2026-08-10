@@ -307,6 +307,26 @@ export default async function OrderDetailPage({
                   </dt>
                   <dd className="text-body text-text-primary">{order.deliveryStreet || '—'}</dd>
                 </div>
+                {/* Quartier/ville — null on the 4 seed rows that predate E1; a real order always
+                    carries both. Deliberately its own row, not folded into the street line: this
+                    is the bon-de-livraison view, and quartier is often the only thing that makes a
+                    Tunisian address findable. */}
+                {order.deliveryQuartier ? (
+                  <div className="flex flex-col gap-1">
+                    <dt className="text-body-sm text-text-secondary">
+                      {t('seller.orderDetail.quartier', lang)}
+                    </dt>
+                    <dd className="text-body text-text-primary">{order.deliveryQuartier}</dd>
+                  </div>
+                ) : null}
+                {order.deliveryVille ? (
+                  <div className="flex flex-col gap-1">
+                    <dt className="text-body-sm text-text-secondary">
+                      {t('seller.orderDetail.ville', lang)}
+                    </dt>
+                    <dd className="text-body text-text-primary">{order.deliveryVille}</dd>
+                  </div>
+                ) : null}
                 {order.deliveryGovernorate ? (
                   <div className="flex flex-col gap-1">
                     <dt className="text-body-sm text-text-secondary">

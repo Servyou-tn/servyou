@@ -23,16 +23,64 @@ function primaryImage(images: { image_url: string; display_order: number }[] | n
 
 const GOV_VALUES = new Set(GOVERNORATES.map((g) => g.value))
 
-// "{street}, {governorate}" → split on the LAST ", " (governorate is appended last and
-// contains no comma), but only when the tail is a known governorate value. A street that
-// happens to end in ", X" where X is not a governorate stays whole (gov = null).
-export function parseDeliveryAddress(address: string | null): { street: string; governorate: string | null } {
-  if (!address) return { street: '', governorate: null }
-  const idx = address.lastIndexOf(', ')
-  if (idx === -1) return { street: address, governorate: null }
-  const tail = address.slice(idx + 2)
-  if (GOV_VALUES.has(tail)) return { street: address.slice(0, idx), governorate: tail }
-  return { street: address, governorate: null }
+// ⚑ TWO FORMATS, ONE COLUMN. `orders.delivery_address` has always been the single text field
+// both the street and the governorate get folded into — there is no dedicated column for either,
+// and per the founder's ruling (fix/e1-grid-overflow discovery pass) there will not be one for
+// quartier/ville either: "extend the input type, do not fold into one string" was about keeping
+// the four pieces LOGICALLY distinct, not about adding columns.
+//
+// LEGACY (4 real seed rows, predating this form): "{street}, {governorate}" — one line, comma-fold.
+// CURRENT (this PR on): "{street}\n{quartier}\n{ville}, {governorate}" — three lines, newline-
+// delimited. Newlines are the safe delimiter BECAUSE every piece is typed into a single-line
+// `<input>`: a browser cannot put a literal newline into one (pasted text collapses it), so a
+// street/quartier/ville containing a comma — completely normal in a real address — can never be
+// mistaken for the delimiter. The comma-fold survives only on the LAST line, matching the format
+// already live in 4 real rows, so the SAME `GOV_VALUES` disambiguation both formats already share
+// needed no changes — just applying it to the tail line instead of the whole string.
+export function encodeDeliveryAddress(parts: {
+  street: string
+  quartier: string
+  ville: string
+  governorate: string
+}): string {
+  return `${parts.street}\n${parts.quartier}\n${parts.ville}, ${parts.governorate}`
+}
+
+export type ParsedDeliveryAddress = {
+  street: string
+  /** null on every LEGACY row (predates the quartier field) — never null on a row this form wrote. */
+  quartier: string | null
+  /** Same legacy caveat as quartier. */
+  ville: string | null
+  governorate: string | null
+}
+
+export function parseDeliveryAddress(address: string | null): ParsedDeliveryAddress {
+  if (!address) return { street: '', quartier: null, ville: null, governorate: null }
+
+  const lines = address.split('\n')
+  if (lines.length >= 3) {
+    const [street, quartier, tail] = lines
+    const idx = tail.lastIndexOf(', ')
+    if (idx !== -1) {
+      const gov = tail.slice(idx + 2)
+      if (GOV_VALUES.has(gov)) return { street, quartier, ville: tail.slice(0, idx), governorate: gov }
+    }
+    // Tail doesn't end in a known governorate value — still a 3-line row, just an unrecognised
+    // (or missing) governorate tag. Keep quartier; don't silently drop it to look like a legacy row.
+    return { street, quartier, ville: tail, governorate: null }
+  }
+
+  // LEGACY one-line format — identical logic to before this change, additively returning
+  // quartier/ville as null rather than omitting them from the shape.
+  const single = lines[0]
+  const idx = single.lastIndexOf(', ')
+  if (idx === -1) return { street: single, quartier: null, ville: null, governorate: null }
+  const tail = single.slice(idx + 2)
+  if (GOV_VALUES.has(tail)) {
+    return { street: single.slice(0, idx), quartier: null, ville: null, governorate: tail }
+  }
+  return { street: single, quartier: null, ville: null, governorate: null }
 }
 
 // "{description}\n\n[Délai: ...]\n[Budget: ... TND]" → its three parts. The optional tags are
@@ -80,6 +128,10 @@ export type OrderDetail = {
   // Product delivery details (null for services).
   deliveryName: string | null
   deliveryStreet: string | null
+  /** null on the 4 pre-E1 seed rows; always set on a row this form wrote. */
+  deliveryQuartier: string | null
+  /** Same legacy caveat as deliveryQuartier. */
+  deliveryVille: string | null
   deliveryGovernorate: string | null
   /**
    * Product: the delivery contact. Service: the number the buyer chose for THIS request
@@ -87,6 +139,17 @@ export type OrderDetail = {
    */
   deliveryPhone: string | null
   buyerNote: string | null
+  /**
+   * `orders.unit_price_tnd` — frozen at insert, never a live re-fetch. E2 shows what was
+   * actually charged, not what the catalogue says today; a seller editing the price five
+   * minutes after checkout must not change what the buyer's own confirmation page reports.
+   * Null only for orders older than migration 20260729111547 — cannot occur for an order this
+   * screen navigates to straight from `submitProductRequest`, but the type stays honest either way.
+   */
+  unitPriceFrozen: number | null
+  /** `orders.delivery_fee_tnd` — frozen at insert, same reasoning as unitPriceFrozen. Null for
+   *  every service order and for orders older than migration 20260801112027. */
+  deliveryFeeFrozen: number | null
   // Service request details (null for products), unfolded from buyer_note.
   serviceDescription: string | null
   serviceTimeframe: string | null
@@ -111,6 +174,8 @@ type OrderRow = {
   cancelled_by: 'buyer' | 'seller' | null
   cancellation_reason: string | null
   received_at: string | null
+  unit_price_tnd: number | string | null
+  delivery_fee_tnd: number | string | null
   products:
     | {
         id: string
@@ -144,6 +209,7 @@ export const getOrderDetail = cache(
         `id, order_type, status, quantity, buyer_id, seller_id,
          delivery_name, delivery_address, delivery_phone, buyer_note,
          created_at, updated_at, cancelled_by, cancellation_reason, received_at,
+         unit_price_tnd, delivery_fee_tnd,
          products ( id, title, price_tnd, shop_id,
                     categories ( name_fr ),
                     shops ( id, name, city, logo_url ),
@@ -180,15 +246,21 @@ export const getOrderDetail = cache(
     if (row.order_type === 'product') {
       const p = one(row.products)
       const shop = one(p?.shops)
-      const { street, governorate } = parseDeliveryAddress(row.delivery_address)
+      const { street, quartier, ville, governorate } = parseDeliveryAddress(row.delivery_address)
       return {
         ...base,
         orderType: 'product',
         deliveryName: row.delivery_name,
         deliveryStreet: street || null,
+        deliveryQuartier: quartier,
+        deliveryVille: ville,
         deliveryGovernorate: governorate,
         deliveryPhone: row.delivery_phone,
         buyerNote: row.buyer_note,
+        // NO `??` fallback on either — see the field docs. A recap built on a live re-fetch would
+        // report a price or fee the buyer was never actually charged.
+        unitPriceFrozen: row.unit_price_tnd != null ? Number(row.unit_price_tnd) : null,
+        deliveryFeeFrozen: row.delivery_fee_tnd != null ? Number(row.delivery_fee_tnd) : null,
         serviceDescription: null,
         serviceTimeframe: null,
         serviceBudget: null,
@@ -227,10 +299,17 @@ export const getOrderDetail = cache(
       orderType: 'service',
       deliveryName: null,
       deliveryStreet: null,
+      deliveryQuartier: null,
+      deliveryVille: null,
       deliveryGovernorate: null,
       // Service orders carry a contact number, not an address (E1 writes it).
       deliveryPhone: row.delivery_phone,
       buyerNote: row.buyer_note,
+      // orders_delivery_fee_requires_product forbids a fee on a service row; unit_price_tnd IS
+      // frozen for services too, but E2's service Recap already reads the live join (item.price)
+      // and has no line item that needs the frozen value, so it stays unread here.
+      unitPriceFrozen: null,
+      deliveryFeeFrozen: null,
       serviceDescription: parsed.description,
       serviceTimeframe: parsed.timeframe,
       serviceBudget: parsed.budget,
