@@ -122,6 +122,41 @@ container height is the slip; build the circle 44×44.
 64px thumbs, start-aligned, and the design shows exactly as many thumbs as images (5/5). A product
 with 3 images gets a 3-thumb strip, not 5 slots.
 
+**🔴 CORRECTION (fix/d1-grid-overflow, 2026-08-10) — every `600` above is a value measured AT 1440,
+NOT a constant the layout can enforce below it.** The first build (`d3f4b39`) read `galleryCol 600`
+literally and shipped `lg:grid-cols-[600px_504px]` — two RIGID tracks whose sum, `600 + 32 + 504 =
+1136`, is fixed regardless of viewport. Below ~1424px of available content width (240 sidebar + 64
+padding + scrollbar gutter), 1136 does not fit, and the grid overflowed its own shell by up to 384px
+— founder-reproduced at his 1366px window, sidebar (`position: sticky`) dragged off-screen along
+with the scroll. Measured broken band: **[1024, 1407]** inclusive; clean at 1408+. Fixed in
+`fix/d1-grid-overflow` (commit follows this doc update).
+
+**The fix: `galleryCol` becomes `minmax(0, 600px)`; `infoCol` stays the rigid `504px`.** 600 is now
+a CEILING the track grows to when the shell has room (true at 1440, where it renders exactly
+`600×600` per this section) and shrinks below on demand — measured `511×511` at 1366, `585×585` at
+1440 itself (the shell's *available* content width there is 1121, one CSS pixel short of the full
+1136 the frame implies — see the note below), and as small as `169×169` at the 1024 floor of the
+`lg:` breakpoint. **`y=612` for the thumb strip, and every other pixel value in §2c, is therefore
+also a 1440 point-value, not a floor.** The strip itself never breaks: it is `w-full overflow-x-auto`
+already (built for the no-375-frame mobile ramp), so at 1024 its own 368px content simply becomes
+scrollable within a 169px box instead of overflowing the page — a real UX squeeze at the very bottom
+of the `lg:` band, flagged to the founder as an observation, not fixed in that PR.
+
+**Why `infoCol` was left rigid.** D2's identical shape — `lg:grid-cols-[minmax(0,750px)_354px]` —
+already puts the flexible track on the MEDIA side and keeps the text/CTA side fixed. Shrinking
+`infoCol` instead would wrap the price block and the CTA label first, which is worse than a smaller
+photo. This is why the pattern generalizes as "the fixed-width column is text/controls, the flexible
+column is media" rather than "make both minmax" — the second option is more correct on paper but
+was not what D2 already established in-repo, and the founder's fix directive was explicit: "apply
+an existing in-repo rule rather than inventing one."
+
+**Note on the 1440 shortfall:** even at the frame's own native width, the shell's real available
+content width for the grid measured 1121px against the frame's `1136` — the frame assumes zero
+scrollbar-gutter reservation, the browser does not. This 15px gap is present on every measured D1/C1
+page at every width (it is the site-wide scrollbar constant, not a D1 defect) and is why `585`, not
+`600`, is what actually renders at a bare 1440px viewport; only a WIDER-than-1440 viewport reaches
+the full 600 ceiling.
+
 ### 2d. infoCol `562:39180` — 📐 order and gaps confirmed, uniform 16
 
 | child | id | y | w × h |

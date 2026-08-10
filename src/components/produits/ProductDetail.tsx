@@ -106,8 +106,25 @@ export function ProductDetail({
           <span className="text-text-secondary">{product.title}</span>
         </nav>
 
-        {/* aboveFold — 600 / 32 / 504, top-aligned. Single column below lg (INFERRED, no 375 frame). */}
-        <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[600px_504px] lg:items-start lg:gap-8">
+        {/* aboveFold — 600 / 32 / 504, top-aligned. Single column below xl (INFERRED, no 375 frame).
+            ⚑ GALLERY TRACK IS `minmax(0,600px)`, NOT a bare `600px`. 600 is the value measured at
+            1440 (d1-discovery.md §2), not a floor the layout can enforce — a bare `600px 504px`
+            needs 1136 of content-box width regardless of viewport, and content-box only reaches
+            1136 at ~1424+ (240 sidebar + 64 padding + scrollbar gutter). A rigid pair overflowed the
+            shell by up to 384px at 1024–1407, dragging the sticky sidebar off-screen with it; a
+            flexible gallery track alone still isn't enough — see the next note.
+            🔴 TWO-COLUMN SWITCH IS `xl:` (1280), NOT `lg:` (1024). It was `lg:` for one PR: at 1024
+            the shell leaves only ~705 of content for a fixed 504 infoCol + 32 gap, so the gallery
+            track — even as `minmax(0,600px)` — computed to 169×169, a thumbnail on a page whose
+            whole job is the photo. That is not what `minmax` was for; a flexible track still needs
+            somewhere to flex TO. Below `xl` the stack applies instead — gallery full-width, info
+            below it — the same shape already verified clean at 375. D2 does not hit this because
+            its second column is 354, not 504: `minmax(0,750px)_354px` has ~150px more room to give
+            the flexible side at the same viewport, which is why copying D2's `lg:` verbatim was not
+            actually copying D2's OUTCOME. The FIXED 504 infoCol stays untouched either way:
+            shrinking it wraps the price block and CTA first, which is worse than a shorter
+            gallery. */}
+        <div className="flex flex-col gap-6 xl:grid xl:grid-cols-[minmax(0,600px)_504px] xl:items-start xl:gap-8">
           <ProductGallery images={product.images} title={product.title} productId={product.id} />
 
           {/* infoCol — uniform gap 16 between all six children, measured. */}
