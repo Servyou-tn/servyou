@@ -61,8 +61,12 @@ export function ProductGallery({
           <ProductCoverImage
             src={img.url}
             alt={title}
-            // 600 at lg+, full viewport below it — matches the layout ramp in the parent.
-            sizes="(max-width: 1023px) 100vw, 600px"
+            // 600 at xl+, full viewport below it — matches the layout ramp in the parent (moved
+            // with the grid breakpoint in ProductDetail.tsx:110; a stale 1023px split here would
+            // tell next/image the box is 600px wide across the whole 1024–1279 stacked-full-width
+            // band, and it would fetch an undersized source for the one element on this page whose
+            // whole job is showing the photo clearly).
+            sizes="(max-width: 1279px) 100vw, 600px"
             // Only the first is the LCP candidate; the rest ride the normal lazy path but are in
             // the viewport anyway, so they resolve well before a user reaches for a thumb.
             priority={i === 0}
@@ -80,12 +84,18 @@ export function ProductGallery({
     <div className="flex flex-col gap-3">
       {/* main — square, fluid at every width, capped at the 600 measured at 1440.
           ⚑ NOT `lg:h-[600px] lg:w-[600px]`. The parent grid column is `minmax(0,600px)` (see
-          ProductDetail.tsx:110's note), so it shrinks below 600 whenever the shell can't fit it —
-          1024–1407 in the measured band. A fixed 600×600 box ignores that and overflows its OWN
-          column by the same margin the grid used to overflow the shell; it would just relocate the
-          bug, not fix it. `aspect-square` + `w-full` + `lg:max-w-[600px]` tracks the column's real
-          rendered width at every size and never exceeds the measured 600. */}
-      <div className="relative aspect-square w-full overflow-hidden rounded-xl border border-border-subtle bg-surface-sunken lg:max-w-[600px]">
+          ProductDetail.tsx:110's note), so it shrinks below 600 whenever the shell can't fit it. A
+          fixed 600×600 box ignores that and overflows its OWN column by the same margin the grid
+          used to overflow the shell; it would just relocate the bug, not fix it.
+          🔴 THE CAP IS `xl:`, MATCHING THE GRID'S BREAKPOINT — NOT `lg:`. The two must move
+          together: below `xl` the parent is a plain flex column (no grid, no shared row with
+          infoCol), so the gallery is meant to be genuinely full-width there, the same as at 375. An
+          `lg:max-w-[600px]` left behind after the grid moved to `xl:` would silently cap the
+          stacked-mode gallery at 600 for the whole 1024–1279 band, for no reason — that width isn't
+          shared with anything in that mode. `aspect-square` + `w-full` + `xl:max-w-[600px]` tracks
+          the column's real rendered width once the grid engages, and never exceeds the measured
+          600. */}
+      <div className="relative aspect-square w-full overflow-hidden rounded-xl border border-border-subtle bg-surface-sunken xl:max-w-[600px]">
         {images.length > 0 ? (
           stack
         ) : (
