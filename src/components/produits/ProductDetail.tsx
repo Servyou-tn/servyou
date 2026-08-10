@@ -106,8 +106,17 @@ export function ProductDetail({
           <span className="text-text-secondary">{product.title}</span>
         </nav>
 
-        {/* aboveFold — 600 / 32 / 504, top-aligned. Single column below lg (INFERRED, no 375 frame). */}
-        <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[600px_504px] lg:items-start lg:gap-8">
+        {/* aboveFold — 600 / 32 / 504, top-aligned. Single column below lg (INFERRED, no 375 frame).
+            ⚑ GALLERY TRACK IS `minmax(0,600px)`, NOT a bare `600px`. 600 is the value measured at
+            1440 (d1-discovery.md §2), not a floor the layout can enforce — a bare `600px 504px`
+            needs 1136 of content-box width regardless of viewport, and content-box only reaches
+            1136 at ~1424+ (240 sidebar + 64 padding + scrollbar gutter). Below that the grid
+            overflowed the shell by up to 384px at 1024–1407, dragging the sticky sidebar off-screen
+            with it. D2 already carries this exact shape — `minmax(0,750px)_354px` — clean at 1366;
+            this brings D1 in line with it rather than inventing a second rule. The FIXED 504
+            infoCol is deliberately untouched: shrinking it would wrap the price block and CTA
+            first, which is worse than a shorter gallery. */}
+        <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[minmax(0,600px)_504px] lg:items-start lg:gap-8">
           <ProductGallery images={product.images} title={product.title} productId={product.id} />
 
           {/* infoCol — uniform gap 16 between all six children, measured. */}

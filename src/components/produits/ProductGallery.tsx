@@ -78,8 +78,14 @@ export function ProductGallery({
 
   return (
     <div className="flex flex-col gap-3">
-      {/* main — 600² at lg+, square and fluid below. `overflow-hidden` clips the stacked layers. */}
-      <div className="relative aspect-square w-full overflow-hidden rounded-xl border border-border-subtle bg-surface-sunken lg:aspect-auto lg:h-[600px] lg:w-[600px]">
+      {/* main — square, fluid at every width, capped at the 600 measured at 1440.
+          ⚑ NOT `lg:h-[600px] lg:w-[600px]`. The parent grid column is `minmax(0,600px)` (see
+          ProductDetail.tsx:110's note), so it shrinks below 600 whenever the shell can't fit it —
+          1024–1407 in the measured band. A fixed 600×600 box ignores that and overflows its OWN
+          column by the same margin the grid used to overflow the shell; it would just relocate the
+          bug, not fix it. `aspect-square` + `w-full` + `lg:max-w-[600px]` tracks the column's real
+          rendered width at every size and never exceeds the measured 600. */}
+      <div className="relative aspect-square w-full overflow-hidden rounded-xl border border-border-subtle bg-surface-sunken lg:max-w-[600px]">
         {images.length > 0 ? (
           stack
         ) : (
