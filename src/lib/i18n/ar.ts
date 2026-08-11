@@ -1045,6 +1045,54 @@ export const ar: Record<string, string> = {
   'devenir.vendeur.already.subheadline':"واصل إدارة متجرك من مساحتك المخصّصة.",
   'devenir.vendeur.already.manage':    "إدارة متجري",
 
+  // ─── /ma-boutique/creer (G2 step 1 "Bases") ──────────────────────────────────
+  'shop.create.page_title':        "أنشئ متجري",
+  'shop.create.page_subtitle':     "خطوتان لإطلاق متجرك. يمكنك تعديل كل شيء لاحقًا.",
+  'shop.create.crumb_devenir':     "كن بائعًا",
+  'shop.create.crumb_current':     "أنشئ متجري",
+
+  'shop.create.step1_label':       "الأساسيات",
+  'shop.create.step2_label':       "الإعدادات",
+
+  'shop.create.logo_choose':       "اختيار شعار",
+  'shop.create.logo_replace':      "تغيير الشعار",
+  'shop.create.logo_helper':       "يظهر شعارك في متجرك وعلى إيصالات التوصيل. (اختياري لكن موصى به)",
+
+  'shop.create.banner_choose':     "اختيار صورة",
+  'shop.create.banner_replace':    "تغيير الصورة",
+  'shop.create.banner_remove':     "إزالة الصورة",
+  'shop.create.banner_helper':     "صورة رأس متجرك. (اختياري)",
+
+  'shop.create.name_label':        "اسم المتجر",
+  'shop.create.name_ph':           "مثال: متجر أميرة",
+  'shop.create.name_helper':       "يجب أن يكون فريدًا. هذا هو الاسم الذي سيراه عملاؤك.",
+
+  'shop.create.city_label':        "الولاية",
+  'shop.create.city_ph':           "اختر ولاية",
+
+  'shop.create.desc_label':        "الوصف",
+  'shop.create.desc_ph':           "صف متجرك: ما الذي تبيعه، تخصصك، ما الذي يميزك…",
+  'shop.create.desc_helper':       "50 حرفًا على الأقل. يساعد المشترين على فهم متجرك.",
+
+  'shop.create.save_draft':        "حفظ ومتابعة لاحقًا",
+  'shop.create.next':              "التالي",
+  'shop.create.submitting':        "جارٍ الإنشاء…",
+
+  'shop.create.error.form':          "يرجى تصحيح الحقول باللون الأحمر.",
+  'shop.create.error.notAuth':       "انتهت جلستك. يرجى إعادة تسجيل الدخول.",
+  'shop.create.error.name_required': "اسم المتجر مطلوب.",
+  'shop.create.error.name_max':      "لا يمكن أن يتجاوز الاسم {max} حرفًا.",
+  'shop.create.error.name_taken':    "اسم المتجر هذا مُستخدم بالفعل.",
+  'shop.create.error.name_invalid':  "اسم المتجر غير صالح.",
+  'shop.create.error.city_required': "يرجى اختيار ولاية.",
+  'shop.create.error.desc_min':      "يجب أن يحتوي الوصف على {min} حرفًا على الأقل.",
+  'shop.create.error.desc_max':      "لا يمكن أن يتجاوز الوصف {max} حرفًا.",
+  'shop.create.error.age_gate':      "يجب أن يكون عمرك 18 عامًا أو أكثر لتصبح بائعًا.",
+
+  'shop.create.freelancerBlocked.headline':    "أنت بالفعل مستقلّ على Servyou",
+  'shop.create.freelancerBlocked.subheadline': "التبديل من مستقلّ إلى بائع غير متاح بعد. تواصل معنا إذا كنت بحاجة إلى ذلك.",
+  'shop.create.freelancerBlocked.manage':      "إدارة ملفي كمستقلّ",
+
   // ─── /devenir-freelance (role-upgrade marketing) ─────────────────────────────
   'devenir.freelance.hero.eyebrow':      "للمستقلّين",
   'devenir.freelance.hero.headline':     "اعمل كمستقل. واعثر على عملائك الأوائل.",

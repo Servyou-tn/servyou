@@ -1035,6 +1035,54 @@ export const fr: Record<string, string> = {
   'devenir.vendeur.already.subheadline':"Continuez à gérer votre boutique dans votre espace dédié.",
   'devenir.vendeur.already.manage':    "Gérer ma boutique",
 
+  // ─── /ma-boutique/creer (G2 step 1 "Bases") ──────────────────────────────────
+  'shop.create.page_title':        "Créer ma boutique",
+  'shop.create.page_subtitle':     "Deux étapes pour lancer votre boutique. Vous pourrez tout modifier plus tard.",
+  'shop.create.crumb_devenir':     "Devenir vendeur",
+  'shop.create.crumb_current':     "Créer ma boutique",
+
+  'shop.create.step1_label':       "Bases",
+  'shop.create.step2_label':       "Configuration",
+
+  'shop.create.logo_choose':       "Choisir un logo",
+  'shop.create.logo_replace':      "Changer le logo",
+  'shop.create.logo_helper':       "Votre logo apparaît sur votre boutique et vos bons de livraison. (optionnel mais recommandé)",
+
+  'shop.create.banner_choose':     "Choisir une image",
+  'shop.create.banner_replace':    "Changer l'image",
+  'shop.create.banner_remove':     "Retirer l'image",
+  'shop.create.banner_helper':     "L'image d'en-tête de votre boutique. (optionnel)",
+
+  'shop.create.name_label':        "Nom de la boutique",
+  'shop.create.name_ph':           "Ex. Boutique Amira",
+  'shop.create.name_helper':       "Doit être unique. C'est le nom que verront vos clients.",
+
+  'shop.create.city_label':        "Ville",
+  'shop.create.city_ph':           "Choisir un gouvernorat",
+
+  'shop.create.desc_label':        "Description",
+  'shop.create.desc_ph':           "Décrivez votre boutique : ce que vous vendez, votre spécialité, ce qui vous distingue…",
+  'shop.create.desc_helper':       "Minimum 50 caractères. Aide les acheteurs à comprendre votre boutique.",
+
+  'shop.create.save_draft':        "Enregistrer et continuer plus tard",
+  'shop.create.next':              "Suivant",
+  'shop.create.submitting':        "Création en cours…",
+
+  'shop.create.error.form':          "Veuillez corriger les champs en rouge.",
+  'shop.create.error.notAuth':       "Votre session a expiré. Veuillez vous reconnecter.",
+  'shop.create.error.name_required': "Le nom de la boutique est requis.",
+  'shop.create.error.name_max':      "Le nom ne peut pas dépasser {max} caractères.",
+  'shop.create.error.name_taken':    "Ce nom de boutique est déjà pris.",
+  'shop.create.error.name_invalid':  "Le nom de la boutique n'est pas valide.",
+  'shop.create.error.city_required': "Veuillez choisir une ville.",
+  'shop.create.error.desc_min':      "La description doit contenir au moins {min} caractères.",
+  'shop.create.error.desc_max':      "La description ne peut pas dépasser {max} caractères.",
+  'shop.create.error.age_gate':      "Vous devez avoir 18 ans ou plus pour devenir vendeur.",
+
+  'shop.create.freelancerBlocked.headline':    "Vous êtes déjà freelance sur Servyou",
+  'shop.create.freelancerBlocked.subheadline': "Le changement de rôle freelance → vendeur n'est pas encore disponible. Contactez-nous si vous en avez besoin.",
+  'shop.create.freelancerBlocked.manage':      "Gérer mon profil freelance",
+
   // ─── /devenir-freelance (role-upgrade marketing) ─────────────────────────────
   'devenir.freelance.hero.eyebrow':      "Pour les freelances",
   'devenir.freelance.hero.headline':     "Travaillez en freelance. Trouvez vos premiers clients.",
