@@ -20,6 +20,7 @@ export type StatusValue =
   | 'new' | 'best-seller' | 'sale' | 'stock-faible' | 'rupture-stock' | 'acceptee' | 'expediee'
   | 'arrivee' | 'ouverte' | 'pourvue' | 'expiree' | 'disponible' | 'occupe' | 'vacances' | 'suspendu'
   | 'masqué' | 'préparée' | 'reçue' | 'annulée' | 'refusée' | 'freelance' | 'boutique' | 'client'
+  | 'optional' | 'complete'
 
 type StatusTone =
   | 'success' | 'warning' | 'info' | 'info-strong' | 'accent' | 'neutral' | 'muted' | 'danger'
@@ -53,6 +54,8 @@ const STATUS_TONE: Record<StatusValue, StatusTone> = {
   new: 'solid-success',
   sale: 'solid-accent',
   'best-seller': 'highlight',
+  optional: 'neutral',
+  complete: 'success',
 }
 
 const BASE = 'inline-flex items-center whitespace-nowrap rounded-full px-3 py-1 text-xs font-semibold'

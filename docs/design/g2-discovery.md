@@ -387,3 +387,249 @@ shop" retry path (name pre-check races a concurrent insert) — covered by the c
 was seeded under 18, since `createUser`'s DOB is a script parameter, not exercised in this pass.
 Both are straightforward re-derivations of already-shipped, already-tested code paths
 (`enforce_seller_type_age_gate`, `resolveOwnedShopId`), not new logic this PR wrote.
+
+---
+
+# /ma-boutique/creer/configuration (G2 step 2 — Configuration) — discovery record
+
+**Provenance.** 2026-08-11, same day as step 1. **Calls spent: one** — a single `get_metadata` read
+of `556:37583` ("box"), file `jDNjJ8D1gnXiW7Ry3GkN4U`, per the brief's budget. The page shell
+(topbar/sidebar/column/footer geometry) is NOT re-measured — it's the same wizard shell step 1
+already measured (§2, §8), and this frame (`556:37564`, 824×1369) is Figma's own hug-cropped
+per-step artboard: `box` returns at local `x=32`, and `32+760+32=824` — the same 760px column,
+32px gutter, just packaged as its own top-level frame instead of nested in a 1200-wide "right"
+panel. Stepper (`556:37566`) and footer (`556:37605`) were **not** read this pass — see §13.
+
+## 12. The box (`556:37583`, 760×1027) — 📐 MEASURED
+
+```
+box 760×1027 (24px padding all sides, closes exactly: 24+979+24=1027)
+  subline @(24,24) 712×21  "Ces réglages sont facultatifs. Vous pouvez les définir maintenant ou plus tard."
+  accordion-group @(24,61) 712×942   (gap 16 from subline; 61-24-21=16)
+    acc-type        712×66   collapsed, no body drawn
+    acc-livraison   712×401  @y90  (gap 24)  — header 66 + body 335
+    acc-paiement    712×337  @y515 (gap 24)  — header 66 + body 271
+    acc-categories  712×66   @y876 (gap 24)  collapsed, no body drawn
+```
+`66+24+401+24+337+24+66 = 942` ✓ — exactly 4 sections, uniform 24px gap, no 5th section fits.
+
+**⚑ Every accordion also carries a hidden (`hidden=true`) 1136×1079 "body" instance** —
+`port-rows`/"Ajouter un projet"/"Lien portfolio externe" copy, i.e. H6/H7's freelancer *portfolio*
+accordion body, pasted onto all four sections identically (same node shape, same copy, same
+hidden=true). This is Figma authoring debris from cloning an H-side accordion component, not part
+of this design — not built, not counted as a 5th region anywhere in this doc.
+
+### 12a. `acc-livraison` body (712×335) — MEASURED
+
+```
+field "Mode de livraison"        664×119  — label(17) + gap8 + 3 Radio instances (166×26/174×26/150×26, gap 8)
+field "Ma société de livraison"  664×172  — label(17) + gap8 + Select-Trigger(664×97) + gap8 + caption(2 lines, 42)
+  caption verbatim: "Options : First Delivery · Aramex · Droppex · Navex · Best Delivery · Intigo ·
+                      Mes Colis · La Poste (Rapid-Poste) · Livraison personnelle · Autre"
+```
+Per ruling 2, "Ma société de livraison" is built as free text + `<datalist>` of those ten literal
+names, not a real Select — so the 97px trigger height (which would encode an open dropdown panel,
+never resolved from `get_metadata`'s instance-opacity limit anyway) is moot; the field renders at
+Input's standard 44px.
+
+### 12b. `acc-paiement` body (712×271) — MEASURED
+
+```
+text (measured verbatim) @y4  664×21
+  "Le paiement à la livraison (COD) est activé par défaut. Ajoutez d'autres options si vous les acceptez."
+checks @y41  664×206 — 6 Checkbox instances, gap 10, widths 431/164/55/89/71/67
+```
+Six checkboxes = exactly `PAYMENT_METHODS.length` (cod/bank_transfer/d17/flouci/konnect/other). The
+first (431px, widest) is cod — consistent with ruling 3's locked/disabled state needing the longest
+label+caption. Built in `PAYMENT_METHODS` array order.
+
+### 12c. `acc-type` / `acc-categories` bodies — UNMEASURED (headers only, no body drawn)
+
+Both collapsed in this frame; `get_metadata` returned zero body content for either. Everything
+inside them below is **inferred**, not measured — flagged the same way step 1 flagged its own
+unmeasured stepper fills (§8).
+
+## 13. What this PR does NOT re-measure, and why that's safe
+
+- **Footer (`556:37605`) — not read.** Step 1's *own measured record* (§2) already states this
+  frame's footer: `Button (secondary, left) 288×40` + `nav` containing `Button "Précédent" —
+  hidden=true` + `Button "Suivant" 91×40`. Absent a second call, step 2's footer is built **identical
+  to step 1's measured footer** — secondary start, primary end, no Précédent — rather than assumed
+  to differ. If the founder wants a working "back to Bases" control, that's a second `get_metadata`
+  call on `556:37605` plus a change to step 1's own shop-exists guard, which today bounces any
+  shop-holder straight to `/tableau-de-bord-vendeur` — out of scope here.)
+- **Stepper (`556:37566`) — not read.** Reused verbatim: same two steps ("Bases"/"Configuration",
+  already in `shop.create.step1_label`/`step2_label`), same component. Step 1 renders `active`/
+  `upcoming`; step 2 needs a third **`done`** state for step 1's own circle (filled + checkmark,
+  inferred — no Figma read backs this glyph choice, same inferred-not-measured category as step 1's
+  own active/upcoming fills, §8).
+- **Page header (breadcrumb/H1/subline) — not read.** Reused verbatim from step 1
+  (`shop.create.page_title`/`page_subtitle`/`crumb_devenir`/`crumb_current`) — same wizard, same
+  framing copy, only the Stepper's active step and the box content change between the two screens.
+
+## 14. The two orphan fields — `working_hours` / `location_detail`
+
+The brief lists seven settable fields; the frame draws four accordion bodies. `shop_type`,
+`delivery_setup`, `preferred_carriers`, `shop_payment_methods`, and `shop_categories` account for
+five of the seven boxes across acc-type/acc-livraison/acc-paiement/acc-categories, leaving
+`working_hours` and `location_detail` with no drawn home — and §12's arithmetic (942 exact) proves
+there is no undrawn fifth accordion for them to occupy.
+
+**Resolved: both live inside `acc-type`'s undrawn body**, alongside the `shop_type` control.
+`shop_type` (physical/online_only/dropshipper) is the one question in this form that determines
+whether an address or opening hours are even meaningful to the buyer — a `dropshipper` or
+`online_only` shop may have neither — so grouping "what kind of shop is this, and if it has a
+physical presence, when/where" reads as one coherent section, not three unrelated ones. This is
+also the most likely reason the pre-seeded i18n block (§15) already carries
+`field_working_hours`/`hint_working_hours` and `field_location_detail`/`hint_location_detail`
+sitting right next to `field_shop_type` — the keys were prepared for exactly this grouping.
+**Inferred, not measured** — logged the same way as everything else in §12c.
+
+`acc-type`'s body, built: `shop_type` (native `<select>`, see §15) → `working_hours` (`Input`,
+`field_working_hours`/`hint_working_hours`) → `location_detail` (`Input`,
+`field_location_detail`/`hint_location_detail`), `gap-5` (20px), matching step 1's own field-to-field
+spacing convention inside its box.
+
+## 15. i18n — reuse vs. new, and the rule applied
+
+The brief's twelve `boutique.shop_type_*` / `delivery_setup_*` / `payment_method_*` keys (verified
+present in **both** `fr.ts` and `ar.ts`, parity confirmed — 35/35 `boutique.*` config-shaped keys
+match count across both files) are consumed via `shop-config.ts`'s existing `shopTypeLabelKey` /
+`deliverySetupLabelKey` / `paymentMethodLabelKey` helpers, unchanged.
+
+Beyond those twelve, a second pre-seeded block already sits in `fr.ts`/`ar.ts` (`field_shop_type`,
+`field_delivery_setup`, `field_working_hours`, `field_location_detail`, `field_preferred_carriers`,
+`field_payment_methods`, `field_category_specialties`, matching `hint_*`/`placeholder_*`, and
+`action_create`/`action_save`) — unconsumed by any code today (grep confirms zero call sites), but
+too precisely shaped for this exact page to be coincidental. `action_create` = **"Créer ma
+boutique"**, verbatim what the brief specifies for this page's own final CTA.
+
+**Rule applied where pre-seeded copy and Figma's measured copy disagree:** measured text wins where
+Figma actually drew it; pre-seeded keys win where Figma drew nothing (§12c's two collapsed
+sections). Concretely:
+- `field_shop_type` = "Type de boutique" happens to match the measured header text exactly (minus
+  the dynamic "(optionnel)" suffix, dropped everywhere — see badge note below) → reused as-is.
+- `field_delivery_setup` = "Mode de livraison" matches §12a's measured field label **verbatim** →
+  reused.
+- `field_preferred_carriers` = "Transporteurs préférés" does NOT match the measured "Ma société de
+  livraison" — reused anyway (existing-key-over-new-string), logged as a wording deviation from the
+  literal Figma text.
+- `hint_preferred_carriers` = "Ex : First Delivery, Aramex, Mylerz, Best Delivery" (short, existing)
+  is the **visible caption**; the full ten-name **measured** list (§12a) becomes the `<datalist>`'s
+  suggestion options instead — both keys used, for two different jobs, nothing dropped.
+- `placeholder_shop_type` = "— Sélectionner —" is the tell that `shop_type` was originally drafted
+  as a select, not radios — used as the empty option of a native `<select>` (mirrors step 1's own
+  Ville field, `ProductRequestForm.tsx`'s `selectField` class), since acc-type's body was never
+  drawn and this is the only direct evidence of intended control type for that field.
+  `placeholder_delivery_setup` (same shape) goes **unused** — `delivery_setup` WAS measured as 3
+  radios (§12a), and measured content overrides an unmeasured placeholder's implied assumption.
+- `field_payment_methods` = "Modes de paiement acceptés" does not match the measured header "Moyens
+  de paiement" closely enough to reuse as the section title without contradicting §12's own text —
+  a **new** key is added for the header; `field_payment_methods` is logged unused-for-now (candidate
+  for G3's future edit page, which was very likely this block's other intended consumer).
+- `field_category_specialties` = "Spécialités" — same call: doesn't match measured "Catégories de la
+  boutique" closely enough; a **new** section-header key is added, this one logged unused-for-now.
+
+**New keys added** (none of the above covers): `boutique.config.badge_optional` / `badge_complete`
+(the accordion StatusPill text — genuinely new UI chrome, not a duplicate of anything), `section_
+livraison` / `section_paiement` / `section_categories` (measured header text, minus "(optionnel)"),
+`cod_note` (§12b's measured instructional sentence, verbatim), `cod_locked` (ruling 3's "verrouillé
+— défaut universel", paraphrased, no measured source), and `shop.create.saving` ("Enregistrement en
+cours…" — step 1's `submitting` = "Création en cours…" reads wrong for an UPDATE, which is all step
+2 ever does).
+
+## 16. Badge computation (ruling 4) — one rule, not four
+
+**Complet iff the owner has supplied at least one value the owner actually controls; Optionnel
+otherwise.** Applied per section:
+
+| section | Complet when |
+|---|---|
+| acc-type | `shopType \|\| workingHours \|\| locationDetail` (any of the three) |
+| acc-livraison | `deliveryMode \|\| carrierText.trim()` — the exact "delivery mode set, carrier empty" case ruling 4 flags resolves to Complet, since deliveryMode alone is a real owner-supplied value |
+| acc-paiement | `paymentMethods.size > 1` — i.e. more than just the locked `cod`. cod is not owner-controlled (ruling 3: written regardless, un-uncheckable), so it cannot count toward "the owner configured this section" |
+| acc-categories | `categoryIds.size > 0` |
+
+Computed from **live client state** on every render, not from the server-loaded initial values —
+so unchecking the last extra payment method flips the badge back to Optionnel immediately, before
+save, not after a round trip.
+
+## 17. Write path — resolved against the advisor's three corrections
+
+1. **`shopId` is never accepted from the client.** Unlike step 1 (which had to hand a freshly
+   `.insert()`-returned id to the upload actions because nothing else could name the row yet), step
+   2 is a pure update against a shop that's known to exist by the time the page renders — the save
+   action re-derives it itself via `resolveOwnedShopId(supabase, user.id)`, same as the page guard.
+   Removes a client-supplied-shopId IDOR surface that step 1 never had to worry about.
+2. **Unchecking a previously-saved payment method / category must delete its row**, not just skip
+   re-inserting it — a naive "insert what's checked" leaves stale rows behind. Both child tables are
+   reconciled against their current DB state with the same pure set-diff (`reconcile()`,
+   `src/lib/shops/reconcile.ts`, unit-tested — data-integrity logic, must-test per CLAUDE.md):
+   `toDelete = previous \ selected`, `toInsert = selected \ previous`. `cod` is unconditionally unioned
+   into the selected set before the diff runs (ruling 3).
+3. **Free text columns save as `null`, not `''`**, when empty — trimmed server-side, matching
+   `working_hours`/`location_detail`/`preferred_carriers`'s nullable-text shape and keeping the
+   badge rule (§16, which reads `''` as falsy either way, but the DB should reflect "never set" as
+   NULL, not an empty string) honest with what's actually stored.
+
+`shop_type`/`delivery_setup` are validated with `z.enum(SHOP_TYPES)` / `z.enum(DELIVERY_SETUPS)`
+(both already exported from `shop-config.ts`) so no value outside the CHECK constraint's own set can
+reach the query.
+
+`categoryIds` gets the same treatment `shop_categories` has no CHECK for: `categories` is one flat
+table shared by products/services/job-posts/shop_categories (`product-categories.ts`'s own header),
+so a UUID-shaped-but-wrong-kind id would pass `z.string().uuid()` and the FK constraint without
+issue. The action re-derives the valid set via `getProductCategories()` (product/both kind) and
+filters the client's list against it before reconciling — the exact defect class that file's header
+already documents being fixed twice on the mission side (#112) and the product side (G6); this is
+the shop-config side of the same fix, not a new pattern.
+
+## 18. Guard (ruling 1)
+
+```
+resolveOwnedShopId(supabase, user.id)
+  ok: true             → render the form (fetch shop row + child tables + category list)
+  ok:false, no_shop     → redirect /ma-boutique/creer  (step 1's own guard then decides: form for a
+                            consumer/shop_owner-no-shop, AlreadyHaveRole for a freelancer — this
+                            route doesn't need to re-derive any of that, step 1 already owns it)
+  ok:false, query_failed → throw (mirrors step 1's page.tsx exactly)
+```
+A direct URL hit with no shop (never completed step 1, or typed the URL cold) lands on step 1's
+form, not an error page or a silent redirect to the dashboard — the honest "go create the shop
+first" answer. No "already configured, go away" branch exists on the success path: per ruling 5 the
+shop is already legitimate with nothing configured, so this route stays reachable indefinitely as
+the only current write surface for these seven fields (G3 `/ma-boutique/modifier` does not exist in
+code yet — Figma-only per memory), not just during a single onboarding session.
+
+## 19. Step 1 rewiring — the one previous-PR file touched
+
+`CreateShopForm.tsx`'s two submit buttons currently do the identical thing (create shop → redirect
+`/tableau-de-bord-vendeur`) because step 2 didn't exist when they were built — `Stepper.tsx`'s own
+comment already flags step 2 as "not yet reachable," anticipating this. **Only the primary
+("Suivant") button's post-success destination changes**, to `/ma-boutique/creer/configuration`,
+disambiguated via `data-intent` + `(e.nativeEvent as SubmitEvent).submitter` (not FormData, which
+drops a disabled submitter's pair — irrelevant here since the read happens synchronously at click
+time, but the submitter reference is the more direct signal regardless). The secondary ("Enregistrer
+et continuer plus tard") button, the Stepper's non-interactivity, step 1's validation, and its image
+upload flow are all untouched. Flagged here explicitly for the founder's merge review per CLAUDE.md's
+"once built, stays built" rule — this is judged as completing previously-scaffolded intent, not
+overriding an architectural decision, but it's a previous PR's file and deserves the explicit call-out.
+
+## 20. Verification note — accordions must be forced open for the overflow sweep
+
+Every section of this page starts collapsed. Measuring `document.documentElement.scrollWidth −
+clientWidth` with all four `<details>` closed would only ever exercise the box's collapsed-header
+chrome (already proven zero-overflow by step 1's identical box/column geometry) and silently skip
+every field this PR actually adds. The verification pass force-opens every `<details>` (`el.open =
+true`) before each measurement. Result: **0px at every FR/AR width from 1024–1440; 56px FR / 53px AR
+at 375** — matching step 1's already-logged figures for those exact same numbers (g2-discovery.md
+§11) to the pixel, not a new regression.
+
+**Screenshot confirms it's the same defect, not a new one, and explains the numbers visually.** At
+375/AR, the topbar avatar renders detached near the document's far-left edge over a black void —
+alarming on first look, but it's exactly the mechanism §11 already attributed to `Topbar`/`UserMenu`:
+a `right:` offset computed against the wrong containing-block width. With `scrollWidth` at 428
+(375+53) and the logged `right: 431`, `428 − 431 ≈ −3px` places the avatar right where the
+screenshot shows it. Same broken element, same arithmetic, this page just happens to be the first
+one in this codebase's history to screenshot it rather than only sum it. Not fixed here — still a
+shared-shell change, still a different PR's blast radius, per §11's own ruling.
