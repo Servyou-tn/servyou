@@ -993,7 +993,33 @@ export const fr: Record<string, string> = {
   'parametres.toast.exportPending':     "Une demande d'export est déjà en cours. Vous recevrez vos données prochainement.",
   'parametres.toast.exportError':       "Une erreur est survenue. Veuillez réessayer.",
 
-  // ─── /devenir-vendeur (role-upgrade marketing) ───────────────────────────────
+  // ─── /devenir-vendeur (shared role-choice entry, Figma 469:20560) ────────────
+  'devenir.choice.hero.eyebrow':              "Devenir vendeur",
+  'devenir.choice.hero.headline':             "Comment voulez-vous vendre ?",
+  'devenir.choice.hero.subheadline':          "Choisissez votre activité. Vous pourrez toujours ajouter l'autre plus tard.",
+  'devenir.choice.freelance.title':           "Freelance",
+  'devenir.choice.freelance.description':     "Vendez vos compétences et services. Développement, design, marketing, rédaction…",
+  'devenir.choice.freelance.point1':          "Publiez vos services",
+  'devenir.choice.freelance.point2':          "Répondez aux missions",
+  'devenir.choice.freelance.point3':          "Construisez votre réputation",
+  'devenir.choice.boutique.title':            "Boutique",
+  'devenir.choice.boutique.description':      "Vendez des produits en ligne. Artisanat, mode, électronique, tout ce que vous fabriquez ou revendez.",
+  'devenir.choice.boutique.point1':           "Créez votre boutique",
+  'devenir.choice.boutique.point2':           "Ajoutez vos produits",
+  'devenir.choice.boutique.point3':           "Gérez vos commandes",
+  'devenir.choice.unavailable.asFreelancer':  "Vous êtes déjà freelance sur Servyou. Un compte ne peut avoir qu'une seule activité à la fois.",
+  'devenir.choice.unavailable.asShopOwner':   "Vous êtes déjà vendeur boutique sur Servyou. Un compte ne peut avoir qu'une seule activité à la fois.",
+  'devenir.choice.agegate.message':           "Vous devez avoir 18 ans ou plus pour vendre sur Servyou.",
+  'devenir.choice.agegate.dobPass.prefix':    "Date de naissance : ",
+  'devenir.choice.agegate.dobPass.suffix':    " · 18 ans ou plus",
+  'devenir.choice.agegate.dobFail.prefix':    "Date de naissance : ",
+  'devenir.choice.agegate.dobFail.suffix':    " · Moins de 18 ans",
+  'devenir.choice.agegate.refusal.heading':      "Avant de commencer",
+  'devenir.choice.agegate.refusal.alertTitle':   "Revenez à votre 18e anniversaire",
+  'devenir.choice.agegate.refusal.alertMessage': "Vous pourrez créer votre compte vendeur dès que vous aurez 18 ans. En attendant, vous pouvez explorer les boutiques et services sur Servyou.",
+  'devenir.choice.agegate.refusal.button':       "Retour à l'accueil",
+
+  // ─── /devenir-vendeur/boutique (role-upgrade marketing) ──────────────────────
   'devenir.vendeur.hero.eyebrow':      "Pour les vendeurs",
   'devenir.vendeur.hero.headline':     "Lancez votre boutique en ligne. Sans commission.",
   'devenir.vendeur.hero.subheadline':  "Servyou connecte les vendeurs tunisiens avec des acheteurs locaux. Listez vos produits, recevez les commandes en direct, et encaissez à la livraison. Vous gardez 100% de ce que vous vendez.",
@@ -1031,11 +1057,8 @@ export const fr: Record<string, string> = {
   'devenir.vendeur.final.subheadline': "Rejoignez les vendeurs qui développent leur business avec Servyou. Création gratuite, sans engagement.",
   'devenir.vendeur.final.cta':         "Créer ma boutique",
   'devenir.vendeur.final.note':        "Vous devez avoir 18 ans ou plus pour ouvrir une boutique.",
-  'devenir.vendeur.already.headline':  "Vous êtes déjà vendeur sur Servyou",
-  'devenir.vendeur.already.subheadline':"Continuez à gérer votre boutique dans votre espace dédié.",
-  'devenir.vendeur.already.manage':    "Gérer ma boutique",
 
-  // ─── /devenir-freelance (role-upgrade marketing) ─────────────────────────────
+  // ─── /devenir-vendeur/freelance (role-upgrade marketing) ─────────────────────
   'devenir.freelance.hero.eyebrow':      "Pour les freelances",
   'devenir.freelance.hero.headline':     "Travaillez en freelance. Trouvez vos premiers clients.",
   'devenir.freelance.hero.subheadline':  "Servyou connecte les freelances tunisiens avec des clients qui ont besoin de leurs compétences. Listez vos services, recevez des missions, et développez votre activité. Sans commission, sans intermédiaire.",
@@ -1073,9 +1096,6 @@ export const fr: Record<string, string> = {
   'devenir.freelance.final.subheadline': "Rejoignez la communauté des freelances tunisiens qui développent leur activité. Création gratuite, sans engagement.",
   'devenir.freelance.final.cta':         "Créer mon profil freelance",
   'devenir.freelance.final.note':        "Vous devez avoir 18 ans ou plus pour devenir freelance.",
-  'devenir.freelance.already.headline':  "Vous êtes déjà freelance sur Servyou",
-  'devenir.freelance.already.subheadline':"Continuez à gérer votre profil freelance dans votre espace dédié.",
-  'devenir.freelance.already.manage':    "Gérer mon profil freelance",
 
   // Avatar dropdown — role-upgrade discovery
   'profileMenu.devenirVendeur':    "Devenir vendeur",

@@ -111,7 +111,7 @@ export function ProfileAvatarMenu({
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild className={itemBase}>
-                <Link href="/devenir-freelance">
+                <Link href="/devenir-vendeur/freelance">
                   <Briefcase className="me-2 h-4 w-4 text-text-muted" aria-hidden="true" />
                   {t('profileMenu.devenirFreelance', lang)}
                 </Link>
