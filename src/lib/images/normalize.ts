@@ -1,5 +1,5 @@
 import sharp from 'sharp'
-import { AVATAR_MAX_EDGE, PRODUCT_MAX_EDGE, MAX_INPUT_BYTES } from './limits'
+import { AVATAR_MAX_EDGE, PRODUCT_MAX_EDGE, SHOP_LOGO_MAX_EDGE, SHOP_BANNER_MAX_EDGE, MAX_INPUT_BYTES } from './limits'
 
 // Normalizes an arbitrary user upload into ONE canonical WebP original.
 //
@@ -177,4 +177,20 @@ export async function normalizeAvatar(input: Buffer, maxEdge = AVATAR_MAX_EDGE):
  */
 export async function normalizeProductImage(input: Buffer): Promise<NormalizeResult> {
   return normalizeAvatar(input, PRODUCT_MAX_EDGE)
+}
+
+/**
+ * Shop logo variant — G2 "Créer ma boutique". Same thin-wrapper reasoning as
+ * normalizeProductImage: the decode/auto-orient/strip-EXIF/re-encode sequence is the content
+ * gate, and a second implementation of it is a second thing to get wrong.
+ */
+export async function normalizeShopLogo(input: Buffer): Promise<NormalizeResult> {
+  return normalizeAvatar(input, SHOP_LOGO_MAX_EDGE)
+}
+
+/**
+ * Shop banner variant — G2 "Créer ma boutique". Same thin wrapper, content-image edge cap.
+ */
+export async function normalizeShopBanner(input: Buffer): Promise<NormalizeResult> {
+  return normalizeAvatar(input, SHOP_BANNER_MAX_EDGE)
 }

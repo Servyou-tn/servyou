@@ -55,6 +55,24 @@ export const AVATAR_MAX_EDGE = 512
 export const PRODUCT_MAX_EDGE = 1280
 
 /**
+ * Longest-edge cap for a shop logo. Own constant per normalizeProductImage's precedent (a shared
+ * default would still need documenting why it's safe for THIS surface) — the reasoning happens to
+ * land on the same number as AVATAR_MAX_EDGE: the largest measured render is the G2 avatar-ring
+ * preview itself (120px), and every other known consumer (D1 shop-snippet 40px, shopPanel 56px)
+ * is smaller. 512 serves the 120px surface at better than 4x with the same 1 GB-budget logic as
+ * avatars.
+ */
+export const SHOP_LOGO_MAX_EDGE = 512
+
+/**
+ * Longest-edge cap for a shop banner. Own constant, same reasoning as PRODUCT_MAX_EDGE: a banner
+ * is a full-width content image (measured 712px in the G2 drop-zone alone, and a shop header is
+ * the kind of surface that only gets wider elsewhere), not a small fixed-size glyph like a logo —
+ * so it gets the content-image cap, not the avatar cap.
+ */
+export const SHOP_BANNER_MAX_EDGE = 1280
+
+/**
  * The same ceiling in whole megabytes, for the user-facing message. Derived rather than written out
  * so the copy cannot drift from the constant — the gate caught exactly that drift once, when the
  * limit moved 15 MB -> 4 MB and the French string kept saying "15 Mo maximum".
