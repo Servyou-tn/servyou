@@ -1003,7 +1003,33 @@ export const ar: Record<string, string> = {
   'parametres.toast.exportPending':     "هناك طلب تصدير قيد المعالجة بالفعل. ستتلقى بياناتك قريبًا.",
   'parametres.toast.exportError':       "حدث خطأ. يرجى المحاولة مرة أخرى.",
 
-  // ─── /devenir-vendeur (role-upgrade marketing) ───────────────────────────────
+  // ─── /devenir-vendeur (shared role-choice entry, Figma 469:20560) ────────────
+  'devenir.choice.hero.eyebrow':              "كن بائعًا",
+  'devenir.choice.hero.headline':             "كيف تريد أن تبيع؟",
+  'devenir.choice.hero.subheadline':          "اختر نشاطك. يمكنك دائمًا إضافة النشاط الآخر لاحقًا.",
+  'devenir.choice.freelance.title':           "مستقل",
+  'devenir.choice.freelance.description':     "بِع مهاراتك وخدماتك. تطوير، تصميم، تسويق، تحرير…",
+  'devenir.choice.freelance.point1':          "انشر خدماتك",
+  'devenir.choice.freelance.point2':          "ردّ على المهام",
+  'devenir.choice.freelance.point3':          "ابنِ سمعتك",
+  'devenir.choice.boutique.title':            "متجر",
+  'devenir.choice.boutique.description':      "بِع منتجات عبر الإنترنت. حِرف، موضة، إلكترونيات، كل ما تصنعه أو تعيد بيعه.",
+  'devenir.choice.boutique.point1':           "أنشئ متجرك",
+  'devenir.choice.boutique.point2':           "أضف منتجاتك",
+  'devenir.choice.boutique.point3':           "أدر طلباتك",
+  'devenir.choice.unavailable.asFreelancer':  "أنت مستقل بالفعل على Servyou. لا يمكن أن يكون للحساب سوى نشاط واحد في كل مرة.",
+  'devenir.choice.unavailable.asShopOwner':   "أنت بائع متجر بالفعل على Servyou. لا يمكن أن يكون للحساب سوى نشاط واحد في كل مرة.",
+  'devenir.choice.agegate.message':           "يجب أن يكون عمرك 18 عامًا أو أكثر للبيع على Servyou.",
+  'devenir.choice.agegate.dobPass.prefix':    "تاريخ الميلاد: ",
+  'devenir.choice.agegate.dobPass.suffix':    " · 18 عامًا أو أكثر",
+  'devenir.choice.agegate.dobFail.prefix':    "تاريخ الميلاد: ",
+  'devenir.choice.agegate.dobFail.suffix':    " · أقل من 18 عامًا",
+  'devenir.choice.agegate.refusal.heading':      "قبل أن تبدأ",
+  'devenir.choice.agegate.refusal.alertTitle':   "عُد عند بلوغك 18 عامًا",
+  'devenir.choice.agegate.refusal.alertMessage': "ستتمكن من إنشاء حساب بائع بمجرد بلوغك 18 عامًا. في غضون ذلك، يمكنك تصفّح المتاجر والخدمات على Servyou.",
+  'devenir.choice.agegate.refusal.button':       "العودة إلى الرئيسية",
+
+  // ─── /devenir-vendeur/boutique (role-upgrade marketing) ──────────────────────
   'devenir.vendeur.hero.eyebrow':      "للبائعين",
   'devenir.vendeur.hero.headline':     "أطلق متجرك على الإنترنت. بدون عمولة.",
   'devenir.vendeur.hero.subheadline':  "تربط Servyou البائعين التونسيين بالمشترين المحليين. اعرض منتجاتك، واستقبل الطلبات مباشرة، واقبض عند التسليم. تحتفظ بـ100% مما تبيعه.",
@@ -1041,9 +1067,6 @@ export const ar: Record<string, string> = {
   'devenir.vendeur.final.subheadline': "انضمّ إلى البائعين الذين يطوّرون أعمالهم مع Servyou. إنشاء مجاني، دون التزام.",
   'devenir.vendeur.final.cta':         "إنشاء متجري",
   'devenir.vendeur.final.note':        "يجب أن يكون عمرك 18 عامًا أو أكثر لفتح متجر.",
-  'devenir.vendeur.already.headline':  "أنت بائع بالفعل على Servyou",
-  'devenir.vendeur.already.subheadline':"واصل إدارة متجرك من مساحتك المخصّصة.",
-  'devenir.vendeur.already.manage':    "إدارة متجري",
 
   // ─── /ma-boutique/creer (G2 step 1 "Bases") ──────────────────────────────────
   'shop.create.page_title':        "أنشئ متجري",
@@ -1093,7 +1116,7 @@ export const ar: Record<string, string> = {
   'shop.create.freelancerBlocked.subheadline': "التبديل من مستقلّ إلى بائع غير متاح بعد. تواصل معنا إذا كنت بحاجة إلى ذلك.",
   'shop.create.freelancerBlocked.manage':      "إدارة ملفي كمستقلّ",
 
-  // ─── /devenir-freelance (role-upgrade marketing) ─────────────────────────────
+  // ─── /devenir-vendeur/freelance (role-upgrade marketing) ─────────────────────
   'devenir.freelance.hero.eyebrow':      "للمستقلّين",
   'devenir.freelance.hero.headline':     "اعمل كمستقل. واعثر على عملائك الأوائل.",
   'devenir.freelance.hero.subheadline':  "تربط Servyou المستقلّين التونسيين بعملاء يحتاجون إلى مهاراتهم. اعرض خدماتك، واستقبل المهام، وطوّر نشاطك. بدون عمولة، بدون وسيط.",
@@ -1131,9 +1154,6 @@ export const ar: Record<string, string> = {
   'devenir.freelance.final.subheadline': "انضمّ إلى مجتمع المستقلّين التونسيين الذين يطوّرون نشاطهم. إنشاء مجاني، دون التزام.",
   'devenir.freelance.final.cta':         "إنشاء ملفي كمستقل",
   'devenir.freelance.final.note':        "يجب أن يكون عمرك 18 عامًا أو أكثر لتصبح مستقلًّا.",
-  'devenir.freelance.already.headline':  "أنت مستقل بالفعل على Servyou",
-  'devenir.freelance.already.subheadline':"واصل إدارة ملفك كمستقل من مساحتك المخصّصة.",
-  'devenir.freelance.already.manage':    "إدارة ملفي كمستقل",
 
   // Avatar dropdown — role-upgrade discovery
   'profileMenu.devenirVendeur':    "كن بائعًا",

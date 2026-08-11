@@ -7,13 +7,13 @@ describe('roleConfig — age gates and destinations', () => {
     expect(roleConfig('consumer').minAge).toBe(16)
     expect(roleConfig('consumer').destination).toBe('/')
   })
-  it('shopOwner is the 18+ gate and lands on /devenir-vendeur', () => {
+  it('shopOwner is the 18+ gate and lands on /devenir-vendeur/boutique', () => {
     expect(roleConfig('shopOwner').minAge).toBe(18)
-    expect(roleConfig('shopOwner').destination).toBe('/devenir-vendeur')
+    expect(roleConfig('shopOwner').destination).toBe('/devenir-vendeur/boutique')
   })
-  it('freelancer is the 18+ gate and lands on /devenir-freelance', () => {
+  it('freelancer is the 18+ gate and lands on /devenir-vendeur/freelance', () => {
     expect(roleConfig('freelancer').minAge).toBe(18)
-    expect(roleConfig('freelancer').destination).toBe('/devenir-freelance')
+    expect(roleConfig('freelancer').destination).toBe('/devenir-vendeur/freelance')
   })
 })
 
@@ -33,8 +33,8 @@ describe('roleConfig — i18n keys resolve (catch a missing/typo key)', () => {
 describe('roleDestination', () => {
   it('maps each role to its destination', () => {
     expect(roleDestination('consumer')).toBe('/')
-    expect(roleDestination('shopOwner')).toBe('/devenir-vendeur')
-    expect(roleDestination('freelancer')).toBe('/devenir-freelance')
+    expect(roleDestination('shopOwner')).toBe('/devenir-vendeur/boutique')
+    expect(roleDestination('freelancer')).toBe('/devenir-vendeur/freelance')
   })
   it('tolerates null → home', () => {
     expect(roleDestination(null)).toBe('/')

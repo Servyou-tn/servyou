@@ -4,9 +4,10 @@ import { MIN_SIGNUP_AGE, MIN_SELLER_AGE } from './signup-validation'
 // form. This is pure UI intent: it brands the form title, sets the client-side
 // signup age gate, and decides where the user lands after verifying their email.
 // It is NEVER written to the database — the handle_new_user trigger always creates
-// accounts with seller_type = null (consumer baseline). Real role conversion
-// happens later at /devenir-vendeur and /devenir-freelance (which enforce 18+ in
-// the DB). See docs/audits/auth-migration-audit.md.
+// accounts with seller_type = null (consumer baseline). Real role conversion happens later
+// at /devenir-vendeur/boutique or /devenir-vendeur/freelance (which enforce 18+ in the DB) —
+// landing straight on the pitch page since the visitor already picked a role here.
+// See docs/audits/auth-migration-audit.md.
 export type SignupRole = 'consumer' | 'shopOwner' | 'freelancer'
 
 /** sessionStorage key holding the chosen role across the signup → verify hop. */
@@ -48,14 +49,14 @@ export const ROLE_CONFIG: Record<SignupRole, RoleConfig> = {
     titleKey: 'signup.form.titles.shopOwner',
     ageHelperKey: 'signup.form.fields.dateOfBirth.helper.shopOwner',
     ageErrorKey: 'signup.form.errors.tooYoung.shopOwner',
-    destination: '/devenir-vendeur',
+    destination: '/devenir-vendeur/boutique',
   },
   freelancer: {
     minAge: MIN_SELLER_AGE,
     titleKey: 'signup.form.titles.freelancer',
     ageHelperKey: 'signup.form.fields.dateOfBirth.helper.freelancer',
     ageErrorKey: 'signup.form.errors.tooYoung.freelancer',
-    destination: '/devenir-freelance',
+    destination: '/devenir-vendeur/freelance',
   },
 }
 
