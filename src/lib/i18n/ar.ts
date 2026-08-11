@@ -1100,6 +1100,7 @@ export const ar: Record<string, string> = {
   'shop.create.save_draft':        "حفظ ومتابعة لاحقًا",
   'shop.create.next':              "التالي",
   'shop.create.submitting':        "جارٍ الإنشاء…",
+  'shop.create.saving':            "جارٍ الحفظ…",
 
   'shop.create.error.form':          "يرجى تصحيح الحقول باللون الأحمر.",
   'shop.create.error.notAuth':       "انتهت جلستك. يرجى إعادة تسجيل الدخول.",
@@ -1115,6 +1116,16 @@ export const ar: Record<string, string> = {
   'shop.create.freelancerBlocked.headline':    "أنت بالفعل مستقلّ على Servyou",
   'shop.create.freelancerBlocked.subheadline': "التبديل من مستقلّ إلى بائع غير متاح بعد. تواصل معنا إذا كنت بحاجة إلى ذلك.",
   'shop.create.freelancerBlocked.manage':      "إدارة ملفي كمستقلّ",
+
+  // ─── /ma-boutique/creer/configuration (G2 step 2 "Configuration") ────────────
+  'boutique.config.box_subline':      "هذه الإعدادات اختيارية. يمكنك ضبطها الآن أو لاحقًا.",
+  'boutique.config.section_livraison':  "التوصيل",
+  'boutique.config.section_paiement':   "طرق الدفع",
+  'boutique.config.section_categories': "فئات المتجر",
+  'boutique.config.badge_optional':   "اختياري",
+  'boutique.config.badge_complete':   "مكتمل",
+  'boutique.config.cod_note':         "الدفع عند الاستلام مُفعّل افتراضيًا. أضف طرقًا أخرى إذا كنت تقبلها.",
+  'boutique.config.cod_locked':       "مقفل — افتراضي عام",
 
   // ─── /devenir-vendeur/freelance (role-upgrade marketing) ─────────────────────
   'devenir.freelance.hero.eyebrow':      "للمستقلّين",

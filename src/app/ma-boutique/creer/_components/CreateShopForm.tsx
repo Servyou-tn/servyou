@@ -96,6 +96,12 @@ export function CreateShopForm() {
     e.preventDefault()
     if (pending) return
 
+    // Which button triggered this submit — read from the DOM submitter, not FormData (a disabled
+    // submitter's name/value pair would be dropped from FormData, but this read happens
+    // synchronously at click time, before `pending` disables anything).
+    const submitter = (e.nativeEvent as SubmitEvent).submitter as HTMLButtonElement | null
+    const intent = submitter?.dataset.intent === 'next' ? 'next' : 'draft'
+
     const found = validate()
     setErrors(found)
     if (Object.keys(found).length > 0) {
@@ -132,8 +138,10 @@ export function CreateShopForm() {
     }
 
     // Stay pending through the navigation — the buttons must not go back to idle on a page that
-    // is already being replaced.
-    router.push('/tableau-de-bord-vendeur')
+    // is already being replaced. "Suivant" advances into step 2 (docs/design/g2-discovery.md §19 —
+    // step 2 didn't exist when this file first shipped, Stepper.tsx's own comment flagged this as
+    // the known gap); "Enregistrer et continuer plus tard" keeps its original destination.
+    router.push(intent === 'next' ? '/ma-boutique/creer/configuration' : '/tableau-de-bord-vendeur')
   }
 
   const selectField = `w-full rounded-lg border px-4 h-11 bg-surface-base text-base text-text-primary outline-none transition-colors focus:border-brand-blue-600 ${FOCUS_RING}`
@@ -248,7 +256,14 @@ export function CreateShopForm() {
         <Button type="submit" variant="secondary" size="lg" loading={pending} className="w-full sm:w-auto">
           {pending ? t('shop.create.submitting', lang) : t('shop.create.save_draft', lang)}
         </Button>
-        <Button type="submit" variant="primary" size="lg" loading={pending} className="w-full sm:w-auto">
+        <Button
+          type="submit"
+          variant="primary"
+          size="lg"
+          loading={pending}
+          data-intent="next"
+          className="w-full sm:w-auto"
+        >
           {pending ? t('shop.create.submitting', lang) : t('shop.create.next', lang)}
         </Button>
       </div>

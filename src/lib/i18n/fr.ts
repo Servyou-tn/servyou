@@ -1090,6 +1090,7 @@ export const fr: Record<string, string> = {
   'shop.create.save_draft':        "Enregistrer et continuer plus tard",
   'shop.create.next':              "Suivant",
   'shop.create.submitting':        "Création en cours…",
+  'shop.create.saving':            "Enregistrement en cours…",
 
   'shop.create.error.form':          "Veuillez corriger les champs en rouge.",
   'shop.create.error.notAuth':       "Votre session a expiré. Veuillez vous reconnecter.",
@@ -1105,6 +1106,16 @@ export const fr: Record<string, string> = {
   'shop.create.freelancerBlocked.headline':    "Vous êtes déjà freelance sur Servyou",
   'shop.create.freelancerBlocked.subheadline': "Le changement de rôle freelance → vendeur n'est pas encore disponible. Contactez-nous si vous en avez besoin.",
   'shop.create.freelancerBlocked.manage':      "Gérer mon profil freelance",
+
+  // ─── /ma-boutique/creer/configuration (G2 step 2 "Configuration") ────────────
+  'boutique.config.box_subline':      "Ces réglages sont facultatifs. Vous pouvez les définir maintenant ou plus tard.",
+  'boutique.config.section_livraison':  "Livraison",
+  'boutique.config.section_paiement':   "Moyens de paiement",
+  'boutique.config.section_categories': "Catégories de la boutique",
+  'boutique.config.badge_optional':   "Optionnel",
+  'boutique.config.badge_complete':   "Complet",
+  'boutique.config.cod_note':         "Le paiement à la livraison (COD) est activé par défaut. Ajoutez d'autres options si vous les acceptez.",
+  'boutique.config.cod_locked':       "Verrouillé — par défaut universel",
 
   // ─── /devenir-vendeur/freelance (role-upgrade marketing) ─────────────────────
   'devenir.freelance.hero.eyebrow':      "Pour les freelances",
