@@ -1791,3 +1791,37 @@ original two, or a fourth pass will split the reconciliation again.
   right call for a rebuild, and diverging on one page would leave the two detail pages announcing
   their breadcrumbs differently. It is two surfaces and one new i18n key.
 - **Trigger:** fix both together with a `common.breadcrumb.label` key. Cheap; just not a D1 change.
+
+### 🔴 PRE-LAUNCH — Google Fonts CDN is a third-party single point of failure for every route
+
+- **What:** `src/app/layout.tsx` loads both platform typefaces — Cairo (AR) and Inter (FR/default)
+  — through `next/font/google`. In production this self-hosts and the runtime dependency on Google
+  disappears; **in dev (Turbopack), it does not** — the font CSS/files are fetched from
+  `fonts.gstatic.com`/`fonts.googleapis.com` at compile time, and because `layout.tsx` is the root
+  layout, a failed font module fails the module graph for **every route**, `/connexion` included.
+- **Confirmed live, 2026-08-12** (while chasing an unrelated blocked CDP pass, see
+  `g2-discovery.md` §26): a genuine Google-side CDN blip caused `fonts.gstatic.com` to 404 on the
+  exact Cairo `.woff2` path this app requests, and the dev server 500'd on every route with
+  `Module not found: Can't resolve '@vercel/turbopack-next/internal/font/google/font'`. Worse: the
+  outage **did not need to still be happening** for the app to stay broken — Turbopack's dev cache
+  had baked in the failed CSS response (dead asset hashes), so even after Google recovered
+  (confirmed by a bare `curl` returning real `200`s), the app kept 500ing until `.next` was deleted
+  and the dev server restarted. Two compounding failure modes on one third-party dependency.
+- **Why this matters for Tunisia specifically, not just as a general best practice:** per this
+  repo's own market anchors (CLAUDE.md), Servyou serves a market where mobile-first,
+  intermittent-connectivity access is the norm, not the edge case. A platform whose landing,
+  login, and every other page depend on a single external CDN being reachable is a self-inflicted
+  outage surface that has nothing to do with Servyou's own infrastructure or Supabase/Vercel
+  uptime.
+- **Fix:** self-host both font families (download the `.woff2` files, serve them via
+  `next/font/local` or a static `/public` path) — removes the runtime Google dependency in dev
+  *and* removes any residual build-time fetch dependency in production, where `next/font/google`
+  already self-hosts the *output* but still needs to reach Google *once*, at build time, to
+  produce it.
+- **Why deferred:** not a regression in any open PR, not blocking `feat/g2-success` (the CDP pass
+  it was discovered during a dev-server restart + `.next` clear unblocked it fully, so this is a
+  resilience gap, not an active bug) — a platform-wide infra change, not this branch's blast
+  radius.
+- **Trigger:** pre-launch hardening pass, alongside wiring up Sentry (`docs/follow-ups.md:450`
+  already tracks the `@sentry/nextjs` dependency bump) — both are "the platform should not go dark
+  because of a third party" items and read naturally as one pass.

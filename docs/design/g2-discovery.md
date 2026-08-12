@@ -824,5 +824,53 @@ from Google right now, confirmed with a bare `curl`/`Invoke-WebRequest` outside 
 (not a bug in this PR, this repo, or the dev server). Logged here rather than silently claimed:
 the guard, the create-branch walkthrough, the overflow sweep, and the AR pass (above) all completed
 live before the outage started; the secondary-submit branch and the a11y fix are confirmed by
-code/DOM inspection, not a second live pass.
+code/DOM inspection, not a second live pass. **Superseded by §26** — the CDN recovered and the
+blocked branch was re-run live.
+
+## 26. The blocked live pass, completed (2026-08-12, after §25's outage cleared)
+
+Google's Fonts CDN was reachable again (`fonts.gstatic.com` returned real `200`s for Cairo's own
+woff2 files on direct `curl`), but the **dev server's own Turbopack cache still held the failed
+CSS module from mid-outage** — `.next/dev/static/chunks/…cairo…css` had baked in dead
+`fonts.gstatic.com` URLs (different hashes than the live CSS now serves), so every route kept
+500ing (`Module not found: …/internal/font/google/font`) until `.next` was deleted and the dev
+server restarted. Worth recording as its own finding: **a transient CDN outage during a Turbopack
+dev session doesn't self-heal when the CDN recovers** — the broken fetch gets cached, and only a
+`.next` clear + restart forces a fresh one. Not a app-code bug; logged as the reasoning behind why
+"CDN is back" and "the dev server is healthy" were briefly two different facts.
+
+With a healthy dev server, the three specific items requested were verified against a real
+Chromium instance (no Playwright — headless Chrome via `--remote-debugging-port`, driven over raw
+CDP with Node's built-in `WebSocket`, same technique as §11/§20), signed in through the real
+`/connexion` form as an ephemeral service-role-seeded shop-owner fixture (one auth user + one
+`shops` row, `@cdp-g2success.servyou.invalid`, deleted immediately after):
+
+- **`aria-disabled` + visible "Bientôt" badge.** Read the live DOM `outerHTML` of the button:
+  `disabled=""`, `aria-disabled="true"`, and `<span>Bientôt</span>` all present, text content
+  `"Voir ma boutique publiqueBientôt"` — the badge renders as part of the button's own text, not
+  behind a `:hover` state. Re-checked in AR: `aria-disabled="true"` holds and the badge reads
+  `"قريبًا"` (the AR translation of "Bientôt"), same construction, `dir="rtl"` confirmed live.
+- **Not reachable as an interactive control.** `element.focus()` called directly on the button
+  left `document.activeElement` on `<body>`, not the button — a real browser refusing focus on a
+  natively `disabled` element, not a `tabIndex` guess. A second, independent check dispatched 8 real
+  `Tab` keydown/keyup events from the page body and confirmed focus never landed on it at any point
+  in the traversal (it skips straight from the shell's search field to the sidebar's "Paramètres"
+  link — visible in the FR screenshot as the focus ring on "Paramètres", not on either success-page
+  button).
+- **"Enregistrer et continuer plus tard" still falls through to `/tableau-de-bord-vendeur`.**
+  Clicked the real button (not simulated via `router.push`) on `/ma-boutique/creer/configuration`
+  and landed on `/tableau-de-bord-vendeur` — confirms §19/§23's asymmetric-wiring recommendation
+  survived the primary-submit rewiring in this PR's diff, live, not just by reading the ternary.
+
+**One harness-only gotcha worth keeping for the next CDP pass that submits a form on this
+codebase**: a `.click()` dispatched too soon after `Page.navigate` can land before Turbopack has
+finished hydrating the client component. Neither the `/connexion` `SigninForm` nor
+`ConfigurationForm` gives its inputs a `name` attribute (both are fully controlled + JS-submitted
+by design), so an unhydrated click falls through to a **native, unhandled form submission** — a
+silent GET reload of the same URL with no data, which looks identical to "the button did nothing"
+from the outside (same URL, no error banner, no console error) and cost several retries to
+diagnose. Not an app bug — SSR paints the button's final text before the client bundle attaches
+its handler, which is expected Suspense/hydration behavior — but a harness that clicks immediately
+after a route change will intermittently self-defeat on this app. Fixed in the (deleted) one-off
+script with a growing settle wait before the first interaction.
 
