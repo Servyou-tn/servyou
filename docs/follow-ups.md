@@ -1825,3 +1825,30 @@ original two, or a fourth pass will split the reconciliation again.
 - **Trigger:** pre-launch hardening pass, alongside wiring up Sentry (`docs/follow-ups.md:450`
   already tracks the `@sentry/nextjs` dependency bump) — both are "the platform should not go dark
   because of a third party" items and read naturally as one pass.
+
+### 🔴 Every guarded-page bounce to `/connexion` sends `?next=`, but `SigninForm` only reads `?redirect=`
+
+- **What:** `SigninForm.tsx:76` reads the return destination as
+  `new URLSearchParams(window.location.search).get('redirect')`. Every server-side guard in the app
+  that redirects a logged-out visitor to sign in builds the query string as `?next=` instead —
+  confirmed at **10 call sites**: `succes/page.tsx:40` and `configuration/page.tsx:32` (both new in
+  this PR), `ma-boutique/creer/page.tsx:33`, `mon-compte/page.tsx:23`, `parametres/page.tsx:18/21`,
+  `mes-commandes/[id]/page.tsx:20`, `mes-missions/[id]/page.tsx:30`, `demander/[id]/page.tsx:29`, and
+  the shared `require-seller.ts:42` helper (used by `mes-produits/ajouter` and others). `next` is
+  never read anywhere under `src/app/connexion/`, including the page component itself
+  (`connexion/page.tsx`) which awaits `searchParams` but only forwards `passwordReset`. The result:
+  sign in from any guarded page and you land on `/` (SigninForm's own fallback,
+  `SigninForm.tsx:85`), not back on the page you were trying to reach — silently, no error, easy to
+  miss in a click-through because "landing on the marketplace" doesn't look broken.
+- **Surfaced by:** the G2-success CDP verification pass (2026-08-12,
+  `g2-discovery.md` §26) — noticed while scripting a real sign-in through `/connexion`, not fixed
+  there per "one PR, one focus"; this is a pre-existing, wider-than-this-PR defect, not something
+  `succes/page.tsx` introduced (it copied the same `?next=` pattern every other guard already uses).
+- **Fix:** either rename every producer's query key to `redirect` (10+ call sites, mechanical, easy
+  to grep-verify), or make `SigninForm.tsx:76` read `next` (one line, matches the majority
+  convention already in the codebase, and would need `connexion/page.tsx` to also stop dropping it
+  if a server-rendered variant of the check is ever added). The second is cheaper and matches what
+  every guard already writes — no reason to rename 10 call sites to fix a 1-line reader.
+- **Trigger:** next PR that touches `/connexion` or any of the listed guards. Grep
+  `?next=` before assuming this list is exhaustive — this pass found it via a full-repo search, not
+  a systematic audit of every guard.

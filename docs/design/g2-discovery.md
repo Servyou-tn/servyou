@@ -850,13 +850,28 @@ CDP with Node's built-in `WebSocket`, same technique as §11/§20), signed in th
   `"Voir ma boutique publiqueBientôt"` — the badge renders as part of the button's own text, not
   behind a `:hover` state. Re-checked in AR: `aria-disabled="true"` holds and the badge reads
   `"قريبًا"` (the AR translation of "Bientôt"), same construction, `dir="rtl"` confirmed live.
+  **DOM text is not proof of what a screen reader announces**, so followed up with
+  `Accessibility.getFullAXTree` (a second, separate CDP pass, same fixture pattern) to read the
+  browser's actual computed accessibility node, not just the markup: `role: "button"`,
+  `ignored: false`, `name: "Voir ma boutique publique Bientôt"`, `properties: [disabled=true]`.
+  This is the real answer to the founder's "aria-disabled was theatre once already in #128" concern
+  — the button is not pruned from the tree, its computed accessible name genuinely includes the
+  "Bientôt" reason (sourced from its own text contents, with the `title` attribute correctly
+  superseded per the AX `sources` list), and `disabled=true` is exposed as a real AX property. All
+  five other buttons on the page were dumped alongside it for contrast (Notifications, Mon compte,
+  the live "Voir ma boutique publique Bientôt" itself, FR, AR) and only this one carries
+  `disabled: true` — confirms it's this specific node being checked, not a tree-wide default.
 - **Not reachable as an interactive control.** `element.focus()` called directly on the button
   left `document.activeElement` on `<body>`, not the button — a real browser refusing focus on a
   natively `disabled` element, not a `tabIndex` guess. A second, independent check dispatched 8 real
   `Tab` keydown/keyup events from the page body and confirmed focus never landed on it at any point
   in the traversal (it skips straight from the shell's search field to the sidebar's "Paramètres"
   link — visible in the FR screenshot as the focus ring on "Paramètres", not on either success-page
-  button).
+  button). This is specifically about keyboard/pointer *activation* reachability (Tab order, click,
+  focus) — a `disabled` element is correctly excluded from that. It does not mean the element is
+  invisible to assistive tech generally: the AX-tree check above confirms a screen reader's browse-
+  mode virtual cursor can still land on and announce it, which is the mechanism that actually
+  delivers the "Bientôt" reason to an AT user (not a hover, and not interactivity).
 - **"Enregistrer et continuer plus tard" still falls through to `/tableau-de-bord-vendeur`.**
   Clicked the real button (not simulated via `router.push`) on `/ma-boutique/creer/configuration`
   and landed on `/tableau-de-bord-vendeur` — confirms §19/§23's asymmetric-wiring recommendation
@@ -873,4 +888,18 @@ diagnose. Not an app bug — SSR paints the button's final text before the clien
 its handler, which is expected Suspense/hydration behavior — but a harness that clicks immediately
 after a route change will intermittently self-defeat on this app. Fixed in the (deleted) one-off
 script with a growing settle wait before the first interaction.
+
+**What §26 does NOT close.** The §25 "Bientôt" pill's width divergence from §21's measured 235px
+is still **reasoned, not verified** — this pass had a healthy dev server and a live browser open for
+the exact same page and did not re-run the `scrollWidth − clientWidth` overflow sweep, so that
+specific paragraph in §25 stands unchanged. Do not read §26 as having closed everything §25 left
+open — only the three items the founder asked for by name were re-verified live.
+
+**One real bug surfaced while scripting the sign-in, not fixed here, logged separately**: the
+`/connexion` form only reads `?redirect=` from the query string
+(`SigninForm.tsx:76`), but every guarded page in the app — including this PR's own
+`succes/page.tsx:40` and `configuration/page.tsx:32` — bounces to `/connexion?next=…`. `next` is
+never read, so every guarded-page sign-in silently lands on `/` instead of back on the page the
+user wanted. Pre-existing, wider than this PR (10+ call sites), out of this PR's blast radius per
+"one PR, one focus" — logged in `docs/follow-ups.md` (append, 2026-08-12) rather than fixed inline.
 
