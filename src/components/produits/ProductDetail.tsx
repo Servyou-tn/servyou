@@ -32,8 +32,9 @@ import { ShareLinkButton } from './ShareLinkButton'
 //
 // Deliberately NOT built, each by ruling and each recorded in the discovery doc: the share dialog
 // (`563:39668`) and the report modal (`563:39705`) — see ShareLinkButton for the icon reason and
-// the report line at the foot of this file; and both « Voir la boutique » affordances, which render
-// as static muted text because D3 `/boutique/[slug]` has neither a route nor a slug column.
+// the report line at the foot of this file. Both « Voir la boutique » affordances now link to
+// `/boutique/[id]` (D3 shipped 2026-08-12, bare uuid — `shops` has no slug column, see
+// docs/follow-ups.md "D3 URL shape — RESOLVED").
 
 // Section header — 26 leading in the frame on all four belowFold sections, gap 16 to its body.
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
@@ -68,6 +69,7 @@ export function ProductDetail({
 
   const total = product.price_tnd + product.delivery_fee_tnd
   const shopName = product.shop?.name?.trim() || ''
+  const shopHref = product.shopId ? `/boutique/${product.shopId}` : null
   // The frame draws a TEXT NODE — « AS » — in both logo slots, not an image. `shops.logo_url` is
   // null on every row and is settable nowhere until G3 exists, so the monogram is the design, not
   // a fallback for a missing asset.
@@ -228,12 +230,14 @@ export function ProductDetail({
                     </p>
                   )}
                 </div>
-                {/* Static muted text, NOT a link — D3 `/boutique/[slug]` has no route and `shops`
-                    has no slug column. Same treatment as ServiceDetail.tsx:232. Reverses to a
-                    <Link> in one line the day D3 lands. */}
-                <span className="ms-auto shrink-0 text-body-sm leading-[21px] text-text-muted">
-                  {t('product.detail.view_shop', lang)} <DirArrow lang={lang} direction="forward" />
-                </span>
+                {shopHref && (
+                  <Link
+                    href={shopHref}
+                    className={`ms-auto shrink-0 text-body-sm leading-[21px] text-text-muted transition-colors hover:text-text-secondary ${FOCUS_RING}`}
+                  >
+                    {t('product.detail.view_shop', lang)} <DirArrow lang={lang} direction="forward" />
+                  </Link>
+                )}
               </div>
             )}
           </div>
@@ -264,11 +268,15 @@ export function ProductDetail({
                   {product.shop.description}
                 </p>
               )}
-              {/* Static muted text — same D3 reason as the snippet above. */}
-              <span className="text-body-sm leading-[21px] text-text-muted">
-                {t('product.detail.view_all_products', lang)}{' '}
-                <DirArrow lang={lang} direction="forward" />
-              </span>
+              {shopHref && (
+                <Link
+                  href={shopHref}
+                  className={`text-body-sm leading-[21px] text-text-muted transition-colors hover:text-text-secondary ${FOCUS_RING}`}
+                >
+                  {t('product.detail.view_all_products', lang)}{' '}
+                  <DirArrow lang={lang} direction="forward" />
+                </Link>
+              )}
             </div>
           </div>
         )}
