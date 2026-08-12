@@ -364,7 +364,7 @@ A "Pas encore de compte? Créer un compte" link at the bottom navigates to `/ins
 
 **Validation:** if the email or password is wrong, the inline error is generic ("Email ou mot de passe incorrect") to avoid giving an attacker information about which accounts exist. The error appears below the form, not beneath individual fields, since either could be the cause.
 
-**On success:** the server action establishes the session and redirects to the user's appropriate landing page based on their role: consumers go to `/`, shop owners go to `/ma-boutique`, freelancers go to `/mon-profil-freelance`. Users who were trying to access a protected page before signin are redirected to that page after signin (via a `?redirect=` query parameter).
+**On success:** the server action establishes the session and redirects to the user's appropriate landing page based on their role: consumers go to `/`, shop owners go to `/ma-boutique`, freelancers go to `/mon-profil-freelance`. Users who were trying to access a protected page before signin are redirected to that page after signin (via a `?next=` query parameter — corrected 2026-08-12; every guard in the codebase already emitted `?next=`, `SigninForm` had drifted to reading `?redirect=`, see `docs/follow-ups.md`).
 
 ### B.3 — Email verification page (`/verifier-email`)
 
