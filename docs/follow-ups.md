@@ -1826,7 +1826,18 @@ original two, or a fourth pass will split the reconciliation again.
   already tracks the `@sentry/nextjs` dependency bump) — both are "the platform should not go dark
   because of a third party" items and read naturally as one pass.
 
-### 🔴 Every guarded-page bounce to `/connexion` sends `?next=`, but `SigninForm` only reads `?redirect=`
+### ✅ RESOLVED 2026-08-12 — every guarded-page bounce to `/connexion` sends `?next=`, but `SigninForm` only reads `?redirect=`
+
+- **Fixed on `fix/signin-next-param`.** `SigninForm.tsx` now reads `?next=` via a new
+  `resolvePostLoginDestination()` (`src/lib/internal-path.ts`), matching all 10 producer call
+  sites below. Verified live across three guarded routes (`/mon-compte`, `/parametres`,
+  `/ma-boutique/creer/configuration`) plus two crafted external `next` values (`//evil.example.com`,
+  `https://evil.example.com`), both correctly rejected and falling back to `/`. Unit tests added
+  (`src/__tests__/internal-path.test.ts`) covering the param-name contract itself, including a
+  `next` value that carries its own query string, so a future rename back to `redirect` fails a
+  test instead of silently regressing. Original write-up kept below for context.
+
+### Every guarded-page bounce to `/connexion` sends `?next=`, but `SigninForm` only reads `?redirect=`
 
 - **What:** `SigninForm.tsx:76` reads the return destination as
   `new URLSearchParams(window.location.search).get('redirect')`. Every server-side guard in the app
@@ -1852,3 +1863,17 @@ original two, or a fourth pass will split the reconciliation again.
 - **Trigger:** next PR that touches `/connexion` or any of the listed guards. Grep
   `?next=` before assuming this list is exhaustive — this pass found it via a full-repo search, not
   a systematic audit of every guard.
+
+### `servyou-pages-elements-and-interactions.md`'s sign-in spec describes role-based landing pages that don't exist
+
+- **What:** `docs/servyou-pages-elements-and-interactions.md:367` (section B.2, sign-in) still says
+  "the server action... redirects to the user's appropriate landing page based on their role:
+  consumers go to `/`, shop owners go to `/ma-boutique`, freelancers go to `/mon-profil-freelance`."
+  `SigninForm.tsx`'s own comment says otherwise: "Role dashboards were removed in the design-phase
+  reset... until then there is one destination for all roles" — every role currently lands on `/`.
+- **Why deferred:** noticed while fixing the adjacent `?next=`/`?redirect=` param-name bug
+  (`fix/signin-next-param`, 2026-08-12) — that fix corrected the param name in the same sentence
+  (it's the literal subject of that PR) but did not touch this separate, pre-existing role-landing
+  claim, which is wider doc-drift unrelated to the redirect-param fix.
+- **Trigger:** whenever role-specific post-login landing pages actually get built, or the next pass
+  through this doc for unrelated reasons — cheap to fix (one clause), just not this PR's scope.

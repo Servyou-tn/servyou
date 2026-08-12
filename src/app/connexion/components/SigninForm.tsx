@@ -7,7 +7,7 @@ import { createClient } from '@/lib/supabase/client'
 import { useLang } from '@/components/LangProvider'
 import { t } from '@/lib/i18n'
 import { isValidEmail } from '@/lib/signup-validation'
-import { isValidInternalPath } from '@/lib/internal-path'
+import { resolvePostLoginDestination } from '@/lib/internal-path'
 import { SpinnerIcon, GoogleIcon, CheckCircleIcon } from '@/components/auth/Icons'
 import { PasswordField } from '@/components/auth/PasswordField'
 import { display, labelClass, errorClass, inputBase, primaryBtn } from '@/components/auth/field-styles'
@@ -71,18 +71,12 @@ export function SigninForm({ showResetSuccess = false }: { showResetSuccess?: bo
         return
       }
 
-      // 1) Honour a safe ?redirect= (set when a guarded page bounced the user here).
-      //    Guarded against open redirect; an unsafe value is ignored.
-      const redirectParam = new URLSearchParams(window.location.search).get('redirect')
-      if (redirectParam && isValidInternalPath(redirectParam)) {
-        router.push(redirectParam)
-        return
-      }
-
-      // 2) Otherwise everyone lands on the marketplace landing. Role dashboards were
-      //    removed in the design-phase reset and will get their own redirects when
-      //    rebuilt; until then there is one destination for all roles.
-      router.push('/')
+      // Honour a safe ?next= (set when a guarded page bounced the user here — every guard
+      // in the app builds this key, e.g. require-seller.ts:42) or fall back to the
+      // marketplace landing. Role dashboards were removed in the design-phase reset and
+      // will get their own redirects when rebuilt; until then there is one fallback
+      // destination for all roles. Open-redirect guarded inside the resolver.
+      router.push(resolvePostLoginDestination(window.location.search))
     } catch (err) {
       console.error('[SigninForm] signin error:', err)
       setFormError(t('signin.errors.generic', lang))
