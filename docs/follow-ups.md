@@ -1477,30 +1477,43 @@ work and neither is fixed in it — logged per "one PR, one focus".
 - **Trigger:** the D3 PR closes this. Until then, treat any "my shop page is broken" report as this
   entry, not as a new bug.
 
-### 🟡 D3 assumes `shops.slug`; the column does not exist and every live link uses `shop.id`
+### 🔴 (4th entry) `/ma-boutique/creer/succes:83` — G2 success, ruled 2026-08-12
 
-- **Decide this ONCE, before D3 is built — it is the same id-vs-slug decision D4 already faced.**
-  Deciding it twice is how two public URL shapes ship.
-- The registry lists D3 as **Boutique publique — 1440 = `540:32918`**, and the design is recorded
-  against `/boutique/[slug]`. The database disagrees. Live `public.shops` columns:
-  ```
-  id, owner_id, name, description, city, logo_url, banner_url, created_at, updated_at,
-  shop_type, delivery_setup, working_hours, location_detail, preferred_carriers,
-  admin_hidden_at, admin_hidden_reason
-  ```
-  **There is no `slug`.** Every call site in the app already builds `/boutique/${shop.id}` (see the
-  entry above), so the id shape is the one that exists in code today and `[slug]` exists only in the
-  design.
-- **The two options, with what each actually costs:**
-  - **`[id]`** — zero migration, matches all three existing links, ships D3 immediately. Cost: uuids
-    in public URLs — unguessable, but unreadable and not shareable by name.
-  - **`[slug]`** — needs a migration (nullable `slug`, unique index, backfill from `name`, a
-    collision strategy, and a decision about whether renames break old links) plus updating all
-    three call sites.
-- ⚑ **Whoever builds D3 owns this decision, and should check what D4 chose for
-  `/freelance/[slug]` first** — the two public profile routes should not disagree on URL shape for
-  no reason. If D4 shipped slugs against a real column, D3 matching it is cheap; if D4 has the same
-  gap, decide both in one migration rather than one page at a time.
+- **"Voir ma boutique publique" ships as a `disabled` `Button`, not a `Link` to `/boutique/{id}`.**
+  Founder ruling, checked against this same entry's first three surfaces before building: D1
+  (`ProductDetail.tsx`, two "Voir la boutique" spans) and C1 (`ProduitsLensToggle.tsx`, disabled
+  "Boutiques" segment) already treat D3 as absent; only the G4 quick action above links live, and
+  that link is this entry's own 🔴, not a pattern to extend. The succes screen matches D1/C1, the
+  majority and the deliberate treatment — logged here as the 4th surface against the same root
+  cause, not a new bug.
+- **Correction to a stale in-code comment surfaced while auditing this:** `ProductDetail.tsx:35`
+  claims "same treatment as `ServiceDetail.tsx:232`" — checked, and that line is D2's report-line
+  today, not a shop link. D2 (service detail) is freelancer-owned and has no shop/D3 concept at all,
+  so it was never a real surface in this count. Not fixed (a comment, not a defect), logged so it
+  isn't re-cited as a fourth precedent by a future pass.
+- **Trigger:** unchanged — the D3 PR closes all four surfaces at once, including this one.
+
+### ✅ D3 URL shape — RESOLVED 2026-08-12: bare `[id]`, not `[slug]`
+
+- **Ruled by the founder while this entry was still open** — recorded here now because the ruling
+  predates this doc entry and was never written down, which is why a later pass (G2 success) read
+  it as still pending. Decided **once**, per this entry's own original request, and it does cover
+  all four public-profile-shaped routes, not only D3: **D1, D2, D3, D4 all use a bare id.** `shops`
+  and `freelancer_profiles` both remain without a `slug` column — this was not a per-route choice
+  that happened to converge, it is one decision applied uniformly.
+  - **`[id]`** — the shape every live link already builds (`/boutique/${shop.id}`, this entry's
+    first 🔴) and the shape D1 shipped its own route on (`/produits/[id]`). Zero migration, ships D3
+    immediately when it's built.
+  - **`[slug]`** was the alternative on the table (nullable `slug`, unique index, backfill,
+    collision strategy) — not pursued. No `slug` column exists on `shops` or `freelancer_profiles`
+    today, and none is planned against this ruling.
+- **Nothing left to decide when D3 (or D4) is built.** D1 (`/produits/[id]`) and D2
+  (`/services/[id]`) are already shipped on bare id. D3 is not yet built; when it is, the route is
+  `/boutique/[id]`. D4 is not yet built either (`src/app/freelance*` does not exist under `src/app`
+  today) — its route is `/freelance/[id]` under this ruling, **correcting** the `/freelance/[slug]`
+  naming carried in the design registry and memory notes, which reflects the Figma frame's own
+  node name, not a coded decision. One shape across all four public-profile-style routes, decided
+  once rather than re-opened per page.
 
 ### Boutiques lens — DEFERRED with a "Bientôt" badge, and why the Freelances precedent did not decide it
 

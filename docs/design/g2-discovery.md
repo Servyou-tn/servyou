@@ -633,3 +633,196 @@ a `right:` offset computed against the wrong containing-block width. With `scrol
 screenshot shows it. Same broken element, same arithmetic, this page just happens to be the first
 one in this codebase's history to screenshot it rather than only sum it. Not fixed here — still a
 shared-shell change, still a different PR's blast radius, per §11's own ruling.
+
+---
+
+# /ma-boutique/creer/succes (G2 success — "Boutique créée") — discovery record
+
+**Provenance.** 2026-08-12. **Calls spent: one** — a single `get_metadata` read of `556:38330`
+("box"), file `jDNjJ8D1gnXiW7Ry3GkN4U`, per the brief's budget. Only the box's children came back;
+the parent frame `556:38328` (824×484) was not itself expanded, so nothing here confirms whether the
+design intends `AppShell` chrome (topbar/sidebar, like step 1/2) or a chromeless centered card (like
+E2/K1-K4). Logged as an open question in §22, not assumed.
+
+## 21. The box (`556:38330`, 760×370) — 📐 MEASURED
+
+```
+box 760×370  @ (32,82) inside the 824×484 frame  — 32px side gutters, ASYMMETRIC vertical
+             (82 top, 484-82-370=32 bottom) — consistent with a page that has its own header
+             region above the card (AppShell topbar) rather than a self-centered modal
+  Frame (icon ring) 96×96 @ (332,48)         — centre x = 380 = 760/2 exactly (centred)
+    icon-check-circle 48×48 @ (24,24)         — centred inside the 96×96 ring
+  H1 "Votre boutique est créée !" 297×30 @ (231.5,160)   — centre x = 380 (centred), gap 16 from icon
+  subline 664×52 @ (48,206)                              — centre x = 380 (centred), gap 16 from H1
+    verbatim: "Bienvenue parmi les vendeurs Servyou. Ajoutez votre premier produit pour commencer
+                à vendre."
+  Frame (button row) 491×48 @ (134.5,274)                — centre x = 380 (centred), gap 16 from subline
+    Button 235×40 @ (0,8)
+    Button 244×40 @ (247,8)                               — gap 12 between the two buttons
+```
+
+**Exactly two buttons, no third.** The "add your first product" content the brief describes is
+entirely inside the 664×52 subline text node — there is no separate button, link, or third `Frame`
+child anywhere in the metadata for that idea. §23 below reports this as drawn, per the brief's own
+instruction not to improve on it.
+
+Button labels themselves are not readable from `get_metadata` (same instance-opacity limit every
+prior page in this doc hit — §2c, §12c) — taken from the brief's own copy: "Voir ma boutique
+publique" (235px, first/start) and "Aller à mon tableau de bord" (244px, second/end).
+
+## 22. Shell or chromeless — INFERRED at build time, not re-measured
+
+Built with `AppShell` (see §23 build note below). This section's original open question stands as
+the record of why it was genuinely ambiguous from the one `get_metadata` call spent; the choice
+itself was made during build, not resolved by a second Figma read.
+
+Not resolved by this pass's one call. Two precedents pull in different directions:
+- Step 1 and step 2 (`ConfigurationPage`, this same file's §2/§11) both render inside `<AppShell>`
+  — this screen is reached by an already-authenticated shop owner mid-flow, same as those two.
+- E2 ("Demande envoyée") and K1-K4 are shell-less centered cards (memory:
+  `project_figma_e2_confirmation`, `project_figma_k1k4_system_pages`) — the closest content-shape
+  precedents (icon + H1 + line + CTA row) in the registry.
+
+The frame's own total width (824) is far narrower than step 1's 1200-wide "right" panel measured in
+§2, and draws no Stepper/breadcrumb — both consistent with a standalone artboard cropped to its own
+card content rather than nested inside the same 1200-wide shell frame. That is circumstantial, not
+a `get_metadata` read of the parent confirming shell vs. no-shell either way.
+
+## 23. Route, guard, D3 link, and the third-action question — reported, not built
+
+See the conversation for the full reasoning; summarized here for the record:
+
+- **Route recommended:** `/ma-boutique/creer/succes`, sibling of `configuration`, own dedicated page
+  — not a query param on `/tableau-de-bord-vendeur`. The frame is its own compact artboard (§22),
+  not a variant of G4's action-center grid; overlaying it behind a query flag would mean branching
+  G4's own render on unrelated onboarding state.
+- **Guard recommended:** reuse `resolveOwnedShopId` verbatim, identical to `ConfigurationPage`'s own
+  guard (this file, `page.tsx:36-44`) — `ok:false` → redirect `/ma-boutique/creer`; `ok:true` →
+  render. No new "already seen this" state. Configuration itself is optional end-to-end (§16 — every
+  section can be `Optionnel` and the badge rule never requires `Complet`), so shop existence is the
+  only real precondition; there is no "configuration finished" flag to key a stricter guard on even
+  if one were wanted.
+- **Revisit/bookmark handling recommended:** accept indefinite reachability once a shop exists, same
+  policy §18 already accepted for `configuration` itself ("this route stays reachable indefinitely
+  … not just during a single onboarding session"). Nothing on the page is sensitive, destructive, or
+  goes stale — "you have a shop, here are your two links" stays true forever. A true one-time view
+  would need a new persisted flag (e.g. a `shops` timestamp column) with no existing precedent
+  anywhere in this doc's three pages; not proposed unless the founder wants it.
+- **Wiring recommended:** mirror §19's own precedent exactly — only the *primary* submit button
+  ("Créer ma boutique") in `ConfigurationForm.tsx` redirects to the new route; the secondary
+  ("Enregistrer et continuer plus tard") keeps redirecting to `/tableau-de-bord-vendeur` unchanged,
+  same asymmetry §19 already applied to step 1's two buttons and for the same reason — a
+  save-and-defer click is not a completion event.
+- **No `src/app/ma-boutique/creer/layout.tsx` exists.** `succes` cannot inherit a shared guard from
+  step 1 or step 2 the way a nested layout would provide — it needs its own explicit
+  `resolveOwnedShopId` check, written the same way `configuration/page.tsx` writes its own.
+- **D3 link — reported as blocking at the time this section was written.** See §24 below for the
+  ruling.
+
+## 24. The D3 link — RULED 2026-08-12
+
+Ships `disabled`, matching D1/C1's non-live treatment (not the G4 dashboard's already-broken live
+link) — see the conversation for the three-surface audit (`ProductDetail.tsx`/D1's two spans,
+`ProduitsLensToggle.tsx`/C1) and `docs/follow-ups.md`'s existing 🔴
+`tableau-de-bord-vendeur:83` entry ("Voir ma boutique" is a live 404) on the fourth surface (G4).
+Logged as the 4th entry against that same 🔴 item — line numbers not cited here since this same
+edit inserted new content into that file, which would immediately go stale.
+
+`ProductDetail.tsx:35`'s own comment cites `ServiceDetail.tsx:232` as carrying "the same
+treatment" — checked while auditing this and found stale: that line is D2's report-line today, and
+D2 (service detail, freelancer-owned) has no shop/D3 concept at all, services don't belong to
+shops. Not a real fifth surface; the comment is drift, logged here and in `follow-ups.md` so it
+isn't re-cited by a future pass.
+
+The D3 URL-shape question this audit also raised (`[id]` vs `[slug]`) turned out to have been
+already ruled by the founder but never recorded — now written down in `follow-ups.md`'s own D3
+URL-shape entry as resolved: bare `[id]` for all four public-profile-style routes (D1–D4).
+
+## 25. Verification results (2026-08-12)
+
+Built at `src/app/ma-boutique/creer/succes/page.tsx`. `ConfigurationForm.tsx`'s primary submit
+rewired (data-intent="create") per §23's wiring recommendation. Verified with a one-off CDP harness
+(same technique as g2-discovery.md §11/§20, no Playwright) against the real dev server — two
+service-role-seeded fixtures (`owner`, a shop_owner with a live `shops` row; `noshop`, a plain
+consumer), real `/connexion` sign-ins, real button clicks. Fixtures and script deleted after use.
+
+**Guard.** `noshop`, signed in, direct hit on `/ma-boutique/creer/succes` → landed on
+`/ma-boutique/creer` (redirected, not rendered). `owner`, direct hit on the same URL → rendered
+(no redirect) — confirms §23's guard recommendation (`resolveOwnedShopId` reused verbatim) behaves
+exactly as designed for both branches.
+
+**Real walkthrough.** `owner` navigated to `/ma-boutique/creer/configuration`, clicked the button
+carrying `data-intent="create"` ("Créer ma boutique") — landed on `/ma-boutique/creer/succes`.
+Confirms the primary-submit-only rewiring (§23/§19 mirror) actually fires end to end, not just by
+reading the diff.
+
+**Content.** Screenshot confirms the built card matches §21's measured geometry: green check-circle
+chip, H1, subline, and the two buttons in the measured order — "Voir ma boutique publique" rendered
+`disabled` (muted, per the D3 ruling) and "Aller à mon tableau de bord" rendered as the live primary
+CTA.
+
+**Breakpoint overflow sweep** — `document.documentElement.scrollWidth − clientWidth` at every
+required width, FR and AR, `behavior:'instant'` scroll-to-origin before measuring:
+
+| width | FR | AR |
+|---|---|---|
+| 375 | 56px | 53px |
+| 1024 / 1152 / 1279 / 1280 / 1366 / 1440 | −15px | −15px |
+
+**The 375 numbers are the identical, already-logged `Topbar`/`UserMenu` shell defect** (g2-discovery
+§11/§20 — same 56/53 figures, to the pixel, on `/ma-boutique/creer` and `/ma-boutique/creer/configuration`
+already). Not a new regression; this page's own content contributes zero additional overflow. The
+1024–1440 figures are **negative**, which means `scrollWidth` came back *smaller* than `clientWidth`
+— the card (`max-w-[760px]`, centred) is comfortably narrower than the viewport at every one of
+those widths, so there is no scrollbar and nothing to overflow. Genuinely zero horizontal overflow,
+not a sign worth chasing.
+
+**AR pass.** `document.documentElement.dir === 'rtl'` confirmed live, H1 read back as
+`"تم إنشاء متجرك!"` — no FR leak. Screenshot confirms the button row mirrors correctly: in FR the
+disabled "Voir ma boutique publique" (drawn first/start in the frame, §21) renders on the visual
+left and the primary "Aller à mon tableau de bord" on the right; in AR the same DOM order renders
+disabled-left flips to disabled-right, primary-left — a straight logical-properties mirror, no
+hardcoded left/right anywhere in the markup. This matches the wizard's own established convention
+(step 1/2's footer: secondary at the reading-direction start, primary at the end, §2/§13) rather
+than an unexamined default — confirmed intentional, not just observed. No digit/counter content
+exists on this page, so the RTL numeric-run class of bug (`reference_rtl_numeric_run_reversal`) has
+no surface to reproduce on here.
+
+**Accessibility follow-up (2026-08-12, second pass).** The disabled "Voir ma boutique publique"
+button initially shipped with only a `title` tooltip for the disabled reason — hover-only, and a
+`disabled` native button is removed from the tab order, so no keyboard/AT user could reach it.
+Corrected to match `ProduitsLensToggle.tsx`'s own precedent for the identical problem: `aria-
+disabled="true"` alongside the native `disabled`, plus a visible "Bientôt" badge rendered as a
+child of the button so the reason is part of the accessible name, not only the title attribute —
+per `docs/design/accessibility.md`'s Button spec ("aria-disabled when disabled"). A live DOM
+re-check was queued in the same CDP pass as the secondary-submit check below and hit the same
+outage before it could run (see that paragraph) — confirmed instead by reading the built JSX
+directly: `aria-disabled="true"` and the badge span are unambiguously present in
+`src/app/ma-boutique/creer/succes/page.tsx`, so the accessible text is "Voir ma boutique publique
+Bientôt" by construction.
+
+**Deliberate divergence from §21's measured 235px width.** Adding the "Bientôt" pill as a child
+grows the button's intrinsic width past the measured 235px (the row is `whitespace-nowrap`, so it
+grows rather than wraps) — a11y-driven, not a fidelity slip, and the same category of divergence
+`ProduitsLensToggle.tsx` already logs for its own invented "Bientôt" badge against `578:42513`
+(which draws the segment with no badge at all). **Not re-swept after adding it** — the a11y fix
+landed after the live overflow pass above, and the same CDN outage blocked a second live sweep.
+Reasoned instead of measured: the button row sits inside a 760px card with real slack at every
+desktop width (§8), and at 375 the row stacks `flex-col` full-width (this page's own footer rule,
+mirroring step 1/2's), so a wider first button still spans the same row width rather than pushing
+past it. Low-risk, but logged as reasoned, not verified, per this doc's own standard for
+distinguishing the two.
+
+**Secondary submit ("Enregistrer et continuer plus tard").** Confirmed by code inspection: it
+carries no `data-intent` attribute, so `ConfigurationForm.tsx`'s ternary (`intent === 'create' ?
+'create' : 'draft'`) falls through to `'draft'` and still redirects to `/tableau-de-bord-vendeur`
+— only the primary submit's destination changed; this is the exact same fallback shape
+`CreateShopForm.tsx`'s own `data-intent="next"` pattern already uses in production (§19). A live
+CDP click-through of this specific branch was attempted but blocked by a Google Fonts CDN outage
+mid-session — the exact `fonts.gstatic.com` Cairo `.woff2` path this app requests 404s directly
+from Google right now, confirmed with a bare `curl`/`Invoke-WebRequest` outside the app entirely
+(not a bug in this PR, this repo, or the dev server). Logged here rather than silently claimed:
+the guard, the create-branch walkthrough, the overflow sweep, and the AR pass (above) all completed
+live before the outage started; the secondary-submit branch and the a11y fix are confirmed by
+code/DOM inspection, not a second live pass.
+

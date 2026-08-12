@@ -1127,6 +1127,12 @@ export const ar: Record<string, string> = {
   'boutique.config.cod_note':         "الدفع عند الاستلام مُفعّل افتراضيًا. أضف طرقًا أخرى إذا كنت تقبلها.",
   'boutique.config.cod_locked':       "مقفل — افتراضي عام",
 
+  // ─── /ma-boutique/creer/succes (G2 success) ───────────────────────────────────
+  'shop.create.succes.title':          "تم إنشاء متجرك!",
+  'shop.create.succes.subline':        "مرحبًا بك بين بائعي Servyou. أضف منتجك الأول لتبدأ البيع.",
+  'shop.create.succes.view_shop_soon': "قريبًا",
+  'shop.create.succes.cta_dashboard':  "الذهاب إلى لوحة التحكم",
+
   // ─── /devenir-vendeur/freelance (role-upgrade marketing) ─────────────────────
   'devenir.freelance.hero.eyebrow':      "للمستقلّين",
   'devenir.freelance.hero.headline':     "اعمل كمستقل. واعثر على عملائك الأوائل.",

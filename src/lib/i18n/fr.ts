@@ -1117,6 +1117,12 @@ export const fr: Record<string, string> = {
   'boutique.config.cod_note':         "Le paiement à la livraison (COD) est activé par défaut. Ajoutez d'autres options si vous les acceptez.",
   'boutique.config.cod_locked':       "Verrouillé — par défaut universel",
 
+  // ─── /ma-boutique/creer/succes (G2 success) ───────────────────────────────────
+  'shop.create.succes.title':          "Votre boutique est créée !",
+  'shop.create.succes.subline':        "Bienvenue parmi les vendeurs Servyou. Ajoutez votre premier produit pour commencer à vendre.",
+  'shop.create.succes.view_shop_soon': "Bientôt",
+  'shop.create.succes.cta_dashboard':  "Aller à mon tableau de bord",
+
   // ─── /devenir-vendeur/freelance (role-upgrade marketing) ─────────────────────
   'devenir.freelance.hero.eyebrow':      "Pour les freelances",
   'devenir.freelance.hero.headline':     "Travaillez en freelance. Trouvez vos premiers clients.",
