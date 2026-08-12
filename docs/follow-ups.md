@@ -1477,30 +1477,43 @@ work and neither is fixed in it — logged per "one PR, one focus".
 - **Trigger:** the D3 PR closes this. Until then, treat any "my shop page is broken" report as this
   entry, not as a new bug.
 
-### 🟡 D3 assumes `shops.slug`; the column does not exist and every live link uses `shop.id`
+### 🔴 (4th entry) `/ma-boutique/creer/succes:83` — G2 success, ruled 2026-08-12
 
-- **Decide this ONCE, before D3 is built — it is the same id-vs-slug decision D4 already faced.**
-  Deciding it twice is how two public URL shapes ship.
-- The registry lists D3 as **Boutique publique — 1440 = `540:32918`**, and the design is recorded
-  against `/boutique/[slug]`. The database disagrees. Live `public.shops` columns:
-  ```
-  id, owner_id, name, description, city, logo_url, banner_url, created_at, updated_at,
-  shop_type, delivery_setup, working_hours, location_detail, preferred_carriers,
-  admin_hidden_at, admin_hidden_reason
-  ```
-  **There is no `slug`.** Every call site in the app already builds `/boutique/${shop.id}` (see the
-  entry above), so the id shape is the one that exists in code today and `[slug]` exists only in the
-  design.
-- **The two options, with what each actually costs:**
-  - **`[id]`** — zero migration, matches all three existing links, ships D3 immediately. Cost: uuids
-    in public URLs — unguessable, but unreadable and not shareable by name.
-  - **`[slug]`** — needs a migration (nullable `slug`, unique index, backfill from `name`, a
-    collision strategy, and a decision about whether renames break old links) plus updating all
-    three call sites.
-- ⚑ **Whoever builds D3 owns this decision, and should check what D4 chose for
-  `/freelance/[slug]` first** — the two public profile routes should not disagree on URL shape for
-  no reason. If D4 shipped slugs against a real column, D3 matching it is cheap; if D4 has the same
-  gap, decide both in one migration rather than one page at a time.
+- **"Voir ma boutique publique" ships as a `disabled` `Button`, not a `Link` to `/boutique/{id}`.**
+  Founder ruling, checked against this same entry's first three surfaces before building: D1
+  (`ProductDetail.tsx`, two "Voir la boutique" spans) and C1 (`ProduitsLensToggle.tsx`, disabled
+  "Boutiques" segment) already treat D3 as absent; only the G4 quick action above links live, and
+  that link is this entry's own 🔴, not a pattern to extend. The succes screen matches D1/C1, the
+  majority and the deliberate treatment — logged here as the 4th surface against the same root
+  cause, not a new bug.
+- **Correction to a stale in-code comment surfaced while auditing this:** `ProductDetail.tsx:35`
+  claims "same treatment as `ServiceDetail.tsx:232`" — checked, and that line is D2's report-line
+  today, not a shop link. D2 (service detail) is freelancer-owned and has no shop/D3 concept at all,
+  so it was never a real surface in this count. Not fixed (a comment, not a defect), logged so it
+  isn't re-cited as a fourth precedent by a future pass.
+- **Trigger:** unchanged — the D3 PR closes all four surfaces at once, including this one.
+
+### ✅ D3 URL shape — RESOLVED 2026-08-12: bare `[id]`, not `[slug]`
+
+- **Ruled by the founder while this entry was still open** — recorded here now because the ruling
+  predates this doc entry and was never written down, which is why a later pass (G2 success) read
+  it as still pending. Decided **once**, per this entry's own original request, and it does cover
+  all four public-profile-shaped routes, not only D3: **D1, D2, D3, D4 all use a bare id.** `shops`
+  and `freelancer_profiles` both remain without a `slug` column — this was not a per-route choice
+  that happened to converge, it is one decision applied uniformly.
+  - **`[id]`** — the shape every live link already builds (`/boutique/${shop.id}`, this entry's
+    first 🔴) and the shape D1 shipped its own route on (`/produits/[id]`). Zero migration, ships D3
+    immediately when it's built.
+  - **`[slug]`** was the alternative on the table (nullable `slug`, unique index, backfill,
+    collision strategy) — not pursued. No `slug` column exists on `shops` or `freelancer_profiles`
+    today, and none is planned against this ruling.
+- **Nothing left to decide when D3 (or D4) is built.** D1 (`/produits/[id]`) and D2
+  (`/services/[id]`) are already shipped on bare id. D3 is not yet built; when it is, the route is
+  `/boutique/[id]`. D4 is not yet built either (`src/app/freelance*` does not exist under `src/app`
+  today) — its route is `/freelance/[id]` under this ruling, **correcting** the `/freelance/[slug]`
+  naming carried in the design registry and memory notes, which reflects the Figma frame's own
+  node name, not a coded decision. One shape across all four public-profile-style routes, decided
+  once rather than re-opened per page.
 
 ### Boutiques lens — DEFERRED with a "Bientôt" badge, and why the Freelances precedent did not decide it
 
@@ -1778,3 +1791,64 @@ original two, or a fourth pass will split the reconciliation again.
   right call for a rebuild, and diverging on one page would leave the two detail pages announcing
   their breadcrumbs differently. It is two surfaces and one new i18n key.
 - **Trigger:** fix both together with a `common.breadcrumb.label` key. Cheap; just not a D1 change.
+
+### 🔴 PRE-LAUNCH — Google Fonts CDN is a third-party single point of failure for every route
+
+- **What:** `src/app/layout.tsx` loads both platform typefaces — Cairo (AR) and Inter (FR/default)
+  — through `next/font/google`. In production this self-hosts and the runtime dependency on Google
+  disappears; **in dev (Turbopack), it does not** — the font CSS/files are fetched from
+  `fonts.gstatic.com`/`fonts.googleapis.com` at compile time, and because `layout.tsx` is the root
+  layout, a failed font module fails the module graph for **every route**, `/connexion` included.
+- **Confirmed live, 2026-08-12** (while chasing an unrelated blocked CDP pass, see
+  `g2-discovery.md` §26): a genuine Google-side CDN blip caused `fonts.gstatic.com` to 404 on the
+  exact Cairo `.woff2` path this app requests, and the dev server 500'd on every route with
+  `Module not found: Can't resolve '@vercel/turbopack-next/internal/font/google/font'`. Worse: the
+  outage **did not need to still be happening** for the app to stay broken — Turbopack's dev cache
+  had baked in the failed CSS response (dead asset hashes), so even after Google recovered
+  (confirmed by a bare `curl` returning real `200`s), the app kept 500ing until `.next` was deleted
+  and the dev server restarted. Two compounding failure modes on one third-party dependency.
+- **Why this matters for Tunisia specifically, not just as a general best practice:** per this
+  repo's own market anchors (CLAUDE.md), Servyou serves a market where mobile-first,
+  intermittent-connectivity access is the norm, not the edge case. A platform whose landing,
+  login, and every other page depend on a single external CDN being reachable is a self-inflicted
+  outage surface that has nothing to do with Servyou's own infrastructure or Supabase/Vercel
+  uptime.
+- **Fix:** self-host both font families (download the `.woff2` files, serve them via
+  `next/font/local` or a static `/public` path) — removes the runtime Google dependency in dev
+  *and* removes any residual build-time fetch dependency in production, where `next/font/google`
+  already self-hosts the *output* but still needs to reach Google *once*, at build time, to
+  produce it.
+- **Why deferred:** not a regression in any open PR, not blocking `feat/g2-success` (the CDP pass
+  it was discovered during a dev-server restart + `.next` clear unblocked it fully, so this is a
+  resilience gap, not an active bug) — a platform-wide infra change, not this branch's blast
+  radius.
+- **Trigger:** pre-launch hardening pass, alongside wiring up Sentry (`docs/follow-ups.md:450`
+  already tracks the `@sentry/nextjs` dependency bump) — both are "the platform should not go dark
+  because of a third party" items and read naturally as one pass.
+
+### 🔴 Every guarded-page bounce to `/connexion` sends `?next=`, but `SigninForm` only reads `?redirect=`
+
+- **What:** `SigninForm.tsx:76` reads the return destination as
+  `new URLSearchParams(window.location.search).get('redirect')`. Every server-side guard in the app
+  that redirects a logged-out visitor to sign in builds the query string as `?next=` instead —
+  confirmed at **10 call sites**: `succes/page.tsx:40` and `configuration/page.tsx:32` (both new in
+  this PR), `ma-boutique/creer/page.tsx:33`, `mon-compte/page.tsx:23`, `parametres/page.tsx:18/21`,
+  `mes-commandes/[id]/page.tsx:20`, `mes-missions/[id]/page.tsx:30`, `demander/[id]/page.tsx:29`, and
+  the shared `require-seller.ts:42` helper (used by `mes-produits/ajouter` and others). `next` is
+  never read anywhere under `src/app/connexion/`, including the page component itself
+  (`connexion/page.tsx`) which awaits `searchParams` but only forwards `passwordReset`. The result:
+  sign in from any guarded page and you land on `/` (SigninForm's own fallback,
+  `SigninForm.tsx:85`), not back on the page you were trying to reach — silently, no error, easy to
+  miss in a click-through because "landing on the marketplace" doesn't look broken.
+- **Surfaced by:** the G2-success CDP verification pass (2026-08-12,
+  `g2-discovery.md` §26) — noticed while scripting a real sign-in through `/connexion`, not fixed
+  there per "one PR, one focus"; this is a pre-existing, wider-than-this-PR defect, not something
+  `succes/page.tsx` introduced (it copied the same `?next=` pattern every other guard already uses).
+- **Fix:** either rename every producer's query key to `redirect` (10+ call sites, mechanical, easy
+  to grep-verify), or make `SigninForm.tsx:76` read `next` (one line, matches the majority
+  convention already in the codebase, and would need `connexion/page.tsx` to also stop dropping it
+  if a server-rendered variant of the check is ever added). The second is cheaper and matches what
+  every guard already writes — no reason to rename 10 call sites to fix a 1-line reader.
+- **Trigger:** next PR that touches `/connexion` or any of the listed guards. Grep
+  `?next=` before assuming this list is exhaustive — this pass found it via a full-repo search, not
+  a systematic audit of every guard.

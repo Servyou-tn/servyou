@@ -115,6 +115,11 @@ export function ConfigurationForm({
     e.preventDefault()
     if (pending) return
 
+    // Which button triggered this submit — read from the DOM submitter, not FormData, same as
+    // CreateShopForm.tsx's own `data-intent` pattern (g2-discovery.md §19/§23).
+    const submitter = (e.nativeEvent as SubmitEvent).submitter as HTMLButtonElement | null
+    const intent = submitter?.dataset.intent === 'create' ? 'create' : 'draft'
+
     setPending(true)
     setFormError(null)
 
@@ -134,8 +139,11 @@ export function ConfigurationForm({
     }
 
     // Stay pending through the navigation, same as step 1 — the buttons must not flash back to
-    // idle on a page that's already being replaced.
-    router.push('/tableau-de-bord-vendeur')
+    // idle on a page that's already being replaced. Only the primary ("Créer ma boutique") submit
+    // advances to the success screen — a save-and-defer click is not a completion event
+    // (g2-discovery.md §23), so "Enregistrer et continuer plus tard" keeps its original
+    // destination.
+    router.push(intent === 'create' ? '/ma-boutique/creer/succes' : '/tableau-de-bord-vendeur')
   }
 
   const selectField = `w-full rounded-lg border px-4 h-11 bg-surface-base text-base text-text-primary outline-none transition-colors focus:border-brand-blue-600 border-border-strong ${FOCUS_RING}`
@@ -302,7 +310,14 @@ export function ConfigurationForm({
         <Button type="submit" variant="secondary" size="lg" loading={pending} className="w-full sm:w-auto">
           {pending ? t('shop.create.saving', lang) : t('shop.create.save_draft', lang)}
         </Button>
-        <Button type="submit" variant="primary" size="lg" loading={pending} className="w-full sm:w-auto">
+        <Button
+          type="submit"
+          variant="primary"
+          size="lg"
+          loading={pending}
+          data-intent="create"
+          className="w-full sm:w-auto"
+        >
           {pending ? t('shop.create.saving', lang) : t('boutique.action_create', lang)}
         </Button>
       </div>
