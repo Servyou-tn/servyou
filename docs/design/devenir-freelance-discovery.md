@@ -146,6 +146,15 @@ pre-existing secondary browse-freelancers link) moved into the hero. This placem
 measured — it's carried forward from the page's pre-rebuild content, into the one surviving
 navigational region.
 
+**⚑ CORRECTION (found during the boutique sibling's discovery pass, fixed on
+`feat/devenir-boutique-rebuild`):** the age-gate module also held a legal line ("En continuant,
+vous acceptez les conditions d'utilisation freelance.") that traveled with the CTA on paper but
+was never actually relocated — this rebuild dropped it silently, not as a recorded decision. It
+shipped missing from the live page. Fixed in the boutique PR via a new shared `TermsLine`
+component (`src/components/devenir/TermsLine.tsx`, imported here too), pointing at the general
+`/conditions` page rather than a role-specific document that was never real. See
+`docs/design/devenir-boutique-discovery.md` §4 for the reasoning on the link target.
+
 **4. Value-cards: `BenefitGrid` parameterized, not forked.** Added an optional `columns?: 3 | 4`
 prop (literal Tailwind class lookup, not string interpolation — the JIT scanner needs literal
 class names in source) and made `sectionTitle`/`sectionSubtitle` optional (the frame's

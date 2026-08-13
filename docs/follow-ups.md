@@ -1121,6 +1121,15 @@ the route, its i18n block (`fr.ts` / `ar.ts`, "Order detail page") and its `acti
   an actual mobile Figma frame — re-measure against it then, treat any disagreement as a
   re-measure, not a bug.
 
+### `/devenir-vendeur/boutique` joins the same list — a twelfth, same shape as its sibling
+- **`555:37032` ("Devenir vendeur (boutique) — 1440") is also desktop-only.** Full geometry in
+  `docs/design/devenir-boutique-discovery.md`.
+- **Same D1 hard-fit value-cards row**, same fix (`BenefitGrid`'s `columns={3}`), same `sm`
+  1-up→3-up breakpoint chosen for the same reason (skips an uneven 2-up tablet step for 3
+  items) — INFERRED, not measured, confirmed on this frame too, not re-derived independently.
+- **Trigger:** same as the freelance entry above — whenever either sibling gets a real mobile
+  frame, re-measure both together rather than reconciling them twice.
+
 ### Three buyer-side order transitions still write from client components
 - `mes-commandes/_components/OrdersList.tsx:279` and `components/ReceiptConfirmButton.tsx:33`
   (both → `received`) and `components/CancelOrderModal.tsx:81` (cancel) call `supabase.update()`
@@ -1956,3 +1965,35 @@ sites) still lives in `marche/ProfileAvatarMenu.tsx` — small, mechanical to mo
 `ProfileAvatarMenu` while `MarcheTopBar`/`MarcheLayout` still use it). `getInitials` is **already**
 fully extracted to `components/ui/initials.ts` and consumed by both shells — the audit's "runtime
 coupling" claim on that specific function is stale, not a remaining blocker.
+
+## `/devenir-vendeur/boutique` rebuild (`feat/devenir-boutique-rebuild`, 2026-08-13)
+
+### No seller-specific terms document exists — both pitch pages now link the general one instead
+- Both `/devenir-vendeur/{freelance,boutique}` frames drew a role-specific phrase in their
+  (now-cut) age-gate module — *"conditions d'utilisation freelance"* / *"... vendeur"*. No such
+  document exists anywhere in the app: no route, no file, no string match for a seller- or
+  freelancer-specific terms concept outside these two frames' own copy. The only terms document
+  that exists is the general one (`src/app/(marketing)/conditions/page.tsx`,
+  `LEGAL_DOCS.conditions`, 14 sections, one "Achats et ventes" section covering buying *and*
+  selling together — no seller-specific carve-out).
+- **Resolution taken (founder ruling):** both pages now share one `TermsLine` component and one
+  copy string ("En continuant, vous acceptez les conditions d'utilisation.") linking to the
+  general `/conditions` page — the role word ("freelance"/"vendeur") dropped rather than
+  promising a document that doesn't exist.
+- **Still owed:** a real seller-specific terms document (and, symmetrically, a freelancer one) —
+  what it should say is a legal/product question, not an engineering one. Belongs with the
+  pre-launch legal-pages pass, not invented here.
+- **Trigger:** whenever the pre-launch legal review happens, or before the platform actually
+  takes its first seller signups at scale.
+
+### `RoleUpgradeHero.tsx` is now fully orphaned — 0 remaining callers
+- Both `/devenir-vendeur/freelance` (`f92d793`) and `/devenir-vendeur/boutique` (this PR)
+  rebuilt their heroes single-column, matching their respective frames — neither reuses
+  `RoleUpgradeHero` (it's 2-column, wrong shape for either measured frame). Confirmed by grep:
+  zero files import it besides its own definition.
+- **Not deleted here** — this PR's rulings named `HowItWorks`/`FAQ`/`FinalCTA` specifically for
+  deletion (the discovery doc's own finding); `RoleUpgradeHero` going to zero callers is a side
+  effect of executing those rulings, not something ruled on directly. Logged rather than deleted
+  inline, per "one PR, one focus."
+- **Trigger:** next `devenir/` cleanup pass — safe to delete on sight, already confirmed
+  zero-caller.

@@ -6,6 +6,7 @@ import { useLang } from '@/components/LangProvider'
 import { t } from '@/lib/i18n'
 import { FOCUS_RING } from '@/components/layout/styles'
 import { BenefitGrid } from './BenefitGrid'
+import { TermsLine } from './TermsLine'
 
 // Rebuilt from the measured Figma frame (466:19958, "Devenir freelance — 1440"), per
 // docs/design/devenir-freelance-discovery.md. The page is now exactly two regions: hero, then
@@ -23,6 +24,13 @@ import { BenefitGrid } from './BenefitGrid'
 //    + the pre-existing secondary "voir des freelances" browse link) moved up into the hero.
 //    Not measured; carried forward from the page's own pre-rebuild content.
 //
+// TERMS LINE — the age-gate module also held a legal line ("En continuant, vous acceptez les
+// conditions d'utilisation freelance."). The first rebuild (f92d793) dropped it silently along
+// with the age-gate instead of relocating it with the CTA — an omission, not a recorded
+// decision, caught during the boutique sibling's discovery pass. Restored here via the shared
+// `TermsLine` (also used by boutique), now pointing at the general /conditions page rather than
+// a role-specific document that doesn't exist — see TermsLine.tsx.
+//
 // CTA target: /mon-profil-freelance/creer does not exist yet (H2 is a later build — the same
 // position /ma-boutique/creer was in before G2 shipped). Wired anyway, not disabled: the
 // canonical freelancer-workspace root (`/mon-profil-freelance`, no `/creer`) is already
@@ -30,9 +38,9 @@ import { BenefitGrid } from './BenefitGrid'
 // "404 until built" posture, and the `/creer` suffix matches the shop side's own
 // `/ma-boutique` + `/ma-boutique/creer` shape.
 //
-// HowItWorks / FAQ / FinalCTA are cut from this page (no frame region for them) but their
-// component files stay — DevenirVendeurContent.tsx (boutique) is still their only remaining
-// caller. Deleting them is a boutique-rebuild cleanup, not this PR's.
+// HowItWorks / FAQ / FinalCTA are gone from this page's render since f92d793 — as of this PR
+// they're deleted from the codebase entirely (boutique, the last remaining caller, moved off
+// them too).
 export function DevenirFreelanceContent({ isAuthenticated }: { isAuthenticated: boolean }) {
   const lang = useLang()
   const createHref = isAuthenticated
@@ -70,6 +78,7 @@ export function DevenirFreelanceContent({ isAuthenticated }: { isAuthenticated: 
             {k('hero.secondaryCta')}
           </Link>
         </div>
+        <TermsLine />
       </section>
 
       {/* 32px gap, measured (hero ends y=127, value-cards starts y=159 in the frame). */}
