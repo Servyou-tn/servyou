@@ -1103,6 +1103,24 @@ the route, its i18n block (`fr.ts` / `ar.ts`, "Order detail page") and its `acti
   absorbing page-by-page across ten PRs.
 - **Trigger:** before the seller world ships to real users.
 
+### `/devenir-vendeur/freelance` joins the no-mobile-frame list — every responsive value INFERRED
+- **`466:19958` ("Devenir freelance — 1440") is desktop-only**, same pattern as the ten seller
+  pages above — this is effectively an eleventh. Full geometry in
+  `docs/design/devenir-freelance-discovery.md`.
+- **The value-cards row is the D1 hard-fit shape**: 3 × 229.33px + 2 × 16px gap = 720px, exactly
+  the measured column width, zero slack. Built fluid (`BenefitGrid`'s new `columns=3` →
+  `grid-cols-1 sm:grid-cols-3`), not fixed-px, specifically to avoid the D1/G1 overflow trap.
+- **`sm` (640px) as the 1-up→3-up jump is INFERRED, not measured** — chosen to skip the
+  intermediate 2-up step 4-column grids use (`md:grid-cols-2` before `lg:grid-cols-4`), since 3
+  items split unevenly into 2 (a 2-then-1-orphan tablet state). No frame exists below 1440 to
+  confirm or contradict this.
+- **The hero's mobile shape (font-size steps, button wrap behavior) is also inferred** — carried
+  from the pre-existing `RoleUpgradeHero` responsive values (`text-4xl md:text-5xl`, `flex-wrap`
+  CTA row) rather than measured fresh, since the frame draws no responsive variant at all.
+- **Trigger:** whenever this page (or boutique's sibling `555:37032`, likely the same shape) gets
+  an actual mobile Figma frame — re-measure against it then, treat any disagreement as a
+  re-measure, not a bug.
+
 ### Three buyer-side order transitions still write from client components
 - `mes-commandes/_components/OrdersList.tsx:279` and `components/ReceiptConfirmButton.tsx:33`
   (both → `received`) and `components/CancelOrderModal.tsx:81` (cancel) call `supabase.update()`
