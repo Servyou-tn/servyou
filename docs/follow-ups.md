@@ -678,11 +678,15 @@ capture-twice-and-diff method above.
 Measured on the authenticated route with a real seeded order (`documentElement.scrollWidth 433` vs `clientWidth 375`). **Neither offender is the price breakdown** — its rows are not in the list:
 
 - **`OrderRail` steps** — `flex w-14 shrink-0 flex-col items-center gap-2 lg:w-20`, rightmost edge **433**. A product order's chain is **7** stages; 7 × 56px + gaps exceeds 375 and `shrink-0` forbids any give. Shipped in PR #105 (rail timestamps). A service order (4 stages) would not overflow, which is likely why this was never seen.
-- **Topbar avatar cluster** — `flex shrink-0 items-center gap-4`, rightmost edge **431**.
+- **Topbar avatar cluster** — `flex shrink-0 items-center gap-4`, rightmost edge **431**. **✅
+  RESOLVED — `fix/appshell-topbar-and-pitch-pages`, 2026-08-13** (see the G6/G4 entries for the
+  fix). This route's overflow is now **`OrderRail`-only** — re-measure the actual remaining number
+  next time this route is touched; it was not re-measured as part of this PR (the fix was verified
+  on other AppShell routes, not this specific auth-gated order-detail page).
 
 This is **not covered by** the frontend audit's "380px 0-overflow (negative-control validated)" finding — a different viewport, and more to the point that sweep could not reach the 12 auth-walled routes. Both offenders here exist *only when authenticated* (the rail's 7 product stages, the topbar's name+role avatar cluster), so an anonymous sweep could not have seen either. Treat the audit's overflow result as covering anonymous routes only.
 
-Not fixed in the breakdown PR: the rail is a previous PR's element and the fix is a real responsive decision (horizontal scroll vs a condensed mobile rail vs wrapping), not a one-liner.
+**`OrderRail` still not fixed** — it is a previous PR's element and the fix is a real responsive decision (horizontal scroll vs a condensed mobile rail vs wrapping), not a one-liner. Only the topbar half of this entry's overflow is resolved.
 
 ### 🟡 `scripts/gate/authed.mjs` cannot set the language cookie — AR half of the visual gate is unreachable through it
 
@@ -861,6 +865,8 @@ All three are founder-decided on the D2 build (`feat/d2-service-detail`, Figma `
   consumer, and `project_frontend_audit` recorded "380px 0-overflow" from a logged-OUT sweep,
   which is why it was missed.
 - **Trigger:** the next `components/shell/*` pass. Re-measure logged-IN at 375.
+- **✅ RESOLVED — `fix/appshell-topbar-and-pitch-pages`, 2026-08-13.** See the closing note under
+  the G6 entry below for the fix and the full re-measurement; not repeated at every sighting.
 
 ### CDP click harness cannot deliver synthetic mouse input (tooling note)
 - `Input.dispatchMouseEvent` (mouseMoved → mousePressed → mouseReleased, correct `buttons`,
@@ -1069,6 +1075,20 @@ the route, its i18n block (`fr.ts` / `ar.ts`, "Order detail page") and its `acti
   the FR/AR toggle behind the mobile drawer below `sm`, which is where the language control already
   lives on mobile). Re-measure logged in at 375 in both locales afterwards.
 - **Trigger:** next shell-touching PR, or before any seller page ships to mobile users.
+- **✅ RESOLVED — `fix/appshell-topbar-and-pitch-pages`, 2026-08-13.** Neither of the two options
+  above was taken — dropping `shrink-0` was explicitly rejected (would compress the avatar/bell/
+  toggle unpredictably instead of the row reclaiming space) and hiding the FR/AR toggle changes
+  what the row *offers*, not just what it costs. Fix instead: below `sm`, `Topbar.tsx`'s logo swaps
+  the full wordmark (110px) for the icon-only S-mark (32px, the same asset the open drawer already
+  uses) and the cluster's `gap-4` (16px) drops to `gap-2` (8px) — both revert at their breakpoint,
+  nothing shrinks under pressure. Re-measured logged in, FR and AR, at 375: `scrollWidth ==
+  clientWidth`, 0 overflow, on `/tableau-de-bord-vendeur`, `/marche/produits`, `/produits/[id]`,
+  `/ma-boutique/creer`, plus the two newly-migrated `/devenir-vendeur/{boutique,freelance}` — AR
+  confirmed via a throwaway `Network.setCookie(servyou_lang=ar)` runner (the exact gap the
+  `authed.mjs` entry two sections up already logs; not fixed there, same "not this PR" call).
+  Desktop 1024/1152/1279/1280/1366/1440 swept clean on the two migrated pages. **S4 (topbar 65px
+  vs Figma's 64px) was NOT touched** — the founder's 2026-07-28 "rides with" note for that item
+  is still open; this PR's scope was the 375px overflow specifically, not the 1px height delta.
 
 ### The ten seller pages have NO mobile Figma frames
 - **G1-G9 + D3 are all desktop-only.** The registry holds **13 mobile (375) frames across 160 screen
@@ -1082,6 +1102,33 @@ the route, its i18n block (`fr.ts` / `ar.ts`, "Order detail page") and its `acti
 - **On a market that is 70%+ mobile**, this is worth sizing as one design batch rather than
   absorbing page-by-page across ten PRs.
 - **Trigger:** before the seller world ships to real users.
+
+### `/devenir-vendeur/freelance` joins the no-mobile-frame list — every responsive value INFERRED
+- **`466:19958` ("Devenir freelance — 1440") is desktop-only**, same pattern as the ten seller
+  pages above — this is effectively an eleventh. Full geometry in
+  `docs/design/devenir-freelance-discovery.md`.
+- **The value-cards row is the D1 hard-fit shape**: 3 × 229.33px + 2 × 16px gap = 720px, exactly
+  the measured column width, zero slack. Built fluid (`BenefitGrid`'s new `columns=3` →
+  `grid-cols-1 sm:grid-cols-3`), not fixed-px, specifically to avoid the D1/G1 overflow trap.
+- **`sm` (640px) as the 1-up→3-up jump is INFERRED, not measured** — chosen to skip the
+  intermediate 2-up step 4-column grids use (`md:grid-cols-2` before `lg:grid-cols-4`), since 3
+  items split unevenly into 2 (a 2-then-1-orphan tablet state). No frame exists below 1440 to
+  confirm or contradict this.
+- **The hero's mobile shape (font-size steps, button wrap behavior) is also inferred** — carried
+  from the pre-existing `RoleUpgradeHero` responsive values (`text-4xl md:text-5xl`, `flex-wrap`
+  CTA row) rather than measured fresh, since the frame draws no responsive variant at all.
+- **Trigger:** whenever this page (or boutique's sibling `555:37032`, likely the same shape) gets
+  an actual mobile Figma frame — re-measure against it then, treat any disagreement as a
+  re-measure, not a bug.
+
+### `/devenir-vendeur/boutique` joins the same list — a twelfth, same shape as its sibling
+- **`555:37032` ("Devenir vendeur (boutique) — 1440") is also desktop-only.** Full geometry in
+  `docs/design/devenir-boutique-discovery.md`.
+- **Same D1 hard-fit value-cards row**, same fix (`BenefitGrid`'s `columns={3}`), same `sm`
+  1-up→3-up breakpoint chosen for the same reason (skips an uneven 2-up tablet step for 3
+  items) — INFERRED, not measured, confirmed on this frame too, not re-derived independently.
+- **Trigger:** same as the freelance entry above — whenever either sibling gets a real mobile
+  frame, re-measure both together rather than reconciling them twice.
 
 ### Three buyer-side order transitions still write from client components
 - `mes-commandes/_components/OrdersList.tsx:279` and `components/ReceiptConfirmButton.tsx:33`
@@ -1332,6 +1379,14 @@ work and neither is fixed in it — logged per "one PR, one focus".
 - **Reproduce:**
   `node scripts/gate/authed.mjs --email <shop-owner> --route /tableau-de-bord-vendeur --width 375 --height 812 --eval <overflow-probe> --json`
 - **Trigger:** the next shell/topbar PR, or any mobile-polish pass. Gate at **375**, not 380.
+- **✅ RESOLVED — `fix/appshell-topbar-and-pitch-pages`, 2026-08-13.** `Topbar.tsx` below `sm` now
+  renders the icon-only S-mark instead of the full wordmark (saves ~79px) and the icon cluster's
+  gap tightens from 16px to 8px below `md` (saves 16px); both revert to the original at their
+  breakpoint. Re-measured with the same `authed.mjs` command as above, plus `/marche/produits`,
+  `/produits/[id]`, `/ma-boutique/creer`, and the two newly AppShell-migrated
+  `/devenir-vendeur/{boutique,freelance}`: `scrollWidth == clientWidth` on all of them, FR and AR,
+  at 375. Full writeup on the G4 entry above (same fix, not repeated here). S4 (the 65px-vs-64px
+  height delta on the same component) remains open — out of this PR's stated scope.
 
 ## G6 image rendering (`fix/g6-figma-fidelity`, 2026-08-06)
 
@@ -1937,3 +1992,68 @@ original two, or a fourth pass will split the reconciliation again.
 - **Trigger:** next pass through the admin moderation surfaces, or whenever `/produits`/`/services`
   next changes shape. Two-line fix (`/produit`→`/produits`, `/service`→`/services`), just not found
   by this PR's own walk.
+
+## AppShell Topbar 375px fix + first MarcheLayout→AppShell migration step (`fix/appshell-topbar-and-pitch-pages`, 2026-08-13)
+
+### AppShell Topbar 375px overflow — closed
+Fixed the defect logged four separate times above (G9 partial, the E1-era entry, G4, G6) — see
+those entries for the fix detail and re-measurement, not repeated here. One entry (G9
+`/commandes-recues/[id]`) was a compound bug; only its topbar-cluster half is resolved, `OrderRail`
+remains open. S4 (topbar 65px vs Figma's 64px, same component, founder-flagged to ride with this
+fix) was deliberately **not** included — out of this PR's stated scope, still open.
+
+### `/devenir-vendeur/{boutique,freelance}` migrated off `MarcheLayout` onto `AppShell` — 2 of 5 done
+Reported separately (routing-defect audit, 2026-08-13): a click from the new `/devenir-vendeur`
+role-choice screen (`AppShell`) into either pitch page landed on the **old** shell (`MarcheLayout`
+— different sidebar, "Publier un projet" CTA, no shell parity). Both pages were confirmed 4-line
+swaps (static content, `user` prop only, no `--marche-topbar-h` / `MarcheSidebar` dependency) and
+migrated here. Verified live: identical sidebar + topbar across `/devenir-vendeur` →
+`/devenir-vendeur/freelance` → `/devenir-vendeur/boutique` (screenshots, 1440 + 375), no "Publier un
+projet", no "Mes missions" on any of the three.
+
+**3 of 5 `MarcheLayout` routes remain:** `/` (`ConsumerHomepage`), `/recherche`,
+`/categories/[slug]`. All three depend on the cross-engine Produits/Services toggle + stateful
+URL-synced search that `AppShell`'s `Topbar` has no equivalent for (`TopbarSearch` is a stateless
+box that always redirects to `/recherche`, carries no `q=` or type). Not a swap — needs a new
+page-local component, and for `/` specifically a founder call first (does it stay a bespoke browse
+surface, or fold into `/marche/produits`, which already has `AppShell` + its own lens toggle).
+Scoped as a separate PR ("PR 2"), deliberately not started here.
+
+**Still coupling `AppShell` to the shell it's meant to replace:** `TopBarUser` (type-only, 9 import
+sites) still lives in `marche/ProfileAvatarMenu.tsx` — small, mechanical to move to
+`lib/marche/shell-user.ts`, but blocked on all 5 routes being off `MarcheLayout` first (can't delete
+`ProfileAvatarMenu` while `MarcheTopBar`/`MarcheLayout` still use it). `getInitials` is **already**
+fully extracted to `components/ui/initials.ts` and consumed by both shells — the audit's "runtime
+coupling" claim on that specific function is stale, not a remaining blocker.
+
+## `/devenir-vendeur/boutique` rebuild (`feat/devenir-boutique-rebuild`, 2026-08-13)
+
+### No seller-specific terms document exists — both pitch pages now link the general one instead
+- Both `/devenir-vendeur/{freelance,boutique}` frames drew a role-specific phrase in their
+  (now-cut) age-gate module — *"conditions d'utilisation freelance"* / *"... vendeur"*. No such
+  document exists anywhere in the app: no route, no file, no string match for a seller- or
+  freelancer-specific terms concept outside these two frames' own copy. The only terms document
+  that exists is the general one (`src/app/(marketing)/conditions/page.tsx`,
+  `LEGAL_DOCS.conditions`, 14 sections, one "Achats et ventes" section covering buying *and*
+  selling together — no seller-specific carve-out).
+- **Resolution taken (founder ruling):** both pages now share one `TermsLine` component and one
+  copy string ("En continuant, vous acceptez les conditions d'utilisation.") linking to the
+  general `/conditions` page — the role word ("freelance"/"vendeur") dropped rather than
+  promising a document that doesn't exist.
+- **Still owed:** a real seller-specific terms document (and, symmetrically, a freelancer one) —
+  what it should say is a legal/product question, not an engineering one. Belongs with the
+  pre-launch legal-pages pass, not invented here.
+- **Trigger:** whenever the pre-launch legal review happens, or before the platform actually
+  takes its first seller signups at scale.
+
+### `RoleUpgradeHero.tsx` is now fully orphaned — 0 remaining callers
+- Both `/devenir-vendeur/freelance` (`f92d793`) and `/devenir-vendeur/boutique` (this PR)
+  rebuilt their heroes single-column, matching their respective frames — neither reuses
+  `RoleUpgradeHero` (it's 2-column, wrong shape for either measured frame). Confirmed by grep:
+  zero files import it besides its own definition.
+- **Not deleted here** — this PR's rulings named `HowItWorks`/`FAQ`/`FinalCTA` specifically for
+  deletion (the discovery doc's own finding); `RoleUpgradeHero` going to zero callers is a side
+  effect of executing those rulings, not something ruled on directly. Logged rather than deleted
+  inline, per "one PR, one focus."
+- **Trigger:** next `devenir/` cleanup pass — safe to delete on sight, already confirmed
+  zero-caller.
