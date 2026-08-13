@@ -596,6 +596,31 @@ export const fr: Record<string, string> = {
   'boutique.action_create':             "Créer ma boutique",
   'boutique.action_save':               "Enregistrer les modifications",
 
+  // ─── D3 — Public shop page (/boutique/[id]) ───────────────────────────────────
+  'boutique.public.member_since':       "Boutique depuis {date}",
+  'boutique.public.products_title':     "Produits",
+  'boutique.public.products_count':     "{count} produits",
+  'boutique.public.empty_products':     "Cette boutique n'a pas encore de produits",
+  'boutique.public.payment_caption':    "Paiement",
+  'boutique.public.categories_caption': "Catégories",
+  'boutique.public.share':              "Partager",
+  'boutique.public.link_copied':        "Lien copié !",
+  'boutique.public.report_trigger':     "Signaler cette boutique",
+
+  // ─── Shop report modal (D3's « Signaler ») ─────────────────────────────────────
+  'report.shop.title':                  "Signaler cette boutique",
+  'report.shop.subtitle':               "Vous signalez la boutique « {name} ». Notre équipe examinera votre signalement.",
+  'report.shop.reason_label':           "Motif du signalement",
+  'report.shop.reason_placeholder':     "Sélectionner un motif",
+  'report.shop.reason_fake_scam':       "Arnaque ou faux",
+  'report.shop.reason_offensive':       "Contenu offensant",
+  'report.shop.reason_other':           "Autre",
+  'report.shop.description_label':      "Description (optionnel)",
+  'report.shop.description_placeholder':"Décrivez le problème rencontré…",
+  'report.shop.cancel':                 "Annuler",
+  'report.shop.submit':                 "Signaler la boutique",
+  'report.shop.success':                "Signalement envoyé. Merci.",
+
   // ─── Products (boutique management + public product page) ────────────────────
   'product.list_title':     "Mes produits",
   'product.add_btn':        "+ Ajouter un produit",
@@ -1094,7 +1119,6 @@ export const fr: Record<string, string> = {
   // ─── /ma-boutique/creer/succes (G2 success) ───────────────────────────────────
   'shop.create.succes.title':          "Votre boutique est créée !",
   'shop.create.succes.subline':        "Bienvenue parmi les vendeurs Servyou. Ajoutez votre premier produit pour commencer à vendre.",
-  'shop.create.succes.view_shop_soon': "Bientôt",
   'shop.create.succes.cta_dashboard':  "Aller à mon tableau de bord",
 
   // ─── /devenir-vendeur/freelance (role-upgrade marketing) ─────────────────────

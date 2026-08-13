@@ -627,6 +627,31 @@ export const ar: Record<string, string> = {
   'boutique.action_create':             "إنشاء متجري",
   'boutique.action_save':               "حفظ التعديلات",
 
+  // ─── D3 — Public shop page (/boutique/[id]) ───────────────────────────────────
+  'boutique.public.member_since':       "متجر منذ {date}",
+  'boutique.public.products_title':     "المنتجات",
+  'boutique.public.products_count':     "{count} منتج",
+  'boutique.public.empty_products':     "لا يحتوي هذا المتجر على منتجات بعد",
+  'boutique.public.payment_caption':    "الدفع",
+  'boutique.public.categories_caption': "الفئات",
+  'boutique.public.share':              "مشاركة",
+  'boutique.public.link_copied':        "تم نسخ الرابط!",
+  'boutique.public.report_trigger':     "الإبلاغ عن هذا المتجر",
+
+  // ─── Shop report modal (D3's « الإبلاغ ») ─────────────────────────────────────
+  'report.shop.title':                  "الإبلاغ عن هذا المتجر",
+  'report.shop.subtitle':               "أنت تبلغ عن متجر « {name} ». سيقوم فريقنا بمراجعة بلاغك.",
+  'report.shop.reason_label':           "سبب الإبلاغ",
+  'report.shop.reason_placeholder':     "اختر سببًا",
+  'report.shop.reason_fake_scam':       "احتيال أو مزيف",
+  'report.shop.reason_offensive':       "محتوى مسيء",
+  'report.shop.reason_other':           "آخر",
+  'report.shop.description_label':      "الوصف (اختياري)",
+  'report.shop.description_placeholder':"صف المشكلة التي واجهتها…",
+  'report.shop.cancel':                 "إلغاء",
+  'report.shop.submit':                 "الإبلاغ عن المتجر",
+  'report.shop.success':                "تم إرسال البلاغ. شكرًا لك.",
+
   // ─── Products (boutique management + public product page) ────────────────────
   'product.list_title':     "منتجاتي",
   'product.add_btn':        "+ إضافة منتج",
@@ -1104,7 +1129,6 @@ export const ar: Record<string, string> = {
   // ─── /ma-boutique/creer/succes (G2 success) ───────────────────────────────────
   'shop.create.succes.title':          "تم إنشاء متجرك!",
   'shop.create.succes.subline':        "مرحبًا بك بين بائعي Servyou. أضف منتجك الأول لتبدأ البيع.",
-  'shop.create.succes.view_shop_soon': "قريبًا",
   'shop.create.succes.cta_dashboard':  "الذهاب إلى لوحة التحكم",
 
   // ─── /devenir-vendeur/freelance (role-upgrade marketing) ─────────────────────

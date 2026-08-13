@@ -3,7 +3,6 @@ import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { CircleCheckBig } from 'lucide-react'
 import { AppShell } from '@/components/shell/AppShell'
-import { Button } from '@/components/ui/button'
 import { FOCUS_RING } from '@/components/layout/styles'
 import { getShellUser } from '@/lib/marche/shell-user'
 import { resolveOwnedShopId } from '@/lib/shops/owner-shop'
@@ -27,9 +26,9 @@ const ROUTE = '/ma-boutique/creer/succes'
 // persisted "already seen this" flag would be a new pattern with no precedent anywhere in this
 // wizard's three pages.
 //
-// D3 LINK — ruled 2026-08-12 (docs/follow-ups.md, 4th entry against the tableau-de-bord-vendeur
-// 🔴): "Voir ma boutique publique" ships `disabled`, matching D1/C1's non-live treatment. The G4
-// dashboard's live `/boutique/{id}` link is a known bug, not a precedent to extend.
+// D3 LINK — D3 shipped 2026-08-12 (`/boutique/[id]`, docs/follow-ups.md "D3 URL shape —
+// RESOLVED"). "Voir ma boutique publique" is now a real `<Link>` to `/boutique/{shopId}`,
+// closing the 4th of the four surfaces the founder tracked against this same root cause.
 //
 // SHELL — AppShell, INFERRED: the one `get_metadata` call did not expand the parent frame
 // (556:38328), so shell-vs-chromeless was never measured. Chosen for consistency with step 1/2
@@ -52,6 +51,7 @@ export default async function ShopCreatedPage() {
   const lang = await getLang()
 
   const primaryLinkClasses = `inline-flex h-10 w-full items-center justify-center rounded-lg bg-brand-blue-600 px-4 text-base font-semibold text-text-inverse transition-colors hover:bg-brand-blue-700 active:bg-brand-blue-800 sm:w-auto ${FOCUS_RING}`
+  const secondaryLinkClasses = `inline-flex h-10 w-full items-center justify-center rounded-lg border border-border-strong bg-surface-base px-4 text-base font-semibold text-text-primary transition-colors hover:bg-surface-subtle active:bg-surface-sunken sm:w-auto ${FOCUS_RING}`
 
   return (
     <AppShell user={shell.topBarUser}>
@@ -72,24 +72,9 @@ export default async function ShopCreatedPage() {
           </p>
 
           <div className="mt-2 flex w-full flex-col items-center gap-3 sm:w-auto sm:flex-row">
-            {/* disabled removes it from the tab order (expected for a dead action), but the
-                "why" must still be perceivable, not only a hover-only title — same fix
-                ProduitsLensToggle.tsx already applies: aria-disabled + a visible badge inside
-                the accessible name, per accessibility.md's Button spec ("aria-disabled when
-                disabled"). */}
-            <Button
-              variant="secondary"
-              size="md"
-              disabled
-              aria-disabled="true"
-              title={t('shop.create.succes.view_shop_soon', lang)}
-              className="w-full sm:w-auto"
-            >
+            <Link href={`/boutique/${owned.shopId}`} className={secondaryLinkClasses}>
               {t('boutique.view_public', lang)}
-              <span className="rounded-full bg-brand-blue-100 px-1.5 py-0.5 text-caption font-semibold text-brand-blue-600">
-                {t('shop.create.succes.view_shop_soon', lang)}
-              </span>
-            </Button>
+            </Link>
             <Link href="/tableau-de-bord-vendeur" className={primaryLinkClasses}>
               {t('shop.create.succes.cta_dashboard', lang)}
             </Link>

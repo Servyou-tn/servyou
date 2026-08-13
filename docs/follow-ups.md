@@ -1504,7 +1504,7 @@ work and neither is fixed in it — logged per "one PR, one focus".
 
 ## C1 — Marketplace produits (`feat/c1-marketplace-produits`, 2026-08-07)
 
-### 🔴 `tableau-de-bord-vendeur:83` — "Voir ma boutique" is a live 404 a seller can press today
+### ✅ RESOLVED 2026-08-12 — `tableau-de-bord-vendeur:83` — "Voir ma boutique" is a live 404 a seller can press today
 
 - **This is a defect NOW, not a consequence of the Boutiques deferral below.** It is filed
   separately on purpose: deferring a marketplace lens is a scope decision, but a button on the
@@ -1529,10 +1529,12 @@ work and neither is fixed in it — logged per "one PR, one focus".
 - ⚑ **Not fixed in C1, and that is a scope call rather than an oversight.** The honest fix is
   building D3 (`540:32918`), which is a page rebuild. The dishonest fix — pointing the button at a
   new stub — trades a 404 for a dead end, which is the thing C1 exists to stop doing.
-- **Trigger:** the D3 PR closes this. Until then, treat any "my shop page is broken" report as this
-  entry, not as a new bug.
+- **Closed by `fix/d3` (2026-08-12).** `/boutique/[id]` now exists (`src/app/boutique/[id]/page.tsx`).
+  No code change was needed at this call site or the two admin ones below — all three already
+  built the correct `/boutique/{id}` href, they just had nowhere to land. Verified live: signed-in
+  shop owner, G4 quick action → real shop page, not a 404 (see this PR's own verification record).
 
-### 🔴 (4th entry) `/ma-boutique/creer/succes:83` — G2 success, ruled 2026-08-12
+### ✅ RESOLVED 2026-08-12 (was: 🔴 4th entry) `/ma-boutique/creer/succes:83` — G2 success
 
 - **"Voir ma boutique publique" ships as a `disabled` `Button`, not a `Link` to `/boutique/{id}`.**
   Founder ruling, checked against this same entry's first three surfaces before building: D1
@@ -1546,7 +1548,9 @@ work and neither is fixed in it — logged per "one PR, one focus".
   today, not a shop link. D2 (service detail) is freelancer-owned and has no shop/D3 concept at all,
   so it was never a real surface in this count. Not fixed (a comment, not a defect), logged so it
   isn't re-cited as a fourth precedent by a future pass.
-- **Trigger:** unchanged — the D3 PR closes all four surfaces at once, including this one.
+- **Closed by `fix/d3` (2026-08-12).** All four surfaces now link to `/boutique/[id]` (D1's two
+  spans, the G2-success button) or stay deliberately disabled with a corrected reason (C1's
+  Boutiques toggle — re-ruled to stay off, see "Boutiques lens" entry below, not simply unblocked).
 
 ### ✅ D3 URL shape — RESOLVED 2026-08-12: bare `[id]`, not `[slug]`
 
@@ -1573,17 +1577,27 @@ work and neither is fixed in it — logged per "one PR, one focus".
 ### Boutiques lens — DEFERRED with a "Bientôt" badge, and why the Freelances precedent did not decide it
 
 - **The frame is real and buildable.** `C1 — vue Boutiques = 578:42528` (browseHead `578:42529`,
-  gridWrap `578:42532`), and the card exists as a component:
+  gridWrap `578:42532`), and the card exists as a component **in Figma only**:
   **`Shop Card = 578:42367` — 4 variants · `state[default,hover]` `banner[true,false]` ·
   props: `shopName(text) city(text) productCount(text)`.** All three props map to real columns
   (`shops.name`, `shops.city`, and a count over `products`). This is NOT deferred for missing data.
-- ⚑ **It is deferred because the card has nowhere to link.** Every Shop Card CTA resolves to
-  `/boutique/{id}`, which 404s — see the 🔴 entry above. A grid of shops linking into hard 404s is
-  worse than a disabled toggle: it looks finished and fails on click.
+- ⚑ **RE-RULED 2026-08-12, after D3 shipped — stays disabled.** The original reasoning below ("the
+  card has nowhere to link") is now stale and superseded: D3 (`/boutique/[id]`) shipped and the
+  destination exists. The toggle was re-examined anyway and the founder ruled it **stays
+  disabled**, because the actual blocker was always bigger than the destination: **`ShopCard`
+  exists nowhere in code** (`578:42367` is Figma-only, confirmed by a full `src/` grep — zero
+  matches) and neither does a shop-grid render path for `/marche/produits`. Flipping the toggle
+  needs a new component, a new query, and wiring — a separate build, not something D3 unlocks for
+  free. `ProduitsLensToggle.tsx`'s own comment now states this correctly.
+  - *(Original reasoning, kept for history: "It is deferred because the card has nowhere to
+    link. Every Shop Card CTA resolves to `/boutique/{id}`, which 404s. A grid of shops linking
+    into hard 404s is worse than a disabled toggle." — true at the time, incomplete: it named the
+    destination as the only blocker when the code path was equally missing.)*
 - **The Freelances precedent (`ServicesLensToggle`) was checked and does NOT transfer.** Freelances
   was deferred because its data layer, its cards, and the `/freelance` pages all did not exist.
-  Here the data exists and the card exists; only the destination is missing. Same outcome, different
-  reason — do not cite "we deferred Freelances too" as the justification when revisiting.
+  Here the data exists (`shops`, `products`) and the destination now exists (D3); only the
+  component + grid code is missing. Same outcome, different reason — do not cite "we deferred
+  Freelances too" as the justification when revisiting.
 - **What ships instead:** the `Produits` segment active, `Boutiques` rendered `disabled` +
   `aria-disabled` with a visible "Bientôt" badge. That is a **deliberate divergence from
   `578:42513`, which draws both segments enabled** — marked in-code so a later fidelity pass can
@@ -1592,8 +1606,9 @@ work and neither is fixed in it — logged per "one PR, one focus".
   city, **0 with a logo**. So the lens would have rendered a one-card grid, and the Shop Card's
   logo slot has no data on any row — it would fall back to initials, as the Product Card's shop
   badge already does.
-- **Trigger:** ship this the moment D3 lands. The blocker is the destination, nothing else. Order is
-  D3 → Boutiques lens, never the reverse.
+- **Trigger:** build `ShopCard` (from `578:42367`) + a shop-grid query + wire the toggle, as its
+  own PR. D3 landing does not trigger this by itself — that assumption is what this re-ruling
+  corrected.
 
 ### The C1 product card is a FORK, not a restyle — the delta table, so the consolidation is not re-measured
 
@@ -1932,6 +1947,51 @@ original two, or a fourth pass will split the reconciliation again.
   claim, which is wider doc-drift unrelated to the redirect-param fix.
 - **Trigger:** whenever role-specific post-login landing pages actually get built, or the next pass
   through this doc for unrelated reasons — cheap to fix (one clause), just not this PR's scope.
+
+### 7 orphaned `shop-assets` storage objects from G2's own verification fixtures — never swept
+
+- **What:** `storage.objects` (bucket `shop-assets`, public, `image/webp` only) holds 7 objects
+  across 4 shop-id-shaped folders, all timestamped 2026-08-11, none of which match any `shops.id`
+  in the live DB today. These are leftovers from the G2 step-1/step-2 CDP verification passes:
+  ephemeral service-role-seeded fixtures (auth user + shop row) that uploaded a real logo/banner
+  through the real write path, then had their **DB rows** torn down (`auth.admin.deleteUser`,
+  cascading `profiles` → `shops`) — but the **storage objects were never swept**, because the
+  teardown scripts (deleted after use, per this repo's own convention) only deleted the DB side.
+- **Confirmed live** (`fix/d3`, 2026-08-12): downloaded 3 of the 7 and ran `sharp().metadata()` —
+  all decode clean (`webp`, `1024×1024` banner / `512×512` logo, `srgb`). Not corrupt, just
+  orphaned. Small (≈4.5–12 KB each, ~50 KB total) — not urgent, but the general problem this is one
+  instance of is already tracked (see below) and this repo's own storage-hygiene rule applies.
+- **This is a harness/verification-process gap, not a product feature gap.** The general
+  "reconciliation sweep" this needs is already tracked at this file's own **"Orphaned storage
+  objects need a reconciliation sweep before the first deletable image surface"** entry (line 89) —
+  that entry already names `shops.logo_url`/`banner_url` as a future sweep target. This is the
+  first concrete instance of exactly what it predicted, arriving via test-fixture teardown rather
+  than a real deletable-image-surface PR.
+- **Whoever sweeps this must go through the Storage API, never SQL** — this repo's own rule, already
+  logged and learned the hard way: **"🔴 Delete storage objects through the Storage API — NEVER
+  `delete from storage.objects`"** (line 1650). A SQL delete only removes the metadata row; the
+  physical file stays in the S3 backend, still billed, still counted against the 1 GB free tier,
+  and now invisible to every future sweep because sweeps enumerate through the metadata.
+- **Trigger:** either the general reconciliation-sweep entry's own trigger (first deletable image
+  surface), or — cheaper — whoever next writes a CDP verification fixture that uploads to
+  `shop-assets` should add a storage sweep to that fixture's own teardown (mirroring
+  `scripts/rls-smoke.mjs`'s `sweepSmokeStorage`, which already does this correctly for its own
+  buckets — the pattern exists, this class of fixture just didn't use it).
+
+### Admin `signalements` detail page's `TARGET_ROUTES` map has wrong base paths for 4 of 6 target types
+
+- **What:** `src/app/admin/signalements/[id]/page.tsx:52-58` maps `report.target_type` to a base
+  path for the "view target" link: `product: '/produit'` (real route is `/produits/[id]`, plural),
+  `service: '/service'` (real route is `/services/[id]`, plural) — both singular where the app is
+  plural. `shop: '/boutique'` is correct (confirmed while verifying this PR's own D3 route lands
+  where every existing caller already expected it). `freelancer_profile: '/freelance'` is also
+  unverified — D4 is not built yet, so there is nothing to check it against.
+- **Why deferred:** found incidentally while confirming the admin surfaces that link to
+  `/boutique/{id}` were shaped correctly (they were) — a different target-type's base path, no
+  overlap with D3's own scope.
+- **Trigger:** next pass through the admin moderation surfaces, or whenever `/produits`/`/services`
+  next changes shape. Two-line fix (`/produit`→`/produits`, `/service`→`/services`), just not found
+  by this PR's own walk.
 
 ## AppShell Topbar 375px fix + first MarcheLayout→AppShell migration step (`fix/appshell-topbar-and-pitch-pages`, 2026-08-13)
 

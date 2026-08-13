@@ -9,12 +9,12 @@ import { t, type Lang } from '@/lib/i18n'
 // 578:42513 draws text only. That is a measured difference between the two frames, not drift.
 //
 // ⚑ THE "Bientôt" BADGE AND THE DISABLED STATE ARE INVENTED — 578:42513 DRAWS BOTH SEGMENTS
-// ENABLED. Founder-approved divergence, and the reason is a hard dependency rather than taste:
-// every Shop Card CTA resolves to /boutique/{id}, and NO /boutique route exists anywhere under
-// src/app — not a stub, no directory (verified: GET /boutique/<uuid> → 404). Shipping the lens
-// would put a grid of shops in front of buyers where every click is a 404, which is strictly worse
-// than a disabled segment. The frame, the Shop Card (578:42367) and the data are all ready; only
-// the destination is missing, so this un-defers the moment D3 (540:32918) lands.
+// ENABLED. Founder-approved divergence. STAYS DISABLED even after D3 shipped (2026-08-12,
+// /boutique/[id]) — founder ruling: D3 only builds the single-shop detail page. This toggle
+// gates an entire shop-GRID render path (a "vue Boutiques" for /marche/produits) that does not
+// exist in code at all — `ShopCard` (578:42367) exists only in Figma, zero matches anywhere
+// under src/. Re-enabling this is a separate build: a new ShopCard component, a new query, and
+// wiring the toggle to real content — not something that falls out of D3 for free.
 // Full reasoning: docs/follow-ups.md → "Boutiques lens — DEFERRED with a Bientôt badge".
 //
 // Static markup, no client interaction — stays a server component.
