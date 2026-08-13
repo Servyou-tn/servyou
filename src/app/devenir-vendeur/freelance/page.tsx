@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { MarcheLayout } from '@/components/marche/MarcheLayout'
+import { AppShell } from '@/components/shell/AppShell'
 import { DevenirFreelanceContent } from '@/components/devenir/DevenirFreelanceContent'
 import { getShellUser } from '@/lib/marche/shell-user'
 
@@ -15,12 +15,17 @@ export const metadata: Metadata = {
 // now marks this card unavailable before a visitor ever reaches this page — so it is not
 // repeated here. Public: visitor → CTA to /inscription?next=…; consumer → CTA to
 // /mon-profil-freelance/creer.
+//
+// SHELL — migrated off MarcheLayout onto AppShell: the parent /devenir-vendeur is already
+// AppShell, so a Freelance/Boutique click was landing on a visibly different sidebar+topbar
+// one level in. Static content, `user` prop only — no `--marche-topbar-h`, no MarcheSidebar
+// dependency, so this is a straight shell swap, not a rebuild.
 export default async function DevenirVendeurFreelancePage() {
   const shell = await getShellUser()
 
   return (
-    <MarcheLayout user={shell?.topBarUser ?? null}>
+    <AppShell user={shell?.topBarUser ?? null}>
       <DevenirFreelanceContent isAuthenticated={Boolean(shell)} />
-    </MarcheLayout>
+    </AppShell>
   )
 }

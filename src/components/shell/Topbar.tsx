@@ -48,15 +48,30 @@ export function Topbar({
           <Menu className="h-6 w-6 text-text-primary" aria-hidden="true" />
         </button>
 
-        {/* Logo — mobile/tablet only; the navy sidebar carries the wordmark on desktop. */}
+        {/* Logo — mobile/tablet only; the navy sidebar carries the wordmark on desktop. Below
+            `sm` the full lockup (110px) is part of what makes row 1 overflow 375px alongside the
+            hamburger + icon cluster (measured: 431px content in a 359px box — see
+            docs/follow-ups.md "The AppShell topbar overflows..."), so the smallest breakpoint
+            gets the icon-only S-mark instead — the same 32px asset the open drawer already uses
+            (Sidebar.tsx) — and the full wordmark returns at `sm:` where the row has room. No
+            mobile Figma frame exists for this topbar to contradict; this is a functional fix, not
+            a redraw. */}
         <Link href="/" aria-label="Servyou" className="shrink-0 lg:hidden">
+          <Image
+            src="/brand/logo/servyou-s-mark.png"
+            alt="Servyou"
+            width={32}
+            height={32}
+            priority
+            className="h-8 w-8 sm:hidden"
+          />
           <Image
             src="/brand/logo/servyou-navbar.png"
             alt="Servyou"
             width={110}
             height={32}
             priority
-            className="h-8 w-auto"
+            className="hidden h-8 w-auto sm:block"
           />
         </Link>
 
@@ -68,8 +83,12 @@ export function Topbar({
         {/* Mobile spacer — pushes the cluster to the end when the inline search is hidden. */}
         <div className="flex-1 md:hidden" aria-hidden="true" />
 
-        {/* Icon cluster — language · notifications (auth only) · user. gap 16 per the Figma. */}
-        <div className="flex shrink-0 items-center gap-4">
+        {/* Icon cluster — language · notifications (auth only) · user. gap 16 per the Figma at
+            md+; below md the row also carries the hamburger + logo with nothing left to shrink
+            (the spacer at :69 is already at its floor), so the cluster's own gap tightens to 8px
+            there — part of the same 375px fix as the logo swap above, not a Figma deviation
+            (no mobile frame exists for this topbar). */}
+        <div className="flex shrink-0 items-center gap-2 md:gap-4">
           <LanguageToggle />
           {user ? <TopbarNotifications /> : null}
           <TopbarUserMenu user={user} role={role} />
