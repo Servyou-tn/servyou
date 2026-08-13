@@ -192,3 +192,58 @@ selects a reason, submits, and a service-role read confirms a real `reports` row
 correct shape (`target_type='shop'`, `target_id`, `reporter_id` from the session not the input).
 5/5 checks pass, including the logged-out redirect from fix #1. Full gate re-run clean after all
 three fixes: `tsc`, `eslint`, `next build`, `vitest` 620/620 (+7 from the new test file).
+
+## 12. UNVERIFIED — pixel values in `ShopDetail.tsx` with no matching entry in this record
+
+Written 2026-08-13, during the founder's fidelity re-audit (`docs/follow-ups.md`, "D3 fidelity
+re-audit"). That audit's own analysis found five widths/offsets already recorded above (§1, §7)
+that the code matches exactly (`max-w-[760px]` description cap, the 64px avatar/banner overlap,
+the 16px grid gap). Grepping this file for the code's OTHER literal pixel values returns nothing:
+
+- `leading-[38px]` / `tracking-[-0.64px]` — the `h1` shop name.
+- `leading-[26px]` — the "Produits" `h2`.
+- `top-[136px]` — the avatar's absolute offset (consistent by arithmetic with the recorded 64px
+  overlap given the code's own `h-[200px]` banner and `size-32` avatar, but the three underlying
+  numbers themselves were never individually recorded here).
+- `pt-[76px]` — the content block's top padding, clearing the avatar.
+- `tracking-[0.48px]` — the PAIEMENT/CATÉGORIES overline captions.
+- Every `gap-*` utility in the hero (`gap-8`/`gap-6`/`gap-4`/`gap-3`/`gap-2`/`gap-1.5`/`gap-2.5`/
+  `gap-5`) — none has a recorded Figma measurement to check against.
+
+**Origin, honestly: unknown.** §"Why this file exists" above already records that an earlier D3
+verification pass was produced in conversation and lost when that session's context was
+summarized, and that this file's own content was freshly re-verified afterward, "not recovered
+from the lost report." These specific numbers plausibly survived from that lost pass into the
+committed code without ever being re-measured or written down here — but that is a plausible
+explanation, not a confirmed one. Nobody re-opened Figma to re-check them for this entry.
+
+**Disposition:** left alone. Not deleted, not re-labelled as measured. If a future pass re-measures
+the hero region against `540:32918`/`540:32920` and confirms or corrects any of the numbers above,
+that pass updates this section directly — do not silently fold a confirmed number back into §1/§7
+without saying so.
+
+## 13. Banner render bug — found by the populated-fixture pass, fixed same PR
+
+**Found:** the same populated-fixture pass that produced §12 caught a second, unrelated defect.
+`shop-detail.ts` fetches and types `bannerUrl`; `ShopDetail.tsx:58` rendered the gradient `<div>`
+unconditionally and never read it. A real, reachable `banner_url` had zero effect on the render —
+indistinguishable from "never built" on OM shop, whose `banner_url` is null, which is exactly the
+blind spot §"D3 fidelity re-audit" (`docs/follow-ups.md`) exists to catch. Confirmed via DOM read
+before any fix (`bannerHasImg: false`, computed `background-image` a `linear-gradient(...)`, no
+`<img>` present at all), not by re-reading the screenshot.
+
+**Fixed:** `ShopDetail.tsx` now branches the banner exactly like `Avatar` already branches the
+logo — a real `next/image` (`fill`, `object-cover`) when `shop.bannerUrl` is present, the original
+gradient `<div>` when it's null. `sizes="(max-width: 1279px) 100vw, 1120px"`, matching the shape
+of `ProductGallery.tsx`'s own hero-image `sizes` clamp.
+
+**Verified, both directions, one fixture shop, DOM-level (not computed style, not a screenshot):**
+- Populated: `bannerHasImg: true`, `naturalWidth: 895`, `src` resolving through `/_next/image` to
+  the real Supabase-storage public URL.
+- Same shop, `banner_url` set to `null`, fresh navigation: `bannerHasImg: false`,
+  `naturalWidth: null`, gradient `<div>` present with a computed `linear-gradient` background.
+
+`tsc --noEmit` and `eslint` clean on the changed file. Fixture teardown re-verified by SQL
+read-back after: `storage.objects` (bucket `shop-assets`) at 0, `shops` back to 1 (OM shop),
+`products` back to 26, `shop_payment_methods`/`shop_categories` at 0, zero profiles under the
+fixture's email domain.
