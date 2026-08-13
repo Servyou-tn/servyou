@@ -678,11 +678,15 @@ capture-twice-and-diff method above.
 Measured on the authenticated route with a real seeded order (`documentElement.scrollWidth 433` vs `clientWidth 375`). **Neither offender is the price breakdown** — its rows are not in the list:
 
 - **`OrderRail` steps** — `flex w-14 shrink-0 flex-col items-center gap-2 lg:w-20`, rightmost edge **433**. A product order's chain is **7** stages; 7 × 56px + gaps exceeds 375 and `shrink-0` forbids any give. Shipped in PR #105 (rail timestamps). A service order (4 stages) would not overflow, which is likely why this was never seen.
-- **Topbar avatar cluster** — `flex shrink-0 items-center gap-4`, rightmost edge **431**.
+- **Topbar avatar cluster** — `flex shrink-0 items-center gap-4`, rightmost edge **431**. **✅
+  RESOLVED — `fix/appshell-topbar-and-pitch-pages`, 2026-08-13** (see the G6/G4 entries for the
+  fix). This route's overflow is now **`OrderRail`-only** — re-measure the actual remaining number
+  next time this route is touched; it was not re-measured as part of this PR (the fix was verified
+  on other AppShell routes, not this specific auth-gated order-detail page).
 
 This is **not covered by** the frontend audit's "380px 0-overflow (negative-control validated)" finding — a different viewport, and more to the point that sweep could not reach the 12 auth-walled routes. Both offenders here exist *only when authenticated* (the rail's 7 product stages, the topbar's name+role avatar cluster), so an anonymous sweep could not have seen either. Treat the audit's overflow result as covering anonymous routes only.
 
-Not fixed in the breakdown PR: the rail is a previous PR's element and the fix is a real responsive decision (horizontal scroll vs a condensed mobile rail vs wrapping), not a one-liner.
+**`OrderRail` still not fixed** — it is a previous PR's element and the fix is a real responsive decision (horizontal scroll vs a condensed mobile rail vs wrapping), not a one-liner. Only the topbar half of this entry's overflow is resolved.
 
 ### 🟡 `scripts/gate/authed.mjs` cannot set the language cookie — AR half of the visual gate is unreachable through it
 
@@ -861,6 +865,8 @@ All three are founder-decided on the D2 build (`feat/d2-service-detail`, Figma `
   consumer, and `project_frontend_audit` recorded "380px 0-overflow" from a logged-OUT sweep,
   which is why it was missed.
 - **Trigger:** the next `components/shell/*` pass. Re-measure logged-IN at 375.
+- **✅ RESOLVED — `fix/appshell-topbar-and-pitch-pages`, 2026-08-13.** See the closing note under
+  the G6 entry below for the fix and the full re-measurement; not repeated at every sighting.
 
 ### CDP click harness cannot deliver synthetic mouse input (tooling note)
 - `Input.dispatchMouseEvent` (mouseMoved → mousePressed → mouseReleased, correct `buttons`,
@@ -1069,6 +1075,20 @@ the route, its i18n block (`fr.ts` / `ar.ts`, "Order detail page") and its `acti
   the FR/AR toggle behind the mobile drawer below `sm`, which is where the language control already
   lives on mobile). Re-measure logged in at 375 in both locales afterwards.
 - **Trigger:** next shell-touching PR, or before any seller page ships to mobile users.
+- **✅ RESOLVED — `fix/appshell-topbar-and-pitch-pages`, 2026-08-13.** Neither of the two options
+  above was taken — dropping `shrink-0` was explicitly rejected (would compress the avatar/bell/
+  toggle unpredictably instead of the row reclaiming space) and hiding the FR/AR toggle changes
+  what the row *offers*, not just what it costs. Fix instead: below `sm`, `Topbar.tsx`'s logo swaps
+  the full wordmark (110px) for the icon-only S-mark (32px, the same asset the open drawer already
+  uses) and the cluster's `gap-4` (16px) drops to `gap-2` (8px) — both revert at their breakpoint,
+  nothing shrinks under pressure. Re-measured logged in, FR and AR, at 375: `scrollWidth ==
+  clientWidth`, 0 overflow, on `/tableau-de-bord-vendeur`, `/marche/produits`, `/produits/[id]`,
+  `/ma-boutique/creer`, plus the two newly-migrated `/devenir-vendeur/{boutique,freelance}` — AR
+  confirmed via a throwaway `Network.setCookie(servyou_lang=ar)` runner (the exact gap the
+  `authed.mjs` entry two sections up already logs; not fixed there, same "not this PR" call).
+  Desktop 1024/1152/1279/1280/1366/1440 swept clean on the two migrated pages. **S4 (topbar 65px
+  vs Figma's 64px) was NOT touched** — the founder's 2026-07-28 "rides with" note for that item
+  is still open; this PR's scope was the 375px overflow specifically, not the 1px height delta.
 
 ### The ten seller pages have NO mobile Figma frames
 - **G1-G9 + D3 are all desktop-only.** The registry holds **13 mobile (375) frames across 160 screen
@@ -1332,6 +1352,14 @@ work and neither is fixed in it — logged per "one PR, one focus".
 - **Reproduce:**
   `node scripts/gate/authed.mjs --email <shop-owner> --route /tableau-de-bord-vendeur --width 375 --height 812 --eval <overflow-probe> --json`
 - **Trigger:** the next shell/topbar PR, or any mobile-polish pass. Gate at **375**, not 380.
+- **✅ RESOLVED — `fix/appshell-topbar-and-pitch-pages`, 2026-08-13.** `Topbar.tsx` below `sm` now
+  renders the icon-only S-mark instead of the full wordmark (saves ~79px) and the icon cluster's
+  gap tightens from 16px to 8px below `md` (saves 16px); both revert to the original at their
+  breakpoint. Re-measured with the same `authed.mjs` command as above, plus `/marche/produits`,
+  `/produits/[id]`, `/ma-boutique/creer`, and the two newly AppShell-migrated
+  `/devenir-vendeur/{boutique,freelance}`: `scrollWidth == clientWidth` on all of them, FR and AR,
+  at 375. Full writeup on the G4 entry above (same fix, not repeated here). S4 (the 65px-vs-64px
+  height delta on the same component) remains open — out of this PR's stated scope.
 
 ## G6 image rendering (`fix/g6-figma-fidelity`, 2026-08-06)
 
@@ -1877,3 +1905,36 @@ original two, or a fourth pass will split the reconciliation again.
   claim, which is wider doc-drift unrelated to the redirect-param fix.
 - **Trigger:** whenever role-specific post-login landing pages actually get built, or the next pass
   through this doc for unrelated reasons — cheap to fix (one clause), just not this PR's scope.
+
+## AppShell Topbar 375px fix + first MarcheLayout→AppShell migration step (`fix/appshell-topbar-and-pitch-pages`, 2026-08-13)
+
+### AppShell Topbar 375px overflow — closed
+Fixed the defect logged four separate times above (G9 partial, the E1-era entry, G4, G6) — see
+those entries for the fix detail and re-measurement, not repeated here. One entry (G9
+`/commandes-recues/[id]`) was a compound bug; only its topbar-cluster half is resolved, `OrderRail`
+remains open. S4 (topbar 65px vs Figma's 64px, same component, founder-flagged to ride with this
+fix) was deliberately **not** included — out of this PR's stated scope, still open.
+
+### `/devenir-vendeur/{boutique,freelance}` migrated off `MarcheLayout` onto `AppShell` — 2 of 5 done
+Reported separately (routing-defect audit, 2026-08-13): a click from the new `/devenir-vendeur`
+role-choice screen (`AppShell`) into either pitch page landed on the **old** shell (`MarcheLayout`
+— different sidebar, "Publier un projet" CTA, no shell parity). Both pages were confirmed 4-line
+swaps (static content, `user` prop only, no `--marche-topbar-h` / `MarcheSidebar` dependency) and
+migrated here. Verified live: identical sidebar + topbar across `/devenir-vendeur` →
+`/devenir-vendeur/freelance` → `/devenir-vendeur/boutique` (screenshots, 1440 + 375), no "Publier un
+projet", no "Mes missions" on any of the three.
+
+**3 of 5 `MarcheLayout` routes remain:** `/` (`ConsumerHomepage`), `/recherche`,
+`/categories/[slug]`. All three depend on the cross-engine Produits/Services toggle + stateful
+URL-synced search that `AppShell`'s `Topbar` has no equivalent for (`TopbarSearch` is a stateless
+box that always redirects to `/recherche`, carries no `q=` or type). Not a swap — needs a new
+page-local component, and for `/` specifically a founder call first (does it stay a bespoke browse
+surface, or fold into `/marche/produits`, which already has `AppShell` + its own lens toggle).
+Scoped as a separate PR ("PR 2"), deliberately not started here.
+
+**Still coupling `AppShell` to the shell it's meant to replace:** `TopBarUser` (type-only, 9 import
+sites) still lives in `marche/ProfileAvatarMenu.tsx` — small, mechanical to move to
+`lib/marche/shell-user.ts`, but blocked on all 5 routes being off `MarcheLayout` first (can't delete
+`ProfileAvatarMenu` while `MarcheTopBar`/`MarcheLayout` still use it). `getInitials` is **already**
+fully extracted to `components/ui/initials.ts` and consumed by both shells — the audit's "runtime
+coupling" claim on that specific function is stale, not a remaining blocker.
