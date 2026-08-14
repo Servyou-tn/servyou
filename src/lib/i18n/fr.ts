@@ -1534,6 +1534,55 @@ export const fr: Record<string, string> = {
   'freelance.received_requests':  "Demandes reçues",
   'freelance.view_public':        "Voir mon profil public",
   'freelance.delete_skill_label': "Supprimer {name}",
+
+  // ─── H2 step 1 "Bases" (/mon-profil-freelance/creer) — Figma 466:20244, measured in
+  // docs/design/h2-discovery.md. The `freelance.create_*` block below (flat keys) is a
+  // pre-redesign orphan with zero .tsx callers — left untouched, not reused here; this block
+  // uses the `freelance.create.*` namespace to avoid conflating the two.
+  'freelance.create.page_title':        "Créer mon profil freelance",
+  'freelance.create.page_subtitle':     "Trois étapes pour lancer votre profil. Vous pourrez tout modifier plus tard.",
+  'freelance.create.crumb_devenir':     "Devenir freelance",
+  'freelance.create.crumb_current':     "Créer mon profil",
+
+  'freelance.create.step1_label':       "Bases",
+  'freelance.create.step2_label':       "Compétences",
+  'freelance.create.step3_label':       "Détails",
+
+  'freelance.create.avatar_choose':     "Ajouter une photo",
+  'freelance.create.avatar_helper':     "Recommandée. Les profils avec photo reçoivent bien plus de contacts. (optionnel)",
+
+  'freelance.create.name_label':        "Nom complet",
+  'freelance.create.name_helper':       "Tel qu'il apparaîtra sur votre profil public.",
+
+  'freelance.create.headline_label':    "Titre professionnel",
+  'freelance.create.headline_ph':       "Ex: Développeur web full-stack — boutiques en ligne pour artisans",
+  'freelance.create.headline_helper':   "[Rôle] + [Spécialité] + [Différenciateur]. Le champ le plus important.",
+
+  'freelance.create.bio_label':         "À propos",
+  'freelance.create.bio_ph':            "Racontez qui vous êtes, ce que vous faites, et pour qui.",
+  'freelance.create.bio_helper':        "Minimum 100 caractères. Votre argumentaire.",
+
+  'freelance.create.city_label':        "Ville",
+  'freelance.create.city_ph':           "Choisissez votre gouvernorat",
+  'freelance.create.city_helper':       "Aide les clients à vous trouver.",
+
+  'freelance.create.save_draft':        "Enregistrer et continuer plus tard",
+  'freelance.create.next':              "Suivant",
+  'freelance.create.submitting':        "Création en cours…",
+
+  'freelance.create.error.form':               "Veuillez corriger les champs en rouge.",
+  'freelance.create.error.notAuth':            "Votre session a expiré. Veuillez vous reconnecter.",
+  'freelance.create.error.name_required':      "Le nom complet est requis.",
+  'freelance.create.error.headline_required':  "Le titre professionnel est requis.",
+  'freelance.create.error.bio_min':            "La présentation doit contenir au moins {min} caractères.",
+  'freelance.create.error.bio_max':            "La présentation ne peut pas dépasser {max} caractères.",
+  'freelance.create.error.city_required':      "Veuillez choisir une ville.",
+  'freelance.create.error.age_gate':           "Vous devez avoir 18 ans ou plus pour devenir freelance.",
+
+  'freelance.create.shopOwnerBlocked.headline':    "Vous êtes déjà vendeur sur Servyou",
+  'freelance.create.shopOwnerBlocked.subheadline': "Le changement de rôle vendeur → freelance n'est pas encore disponible. Contactez-nous si vous en avez besoin.",
+  'freelance.create.shopOwnerBlocked.manage':      "Aller à mon tableau de bord",
+
   // Create profile
   'freelance.create_title':       "Créer mon profil freelance",
   'freelance.create_btn':         "Créer mon profil",

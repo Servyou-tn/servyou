@@ -24,8 +24,8 @@ const ROUTE = '/ma-boutique/creer'
 //   seller_type freelancer -> AlreadyHaveRole (g2-discovery.md §7c — the switch-and-delete cascade
 //                             CLAUDE.md describes isn't built anywhere in the schema; blocking
 //                             entry here is cheaper and safer than leaving a live account in a
-//                             silently-inconsistent state — 10 profiles are seller_type=freelancer
-//                             today, this is not a theoretical case)
+//                             silently-inconsistent state — 11 profiles are seller_type=freelancer
+//                             today (live count, 2026-08-14), this is not a theoretical case)
 //   otherwise (null OR
 //     shop_owner-no-shop)  -> render the form
 export default async function CreerBoutiquePage() {
