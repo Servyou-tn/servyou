@@ -31,12 +31,11 @@ import { TermsLine } from './TermsLine'
 // `TermsLine` (also used by boutique), now pointing at the general /conditions page rather than
 // a role-specific document that doesn't exist — see TermsLine.tsx.
 //
-// CTA target: /mon-profil-freelance/creer does not exist yet (H2 is a later build — the same
-// position /ma-boutique/creer was in before G2 shipped). Wired anyway, not disabled: the
-// canonical freelancer-workspace root (`/mon-profil-freelance`, no `/creer`) is already
-// referenced elsewhere (src/lib/roles.ts:76, ProfileAvatarMenu.tsx:104,133) with the identical
-// "404 until built" posture, and the `/creer` suffix matches the shop side's own
-// `/ma-boutique` + `/ma-boutique/creer` shape.
+// CTA target: /mon-profil-freelance/creer now exists (H2 step 1, feat/h2-step1-bases,
+// 2026-08-14) — this was the same position /ma-boutique/creer was in before G2 shipped, and it
+// resolved the same way. The bare workspace root (`/mon-profil-freelance`, no `/creer`) is
+// STILL unbuilt — src/lib/roles.ts:76 and ProfileAvatarMenu.tsx:104,133 reference that path, not
+// this one, and remain "404 until built" until it lands (docs/design/h2-discovery.md §7).
 //
 // HowItWorks / FAQ / FinalCTA are gone from this page's render since f92d793 — as of this PR
 // they're deleted from the codebase entirely (boutique, the last remaining caller, moved off

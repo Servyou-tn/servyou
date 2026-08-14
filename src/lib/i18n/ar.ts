@@ -1540,6 +1540,52 @@ export const ar: Record<string, string> = {
   'freelance.received_requests':  "الطلبات الواردة",
   'freelance.view_public':        "عرض ملفي العام",
   'freelance.delete_skill_label': "حذف {name}",
+
+  // ─── H2 step 1 "Bases" (/mon-profil-freelance/creer) — see fr.ts for the full provenance note.
+  'freelance.create.page_title':        "إنشاء ملفي الشخصي كمستقلّ",
+  'freelance.create.page_subtitle':     "ثلاث خطوات لإطلاق ملفك الشخصي. يمكنك تعديل كل شيء لاحقًا.",
+  'freelance.create.crumb_devenir':     "كن مستقلّاً",
+  'freelance.create.crumb_current':     "إنشاء ملفي الشخصي",
+
+  'freelance.create.step1_label':       "الأساسيات",
+  'freelance.create.step2_label':       "المهارات",
+  'freelance.create.step3_label':       "التفاصيل",
+
+  'freelance.create.avatar_choose':     "إضافة صورة",
+  'freelance.create.avatar_helper':     "موصى به. الملفات الشخصية التي تحتوي على صورة تتلقى تواصلاً أكثر بكثير. (اختياري)",
+
+  'freelance.create.name_label':        "الاسم الكامل",
+  'freelance.create.name_helper':       "كما سيظهر في ملفك الشخصي العام.",
+
+  'freelance.create.headline_label':    "اللقب المهني",
+  'freelance.create.headline_ph':       "مثال: مطوّر ويب متكامل — متاجر إلكترونية للحرفيين",
+  'freelance.create.headline_helper':   "[الدور] + [التخصص] + [ما يميزك]. أهم حقل في ملفك.",
+
+  'freelance.create.bio_label':         "نبذة عني",
+  'freelance.create.bio_ph':            "أخبرنا من أنت، وماذا تفعل، ولمن تقدّم خدماتك.",
+  'freelance.create.bio_helper':        "100 حرف على الأقل. هذه حجتك التسويقية.",
+
+  'freelance.create.city_label':        "الولاية",
+  'freelance.create.city_ph':           "اختر ولايتك",
+  'freelance.create.city_helper':       "يساعد العملاء على العثور عليك.",
+
+  'freelance.create.save_draft':        "حفظ ومتابعة لاحقًا",
+  'freelance.create.next':              "التالي",
+  'freelance.create.submitting':        "جارٍ الإنشاء…",
+
+  'freelance.create.error.form':               "يرجى تصحيح الحقول باللون الأحمر.",
+  'freelance.create.error.notAuth':            "انتهت جلستك. يرجى إعادة تسجيل الدخول.",
+  'freelance.create.error.name_required':      "الاسم الكامل مطلوب.",
+  'freelance.create.error.headline_required':  "اللقب المهني مطلوب.",
+  'freelance.create.error.bio_min':            "يجب أن تحتوي النبذة على {min} حرفًا على الأقل.",
+  'freelance.create.error.bio_max':            "لا يمكن أن تتجاوز النبذة {max} حرفًا.",
+  'freelance.create.error.city_required':      "يرجى اختيار ولاية.",
+  'freelance.create.error.age_gate':           "يجب أن يكون عمرك 18 عامًا أو أكثر لتصبح مستقلّاً.",
+
+  'freelance.create.shopOwnerBlocked.headline':    "أنت بالفعل بائع على Servyou",
+  'freelance.create.shopOwnerBlocked.subheadline': "التبديل من بائع إلى مستقلّ غير متاح بعد. تواصل معنا إذا كنت بحاجة إلى ذلك.",
+  'freelance.create.shopOwnerBlocked.manage':      "الذهاب إلى لوحة التحكم",
+
   // Create profile
   'freelance.create_title':       "إنشاء ملفي كمستقل",
   'freelance.create_btn':         "إنشاء ملفي",
