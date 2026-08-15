@@ -182,6 +182,17 @@ export function ConfigurationForm({
             { label: t('shop.create.step2_label', lang), state: 'active' },
           ]}
         />
+
+        {/* Reciprocal link added by G3 (/ma-boutique/modifier) — this page is also the real edit
+            surface for a returning owner's shop settings, not only an onboarding step, but had no
+            way back to the shop's own edit page before this. INFERRED placement, no frame drew it:
+            G3 was designed assuming these accordions lived on the same page as identity fields. */}
+        <Link
+          href="/ma-boutique/modifier"
+          className={`self-start rounded text-body-sm text-brand-blue-600 hover:underline ${FOCUS_RING}`}
+        >
+          {t('boutique.config.back_to_modifier', lang)}
+        </Link>
       </div>
 
       <div className="flex flex-col rounded-card border border-border-subtle bg-surface-base p-4 sm:p-6">

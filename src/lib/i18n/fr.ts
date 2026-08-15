@@ -1115,11 +1115,23 @@ export const fr: Record<string, string> = {
   'boutique.config.badge_complete':   "Complet",
   'boutique.config.cod_note':         "Le paiement à la livraison (COD) est activé par défaut. Ajoutez d'autres options si vous les acceptez.",
   'boutique.config.cod_locked':       "Verrouillé — par défaut universel",
+  'boutique.config.back_to_modifier': "Retour à Modifier ma boutique",
 
   // ─── /ma-boutique/creer/succes (G2 success) ───────────────────────────────────
   'shop.create.succes.title':          "Votre boutique est créée !",
   'shop.create.succes.subline':        "Bienvenue parmi les vendeurs Servyou. Ajoutez votre premier produit pour commencer à vendre.",
   'shop.create.succes.cta_dashboard':  "Aller à mon tableau de bord",
+
+  // ─── /ma-boutique/modifier (G3 "Modifier ma boutique") ────────────────────────
+  // Identity-field edit only (name, city, description, logo, banner) — field labels/placeholders/
+  // helpers/errors are shared verbatim with shop.create.* above, same fields, same copy.
+  'shop.edit.page_title':    "Modifier ma boutique",
+  'shop.edit.page_subtitle': "Mettez à jour les informations de votre boutique.",
+  'shop.edit.crumb_shop':    "Ma boutique",
+  'shop.edit.crumb_current': "Modifier",
+  'shop.edit.save':          "Enregistrer les modifications",
+  'shop.edit.view_public':   "Voir ma boutique",
+  'shop.edit.config_link':   "Configurer horaires, livraison, paiement et catégories",
 
   // ─── /devenir-vendeur/freelance (role-upgrade marketing) ─────────────────────
   // Shared between both /devenir-vendeur pitch pages (TermsLine.tsx) — same copy, same target
