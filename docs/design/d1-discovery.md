@@ -234,7 +234,7 @@ Live schema (`information_schema`, 2026-08-08):
 | 10 | Nom boutique | ✅ | `shops.name`, set at G2 |
 | 11 | Ville boutique | ✅ | `shops.city` — 1/1 populated |
 | 12 | Description boutique (panel) | ✅ | `shops.description` — 1/1 populated |
-| 13 | **Logo boutique** (rond « AS ») | ❌ **NO — settable nowhere** | `shops.logo_url` exists, **0/1 rows populated**; G2 is the only shop-write surface and G3 `/ma-boutique/modifier` does not exist. `ProductBrowseCard.tsx:34-42` already fell back to a 2-letter monogram |
+| 13 | **Logo boutique** (rond « AS ») | ~~❌ NO — settable nowhere~~ ✅ **CLOSED** at creation only until G3 | `shops.logo_url` exists; ~~G2 is the only shop-write surface and G3 `/ma-boutique/modifier` does not exist~~ — **G3 now provides the revisit/edit path** (`feat/g3-shop-edit`), so a shop can both set and replace its logo, not just set it once at creation. `ProductBrowseCard.tsx:34-42` still falls back to a 2-letter monogram when unset |
 | 14 | « Voir la boutique → » / « Voir tous les produits → » | ❌ | Targets D3 `/boutique/[slug]` — **route absent** AND `shops` has **no `slug`** |
 | 15 | Share URL `/produits/coussin-brode-main` | ❌ | `products` has **no `slug`**; live route is `[id]` = uuid |
 | 16 | Report modal (specimen C) | ✅ **DB ready**, no consumer UI | `reports` CHECK: `target_type` includes `'product'`; `reason ∈ fake_scam\|offensive\|wrong_category\|other` — exact match for Arnaque/Contenu/Mauvaise catégorie/Autre. Only `/admin/signalements` touches it |
@@ -248,7 +248,7 @@ Live schema (`information_schema`, 2026-08-08):
 |---|---|---|
 | **A. Secteur** (crumb2) | taxonomy level does not exist in the DB | migration (`g6-discovery.md §6 B2`) |
 | **B. Sous-catégorie** (badge + crumb3) | same | same migration |
-| **C. Logo boutique** | shop field, not a product field; no shop-edit route | G3 |
+| **C. Logo boutique** | ~~shop field, not a product field; no shop-edit route~~ | ✅ **CLOSED** — G3 (`/ma-boutique/modifier`, `feat/g3-shop-edit`) |
 | **D. Slug** (produit + boutique) | no column on either table | migration |
 | **E. `delivery_fee_tnd`** | ~~written but not selected~~ | ✅ **CLOSED** in the D1 build — added to the select and to `ProductDetailData`; E1 inherits it |
 

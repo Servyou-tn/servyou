@@ -1125,11 +1125,21 @@ export const ar: Record<string, string> = {
   'boutique.config.badge_complete':   "مكتمل",
   'boutique.config.cod_note':         "الدفع عند الاستلام مُفعّل افتراضيًا. أضف طرقًا أخرى إذا كنت تقبلها.",
   'boutique.config.cod_locked':       "مقفل — افتراضي عام",
+  'boutique.config.back_to_modifier': "العودة إلى تعديل متجري",
 
   // ─── /ma-boutique/creer/succes (G2 success) ───────────────────────────────────
   'shop.create.succes.title':          "تم إنشاء متجرك!",
   'shop.create.succes.subline':        "مرحبًا بك بين بائعي Servyou. أضف منتجك الأول لتبدأ البيع.",
   'shop.create.succes.cta_dashboard':  "الذهاب إلى لوحة التحكم",
+
+  // ─── /ma-boutique/modifier (G3 "Modifier ma boutique") ────────────────────────
+  'shop.edit.page_title':    "تعديل متجري",
+  'shop.edit.page_subtitle': "حدّث معلومات متجرك.",
+  'shop.edit.crumb_shop':    "متجري",
+  'shop.edit.crumb_current': "تعديل",
+  'shop.edit.save':          "حفظ التعديلات",
+  'shop.edit.view_public':   "عرض متجري",
+  'shop.edit.config_link':   "إدارة أوقات العمل والتوصيل والدفع والفئات",
 
   // ─── /devenir-vendeur/freelance (role-upgrade marketing) ─────────────────────
   // Shared between both /devenir-vendeur pitch pages (TermsLine.tsx) — same copy, same target.
