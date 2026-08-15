@@ -1586,6 +1586,37 @@ export const ar: Record<string, string> = {
   'freelance.create.shopOwnerBlocked.subheadline': "التبديل من بائع إلى مستقلّ غير متاح بعد. تواصل معنا إذا كنت بحاجة إلى ذلك.",
   'freelance.create.shopOwnerBlocked.manage':      "الذهاب إلى لوحة التحكم",
 
+  'freelance.create.back':              "رجوع",
+
+  // ─── H2 étape 2 "Compétences & langues" — see fr.ts for provenance/context.
+  'freelance.create.step2.competences_label':   "المهارات",
+  'freelance.create.step2.competences_ph':      "اكتب لإضافة مهارة…",
+  'freelance.create.step2.competences_helper':  "3 كحد أدنى، 15 كحد أقصى. تُستخدم في نتائج البحث.",
+
+  'freelance.create.step2.langues_label':       "اللغات",
+  'freelance.create.step2.langue_select_label': "اللغة",
+  'freelance.create.step2.niveau_select_label': "المستوى",
+  'freelance.create.step2.langues_helper':      "لغة واحدة على الأقل. مهم جدًا في تونس (فرنسية/عربية/إنجليزية/إيطالية).",
+  'freelance.create.step2.add_language':        "+ إضافة لغة",
+  'freelance.create.step2.remove_language_label': "حذف لغة {language}",
+
+  'freelance.create.step2.years_label':         "سنوات الخبرة (اختياري)",
+  'freelance.create.step2.years_helper':        "تظهر كـ « X سنوات خبرة ».",
+  'freelance.create.step2.years_decrease':      "إنقاص سنوات الخبرة",
+  'freelance.create.step2.years_increase':      "زيادة سنوات الخبرة",
+
+  'freelance.create.step2.portfolio_label':     "رابط معرض الأعمال الخارجي (اختياري)",
+  'freelance.create.step2.portfolio_ph':        "https://",
+  'freelance.create.step2.portfolio_helper':    "Behance أو GitHub أو موقعك الشخصي — إن وُجد.",
+
+  'freelance.create.step2.error.skills_min':          "أضف {min} مهارات على الأقل.",
+  'freelance.create.step2.error.skills_max':          "15 مهارة كحد أقصى.",
+  'freelance.create.step2.error.skills_duplicate':    "تمت إضافة هذه المهارة بالفعل.",
+  'freelance.create.step2.error.languages_min':       "أضف لغة واحدة على الأقل.",
+  'freelance.create.step2.error.languages_duplicate': "تمت إضافة هذه اللغة بالفعل.",
+  'freelance.create.step2.error.portfolio_url':       "يرجى إدخال رابط صالح (https://…).",
+  'freelance.create.step2.error.years_invalid':       "يرجى إدخال رقم صالح.",
+
   // Create profile
   'freelance.create_title':       "إنشاء ملفي كمستقل",
   'freelance.create_btn':         "إنشاء ملفي",
