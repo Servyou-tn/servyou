@@ -1583,6 +1583,39 @@ export const fr: Record<string, string> = {
   'freelance.create.shopOwnerBlocked.subheadline': "Le changement de rôle vendeur → freelance n'est pas encore disponible. Contactez-nous si vous en avez besoin.",
   'freelance.create.shopOwnerBlocked.manage':      "Aller à mon tableau de bord",
 
+  'freelance.create.back':              "Retour",
+
+  // ─── H2 step 2 "Compétences & langues" (/mon-profil-freelance/creer/competences) — Figma
+  // 467:20404, measured in docs/design/h2-discovery.md §3. Langue/niveau option labels are
+  // founder-ruled (§3c), not measured — see src/lib/freelancer/language-options.ts.
+  'freelance.create.step2.competences_label':   "Compétences",
+  'freelance.create.step2.competences_ph':      "Tapez pour ajouter une compétence…",
+  'freelance.create.step2.competences_helper':  "Minimum 3, maximum 15. Elles alimentent la recherche.",
+
+  'freelance.create.step2.langues_label':       "Langues",
+  'freelance.create.step2.langue_select_label': "Langue",
+  'freelance.create.step2.niveau_select_label': "Niveau",
+  'freelance.create.step2.langues_helper':      "Au moins une. Critique en Tunisie (FR/AR/EN/IT).",
+  'freelance.create.step2.add_language':        "+ Ajouter une langue",
+  'freelance.create.step2.remove_language_label': "Supprimer la langue {language}",
+
+  'freelance.create.step2.years_label':         "Années d'expérience (optionnel)",
+  'freelance.create.step2.years_helper':        "S'affiche comme « X années d'expérience ».",
+  'freelance.create.step2.years_decrease':      "Diminuer les années d'expérience",
+  'freelance.create.step2.years_increase':      "Augmenter les années d'expérience",
+
+  'freelance.create.step2.portfolio_label':     "Lien portfolio externe (optionnel)",
+  'freelance.create.step2.portfolio_ph':        "https://",
+  'freelance.create.step2.portfolio_helper':    "Behance, GitHub, site perso — si vous en avez un.",
+
+  'freelance.create.step2.error.skills_min':          "Ajoutez au moins {min} compétences.",
+  'freelance.create.step2.error.skills_max':          "15 compétences maximum.",
+  'freelance.create.step2.error.skills_duplicate':    "Cette compétence est déjà ajoutée.",
+  'freelance.create.step2.error.languages_min':       "Ajoutez au moins une langue.",
+  'freelance.create.step2.error.languages_duplicate': "Cette langue est déjà ajoutée.",
+  'freelance.create.step2.error.portfolio_url':       "Veuillez saisir une URL valide (https://…).",
+  'freelance.create.step2.error.years_invalid':       "Veuillez saisir un nombre valide.",
+
   // Create profile
   'freelance.create_title':       "Créer mon profil freelance",
   'freelance.create_btn':         "Créer mon profil",

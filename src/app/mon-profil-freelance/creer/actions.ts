@@ -71,9 +71,8 @@ export async function createFreelancerProfileAction(input: unknown): Promise<Cre
     return { ok: false, error: t('common.error_generic', lang), field: 'city' }
   }
 
-  // Defense in depth — the page guard already keeps an existing shop owner and an existing
-  // freelancer profile out of this form, but a server action must re-derive rather than trust
-  // the render.
+  // Defense in depth — the page guard already keeps an existing shop owner out of this form, but
+  // a server action must re-derive rather than trust the render.
   const { data: profile, error: profileErr } = await supabase
     .from('profiles')
     .select('seller_type')
@@ -89,14 +88,17 @@ export async function createFreelancerProfileAction(input: unknown): Promise<Cre
   }
 
   const existing = await resolveOwnedFreelancerProfileId(supabase, user.id)
-  if (existing.ok) {
-    console.error(`[createFreelancerProfile] rejected: user ${user.id} already has profile ${existing.freelancerProfileId}`)
-    return { ok: false, error: t('common.error_generic', lang) }
-  }
-  if (existing.reason === 'query_failed') {
+  if (!existing.ok && existing.reason === 'query_failed') {
     return { ok: false, error: t('common.error_generic', lang) }
   }
 
+  // full_name rides along unconditionally, same write whether this is a fresh submit or a
+  // revisit. On a fresh submit this UPDATE is the seller_type flip (consumer -> freelancer); on a
+  // revisit (existing.ok — "Retour" from step 2, or coming back before finishing it) seller_type
+  // is already 'freelancer', so this re-sets the same value. That matters for the age-gate
+  // trigger (enforce_seller_type_age_gate, 23514): it only re-checks age when `new.seller_type IS
+  // DISTINCT FROM old.seller_type`, so a same-value re-set on a revisit is a verified no-op for
+  // that trigger, not a second age check against a user who already passed it once.
   const { error: roleErr } = await supabase
     .from('profiles')
     .update({ seller_type: 'freelancer', full_name: fullName })
@@ -107,6 +109,25 @@ export async function createFreelancerProfileAction(input: unknown): Promise<Cre
       return { ok: false, error: t('freelance.create.error.age_gate', lang) }
     }
     return { ok: false, error: t('common.error_generic', lang) }
+  }
+
+  if (existing.ok) {
+    // Revisit — UPDATE, not INSERT, the row already exists. The page guard
+    // (mon-profil-freelance/creer/page.tsx) only renders this form pre-filled when
+    // freelancer_languages has no row yet for this profile (i.e. step 2 was never finished), so
+    // reaching this branch means the earlier reject-on-existing behavior would have wrongly
+    // blocked a legitimate "Retour" resubmit.
+    const { error: updErr } = await supabase
+      .from('freelancer_profiles')
+      .update({ headline, bio, city })
+      .eq('id', existing.freelancerProfileId)
+    if (updErr) {
+      console.error('[createFreelancerProfile] update failed:', updErr.message, updErr.code, updErr.details)
+      return { ok: false, error: t('common.error_generic', lang) }
+    }
+    revalidatePath('/tableau-de-bord')
+    revalidatePath('/mon-profil-freelance/creer')
+    return { ok: true }
   }
 
   const { error: insErr } = await supabase

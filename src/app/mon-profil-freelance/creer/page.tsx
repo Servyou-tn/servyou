@@ -20,17 +20,41 @@ const ROUTE = '/mon-profil-freelance/creer'
 // seeded/flipped directly) is a legitimate retry state and must reach the form, not bounce.
 // Confirmed live, 2026-08-14: 1 of 11 seller_type='freelancer' profiles has no freelancer_profiles
 // row — "has the role" and "has a profile" are provably not the same state here, same as G2's
-// shop_owner-with-no-shop. Three outcomes:
-//   has a profile already   -> redirect /tableau-de-bord (NOT /tableau-de-bord-vendeur — that
-//                              route calls requireShopOwner, which redirects any non-shop_owner
-//                              to /devenir-vendeur; a real freelancer visiting it bounces
-//                              straight back to the role chooser. Caught live during the QA walk,
-//                              2026-08-14 — /tableau-de-bord's own guard is just "logged in",
-//                              seller_type-agnostic, so it is the one destination that actually
-//                              renders for a freelancer today, even as its own ComingSoon stub)
-//   seller_type shop_owner  -> AlreadyHaveRole (mirrors G2's freelancer-blocked branch, inverted)
+// shop_owner-with-no-shop. Four outcomes now (H2 step 2 added a mid-wizard branch G2 never needed
+// — see below):
+//   profile exists,
+//     freelancer_languages   -> redirect /tableau-de-bord (NOT /tableau-de-bord-vendeur — that
+//     has a row already         route calls requireShopOwner, which redirects any non-shop_owner
+//                                to /devenir-vendeur; a real freelancer visiting it bounces
+//                                straight back to the role chooser. Caught live during the QA
+//                                walk, 2026-08-14 — /tableau-de-bord's own guard is just "logged
+//                                in", seller_type-agnostic, so it is the one destination that
+//                                actually renders for a freelancer today, even as its own
+//                                ComingSoon stub)
+//   profile exists,
+//     no freelancer_languages -> render the form PRE-FILLED from the existing freelancer_profiles
+//     row yet (mid-wizard)        row — "Retour" from step 2 lands here, and so does browser-back
+//                                  or a bare URL revisit; all three are the same state
+//   seller_type shop_owner    -> AlreadyHaveRole (mirrors G2's freelancer-blocked branch,
+//     (only reachable when         inverted) — unreachable when a profile exists, since a
+//     no profile exists yet)       freelancer_profiles row implies seller_type is already
+//                                  'freelancer' (step 1's own action flips it in the same write
+//                                  that inserts the row)
 //   otherwise (null OR
-//     freelancer-no-profile) -> render the form
+//     freelancer-no-profile)    -> render the form blank
+//
+// WHY freelancer_languages (not freelancer_skills) is the "finished step 2" signal: step 2's own
+// action (competences/actions.ts) writes skills BEFORE languages, deliberately — languages is the
+// LAST table it touches. If skills succeed but languages fail partway through a submit, this
+// guard must still treat the profile as unfinished and route back into the wizard, not to the
+// dashboard; gating on the last-written table is what makes that recoverable.
+//
+// 🔴 Behavior change for existing accounts: 10 freelancer_profiles rows exist live today (2026-08-
+// 14), 0 with any freelancer_skills or freelancer_languages rows — every one of them now renders
+// this prefilled form on a visit to this route instead of redirecting to /tableau-de-bord. They
+// are, factually, mid-wizard (never did step 2) — this is "resume where you left off" working as
+// intended for them too, not a regression, but it is a real behavior change worth naming rather
+// than letting it land as a silent side effect of the Retour feature.
 export default async function CreerProfilFreelancePage() {
   const shell = await getShellUser()
   if (!shell) redirect(`/connexion?next=${encodeURIComponent(ROUTE)}`)
@@ -39,9 +63,47 @@ export default async function CreerProfilFreelancePage() {
   const supabase = await createClient()
 
   const existing = await resolveOwnedFreelancerProfileId(supabase, shell.id)
-  if (existing.ok) redirect('/tableau-de-bord')
-  if (existing.reason === 'query_failed') {
+  if (!existing.ok && existing.reason === 'query_failed') {
     throw new Error('freelancer profile fetch failed while guarding /mon-profil-freelance/creer')
+  }
+
+  if (existing.ok) {
+    const { data: languageRow, error: langErr } = await supabase
+      .from('freelancer_languages')
+      .select('id')
+      .eq('freelancer_profile_id', existing.freelancerProfileId)
+      .limit(1)
+      .maybeSingle()
+    if (langErr) {
+      console.error('[creer-profil-freelance] freelancer_languages check failed:', langErr.message, langErr.code, langErr.details)
+      throw new Error('freelancer_languages fetch failed while guarding /mon-profil-freelance/creer')
+    }
+
+    if (languageRow) redirect('/tableau-de-bord')
+
+    const { data: profileRow, error: profileErr } = await supabase
+      .from('freelancer_profiles')
+      .select('headline, bio, city')
+      .eq('id', existing.freelancerProfileId)
+      .single()
+    if (profileErr || !profileRow) {
+      console.error('[creer-profil-freelance] freelancer_profiles fetch failed:', profileErr?.message, profileErr?.code, profileErr?.details)
+      throw new Error('freelancer_profiles fetch failed while guarding /mon-profil-freelance/creer')
+    }
+
+    return (
+      <AppShell user={shell.topBarUser}>
+        <CreateFreelancerProfileForm
+          fullName={shell.topBarUser.full_name}
+          avatarUrl={shell.topBarUser.avatar_url ?? null}
+          initial={{
+            headline: profileRow.headline ?? '',
+            bio: profileRow.bio ?? '',
+            city: profileRow.city ?? '',
+          }}
+        />
+      </AppShell>
+    )
   }
 
   if (shell.topBarUser.seller_type === 'shop_owner') {

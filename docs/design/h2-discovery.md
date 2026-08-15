@@ -168,6 +168,52 @@ The helper copy names "FR/AR/EN/IT" — that is a hint about intended scope, rea
 measured enum**. "Natif" is the only niveau value observed, on both rows — the proficiency value set
 (Natif / Courant / ? / ?) is unknown from this frame.
 
+### 3c. Langue and niveau option lists — 🟠 RULED, not measured (founder, 2026-08-14)
+
+The Figma quota was exhausted before either option list could be measured (§3b) and stayed
+exhausted for this build pass. Both lists below are **founder-ruled**, not read off a frame — do
+not treat them as if `get_design_context` confirmed them, and re-measure against `467:20433`/
+`467:20445` if the quota ever resets and a discrepancy is suspected.
+
+**Langue** (`freelancer_languages.language`, CHECK-constrained codes):
+
+| label (FR) | stored code |
+|---|---|
+| Français | `fr` |
+| Arabe | `ar` |
+| Anglais | `en` |
+| Italien | `it` |
+| Allemand | `de` |
+| Espagnol | `es` |
+| Autre | `autre` |
+
+**Niveau** (`freelancer_languages.proficiency`, CHECK-constrained codes):
+
+| label (FR) | stored code |
+|---|---|
+| Natif | `natif` |
+| Courant | `courant` |
+| Intermédiaire | `intermediaire` |
+| Notions | `notions` |
+
+The stored codes are unaccented ASCII (`intermediaire`, not `Intermédiaire`) — the accented form
+is a display label only, built in `src/lib/freelancer/language-options.ts` mirroring
+`GOVERNORATES`' `{value, fr, ar}` shape, never written to the column.
+
+### 3d. Migration applied — `freelancer_languages`, 2026-08-14
+
+`db/migrations/20260814114009_freelancer_languages.sql` (Supabase version `20260814114009`)
+closes the §5b structural mismatch: `freelancer_profile_id` FK cascade, `language`/`proficiency`
+CHECK-constrained per §3c, `UNIQUE (freelancer_profile_id, language)` (the niveau-change-without-
+language-change case needs this to resolve as one row, not two — see the diff-logic note in
+`docs/follow-ups.md`'s H2 step 2 section). RLS is `FOR ALL` owner-scoped, matching
+`shop_payment_methods`/`shop_categories`, deliberately not `freelancer_skills`' narrower
+insert/delete-only shape (that gap is logged, not fixed, in the same follow-ups section).
+`freelancer_profiles.languages` (the superseded scalar) is left in place, unwritten from this PR
+forward; its 10 pre-existing values are dumped verbatim in `docs/follow-ups.md` rather than
+backfilled — parsing free text into two enums under a real user's name was judged not worth it
+for 10 rows.
+
 ---
 
 ## 4. Step 3 and the success screen — 🧠 MEMORY ONLY, blocked by quota

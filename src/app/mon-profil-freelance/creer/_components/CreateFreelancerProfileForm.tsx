@@ -32,17 +32,22 @@ type Errors = { fullName?: string; headline?: string; bio?: string; city?: strin
 export function CreateFreelancerProfileForm({
   fullName: initialFullName,
   avatarUrl,
+  initial,
 }: {
   fullName: string | null
   avatarUrl: string | null
+  /** Present only on a revisit (page.tsx's guard: profile exists, step 2 not yet finished) — the
+   *  fields other than fullName started blank even for a prefill-capable form until this prop
+   *  existed, since a fresh create never had anything to prefill them with. */
+  initial?: { headline: string; bio: string; city: string }
 }) {
   const lang = useLang()
   const router = useRouter()
 
   const [fullName, setFullName] = React.useState(initialFullName ?? '')
-  const [headline, setHeadline] = React.useState('')
-  const [bio, setBio] = React.useState('')
-  const [city, setCity] = React.useState('')
+  const [headline, setHeadline] = React.useState(initial?.headline ?? '')
+  const [bio, setBio] = React.useState(initial?.bio ?? '')
+  const [city, setCity] = React.useState(initial?.city ?? '')
 
   const [errors, setErrors] = React.useState<Errors>({})
   const [formError, setFormError] = React.useState<string | null>(null)
@@ -92,15 +97,16 @@ export function CreateFreelancerProfileForm({
       return
     }
 
-    // Both buttons land on /tableau-de-bord for now — NOT /tableau-de-bord-vendeur, which
-    // calls requireShopOwner and bounces a real freelancer to /devenir-vendeur (caught live
-    // during the QA walk, 2026-08-14 — see the matching note on page.tsx's guard). Step 2
-    // (Compétences & langues) does not exist yet (docs/design/h2-discovery.md §4, blocked on
-    // the Figma quota + the languages schema decision). "Suivant" keeps `data-intent="next"` as
-    // a forward-compat marker and repoints to /mon-profil-freelance/creer/configuration once
-    // step 2 ships, exactly as G2's own Stepper.tsx flagged the identical known gap before its
-    // step 2 landed (ma-boutique/creer/_components/Stepper.tsx:7-8).
-    router.push('/tableau-de-bord')
+    // Which button triggered this submit — read from the DOM submitter, same pattern G2's
+    // CreateShopForm.tsx uses (docs/design/h2-discovery.md §8 named this exact repoint as the
+    // known gap before step 2 shipped). "Suivant" (data-intent="next") now advances to step 2;
+    // "Enregistrer et continuer plus tard" still lands on /tableau-de-bord — NOT
+    // /tableau-de-bord-vendeur, which calls requireShopOwner and bounces a real freelancer to
+    // /devenir-vendeur (caught live during the QA walk, 2026-08-14 — see the matching note on
+    // page.tsx's guard).
+    const submitter = (e.nativeEvent as SubmitEvent).submitter as HTMLButtonElement | null
+    const intent = submitter?.dataset.intent === 'next' ? 'next' : 'draft'
+    router.push(intent === 'next' ? '/mon-profil-freelance/creer/competences' : '/tableau-de-bord')
   }
 
   const selectField = `w-full rounded-lg border px-4 h-11 bg-surface-base text-base text-text-primary outline-none transition-colors focus:border-brand-blue-600 ${FOCUS_RING}`
