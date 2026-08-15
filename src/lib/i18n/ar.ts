@@ -1225,6 +1225,8 @@ export const ar: Record<string, string> = {
   // ─── PageHeader — per-page animated subtitle (best-effort MSA, review pending) ──
   'page_header.accueil.subtitle':            "اكتشف جديد Servyou",
   'page_header.accueil.emphasis':            "جديد",
+  // "/" thin landing — see fr.ts for provenance (INFERRED, no measured frame).
+  'home.landing.body': "تصفّح المنتجات والخدمات التي يقدمها بائعونا والمستقلّون لدينا.",
   'page_header.produits.subtitle':           "اعثر على ما تحتاجه",
   'page_header.produits.emphasis':           "تحتاجه",
   'page_header.services.subtitle':           "اعثر على المستقل المناسب",

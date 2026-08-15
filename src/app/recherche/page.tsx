@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { MarcheLayout } from '@/components/marche/MarcheLayout'
+import { AppShell } from '@/components/shell/AppShell'
 import { ListingResults } from '@/components/listings/ListingResults'
 import { getShellUser } from '@/lib/marche/shell-user'
 import { getLang } from '@/lib/i18n/server'
@@ -13,17 +13,21 @@ import { isWeakResult, shouldShowSearchLanding } from '@/lib/search/recherche-lo
 import { buildSearchQuery } from '@/components/recherche/search-url'
 import { SearchFilters } from '@/components/recherche/SearchFilters'
 import { SearchFiltersSheet } from '@/components/recherche/SearchFiltersSheet'
+import { SearchQueryInput } from '@/components/recherche/SearchQueryInput'
 import { Pagination } from '@/components/shared/Pagination'
 import { PageHeader } from '@/components/shared/PageHeader'
 import { SearchEmptyState } from '@/components/recherche/SearchEmptyState'
 import { SearchLanding } from '@/components/recherche/SearchLanding'
 
-// /recherche — Engine 3, the search surface (public, no auth gate). The Produits/Services
-// toggle in the top bar is the compass: search runs against ONE side only. Browse-by-default
-// now lives on /marche/produits and /marche/services, so a bare /recherche (no query, no
+// /recherche — Engine 3, the search surface (public, no auth gate). Search runs against ONE
+// side only, chosen by ?type (product default, service otherwise) — the sidebar's expandable
+// Marketplace item is the only cross-engine switch anywhere now (the old top-bar Produits/
+// Services toggle was retired with the legacy marche shell; see docs/follow-ups.md). Browse-
+// by-default lives on /marche/produits and /marche/services, so a bare /recherche (no query, no
 // filters) shows a landing block, not a grid. A ?q narrows to title/description matches;
-// ?categorie / ?prix_* refine; ?tri sorts; ?page paginates. When the active side is
-// empty or thin, a cross-side nudge points to the other side of the toggle.
+// ?categorie / ?prix_* refine; ?tri sorts; ?page paginates. When the active side is empty or
+// thin, a cross-side nudge (page-local, unaffected by the shell migration) points to the other
+// side.
 function sideLabel(type: SearchType, lang: Lang): string {
   return t(type === 'product' ? 'common.products_section' : 'common.services_section', lang)
 }
@@ -41,13 +45,16 @@ export default async function RecherchePage({
   const shell = await getShellUser()
   const topBarUser = shell?.topBarUser ?? null
 
-  // Bare /recherche (no query AND no filters) → landing block. The top bar (toggle + search)
-  // still frames it; the two CTAs route to the marketplaces.
+  // Bare /recherche (no query AND no filters) → landing block; the two CTAs route to the
+  // marketplaces.
   if (shouldShowSearchLanding(params)) {
     return (
-      <MarcheLayout user={topBarUser} searchType={params.type} searchQuery={params.q}>
-        <SearchLanding lang={lang} />
-      </MarcheLayout>
+      <AppShell user={topBarUser}>
+        <SearchQueryInput initialQuery={params.q} type={params.type} basePath="/recherche" />
+        <div className="mt-6">
+          <SearchLanding lang={lang} />
+        </div>
+      </AppShell>
     )
   }
 
@@ -109,7 +116,11 @@ export default async function RecherchePage({
   const showWeakHelper = hasQuery && isWeakResult(result.totalCount)
 
   return (
-    <MarcheLayout user={topBarUser} searchType={params.type} searchQuery={params.q}>
+    <AppShell user={topBarUser}>
+      <div className="mb-4">
+        <SearchQueryInput initialQuery={params.q} type={params.type} basePath="/recherche" />
+      </div>
+
       {/* Query echo + clear-search — only when a query actually matched something
           (suppressed on zero results, where the empty card speaks). */}
       {showQueryEcho && (
@@ -197,6 +208,6 @@ export default async function RecherchePage({
           )}
         </div>
       </div>
-    </MarcheLayout>
+    </AppShell>
   )
 }

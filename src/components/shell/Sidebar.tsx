@@ -89,18 +89,48 @@ export function Sidebar({
       >
         {sections.map((section) => (
           <SidebarSection key={section.labelKey} label={t(section.labelKey, lang)}>
-            {section.items.map((item) => (
-              <SidebarItem
-                key={item.href}
-                href={item.href}
-                label={t(item.key, lang)}
-                icon={item.icon}
-                active={isActiveRoute(pathname, item.href)}
-                onNavigate={onNavigate}
-                disabled={item.disabled}
-                soonLabel={item.disabled ? t('shell.sidebar.soon', lang) : undefined}
-              />
-            ))}
+            {section.items.map((item) => {
+              // The lone expandable case (Marketplace) — contained here, not a general nested-item
+              // model (sidebar-items.ts's SidebarItemDef comment has the full reasoning). Expansion
+              // reads `expandOn` (a route PREFIX, e.g. "/marche"), never `item.href` (its own
+              // navigation target, e.g. "/marche/produits") — the two engines share the prefix but
+              // not the href, so deriving expansion from href would collapse the sub-items the
+              // moment a visitor is on the OTHER engine.
+              const expanded = item.subItems && item.expandOn ? isActiveRoute(pathname, item.expandOn) : undefined
+              return (
+                <div key={item.href}>
+                  <SidebarItem
+                    href={item.href}
+                    label={t(item.key, lang)}
+                    icon={item.icon}
+                    // Never active when it owns subItems: with `expandOn` prefix-matching both
+                    // engines and `href` exact/prefix-matching only Produits, both the parent AND
+                    // the Produits sub-item would otherwise light up solid at once — two
+                    // aria-current="page" in one <nav>. The chevron (via `expanded`) is this row's
+                    // only visual state; the real "current" signal lives on whichever sub-item
+                    // matches below.
+                    active={item.subItems ? false : isActiveRoute(pathname, item.href)}
+                    onNavigate={onNavigate}
+                    disabled={item.disabled}
+                    soonLabel={item.disabled ? t('shell.sidebar.soon', lang) : undefined}
+                    expanded={expanded}
+                  />
+                  {expanded && item.subItems && (
+                    <div className="mt-0.5 flex flex-col gap-0.5 ps-8">
+                      {item.subItems.map((sub) => (
+                        <SidebarItem
+                          key={sub.href}
+                          href={sub.href}
+                          label={t(sub.key, lang)}
+                          active={isActiveRoute(pathname, sub.href)}
+                          onNavigate={onNavigate}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )
+            })}
             {/* "Devenir vendeur" promo (Figma 611:45637 → 110:3874): only for a consumer
                 (seller_type null; role is 'consumer' logged-out too). Hidden for sellers. */}
             {role === 'consumer' && section.labelKey === 'shell.sidebar.section.discover' && (

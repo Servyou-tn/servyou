@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { MarcheLayout } from '@/components/marche/MarcheLayout'
+import { AppShell } from '@/components/shell/AppShell'
 import { ListingResults } from '@/components/listings/ListingResults'
 import { getShellUser } from '@/lib/marche/shell-user'
 import { getLang } from '@/lib/i18n/server'
@@ -11,6 +11,7 @@ import { searchMarketplace } from '@/lib/search/search-marketplace'
 import { buildSearchQuery } from '@/components/recherche/search-url'
 import { SearchFilters } from '@/components/recherche/SearchFilters'
 import { SearchFiltersSheet } from '@/components/recherche/SearchFiltersSheet'
+import { SearchQueryInput } from '@/components/recherche/SearchQueryInput'
 import { Pagination } from '@/components/shared/Pagination'
 import { PageHeader } from '@/components/shared/PageHeader'
 import { getCategoryBySlug, getSubcategories } from '@/lib/categories/category-data'
@@ -20,8 +21,10 @@ import { CategoryEmptyState } from '@/components/categories/CategoryEmptyState'
 // /categories/[slug] — the category-scoped browse surface (public). The slug locks the
 // category; the page browses-by-default (full grid immediately), refinable by city/price.
 // Reuses /recherche's data layer (searchMarketplace with a categoryId) + filter components
-// (with the Catégorie section hidden and the base path pointed at this slug). The header
-// search bar + type toggle are the shared shell's, unchanged (they target /recherche).
+// (with the Catégorie section hidden and the base path pointed at this slug). Search input is
+// SearchQueryInput (page-local) — this page never had its own search UI before the shell
+// migration; the old top-bar search always targeted /recherche, never this route, so this is a
+// genuinely new affordance, not a like-for-like replacement.
 export default async function CategoryPage({
   params,
   searchParams,
@@ -66,7 +69,11 @@ export default async function CategoryPage({
   const switchTypeHref = hrefFrom(buildSearchQuery(current, { type: otherType(sParams.type) }))
 
   return (
-    <MarcheLayout user={topBarUser} searchType={sParams.type} searchQuery="">
+    <AppShell user={topBarUser}>
+      <div className="mb-4">
+        <SearchQueryInput initialQuery={sParams.q} type={sParams.type} basePath={base} />
+      </div>
+
       {/* Breadcrumbs — Accueil > Catégories > {name}. "Catégories" is plain text:
           TODO link it when the /categories index page exists. */}
       <nav
@@ -143,6 +150,6 @@ export default async function CategoryPage({
           )}
         </div>
       </div>
-    </MarcheLayout>
+    </AppShell>
   )
 }

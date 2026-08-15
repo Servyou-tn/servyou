@@ -1211,6 +1211,10 @@ export const fr: Record<string, string> = {
   // ─── PageHeader — per-page animated subtitle (consumer dashboard shell) ──────
   'page_header.accueil.subtitle':            "Découvrez les nouveautés de Servyou",
   'page_header.accueil.emphasis':            "nouveautés",
+  // "/" thin landing (PR feat/sidebar-marketplace-and-shell-migration) — INFERRED copy, no
+  // measured Figma frame exists for this card. Points into both engines; the sidebar's own
+  // Marketplace item is the durable way back in on every later visit.
+  'home.landing.body': "Parcourez les produits et les services proposés par nos vendeurs et freelances.",
   'page_header.produits.subtitle':           "Trouvez ce dont vous avez besoin",
   'page_header.produits.emphasis':           "besoin",
   'page_header.services.subtitle':           "Trouvez le freelance qu'il vous faut",

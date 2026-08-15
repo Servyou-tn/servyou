@@ -32,6 +32,36 @@ undo them. A closed decision is not a deferral.
   over `product_images` and must not raise when there is no image) stays valid and is worth
   reading first *if* a snapshot column is ever genuinely justified.
 
+### ✅ The sidebar's Marketplace item is expandable — a deliberate REVERSAL of the 2026-06-27 flat-IA ruling, not drift
+
+- **Decision (founder, 2026-08-15, PR `feat/sidebar-marketplace-and-shell-migration`):** the
+  Marketplace item in `sidebar-items.ts` expands to two sub-items (Produits/Services). Clicking it
+  navigates to Produits AND expands; clicking Services navigates there and the expansion follows
+  the route. This is the ONE exception to the flat, no-nesting sidebar IA the founder locked on
+  2026-06-27 (`sidebar-items.ts:17`, "supersedes the example item list in design system Section
+  6.1").
+- **Why this reverses the ruling rather than violating it:** the 2026-06-27 flat IA assumed a
+  visitor could still switch between the Produits and Services marketplace engines some other way.
+  That other way — the legacy marche top bar's Produits/Services text-link toggle
+  (`MarcheTopBar.tsx`'s `NavTextLinks`) — was retired in this SAME PR, and no cross-engine toggle
+  exists anywhere else now (`/marche/services` and `/marche/produits` each keep only their OWN
+  local toggle — Services/Freelances and Produits/Boutiques respectively, per the same PR's
+  ruling). Once that was gone, the sidebar had to become the thing that moves a visitor between
+  the two engines — new information the 2026-06-27 decision didn't have, not a change of mind.
+- **Contained, not a general nested-item model:** `SidebarItemDef` gained one optional `subItems`
+  field and Sidebar.tsx gained one conditional branch — every other item in every other section is
+  still a flat leaf. If a second item ever needs the same treatment, that's the trigger to
+  generalize; one exception is not.
+- **Do not** read this as license to nest other sidebar items, and do not "simplify" it back to
+  flat without first checking whether a cross-engine toggle has been rebuilt somewhere else — if
+  one hasn't, collapsing this back to a flat Marketplace link removes the only way to reach the
+  Services engine from the sidebar.
+- **INFERRED, not measured:** no Figma frame exists for a chevron/expand affordance on the v2 navy
+  sidebar (`SidebarItem.tsx` cites `611:45637`, flat-only) and the quota was exhausted before this
+  PR. The `ChevronDown` + `rotate-180` treatment (matching `MarcheSidebar.tsx`'s old filter toggle
+  and `AccountMenu.tsx`'s dropdown, not a directional `ChevronRight` idiom) is a reasoned choice,
+  not a measured one — re-check against a real frame if the quota ever resets.
+
 ## Open
 
 ### `docs/follow-ups.md` conflicts on every concurrent branch — it needs an append convention
@@ -2179,3 +2209,73 @@ coupling" claim on that specific function is stale, not a remaining blocker.
 - **Trigger:** the next AppShell/Topbar pass, or whenever a founder-facing report of a 320px
   device (older low-density Androids, the standard's own stated reason for testing this width)
   shows a sliver of horizontal scroll on any authenticated page.
+
+## Sidebar Marketplace + legacy shell retirement (`feat/sidebar-marketplace-and-shell-migration`, 2026-08-15)
+
+### TopbarSearch's type inference doesn't widen to /recherche or /categories/[slug]'s own query string — by design, not an oversight
+
+- **What:** `TopbarSearch.tsx`'s type-aware fix infers `type` from PATHNAME only
+  (`/marche/services` → `service`, else `product`). It does NOT read the CURRENT page's own
+  `?type=` when that page is `/recherche` or `/categories/[slug]` — searching from the shell
+  topbar while already on `/recherche?type=service` still resolves to product, because pathname
+  alone can't see the current query string's type.
+- **Why not widened:** founder call — those two pages carry `type` correctly through their OWN
+  page-local `SearchQueryInput` now (it patches the CURRENT url via `buildSearchQuery`, so `type`
+  survives automatically). `TopbarSearch` is the fallback path for every OTHER page (freelancer
+  dashboard, shop dashboard, `/mes-commandes`, etc.), not the primary way to search from within an
+  already-type-scoped result set — widening it to parse the current query string would duplicate
+  logic the page-local input already owns correctly.
+- **Trigger:** only if click-through shows visitors reaching for the topbar search while deep in a
+  service-scoped `/recherche` or category results and getting silently bounced to products. Until
+  then this is an accepted, named gap, not a bug queue item.
+
+### `TopBarUser` type still lives in the deprecated-looking `ProfileAvatarMenu.tsx`
+
+- **What:** `MarcheLayout.tsx` / `MarcheSidebar.tsx` / `MarcheTopBar.tsx` are deleted in this PR,
+  but `ProfileAvatarMenu.tsx` stays — 8 files (`shell/AppShell.tsx`, `AppShellClient.tsx`,
+  `Topbar.tsx`, `TopbarUserMenu.tsx`, `home/ConsumerHomepage.tsx`, `lib/marche/shell-user.ts`, and
+  `ProfileAvatarMenu.tsx` itself) import the `TopBarUser` **type** from it; only `MarcheTopBar.tsx`
+  (now deleted) ever imported the `ProfileAvatarMenu` **component** at runtime.
+- **Why not moved here:** a type relocation ripples all 8 import sites for a rename with zero
+  behavior change — out of scope for a PR about the sidebar and the marketplace shell migration.
+- **Trigger:** the next PR that touches the shell — move `TopBarUser` to `shell/` (or a shared
+  types module) and update the 8 import sites in the same commit, then `ProfileAvatarMenu.tsx`
+  itself can be evaluated for deletion or a rename to reflect what it actually still does.
+
+### Five marche/* components are now true orphans (zero importers) — not deleted here
+
+- **What:** deleting `MarcheTopBar.tsx`/`MarcheSidebar.tsx` orphaned five components nobody else
+  imports: `ExpandableSearch.tsx`, `NavTextLinks.tsx`, `HelpDropdown.tsx`, `PublishProjectCTA.tsx`,
+  `SidebarSelectFilter.tsx` (grep-verified zero real importers, repo-wide). Also orphaned inside
+  `lib/marche/marche-routing.ts`: the `toggleDestination`, `homeEngineHref`, and
+  `resolveMarcheSidebarNav` exports (the last was already partly dead — `produitsActive`/
+  `servicesActive` were computed and unit-tested but never consumed even before this PR).
+  `marche-routing.ts` itself survives: `marcheRedirectTarget` is still used by `/marche`'s own
+  redirect route, unrelated to this migration.
+- **Why not deleted here:** the ruling for this PR named exactly three files for deletion
+  (`MarcheLayout.tsx`, `MarcheSidebar.tsx`, `MarcheTopBar.tsx`). Expanding deletion to their
+  now-orphaned dependents is a reasonable next step but a distinct one — "one PR, one focus,"
+  same posture PR #83 (`chore/strip-legacy-consumer-ui`) took with its own cascade.
+- **Trigger:** a dedicated cleanup commit — grep each name repo-wide to reconfirm zero importers
+  (components can gain a new consumer between now and then) before deleting.
+
+### AppShell has no site Footer — /recherche, /categories/[slug], and / (consumer landing) lose theirs in this migration
+
+- **What:** `AppShellClient.tsx` renders sidebar + topbar + content, no `<Footer>`. `MarcheLayout`
+  rendered one unconditionally. The three routes migrated in this PR lose their footer as a result.
+- **Why this isn't new scope:** `/marche/produits` and `/marche/services` made the identical trade
+  when they moved to AppShell earlier (`feat/rebuild-marche-services` and the produits rebuild) —
+  this PR extends an already-accepted gap to three more routes, it doesn't introduce it. No
+  existing follow-up entry named it before now.
+- **Trigger:** whenever AppShell's own footer situation gets a real design decision — a persistent
+  footer slot, or an explicit call that authenticated/browse surfaces don't need one.
+
+### ConsumerHomepage's thin-landing card is INFERRED, no measured frame
+
+- **What:** `/`'s new thin landing (`ConsumerHomepage.tsx`) — greeting + one card with two CTAs
+  into `/marche/produits` and `/marche/services` — has no Figma frame behind it. Kept deliberately
+  minimal (reused `PageHeader` + one `CARD_SHADOW` card, one new i18n key pair
+  `home.landing.body`) rather than invent a bespoke landing design without a frame to build
+  against.
+- **Trigger:** if/when a Figma frame for this surface exists (quota permitting), reconcile against
+  it — this is a functional placeholder, not a claimed-final design.
