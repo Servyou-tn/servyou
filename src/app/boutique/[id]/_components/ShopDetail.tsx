@@ -1,3 +1,4 @@
+import Image from 'next/image'
 import { MapPin, Calendar, Store, Truck, Package } from 'lucide-react'
 import { Avatar } from '@/components/ui/avatar'
 import { getInitials } from '@/components/ui/initials'
@@ -16,12 +17,17 @@ import { ShopReportModal } from './ShopReportModal'
 // region) — matches D4's own skeleton without D4's hero trust-row horizontal split, which D3
 // never had.
 //
-// LOGO — real image when present, initials fallback when null (Avatar's own `src` > `initials` >
-// glyph priority). The Figma frame draws initials-only because it was drawn when `logo_url` was
-// still unfillable (no G2 write surface existed); now that G2 fills it, showing the real photo
-// when the owner has uploaded one is the correct behaviour, not a literal reproduction of the
-// frame's demo state — same "mock state differs from real data" rule this project already applies
-// everywhere else.
+// LOGO/BANNER — real image when present, fallback when null. Avatar already does this for the
+// logo (its own `src` > `initials` > glyph priority); the banner gets the identical treatment
+// here — real `banner_url` photo when the owner has uploaded one, the gradient only when it's
+// null. The Figma frame draws both as their empty state (initials-only logo, gradient-only
+// banner) because it was drawn when neither `logo_url` nor `banner_url` had a write surface yet
+// (no G2 upload flow existed); now that G2 fills both, showing the real photo when present is the
+// correct behaviour, not a literal reproduction of the frame's demo state — same "mock state
+// differs from real data" rule this project already applies everywhere else. Found via the
+// founder's populated-fixture fidelity pass (docs/design/d3-discovery.md §13): the banner half of
+// this was fetched and typed (`shop-detail.ts`) but never wired into the render — OM shop's null
+// `banner_url` made "always gradient" indistinguishable from "correctly falls back to gradient."
 //
 // shop_type/delivery_setup — the Figma frame's demo text ("Artisan" / "Livraison à domicile")
 // does not match any real enum value (`shop_type` ∈ physical/online_only/dropshipper;
@@ -55,7 +61,13 @@ export function ShopDetail({
     <div className="flex flex-col gap-8">
       {/* hero — banner + avatar-ring overlap + identity, single stacked column throughout */}
       <div className="relative flex flex-col items-start rounded-card border border-border-subtle bg-surface-base">
-        <div className="h-[200px] w-full shrink-0 rounded-t-xl bg-gradient-to-r from-[#5b57f2] to-brand-blue-600" />
+        <div className="relative h-[200px] w-full shrink-0 overflow-hidden rounded-t-xl">
+          {shop.bannerUrl ? (
+            <Image src={shop.bannerUrl} alt="" fill sizes="(max-width: 1279px) 100vw, 1120px" className="object-cover" />
+          ) : (
+            <div className="size-full bg-gradient-to-r from-[#5b57f2] to-brand-blue-600" />
+          )}
+        </div>
 
         <div className="absolute start-6 top-[136px] size-32 rounded-full bg-surface-base p-1">
           <Avatar size="2xl" src={shop.logoUrl} name={shop.name} initials={initials} className="size-full" decorative={false} />

@@ -2338,3 +2338,72 @@ coupling" claim on that specific function is stale, not a remaining blocker.
   could only set it once, at creation, with no revisit path). Corrected in place — G3 is the
   revisit/edit path that closes it, so the row and the summary table's row C are marked resolved
   rather than deleted, per the founder's instruction to narrow rather than remove.
+
+## D3 fidelity re-audit — sparse live data, and the standing rule it forces (`fix/d3`, 2026-08-13)
+
+### Founder audit: were the shop_type/delivery_setup meta bits and PAIEMENT/CATEGORIES chip rows built, or never built?
+- **Question:** OM shop (the only live shop) renders name, city, "Boutique depuis juin 2026",
+  description, and the actions row — no shop-type bit, no delivery-setup bit, no chip sections.
+  Same question the GATE-DESIGN PRINCIPLE entry above already asks in a different shape: does the
+  live page's silence mean the region is absent, or that it was built and is correctly hidden?
+- **Answer, read from `ShopDetail.tsx` directly, not inferred from the live render:** built and
+  correctly hidden, all four. `const hasMeta = Boolean(shop.shopType || shop.deliverySetup)`
+  gates the shop-type/delivery-setup pair (`{hasMeta && (...)}`, each bit additionally
+  individually gated inside); `{(shop.paymentMethods.length > 0 || shop.categories.length > 0) &&
+  (...)}` gates the chips block, with PAIEMENT and CATEGORIES each independently gated inside
+  that by their own `.length > 0`. OM shop has `shop_type`/`delivery_setup` both null and zero
+  rows in both join tables (confirmed live in `d3-discovery.md` §3) — every one of these
+  conditions is false for the only shop anyone can look at, which is why an unbuilt region and a
+  correctly-hidden one were indistinguishable on sight. No code defect found; no code change made.
+
+### 🔴 STANDING RULE: exercise every conditional region with data that makes it render, before calling a page verified
+- **Extends the GATE-DESIGN PRINCIPLE entry above** (this file, under "G8 — Commandes reçues"):
+  that entry's third bullet already covers *interactive* default-state blindness ("measuring a
+  control in its default state is not evidence about its other states — open the panel, expand
+  the row"). This is the same blindness in *data* form: a nullable/optional field that happens to
+  be null on the one live row and a region that was never built produce the identical rendered
+  output. Checking a page against whatever the live database currently holds cannot tell the two
+  apart — it isn't a gate on that dimension, it's a formality, per the principle above.
+- **Required step, from now on:** before declaring any page verified, seed a temporary fixture
+  that populates every optional field the frame draws, screenshot the page in that state, then
+  tear the fixture down. The populated-state screenshot — not the sparse-data one — is what gets
+  compared against the Figma frame.
+- **Trigger:** before declaring any page verified whose Figma frame draws a region backed by a
+  nullable column, an optional join table, or any other field that can legitimately be empty.
+
+## D3 banner-fix recovery (`fix/d3-banner-recovery`, 2026-08-16)
+
+### 🔴 STANDING RULE: a commit pushed to a branch after its PR has merged goes nowhere — verify the fix landed on `main`, not just that the work was done
+- **What happened:** `2f5a65b` ("fix(shop): render the real D3 banner…") was written and
+  DOM-verified on branch `fix/d3` — but PR #132, on that same branch, had already merged the day
+  before (Aug 12). No second PR was opened for the follow-up commit, so it sat stranded on the
+  orphaned `fix/d3` branch for three days until a founder screenshot caught the still-broken
+  banner and forced a rediscovery (`fix/d3-banner-recovery`, this section).
+- **Why it's dangerous:** the branch still exists, still has the commit, `git log` on it looks
+  completely normal — nothing about the local state signals "this never shipped." The only way to
+  know is to check whether the commit is reachable from `origin/main`, and nobody did that before
+  treating the fix as done.
+- **Rule, from now on:** after any fix commit, confirm it actually landed —
+  `git merge-base --is-ancestor <commit> origin/main` (or: is it in a *merged* PR, not just a PR
+  that exists) — before considering the work complete. A commit existing on a branch, even a
+  DOM-verified one, is not evidence it shipped. Any fix made after a PR has merged needs its own
+  branch and its own PR; it cannot ride the merged branch's coattails.
+- **Trigger:** standing — apply this check whenever picking up a "didn't this already get fixed?"
+  report, and as a habit after every fix commit going forward.
+
+### `Avatar`'s `<Image>` sets no `priority` — a real LCP concern on a page sellers share publicly
+- **What:** `Avatar` (`src/components/ui/avatar.tsx`) never passes `priority` to its
+  `<Image src={src} fill … />`. On D3 (`/boutique/[id]`) the shop's own avatar sits inside the
+  hero, above the fold — very plausibly the page's LCP element — yet it renders as a default
+  lazy-loaded image. Observed directly during this PR's re-verification: a CDP capture at 1440px
+  caught the avatar image not yet painted at screenshot time, while the same page at 375px had
+  already painted it. Consistent with lazy-load timing, not a data bug.
+- **Why it matters more here than on an average internal page:** D3 is the one route a seller puts
+  in a bio link and shares externally — the audience landing on it cold, with no warm cache, is
+  exactly the audience LCP timing affects most.
+- **Not fixed here** — out of scope for a banner-fix recovery PR, and `Avatar` is a shared
+  primitive (topbar avatar, D4, G3's preview, etc.); adding `priority` needs to be conditional per
+  call site (the standalone hero usage, not every 40px topbar instance), plus a check that no page
+  ends up with more than one `priority` image (Next.js flags that).
+- **Trigger:** a small, dedicated PR — thread a `priority?: boolean` prop through `Avatar`, set it
+  `true` on D3's hero avatar (and D4's, once checked) only.
