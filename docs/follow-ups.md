@@ -2508,3 +2508,47 @@ coupling" claim on that specific function is stale, not a remaining blocker.
   (documented as intentional, not a link despite the visual read) or replace the blue+underline
   pairing with a non-link-coded accent (e.g. weight or a different color that isn't the interactive
   brand-blue).
+
+### `SegmentedControl`'s solid blue pill vs. the quiet frame — founder-ruled for F1, four implementations still unconsolidated
+
+- **What:** `/mes-favoris`'s tab switcher rendered `SegmentedControl`'s active state — a solid
+  `bg-brand-blue-600` pill with white text and a Motion sliding-indicator animation. Figma
+  `718:60584` draws the tabs as plain text labels with the active one on a subtle light
+  background — quiet, low-contrast, no blue fill. Founder ruling: *"the switcher toggle buttons
+  are not the same we build in figma, they should be like all the other pages."*
+- **The "other pages" aren't one pattern — checked, not assumed.** `ProduitsLensToggle` (Figma
+  `578:42513`), `ServicesLensToggle` (`661:53879`) and `OrdersTabs` (`709:59668`/`710:59947`) are
+  all quiet (white active pill, no blue fill) but split on token: `ServicesLensToggle` and
+  `OrdersTabs` both use `bg-surface-pill` + `shadow-sm`; `ProduitsLensToggle` alone uses
+  `bg-surface-sunken` + `shadow-xs`. Two-vs-one, and the two don't average out to a third answer —
+  one of the three is simply built on a different token pair than the other two. None of the three
+  is a stateful client-rendered tab switcher either: `ProduitsLensToggle` and `OrdersTabs` are
+  static server components (URL-driven / permanently-fixed selection), so "matches the siblings"
+  is a claim about visual tokens, not about matching component architecture.
+- **Fixed here, F1-local only, ruled by the frame itself, not by majority vote among the
+  siblings:** `get_variable_defs` on `718:60584` returned `surface/sunken` (not `surface/pill`),
+  `text/primary`, `text/secondary`, `radius/lg`=10, `radius/md`=8. That matches
+  `ProduitsLensToggle`'s token pair, not `ServicesLensToggle`/`OrdersTabs`'s — which means those
+  two may themselves be off, or were built against different frames with different tokens; that's
+  unverified and out of scope here. `FavorisTabs` now renders bespoke markup on
+  `ProduitsLensToggle`'s exact classes (`bg-surface-sunken` track, `bg-white` + `text-text-primary`
+  + `shadow-xs` active pill, `text-text-secondary` otherwise) because those are the tokens the F1
+  frame actually specifies. `SegmentedControl` itself was deliberately left untouched — no variant
+  prop was added.
+- **Not fixed — `SegmentedControl`'s other two callers were never checked against a frame at all:**
+  `ParametresForm`'s FR/AR language toggle and `SharedSearchBar`'s Produits/Services search toggle
+  (topbar, `/recherche`, `/marche`) both use `SegmentedControl` with no Figma citation next to
+  either call site. Whether they're correct or also wrong — and whether `ServicesLensToggle`/
+  `OrdersTabs`'s `surface-pill`/`shadow-sm` pair is right for their own frames or is itself a
+  drift — is unknown without pulling all the frames together.
+- **Why not consolidated here:** four separate implementations of one "pill toggle" idea, with at
+  least one confirmed internal token disagreement among the three "quiet" ones, is a design-system
+  consolidation question, not an F1 bug fix. Deciding whether `SegmentedControl` should become the
+  one shared abstraction (and which token pair is actually correct) needs its own frame reads
+  across all of `ParametresForm`, `SharedSearchBar`, `ProduitsLensToggle`, `ServicesLensToggle` and
+  `OrdersTabs` together — scope this PR was told to stay out of.
+- **Trigger:** a dedicated design-system PR: pull frames for `ParametresForm`'s and
+  `SharedSearchBar`'s toggles, resolve the `surface-sunken`/`shadow-xs` vs. `surface-pill`/
+  `shadow-sm` split against each one's own frame, decide whether `SegmentedControl`'s default
+  needs to change (or the bespoke siblings fold into it), and fix all of it together so it doesn't
+  fragment into per-page patches again.

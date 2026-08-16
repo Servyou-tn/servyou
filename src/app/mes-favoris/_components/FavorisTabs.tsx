@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useLang } from '@/components/LangProvider'
 import { t } from '@/lib/i18n'
-import { SegmentedControl, type SegmentedControlOption } from '@/components/ui/segmented-control'
+import { FOCUS_RING } from '@/components/layout/styles'
 import { ListingResults } from '@/components/listings/ListingResults'
 import { FavorisProductGrid } from './FavorisProductGrid'
 import { EmptyState } from '@/components/marche/EmptyState'
@@ -36,24 +36,8 @@ export function FavorisTabs({
   const [tab, setTab] = useState<TabValue>('produits')
 
   const soon = t('mesfavoris.tab.soon', lang)
-  const options: SegmentedControlOption<TabValue>[] = [
-    { value: 'produits', label: t('mesfavoris.tab.produits', lang) },
-    { value: 'services', label: t('mesfavoris.tab.services', lang) },
-    {
-      value: 'boutiques',
-      label: t('mesfavoris.tab.boutiques', lang),
-      disabled: true,
-      disabledTitle: soon,
-      soonLabel: soon,
-    },
-    {
-      value: 'freelances',
-      label: t('mesfavoris.tab.freelances', lang),
-      disabled: true,
-      disabledTitle: soon,
-      soonLabel: soon,
-    },
-  ]
+  const enabledTabs: TabValue[] = ['produits', 'services']
+  const disabledTabs: TabValue[] = ['boutiques', 'freelances']
 
   // Pagination is reused for visual/structural consistency with the cached Figma audit ("single-
   // page Pagination"); at current favorites volumes every tab is one page, so Pagination
@@ -64,15 +48,51 @@ export function FavorisTabs({
 
   return (
     <div className="flex flex-col gap-6">
-      <SegmentedControl
-        options={options}
-        value={tab}
-        onChange={(v) => {
-          if (v === 'produits' || v === 'services') setTab(v)
-        }}
-        ariaLabel={t('mesfavoris.tabsAria', lang)}
-        className="max-w-full self-start overflow-x-auto"
-      />
+      {/* Quiet tab bar (Figma 718:60584, sunken track): matches ProduitsLensToggle/
+          ServicesLensToggle/OrdersTabs, not SegmentedControl — those three were each measured
+          against a real frame and landed on the same white-pill-on-surface-sunken look;
+          SegmentedControl's solid blue pill was never measured against any of them
+          (docs/follow-ups.md logs the consolidation question separately). */}
+      <div
+        role="tablist"
+        aria-label={t('mesfavoris.tabsAria', lang)}
+        className="inline-flex max-w-full items-center self-start overflow-x-auto rounded-[10px] bg-surface-sunken p-1"
+      >
+        {enabledTabs.map((value) => {
+          const isActive = tab === value
+          return (
+            <button
+              key={value}
+              type="button"
+              role="tab"
+              aria-selected={isActive}
+              onClick={() => setTab(value)}
+              className={`inline-flex h-9 shrink-0 items-center justify-center rounded-md px-3 text-body-sm font-medium transition-colors ${FOCUS_RING} ${
+                isActive ? 'bg-white text-text-primary shadow-xs' : 'text-text-secondary hover:text-text-primary'
+              }`}
+            >
+              {t(`mesfavoris.tab.${value}`, lang)}
+            </button>
+          )
+        })}
+        {disabledTabs.map((value) => (
+          <button
+            key={value}
+            type="button"
+            role="tab"
+            disabled
+            aria-disabled="true"
+            aria-selected={false}
+            title={soon}
+            className="inline-flex h-9 shrink-0 cursor-not-allowed items-center gap-1 rounded-md px-3 text-body-sm font-medium text-text-secondary"
+          >
+            {t(`mesfavoris.tab.${value}`, lang)}
+            <span className="rounded-full bg-brand-blue-100 px-1.5 py-0.5 text-caption font-semibold text-brand-blue-600">
+              {soon}
+            </span>
+          </button>
+        ))}
+      </div>
 
       {tab === 'services' ? (
         services.length === 0 ? (
