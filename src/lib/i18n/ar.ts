@@ -1452,6 +1452,18 @@ export const ar: Record<string, string> = {
   'mescommandes.empty':             "ليس لديك أي طلبات بعد.",
 
   'mesfavoris.count':               "{n} مفضّلة",
+  'mesfavoris.tabsAria':            "نوع المفضلة",
+  'mesfavoris.tab.produits':        "المنتجات",
+  'mesfavoris.tab.services':        "الخدمات",
+  'mesfavoris.tab.boutiques':       "المتاجر",
+  'mesfavoris.tab.freelances':      "المستقلون",
+  'mesfavoris.tab.soon':            "قريبًا",
+  'mesfavoris.empty.produits.title':      "لا توجد منتجات في المفضّلة",
+  'mesfavoris.empty.produits.subtitle':   "أضف منتجات إلى مفضّلتك بالنقر على ♡.",
+  'mesfavoris.empty.produits.cta':        "تصفّح المنتجات",
+  'mesfavoris.empty.services.title':      "لا توجد خدمات في المفضّلة",
+  'mesfavoris.empty.services.subtitle':   "أضف خدمات إلى مفضّلتك بالنقر على ♡.",
+  'mesfavoris.empty.services.cta':        "تصفّح الخدمات",
 
   'mesmissions.count':              "{n} مهام",
   'mesmissions.new':                "نشر مهمة جديدة",
@@ -1459,7 +1471,8 @@ export const ar: Record<string, string> = {
   'mesmissions.empty_cta':          "نشر أول مهمة لي",
   'mesmissions.responses':          "{n} / {max} ردود",
   'mesmissions.status.open':        "مفتوحة",
-  'mesmissions.status.closed':      "مغلقة",
+  'mesmissions.status.filled':      "مُسندة",
+  'mesmissions.status.expired':     "منتهية",
 
   'mission.create.title':           "مهمة جديدة",
   'mission.create.subtitle':        "صِف ما تحتاج إليه.",

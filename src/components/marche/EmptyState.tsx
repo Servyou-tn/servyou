@@ -2,16 +2,20 @@ import Link from 'next/link'
 import type { ReactNode } from 'react'
 import { FOCUS_RING, CARD_SHADOW } from '@/components/layout/styles'
 
-// Shared empty-state card for the account pages: a muted 48px glyph, a message, and an
-// optional CTA. A disabled CTA renders as a muted non-link (used where the destination
-// route isn't built yet).
+// Shared empty-state card for the account pages: a muted 48px glyph, a message, an optional
+// subtitle line, and an optional CTA. A disabled CTA renders as a muted non-link (used where
+// the destination route isn't built yet).
 export function EmptyState({
   icon,
   message,
+  subtitle,
   cta,
 }: {
   icon: ReactNode
   message: string
+  // Additive, optional second line (F1 /mes-favoris — the reused message-only shape used by
+  // /mes-missions is unaffected since it never passes this).
+  subtitle?: string
   cta?: { label: string; href: string; disabled?: boolean }
 }) {
   return (
@@ -21,6 +25,7 @@ export function EmptyState({
           {icon}
         </div>
         <p className="mt-4 text-base font-semibold text-text-primary">{message}</p>
+        {subtitle && <p className="mt-2 text-body-sm text-text-muted">{subtitle}</p>}
         {cta &&
           (cta.disabled ? (
             <span className="mt-6 inline-flex cursor-not-allowed select-none items-center rounded-full bg-brand-blue-600/40 px-5 py-2.5 text-sm font-medium text-white opacity-70">
