@@ -1450,6 +1450,18 @@ export const fr: Record<string, string> = {
   'mescommandes.empty':             "Vous n'avez pas encore de commandes.",
 
   'mesfavoris.count':               "{n} favoris",
+  'mesfavoris.tabsAria':            "Type de favori",
+  'mesfavoris.tab.produits':        "Produits",
+  'mesfavoris.tab.services':        "Services",
+  'mesfavoris.tab.boutiques':       "Boutiques",
+  'mesfavoris.tab.freelances':      "Freelances",
+  'mesfavoris.tab.soon':            "Bientôt",
+  'mesfavoris.empty.produits.title':      "Aucun produit en favoris",
+  'mesfavoris.empty.produits.subtitle':   "Ajoutez des produits à vos favoris en cliquant sur ♡.",
+  'mesfavoris.empty.produits.cta':        "Explorer les produits",
+  'mesfavoris.empty.services.title':      "Aucun service en favori",
+  'mesfavoris.empty.services.subtitle':   "Ajoutez des services à vos favoris en cliquant sur ♡.",
+  'mesfavoris.empty.services.cta':        "Explorer les services",
 
   'mesmissions.count':              "{n} missions",
   'mesmissions.new':                "Poster une nouvelle mission",
@@ -1457,7 +1469,8 @@ export const fr: Record<string, string> = {
   'mesmissions.empty_cta':          "Poster ma première mission",
   'mesmissions.responses':          "{n} / {max} réponses",
   'mesmissions.status.open':        "Ouverte",
-  'mesmissions.status.closed':      "Fermée",
+  'mesmissions.status.filled':      "Pourvue",
+  'mesmissions.status.expired':     "Expirée",
 
   'mission.create.title':           "Nouvelle mission",
   'mission.create.subtitle':        "Décrivez ce dont vous avez besoin.",

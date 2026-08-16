@@ -2407,3 +2407,24 @@ coupling" claim on that specific function is stale, not a remaining blocker.
   ends up with more than one `priority` image (Next.js flags that).
 - **Trigger:** a small, dedicated PR — thread a `priority?: boolean` prop through `Avatar`, set it
   `true` on D3's hero avatar (and D4's, once checked) only.
+
+## F1 Mes favoris (`feat/f1-favoris`, 2026-08-16)
+
+### `BlurFade` (magicui) throws a React hydration-mismatch console error on every page that uses it — pre-existing, not introduced by this PR
+- **What:** motion/react serializes `style.opacity`/`style.filter`/`style.transform` as numbers
+  on the client but the SSR pass emits them as strings ("0" vs `0`, etc.), so React logs "A tree
+  hydrated but some attributes of the server rendered HTML didn't match the client properties" —
+  Next's dev overlay surfaces it as a "1 Issue" toast. Confirmed via CDP (`Console Error` +
+  full component stack pointing at `src/components/magicui/blur-fade.tsx:75`).
+- **Not specific to F1** — reproduced identically on `/marche/produits` (`ProductBrowseGrid` →
+  `BlurFade`), which predates this PR and never touched `mes-favoris`. `ListingResults`
+  (`src/components/listings/ListingResults.tsx`), reused here per Ruling 3, wraps every
+  card in the same `BlurFade`, so `/mes-favoris` inherits the same warning — it did not create it.
+  Matches the "BlurFade opacity-0 hydration false-positive" gotcha already on file from earlier
+  visual-gate passes.
+- **Not fixed here** — `BlurFade` is a shared entrance-animation primitive used across
+  `/recherche`, `/categories/[slug]`, the consumer homepage, `/marche/produits`, `/marche/services`
+  and now `/mes-favoris`; the fix belongs in `magicui/blur-fade.tsx` itself (likely coercing the
+  animated style values to a consistent string/number shape before the first paint), not in any
+  one caller.
+- **Trigger:** a small, dedicated PR against `src/components/magicui/blur-fade.tsx`.

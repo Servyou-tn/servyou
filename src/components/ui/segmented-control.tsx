@@ -7,6 +7,16 @@ import { FOCUS_RING } from '@/components/layout/styles'
 export type SegmentedControlOption<T extends string = string> = {
   value: T
   label: string
+  // Renders the option as a non-interactive, out-of-tab-order button with a "Bientôt" badge
+  // instead of wiring it to onChange. Badge classes match the established disabled-tab
+  // convention (OrdersTabs, ProduitsLensToggle) exactly, so every deferred-tab affordance in
+  // the app looks the same. Additive: existing callers (search toggle, commandes filter) never
+  // set this, so their options are unaffected.
+  disabled?: boolean
+  // Accessible/tooltip text for a disabled option (e.g. "Bientôt disponible"). Required when
+  // disabled is true.
+  disabledTitle?: string
+  soonLabel?: string
 }
 
 type Props<T extends string> = {
@@ -40,6 +50,28 @@ export function SegmentedControl<T extends string>({
       className={`inline-flex items-center rounded-full bg-surface-pill p-1 ${className}`}
     >
       {options.map((option) => {
+        if (option.disabled) {
+          return (
+            <button
+              key={option.value}
+              type="button"
+              role="tab"
+              disabled
+              aria-disabled="true"
+              aria-selected={false}
+              title={option.disabledTitle}
+              className="relative flex shrink-0 cursor-not-allowed items-center justify-center gap-1 whitespace-nowrap rounded-full px-3 py-1.5 text-sm font-medium text-text-muted"
+            >
+              <span>{option.label}</span>
+              {option.soonLabel && (
+                <span className="rounded-full bg-brand-blue-100 px-1.5 py-0.5 text-caption font-semibold text-brand-blue-600">
+                  {option.soonLabel}
+                </span>
+              )}
+            </button>
+          )
+        }
+
         const isActive = option.value === value
         return (
           <button

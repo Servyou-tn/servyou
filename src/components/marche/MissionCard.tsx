@@ -6,6 +6,7 @@ import { t } from '@/lib/i18n'
 import { MAX_RESPONSES_PER_POST } from '@/lib/job-constants'
 import { tndPrice } from '@/components/listings/listing-utils'
 import { FOCUS_RING } from '@/components/layout/styles'
+import { StatusPill, type StatusValue } from '@/components/ui/status-pill'
 import type { MyMission } from '@/lib/marche/my-data'
 
 function budgetLabel(min: number | null, max: number | null): string | null {
@@ -15,14 +16,22 @@ function budgetLabel(min: number | null, max: number | null): string | null {
   return null
 }
 
+// job_posts.status → (StatusPill status, i18n label key). 'deleted' never reaches this card —
+// getMyMissions excludes it at the query.
+const STATUS_MAP: Record<'open' | 'filled' | 'expired', { status: StatusValue; labelKey: string }> = {
+  open: { status: 'ouverte', labelKey: 'mesmissions.status.open' },
+  filled: { status: 'pourvue', labelKey: 'mesmissions.status.filled' },
+  expired: { status: 'expiree', labelKey: 'mesmissions.status.expired' },
+}
+
 // Full-width mission row (consumer's own posts). Same visual DNA as the order cards. The
 // responses badge turns amber once the 10-response fairness cap is reached. The whole row
 // links to the mission detail page (/mes-missions/[id]).
 export function MissionCard({ mission }: { mission: MyMission }) {
   const lang = useLang()
 
-  const isOpen = mission.status === 'open'
-  const statusLabel = t(isOpen ? 'mesmissions.status.open' : 'mesmissions.status.closed', lang)
+  const { status: pillStatus, labelKey } = STATUS_MAP[mission.status as 'open' | 'filled' | 'expired']
+  const statusLabel = t(labelKey, lang)
   const capReached = mission.response_count >= MAX_RESPONSES_PER_POST
   const dateLabel = new Date(mission.created_at).toLocaleDateString('fr-TN', {
     day: '2-digit',
@@ -40,13 +49,9 @@ export function MissionCard({ mission }: { mission: MyMission }) {
         <p className="min-w-0 flex-1 truncate text-base font-semibold text-text-primary">
           {mission.title}
         </p>
-        <span
-          className={`shrink-0 rounded-full px-3 py-1 text-xs font-medium ${
-            isOpen ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-600'
-          }`}
-        >
+        <StatusPill status={pillStatus} className="shrink-0">
           {statusLabel}
-        </span>
+        </StatusPill>
       </div>
 
       {mission.description && (
