@@ -2,7 +2,6 @@ import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 import { AppShell } from '@/components/shell/AppShell'
 import { PageHeader } from '@/components/marche/PageHeader'
-import { PageHeader as PageSubtitle } from '@/components/shared/PageHeader'
 import { getShellUser } from '@/lib/marche/shell-user'
 import { getMyFavorites } from '@/lib/marche/my-data'
 import { getLang } from '@/lib/i18n/server'
@@ -25,11 +24,6 @@ export default async function MesFavorisPage() {
 
   return (
     <AppShell user={shell.topBarUser}>
-      <PageSubtitle
-        as="p"
-        subtitle={t('page_header.favoris.subtitle', lang)}
-        emphasisWord={t('page_header.favoris.emphasis', lang)}
-      />
       <PageHeader
         title={t('shell.sidebar.favorites', lang)}
         countLabel={total > 0 ? t('mesfavoris.count', lang, { n: total }) : undefined}

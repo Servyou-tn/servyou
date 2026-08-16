@@ -2471,3 +2471,40 @@ coupling" claim on that specific function is stale, not a remaining blocker.
   needs a sibling `marche/PageHeader` (or, for `profil`/`parametres`, whether the *existing*
   second `<h1>` should just win and `shared/PageHeader` there switch to `as="p"`), and fix all 6
   in that one pass so it doesn't fragment into six small PRs each re-deriving this same list.
+- **🔴 ADDENDUM (2026-08-16) — `/mes-favoris` and `/mes-missions` no longer call
+  `shared/PageHeader` at all.** A screenshot after this fix shipped showed both pages rendering
+  *two* headers stacked (the `as="p"` subtitle band on top, the real `<h1>` below) — the `as` prop
+  stopped the double-`<h1>` a11y defect but never addressed double-rendering. Founder ruling: drop
+  the `PageSubtitle` call entirely on both pages, `marche/PageHeader`'s `title` stays as the sole
+  heading. Basis: two independent founder reads of `718:60584` both describe a title only, no
+  subtitle line; `/mes-missions` has no frame at all (see next entry) so matching its sibling is
+  the right default over inventing a subtitle for it. `shared/PageHeader` itself is untouched —
+  its `as` prop and its other 6 callers are unaffected; this only removes 2 of the 8 call sites,
+  leaving 6.
+- **🔴 `/mes-missions` has no Figma frame mapped at all** — `docs/reality-sync/master-matrix.md:133`
+  lists it `NONE 🔴 Zone F gap`. Every heading decision made for this page (this PR's title string,
+  the subtitle removal above) is inferred from its sibling `/mes-favoris`, not measured against
+  any frame. Not a defect to fix — there's nothing to measure against — but any future claim that
+  `/mes-missions`'s header is "correct" should be read as "consistent with `/mes-favoris`," not
+  "Figma-verified."
+
+### `shared/PageHeader`'s `emphasisWord` renders as a blue underlined span with no interactivity — reads as a dead link
+
+- **What:** on every caller that passes `emphasisWord`, the matched substring gets
+  `text-brand-blue-600` plus an animated `.ph-underline` bar drawn under it (`globals.css:269-289`)
+  — visually identical to a link. The span carries no `href`, no `onClick`, is not focusable, and
+  has no pointer cursor. Surfaced while investigating the `/mes-favoris` double-header stack (the
+  subtitle band carrying this treatment was one of the two things founder-screenshotted); the
+  band itself is now removed on `/mes-favoris` and `/mes-missions` (see addendum above), so this
+  no longer applies to those two pages specifically — but the same treatment is still live on
+  `shared/PageHeader`'s other 6 callers (`recherche`, `profil`, `parametres`,
+  `mes-missions/nouvelle`, `ConsumerHomepage`, `categories/[slug]`), on 5 of which it renders
+  directly on the page's actual `<h1>` text.
+- **Not a ruled defect — logged as an open question.** This is `shared/PageHeader`'s core visual
+  signature (`shared/PageHeader.tsx:3`, "Premium animated subtitle row"), not a one-off mistake;
+  whether a non-interactive link-styled span on a page's main heading is acceptable is a
+  component-level design call, not something to infer from one page's screenshot.
+- **Trigger:** a founder ruling on `shared/PageHeader`'s emphasis treatment — either keep it
+  (documented as intentional, not a link despite the visual read) or replace the blue+underline
+  pairing with a non-link-coded accent (e.g. weight or a different color that isn't the interactive
+  brand-blue).
