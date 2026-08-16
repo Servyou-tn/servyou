@@ -24,9 +24,13 @@ const ARABIC = /[؀-ۿ]/
 export function PageHeader({
   subtitle,
   emphasisWord,
+  as = 'h1',
 }: {
   subtitle: string
   emphasisWord?: string
+  // 'p' when a real <h1> renders elsewhere on the page (marche/PageHeader's title) — this
+  // component is a subtitle, not a title, and must not double as the page's only heading.
+  as?: 'h1' | 'p'
 }) {
   // Emphasis character range (first occurrence only); empty when absent / not found.
   const emStart = emphasisWord ? subtitle.indexOf(emphasisWord) : -1
@@ -90,13 +94,14 @@ export function PageHeader({
   }
 
   const underlineDelay = INITIAL_MS + subtitle.length * STEP_MS + REVEAL_MS + UNDERLINE_GAP_MS
+  const Tag = as
 
   return (
     <div className="border-b border-border-subtle bg-surface-base pb-8 pt-6 md:pb-10 md:pt-8">
       {/* aria-label carries the whole phrase to a screen reader (read once); the per-unit spans
           are aria-hidden so it never reads letter-by-letter. */}
       {/* responsive pair retained: text-[17px]/md:text-[20px] — half-tokenizing would break the mobile→desktop ramp (DS-3b-3) */}
-      <h1
+      <Tag
         aria-label={subtitle}
         className="text-[17px] font-medium leading-[1.2] tracking-[-0.01em] text-text-primary md:text-[20px]"
       >
@@ -107,7 +112,7 @@ export function PageHeader({
             style={{ animationDelay: `${underlineDelay}ms` } as CSSProperties}
           />
         </span>
-      </h1>
+      </Tag>
     </div>
   )
 }
