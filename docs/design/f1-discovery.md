@@ -49,6 +49,21 @@ string now on a `<p>`; same on `/mes-missions` ("Mes missions"). AR: `<html dir=
 "المحفوظات", no French leak. No horizontal overflow at 375/1024/1152/1279/1280/1366/1440 (the
 constant −15 is the scrollbar gutter, not a layout defect).
 
+**⚠️ SUPERSEDED, 2026-08-16, same day.** The `as="p"` fix above stopped the double-`<h1>` a11y
+defect but never addressed double-*rendering* — the demoted `<p>` still unconditionally rendered,
+stacked above the real `<h1>`, as its own shaded band (`shared/PageHeader`'s wrapper div:
+`border-b border-border-subtle bg-surface-base` + vertical padding — not a literal card, but reads
+as one against plain page background). A founder screenshot caught both bands stacked. **Ruled:**
+drop the `PageSubtitle` call entirely on both pages — `marche/PageHeader`'s `title` is now the
+*only* header component either page renders. Basis: two independent founder reads of `718:60584`
+(this entry's original 🗣 FOUNDER-REPORTED line, and the screenshot report) both describe a title
+only, no subtitle sentence in the frame. `/mes-missions` has no Figma frame at all
+(`docs/reality-sync/master-matrix.md:133`, `NONE 🔴 Zone F gap`) — its header is inferred from its
+now-fixed sibling, not independently measured. `shared/PageHeader` itself, its `as` prop, and its
+other 6 callers are untouched by this change — see `docs/follow-ups.md` for the full addendum and
+the still-open `emphasisWord`-reads-as-a-link question this removal sidesteps but does not answer
+for the other 6 callers.
+
 ## 2. Card fidelity — Produits (`718:60584`) vs `ProductListingCard`
 
 Figma card, 🗣 FOUNDER-REPORTED: heart top-left · shop monogram top-right · category label ·

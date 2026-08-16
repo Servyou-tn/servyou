@@ -3,7 +3,6 @@ import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { AppShell } from '@/components/shell/AppShell'
 import { PageHeader } from '@/components/marche/PageHeader'
-import { PageHeader as PageSubtitle } from '@/components/shared/PageHeader'
 import { EmptyState } from '@/components/marche/EmptyState'
 import { MissionCard } from '@/components/marche/MissionCard'
 import { getShellUser } from '@/lib/marche/shell-user'
@@ -50,11 +49,6 @@ export default async function MesMissionsPage({
 
   return (
     <AppShell user={shell.topBarUser}>
-      <PageSubtitle
-        as="p"
-        subtitle={t('page_header.missions.subtitle', lang)}
-        emphasisWord={t('page_header.missions.emphasis', lang)}
-      />
       <PageHeader
         title={t('job.my_missions_title', lang)}
         countLabel={missions.length > 0 ? t('mesmissions.count', lang, { n: missions.length }) : undefined}
