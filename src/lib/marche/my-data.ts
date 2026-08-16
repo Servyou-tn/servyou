@@ -203,6 +203,10 @@ type FavoriteRow = {
           | ({ name: string | null; city: string | null } & HiddenAt)
           | ({ name: string | null; city: string | null } & HiddenAt)[]
           | null
+        categories:
+          | { name_fr: string; name_ar: string | null }
+          | { name_fr: string; name_ar: string | null }[]
+          | null
         product_images: { image_url: string; display_order: number }[] | null
       }
     | null
@@ -265,7 +269,7 @@ export async function getMyFavorites(
     .from('favorites')
     .select(
       `item_type, created_at,
-       products ( id, title, description, price_tnd, status, admin_hidden_at, shops ( name, city, admin_hidden_at ), product_images ( image_url, display_order ) ),
+       products ( id, title, description, price_tnd, status, admin_hidden_at, shops ( name, city, admin_hidden_at ), categories ( name_fr, name_ar ), product_images ( image_url, display_order ) ),
        service_listings ( id, title, description, starting_price_tnd, delivery_time, status, admin_hidden_at, freelancer_profiles ( profile_id, city, admin_hidden_at ), categories ( name_fr ) )`,
     )
     .eq('user_id', userId)
@@ -289,6 +293,7 @@ export async function getMyFavorites(
       if (!p) continue
       const shop = one(p.shops)
       if (!favoriteIsVisible(p, shop)) continue
+      const category = one(p.categories)
       products.push({
         id: p.id,
         title: p.title,
@@ -296,6 +301,7 @@ export async function getMyFavorites(
         price_tnd: Number(p.price_tnd),
         image_url: primaryImage(p.product_images),
         shop: { name: shop?.name ?? '', city: shop?.city ?? null },
+        category: category ? { name_fr: category.name_fr, name_ar: category.name_ar ?? undefined } : null,
       })
       order.push({ kind: 'product', id: p.id })
     } else {
