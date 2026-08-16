@@ -26,10 +26,14 @@ export default async function MesFavorisPage() {
   return (
     <AppShell user={shell.topBarUser}>
       <PageSubtitle
+        as="p"
         subtitle={t('page_header.favoris.subtitle', lang)}
         emphasisWord={t('page_header.favoris.emphasis', lang)}
       />
-      {total > 0 && <PageHeader countLabel={t('mesfavoris.count', lang, { n: total })} />}
+      <PageHeader
+        title={t('shell.sidebar.favorites', lang)}
+        countLabel={total > 0 ? t('mesfavoris.count', lang, { n: total }) : undefined}
+      />
       <FavorisTabs products={products} services={services} />
     </AppShell>
   )

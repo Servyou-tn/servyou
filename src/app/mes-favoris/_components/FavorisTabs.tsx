@@ -5,6 +5,7 @@ import { useLang } from '@/components/LangProvider'
 import { t } from '@/lib/i18n'
 import { SegmentedControl, type SegmentedControlOption } from '@/components/ui/segmented-control'
 import { ListingResults } from '@/components/listings/ListingResults'
+import { FavorisProductGrid } from './FavorisProductGrid'
 import { EmptyState } from '@/components/marche/EmptyState'
 import { Pagination } from '@/components/shared/Pagination'
 import { paginate } from '@/lib/search/search-params'
@@ -96,7 +97,7 @@ export function FavorisTabs({
         />
       ) : (
         <>
-          <ListingResults type="product" items={products} />
+          <FavorisProductGrid items={products} />
           <Pagination page={1} totalPages={productPages} basePath={BASE} />
         </>
       )}

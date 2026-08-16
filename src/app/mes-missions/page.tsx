@@ -51,15 +51,15 @@ export default async function MesMissionsPage({
   return (
     <AppShell user={shell.topBarUser}>
       <PageSubtitle
+        as="p"
         subtitle={t('page_header.missions.subtitle', lang)}
         emphasisWord={t('page_header.missions.emphasis', lang)}
       />
-      {missions.length > 0 && (
-        <PageHeader
-          countLabel={t('mesmissions.count', lang, { n: missions.length })}
-          action={newButton}
-        />
-      )}
+      <PageHeader
+        title={t('job.my_missions_title', lang)}
+        countLabel={missions.length > 0 ? t('mesmissions.count', lang, { n: missions.length }) : undefined}
+        action={missions.length > 0 ? newButton : undefined}
+      />
 
       {missions.length === 0 ? (
         <EmptyState

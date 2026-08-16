@@ -1849,6 +1849,16 @@ original two, or a fourth pass will split the reconciliation again.
   explicitly forbids.
 - **Trigger:** when D3 `/boutique/[slug]` becomes the **third** consumer. At that point move both to
   `src/components/produits/` in their own PR and update all three import sites together.
+- **🔴 ADDENDUM (F1-favoris PR, 2026-08-16) — the trigger already fired, and now there's a fourth.**
+  `ProductBrowseCard` itself (not just `ProductCoverImage`) is imported directly from
+  `@/app/marche/produits/_components/ProductBrowseCard` by THREE call sites already:
+  `ProductBrowseGrid.tsx` (C1), `ProductDetail.tsx` (D1), `ShopDetail.tsx` (D3) — the "third
+  consumer" trigger above was met before this PR touched anything. F1 adds a fourth
+  (`src/app/mes-favoris/_components/FavorisProductGrid.tsx`, same import path, same in-place
+  pattern per the existing ruling — see `docs/design/f1-discovery.md` §2). Not moved here either:
+  this PR is a header fix + card swap, not the promotion PR the founder already scoped above.
+  Four call sites reaching into one route's private folder is a stronger case for that promotion
+  PR than three was — nothing here changes the plan, just the urgency.
 
 ### `tndPrice` is locale-blind, and `ar.ts` carries two currency notations
 
@@ -2428,3 +2438,36 @@ coupling" claim on that specific function is stale, not a remaining blocker.
   animated style values to a consistent string/number shape before the first paint), not in any
   one caller.
 - **Trigger:** a small, dedicated PR against `src/components/magicui/blur-fade.tsx`.
+
+### `shared/PageHeader` silently absorbs the page's only `<h1>` on 6 other callers — headings audit needed
+
+- **What:** this PR fixed the mechanical defect on `/mes-favoris` and `/mes-missions` — both
+  imported `shared/PageHeader` (aliased `PageSubtitle`) alongside `marche/PageHeader`, but never
+  passed `marche/PageHeader`'s `title`, so the animated *subtitle* component ended up rendering
+  the page's only `<h1>`. Fixed via a new `as?: 'h1' | 'p'` prop (default `'h1'`) on
+  `shared/PageHeader`, `as="p"` + a real `title` on both fixed pages. See
+  `docs/design/f1-discovery.md` §1 for the full trace.
+- **Not fixed — 6 other callers of `shared/PageHeader`, each a different shape, each needing its
+  own Figma read to resolve (quota exhausted this cycle):**
+  - `mes-missions/nouvelle/page.tsx`, `recherche/page.tsx`, `categories/[slug]/page.tsx`,
+    `ConsumerHomepage.tsx` (`/`) — no `marche/PageHeader` import at all, so `shared/PageHeader` is
+    the page's *only* heading, ever. `/recherche`'s only renders when a query has results (zero
+    `<h1>` on the landing/empty state); `/categories/[slug]` shows a dynamic "{count} produits
+    dans {category}" line instead of the category name as a static title; `/` (`ConsumerHomepage`)
+    is explicitly a thin, un-measured landing (no Figma frame exists for it at all — see the
+    "INFERRED" note at `ConsumerHomepage.tsx:18`). Whether any of the four needs a distinct static
+    `<h1>` is a per-page Figma question, not something to infer.
+  - `profil/page.tsx` and `parametres/page.tsx` — **duplicate `<h1>`s**, the opposite shape:
+    `shared/PageHeader`'s subtitle renders one `<h1>`, and a second, separate `<h1>` already
+    exists (`profil/page.tsx:24`; `ParametresForm.tsx:88`, reading `t('parametres.title')`).
+    `/profil` is explicitly marked a temporary stub ("full profile surface returns in a
+    follow-up commit") pending its own rebuild.
+- **Why not widened here:** the founder's own instruction on this PR — "those are per-page Figma
+  questions and the quota is gone; do not widen scope on inference." Fixing 6 more pages on a
+  guess about what each one's frame actually specifies is exactly the inference this PR was told
+  not to do.
+- **Trigger:** a dedicated headings-audit PR once Figma quota resets — pull each of the frames that
+  have one (ConsumerHomepage has none — see above), decide per page whether `shared/PageHeader`
+  needs a sibling `marche/PageHeader` (or, for `profil`/`parametres`, whether the *existing*
+  second `<h1>` should just win and `shared/PageHeader` there switch to `as="p"`), and fix all 6
+  in that one pass so it doesn't fragment into six small PRs each re-deriving this same list.
