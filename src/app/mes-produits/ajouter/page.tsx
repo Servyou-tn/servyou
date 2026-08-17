@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { randomUUID } from 'node:crypto'
+import Link from 'next/link'
 import { ChevronRight } from 'lucide-react'
 import { AppShell } from '@/components/shell/AppShell'
 import { ProductForm } from '@/components/produits/ProductForm'
@@ -7,6 +8,8 @@ import { requireShopOwner } from '@/lib/auth/require-seller'
 import { getProductCategories } from '@/lib/marche/product-categories'
 import { getLang } from '@/lib/i18n/server'
 import { t } from '@/lib/i18n'
+import { FOCUS_RING } from '@/components/layout/styles'
+import { cn } from '@/lib/utils'
 
 export const metadata: Metadata = { title: 'Ajouter un produit — Servyou' }
 
@@ -72,16 +75,21 @@ export default async function AjouterProduitPage() {
 // wrong for a seller form, and the source of three separate fidelity deltas at once (g6-deltas.md
 // D2). A form wants a title, not a performance.
 //
-// ⚑ "Mes produits" is PLAIN TEXT, not a link. G5 `/mes-produits` does not exist — the directory
-// holds only `ajouter/` — and the sidebar entry is already `disabled: true`. The trail still tells
-// the seller where they are, which is the job; a link would be the part that is dead. It becomes a
-// real link in the G5 PR (logged in docs/follow-ups.md).
+// "Mes produits" is now a real link — G5 `/mes-produits` ships in this PR and the sidebar entry
+// is no longer disabled.
 function PageIntro({ lang }: { lang: Awaited<ReturnType<typeof getLang>> }) {
   return (
     <div className="mb-8 max-w-[760px]">
       <nav aria-label="Fil d'Ariane" className="mb-3">
         <ol className="flex items-center gap-1.5 text-sm text-text-muted">
-          <li>{t('product.form.crumb_products', lang)}</li>
+          <li>
+            <Link
+              href="/mes-produits"
+              className={cn('rounded hover:text-text-primary hover:underline', FOCUS_RING)}
+            >
+              {t('product.form.crumb_products', lang)}
+            </Link>
+          </li>
           <li aria-hidden="true" className="flex items-center">
             <ChevronRight className="h-4 w-4 rtl:rotate-180" />
           </li>

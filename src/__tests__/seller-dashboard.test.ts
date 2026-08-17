@@ -76,13 +76,13 @@ describe('sidebarSectionsForRole', () => {
     ])
   })
 
-  it('marks only the unbuilt shop pages disabled, so the nav never links to a 404', () => {
+  it('leaves no shop pages disabled — every SHOP_ACTIVITIES page is built', () => {
     const [activities] = sidebarSectionsForRole('shop_owner')
     const byHref = Object.fromEntries(activities.items.map((i) => [i.href, Boolean(i.disabled)]))
     expect(byHref['/tableau-de-bord-vendeur']).toBe(false)
-    // Enabled in G8 — the page now exists. Mes produits stays disabled until G5.
     expect(byHref['/commandes-recues']).toBe(false)
-    expect(byHref['/mes-produits']).toBe(true)
+    // Enabled in G5 — the page now exists.
+    expect(byHref['/mes-produits']).toBe(false)
   })
 
   it('leaves the freelancer and consumer IAs untouched', () => {

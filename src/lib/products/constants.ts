@@ -17,3 +17,12 @@ export type ProductActionResult = { ok: true } | { ok: false; error: string }
 export type UploadImageResult =
   | { ok: true; path: string; url: string }
   | { ok: false; error: string }
+
+/** Why a bulk-selected row didn't get the action applied — G5 §8.5's "pre-check and report". */
+export type BulkProductSkipReason = 'moderated' | 'has_orders'
+
+export type BulkProductSkip = { id: string; title: string; reason: BulkProductSkipReason }
+
+export type BulkProductActionResult =
+  | { ok: true; updatedCount: number; skipped: BulkProductSkip[] }
+  | { ok: false; error: string }

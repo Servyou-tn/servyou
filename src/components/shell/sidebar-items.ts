@@ -112,7 +112,7 @@ const SHOP_ACTIVITIES: SidebarSectionDef = {
   labelKey: 'shell.sidebar.section.activities',
   items: [
     { key: 'shell.sidebar.dashboard', href: '/tableau-de-bord-vendeur', icon: LayoutDashboard },
-    { key: 'shell.sidebar.products', href: '/mes-produits', icon: Package, disabled: true },
+    { key: 'shell.sidebar.products', href: '/mes-produits', icon: Package },
     { key: 'shell.sidebar.receivedOrders', href: '/commandes-recues', icon: Inbox },
   ],
 }
