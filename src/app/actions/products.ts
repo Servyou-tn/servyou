@@ -7,10 +7,12 @@ import { createClient } from '@/lib/supabase/server'
 import { getLang } from '@/lib/i18n/server'
 import { t } from '@/lib/i18n'
 import { resolveOwnedShopId } from '@/lib/shops/owner-shop'
+import { PRODUCTS_PER_PAGE } from '@/lib/marche/seller-products'
 import {
   MAX_PRODUCT_IMAGES,
   type ProductActionResult,
   type UploadImageResult,
+  type BulkProductActionResult,
 } from '@/lib/products/constants'
 import {
   normalizeProductImage,
@@ -358,8 +360,10 @@ export async function createProductAction(input: unknown): Promise<ProductAction
   }
 
   // Fixed allow-list, as SELLER_PATHS is in orders.ts — a caller must never get to name a route.
-  // G5 /mes-produits is unbuilt, so the dashboard is where the seller lands.
   revalidatePath('/tableau-de-bord-vendeur')
+  // G5 /mes-produits now exists (this PR) — without this a newly created product doesn't show up
+  // in the seller's own list until an unrelated navigation happens to revalidate it.
+  revalidatePath('/mes-produits')
   // /marche/produits is a REAL surface as of C1 — it renders the published catalogue from
   // `searchMarketplace`, so a new product must purge it or the marketplace serves a stale page.
   //
@@ -370,4 +374,290 @@ export async function createProductAction(input: unknown): Promise<ProductAction
   // being invalidated. Check that before adding the next one.
   revalidatePath('/marche/produits')
   return { ok: true }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────────────────────
+// G5 « Mes produits » write actions — docs/design/g5-discovery.md §8.5, §8.7.
+//
+// Two risky bulk actions share one shape (§8.5): pre-check eligibility, act on the eligible
+// subset, name what was skipped and why. Neither is a single atomic `WHERE id IN (…)` — that
+// would let one blocked row sink the whole batch, which is exactly the all-or-nothing behaviour
+// the founder rejected in favour of pre-check-and-report.
+// ─────────────────────────────────────────────────────────────────────────────────────────────
+
+function revalidateProductSurfaces() {
+  revalidatePath('/mes-produits')
+  revalidatePath('/tableau-de-bord-vendeur')
+  revalidatePath('/marche/produits')
+}
+
+const ToggleStatusInput = z.object({
+  productId: z.string().uuid(),
+  nextStatus: z.enum(['active', 'hidden']),
+})
+
+/**
+ * Single-row status toggle (Activer / Masquer). `enforce_admin_moderation_lock` blocks moving an
+ * admin-moderated row's status away from 'hidden' for a non-admin — that raise is the ONE error
+ * this needs to distinguish from a generic failure, surfaced with the same string the moderation
+ * banner already uses (§8.7), not a raw exception.
+ */
+export async function toggleProductStatusAction(input: unknown): Promise<ProductActionResult> {
+  const lang = await getLang()
+  const parsed = ToggleStatusInput.safeParse(input)
+  if (!parsed.success) {
+    console.error('[toggleProductStatus] rejected: invalid input —', parsed.error.issues[0]?.message)
+    return { ok: false, error: t('common.error_generic', lang) }
+  }
+
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) {
+    console.error('[toggleProductStatus] rejected: no authenticated user')
+    return { ok: false, error: t('product.error.notAuth', lang) }
+  }
+
+  const { data, error } = await supabase
+    .from('products')
+    .update({ status: parsed.data.nextStatus })
+    .eq('id', parsed.data.productId)
+    .select('id')
+    .maybeSingle()
+
+  if (error) {
+    console.error('[toggleProductStatus] update failed:', error.message, error.code, error.details)
+    if (error.message.includes('admin-moderated')) {
+      return { ok: false, error: t('owner.moderation_banner.product', lang) }
+    }
+    return { ok: false, error: t('product.error_update', lang) }
+  }
+  if (!data) {
+    // RLS scoped the UPDATE to zero rows — not this seller's product, or it no longer exists.
+    console.error(
+      `[toggleProductStatus] no row updated for product ${parsed.data.productId}, user ${user.id}`,
+    )
+    return { ok: false, error: t('common.error_generic', lang) }
+  }
+
+  revalidateProductSurfaces()
+  return { ok: true }
+}
+
+const DeleteProductInput = z.object({ productId: z.string().uuid() })
+
+/**
+ * Single-row hard delete, restricted to zero-order products (docs/design/g5-discovery.md §7
+ * ruling). The row's disabled "Supprimer" is UI only — eligibility is re-derived here, not trusted
+ * from the client.
+ */
+export async function deleteProductAction(input: unknown): Promise<ProductActionResult> {
+  const lang = await getLang()
+  const parsed = DeleteProductInput.safeParse(input)
+  if (!parsed.success) {
+    console.error('[deleteProduct] rejected: invalid input —', parsed.error.issues[0]?.message)
+    return { ok: false, error: t('common.error_generic', lang) }
+  }
+  const { productId } = parsed.data
+
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) {
+    console.error('[deleteProduct] rejected: no authenticated user')
+    return { ok: false, error: t('product.error.notAuth', lang) }
+  }
+
+  const { count, error: countError } = await supabase
+    .from('orders')
+    .select('id', { count: 'exact', head: true })
+    .eq('product_id', productId)
+  if (countError) {
+    console.error('[deleteProduct] order count failed:', countError.message, countError.code)
+    return { ok: false, error: t('common.error_generic', lang) }
+  }
+  if ((count ?? 0) > 0) {
+    console.error(`[deleteProduct] rejected: product ${productId} has ${count} order(s)`)
+    return { ok: false, error: t('product.error_delete_has_orders', lang) }
+  }
+
+  const { data, error } = await supabase
+    .from('products')
+    .delete()
+    .eq('id', productId)
+    .select('id')
+    .maybeSingle()
+
+  if (error) {
+    console.error('[deleteProduct] delete failed:', error.message, error.code, error.details)
+    // TOCTOU: an order landed between the count check above and this delete, and
+    // `enforce_order_identity_lock` raised on the cascading SET NULL — verified live, §7.
+    if (error.code === '42501') {
+      return { ok: false, error: t('product.error_delete_has_orders', lang) }
+    }
+    return { ok: false, error: t('product.error_delete', lang) }
+  }
+  if (!data) {
+    console.error(`[deleteProduct] no row deleted for product ${productId}, user ${user.id}`)
+    return { ok: false, error: t('common.error_generic', lang) }
+  }
+
+  // `product_images` rows cascade-delete (ON DELETE CASCADE), but the STORAGE objects they
+  // pointed at do not — the same residue class uploadProductImageAction already documents, owned
+  // by the reconciliation sweep (image-storage-discovery.md §6c), not swept here.
+  revalidateProductSurfaces()
+  return { ok: true }
+}
+
+const BulkIdsInput = z.object({
+  // Selection is scoped to the current page only (§8.5's ruling) — PRODUCTS_PER_PAGE is a real
+  // invariant on the input size, not an arbitrary cap.
+  productIds: z.array(z.string().uuid()).min(1).max(PRODUCTS_PER_PAGE),
+})
+
+/**
+ * Bulk Activer. Pre-checks `admin_hidden_at` on the selection, updates only the eligible subset,
+ * and reports the rest — `enforce_admin_moderation_lock` only blocks moving AWAY from 'hidden', so
+ * this is the one bulk action that can hit it (§8.5, §8.7).
+ */
+export async function bulkActivateProductsAction(input: unknown): Promise<BulkProductActionResult> {
+  const lang = await getLang()
+  const parsed = BulkIdsInput.safeParse(input)
+  if (!parsed.success) {
+    console.error('[bulkActivateProducts] rejected: invalid input —', parsed.error.issues[0]?.message)
+    return { ok: false, error: t('common.error_generic', lang) }
+  }
+
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return { ok: false, error: t('product.error.notAuth', lang) }
+
+  const shop = await resolveOwnedShopId(supabase, user.id)
+  if (!shop.ok) {
+    console.error(`[bulkActivateProducts] shop unresolved (${shop.reason}) for user ${user.id}`)
+    return { ok: false, error: t('common.error_generic', lang) }
+  }
+
+  // Scoped by shop ownership explicitly — `products` is public-read, so the caller's ids alone
+  // cannot be trusted to be theirs.
+  const { data: rows, error: fetchError } = await supabase
+    .from('products')
+    .select('id, title, admin_hidden_at')
+    .eq('shop_id', shop.shopId)
+    .in('id', parsed.data.productIds)
+  if (fetchError) {
+    console.error('[bulkActivateProducts] pre-check fetch failed:', fetchError.message, fetchError.code)
+    return { ok: false, error: t('common.error_generic', lang) }
+  }
+
+  const eligible = (rows ?? []).filter((r) => r.admin_hidden_at == null)
+  const preSkipped = (rows ?? [])
+    .filter((r) => r.admin_hidden_at != null)
+    .map((r) => ({ id: r.id, title: r.title, reason: 'moderated' as const }))
+
+  if (eligible.length === 0) {
+    return { ok: true, updatedCount: 0, skipped: preSkipped }
+  }
+
+  // `.is('admin_hidden_at', null)` is the race-closer: a row moderated between the pre-check above
+  // and this write simply won't match, rather than raising inside the trigger and sinking the
+  // whole UPDATE.
+  const { data: updated, error: updateError } = await supabase
+    .from('products')
+    .update({ status: 'active' })
+    .in(
+      'id',
+      eligible.map((r) => r.id),
+    )
+    .is('admin_hidden_at', null)
+    .select('id')
+
+  if (updateError) {
+    console.error('[bulkActivateProducts] update failed:', updateError.message, updateError.code)
+    return { ok: false, error: t('common.error_generic', lang) }
+  }
+
+  const updatedIds = new Set((updated ?? []).map((r) => r.id))
+  const raceSkipped = eligible
+    .filter((r) => !updatedIds.has(r.id))
+    .map((r) => ({ id: r.id, title: r.title, reason: 'moderated' as const }))
+
+  revalidateProductSurfaces()
+  return { ok: true, updatedCount: updated?.length ?? 0, skipped: [...preSkipped, ...raceSkipped] }
+}
+
+/**
+ * Bulk Supprimer. Pre-checks order history (ANY order, not just delivered — matches the single-row
+ * rule) on the selection, then deletes the eligible subset ONE ROW AT A TIME, not one
+ * `DELETE … WHERE id IN (…)` — a batch delete is atomic, so a row blocked by
+ * `enforce_order_identity_lock` (a TOCTOU order landing after the pre-check) would roll back every
+ * row in the batch, recreating the all-or-nothing failure this design exists to avoid.
+ */
+export async function bulkDeleteProductsAction(input: unknown): Promise<BulkProductActionResult> {
+  const lang = await getLang()
+  const parsed = BulkIdsInput.safeParse(input)
+  if (!parsed.success) {
+    console.error('[bulkDeleteProducts] rejected: invalid input —', parsed.error.issues[0]?.message)
+    return { ok: false, error: t('common.error_generic', lang) }
+  }
+
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return { ok: false, error: t('product.error.notAuth', lang) }
+
+  const shop = await resolveOwnedShopId(supabase, user.id)
+  if (!shop.ok) {
+    console.error(`[bulkDeleteProducts] shop unresolved (${shop.reason}) for user ${user.id}`)
+    return { ok: false, error: t('common.error_generic', lang) }
+  }
+
+  const { data: rows, error: fetchError } = await supabase
+    .from('products')
+    .select('id, title')
+    .eq('shop_id', shop.shopId)
+    .in('id', parsed.data.productIds)
+  if (fetchError) {
+    console.error('[bulkDeleteProducts] pre-check fetch failed:', fetchError.message, fetchError.code)
+    return { ok: false, error: t('common.error_generic', lang) }
+  }
+  if (!rows || rows.length === 0) return { ok: true, updatedCount: 0, skipped: [] }
+
+  const { data: orderRows, error: ordersError } = await supabase
+    .from('orders')
+    .select('product_id')
+    .in(
+      'product_id',
+      rows.map((r) => r.id),
+    )
+  if (ordersError) {
+    console.error('[bulkDeleteProducts] order pre-check failed:', ordersError.message, ordersError.code)
+    return { ok: false, error: t('common.error_generic', lang) }
+  }
+
+  const withOrders = new Set((orderRows ?? []).map((o) => o.product_id).filter((id): id is string => !!id))
+  const eligible = rows.filter((r) => !withOrders.has(r.id))
+  const skipped = rows
+    .filter((r) => withOrders.has(r.id))
+    .map((r) => ({ id: r.id, title: r.title, reason: 'has_orders' as const }))
+
+  let updatedCount = 0
+  for (const row of eligible) {
+    const { error: deleteError } = await supabase.from('products').delete().eq('id', row.id)
+    if (deleteError) {
+      // Same TOCTOU as the single-row action — reported as a skip, not a 500.
+      console.error(`[bulkDeleteProducts] delete failed for ${row.id}:`, deleteError.message, deleteError.code)
+      skipped.push({ id: row.id, title: row.title, reason: 'has_orders' })
+    } else {
+      updatedCount++
+    }
+  }
+
+  revalidateProductSurfaces()
+  return { ok: true, updatedCount, skipped }
 }
