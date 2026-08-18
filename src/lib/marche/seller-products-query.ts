@@ -9,6 +9,16 @@ import {
   type SellerProductsPage,
 } from './seller-products'
 
+// G7 « Modifier un produit » read — a SIBLING of getSellerProducts below, not a reuse of it.
+// getSellerProducts is list-shaped (paginated, tab-filtered) and reduces product_images down to
+// one cover URL via primaryImage() — it never selects the images' own row ids, so a caller can
+// display a gallery but not target one image for deletion. getProductDetail (src/lib/marche/
+// product-detail.ts) is the other near-miss: it filters `status='active'`, which is correct for a
+// public buyer view and wrong for an owner editing their own hidden or admin-moderated product.
+// Neither fits, so this is new, scoped by shopId — matching getSellerProducts's own signature
+// shape rather than getSellerOrderDetail's by-userId shape, since products has no direct owner_id
+// column the way orders has seller_id; shop_id is the natural scoping key here.
+
 // Server-only fetch for G5 « Mes produits ». Split from ./seller-products (pure predicates/types,
 // safe to import from a client component) specifically so this file's `next/headers` dependency
 // chain never reaches the client bundle. See that file's header note.
@@ -125,5 +135,89 @@ export const getSellerProducts = cache(
     }))
 
     return { products, counts, totalCount, totalPages, page }
+  },
+)
+
+export type SellerProductImage = { id: string; url: string; displayOrder: number }
+
+export type SellerProductDetail = {
+  id: string
+  title: string
+  description: string | null
+  categoryId: string
+  priceTnd: number
+  deliveryFeeTnd: number
+  tracksStock: boolean
+  stockCount: number | null
+  status: string
+  adminHiddenAt: string | null
+  /** Sorted by displayOrder ascending — images[0] is the cover, same rule as primaryImage() above. */
+  images: SellerProductImage[]
+  hasOrders: boolean
+}
+
+type DetailRow = {
+  id: string
+  title: string
+  description: string | null
+  category_id: string
+  price_tnd: number | string
+  delivery_fee_tnd: number | string
+  tracks_stock: boolean
+  stock_count: number | null
+  status: string
+  admin_hidden_at: string | null
+  product_images: { id: string; image_url: string; display_order: number }[] | null
+  all_orders: { count: number }[] | { count: number } | null
+}
+
+/**
+ * One product, scoped to `shopId` — NOT to `productId` alone. `products` is public-SELECT, so the
+ * `.eq('shop_id', shopId)` clause is the ownership check, not RLS; a mismatched id (wrong shop, or
+ * no such product) returns null rather than another seller's row. The caller turns that into a
+ * `notFound()`, matching getSellerOrderDetail's convention: missing id and "not yours" are one
+ * indistinguishable state, so the response can't be used to probe whether a product id exists.
+ */
+export const getSellerProductDetail = cache(
+  async (shopId: string, productId: string): Promise<SellerProductDetail | null> => {
+    const supabase = await createClient()
+
+    const { data, error } = await supabase
+      .from('products')
+      .select(
+        `id, title, description, category_id, price_tnd, delivery_fee_tnd, tracks_stock, stock_count,
+         status, admin_hidden_at,
+         product_images ( id, image_url, display_order ),
+         all_orders:orders(count)`,
+      )
+      .eq('id', productId)
+      .eq('shop_id', shopId)
+      .maybeSingle()
+
+    if (error) {
+      console.error('[seller-product-detail] fetch error:', error.message, error.code, error.details)
+      throw new Error(`seller product detail fetch failed: ${error.message}`)
+    }
+    if (!data) return null
+
+    const r = data as unknown as DetailRow
+    const images = (r.product_images ?? [])
+      .map((img) => ({ id: img.id, url: img.image_url, displayOrder: img.display_order }))
+      .sort((a, b) => a.displayOrder - b.displayOrder)
+
+    return {
+      id: r.id,
+      title: r.title,
+      description: r.description,
+      categoryId: r.category_id,
+      priceTnd: Number(r.price_tnd),
+      deliveryFeeTnd: Number(r.delivery_fee_tnd),
+      tracksStock: r.tracks_stock,
+      stockCount: r.stock_count,
+      status: r.status,
+      adminHiddenAt: r.admin_hidden_at,
+      images,
+      hasOrders: countOf(r.all_orders) > 0,
+    }
   },
 )

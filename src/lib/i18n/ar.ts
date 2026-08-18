@@ -669,9 +669,9 @@ export const ar: Record<string, string> = {
   'product.back':           "العودة إلى المنتجات",
   'product.error_title':    "العنوان إلزامي.",
   'product.error_price':    "يرجى إدخال سعر صالح (>= 0).",
+  'product.error_stock_required': "يرجى تحديد الكمية المتوفرة في المخزون.",
   'product.error_update':   "حدث خطأ أثناء التحديث. يرجى المحاولة مرة أخرى.",
   'product.error_add':      "حدث خطأ أثناء الإضافة. يرجى المحاولة مرة أخرى.",
-  'product.delete_confirm': "حذف المنتج \"{title}\"؟ هذا الإجراء لا يمكن التراجع عنه.",
 
   // G5 « Mes produits » (Figma 522:29106) — docs/design/g5-discovery.md
   'product.list_subtitle':          "أدر كتالوجك: الحالة والمخزون والمبيعات.",
@@ -803,6 +803,26 @@ export const ar: Record<string, string> = {
   // Success toasts — one per footer CTA (see fr.ts for why they must stay distinguishable).
   'product.created.published':      "تم نشر المنتج. أصبح متاحًا الآن.",
   'product.created.draft':          "تم حفظ المسودة. لا يراها المشترون بعد.",
+
+  // ─── G7 « Modifier un produit » (/mes-produits/[id]/modifier) — Figma 535:32433 ───
+  'product.edit.page_subtitle':     "عدّل معلومات منتجك.",
+  'product.edit.crumb_current':     "تعديل المنتج",
+  'product.edit.view_product':      "عرض المنتج",
+  'product.edit.save':              "حفظ التعديلات",
+  'product.edit.saved':             "تم حفظ التعديلات.",
+  'product.edit.dirty':             "تعديلات غير محفوظة",
+  'product.edit.section_status':    "الحالة والحذف",
+  'product.edit.status_label':      "حالة المنتج",
+  'product.edit.status_desc':       "نشط: يظهر في السوق. مخفي: غير معروض للبيع، يظهر لك فقط.",
+  'product.edit.danger_title':      "حذف هذا المنتج",
+  'product.edit.danger_body':       "هذا الإجراء نهائي. سيُزال المنتج من متجرك ومن السوق.",
+  'product.edit.danger_cta':        "حذف المنتج",
+  'product.delete_modal.title':          "حذف هذا المنتج؟",
+  'product.delete_modal.body':           "سيُحذف المنتج «{title}» نهائيًا ويُزال من متجرك ومن نتائج البحث.",
+  'product.delete_modal.confirm_label':  "للتأكيد، اكتب {keyword}",
+  'product.delete_modal.keyword':        "حذف",
+  'product.delete_modal.confirm_cta':    "حذف نهائي",
+
   // ─── C1 « Marketplace produits » (/marche/produits) — Figma 569:39769 ───
   'produits.lens.ariaLabel':        "اختيار العرض",
   'produits.lens.produits':         "المنتجات",
