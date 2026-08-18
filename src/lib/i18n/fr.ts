@@ -638,9 +638,9 @@ export const fr: Record<string, string> = {
   'product.back':           "Retour aux produits",
   'product.error_title':    "Le titre est requis.",
   'product.error_price':    "Veuillez entrer un prix valide (>= 0).",
+  'product.error_stock_required': "Veuillez indiquer la quantité en stock.",
   'product.error_update':   "Une erreur est survenue lors de la mise à jour. Veuillez réessayer.",
   'product.error_add':      "Une erreur est survenue lors de l'ajout. Veuillez réessayer.",
-  'product.delete_confirm': "Supprimer le produit \"{title}\" ? Cette action est irréversible.",
 
   // G5 « Mes produits » (Figma 522:29106) — docs/design/g5-discovery.md
   'product.list_subtitle':          "Gérez votre catalogue : statut, stock et ventes.",
@@ -775,6 +775,33 @@ export const fr: Record<string, string> = {
   // draft is "en ligne" would be a lie the dashboard does nothing to correct.
   'product.created.published':      "Produit publié. Il est maintenant en ligne.",
   'product.created.draft':          "Brouillon enregistré. Il n'est pas encore visible par les acheteurs.",
+
+  // ─── G7 « Modifier un produit » (/mes-produits/[id]/modifier) — Figma 535:32433 ───
+  'product.edit.page_subtitle':     "Modifiez les informations de votre produit.",
+  'product.edit.crumb_current':     "Modifier le produit",
+  'product.edit.view_product':      "Voir le produit",
+  'product.edit.save':              "Enregistrer les modifications",
+  'product.edit.saved':             "Modifications enregistrées.",
+  'product.edit.dirty':             "Modifications non enregistrées",
+  // §5 Statut & suppression
+  'product.edit.section_status':    "Statut & suppression",
+  'product.edit.status_label':      "Statut du produit",
+  'product.edit.status_desc':       "Actif : visible dans le marché. Masqué : retiré de la vente, visible seulement par vous.",
+  'product.edit.danger_title':      "Supprimer ce produit",
+  'product.edit.danger_body':       "Cette action est définitive. Le produit sera retiré de votre boutique et du marché.",
+  'product.edit.danger_cta':        "Supprimer le produit",
+  // Typed-confirm delete modal (Figma 536:32818) — shared with G5's ProductRow, so both
+  // destructive-delete entry points read the same way rather than one plain confirm() and one
+  // typed-confirm modal for the identical action.
+  'product.delete_modal.title':          "Supprimer ce produit ?",
+  'product.delete_modal.body':           "Le produit « {title} » sera définitivement supprimé et retiré de votre boutique et des résultats de recherche.",
+  'product.delete_modal.confirm_label':  "Pour confirmer, tapez {keyword}",
+  // The fixed word the seller must type — translated so an Arabic-reading seller isn't asked to
+  // type a French word to confirm; the typed-confirm PATTERN is what matters, not this literal
+  // string. FR value matches the frame (536:32818) exactly.
+  'product.delete_modal.keyword':        "SUPPRIMER",
+  'product.delete_modal.confirm_cta':    "Supprimer définitivement",
+
   // ─── C1 « Marketplace produits » (/marche/produits) — Figma 569:39769 ───
   // Lens toggle (578:42513). "Bientôt" marks the deferred Boutiques lens, not a design state.
   'produits.lens.ariaLabel':        "Choisir la vue",

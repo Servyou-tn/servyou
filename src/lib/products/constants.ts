@@ -14,8 +14,18 @@ export const MAX_PRODUCT_IMAGES = 8
 
 export type ProductActionResult = { ok: true } | { ok: false; error: string }
 
+/** G7: field attribution for inline errors, mirroring UpdateShopResult's shape. */
+export type UpdateProductResult =
+  | { ok: true }
+  | { ok: false; error: string; field?: 'title' | 'price' | 'deliveryFee' | 'stockCount' }
+
 export type UploadImageResult =
   | { ok: true; path: string; url: string }
+  | { ok: false; error: string }
+
+/** G7: the row this upload becomes, once inserted for an EXISTING product (not batched with create). */
+export type AddProductImageResult =
+  | { ok: true; imageId: string; url: string }
   | { ok: false; error: string }
 
 /** Why a bulk-selected row didn't get the action applied — G5 §8.5's "pre-check and report". */

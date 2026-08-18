@@ -2,13 +2,13 @@
 
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import Image from 'next/image'
 import { toast } from 'sonner'
 import { Image as ImageIcon, MoreVertical } from 'lucide-react'
 import { t, type Lang } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
 import { FOCUS_RING } from '@/components/layout/styles'
-import { Button } from '@/components/ui/button'
 import { StatusPill } from '@/components/ui/status-pill'
 import {
   DropdownMenu,
@@ -17,8 +17,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { DeleteProductModal } from '@/components/produits/DeleteProductModal'
 import { tndPrice } from '@/components/listings/listing-utils'
-import { toggleProductStatusAction, deleteProductAction } from '@/app/actions/products'
+import { toggleProductStatusAction } from '@/app/actions/products'
 import { isOutOfStock, type SellerProductRow } from '@/lib/marche/seller-products'
 
 // §8.4: route-local, hand-built markup close to List Row's Figma instance (thumb, title, col1-3
@@ -50,18 +51,6 @@ export function ProductRow({
   const runToggle = (nextStatus: 'active' | 'hidden') => {
     startTransition(async () => {
       const result = await toggleProductStatusAction({ productId: product.id, nextStatus })
-      if (!result.ok) {
-        toast.error(result.error)
-        return
-      }
-      router.refresh()
-    })
-  }
-
-  const runDelete = () => {
-    startTransition(async () => {
-      const result = await deleteProductAction({ productId: product.id })
-      setConfirmingDelete(false)
       if (!result.ok) {
         toast.error(result.error)
         return
@@ -113,15 +102,16 @@ export function ProductRow({
       </div>
 
       <div className="flex shrink-0 items-center gap-2">
-        {/* Bientôt pattern (§8.2), matching sidebar-items.ts/SidebarItem.tsx exactly: an inert,
-            titled span rather than a link to a page that doesn't exist yet (G7). */}
-        <span
-          aria-disabled="true"
-          title={t('shell.sidebar.soon', lang)}
-          className="inline-flex h-9 cursor-not-allowed items-center rounded-lg border border-border-subtle px-3 text-body-sm font-medium text-text-muted"
+        {/* G7 shipped — was the §8.2 Bientôt span pointing nowhere; now a real link. */}
+        <Link
+          href={`/mes-produits/${product.id}/modifier`}
+          className={cn(
+            'inline-flex h-9 items-center rounded-lg border border-border-subtle px-3 text-body-sm font-medium text-text-secondary hover:bg-surface-subtle',
+            FOCUS_RING,
+          )}
         >
           {t('common.edit', lang)}
-        </span>
+        </Link>
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -155,14 +145,22 @@ export function ProductRow({
               </DropdownMenuItem>
             )}
             <DropdownMenuSeparator />
+            {/* No preventDefault here — Radix's own Item.handleSelect only calls
+                rootContext.onClose() when the select event is NOT defaultPrevented
+                (@radix-ui/react-menu/dist/index.mjs:379-384). Blocking that close left the
+                DropdownMenu's DismissableLayer permanently "open", and its
+                disableOutsidePointerEvents lock (@radix-ui/react-dismissable-layer:70-76) sets
+                document.body.style.pointerEvents = 'none' for as long as the layer stays mounted
+                — with no onOpenChange(false) ever firing, that lock never lifted. The modal below
+                (a plain div, not Radix-portaled, so it never gets the layer's own
+                pointerEvents:'auto' override) inherited that 'none' and was permanently
+                unclickable by mouse; Tab/Enter still worked since pointer-events doesn't gate
+                keyboard activation, which is what made this easy to miss on a keyboard-only pass. */}
             <DropdownMenuItem
               disabled={pending || product.hasOrders}
               title={product.hasOrders ? t('product.error_delete_has_orders', lang) : undefined}
               variant="destructive"
-              onSelect={(e) => {
-                e.preventDefault()
-                setConfirmingDelete(true)
-              }}
+              onSelect={() => setConfirmingDelete(true)}
             >
               {t('common.delete', lang)}
             </DropdownMenuItem>
@@ -171,31 +169,16 @@ export function ProductRow({
       </div>
 
       {confirmingDelete ? (
-        <div
-          role="dialog"
-          aria-modal="true"
-          aria-label={t('common.delete', lang)}
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
-        >
-          <div className="flex w-full max-w-[420px] flex-col gap-4 rounded-xl bg-surface-base p-6">
-            <p className="text-body text-text-primary">
-              {t('product.delete_confirm', lang, { title: product.title })}
-            </p>
-            <div className="flex justify-end gap-3">
-              <Button
-                variant="ghost"
-                size="md"
-                onClick={() => setConfirmingDelete(false)}
-                disabled={pending}
-              >
-                {t('common.cancel', lang)}
-              </Button>
-              <Button variant="danger" size="md" loading={pending} onClick={runDelete}>
-                {t('common.delete', lang)}
-              </Button>
-            </div>
-          </div>
-        </div>
+        <DeleteProductModal
+          productId={product.id}
+          productTitle={product.title}
+          lang={lang}
+          onCancel={() => setConfirmingDelete(false)}
+          onDeleted={() => {
+            setConfirmingDelete(false)
+            router.refresh()
+          }}
+        />
       ) : null}
     </li>
   )
