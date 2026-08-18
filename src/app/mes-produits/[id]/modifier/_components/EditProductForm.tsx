@@ -385,7 +385,12 @@ export function EditProductForm({
           No publish gate — the product already exists with a status, managed above in §5. ─── */}
       <div className={`sticky bottom-0 flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-white p-5 ${CARD_SHADOW}`}>
         <p className="text-sm text-text-muted">{isDirty ? t('product.edit.dirty', lang) : null}</p>
-        <div className="flex items-center gap-3">
+        {/* Stacked below sm, not wrapped — flex-wrap on two whitespace-nowrap children of
+            unrelated width (a text link vs. a submit button) wraps wherever the words happen to
+            run out of room, so FR and AR (different label lengths) would each ragged-break at a
+            different point. flex-col forces one deliberate break — link above button, both
+            full-width — instead of leaving it to content length. */}
+        <div className="flex w-full flex-col items-stretch gap-3 sm:w-auto sm:flex-row sm:items-center">
           {/* Only when the live local status is 'active' — D1 (getProductDetail) filters
               status='active', so a link on a Masqué product would be a 404 offer. Matches the
               cached G7 memory's own specimen C, which hides this exact link on a non-public
@@ -394,12 +399,12 @@ export function EditProductForm({
           {status === 'active' ? (
             <Link
               href={`/produits/${product.id}`}
-              className={`relative inline-flex h-11 items-center justify-center gap-2 rounded-lg px-5 text-base font-semibold whitespace-nowrap text-brand-blue-600 transition-colors hover:bg-brand-blue-50 active:bg-brand-blue-100 motion-reduce:transition-none ${FOCUS_RING}`}
+              className={`relative inline-flex h-11 w-full items-center justify-center gap-2 rounded-lg px-5 text-base font-semibold whitespace-nowrap text-brand-blue-600 transition-colors hover:bg-brand-blue-50 active:bg-brand-blue-100 motion-reduce:transition-none sm:w-auto ${FOCUS_RING}`}
             >
               {t('product.edit.view_product', lang)}
             </Link>
           ) : null}
-          <Button type="submit" variant="primary" loading={pending}>
+          <Button type="submit" variant="primary" loading={pending} className="w-full sm:w-auto">
             {pending ? t('product.form.submitting', lang) : t('product.edit.save', lang)}
           </Button>
         </div>

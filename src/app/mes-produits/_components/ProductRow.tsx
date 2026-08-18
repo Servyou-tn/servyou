@@ -145,14 +145,22 @@ export function ProductRow({
               </DropdownMenuItem>
             )}
             <DropdownMenuSeparator />
+            {/* No preventDefault here — Radix's own Item.handleSelect only calls
+                rootContext.onClose() when the select event is NOT defaultPrevented
+                (@radix-ui/react-menu/dist/index.mjs:379-384). Blocking that close left the
+                DropdownMenu's DismissableLayer permanently "open", and its
+                disableOutsidePointerEvents lock (@radix-ui/react-dismissable-layer:70-76) sets
+                document.body.style.pointerEvents = 'none' for as long as the layer stays mounted
+                — with no onOpenChange(false) ever firing, that lock never lifted. The modal below
+                (a plain div, not Radix-portaled, so it never gets the layer's own
+                pointerEvents:'auto' override) inherited that 'none' and was permanently
+                unclickable by mouse; Tab/Enter still worked since pointer-events doesn't gate
+                keyboard activation, which is what made this easy to miss on a keyboard-only pass. */}
             <DropdownMenuItem
               disabled={pending || product.hasOrders}
               title={product.hasOrders ? t('product.error_delete_has_orders', lang) : undefined}
               variant="destructive"
-              onSelect={(e) => {
-                e.preventDefault()
-                setConfirmingDelete(true)
-              }}
+              onSelect={() => setConfirmingDelete(true)}
             >
               {t('common.delete', lang)}
             </DropdownMenuItem>
