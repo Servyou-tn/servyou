@@ -437,6 +437,42 @@ undo them. A closed decision is not a deferral.
 - **Trigger:** Post-launch, if search analytics show users toggling between types on the
   same query.
 
+### Button's single disabled treatment conflates two different meanings — ruled OUT of scope for G7 (fix/g7-header-and-dirty-state, 2026-08-18)
+- **What:** the F3 `Button` primitive (`src/components/ui/button.tsx`) applies one recolor
+  (`VARIANT_DISABLED`, `bg-surface-sunken text-text-muted`, lines 52-59) to every disabled state
+  regardless of *why* it is disabled. Two distinct semantics share it across call sites: **"fill
+  in the form" gates** — the control becomes enabled once the user acts (e.g.
+  `components/produits/ProductForm.tsx:322`, `disabled={!canPublish}` on the Publish button) —
+  and **hard blocks** — the control cannot become enabled by anything the user types in this
+  session (e.g. `app/mes-produits/[id]/modifier/_components/EditProductForm.tsx:404`,
+  `disabled={product.hasOrders}` on the delete button, permanently blocked while the product has
+  order history, with adjacent copy explaining why).
+- **Why one shared treatment cannot be right for both (founder ruling, 2026-08-18):** a gate wants
+  to read as "not yet — do the thing and this unlocks." A hard block wants to read as "not
+  available, and nothing you type here changes that." The same grey undersells the block and
+  oversells the gate; fixing one by recoloring it would misrepresent the other.
+- **Ruled OUT of G7:** this is a design-system decision on the primitive's `VARIANT_DISABLED`
+  table, not something a single edit form should patch around. G7 ships with `Button` unchanged.
+- **Trigger:** a DS pass on `Button` — likely wants a second disabled treatment (e.g. a
+  `disabledReason`/hard-block variant, mirroring the `disabledTitle` pattern G7's own status
+  `Select` already uses at `EditProductForm.tsx:374-375`) rather than one boolean `disabled` prop
+  covering both meanings.
+
+### G7's `536:32841` "produit en brouillon" specimen stays logged as blocked-on-schema — not deleted (fix/g7-header-and-dirty-state, 2026-08-18)
+- **What:** still standing from `docs/design/g6-discovery.md` §8 (lines 585-623): G7 has a
+  dedicated Figma specimen (`536:32841`, "G6 — produit en brouillon") for a `draft` product state,
+  but the live `products.status` CHECK (`CHECK (status = ANY (ARRAY['active', 'hidden',
+  'sold_out']))`) has no `'draft'` value. Of that doc's three options, only **option A** (add
+  `'draft'` to the CHECK, then audit every `status='active'` read path) makes the frame buildable
+  as designed; the schema shipped with **option B** (map "brouillon" → `hidden`), which the
+  discovery doc already flagged makes `536:32841` "unbuildable as designed."
+- **Ruling (founder, 2026-08-18):** keep the frame reference in the registry/discovery docs,
+  flagged blocked-on-schema — do not delete it. It documents a real, still-open product decision
+  (whether drafts get their own status), not a stale artifact.
+- **Trigger:** the migration PR that adds `'draft'` to the CHECK (option A, `g6-discovery.md` §8),
+  audited against every `status='active'` read path (`lib/marche/data.ts`,
+  `lib/marche/filter-categories.ts`, search, D3, D1).
+
 ## Post-MVP scale triggers
 
 ### Migrate /recherche to PostgreSQL full-text search (FTS)
