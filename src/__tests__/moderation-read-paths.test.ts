@@ -348,8 +348,8 @@ const MODERATED_TABLES = ['products', 'shops', 'service_listings', 'freelancer_p
 const OWNER_SCOPED: Record<string, string> = {
   'my-orders.ts': 'buyer order history — a moderated shop must not erase a real purchase',
   'order-detail.ts': 'single order the viewer is party to',
-  'mission-detail.ts': 'author-only view of own post + the freelancers who responded to it',
-  'my-data.ts': 'getMyOrders/getMyMissions are owner-scoped; getMyFavorites filters in code',
+  'annonce-detail.ts': 'author-only view of own post + the freelancers who responded to it',
+  'my-data.ts': 'getMyOrders/getMyAnnonces are owner-scoped; getMyFavorites filters in code',
   // G4. Reads the SELLER'S OWN shop: their orders (seller_id = me) and their products (shop_id =
   // my shop). A seller must see their own moderated content behind ModerationBanner, so filtering
   // here would hide a hidden product from the only person who can act on it. Note the counts are

@@ -14,7 +14,7 @@ export function EmptyState({
   icon: ReactNode
   message: string
   // Additive, optional second line (F1 /mes-favoris — the reused message-only shape used by
-  // /mes-missions is unaffected since it never passes this).
+  // /mes-annonces is unaffected since it never passes this).
   subtitle?: string
   cta?: { label: string; href: string; disabled?: boolean }
 }) {
