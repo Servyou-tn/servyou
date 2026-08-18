@@ -66,7 +66,7 @@ export const config = {
     '/mon-profil-freelance/:path*',
     '/mes-demandes/:path*',
     '/mes-favoris/:path*',
-    '/mes-missions/:path*',
+    '/mes-annonces/:path*',
     '/mes-reponses/:path*',
     '/missions/:path*',
     '/profile/:path*',

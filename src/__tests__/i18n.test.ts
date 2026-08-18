@@ -85,9 +85,9 @@ describe('t() — interpolation', () => {
     expect(result).not.toContain('{mission}')
   })
 
-  it('substitutes {mission} into the consumer→responder WhatsApp message', () => {
-    const result = t('job.whatsapp_consumer_to_responder', 'fr', { mission: 'Traduction FR-AR' })
+  it('substitutes {annonce} into the consumer→responder WhatsApp message', () => {
+    const result = t('annonces.detail.whatsapp_consumer_to_responder', 'fr', { annonce: 'Traduction FR-AR' })
     expect(result).toContain('"Traduction FR-AR"')
-    expect(result).not.toContain('{mission}')
+    expect(result).not.toContain('{annonce}')
   })
 })

@@ -104,6 +104,10 @@ const nextConfig: NextConfig = {
       { source: '/signup', destination: '/inscription', permanent: true },
       { source: '/forgot-password', destination: '/mot-de-passe-oublie', permanent: true },
       { source: '/update-password', destination: '/nouveau-mot-de-passe', permanent: true },
+      // /mes-missions renamed to /mes-annonces (vocab reconciliation — "annonce" is the buyer's
+      // own listing; "mission" stays reserved for the freelancer-facing job board). Wildcard keeps
+      // any in-flight bookmark/link to the list, create, or detail page working.
+      { source: '/mes-missions/:path*', destination: '/mes-annonces/:path*', permanent: true },
     ]
   },
 };

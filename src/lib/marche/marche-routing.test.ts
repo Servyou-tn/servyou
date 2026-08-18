@@ -145,7 +145,7 @@ describe('resolveMarcheSidebarNav', () => {
   })
 
   it('off /marche → collapsed, no engine active (no sub-items)', () => {
-    for (const path of ['/mes-commandes', '/mes-favoris', '/mes-missions', '/recherche', '/categories/mode']) {
+    for (const path of ['/mes-commandes', '/mes-favoris', '/mes-annonces', '/recherche', '/categories/mode']) {
       expect(resolveMarcheSidebarNav(path)).toEqual({
         onMarche: false,
         produitsActive: false,

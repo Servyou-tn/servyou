@@ -5,7 +5,7 @@ import { LangProvider } from '@/components/LangProvider'
 
 // Render smoke for the SHARED Pagination, rebuilt to Figma 188:14219 (delta rows S1/S2/P2-P4/C1-C3).
 // It has four consumers and only one of them (/marche/services) can be made to paginate on the
-// current seed data — /categories/[slug] tops out at 5 items, /mes-missions is auth-gated. So the
+// current seed data — /categories/[slug] tops out at 5 items, /mes-annonces is auth-gated. So the
 // two unreachable consumers are covered here, by their real prop shapes, rather than left unchecked.
 //
 // What this locks:
@@ -39,7 +39,7 @@ describe('Pagination — shared across 4 consumers, rebuilt to Figma 188:14219',
     totalItems: 21,
     perPage: 12,
   }
-  // /recherche · /categories/[slug] · /mes-missions — nav only, no caption.
+  // /recherche · /categories/[slug] · /mes-annonces — nav only, no caption.
   const noCaption: Props = { page: 2, totalPages: 5, basePath: '/recherche' }
 
   it('S1: the caption renders AFTER the nav, not before it', () => {

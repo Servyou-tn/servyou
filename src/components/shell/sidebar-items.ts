@@ -69,10 +69,10 @@ const DISCOVER: SidebarSectionDef = {
     },
     { key: 'shell.sidebar.orders', href: '/mes-commandes', icon: Package },
     { key: 'shell.sidebar.favorites', href: '/mes-favoris', icon: Heart },
-    // "Mes annonces" per Figma 611:45637 (110:3863). VOCAB DRIFT: the label is "Mes annonces"
-    // but the job-posting list route is /mes-missions today — kept as-is (not renamed here);
-    // reconcile annonces↔missions in a vocab pass (see docs/follow-ups.md).
-    { key: 'shell.sidebar.listings', href: '/mes-missions', icon: Megaphone },
+    // "Mes annonces" per Figma 611:45637 (110:3863). VOCAB DRIFT resolved (feat/annonces-vocab-
+    // rename): the route and every string behind it now say "annonce" too — /mes-missions
+    // permanently redirects here (next.config.ts).
+    { key: 'shell.sidebar.listings', href: '/mes-annonces', icon: Megaphone },
   ],
 }
 

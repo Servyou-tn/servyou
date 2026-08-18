@@ -1,12 +1,12 @@
 /**
- * Unit tests for getCategories() — the /mes-missions/nouvelle category picker.
+ * Unit tests for getCategories() — the /mes-annonces/nouvelle category picker.
  *
  * The Supabase client is mocked at the query-builder level: these cover WHICH ROWS THE PICKER
  * ASKS FOR, not the database. The data itself is enforced by `categories.kind` (NOT NULL, CHECK
  * product|service|both — migration 20260804132447).
  *
  * Why this file exists at all. Before `kind`, this picker rendered all 14 categories and a
- * consumer could file a freelance mission under "Électronique" or "Beauté & Soins". That shipped
+ * consumer could file an annonce under "Électronique" or "Beauté & Soins". That shipped
  * and stayed live because nothing asserted what the picker offered — verified by loading the page
  * and parsing its <option> elements: 14 before the fix, 9 after.
  *
@@ -53,7 +53,7 @@ beforeEach(() => {
   h.from.mockClear()
 })
 
-describe('getCategories — the mission picker is service-side', () => {
+describe('getCategories — the annonce picker is service-side', () => {
   it('filters on kind, and asks the categories table for it', async () => {
     await getCategories()
     expect(h.from).toHaveBeenCalledWith('categories')
@@ -61,7 +61,7 @@ describe('getCategories — the mission picker is service-side', () => {
     expect(h.calls.in[0][0]).toBe('kind')
   })
 
-  it("INCLUDES 'both' — a mission picker that only asks for 'service' silently drops maison", async () => {
+  it("INCLUDES 'both' — an annonce picker that only asks for 'service' silently drops maison", async () => {
     await getCategories()
     const [, values] = h.calls.in[0]
     expect(values).toContain('both')

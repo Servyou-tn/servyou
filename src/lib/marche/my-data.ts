@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import type { ProductListing } from '@/components/listings/ProductListingCard'
 import type { ServiceListing } from '@/components/listings/ServiceListingCard'
 
-// Server reads for the account pages (/mes-commandes, /mes-favoris, /mes-missions).
+// Server reads for the account pages (/mes-commandes, /mes-favoris, /mes-annonces).
 // Each is owner-scoped (buyer_id / user_id / consumer_id = me) and re-guarded by RLS;
 // the explicit .eq() keeps the intent clear and, for orders, narrows the buyer+seller
 // RLS read to the buyer slice. Errors are captured and surfaced (never a silent []).
@@ -369,9 +369,9 @@ export async function getMyFavorites(
   return { products, services, combined }
 }
 
-// ─── /mes-missions ──────────────────────────────────────────────────────────────
+// ─── /mes-annonces ──────────────────────────────────────────────────────────────
 
-export type MyMission = {
+export type MyAnnonce = {
   id: string
   title: string
   description: string | null
@@ -386,7 +386,7 @@ export type MyMission = {
   response_count: number
 }
 
-type MissionRow = {
+type AnnonceRow = {
   id: string
   title: string
   description: string | null
@@ -401,7 +401,7 @@ type MissionRow = {
   job_responses: { count: number }[] | null
 }
 
-export async function getMyMissions(userId: string): Promise<MyMission[]> {
+export async function getMyAnnonces(userId: string): Promise<MyAnnonce[]> {
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('job_posts')
@@ -414,11 +414,11 @@ export async function getMyMissions(userId: string): Promise<MyMission[]> {
     .order('created_at', { ascending: false })
 
   if (error) {
-    console.error('[my-data] missions fetch error:', error)
+    console.error('[my-data] annonces fetch error:', error)
     return []
   }
 
-  return ((data ?? []) as unknown as MissionRow[]).map((row) => ({
+  return ((data ?? []) as unknown as AnnonceRow[]).map((row) => ({
     id: row.id,
     title: row.title,
     description: row.description ?? null,

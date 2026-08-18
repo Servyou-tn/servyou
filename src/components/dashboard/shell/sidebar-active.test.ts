@@ -8,7 +8,7 @@ describe('isActiveRoute', () => {
 
   it('sub-route match → true', () => {
     expect(isActiveRoute('/mes-demandes/123', '/mes-demandes')).toBe(true)
-    expect(isActiveRoute('/mes-missions/abc/modifier', '/mes-missions')).toBe(true)
+    expect(isActiveRoute('/mes-annonces/abc/modifier', '/mes-annonces')).toBe(true)
   })
 
   it('unrelated route → false', () => {
