@@ -35,7 +35,7 @@ function parseLocalDate(value: string): Date {
   return m ? new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3])) : new Date(NaN)
 }
 
-// '' → null (optional); a non-negative finite number → that number; anything else →
+// '' â†’ null (optional); a non-negative finite number â†’ that number; anything else â†’
 // 'invalid'.
 function parseBudget(raw: string): number | null | 'invalid' {
   const s = raw.trim()
@@ -47,29 +47,29 @@ function parseBudget(raw: string): number | null | 'invalid' {
 
 export function validateJobPost(input: JobPostInput, now: Date = new Date()): JobPostValidation {
   const title = input.title.trim()
-  if (!title) return { ok: false, errorKey: 'mission.error.title_required' }
+  if (!title) return { ok: false, errorKey: 'annonce.error.title_required' }
 
   const description = input.description.trim()
-  if (!description) return { ok: false, errorKey: 'mission.error.description_required' }
+  if (!description) return { ok: false, errorKey: 'annonce.error.description_required' }
 
-  if (!input.categoryId) return { ok: false, errorKey: 'mission.error.category_required' }
-  if (!input.city) return { ok: false, errorKey: 'mission.error.city_required' }
+  if (!input.categoryId) return { ok: false, errorKey: 'annonce.error.category_required' }
+  if (!input.city) return { ok: false, errorKey: 'annonce.error.city_required' }
 
   const budget_min = parseBudget(input.budgetMin)
   const budget_max = parseBudget(input.budgetMax)
   if (budget_min === 'invalid' || budget_max === 'invalid') {
-    return { ok: false, errorKey: 'mission.error.budget_invalid' }
+    return { ok: false, errorKey: 'annonce.error.budget_invalid' }
   }
   if (budget_min != null && budget_max != null && budget_min > budget_max) {
-    return { ok: false, errorKey: 'mission.error.budget_order' }
+    return { ok: false, errorKey: 'annonce.error.budget_order' }
   }
 
   let deadline: string | null = null
   if (input.deadline.trim()) {
     const d = parseLocalDate(input.deadline.trim())
-    if (Number.isNaN(d.getTime())) return { ok: false, errorKey: 'mission.error.deadline_past' }
+    if (Number.isNaN(d.getTime())) return { ok: false, errorKey: 'annonce.error.deadline_past' }
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
-    if (d < today) return { ok: false, errorKey: 'mission.error.deadline_past' }
+    if (d < today) return { ok: false, errorKey: 'annonce.error.deadline_past' }
     deadline = input.deadline.trim()
   }
 

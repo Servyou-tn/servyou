@@ -4,9 +4,9 @@ import { redirect } from 'next/navigation'
 import { AppShell } from '@/components/shell/AppShell'
 import { PageHeader } from '@/components/marche/PageHeader'
 import { EmptyState } from '@/components/marche/EmptyState'
-import { MissionCard } from '@/components/marche/MissionCard'
+import { AnnonceCard } from '@/components/marche/AnnonceCard'
 import { getShellUser } from '@/lib/marche/shell-user'
-import { getMyMissions } from '@/lib/marche/my-data'
+import { getMyAnnonces } from '@/lib/marche/my-data'
 import { paginate } from '@/lib/search/search-params'
 import { Pagination } from '@/components/shared/Pagination'
 import { getLang } from '@/lib/i18n/server'
@@ -14,12 +14,12 @@ import { t } from '@/lib/i18n'
 import { FOCUS_RING } from '@/components/layout/styles'
 import { BriefcaseIcon } from '@/components/marche/icons'
 
-export const metadata: Metadata = { title: 'Mes missions — Servyou' }
+export const metadata: Metadata = { title: 'Mes annonces — Servyou' }
 
 // The consumer's own job posts + response counts. Auth-gated (own data). The full set is
 // fetched and paginated in JS (?page=) via the shared helper — same posture as the search
 // engines; the count + empty-state read the full list, only the rendered grid is the slice.
-export default async function MesMissionsPage({
+export default async function MesAnnoncesPage({
   searchParams,
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>
@@ -28,48 +28,48 @@ export default async function MesMissionsPage({
   if (!shell) redirect('/connexion')
 
   const lang = await getLang()
-  const missions = await getMyMissions(shell.id)
+  const annonces = await getMyAnnonces(shell.id)
 
   const sp = await searchParams
   const rawPage = Array.isArray(sp.page) ? sp.page[0] : sp.page
   const { totalPages, safePage, start, end } = paginate(
-    missions.length,
+    annonces.length,
     Math.max(1, Number.parseInt(rawPage ?? '1', 10) || 1),
   )
-  const pageMissions = missions.slice(start, end)
+  const pageAnnonces = annonces.slice(start, end)
 
   const newButton = (
     <Link
-      href="/mes-missions/nouvelle"
+      href="/mes-annonces/nouvelle"
       className={`inline-flex items-center rounded-full bg-brand-blue-600 px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-brand-blue-500 ${FOCUS_RING}`}
     >
-      {t('mesmissions.new', lang)}
+      {t('mesannonces.new', lang)}
     </Link>
   )
 
   return (
     <AppShell user={shell.topBarUser}>
       <PageHeader
-        title={t('job.my_missions_title', lang)}
-        countLabel={missions.length > 0 ? t('mesmissions.count', lang, { n: missions.length }) : undefined}
-        action={missions.length > 0 ? newButton : undefined}
+        title={t('mesannonces.title', lang)}
+        countLabel={annonces.length > 0 ? t('mesannonces.count', lang, { n: annonces.length }) : undefined}
+        action={annonces.length > 0 ? newButton : undefined}
       />
 
-      {missions.length === 0 ? (
+      {annonces.length === 0 ? (
         <EmptyState
           icon={<BriefcaseIcon className="mx-auto h-12 w-12" />}
-          message={t('mesmissions.empty', lang)}
-          cta={{ label: t('mesmissions.empty_cta', lang), href: '/mes-missions/nouvelle' }}
+          message={t('mesannonces.empty', lang)}
+          cta={{ label: t('mesannonces.empty_cta', lang), href: '/mes-annonces/nouvelle' }}
         />
       ) : (
         <>
           <div className="flex flex-col gap-4">
-            {pageMissions.map((m) => (
-              <MissionCard key={m.id} mission={m} />
+            {pageAnnonces.map((a) => (
+              <AnnonceCard key={a.id} annonce={a} />
             ))}
           </div>
           <div className="mt-8">
-            <Pagination page={safePage} totalPages={totalPages} basePath="/mes-missions" />
+            <Pagination page={safePage} totalPages={totalPages} basePath="/mes-annonces" />
           </div>
         </>
       )}

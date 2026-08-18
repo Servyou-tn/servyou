@@ -2,10 +2,10 @@ import { cache } from 'react'
 import { createClient } from '@/lib/supabase/server'
 import { JOB_POST_EXPIRY_DAYS, MAX_RESPONSES_PER_POST } from '@/lib/job-constants'
 
-// Single-mission detail fetch for /mes-missions/[id] — the consumer's view of one job post
+// Single-annonce detail fetch for /mes-annonces/[id] — the consumer's view of one job post
 // plus the freelancer responses to it. RLS already restricts job_posts SELECT to
 // (status='open' OR consumer_id=auth.uid()); this page is strictly the author's view, so
-// getMissionDetail re-checks consumer_id === currentUserId and returns null otherwise
+// getAnnonceDetail re-checks consumer_id === currentUserId and returns null otherwise
 // (defense in depth — a non-owner, a missing post, an invalid id, or a soft-deleted post all
 // yield the same not-found state, no information leak). Errors are captured, never silent [].
 //
@@ -40,7 +40,7 @@ function one<T>(embed: T | T[] | null | undefined): T | null {
   return embed ?? null
 }
 
-export type MissionResponse = {
+export type AnnonceResponse = {
   id: string
   /** = profiles.id of the responding freelancer; the get_contact_phone(target) value. */
   freelancerId: string
@@ -51,7 +51,7 @@ export type MissionResponse = {
   createdAt: string
 }
 
-export type MissionDetailData = {
+export type AnnonceDetailData = {
   id: string
   title: string
   description: string
@@ -66,13 +66,13 @@ export type MissionDetailData = {
   updatedAt: string
   category: string | null
   skills: string[]
-  responses: MissionResponse[]
+  responses: AnnonceResponse[]
   responseCount: number
   isAtCap: boolean
   isExpired: boolean
 }
 
-type MissionRow = {
+type AnnonceRow = {
   id: string
   consumer_id: string
   title: string
@@ -90,8 +90,8 @@ type MissionRow = {
 }
 
 // Wrapped in React cache() so generateMetadata + the page share a single fetch per request.
-export const getMissionDetail = cache(
-  async (missionId: string, currentUserId: string): Promise<MissionDetailData | null> => {
+export const getAnnonceDetail = cache(
+  async (annonceId: string, currentUserId: string): Promise<AnnonceDetailData | null> => {
     const supabase = await createClient()
     const { data, error } = await supabase
       .from('job_posts')
@@ -101,17 +101,17 @@ export const getMissionDetail = cache(
          categories ( name_fr ),
          job_post_skills ( skill )`,
       )
-      .eq('id', missionId)
+      .eq('id', annonceId)
       .maybeSingle()
 
     if (error) {
       // The invalid-UUID case (Postgres 22P02) lands here too → graceful not-found, no crash.
-      console.error('[mission-detail] fetch error:', error)
+      console.error('[annonce-detail] fetch error:', error)
       return null
     }
     if (!data) return null
 
-    const row = data as unknown as MissionRow
+    const row = data as unknown as AnnonceRow
     // Author-only view (defense in depth on top of RLS); a soft-deleted post is gone for the consumer.
     if (row.consumer_id !== currentUserId) return null
     if (row.status === 'deleted') return null
@@ -122,7 +122,7 @@ export const getMissionDetail = cache(
       .select('id, freelancer_id, proposal_message, created_at')
       .eq('job_post_id', row.id)
       .order('created_at', { ascending: false })
-    if (respErr) console.error('[mission-detail] responses fetch error:', respErr)
+    if (respErr) console.error('[annonce-detail] responses fetch error:', respErr)
     const respRows = (respData ?? []) as {
       id: string
       freelancer_id: string
@@ -141,7 +141,7 @@ export const getMissionDetail = cache(
         .from('public_profiles')
         .select('id, full_name, city')
         .in('id', freelancerIds)
-      if (pErr) console.error('[mission-detail] public_profiles error:', pErr)
+      if (pErr) console.error('[annonce-detail] public_profiles error:', pErr)
       for (const p of (profs ?? []) as { id: string; full_name: string | null; city: string | null }[]) {
         nameCity.set(p.id, { full_name: p.full_name, city: p.city })
       }
@@ -150,13 +150,13 @@ export const getMissionDetail = cache(
         .from('freelancer_profiles')
         .select('profile_id, headline, city')
         .in('profile_id', freelancerIds)
-      if (fErr) console.error('[mission-detail] freelancer_profiles error:', fErr)
+      if (fErr) console.error('[annonce-detail] freelancer_profiles error:', fErr)
       for (const f of (fps ?? []) as { profile_id: string; headline: string | null; city: string | null }[]) {
         headlineCity.set(f.profile_id, { headline: f.headline, city: f.city })
       }
     }
 
-    const responses: MissionResponse[] = respRows.map((r) => ({
+    const responses: AnnonceResponse[] = respRows.map((r) => ({
       id: r.id,
       freelancerId: r.freelancer_id,
       fullName: nameCity.get(r.freelancer_id)?.full_name ?? null,

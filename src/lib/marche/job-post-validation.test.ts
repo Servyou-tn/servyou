@@ -3,7 +3,7 @@ import { validateJobPost, type JobPostInput } from './job-post-validation'
 
 // A valid baseline; each test overrides one field to isolate a rule.
 const base: JobPostInput = {
-  title: 'Création de logo',
+  title: 'CrÃ©ation de logo',
   description: 'Un logo moderne pour ma marque.',
   categoryId: 'cat-1',
   city: 'Tunis',
@@ -19,7 +19,7 @@ describe('validateJobPost', () => {
     const r = validateJobPost(base, NOW)
     expect(r.ok).toBe(true)
     if (r.ok) {
-      expect(r.value.title).toBe('Création de logo')
+      expect(r.value.title).toBe('CrÃ©ation de logo')
       expect(r.value.budget_min).toBeNull()
       expect(r.value.budget_max).toBeNull()
       expect(r.value.deadline).toBeNull()
@@ -29,38 +29,38 @@ describe('validateJobPost', () => {
 
   it('trims and rejects an empty title', () => {
     const r = validateJobPost({ ...base, title: '   ' }, NOW)
-    expect(r).toEqual({ ok: false, errorKey: 'mission.error.title_required' })
+    expect(r).toEqual({ ok: false, errorKey: 'annonce.error.title_required' })
   })
 
   it('rejects an empty description', () => {
     const r = validateJobPost({ ...base, description: '' }, NOW)
-    expect(r).toEqual({ ok: false, errorKey: 'mission.error.description_required' })
+    expect(r).toEqual({ ok: false, errorKey: 'annonce.error.description_required' })
   })
 
   it('rejects a missing category', () => {
     const r = validateJobPost({ ...base, categoryId: '' }, NOW)
-    expect(r).toEqual({ ok: false, errorKey: 'mission.error.category_required' })
+    expect(r).toEqual({ ok: false, errorKey: 'annonce.error.category_required' })
   })
 
   it('rejects a missing city', () => {
     const r = validateJobPost({ ...base, city: '' }, NOW)
-    expect(r).toEqual({ ok: false, errorKey: 'mission.error.city_required' })
+    expect(r).toEqual({ ok: false, errorKey: 'annonce.error.city_required' })
   })
 
   it('rejects a non-numeric or negative budget', () => {
     expect(validateJobPost({ ...base, budgetMin: 'abc' }, NOW)).toEqual({
       ok: false,
-      errorKey: 'mission.error.budget_invalid',
+      errorKey: 'annonce.error.budget_invalid',
     })
     expect(validateJobPost({ ...base, budgetMax: '-5' }, NOW)).toEqual({
       ok: false,
-      errorKey: 'mission.error.budget_invalid',
+      errorKey: 'annonce.error.budget_invalid',
     })
   })
 
   it('rejects min greater than max', () => {
     const r = validateJobPost({ ...base, budgetMin: '500', budgetMax: '100' }, NOW)
-    expect(r).toEqual({ ok: false, errorKey: 'mission.error.budget_order' })
+    expect(r).toEqual({ ok: false, errorKey: 'annonce.error.budget_order' })
   })
 
   it('accepts a valid budget range', () => {
@@ -74,7 +74,7 @@ describe('validateJobPost', () => {
 
   it('rejects a past deadline', () => {
     const r = validateJobPost({ ...base, deadline: '2026-06-14' }, NOW)
-    expect(r).toEqual({ ok: false, errorKey: 'mission.error.deadline_past' })
+    expect(r).toEqual({ ok: false, errorKey: 'annonce.error.deadline_past' })
   })
 
   it('accepts today and future deadlines', () => {

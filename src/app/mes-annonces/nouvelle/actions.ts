@@ -5,7 +5,7 @@ import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 import { validateJobPost, type JobPostInput } from '@/lib/marche/job-post-validation'
 
-// On success this redirects to /mes-missions (never returns); only failures return.
+// On success this redirects to /mes-annonces (never returns); only failures return.
 export type CreateMissionResult = { ok: false; errorKey: string }
 
 // Create a job post (mission). Validation runs BEFORE createClient() so a malformed
@@ -19,7 +19,7 @@ export async function createMission(input: JobPostInput): Promise<CreateMissionR
   const {
     data: { user },
   } = await supabase.auth.getUser()
-  if (!user) return { ok: false, errorKey: 'mission.error.not_authorized' }
+  if (!user) return { ok: false, errorKey: 'annonce.error.not_authorized' }
 
   const { data, error } = await supabase
     .from('job_posts')
@@ -46,6 +46,6 @@ export async function createMission(input: JobPostInput): Promise<CreateMissionR
     return { ok: false, errorKey: 'common.error_generic' }
   }
 
-  revalidatePath('/mes-missions')
-  redirect('/mes-missions')
+  revalidatePath('/mes-annonces')
+  redirect('/mes-annonces')
 }
