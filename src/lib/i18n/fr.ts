@@ -778,7 +778,7 @@ export const fr: Record<string, string> = {
 
   // ─── G7 « Modifier un produit » (/mes-produits/[id]/modifier) — Figma 535:32433 ───
   'product.edit.page_subtitle':     "Modifiez les informations de votre produit.",
-  'product.edit.crumb_current':     "Modifier le produit",
+  'product.edit.crumb_current':     "Modifier",
   'product.edit.view_product':      "Voir le produit",
   'product.edit.save':              "Enregistrer les modifications",
   'product.edit.saved':             "Modifications enregistrées.",

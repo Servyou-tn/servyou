@@ -806,7 +806,7 @@ export const ar: Record<string, string> = {
 
   // ─── G7 « Modifier un produit » (/mes-produits/[id]/modifier) — Figma 535:32433 ───
   'product.edit.page_subtitle':     "عدّل معلومات منتجك.",
-  'product.edit.crumb_current':     "تعديل المنتج",
+  'product.edit.crumb_current':     "تعديل",
   'product.edit.view_product':      "عرض المنتج",
   'product.edit.save':              "حفظ التعديلات",
   'product.edit.saved':             "تم حفظ التعديلات.",

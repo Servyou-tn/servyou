@@ -45,8 +45,8 @@ export default async function ModifierProduitPage({
 
   return (
     <AppShell user={topBarUser}>
-      <div className="mb-8 max-w-[760px]">
-        <nav aria-label="Fil d'Ariane" className="mb-3">
+      <div className="mb-3 max-w-[760px]">
+        <nav aria-label="Fil d'Ariane">
           <ol className="flex items-center gap-1.5 text-sm text-text-muted">
             <li>
               <Link href={LIST} className={cn('rounded hover:text-text-primary hover:underline', FOCUS_RING)}>
@@ -61,10 +61,11 @@ export default async function ModifierProduitPage({
             </li>
           </ol>
         </nav>
-        <h1 className="text-2xl font-semibold text-text-primary">{t('product.edit_title', lang)}</h1>
-        <p className="mt-1.5 text-sm text-text-muted">{t('product.edit.page_subtitle', lang)}</p>
       </div>
 
+      {/* H1 + StatusPill + "Voir le produit" live in EditProductForm, not here — they track the
+          §5 status toggle in real time (same reasoning as the footer's own view-link), which a
+          plain server-rendered header block can't do. */}
       <EditProductForm product={product} categories={categories} />
     </AppShell>
   )
