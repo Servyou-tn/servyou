@@ -488,6 +488,39 @@ undo them. A closed decision is not a deferral.
 - **Trigger:** the next PR that touches this legacy dashboard-shell family (or a dedicated
   dead-code sweep) — decide delete-outright vs. keep-and-fix-the-href then, with the founder.
 
+### Staged-rename-shadows-unstaged-content — the class of bug that broke #148, now a named rule
+- **What happened:** `feat/annonces-vocab-rename` (#148) staged file renames early (`git mv`-style:
+  `MissionCard.tsx → AnnonceCard.tsx` etc.), then edited the *content* of those already-renamed
+  files afterward — internal identifiers, i18n key references, a dead-code deletion. Those edits
+  landed in the working tree on top of an already-staged rename, which `git status --short` reports
+  as `RM`: **R**enamed-and-staged, **M**odified-again-and-unstaged. The commit step read `RM` as
+  "already staged, nothing to do" and staged only the *other* modified files, explicitly skipping
+  the renamed ones on that belief. `git commit` therefore committed the bare renames — zero of the
+  content fix — while `tsc`/the suite/screenshots had all been run against the working tree, which
+  genuinely had the fix. `git push` followed immediately. The gap sat on `main` undetected until
+  `fix/annonces-dangling-imports` traced it back to `741eb08` itself via an isolated worktree
+  (`tsc --noEmit` inside a fresh worktree pinned to that exact commit still shows the 12 errors).
+- **The rule:** `RM` (or any status with a non-blank *second* column — `RM`, `AM`, `MM`) means
+  **staged action PLUS unstaged content on top of it.** It is never "fully staged." Only a
+  single-letter code with a blank second column (`M `, `A `, `R `, `D `) means nothing further is
+  pending for that path. Never infer "fully staged" from the presence of *a* staged marker — check
+  the second column specifically.
+- **A second, independent trap in the same incident:** a `git add` invocation with **any** invalid
+  pathspec in its argument list fails the *entire* command — none of the valid paths in that same
+  call get staged either. Two of the three `git add` attempts in #148 failed this way (one against
+  an already-renamed-away directory, one against an already-fully-staged deletion) and staged
+  nothing; only the third, narrower attempt succeeded — and it was narrowed by excluding the paths
+  under the `RM` misreading above, which is how the drop happened.
+- **The gate that follows from both:** after `git commit`, before `git push`, run
+  `git status --porcelain` and require **empty output** — not "looks staged," not a visual scan of
+  `git status --short`, the literal porcelain string must be zero bytes. Then run `tsc`/the test
+  suite/the build **against the committed tree** (a fresh worktree or a post-commit checkout), not
+  the working tree. A working-tree verification proves the *code* is correct; it proves nothing
+  about what the commit — the thing that actually ships — contains. The two are only guaranteed
+  identical when `git status --porcelain` is empty at the moment `tsc` runs.
+- **Trigger:** already in force — apply this gate to every commit from here on, not just PRs that
+  touch renamed files.
+
 ## Post-MVP scale triggers
 
 ### Migrate /recherche to PostgreSQL full-text search (FTS)
@@ -563,14 +596,28 @@ Trigger: a dependency-hygiene chore, or when the Dependabot PRs land.
 - **Trigger:** Make `tags` required (or strongly prompted) in **H6 (create service) / H7 (edit service)**; once real listings carry tags, **remove the category-chip fallback** in `ServiceListingCard`.
 
 ### Sidebar IA drift surfaced by the v2-shell adoption (feat/rebuild-marche-services)
-- **✅ "Mes annonces" → /mes-missions vocab drift — RESOLVED (`feat/annonces-vocab-rename`).** The
-  route moved to `/mes-annonces` (permanent redirect from `/mes-missions/:path*` in
-  `next.config.ts`) and every user-visible string on the three pages behind it — list, create,
-  detail — now says "annonce" too, matching the sidebar label. "mission" stays reserved for the
-  freelancer-facing job board (`job.*` i18n keys, unrenamed). ~~The sidebar item added per Figma
-  `611:45637` is labelled "Mes annonces" but routes to `/mes-missions` (the job-posting list).
-  Reconcile the vocabulary (annonces vs missions) in a naming pass; not renamed in the shell PR to
-  avoid moving a live route. Lives in `sidebar-items.ts`.~~
+- **✅ "Mes annonces" → /mes-missions vocab drift — RESOLVED (`feat/annonces-vocab-rename`,
+  completed by `fix/annonces-dangling-imports`).** The route moved to `/mes-annonces` (permanent
+  redirect from `/mes-missions/:path*` in `next.config.ts`) and every user-visible string on the
+  three pages behind it — list, create, detail — now says "annonce" too, matching the sidebar
+  label. "mission" stays reserved for the freelancer-facing job board (`job.*` i18n keys,
+  unrenamed). ~~The sidebar item added per Figma `611:45637` is labelled "Mes annonces" but routes
+  to `/mes-missions` (the job-posting list). Reconcile the vocabulary (annonces vs missions) in a
+  naming pass; not renamed in the shell PR to avoid moving a live route. Lives in
+  `sidebar-items.ts`.~~
+  **Correction (2026-08-18):** the "RESOLVED" claim above was premature. `feat/annonces-vocab-rename`
+  only finished the *create* page's dictionary and routing; the **list** (`mes-annonces/page.tsx`)
+  and **detail** (`mes-annonces/[id]/page.tsx`, `AnnonceDetail.tsx`, `AnnonceCard.tsx`,
+  `annonce-detail.ts`) pages were `git mv`'d but left internally un-renamed — dangling imports
+  (`MissionForm`/`MissionDetail`/`MissionCard`/`getMyMissions`, 12 `tsc` errors on `main`) and
+  ~35 deleted i18n keys (`mesmissions.*`, `missions.detail.*`, `mission.error.*`,
+  `mission.form.*`, `job.my_missions_title`, `job.whatsapp_consumer_to_responder`) rendering raw
+  key strings to real users on every field of both pages. `fix/annonces-dangling-imports` is the
+  PR that actually finished the rename: renamed the internal identifiers to match, pointed every
+  reference at the `annonces.*`/`mesannonces.*`/`annonce.*` keys that PR-A had already created,
+  added the one genuinely-missing key (`annonces.detail.modify`), and got `main` back to a clean
+  `tsc`. Lesson: a route/file rename is not evidence the code inside was updated — verify with
+  `tsc --noEmit`, not just `git status` on the renamed paths.
 - **/statistiques is now nav-orphaned.** "Statistiques" was removed from the shell sidebar (absent
   from the Figma). The `/statistiques` page still exists and builds, but the shell was its only nav
   entry — it's now URL-only until it gets its own IA decision (a freelancer-stats surface). Don't

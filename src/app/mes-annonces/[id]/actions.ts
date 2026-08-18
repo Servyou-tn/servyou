@@ -14,8 +14,8 @@ import { JOB_POST_EXPIRY_DAYS } from '@/lib/job-constants'
 export type MissionActionResult = { ok: boolean; errorKey?: string }
 
 function revalidate(missionId: string) {
-  revalidatePath('/mes-missions')
-  revalidatePath(`/mes-missions/${missionId}`)
+  revalidatePath('/mes-annonces')
+  revalidatePath(`/mes-annonces/${missionId}`)
 }
 
 // Close an open mission (open → filled). Freelancers can no longer respond.
@@ -24,7 +24,7 @@ export async function closeMissionAction(missionId: string): Promise<MissionActi
   const {
     data: { user },
   } = await supabase.auth.getUser()
-  if (!user) return { ok: false, errorKey: 'mission.error.not_authorized' }
+  if (!user) return { ok: false, errorKey: 'annonce.error.not_authorized' }
 
   const { data, error } = await supabase
     .from('job_posts')
@@ -53,7 +53,7 @@ export async function reopenMissionAction(missionId: string): Promise<MissionAct
   const {
     data: { user },
   } = await supabase.auth.getUser()
-  if (!user) return { ok: false, errorKey: 'mission.error.not_authorized' }
+  if (!user) return { ok: false, errorKey: 'annonce.error.not_authorized' }
 
   const { data: post, error: readErr } = await supabase
     .from('job_posts')
@@ -69,7 +69,7 @@ export async function reopenMissionAction(missionId: string): Promise<MissionAct
 
   const expiryMs = JOB_POST_EXPIRY_DAYS * 24 * 60 * 60 * 1000
   if (Date.now() - new Date(post.created_at as string).getTime() > expiryMs) {
-    return { ok: false, errorKey: 'missions.detail.reopen_expired_error' }
+    return { ok: false, errorKey: 'annonces.detail.reopen_expired_error' }
   }
 
   const { data, error } = await supabase
@@ -91,14 +91,14 @@ export async function reopenMissionAction(missionId: string): Promise<MissionAct
 }
 
 // Soft-delete (status → 'deleted'). No hard delete — preserves response rows / data integrity.
-// The client shows the success toast and redirects to /mes-missions (a server redirect here
+// The client shows the success toast and redirects to /mes-annonces (a server redirect here
 // would discard the toast).
 export async function deleteMissionAction(missionId: string): Promise<MissionActionResult> {
   const supabase = await createClient()
   const {
     data: { user },
   } = await supabase.auth.getUser()
-  if (!user) return { ok: false, errorKey: 'mission.error.not_authorized' }
+  if (!user) return { ok: false, errorKey: 'annonce.error.not_authorized' }
 
   const { data, error } = await supabase
     .from('job_posts')
@@ -113,6 +113,6 @@ export async function deleteMissionAction(missionId: string): Promise<MissionAct
   }
   if (!data || data.length === 0) return { ok: false, errorKey: 'common.error_generic' }
 
-  revalidatePath('/mes-missions')
+  revalidatePath('/mes-annonces')
   return { ok: true }
 }

@@ -6,12 +6,12 @@ import { useLang } from '@/components/LangProvider'
 import { t } from '@/lib/i18n'
 import { GOVERNORATES } from '@/lib/tunisia-governorates'
 import { FOCUS_RING, CARD_SHADOW } from '@/components/layout/styles'
-import { createMission } from '@/app/mes-missions/nouvelle/actions'
+import { createMission } from '@/app/mes-annonces/nouvelle/actions'
 
-// Minimal create-mission form. Validation is shared with the server action
-// (validateJobPost); the action redirects to /mes-missions on success, so a resolved
+// Minimal create-annonce form. Validation is shared with the server action
+// (validateJobPost); the action redirects to /mes-annonces on success, so a resolved
 // (non-redirect) return means an error to show.
-export function MissionForm({ categories }: { categories: { id: string; name_fr: string }[] }) {
+export function AnnonceForm({ categories }: { categories: { id: string; name_fr: string }[] }) {
   const lang = useLang()
   const [pending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
@@ -52,28 +52,28 @@ export function MissionForm({ categories }: { categories: { id: string; name_fr:
       <div className="space-y-5">
         <div>
           <label htmlFor="mission-title" className={label}>
-            {t('mission.form.title_label', lang)}
+            {t('annonce.form.title_label', lang)}
           </label>
           <input
             id="mission-title"
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            placeholder={t('mission.form.title_ph', lang)}
+            placeholder={t('annonce.form.title_ph', lang)}
             className={field}
           />
         </div>
 
         <div>
           <label htmlFor="mission-description" className={label}>
-            {t('mission.form.description_label', lang)}
+            {t('annonce.form.description_label', lang)}
           </label>
           <textarea
             id="mission-description"
             rows={4}
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            placeholder={t('mission.form.description_ph', lang)}
+            placeholder={t('annonce.form.description_ph', lang)}
             className={`${field} resize-y`}
           />
         </div>
@@ -81,7 +81,7 @@ export function MissionForm({ categories }: { categories: { id: string; name_fr:
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
           <div>
             <label htmlFor="mission-category" className={label}>
-              {t('mission.form.category_label', lang)}
+              {t('annonce.form.category_label', lang)}
             </label>
             <select
               id="mission-category"
@@ -89,7 +89,7 @@ export function MissionForm({ categories }: { categories: { id: string; name_fr:
               onChange={(e) => setCategoryId(e.target.value)}
               className={field}
             >
-              <option value="">{t('mission.form.category_ph', lang)}</option>
+              <option value="">{t('annonce.form.category_ph', lang)}</option>
               {categories.map((c) => (
                 <option key={c.id} value={c.id}>
                   {c.name_fr}
@@ -100,7 +100,7 @@ export function MissionForm({ categories }: { categories: { id: string; name_fr:
 
           <div>
             <label htmlFor="mission-city" className={label}>
-              {t('mission.form.city_label', lang)}
+              {t('annonce.form.city_label', lang)}
             </label>
             <select
               id="mission-city"
@@ -108,7 +108,7 @@ export function MissionForm({ categories }: { categories: { id: string; name_fr:
               onChange={(e) => setCity(e.target.value)}
               className={field}
             >
-              <option value="">{t('mission.form.city_ph', lang)}</option>
+              <option value="">{t('annonce.form.city_ph', lang)}</option>
               {GOVERNORATES.map((g) => (
                 <option key={g.value} value={g.value}>
                   {lang === 'ar' ? g.ar : g.fr}
@@ -119,7 +119,7 @@ export function MissionForm({ categories }: { categories: { id: string; name_fr:
         </div>
 
         <div>
-          <span className={label}>{t('mission.form.budget_label', lang)}</span>
+          <span className={label}>{t('annonce.form.budget_label', lang)}</span>
           <div className="grid grid-cols-2 gap-3">
             <input
               type="number"
@@ -127,8 +127,8 @@ export function MissionForm({ categories }: { categories: { id: string; name_fr:
               inputMode="numeric"
               value={budgetMin}
               onChange={(e) => setBudgetMin(e.target.value)}
-              placeholder={t('mission.form.budget_min_ph', lang)}
-              aria-label={t('mission.form.budget_min_ph', lang)}
+              placeholder={t('annonce.form.budget_min_ph', lang)}
+              aria-label={t('annonce.form.budget_min_ph', lang)}
               className={field}
             />
             <input
@@ -137,8 +137,8 @@ export function MissionForm({ categories }: { categories: { id: string; name_fr:
               inputMode="numeric"
               value={budgetMax}
               onChange={(e) => setBudgetMax(e.target.value)}
-              placeholder={t('mission.form.budget_max_ph', lang)}
-              aria-label={t('mission.form.budget_max_ph', lang)}
+              placeholder={t('annonce.form.budget_max_ph', lang)}
+              aria-label={t('annonce.form.budget_max_ph', lang)}
               className={field}
             />
           </div>
@@ -147,7 +147,7 @@ export function MissionForm({ categories }: { categories: { id: string; name_fr:
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
           <div>
             <label htmlFor="mission-deadline" className={label}>
-              {t('mission.form.deadline_label', lang)}
+              {t('annonce.form.deadline_label', lang)}
             </label>
             <input
               id="mission-deadline"
@@ -165,7 +165,7 @@ export function MissionForm({ categories }: { categories: { id: string; name_fr:
               onChange={(e) => setIsRemote(e.target.checked)}
               className={`h-4 w-4 rounded border-border-subtle text-brand-blue-600 ${FOCUS_RING}`}
             />
-            {t('mission.form.remote_label', lang)}
+            {t('annonce.form.remote_label', lang)}
           </label>
         </div>
 
@@ -181,13 +181,13 @@ export function MissionForm({ categories }: { categories: { id: string; name_fr:
             disabled={pending}
             className={`inline-flex items-center rounded-full bg-brand-blue-600 px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-brand-blue-500 disabled:opacity-60 ${FOCUS_RING}`}
           >
-            {pending ? t('mission.form.submitting', lang) : t('mission.form.submit', lang)}
+            {pending ? t('annonce.form.submitting', lang) : t('annonce.form.submit', lang)}
           </button>
           <Link
-            href="/mes-missions"
+            href="/mes-annonces"
             className={`inline-flex items-center rounded-full px-5 py-2.5 text-sm font-medium text-text-muted transition-colors hover:bg-surface-pill ${FOCUS_RING}`}
           >
-            {t('mission.form.cancel', lang)}
+            {t('annonce.form.cancel', lang)}
           </Link>
         </div>
       </div>

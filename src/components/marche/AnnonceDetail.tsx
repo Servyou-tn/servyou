@@ -13,7 +13,6 @@ import {
   MapPin,
   MessageCircle,
   MessageSquare,
-  Pencil,
   RotateCcw,
   Trash2,
   Wifi,
@@ -24,12 +23,12 @@ import { t } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
 import { FOCUS_RING } from '@/components/layout/styles'
 import { MAX_RESPONSES_PER_POST } from '@/lib/job-constants'
-import type { MissionDetailData, MissionResponse } from '@/lib/marche/mission-detail'
+import type { AnnonceDetailData, AnnonceResponse } from '@/lib/marche/annonce-detail'
 import {
   closeMissionAction,
   reopenMissionAction,
   deleteMissionAction,
-} from '@/app/mes-missions/[id]/actions'
+} from '@/app/mes-annonces/[id]/actions'
 
 function formatPrice(n: number): string {
   return `${new Intl.NumberFormat('fr-TN').format(n)} TND`
@@ -57,7 +56,7 @@ function initials(name: string | null): string {
 // as "Expirée" since the DB will no longer accept responses to it.
 type DisplayStatus = 'open' | 'filled' | 'expired'
 
-export function MissionDetail({ mission }: { mission: MissionDetailData }) {
+export function AnnonceDetail({ annonce }: { annonce: AnnonceDetailData }) {
   const lang = useLang()
   const router = useRouter()
   const supabase = createClient()
@@ -75,12 +74,13 @@ export function MissionDetail({ mission }: { mission: MissionDetailData }) {
   const keepBtnRef = useRef<HTMLButtonElement>(null)
 
   const display: DisplayStatus =
-    mission.status === 'filled' ? 'filled' : mission.isExpired ? 'expired' : 'open'
+    annonce.status === 'filled' ? 'filled' : annonce.isExpired ? 'expired' : 'open'
 
-  // Action gating: an expired-but-open post offers no Modify/Close (they would be no-ops); a
-  // filled post can be reopened only while still inside the 30-day window.
+  // Action gating: an expired-but-open post offers no Close (it would be a no-op); a filled
+  // post can be reopened only while still inside the 30-day window. Modify returns in PR-D
+  // with the edit route behind it — canManageOpen still gates Close below, unrelated to Modify.
   const canManageOpen = display === 'open'
-  const canReopen = mission.status === 'filled' && !mission.isExpired
+  const canReopen = annonce.status === 'filled' && !annonce.isExpired
 
   // Delete modal a11y: lock scroll, move focus onto the non-destructive button, restore on close.
   useEffect(() => {
@@ -103,38 +103,38 @@ export function MissionDetail({ mission }: { mission: MissionDetailData }) {
     return () => document.removeEventListener('keydown', onKey)
   }, [deleteOpen, deleting])
 
-  async function contactFreelancer(resp: MissionResponse) {
+  async function contactFreelancer(resp: AnnonceResponse) {
     let p = phones[resp.freelancerId]
     if (!p) {
       setRevealingId(resp.freelancerId)
       const { data, error } = await supabase.rpc('get_contact_phone', { target: resp.freelancerId })
       setRevealingId(null)
       if (error) {
-        console.error('[MissionDetail] phone reveal error:', error)
-        toast.error(t('missions.detail.phone_reveal_error', lang))
+        console.error('[AnnonceDetail] phone reveal error:', error)
+        toast.error(t('annonces.detail.phone_reveal_error', lang))
         return
       }
       if (!data) {
-        toast.error(t('missions.detail.no_phone', lang))
+        toast.error(t('annonces.detail.no_phone', lang))
         return
       }
       p = data as string
       setPhones((m) => ({ ...m, [resp.freelancerId]: p! }))
     }
     const waNumber = p.replace(/[^0-9]/g, '') // wa.me wants digits only, country code included
-    const message = t('job.whatsapp_consumer_to_responder', lang, { mission: mission.title })
+    const message = t('annonces.detail.whatsapp_consumer_to_responder', lang, { annonce: annonce.title })
     window.open(`https://wa.me/${waNumber}?text=${encodeURIComponent(message)}`, '_blank', 'noopener,noreferrer')
   }
 
   async function doClose() {
     setClosing(true)
-    const res = await closeMissionAction(mission.id)
+    const res = await closeMissionAction(annonce.id)
     if (!res.ok) {
       toast.error(t(res.errorKey ?? 'common.error_generic', lang))
       setClosing(false)
       return
     }
-    toast.success(t('missions.detail.close_success', lang))
+    toast.success(t('annonces.detail.close_success', lang))
     setCloseStep(false)
     setClosing(false)
     router.refresh()
@@ -142,87 +142,87 @@ export function MissionDetail({ mission }: { mission: MissionDetailData }) {
 
   async function doReopen() {
     setReopening(true)
-    const res = await reopenMissionAction(mission.id)
+    const res = await reopenMissionAction(annonce.id)
     if (!res.ok) {
       toast.error(t(res.errorKey ?? 'common.error_generic', lang))
       setReopening(false)
       return
     }
-    toast.success(t('missions.detail.reopen_success', lang))
+    toast.success(t('annonces.detail.reopen_success', lang))
     setReopening(false)
     router.refresh()
   }
 
   async function doDelete() {
     setDeleting(true)
-    const res = await deleteMissionAction(mission.id)
+    const res = await deleteMissionAction(annonce.id)
     if (!res.ok) {
       toast.error(t(res.errorKey ?? 'common.error_generic', lang))
       setDeleting(false)
       return
     }
-    toast.success(t('missions.detail.delete_success', lang))
+    toast.success(t('annonces.detail.delete_success', lang))
     // Keep `deleting` true so the buttons stay disabled through the navigation; the Sonner
     // toaster lives in the root layout, so the toast survives the route change.
-    router.push('/mes-missions')
+    router.push('/mes-annonces')
     router.refresh()
   }
 
   // Budget label: a single value when min === max, a range when both differ, a one-sided bound
   // when only one is set, "À discuter" when neither is.
   let budgetLabel: string
-  if (mission.budgetMin != null && mission.budgetMax != null) {
+  if (annonce.budgetMin != null && annonce.budgetMax != null) {
     budgetLabel =
-      mission.budgetMin === mission.budgetMax
-        ? formatPrice(mission.budgetMin)
-        : `${formatPrice(mission.budgetMin)} – ${formatPrice(mission.budgetMax)}`
-  } else if (mission.budgetMin != null) {
-    budgetLabel = `≥ ${formatPrice(mission.budgetMin)}`
-  } else if (mission.budgetMax != null) {
-    budgetLabel = `≤ ${formatPrice(mission.budgetMax)}`
+      annonce.budgetMin === annonce.budgetMax
+        ? formatPrice(annonce.budgetMin)
+        : `${formatPrice(annonce.budgetMin)} – ${formatPrice(annonce.budgetMax)}`
+  } else if (annonce.budgetMin != null) {
+    budgetLabel = `≥ ${formatPrice(annonce.budgetMin)}`
+  } else if (annonce.budgetMax != null) {
+    budgetLabel = `≤ ${formatPrice(annonce.budgetMax)}`
   } else {
-    budgetLabel = t('missions.detail.budget_tbd', lang)
+    budgetLabel = t('annonces.detail.budget_tbd', lang)
   }
 
   const statusBadge = {
-    open: { cls: 'bg-brand-blue-100 text-brand-blue-700', label: t('missions.detail.status_open', lang) },
-    filled: { cls: 'bg-green-100 text-green-700', label: t('missions.detail.status_filled', lang) },
-    expired: { cls: 'bg-slate-200 text-slate-700', label: t('missions.detail.status_expired', lang) },
+    open: { cls: 'bg-brand-blue-100 text-brand-blue-700', label: t('annonces.detail.status_open', lang) },
+    filled: { cls: 'bg-green-100 text-green-700', label: t('annonces.detail.status_filled', lang) },
+    expired: { cls: 'bg-slate-200 text-slate-700', label: t('annonces.detail.status_expired', lang) },
   }[display]
 
-  const responseBadgeCls = mission.isAtCap ? 'bg-amber-100 text-amber-800' : 'bg-slate-100 text-text-muted'
+  const responseBadgeCls = annonce.isAtCap ? 'bg-amber-100 text-amber-800' : 'bg-slate-100 text-text-muted'
   const responseBadgeLabel = t(
-    mission.isAtCap ? 'missions.detail.responses_cap' : 'missions.detail.responses',
+    annonce.isAtCap ? 'annonces.detail.responses_cap' : 'annonces.detail.responses',
     lang,
-    { n: mission.responseCount, max: MAX_RESPONSES_PER_POST },
+    { n: annonce.responseCount, max: MAX_RESPONSES_PER_POST },
   )
 
   return (
     <div className="lg:grid lg:grid-cols-5 lg:gap-8">
-      {/* LEFT — mission summary + responses */}
+      {/* LEFT — annonce summary + responses */}
       <div className="lg:col-span-3">
         {/* Back */}
         <Link
-          href="/mes-missions"
+          href="/mes-annonces"
           className={cn(
             'mb-6 inline-flex items-center gap-1.5 rounded text-sm text-text-muted transition-colors hover:text-text-primary',
             FOCUS_RING,
           )}
         >
           <ArrowLeft className="h-4 w-4 rtl:-scale-x-100" aria-hidden="true" />
-          {t('missions.detail.back', lang)}
+          {t('annonces.detail.back', lang)}
         </Link>
 
         {/* Header */}
         <div className="mb-6">
-          <p className="text-xs uppercase tracking-wide text-text-muted">{t('missions.detail.label', lang)}</p>
-          <h1 className="mt-1 text-2xl font-bold text-text-primary">{mission.title}</h1>
+          <p className="text-xs uppercase tracking-wide text-text-muted">{t('annonces.detail.label', lang)}</p>
+          <h1 className="mt-1 text-2xl font-bold text-text-primary">{annonce.title}</h1>
           <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-text-muted">
             <span className={cn('rounded-full px-3 py-1 text-xs font-medium', statusBadge.cls)}>
               {statusBadge.label}
             </span>
             <span aria-hidden="true">·</span>
-            <span>{t('missions.detail.posted_on', lang, { date: formatDate(mission.createdAt) })}</span>
+            <span>{t('annonces.detail.posted_on', lang, { date: formatDate(annonce.createdAt) })}</span>
             <span aria-hidden="true">·</span>
             <span className={cn('rounded-full px-3 py-1 text-xs font-medium', responseBadgeCls)}>
               {responseBadgeLabel}
@@ -230,32 +230,32 @@ export function MissionDetail({ mission }: { mission: MissionDetailData }) {
           </div>
         </div>
 
-        {/* Section A — mission summary */}
+        {/* Section A — annonce summary */}
         <div className="card-premium outline-brand mb-6 rounded-2xl bg-white p-6">
           <div className="mb-4 flex items-center gap-2">
             <Briefcase className="h-5 w-5 text-brand-blue-600" aria-hidden="true" />
-            <h2 className="text-lg font-semibold text-text-primary">{t('missions.detail.section_details', lang)}</h2>
+            <h2 className="text-lg font-semibold text-text-primary">{t('annonces.detail.section_details', lang)}</h2>
           </div>
 
           <div className="flex flex-col gap-4">
             <div>
-              <p className="text-sm font-medium text-text-muted">{t('missions.detail.description_label', lang)}</p>
+              <p className="text-sm font-medium text-text-muted">{t('annonces.detail.description_label', lang)}</p>
               <p className="mt-1 whitespace-pre-line text-base leading-relaxed text-text-primary">
-                {mission.description}
+                {annonce.description}
               </p>
             </div>
 
             <dl className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
-                <dt className="text-sm font-medium text-text-muted">{t('missions.detail.budget_label', lang)}</dt>
+                <dt className="text-sm font-medium text-text-muted">{t('annonces.detail.budget_label', lang)}</dt>
                 <dd className="mt-1 text-base font-semibold text-text-primary">{budgetLabel}</dd>
               </div>
               <div>
-                <dt className="text-sm font-medium text-text-muted">{t('missions.detail.category_label', lang)}</dt>
+                <dt className="text-sm font-medium text-text-muted">{t('annonces.detail.category_label', lang)}</dt>
                 <dd className="mt-1">
-                  {mission.category ? (
+                  {annonce.category ? (
                     <span className="inline-block rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-text-primary">
-                      {mission.category}
+                      {annonce.category}
                     </span>
                   ) : (
                     <span className="text-base text-text-muted">—</span>
@@ -263,17 +263,17 @@ export function MissionDetail({ mission }: { mission: MissionDetailData }) {
                 </dd>
               </div>
               <div>
-                <dt className="text-sm font-medium text-text-muted">{t('missions.detail.location_label', lang)}</dt>
+                <dt className="text-sm font-medium text-text-muted">{t('annonces.detail.location_label', lang)}</dt>
                 <dd className="mt-1 inline-flex items-center gap-1.5 text-base text-text-primary">
-                  {mission.isRemote ? (
+                  {annonce.isRemote ? (
                     <>
                       <Wifi className="h-4 w-4 text-text-muted" aria-hidden="true" />
-                      {t('mission.form.remote_label', lang)}
+                      {t('annonce.form.remote_label', lang)}
                     </>
-                  ) : mission.city ? (
+                  ) : annonce.city ? (
                     <>
                       <MapPin className="h-4 w-4 text-text-muted" aria-hidden="true" />
-                      {mission.city}
+                      {annonce.city}
                     </>
                   ) : (
                     <span className="text-text-muted">—</span>
@@ -281,18 +281,18 @@ export function MissionDetail({ mission }: { mission: MissionDetailData }) {
                 </dd>
               </div>
               <div>
-                <dt className="text-sm font-medium text-text-muted">{t('missions.detail.deadline_label', lang)}</dt>
+                <dt className="text-sm font-medium text-text-muted">{t('annonces.detail.deadline_label', lang)}</dt>
                 <dd className="mt-1 text-base text-text-primary">
-                  {mission.deadline ? formatDate(mission.deadline) : t('missions.detail.deadline_none', lang)}
+                  {annonce.deadline ? formatDate(annonce.deadline) : t('annonces.detail.deadline_none', lang)}
                 </dd>
               </div>
             </dl>
 
-            {mission.skills.length > 0 && (
+            {annonce.skills.length > 0 && (
               <div>
-                <p className="text-sm font-medium text-text-muted">{t('missions.detail.skills_label', lang)}</p>
+                <p className="text-sm font-medium text-text-muted">{t('annonces.detail.skills_label', lang)}</p>
                 <div className="mt-2 flex flex-wrap gap-2">
-                  {mission.skills.map((s) => (
+                  {annonce.skills.map((s) => (
                     <span key={s} className="rounded-full bg-slate-100 px-3 py-1 text-xs text-text-primary">
                       {s}
                     </span>
@@ -306,21 +306,21 @@ export function MissionDetail({ mission }: { mission: MissionDetailData }) {
         {/* Section B — responses */}
         <div className="mb-4 flex items-center gap-2 lg:mb-0">
           <MessageSquare className="h-5 w-5 text-brand-blue-600" aria-hidden="true" />
-          <h2 className="text-lg font-semibold text-text-primary">{t('missions.detail.responses_title', lang)}</h2>
+          <h2 className="text-lg font-semibold text-text-primary">{t('annonces.detail.responses_title', lang)}</h2>
           <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-text-muted">
-            {mission.responseCount}
+            {annonce.responseCount}
           </span>
         </div>
 
-        {mission.responses.length === 0 ? (
+        {annonce.responses.length === 0 ? (
           <div className="card-premium outline-brand mt-4 rounded-2xl bg-white p-12 text-center">
             <Inbox className="mx-auto mb-4 h-16 w-16 text-text-muted" aria-hidden="true" />
-            <p className="text-base font-semibold text-text-primary">{t('missions.detail.empty_title', lang)}</p>
-            <p className="mt-2 text-sm text-text-muted">{t('missions.detail.empty_desc', lang)}</p>
+            <p className="text-base font-semibold text-text-primary">{t('annonces.detail.empty_title', lang)}</p>
+            <p className="mt-2 text-sm text-text-muted">{t('annonces.detail.empty_desc', lang)}</p>
           </div>
         ) : (
           <div className="mt-4 flex flex-col gap-4">
-            {mission.responses.map((resp) => {
+            {annonce.responses.map((resp) => {
               const days = daysAgo(resp.createdAt)
               return (
                 <div key={resp.id} className="card-premium outline-brand rounded-2xl bg-white p-6">
@@ -334,7 +334,7 @@ export function MissionDetail({ mission }: { mission: MissionDetailData }) {
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
                         <p className="text-base font-semibold text-text-primary">
-                          {resp.fullName || t('missions.detail.freelance_unnamed', lang)}
+                          {resp.fullName || t('annonces.detail.freelance_unnamed', lang)}
                         </p>
                         {resp.city && (
                           <>
@@ -353,8 +353,8 @@ export function MissionDetail({ mission }: { mission: MissionDetailData }) {
                       )}
                       <p className="mt-3 text-xs text-text-muted">
                         {days === 0
-                          ? t('missions.detail.responded_today', lang)
-                          : t('missions.detail.responded_days_ago', lang, { n: days })}
+                          ? t('annonces.detail.responded_today', lang)
+                          : t('annonces.detail.responded_days_ago', lang, { n: days })}
                       </p>
                     </div>
 
@@ -375,7 +375,7 @@ export function MissionDetail({ mission }: { mission: MissionDetailData }) {
                         ) : (
                           <MessageCircle className="h-4 w-4" aria-hidden="true" />
                         )}
-                        {t('missions.detail.contact', lang)}
+                        {t('annonces.detail.contact', lang)}
                       </button>
                     </div>
                   </div>
@@ -389,23 +389,9 @@ export function MissionDetail({ mission }: { mission: MissionDetailData }) {
       {/* RIGHT — sticky action panel */}
       <div className="mt-6 lg:col-span-2 lg:mt-0">
         <div className="card-premium outline-brand rounded-2xl bg-white p-6 lg:sticky lg:top-24">
-          <p className="mb-4 text-xs uppercase tracking-wide text-text-muted">{t('missions.detail.actions', lang)}</p>
+          <p className="mb-4 text-xs uppercase tracking-wide text-text-muted">{t('annonces.detail.actions', lang)}</p>
 
           <div className="flex flex-col gap-3">
-            {/* Modify — only while open (route deferred → U-curve 404) */}
-            {canManageOpen && (
-              <Link
-                href={`/mes-missions/${mission.id}/modifier`}
-                className={cn(
-                  'inline-flex h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-full border border-border-subtle bg-white text-sm font-medium text-text-primary transition-colors hover:bg-slate-50',
-                  FOCUS_RING,
-                )}
-              >
-                <Pencil className="h-4 w-4" aria-hidden="true" />
-                {t('missions.detail.modify', lang)}
-              </Link>
-            )}
-
             {/* Close — only while open, 2-step inline confirm */}
             {canManageOpen &&
               (!closeStep ? (
@@ -418,11 +404,11 @@ export function MissionDetail({ mission }: { mission: MissionDetailData }) {
                   )}
                 >
                   <CheckCircle className="h-5 w-5" aria-hidden="true" />
-                  {t('missions.detail.close', lang)}
+                  {t('annonces.detail.close', lang)}
                 </button>
               ) : (
                 <div className="rounded-2xl border border-border-subtle p-3">
-                  <p className="text-sm font-medium text-text-primary">{t('missions.detail.close_sure', lang)}</p>
+                  <p className="text-sm font-medium text-text-primary">{t('annonces.detail.close_sure', lang)}</p>
                   <div className="mt-2 flex gap-2">
                     <button
                       type="button"
@@ -434,7 +420,7 @@ export function MissionDetail({ mission }: { mission: MissionDetailData }) {
                       )}
                     >
                       {closing && <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />}
-                      {closing ? t('common.submitting', lang) : t('missions.detail.confirm', lang)}
+                      {closing ? t('common.submitting', lang) : t('annonces.detail.confirm', lang)}
                     </button>
                     <button
                       type="button"
@@ -452,7 +438,7 @@ export function MissionDetail({ mission }: { mission: MissionDetailData }) {
               ))}
 
             {canManageOpen && (
-              <p className="text-xs text-text-muted">{t('missions.detail.close_helper', lang)}</p>
+              <p className="text-xs text-text-muted">{t('annonces.detail.close_helper', lang)}</p>
             )}
 
             {/* Reopen — only a filled, not-expired post */}
@@ -471,7 +457,7 @@ export function MissionDetail({ mission }: { mission: MissionDetailData }) {
                 ) : (
                   <RotateCcw className="h-4 w-4" aria-hidden="true" />
                 )}
-                {t('missions.detail.reopen', lang)}
+                {t('annonces.detail.reopen', lang)}
               </button>
             )}
 
@@ -485,11 +471,11 @@ export function MissionDetail({ mission }: { mission: MissionDetailData }) {
               )}
             >
               <Trash2 className="h-4 w-4" aria-hidden="true" />
-              {t('missions.detail.delete', lang)}
+              {t('annonces.detail.delete', lang)}
             </button>
 
             <div className="mt-2 border-t border-border-subtle pt-3">
-              <p className="text-xs leading-relaxed text-text-muted">{t('missions.detail.expiry_note', lang)}</p>
+              <p className="text-xs leading-relaxed text-text-muted">{t('annonces.detail.expiry_note', lang)}</p>
             </div>
           </div>
         </div>
@@ -506,13 +492,13 @@ export function MissionDetail({ mission }: { mission: MissionDetailData }) {
           <div
             role="dialog"
             aria-modal="true"
-            aria-labelledby="delete-mission-title"
+            aria-labelledby="delete-annonce-title"
             className="relative w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl"
           >
-            <h2 id="delete-mission-title" className="text-xl font-bold text-text-primary">
-              {t('missions.detail.delete_modal_title', lang)}
+            <h2 id="delete-annonce-title" className="text-xl font-bold text-text-primary">
+              {t('annonces.detail.delete_modal_title', lang)}
             </h2>
-            <p className="mt-2 text-sm text-text-muted">{t('missions.detail.delete_modal_body', lang)}</p>
+            <p className="mt-2 text-sm text-text-muted">{t('annonces.detail.delete_modal_body', lang)}</p>
             <div className="mt-6 flex justify-end gap-3">
               <button
                 ref={keepBtnRef}
@@ -536,7 +522,7 @@ export function MissionDetail({ mission }: { mission: MissionDetailData }) {
                 )}
               >
                 {deleting && <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />}
-                {deleting ? t('common.submitting', lang) : t('missions.detail.delete_confirm', lang)}
+                {deleting ? t('common.submitting', lang) : t('annonces.detail.delete_confirm', lang)}
               </button>
             </div>
           </div>

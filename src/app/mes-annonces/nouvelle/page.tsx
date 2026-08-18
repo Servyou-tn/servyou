@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 import { AppShell } from '@/components/shell/AppShell'
-import { MissionForm } from '@/components/marche/MissionForm'
+import { AnnonceForm } from '@/components/marche/AnnonceForm'
 import { getShellUser } from '@/lib/marche/shell-user'
 import { getCategories } from '@/lib/marche/my-data'
 import { PageHeader } from '@/components/shared/PageHeader'
@@ -25,7 +25,7 @@ export default async function NouvelleMissionPage() {
         subtitle={t('page_header.nouvelle_mission.subtitle', lang)}
         emphasisWord={t('page_header.nouvelle_mission.emphasis', lang)}
       />
-      <MissionForm categories={categories} />
+      <AnnonceForm categories={categories} />
     </AppShell>
   )
 }
