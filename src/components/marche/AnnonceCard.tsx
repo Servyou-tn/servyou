@@ -56,7 +56,14 @@ export function AnnonceCard({ annonce }: { annonce: MyAnnonce }) {
         </StatusPill>
       </div>
 
-      {annonce.admin_hidden_at && <div className="mt-3"><ModerationBanner variant="job_post" /></div>}
+      {/* alert={false}: N moderated rows on this list would otherwise fire N assertive
+          announcements for what is, to the user, one glanceable state per row. The detail page
+          keeps the default (one page-level role="alert"). */}
+      {annonce.admin_hidden_at && (
+        <div className="mt-3">
+          <ModerationBanner variant="job_post" alert={false} />
+        </div>
+      )}
 
       {annonce.description && (
         <p className="mt-2 line-clamp-2 text-sm text-text-muted">{annonce.description}</p>
