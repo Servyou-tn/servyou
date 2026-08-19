@@ -20,9 +20,11 @@ import { LANGUAGE_CODES, PROFICIENCY_CODES } from '@/lib/freelancer/language-opt
 // re-reads the (now non-empty) skills set and inserts only the delta, instead of duplicating rows
 // that already landed.
 //
-// SKILLS_MIN/MAX duplicated from SkillsInput.tsx (a 'use client' module) rather than imported —
-// pulling a client-boundary file's named export into server action code is avoidable friction for
-// two numbers already fixed by the frame's own helper text ("Minimum 3, maximum 15").
+// SKILLS_MIN/MAX duplicated from CompetencesForm.tsx (a 'use client' module, itself now the sole
+// owner of these two numbers since PR-D promoted SkillsInput.tsx to the generic `ui/tag-input`,
+// which takes min/max as props) rather than imported — pulling a client-boundary file's local
+// const into server action code is avoidable friction for two numbers already fixed by the
+// frame's own helper text ("Minimum 3, maximum 15").
 const SKILLS_MIN = 3
 const SKILLS_MAX = 15
 const SKILL_MAX_LEN = 60

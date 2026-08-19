@@ -511,15 +511,120 @@ undo them. A closed decision is not a deferral.
   an already-renamed-away directory, one against an already-fully-staged deletion) and staged
   nothing; only the third, narrower attempt succeeded — and it was narrowed by excluding the paths
   under the `RM` misreading above, which is how the drop happened.
-- **The gate that follows from both:** after `git commit`, before `git push`, run
-  `git status --porcelain` and require **empty output** — not "looks staged," not a visual scan of
-  `git status --short`, the literal porcelain string must be zero bytes. Then run `tsc`/the test
+- **The gate that follows from both (precise wording — a first pass at this got it wrong):** the
+  rule is **not** "`git status --porcelain` must be empty." Pre-existing untracked `??` clutter
+  (this repo has ~20 such lines from unrelated earlier work) does not violate anything and will
+  never go away between commits — demanding zero bytes of output makes the gate fail permanently
+  and teaches people to stop trusting it. The actual invariant: **no tracked path that belongs to
+  the commit's own working set may carry a second-column marker.** Concretely, after `git commit`,
+  before `git push`, run `git status --porcelain` and read only the lines whose first column is a
+  tracked-file code (`M`, `A`, `R`, `D`, `C`, `U`) — every one of those must have a **blank** second
+  column (`M `, `A `, `R `, not `RM`/`AM`/`MM`). `??` lines are untracked and outside this check
+  entirely, whether they're pre-existing clutter or something new — an untracked leftover from your
+  own change is a *different* mistake (an omitted file), not this one. Then run `tsc`/the test
   suite/the build **against the committed tree** (a fresh worktree or a post-commit checkout), not
   the working tree. A working-tree verification proves the *code* is correct; it proves nothing
-  about what the commit — the thing that actually ships — contains. The two are only guaranteed
-  identical when `git status --porcelain` is empty at the moment `tsc` runs.
+  about what the commit — the thing that actually ships — contains.
 - **Trigger:** already in force — apply this gate to every commit from here on, not just PRs that
   touch renamed files.
+
+### Junctioning `node_modules` into a scratch worktree destroys the real one
+- **What happened:** verifying `741eb08` in isolation (the entry above) used a scratch git worktree
+  with `node_modules` junctioned in (`New-Item -ItemType Junction`) rather than reinstalled, to
+  avoid a multi-minute `npm ci` for a one-off check. `git worktree remove --force` on that worktree
+  errored ("Filename too long") partway through — and had, before failing, recursed **through the
+  junction into the real `node_modules`** and started deleting inside it. `node_modules/.bin` was
+  gone entirely afterward; the actual packages (`next`, `vitest`, `typescript`, …) survived because
+  the delete aborted mid-walk, not because junctions were respected as opaque.
+- **The false-green tell:** with `.bin` gone, `npx tsc --noEmit` did not error — it silently
+  resolved to an unrelated same-named package on the npm registry (`tsc@2.0.4`, a placeholder that
+  prints "this is not the tsc command you are looking for") and exited non-zero on ITS OWN terms,
+  which looked like a real compile failure until inspected. Had that placeholder instead exited 0,
+  a `tsc --noEmit` check would have reported clean while checking nothing. Same class of trap as
+  `getComputedStyle` returning a live object that reads plausible while measuring the wrong thing,
+  and Tailwind v4 compiling an unrecognized utility to standalone longhand properties instead of
+  erroring: **the tool degrades to something that still runs and still looks like an answer.** A
+  missing/wrong binary on `PATH` is not always a loud failure — check `node_modules/.bin/<tool>.cmd`
+  exists (or invoke `node node_modules/<pkg>/bin/<tool>` directly) if a familiar `npx` command
+  starts behaving strangely, rather than trusting its exit code alone.
+- **The rule:** never junction (or symlink) `node_modules` into a scratch worktree. Either accept
+  the full `npm ci` cost for that worktree, or — if the check is read-only and fast — run it without
+  installing anything by pointing `NODE_PATH`/a temp `tsconfig` at the main repo's `node_modules`
+  instead of merging directory trees. If a worktree with a junctioned `node_modules` was created
+  anyway, **do not** `git worktree remove` or `rmdir /s` it — remove the junction itself first
+  (`Remove-Item <path>\node_modules` with no `-Recurse`, which unlinks a junction without
+  descending into its target), confirm the real `node_modules` is untouched, then remove the rest
+  of the worktree normally.
+- **Recovery, if it happens again:** don't patch around a missing shim. Full `Remove-Item -Recurse
+  -Force node_modules` + `npm ci`, then re-verify `.bin` exists and the tool resolves correctly.
+  A partial fix (reinstalling just the missing piece) doesn't rule out other silent damage from the
+  same aborted delete.
+- **Trigger:** already in force — no scratch worktree should ever share `node_modules` with the
+  main tree via junction/symlink again.
+
+### Select-field consolidation still owed — one shared constant, three copies, no real component (PR-D, `feat/annonces-form-ds`, 2026-08-19)
+- **What:** PR-D extracted `SELECT_FIELD_BASE` into `components/layout/styles.ts` (alongside
+  `FOCUS_RING`/`CARD_SHADOW`) from E1's local `selectField` shape (`ProductRequestForm.tsx` —
+  deliberately, not G6's: E1's version omits the border color so a caller can append
+  `border-danger-500` on error, which PR-D's per-field error state needed and G6's own copy, baked
+  to `border-border-strong` unconditionally, did not support). G6's `ProductForm.tsx` and the new
+  `/mes-annonces/nouvelle` both now consume the shared constant. **E1's own `ProductRequestForm.tsx`
+  still has its local copy, untouched** — task scope named only "here and G6," not the extraction's
+  own source file, so there are now three call sites (G6, annonces, E1) and one shared definition
+  E1 itself doesn't use yet.
+- **Why deferred:** consolidating E1 onto the shared constant is a one-line, zero-risk change, but
+  bundling it into a form-rebuild PR not otherwise touching E1 widens the diff for no behavioral
+  reason. The bigger item — a real DS `Select` component (out of scope per PR-D's own brief: "DS
+  Select" is explicitly listed as out of scope) — is the actual fix; the shared string constant is
+  a stopgap three routes now depend on informally.
+- **Trigger:** the DS pass that finally builds a real `Select` primitive (Section 4's locked
+  component list already names it), or a small consolidation commit that points E1 at
+  `SELECT_FIELD_BASE` too in the meantime.
+
+### `Input`/`Textarea`'s `required` prop couples the visual asterisk to `aria-required` — blocks the HYBRID no-asterisk rule on a majority-required form (PR-D, `feat/annonces-form-ds`, 2026-08-19)
+- **What:** `/mes-annonces/nouvelle` is a majority-required form, so the locked HYBRID field-marking
+  rule applies: required fields carry NO visual asterisk (optional fields carry "(optionnel)" in
+  the label text instead, already true of every optional label in this form). Category and Ville
+  are native `<select>`s, so PR-D wired `aria-required="true"` on them by hand with no asterisk —
+  clean. **Title (`Input`) and Description (`Textarea`) could not follow the same rule.** Both
+  primitives expose exactly one `required: boolean` prop that does two things at once
+  (`components/ui/input.tsx:83` / `components/ui/textarea.tsx`, same shape): it renders the
+  visual asterisk AND sets `aria-required`. There is no way to ask for one without the other.
+- **Confirmed structurally impossible to route around from the caller side, not just inconvenient:**
+  both primitives spread `{...props}` onto the native element and THEN set
+  `aria-required={required || undefined}` as an explicit JSX attribute afterward — in React, an
+  explicit attribute declared after a spread always wins, including when its value is `undefined`,
+  which removes the attribute. So passing `aria-required="true"` through the props spread while
+  leaving `required` unset does not survive; it gets silently overwritten to `undefined`. There is
+  no prop combination that yields "aria-required, no asterisk" without editing the primitive.
+- **What PR-D shipped instead, and why it's a report rather than a fix:** Title and Description
+  ship with NEITHER the asterisk NOR `aria-required` under this interim — not a regression (the
+  form they replace had neither either — no `required` handling existed anywhere in the old
+  hand-rolled version), just not yet the full HYBRID rule. Editing `Input`/`Textarea` to add a new
+  prop was deliberately not done unilaterally inside a form-rebuild PR: it is a shared-primitive
+  contract change touching every one of their existing call sites (G6, E1, H2, H3, G2's
+  configuration step, …), which is a decision for a DS pass, not a side effect of this one.
+- **The fix, when someone picks this up:** split the concern into two props — e.g. keep `required`
+  for the common case (asterisk + aria-required together, today's behavior, no call site needs to
+  change) and add `hideRequiredMarker?: boolean` (or equivalently `ariaRequired?: boolean`
+  independent of the visual `required`) for a caller that wants aria-required without the
+  asterisk. Additive, so every existing call site is unaffected.
+- **Trigger:** the next DS pass on `Input`/`Textarea`, or the next majority-required form built
+  after this one that hits the identical wall.
+
+### Native `type="date"` renders in the OS/Chromium locale, not the app's `lang` — mm/dd/yyyy on an AR page
+- **What:** the browser's built-in date picker and its placeholder format follow the host OS/browser
+  locale, which `lang`/`dir` (the app's own FR/AR switch) has no control over. On a Chromium browser
+  set to an English OS locale, `/mes-annonces/nouvelle`'s Deadline field renders `mm/dd/yyyy` even
+  when the page itself is rendered in Arabic (`dir="rtl"`, every surrounding label in Arabic).
+  `SignupForm.tsx:294` has the identical `type="date"` field and the identical bug — confirmed by
+  grep, not assumed: it is the only other `type="date"` input in `src`, so this is not a novel
+  defect, it is the second known instance of one.
+- **Why not fixed here:** the real fix is a DS `DatePicker` (explicitly out of scope for PR-D, and
+  presumably for the signup form's own PR too) — restyling the native input, which PR-D did, does
+  not touch the picker's locale behavior, which is the browser's, not CSS's, to control.
+- **Trigger:** the DS pass that builds a real `DatePicker` primitive — fix both call sites
+  (`SignupForm.tsx` and `AnnonceForm.tsx`) together, since they now share the exact same defect.
 
 ## Post-MVP scale triggers
 

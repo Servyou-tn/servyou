@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input'
 import { FOCUS_RING } from '@/components/layout/styles'
 import { isValidPhone } from '@/lib/phone'
 import { submitServiceRequest } from '../actions'
-import { Textarea } from './Textarea'
+import { Textarea } from '@/components/ui/textarea'
 
 // E1 MAIN — the form card, measured from Figma 680:56165 (empty) / 682:56521 (filled) /
 // 682:56805 (mobile). Client because it owns four controlled fields, inline validation and the

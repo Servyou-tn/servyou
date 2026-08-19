@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { useLang } from '@/components/LangProvider'
 import { t } from '@/lib/i18n'
-import { FOCUS_RING, CARD_SHADOW } from '@/components/layout/styles'
+import { FOCUS_RING, CARD_SHADOW, SELECT_FIELD_BASE } from '@/components/layout/styles'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Toggle } from '@/components/ui/toggle'
@@ -126,7 +126,9 @@ export function ProductForm({
   const section = `rounded-2xl bg-white p-6 sm:p-8 ${CARD_SHADOW}`
   const heading = 'mb-5 text-base font-semibold text-text-primary'
   const label = 'mb-1.5 block text-sm font-medium text-text-secondary'
-  const selectField = `w-full rounded-lg border border-border-strong bg-surface-base px-4 h-11 text-base text-text-primary outline-none transition-colors focus:border-brand-blue-600 ${FOCUS_RING}`
+  // No error state on this select today, so the default border is appended unconditionally —
+  // token-for-token the same rendered class list this local constant produced before promotion.
+  const selectField = `${SELECT_FIELD_BASE} border-border-strong`
   // The in-field currency adornment — the `TND` text node the Price Input composite carries.
   const suffix = (
     <span aria-hidden="true" className="shrink-0 text-sm text-text-muted">

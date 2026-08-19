@@ -8,12 +8,19 @@ import { useLang } from '@/components/LangProvider'
 import { t } from '@/lib/i18n'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
+import { TagInput } from '@/components/ui/tag-input'
 import { FOCUS_RING } from '@/components/layout/styles'
 import { NumberStepper } from '@/app/demander/[id]/_components/NumberStepper'
 import { Stepper } from '../../_components/Stepper'
-import { SkillsInput, SKILLS_MIN } from './SkillsInput'
 import { LanguageRepeater, type LanguageRow } from './LanguageRepeater'
 import { saveCompetencesAction } from '../actions'
+
+// Duplicated from the promoted `TagInput`'s own doc comment: these two numbers used to live as
+// exported constants on the route-local SkillsInput.tsx (PR-D promoted it to components/ui, which
+// takes min/max as props instead of hardcoding them — see docs/follow-ups.md). "Minimum 3,
+// maximum 15" per the frame's own helper text (467:20404).
+const SKILLS_MIN = 3
+const SKILLS_MAX = 15
 
 // H2 step 2 "Compétences & langues" — Figma 467:20404, measured in docs/design/h2-discovery.md
 // §3. The measured frame is a cropped specimen (Stepper + box only, no footer — §1) so the
@@ -142,7 +149,17 @@ export function CompetencesForm({ initial }: { initial: CompetencesInitial }) {
       </div>
 
       <div className="flex flex-col gap-5 rounded-card border border-border-subtle bg-surface-base p-4 sm:p-6">
-        <SkillsInput skills={skills} onChange={setSkills} lang={lang} error={errors.skills} />
+        <TagInput
+          value={skills}
+          onChange={setSkills}
+          min={SKILLS_MIN}
+          max={SKILLS_MAX}
+          label={t('freelance.create.step2.competences_label', lang)}
+          placeholder={t('freelance.create.step2.competences_ph', lang)}
+          helper={t('freelance.create.step2.competences_helper', lang)}
+          error={errors.skills}
+          getRemoveLabel={(skill) => t('freelance.delete_skill_label', lang, { name: skill })}
+        />
 
         <LanguageRepeater rows={languageRows} onChange={setLanguageRows} lang={lang} error={errors.languages} />
 

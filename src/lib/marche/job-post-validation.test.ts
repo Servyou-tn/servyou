@@ -11,6 +11,7 @@ const base: JobPostInput = {
   budgetMax: '',
   isRemote: false,
   deadline: '',
+  skills: [],
 }
 const NOW = new Date(2026, 5, 15) // 2026-06-15 (injected, since Date.now varies)
 
@@ -80,5 +81,38 @@ describe('validateJobPost', () => {
   it('accepts today and future deadlines', () => {
     expect(validateJobPost({ ...base, deadline: '2026-06-15' }, NOW).ok).toBe(true)
     expect(validateJobPost({ ...base, deadline: '2026-12-31' }, NOW).ok).toBe(true)
+  })
+
+  it('trims skills and drops empties, no minimum required', () => {
+    const r = validateJobPost({ ...base, skills: ['  Plomberie  ', '', '  '] }, NOW)
+    expect(r.ok).toBe(true)
+    if (r.ok) expect(r.value.skills).toEqual(['Plomberie'])
+  })
+
+  it('accepts exactly 8 skills, rejects 9', () => {
+    const eight = Array.from({ length: 8 }, (_, i) => `skill-${i}`)
+    expect(validateJobPost({ ...base, skills: eight }, NOW).ok).toBe(true)
+    const nine = Array.from({ length: 9 }, (_, i) => `skill-${i}`)
+    expect(validateJobPost({ ...base, skills: nine }, NOW)).toEqual({
+      ok: false,
+      errorKey: 'annonce.error.skills_max',
+    })
+  })
+
+  it('rejects a skill longer than 60 characters', () => {
+    const r = validateJobPost({ ...base, skills: ['a'.repeat(61)] }, NOW)
+    expect(r).toEqual({ ok: false, errorKey: 'annonce.error.skills_length' })
+  })
+
+  it('accepts a skill at exactly 60 characters', () => {
+    const r = validateJobPost({ ...base, skills: ['a'.repeat(60)] }, NOW)
+    expect(r.ok).toBe(true)
+  })
+
+  it('treats a missing skills array as empty rather than throwing', () => {
+    const { skills: _skills, ...rest } = base
+    const r = validateJobPost({ ...rest, skills: undefined as unknown as string[] }, NOW)
+    expect(r.ok).toBe(true)
+    if (r.ok) expect(r.value.skills).toEqual([])
   })
 })
