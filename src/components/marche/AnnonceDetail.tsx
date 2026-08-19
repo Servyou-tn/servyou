@@ -23,6 +23,7 @@ import { t } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
 import { FOCUS_RING } from '@/components/layout/styles'
 import { MAX_RESPONSES_PER_POST } from '@/lib/job-constants'
+import { ModerationBanner } from '@/components/ModerationBanner'
 import type { AnnonceDetailData, AnnonceResponse } from '@/lib/marche/annonce-detail'
 import {
   closeMissionAction,
@@ -51,11 +52,6 @@ function initials(name: string | null): string {
   return parts.slice(0, 2).map((p) => p[0]!.toUpperCase()).join('')
 }
 
-// The display status folds the stored status with computed expiry: a 'filled' post stays
-// "Fermée" regardless of age (it was deliberately closed); an 'open' post past 30 days reads
-// as "Expirée" since the DB will no longer accept responses to it.
-type DisplayStatus = 'open' | 'filled' | 'expired'
-
 export function AnnonceDetail({ annonce }: { annonce: AnnonceDetailData }) {
   const lang = useLang()
   const router = useRouter()
@@ -73,8 +69,11 @@ export function AnnonceDetail({ annonce }: { annonce: AnnonceDetailData }) {
   const [deleting, setDeleting] = useState(false)
   const keepBtnRef = useRef<HTMLButtonElement>(null)
 
-  const display: DisplayStatus =
-    annonce.status === 'filled' ? 'filled' : annonce.isExpired ? 'expired' : 'open'
+  // Resolved server-side (lib/marche/annonce-status.ts, shared with AnnonceCard) and passed down
+  // as `displayStatus` — NOT recomputed here. A resolver reading `Date.now()` inside this
+  // 'use client' component's render body would run once during SSR and again on hydration with
+  // two different clocks; for a post near the 30-day boundary that is a hydration mismatch.
+  const display = annonce.displayStatus
 
   // Action gating: an expired-but-open post offers no Close (it would be a no-op); a filled
   // post can be reopened only while still inside the 30-day window. Modify returns in PR-D
@@ -170,6 +169,7 @@ export function AnnonceDetail({ annonce }: { annonce: AnnonceDetailData }) {
 
   // Budget label: a single value when min === max, a range when both differ, a one-sided bound
   // when only one is set, "À discuter" when neither is.
+  const hasBudget = annonce.budgetMin != null || annonce.budgetMax != null
   let budgetLabel: string
   if (annonce.budgetMin != null && annonce.budgetMax != null) {
     budgetLabel =
@@ -230,6 +230,8 @@ export function AnnonceDetail({ annonce }: { annonce: AnnonceDetailData }) {
           </div>
         </div>
 
+        {annonce.adminHiddenAt && <ModerationBanner variant="job_post" />}
+
         {/* Section A — annonce summary */}
         <div className="card-premium outline-brand mb-6 rounded-2xl bg-white p-6">
           <div className="mb-4 flex items-center gap-2">
@@ -248,7 +250,11 @@ export function AnnonceDetail({ annonce }: { annonce: AnnonceDetailData }) {
             <dl className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
                 <dt className="text-sm font-medium text-text-muted">{t('annonces.detail.budget_label', lang)}</dt>
-                <dd className="mt-1 text-base font-semibold text-text-primary">{budgetLabel}</dd>
+                {/* dir="ltr" only on the numeric branches — the "À discuter" fallback (hasBudget
+                    false) is real translated text and must stay in the ambient RTL flow. */}
+                <dd dir={hasBudget ? 'ltr' : undefined} className="mt-1 text-base font-semibold text-text-primary">
+                  {budgetLabel}
+                </dd>
               </div>
               <div>
                 <dt className="text-sm font-medium text-text-muted">{t('annonces.detail.category_label', lang)}</dt>
@@ -282,8 +288,14 @@ export function AnnonceDetail({ annonce }: { annonce: AnnonceDetailData }) {
               </div>
               <div>
                 <dt className="text-sm font-medium text-text-muted">{t('annonces.detail.deadline_label', lang)}</dt>
+                {/* dir="ltr" only around the date string — "Aucune" (deadline_none) is real
+                    translated text and must stay in the ambient RTL flow. */}
                 <dd className="mt-1 text-base text-text-primary">
-                  {annonce.deadline ? formatDate(annonce.deadline) : t('annonces.detail.deadline_none', lang)}
+                  {annonce.deadline ? (
+                    <span dir="ltr">{formatDate(annonce.deadline)}</span>
+                  ) : (
+                    t('annonces.detail.deadline_none', lang)
+                  )}
                 </dd>
               </div>
             </dl>

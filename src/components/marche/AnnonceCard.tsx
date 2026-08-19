@@ -7,6 +7,7 @@ import { MAX_RESPONSES_PER_POST } from '@/lib/job-constants'
 import { tndPrice } from '@/components/listings/listing-utils'
 import { FOCUS_RING } from '@/components/layout/styles'
 import { StatusPill, type StatusValue } from '@/components/ui/status-pill'
+import { ModerationBanner } from '@/components/ModerationBanner'
 import type { MyAnnonce } from '@/lib/marche/my-data'
 
 function budgetLabel(min: number | null, max: number | null): string | null {
@@ -16,8 +17,9 @@ function budgetLabel(min: number | null, max: number | null): string | null {
   return null
 }
 
-// job_posts.status → (StatusPill status, i18n label key). 'deleted' never reaches this card —
-// getMyAnnonces excludes it at the query.
+// AnnonceDisplayStatus (my_data's resolveAnnonceStatus, folding raw status + computed expiry) →
+// (StatusPill status, i18n label key). 'deleted' never reaches this card — getMyAnnonces excludes
+// it at the query.
 const STATUS_MAP: Record<'open' | 'filled' | 'expired', { status: StatusValue; labelKey: string }> = {
   open: { status: 'ouverte', labelKey: 'mesannonces.status.open' },
   filled: { status: 'pourvue', labelKey: 'mesannonces.status.filled' },
@@ -30,7 +32,7 @@ const STATUS_MAP: Record<'open' | 'filled' | 'expired', { status: StatusValue; l
 export function AnnonceCard({ annonce }: { annonce: MyAnnonce }) {
   const lang = useLang()
 
-  const { status: pillStatus, labelKey } = STATUS_MAP[annonce.status as 'open' | 'filled' | 'expired']
+  const { status: pillStatus, labelKey } = STATUS_MAP[annonce.display_status]
   const statusLabel = t(labelKey, lang)
   const capReached = annonce.response_count >= MAX_RESPONSES_PER_POST
   const dateLabel = new Date(annonce.created_at).toLocaleDateString('fr-TN', {
@@ -54,20 +56,30 @@ export function AnnonceCard({ annonce }: { annonce: MyAnnonce }) {
         </StatusPill>
       </div>
 
+      {annonce.admin_hidden_at && <div className="mt-3"><ModerationBanner variant="job_post" /></div>}
+
       {annonce.description && (
         <p className="mt-2 line-clamp-2 text-sm text-text-muted">{annonce.description}</p>
       )}
 
       <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-2 text-xs">
-        <span className="text-text-muted">{dateLabel}</span>
+        <span dir="ltr" className="text-text-muted">{dateLabel}</span>
         <span
           className={`rounded-full px-2.5 py-1 font-medium ${
             capReached ? 'bg-amber-100 text-amber-700' : 'bg-brand-blue-600/10 text-brand-blue-600'
           }`}
         >
-          {t('mesannonces.responses', lang, { n: annonce.response_count, max: MAX_RESPONSES_PER_POST })}
+          {/* The rule is the numeric run itself, not the sentence around it: "{n} / {max}" is
+              bare digits/slash/spaces with no strong-directional anchor, so under RTL it can
+              reverse to "{max} / {n}" (reference_rtl_numeric_run_reversal). "réponses"/"ردود" is
+              real translated text and must stay outside the isolated run, in the ambient RTL
+              flow, or it would get mirrored to the wrong side of the number. */}
+          <span dir="ltr">
+            {annonce.response_count} / {MAX_RESPONSES_PER_POST}
+          </span>{' '}
+          {t('mesannonces.responses_suffix', lang)}
         </span>
-        {budget && <span className="text-text-muted">{budget}</span>}
+        {budget && <span dir="ltr" className="text-text-muted">{budget}</span>}
         {annonce.city && <span className="text-text-muted">{annonce.city}</span>}
         {annonce.is_remote && <span className="text-text-muted">{t('annonce.form.remote_label', lang)}</span>}
       </div>
