@@ -3,6 +3,11 @@
 // auth.uid() on INSERT) is the real authorization guard; these are app-layer UX checks
 // that return i18n error keys. Budgets and deadline are optional.
 
+// Skills — PR-D §6 RULING: optional, max 8, no minimum. Distinct from H2's SKILLS_MIN/SKILLS_MAX
+// (3/15, CompetencesForm.tsx) — a different form, a different rule, not the same constant.
+export const ANNONCE_SKILLS_MAX = 8
+const SKILL_MAX_LEN = 60
+
 export type JobPostInput = {
   title: string
   description: string
@@ -12,6 +17,7 @@ export type JobPostInput = {
   budgetMax: string
   isRemote: boolean
   deadline: string // YYYY-MM-DD or ''
+  skills: string[]
 }
 
 export type JobPostValues = {
@@ -23,6 +29,7 @@ export type JobPostValues = {
   budget_max: number | null
   is_remote: boolean
   deadline: string | null
+  skills: string[]
 }
 
 export type JobPostValidation =
@@ -73,6 +80,16 @@ export function validateJobPost(input: JobPostInput, now: Date = new Date()): Jo
     deadline = input.deadline.trim()
   }
 
+  // Server action input is attacker-controlled and TS types are erased at runtime — `?? []`
+  // guards a hand-crafted request with `skills` omitted or null from throwing on `.map`.
+  const skills = (input.skills ?? []).map((s) => s.trim()).filter((s) => s.length > 0)
+  if (skills.length > ANNONCE_SKILLS_MAX) {
+    return { ok: false, errorKey: 'annonce.error.skills_max' }
+  }
+  if (skills.some((s) => s.length > SKILL_MAX_LEN)) {
+    return { ok: false, errorKey: 'annonce.error.skills_length' }
+  }
+
   return {
     ok: true,
     value: {
@@ -84,6 +101,7 @@ export function validateJobPost(input: JobPostInput, now: Date = new Date()): Jo
       budget_max,
       is_remote: input.isRemote,
       deadline,
+      skills,
     },
   }
 }

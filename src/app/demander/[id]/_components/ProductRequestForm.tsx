@@ -11,7 +11,7 @@ import { GOVERNORATES } from '@/lib/tunisia-governorates'
 import { tndPrice } from '@/components/listings/listing-utils'
 import { ProductCoverImage } from '@/app/marche/produits/_components/ProductCoverImage'
 import { submitProductRequest } from '../actions'
-import { Textarea } from './Textarea'
+import { Textarea } from '@/components/ui/textarea'
 import { NumberStepper } from './NumberStepper'
 
 // E1-product — form + summary, ONE component. Measured from Figma 589:43997 §6c/§6d
