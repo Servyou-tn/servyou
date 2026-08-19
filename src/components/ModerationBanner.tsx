@@ -10,12 +10,16 @@ import { t } from '@/lib/i18n'
 // owner dashboards/edit pages, which already use useLang().
 type Variant = 'shop' | 'freelancer_profile' | 'product' | 'service' | 'job_post'
 
-export function ModerationBanner({ variant }: { variant: Variant }) {
+// `alert` defaults to true (role="alert", one assertive announcement — correct for a single
+// page-level banner on a detail page). Pass `alert={false}` on a list surface where N moderated
+// rows would otherwise fire N assertive announcements for what is, to the user, one glanceable
+// state per row (PR-B, AnnonceCard's list usage).
+export function ModerationBanner({ variant, alert = true }: { variant: Variant; alert?: boolean }) {
   const lang = useLang()
   return (
     <div
       className="mb-4 flex items-start gap-2 rounded border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"
-      role="alert"
+      role={alert ? 'alert' : undefined}
     >
       <svg
         className="mt-0.5 h-4 w-4 shrink-0"

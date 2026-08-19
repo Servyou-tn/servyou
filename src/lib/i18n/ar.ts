@@ -1503,7 +1503,7 @@ export const ar: Record<string, string> = {
   'mesannonces.new':                "نشر إعلان جديد",
   'mesannonces.empty':              "لم تنشر أي إعلان بعد.",
   'mesannonces.empty_cta':          "نشر أول إعلان لي",
-  'mesannonces.responses':          "{n} / {max} ردود",
+  'mesannonces.responses_suffix':   "ردود",
   'mesannonces.status.open':        "مفتوح",
   'mesannonces.status.filled':      "مُسند",
   'mesannonces.status.expired':     "منتهي",

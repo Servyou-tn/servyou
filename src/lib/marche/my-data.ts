@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import type { ProductListing } from '@/components/listings/ProductListingCard'
 import type { ServiceListing } from '@/components/listings/ServiceListingCard'
+import { resolveAnnonceStatus, type AnnonceDisplayStatus } from '@/lib/marche/annonce-status'
 
 // Server reads for the account pages (/mes-commandes, /mes-favoris, /mes-annonces).
 // Each is owner-scoped (buyer_id / user_id / consumer_id = me) and re-guarded by RLS;
@@ -381,9 +382,13 @@ export type MyAnnonce = {
   is_remote: boolean
   deadline: string | null
   status: 'open' | 'filled' | 'expired' | 'deleted'
+  /** status folded with computed expiry (resolveAnnonceStatus) — what the UI should render. */
+  display_status: AnnonceDisplayStatus
   created_at: string
   category: string | null
   response_count: number
+  /** Set by admin moderation. Never expose admin_hidden_reason — that stays admin-internal. */
+  admin_hidden_at: string | null
 }
 
 type AnnonceRow = {
@@ -399,6 +404,7 @@ type AnnonceRow = {
   created_at: string
   categories: { name_fr: string } | { name_fr: string }[] | null
   job_responses: { count: number }[] | null
+  admin_hidden_at: string | null
 }
 
 export async function getMyAnnonces(userId: string): Promise<MyAnnonce[]> {
@@ -407,7 +413,7 @@ export async function getMyAnnonces(userId: string): Promise<MyAnnonce[]> {
     .from('job_posts')
     .select(
       `id, title, description, budget_min, budget_max, city, is_remote, deadline, status, created_at,
-       categories ( name_fr ), job_responses ( count )`,
+       categories ( name_fr ), job_responses ( count ), admin_hidden_at`,
     )
     .eq('consumer_id', userId)
     .neq('status', 'deleted')
@@ -428,9 +434,11 @@ export async function getMyAnnonces(userId: string): Promise<MyAnnonce[]> {
     is_remote: Boolean(row.is_remote),
     deadline: row.deadline ?? null,
     status: row.status,
+    display_status: resolveAnnonceStatus(row.status, row.created_at),
     created_at: row.created_at,
     category: one(row.categories)?.name_fr ?? null,
     response_count: row.job_responses?.[0]?.count ?? 0,
+    admin_hidden_at: row.admin_hidden_at ?? null,
   }))
 }
 

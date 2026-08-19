@@ -1508,7 +1508,7 @@ export const fr: Record<string, string> = {
   'mesannonces.new':                "Publier une nouvelle annonce",
   'mesannonces.empty':              "Vous n'avez pas encore publié d'annonce.",
   'mesannonces.empty_cta':          "Publier ma première annonce",
-  'mesannonces.responses':          "{n} / {max} réponses",
+  'mesannonces.responses_suffix':   "réponses",
   'mesannonces.status.open':        "Ouverte",
   'mesannonces.status.filled':      "Pourvue",
   'mesannonces.status.expired':     "Expirée",

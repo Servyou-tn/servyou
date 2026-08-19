@@ -1,6 +1,7 @@
 import { cache } from 'react'
 import { createClient } from '@/lib/supabase/server'
-import { JOB_POST_EXPIRY_DAYS, MAX_RESPONSES_PER_POST } from '@/lib/job-constants'
+import { MAX_RESPONSES_PER_POST } from '@/lib/job-constants'
+import { isAnnoncePastExpiry, resolveAnnonceStatus, type AnnonceDisplayStatus } from '@/lib/marche/annonce-status'
 
 // Single-annonce detail fetch for /mes-annonces/[id] — the consumer's view of one job post
 // plus the freelancer responses to it. RLS already restricts job_posts SELECT to
@@ -15,12 +16,16 @@ import { JOB_POST_EXPIRY_DAYS, MAX_RESPONSES_PER_POST } from '@/lib/job-constant
 //   - job_responses.freelancer_id is a profiles.id (NOT freelancer_profiles.id); it is the
 //     get_contact_phone(target) value and the post-owner is authorized via the responder path.
 //   - There is no avatar column anywhere → the UI falls back to initials.
-//   - "expired" is never stored on job_posts; the response-limit trigger only blocks new
-//     responses past 30 days. Expiry is therefore computed here from created_at.
+//   - "expired" is never stored on job_posts (confirmed against the live DB — see
+//     lib/marche/annonce-status.ts's own header for the trigger/CHECK-constraint sweep that
+//     settles it). Display status is resolved there and returned as `displayStatus` below.
 //
-// MODERATION — this file DELIBERATELY does not filter admin_hidden_at. That is a decision, not
-// an omission, and it was made when the public read paths were audited and fixed
-// (fix/moderation-filter):
+// MODERATION — this file DELIBERATELY does not FILTER on admin_hidden_at (a moderated post stays
+// visible to its own author), but it DOES now select the column and return it as
+// `adminHiddenAt`, so the owner sees the ModerationBanner explaining why it is hidden — a
+// pre-existing component/copy (variant="job_post") that PR-B is the first surface to actually
+// render; it was never wired up before. That is a decision, not an omission, and it was made when
+// the public read paths were audited and fixed (fix/moderation-filter):
 //   - The job post itself is the VIEWER'S OWN (consumer_id === currentUserId is enforced above).
 //     An owner must be able to see their own moderated content, with the ModerationBanner
 //     explaining why it is hidden — 404-ing an author out of their own post is the wrong
@@ -62,6 +67,8 @@ export type AnnonceDetailData = {
   deadline: string | null
   /** Stored value is only ever 'open' | 'filled' (deleted → null above; 'expired' is computed). */
   status: 'open' | 'filled' | 'expired' | 'deleted'
+  /** status folded with computed expiry (resolveAnnonceStatus) — what the UI should render. */
+  displayStatus: AnnonceDisplayStatus
   createdAt: string
   updatedAt: string
   category: string | null
@@ -69,7 +76,12 @@ export type AnnonceDetailData = {
   responses: AnnonceResponse[]
   responseCount: number
   isAtCap: boolean
+  /** Raw age check, independent of status — used to gate reopening (mes-annonces/[id]/actions.ts),
+   *  NOT the same thing as `displayStatus === 'expired'` (a filled post has isExpired possibly
+   *  true but displayStatus 'filled' — precedence, not equivalence). */
   isExpired: boolean
+  /** Set by admin moderation. Never expose admin_hidden_reason — that stays admin-internal. */
+  adminHiddenAt: string | null
 }
 
 type AnnonceRow = {
@@ -87,6 +99,9 @@ type AnnonceRow = {
   updated_at: string
   categories: { name_fr: string } | { name_fr: string }[] | null
   job_post_skills: { skill: string }[] | null
+  admin_hidden_at: string | null
+  /** Selected but never returned by getAnnonceDetail — stays admin-internal. */
+  admin_hidden_reason: string | null
 }
 
 // Wrapped in React cache() so generateMetadata + the page share a single fetch per request.
@@ -96,8 +111,11 @@ export const getAnnonceDetail = cache(
     const { data, error } = await supabase
       .from('job_posts')
       .select(
+        // admin_hidden_reason is selected (mirroring the pair the admin write-side and the DB's
+        // own CHECK constraint always keep together) but deliberately never leaves this function —
+        // ModerationBanner's own contract is that the reason stays admin-internal.
         `id, consumer_id, title, description, budget_min, budget_max, city, is_remote,
-         deadline, status, created_at, updated_at,
+         deadline, status, created_at, updated_at, admin_hidden_at, admin_hidden_reason,
          categories ( name_fr ),
          job_post_skills ( skill )`,
       )
@@ -167,8 +185,7 @@ export const getAnnonceDetail = cache(
       createdAt: r.created_at,
     }))
 
-    const expiryMs = JOB_POST_EXPIRY_DAYS * 24 * 60 * 60 * 1000
-    const isExpired = Date.now() - new Date(row.created_at).getTime() > expiryMs
+    const isExpired = isAnnoncePastExpiry(row.created_at)
 
     return {
       id: row.id,
@@ -180,10 +197,12 @@ export const getAnnonceDetail = cache(
       isRemote: Boolean(row.is_remote),
       deadline: row.deadline ?? null,
       status: row.status,
+      displayStatus: resolveAnnonceStatus(row.status, row.created_at),
       createdAt: row.created_at,
       updatedAt: row.updated_at,
       category: one(row.categories)?.name_fr ?? null,
       skills: (row.job_post_skills ?? []).map((s) => s.skill),
+      adminHiddenAt: row.admin_hidden_at ?? null,
       responses,
       responseCount: responses.length,
       isAtCap: responses.length >= MAX_RESPONSES_PER_POST,
