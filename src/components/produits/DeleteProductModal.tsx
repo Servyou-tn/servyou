@@ -61,7 +61,7 @@ export function DeleteProductModal({
       role="dialog"
       aria-modal="true"
       aria-label={t('product.delete_modal.title', lang)}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-overlay-scrim p-4"
     >
       <div className="flex w-full max-w-[420px] flex-col gap-4 rounded-xl bg-surface-base p-6">
         <div className="flex flex-col gap-1.5">

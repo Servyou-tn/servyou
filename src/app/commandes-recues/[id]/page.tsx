@@ -506,7 +506,7 @@ export default async function OrderDetailPage({
                 {t('seller.orderDetail.phone_disclosure', lang)}
               </p>
               <WhatsAppContactButton
-                buyerId={order.buyerId}
+                targetId={order.buyerId}
                 size="lg"
                 label={t('seller.orderDetail.whatsapp_cta', lang)}
                 message={waMessage}

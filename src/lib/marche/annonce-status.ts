@@ -1,4 +1,5 @@
 import { JOB_POST_EXPIRY_DAYS } from '@/lib/job-constants'
+import type { StatusValue } from '@/components/ui/status-pill'
 
 const EXPIRY_MS = JOB_POST_EXPIRY_DAYS * 24 * 60 * 60 * 1000
 
@@ -43,4 +44,17 @@ export function resolveAnnonceStatus(
   // status is 'open' here in practice (or defensively 'deleted' — both getMyAnnonces and
   // getAnnonceDetail already filter deleted rows out before this ever runs).
   return isAnnoncePastExpiry(createdAt, now) ? 'expired' : 'open'
+}
+
+// AnnonceDisplayStatus → (StatusPill status, i18n label key). ONE map for every surface that
+// shows an annonce's status (the list card, the detail page) — both read the same displayStatus
+// above, so they must render the same colour AND the same word. Before PR-E, the detail page kept
+// its own copy with a different hue (green, not StatusPill's indigo for 'pourvue') and a different
+// label ("Fermée" vs "Pourvue") for the identical status: the same post read as two different
+// things depending which page you were on. 'deleted' never reaches a caller of this map —
+// getMyAnnonces and getAnnonceDetail both filter it out before displayStatus is ever computed.
+export const ANNONCE_STATUS_PILL: Record<AnnonceDisplayStatus, { status: StatusValue; labelKey: string }> = {
+  open: { status: 'ouverte', labelKey: 'mesannonces.status.open' },
+  filled: { status: 'pourvue', labelKey: 'mesannonces.status.filled' },
+  expired: { status: 'expiree', labelKey: 'mesannonces.status.expired' },
 }
