@@ -2773,3 +2773,52 @@ coupling" claim on that specific function is stale, not a remaining blocker.
   focus means a create-flow redirect change doesn't ride along on an edit-flow PR.
 - **Trigger:** a small, dedicated one-line PR against `ProductForm.tsx:122` (and its now-stale
   comment at lines 115-121), changing the redirect target to `/mes-produits`.
+
+## PR-C — Mes annonces list rebuild (`feat/annonces-list-ds`, 2026-08-22)
+
+### `job_post_skills` is publicly readable — a direct query (not through `job_posts`) would leak skills off posts the caller can't read
+
+- **What:** `job_post_skills` RLS is `for select using (true)` — fully public, with no status or
+  ownership check of its own. `getMyAnnonces`/`getAnnonceDetail` are safe because the embed hangs
+  off a `job_posts` query already scoped (`.eq('consumer_id', userId)` / RLS's own `status='open'
+  or consumer_id=auth.uid()`); the join direction is what protects the read, not the table's own
+  policy. A hypothetical direct `.from('job_post_skills').select(...)` call would return skill text
+  for non-`open`, non-owned posts — e.g. another consumer's still-drafting or filled post.
+- **Not fixed here** — no such direct-query call site exists today, so there is nothing to patch;
+  this is a standing gap in the table's own RLS, not a bug in this PR's code.
+- **Trigger:** the next PR that adds a `job_post_skills` read path that does NOT go through a
+  pre-scoped `job_posts` join (e.g. a global skills-autocomplete endpoint) — add a real policy
+  (`exists (select 1 from job_posts jp where jp.id = job_post_id and (jp.status = 'open' or
+  jp.consumer_id = auth.uid()))`, mirroring `job_posts`' own SELECT policy) before shipping it.
+
+### `tndAmount()` has no thousands separator — confirmed unsafe to fix inside this PR alone
+
+- **What:** PR-C's brief flagged this and asked for an assessment before touching it. `tndAmount()`
+  (`listing-utils.ts`) is a bare `Number.isInteger(n) ? String(n) : n.toFixed(2)` — a 5-figure
+  budget renders as `45000 TND`, not `45 000 TND` (French grouping uses a space, not a comma, so
+  this isn't even a one-line `toLocaleString()` swap without picking the right locale/separator).
+- **Why not safe to change alone:** 9 real call sites outside this PR depend on the current
+  no-separator format — `ProductRequestForm.tsx`, `ProductDetail.tsx`, `ProductRow.tsx`,
+  `demander/succes/page.tsx`, `ProductBrowseCard.tsx`, `ProductListingCard.tsx` — spanning products,
+  service requests and order confirmation, several with their own snapshotted price displays.
+  `listing-utils.test.ts` also asserts the current bare-digit format directly, so changing the
+  formatter breaks that suite too. This is a cross-cutting formatting decision, not a mes-annonces
+  fix.
+- **Trigger:** a dedicated formatting PR — pick the French grouping convention explicitly (with the
+  founder), update `tndAmount()`/`tndPrice()` once, and update `listing-utils.test.ts` alongside it
+  so every consumer moves together instead of drifting call-site by call-site.
+
+### `card-premium` vs `ServiceListingCard`'s 2px-outline treatment — two competing "premium card" looks, unreconciled
+
+- **What:** this PR's rebuilt `AnnonceCard` uses `.card-premium` (white, soft blue-tinted shadow,
+  `-translate-y-0.5` lift on hover) — the SAME family of card treatment as `ProductListingCard`,
+  G5's `ProductRow`, and roughly a dozen other surfaces. `ServiceListingCard` instead uses a solid
+  `2px border-brand-blue-600` outline + `CARD_SHADOW`/`HOVER_SHADOW` — visually a different
+  "premium" language for what is conceptually the same idea (an owner/browse card in a 3-up grid).
+  PR-C's brief named this split explicitly and ruled it out of scope: ~11 call sites, a platform-
+  wide design-system call, not a mes-annonces decision.
+- **Not fixed here** — `AnnonceCard` stayed on `.card-premium` (its pre-existing treatment,
+  unchanged by this PR) rather than picking a side.
+- **Trigger:** a dedicated design-system PR that inventories all ~11 call sites of both treatments
+  and either reconciles them into one, or documents why grid-browse cards (services) and
+  list/account cards (products, annonces) are deliberately different.

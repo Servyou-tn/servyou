@@ -1507,6 +1507,9 @@ export const ar: Record<string, string> = {
   'mesannonces.status.open':        "مفتوح",
   'mesannonces.status.filled':      "مُسند",
   'mesannonces.status.expired':     "منتهي",
+  'mesannonces.expiry_countdown':   "تنتهي خلال {n} يوم",
+  'mesannonces.budget_unset':       "الميزانية للتفاوض",
+  'mesannonces.view_responses':     "عرض الردود",
 
   'annonce.form.crumb_annonces':    "إعلاناتي",
   'annonce.form.crumb_current':     "إعلان جديد",

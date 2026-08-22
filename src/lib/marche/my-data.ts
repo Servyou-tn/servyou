@@ -387,6 +387,7 @@ export type MyAnnonce = {
   created_at: string
   category: string | null
   response_count: number
+  skills: string[]
   /** Set by admin moderation. Never expose admin_hidden_reason — that stays admin-internal. */
   admin_hidden_at: string | null
 }
@@ -404,6 +405,11 @@ type AnnonceRow = {
   created_at: string
   categories: { name_fr: string } | { name_fr: string }[] | null
   job_responses: { count: number }[] | null
+  // Public-read (`for select using (true)`) — no admin_hidden_at/status of its own, so nothing to
+  // moderation-scope on this table itself. Scoping comes from the parent job_posts query below
+  // (.eq('consumer_id', userId).neq('status', 'deleted')); the join direction is what protects it,
+  // same as annonce-detail.ts's identical embed.
+  job_post_skills: { skill: string }[] | null
   admin_hidden_at: string | null
 }
 
@@ -413,7 +419,7 @@ export async function getMyAnnonces(userId: string): Promise<MyAnnonce[]> {
     .from('job_posts')
     .select(
       `id, title, description, budget_min, budget_max, city, is_remote, deadline, status, created_at,
-       categories ( name_fr ), job_responses ( count ), admin_hidden_at`,
+       categories ( name_fr ), job_responses ( count ), job_post_skills ( skill ), admin_hidden_at`,
     )
     .eq('consumer_id', userId)
     .neq('status', 'deleted')
@@ -438,6 +444,7 @@ export async function getMyAnnonces(userId: string): Promise<MyAnnonce[]> {
     created_at: row.created_at,
     category: one(row.categories)?.name_fr ?? null,
     response_count: row.job_responses?.[0]?.count ?? 0,
+    skills: (row.job_post_skills ?? []).map((s) => s.skill),
     admin_hidden_at: row.admin_hidden_at ?? null,
   }))
 }
