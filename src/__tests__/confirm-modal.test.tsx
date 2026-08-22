@@ -5,7 +5,8 @@
  * unification (both flows now share this component instead of Close having none of it). Screenshots
  * of injected markup can only prove the styling; these assert the actual behavior: focus moves into
  * the dialog on open, Escape closes and restores focus to the opener, body scroll is locked while
- * open and released on close, and whether Tab is actually trapped inside the dialog.
+ * open and released on close, and Tab/Shift+Tab cycle between Cancel and Confirm without ever
+ * leaving the dialog.
  *
  * Run: npx vitest run src/__tests__/confirm-modal.test.tsx
  */
@@ -90,33 +91,36 @@ describe('ConfirmModal — scroll lock', () => {
   })
 })
 
-describe('ConfirmModal — Tab order', () => {
-  // Documents the ACTUAL behavior, not the aspirational name. This is the same wiring the
-  // pre-PR-E delete modal shipped (initial-focus + Escape + scroll-lock, no keydown handler
-  // constraining Tab) — extracted into ConfirmModal unchanged, not a regression introduced here.
-  // There is no focus trap: Tab is free to leave the dialog into the rest of the page. If a real
-  // cycling trap is wanted, it does not exist today in either the old or the new code and would
-  // be new work, not a preserved behavior.
-  it('does NOT trap Tab inside the dialog — focus can leave to elements behind it', async () => {
+describe('ConfirmModal — Tab trap', () => {
+  it('wraps Tab forward from Confirm back to Cancel, never leaving the dialog', async () => {
     const user = userEvent.setup()
     const before = document.createElement('button')
     before.textContent = 'page content before the modal'
     document.body.insertBefore(before, document.body.firstChild)
 
     renderModal()
-    const dialog = screen.getByRole('dialog')
-    expect(document.activeElement).toBe(dialog)
+    const cancelBtn = screen.getByRole('button', { name: 'Annuler' })
+    const confirmBtn = screen.getByRole('button', { name: 'Confirmer' })
 
-    // Tab forward through: Cancel, Confirm, then (since nothing stops it) back out to the DOM's
-    // next tabbable node — there is no sentinel/wrap-around handler to catch this.
-    await user.tab() // -> Cancel
-    expect(screen.getByRole('button', { name: 'Annuler' })).toHaveFocus()
-    await user.tab() // -> Confirm
-    expect(screen.getByRole('button', { name: 'Confirmer' })).toHaveFocus()
-    await user.tab() // -> nothing left inside the dialog subtree; escapes it
-    expect(document.activeElement).not.toBe(screen.getByRole('button', { name: 'Annuler' }))
-    expect(document.activeElement).not.toBe(screen.getByRole('button', { name: 'Confirmer' }))
+    await user.tab() // dialog container -> Cancel (default browser behaviour, no interception needed)
+    expect(cancelBtn).toHaveFocus()
+    await user.tab() // Cancel -> Confirm
+    expect(confirmBtn).toHaveFocus()
+    await user.tab() // Confirm -> wraps back to Cancel, does NOT escape to `before`
+    expect(cancelBtn).toHaveFocus()
 
     before.remove()
+  })
+
+  it('wraps Shift+Tab backward from Cancel to Confirm', async () => {
+    const user = userEvent.setup()
+    renderModal()
+    const cancelBtn = screen.getByRole('button', { name: 'Annuler' })
+    const confirmBtn = screen.getByRole('button', { name: 'Confirmer' })
+
+    cancelBtn.focus()
+    expect(cancelBtn).toHaveFocus()
+    await user.tab({ shift: true }) // Cancel -> wraps to Confirm
+    expect(confirmBtn).toHaveFocus()
   })
 })

@@ -4,10 +4,13 @@ import { useEffect, useRef } from 'react'
 import { Button, type ButtonVariant } from '@/components/ui/button'
 
 // Shared confirm-modal a11y wiring for AnnonceDetail's two destructive-adjacent actions (Close,
-// Delete). Before PR-E, only Delete was a real modal (focus-trap-lite, Escape-to-close,
-// scroll-lock); Close was a bespoke inline two-step confirm with none of that wiring — two
-// different confirmation UIs on one page. Route-local (marche/) per the standing rule: this is
-// its first two consumers, not yet a third feature, so it does not move to components/ui.
+// Delete). Before PR-E, only Delete was a real modal, and even that one had no true Tab-cycling —
+// initial-focus + Escape + scroll-lock only; Close was a bespoke inline two-step confirm with NONE
+// of that wiring. This component is new: a real focus trap (Tab/Shift+Tab cycle between Cancel and
+// Confirm), Escape-to-close, scroll-lock, focus restored to the opener on close — verified by
+// behaviour test, not just visually (src/__tests__/confirm-modal.test.tsx). Route-local (marche/)
+// per the standing rule: this is its first two consumers, not yet a third feature, so it does not
+// move to components/ui.
 //
 // No typed keyword on either caller: closing is reversible (Reopen exists, gated by
 // lib/marche/annonce-status.ts's own expiry check), and deleting an annonce is lower-consequence
@@ -51,9 +54,37 @@ export function ConfirmModal({
     }
   }, [])
 
+  // Escape-to-close + a real Tab/Shift+Tab trap. Cancel and Confirm are the only two focusable
+  // descendants (the dialog container itself is tabIndex={-1}, deliberately outside the tab
+  // sequence — see the effect above), so cycling between exactly those two covers every case that
+  // matters here: past the last wraps to the first, back past the first wraps to the last. Landing
+  // on Cancel/Confirm the FIRST time (from the dialog container, right after mount) already works
+  // via the browser's own default Tab behaviour and needs no interception.
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
-      if (e.key === 'Escape' && !pending) onCancel()
+      if (e.key === 'Escape' && !pending) {
+        onCancel()
+        return
+      }
+      if (e.key !== 'Tab') return
+      const dialog = dialogRef.current
+      if (!dialog) return
+      const focusable = Array.from(
+        dialog.querySelectorAll<HTMLElement>(
+          'button:not(:disabled), [href], input:not(:disabled), select:not(:disabled), textarea:not(:disabled), [tabindex]:not([tabindex="-1"])',
+        ),
+      )
+      if (focusable.length === 0) return
+      const first = focusable[0]
+      const last = focusable[focusable.length - 1]
+      const active = document.activeElement
+      if (e.shiftKey && active === first) {
+        e.preventDefault()
+        last.focus()
+      } else if (!e.shiftKey && active === last) {
+        e.preventDefault()
+        first.focus()
+      }
     }
     document.addEventListener('keydown', onKey)
     return () => document.removeEventListener('keydown', onKey)

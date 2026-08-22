@@ -2849,24 +2849,3 @@ coupling" claim on that specific function is stale, not a remaining blocker.
   `className`/wrapper contract so callers can opt into a full-width bar without reaching into
   internals — fixing both `OrderActionRow`'s pre-existing 36px and this page's lost full-width bar
   in the same pass, since they're the same root cause (no external sizing hook on the component).
-
-### `ConfirmModal`'s "focus-trap-lite" has no real Tab-cycling — verified by test, not assumed (PR-E, `feat/annonces-detail-ds`, 2026-08-22)
-
-- **What:** `src/__tests__/confirm-modal.test.tsx` behavior-tests the shared Close/Delete modal
-  wiring (jsdom + `@testing-library/react`, the first component-behavior test in this codebase —
-  `vitest.config.ts`'s default `environment: 'node'` has no jsdom test precedent before this).
-  4 of 4 requested behaviors were asserted: focus moves into the dialog on mount (passes), focus
-  restores to the opener on unmount (passes), Escape closes and is gated on `!pending` (passes,
-  both branches), body scroll locks and releases (passes) — **and Tab does NOT actually cycle
-  inside the dialog** (asserted explicitly: tabbing past the Confirm button leaves the dialog
-  entirely, landing outside both buttons). There is no keydown handler constraining Tab anywhere in
-  `ConfirmModal` — only Escape is handled.
-- **Not a PR-E regression** — this is the exact wiring the pre-PR-E hand-rolled delete modal shipped
-  (`AnnonceDetail.tsx`'s old `useEffect`s: initial-focus + Escape + scroll-lock, no Tab handler
-  either), extracted into `ConfirmModal` unchanged. "Focus-trap-lite" was always initial-placement +
-  Escape + scroll-lock, never true cycling — the discovery report that led to PR-E used that phrase
-  and it should have been more precise about what it did NOT cover.
-- **Trigger:** if a real focus trap is wanted, add a `keydown` handler for `Tab`/`Shift+Tab` that
-  wraps focus between the dialog's first and last focusable elements when it mounts — `ConfirmModal`
-  is the one place to add it (both Close and Delete inherit it immediately), and the existing test
-  file's "Tab order" describe block should flip from asserting the escape to asserting the wrap.
