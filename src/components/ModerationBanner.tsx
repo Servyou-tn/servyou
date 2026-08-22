@@ -18,7 +18,7 @@ export function ModerationBanner({ variant, alert = true }: { variant: Variant; 
   const lang = useLang()
   return (
     <div
-      className="mb-4 flex items-start gap-2 rounded border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"
+      className="mb-4 flex items-start gap-2 rounded border border-danger-100 bg-danger-50 px-3 py-2 text-sm text-danger-700"
       role={alert ? 'alert' : undefined}
     >
       <svg

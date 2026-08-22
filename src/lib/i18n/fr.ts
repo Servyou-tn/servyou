@@ -1512,6 +1512,9 @@ export const fr: Record<string, string> = {
   'mesannonces.status.open':        "Ouverte",
   'mesannonces.status.filled':      "Pourvue",
   'mesannonces.status.expired':     "Expirée",
+  'mesannonces.expiry_countdown':   "Expire dans {n} j",
+  'mesannonces.budget_unset':       "Budget à discuter",
+  'mesannonces.view_responses':     "Voir les réponses",
 
   'annonce.form.crumb_annonces':    "Mes annonces",
   'annonce.form.crumb_current':     "Nouvelle annonce",

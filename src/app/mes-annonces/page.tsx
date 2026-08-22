@@ -7,12 +7,13 @@ import { EmptyState } from '@/components/marche/EmptyState'
 import { AnnonceCard } from '@/components/marche/AnnonceCard'
 import { getShellUser } from '@/lib/marche/shell-user'
 import { getMyAnnonces } from '@/lib/marche/my-data'
-import { paginate } from '@/lib/search/search-params'
+import { paginate, PER_PAGE } from '@/lib/search/search-params'
 import { Pagination } from '@/components/shared/Pagination'
 import { getLang } from '@/lib/i18n/server'
 import { t } from '@/lib/i18n'
-import { FOCUS_RING } from '@/components/layout/styles'
 import { BriefcaseIcon } from '@/components/marche/icons'
+import { BASE as BUTTON_BASE, SIZE as BUTTON_SIZE, VARIANT_BASE, VARIANT_STATE } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
 
 export const metadata: Metadata = { title: 'Mes annonces — Servyou' }
 
@@ -38,10 +39,12 @@ export default async function MesAnnoncesPage({
   )
   const pageAnnonces = annonces.slice(start, end)
 
+  // A real <a> (navigation, not an action) styled with Button's own class recipe — same single
+  // source of truth as the primitive, without rendering the primitive's hardcoded <button>.
   const newButton = (
     <Link
       href="/mes-annonces/nouvelle"
-      className={`inline-flex items-center rounded-full bg-brand-blue-600 px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-brand-blue-500 ${FOCUS_RING}`}
+      className={cn(BUTTON_BASE, BUTTON_SIZE.md, VARIANT_BASE.primary, VARIANT_STATE.primary)}
     >
       {t('mesannonces.new', lang)}
     </Link>
@@ -63,13 +66,21 @@ export default async function MesAnnoncesPage({
         />
       ) : (
         <>
-          <div className="flex flex-col gap-4">
+          {/* Same grid class string as ListingResults.tsx:26's service grid — one breakpoint
+              scheme for every 3-up card grid, not a new one for this page. */}
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
             {pageAnnonces.map((a) => (
               <AnnonceCard key={a.id} annonce={a} />
             ))}
           </div>
           <div className="mt-8">
-            <Pagination page={safePage} totalPages={totalPages} basePath="/mes-annonces" />
+            <Pagination
+              page={safePage}
+              totalPages={totalPages}
+              basePath="/mes-annonces"
+              totalItems={annonces.length}
+              perPage={PER_PAGE}
+            />
           </div>
         </>
       )}

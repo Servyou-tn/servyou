@@ -31,7 +31,10 @@ export type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger' | 'link
 export type ButtonSize = 'sm' | 'md' | 'lg'
 
 // Default colours per variant (Figma bindings: $blue/*, $surface/*, $border/strong, $danger/*, $text/*).
-const VARIANT_BASE: Record<ButtonVariant, string> = {
+// Exported (alongside BASE/SIZE/VARIANT_STATE below) so a real <Link> that must render an <a> —
+// never a <button> — can apply the exact same class recipe instead of a hand-rolled duplicate
+// (mes-annonces/page.tsx's CTA, EmptyState's CTA). Nothing about Button's own behaviour changes.
+export const VARIANT_BASE: Record<ButtonVariant, string> = {
   primary: 'bg-brand-blue-600 text-text-inverse',
   secondary: 'bg-surface-base border border-border-strong text-text-primary',
   ghost: 'text-brand-blue-600',
@@ -41,7 +44,7 @@ const VARIANT_BASE: Record<ButtonVariant, string> = {
 
 // Hover / pressed — applied only when interactive (skipped while loading so a busy button can't
 // flash a hover state, and dropped when disabled).
-const VARIANT_STATE: Record<ButtonVariant, string> = {
+export const VARIANT_STATE: Record<ButtonVariant, string> = {
   primary: 'hover:bg-brand-blue-700 active:bg-brand-blue-800',
   secondary: 'hover:bg-surface-subtle active:bg-surface-sunken',
   ghost: 'hover:bg-brand-blue-50 active:bg-brand-blue-100',
@@ -60,13 +63,13 @@ const VARIANT_DISABLED: Record<ButtonVariant, string> = {
 
 // Heights/type are Figma-measured (sm 32 · md 40 · lg 48; sm 14px, md/lg 16px). Padding is token-scale
 // (Figma authored a fixed 120px demo width, so real padding was never encoded — see follow-ups).
-const SIZE: Record<ButtonSize, string> = {
+export const SIZE: Record<ButtonSize, string> = {
   sm: 'h-8 px-3 text-sm',
   md: 'h-10 px-4 text-base',
   lg: 'h-12 px-6 text-base',
 }
 
-const BASE = cn(
+export const BASE = cn(
   'relative inline-flex items-center justify-center gap-2 rounded-lg font-semibold whitespace-nowrap',
   'transition-colors motion-reduce:transition-none disabled:cursor-not-allowed',
   '[&_svg]:size-4 [&_svg]:shrink-0',
