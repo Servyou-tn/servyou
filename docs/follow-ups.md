@@ -2822,3 +2822,51 @@ coupling" claim on that specific function is stale, not a remaining blocker.
 - **Trigger:** a dedicated design-system PR that inventories all ~11 call sites of both treatments
   and either reconciles them into one, or documents why grid-browse cards (services) and
   list/account cards (products, annonces) are deliberately different.
+
+### `WhatsAppContactButton`'s `size="sm"` renders at 36px — under the project's 44px touch-target rule, now on three surfaces (PR-E, `feat/annonces-detail-ds`, 2026-08-22)
+
+- **What:** `size="sm"` is `h-9` (36px). It has no mobile touch-target affordance the way `Button`
+  does (`Button`'s `size="md"` ships an invisible `absolute -inset-0.5` hit-area extender —
+  `components/ui/button.tsx:122-124` — specifically because a 40px box is itself under 44px;
+  `WhatsAppContactButton` has no equivalent). Confirmed live at 375px on the new annonce-detail
+  response cards: `sm` is a small, start-aligned pill, not full width.
+- **Not new to this PR** — `sm` was already 36px on G8's `OrderActionRow` and G9's
+  `commandes-recues/[id]` row usage before PR-E; this PR is the third surface to inherit it, not
+  the first to introduce it. PR-E's own AnnonceDetail rebuild used `size="sm"` deliberately
+  unmodified (see the next entry) rather than fix the primitive from inside a page-level PR.
+- **Also not fixed here — mobile full-width regression, deliberately reported rather than forced:**
+  the OLD hand-rolled WhatsApp button on `/mes-annonces/[id]` was `h-10 w-full sm:w-auto` (full-width
+  below `sm`). `WhatsAppContactButton` accepts no `className` and forwards no other props onto its
+  root — there is no supported way to restore that from a caller. The only technique that would
+  reach it is an arbitrary descendant selector on a wrapper (e.g. `[&_button]:w-full`) piercing into
+  the component's undocumented internal `div > button` structure — no precedent for that pattern
+  exists anywhere in this codebase (grepped), and it would silently break the moment
+  `WhatsAppContactButton`'s internal markup changes for an unrelated reason. Founder ruling
+  (2026-08-22): do not force it; report and leave `/mes-annonces/[id]`'s mobile Contact button
+  non-full-width rather than add a fragile selector hack.
+- **Trigger:** a dedicated `WhatsAppContactButton` pass that (a) adds the same touch-target hit-area
+  extension `Button` already has for `sm`, and (b) adds either a `fullWidthOnMobile` prop or a
+  `className`/wrapper contract so callers can opt into a full-width bar without reaching into
+  internals — fixing both `OrderActionRow`'s pre-existing 36px and this page's lost full-width bar
+  in the same pass, since they're the same root cause (no external sizing hook on the component).
+
+### `ConfirmModal`'s "focus-trap-lite" has no real Tab-cycling — verified by test, not assumed (PR-E, `feat/annonces-detail-ds`, 2026-08-22)
+
+- **What:** `src/__tests__/confirm-modal.test.tsx` behavior-tests the shared Close/Delete modal
+  wiring (jsdom + `@testing-library/react`, the first component-behavior test in this codebase —
+  `vitest.config.ts`'s default `environment: 'node'` has no jsdom test precedent before this).
+  4 of 4 requested behaviors were asserted: focus moves into the dialog on mount (passes), focus
+  restores to the opener on unmount (passes), Escape closes and is gated on `!pending` (passes,
+  both branches), body scroll locks and releases (passes) — **and Tab does NOT actually cycle
+  inside the dialog** (asserted explicitly: tabbing past the Confirm button leaves the dialog
+  entirely, landing outside both buttons). There is no keydown handler constraining Tab anywhere in
+  `ConfirmModal` — only Escape is handled.
+- **Not a PR-E regression** — this is the exact wiring the pre-PR-E hand-rolled delete modal shipped
+  (`AnnonceDetail.tsx`'s old `useEffect`s: initial-focus + Escape + scroll-lock, no Tab handler
+  either), extracted into `ConfirmModal` unchanged. "Focus-trap-lite" was always initial-placement +
+  Escape + scroll-lock, never true cycling — the discovery report that led to PR-E used that phrase
+  and it should have been more precise about what it did NOT cover.
+- **Trigger:** if a real focus trap is wanted, add a `keydown` handler for `Tab`/`Shift+Tab` that
+  wraps focus between the dialog's first and last focusable elements when it mounts — `ConfirmModal`
+  is the one place to add it (both Close and Delete inherit it immediately), and the existing test
+  file's "Tab order" describe block should flip from asserting the escape to asserting the wrap.
