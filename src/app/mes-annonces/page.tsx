@@ -66,9 +66,12 @@ export default async function MesAnnoncesPage({
         />
       ) : (
         <>
-          {/* Same grid class string as ListingResults.tsx:26's service grid — one breakpoint
-              scheme for every 3-up card grid, not a new one for this page. */}
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
+          {/* Deliberately diverges from ListingResults.tsx:26's lg:grid-cols-3: this card's
+              budget row is a wider, dominant figure than a service card's price, so 3-up at
+              lg (1024, minus the 240px sidebar) gives ~208px columns and wraps a "min – max"
+              range mid-value. xl:grid-cols-3 holds this card at 2-up through 1279, landing
+              3-up only once a column is ~355px+ (1280+). */}
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 xl:grid-cols-3">
             {pageAnnonces.map((a) => (
               <AnnonceCard key={a.id} annonce={a} />
             ))}

@@ -53,9 +53,11 @@ export function AnnonceCard({ annonce }: { annonce: MyAnnonce }) {
   const skillsShown = annonce.skills.slice(0, SKILLS_SHOWN)
   const skillsOverflow = annonce.skills.length - skillsShown.length
   // Countdown is about the POST (will it stop taking responses soon); it is deliberately a
-  // different visual language from a deadline (about the WORK) — this card shows no deadline, so
-  // there is nothing to collide with, but the countdown still gets its own warning-toned text
-  // rather than the plain muted date treatment the rest of the app uses for dates.
+  // different visual language (warning-toned, not the meta row's plain muted text) from a
+  // deadline (about the WORK) — this card shows no deadline, so there is nothing to collide with.
+  // Rendered in the meta row (below), not between the chip row and title: a standalone block
+  // there pushed the title down only for cards that had a countdown, desyncing that card's title
+  // from the rest of its grid row.
   const countdownDays = annonce.display_status === 'open' ? getExpiryCountdownDays(annonce.created_at) : null
 
   return (
@@ -76,12 +78,6 @@ export function AnnonceCard({ annonce }: { annonce: MyAnnonce }) {
         </StatusPill>
       </div>
 
-      {countdownDays != null && (
-        <p className="mt-2 text-caption font-semibold text-warning-700">
-          {t('mesannonces.expiry_countdown', lang, { n: countdownDays })}
-        </p>
-      )}
-
       {/* Reserved 2 lines, not today's binary fits-or-ellipsis: text-body's real line-height
           (1.625, globals.css) × 2 = 52px = h-13 on Tailwind v4's dynamic spacing scale exactly —
           no arbitrary bracket needed. wrap-anywhere: an unbreakable run (no spaces) would
@@ -98,9 +94,14 @@ export function AnnonceCard({ annonce }: { annonce: MyAnnonce }) {
         </div>
       )}
 
-      {annonce.description && (
-        <p className="mt-2 line-clamp-2 wrap-anywhere text-sm text-text-muted">{annonce.description}</p>
-      )}
+      {/* Reserved 2 lines, unconditionally (not `annonce.description &&`): text-sm's line-height
+          is Tailwind's own calc(1.25 / 0.875) × 0.875rem = 1.25rem/line × 2 = 2.5rem = h-10 on the
+          standard spacing scale — same derive-from-the-token method as the title's h-13, so a
+          missing or 1-line description no longer lets the budget below it rise to a different
+          height than the row's longer-description cards. */}
+      <p className="mt-2 line-clamp-2 min-h-10 wrap-anywhere text-sm text-text-muted">
+        {annonce.description}
+      </p>
 
       {/* Figure row — budget is the one dominant number, alone (no competition pill: there is no
           owner-side signal for how many other posts compete for the same freelancers). */}
@@ -132,9 +133,26 @@ export function AnnonceCard({ annonce }: { annonce: MyAnnonce }) {
         )}
       </div>
 
-      {/* Meta row — city OR remote, never both: a remote post's city is not where the work
-          happens, so showing it alongside "Réalisable à distance" would read as a contradiction. */}
-      {metaLabel && <p className="mt-2 text-body-sm text-text-muted">{metaLabel}</p>}
+      {/* Meta row — city OR remote (never both: a remote post's city is not where the work
+          happens, so showing it alongside "Réalisable à distance" would read as a contradiction),
+          plus the expiry countdown when the post is within its last 7 days. The countdown keeps
+          its own warning tone (distinct from the deadline's plain-muted date treatment elsewhere
+          in the app) even sitting next to the muted city/remote text. */}
+      {(metaLabel || countdownDays != null) && (
+        <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-body-sm">
+          {metaLabel && <span className="text-text-muted">{metaLabel}</span>}
+          {metaLabel && countdownDays != null && (
+            <span className="text-text-muted" aria-hidden="true">
+              ·
+            </span>
+          )}
+          {countdownDays != null && (
+            <span className="font-semibold text-warning-700">
+              {t('mesannonces.expiry_countdown', lang, { n: countdownDays })}
+            </span>
+          )}
+        </div>
+      )}
 
       {/* Skills — read-only chips mined from TagInput's visuals (rounded-full, bg-brand-blue-50,
           text-brand-blue-600), not the write-path component itself (no remove button, no input).
