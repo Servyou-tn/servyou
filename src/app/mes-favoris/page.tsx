@@ -5,7 +5,7 @@ import { PageHeader } from '@/components/marche/PageHeader'
 import { getShellUser } from '@/lib/marche/shell-user'
 import { getMyFavorites } from '@/lib/marche/my-data'
 import { getLang } from '@/lib/i18n/server'
-import { t } from '@/lib/i18n'
+import { t, tn } from '@/lib/i18n'
 import { FavorisTabs } from './_components/FavorisTabs'
 
 export const metadata: Metadata = { title: 'Mes favoris — Servyou' }
@@ -26,7 +26,7 @@ export default async function MesFavorisPage() {
     <AppShell user={shell.topBarUser}>
       <PageHeader
         title={t('shell.sidebar.favorites', lang)}
-        countLabel={total > 0 ? t('mesfavoris.count', lang, { n: total }) : undefined}
+        countLabel={total > 0 ? tn('mesfavoris.count', lang, total) : undefined}
       />
       <FavorisTabs products={products} services={services} />
     </AppShell>

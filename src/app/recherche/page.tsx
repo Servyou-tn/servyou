@@ -3,7 +3,7 @@ import { AppShell } from '@/components/shell/AppShell'
 import { ListingResults } from '@/components/listings/ListingResults'
 import { getShellUser } from '@/lib/marche/shell-user'
 import { getLang } from '@/lib/i18n/server'
-import { t } from '@/lib/i18n'
+import { t, tn } from '@/lib/i18n'
 import type { Lang } from '@/lib/i18n'
 import { FOCUS_RING } from '@/components/layout/styles'
 import { otherType, parseSearchParams, type SearchType } from '@/lib/search/search-params'
@@ -126,11 +126,8 @@ export default async function RecherchePage({
       {showQueryEcho && (
         <>
           <PageHeader
-            subtitle={t('page_header.recherche.subtitle', lang, {
-              count: result.totalCount,
-              query: params.q,
-            })}
-            emphasisWord={t('page_header.recherche.emphasis', lang, { count: result.totalCount })}
+            subtitle={tn('page_header.recherche.subtitle', lang, result.totalCount, { query: params.q })}
+            emphasisWord={tn('page_header.recherche.emphasis', lang, result.totalCount)}
           />
           <div className="mb-4 mt-3 flex justify-end">
             <Link

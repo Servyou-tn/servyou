@@ -3,7 +3,7 @@
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
-import { t, type Lang } from '@/lib/i18n'
+import { t, tn, type Lang } from '@/lib/i18n'
 import { Button } from '@/components/ui/button'
 import { bulkActivateProductsAction, bulkDeleteProductsAction } from '@/app/actions/products'
 import type { SellerProductRow } from '@/lib/marche/seller-products'
@@ -86,7 +86,7 @@ export function ProductsList({ products, lang }: { products: SellerProductRow[];
       {selected.size > 0 ? (
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-brand-blue-100 bg-brand-blue-50 px-4 py-3">
           <p className="text-body-sm font-medium text-text-primary">
-            <span dir="ltr">{t('product.bulk.selected_count', lang, { count: selected.size })}</span>
+            <span dir="ltr">{tn('product.bulk.selected_count', lang, selected.size)}</span>
           </p>
           <div className="flex items-center gap-2">
             <Button variant="secondary" size="sm" onClick={clear} disabled={pending}>
@@ -123,7 +123,7 @@ export function ProductsList({ products, lang }: { products: SellerProductRow[];
         >
           <div className="flex w-full max-w-[420px] flex-col gap-4 rounded-xl bg-surface-base p-6">
             <p className="text-body text-text-primary">
-              {t('product.bulk.confirm_delete', lang, { count: selected.size })}
+              {tn('product.bulk.confirm_delete', lang, selected.size)}
             </p>
             <div className="flex justify-end gap-3">
               <Button

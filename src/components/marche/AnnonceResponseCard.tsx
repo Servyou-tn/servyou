@@ -1,6 +1,6 @@
 'use client'
 
-import { t } from '@/lib/i18n'
+import { t, tn } from '@/lib/i18n'
 import type { Lang } from '@/lib/i18n'
 import { Avatar } from '@/components/ui/avatar'
 import { WhatsAppContactButton } from '@/components/orders/WhatsAppContactButton'
@@ -79,7 +79,7 @@ export function AnnonceResponseCard({
           <p className="mt-3 text-xs text-text-muted">
             {days === 0
               ? t('annonces.detail.responded_today', lang)
-              : t('annonces.detail.responded_days_ago', lang, { n: days })}
+              : tn('annonces.detail.responded_days_ago', lang, days)}
           </p>
         </div>
 

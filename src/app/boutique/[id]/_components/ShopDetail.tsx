@@ -7,7 +7,7 @@ import { ProductBrowseCard } from '@/app/marche/produits/_components/ProductBrow
 import type { ProductListing } from '@/components/listings/ProductListingCard'
 import type { ShopDetailData } from '@/lib/marche/shop-detail'
 import { shopTypeLabelKey, deliverySetupLabelKey, paymentMethodLabelKey } from '@/lib/types/shop-config'
-import { t, type Lang } from '@/lib/i18n'
+import { t, tn, type Lang } from '@/lib/i18n'
 import { ShopShareButton } from './ShopShareButton'
 import { ShopReportModal } from './ShopReportModal'
 
@@ -161,7 +161,7 @@ export function ShopDetail({
             {t('boutique.public.products_title', lang)}
           </h2>
           <span className="text-body-sm text-text-muted">
-            {t('boutique.public.products_count', lang, { count: products.length })}
+            {tn('boutique.public.products_count', lang, products.length)}
           </span>
         </div>
 

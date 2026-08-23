@@ -24,7 +24,7 @@ import {
 } from '@/lib/marche/seller-dashboard'
 import { nextSellerStatus, type OrderStatus, type OrderType } from '@/lib/types/order-status'
 import { getLang } from '@/lib/i18n/server'
-import { t, type Lang } from '@/lib/i18n'
+import { t, tn, type Lang } from '@/lib/i18n'
 import { FOCUS_RING } from '@/components/layout/styles'
 import { StatTile } from './_components/StatTile'
 import { Panel, PanelEmpty } from './_components/Panel'
@@ -154,9 +154,7 @@ export default async function TableauDeBordVendeurPage() {
                 })}
                 subtitle={
                   data.netProfit.measuredCount === data.netProfit.deliveredCount
-                    ? t('seller.dashboard.tile.profit_sub', lang, {
-                        count: data.netProfit.deliveredCount,
-                      })
+                    ? tn('seller.dashboard.tile.profit_sub', lang, data.netProfit.deliveredCount)
                     : t('seller.dashboard.tile.profit_partial', lang, {
                         measured: data.netProfit.measuredCount,
                         total: data.netProfit.deliveredCount,

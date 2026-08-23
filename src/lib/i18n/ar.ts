@@ -630,7 +630,7 @@ export const ar: Record<string, string> = {
   // ─── D3 — Public shop page (/boutique/[id]) ───────────────────────────────────
   'boutique.public.member_since':       "متجر منذ {date}",
   'boutique.public.products_title':     "المنتجات",
-  'boutique.public.products_count':     "{count} منتج",
+  // products_count migrated to tn() — see src/lib/i18n/plurals.ts.
   'boutique.public.empty_products':     "لا يحتوي هذا المتجر على منتجات بعد",
   'boutique.public.payment_caption':    "الدفع",
   'boutique.public.categories_caption': "الفئات",
@@ -688,9 +688,10 @@ export const ar: Record<string, string> = {
   'product.tab_empty':              "لا توجد منتجات في هذا التبويب.",
   'product.error_delete':           "حدث خطأ أثناء الحذف. يرجى المحاولة مرة أخرى.",
   'product.error_delete_has_orders': "هذا المنتج لديه طلبات ولا يمكن حذفه. يمكنك إخفاءه بدلاً من ذلك.",
-  'product.bulk.selected_count':    "{count} محدد",
+  // selected_count / confirm_delete migrated to tn() — see src/lib/i18n/plurals.ts. (The old
+  // confirm_delete text used "منتج(ات)", a literal copy of the French "(s)" trick — not standard
+  // Arabic. Rewritten with real number agreement instead.)
   'product.bulk.deselect':          "إلغاء التحديد",
-  'product.bulk.confirm_delete':    "حذف {count} منتج(ات) محددة؟ هذا الإجراء لا يمكن التراجع عنه.",
   'product.bulk.activate_result':   "تم تفعيل {updated} منتج(ات).",
   'product.bulk.activate_result_skipped': "تم تفعيل {updated}، لم يتم تعديل {skipped} (مخفية بواسطة الإشراف).",
   'product.bulk.delete_result':     "تم حذف {updated} منتج(ات).",
@@ -1223,8 +1224,9 @@ export const ar: Record<string, string> = {
   'consumer.dashboard.greeting.subtitle':    "Voici un aperçu de votre activité sur Servyou.",
   'consumer.dashboard.orders.heading':       "Mes commandes en cours",
   'consumer.dashboard.orders.viewAll':       "Voir toutes mes commandes",
-  'consumer.dashboard.orders.count_one':     "{n} commande en cours",
-  'consumer.dashboard.orders.count_many':    "{n} commandes en cours",
+  // count_one / count_many migrated to tn() as 'consumer.dashboard.orders.count' — see
+  // src/lib/i18n/plurals.ts. These two keys held literal French text here; that bug is fixed by
+  // the migration, not by the plural mechanism itself.
   'consumer.dashboard.orders.confirm_count': "{n} à confirmer",
   'consumer.dashboard.orders.empty_title':   "Aucune commande en cours",
   'consumer.dashboard.orders.empty_subtitle':"Vous n'avez pas encore de commandes actives. Parcourez le marché pour découvrir des produits et services.",
@@ -1259,11 +1261,11 @@ export const ar: Record<string, string> = {
   'recherche.empty.subtitle':        "Essayez d'autres mots-clés ou parcourez les catégories.",
   'recherche.empty.cta':             "Parcourir les catégories",
   // startingPrice / priceOnRequest / viewCta localized for the /marche/services rebuild;
-  // relativeAdded / deliveryTime / by stay French pending the Phase 8 AR batch.
+  // deliveryTime / by stay French pending the Phase 8 AR batch.
   'listing.service.startingPrice':   "ابتداءً من {price} د.ت",
   'listing.service.priceRaw':        "{price} د.ت",
   'listing.service.priceOnRequest':  "السعر عند الطلب",
-  'listing.service.relativeAdded':   "ajouté il y a {time}",
+  // relativeAdded deleted — dead code, no caller; this ar.ts value was literal French text.
   'listing.service.deliveryTime':    "Livraison : {time}",
   'listing.service.by':              "par {name}",
   'listing.service.viewCta':         "عرض الخدمة",
@@ -1279,10 +1281,8 @@ export const ar: Record<string, string> = {
   'page_header.produits.emphasis':           "تحتاجه",
   'page_header.services.subtitle':           "اعثر على المستقل المناسب",
   'page_header.services.emphasis':           "المستقل",
-  'page_header.recherche.subtitle':          "{count} نتيجة عن « {query} »",
-  'page_header.recherche.emphasis':          "{count} نتيجة",
-  'page_header.categories.subtitle':         "{count} منتج في {category}",
-  'page_header.categories.emphasis':         "{count} منتج",
+  // recherche.* / categories.* (subtitle + emphasis) migrated to tn() — see
+  // src/lib/i18n/plurals.ts.
   'page_header.favoris.subtitle':            "استعرض عناصرك المحفوظة",
   'page_header.favoris.emphasis':            "المحفوظة",
   'page_header.commandes.subtitle':          "تابع طلباتك الجارية",
@@ -1474,7 +1474,7 @@ export const ar: Record<string, string> = {
   // ─── Account pages: mes-commandes / mes-favoris / mes-annonces ─────────────────
   'marche.browse_cta':              "تصفّح السوق",
 
-  'mescommandes.count':             "{n} طلبات",
+  // mescommandes.count: dead key, no caller — deleted (not migrated).
   'mescommandes.filter.all':        "الكل",
   'mescommandes.filter.active':     "قيد التنفيذ",
   'mescommandes.filter.delivered':  "تم التسليم",
@@ -1484,7 +1484,7 @@ export const ar: Record<string, string> = {
   'mescommandes.item_unavailable':  "العنصر غير متوفر",
   'mescommandes.empty':             "ليس لديك أي طلبات بعد.",
 
-  'mesfavoris.count':               "{n} مفضّلة",
+  // mesfavoris.count migrated to tn() — see src/lib/i18n/plurals.ts.
   'mesfavoris.tabsAria':            "نوع المفضلة",
   'mesfavoris.tab.produits':        "المنتجات",
   'mesfavoris.tab.services':        "الخدمات",
@@ -1499,15 +1499,17 @@ export const ar: Record<string, string> = {
   'mesfavoris.empty.services.cta':        "تصفّح الخدمات",
 
   'mesannonces.title':              "إعلاناتي",
-  'mesannonces.count':              "{n} إعلانات",
+  // count migrated to tn() — see src/lib/i18n/plurals.ts.
   'mesannonces.new':                "نشر إعلان جديد",
   'mesannonces.empty':              "لم تنشر أي إعلان بعد.",
   'mesannonces.empty_cta':          "نشر أول إعلان لي",
+  // A capacity-meter noun ("n / max ردود"), not a counted noun — stays plural, invariant. Do not
+  // migrate to tn(). See the matching note on the French value.
   'mesannonces.responses_suffix':   "ردود",
   'mesannonces.status.open':        "مفتوح",
   'mesannonces.status.filled':      "مُسند",
   'mesannonces.status.expired':     "منتهي",
-  'mesannonces.expiry_countdown':   "تنتهي خلال {n} يوم",
+  // expiry_countdown migrated to tn() — see src/lib/i18n/plurals.ts.
   'mesannonces.budget_unset':       "الميزانية للتفاوض",
   'mesannonces.view_responses':     "عرض الردود",
 
@@ -1553,6 +1555,8 @@ export const ar: Record<string, string> = {
   'annonces.detail.back':                 "العودة إلى إعلاناتي",
   'annonces.detail.label':                "إعلان",
   'annonces.detail.posted_on':            "نُشر في {date}",
+  // Capacity-meter labels ("n/max ردود") — stays plural, invariant. See the matching note on the
+  // French value.
   'annonces.detail.responses':            "{n}/{max} ردود",
   'annonces.detail.responses_cap':        "{n}/{max} ردود (بلغت الحد الأقصى)",
   'annonces.detail.section_details':      "تفاصيل الإعلان",
@@ -1566,9 +1570,9 @@ export const ar: Record<string, string> = {
   'annonces.detail.skills_label':         "المهارات المطلوبة",
   'annonces.detail.responses_title':      "الردود الواردة",
   'annonces.detail.empty_title':          "لا توجد ردود حتى الآن.",
-  'annonces.detail.empty_desc':           "لدى المستقلين 30 يومًا للرد على إعلانك. تحلَّ بالصبر.",
+  'annonces.detail.empty_desc':           "لدى المستقلين 30 يومًا للرد على إعلانك، تحلَّ بالصبر.",
   'annonces.detail.responded_today':      "ردّ اليوم",
-  'annonces.detail.responded_days_ago':   "ردّ منذ {n} يوم",
+  // responded_days_ago migrated to tn() — see src/lib/i18n/plurals.ts.
   'annonces.detail.freelance_unnamed':    "مستقل",
   'annonces.detail.contact':              "تواصل",
   'annonces.detail.phone_reveal_error':   "تعذّر عرض الرقم. يرجى المحاولة مرة أخرى.",
@@ -1735,11 +1739,10 @@ export const ar: Record<string, string> = {
   'freelance.services.form.briefing.counter':         "{count}/1000",
   'freelance.services.form.briefing.errors.max':      "1000 حرف كحد أقصى",
   'freelance.services.detail.deliverables.title':     "ما هو مشمول",
-  'freelance.services.detail.revisions.label':        "{count} مراجعات مشمولة",
+  // detail.revisions.label / card.deliverables_count / card.revisions_count: dead keys, no
+  // caller — deleted (not migrated).
   'freelance.services.detail.briefing.title':         "قبل أن نبدأ",
   'freelance.services.detail.tags.title':             "الكلمات المفتاحية",
-  'freelance.services.card.deliverables_count':       "{count} مخرجات",
-  'freelance.services.card.revisions_count':          "{count} مراجعات",
   'freelance.add_service_btn':    "+ إضافة خدمة",
   'freelance.no_services_own':    "ليس لديك خدمات بعد.",
   'freelance.no_services_cta':    "أضف خدمتك الأولى",
@@ -2030,19 +2033,17 @@ export const ar: Record<string, string> = {
   'job.become_freelancer_link':"كن مستقلًا",
   'job.already_responded':    "لقد أرسلت ترشّحًا لهذه المهمة بالفعل.",
   'job.deadline_label':       "الموعد النهائي:",
-  'job.max_capped':           "بلغت هذه المهمة الحد الأقصى من الردود ({n}).",
+  // max_capped / responses_label / responses_label_pl: dead keys, no caller — deleted (not
+  // migrated).
   'job.consumer_no_phone':    "لم يُدخل العميل رقمه. سيتواصل معك مباشرة.",
-  'job.responses_label':      "رد",
-  'job.responses_label_pl':   "ردود",
   // Edit mission
   'job.edit_title':           "تعديل المهمة",
   'job.error_update':         "خطأ أثناء التحديث. يرجى المحاولة مرة أخرى.",
   // My responses page
   'job.my_responses_title':   "ردودي",
   'job.board_link':           "لوحة المهام",
-  'job.active_section':       "الردود النشطة ({n})",
+  // active_section / history_section: dead keys, no caller — deleted (not migrated).
   'job.no_active_responses':  "لا توجد ردود نشطة.",
-  'job.history_section':      "السجل ({n})",
   'job.deleted_mission':      "مهمة محذوفة",
   'job.response_date_prefix': " · أُرسل الرد في ",
 
@@ -2112,19 +2113,19 @@ export const ar: Record<string, string> = {
 
   // ─── Category page ────────────────────────────────────────────────────────────
   'category.not_found':      "الفئة غير موجودة",
-  'category.result_singular':"نتيجة",
-  'category.result_plural':  "نتائج",
+  // result_singular / result_plural: dead keys, no caller — deleted (not migrated).
   'category.no_results':     "لا توجد نتائج في هذه الفئة حاليًا.",
 
   // ─── Search ──────────────────────────────────────────────────────────────────
   'search.title':       "البحث",
   'search.enter_term':  "يرجى إدخال كلمة للبحث.",
   'search.placeholder': "ابحث…",
-  'search.result_for':  "عن",
+  // result_for: dead key, no caller — deleted (not migrated).
   'search.no_results':  "لا توجد نتائج لهذا البحث. جرّب كلمة أخرى.",
 
   // ─── Search results page (/recherche) ────────────────────────────────────────
-  'search.resultsCount':         "{count} نتيجة لـ « {query} »",
+  // resultsCount: dead key, no caller — deleted (not migrated). Superseded by
+  // page_header.recherche.* (tn()).
   'search.clear':                "مسح البحث",
   'search.filters.title':        "تصفية",
   'search.filters.category':     "الفئة",
@@ -2539,7 +2540,7 @@ export const ar: Record<string, string> = {
   'seller.dashboard.tile.profit':         "صافي الربح",
   'seller.dashboard.tile.profit_soon':    "قريباً",
   'seller.dashboard.tile.profit_value':   "{amount} د.ت",
-  'seller.dashboard.tile.profit_sub':     "من {count} طلب مُستلَم",
+  // profit_sub migrated to tn() — see src/lib/i18n/plurals.ts.
   'seller.dashboard.tile.profit_partial': "من {measured} من أصل {total} طلب مُستلَم",
   'seller.dashboard.tile.week':           "طلبات هذا الأسبوع",
   'seller.dashboard.tile.week_sub':       "آخر 7 أيام",
@@ -2588,7 +2589,7 @@ export const ar: Record<string, string> = {
   'seller.orders.tab.cancelled':          "ملغاة",
   'seller.orders.sort_aria':              "ترتيب الطلبات",
   'shell.topbar.search.receivedOrders':   "ابحث عن طلب وارد...",
-  'seller.orders.count':                  "{count} طلب",
+  // orders.count migrated to tn() — see src/lib/i18n/plurals.ts.
   'seller.orders.sort.recent':            "الأحدث",
   'seller.orders.sort.oldest':            "الأقدم",
   'seller.orders.waiting':                "· منذ {hours} ساعة",
