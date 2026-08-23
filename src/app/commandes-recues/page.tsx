@@ -13,7 +13,7 @@ import {
   type SellerOrderSort,
 } from '@/lib/marche/seller-orders'
 import { getLang } from '@/lib/i18n/server'
-import { t } from '@/lib/i18n'
+import { t, tn } from '@/lib/i18n'
 import { FOCUS_RING } from '@/components/layout/styles'
 import { cn } from '@/lib/utils'
 import { OrderActionRow } from './_components/OrderActionRow'
@@ -133,7 +133,7 @@ export default async function CommandesRecuesPage({
 
           <div className="flex flex-wrap items-center justify-between gap-3">
             <p className="text-body-sm text-text-secondary">
-              {t('seller.orders.count', lang, { count: data.totalCount })}
+              {tn('seller.orders.count', lang, data.totalCount)}
             </p>
             <SortSelect
               value={sort}

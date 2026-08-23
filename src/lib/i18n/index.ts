@@ -4,6 +4,8 @@ import { ar } from './ar'
 export type Lang = 'fr' | 'ar'
 export const LANG_COOKIE = 'servyou_lang'
 
+export { tn, pluralCategory, type PluralVariants } from './plurals'
+
 const dicts: Record<Lang, Record<string, string>> = { fr, ar }
 
 /**

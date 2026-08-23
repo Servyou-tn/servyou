@@ -4,7 +4,7 @@ import { AppShell } from '@/components/shell/AppShell'
 import { ListingResults } from '@/components/listings/ListingResults'
 import { getShellUser } from '@/lib/marche/shell-user'
 import { getLang } from '@/lib/i18n/server'
-import { t } from '@/lib/i18n'
+import { t, tn } from '@/lib/i18n'
 import { FOCUS_RING } from '@/components/layout/styles'
 import { otherType, parseSearchParams } from '@/lib/search/search-params'
 import { searchMarketplace } from '@/lib/search/search-marketplace'
@@ -90,8 +90,8 @@ export default async function CategoryPage({
       </nav>
 
       <PageHeader
-        subtitle={t('page_header.categories.subtitle', lang, { count: result.totalCount, category: name })}
-        emphasisWord={t('page_header.categories.emphasis', lang, { count: result.totalCount })}
+        subtitle={tn('page_header.categories.subtitle', lang, result.totalCount, { category: name })}
+        emphasisWord={tn('page_header.categories.emphasis', lang, result.totalCount)}
       />
 
       {/* Sub-category drill-down — renders nothing while the taxonomy is flat. */}

@@ -599,7 +599,7 @@ export const fr: Record<string, string> = {
   // ─── D3 — Public shop page (/boutique/[id]) ───────────────────────────────────
   'boutique.public.member_since':       "Boutique depuis {date}",
   'boutique.public.products_title':     "Produits",
-  'boutique.public.products_count':     "{count} produits",
+  // products_count migrated to tn() — see src/lib/i18n/plurals.ts.
   'boutique.public.empty_products':     "Cette boutique n'a pas encore de produits",
   'boutique.public.payment_caption':    "Paiement",
   'boutique.public.categories_caption': "Catégories",
@@ -657,9 +657,9 @@ export const fr: Record<string, string> = {
   'product.tab_empty':              "Aucun produit dans cet onglet.",
   'product.error_delete':           "Une erreur est survenue lors de la suppression. Veuillez réessayer.",
   'product.error_delete_has_orders': "Ce produit a des commandes et ne peut pas être supprimé. Masquez-le à la place.",
-  'product.bulk.selected_count':    "{count} sélectionné(s)",
+  // selected_count / confirm_delete migrated to tn() — see src/lib/i18n/plurals.ts. (The old
+  // "(s)" convention is gone; that was improvisation, not a mechanism.)
   'product.bulk.deselect':          "Désélectionner",
-  'product.bulk.confirm_delete':    "Supprimer {count} produit(s) sélectionné(s) ? Cette action est irréversible.",
   'product.bulk.activate_result':   "{updated} produit(s) activé(s).",
   'product.bulk.activate_result_skipped': "{updated} activé(s), {skipped} non modifié(s) (masqué(s) par modération).",
   'product.bulk.delete_result':     "{updated} produit(s) supprimé(s).",
@@ -1220,8 +1220,9 @@ export const fr: Record<string, string> = {
   'consumer.dashboard.greeting.subtitle':    "Voici un aperçu de votre activité sur Servyou.",
   'consumer.dashboard.orders.heading':       "Mes commandes en cours",
   'consumer.dashboard.orders.viewAll':       "Voir toutes mes commandes",
-  'consumer.dashboard.orders.count_one':     "{n} commande en cours",
-  'consumer.dashboard.orders.count_many':    "{n} commandes en cours",
+  // count_one / count_many migrated to tn() as 'consumer.dashboard.orders.count' — see
+  // src/lib/i18n/plurals.ts. (The ar.ts values for these two keys were literal French text; this
+  // is also the fix for that.)
   'consumer.dashboard.orders.confirm_count': "{n} à confirmer",
   'consumer.dashboard.orders.empty_title':   "Aucune commande en cours",
   'consumer.dashboard.orders.empty_subtitle':"Vous n'avez pas encore de commandes actives. Parcourez le marché pour découvrir des produits et services.",
@@ -1258,7 +1259,8 @@ export const fr: Record<string, string> = {
   'listing.service.startingPrice':   "à partir de {price} TND",
   'listing.service.priceRaw':        "{price} TND",
   'listing.service.priceOnRequest':  "Prix sur demande",
-  'listing.service.relativeAdded':   "ajouté il y a {time}",
+  // relativeAdded (+ frenchRelativeAdded() in listing-utils.ts) deleted — dead code, no caller,
+  // and its ar.ts value was literal French text.
   'listing.service.deliveryTime':    "Livraison : {time}",
   'listing.service.by':              "par {name}",
   'listing.service.viewCta':         "Voir le service",
@@ -1276,10 +1278,8 @@ export const fr: Record<string, string> = {
   'page_header.produits.emphasis':           "besoin",
   'page_header.services.subtitle':           "Trouvez le freelance qu'il vous faut",
   'page_header.services.emphasis':           "freelance",
-  'page_header.recherche.subtitle':          "{count} résultats pour « {query} »",
-  'page_header.recherche.emphasis':          "{count} résultats",
-  'page_header.categories.subtitle':         "{count} produits dans {category}",
-  'page_header.categories.emphasis':         "{count} produits",
+  // recherche.* / categories.* (subtitle + emphasis) migrated to tn() — see
+  // src/lib/i18n/plurals.ts.
   'page_header.favoris.subtitle':            "Retrouvez vos articles sauvegardés",
   'page_header.favoris.emphasis':            "sauvegardés",
   'page_header.commandes.subtitle':          "Suivez vos commandes en cours",
@@ -1479,7 +1479,7 @@ export const fr: Record<string, string> = {
   // ─── Account pages: mes-commandes / mes-favoris / mes-annonces ─────────────────
   'marche.browse_cta':              "Parcourir la marketplace",
 
-  'mescommandes.count':             "{n} commandes",
+  // mescommandes.count: dead key, no caller — deleted (not migrated).
   'mescommandes.filter.all':        "Toutes",
   'mescommandes.filter.active':     "En cours",
   'mescommandes.filter.delivered':  "Livrées",
@@ -1489,7 +1489,7 @@ export const fr: Record<string, string> = {
   'mescommandes.item_unavailable':  "Article indisponible",
   'mescommandes.empty':             "Vous n'avez pas encore de commandes.",
 
-  'mesfavoris.count':               "{n} favoris",
+  // mesfavoris.count migrated to tn() — see src/lib/i18n/plurals.ts.
   'mesfavoris.tabsAria':            "Type de favori",
   'mesfavoris.tab.produits':        "Produits",
   'mesfavoris.tab.services':        "Services",
@@ -1504,15 +1504,18 @@ export const fr: Record<string, string> = {
   'mesfavoris.empty.services.cta':        "Explorer les services",
 
   'mesannonces.title':              "Mes annonces",
-  'mesannonces.count':              "{n} annonces",
+  // count migrated to tn() — see src/lib/i18n/plurals.ts.
   'mesannonces.new':                "Publier une nouvelle annonce",
   'mesannonces.empty':              "Vous n'avez pas encore publié d'annonce.",
   'mesannonces.empty_cta':          "Publier ma première annonce",
+  // A capacity-meter noun ("n / max réponses"), not a counted noun — the noun agrees with the
+  // capacity, not the fill (a card at 1/10 still reads "réponses"). Stays plural, invariant, in
+  // both languages. Do not migrate to tn().
   'mesannonces.responses_suffix':   "réponses",
   'mesannonces.status.open':        "Ouverte",
   'mesannonces.status.filled':      "Pourvue",
   'mesannonces.status.expired':     "Expirée",
-  'mesannonces.expiry_countdown':   "Expire dans {n} j",
+  // expiry_countdown migrated to tn() — see src/lib/i18n/plurals.ts.
   'mesannonces.budget_unset':       "Budget à discuter",
   'mesannonces.view_responses':     "Voir les réponses",
 
@@ -1558,6 +1561,8 @@ export const fr: Record<string, string> = {
   'annonces.detail.back':                 "Retour à mes annonces",
   'annonces.detail.label':                "Annonce",
   'annonces.detail.posted_on':            "Publiée le {date}",
+  // Capacity-meter labels ("n/max réponses") — the noun agrees with the capacity, not the fill
+  // ("1/10 réponse" would be wrong). Stays plural, invariant, in both languages. Do not migrate.
   'annonces.detail.responses':            "{n}/{max} réponses",
   'annonces.detail.responses_cap':        "{n}/{max} réponses (cap atteint)",
   'annonces.detail.section_details':      "Détails de l'annonce",
@@ -1571,9 +1576,9 @@ export const fr: Record<string, string> = {
   'annonces.detail.skills_label':         "Compétences recherchées",
   'annonces.detail.responses_title':      "Réponses reçues",
   'annonces.detail.empty_title':          "Aucune réponse pour l'instant.",
-  'annonces.detail.empty_desc':           "Les freelances ont 30 jours pour répondre à votre annonce. Patience.",
+  'annonces.detail.empty_desc':           "Les freelances ont 30 jours pour répondre à votre annonce, patience.",
   'annonces.detail.responded_today':      "Répondu aujourd'hui",
-  'annonces.detail.responded_days_ago':   "Répondu il y a {n} j",
+  // responded_days_ago migrated to tn() — see src/lib/i18n/plurals.ts.
   'annonces.detail.freelance_unnamed':    "Freelance",
   'annonces.detail.contact':              "Contacter",
   'annonces.detail.phone_reveal_error':   "Impossible d'afficher le numéro. Veuillez réessayer.",
@@ -1745,11 +1750,10 @@ export const fr: Record<string, string> = {
   'freelance.services.form.briefing.counter':         "{count}/1000",
   'freelance.services.form.briefing.errors.max':      "Maximum 1000 caractères",
   'freelance.services.detail.deliverables.title':     "Ce qui est inclus",
-  'freelance.services.detail.revisions.label':        "{count} révisions incluses",
+  // detail.revisions.label / card.deliverables_count / card.revisions_count: dead keys, no
+  // caller — deleted (not migrated).
   'freelance.services.detail.briefing.title':         "Avant de commencer",
   'freelance.services.detail.tags.title':             "Mots-clés",
-  'freelance.services.card.deliverables_count':       "{count} livrables",
-  'freelance.services.card.revisions_count':          "{count} révisions",
   'freelance.add_service_btn':    "+ Ajouter un service",
   'freelance.no_services_own':    "Vous n'avez pas encore de services.",
   'freelance.no_services_cta':    "Ajouter votre premier service",
@@ -2040,19 +2044,17 @@ export const fr: Record<string, string> = {
   'job.become_freelancer_link':"Devenir freelancer",
   'job.already_responded':    "Vous avez déjà envoyé une candidature pour cette mission.",
   'job.deadline_label':       "Date limite :",
-  'job.max_capped':           "Cette mission a atteint le nombre maximum de réponses ({n}).",
+  // max_capped / responses_label / responses_label_pl: dead keys, no caller — deleted (not
+  // migrated).
   'job.consumer_no_phone':    "Le client n'a pas renseigné son numéro. Il vous contactera directement.",
-  'job.responses_label':      "réponse",
-  'job.responses_label_pl':   "réponses",
   // Edit mission
   'job.edit_title':           "Modifier la mission",
   'job.error_update':         "Erreur lors de la mise à jour. Veuillez réessayer.",
   // My responses page
   'job.my_responses_title':   "Mes réponses",
   'job.board_link':           "Tableau des missions",
-  'job.active_section':       "Réponses actives ({n})",
+  // active_section / history_section: dead keys, no caller — deleted (not migrated).
   'job.no_active_responses':  "Aucune réponse active.",
-  'job.history_section':      "Historique ({n})",
   'job.deleted_mission':      "Mission supprimée",
   'job.response_date_prefix': " · Réponse envoyée le ",
 
@@ -2122,19 +2124,19 @@ export const fr: Record<string, string> = {
 
   // ─── Category page ────────────────────────────────────────────────────────────
   'category.not_found':      "Catégorie introuvable",
-  'category.result_singular':"résultat",
-  'category.result_plural':  "résultats",
+  // result_singular / result_plural: dead keys, no caller — deleted (not migrated).
   'category.no_results':     "Aucun résultat dans cette catégorie pour le moment.",
 
   // ─── Search ──────────────────────────────────────────────────────────────────
   'search.title':       "Recherche",
   'search.enter_term':  "Veuillez entrer un terme de recherche.",
   'search.placeholder': "Rechercher…",
-  'search.result_for':  "pour",
+  // result_for: dead key, no caller — deleted (not migrated).
   'search.no_results':  "Aucun résultat pour cette recherche. Essayez un autre terme.",
 
   // ─── Search results page (/recherche) ────────────────────────────────────────
-  'search.resultsCount':         "{count} résultats pour « {query} »",
+  // resultsCount: dead key, no caller — deleted (not migrated). Superseded by
+  // page_header.recherche.* (tn()).
   'search.clear':                "Effacer la recherche",
   'search.filters.title':        "Filtres",
   'search.filters.category':     "Catégorie",
@@ -2554,7 +2556,7 @@ export const fr: Record<string, string> = {
   // "you earned nothing" and "not measured yet" are different claims (phase-aware rule).
   'seller.dashboard.tile.profit_soon':    "Bientôt disponible",
   'seller.dashboard.tile.profit_value':   "{amount} TND",
-  'seller.dashboard.tile.profit_sub':     "Sur {count} commande(s) livrée(s)",
+  // profit_sub migrated to tn() — see src/lib/i18n/plurals.ts.
   // Used when some delivered orders predate the price snapshot: the value must not imply it covers
   // all of them.
   'seller.dashboard.tile.profit_partial': "Sur {measured} des {total} commandes livrées",
@@ -2606,7 +2608,7 @@ export const fr: Record<string, string> = {
   'seller.orders.tab.cancelled':          "Annulées",
   'seller.orders.sort_aria':              "Trier les commandes",
   'shell.topbar.search.receivedOrders':   "Rechercher une commande reçue...",
-  'seller.orders.count':                  "{count} commande(s)",
+  // orders.count migrated to tn() — see src/lib/i18n/plurals.ts.
   'seller.orders.sort.recent':            "Plus récentes",
   'seller.orders.sort.oldest':            "Plus anciennes",
   'seller.orders.waiting':                "· il y a {hours} h",

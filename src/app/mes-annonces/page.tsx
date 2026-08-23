@@ -10,7 +10,7 @@ import { getMyAnnonces } from '@/lib/marche/my-data'
 import { paginate, PER_PAGE } from '@/lib/search/search-params'
 import { Pagination } from '@/components/shared/Pagination'
 import { getLang } from '@/lib/i18n/server'
-import { t } from '@/lib/i18n'
+import { t, tn } from '@/lib/i18n'
 import { BriefcaseIcon } from '@/components/marche/icons'
 import { BASE as BUTTON_BASE, SIZE as BUTTON_SIZE, VARIANT_BASE, VARIANT_STATE } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
@@ -54,7 +54,7 @@ export default async function MesAnnoncesPage({
     <AppShell user={shell.topBarUser}>
       <PageHeader
         title={t('mesannonces.title', lang)}
-        countLabel={annonces.length > 0 ? t('mesannonces.count', lang, { n: annonces.length }) : undefined}
+        countLabel={annonces.length > 0 ? tn('mesannonces.count', lang, annonces.length) : undefined}
         action={annonces.length > 0 ? newButton : undefined}
       />
 
