@@ -7,9 +7,10 @@ import { t } from '@/lib/i18n'
 import { MAX_RESPONSES_PER_POST } from '@/lib/job-constants'
 import { tndPrice } from '@/components/listings/listing-utils'
 import { FOCUS_RING } from '@/components/layout/styles'
-import { StatusPill, type StatusValue } from '@/components/ui/status-pill'
+import { StatusPill } from '@/components/ui/status-pill'
 import { ModerationBanner } from '@/components/ModerationBanner'
 import { getExpiryCountdownDays } from '@/lib/marche/annonce-expiry-countdown'
+import { ANNONCE_STATUS_PILL } from '@/lib/marche/annonce-status'
 import type { MyAnnonce } from '@/lib/marche/my-data'
 
 const SKILLS_SHOWN = 3
@@ -19,15 +20,6 @@ function budgetLabel(min: number | null, max: number | null): string | null {
   if (min != null) return `≥ ${tndPrice(min)}`
   if (max != null) return `≤ ${tndPrice(max)}`
   return null
-}
-
-// AnnonceDisplayStatus (my_data's resolveAnnonceStatus, folding raw status + computed expiry) →
-// (StatusPill status, i18n label key). 'deleted' never reaches this card — getMyAnnonces excludes
-// it at the query.
-const STATUS_MAP: Record<'open' | 'filled' | 'expired', { status: StatusValue; labelKey: string }> = {
-  open: { status: 'ouverte', labelKey: 'mesannonces.status.open' },
-  filled: { status: 'pourvue', labelKey: 'mesannonces.status.filled' },
-  expired: { status: 'expiree', labelKey: 'mesannonces.status.expired' },
 }
 
 // Owner-side grid card (3-up, ListingResults.tsx:26's grid) — same ANATOMY strategy as
@@ -45,7 +37,7 @@ const STATUS_MAP: Record<'open' | 'filled' | 'expired', { status: StatusValue; l
 export function AnnonceCard({ annonce }: { annonce: MyAnnonce }) {
   const lang = useLang()
 
-  const { status: pillStatus, labelKey } = STATUS_MAP[annonce.display_status]
+  const { status: pillStatus, labelKey } = ANNONCE_STATUS_PILL[annonce.display_status]
   const statusLabel = t(labelKey, lang)
   const capReached = annonce.response_count >= MAX_RESPONSES_PER_POST
   const budget = budgetLabel(annonce.budget_min, annonce.budget_max)

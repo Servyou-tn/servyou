@@ -72,6 +72,13 @@
   --surface-pill: #F1F5F9;  --surface-pill-active: #FFFFFF;   /* landing/marche-specific — kept literal */
   --surface-placeholder: #F4F4F4;   /* image/avatar/thumb fallback fill — promoted from the #F4F4F4 component literal (DS-3a; no Figma source, chosen over #E8E8E8 which is only a gradient stop). DS-3b-4: #E8E8E8 re-checked against figma-registry — no source, so no token; the 3 gradient stops stay literal. */
   --status-dot-success: var(--success-500);
+  /* Modal backdrop — no Figma node exists for this (PR-E discovery). Before this token, the two
+     modals in the codebase disagreed with each other (this page's own delete modal at /50, every
+     other modal — DeleteProductModal, CancelOrderModal, DisputeCreateModal, ShopReportModal,
+     ProductsList, SearchFiltersSheet — at /40). /40 is the value 10 of the 12 existing modal
+     overlays already use; this page's /50 was the outlier, not the majority. Alpha is baked into
+     the token (not a Tailwind /40 modifier) so no call site can drift from it again. */
+  --overlay-scrim: rgb(0 0 0 / 0.4);
 }
 
 @theme inline {
@@ -93,6 +100,7 @@
   --color-status-dot-success: var(--status-dot-success);
   --color-border-focus: var(--border-focus);
   --color-icon-muted: var(--icon-muted);
+  --color-overlay-scrim: var(--overlay-scrim);
   /* Compat: legacy navy utility names (components still reference these; rewire later).
      bg-brand-navy-900 → text-primary #0F172A · text-brand-navy-700 → blue/800 #1E3A8A. */
   --color-brand-navy-900: var(--text-primary);  --color-brand-navy-800: var(--brand-navy-800);  --color-brand-navy-700: var(--brand-blue-800);

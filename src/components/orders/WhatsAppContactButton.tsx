@@ -18,20 +18,27 @@ import { FOCUS_RING } from '@/components/layout/styles'
 // this button for contact and a separate control for the transition.
 //
 // Phone is revealed on click via get_contact_phone(target), never rendered into the page: the RPC
-// is relationship-gated (it returns a number only to the buyer or seller of a shared order), so
-// the reveal has to happen behind a user action, not at render.
+// is relationship-gated (it returns a number only to the two parties of a shared order OR — since
+// PR-E — an annonce and its responder), so the reveal has to happen behind a user action, not at
+// render.
 export function WhatsAppContactButton({
-  buyerId,
+  targetId,
   message,
   label,
   size = 'sm',
+  errorMessageKey = 'seller.orders.whatsapp_error',
+  noPhoneMessageKey = 'seller.orders.whatsapp_none',
 }: {
-  buyerId: string
+  /** get_contact_phone's `target` — the other party's profile id (buyer, seller, or annonce responder). */
+  targetId: string
   /** Fully composed, already localised. Truncated to the Arabic budget by buildWhatsAppUrl. */
   message: string
   label: string
   /** `sm` = G8's row (h-9). `lg` = G9's rail button (Figma 312×48). */
   size?: 'sm' | 'lg'
+  /** Override for a non-order caller — the defaults read "…cette commande" (PR-E/AnnonceResponseCard). */
+  errorMessageKey?: string
+  noPhoneMessageKey?: string
 }) {
   const supabase = createClient()
   const lang = useLang()
@@ -41,15 +48,15 @@ export function WhatsAppContactButton({
   async function contact() {
     setError(null)
     setLoading(true)
-    const { data, error: rpcError } = await supabase.rpc('get_contact_phone', { target: buyerId })
+    const { data, error: rpcError } = await supabase.rpc('get_contact_phone', { target: targetId })
     setLoading(false)
     if (rpcError) {
       console.error('[whatsapp] phone reveal error:', rpcError.message, rpcError.code)
-      setError(t('seller.orders.whatsapp_error', lang))
+      setError(t(errorMessageKey, lang))
       return
     }
     if (!data) {
-      setError(t('seller.orders.whatsapp_none', lang))
+      setError(t(noPhoneMessageKey, lang))
       return
     }
     window.open(buildWhatsAppUrl(data as string, message), '_blank', 'noopener,noreferrer')

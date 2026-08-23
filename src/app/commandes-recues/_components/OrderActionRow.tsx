@@ -103,7 +103,7 @@ export function OrderActionRow({
 
         {order.status === 'pending' ? (
           <WhatsAppContactButton
-            buyerId={order.buyerId}
+            targetId={order.buyerId}
             label={t('seller.orders.whatsapp_short', lang)}
             message={t('seller.orders.whatsapp_message', lang, {
               buyer: order.buyerName,

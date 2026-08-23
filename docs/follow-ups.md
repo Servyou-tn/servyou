@@ -2822,3 +2822,55 @@ coupling" claim on that specific function is stale, not a remaining blocker.
 - **Trigger:** a dedicated design-system PR that inventories all ~11 call sites of both treatments
   and either reconciles them into one, or documents why grid-browse cards (services) and
   list/account cards (products, annonces) are deliberately different.
+
+### `WhatsAppContactButton`'s `size="sm"` renders at 36px — under the project's 44px touch-target rule, now on three surfaces (PR-E, `feat/annonces-detail-ds`, 2026-08-22)
+
+- **What:** `size="sm"` is `h-9` (36px). It has no mobile touch-target affordance the way `Button`
+  does (`Button`'s `size="md"` ships an invisible `absolute -inset-0.5` hit-area extender —
+  `components/ui/button.tsx:122-124` — specifically because a 40px box is itself under 44px;
+  `WhatsAppContactButton` has no equivalent). Confirmed live at 375px on the new annonce-detail
+  response cards: `sm` is a small, start-aligned pill, not full width.
+- **Not new to this PR** — `sm` was already 36px on G8's `OrderActionRow` and G9's
+  `commandes-recues/[id]` row usage before PR-E; this PR is the third surface to inherit it, not
+  the first to introduce it. PR-E's own AnnonceDetail rebuild used `size="sm"` deliberately
+  unmodified (see the next entry) rather than fix the primitive from inside a page-level PR.
+- **Also not fixed here — mobile full-width regression, deliberately reported rather than forced:**
+  the OLD hand-rolled WhatsApp button on `/mes-annonces/[id]` was `h-10 w-full sm:w-auto` (full-width
+  below `sm`). `WhatsAppContactButton` accepts no `className` and forwards no other props onto its
+  root — there is no supported way to restore that from a caller. The only technique that would
+  reach it is an arbitrary descendant selector on a wrapper (e.g. `[&_button]:w-full`) piercing into
+  the component's undocumented internal `div > button` structure — no precedent for that pattern
+  exists anywhere in this codebase (grepped), and it would silently break the moment
+  `WhatsAppContactButton`'s internal markup changes for an unrelated reason. Founder ruling
+  (2026-08-22): do not force it; report and leave `/mes-annonces/[id]`'s mobile Contact button
+  non-full-width rather than add a fragile selector hack.
+- **Trigger:** a dedicated `WhatsAppContactButton` pass that (a) adds the same touch-target hit-area
+  extension `Button` already has for `sm`, and (b) adds either a `fullWidthOnMobile` prop or a
+  `className`/wrapper contract so callers can opt into a full-width bar without reaching into
+  internals — fixing both `OrderActionRow`'s pre-existing 36px and this page's lost full-width bar
+  in the same pass, since they're the same root cause (no external sizing hook on the component).
+
+### `DeleteProductModal` has no focus trap, no Escape-to-close, no scroll-lock — the a11y wiring `ConfirmModal` now has and it doesn't (PR-E, `feat/annonces-detail-ds`, 2026-08-22)
+
+- **What:** PR-E's brief asked for `DeleteProductModal` (`components/produits/DeleteProductModal.tsx`)
+  to replace `/mes-annonces/[id]`'s hand-rolled delete dialog. Discovery found the opposite gap: this
+  page's existing dialog already had focus-into-dialog, Escape-to-close and scroll-lock;
+  `DeleteProductModal` has `role="dialog" aria-modal="true"` (lines 60-65) and nothing else — no
+  `useEffect`, no keydown listener, no scroll-lock, no ref, relying on the dialog role alone. Swapping
+  it in would have been an accessibility regression, not a consolidation, so the ruling kept this
+  page on its own behavior and moved only its visuals onto tokens and `Button`'s danger variant. The
+  new `ConfirmModal` (`components/marche/ConfirmModal.tsx`) that resulted has all four: initial
+  focus, focus-restore-on-close, Escape, scroll-lock, and (as of the follow-up fix in the same PR) a
+  real Tab/Shift+Tab cycle between Cancel and Confirm — behavior-verified in
+  `src/__tests__/confirm-modal.test.tsx`, not just visually.
+- **Not fixed here** — `DeleteProductModal` is unchanged except for moving onto the `--overlay-scrim`
+  token; its a11y wiring is still just the bare dialog role. It is shared by two call sites today:
+  `mes-produits/_components/ProductRow.tsx` (G5, kebab-menu delete) and
+  `mes-produits/[id]/modifier/_components/EditProductForm.tsx` (G7, DangerZone delete) — both
+  currently ship the gap.
+- **Trigger:** a dedicated `DeleteProductModal` a11y pass, built from `ConfirmModal`'s wiring (not the
+  reverse — `ConfirmModal` is the more complete implementation despite being the newer component):
+  add the same mount-focus/restore-on-close effect, the same Escape+Tab-trap keydown handler, and the
+  same scroll-lock. `DeleteProductModal`'s typed-keyword input adds a third focusable descendant the
+  trap's `first`/`last` logic already generalizes to (any number of focusable elements), so the
+  handler can likely be lifted close to verbatim rather than rewritten.
