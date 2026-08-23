@@ -11,6 +11,7 @@ import { FOCUS_RING } from '@/components/layout/styles'
 import { Button } from '@/components/ui/button'
 import { updateProfileAction } from '@/app/mon-compte/actions'
 import type { CurrentProfile } from '@/lib/marche/mon-compte'
+import type { Role } from '@/lib/roles'
 import { LangueRegionTab } from './LangueRegionTab'
 import { ConfidentialiteTab } from './ConfidentialiteTab'
 import { PlaceholderTab } from './PlaceholderTab'
@@ -31,7 +32,7 @@ const TABS: { key: TabKey; icon: LucideIcon; labelKey: string }[] = [
 // tab is showing, and the batched dirty/save state (423:16882 dirty / 558:38900 clean) — a footer
 // sitting outside the two-col row needs to know about edits regardless of which tab made them.
 // Only `language` carries real state this PR; part 2's tabs plug into the same isDirty/onSave shape.
-export function ParametresShell({ profile }: { profile: CurrentProfile }) {
+export function ParametresShell({ profile, role }: { profile: CurrentProfile; role: Role }) {
   const lang = useLang()
   const router = useRouter()
   const [activeTab, setActiveTab] = useState<TabKey>('notifications')
@@ -159,7 +160,7 @@ export function ParametresShell({ profile }: { profile: CurrentProfile }) {
 
         <div className="min-w-0 w-full max-w-[720px]">
           {activeTab === 'notifications' && <PlaceholderTab title={t('parametres.rail.notifications', lang)} />}
-          {activeTab === 'confidentialite' && <ConfidentialiteTab profile={profile} />}
+          {activeTab === 'confidentialite' && <ConfidentialiteTab profile={profile} role={role} />}
           {activeTab === 'langue' && <LangueRegionTab value={language} onChange={setLanguage} />}
           {activeTab === 'comptes' && <PlaceholderTab title={t('parametres.rail.comptes', lang)} />}
         </div>

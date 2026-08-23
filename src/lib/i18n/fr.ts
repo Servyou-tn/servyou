@@ -1081,6 +1081,24 @@ export const fr: Record<string, string> = {
   'parametres.confidentialite.dataSectionSubtitle': "Vous avez le droit d'accéder à toutes les données que Servyou détient sur vous, conformément à la loi tunisienne 2004-63.",
   'parametres.confidentialite.exportAction':        "Demander l'export",
 
+  // Visibilité — role-conditional (freelancer/423:17277, shop_owner/558:38977; consumer gets no
+  // section at all, no public profile to index). Rendered as the MUTED "Bientôt disponible" panel,
+  // NOT live toggles — see ConfidentialiteTab's header comment for why (neither the underlying page
+  // nor the "similar X" suggestion exists yet; a confident locked-ON toggle would promise a real
+  // feature). Copy drops the literal "D4"/"D3" frame-name that leaked into the measured text —
+  // that's an internal page-code, not something a user should read.
+  'parametres.confidentialite.visibility.title':                    "Visibilité",
+  'parametres.confidentialite.visibility.subtitle.freelancer':      "Contrôlez comment votre profil apparaît sur Servyou et sur les moteurs de recherche.",
+  'parametres.confidentialite.visibility.subtitle.shop_owner':      "Contrôlez comment votre boutique apparaît sur Servyou et sur les moteurs de recherche.",
+  'parametres.confidentialite.visibility.google.title.freelancer':  "Profil visible sur Google et les moteurs de recherche",
+  'parametres.confidentialite.visibility.google.desc.freelancer':   "Autorise Google, Bing, et les autres moteurs à indexer votre profil public. Impact direct sur votre visibilité SEO.",
+  'parametres.confidentialite.visibility.google.title.shop_owner':  "Boutique visible sur Google et les moteurs de recherche",
+  'parametres.confidentialite.visibility.google.desc.shop_owner':   "Autorise Google, Bing, et les autres moteurs à indexer votre boutique publique. Impact direct sur votre visibilité SEO.",
+  'parametres.confidentialite.visibility.similar.title.freelancer': "Apparaître dans « Freelancers similaires »",
+  'parametres.confidentialite.visibility.similar.desc.freelancer':  "Votre profil peut être suggéré aux clients qui consultent d'autres freelancers de votre catégorie. Augmente vos vues de profil.",
+  'parametres.confidentialite.visibility.similar.title.shop_owner': "Apparaître dans « Boutiques similaires »",
+  'parametres.confidentialite.visibility.similar.desc.shop_owner':  "Votre boutique peut être suggérée aux clients qui consultent d'autres boutiques de votre catégorie. Augmente vos vues de boutique.",
+
   'parametres.privacy.exportTitle':     "Exporter mes données",
   'parametres.privacy.exportHelp':      "Recevez par email une copie complète des données associées à votre compte Servyou. Le traitement peut prendre jusqu'à 48 heures.",
   'parametres.export.modalTitle':       "Demander l'export de mes données",

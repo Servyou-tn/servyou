@@ -1072,6 +1072,18 @@ export const ar: Record<string, string> = {
   'parametres.confidentialite.dataSectionSubtitle': "يحق لك الاطّلاع على جميع البيانات التي تحتفظ بها Servyou عنك، وفقًا للقانون التونسي 2004-63.",
   'parametres.confidentialite.exportAction':        "طلب التصدير",
 
+  'parametres.confidentialite.visibility.title':                    "الظهور",
+  'parametres.confidentialite.visibility.subtitle.freelancer':      "تحكّم في كيفية ظهور ملفك الشخصي على Servyou وفي محركات البحث.",
+  'parametres.confidentialite.visibility.subtitle.shop_owner':      "تحكّم في كيفية ظهور متجرك على Servyou وفي محركات البحث.",
+  'parametres.confidentialite.visibility.google.title.freelancer':  "الملف الشخصي مرئي على Google ومحركات البحث",
+  'parametres.confidentialite.visibility.google.desc.freelancer':   "يسمح لمحركات البحث بفهرسة ملفك الشخصي العام. له تأثير مباشر على ظهورك في نتائج البحث.",
+  'parametres.confidentialite.visibility.google.title.shop_owner':  "المتجر مرئي على Google ومحركات البحث",
+  'parametres.confidentialite.visibility.google.desc.shop_owner':   "يسمح لمحركات البحث بفهرسة متجرك العام. له تأثير مباشر على ظهورك في نتائج البحث.",
+  'parametres.confidentialite.visibility.similar.title.freelancer': "الظهور ضمن « مستقلّون مشابهون »",
+  'parametres.confidentialite.visibility.similar.desc.freelancer':  "قد يُقترح ملفك الشخصي على العملاء الذين يتصفّحون مستقلّين آخرين في فئتك. يزيد من مشاهدات ملفك الشخصي.",
+  'parametres.confidentialite.visibility.similar.title.shop_owner': "الظهور ضمن « متاجر مشابهة »",
+  'parametres.confidentialite.visibility.similar.desc.shop_owner':  "قد يُقترح متجرك على العملاء الذين يتصفّحون متاجر أخرى في فئتك. يزيد من مشاهدات متجرك.",
+
   'parametres.privacy.exportTitle':     "تصدير بياناتي",
   'parametres.privacy.exportHelp':      "احصل عبر البريد الإلكتروني على نسخة كاملة من البيانات المرتبطة بحسابك في Servyou. قد تستغرق المعالجة حتى 48 ساعة.",
   'parametres.export.modalTitle':       "طلب تصدير بياناتي",
