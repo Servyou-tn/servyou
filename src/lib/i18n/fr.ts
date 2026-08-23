@@ -1033,32 +1033,56 @@ export const fr: Record<string, string> = {
   'monCompte.error.nameRequired':    "Le nom complet est obligatoire.",
   'monCompte.error.phoneFormat':     "Le numéro doit avoir 8 chiffres (avec ou sans +216).",
 
-  // /parametres — consumer settings (notifications / privacy / language / linked accounts)
+  // /parametres — Figma 423:16615 (I2). Two-column shell (sub-nav rail + content), part 1 of the
+  // rebuild: structure + Setting Row + batched save, ONE working tab (Langue & région). See
+  // feat/parametres-shell's PR body for the full measurement-to-build mapping.
   'parametres.title':                   "Paramètres",
-  'parametres.subtitle':                "Vos préférences pour Servyou. Vous pouvez tout modifier à tout moment.",
-  'parametres.notif.title':             "Notifications",
-  'parametres.notif.help':              "Vous serez bientôt en mesure de personnaliser vos notifications par email et dans l'application.",
-  'parametres.notif.orders':            "Mises à jour de commande",
-  'parametres.notif.ordersHelp':        "Toujours activées. Elles vous tiennent informé du statut de vos commandes.",
-  'parametres.notif.ordersActive':      "Activées",
-  'parametres.notif.marketing':         "Communications marketing",
-  'parametres.notif.marketingHelp':     "Bientôt disponible. Nous n'envoyons actuellement aucun email marketing.",
-  'parametres.privacy.title':           "Confidentialité et données",
-  'parametres.privacy.help':            "Vous gardez le contrôle de vos données. Pour exercer vos droits (accès, rectification, portabilité, opposition), écrivez à bonjour@servyou.tn — nous répondons sous 30 jours (Loi 2004-63).",
-  'parametres.privacy.policyLink':      "Lire notre politique de confidentialité complète",
-  'parametres.privacy.deleteHelp':      "La suppression de votre compte se fait depuis votre page Mon compte.",
-  'parametres.privacy.deleteLink':      "Aller à Mon compte",
+  'parametres.breadcrumb.home':         "Accueil",
+  'parametres.subline.text':            "Gérez vos préférences, notifications, et confidentialité. Pour modifier vos informations personnelles, allez à ",
+  'parametres.subline.link':            "Mon compte.",
+
+  'parametres.rail.notifications':      "Notifications",
+  'parametres.rail.confidentialite':    "Confidentialité",
+  'parametres.rail.langue':             "Langue & région",
+  'parametres.rail.comptes':            "Comptes connectés",
+
+  'parametres.footer.dirty':            "Modifications non enregistrées",
+  'parametres.footer.saved':            "Modifications enregistrées",
+  'parametres.footer.cancel':           "Annuler les modifications",
+  'parametres.footer.save':             "Enregistrer",
+
+  // Notifications + Comptes connectés: minimal honest placeholder (real content is part 2 — see
+  // docs/follow-ups.md). Not the old hand-rolled rows: those described a shape the measured design
+  // doesn't match, so they weren't carried forward. Badge reuses marche.sidebar.coming_soon (same
+  // key the old ParametresForm already used for this exact "Bientôt disponible" badge).
+  'parametres.placeholder.body':        "Le contenu de cette section arrive dans une prochaine mise à jour.",
+
+  // Langue & région — the one working tab. Row label reuses parametres.lang.title below.
+  'parametres.lang.title':              "Langue",
+  'parametres.langue.sectionTitle':     "Langue de la plateforme",
+  'parametres.langue.sectionSubtitle':  "L'interface Servyou apparaîtra dans cette langue. Vos textes de profil restent tels que vous les avez écrits.",
+  'parametres.langue.rowDescription':   "Français par défaut. L'arabe active la mise en page RTL sur toutes les pages.",
+  'parametres.region.sectionTitle':          "Région",
+  'parametres.region.sectionSubtitle':       "Fuseau horaire et format téléphone utilisés sur la plateforme.",
+  'parametres.region.timezoneLabel':         "Fuseau horaire",
+  'parametres.region.timezoneDescription':   "Automatique selon votre localisation",
+  'parametres.region.timezoneValue':         "Africa/Tunis (GMT+1)",
+  'parametres.region.phoneFormatLabel':       "Format téléphone",
+  'parametres.region.phoneFormatDescription': "Tunisie uniquement au MVP",
+  'parametres.region.phoneFormatValue':       "+216",
+
+  // Confidentialité — minimal this PR too, EXCEPT the one row with a real, already-shipped backend
+  // (data export): CLAUDE.md's "once built, stays built" rule means that can't just disappear while
+  // the rest of the tab waits for part 2. Section chrome below IS measured (558:38977's "Données
+  // personnelles" section, role-neutral wording); the row itself reuses the existing, already-
+  // reviewed exportTitle/exportHelp strings (below) rather than the shop_owner-flavored row
+  // description that was the only export copy actually measured for the NEW shell.
+  'parametres.confidentialite.dataSectionTitle':    "Données personnelles",
+  'parametres.confidentialite.dataSectionSubtitle': "Vous avez le droit d'accéder à toutes les données que Servyou détient sur vous, conformément à la loi tunisienne 2004-63.",
+  'parametres.confidentialite.exportAction':        "Demander l'export",
+
   'parametres.privacy.exportTitle':     "Exporter mes données",
   'parametres.privacy.exportHelp':      "Recevez par email une copie complète des données associées à votre compte Servyou. Le traitement peut prendre jusqu'à 48 heures.",
-  'parametres.privacy.exportBtn':       "Demander l'export de mes données",
-  'parametres.lang.title':              "Langue",
-  'parametres.lang.help':               "Choisissez la langue d'affichage de l'interface Servyou.",
-  'parametres.lang.effect':             "Le changement de langue prendra effet à votre prochaine navigation.",
-  'parametres.lang.updated':            "Langue mise à jour.",
-  'parametres.social.title':            "Comptes connectés",
-  'parametres.social.help':             "Connectez votre compte Servyou à vos réseaux sociaux pour une connexion plus rapide.",
-  'parametres.social.notConnected':     "Non connecté",
-  'parametres.social.connect':          "Connecter",
   'parametres.export.modalTitle':       "Demander l'export de mes données",
   'parametres.export.modalBody':        "Nous préparerons un fichier contenant toutes vos données Servyou (profil, commandes, favoris, missions) et vous l'enverrons par email à {email}.",
   'parametres.export.modalNote':        "Le traitement peut prendre jusqu'à 48 heures.",
@@ -1288,8 +1312,8 @@ export const fr: Record<string, string> = {
   'page_header.missions.emphasis':           "réponses",
   'page_header.mon_compte.subtitle':         "Gérez vos informations personnelles",
   'page_header.mon_compte.emphasis':         "personnelles",
-  'page_header.parametres.subtitle':         "Personnalisez votre expérience",
-  'page_header.parametres.emphasis':         "expérience",
+  // parametres.subtitle/.emphasis removed — the measured I2 shell (423:16615) has no animated
+  // reveal banner, just a static breadcrumb/h1/subline; see parametres.subline.* above.
   'page_header.profil.subtitle':             "Votre profil Servyou",
   'page_header.profil.emphasis':             "profil",
 
