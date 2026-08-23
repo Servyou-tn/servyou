@@ -9,6 +9,7 @@ import { getCurrentProfile } from '@/lib/marche/mon-compte'
 import { getLang } from '@/lib/i18n/server'
 import { t } from '@/lib/i18n'
 import { FOCUS_RING } from '@/components/layout/styles'
+import { resolveRole } from '@/lib/roles'
 
 export const metadata: Metadata = { title: 'Paramètres — Servyou' }
 
@@ -27,6 +28,9 @@ export default async function ParametresPage() {
   if (!profile) redirect('/connexion?next=/parametres')
 
   const lang = await getLang()
+  // Part 2: the ONE call to resolveRole for this whole page tree — ParametresShell and its tabs
+  // take the resulting Role as a prop, they never re-derive seller_type themselves.
+  const role = resolveRole(profile)
 
   return (
     <AppShell user={shell.topBarUser}>
@@ -48,7 +52,7 @@ export default async function ParametresPage() {
       </div>
 
       <div className="mt-6">
-        <ParametresShell profile={profile} />
+        <ParametresShell profile={profile} role={role} />
       </div>
     </AppShell>
   )
