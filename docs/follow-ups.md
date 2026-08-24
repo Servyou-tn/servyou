@@ -3044,3 +3044,60 @@ coupling" claim on that specific function is stale, not a remaining blocker.
   already has recorded. One call should cover it (base rows only, deriving the shop delta from
   memory); budget a second only if the founder wants the shop_owner row's exact text verbatim rather
   than derived.
+
+## Dependency audit PR-2 — Sentry SDK bump (`chore/deps-sentry`, 2026-08-24)
+
+### 🔴 Vercel cannot deploy from this repo at all right now — Hobby plan blocks git-integration deploys from a private GitHub Organization repo
+
+- **What:** GitHub's own deployment-status API on the PR #158 merge commit (`45ff51a`,
+  2026-08-24T16:33:37Z) returns a Vercel status of `failure` with the description **"Cannot deploy
+  from a private GitHub organization repository on the Hobby plan"**
+  (`target_url` points at `vercel.com/servyou-s-projects?upgradeToPro=github-private-org-to-hobby`).
+  Confirmed via `gh api repos/Servyou-tn/servyou/commits/<sha>/status`. Checked GitHub's
+  `deployments` endpoint directly (not the Vercel MCP's `list_deployments`, which mixes in
+  manually-triggered deploys and reads misleadingly recent) — the **last successful git-triggered
+  deployment of any kind is 2026-06-05T00:28:15Z**, almost three months before this PR. Every PR
+  merge to `main` since then (at minimum #154 through #158, confirmed by walking each merge
+  commit's status) has silently failed to deploy.
+- **Why this wasn't caught earlier:** nothing surfaces the failure anywhere a PR author would look —
+  the GitHub PR UI doesn't block merge on it, and `docs/servyou-*` / CLAUDE.md's Definition-of-Done
+  item 9 ("Vercel green") has apparently been unverifiable-but-uncaught for the same three months.
+  `servyou.vercel.app` still reflects *some* commit (the July 23 entry the Vercel MCP shows), which
+  must have gone out via a manual `vercel --prod`/dashboard deploy, not the git integration — matching
+  [[project_vercel_deploy_pipeline]]'s existing note that CLI `--prod` works while CLI preview is
+  blocked. A manual deploy succeeding periodically is exactly what would mask this: the site looks
+  current enough that nobody went looking for a broken pipeline.
+- **Why this blocked PR-2's live verification:** the task asked for a real preview deploy + a thrown
+  error confirmed in the Sentry dashboard. No Sentry MCP/API exists in this environment either (no
+  local `SENTRY_AUTH_TOKEN` or DSN — both live only in Vercel's env, per `sentry.server.config.ts`'s
+  own comment), so a preview deployment was the only path to any live evidence at all, and it's
+  closed at the platform level, not something a retry or a different push fixes.
+- **Not fixed here — it's a plan/billing decision, not a code change:** the two ways off this are
+  (a) upgrade the Vercel team to Pro, or (b) make the GitHub repo public. Both are the founder's call
+  given cost and visibility tradeoffs; nothing about the codebase or CI config is at fault.
+- **Trigger:** before the next PR that needs a *live* preview to verify (this class of PR — anything
+  changing an external integration where a green build isn't sufficient evidence — will hit the same
+  wall). Until resolved, live-integration verification for Sentry/analytics/webhook-style deps has to
+  route through a manual `vercel --prod`/dashboard deploy by someone with real Vercel auth, not
+  through git push.
+
+### CI's `Type-check · Lint · Test · Build` GitHub Action has been failing on `main` since at least PR #154 — pre-existing, unrelated to dependency work
+
+- **What:** `gh run list --branch main` shows the `CI` workflow (`.github/workflows/ci.yml`) as
+  `failure` on every merge to `main` from #154 through #158 (this PR's base). The failure is a real
+  ESLint error, not flake: the `shared-ui/no-raw-color` rule rejects three arbitrary Tailwind values
+  in `src/components/ui/setting-row.tsx` (`min-h-[…]`, `w-[…]`, `size-[…]`, lines 72/133/151) and one
+  in `src/components/ui/tag-input.tsx` (`h-[…]`, line 91) — `✖ 9 problems (4 errors, 5 warnings)`,
+  exit code 1.
+  - **Verified pre-existing, not introduced by this PR:** neither `chore/deps-lockfile-refresh` nor
+    `chore/deps-sentry` touches either file; the same lint failure reproduces on #154's merge commit,
+    four merges before either dependency PR existed.
+- **Why not fixed here:** out of scope for a dependency-bump PR per CLAUDE.md's "one PR, one focus" —
+  these are unrelated component files, and the fix (replace the arbitrary values with token
+  utilities, or decide the rule needs a narrower scope) is a design-system-compliance change, not a
+  deps change.
+- **Trigger:** the next PR that touches `setting-row.tsx` or `tag-input.tsx`, or a dedicated CI-green
+  sweep — whichever comes first. Worth noting alongside the Vercel finding above: **both of this
+  repo's automated "did it actually work" signals (CI lint/build, and Vercel deploy) have been red on
+  `main` for weeks**, which is worth the founder's attention as a pattern, not just two isolated
+  items.
