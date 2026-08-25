@@ -18,7 +18,7 @@
     "vrt:stories": "node scripts/vrt/stories.mjs"
   },
   "dependencies": {
-    "@sentry/nextjs": "^10.56.0",
+    "@sentry/nextjs": "^10.71.0",
     "@supabase/ssr": "^0.10.3",
     "@supabase/supabase-js": "^2.107.0",
     "clsx": "^2.1.1",
