@@ -62,14 +62,15 @@ export type SelectRowProps = BaseProps & {
 
 export type SettingRowProps = ToggleRowProps | ToggleLockedRowProps | LinkRowProps | SelectRowProps
 
-// Measured shell: min-h-72, py-16, flex items-center justify-between, full width. Left block
-// flex-1 flex-col gap-2, padding-END 40 (was pr-[40px] in the export — converted to the logical
-// side per the app's bilingual-RTL rule) before the control.
+// Measured shell: 72px min-height (min-h-18 on the --spacing token scale), py-16, flex
+// items-center justify-between, full width. Left block flex-1 flex-col gap-2, padding-END 40
+// (was pr-[40px] in the export — converted to the logical side per the app's bilingual-RTL rule)
+// before the control.
 export function SettingRow(props: SettingRowProps) {
   const { label, description, className } = props
 
   return (
-    <div className={cn('flex min-h-[72px] w-full items-center justify-between py-4', className)}>
+    <div className={cn('flex min-h-18 w-full items-center justify-between py-4', className)}>
       <div className="flex min-w-0 flex-1 flex-col gap-0.5 pe-10">
         <p className="text-base font-semibold text-text-primary">{label}</p>
         {description && <p className="text-sm text-text-muted">{description}</p>}
@@ -130,7 +131,7 @@ function SettingRowControl(props: SettingRowProps) {
       // 40px one — reused elsewhere, not reused here since the height doesn't match), and a native
       // element keeps this a two-option field fully accessible with no extra wiring.
       return (
-        <div className="relative w-[122px] shrink-0">
+        <div className="relative w-30.5 shrink-0">
           <select
             value={props.value}
             onChange={(e) => props.onChange(e.target.value)}
@@ -148,7 +149,7 @@ function SettingRowControl(props: SettingRowProps) {
             ))}
           </select>
           <ChevronDown
-            className="pointer-events-none absolute end-3 top-1/2 size-[18px] -translate-y-1/2 text-text-muted"
+            className="pointer-events-none absolute end-3 top-1/2 size-4.5 -translate-y-1/2 text-text-muted"
             aria-hidden="true"
           />
         </div>
