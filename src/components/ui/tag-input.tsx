@@ -88,7 +88,7 @@ export function TagInput({ value, onChange, min, max, label, placeholder, helper
           error ? 'border-danger-500' : 'border-border-strong',
         )}
       >
-        <Search className="h-[18px] w-[18px] shrink-0 text-text-muted" aria-hidden="true" />
+        <Search className="h-4.5 w-4.5 shrink-0 text-text-muted" aria-hidden="true" />
         <input
           id={inputId}
           value={draft}
