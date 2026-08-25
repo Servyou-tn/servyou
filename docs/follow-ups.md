@@ -3096,7 +3096,7 @@ coupling" claim on that specific function is stale, not a remaining blocker.
 - **Trigger:** already fired, repeatedly. Every PR since #87 has merged into this state. Nothing
   further needs to happen to notice it again; it needs a decision.
 
-### 🔴 CI's `Type-check · Lint · Test · Build` GitHub Action has been red for 9 straight PRs, #150→#158 (2026-08-19→2026-08-24) — genuine, pre-existing, unrelated to dependency work, and it has NEVER been able to block a merge on this repo
+### ✅ RESOLVED 2026-08-25 (was: 🔴) — CI's `Type-check · Lint · Test · Build` GitHub Action has been red for 9 straight PRs, #150→#158 (2026-08-19→2026-08-24) — genuine, pre-existing, unrelated to dependency work, and it has NEVER been able to block a merge on this repo
 
 - **What, corrected — an earlier pass at this entry said "since #154"; walking every CI run instead of
   a sample shows it started earlier:** `gh run list --branch main --workflow CI` shows `failure` on
@@ -3149,3 +3149,51 @@ coupling" claim on that specific function is stale, not a remaining blocker.
   `main`, and no deploy pipeline that gets `main` in front of anyone anyway** — the founder's Vercel
   Pro/public-repo decision above would incidentally fix this one too, since branch protection has the
   same plan/visibility gate as the Vercel restriction does.
+- **Closed by `chore/lint-raw-colors` (PR #160, 2026-08-25).** All 5 violations fixed — not 4:
+  `tag-input.tsx:91`'s `h-[18px] w-[18px]` was two in one string; the linter's `checkString` only
+  ever reported the first. None land on `tokens.css`'s named `--spacing-N`
+  scale, but Tailwind v4's dynamic scale resolves any bare numeric multiplier through the same
+  `--spacing` custom property the named tokens use (verified by compiling through the project's
+  actual `@tailwindcss/postcss` pipeline) — so each became a bare multiplier
+  (`min-h-18`/`w-30.5`/`size-4.5`/`h-4.5 w-4.5`) rather than a bracket literal, following the
+  precedent `Header.tsx` already set with `h-18` for 72px. CLAUDE.md's DoD item 3 now names
+  `npm run lint` explicitly alongside `tsc`/`build`, closing the second half of this entry (lint
+  passing locally means nothing if nobody runs it) — the branch-protection gap above is still open
+  and still the reason a red CI check couldn't have blocked #150→#158 even if lint had been run.
+  See that PR's own follow-ups entry below for a related scope gap the investigation surfaced.
+
+## Fix the four raw-color values + gate lint locally (`chore/lint-raw-colors`, 2026-08-25)
+
+### `shared-ui/no-raw-color` only covers `src/components/ui/**` — raw bracket values already live outside that boundary, uncaught by design
+
+- **What:** this PR fixed the rule's 5 known violations (`setting-row.tsx` ×3, `tag-input.tsx` ×2 —
+  see the PR body for the value-by-value breakdown). While checking whether four other components
+  shipped in the same window also failed lint (AnnonceCard, AnnonceDetail, ConfirmModal,
+  ParametresShell), the honest answer turned out to be a scope finding, not a clean bill of health:
+  `eslint.config.mjs` only applies `shared-ui/no-raw-color` to `files: ["src/components/ui/**/*.{ts,tsx}"]`.
+  All four components live in `src/components/marche/` or `src/components/parametres/` — outside the
+  glob — so none of them can fail this rule regardless of what they contain. Two of the four contain
+  exactly the pattern the rule exists to catch: `AnnonceCard.tsx:182` has `rounded-[10px]`, and
+  `ParametresShell.tsx:161,178` has `max-w-[720px]` (×2) — both already flagged as off-token in their
+  own code comments (`rounded-[10px]`'s comment calls it "the same already-logged off-token CTA
+  radius"; `max-w-[720px]`'s calls it "the same cap ... numbers the rail/content split above already
+  uses"), i.e. known, not accidental, and still invisible to `npm run lint` either way.
+- **Why this matters beyond these two files:** the rule's boundary was drawn at the shared/UI-
+  primitives layer (F2's "primitives stay token-only" boundary,
+  `eslint-rules/boundary.mjs`'s header comment), which is a reasonable place to enforce strictly
+  first — but it means every raw arbitrary value in feature code (`src/components/marche/`,
+  `src/components/parametres/`, `src/app/**`, etc.) is currently unenforceable by lint at all, not
+  just unenforced-until-now the way `setting-row.tsx`/`tag-input.tsx` were. A grep for the same
+  bracket-numeric pattern this rule matches turns up hits beyond just these two files; no full count
+  was taken here — that's exactly the sweep this needs, not something to estimate from two examples.
+- **Not fixed here — deliberately:** widening `shared-ui/no-raw-color`'s `files` glob (or adding a
+  second, feature-scoped rule) is its own PR. It needs a repo-wide sweep first to know how many files
+  it would newly flag and whether any are false positives (an intentional 1px hairline, a value that
+  genuinely has no token equivalent) before the rule goes live — the exact caution this PR itself
+  followed for `w-[122px]`/`size-[18px]` (checked for a token match before touching either, didn't
+  invent one). Widening the glob without that sweep first would just repeat the #150→#158 pattern:
+  a rule going red with nobody positioned to act on the count.
+- **Trigger:** a dedicated PR to (1) sweep `src/components/marche/`, `src/components/parametres/`,
+  and `src/app/**` for the same bracket pattern, (2) triage which hits are genuine token gaps vs.
+  fixable, (3) widen the `shared-ui/no-raw-color` `files` glob (or introduce a parallel rule) to
+  cover what the sweep confirms is safe to enforce.
