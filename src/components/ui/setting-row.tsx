@@ -62,7 +62,7 @@ export type SelectRowProps = BaseProps & {
 
 export type SettingRowProps = ToggleRowProps | ToggleLockedRowProps | LinkRowProps | SelectRowProps
 
-// Measured shell: 72px min-height (min-h-18 on the --spacing token scale), py-16, flex
+// Measured shell: min-height 72 (min-h-18 on the --spacing token scale), py 16, flex
 // items-center justify-between, full width. Left block flex-1 flex-col gap-2, padding-END 40
 // (was pr-[40px] in the export — converted to the logical side per the app's bilingual-RTL rule)
 // before the control.
