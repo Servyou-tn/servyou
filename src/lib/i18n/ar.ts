@@ -122,7 +122,7 @@ export const ar: Record<string, string> = {
   'common.services_section':       "الخدمات",
   // Phone (used in poster-mission, RespondForm, service/demande)
   'common.phone_label':            "رقم واتساب",
-  'common.phone_placeholder':      "مثال: 20 000 000، 056 480 920، +216 20 000 000",
+  'common.phone_placeholder':      "مثال: 20 000 000، 056 000 000، +216 20 000 000",
   'common.phone_helper_freelance': "ضروري ليتمكن المستقل من التواصل معك عبر واتساب.",
   'common.phone_helper_client':    "ضروري ليتمكن العميل من التواصل معك عبر واتساب.",
   'common.phone_format_error':     "الصيغة المتوقعة: 8 أرقام (مثال 20 123 456) أو +216 متبوعة بـ 8 أرقام.",

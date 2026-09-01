@@ -89,7 +89,7 @@ export const fr: Record<string, string> = {
   'common.services_section':       "Services",
   // Phone (used in poster-mission, RespondForm, service/demande)
   'common.phone_label':            "Numéro WhatsApp",
-  'common.phone_placeholder':      "Ex : 20 000 000, 056 480 920, +216 20 000 000",
+  'common.phone_placeholder':      "Ex : 20 000 000, 056 000 000, +216 20 000 000",
   'common.phone_helper_freelance': "Nécessaire pour que le freelance puisse vous contacter via WhatsApp.",
   'common.phone_helper_client':    "Nécessaire pour que le client puisse vous contacter via WhatsApp.",
   'common.phone_format_error':     "Format attendu : 8 chiffres (ex. 20 123 456) ou +216 suivi de 8 chiffres.",
