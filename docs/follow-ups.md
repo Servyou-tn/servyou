@@ -626,49 +626,11 @@ undo them. A closed decision is not a deferral.
 - **Trigger:** the DS pass that builds a real `DatePicker` primitive — fix both call sites
   (`SignupForm.tsx` and `AnnonceForm.tsx`) together, since they now share the exact same defect.
 
-### 🔴 Storage RLS scopes writes on folder path only — `normalize.ts` is a content gate for the server-action path, not the bucket, and a caller can go around it (`chore/deps-lockfile-refresh`, 2026-08-24)
-- **What:** every write-capable `storage.objects` INSERT policy (avatars, product-images,
-  shop-assets, portfolio-media, verifications —
-  `db/migrations/20260731073614_storage_buckets_and_policies.sql` +
-  `…/20260804104541_fix_storage_policy_alias_capture.sql`) checks exactly two things: `bucket_id`,
-  and that the first path segment equals the caller's own `auth.uid()` (or an owned shop id for the
-  two shop-scoped buckets). No policy inspects the bytes being written. The only content-adjacent
-  check anywhere is the bucket's `allowed_mime_types`, and `src/lib/images/normalize.ts`'s own
-  header comment already says what that check actually is: it "checks the CLIENT-DECLARED
-  Content-Type, so it stops accidents and not attacks."
-- **The gap this leaves:** `normalize.ts` is the platform's real content gate — magic-byte sniff,
-  full `sharp` decode, re-encode to WebP, EXIF/GPS strip, edge/byte caps per surface. That pipeline
-  runs *inside the server action* (`mon-compte/actions.ts`, `ma-boutique/creer/actions.ts`, etc.) —
-  it is application code the Next.js request path enforces, not something Postgres or Storage
-  enforces. An authenticated user holding their own Supabase session token can call the Storage
-  REST API's upload endpoint directly, entirely outside Next.js, with any Content-Type header they
-  choose and any bytes they choose, targeting a path they are genuinely authorized to write to
-  (their own `avatars/{their-uid}/…`, or a shop they own). RLS grants it correctly — the ownership
-  check is true — and the bucket's declared-Content-Type check passes if the header simply lies.
-  `normalize.ts` never runs.
-- **Why it matters beyond "a user can waste their own quota":** the four public image buckets serve
-  objects at an unauthenticated public URL — RLS does not gate reads there at all, by design (the
-  origin migration notes this explicitly: public reads go through `/object/public/` and bypass RLS
-  entirely). So the practical effect is raw, non-re-encoded, EXIF-intact, size-uncapped bytes served
-  publicly at a Servyou storage URL, under a path whose only guarantee is *ownership*, not *content*.
-  The storage-budget rationale `normalize.ts` exists for (Supabase free tier is a 1 GB hard cap) is
-  also unenforced on this path — nothing stops a caller from uploading full-resolution originals
-  straight to Storage.
-- **Not a dependency-audit finding in the security-advisory sense — logging it here because it
-  surfaced while reading the storage policies during this audit and there is nowhere else for it to
-  live yet.** It predates this PR; this PR did not touch storage policies or `normalize.ts`.
-- **The fix is not obvious enough to build inline, which is why this is a trigger and not a diff:**
-  a `storage.objects` RLS policy runs against the row being inserted (path, bucket, metadata) — it
-  cannot inspect the object body, so bumping the policy cannot close this. The real options are (a)
-  a post-upload verification pass (webhook or scheduled sweep) that re-runs the magic-byte/decode
-  check against whatever landed and removes anything that fails it, or (b) stop granting callers a
-  token that can write directly to Storage for these buckets at all — move to Supabase's signed
-  upload-URL pattern, minted per-request only after `normalize.ts` has already validated and
-  re-encoded the bytes server-side, so nothing ever reaches Storage without having gone through the
-  gate first. Needs its own discovery pass before picking, given the two very different shapes.
+### 🔴 Storage RLS content-gate gap (`chore/deps-lockfile-refresh`, 2026-08-24)
+- Details held outside the repo (founder has the full write-up). Owed its own PR. High priority —
+  a live gap in what the platform can honestly claim it enforces, not a UI polish item.
 - **Trigger:** its own PR, before the first surface that treats these buckets' contents as trusted
-  in a way stronger than "a public image renders." Higher priority than most open items in this
-  file — it is a live gap in what the platform can honestly claim it enforces, not a UI polish item.
+  in a way stronger than "a public image renders."
 
 ## Post-MVP scale triggers
 
@@ -3197,3 +3159,32 @@ coupling" claim on that specific function is stale, not a remaining blocker.
   and `src/app/**` for the same bracket pattern, (2) triage which hits are genuine token gaps vs.
   fixable, (3) widen the `shared-ui/no-raw-color` `files` glob (or introduce a parallel rule) to
   cover what the sweep confirms is safe to enforce.
+
+## Pre-public security audit follow-ups (`chore/pre-public-scrub`, 2026-08-26)
+
+### `admin_overview_stats`'s REVOKE-from-`public` didn't hold — `anon` can still execute it live, though `is_admin()` blocks anything happening
+
+- **What:** `db/migrations/20260607134340_admin_overview_stats_rpc.sql` explicitly runs
+  `revoke all on function public.admin_overview_stats() from public; grant execute ... to
+  authenticated`, intending `anon` to lose EXECUTE entirely — a second layer on top of the
+  function's own `is_admin()` gate (the migration's own comment calls it "defense in depth on top
+  of the is_admin gate"). A live query against the project
+  (`has_function_privilege('anon', <oid>, 'EXECUTE')`) shows `anon` **can still call it** today,
+  along with the other `admin_*` SECURITY DEFINER RPCs, `log_admin_action`, `get_contact_phone`,
+  and `is_admin` — all flagged by Supabase's advisor as `anon_security_definer_function_executable`.
+- **Not exploitable today:** every one of those functions opens with
+  `if not public.is_admin() then raise exception 'Forbidden: admin access required'`, confirmed by
+  reading each body in `db/migrations/`. `is_admin()` reads `auth.uid()` internally, which is
+  `NULL` for an anonymous caller, so `where id = auth.uid()` never matches and it returns `false`.
+  An anon call to any `admin_*` RPC reaches the function and is rejected before touching data.
+- **Why it's still worth fixing:** the revoke was meant to be a second, independent layer so a bug
+  in `is_admin()` alone couldn't expose these endpoints to anonymous callers — right now
+  `is_admin()` is the *only* layer, not a second one, because the revoke isn't holding. Likely
+  cause: a later default-privilege reset (Supabase grants EXECUTE on new `public`-schema functions
+  to `anon`/`authenticated` by default; nothing has reasserted the revoke since this migration ran).
+- **Trigger:** a migration that reapplies `revoke execute on function public.admin_overview_stats()
+  from public, anon;` (confirming `authenticated` keeps it, since real admins authenticate), plus a
+  check of the other `admin_*` functions and `log_admin_action` for the same drift. `get_contact_phone`
+  and `is_admin` are intentionally anon-callable (both self-gate correctly on a real relationship /
+  return `false`) and don't need the same revoke — don't lump them into the fix by pattern-matching
+  on the advisor list alone.

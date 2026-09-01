@@ -5,7 +5,7 @@ order.
 
 **Measured** 2026-07-28 against `feat/g4-seller-dashboard` @ `90479f3`, dev server on :3000, fresh
 `.next`. Page side is computed geometry from a headless Chrome at 1440×900, FR
-(`servyou_lang=fr`), **logged in as the real shop owner** (`moatezsahbeni500@gmail.com`, OM shop) —
+(`servyou_lang=fr`), **logged in as the real shop owner account** (OM shop) —
 not eyeballed from a screenshot. Figma side is the live node tree read over the **Figma MCP**
 (file `jDNjJ8D1gnXiW7Ry3GkN4U`); the figma-cli CDP bridge was down (port 9222 closed) and
 reconnecting it means killing a running Figma, which the MCP path avoids entirely.
