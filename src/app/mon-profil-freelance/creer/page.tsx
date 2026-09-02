@@ -20,17 +20,22 @@ const ROUTE = '/mon-profil-freelance/creer'
 // seeded/flipped directly) is a legitimate retry state and must reach the form, not bounce.
 // Confirmed live, 2026-08-14: 1 of 11 seller_type='freelancer' profiles has no freelancer_profiles
 // row — "has the role" and "has a profile" are provably not the same state here, same as G2's
-// shop_owner-with-no-shop. Four outcomes now (H2 step 2 added a mid-wizard branch G2 never needed
-// — see below):
+// shop_owner-with-no-shop. Five outcomes now (H2 step 3 added a second signal on top of the
+// mid-wizard branch G2 never needed — see below):
 //   profile exists,
-//     freelancer_languages   -> redirect /tableau-de-bord (NOT /tableau-de-bord-vendeur — that
-//     has a row already         route calls requireShopOwner, which redirects any non-shop_owner
-//                                to /devenir-vendeur; a real freelancer visiting it bounces
-//                                straight back to the role chooser. Caught live during the QA
-//                                walk, 2026-08-14 — /tableau-de-bord's own guard is just "logged
-//                                in", seller_type-agnostic, so it is the one destination that
-//                                actually renders for a freelancer today, even as its own
-//                                ComingSoon stub)
+//     freelancer_languages   -> check freelancer_profiles.working_hours (step 3's own signal,
+//     has a row already         see creer/details/page.tsx's guard comment for why this column):
+//                                  IS NOT NULL -> redirect /tableau-de-bord (NOT
+//                                    /tableau-de-bord-vendeur — that route calls requireShopOwner,
+//                                    which redirects any non-shop_owner to /devenir-vendeur; a real
+//                                    freelancer visiting it bounces straight back to the role
+//                                    chooser. Caught live during the QA walk, 2026-08-14 —
+//                                    /tableau-de-bord's own guard is just "logged in",
+//                                    seller_type-agnostic, so it is the one destination that
+//                                    actually renders for a freelancer today, even as its own
+//                                    ComingSoon stub)
+//                                  IS NULL -> redirect /mon-profil-freelance/creer/details
+//                                    (step 2 done, step 3 never submitted)
 //   profile exists,
 //     no freelancer_languages -> render the form PRE-FILLED from the existing freelancer_profiles
 //     row yet (mid-wizard)        row — "Retour" from step 2 lands here, and so does browser-back
@@ -79,7 +84,23 @@ export default async function CreerProfilFreelancePage() {
       throw new Error('freelancer_languages fetch failed while guarding /mon-profil-freelance/creer')
     }
 
-    if (languageRow) redirect('/tableau-de-bord')
+    if (languageRow) {
+      // Step 2 done — extend with the step-3 signal, same existence-based shape as the languages
+      // check above. working_hours is the ONE freelancer_profiles column steps 1/2 never touch,
+      // and step 3's own action (creer/details/actions.ts) is the only writer, unconditionally
+      // (even '' on an empty submit) and LAST in its own write order — so `IS NOT NULL` is a true
+      // "step 3 was submitted at least once" signal, not an inference from optional content.
+      const { data: detailsProfile, error: detailsErr } = await supabase
+        .from('freelancer_profiles')
+        .select('working_hours')
+        .eq('id', existing.freelancerProfileId)
+        .maybeSingle()
+      if (detailsErr) {
+        console.error('[creer-profil-freelance] working_hours check failed:', detailsErr.message, detailsErr.code, detailsErr.details)
+        throw new Error('freelancer_profiles working_hours fetch failed while guarding /mon-profil-freelance/creer')
+      }
+      redirect(detailsProfile?.working_hours != null ? '/tableau-de-bord' : '/mon-profil-freelance/creer/details')
+    }
 
     const { data: profileRow, error: profileErr } = await supabase
       .from('freelancer_profiles')

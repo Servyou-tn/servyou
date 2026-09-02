@@ -1712,6 +1712,61 @@ export const ar: Record<string, string> = {
   'freelance.create.step2.error.portfolio_url':       "يرجى إدخال رابط صالح (https://…).",
   'freelance.create.step2.error.years_invalid':       "يرجى إدخال رقم صالح.",
 
+  // ─── H2 step 3 "التفاصيل" — mirrors fr.ts's H2 step 3 block exactly, same founder-ruled field
+  // shapes (not measured — see fr.ts's header comment and the PR description).
+  'freelance.create.step3.lede':          "هذه الأقسام اختيارية. يمكنك تعبئتها الآن أو لاحقًا.",
+  'freelance.create.step3.optional_suffix': "(اختياري)",
+  'freelance.create.step3.submit':        "إنشاء ملفي",
+
+  'freelance.create.step3.formation_title':      "التكوين",
+  'freelance.create.step3.education_entry':      "تكوين {index}",
+  'freelance.create.step3.remove_education':     "حذف التكوين {index}",
+  'freelance.create.step3.add_education':        "+ إضافة تكوين",
+  'freelance.create.step3.institution_label':    "المؤسسة",
+  'freelance.create.step3.institution_ph':       "مثال: جامعة تونس",
+  'freelance.create.step3.degree_label':         "الشهادة",
+  'freelance.create.step3.degree_ph':            "مثال: إجازة في الإعلامية",
+  'freelance.create.step3.field_label':          "التخصص",
+  'freelance.create.step3.field_ph':             "مثال: تطوير الويب",
+  'freelance.create.step3.year_start_label':     "سنة البداية",
+  'freelance.create.step3.year_end_label':       "سنة النهاية",
+  'freelance.create.step3.year_end_helper':      "اتركه فارغًا إذا كنت لا تزال متابعًا للدراسة.",
+
+  'freelance.create.step3.certifications_title': "الشهادات المهنية",
+  'freelance.create.step3.certification_entry':  "شهادة {index}",
+  'freelance.create.step3.remove_certification': "حذف الشهادة {index}",
+  'freelance.create.step3.add_certification':    "+ إضافة شهادة",
+  'freelance.create.step3.cert_name_label':      "اسم الشهادة",
+  'freelance.create.step3.cert_name_ph':         "مثال: AWS Certified Solutions Architect",
+  'freelance.create.step3.issuing_org_label':    "الجهة المانحة",
+  'freelance.create.step3.issuing_org_ph':       "مثال: Amazon Web Services",
+  'freelance.create.step3.year_obtained_label':  "سنة الحصول عليها",
+  'freelance.create.step3.credential_url_label': "رابط الشهادة",
+  'freelance.create.step3.credential_url_ph':    "https://",
+
+  'freelance.create.step3.tools_title':   "الأدوات والبرامج",
+  'freelance.create.step3.tools_label':   "الأدوات والبرامج",
+  'freelance.create.step3.tools_ph':      "اكتب لإضافة أداة…",
+  'freelance.create.step3.tools_helper':  "الأدوات والبرامج التي تستخدمها يوميًا.",
+  'freelance.create.step3.remove_tool':   "حذف {name}",
+
+  'freelance.create.step3.horaires_title':        "ساعات العمل",
+  'freelance.create.step3.working_hours_label':   "ساعات العمل",
+  'freelance.create.step3.working_hours_ph':      "مثال: الإثنين-الجمعة، 9-18",
+  'freelance.create.step3.working_hours_helper':  "أوقات توفّرك المعتادة.",
+
+  'freelance.create.step3.error.credential_url':       "يرجى إدخال رابط صالح (https://…).",
+  'freelance.create.step3.error.education_cap':        "5 تكوينات كحد أقصى.",
+  'freelance.create.step3.error.certifications_cap':   "5 شهادات كحد أقصى.",
+  'freelance.create.step3.error.tools_cap':            "15 أداة كحد أقصى.",
+  'freelance.create.step3.error.working_hours_max':    "500 حرف كحد أقصى.",
+
+  // ─── H2 success — mirrors fr.ts exactly.
+  'freelance.create.succes.title':               "تم إنشاء ملفك الشخصي!",
+  'freelance.create.succes.subline':             "مرحبًا بك بين مستقلي Servyou. أصبح ملفك الشخصي مرئيًا الآن.",
+  'freelance.create.succes.cta_dashboard':       "الذهاب إلى لوحة التحكم",
+  'freelance.create.succes.public_profile_note': "ستكون هذه الصفحة متاحة قريبًا.",
+
   // Create profile
   'freelance.create_title':       "إنشاء ملفي كمستقل",
   'freelance.create_btn':         "إنشاء ملفي",

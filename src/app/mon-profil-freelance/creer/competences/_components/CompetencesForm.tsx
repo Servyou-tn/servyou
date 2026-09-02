@@ -106,9 +106,7 @@ export function CompetencesForm({ initial }: { initial: CompetencesInitial }) {
       return
     }
 
-    // Step 3 does not exist yet — both step-2 buttons land on /tableau-de-bord, same forward-compat
-    // posture step 1 already documented.
-    router.push('/tableau-de-bord')
+    router.push('/mon-profil-freelance/creer/details')
   }
 
   return (
