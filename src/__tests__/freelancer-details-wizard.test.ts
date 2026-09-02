@@ -298,3 +298,53 @@ describe.skipIf(!hasCreds)('applyFreelancerDetailsSave — empty is valid, full-
     expect(profile?.is_published).toBe(false)
   })
 })
+
+// ─── The unified scenario: a genuinely fresh freelancer, never touched, submits
+//     step 3 completely empty. The three describe blocks above each prove one piece of
+//     this (schema accepts it / full-replace leaves zero rows / the guard signal flips)
+//     against `freelancerProfileId`, which by this point in the file has been filled,
+//     emptied, and filled again — "empty" there means "emptied", not "never had rows".
+//     This test uses its OWN fresh profile so "never had any child rows" is actually
+//     true, not inferred from a full-replace being order-independent. All four facts
+//     asserted together, in the one place, because is_published is the one that matters
+//     most here: the wizard has every reason to feel like it should publish a profile on
+//     its terminal "Créer mon profil" submit, and it must not — publication is derived
+//     from active service_listings alone, never from completing this wizard. ───────────
+
+describe.skipIf(!hasCreds)('fresh freelancer — step 3 submitted completely untouched', () => {
+  it('accepted, zero rows in all three child tables, working_hours flips to the guard signal, is_published stays false', async () => {
+    const freshOwner = await createUser(`${EMAIL_PREFIX}fresh${EMAIL_SUFFIX}`)
+    const { data: freshProfile, error: freshErr } = await admin
+      .from('freelancer_profiles').insert({ profile_id: freshOwner }).select('id').single()
+    expect(freshErr).toBeNull()
+    const freshId = freshProfile!.id
+
+    // Step 2 done (the precondition for reaching step 3 at all) — and nothing else. This
+    // profile has never had a row in any of the four step-3 targets.
+    const { error: langErr } = await admin
+      .from('freelancer_languages')
+      .insert({ freelancer_profile_id: freshId, language: 'fr', proficiency: 'natif' })
+    expect(langErr).toBeNull()
+
+    const before = await admin.from('freelancer_profiles').select('working_hours, is_published').eq('id', freshId).single()
+    expect(before.data?.working_hours).toBeNull()
+    expect(before.data?.is_published).toBe(false)
+
+    const res = await applyFreelancerDetailsSave(admin, freshId, {
+      education: [], certifications: [], tools: [], workingHours: '',
+    })
+    expect(res.ok).toBe(true)
+
+    const [edu, cert, tools, after] = await Promise.all([
+      admin.from('freelancer_education').select('id').eq('freelancer_id', freshId),
+      admin.from('freelancer_certifications').select('id').eq('freelancer_id', freshId),
+      admin.from('freelancer_tools').select('id').eq('freelancer_id', freshId),
+      admin.from('freelancer_profiles').select('working_hours, is_published').eq('id', freshId).single(),
+    ])
+    expect(edu.data).toEqual([])
+    expect(cert.data).toEqual([])
+    expect(tools.data).toEqual([])
+    expect(after.data?.working_hours).toBe('') // NOT NULL — the guard signal, flipped by an empty submit too
+    expect(after.data?.is_published).toBe(false) // the assertion that matters most: this wizard never publishes
+  })
+})
