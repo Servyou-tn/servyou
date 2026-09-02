@@ -168,9 +168,7 @@ export async function saveCompetencesAction(input: unknown): Promise<SaveCompete
     }
   }
 
-  // Step 3 does not exist yet (docs/design/h2-discovery.md §4) — both buttons land on
-  // /tableau-de-bord for now, same forward-compat posture step 1 already documented.
-  revalidatePath('/tableau-de-bord')
   revalidatePath('/mon-profil-freelance/creer')
+  revalidatePath('/mon-profil-freelance/creer/details')
   return { ok: true }
 }

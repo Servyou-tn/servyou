@@ -1743,6 +1743,68 @@ export const fr: Record<string, string> = {
   'freelance.create.step2.error.portfolio_url':       "Veuillez saisir une URL valide (https://…).",
   'freelance.create.step2.error.years_invalid':       "Veuillez saisir un nombre valide.",
 
+  // ─── H2 step 3 "Détails" (/mon-profil-freelance/creer/details) — Figma 468:20502 measured the
+  // lede + four accordion HEADERS only (title/"(optionnel)"/chevron); the bodies were never
+  // authored in the file. Field labels below are a FOUNDER RULING off the schema, not measured —
+  // see the PR description for the ruling and docs/design/h2-discovery.md for the header
+  // measurement. Sourced from H3's known field shapes where they overlap (institution/degree/
+  // field, cert name/org/url) so the two surfaces don't diverge in wording.
+  'freelance.create.step3.lede':          "Ces sections sont facultatives. Vous pouvez les remplir maintenant ou plus tard.",
+  'freelance.create.step3.optional_suffix': "(optionnel)",
+  'freelance.create.step3.submit':        "Créer mon profil",
+
+  'freelance.create.step3.formation_title':      "Formation",
+  'freelance.create.step3.education_entry':      "Formation {index}",
+  'freelance.create.step3.remove_education':     "Supprimer la formation {index}",
+  'freelance.create.step3.add_education':        "+ Ajouter une formation",
+  'freelance.create.step3.institution_label':    "Établissement",
+  'freelance.create.step3.institution_ph':       "Ex: Université de Tunis",
+  'freelance.create.step3.degree_label':         "Diplôme",
+  'freelance.create.step3.degree_ph':            "Ex: Licence en informatique",
+  'freelance.create.step3.field_label':          "Domaine",
+  'freelance.create.step3.field_ph':             "Ex: Développement web",
+  'freelance.create.step3.year_start_label':     "Année de début",
+  'freelance.create.step3.year_end_label':       "Année de fin",
+  'freelance.create.step3.year_end_helper':      "Laissez vide si en cours.",
+
+  'freelance.create.step3.certifications_title': "Certifications",
+  'freelance.create.step3.certification_entry':  "Certification {index}",
+  'freelance.create.step3.remove_certification': "Supprimer la certification {index}",
+  'freelance.create.step3.add_certification':    "+ Ajouter une certification",
+  'freelance.create.step3.cert_name_label':      "Nom de la certification",
+  'freelance.create.step3.cert_name_ph':         "Ex: AWS Certified Solutions Architect",
+  'freelance.create.step3.issuing_org_label':    "Organisme émetteur",
+  'freelance.create.step3.issuing_org_ph':       "Ex: Amazon Web Services",
+  'freelance.create.step3.year_obtained_label':  "Année d'obtention",
+  'freelance.create.step3.credential_url_label': "Lien vers le certificat",
+  'freelance.create.step3.credential_url_ph':    "https://",
+
+  'freelance.create.step3.tools_title':   "Outils & logiciels",
+  'freelance.create.step3.tools_label':   "Outils & logiciels",
+  'freelance.create.step3.tools_ph':      "Tapez pour ajouter un outil…",
+  'freelance.create.step3.tools_helper':  "Les logiciels et outils que vous utilisez au quotidien.",
+  'freelance.create.step3.remove_tool':   "Supprimer {name}",
+
+  'freelance.create.step3.horaires_title':        "Horaires de travail",
+  'freelance.create.step3.working_hours_label':   "Horaires de travail",
+  'freelance.create.step3.working_hours_ph':      "Ex: Lundi-Vendredi, 9h-18h",
+  'freelance.create.step3.working_hours_helper':  "Vos disponibilités habituelles.",
+
+  'freelance.create.step3.error.credential_url':       "Veuillez saisir une URL valide (https://…).",
+  'freelance.create.step3.error.education_cap':        "5 formations maximum.",
+  'freelance.create.step3.error.certifications_cap':   "5 certifications maximum.",
+  'freelance.create.step3.error.tools_cap':            "15 outils maximum.",
+  'freelance.create.step3.error.working_hours_max':    "500 caractères maximum.",
+
+  // ─── H2 success (/mon-profil-freelance/creer/succes) — Figma 468:20536/468:20538, measured.
+  // "Voir mon profil public" is DISABLED (D4 does not exist yet, h2-discovery.md §4a) — reuses
+  // the existing `freelance.view_public` key rather than a new one, so the label can't drift from
+  // the same CTA used elsewhere (the navbar avatar dropdown).
+  'freelance.create.succes.title':               "Votre profil est créé !",
+  'freelance.create.succes.subline':             "Bienvenue parmi les freelances Servyou. Votre profil est maintenant visible.",
+  'freelance.create.succes.cta_dashboard':       "Aller à mon tableau de bord",
+  'freelance.create.succes.public_profile_note': "Cette page sera bientôt disponible.",
+
   // Create profile
   'freelance.create_title':       "Créer mon profil freelance",
   'freelance.create_btn':         "Créer mon profil",
