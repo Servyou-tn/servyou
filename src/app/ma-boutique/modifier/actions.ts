@@ -16,6 +16,7 @@ import {
   type NormalizeFailure,
   type NormalizeResult,
 } from '@/lib/images/normalize'
+import { recordUploadProvenance, deleteUploadProvenance } from '@/lib/images/provenance'
 
 // G3 "Modifier ma boutique" — the identity-field edit surface (name, city, description, logo,
 // banner). The other six accordions (type, livraison, horaires, adresse, paiement, catégories)
@@ -244,6 +245,18 @@ async function updateShopAsset(params: {
     return { ok: false, error: t('product.image.error.upload', lang) }
   }
 
+  // ⚑ PROVENANCE RIGHT AFTER THE BYTES LAND, BEFORE ANYTHING ELSE CAN REFERENCE THIS PATH — same
+  // discipline and same reasoning as uploadShopAsset (ma-boutique/creer/actions.ts): this action is
+  // also "safe by control flow, not by check" today (no client-supplied path), and writing
+  // provenance unconditionally keeps that guarantee structural rather than incidental. Awaited and
+  // confirmed before the `shops` update below.
+  const provenance = await recordUploadProvenance('shop-assets', path, user.id)
+  if (!provenance.ok) {
+    console.error(`[updateShopAsset:${kind}] provenance insert failed, removing orphaned object at ${path}`)
+    await supabase.storage.from(SHOP_BUCKET).remove([path])
+    return { ok: false, error: t('product.image.error.upload', lang) }
+  }
+
   // Post-upload integrity assertion — same forensics as ma-boutique/creer/actions.ts (#122).
   const { data: stored, error: infoError } = await supabase.storage.from(SHOP_BUCKET).info(path)
   if (infoError || !stored || stored.size !== normalized.blob.size) {
@@ -253,6 +266,7 @@ async function updateShopAsset(params: {
         (infoError ? ` (info error: ${infoError.message})` : ''),
     )
     await supabase.storage.from(SHOP_BUCKET).remove([path])
+    await deleteUploadProvenance('shop-assets', path)
     return { ok: false, error: t('product.image.error.upload', lang) }
   }
 
@@ -265,6 +279,7 @@ async function updateShopAsset(params: {
     // The new object is uploaded but unreferenced — clean it up, same compensating-delete shape
     // as every other upload action in this codebase.
     await supabase.storage.from(SHOP_BUCKET).remove([path])
+    await deleteUploadProvenance('shop-assets', path)
     console.error(`[updateShopAsset:${kind}] shop update failed:`, updateError.message, updateError.code)
     return { ok: false, error: t('common.error_generic', lang) }
   }

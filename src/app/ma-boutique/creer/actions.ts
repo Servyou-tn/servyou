@@ -16,6 +16,7 @@ import {
   type NormalizeFailure,
   type NormalizeResult,
 } from '@/lib/images/normalize'
+import { recordUploadProvenance, deleteUploadProvenance } from '@/lib/images/provenance'
 
 // G2 "Créer ma boutique" step 1. Full reasoning: docs/design/g2-discovery.md §7.
 //
@@ -257,6 +258,20 @@ async function uploadShopAsset(params: {
     return { ok: false, error: t('product.image.error.upload', lang) }
   }
 
+  // ⚑ PROVENANCE RIGHT AFTER THE BYTES LAND, BEFORE ANYTHING ELSE CAN REFERENCE THIS PATH. Same
+  // discipline as uploadAvatarAction (mon-compte/actions.ts) and uploadProductImageAction
+  // (actions/products.ts) — service_role write, awaited and confirmed before the `shops` update
+  // below. Not currently trigger-enforced for this bucket, but this action is "safe by control
+  // flow, not by check" (it derives `path` itself and never accepts one from the caller) — writing
+  // provenance unconditionally means a future PR that starts accepting a client-supplied shop-asset
+  // path cannot reopen the product-images class of gap without also tripping this table's own gate.
+  const provenance = await recordUploadProvenance('shop-assets', path, user.id)
+  if (!provenance.ok) {
+    console.error(`[uploadShopAsset:${kind}] provenance insert failed, removing orphaned object at ${path}`)
+    await supabase.storage.from(SHOP_BUCKET).remove([path])
+    return { ok: false, error: t('product.image.error.upload', lang) }
+  }
+
   // Post-upload integrity assertion (#122 forensics) — needs the SELECT policy added alongside
   // this PR's migration; see g2-discovery.md §6/§7a for why that policy had to ship here.
   const { data: stored, error: infoError } = await supabase.storage.from(SHOP_BUCKET).info(path)
@@ -267,6 +282,7 @@ async function uploadShopAsset(params: {
         (infoError ? ` (info error: ${infoError.message})` : ''),
     )
     await supabase.storage.from(SHOP_BUCKET).remove([path])
+    await deleteUploadProvenance('shop-assets', path)
     return { ok: false, error: t('product.image.error.upload', lang) }
   }
 
@@ -279,6 +295,7 @@ async function uploadShopAsset(params: {
     // The object is uploaded but unreferenced — same compensating-delete shape as
     // uploadAvatarAction (mon-compte/actions.ts:157-163).
     await supabase.storage.from(SHOP_BUCKET).remove([path])
+    await deleteUploadProvenance('shop-assets', path)
     console.error(`[uploadShopAsset:${kind}] shop update failed:`, updateError.message, updateError.code)
     return { ok: false, error: t('common.error_generic', lang) }
   }
