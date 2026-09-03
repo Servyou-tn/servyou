@@ -175,3 +175,119 @@ bare-redirect page at both roots — `/mon-profil-freelance` → `/tableau-de-bo
    "Voir tout" omitted, not fake-disabled (see the link-destination rule in §4).
 
 No migration in this PR. Every panel above ships in one PR, not a slice.
+
+---
+
+## §9 — CDP re-measurement pass (figma-cli bridge, Yolo mode, 2026-09-03)
+
+The Figma MCP connector's quota was exhausted (see above); the founder had the CDP bridge at
+`C:\Users\Zolo\Projects\figma-cli` reconnected against Figma Desktop (already open) instead —
+Yolo mode connected clean on the first attempt, no stale-daemon reconnect and no Yolo-patch
+restore were needed. This section is **📐 MEASURED**, direct `node tree` reads of `166:12086` at
+depth 4-6 plus two targeted sub-node reads, not inferred from memory. It supersedes every
+"🧠 RE-VERIFIED" claim above wherever the two disagree — this pass is a real screenshot-quality
+frame read, the RE-VERIFIED tag above was reasoning from 47-52-day-old memory.
+
+**The build shipped before this pass diverged from the frame structurally, not cosmetically.**
+Full findings below; the founder's ruling on each (this same session) is what the current build
+implements — see `page.tsx`, `StatTile.tsx`, and the Ecosystem block for the applied result.
+
+### Header
+`167:12236`/`167:12237`: title **"Bienvenue, Moatez 👋"** (32px Inter Bold `#0F172A`), subtitle
+**"Voici ce qui se passe sur votre activité aujourd'hui"** (16px Regular `#475569`). "Moatez" is
+the founder's own name on a specimen frame that seeds real-looking data everywhere else in this
+file (same pattern as every other H-series specimen) — read as "Bienvenue, {prénom} 👋" with the
+name interpolated from `profiles.full_name`'s first token. **Ruled: interpolate.** No explicit
+Figma-variable binding was provable from this read; if that binding is ever found to differ, this
+is the note that flags it as inferred, not measured with certainty.
+
+### Stat tiles — `167:12252` etc.
+272×159, radius 12, border `#E2E8F0` 1px. **Padding 20** (not 24), **internal gap 12** (not 16),
+**icon circle 44×44** (not 48), **glyph 22×22** (not 24). Value 28px Inter Bold — this one already
+matched.
+
+Icon/colour per tile, measured:
+| Tile | Icon-circle fill | Glyph |
+|---|---|---|
+| Services actifs (`167:12252`) | `#DBE6FE` (brand-blue-100) | briefcase |
+| Engagements actifs (`167:12260`) | `#DCFCE7` (success-100) | file-check |
+| Demandes en attente (`167:12270`) | `#FEF3C7` (warning-100) | package |
+| Vues du profil (`167:12280`) | `#DBE6FE` (brand-blue-100) | eye |
+
+**Correction to my own prior report:** I told the founder "Services actifs … already match" —
+that was wrong. The shipped build had `accent="neutral"` (grey) on that tile; the frame measures
+blue. Caught while building to this section, fixed in the same pass, flagged here rather than
+silently corrected.
+
+The frame's "Vues du profil" tile shows seeded `342` / `↑ 18 %` (green). Expected, not a gap —
+Ruling 1 already and deliberately overrides this to 0/no-delta regardless of what the frame seeds.
+Same for "Votre parcours" (`440:17758`), fully drawn in the frame on the `vues=342>0` seed — Ruling
+1's gate keeps it un-rendered in the real build.
+
+### Section gap
+`166:12233` content: `layout: col gap=24`. Confirmed **24px uniform** at every section boundary
+measured (header→stats, stats→ecosystem, ecosystem→missions, missions→twoCol — all exactly 24).
+The shipped `gap-6 lg:gap-8` stepped to 32px at desktop; wrong, corrected to a flat 24.
+
+### Ecosystem — structural, not cosmetic
+`167:12291` is **one outer panel**: 1136×251, white, `#E2E8F0` 1px border, radius 12, **20px
+padding**, containing a single row: card → **48px-wide connector zone** (a centered horizontal
+`#CBD5E1` 2px line) → card → connector → card. **The three inner cards carry no border of their
+own** — only the outer wrapper has chrome. The shipped build had 3 independently-bordered
+top-level cards with a plain gap, no connectors — this is the single biggest structural gap on
+the page.
+
+- Side cards (`165:12038` consumers, `165:12073` shops): 333×198, `#DCFCE7` / `#FEF3C7` bg, 20px
+  padding, 10px internal gap. Chip 40×40, solid `#16A34A` / `#F59E0B`.
+- Centre card (`165:12051`, "Vous — Freelance"): 333×211 (13px taller — extra room for the
+  button), `#1F5FE0` fill, chip 48×48 white, body text `#DBE6FE` (a light-blue tint, NOT
+  `white/90`), button white fill **with a `#CBD5E1` 1px border** (not a plain borderless white fill).
+- Count + noun is **one string, one line**: `"24 consommateurs"` / `"8 boutiques"`, 16px Bold,
+  `#0F172A` (dark text on the tint — not split into a big number over a separate label, and not
+  colour-matched to the card accent).
+- Side cards use a **fixed 25px spacer** node between the subtitle and the link (not a flexible
+  push) — the cards are fixed-height in the frame. Built with a flexible (`flex-1`) spacer instead
+  of a hardcoded 25px block: real counts vary in length/wrap (esp. AR), and a hardcoded spacer
+  inside a hardcoded 198px card would clip on a long string where the frame's specimen never has
+  to. Flagged as a deliberate adaptation, not a measurement miss.
+- **Chip glyphs unconfirmed.** The circle frames' children sit one level past what the depth-limited
+  tree dump captured, and a targeted follow-up read on the nested instance IDs
+  (`I167:12291;165:12039`, `I167:12291;165:12052`) errored — the underlying `figma-use` node
+  lookup doesn't resolve semicolon-qualified instance-override IDs directly. Not re-attempted (the
+  founder capped further bridge calls on this one detail). Built with a best-reading choice per
+  card — Users / User / Store — each flagged individually in code as unmeasured.
+
+### Missions récentes — `232:7597`
+Title (`232:7599`) confirmed literal: **"Missions récentes pour vous"** (not "Missions récentes" —
+the shipped title was missing "pour vous").
+
+Row (`232:7602` measured at full depth): left = title (16px Semi Bold) + an inline **"Urgent"**
+badge when present (`#FEF3C7` fill / `#92400E` label / radius 8 — these hex values are exactly the
+existing `warning-100`/`warning-700` tokens, no new colour needed). Right = a `columns` block
+(gap 24) with **col1 "Budget"** (label 12px Medium `#64748B`, value e.g. `"800 TND"` 14px Semi Bold
+`#0F172A`) and **col2 "Publié"** (same label style, value e.g. `"il y a 2h"`). **col3 exists but is
+empty (0-width)** — confirmed no third value, no city anywhere in this row.
+
+**String bug, fixed:** the frame's relative-time value reads **"il y a 2h" — no space before the
+h.** The shipped `relativeTimeLabel()`/`tn()` output had a space ("il y a 2 h"). This function is
+shared with Activité récente, which was never itself drawn in Figma (Ruling 8) — there is no
+counter-evidence for a different format there, and one relative-time string across the whole page
+is obviously correct over two, so the fix applies to the shared helper, not just this row.
+
+### Actions rapides — `236:7862`
+Four labels confirmed literal, exact match to what shipped: "Créer un service", "Trouver des
+missions", "Acheter des produits", "Voir mes commandes". Chip **56×56** (not 48), fill
+**`#DBE6FE`/brand-blue-100 uniformly** (shipped had `-50`, one shade too light), glyph **24×24**
+(not 20), stroke `#1F5FE0`. "Trouver des missions" uses a **search (magnifying-glass) icon**, not
+a compass — shipped used Compass, wrong glyph, swapped. Badge on "Voir mes commandes" confirmed a
+**real count badge** (16×16, `#1F5FE0` fill, white "3", 12px Semi Bold, overlapping the chip's
+top-right corner), not a static dot — wired to a new query, `orders` where `buyer_id = freelancer`
+and status not terminal (mirrors the existing seller-side "active" definition), since the founder
+ruled a badge that never renders is a hole, not a scope violation.
+
+### Panel padding — confirmed, two conventions coexist
+Missions récentes and Actions rapides both pad **24px**, with a **16px** gap between their header
+and body (`panel-header` at `x=24,y=24`; body starts 16px below the header's own bottom edge).
+This is a DIFFERENT convention from the stat-tile/eco-card 20px padding — both are real, neither
+is a typo, and `Panel.tsx`'s existing `p-6`(24)/`gap-4`(16) shape already matches this one exactly
+(it was never wrong for these two panels — only the tiles and eco cards needed the 20px fix).

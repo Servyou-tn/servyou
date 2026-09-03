@@ -2754,8 +2754,8 @@ export const ar: Record<string, string> = {
 
   // H4 — mirrors fr.ts's H4 block exactly, same measured/ruled/inferred provenance
   // (docs/design/h4-discovery.md).
-  'freelance.dashboard.title':             "لوحة التحكم",
-  'freelance.dashboard.subline':           "نظرة سريعة على نشاطك كمستقل.",
+  'freelance.dashboard.title':             "مرحباً، {firstName} 👋",
+  'freelance.dashboard.subline':           "إليك آخر مستجدات نشاطك اليوم",
   'freelance.dashboard.noProfile.title':   "أكمل ملفك الشخصي كمستقل",
   'freelance.dashboard.noProfile.body':    "تُفعَّل لوحة التحكم فور إنشاء ملفك الشخصي كمستقل.",
   'freelance.dashboard.noProfile.cta':     "إنشاء ملفي الشخصي",
@@ -2768,7 +2768,7 @@ export const ar: Record<string, string> = {
   'freelance.dashboard.tile.pending_sub':  "بانتظار ردّك",
   'freelance.dashboard.tile.views':        "مشاهدات الملف الشخصي · 30 يومًا",
 
-  'freelance.dashboard.missions.title':      "مهام حديثة",
+  'freelance.dashboard.missions.title':      "مهام حديثة لك",
   'freelance.dashboard.missions.link':       "عرض كل المهام ←",
   'freelance.dashboard.missions.empty_title': "لا توجد مهام مطابقة لمهاراتك",
   'freelance.dashboard.missions.empty_body': "ستظهر هنا المهام الجديدة فور تطابقها مع ملفك الشخصي.",
@@ -2793,19 +2793,18 @@ export const ar: Record<string, string> = {
   'activite.time_ago_just_now': "الآن",
   'activite.time_ago_yesterday': "أمس",
 
-  // H4 rebuild pass — mirrors fr.ts's block exactly, same layout-only provenance.
+  // H4 rebuild pass — mirrors fr.ts's block exactly, same measured provenance (h4-discovery.md §9).
   'freelance.dashboard.createService':     "إنشاء خدمة",
   'freelance.dashboard.quick.buyProducts': "شراء منتجات",
   'freelance.dashboard.quick.myOrders':    "عرض مشترياتي",
 
-  // REVIEW_AR_TRANSLATION: "مستهلكون" (consumers) is not in the locked glossary — best-effort
-  // MSA, no native pass yet (same flag as the plurals.ts entry it replaces on this page).
-  'ecosysteme.consumers_label': "مستهلكون",
+  // consumers_count / shops_count live in lib/i18n/plurals.ts as tn() keys.
+  // REVIEW_AR_TRANSLATION: "مستهلكون" (consumers, in that plurals.ts entry) is not in the locked
+  // glossary — best-effort MSA, no native pass yet.
   'ecosysteme.consumers_sub':   "استخدموا خدماتك",
   'ecosysteme.consumers_link':  "عرض الطلبات ←",
   'ecosysteme.you_title':       "أنت — مستقل",
   'ecosysteme.you_body':        "بِع خدماتك، اشترِ منتجات، طوّر نشاطك",
-  'ecosysteme.shops_label':     "متاجر",
   'ecosysteme.shops_sub':       "تعاملتَ معها",
   'ecosysteme.shops_link':      "عرض المتاجر ←",
 

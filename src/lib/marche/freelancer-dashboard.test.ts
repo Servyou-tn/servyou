@@ -6,10 +6,22 @@
 import { describe, it, expect } from 'vitest'
 import {
   activeOrderCounts,
+  activePurchaseCount,
   matchingPostIds,
   buildActivityFeed,
   checklistFrom,
 } from './freelancer-dashboard'
+
+describe('activePurchaseCount', () => {
+  it('excludes only the two terminal statuses, same rule as activeOrderCounts', () => {
+    const orders = [{ status: 'pending' }, { status: 'accepted' }, { status: 'received' }, { status: 'cancelled' }]
+    expect(activePurchaseCount(orders)).toBe(2)
+  })
+
+  it('is zero on an empty purchase history', () => {
+    expect(activePurchaseCount([])).toBe(0)
+  })
+})
 
 describe('activeOrderCounts', () => {
   it('excludes only the two terminal statuses from "actifs"', () => {

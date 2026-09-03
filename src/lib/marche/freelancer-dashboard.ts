@@ -42,6 +42,10 @@ export type FreelancerDashboard = {
   ecosystem: { consumers: number; shops: number }
   missions: MissionMatch[]
   activite: ActivityEvent[]
+  /** Orders where THIS freelancer is the buyer (not the seller), not yet terminal — backs the
+   *  count badge on Actions rapides' "Voir mes commandes" chip. §9 of h4-discovery.md: the frame
+   *  is explicit that badge is a real count, not a static dot. */
+  activePurchasesCount: number
 }
 
 /** Ruling 1: no profile_views table, no write path, nothing seeded. A named constant so the "0"
@@ -139,6 +143,12 @@ export function buildActivityFeed(
     .slice(0, limit)
 }
 
+/** Same "active" rule as activeOrderCounts, applied to the freelancer's OWN purchases (buyer_id),
+ *  not their sales — backs the Actions rapides count badge (§9, h4-discovery.md). */
+export function activePurchaseCount(orders: readonly { status: string }[]): number {
+  return orders.filter((o) => !TERMINAL_ORDER_STATUSES.includes(o.status)).length
+}
+
 /** Force du profil checklist — Ruling 2: `portfolio` is always false, never derived. */
 export function checklistFrom(input: {
   avatarUrl: string | null
@@ -194,6 +204,24 @@ export const getFreelancerDashboard = cache(
       throw new Error(`freelancer orders fetch failed: ${ordersError.message}`)
     }
     const orders = (orderData ?? []) as unknown as OrderRow[]
+
+    // Orders I bought — a completely separate slice from the `orders` read above (that one is
+    // scoped to seller_id; this one is buyer_id, the freelancer acting as a consumer). Backs only
+    // the Actions rapides count badge, so a bare status count is enough — no titles, no events.
+    const { data: purchaseData, error: purchasesError } = await supabase
+      .from('orders')
+      .select('status')
+      .eq('buyer_id', userId)
+    if (purchasesError) {
+      console.error(
+        '[freelancer-dashboard] purchases fetch error:',
+        purchasesError.message,
+        purchasesError.code,
+        purchasesError.details,
+      )
+      throw new Error(`freelancer purchases fetch failed: ${purchasesError.message}`)
+    }
+    const activePurchasesCount = activePurchaseCount(purchaseData ?? [])
 
     // Proposals I sent — Activité récente's (c) rows. job_posts' RLS only grants a non-owner
     // reader rows where status = 'open': a post that has since moved to filled/expired is
@@ -342,6 +370,7 @@ export const getFreelancerDashboard = cache(
       },
       missions,
       activite,
+      activePurchasesCount,
     }
   },
 )

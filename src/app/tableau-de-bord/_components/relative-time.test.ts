@@ -10,9 +10,10 @@ describe('relativeTimeLabel — the three bands the founder\'s own examples name
     expect(relativeTimeLabel(hoursAgo(0.5), 'fr', NOW)).toBe("À l'instant")
   })
 
-  it('renders "il y a {h} h" (abbreviated, invariant) between 1 and 23 hours — matches "il y a 3 h"', () => {
-    expect(relativeTimeLabel(hoursAgo(3), 'fr', NOW)).toBe('il y a 3 h')
-    expect(relativeTimeLabel(hoursAgo(1), 'fr', NOW)).toBe('il y a 1 h')
+  it('renders "il y a {h}h" (abbreviated, invariant, NO space before the h) between 1 and 23 hours — 📐 measured against 232:7602: "il y a 2h"', () => {
+    expect(relativeTimeLabel(hoursAgo(3), 'fr', NOW)).toBe('il y a 3h')
+    expect(relativeTimeLabel(hoursAgo(1), 'fr', NOW)).toBe('il y a 1h')
+    expect(relativeTimeLabel(hoursAgo(2), 'fr', NOW)).toBe('il y a 2h')
   })
 
   it('renders "Hier" for exactly one day, as a plain key — not "il y a 1 jour"', () => {

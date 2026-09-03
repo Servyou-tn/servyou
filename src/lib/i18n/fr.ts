@@ -2811,8 +2811,12 @@ export const fr: Record<string, string> = {
   // `tile.views` and every `forceProfil.item_*` are 📐 MEASURED exact copy — do not reword.
   // Everything else on this page (subtitles, panel titles, empty-state copy) has no measured
   // text and is INFERRED, same treatment as the Demandes-en-attente status mapping.
-  'freelance.dashboard.title':             "Tableau de bord",
-  'freelance.dashboard.subline':           "Un coup d'œil sur votre activité freelance.",
+  // 📐 MEASURED (167:12236/167:12237, h4-discovery.md §9). {firstName} interpolates
+  // profiles.full_name's first token — the frame shows "Moatez" (the founder's own seed name),
+  // read as intent not a literal, since a hardcoded name would be obviously wrong for every other
+  // freelancer.
+  'freelance.dashboard.title':             "Bienvenue, {firstName} 👋",
+  'freelance.dashboard.subline':           "Voici ce qui se passe sur votre activité aujourd'hui",
   'freelance.dashboard.noProfile.title':   "Finalisez votre profil freelance",
   'freelance.dashboard.noProfile.body':    "Votre tableau de bord s'active dès que votre profil freelance est créé.",
   'freelance.dashboard.noProfile.cta':     "Créer mon profil",
@@ -2827,7 +2831,8 @@ export const fr: Record<string, string> = {
   // renders 0, no delta, nothing seeded.
   'freelance.dashboard.tile.views':        "Vues du profil · 30 jours",
 
-  'freelance.dashboard.missions.title':      "Missions récentes",
+  // 📐 MEASURED (232:7599) — "pour vous" is part of the literal title, not dropped.
+  'freelance.dashboard.missions.title':      "Missions récentes pour vous",
   'freelance.dashboard.missions.link':       "Voir toutes les missions →",
   'freelance.dashboard.missions.empty_title': "Aucune mission ne correspond à vos compétences",
   'freelance.dashboard.missions.empty_body': "De nouvelles missions apparaîtront ici dès qu'elles correspondent à votre profil.",
@@ -2854,18 +2859,18 @@ export const fr: Record<string, string> = {
   'activite.time_ago_just_now': "À l'instant",
   'activite.time_ago_yesterday': "Hier",
 
-  // H4 rebuild pass (founder's screenshot-description spec, Figma quota exhausted — see
-  // docs/design/h4-discovery.md). Layout-only; no measured copy in this block.
+  // H4 rebuild pass — 📐 MEASURED against the figma-cli CDP re-read, h4-discovery.md §9, except
+  // where noted. "Créer un service" / buyProducts / myOrders labels are 📐 measured literal.
   'freelance.dashboard.createService':     "Créer un service",
   'freelance.dashboard.quick.buyProducts': "Acheter des produits",
   'freelance.dashboard.quick.myOrders':    "Voir mes commandes",
 
-  'ecosysteme.consumers_label': "consommateurs",
+  // consumers_count / shops_count (the single-line "24 consommateurs" string) live in
+  // lib/i18n/plurals.ts as tn() keys — 📐 measured shape, reused rather than duplicated here.
   'ecosysteme.consumers_sub':   "qui ont utilisé vos services",
   'ecosysteme.consumers_link':  "Voir les demandes →",
   'ecosysteme.you_title':       "Vous — Freelance",
   'ecosysteme.you_body':        "Vendez vos services, achetez des produits, développez votre activité",
-  'ecosysteme.shops_label':     "boutiques",
   'ecosysteme.shops_sub':       "avec qui vous avez travaillé",
   'ecosysteme.shops_link':      "Voir les boutiques →",
 

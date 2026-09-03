@@ -74,11 +74,13 @@ const frPlurals: Record<string, PluralVariants> = {
   'ecosysteme.consumers_count':            { one: '{count} consommateur', other: '{count} consommateurs' },
   'ecosysteme.shops_count':                { one: '{count} boutique', other: '{count} boutiques' },
 
-  // H4 Activité récente relative timestamps (Ruling 8) — "h" stays the invariant abbreviation
-  // (same convention as the "j" pair above: 1 h, 3 h), but days are SPELLED OUT per the ruling's
-  // own example copy ("il y a 2 jours", not "il y a 2 j") — a deliberate asymmetry, not a
-  // mismatch between these two entries.
-  'activite.time_ago_hours':               { one: 'il y a {count} h', other: 'il y a {count} h' },
+  // Relative timestamps, shared by Missions récentes ("Publié") and Activité récente. "h" is the
+  // invariant abbreviation (same convention as the "j" pair above: 1h, 3h) — 📐 MEASURED against
+  // 232:7602 (h4-discovery.md §9): the frame reads "il y a 2h", NO SPACE before the h. Days are
+  // SPELLED OUT ("il y a 2 jours", WITH a space) — that half is still 🔨 founder-ruled copy
+  // (Ruling 8), Missions récentes' own frame never seeds a days-old post to confirm it, and
+  // there's no reason to assume the same no-space treatment carries over to a different unit.
+  'activite.time_ago_hours':               { one: 'il y a {count}h', other: 'il y a {count}h' },
   'activite.time_ago_days':                { one: 'il y a {count} jour', other: 'il y a {count} jours' },
 }
 
