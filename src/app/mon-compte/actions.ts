@@ -9,6 +9,7 @@ import { t } from '@/lib/i18n'
 import { isValidPhone, normalizePhone } from '@/lib/phone'
 import { GOVERNORATES } from '@/lib/tunisia-governorates'
 import { normalizeAvatar, MAX_INPUT_BYTES, MAX_INPUT_MB, type NormalizeFailure } from '@/lib/images/normalize'
+import { recordUploadProvenance, deleteUploadProvenance } from '@/lib/images/provenance'
 
 export type AccountActionResult = { ok: true } | { ok: false; error: string }
 
@@ -124,6 +125,20 @@ export async function uploadAvatarAction(formData: FormData): Promise<AccountAct
     return { ok: false, error: t('monCompte.avatar.error.upload', lang) }
   }
 
+  // ⚑ PROVENANCE RIGHT AFTER THE BYTES LAND, BEFORE ANYTHING ELSE CAN REFERENCE THIS PATH. Written
+  // with a service_role client, never this action's own session client — see recordUploadProvenance's
+  // header. No trigger reads this for avatars today (only product_images has one), but the write
+  // happens unconditionally anyway so the four upload actions stay structurally identical, and so a
+  // future PR that starts accepting a client-supplied avatar path cannot reopen the same gap
+  // uploaded_objects exists to close for product images. Awaited and confirmed before the profile
+  // update below runs — do not parallelize the two.
+  const provenance = await recordUploadProvenance('avatars', path, user.id)
+  if (!provenance.ok) {
+    console.error(`[uploadAvatarAction] provenance insert failed, removing orphaned object at ${path}`)
+    await supabase.storage.from(AVATAR_BUCKET).remove([path])
+    return { ok: false, error: t('monCompte.avatar.error.upload', lang) }
+  }
+
   // ⚑ READ THE STORED SIZE BACK AND COMPARE — see the twin check in actions/products.ts for the
   // full reasoning. Short version: upload() returning ok proves the request was accepted, not that
   // the bytes survived, and every body-encoding fault changes the object's length.
@@ -143,6 +158,7 @@ export async function uploadAvatarAction(formData: FormData): Promise<AccountAct
     // action already removes it on the adjacent profile-update failure (below), so the behaviour
     // stays consistent within the file.
     await supabase.storage.from(AVATAR_BUCKET).remove([path])
+    await deleteUploadProvenance('avatars', path)
     return { ok: false, error: t('monCompte.avatar.error.upload', lang) }
   }
 
@@ -158,6 +174,7 @@ export async function uploadAvatarAction(formData: FormData): Promise<AccountAct
     // The object is uploaded but unreferenced. Remove it rather than leave an orphan we would then
     // need the (not yet built) reconciliation sweep to find.
     await supabase.storage.from(AVATAR_BUCKET).remove([path])
+    await deleteUploadProvenance('avatars', path)
     console.error('[uploadAvatarAction] profile update failed:', updateError.message, updateError.code)
     return { ok: false, error: t('common.error_generic', lang) }
   }

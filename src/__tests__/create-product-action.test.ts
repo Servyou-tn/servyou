@@ -281,4 +281,20 @@ describe('createProductAction — compensation when the gallery insert fails', (
     expect(h.calls.productsDeleted).toHaveLength(0)
     expect(h.calls.imagesInsert).toHaveLength(0)
   })
+
+  it('logs a distinct "possible tampering" line when the DB rejects an image row for failing the provenance check', async () => {
+    // enforce_product_image_provenance (product_images BEFORE INSERT trigger) raises with this
+    // substring when a path has no matching uploaded_objects row — reachable only by a caller who
+    // direct-PUT bytes into their own shop's storage prefix instead of going through
+    // uploadProductImageAction. The prefix check a few lines above this insert cannot catch that
+    // case (the path IS legitimately under the caller's own shop), so this is the operator-facing
+    // signal that something more than an ordinary DB error happened.
+    const err = vi.spyOn(console, 'error').mockImplementation(() => {})
+    h.state.imagesInsertError = { message: 'product-images provenance check failed: no validated upload record', code: '' }
+    const res = await createProductAction(okInput())
+    expect(res.ok).toBe(false)
+    const logged = err.mock.calls.flat().join(' ')
+    expect(logged).toContain('possible tampering')
+    err.mockRestore()
+  })
 })

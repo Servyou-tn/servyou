@@ -23,6 +23,7 @@ import {
   MAX_INPUT_MB,
   type NormalizeFailure,
 } from '@/lib/images/normalize'
+import { recordUploadProvenance } from '@/lib/images/provenance'
 
 // G6 « Ajouter un produit » — the FIRST write path to `products` anywhere in the app. The seller
 // product surface was stripped in PR #83 and nothing has written this table since.
@@ -172,6 +173,29 @@ export async function uploadProductImageAction(formData: FormData): Promise<Uplo
   })
   if (uploadError) {
     console.error('[uploadProductImage] storage upload failed:', uploadError.message)
+    return { ok: false, error: t('product.image.error.upload', lang) }
+  }
+
+  // ⚑ PROVENANCE BEFORE RETURNING THE PATH TO THE CALLER — THIS IS THE FIX, NOT A NICETY.
+  // `createProductAction` and `addProductImageAction` (below, in this same file) are the two places
+  // that later reference this exact path in a `product_images` INSERT, and `product_images` now
+  // carries a BEFORE INSERT trigger (`enforce_product_image_provenance`) that requires this row to
+  // already be committed for that path. Those two actions run as a SEPARATE round trip from this
+  // one — the client cannot call either of them before it receives `path` from this action's
+  // return — so confirming this insert HERE, before returning, is what makes the invariant hold
+  // across the two calls without a shared transaction. A refactor that races this against the
+  // return (Promise.all, fire-and-forget, or moving it after the integrity check below) reopens
+  // exactly the gap the trigger exists to close: a legitimate upload could return a path whose
+  // provenance row isn't durably visible yet.
+  //
+  // Written with a service_role client, never this action's own session client — `uploaded_objects`
+  // denies INSERT to `authenticated` by design (see the migration). If this fails, the object is
+  // left in place for the reconciliation sweep rather than deleted here — same "leave it for the
+  // sweep, don't delete a byte-for-byte real upload on a DB hiccup" posture this action already
+  // takes on the integrity-check branch below.
+  const provenance = await recordUploadProvenance('product-images', path, user.id)
+  if (!provenance.ok) {
+    console.error(`[uploadProductImage] provenance insert failed for ${path}, user ${user.id} — object left for reconciliation`)
     return { ok: false, error: t('product.image.error.upload', lang) }
   }
 
@@ -332,6 +356,19 @@ export async function createProductAction(input: unknown): Promise<ProductAction
     const { error: imagesError } = await supabase.from('product_images').insert(rows)
 
     if (imagesError) {
+      // `enforce_product_image_provenance` (product_images BEFORE INSERT trigger) rejects a path
+      // with no matching uploaded_objects row — reachable ONLY by a caller who direct-PUT bytes
+      // into their own shop's storage prefix instead of going through uploadProductImageAction, the
+      // one place that writes provenance. The prefix check above this insert cannot catch that: the
+      // path IS legitimately under their own shop. Logged with the same "possible tampering"
+      // phrasing as that check, matched the way toggleProductStatusAction already matches
+      // 'admin-moderated' — a distinct signal from an ordinary DB error, not a different user-facing
+      // message.
+      if (imagesError.message.includes('provenance check failed')) {
+        console.error(
+          `[createProduct] rejected: image path failed provenance check for user ${user.id} — possible tampering (direct storage write bypassing uploadProductImageAction)`,
+        )
+      }
       console.error('[createProduct] image rows failed:', imagesError.message, imagesError.code, imagesError.details)
 
       // COMPENSATING DELETE. The product exists but its gallery does not, and both tables are
@@ -867,6 +904,13 @@ export async function addProductImageAction(input: unknown): Promise<AddProductI
     .single()
 
   if (insertError || !inserted) {
+    // Same provenance-violation signal as createProductAction's image-rows branch above — the
+    // second of the two call sites the trigger has to hold for.
+    if (insertError?.message.includes('provenance check failed')) {
+      console.error(
+        `[addProductImage] rejected: image path failed provenance check for user ${user.id} — possible tampering (direct storage write bypassing uploadProductImageAction)`,
+      )
+    }
     console.error(
       '[addProductImage] insert failed:',
       insertError?.message,
