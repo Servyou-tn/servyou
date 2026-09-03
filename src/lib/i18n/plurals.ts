@@ -69,6 +69,17 @@ const frPlurals: Record<string, PluralVariants> = {
   'annonces.detail.responded_days_ago':    { one: 'Répondu il y a {count} j', other: 'Répondu il y a {count} j' },
 
   'consumer.dashboard.orders.count':       { one: '{count} commande en cours', other: '{count} commandes en cours' },
+
+  // H4 Ecosystem widget (docs/design/h4-discovery.md §3).
+  'ecosysteme.consumers_count':            { one: '{count} consommateur', other: '{count} consommateurs' },
+  'ecosysteme.shops_count':                { one: '{count} boutique', other: '{count} boutiques' },
+
+  // H4 Activité récente relative timestamps (Ruling 8) — "h" stays the invariant abbreviation
+  // (same convention as the "j" pair above: 1 h, 3 h), but days are SPELLED OUT per the ruling's
+  // own example copy ("il y a 2 jours", not "il y a 2 j") — a deliberate asymmetry, not a
+  // mismatch between these two entries.
+  'activite.time_ago_hours':               { one: 'il y a {count} h', other: 'il y a {count} h' },
+  'activite.time_ago_days':                { one: 'il y a {count} jour', other: 'il y a {count} jours' },
 }
 
 const arPlurals: Record<string, PluralVariants> = {
@@ -117,6 +128,21 @@ const arPlurals: Record<string, PluralVariants> = {
   // "قيد التنفيذ" (in progress) is an invariant prepositional phrase — it doesn't take number
   // agreement, so only the noun changes across categories.
   'consumer.dashboard.orders.count':       { one: '{count} طلب قيد التنفيذ', two: '{count} طلبان قيد التنفيذ', other: '{count} طلبات قيد التنفيذ' },
+
+  // H4 Ecosystem widget. Both nouns are human/rational (مستهلك) or place (متجر) — sound masculine
+  // plural for the former, broken plural for the latter, same split the glossary already uses
+  // between people-nouns and thing-nouns elsewhere in this file. Not preceded by a preposition →
+  // nominative dual/plural, not the oblique forms used after "من"/"منذ"/"خلال".
+  // REVIEW_AR_TRANSLATION: "مستهلك" (consumer) is not in the locked glossary (ar.ts:5-23) — best-
+  // effort MSA, no native pass yet.
+  'ecosysteme.consumers_count':            { one: '{count} مستهلك', two: '{count} مستهلكان', other: '{count} مستهلكون' },
+  'ecosysteme.shops_count':                { one: '{count} متجر', two: '{count} متجران', other: '{count} متاجر' },
+
+  // H4 Activité récente relative timestamps (Ruling 8). Not preceded by a preposition here
+  // ("منذ" IS the preposition itself, not a modifier of it) — but "منذ" still governs an oblique
+  // dual by the same rule as the "خلال"/"منذ" pair above (يومين/ساعتين, not يومان/ساعتان).
+  'activite.time_ago_hours':               { one: 'منذ {count} ساعة', two: 'منذ {count} ساعتين', other: 'منذ {count} ساعات' },
+  'activite.time_ago_days':                { one: 'منذ {count} يوم', two: 'منذ {count} يومين', other: 'منذ {count} أيام' },
 }
 
 const pluralDicts: Record<Lang, Record<string, PluralVariants>> = { fr: frPlurals, ar: arPlurals }

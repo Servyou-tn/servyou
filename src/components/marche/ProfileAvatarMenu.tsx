@@ -100,8 +100,9 @@ export function ProfileAvatarMenu({
           <DropdownMenuSeparator className="bg-border-subtle" />
 
           {/* Role-upgrade discovery (Path A — strict single role at MVP). Consumer sees
-              both upgrade paths; a seller sees only their own workspace link. The
-              workspace routes (/ma-boutique, /mon-profil-freelance) 404 until built. */}
+              both upgrade paths; a seller sees only their own workspace link. Both workspace
+              roots (/ma-boutique, /mon-profil-freelance) now redirect to the real dashboard
+              (H4, docs/design/h4-discovery.md §7) — no longer 404s. */}
           {role === null && (
             <>
               <DropdownMenuItem asChild className={itemBase}>
