@@ -48,17 +48,23 @@ export function StatTile({
         <Icon className="h-[22px] w-[22px]" aria-hidden="true" />
       </span>
       <div className="flex w-full flex-col gap-1">
-        <p className="text-body-sm font-medium text-text-secondary">{label}</p>
-        {/* leading-[normal], not leading-normal — see the G4 original's note (StatTile.tsx). */}
+        {/* leading-none on all three lines — Pass 2. G4's StatTile uses leading-[normal] on the
+            value (≈34px for Inter) and that is verified correct THERE (it reproduces G4's own
+            484:24205 frame height, 196, exactly). H4's frame targets a shorter tile (159, not
+            196) with the same padding/icon/gap envelope, so it cannot be using the same loose
+            line-heights — solving for the 159 target with the padding/icon/gap already measured
+            in h4-discovery.md §9 leaves ~63px for this 3-line stack, which is what leading-none
+            (14+28+14=56, plus the two 4px gaps=64) lands almost exactly on. G4 stays untouched. */}
+        <p className="text-body-sm font-medium leading-none text-text-secondary">{label}</p>
         <p
           className={cn(
-            'text-[28px] font-bold leading-[normal]',
+            'text-[28px] font-bold leading-none',
             muted ? 'text-text-muted' : 'text-brand-blue-800',
           )}
         >
           {value}
         </p>
-        <p className="text-body-sm text-text-muted">{subtitle}</p>
+        <p className="text-body-sm leading-none text-text-muted">{subtitle}</p>
       </div>
     </div>
   )

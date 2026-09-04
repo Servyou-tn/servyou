@@ -78,7 +78,7 @@ export default async function TableauDeBordPage() {
             <h1 className="text-h1 text-text-primary">
               {t('freelance.dashboard.title', lang, { firstName })}
             </h1>
-            <p className="text-body-sm text-text-secondary">{t('freelance.dashboard.subline', lang)}</p>
+            <p className="text-body text-text-secondary">{t('freelance.dashboard.subline', lang)}</p>
           </div>
           {/* INERT — no route exists to create a service yet (/mes-services has no /ajouter
               subroute; H6 never shipped in code). A real Link here would 404. Flip to a Link the
@@ -149,14 +149,20 @@ export default async function TableauDeBordPage() {
 
         {/* ── Ecosystem widget — ONE outer panel (1136×251, 20px padding) wrapping a row of
             [card, 48px connector, card, connector, card]. The inner cards carry NO border of
-            their own — only this wrapper does. 📐 measured, h4-discovery.md §9. ─────────────── */}
-        <div className="flex flex-col gap-4 rounded-xl border border-border-subtle bg-surface-base p-5 sm:flex-row">
+            their own — only this wrapper does. 📐 measured, h4-discovery.md §9.
+            `sm:items-start` (not the flex default `stretch`) — Pass 2: the row previously
+            stretched every card to match the tallest, which is why the shipped side cards
+            measured 236px against Figma's 198. Each card now sizes to its own content + p-5;
+            connectors get `self-stretch` so the line still spans whatever height the tallest
+            card ends up at. No card gets a min-h — deriving from content per the founder's
+            Pass 2 instruction, not re-pinning a number. ────────────────────────────────────── */}
+        <div className="flex flex-col gap-4 rounded-xl border border-border-subtle bg-surface-base p-5 sm:flex-row sm:items-start">
           {/* Card A — consumers. Chip glyph unmeasured (CLI couldn't resolve the nested instance
               ID) — Users is a best-reading choice, flagged per the founder's instruction not to
               spend another bridge call on it. Link target: the closest existing surface showing
               the freelancer's relationship to consumers; no dedicated "demandes" list route
               exists to link more precisely. */}
-          <div className="flex min-h-[198px] flex-1 flex-col gap-2.5 rounded-xl bg-success-50 p-5">
+          <div className="flex flex-1 flex-col gap-2.5 rounded-xl bg-success-100 p-5">
             <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-success-500">
               <Users className="h-5 w-5 text-white" aria-hidden="true" />
             </span>
@@ -177,13 +183,13 @@ export default async function TableauDeBordPage() {
           </div>
 
           {/* Connector — a 48px zone with a centered horizontal line, not a plain gap. */}
-          <div className="hidden w-12 shrink-0 items-center justify-center sm:flex" aria-hidden="true">
+          <div className="hidden w-12 shrink-0 items-center justify-center self-stretch sm:flex" aria-hidden="true">
             <div className="h-0.5 w-10 bg-border-strong" />
           </div>
 
           {/* Card B — the freelancer's own card, filled brand-blue. Chip glyph unmeasured; User
               (a person) is the best-reading choice for "Vous", flagged. */}
-          <div className="flex min-h-[211px] flex-1 flex-col gap-2.5 rounded-xl bg-brand-blue-600 p-5 text-text-inverse">
+          <div className="flex flex-1 flex-col gap-2.5 rounded-xl bg-brand-blue-600 p-5 text-text-inverse">
             <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-white">
               <User className="h-5 w-5 text-brand-blue-600" aria-hidden="true" />
             </span>
@@ -198,14 +204,14 @@ export default async function TableauDeBordPage() {
             </Link>
           </div>
 
-          <div className="hidden w-12 shrink-0 items-center justify-center sm:flex" aria-hidden="true">
+          <div className="hidden w-12 shrink-0 items-center justify-center self-stretch sm:flex" aria-hidden="true">
             <div className="h-0.5 w-10 bg-border-strong" />
           </div>
 
           {/* Card C — shops. Chip glyph unmeasured; Store is the best-reading choice, flagged.
               Link target: /marche/produits, the real route that carries the Produits/Boutiques
               toggle — not investigated deep enough to force the Boutiques tab via a query param. */}
-          <div className="flex min-h-[198px] flex-1 flex-col gap-2.5 rounded-xl bg-warning-50 p-5">
+          <div className="flex flex-1 flex-col gap-2.5 rounded-xl bg-warning-100 p-5">
             <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-warning-500">
               <StoreIcon className="h-5 w-5 text-white" aria-hidden="true" />
             </span>
