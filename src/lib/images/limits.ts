@@ -73,6 +73,16 @@ export const SHOP_LOGO_MAX_EDGE = 512
 export const SHOP_BANNER_MAX_EDGE = 1280
 
 /**
+ * Longest-edge cap for a portfolio item image (H3 "Portfolio"). The `portfolio-media` bucket sets
+ * the identical `file_size_limit` product-images uses -- 2 MiB (2097152 bytes) -- so
+ * PRODUCT_MAX_EDGE's own worst-case-WebP-vs-bucket-cap table applies unchanged: 1280 spends ~43%
+ * of the cap, 2048 would exceed it. A portfolio thumbnail is a project screenshot meant to read
+ * clearly (H3's own row shows it at 120x120, but nothing rules out a larger render on a future
+ * public profile surface), so it gets the content-image cap, not the avatar cap.
+ */
+export const PORTFOLIO_MAX_EDGE = 1280
+
+/**
  * The same ceiling in whole megabytes, for the user-facing message. Derived rather than written out
  * so the copy cannot drift from the constant — the gate caught exactly that drift once, when the
  * limit moved 15 MB -> 4 MB and the French string kept saying "15 Mo maximum".

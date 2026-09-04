@@ -1796,6 +1796,122 @@ export const fr: Record<string, string> = {
   'freelance.create.step3.error.tools_cap':            "15 outils maximum.",
   'freelance.create.step3.error.working_hours_max':    "500 caractères maximum.",
 
+  // ─── H3 "Modifier mon profil" (/mon-profil-freelance/modifier) — Figma 404:11909. Per-field
+  // provenance (📐 measured / 🔨 founder-ruled) is in the PR description, not repeated here.
+  'freelance.edit.breadcrumb':          "Tableau de bord",
+  'freelance.edit.page_title':          "Modifier mon profil",
+  'freelance.edit.page_subtitle':       "Ce que les visiteurs voient sur votre page publique.",
+  'freelance.edit.noProfile.title':     "Complétez d'abord votre profil",
+  'freelance.edit.noProfile.body':      "Vous devez créer votre profil freelance avant de pouvoir le modifier.",
+  'freelance.edit.noProfile.cta':       "Créer mon profil",
+
+  'freelance.edit.display_name_label':  "Nom affiché",
+  'freelance.edit.location_label':      "Localisation",
+  'freelance.edit.edit_in_settings':    "Modifier dans Paramètres →",
+
+  // 📐 167:12377-style asterisk pattern, this frame's own identity-panel Input (404:12236).
+  'freelance.edit.headline_label':      "Titre professionnel",
+  'freelance.edit.headline_helper':     "Une phrase qui décrit ce que vous faites et pour qui. Formule : [Rôle] + [Spécialité] + [Différenciateur].",
+  'freelance.edit.error_headline':      "Le titre professionnel est requis pour publier votre profil.",
+
+  'freelance.edit.trust_title':         "Confiance & liens",
+  'freelance.edit.years_experience_label': "Années d'expérience",
+  'freelance.edit.years_suffix':        "ans",
+  'freelance.edit.links_title':         "Liens externes",
+  'freelance.edit.links_helper':        "Vos profils publics — GitHub, LinkedIn, site web. Jusqu'à 3 liens.",
+  // 🔨 founder-ruled from content shape — the file never named these two inputs (unedited
+  // component placeholders). Not measured; correctable by a later Figma pass.
+  'freelance.edit.link_label_field':    "Nom du lien",
+  'freelance.edit.link_url_field':      "URL",
+  'freelance.edit.add_link':            "Ajouter un lien",
+  'freelance.edit.remove_link':         "Supprimer le lien {index}",
+
+  'freelance.edit.about_title':         "À propos",
+  'freelance.edit.bio_label':           "À propos de vous",
+  'freelance.edit.bio_helper':          "Le texte long qui construit la confiance. Minimum 100 caractères pour publier votre profil.",
+  'freelance.edit.error_bio':           "La bio doit contenir au moins 100 caractères pour publier votre profil.",
+
+  'freelance.edit.skills_languages_title': "Compétences & langues",
+  'freelance.edit.skills_label':        "Vos compétences",
+  'freelance.edit.skills_helper':       "Minimum 3, maximum 15. Elles alimentent la recherche client.",
+  'freelance.edit.error_skills':        "Sélectionnez entre 3 et 15 compétences pour publier votre profil.",
+  'freelance.edit.remove_skill':        "Retirer {name}",
+  'freelance.edit.languages_title':     "Langues",
+  'freelance.edit.languages_helper':    "Les langues que vous parlez et votre niveau.",
+  'freelance.edit.langue_select_label': "Langue",
+  'freelance.edit.niveau_select_label': "Niveau",
+  'freelance.edit.remove_language_label': "Retirer {language}",
+  'freelance.edit.add_language':        "Ajouter une langue",
+  'freelance.edit.tools_label':         "Outils",
+  'freelance.edit.tools_helper':        "Les logiciels et technologies que vous maîtrisez.",
+  'freelance.edit.remove_tool':         "Retirer {name}",
+
+  // 🔨 title/url labels founder-ruled from content shape (413:15949's two short Inputs never got
+  // real captions either) — "Lien externe (optionnel)" specifically chosen to not collide with
+  // the sibling singular field "Lien portfolio externe" in the same accordion.
+  'freelance.edit.portfolio_title':     "Portfolio",
+  'freelance.edit.portfolio_title_field': "Titre du projet",
+  'freelance.edit.portfolio_url_field': "Lien externe (optionnel)",
+  'freelance.edit.portfolio_description_field': "Description du projet",
+  'freelance.edit.add_portfolio_item':  "Ajouter un projet",
+  'freelance.edit.remove_portfolio_item': "Supprimer le projet {index}",
+  'freelance.edit.portfolio_helper':    "Jusqu'à 6 projets. La couverture est la vitrine — choisissez la meilleure image.",
+
+  'freelance.edit.services_title':      "Services",
+  'freelance.edit.services_body':       "Vos services s'affichent automatiquement sur votre page publique à partir de « Mes services ». Cette section ne s'édite pas ici.",
+  'freelance.edit.services_link':       "Gérer mes services",
+
+  'freelance.edit.formation_title':     "Formation & certifications",
+  'freelance.edit.education_title':     "Formation",
+  'freelance.edit.education_helper':    "Vos diplômes et parcours académique. Jusqu'à 5.",
+  'freelance.edit.institution_label':   "Établissement",
+  'freelance.edit.institution_ph':      "Ex: Université de Tunis",
+  // 🔨 maps to freelancer_education.degree — the frame draws ONE field here, not degree+field
+  // separately (founder ruling: `field` stays unused by this form).
+  'freelance.edit.degree_label':        "Diplôme",
+  'freelance.edit.degree_ph':           "Ex: Génie Logiciel",
+  'freelance.edit.year_start_label':    "Année de début",
+  'freelance.edit.year_end_label':      "Année de fin",
+  'freelance.edit.education_entry':     "Formation {index}",
+  'freelance.edit.add_education':       "Ajouter une formation",
+  'freelance.edit.remove_education':    "Supprimer la formation {index}",
+
+  'freelance.edit.certifications_title': "Certifications",
+  'freelance.edit.certifications_helper': "Vos certifications professionnelles avec le lien de vérification.",
+  'freelance.edit.cert_name_label':     "Nom de la certification",
+  'freelance.edit.cert_name_ph':        "Ex: Meta Front-End Developer",
+  'freelance.edit.issuing_org_label':   "Organisme émetteur",
+  'freelance.edit.issuing_org_ph':      "Ex: Meta",
+  'freelance.edit.year_obtained_label': "Année d'obtention",
+  'freelance.edit.credential_url_label': "Lien de vérification",
+  'freelance.edit.credential_url_ph':   "https://",
+  'freelance.edit.certification_entry': "Certification {index}",
+  'freelance.edit.add_certification':   "Ajouter une certification",
+  'freelance.edit.remove_certification': "Supprimer la certification {index}",
+
+  'freelance.edit.context_title':       "Contexte",
+  'freelance.edit.working_hours_label': "Horaires",
+  // 📐 workplace_location column comment (20260904180529): distinct from current_workplace.
+  'freelance.edit.workplace_location_label': "Lieu de travail",
+
+  'freelance.edit.badge_complete':      "Complet",
+  'freelance.edit.badge_incomplete':    "Incomplet",
+
+  // 📐 408:14113/408:14810, screenshot-confirmed.
+  'freelance.edit.footer_dirty':        "Modifications non enregistrées",
+  'freelance.edit.footer_clean':        "Modifications enregistrées",
+  'freelance.edit.preview':             "Prévisualiser",
+  'freelance.edit.save':                "Enregistrer",
+  'freelance.edit.publish':             "Publier mon profil",
+  'freelance.edit.publish_disabled_tooltip': "Complétez les champs requis pour publier",
+  // 📐 409:15514 warn-banner, literal.
+  'freelance.edit.validation_banner':   "Certains champs requis sont manquants. Corrigez-les avant de publier votre profil.",
+  // Publish model option A — is_published is trigger-derived (PR #164), never set by this page.
+  // These two messages explain, they never claim to have flipped anything.
+  'freelance.edit.publish_success':     "Votre profil est complet et actuellement visible.",
+  'freelance.edit.publish_needs_listing': "Votre profil est complet. Il sera visible dès que vous aurez publié un service.",
+  'freelance.edit.publish_needs_listing_link': "Créer un service",
+
   // ─── H2 success (/mon-profil-freelance/creer/succes) — Figma 468:20536/468:20538, measured.
   // "Voir mon profil public" is DISABLED (D4 does not exist yet, h2-discovery.md §4a) — reuses
   // the existing `freelance.view_public` key rather than a new one, so the label can't drift from

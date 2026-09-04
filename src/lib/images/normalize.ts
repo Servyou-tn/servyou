@@ -1,5 +1,5 @@
 import sharp from 'sharp'
-import { AVATAR_MAX_EDGE, PRODUCT_MAX_EDGE, SHOP_LOGO_MAX_EDGE, SHOP_BANNER_MAX_EDGE, MAX_INPUT_BYTES } from './limits'
+import { AVATAR_MAX_EDGE, PRODUCT_MAX_EDGE, SHOP_LOGO_MAX_EDGE, SHOP_BANNER_MAX_EDGE, PORTFOLIO_MAX_EDGE, MAX_INPUT_BYTES } from './limits'
 
 // Normalizes an arbitrary user upload into ONE canonical WebP original.
 //
@@ -44,7 +44,7 @@ export type NormalizeResult =
 
 // Re-exported so server-side callers have one import for the whole pipeline. The definitions live
 // in ./limits because the client needs MAX_INPUT_BYTES and must not import `sharp`.
-export { AVATAR_MAX_EDGE, PRODUCT_MAX_EDGE, MAX_INPUT_BYTES, MAX_INPUT_MB } from './limits'
+export { AVATAR_MAX_EDGE, PRODUCT_MAX_EDGE, PORTFOLIO_MAX_EDGE, MAX_INPUT_BYTES, MAX_INPUT_MB } from './limits'
 
 /**
  * Identifies a container from its leading bytes. Deliberately not a general-purpose sniffer -- it
@@ -193,4 +193,11 @@ export async function normalizeShopLogo(input: Buffer): Promise<NormalizeResult>
  */
 export async function normalizeShopBanner(input: Buffer): Promise<NormalizeResult> {
   return normalizeAvatar(input, SHOP_BANNER_MAX_EDGE)
+}
+
+/**
+ * Portfolio-item image variant — H3 "Portfolio". Same thin wrapper, content-image edge cap.
+ */
+export async function normalizePortfolioImage(input: Buffer): Promise<NormalizeResult> {
+  return normalizeAvatar(input, PORTFOLIO_MAX_EDGE)
 }

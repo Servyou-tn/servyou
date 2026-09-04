@@ -1,10 +1,11 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 
-// The four buckets a provenance row can ever be written for -- matches the four upload actions
-// (uploadAvatarAction, uploadProductImageAction, uploadShopAsset, updateShopAsset) and the four
-// buckets created in 20260731073614_storage_buckets_and_policies. portfolio-media and verifications
-// have no writer yet and are deliberately excluded until one ships.
-export type ProvenanceBucket = 'avatars' | 'product-images' | 'shop-assets'
+// The buckets a provenance row can ever be written for -- matches the upload actions
+// (uploadAvatarAction, uploadProductImageAction, uploadShopAsset, updateShopAsset,
+// uploadPortfolioImageAction) and the buckets created in 20260731073614_storage_buckets_and_policies
+// / 20260904180529_h3_freelancer_links_portfolio_workplace. `verifications` has no writer yet and
+// stays excluded until one ships.
+export type ProvenanceBucket = 'avatars' | 'product-images' | 'shop-assets' | 'portfolio-media'
 
 export type RecordProvenanceResult = { ok: true } | { ok: false; error: string }
 
