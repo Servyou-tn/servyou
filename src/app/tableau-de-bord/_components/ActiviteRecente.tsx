@@ -1,5 +1,5 @@
 import type { LucideIcon } from 'lucide-react'
-import { Package, CheckCircle2, Send, History } from 'lucide-react'
+import { Package, CheckCircle2, FileCheck2, Send, History } from 'lucide-react'
 import { t, type Lang } from '@/lib/i18n'
 import { statusPillFor } from '@/lib/orders/order-status'
 import type { ActivityEvent } from '@/lib/marche/freelancer-dashboard'
@@ -16,14 +16,23 @@ import { relativeTimeLabel } from './relative-time'
 //     primary sentence with guillemets, not shown as a second line.
 //   - rows are GAP-separated (16px), not divided by a hairline border — Missions récentes' rows
 //     use dividers, this panel's rows do not.
-// Two of the four measured copy templates ("Service «title» publié", "Engagement terminé avec
-// {name}") need data this pass does not source yet (reported separately, not built here) — the
-// `status` kind keeps its pre-Pass-4 CheckCircle2/"Engagement {status}" rendering until answered.
+//
+// Three of the four measured kinds are built: `request`, `proposal`, and the `status`==='received'
+// case ("Engagement terminé avec {name}" — buyer name via the G8 public_profiles pattern, see
+// freelancer-dashboard.ts). The fourth ("Service «title» publié") is NOT built:
+// service_listings has no honest publish-transition timestamp, only created_at, which conflates
+// a drafted listing with a published one — logged in docs/follow-ups.md, waits for a migration.
+// A 'received' row whose buyer-name lookup came back empty, or any other status, falls back to
+// the pre-Pass-4 generic CheckCircle2/"Engagement {status}" rendering — never "avec " with
+// nothing after it.
 const TONE = {
   info: 'bg-brand-blue-100 text-brand-blue-600',
   success: 'bg-success-100 text-success-500',
   danger: 'bg-danger-100 text-danger-500',
   accent: 'bg-brand-indigo-100 text-brand-indigo-500',
+  // 📐 167:12333 — measured pairing is the reverse of Pass 1-3's guess: "Réponse envoyée" is
+  // grey, "Engagement terminé" is indigo (not send=indigo, done=success as shipped before).
+  neutral: 'bg-surface-sunken text-icon-muted',
 } as const
 
 function presentationFor(item: ActivityEvent): { Icon: LucideIcon; toneClass: string } {
@@ -31,9 +40,11 @@ function presentationFor(item: ActivityEvent): { Icon: LucideIcon; toneClass: st
     case 'request':
       return { Icon: Package, toneClass: TONE.info } // 📐 167:12333 — was FilePlus2
     case 'proposal':
-      return { Icon: Send, toneClass: TONE.accent }
+      return { Icon: Send, toneClass: TONE.neutral } // 📐 was accent/indigo — measured grey
     case 'status':
-      // PENDING — see the file header note. Not yet the measured file-check/"terminé" icon.
+      if (item.status === 'received' && item.buyerName) {
+        return { Icon: FileCheck2, toneClass: TONE.accent } // 📐 the measured "terminé" kind
+      }
       if (item.status === 'received') return { Icon: CheckCircle2, toneClass: TONE.success }
       if (item.status === 'cancelled') return { Icon: CheckCircle2, toneClass: TONE.danger }
       return { Icon: CheckCircle2, toneClass: TONE.info }
@@ -41,10 +52,11 @@ function presentationFor(item: ActivityEvent): { Icon: LucideIcon; toneClass: st
 }
 
 /**
- * `request` and `proposal` are 📐 MEASURED exact templates (167:12333). `status` keeps reusing
- * statusPillFor()/PILL_BASE — no invented strings there either, but it's the OLD ruled template,
- * pending the buyer-name data question. All rows here are service orders (the query filters
- * order_type='service'), so orderType is always 'service'.
+ * `request`, `proposal`, and 'received'-with-a-name are 📐 MEASURED exact templates (167:12333).
+ * Every other `status` value keeps reusing statusPillFor()/PILL_BASE — no invented strings there
+ * either, but it's the pre-Pass-4 ruled template (not part of the four measured kinds). All rows
+ * here are service orders (the query filters order_type='service'), so orderType is always
+ * 'service'.
  *
  * Flagged, not fixed: `statusPillFor('arrived', 'service')` yields "Travail livré", so this row
  * can read "Engagement Travail livré" — slightly odd French, but that string is shipped and
@@ -59,6 +71,9 @@ function primaryLabel(item: ActivityEvent, lang: Lang): string {
         ? t('activite.proposal_title', lang, { title: item.title })
         : t('activite.proposal_title_untitled', lang)
     case 'status': {
+      if (item.status === 'received' && item.buyerName) {
+        return t('activite.engagement_termine', lang, { name: item.buyerName })
+      }
       const mapped = statusPillFor(item.status, 'service')
       const statusLabel = mapped ? t(mapped.labelKey, lang) : item.status
       return t('activite.engagement_status', lang, { status: statusLabel })

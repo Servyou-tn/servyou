@@ -2790,6 +2790,8 @@ export const ar: Record<string, string> = {
   // 📐 "تم إرسال الرد: « {title} »" — mirrors fr.ts's Pass 4 template; job-post title interpolated.
   'activite.proposal_title':   "تم إرسال الرد: « {title} »",
   'activite.proposal_title_untitled': "تم إرسال العرض",
+  // 📐 mirrors fr.ts's Pass 4 template; name is the buyer's public_profiles.full_name.
+  'activite.engagement_termine': "المهمة منجزة مع {name}",
   // REVIEW_AR_TRANSLATION: {status} interpolates the SAME lifecycle label StatusPill/rail use
   // (statusPillFor labelKey), so this template's own grammar is untested against every status —
   // flagged for a native pass, same as the fr.ts note on "Travail livré" reading oddly here.

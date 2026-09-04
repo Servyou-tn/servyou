@@ -29,7 +29,9 @@ export type MissionMatch = {
 
 export type ActivityEvent =
   | { kind: 'request'; createdAt: string; title: string }
-  | { kind: 'status'; createdAt: string; status: string; title: string }
+  // buyerName is '' when the public_profiles lookup found nothing for this order's buyer_id —
+  // the renderer falls back to the generic template rather than interpolating an empty name.
+  | { kind: 'status'; createdAt: string; status: string; title: string; buyerName: string }
   // title is null when job_posts' RLS hides the post from its responder (see the note on
   // responsesQuery below) — a real, honest gap, not a bug in this mapping.
   | { kind: 'proposal'; createdAt: string; title: string | null }
@@ -64,6 +66,7 @@ type OrderRow = {
   status: string
   created_at: string
   item_title: string | null
+  buyer_id: string
   service_listings: { title: string } | { title: string }[] | null
   order_events: OrderEventRow[] | null
 }
@@ -107,14 +110,20 @@ export function matchingPostIds(
 }
 
 /**
- * Activité récente — Ruling 8: unions the three sources, sorts newest-first, caps at `limit`.
- * `event_type === 'status_change'` is filtered by the CALLER (orders' events are pre-filtered
- * before reaching this function is NOT assumed — filtered again here so this function is correct
- * on its own, independent of how its caller queried).
+ * Activité récente — Ruling 8 (superseded, Pass 4): unions the three sources, sorts newest-first,
+ * caps at `limit`. `event_type === 'status_change'` is filtered by the CALLER (orders' events are
+ * pre-filtered before reaching this function is NOT assumed — filtered again here so this
+ * function is correct on its own, independent of how its caller queried).
+ *
+ * `buyerNames` backs the measured "Engagement terminé avec {name}" template — same G8 pattern as
+ * seller-orders.ts:201-217 (a second public_profiles query on the collected buyer_ids, not an
+ * embed; profiles SELECT is owner-only so an embed on `orders` returns null for every buyer).
+ * Missing/unmapped ids resolve to '', and the renderer falls back rather than interpolate that.
  */
 export function buildActivityFeed(
   orders: readonly OrderRow[],
   responses: readonly { created_at: string; job_posts: { title: string } | { title: string }[] | null }[],
+  buyerNames: ReadonlyMap<string, string>,
   limit: number,
 ): ActivityEvent[] {
   return [
@@ -128,6 +137,7 @@ export function buildActivityFeed(
             createdAt: e.created_at,
             status: e.to_status as string,
             title: titleOf(o),
+            buyerName: buyerNames.get(o.buyer_id) ?? '',
           }),
         ),
     ),
@@ -186,7 +196,7 @@ export const getFreelancerDashboard = cache(
     const { data: orderData, error: ordersError } = await supabase
       .from('orders')
       .select(
-        `id, status, created_at, item_title,
+        `id, status, created_at, item_title, buyer_id,
          service_listings ( title ),
          order_events ( event_type, to_status, created_at )`,
       )
@@ -204,6 +214,31 @@ export const getFreelancerDashboard = cache(
       throw new Error(`freelancer orders fetch failed: ${ordersError.message}`)
     }
     const orders = (orderData ?? []) as unknown as OrderRow[]
+
+    // Buyer names for Activité récente's "Engagement terminé avec {name}" rows — exact G8 pattern
+    // (seller-orders.ts:201-217), not a new one: public_profiles SELECT is owner-only, so an
+    // embed on the orders query above would return null for every buyer; a second query on the
+    // collected ids is the proven fix. Logs and degrades (buyerName '') rather than throwing —
+    // same choice seller-orders.ts makes, a missing display name shouldn't break the feed.
+    const buyerIds = [...new Set(orders.map((o) => o.buyer_id).filter(Boolean))]
+    const buyerNames = new Map<string, string>()
+    if (buyerIds.length > 0) {
+      const { data: buyerProfiles, error: buyerProfilesError } = await supabase
+        .from('public_profiles')
+        .select('id, full_name')
+        .in('id', buyerIds)
+      if (buyerProfilesError) {
+        console.error(
+          '[freelancer-dashboard] buyer public_profiles error:',
+          buyerProfilesError.message,
+          buyerProfilesError.code,
+        )
+      } else {
+        for (const p of buyerProfiles ?? []) {
+          buyerNames.set(p.id, p.full_name ?? '')
+        }
+      }
+    }
 
     // Orders I bought — a completely separate slice from the `orders` read above (that one is
     // scoped to seller_id; this one is buyer_id, the freelancer acting as a consumer). Backs only
@@ -356,7 +391,7 @@ export const getFreelancerDashboard = cache(
       }
     }
 
-    const activite = buildActivityFeed(orders, responses, ACTIVITY_LIMIT)
+    const activite = buildActivityFeed(orders, responses, buyerNames, ACTIVITY_LIMIT)
     const { engagementsActifs, demandesEnAttente } = activeOrderCounts(orders)
 
     return {
