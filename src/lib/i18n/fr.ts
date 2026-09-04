@@ -2846,11 +2846,18 @@ export const fr: Record<string, string> = {
   'forceProfil.item_bio':     "Bio complétée",
   'forceProfil.item_skills':  "Compétences renseignées",
   'forceProfil.item_portfolio': "Ajoutez 2 réalisations",
+  // Footer link, added Pass 3 (h4-discovery.md never drew it — 167:12377's read stopped at the
+  // checklist). Destination is H3 (/mon-profil-freelance/modifier), which has no route yet —
+  // renders inert, same "Créer un service" treatment as the header CTA.
+  'forceProfil.complete_link': "Compléter mon profil →",
 
   // Activité récente — Ruling 8, founder-ruled from the event tables (Figma quota exhausted
   // before the panel body was ever drawn — provisional, see h4-discovery.md). `request_title`,
   // `proposal_title` and `engagement_status`'s template are exact per the ruling; do not reword.
   'activite.title':            "Activité récente",
+  // Added Pass 3 — the frame has this header link (missed under Ruling 8's "no route" reading);
+  // Activité récente has no dedicated full-list route either, so it renders inert too.
+  'activite.view_all':         "Voir tout →",
   'activite.empty_title':      "Aucune activité pour l'instant",
   'activite.empty_body':       "Vos demandes, engagements et propositions apparaîtront ici.",
   'activite.request_title':    "Nouvelle demande de service",

@@ -85,6 +85,14 @@ export function ForceDuProfil({ checklist, lang }: { checklist: FreelancerCheckl
             )
           })}
         </ul>
+        {/* Footer link, added Pass 3 — 167:12377's read (h4-discovery.md §2) stopped at the
+            checklist, so this was never Figma-measured, only ruled by the founder off the
+            frame's visible copy. Destination is H3 (/mon-profil-freelance/modifier), which has
+            no route yet — same inert treatment as the header's "Créer un service" CTA, not a
+            Link to a 404. */}
+        <span aria-disabled="true" className="cursor-not-allowed text-body-sm font-semibold text-text-muted">
+          {t('forceProfil.complete_link', lang)}
+        </span>
       </div>
     </Panel>
   )

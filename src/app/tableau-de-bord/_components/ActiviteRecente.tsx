@@ -83,7 +83,13 @@ function ActivityRow({ item, lang }: { item: ActivityEvent; lang: Lang }) {
 
 export function ActiviteRecente({ items, lang }: { items: ActivityEvent[]; lang: Lang }) {
   return (
-    <Panel title={t('activite.title', lang)}>
+    <Panel
+      title={t('activite.title', lang)}
+      // Pass 3: the frame does draw this header link (missed under Ruling 8's "no route, omit"
+      // reading — see h4-discovery.md §4's link-destination rule). Activité récente still has no
+      // dedicated full-list route, so `href: null` renders it inert rather than a 404 Link.
+      link={{ href: null, label: t('activite.view_all', lang) }}
+    >
       {items.length === 0 ? (
         <PanelEmpty
           icon={History}

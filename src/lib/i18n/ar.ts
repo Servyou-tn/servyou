@@ -2780,8 +2780,10 @@ export const ar: Record<string, string> = {
   'forceProfil.item_bio':     "النبذة الشخصية مكتملة",
   'forceProfil.item_skills':  "المهارات مُدرَجة",
   'forceProfil.item_portfolio': "أضف عملين من أعمالك",
+  'forceProfil.complete_link': "أكمل ملفك الشخصي ←",
 
   'activite.title':            "النشاط الأخير",
+  'activite.view_all':         "عرض الكل ←",
   'activite.empty_title':      "لا يوجد نشاط بعد",
   'activite.empty_body':       "ستظهر هنا طلباتك ومهامك الجارية وعروضك المُرسَلة.",
   'activite.request_title':    "طلب خدمة جديد",
