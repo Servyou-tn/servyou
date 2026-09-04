@@ -2807,4 +2807,77 @@ export const fr: Record<string, string> = {
   'seller.orders.whatsapp_error':         "Impossible de récupérer le numéro. Réessayez.",
   'seller.orders.whatsapp_none':          "Numéro indisponible pour cette commande.",
 
+  // H4 — Tableau de bord freelance (Figma 166:12086). Provenance: docs/design/h4-discovery.md.
+  // `tile.views` and every `forceProfil.item_*` are 📐 MEASURED exact copy — do not reword.
+  // Everything else on this page (subtitles, panel titles, empty-state copy) has no measured
+  // text and is INFERRED, same treatment as the Demandes-en-attente status mapping.
+  // 📐 MEASURED (167:12236/167:12237, h4-discovery.md §9). {firstName} interpolates
+  // profiles.full_name's first token — the frame shows "Moatez" (the founder's own seed name),
+  // read as intent not a literal, since a hardcoded name would be obviously wrong for every other
+  // freelancer.
+  'freelance.dashboard.title':             "Bienvenue, {firstName} 👋",
+  'freelance.dashboard.subline':           "Voici ce qui se passe sur votre activité aujourd'hui",
+  'freelance.dashboard.noProfile.title':   "Finalisez votre profil freelance",
+  'freelance.dashboard.noProfile.body':    "Votre tableau de bord s'active dès que votre profil freelance est créé.",
+  'freelance.dashboard.noProfile.cta':     "Créer mon profil",
+
+  'freelance.dashboard.tile.services':     "Services actifs",
+  'freelance.dashboard.tile.services_sub': "Visibles sur votre profil",
+  'freelance.dashboard.tile.engagements':  "Engagements actifs",
+  'freelance.dashboard.tile.engagements_sub': "En cours",
+  'freelance.dashboard.tile.pending':      "Demandes en attente",
+  'freelance.dashboard.tile.pending_sub':  "En attente de votre réponse",
+  // 📐 MEASURED (167:12280) — period folded into the label, no separate sub-label node. Ruling 1:
+  // renders 0, no delta, nothing seeded.
+  'freelance.dashboard.tile.views':        "Vues du profil · 30 jours",
+
+  // 📐 MEASURED (232:7599) — "pour vous" is part of the literal title, not dropped.
+  'freelance.dashboard.missions.title':      "Missions récentes pour vous",
+  'freelance.dashboard.missions.link':       "Voir toutes les missions →",
+  'freelance.dashboard.missions.empty_title': "Aucune mission ne correspond à vos compétences",
+  'freelance.dashboard.missions.empty_body': "De nouvelles missions apparaîtront ici dès qu'elles correspondent à votre profil.",
+
+  'freelance.dashboard.quick.title':       "Actions rapides",
+
+  // Force du profil — 📐 MEASURED exact copy (167:12377). Denominator is 4; item 4 always reads
+  // NOT DONE (Ruling 2) — do not reword these to match a different completion state.
+  'forceProfil.title':        "Force du profil",
+  'forceProfil.item_avatar':  "Photo de profil ajoutée",
+  'forceProfil.item_bio':     "Bio complétée",
+  'forceProfil.item_skills':  "Compétences renseignées",
+  'forceProfil.item_portfolio': "Ajoutez 2 réalisations",
+
+  // Activité récente — Ruling 8, founder-ruled from the event tables (Figma quota exhausted
+  // before the panel body was ever drawn — provisional, see h4-discovery.md). `request_title`,
+  // `proposal_title` and `engagement_status`'s template are exact per the ruling; do not reword.
+  'activite.title':            "Activité récente",
+  'activite.empty_title':      "Aucune activité pour l'instant",
+  'activite.empty_body':       "Vos demandes, engagements et propositions apparaîtront ici.",
+  'activite.request_title':    "Nouvelle demande de service",
+  'activite.proposal_title':   "Réponse envoyée",
+  'activite.engagement_status': "Engagement {status}",
+  'activite.time_ago_just_now': "À l'instant",
+  'activite.time_ago_yesterday': "Hier",
+
+  // H4 rebuild pass — 📐 MEASURED against the figma-cli CDP re-read, h4-discovery.md §9, except
+  // where noted. "Créer un service" / buyProducts / myOrders labels are 📐 measured literal.
+  'freelance.dashboard.createService':     "Créer un service",
+  'freelance.dashboard.quick.buyProducts': "Acheter des produits",
+  'freelance.dashboard.quick.myOrders':    "Voir mes commandes",
+
+  // consumers_count / shops_count (the single-line "24 consommateurs" string) live in
+  // lib/i18n/plurals.ts as tn() keys — 📐 measured shape, reused rather than duplicated here.
+  'ecosysteme.consumers_sub':   "qui ont utilisé vos services",
+  'ecosysteme.consumers_link':  "Voir les demandes →",
+  'ecosysteme.you_title':       "Vous — Freelance",
+  'ecosysteme.you_body':        "Vendez vos services, achetez des produits, développez votre activité",
+  'ecosysteme.shops_sub':       "avec qui vous avez travaillé",
+  'ecosysteme.shops_link':      "Voir les boutiques →",
+
+  'mission.col_budget':    "Budget",
+  'mission.col_published': "Publié",
+  // Built but never triggered this pass — job_posts has no urgency/priority column. See
+  // MissionRow.tsx's file header.
+  'mission.urgent':        "Urgent",
+
 }

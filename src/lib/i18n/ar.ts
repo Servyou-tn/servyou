@@ -2752,4 +2752,64 @@ export const ar: Record<string, string> = {
   'seller.orders.whatsapp_error':         "تعذّر جلب الرقم. حاول مرة أخرى.",
   'seller.orders.whatsapp_none':          "الرقم غير متاح لهذا الطلب.",
 
+  // H4 — mirrors fr.ts's H4 block exactly, same measured/ruled/inferred provenance
+  // (docs/design/h4-discovery.md).
+  'freelance.dashboard.title':             "مرحباً، {firstName} 👋",
+  'freelance.dashboard.subline':           "إليك آخر مستجدات نشاطك اليوم",
+  'freelance.dashboard.noProfile.title':   "أكمل ملفك الشخصي كمستقل",
+  'freelance.dashboard.noProfile.body':    "تُفعَّل لوحة التحكم فور إنشاء ملفك الشخصي كمستقل.",
+  'freelance.dashboard.noProfile.cta':     "إنشاء ملفي الشخصي",
+
+  'freelance.dashboard.tile.services':     "الخدمات النشطة",
+  'freelance.dashboard.tile.services_sub': "ظاهرة في ملفك الشخصي",
+  'freelance.dashboard.tile.engagements':  "المهام الجارية",
+  'freelance.dashboard.tile.engagements_sub': "قيد التنفيذ",
+  'freelance.dashboard.tile.pending':      "الطلبات المعلّقة",
+  'freelance.dashboard.tile.pending_sub':  "بانتظار ردّك",
+  'freelance.dashboard.tile.views':        "مشاهدات الملف الشخصي · 30 يومًا",
+
+  'freelance.dashboard.missions.title':      "مهام حديثة لك",
+  'freelance.dashboard.missions.link':       "عرض كل المهام ←",
+  'freelance.dashboard.missions.empty_title': "لا توجد مهام مطابقة لمهاراتك",
+  'freelance.dashboard.missions.empty_body': "ستظهر هنا المهام الجديدة فور تطابقها مع ملفك الشخصي.",
+
+  'freelance.dashboard.quick.title':       "إجراءات سريعة",
+
+  'forceProfil.title':        "قوة الملف الشخصي",
+  'forceProfil.item_avatar':  "صورة الملف الشخصي مضافة",
+  'forceProfil.item_bio':     "النبذة الشخصية مكتملة",
+  'forceProfil.item_skills':  "المهارات مُدرَجة",
+  'forceProfil.item_portfolio': "أضف عملين من أعمالك",
+
+  'activite.title':            "النشاط الأخير",
+  'activite.empty_title':      "لا يوجد نشاط بعد",
+  'activite.empty_body':       "ستظهر هنا طلباتك ومهامك الجارية وعروضك المُرسَلة.",
+  'activite.request_title':    "طلب خدمة جديد",
+  'activite.proposal_title':   "تم إرسال العرض",
+  // REVIEW_AR_TRANSLATION: {status} interpolates the SAME lifecycle label StatusPill/rail use
+  // (statusPillFor labelKey), so this template's own grammar is untested against every status —
+  // flagged for a native pass, same as the fr.ts note on "Travail livré" reading oddly here.
+  'activite.engagement_status': "المهمة الجارية: {status}",
+  'activite.time_ago_just_now': "الآن",
+  'activite.time_ago_yesterday': "أمس",
+
+  // H4 rebuild pass — mirrors fr.ts's block exactly, same measured provenance (h4-discovery.md §9).
+  'freelance.dashboard.createService':     "إنشاء خدمة",
+  'freelance.dashboard.quick.buyProducts': "شراء منتجات",
+  'freelance.dashboard.quick.myOrders':    "عرض مشترياتي",
+
+  // consumers_count / shops_count live in lib/i18n/plurals.ts as tn() keys.
+  // REVIEW_AR_TRANSLATION: "مستهلكون" (consumers, in that plurals.ts entry) is not in the locked
+  // glossary — best-effort MSA, no native pass yet.
+  'ecosysteme.consumers_sub':   "استخدموا خدماتك",
+  'ecosysteme.consumers_link':  "عرض الطلبات ←",
+  'ecosysteme.you_title':       "أنت — مستقل",
+  'ecosysteme.you_body':        "بِع خدماتك، اشترِ منتجات، طوّر نشاطك",
+  'ecosysteme.shops_sub':       "تعاملتَ معها",
+  'ecosysteme.shops_link':      "عرض المتاجر ←",
+
+  'mission.col_budget':    "الميزانية",
+  'mission.col_published': "تاريخ النشر",
+  'mission.urgent':        "عاجل",
+
 }

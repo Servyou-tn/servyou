@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import { getShellUser } from '@/lib/marche/shell-user'
 import { createClient } from '@/lib/supabase/server'
 import { resolveRole, type Role } from '@/lib/roles'
+import { resolveOwnedFreelancerProfileId } from '@/lib/freelancer/owner-profile'
 
 // Shared seller guard for the workspace route groups (Zone G shop_owner, Zone H freelancer).
 // Written for G4 as the first consumer, because repeating the auth-then-role-then-redirect
@@ -66,5 +67,41 @@ export async function requireShopOwner(nextPath: string): Promise<ShopOwnerConte
     role,
     topBarUser: shell.topBarUser,
     shop: data ?? null,
+  }
+}
+
+export type FreelancerContext = SellerContext & {
+  /** The freelancer's own row, or null when the account is a freelancer that never finished H2
+   *  step 1 — see resolveOwnedFreelancerProfileId. A real state, not an error. */
+  freelancerProfile: { id: string } | null
+}
+
+/**
+ * Guard a freelancer workspace page (H4 and beyond). Same three-outcome shape as
+ * requireShopOwner: logged-out and wrong-role both redirect; a freelancer with no
+ * freelancer_profiles row yet is returned as `freelancerProfile: null` for the caller to handle,
+ * not redirected — only H2 step 1 can fix that, and the caller renders its own prompt.
+ */
+export async function requireFreelancer(nextPath: string): Promise<FreelancerContext> {
+  const shell = await getShellUser()
+  if (!shell) redirect(`/connexion?next=${encodeURIComponent(nextPath)}`)
+
+  const role = resolveRole(shell.topBarUser)
+  if (role !== 'freelancer') redirect('/devenir-vendeur')
+
+  const supabase = await createClient()
+  const resolved = await resolveOwnedFreelancerProfileId(supabase, shell.id)
+
+  // Never collapse a failed query into "no profile" — see resolveOwnedFreelancerProfileId's own
+  // comment: that would push a freelancer WHO HAS a profile back into the create funnel.
+  if (!resolved.ok && resolved.reason === 'query_failed') {
+    throw new Error('freelancer profile fetch failed')
+  }
+
+  return {
+    userId: shell.id,
+    role,
+    topBarUser: shell.topBarUser,
+    freelancerProfile: resolved.ok ? { id: resolved.freelancerProfileId } : null,
   }
 }

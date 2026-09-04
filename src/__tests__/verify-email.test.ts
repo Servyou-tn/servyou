@@ -13,7 +13,9 @@ describe('nextDestinationAfterVerify', () => {
   it('falls back to seller_type when there is no role intent (cross-device)', () => {
     // G4: was '/ma-boutique', a route that has never existed — this fallback landed a shop owner
     // verifying email on a second device straight onto a 404. Now the seller dashboard, which does.
-    // '/mon-profil-freelance' is still a 404 and stays pinned here until H2/H3 give it a real page.
+    // '/mon-profil-freelance' used to be the same kind of 404; H4 (docs/design/h4-discovery.md §7)
+    // gave it a real page that redirects to /tableau-de-bord, so this value is pinned for a
+    // different reason now — it's the workspace root, not a dead end.
     expect(nextDestinationAfterVerify(null, 'shop_owner')).toBe('/tableau-de-bord-vendeur')
     expect(nextDestinationAfterVerify(null, 'freelancer')).toBe('/mon-profil-freelance')
   })

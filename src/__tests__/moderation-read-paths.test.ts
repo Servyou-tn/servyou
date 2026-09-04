@@ -385,15 +385,14 @@ describe('source guard — public read paths filter moderated tables', () => {
     expect(offenders).toEqual([])
   })
 
-  it('job_posts has no public read path yet — the board must add the filter when it ships', () => {
-    const publicJobPostReaders = readPathFiles()
-      .filter(({ name }) => !(name in OWNER_SCOPED))
-      .filter(({ source }) => source.includes(".from('job_posts')"))
-      .map(({ name }) => name)
-    // If this fails, /trouver-des-missions (or similar) just gained a public job_posts read.
-    // That is fine — filter admin_hidden_at on it, then delete this assertion.
-    expect(publicJobPostReaders).toEqual([])
-  })
+  // The canary this replaced ("job_posts has no public read path yet") fired as designed: H4's
+  // Missions récentes panel (freelancer-dashboard.ts) is the first public-ish job_posts read —
+  // matched via job_post_skills against the freelancer's own skills, not scoped to a post the
+  // freelancer owns. It filters `.eq('status', 'open').is('admin_hidden_at', null)` explicitly
+  // (RLS grants 'open' rows to a non-owner but does not filter admin_hidden_at on its own — see
+  // docs/design/h4-discovery.md §4), which is exactly the fix the canary's own comment asked for.
+  // Deleted per that comment's own instruction rather than widening OWNER_SCOPED — this read is
+  // NOT owner-scoped, it is the real thing the canary was watching for.
 
   it('the owner-scoped exemption list stays small and documented', () => {
     for (const [file, reason] of Object.entries(OWNER_SCOPED)) {
