@@ -71,11 +71,13 @@ export function ForceDuProfil({ checklist, lang }: { checklist: FreelancerCheckl
               <li key={item.key} className="flex items-center gap-3">
                 <span
                   className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full ${
-                    done ? 'bg-success-100 text-success-500' : 'bg-surface-sunken'
+                    done ? 'bg-success-100 text-success-500' : 'border-2 border-border-strong'
                   }`}
                 >
                   {/* Checkmark only when done — showing it (even muted) on an unmet item reads as
-                      "done" regardless of colour; unmet renders an empty circle instead. */}
+                      "done" regardless of colour; unmet renders an outlined circle instead (📐
+                      167:12371, figma-cli Safe Mode screenshot — was a filled surface-sunken
+                      circle with no border, wrong). */}
                   {done ? <Check className="h-3.5 w-3.5" aria-hidden="true" /> : null}
                 </span>
                 <span className={`text-body-sm ${done ? 'text-text-primary' : 'text-text-muted'}`}>
