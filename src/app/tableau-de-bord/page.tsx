@@ -157,7 +157,7 @@ export default async function TableauDeBordPage() {
               the freelancer's relationship to consumers; no dedicated "demandes" list route
               exists to link more precisely. */}
           <div className="flex min-h-[198px] flex-1 flex-col gap-2.5 rounded-xl bg-success-50 p-5">
-            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-success-600">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-success-500">
               <Users className="h-5 w-5 text-white" aria-hidden="true" />
             </span>
             {/* tn(), not a plain key — reuses the already-correct one/other pluralization
