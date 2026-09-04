@@ -24,14 +24,12 @@ const ACCENT: Record<TileAccent, string> = {
 export function StatTile({
   label,
   value,
-  subtitle,
   icon: Icon,
   accent,
   muted,
 }: {
   label: string
   value: string
-  subtitle: string
   icon: LucideIcon
   accent: TileAccent
   /** Renders the value in the muted ramp — for a tile with no real data source yet. */
@@ -47,9 +45,14 @@ export function StatTile({
       >
         <Icon className="h-[22px] w-[22px]" aria-hidden="true" />
       </span>
-      <div className="flex w-full flex-col gap-1">
-        <p className="text-body-sm font-medium text-text-secondary">{label}</p>
-        {/* leading-[normal], not leading-normal — see the G4 original's note (StatTile.tsx). */}
+      {/* Pass 4 (figma-cli Safe Mode read, 167:1225x) — TWO lines, not three. The frame has no
+          subtitle text node at all; Pass 1-2 built one because nothing had ever measured it
+          directly (h4-discovery.md §9 only confirmed padding/icon/gap, never drilled into the
+          text stack). `leading-[normal]` on both lines, not `leading-none` — measured heights
+          are label 17px / value 34px (≈1.214× their font sizes, i.e. Inter's own `normal`), and
+          the label→value gap is 12px, not `gap-1`. 40(pad)+44(icon)+12(gap)+17+12+34 = 159 exact. */}
+      <div className="flex w-full flex-col gap-3">
+        <p className="text-body-sm font-medium leading-[normal] text-text-secondary">{label}</p>
         <p
           className={cn(
             'text-[28px] font-bold leading-[normal]',
@@ -58,7 +61,6 @@ export function StatTile({
         >
           {value}
         </p>
-        <p className="text-body-sm text-text-muted">{subtitle}</p>
       </div>
     </div>
   )

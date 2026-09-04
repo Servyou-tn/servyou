@@ -66,11 +66,17 @@ describe('matchingPostIds', () => {
 })
 
 describe('buildActivityFeed', () => {
-  const order = (id: string, createdAt: string, events: { event_type: string; to_status: string | null; created_at: string }[]) => ({
+  const order = (
+    id: string,
+    createdAt: string,
+    events: { event_type: string; to_status: string | null; created_at: string }[],
+    buyerId = 'buyer-1',
+  ) => ({
     id,
     status: 'accepted',
     created_at: createdAt,
     item_title: null,
+    buyer_id: buyerId,
     service_listings: { title: `Service ${id}` },
     order_events: events,
   })
@@ -85,7 +91,7 @@ describe('buildActivityFeed', () => {
         { event_type: 'status_change', to_status: 'accepted', created_at: '2026-09-01T11:00:00Z' },
       ]),
     ]
-    const feed = buildActivityFeed(orders, [], 10)
+    const feed = buildActivityFeed(orders, [], new Map(), 10)
     expect(feed).toHaveLength(2)
     expect(feed.filter((f) => f.kind === 'request')).toHaveLength(1)
     expect(feed.filter((f) => f.kind === 'status')).toHaveLength(1)
@@ -97,7 +103,7 @@ describe('buildActivityFeed', () => {
         { event_type: 'status_change', to_status: null, created_at: '2026-09-01T11:00:00Z' },
       ]),
     ]
-    const feed = buildActivityFeed(orders, [], 10)
+    const feed = buildActivityFeed(orders, [], new Map(), 10)
     expect(feed.filter((f) => f.kind === 'status')).toHaveLength(0)
   })
 
@@ -109,7 +115,7 @@ describe('buildActivityFeed', () => {
     const responses = [
       { created_at: '2026-09-02T08:00:00Z', job_posts: { title: 'Mission A' } },
     ]
-    const feed = buildActivityFeed(orders, responses, 2)
+    const feed = buildActivityFeed(orders, responses, new Map(), 2)
     expect(feed).toHaveLength(2)
     expect(feed[0].createdAt).toBe('2026-09-03T08:00:00Z')
     expect(feed[1].createdAt).toBe('2026-09-02T08:00:00Z')
@@ -117,8 +123,34 @@ describe('buildActivityFeed', () => {
 
   it('carries a null proposal title through rather than substituting one — the job_posts RLS gap', () => {
     const responses = [{ created_at: '2026-09-01T08:00:00Z', job_posts: null }]
-    const feed = buildActivityFeed([], responses, 10)
+    const feed = buildActivityFeed([], responses, new Map(), 10)
     expect(feed[0]).toMatchObject({ kind: 'proposal', title: null })
+  })
+
+  it('resolves a status row\'s buyerName from the map keyed on the order\'s buyer_id', () => {
+    const orders = [
+      order(
+        'o1',
+        '2026-09-01T10:00:00Z',
+        [{ event_type: 'status_change', to_status: 'received', created_at: '2026-09-01T11:00:00Z' }],
+        'buyer-42',
+      ),
+    ]
+    const feed = buildActivityFeed(orders, [], new Map([['buyer-42', 'Ahmed B.']]), 10)
+    expect(feed.find((f) => f.kind === 'status')).toMatchObject({ status: 'received', buyerName: 'Ahmed B.' })
+  })
+
+  it('resolves to an empty buyerName, not a crash or a fabricated name, when the map has no entry', () => {
+    const orders = [
+      order(
+        'o1',
+        '2026-09-01T10:00:00Z',
+        [{ event_type: 'status_change', to_status: 'received', created_at: '2026-09-01T11:00:00Z' }],
+        'buyer-unmapped',
+      ),
+    ]
+    const feed = buildActivityFeed(orders, [], new Map(), 10)
+    expect(feed.find((f) => f.kind === 'status')).toMatchObject({ buyerName: '' })
   })
 })
 

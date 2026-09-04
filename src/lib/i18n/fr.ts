@@ -2846,15 +2846,32 @@ export const fr: Record<string, string> = {
   'forceProfil.item_bio':     "Bio complétée",
   'forceProfil.item_skills':  "Compétences renseignées",
   'forceProfil.item_portfolio': "Ajoutez 2 réalisations",
+  // Footer link, added Pass 3 (h4-discovery.md never drew it — 167:12377's read stopped at the
+  // checklist). Destination is H3 (/mon-profil-freelance/modifier), which has no route yet —
+  // renders inert, same "Créer un service" treatment as the header CTA.
+  'forceProfil.complete_link': "Compléter mon profil →",
 
-  // Activité récente — Ruling 8, founder-ruled from the event tables (Figma quota exhausted
-  // before the panel body was ever drawn — provisional, see h4-discovery.md). `request_title`,
-  // `proposal_title` and `engagement_status`'s template are exact per the ruling; do not reword.
+  // Activité récente — Pass 4 (167:12333, figma-cli Safe Mode read): Ruling 8 is SUPERSEDED, the
+  // frame draws this panel's body after all (it did not when Ruling 8 was written — quota
+  // exhausted before reaching it). `request_title`, `proposal_title` and `engagement_termine` are
+  // 📐 MEASURED exact templates, not founder-ruled placeholders — do not reword. The fourth
+  // measured kind ("Service «title» publié") is NOT built — service_listings has no honest
+  // publish-transition timestamp; see docs/follow-ups.md. `engagement_status` stays the OLD ruled
+  // template, used for every `status` value `engagement_termine` doesn't cover.
   'activite.title':            "Activité récente",
+  'activite.view_all':         "Voir tout →",
   'activite.empty_title':      "Aucune activité pour l'instant",
   'activite.empty_body':       "Vos demandes, engagements et propositions apparaîtront ici.",
   'activite.request_title':    "Nouvelle demande de service",
-  'activite.proposal_title':   "Réponse envoyée",
+  // 📐 "Réponse envoyée : « {title} »" — title is the same job-post title Ruling 8's original
+  // query already carried (as a secondary line); `_untitled` is the defensive fallback for the
+  // case (should not occur) where a proposal's job post has no title.
+  'activite.proposal_title':   "Réponse envoyée : « {title} »",
+  'activite.proposal_title_untitled': "Réponse envoyée",
+  // 📐 "Engagement terminé avec {name}" — name is the buyer's public_profiles.full_name (G8
+  // pattern, freelancer-dashboard.ts). Only used when that lookup found a non-empty name; a
+  // 'received' order with no resolvable name falls back to `engagement_status` below.
+  'activite.engagement_termine': "Engagement terminé avec {name}",
   'activite.engagement_status': "Engagement {status}",
   'activite.time_ago_just_now': "À l'instant",
   'activite.time_ago_yesterday': "Hier",

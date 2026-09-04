@@ -6,11 +6,12 @@ import {
   Package,
   Eye,
   Users,
-  User,
   Store as StoreIcon,
   Search,
   ShoppingBag,
   Plus,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react'
 import { AppShell } from '@/components/shell/AppShell'
 import { requireFreelancer } from '@/lib/auth/require-seller'
@@ -78,7 +79,7 @@ export default async function TableauDeBordPage() {
             <h1 className="text-h1 text-text-primary">
               {t('freelance.dashboard.title', lang, { firstName })}
             </h1>
-            <p className="text-body-sm text-text-secondary">{t('freelance.dashboard.subline', lang)}</p>
+            <p className="text-body text-text-secondary">{t('freelance.dashboard.subline', lang)}</p>
           </div>
           {/* INERT — no route exists to create a service yet (/mes-services has no /ajouter
               subroute; H6 never shipped in code). A real Link here would 404. Flip to a Link the
@@ -111,26 +112,24 @@ export default async function TableauDeBordPage() {
 
         {/* ── Stat row — 272×159, pad 20, gap 12 (StatTile.tsx). Icon/colour per tile is
             📐 MEASURED (h4-discovery.md §9): services=blue, engagements=success, pending=warning,
-            views=blue. None carry a delta. ──────────────────────────────────────────────────── */}
+            views=blue. None carry a delta. Two lines per tile, not three — Pass 4 (167:1225x,
+            figma-cli Safe Mode read): the frame has no subtitle text node; see StatTile.tsx. ── */}
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <StatTile
             label={t('freelance.dashboard.tile.services', lang)}
             value={String(data.servicesActifs)}
-            subtitle={t('freelance.dashboard.tile.services_sub', lang)}
             icon={Briefcase}
             accent="blue"
           />
           <StatTile
             label={t('freelance.dashboard.tile.engagements', lang)}
             value={String(data.engagementsActifs)}
-            subtitle={t('freelance.dashboard.tile.engagements_sub', lang)}
             icon={FileCheck2}
             accent="success"
           />
           <StatTile
             label={t('freelance.dashboard.tile.pending', lang)}
             value={String(data.demandesEnAttente)}
-            subtitle={t('freelance.dashboard.tile.pending_sub', lang)}
             icon={Package}
             accent="warning"
           />
@@ -140,7 +139,6 @@ export default async function TableauDeBordPage() {
           <StatTile
             label={t('freelance.dashboard.tile.views', lang)}
             value={String(VUES_DU_PROFIL)}
-            subtitle=""
             icon={Eye}
             accent="blue"
             muted
@@ -149,47 +147,58 @@ export default async function TableauDeBordPage() {
 
         {/* ── Ecosystem widget — ONE outer panel (1136×251, 20px padding) wrapping a row of
             [card, 48px connector, card, connector, card]. The inner cards carry NO border of
-            their own — only this wrapper does. 📐 measured, h4-discovery.md §9. ─────────────── */}
-        <div className="flex flex-col gap-4 rounded-xl border border-border-subtle bg-surface-base p-5 sm:flex-row">
-          {/* Card A — consumers. Chip glyph unmeasured (CLI couldn't resolve the nested instance
-              ID) — Users is a best-reading choice, flagged per the founder's instruction not to
-              spend another bridge call on it. Link target: the closest existing surface showing
-              the freelancer's relationship to consumers; no dedicated "demandes" list route
-              exists to link more precisely. */}
-          <div className="flex min-h-[198px] flex-1 flex-col gap-2.5 rounded-xl bg-success-50 p-5">
+            their own — only this wrapper does. 📐 measured, h4-discovery.md §9.
+            `sm:items-start` (not the flex default `stretch`) — Pass 2: the row previously
+            stretched every card to match the tallest, which is why the shipped side cards
+            measured 236px against Figma's 198. Each card now sizes to its own content + p-5;
+            connectors get `self-stretch` so the line still spans whatever height the tallest
+            card ends up at. No card gets a min-h — deriving from content per the founder's
+            Pass 2 instruction, not re-pinning a number.
+            Pass 4 (167:12291, figma-cli Safe Mode read) closed the last open items: side chip
+            glyphs (Users/Store) were already right; card text needs `leading-[normal]`, not the
+            token defaults (title 16px→19px measured, body/link 14px→17px, same ≈1.214 ratio as
+            the stat tiles); the connector is a dashed line with arrow chevrons, not a solid bar. */}
+        <div className="flex flex-col gap-4 rounded-xl border border-border-subtle bg-surface-base p-5 sm:flex-row sm:items-start">
+          {/* Card A — consumers. Link target: the closest existing surface showing the
+              freelancer's relationship to consumers; no dedicated "demandes" list route exists
+              to link more precisely. */}
+          <div className="flex flex-1 flex-col gap-2.5 rounded-xl bg-success-100 p-5">
             <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-success-500">
               <Users className="h-5 w-5 text-white" aria-hidden="true" />
             </span>
             {/* tn(), not a plain key — reuses the already-correct one/other pluralization
                 ("1 consommateur" / "24 consommateurs") rather than inventing a second string for
                 the same count+noun shape the frame draws as one line. */}
-            <p className="text-body font-bold text-text-primary">
+            <p className="text-body font-bold leading-[normal] text-text-primary">
               {tn('ecosysteme.consumers_count', lang, data.ecosystem.consumers)}
             </p>
-            <p className="text-body-sm text-text-secondary">{t('ecosysteme.consumers_sub', lang)}</p>
+            <p className="text-body-sm leading-[normal] text-text-secondary">{t('ecosysteme.consumers_sub', lang)}</p>
             <div className="flex-1" aria-hidden="true" />
             <Link
               href="/mes-engagements"
-              className={`w-fit rounded text-body-sm font-semibold text-success-700 hover:underline ${FOCUS_RING}`}
+              className={`w-fit rounded text-body-sm font-semibold leading-[normal] text-success-700 hover:underline ${FOCUS_RING}`}
             >
               {t('ecosysteme.consumers_link', lang)}
             </Link>
           </div>
 
-          {/* Connector — a 48px zone with a centered horizontal line, not a plain gap. */}
-          <div className="hidden w-12 shrink-0 items-center justify-center sm:flex" aria-hidden="true">
-            <div className="h-0.5 w-10 bg-border-strong" />
+          {/* Connector — 48px zone, dashed line + arrow chevrons at both ends. 📐 167:12291. */}
+          <div className="hidden w-12 shrink-0 items-center justify-center gap-0.5 self-stretch sm:flex" aria-hidden="true">
+            <ChevronLeft className="h-3 w-3 shrink-0 text-border-strong" />
+            <div className="h-0 flex-1 border-t-2 border-dashed border-border-strong" />
+            <ChevronRight className="h-3 w-3 shrink-0 text-border-strong" />
           </div>
 
-          {/* Card B — the freelancer's own card, filled brand-blue. Chip glyph unmeasured; User
-              (a person) is the best-reading choice for "Vous", flagged. */}
-          <div className="flex min-h-[211px] flex-1 flex-col gap-2.5 rounded-xl bg-brand-blue-600 p-5 text-text-inverse">
+          {/* Card B — the freelancer's own card, filled brand-blue. Glyph is a briefcase (📐
+              167:12291 — was `User`, a plain person, wrong). No flex-1 spacer: Figma's own
+              eco-card-center has 4 children (chip/title/body/button), not 5 — the side cards'
+              spacer doesn't apply here, and keeping it added a gap the frame doesn't have. */}
+          <div className="flex flex-1 flex-col gap-2.5 rounded-xl bg-brand-blue-600 p-5 text-text-inverse">
             <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-white">
-              <User className="h-5 w-5 text-brand-blue-600" aria-hidden="true" />
+              <Briefcase className="h-5 w-5 text-brand-blue-600" aria-hidden="true" />
             </span>
-            <p className="text-body font-bold">{t('ecosysteme.you_title', lang)}</p>
-            <p className="text-body-sm text-brand-blue-100">{t('ecosysteme.you_body', lang)}</p>
-            <div className="flex-1" aria-hidden="true" />
+            <p className="text-body font-bold leading-[normal]">{t('ecosysteme.you_title', lang)}</p>
+            <p className="text-body-sm leading-[normal] text-brand-blue-100">{t('ecosysteme.you_body', lang)}</p>
             <Link
               href="/mes-services"
               className={`inline-flex h-10 w-fit items-center justify-center rounded-lg border border-border-strong bg-white px-4 text-body-sm font-semibold text-brand-blue-700 transition-colors hover:bg-white/90 ${FOCUS_RING}`}
@@ -198,25 +207,27 @@ export default async function TableauDeBordPage() {
             </Link>
           </div>
 
-          <div className="hidden w-12 shrink-0 items-center justify-center sm:flex" aria-hidden="true">
-            <div className="h-0.5 w-10 bg-border-strong" />
+          <div className="hidden w-12 shrink-0 items-center justify-center gap-0.5 self-stretch sm:flex" aria-hidden="true">
+            <ChevronLeft className="h-3 w-3 shrink-0 text-border-strong" />
+            <div className="h-0 flex-1 border-t-2 border-dashed border-border-strong" />
+            <ChevronRight className="h-3 w-3 shrink-0 text-border-strong" />
           </div>
 
-          {/* Card C — shops. Chip glyph unmeasured; Store is the best-reading choice, flagged.
-              Link target: /marche/produits, the real route that carries the Produits/Boutiques
-              toggle — not investigated deep enough to force the Boutiques tab via a query param. */}
-          <div className="flex min-h-[198px] flex-1 flex-col gap-2.5 rounded-xl bg-warning-50 p-5">
+          {/* Card C — shops. Link target: /marche/produits, the real route that carries the
+              Produits/Boutiques toggle — not investigated deep enough to force the Boutiques tab
+              via a query param. */}
+          <div className="flex flex-1 flex-col gap-2.5 rounded-xl bg-warning-100 p-5">
             <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-warning-500">
               <StoreIcon className="h-5 w-5 text-white" aria-hidden="true" />
             </span>
-            <p className="text-body font-bold text-text-primary">
+            <p className="text-body font-bold leading-[normal] text-text-primary">
               {tn('ecosysteme.shops_count', lang, data.ecosystem.shops)}
             </p>
-            <p className="text-body-sm text-text-secondary">{t('ecosysteme.shops_sub', lang)}</p>
+            <p className="text-body-sm leading-[normal] text-text-secondary">{t('ecosysteme.shops_sub', lang)}</p>
             <div className="flex-1" aria-hidden="true" />
             <Link
               href="/marche/produits"
-              className={`w-fit rounded text-body-sm font-semibold text-warning-700 hover:underline ${FOCUS_RING}`}
+              className={`w-fit rounded text-body-sm font-semibold leading-[normal] text-warning-700 hover:underline ${FOCUS_RING}`}
             >
               {t('ecosysteme.shops_link', lang)}
             </Link>
@@ -244,8 +255,10 @@ export default async function TableauDeBordPage() {
           )}
         </Panel>
 
-        {/* ── twoCol: leftCol(Activité récente, Actions rapides) | rightCol(Force du profil) ── */}
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        {/* ── twoCol: leftCol(Activité récente, Actions rapides) | rightCol(Force du profil).
+            📐 167:12332, figma-cli Safe Mode read — NOT a 50/50 split. rightCol is FIXED 320px,
+            leftCol is FILL (1136 − 24 gap − 320 = 792, exact). Shipped as 1fr/1fr; corrected. ── */}
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
           <div className="flex flex-col gap-4">
             <ActiviteRecente items={data.activite} lang={lang} />
 
