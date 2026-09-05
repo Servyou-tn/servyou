@@ -3382,3 +3382,30 @@ coupling" claim on that specific function is stale, not a remaining blocker.
   two already-shipped surfaces from inside a D4 PR, which "one PR, one focus" pushes back on. A
   page build (D4) is not the place to widen into that refactor.
 - **Trigger:** a fourth consumer, or a dedicated component-consolidation pass.
+
+## H5 — Mes services (`feat/h5-mes-services`, 2026-09-05)
+
+### `StatTile` is now at its documented third consumer — promote to shared
+- `tableau-de-bord-vendeur/_components/StatTile.tsx` (G4) and `tableau-de-bord/_components/
+  StatTile.tsx` (H4) both already carry the "promote at the 3rd consumer" comment.
+  `mes-services/_components/StatTile.tsx` (H5) is the third route-local copy — and it needed a
+  `delta` region neither of the first two has (H5's "Commandes ce mois" tile is the first REAL
+  delta value in the app; H4's own "Vues du profil" tile deliberately renders none).
+- **Not promoted here.** Promoting means designing one shared shape covering all three tiles'
+  measured deltas (G4: no delta, always a subtitle; H4: no delta, optional muted value; H5: an
+  optional signed delta ALONGSIDE a caption) and repointing two already-shipped dashboards at it —
+  out of an H5 page-build PR's scope, same reasoning `FreelancerShareButton` used above.
+- **Trigger:** a fourth consumer, or a dedicated component-consolidation pass.
+
+### `marche.sidebar.coming_soon`'s Arabic value is untranslated French — found while building H5
+- `src/lib/i18n/ar.ts` line ~1382: `'marche.sidebar.coming_soon': "Bientôt disponible"` — the exact
+  French string, not translated. H5 reuses this key for its two permanently-inert CTAs ("+ Créer un
+  service" and the kebab's "Modifier", both disabled because H6/H7 don't exist in code yet), and
+  the AR curl-verified render confirmed the leak lands on H5's own AR page, not just wherever this
+  key was first used.
+- **Not fixed here.** The key is shared across the sidebar, admin nav, and at least one other
+  ParametresForm consumer (per its own comment) — retranslating it is a one-line fix but touches
+  shared copy from inside an H5 PR, which is exactly the drive-by CLAUDE.md's one-PR-one-focus rule
+  exists to stop, however small.
+- **Trigger:** its own tiny PR — translate to something like "قريبًا" or "متاح قريبًا" and
+  re-verify every consumer's AR render (sidebar, admin nav, ParametresForm, H5 now too).
