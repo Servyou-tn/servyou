@@ -59,6 +59,11 @@ export const SaveProfileInput = z.object({
   yearsExperience: z.number().int().min(0).max(YEARS_MAX),
   workingHours: z.string().trim().max(WORKING_HOURS_MAX),
   workplaceLocation: z.string().trim().max(WORKPLACE_LOCATION_MAX),
+  // D4 mirror closer (founder ruling, D4 build pass): D4 renders freelancer_profiles.portfolio_link
+  // as its own row under the portfolio grid ("Portfolio externe :"). This form read it from day one
+  // (freelancer-profile-edit.ts) but never wrote it — same optionalUrl shape as PortfolioRowInput's
+  // own url field, so a value valid on entry there is not rejected here.
+  portfolioLink: optionalUrl,
   skills: z.array(z.string().trim().min(1).max(60)).max(SKILLS_MAX),
   languages: z.array(z.object({ language: z.enum(LANGUAGE_CODES), proficiency: z.enum(PROFICIENCY_CODES) })).max(LANGUAGE_CODES.length),
   tools: z.array(z.string().trim().min(1).max(60)).max(TOOLS_CAP),

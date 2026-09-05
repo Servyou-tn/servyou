@@ -52,6 +52,8 @@ const frPlurals: Record<string, PluralVariants> = {
   'page_header.categories.subtitle':       { one: '{count} produit dans {category}',   other: '{count} produits dans {category}' },
   'page_header.categories.emphasis':       { one: '{count} produit', other: '{count} produits' },
   'boutique.public.products_count':        { one: '{count} produit', other: '{count} produits' },
+  'freelance.public.services_count':       { one: '{count} service', other: '{count} services' },
+  'freelance.public.portfolio_count':      { one: '{count} réalisation', other: '{count} réalisations' },
 
   'seller.orders.count':                   { one: '{count} commande', other: '{count} commandes' },
   'seller.dashboard.tile.profit_sub':      { one: 'Sur {count} commande livrée', other: 'Sur {count} commandes livrées' },
@@ -101,6 +103,8 @@ const arPlurals: Record<string, PluralVariants> = {
   },
   'page_header.categories.emphasis':       { one: '{count} منتج', two: '{count} منتجان', other: '{count} منتجات' },
   'boutique.public.products_count':        { one: '{count} منتج', two: '{count} منتجان', other: '{count} منتجات' },
+  'freelance.public.services_count':       { one: '{count} خدمة', two: '{count} خدمتان', other: '{count} خدمات' },
+  'freelance.public.portfolio_count':      { one: '{count} إنجاز', two: '{count} إنجازان', other: '{count} إنجازات' },
 
   'seller.orders.count':                   { one: '{count} طلب', two: '{count} طلبان', other: '{count} طلبات' },
   // Preceded by "من" (from) → dual takes the oblique form (طلبين, not طلبان). Non-human plural
