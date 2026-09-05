@@ -233,7 +233,7 @@ export function ProfileEditForm({ initial, lang }: { initial: FreelancerProfileE
           </div>
         </AccordionSection>
 
-        <AccordionSection title={t('freelance.edit.about_title', lang)} complete={bio.trim().length >= 100} defaultOpen>
+        <AccordionSection title={t('freelance.edit.about_title', lang)} complete={bio.trim().length > 0} defaultOpen>
           <Textarea
             label={t('freelance.edit.bio_label', lang)}
             required
@@ -248,7 +248,7 @@ export function ProfileEditForm({ initial, lang }: { initial: FreelancerProfileE
 
         <AccordionSection
           title={t('freelance.edit.skills_languages_title', lang)}
-          complete={skills.length >= 3 && skills.length <= SKILLS_MAX}
+          complete={skills.length > 0 || languageRows.length > 0 || tools.length > 0}
           defaultOpen
         >
           <div>

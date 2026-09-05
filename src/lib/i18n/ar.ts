@@ -1850,7 +1850,7 @@ export const ar: Record<string, string> = {
   'freelance.edit.workplace_location_label': "مكان العمل",
 
   'freelance.edit.badge_complete':      "مكتمل",
-  'freelance.edit.badge_incomplete':    "غير مكتمل",
+  'freelance.edit.badge_empty':         "فارغ",
 
   'freelance.edit.footer_dirty':        "تغييرات غير محفوظة",
   'freelance.edit.footer_clean':        "تم حفظ التغييرات",

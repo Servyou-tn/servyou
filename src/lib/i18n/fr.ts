@@ -1895,7 +1895,7 @@ export const fr: Record<string, string> = {
   'freelance.edit.workplace_location_label': "Lieu de travail",
 
   'freelance.edit.badge_complete':      "Complet",
-  'freelance.edit.badge_incomplete':    "Incomplet",
+  'freelance.edit.badge_empty':         "Vide",
 
   // 📐 408:14113/408:14810, screenshot-confirmed.
   'freelance.edit.footer_dirty':        "Modifications non enregistrées",

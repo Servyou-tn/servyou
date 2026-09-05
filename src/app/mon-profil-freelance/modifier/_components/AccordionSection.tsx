@@ -8,11 +8,14 @@ import { t } from '@/lib/i18n'
 import { FOCUS_RING } from '@/components/layout/styles'
 import { cn } from '@/lib/utils'
 
-// H3's 7 accordions (404:12214) — same StatusPill Complet/Incomplet pattern as G2's own
-// AccordionSection (ma-boutique/creer/configuration/_components/AccordionSection.tsx), which is
-// what the measured H3 frame actually shows ("Complet" pill, screenshot-confirmed on every
-// section) — not H2 step 3's static "(optionnel)" suffix variant. Duplicated route-local per this
-// codebase's "promote at the third consumer" rule; H3 is the second.
+// H3's 7 accordions (404:12214). Two states only, screenshot-confirmed on the empty-state
+// specimen (408:14559): "Vide" (gray, no content) / "Complet" (green, has content) — applied the
+// same way to every section regardless of whether it contains a required field. An earlier build
+// pass invented "Incomplet" for the false branch without measuring it; 408:14559 shows "Vide" on
+// all seven headers, including À propos and Compétences & langues, so required-vs-optional is
+// carried by the asterisks and the publish gate, never by this pill. Duplicated route-local per
+// this codebase's "promote at the third consumer" rule; H3 is the second (after G2's own
+// AccordionSection, ma-boutique/creer/configuration/_components/AccordionSection.tsx).
 //
 // `defaultOpen` is the measured default state per section (404:11909): Confiance & liens, À
 // propos, Compétences & langues and Formation & certifications open; Portfolio, Services and
@@ -40,7 +43,7 @@ export function AccordionSection({
         <span className="text-base font-semibold text-text-primary">{title}</span>
         <span className="flex shrink-0 items-center gap-3">
           <StatusPill status={complete ? 'complete' : 'optional'}>
-            {t(complete ? 'freelance.edit.badge_complete' : 'freelance.edit.badge_incomplete', lang)}
+            {t(complete ? 'freelance.edit.badge_complete' : 'freelance.edit.badge_empty', lang)}
           </StatusPill>
           <ChevronDown aria-hidden="true" className="h-5 w-5 text-text-muted transition-transform group-open:rotate-180" />
         </span>
