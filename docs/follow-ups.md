@@ -3265,6 +3265,12 @@ coupling" claim on that specific function is stale, not a remaining blocker.
   or a short random id, matching how every other live-DB fixture in this codebase (e.g.
   `uploaded-objects-provenance-rls.test.ts`'s `Provenance Test Shop ${randomUUID().slice(0,8)}`)
   already avoids this class of collision.
+- **Still red (seen again 2026-09-05, `feat/d4-public-profile`):** first seen during the H3 build,
+  still failing on the same `shops_name_lower_key` duplicate across multiple sessions since — the
+  tests are not cleaning up after themselves, so orphaned rows from past runs keep colliding with
+  the next one. Two integration tests permanently red is noise that will mask a real failure.
+  Needs a teardown fix in addition to the `make*WithProduct` naming fix above, plus a one-time
+  cleanup of the orphaned rows already sitting in the DB. Not tied to any page PR.
 
 ## H4 — Tableau de bord freelance (`feat/h4-dashboard-freelancer`, 2026-09-03)
 
