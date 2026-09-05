@@ -42,6 +42,7 @@ export function ProfileEditForm({ initial, lang }: { initial: FreelancerProfileE
   const [yearsExperience, setYearsExperience] = React.useState(String(initial.yearsExperience))
   const [workingHours, setWorkingHours] = React.useState(initial.workingHours)
   const [workplaceLocation, setWorkplaceLocation] = React.useState(initial.workplaceLocation)
+  const [portfolioLink, setPortfolioLink] = React.useState(initial.portfolioLink)
   const [skills, setSkills] = React.useState<string[]>(initial.skills)
   const [tools, setTools] = React.useState<string[]>(initial.tools)
   const [languageRows, setLanguageRows] = React.useState<LanguageRow[]>(() =>
@@ -92,6 +93,7 @@ export function ProfileEditForm({ initial, lang }: { initial: FreelancerProfileE
   const setYearsT = touch(setYearsExperience)
   const setHoursT = touch(setWorkingHours)
   const setLocationT = touch(setWorkplaceLocation)
+  const setPortfolioLinkT = touch(setPortfolioLink)
   const setSkillsT = touch(setSkills)
   const setToolsT = touch(setTools)
   const setLanguagesT = touch(setLanguageRows)
@@ -107,6 +109,7 @@ export function ProfileEditForm({ initial, lang }: { initial: FreelancerProfileE
       yearsExperience: Number(yearsExperience) || 0,
       workingHours,
       workplaceLocation,
+      portfolioLink,
       skills,
       tools,
       languages: languageRows.filter((r) => r.language && r.proficiency).map((r) => ({ language: r.language, proficiency: r.proficiency })),
@@ -283,6 +286,14 @@ export function ProfileEditForm({ initial, lang }: { initial: FreelancerProfileE
 
         <AccordionSection title={t('freelance.edit.portfolio_title', lang)} complete={portfolioRows.length > 0}>
           <PortfolioRepeater rows={portfolioRows} onChange={setPortfolioT} lang={lang} />
+          <div className="border-t border-border-subtle pt-4">
+            <Input
+              label={t('freelance.edit.portfolio_link_label', lang)}
+              dir="ltr"
+              value={portfolioLink}
+              onChange={(e) => setPortfolioLinkT(e.target.value)}
+            />
+          </div>
         </AccordionSection>
 
         <AccordionSection title={t('freelance.edit.services_title', lang)} complete>
@@ -349,7 +360,7 @@ export function ProfileEditForm({ initial, lang }: { initial: FreelancerProfileE
         saving={saving}
         publishing={publishing}
         canPublish={canPublish}
-        previewHref="/mes-services"
+        previewHref={`/freelance/${initial.freelancerProfileId}`}
         onSave={onSave}
         onPublish={onPublish}
       />

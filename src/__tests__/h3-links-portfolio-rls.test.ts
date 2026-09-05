@@ -276,6 +276,7 @@ describe.skipIf(!hasCreds)('publish model option A — is_published is never tou
       yearsExperience: 5,
       workingHours: '',
       workplaceLocation: '',
+      portfolioLink: null,
       skills: ['React', 'Node', 'TypeScript'],
       languages: [],
       tools: [],
@@ -309,4 +310,44 @@ describe.skipIf(!hasCreds)('publish model option A — is_published is never tou
   // paths" describe block) that a transient insert+delete here raced against — confirmed by
   // re-running both files together. The assertion above is sufficient for this module's own claim
   // (it never touches is_published); the trigger's own correctness is out of scope for this file.
+})
+
+// D4 build pass: portfolio_link's WRITE side (applyProfileSave) closes the D-H mirror violation —
+// D4 read this field from day one, this module never wrote it until now. D4's own read side (the
+// column appearing/disappearing on the rendered page) was verified separately by curling a live
+// dev server against a real fixture; this proves the write path itself, through the same
+// applyProfileSave() every other field in this file is exercised through.
+describe.skipIf(!hasCreds)('portfolio_link — applyProfileSave writes and clears it (D4 mirror closer)', () => {
+  const basePayload = {
+    headline: 'Développeur web full-stack',
+    bio: 'x'.repeat(BIO_MIN_FOR_PUBLISH),
+    yearsExperience: 5,
+    workingHours: '',
+    workplaceLocation: '',
+    skills: [] as string[],
+    languages: [] as { language: string; proficiency: string }[],
+    tools: [] as string[],
+    links: [] as { label: string; url: string }[],
+    portfolio: [] as { imageUrl: string; title: string; url: string; description: string }[],
+    education: [] as { institution: string; degree: string; yearStart: number | null; yearEnd: number | null }[],
+    certifications: [] as { name: string; issuingOrg: string; yearObtained: number | null; credentialUrl: string }[],
+  }
+
+  it('sets portfolio_link on save', async () => {
+    const result = await applyProfileSave(pubClient, pubProfileId, { ...basePayload, portfolioLink: 'https://behance.net/moatez' })
+    expect(result.ok).toBe(true)
+
+    const { data, error } = await admin.from('freelancer_profiles').select('portfolio_link').eq('id', pubProfileId).single()
+    expect(error).toBeNull()
+    expect(data?.portfolio_link).toBe('https://behance.net/moatez')
+  })
+
+  it('clears portfolio_link back to null on a subsequent save with no value', async () => {
+    const result = await applyProfileSave(pubClient, pubProfileId, { ...basePayload, portfolioLink: null })
+    expect(result.ok).toBe(true)
+
+    const { data, error } = await admin.from('freelancer_profiles').select('portfolio_link').eq('id', pubProfileId).single()
+    expect(error).toBeNull()
+    expect(data?.portfolio_link).toBeNull()
+  })
 })

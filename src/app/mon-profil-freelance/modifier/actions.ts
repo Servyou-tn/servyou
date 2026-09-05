@@ -61,6 +61,7 @@ export async function applyProfileSave(
       years_experience: input.yearsExperience,
       working_hours: input.workingHours,
       workplace_location: input.workplaceLocation || null,
+      portfolio_link: input.portfolioLink,
     })
     .eq('id', freelancerProfileId)
   if (profileErr) {
