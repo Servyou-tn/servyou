@@ -31,8 +31,12 @@ type Props<T extends string> = {
 // the Linear/Vercel/Notion pattern). Controlled (value + onChange) so it drives both
 // URL-state callers (the search toggle) and local-useState callers (favoris tab,
 // commandes filter). useId() gives each instance a unique layoutId so two controls on
-// the same page never animate into each other. Uniform option width within the track
-// (flex-1 + min-w — the iOS pattern). Reduced motion snaps instead of springing.
+// the same page never animate into each other. Options size to content (shrink-0 +
+// whitespace-nowrap, same as the disabled branch below) — a longer label on a narrow
+// track was breaking across two lines under the old flex-1 + min-w-20 uniform-width rule
+// (founder ruling, 2026-09-06); fixing that wrap is this component's only sanctioned
+// change here — the pill fill and container stay exactly as shipped. Reduced motion
+// snaps instead of springing.
 export function SegmentedControl<T extends string>({
   options,
   value,
@@ -80,7 +84,7 @@ export function SegmentedControl<T extends string>({
             role="tab"
             aria-selected={isActive}
             onClick={() => onChange(option.value)}
-            className={`relative min-w-20 flex-1 rounded-full px-4 py-1.5 text-sm font-medium transition-colors duration-200 ${FOCUS_RING} ${
+            className={`relative shrink-0 whitespace-nowrap rounded-full px-4 py-1.5 text-sm font-medium transition-colors duration-200 ${FOCUS_RING} ${
               isActive ? 'text-white' : 'text-text-muted hover:text-text-primary'
             }`}
           >

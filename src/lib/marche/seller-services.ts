@@ -56,6 +56,9 @@ export type SellerServiceRow = {
   /** True only for an `active` row when it is the freelancer's ONLY active listing — the signal
    *  that pausing or deleting THIS row would flip `freelancer_profiles.is_published` to false. */
   isLastActive: boolean
+  /** `categories.slug` via `service_listings.category_id` — drives the row thumb icon
+   *  (CATEGORY_ICONS in ServiceRow.tsx). Null for the rare uncategorized row; Wrench fallback. */
+  categorySlug: string | null
 }
 
 export type ServiceStats = {

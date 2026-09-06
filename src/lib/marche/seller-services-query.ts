@@ -22,6 +22,11 @@ function countOf(embed: { count: number }[] | { count: number } | null | undefin
   return embed?.count ?? 0
 }
 
+function one<T>(embed: T | T[] | null | undefined): T | null {
+  if (Array.isArray(embed)) return embed[0] ?? null
+  return embed ?? null
+}
+
 type ContentRow = {
   id: string
   title: string
@@ -31,6 +36,7 @@ type ContentRow = {
   admin_hidden_at: string | null
   commandes: { count: number }[] | { count: number } | null
   all_orders: { count: number }[] | { count: number } | null
+  categories: { slug: string } | { slug: string }[] | null
 }
 
 // Africa/Tunis has been a fixed UTC+1 offset year-round since Tunisia abolished DST in 2005 — no
@@ -102,7 +108,7 @@ export const getSellerServices = cache(
       .from('service_listings')
       .select(
         `id, title, description, starting_price_tnd, status, admin_hidden_at,
-         commandes:orders(count), all_orders:orders(count)`,
+         commandes:orders(count), all_orders:orders(count), categories(slug)`,
       )
       .eq('freelancer_profile_id', freelancerProfileId)
       .neq('commandes.status', 'cancelled')
@@ -138,6 +144,7 @@ export const getSellerServices = cache(
       ordersCount: countOf(r.commandes),
       hasOrders: countOf(r.all_orders) > 0,
       isLastActive: r.status === 'active' && activeCount === 1,
+      categorySlug: one(r.categories)?.slug ?? null,
     }))
 
     const stats = await getServiceStats(supabase, ownerId, activeCount, counts.all)

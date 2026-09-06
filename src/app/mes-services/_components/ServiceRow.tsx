@@ -4,7 +4,8 @@ import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { toast } from 'sonner'
-import { Wrench, MoreVertical } from 'lucide-react'
+import { Wrench, MoreVertical, Code, Palette, Megaphone, Video, FileText, Briefcase, Camera, BarChart3 } from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
 import { t, type Lang } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
 import { FOCUS_RING } from '@/components/layout/styles'
@@ -33,11 +34,28 @@ import { DeleteServiceModal } from './DeleteServiceModal'
 // disabled because H6/H7 don't exist in code yet, same "coming soon" tooltip H4's inert CTAs use.
 // The kebab is Activer/Mettre en pause (not Dupliquer/Partager, which the generic Kebab Menu master
 // component draws but nothing in the schema or this app's plumbing backs).
+
+// Founder-ruled, NOT measured against Figma (2026-09-06): `public.categories` has no icon column
+// and its flat slugs don't reconcile with service-categories.ts's richer taxonomy (see
+// docs/follow-ups.md, "Service Row's category-specific thumb icon"). Keyed to the 8 real
+// `categories.slug` values under kind='service' — Wrench stays the fallback for null/unmapped.
+const CATEGORY_ICONS: Record<string, LucideIcon> = {
+  developpement: Code,
+  'design-creation': Palette,
+  marketing: Megaphone,
+  'montage-video': Video,
+  redaction: FileText,
+  'business-conseil': Briefcase,
+  ugc: Camera,
+  'data-science-analyse': BarChart3,
+}
+
 export function ServiceRow({ service, lang }: { service: SellerServiceRow; lang: Lang }) {
   const [pending, startTransition] = useTransition()
   const [modal, setModal] = useState<'none' | 'cascade-pause' | 'cascade-delete' | 'delete-confirm'>('none')
   const router = useRouter()
 
+  const CategoryIcon = (service.categorySlug && CATEGORY_ICONS[service.categorySlug]) || Wrench
   const isModerated = service.adminHiddenAt != null
   const isActive = service.status === 'active'
 
@@ -74,7 +92,7 @@ export function ServiceRow({ service, lang }: { service: SellerServiceRow; lang:
     <li className="flex flex-col gap-3 border-b border-border-subtle p-4 last:border-b-0 lg:flex-row lg:items-center lg:gap-6 lg:px-6 lg:py-4">
       <div className="flex min-w-0 flex-1 items-center gap-4">
         <span className="flex size-12 shrink-0 items-center justify-center rounded-lg bg-brand-blue-50">
-          <Wrench className="size-5 text-brand-blue-600" aria-hidden="true" />
+          <CategoryIcon className="size-5 text-brand-blue-600" aria-hidden="true" />
         </span>
         <div className="flex min-w-0 flex-1 flex-col gap-1">
           <p className="truncate text-body font-semibold text-text-primary">{service.title}</p>

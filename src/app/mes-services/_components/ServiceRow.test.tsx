@@ -56,6 +56,7 @@ const BASE: SellerServiceRow = {
   ordersCount: 5,
   hasOrders: true,
   isLastActive: false,
+  categorySlug: 'design-creation',
 }
 
 function renderRow(overrides: Partial<SellerServiceRow> = {}) {

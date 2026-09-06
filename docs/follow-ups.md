@@ -3438,3 +3438,52 @@ coupling" claim on that specific function is stale, not a remaining blocker.
   `service-categories.ts` `id`) → then `seller-services-query.ts` can join `category_id` → slug →
   `serviceCategories.find(c => c.id === slug)?.icon` → a lucide icon-name→component lookup in
   `ServiceRow.tsx`.
+- **✅ RESOLVED — `feat/h5-mes-services`, 2026-09-06.** Founder ruling: build it now against the 8
+  real `categories.slug` values under `kind='service'` (`developpement`, `design-creation`,
+  `marketing`, `montage-video`, `redaction`, `business-conseil`, `ugc`, `data-science-analyse` —
+  confirmed live via `select slug, kind from categories`), independent of the taxonomy
+  reconciliation above. `seller-services-query.ts` now joins `categories(slug)` and
+  `SellerServiceRow.categorySlug` carries it through; `ServiceRow.tsx` holds a static
+  `CATEGORY_ICONS` record (Code/Palette/Megaphone/Video/FileText/Briefcase/Camera/BarChart3),
+  `Wrench` fallback for null/unmapped. The icon choices are founder-ruled, not measured against
+  Figma — if the taxonomy migration above ever lands, re-derive from `service-categories.ts`'s own
+  `icon` field instead of keeping this record as a second source of truth.
+
+### Segmented control's selected-pill fill vs. H5's own frame — new sighting on the open consolidation question above
+
+- Surfaced during the same H5 fidelity re-pass (2026-09-06) that produced the category-icon
+  ruling above, and adds a fourth data point to the still-open **"`SegmentedControl`'s solid blue
+  pill vs. the quiet frame — founder-ruled for F1, four implementations still unconsolidated"**
+  entry a few sections up in this same file: the shipped
+  `SegmentedControl` (`src/components/ui/segmented-control.tsx`) renders its selected tab as a
+  solid `bg-brand-blue-600` pill with white label text; H5's own status-tabs frame (244:726)
+  appears, from screenshot inspection, to show a white-pill-on-grey-track treatment instead — the
+  same "quiet" look that entry already confirmed for F1's frame (`718:60584`, `surface-sunken`
+  tokens) against this component's blue-fill default.
+- **Unverified, not folded into that entry's evidence table yet** — both available Figma read
+  paths (`get_design_context` and a `get_metadata` fill-inspection on the pill node) were
+  exhausted before a clean fill-color read on 244:726 came back, and a
+  screenshot-only comparison is exactly the kind of cross-zoom read this file has been burned by
+  before (see the row-height sighting from this same fidelity pass — screenshot vs. Figma image at
+  different zooms, no real divergence once DOM-measured). Do not treat this sighting as confirming
+  244:726 is "quiet" — only that it looks that way, same evidentiary bar the existing entry already
+  holds itself to for its two unchecked callers.
+- **`SegmentedControl`'s actual current callers, re-counted against the live tree (grep +
+  DOM-verified render, not memory) — the caller list in the existing entry is now stale in three
+  places, so re-verify before scoping the consolidation PR:** only **two** call sites render
+  today — `src/app/mes-services/_components/ServiceFiltersBar.tsx` (H5 status tabs, this PR) and
+  `src/app/mes-produits/[id]/modifier/_components/EditProductForm.tsx` (product status toggle) —
+  both DOM-confirmed live at 40px on 2026-09-06. The third importer,
+  `src/components/dashboard/shell/SharedSearchBar.tsx`, is **unreachable**: it renders only under
+  `DashboardTopBar` → `DashboardShellClient`, which this same file already documents as having
+  zero render call sites anywhere in `src` (see "`DashboardSidebar.tsx` has a stale
+  `/mes-missions` href — left alone, dead code"). `/marche/produits` and `/recherche` were gated
+  for it and produced no `[role="tablist"]` at all. `FavorisTabs` (F1) no longer imports
+  `SegmentedControl` per that entry's own fix, and the `ParametresForm` FR/AR toggle it names does
+  not exist under that name in the current tree (`ParametresShell.tsx` carries no
+  `SegmentedControl` import). Net: a fill change would repaint two live surfaces, not four.
+- **Not fixed here** — same reasoning the existing entry already gives: one component's default
+  fill is a design-system consolidation question, not a drive-by inside an H5 (or F1) page fix.
+- **Trigger:** unchanged from the existing entry, now with a confirmed third frame (244:726) to
+  pull alongside `718:60584`, `EditProductForm`'s and `SharedSearchBar`'s call sites — resolve all
+  of it together in one design-system PR rather than another per-page patch.
