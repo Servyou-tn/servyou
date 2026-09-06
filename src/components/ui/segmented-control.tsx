@@ -37,6 +37,12 @@ type Props<T extends string> = {
 // (founder ruling, 2026-09-06); fixing that wrap is this component's only sanctioned
 // change here — the pill fill and container stay exactly as shipped. Reduced motion
 // snaps instead of springing.
+//
+// ⚑ DO NOT restore uniform width by re-adding flex-1 + min-w-20, even with the nowrap kept:
+// measured at 375 in AR, that combination gives every tab an 85px content box and H5's
+// "متوقفة مؤقتًا" needs 85px of text alone, so nowrap stops the two-line break by spilling the
+// label OUTSIDE its own pill instead (DOM-verified: scrollWidth > clientWidth, label rect
+// escaping the button rect). Content sizing is what actually stops the starving.
 export function SegmentedControl<T extends string>({
   options,
   value,
