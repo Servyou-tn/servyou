@@ -956,6 +956,7 @@ export const ar: Record<string, string> = {
   'service.col_status':               "الحالة",
   'service.col_price':                "السعر",
   'service.col_orders':               "الطلبات",
+  'service.row_orders_label':         "الطلبات",
   'service.status_paused':            "متوقفة مؤقتًا",
   'service.status_moderated':         "أُخفيت من قبل الإشراف",
   'service.action_view':              "عرض",

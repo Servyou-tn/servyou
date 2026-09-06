@@ -246,16 +246,22 @@ undo them. A closed decision is not a deferral.
      accessibility failure that reached production),
   3. a **size** again on `OrderRail`'s stepper labels — 12px labels rendered at the inherited 16px
      inside a 16px line box on **both** G9 and E3.
-- **Full inventory (scanned across every `cn()` site in `src/`): 4.** Two were closed in
-  `feat/orders-snapshot-wiring` because they were visible and one of them was a named G9 delta:
+- **Full inventory (scanned across every `cn()` site in `src/`): 4** at last count, **+2 more found
+  and closed 2026-09-06 during H5's fidelity pass** (DOM-verified live, not just grep — see H5's own
+  entry above), **+1 sibling spotted while fixing those** (same file shape, a different route, not
+  touched — one-PR-one-focus). Running total: **7**. Two were closed in `feat/orders-snapshot-wiring`
+  because they were visible and one of them was a named G9 delta:
   | site | loses | state |
   |---|---|---|
   | `components/orders/OrderRail.tsx` label | `text-caption` (12→16) | ✅ **closed** — plain template |
   | `tableau-de-bord-vendeur/_components/Panel.tsx` link | `text-body-sm` (14→16) | ✅ **closed** — plain template |
   | `app/commandes-recues/page.tsx` tab | `text-body` | ⚠ **open — latent**, inherited size is also 16 so nothing renders wrong *today* |
   | `app/commandes-recues/_components/SortSelect.tsx` | `text-body` | ⚠ **open — latent**, same |
-  The two open ones are **landmines, not defects**: they are invisible only because 16px happens to
-  be the inherited size. Any future change to the ancestor's size makes them wrong silently.
+  | `mes-services/_components/ServicesList.tsx` table-header labels | `text-caption` (12→16) | ✅ **closed** 2026-09-06 — plain template (DOM-verified: `fontSize` 16px through `cn()`, 12px after) |
+  | `mes-services/_components/ServiceRow.tsx` "Voir" link | `text-body-sm` (14→16) | ✅ **closed** 2026-09-06 — plain template (DOM-verified) |
+  | `mes-produits/_components/ProductRow.tsx` "Modifier" link | `text-body-sm` (14→16, presumed) | ⚠ **open — not verified live, not fixed**. Byte-identical `cn()` string to ServiceRow's own "Voir" link, on an already-shipped G5 route — out of an H5 PR's scope. |
+  The `⚠ open` rows are **landmines, not defects**: several are invisible only because 16px happens
+  to be the inherited size. Any future change to the ancestor's size makes them wrong silently.
 - **The local fix used, and why it is the right shape:** drop `cn()` and use a plain template
   string. Class ORDER is not a guard rail — reordering "fixes" it until the next edit reorders it
   back, and that is how instance 3 happened after instance 1 was understood. Removing the merge
@@ -3409,3 +3415,26 @@ coupling" claim on that specific function is stale, not a remaining blocker.
   exists to stop, however small.
 - **Trigger:** its own tiny PR — translate to something like "قريبًا" or "متاح قريبًا" and
   re-verify every consumer's AR render (sidebar, admin nav, ParametresForm, H5 now too).
+
+### Service Row's category-specific thumb icon — real column, no icon data behind it (founder to rule)
+
+- **Founder's own H5 fidelity pass (2026-09-06)** asked whether the row's per-category glyph (Figma
+  258:7898's `thumb-icon`, swapped per service — palette/code/video/file-text/megaphone/languages)
+  maps to a real column, and to report rather than invent a mapping if not.
+- **What's real:** `service_listings.category_id` (migration `20260625000000`) is a genuine FK to
+  `public.categories`. It is currently NOT selected in `seller-services-query.ts` — `SellerServiceRow`
+  carries no category field at all, and `ServiceRow.tsx` renders a single hardcoded `Wrench` glyph
+  for every row regardless of category.
+- **Why it's not a simple wire-up:** `public.categories` (flat, 14 rows, migration `20260603182553`)
+  has NO icon column — icons exist only in the separate `src/lib/taxonomy/service-categories.ts`
+  (13 richer sectors: `dev-web-mobile`, `design-graphique`, …, each with a lucide `icon` name). The
+  DB's flat service-kind slugs (`developpement`, `design-creation`, `marketing`, `montage-video`,
+  `redaction`, `business-conseil`, `ugc`, `data-science-analyse` — from `20260804132447`'s backfill)
+  do not line up 1:1 with the TS taxonomy's slugs, and reconciling them is the deferred taxonomy
+  migration [[project_service_taxonomy]] already tracks, not this PR's scope.
+- **Not fixed here** — per the founder's own instruction not to invent a mapping. Thumb stays the
+  generic `Wrench` glyph for every row.
+- **Trigger:** the taxonomy reconciliation migration lands (DB `categories.slug` aligned with
+  `service-categories.ts` `id`) → then `seller-services-query.ts` can join `category_id` → slug →
+  `serviceCategories.find(c => c.id === slug)?.icon` → a lucide icon-name→component lookup in
+  `ServiceRow.tsx`.

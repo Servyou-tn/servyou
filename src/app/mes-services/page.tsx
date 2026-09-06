@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { Plus, Wrench } from 'lucide-react'
+import { Wrench, LayoutGrid, Inbox, CheckCircle, TrendingUp } from 'lucide-react'
 import { AppShell } from '@/components/shell/AppShell'
 import { Pagination } from '@/components/shared/Pagination'
 import { requireFreelancer } from '@/lib/auth/require-seller'
@@ -80,7 +80,9 @@ export default async function MesServicesPage({
   }
 
   const tab = parseTab(first(sp.statut))
-  const sort = parseSort(first(sp.tri))
+  const rawSort = first(sp.tri)
+  const sort = parseSort(rawSort)
+  const sortExplicit = rawSort !== undefined && (SERVICE_SORTS as readonly string[]).includes(rawSort)
   const q = first(sp.q) ?? ''
   const page = Math.max(1, Number(first(sp.page) ?? '1') || 1)
   const data = await getSellerServices(freelancerProfile.id, userId, { tab, page, q, sort })
@@ -94,21 +96,29 @@ export default async function MesServicesPage({
           <StatTile
             label={t('service.stats.active_label', lang)}
             value={String(data.stats.activeCount)}
+            icon={LayoutGrid}
+            accent="blue"
             subtitle={t('service.stats.active_subtitle', lang, { total: data.stats.totalCount })}
           />
           <StatTile
             label={t('service.stats.pending_label', lang)}
             value={String(data.stats.pendingOrders)}
+            icon={Inbox}
+            accent="warning"
             subtitle={t('service.stats.pending_subtitle', lang)}
           />
           <StatTile
             label={t('service.stats.received_label', lang)}
             value={String(data.stats.receivedOrders)}
+            icon={CheckCircle}
+            accent="success"
             subtitle={t('service.stats.received_subtitle', lang)}
           />
           <StatTile
             label={t('service.stats.month_label', lang)}
             value={String(data.stats.thisMonthOrders)}
+            icon={TrendingUp}
+            accent="blue"
             delta={{
               direction: data.stats.monthDelta > 0 ? 'up' : data.stats.monthDelta < 0 ? 'down' : 'flat',
               text: t(
@@ -143,7 +153,7 @@ export default async function MesServicesPage({
           </div>
         ) : (
           <>
-            <ServiceFiltersBar tab={tab} q={q} sort={sort} counts={data.counts} lang={lang} />
+            <ServiceFiltersBar tab={tab} q={q} sort={sort} sortExplicit={sortExplicit} lang={lang} />
 
             {data.services.length === 0 ? (
               <p className="rounded-2xl border border-border-subtle bg-surface-base px-6 py-10 text-center text-body text-text-secondary">
@@ -175,7 +185,10 @@ function Header({ lang }: { lang: Awaited<ReturnType<typeof getLang>> }) {
         <p className="text-body-sm text-text-secondary">{t('service.list_subtitle', lang)}</p>
       </div>
       {/* INERT — H6 never shipped in code (no /mes-services/creer route). A real Link here would
-          404; flip to one the moment that route lands, same rule H4's own header CTA documents. */}
+          404; flip to one the moment that route lands, same rule H4's own header CTA documents.
+          Figma 242:8100's own Button instance renders no separate icon — the "+" is baked into the
+          label text itself (measured via get_design_context, 2026-09-06); a lucide <Plus> alongside
+          it doubled the glyph. */}
       <button
         type="button"
         disabled
@@ -183,7 +196,6 @@ function Header({ lang }: { lang: Awaited<ReturnType<typeof getLang>> }) {
         title={t('marche.sidebar.coming_soon', lang)}
         className="inline-flex h-10 w-fit shrink-0 cursor-not-allowed items-center justify-center gap-2 rounded-lg bg-brand-blue-600/40 px-4 text-base font-semibold text-text-inverse opacity-70"
       >
-        <Plus className="h-4 w-4 shrink-0" aria-hidden="true" />
         {t('service.add_btn', lang)}
       </button>
     </div>

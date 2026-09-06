@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { toast } from 'sonner'
 import { Wrench, MoreVertical } from 'lucide-react'
-import { t, tn, type Lang } from '@/lib/i18n'
+import { t, type Lang } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
 import { FOCUS_RING } from '@/components/layout/styles'
 import { StatusPill } from '@/components/ui/status-pill'
@@ -76,7 +76,7 @@ export function ServiceRow({ service, lang }: { service: SellerServiceRow; lang:
         <span className="flex size-12 shrink-0 items-center justify-center rounded-lg bg-brand-blue-50">
           <Wrench className="size-5 text-brand-blue-600" aria-hidden="true" />
         </span>
-        <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+        <div className="flex min-w-0 flex-1 flex-col gap-1">
           <p className="truncate text-body font-semibold text-text-primary">{service.title}</p>
           {service.description ? (
             <p className="truncate text-body-sm text-text-secondary">{service.description}</p>
@@ -90,19 +90,19 @@ export function ServiceRow({ service, lang }: { service: SellerServiceRow; lang:
         </div>
         <StatCol label={t('service.from_price', lang)} value={tndPrice(service.priceTnd)} className="lg:w-[120px]" />
         <StatCol
-          label={t('service.col_orders', lang)}
-          value={tn('seller.orders.count', lang, service.ordersCount)}
+          label={t('service.row_orders_label', lang)}
+          value={String(service.ordersCount)}
           className="lg:w-[130px]"
         />
       </div>
 
       <div className="flex shrink-0 items-center gap-2">
+        {/* Plain template, NOT `cn()` — `text-body-sm` (size) + `text-text-secondary` (colour) is
+            exactly the pair tailwind-merge cannot classify and silently evicts the size from (DOM-
+            verified here: 14px rendered as 16px through cn()). docs/follow-ups.md's tracked class. */}
         <Link
           href={`/services/${service.id}`}
-          className={cn(
-            'inline-flex h-9 items-center rounded-lg border border-border-subtle px-3 text-body-sm font-medium text-text-secondary hover:bg-surface-subtle',
-            FOCUS_RING,
-          )}
+          className={`inline-flex h-9 items-center rounded-lg border border-border-subtle px-3 text-body-sm font-medium text-text-secondary hover:bg-surface-subtle ${FOCUS_RING}`}
         >
           {t('service.action_view', lang)}
         </Link>

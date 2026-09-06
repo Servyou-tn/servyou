@@ -939,6 +939,9 @@ export const fr: Record<string, string> = {
   'service.col_status':               "Statut",
   'service.col_price':                "Prix",
   'service.col_orders':               "Commandes",
+  // Row-cell label, distinct from the header above — Figma 258:7898's own "commandes" text node
+  // is lowercase (mirrors "À partir de" sitting over the price value), not the header's "Commandes".
+  'service.row_orders_label':         "commandes",
   // "paused" is products' own StatusValue key (tone neutral) — H5's pill uses that SAME status key
   // but this label, since the measured word is "Mis en pause", not "Masqué" (products' word).
   'service.status_paused':            "Mis en pause",
