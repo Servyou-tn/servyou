@@ -3427,8 +3427,8 @@ coupling" claim on that specific function is stale, not a remaining blocker.
   for every row regardless of category.
 - **Why it's not a simple wire-up:** `public.categories` (flat, 14 rows, migration `20260603182553`)
   has NO icon column — icons exist only in the separate `src/lib/taxonomy/service-categories.ts`
-  (13 richer sectors: `dev-web-mobile`, `design-graphique`, …, each with a lucide `icon` name). The
-  DB's flat service-kind slugs (`developpement`, `design-creation`, `marketing`, `montage-video`,
+  (13 richer sectors: `developpement-web-mobile`, `design-graphique-logo`, …, each with a lucide
+  `icon` name). The DB's flat service-kind slugs (`developpement`, `design-creation`, `marketing`, `montage-video`,
   `redaction`, `business-conseil`, `ugc`, `data-science-analyse` — from `20260804132447`'s backfill)
   do not line up 1:1 with the TS taxonomy's slugs, and reconciling them is the deferred taxonomy
   migration [[project_service_taxonomy]] already tracks, not this PR's scope.
@@ -3506,3 +3506,37 @@ coupling" claim on that specific function is stale, not a remaining blocker.
   screenshot-checked via `scripts/gate/authed.mjs`-pattern CDP runs, 2026-09-07. The original
   entry's premise (four unconsolidated implementations) is now stale in the same way its own caller
   list was — closing both as resolved for the two implementations that actually exist.
+
+## 13-sector service taxonomy reconciliation, PR 1 (`feat/taxonomy-13-sectors`, 2026-09-07)
+
+### Skills pools for the 5 new service sectors — FOUNDER-UNREVIEWED, feed H6's type-ahead
+
+- The 5 sectors added in the 13-sector reconciliation (`community-management`,
+  `voix-off-doublage`, `personal-branding`, `coaching-meta-ads`, `coaching-ecommerce`) each carry
+  a first-pass skills pool written by CC — not sourced from a measured Figma frame, the locked
+  doc (which has no skills content at all), or prior art. Flagged `FOUNDER-UNREVIEWED` inline on
+  each `skills:` array in `src/lib/taxonomy/service-categories.ts`.
+- **Why it matters:** `skills` is the exact pool H6's type-ahead suggests from as a freelancer
+  types — these strings render verbatim on screen. Skills are matched BY STRING (no skill
+  entity/slug yet), so a wording change made after H6 ships would split one skill into two on
+  the `/marche/services` filter instead of cleanly renaming it.
+- **Founder's instruction (2026-09-07):** review these 5 pools when H6 "Créer un service" is
+  actually built and the picker is on screen — not before, and not from reading the file in the
+  abstract.
+- **Not fixed here** — a starter list is exactly what was asked for at this stage; the point of
+  this entry is only to make sure the review actually happens.
+- **Trigger:** H6 reaches a reviewable state (wizard + skill-combo on screen).
+
+### `coaching-ecommerce` sector id — hyphenation mismatch against the doc, left as-is (founder to rule)
+
+- The reconciliation pass in this PR renamed 5 sector ids to match the locked doc's naming
+  exactly (`dev-web-mobile` → `developpement-web-mobile`, `design-graphique` →
+  `design-graphique-logo`, `traduction-langues` → `traduction`, `video-animation` →
+  `montage-video-motion`, `conseil-assistance` → `consulting-assistanat`).
+- **Not renamed:** `coaching-ecommerce`. The doc's heading is "Coaching e-commerce" (hyphenated);
+  the file's own stated slug rule would derive `coaching-e-commerce`. Left alone because this is
+  a hyphenation variant of the same name, not a naming mismatch like the five above, and it
+  wasn't part of the founder's explicit rename instruction.
+- **Trigger:** none set — this is a standing offer, not a deadline. Still free to rename now
+  (nothing in `src/` imports this file yet); becomes a migration, not a diff, once PR 2 persists
+  real `category_id` values against it.
