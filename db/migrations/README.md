@@ -97,6 +97,40 @@ These 45 migrations represent the entire schema history of Servyou from initial 
 
 Migration 13 includes a one-row data UPDATE (legacy `'completed'` → `'received'`) because the constraint widening required the legacy row to be reconciled with the new allowed value set. Migration 14 closes the pre-existing wide-open RLS UPDATE policy by adding DB-level transition enforcement above the row-gating policy.
 
+**Numbering note:** this numbered list stopped being kept current after entry 48 — 12 migrations
+(`20260804104541` through `20260905194951`) landed in the folder without a corresponding entry
+here. That gap predates and is unrelated to the entry below; backfilling it is out of scope for
+this PR and is not attempted here.
+
+49. **20260907222557_taxonomy_13_sectors_categories_cutover** — Cutover from the original 8 flat
+    service categories (seeded by migration 4, extended by migration 17) to the 13-sector /
+    91-subcategory taxonomy locked in `docs/design/taxonomy-services.md` and reconciled into
+    `src/lib/taxonomy/service-categories.ts` by the prior PR (#172). Forced ordering: insert the
+    13 sectors → backfill all 21 `service_listings` + 4 `job_posts` that pointed at the old 8
+    (by id, not title; founder-ruled fan-out for 8 of the 21 listings, since 5 of the 13 sectors
+    are new and exist precisely to hold services the old 8 had no bucket for) → assert the old 8
+    are fully drained (checked against all five inbound FKs, including `shop_categories`, the one
+    that CASCADEs rather than SET NULLs) → delete the old 8 → insert the 91 subcategories. That
+    last step must follow the delete: the subcategory `montage-video` (under
+    `montage-video-motion`) collides with the just-deleted sector slug of the same name under
+    `categories_slug_key`'s table-wide uniqueness — the only collision across all 104 new slugs.
+    Also adds `enforce_service_category_kind()` (mirrors `job_response_fairness_trigger`'s shape:
+    plpgsql, `SECURITY DEFINER`, pinned `search_path`, French user-facing message), a `BEFORE
+    INSERT OR UPDATE OF category_id` trigger on both `service_listings` and `job_posts` enforcing
+    `kind in ('service','both')` — the DB half of the read contract migration
+    `categories_kind_discriminator` documented but never enforced. NULL `category_id` is exempt
+    (2 pre-existing `job_posts` test fixtures carry it and are left untouched — neither founder
+    ruling mapped them). The symmetric `products` / `kind in ('product','both')` guard is a real
+    gap, deliberately not installed here (logged in `docs/follow-ups.md`). Final in-transaction
+    verification (13 sectors, 91 subcategories, 0 categories left under any of the 8 legacy slugs
+    at the root, 0 `service_listings` with a null category, 0 `job_posts` that lost a category
+    excluding the 2 known-null fixtures, 0 rows filed under a non-service category, 0 orphaned
+    subcategories) raises and rolls back the whole migration on any failure rather than reporting
+    after the fact. Companion app-code fix in the same PR: `getCategories()`
+    (`src/lib/marche/my-data.ts`, backing `/mes-annonces/nouvelle`) gained `.is('parent_id', null)`
+    — without it the picker would have silently grown from ~9 options to 105 the moment this
+    migration made `categories` a real parent/child table for the first time.
+
 ## Rollback paths
 
 Each migration in this folder represents work that has already been applied to production. Rollback is therefore reverse migration work, not file deletion. If a rollback is ever needed, write a new dated migration that reverses the relevant changes — never delete history from this folder.

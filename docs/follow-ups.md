@@ -3527,7 +3527,7 @@ coupling" claim on that specific function is stale, not a remaining blocker.
   this entry is only to make sure the review actually happens.
 - **Trigger:** H6 reaches a reviewable state (wizard + skill-combo on screen).
 
-### `coaching-ecommerce` sector id — hyphenation mismatch against the doc, left as-is (founder to rule)
+### ✅ `coaching-ecommerce` sector id — hyphenation mismatch against the doc — RESOLVED: staying, founder-ruled
 
 - The reconciliation pass in this PR renamed 5 sector ids to match the locked doc's naming
   exactly (`dev-web-mobile` → `developpement-web-mobile`, `design-graphique` →
@@ -3537,6 +3537,98 @@ coupling" claim on that specific function is stale, not a remaining blocker.
   the file's own stated slug rule would derive `coaching-e-commerce`. Left alone because this is
   a hyphenation variant of the same name, not a naming mismatch like the five above, and it
   wasn't part of the founder's explicit rename instruction.
-- **Trigger:** none set — this is a standing offer, not a deadline. Still free to rename now
-  (nothing in `src/` imports this file yet); becomes a migration, not a diff, once PR 2 persists
-  real `category_id` values against it.
+- **Founder ruling (2026-09-07, `feat/taxonomy-13-sectors-db-migration`):** stays as
+  `coaching-ecommerce`. Reasoning: slugs drop punctuation consistently across the whole file
+  (`e-commerce` under `developpement-web-mobile` is the one counterexample that keeps its hyphen
+  because it's already the standalone word "e-commerce," not a punctuation-glued compound like
+  "Coaching e-commerce" would be) — closing this as resolved rather than a standing offer, now
+  that `coaching-ecommerce` is persisted as real `category_id` values (this PR's cutover
+  migration) and a rename is a migration, not a diff.
+- **Trigger:** none — closed.
+
+## 13-sector service taxonomy, PR 2 — DB cutover (`feat/taxonomy-13-sectors-db-migration`, 2026-09-07)
+
+### Product photography has no home in the 13 sectors — BLOCKING-ISH for H6
+
+- The `ugc` sector is retired by the PR 2 cutover, and its one live listing —
+  **"Photo produits e-commerce"** (`e5bec0f8-00d7-456a-a89b-39d959a251bc`) — was founder-ruled
+  into `design-graphique-logo` as a **placeholder**, not because it belongs there.
+- Photography is genuinely absent from the taxonomy: none of `design-graphique-logo`'s 8
+  subcategories cover it, and the only `photo-*` slug among all 91 is `photo-de-profil` under
+  `personal-branding` (a headshot for a LinkedIn profile — not product shoots). The old
+  `retouche-photo` subcategory that would have been the nearest fit was dropped in PR 1.
+- **Why it matters:** product photography is a real service Tunisian freelancers sell, and it is
+  directly adjacent to the COD e-commerce market Servyou is built around. Once H6 "Créer un
+  service" ships, freelancers pick from this list — a photographer either mis-files under
+  Design graphique or bounces. Fixing it after freelancers have filed against the list means a
+  data migration, not a taxonomy edit.
+- **The decision owed:** a photography subcategory under `design-graphique-logo`, or its own
+  sector. Not CC's call — it changes the locked 13, which was a founder decision.
+- **Not fixed in PR 2** — founder-ruled explicitly: log it, don't hold the migration for it.
+- **Trigger:** before H6 ships. Blocking for H6, not for the cutover.
+
+### Symmetric `kind` guard on `products.category_id` — not installed
+
+- PR 2 adds `enforce_service_category_kind()`, a cross-table trigger asserting that
+  `service_listings.category_id` and `job_posts.category_id` resolve to a category with
+  `kind in ('service','both')`. A CHECK constraint cannot reference another table, hence a trigger.
+- The mirror-image guard on `products.category_id` (`kind in ('product','both')`) was **not**
+  installed — out of PR 2's focus, which is the service taxonomy.
+- **Why it matters:** `20260804132447_categories_kind_discriminator` documented the
+  `kind in (...)` read contract for consumers but enforced nothing at the DB layer. Until the
+  products half exists, nothing stops a product being filed under a service category — the exact
+  hole the service half just closed.
+- **Trigger:** next migration that touches `products` or the product taxonomy.
+
+### 🔴 Tests that pass while the feature is broken — a named class, joining twMerge + Turbopack route-index staleness
+
+- **What happened this time:** `src/__tests__/mission-category-picker.test.ts` mocks the Supabase
+  query builder and asserts on the `.in('kind', …)` call only. When the 13-sector taxonomy cutover
+  (`feat/taxonomy-13-sectors-db-migration`) turned `categories` from flat into a parent/child table,
+  `getCategories()` (`src/lib/marche/my-data.ts`) needed a `.is('parent_id', null)` filter or the
+  `/mes-annonces/nouvelle` picker would silently grow from ~9 options to 105 (13 sectors + 91
+  subcategories + `maison`). Nothing in the test suite would have caught the regression if the
+  filter had simply been forgotten: the mocked builder had no `.is()` method at all, so an
+  unguarded real fix would have thrown at the mock layer (a false negative in the OTHER
+  direction — the suite fails even though the fix is correct), and once the mock is taught the
+  method, the suite goes back to green whether or not the real code calls it, because nothing
+  asserts the call happened.
+- **Why it matters, and why it's the same shape as the other two:** a mocked query-builder test
+  proves the code *asks the mock in a way the mock understands* — it does not prove the code asks
+  the right question. This is the same class as the twMerge finding above (`cn()` drops a class
+  with a green build and no error) and the Turbopack route-index staleness finding: a passing
+  green run is being read as "verified," when what it actually verified is narrower than the
+  claim. Each instance has looked different (a string-merge utility, a dev-server cache, a mocked
+  DB client) but the failure mode is identical: the thing that should fail loudly instead says
+  nothing.
+- **Not fixed here** — the picker's own bug (item 1, this session) IS fixed
+  (`feat/taxonomy-13-sectors-db-migration`); this entry is about the test's blind spot surviving
+  the fix, not the bug itself. Adding a real `.is('parent_id', null)` assertion is a small, safe
+  follow-up that wasn't in scope for the taxonomy PR.
+- **The standing pattern to watch for:** any test that mocks a query builder / cache / string-merge
+  utility at the API-shape level (asserts "this method was called with these args") rather than the
+  outcome level (asserts "this is what actually got returned/rendered/filtered") will keep passing
+  through a regression in ANY clause it doesn't explicitly assert on. Before trusting such a test as
+  a regression gate, check whether it asserts the *complete* query shape or only the *one* clause
+  the last incident happened to be about.
+- **Trigger:** next time `getCategories()`'s test is touched, add the missing `.is()` assertion.
+  No urgency — the real code is now correct; only the safety net has a hole.
+
+### Subcategory drill-down strip on `/categories/[slug]` goes live unreviewed for the first time
+
+- **What:** `getSubcategories()` (`src/lib/categories/category-data.ts`) has returned `[]` for
+  every category since it was written, because `categories.parent_id` was NULL on every row — its
+  own comment says as much ("flat today … returns [] for every category until a nesting migration
+  adds parent/child relationships"). The 13-sector taxonomy cutover
+  (`feat/taxonomy-13-sectors-db-migration`) IS that nesting migration: all 13 service sectors now
+  have real children, so the drill-down strip on `/categories/[slug]` renders actual content for
+  the first time on any of those 13 sector pages.
+- **Why it matters:** this UI shipped and has sat inert long enough that nobody has reviewed how it
+  looks with real data — copy overflow at 7-item sectors (`developpement-web-mobile`) vs 8-item
+  ones (`design-graphique-logo`), AR/RTL wrapping on the longer subcategory labels, mobile reflow.
+  It was accepted as fallout of the cutover (founder ruling, 2026-09-07) rather than held for
+  review, on the grounds that the 8 old flat categories 404 either way and a live-but-unpolished
+  strip is strictly better than a 404.
+- **Not fixed here** — out of the migration PR's focus; a visual-gate pass, not a schema change.
+- **Trigger:** next PR that touches `/categories/[slug]` or the drill-down strip specifically —
+  or before considering that route "done," whichever comes first.

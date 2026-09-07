@@ -56,7 +56,7 @@ const BASE: SellerServiceRow = {
   ordersCount: 5,
   hasOrders: true,
   isLastActive: false,
-  categorySlug: 'design-creation',
+  categorySlug: 'design-graphique-logo', // real destination for this title post-taxonomy-cutover
 }
 
 function renderRow(overrides: Partial<SellerServiceRow> = {}) {
