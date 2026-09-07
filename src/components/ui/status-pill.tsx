@@ -20,7 +20,7 @@ export type StatusValue =
   | 'new' | 'best-seller' | 'sale' | 'stock-faible' | 'rupture-stock' | 'acceptee' | 'expediee'
   | 'arrivee' | 'ouverte' | 'pourvue' | 'expiree' | 'disponible' | 'occupe' | 'vacances' | 'suspendu'
   | 'masqué' | 'préparée' | 'reçue' | 'annulée' | 'refusée' | 'freelance' | 'boutique' | 'client'
-  | 'optional' | 'complete'
+  | 'optional' | 'complete' | 'moderated'
 
 type StatusTone =
   | 'success' | 'warning' | 'info' | 'info-strong' | 'accent' | 'neutral' | 'muted' | 'danger'
@@ -51,6 +51,10 @@ const STATUS_TONE: Record<StatusValue, StatusTone> = {
   paused: 'neutral', draft: 'neutral', expiree: 'neutral', vacances: 'neutral', client: 'neutral',
   withdrawn: 'muted', 'masqué': 'muted',
   cancelled: 'danger', declined: 'danger', 'rupture-stock': 'danger', suspendu: 'danger', 'annulée': 'danger', 'refusée': 'danger',
+  // H5, founder-ruled (not measured — the Figma component set has only active/paused). Danger, not
+  // neutral: a moderated listing needs to read as visually distinct from an ordinary self-pause,
+  // since the owner cannot reactivate it themselves (enforce_admin_moderation_lock).
+  moderated: 'danger',
   new: 'solid-success',
   sale: 'solid-accent',
   'best-seller': 'highlight',

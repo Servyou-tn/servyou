@@ -919,6 +919,79 @@ export const fr: Record<string, string> = {
   'service.detail.moreFromFreelancer': "Plus de services de ce freelance",
   'service.detail.similarServices':    "Services similaires",
 
+  // ─── H5 « Mes services » (/mes-services) ─────────────────────────────────────
+  'service.list_title':              "Mes services",
+  'service.list_subtitle':            "Gérez vos services : statut, tarifs et commandes.",
+  'service.add_btn':                  "+ Créer un service",
+  'service.empty':                    "Vous n'avez pas encore de services.",
+  'service.empty_cta':                "Créer votre premier service",
+  'service.tabs_aria':                "Filtrer les services par statut",
+  'service.tab.all':                  "Tous",
+  'service.tab.active':               "Actifs",
+  'service.tab.paused':               "En pause",
+  'service.tab_empty':                "Aucun service dans cet onglet.",
+  'service.search_placeholder':       "Rechercher un service...",
+  'service.sort_placeholder':         "Trier par",
+  'service.sort.recent':              "Plus récents",
+  'service.sort.price_asc':           "Prix croissant",
+  'service.sort.price_desc':          "Prix décroissant",
+  'service.col_service':               "Service",
+  'service.col_status':               "Statut",
+  'service.col_price':                "Prix",
+  'service.col_orders':               "Commandes",
+  // Row-cell label, distinct from the header above — Figma 258:7898's own "commandes" text node
+  // is lowercase (mirrors "À partir de" sitting over the price value), not the header's "Commandes".
+  'service.row_orders_label':         "commandes",
+  // "paused" is products' own StatusValue key (tone neutral) — H5's pill uses that SAME status key
+  // but this label, since the measured word is "Mis en pause", not "Masqué" (products' word).
+  'service.status_paused':            "Mis en pause",
+  // New third StatusPill state, founder-ruled (not measured — the Figma component set has only
+  // active/paused). See PR body: a self-paused vs admin-moderated listing are both status='hidden'
+  // in the DB, distinguished only by admin_hidden_at, and enforce_admin_moderation_lock blocks the
+  // owner from reactivating a moderated row — this pill is what keeps that distinction visible.
+  'service.status_moderated':         "Masqué par la modération",
+  'service.action_view':              "Voir",
+  'service.action_activate':          "Activer",
+  'service.action_pause':             "Mettre en pause",
+  'service.action_edit':              "Modifier",
+  'service.actions_menu_aria':        "Actions pour {title}",
+  'service.error.notAuth':            "Votre session a expiré. Veuillez vous reconnecter.",
+  'service.error_update':             "Une erreur est survenue lors de la mise à jour. Veuillez réessayer.",
+  'service.error_delete':             "Une erreur est survenue lors de la suppression. Veuillez réessayer.",
+  'service.error_delete_has_orders':  "Ce service a des commandes et ne peut pas être supprimé. Mettez-le en pause à la place.",
+  'service.stats.active_label':       "Services actifs",
+  'service.stats.active_subtitle':    "sur {total} au total",
+  'service.stats.pending_label':      "Demandes en attente",
+  'service.stats.pending_subtitle':   "à traiter",
+  'service.stats.received_label':     "Commandes reçues",
+  'service.stats.received_subtitle':  "depuis le début",
+  'service.stats.month_label':        "Commandes ce mois",
+  'service.stats.month_subtitle':     "vs mois dernier",
+  'service.stats.delta_up':           "↑ {n}",
+  'service.stats.delta_down':         "↓ {n}",
+  'service.stats.delta_flat':         "{n}",
+  // H7's own measured typed-confirm modal (464:19890), reused for services. The body drops the
+  // frame's "vos engagements en cours ne sont pas affectés" line — DISPROVEN while building (PR
+  // body): enforce_order_identity_lock raises on the ON DELETE SET NULL cascade for ANY existing
+  // order, service or product, so this modal (like DeleteProductModal) is only ever reachable for a
+  // zero-order service, and a reassurance about orders would only raise a question this population
+  // never has.
+  'service.delete_modal.title':          "Supprimer ce service ?",
+  'service.delete_modal.body':           "Cette action est définitive. « {title} » sera retiré de votre profil et de la recherche.",
+  'service.delete_modal.confirm_label':  "Pour confirmer, tapez {keyword}",
+  'service.delete_modal.keyword':        "SUPPRIMER",
+  'service.delete_modal.confirm_cta':    "Supprimer définitivement",
+  // The is_published cascade modal (founder ruling): fires only when the action would leave zero
+  // active listings, never on an ordinary pause/delete. Same shell as service.delete_modal above,
+  // no typed confirmation.
+  'service.cascade_modal.title':          "Votre profil deviendra invisible",
+  'service.cascade_modal.pause_body':     "C'est votre dernier service actif. En le mettant en pause, votre profil public ne sera plus accessible et vous n'apparaîtrez plus dans la recherche. Réactivez un service à tout moment pour le remettre en ligne.",
+  'service.cascade_modal.pause_confirm':  "Mettre en pause quand même",
+  // "supprimant" swap only — the pause variant's closing reassurance ("réactivez à tout moment")
+  // is dropped here, not reworded: it is factually wrong after a hard delete.
+  'service.cascade_modal.delete_body':    "C'est votre dernier service actif. En le supprimant, votre profil public ne sera plus accessible et vous n'apparaîtrez plus dans la recherche.",
+  'service.cascade_modal.delete_confirm': "Supprimer quand même",
+
   // /demander/[id] — COD product + service request forms
   'demander.title.product':        "Confirmer votre demande",
   'demander.title.service':        "Confirmer votre demande de service",
