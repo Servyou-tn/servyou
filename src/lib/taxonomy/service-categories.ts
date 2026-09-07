@@ -30,18 +30,38 @@
  * Meta Ads, Coaching e-commerce; retired `ia-automatisation` and `data-analyse`
  * (in no other list, no Figma frame). Every surviving sector's subcategory list
  * was replaced with the doc's content — not just the two spot-checked for a count
- * mismatch, several others (marketing-digital, design-graphique, design-ui-ux,
- * redaction-contenu, traduction-langues, video-animation) had also drifted from
- * the doc in content, not only count. Existing sector `id`s were kept stable
- * (nothing downstream persists against them yet — that is what PR2 changes) even
- * where the doc's display label differs slightly (e.g. `video-animation` now
- * displays "Montage vidéo & motion" per the doc, doc calls the sector under
- * `traduction-langues` simply "Traduction"). Skills pools for the 8 continuing
- * sectors are UNCHANGED — the doc has no skills content, this pass didn't touch
- * them. Skills pools for the 5 new sectors are a first-pass starter list, not
- * sourced from anywhere — flagged per-sector below, review before launch.
- * Icons for the 5 new sectors are PROPOSED, not founder-ruled (same status H5's
- * own category icons carry) — flagged per-sector below, review before launch.
+ * mismatch, several others (marketing-digital, design-graphique-logo, design-ui-ux,
+ * redaction-contenu, traduction, montage-video-motion) had also drifted from the
+ * doc in content, not only count.
+ *
+ * Sector `id`s were renamed to match the doc's naming exactly: `dev-web-mobile` →
+ * `developpement-web-mobile`, `design-graphique` → `design-graphique-logo`,
+ * `traduction-langues` → `traduction`, `video-animation` → `montage-video-motion`,
+ * `conseil-assistance` → `consulting-assistanat`. Done now, before PR2 persists
+ * real `category_id` values against these — nothing in `src/` imports this file
+ * yet, so this is the last point a rename is a diff, not a migration.
+ * `coaching-ecommerce` was NOT renamed to `coaching-e-commerce` even though the
+ * doc's heading hyphenates "e-commerce" — that's a hyphenation variant, not a
+ * naming mismatch like the five above, and wasn't on the approved list. Flagged
+ * in the PR body; still free to change now if the founder wants it.
+ *
+ * Skills pools for the 8 continuing sectors are UNCHANGED — the doc has no skills
+ * content, this pass didn't touch them. Skills pools for the 5 new sectors are a
+ * first-pass starter list, not sourced from anywhere, and marked
+ * FOUNDER-UNREVIEWED per-sector below — they feed H6's type-ahead, so a
+ * freelancer sees them as-is; review when H6's picker is actually on screen
+ * (H6 isn't built yet).
+ *
+ * Icons for the 5 new sectors (message-circle, mic, user-round, target,
+ * shopping-cart) are founder-approved 2026-09-07, but founder-RULED rather than
+ * measured against a Figma frame — the same status H5's own `CATEGORY_ICONS` map
+ * carries (docs/follow-ups.md, "Service Row's category-specific thumb icon").
+ *
+ * Provenance: Coaching Meta Ads is the ONLY one of the 13 sectors whose
+ * subcategory list also exists in Figma (specimen "H6 — Nouvelle taxonomie",
+ * 653:53710) — it matched the doc exactly. The other 90 of the 91 subcategories
+ * were reconciled against doc text alone; there is no competing Figma source for
+ * them.
  *
  * ── SKILLS ────────────────────────────────────────────────────────────────────
  * `skills` is the per-sector type-ahead pool: the combo suggests from the ACTIVE
@@ -92,7 +112,7 @@ export interface ServiceSector {
 
 export const serviceCategories: ServiceSector[] = [
   {
-    id: 'dev-web-mobile',
+    id: 'developpement-web-mobile',
     labelFr: 'Développement web & mobile',
     labelAr: 'تطوير الويب والموبايل', // REVIEW_AR_TRANSLATION: "الموبايل" (Tunisian usage) vs MSA "التطبيقات الجوّالة"
     icon: 'code',
@@ -129,7 +149,7 @@ export const serviceCategories: ServiceSector[] = [
     ],
   },
   {
-    id: 'design-graphique',
+    id: 'design-graphique-logo',
     labelFr: 'Design graphique & logo',
     labelAr: 'التصميم الغرافيكي والشعارات', // REVIEW_AR_TRANSLATION: extended from existing "التصميم الغرافيكي" to cover "& logo"
     icon: 'palette',
@@ -227,12 +247,12 @@ export const serviceCategories: ServiceSector[] = [
   },
   {
     // NEW sector, 2026-09-07 reconciliation. Was previously a marketing-digital subcategory;
-    // the doc promotes it to a full sector with its own 7 subcategories. Icon PROPOSED, skills
-    // pool is a first-pass starter (not sourced) — both flagged for founder review.
+    // the doc promotes it to a full sector with its own 7 subcategories. Icon founder-approved
+    // 2026-09-07; skills pool is FOUNDER-UNREVIEWED — see flags below.
     id: 'community-management',
     labelFr: 'Community management',
     labelAr: 'إدارة المجتمعات', // reused verbatim from the existing marketing-digital skill entry
-    icon: 'message-circle', // PROPOSED — not founder-ruled
+    icon: 'message-circle', // FOUNDER-RULED, not measured — approved 2026-09-07, same status as H5's CATEGORY_ICONS map
     subcategories: [
       { id: 'gestion-instagram-facebook', labelFr: 'Gestion Instagram & Facebook', labelAr: 'إدارة Instagram وFacebook' },
       { id: 'gestion-tiktok-youtube-shorts', labelFr: 'Gestion TikTok & YouTube Shorts', labelAr: 'إدارة TikTok وYouTube Shorts' },
@@ -243,7 +263,8 @@ export const serviceCategories: ServiceSector[] = [
       { id: 'influence-partenariats', labelFr: 'Influence & partenariats', labelAr: 'التأثير والشراكات' }, // REVIEW_AR_TRANSLATION
     ],
     skills: [
-      // STARTER LIST — not sourced from a measured frame or prior art. Review before launch.
+      // FOUNDER-UNREVIEWED — starter list, not sourced from a measured frame or prior art. Feeds
+      // H6's type-ahead, so a freelancer sees it as-is — review when H6's picker ships.
       { labelFr: 'Instagram', labelAr: 'Instagram' },
       { labelFr: 'Facebook', labelAr: 'Facebook' },
       { labelFr: 'TikTok', labelAr: 'TikTok' },
@@ -293,7 +314,7 @@ export const serviceCategories: ServiceSector[] = [
     ],
   },
   {
-    id: 'traduction-langues',
+    id: 'traduction',
     labelFr: 'Traduction',
     labelAr: 'الترجمة', // simplified from "الترجمة واللغات" to match the doc's plain "Traduction"
     icon: 'languages',
@@ -321,7 +342,7 @@ export const serviceCategories: ServiceSector[] = [
     ],
   },
   {
-    id: 'video-animation',
+    id: 'montage-video-motion',
     labelFr: 'Montage vidéo & motion',
     labelAr: 'مونتاج الفيديو والموشن', // REVIEW_AR_TRANSLATION: reworded from "الفيديو والرسوم المتحركة" to track the doc's narrower "Montage vidéo & motion"
     icon: 'clapperboard',
@@ -352,12 +373,12 @@ export const serviceCategories: ServiceSector[] = [
     ],
   },
   {
-    // NEW sector, 2026-09-07 reconciliation. Icon PROPOSED, skills pool is a first-pass starter
-    // (not sourced) — both flagged for founder review.
+    // NEW sector, 2026-09-07 reconciliation. Icon founder-approved 2026-09-07; skills pool is
+    // FOUNDER-UNREVIEWED — see flags below.
     id: 'voix-off-doublage',
     labelFr: 'Voix off & doublage',
     labelAr: 'التعليق الصوتي والدبلجة', // REVIEW_AR_TRANSLATION
-    icon: 'mic', // PROPOSED — not founder-ruled
+    icon: 'mic', // FOUNDER-RULED, not measured — approved 2026-09-07, same status as H5's CATEGORY_ICONS map
     subcategories: [
       { id: 'voix-off-publicite-fr', labelFr: 'Voix off publicité FR', labelAr: 'تعليق صوتي إعلاني بالفرنسية' }, // REVIEW_AR_TRANSLATION
       { id: 'voix-off-publicite-ar', labelFr: 'Voix off publicité AR', labelAr: 'تعليق صوتي إعلاني بالعربية' }, // REVIEW_AR_TRANSLATION
@@ -368,7 +389,8 @@ export const serviceCategories: ServiceSector[] = [
       { id: 'chant-jingle-publicitaire', labelFr: 'Chant & jingle publicitaire', labelAr: 'غناء وجينغل إعلاني' }, // REVIEW_AR_TRANSLATION
     ],
     skills: [
-      // STARTER LIST — not sourced from a measured frame or prior art. Review before launch.
+      // FOUNDER-UNREVIEWED — starter list, not sourced from a measured frame or prior art. Feeds
+      // H6's type-ahead, so a freelancer sees it as-is — review when H6's picker ships.
       { labelFr: 'voix off', labelAr: 'تعليق صوتي' }, // REVIEW_AR_TRANSLATION
       { labelFr: 'doublage', labelAr: 'الدبلجة' },
       { labelFr: 'narration', labelAr: 'السرد' }, // REVIEW_AR_TRANSLATION
@@ -382,7 +404,7 @@ export const serviceCategories: ServiceSector[] = [
     ],
   },
   {
-    id: 'conseil-assistance',
+    id: 'consulting-assistanat',
     labelFr: 'Consulting & assistanat',
     labelAr: 'الاستشارة والمساعدة', // "استشارة" established in ar.ts
     icon: 'briefcase',
@@ -412,12 +434,12 @@ export const serviceCategories: ServiceSector[] = [
     ],
   },
   {
-    // NEW sector, 2026-09-07 reconciliation. Icon PROPOSED, skills pool is a first-pass starter
-    // (not sourced) — both flagged for founder review.
+    // NEW sector, 2026-09-07 reconciliation. Icon founder-approved 2026-09-07; skills pool is
+    // FOUNDER-UNREVIEWED — see flags below.
     id: 'personal-branding',
     labelFr: 'Personal branding',
     labelAr: 'العلامة الشخصية', // REVIEW_AR_TRANSLATION
-    icon: 'user-round', // PROPOSED — not founder-ruled
+    icon: 'user-round', // FOUNDER-RULED, not measured — approved 2026-09-07, same status as H5's CATEGORY_ICONS map
     subcategories: [
       { id: 'strategie-positionnement-marque-personnelle', labelFr: 'Stratégie & positionnement marque personnelle', labelAr: 'استراتيجية وتموضع العلامة الشخصية' }, // REVIEW_AR_TRANSLATION
       { id: 'optimisation-profil-linkedin', labelFr: 'Optimisation profil LinkedIn', labelAr: 'تحسين ملف LinkedIn الشخصي' }, // REVIEW_AR_TRANSLATION
@@ -427,7 +449,8 @@ export const serviceCategories: ServiceSector[] = [
       { id: 'coaching-prise-de-parole-video', labelFr: 'Coaching prise de parole vidéo', labelAr: 'تدريب على التحدث أمام الكاميرا' }, // REVIEW_AR_TRANSLATION
     ],
     skills: [
-      // STARTER LIST — not sourced from a measured frame or prior art. Review before launch.
+      // FOUNDER-UNREVIEWED — starter list, not sourced from a measured frame or prior art. Feeds
+      // H6's type-ahead, so a freelancer sees it as-is — review when H6's picker ships.
       { labelFr: 'LinkedIn', labelAr: 'LinkedIn' },
       { labelFr: 'personal branding', labelAr: 'العلامة الشخصية' }, // REVIEW_AR_TRANSLATION
       { labelFr: 'storytelling', labelAr: 'السرد القصصي' },
@@ -441,12 +464,13 @@ export const serviceCategories: ServiceSector[] = [
   {
     // NEW sector, 2026-09-07 reconciliation. Subcategories DOM-verified against the Figma
     // specimen "H6 — Nouvelle taxonomie" (653:53710) — exact match, 7 items, same wording as
-    // the doc. Icon PROPOSED, skills pool is a first-pass starter (not sourced) — both flagged
-    // for founder review.
+    // the doc. This is the ONLY one of the 5 new sectors whose subcategory list also exists in
+    // Figma; every other sector was reconciled against doc text alone (see file header). Icon
+    // founder-approved 2026-09-07; skills pool is FOUNDER-UNREVIEWED — see flags below.
     id: 'coaching-meta-ads',
     labelFr: 'Coaching Meta Ads',
     labelAr: 'تدريب على إعلانات Meta', // REVIEW_AR_TRANSLATION
-    icon: 'target', // PROPOSED — not founder-ruled
+    icon: 'target', // FOUNDER-RULED, not measured — approved 2026-09-07, same status as H5's CATEGORY_ICONS map
     subcategories: [
       { id: 'initiation-meta-ads-debutant', labelFr: 'Initiation Meta Ads (débutant)', labelAr: 'مبادئ إعلانات Meta (مبتدئ)' }, // REVIEW_AR_TRANSLATION
       { id: 'meta-ads-avance', labelFr: 'Meta Ads avancé (scaling & optimisation)', labelAr: 'إعلانات Meta متقدم (توسيع وتحسين)' }, // REVIEW_AR_TRANSLATION
@@ -457,7 +481,8 @@ export const serviceCategories: ServiceSector[] = [
       { id: 'coaching-campagne-en-cours-live', labelFr: 'Coaching campagne en cours (live)', labelAr: 'تدريب مباشر على حملة جارية' }, // REVIEW_AR_TRANSLATION
     ],
     skills: [
-      // STARTER LIST — not sourced from a measured frame or prior art. Review before launch.
+      // FOUNDER-UNREVIEWED — starter list, not sourced from a measured frame or prior art. Feeds
+      // H6's type-ahead, so a freelancer sees it as-is — review when H6's picker ships.
       { labelFr: 'Meta Ads', labelAr: 'Meta Ads' },
       { labelFr: 'Facebook Ads', labelAr: 'Facebook Ads' },
       { labelFr: 'Instagram Ads', labelAr: 'Instagram Ads' },
@@ -471,12 +496,12 @@ export const serviceCategories: ServiceSector[] = [
     ],
   },
   {
-    // NEW sector, 2026-09-07 reconciliation. Icon PROPOSED, skills pool is a first-pass starter
-    // (not sourced) — both flagged for founder review.
+    // NEW sector, 2026-09-07 reconciliation. Icon founder-approved 2026-09-07; skills pool is
+    // FOUNDER-UNREVIEWED — see flags below.
     id: 'coaching-ecommerce',
     labelFr: 'Coaching e-commerce',
     labelAr: 'تدريب على التجارة الإلكترونية', // REVIEW_AR_TRANSLATION
-    icon: 'shopping-cart', // PROPOSED — not founder-ruled
+    icon: 'shopping-cart', // FOUNDER-RULED, not measured — approved 2026-09-07, same status as H5's CATEGORY_ICONS map
     subcategories: [
       { id: 'initiation-shopify-debutant', labelFr: 'Initiation Shopify (débutant)', labelAr: 'مبادئ Shopify (مبتدئ)' },
       { id: 'initiation-woocommerce-debutant', labelFr: 'Initiation WooCommerce (débutant)', labelAr: 'مبادئ WooCommerce (مبتدئ)' },
@@ -488,7 +513,8 @@ export const serviceCategories: ServiceSector[] = [
       { id: 'coaching-lancement-boutique', labelFr: 'Coaching lancement boutique', labelAr: 'تدريب على إطلاق متجر' }, // REVIEW_AR_TRANSLATION
     ],
     skills: [
-      // STARTER LIST — not sourced from a measured frame or prior art. Review before launch.
+      // FOUNDER-UNREVIEWED — starter list, not sourced from a measured frame or prior art. Feeds
+      // H6's type-ahead, so a freelancer sees it as-is — review when H6's picker ships.
       { labelFr: 'Shopify', labelAr: 'Shopify' },
       { labelFr: 'WooCommerce', labelAr: 'WooCommerce' },
       { labelFr: 'dropshipping', labelAr: 'الدروبشيبينغ' },
