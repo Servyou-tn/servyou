@@ -455,17 +455,25 @@ export async function getMyAnnonces(userId: string): Promise<MyAnnonce[]> {
 // categories — before `categories.kind` existed (migration 20260804132447) this select rendered
 // all 14 rows and a consumer could file a mission under "Électronique" or "Beauté & Soins".
 //
-// `categories` is one flat table shared by products, service_listings, job_posts and
+// `categories` is one flat-AT-THE-TOP table shared by products, service_listings, job_posts and
 // shop_categories, so `kind` is the only thing that separates them. It is matched with `in` and
 // not with equality because 'both' is a real value: `maison` carries it, on the grounds that
 // ménage / plomberie / bricolage are a real Tunisian market the digital-only service taxonomy has
 // not reached yet. Testing `kind = 'service'` would silently drop it.
+//
+// `.is('parent_id', null)` (added 2026-09-07, 13-sector taxonomy cutover): the table stopped being
+// flat the moment that migration inserted 91 subcategories as children of the 13 sectors. Without
+// this filter a mission-creation picker meant to offer ~9 sectors returns 105 rows, sectors and
+// subcategories interleaved alphabetically by name_fr. A job post files at SECTOR granularity only
+// (job_posts.category_id has no UI path to a leaf category today) — the picker offering leaves
+// would be a second, separate feature decision, not a side effect of this filter.
 export async function getCategories(): Promise<{ id: string; name_fr: string }[]> {
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('categories')
     .select('id, name_fr')
     .in('kind', ['service', 'both'])
+    .is('parent_id', null)
     .order('name_fr')
   if (error) {
     console.error('[my-data] categories fetch error:', error.message, error.code, error.details)
