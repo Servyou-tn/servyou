@@ -47,8 +47,15 @@ export function ServiceFiltersBar({
     router.push(qs ? `${ROUTE}?${qs}` : ROUTE)
   }
 
+  // Row geometry measured off 244:726 (figma-cli sandbox, 2026-09-06): the filter-bar is
+  // HORIZONTAL / SPACE_BETWEEN / align CENTER — Segmented pinned start, and a `filter-right`
+  // group (244:761) pinned end holding the search Input (300 fixed) + "Trier par" Select
+  // (180 fixed) at a 12px gap. The shipped build instead let the search stretch on `flex-1`,
+  // which pushed the Select to the far edge and squeezed the tabs. No mobile frame exists for
+  // H5, so below sm the group goes full-width and stacks — same inferred-reflow rule
+  // ServiceRow.tsx documents for its own columns.
   return (
-    <div className="flex flex-wrap items-center gap-4">
+    <div className="flex flex-wrap items-center justify-between gap-4">
       <SegmentedControl
         ariaLabel={t('service.tabs_aria', lang)}
         value={tab}
@@ -59,46 +66,48 @@ export function ServiceFiltersBar({
         }))}
       />
 
-      <form
-        role="search"
-        onSubmit={(e) => {
-          e.preventDefault()
-          push({ q: query.trim() || null })
-        }}
-        className="min-w-0 flex-1"
-      >
-        <div
-          className={`flex h-10 items-center gap-2 rounded-lg border border-border-strong bg-white px-3 focus-within:border-brand-blue-600 focus-within:ring-2 focus-within:ring-brand-blue-600 focus-within:ring-offset-2 ${FOCUS_RING}`}
+      <div className="flex w-full flex-wrap items-center gap-3 sm:w-auto">
+        <form
+          role="search"
+          onSubmit={(e) => {
+            e.preventDefault()
+            push({ q: query.trim() || null })
+          }}
+          className="w-full min-w-0 sm:w-[300px]"
         >
-          <Search className="h-4 w-4 shrink-0 text-icon-muted" aria-hidden="true" />
-          <input
-            type="search"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder={t('service.search_placeholder', lang)}
-            className="w-full min-w-0 bg-transparent text-body-sm text-text-primary outline-none placeholder:text-text-muted"
-          />
-        </div>
-      </form>
+          <div
+            className={`flex h-10 items-center gap-2 rounded-lg border border-border-strong bg-white px-3 focus-within:border-brand-blue-600 focus-within:ring-2 focus-within:ring-brand-blue-600 focus-within:ring-offset-2 ${FOCUS_RING}`}
+          >
+            <Search className="h-4 w-4 shrink-0 text-icon-muted" aria-hidden="true" />
+            <input
+              type="search"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder={t('service.search_placeholder', lang)}
+              className="w-full min-w-0 bg-transparent text-body-sm text-text-primary outline-none placeholder:text-text-muted"
+            />
+          </div>
+        </form>
 
-      <select
-        value={sortExplicit ? sort : ''}
-        onChange={(e) => push({ tri: e.target.value as ServiceSort })}
-        aria-label={t('service.sort_placeholder', lang)}
-        className={`h-10 shrink-0 rounded-lg border border-border-strong bg-white px-3 text-body-sm ${sortExplicit ? 'text-text-primary' : 'text-text-muted'} ${FOCUS_RING}`}
-      >
-        {/* Figma 244:782's trigger reads the bare placeholder at rest — no option preselected
-            (measured via get_design_context, 2026-09-06). Disabled+hidden: it's a label, not a
-            choice a visitor can pick back once they've sorted. */}
-        <option value="" disabled hidden>
-          {t('service.sort_placeholder', lang)}
-        </option>
-        {SERVICE_SORTS.map((key) => (
-          <option key={key} value={key}>
-            {t(`service.sort.${key}`, lang)}
+        <select
+          value={sortExplicit ? sort : ''}
+          onChange={(e) => push({ tri: e.target.value as ServiceSort })}
+          aria-label={t('service.sort_placeholder', lang)}
+          className={`h-10 w-full shrink-0 rounded-lg border border-border-strong bg-white px-3 text-body-sm sm:w-[180px] ${sortExplicit ? 'text-text-primary' : 'text-text-muted'} ${FOCUS_RING}`}
+        >
+          {/* Figma 244:782's trigger reads the bare placeholder at rest — no option preselected
+              (measured via get_design_context, 2026-09-06). Disabled+hidden: it's a label, not a
+              choice a visitor can pick back once they've sorted. */}
+          <option value="" disabled hidden>
+            {t('service.sort_placeholder', lang)}
           </option>
-        ))}
-      </select>
+          {SERVICE_SORTS.map((key) => (
+            <option key={key} value={key}>
+              {t(`service.sort.${key}`, lang)}
+            </option>
+          ))}
+        </select>
+      </div>
     </div>
   )
 }

@@ -28,7 +28,20 @@ type Props<T extends string> = {
 }
 
 // Shared animated segmented control with a sliding pill indicator (Motion layoutId —
-// the Linear/Vercel/Notion pattern). Controlled (value + onChange) so it drives both
+// the Linear/Vercel/Notion pattern).
+//
+// PAINT IS MEASURED, NOT CHOSEN — Figma 244:727 (the Segmented instance inside H5's
+// filter-bar 244:726), read through the figma-cli plugin sandbox on 2026-09-06:
+//   track          surface/sunken #F1F5F9, radius/lg 10, padding 4
+//   selected pill  surface/base #FFFFFF, radius/md 8, drop-shadow 0 1 2 rgb(0 0 0/.04)
+//   selected label text/primary #0F172A · unselected label text/secondary #475569
+//   labels         14px Medium
+// The shipped build had a solid brand-blue-600 pill with white text and text/muted
+// (#64748B) unselected labels — none of which the frame specifies. That is the same
+// white-pill-on-sunken-track look FavorisTabs/ProduitsLensToggle already carry, and
+// H5's frame confirms it independently of F1's 718:60584.
+//
+// Controlled (value + onChange) so it drives both
 // URL-state callers (the search toggle) and local-useState callers (favoris tab,
 // commandes filter). useId() gives each instance a unique layoutId so two controls on
 // the same page never animate into each other. Options size to content (shrink-0 +
@@ -57,7 +70,7 @@ export function SegmentedControl<T extends string>({
     <div
       role="tablist"
       aria-label={ariaLabel}
-      className={`inline-flex items-center rounded-full bg-surface-pill p-1 ${className}`}
+      className={`inline-flex items-center rounded-lg bg-surface-sunken p-1 ${className}`}
     >
       {options.map((option) => {
         if (option.disabled) {
@@ -70,7 +83,7 @@ export function SegmentedControl<T extends string>({
               aria-disabled="true"
               aria-selected={false}
               title={option.disabledTitle}
-              className="relative flex shrink-0 cursor-not-allowed items-center justify-center gap-1 whitespace-nowrap rounded-full px-3 py-1.5 text-sm font-medium text-text-muted"
+              className="relative flex shrink-0 cursor-not-allowed items-center justify-center gap-1 whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium text-text-muted"
             >
               <span>{option.label}</span>
               {option.soonLabel && (
@@ -90,14 +103,14 @@ export function SegmentedControl<T extends string>({
             role="tab"
             aria-selected={isActive}
             onClick={() => onChange(option.value)}
-            className={`relative shrink-0 whitespace-nowrap rounded-full px-4 py-1.5 text-sm font-medium transition-colors duration-200 ${FOCUS_RING} ${
-              isActive ? 'text-white' : 'text-text-muted hover:text-text-primary'
+            className={`relative shrink-0 whitespace-nowrap rounded-md px-4 py-1.5 text-sm font-medium transition-colors duration-200 ${FOCUS_RING} ${
+              isActive ? 'text-text-primary' : 'text-text-secondary hover:text-text-primary'
             }`}
           >
             {isActive && (
               <motion.span
                 layoutId={`segmented-pill-${indicatorId}`}
-                className="absolute inset-0 rounded-full bg-brand-blue-600"
+                className="absolute inset-0 rounded-md bg-white shadow-xs"
                 transition={reduce ? { duration: 0 } : { type: 'spring', stiffness: 380, damping: 30 }}
                 aria-hidden="true"
               />

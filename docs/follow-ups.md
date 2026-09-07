@@ -3487,3 +3487,22 @@ coupling" claim on that specific function is stale, not a remaining blocker.
 - **Trigger:** unchanged from the existing entry, now with a confirmed third frame (244:726) to
   pull alongside `718:60584`, `EditProductForm`'s and `SharedSearchBar`'s call sites — resolve all
   of it together in one design-system PR rather than another per-page patch.
+- **✅ RESOLVED — `feat/h5-mes-services`, 2026-09-06.** The blocking condition above was a clean
+  fill-color read on 244:726/244:727 and an accurate current caller count — this pass got both.
+  `get_variable_defs`-equivalent read via the figma-cli plugin sandbox on `244:727` (the Segmented
+  instance inside H5's own filter-bar) returned `surface/sunken` `#F1F5F9` track (`radius/lg` 10,
+  padding 4), `surface/base` `#FFFFFF` selected pill (`radius/md` 8, `shadow 0 1 2 rgb(0 0 0/.04)`
+  = `shadow-xs`), `text/primary` selected label, `text/secondary` unselected — the exact token pair
+  already confirmed for F1's `718:60584` and `ProduitsLensToggle`'s `578:42513`, now a third
+  independent frame agreeing on it with zero frames anywhere supporting the shipped blue fill. With
+  the caller list re-audited down to the two real live consumers (`ServiceFiltersBar` and
+  `EditProductForm` — `SharedSearchBar` unreachable, `ParametresForm`/`FavorisTabs` don't import
+  it), "needs a design-system PR to weigh four implementations" no longer applied: there was
+  nothing left to weigh, only two call sites to repaint to the pattern three frames independently
+  agree on. `segmented-control.tsx` now ships `rounded-lg bg-surface-sunken` track /
+  `rounded-md bg-white shadow-xs` selected pill / `text-text-primary` selected · `text-text-secondary`
+  unselected, replacing the `rounded-full bg-surface-pill` / `bg-brand-blue-600` / `text-white` set.
+  DOM-verified live on both callers (H5 desktop+mobile, FR+AR; `EditProductForm`'s status toggle),
+  screenshot-checked via `scripts/gate/authed.mjs`-pattern CDP runs, 2026-09-07. The original
+  entry's premise (four unconsolidated implementations) is now stale in the same way its own caller
+  list was — closing both as resolved for the two implementations that actually exist.
