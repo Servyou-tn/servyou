@@ -76,6 +76,35 @@ const CATEGORY_ICONS: Record<string, LucideIcon> = {
   'coaching-ecommerce': ShoppingCart,
 }
 
+function assertNever(x: never): never {
+  throw new Error(`ServiceRow: unhandled status ${JSON.stringify(x)}`)
+}
+
+// Exhaustive over SellerServiceRow['status'] ('active' | 'hidden' | 'draft') — a switch, not a
+// ternary chain, so a future 4th status fails at assertNever (compile time) instead of silently
+// falling through to whichever branch a ternary's `else` happened to catch. The 'draft' case is
+// unreachable in practice: getSellerServices excludes drafts from every H5 tab (founder ruling —
+// H5 must not be the surface that first makes an unpublished draft visible; making one resumable is
+// H6's job, see docs/follow-ups.md). Handled here anyway so the switch stays compiler-exhaustive
+// rather than comment-exhaustive the moment that upstream filter ever changes.
+function getStatusPresentation(
+  service: SellerServiceRow,
+  lang: Lang,
+): { isActive: boolean; pillStatus: 'active' | 'moderated' | 'paused' | 'draft'; pillLabel: string } {
+  switch (service.status) {
+    case 'active':
+      return { isActive: true, pillStatus: 'active', pillLabel: t('common.status_active', lang) }
+    case 'hidden':
+      return service.adminHiddenAt != null
+        ? { isActive: false, pillStatus: 'moderated', pillLabel: t('service.status_moderated', lang) }
+        : { isActive: false, pillStatus: 'paused', pillLabel: t('service.status_paused', lang) }
+    case 'draft':
+      return { isActive: false, pillStatus: 'draft', pillLabel: t('service.status_draft', lang) }
+    default:
+      return assertNever(service.status)
+  }
+}
+
 export function ServiceRow({ service, lang }: { service: SellerServiceRow; lang: Lang }) {
   const [pending, startTransition] = useTransition()
   const [modal, setModal] = useState<'none' | 'cascade-pause' | 'cascade-delete' | 'delete-confirm'>('none')
@@ -83,14 +112,7 @@ export function ServiceRow({ service, lang }: { service: SellerServiceRow; lang:
 
   const CategoryIcon = (service.categorySlug && CATEGORY_ICONS[service.categorySlug]) || Wrench
   const isModerated = service.adminHiddenAt != null
-  const isActive = service.status === 'active'
-
-  const pillStatus = isActive ? 'active' : isModerated ? 'moderated' : 'paused'
-  const pillLabel = isActive
-    ? t('common.status_active', lang)
-    : isModerated
-      ? t('service.status_moderated', lang)
-      : t('service.status_paused', lang)
+  const { isActive, pillStatus, pillLabel } = getStatusPresentation(service, lang)
 
   const runToggle = (nextStatus: 'active' | 'hidden') => {
     startTransition(async () => {

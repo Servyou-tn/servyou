@@ -47,14 +47,37 @@ describe('validateServiceInput — valid input', () => {
     }
   })
 
-  it('trims/rounds and normalizes status', () => {
-    const r = validateServiceInput(valid({ title: '  Logo  ', startingPrice: '10.999', status: 'whatever' }))
+  it('trims and rounds text/numeric fields', () => {
+    const r = validateServiceInput(valid({ title: '  Logo  ', startingPrice: '10.999' }))
     expect(r.ok).toBe(true)
     if (r.ok) {
       expect(r.value.title).toBe('Logo')
       expect(r.value.starting_price_tnd).toBe(11)
-      expect(r.value.status).toBe('active')
     }
+  })
+})
+
+describe('validateServiceInput — status is a real field, not a default branch', () => {
+  it('accepts active and hidden', () => {
+    expect((() => { const r = validateServiceInput(valid({ status: 'active' })); return r.ok && r.value.status })())
+      .toBe('active')
+    expect((() => { const r = validateServiceInput(valid({ status: 'hidden' })); return r.ok && r.value.status })())
+      .toBe('hidden')
+  })
+
+  it('rejects an unrecognized status instead of silently coercing it to active', () => {
+    const r = validateServiceInput(valid({ status: 'whatever' }))
+    expect(!r.ok && r.errors.status).toBe('freelance.services.form.error.status_invalid')
+  })
+
+  it('rejects "draft" explicitly — only H6 (the creation wizard) may ever set it, never this edit form', () => {
+    const r = validateServiceInput(valid({ status: 'draft' }))
+    expect(!r.ok && r.errors.status).toBe('freelance.services.form.error.status_invalid')
+  })
+
+  it('rejects an empty status', () => {
+    const r = validateServiceInput(valid({ status: '' }))
+    expect(!r.ok && r.errors.status).toBe('freelance.services.form.error.status_invalid')
   })
 })
 
@@ -160,7 +183,7 @@ describe('validateServiceInput — multi-error', () => {
     expect(r.ok).toBe(false)
     if (!r.ok) {
       expect(Object.keys(r.errors).sort()).toEqual(
-        ['category', 'deliverables', 'delivery', 'description', 'price', 'tags', 'title'],
+        ['category', 'deliverables', 'delivery', 'description', 'price', 'status', 'tags', 'title'],
       )
     }
   })

@@ -959,6 +959,7 @@ export const ar: Record<string, string> = {
   'service.row_orders_label':         "الطلبات",
   'service.status_paused':            "متوقفة مؤقتًا",
   'service.status_moderated':         "أُخفيت من قبل الإشراف",
+  'service.status_draft':             "مسودة",
   'service.action_view':              "عرض",
   'service.action_activate':          "تفعيل",
   'service.action_pause':             "إيقاف مؤقت",
@@ -2001,6 +2002,12 @@ export const ar: Record<string, string> = {
   'freelance.back':               "العودة إلى مساحتي كمستقل",
   // My services list
   'freelance.services_title':     "خدماتي",
+  // Introduced by the H5 draft-status guard PR (validateServiceInput's status field, currently
+  // unreachable — no production form calls validateServiceInput yet). Sibling keys
+  // freelance.services.form.error.{required,title_too_long,description_too_long,price_invalid}
+  // predate this PR and are themselves untranslated in fr.ts/ar.ts — a pre-existing gap, logged in
+  // docs/follow-ups.md, not fixed here.
+  'freelance.services.form.error.status_invalid': "حالة الخدمة غير صالحة.",
   // Service world-class fields: deliverables / revisions / tags / briefing (PR-F2.3 + F2.3.1, preserved 2026-06-27 Option B)
   'freelance.services.form.deliverables.label':       "المخرجات",
   'freelance.services.form.deliverables.helper':      "من 3 إلى 8 عناصر تصف ما يستلمه العميل",

@@ -92,6 +92,15 @@ describe('ServiceRow — StatusPill, all three states', () => {
     expect(screen.getByText('Masqué par la modération')).toBeInTheDocument()
     expect(screen.queryByText('Mis en pause')).not.toBeInTheDocument()
   })
+
+  // Unreachable in production today — getSellerServices excludes drafts from every H5 tab — but
+  // SellerServiceRow['status'] includes 'draft', so the row must still render something sane
+  // rather than throw, proving the switch in ServiceRow.tsx is genuinely exhaustive and not just
+  // exhaustive over the two statuses that happen to reach it in practice.
+  it('a draft row (unreachable via getSellerServices, proven here for type-exhaustiveness) reads "Brouillon"', () => {
+    renderRow({ status: 'draft', adminHiddenAt: null })
+    expect(screen.getByText('Brouillon')).toBeInTheDocument()
+  })
 })
 
 describe('ServiceRow — the is_published cascade modal fires only on the LAST active listing', () => {
