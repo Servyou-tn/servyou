@@ -3688,3 +3688,22 @@ coupling" claim on that specific function is stale, not a remaining blocker.
 - **Trigger:** blocking before whichever PR first wires an add/edit-service form to
   `validateServiceInput` (expected: H6 and/or H7) — translate all five `form.error.*` keys as part
   of that PR's own scope, not discovered after it ships.
+
+### Production has no `service_listings` fixture in a paused or admin-moderated state — seller-side visual verification cannot exercise those states live
+
+- **What:** raised during pre-merge review of the H5 draft-status guard PR. Production currently
+  has zero `service_listings` rows with `status='hidden'` (neither self-paused nor
+  admin-moderated), and the seed freelancer used for manual click-through has no corresponding
+  `auth.users` row — it cannot sign in. Together, that means a real signed-in session can neither
+  view an existing paused/moderated service row nor moderate one into existence to look at it.
+- **Why it matters:** every seller-side PR that touches `StatusPill`, `ServiceRow`, or any paused/
+  moderated read path (H5, H7, admin moderation surfaces) has to fall back to DB-level live tests
+  and synthetic fixtures for that state instead of an actual signed-in walkthrough — the visual
+  gate cannot cover it. This is a standing gap, not specific to this PR; it will recur on every
+  future PR that touches those states until a real fixture exists.
+- **Not fixed here** — creating a persistent paused/moderated seed fixture (and an
+  `auth.users` row for the seed freelancer) is a data/ops change, not something this PR's scope
+  (widening `service_listings.status`) should smuggle in.
+- **Trigger:** before the next seller-side PR that needs to visually verify a paused or
+  admin-moderated service/product row — or proactively, the first time this blocks a visual gate
+  badly enough to be worth fixing on its own.

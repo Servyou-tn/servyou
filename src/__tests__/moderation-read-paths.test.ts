@@ -86,6 +86,28 @@ function selectFor(table: string): string {
   return typeof sel?.args[0] === 'string' ? (sel.args[0] as string) : ''
 }
 
+/**
+ * Every call in a table's own chain — from its `.from(table)` up to (but not including) the
+ * NEXT `.from()` call, or the end of the recording. A plain `.eq()` scan across the whole
+ * recording would false-positive on demander.ts, which queries `products` (`.eq('status',
+ * 'active')`) and THEN `service_listings` in the same call — an unscoped check couldn't tell
+ * whether the service branch itself applied the filter or just inherited a "true" from products.
+ */
+function tableCalls(table: string): Call[] {
+  const start = calls.findIndex((c) => c.method === 'from' && c.args[0] === table)
+  if (start === -1) return []
+  let end = calls.length
+  for (let i = start + 1; i < calls.length; i++) {
+    if (calls[i].method === 'from') { end = i; break }
+  }
+  return calls.slice(start, end)
+}
+
+/** Was `.eq(column, value)` applied within THIS table's own chain? */
+function tableFilteredEq(table: string, column: string, value: unknown): boolean {
+  return tableCalls(table).some((c) => c.method === 'eq' && c.args[0] === column && c.args[1] === value)
+}
+
 // ── 1. /marche grid — lib/marche/data.ts ──────────────────────────────────────────────────
 
 describe('getActiveProducts (/marche)', () => {
@@ -116,6 +138,18 @@ describe('getActiveServices (/marche)', () => {
     await getActiveServices()
     expect(filteredNull('freelancer_profiles.admin_hidden_at')).toBe(true)
     expect(selectFor('service_listings')).toContain('admin_hidden_at')
+  })
+
+  // H5 draft-status guard PR: service_listings.status can now be 'draft', never buyer-visible.
+  // admin_hidden_at filtering alone (the two tests above) does not exclude a draft — only a
+  // status filter does. This is a query-shape assertion, not a live-DB one, on purpose: Postgres
+  // reliably excludes a non-'active' row from `.eq('status','active')`, so a live-DB test there
+  // would only prove Postgres works. What can actually regress is THIS read path dropping or
+  // widening its own status filter — only the query shape catches that (see this file's header).
+  it("DRAFT: filters status='active', so a draft (status='draft') is excluded too", async () => {
+    const { getActiveServices } = await import('@/lib/marche/data')
+    await getActiveServices()
+    expect(tableFilteredEq('service_listings', 'status', 'active')).toBe(true)
   })
 })
 
@@ -171,6 +205,62 @@ describe('searchMarketplace — services', () => {
     await runSearch('service')
     expect(filteredNull('freelancer_profiles.admin_hidden_at')).toBe(true)
     expect(selectFor('service_listings')).toContain('admin_hidden_at')
+  })
+
+  // Named explicitly on pre-merge review of the H5 draft-status guard PR: a draft must not be
+  // reachable from search. Query-shape, not live-DB — see getActiveServices's own comment above
+  // for why that's the right level for this claim.
+  it("DRAFT: filters status='active' on the search results query", async () => {
+    await runSearch('service')
+    expect(tableFilteredEq('service_listings', 'status', 'active')).toBe(true)
+  })
+})
+
+// ── 2b. Draft exclusion — the three surfaces named on pre-merge review of the H5 draft-status
+// guard PR, plus two adjacent read paths that reach the same column ────────────────────────
+//
+// service_listings.status can now be 'draft' (H6, the creation wizard, is its only writer — not
+// yet in code; a draft was never published by its owner and must never be buyer-visible). Every
+// path below already reads `.eq('status', 'active')` for the pre-existing moderation reasons
+// documented at each call site — that predicate structurally excludes 'draft' too, since it's
+// neither DIRECT nor PARENT hide, just a third value the same column can hold. These assertions
+// exist so dropping or loosening that filter (e.g. to `.neq('status', 'hidden')`, which a draft
+// would pass) fails a test instead of shipping quietly. Query-shape, not live-DB — see
+// getActiveServices's comment above for why.
+
+describe("getServiceDetail (/services/[id], D2) — draft exclusion", () => {
+  it("filters status='active' on the single-listing fetch", async () => {
+    const { getServiceDetail } = await import('@/lib/marche/service-detail')
+    await getServiceDetail('some-id')
+    expect(tableFilteredEq('service_listings', 'status', 'active')).toBe(true)
+  })
+})
+
+describe('getRelatedServices (D2 "other services" block) — draft exclusion', () => {
+  it("filters status='active' on every tier of the related-services query", async () => {
+    const { getRelatedServices } = await import('@/lib/marche/service-detail')
+    await getRelatedServices({ serviceId: 'some-id', freelancerProfileId: null, categoryId: null })
+    expect(tableFilteredEq('service_listings', 'status', 'active')).toBe(true)
+  })
+})
+
+describe('getFreelancerServices (D4 "Ses services") — draft exclusion', () => {
+  it("filters status='active' on the freelancer's own listing list", async () => {
+    const { getFreelancerServices } = await import('@/lib/marche/freelancer-detail')
+    await getFreelancerServices('fp-1', 'Freelancer', 'Tunis')
+    expect(tableFilteredEq('service_listings', 'status', 'active')).toBe(true)
+  })
+})
+
+describe('getRequestTarget service branch (/demander/[id], E1) — draft exclusion', () => {
+  it("filters status='active' on service_listings specifically, not just inherited from the products lookup it tries first", async () => {
+    // Forces the products lookup (tried first) to come back empty so the code falls through to
+    // the service_listings query — otherwise the recording fake's default `{ data: [] }` is
+    // truthy and the service branch never runs.
+    results.set('products', { data: null, error: null })
+    const { getRequestTarget } = await import('@/lib/marche/demander')
+    await getRequestTarget('some-id')
+    expect(tableFilteredEq('service_listings', 'status', 'active')).toBe(true)
   })
 })
 

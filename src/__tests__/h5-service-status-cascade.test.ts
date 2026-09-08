@@ -6,6 +6,20 @@
  * enforce_admin_moderation_lock blocks the OWNER from reactivating a row admin_hide_content
  * moderated, even though the same owner can freely toggle an ordinary (non-moderated) row.
  *
+ * Also covers two gaps the founder flagged on pre-merge review of the draft-status guard, both
+ * closed in this file rather than a new one — it already has the fixture, ownerClient, and
+ * teardown:
+ *   - a draft insert never flips freelancer_profiles.is_published (structurally guaranteed by
+ *     freelancer_has_active_listing()'s `status = 'active'` filter — asserted directly here).
+ *   - getSellerServices' LIVE query shape (seller-services-query.ts) is the DB-side twin of
+ *     matchesServiceTab/countServiceTabs (seller-services.ts, tested at the pure-predicate level
+ *     in seller-services.test.ts) — that file's own comment names the risk: the fetched rows and
+ *     the reported count could silently diverge if the two implementations of "all excludes
+ *     draft" ever disagree. Not a call into getSellerServices itself (it goes through
+ *     `@/lib/supabase/server`, which needs next/headers request scope this file doesn't have) —
+ *     the identical query shapes, run through the real owner's session, so RLS applies exactly as
+ *     it would through the app.
+ *
  * Pattern A (live-DB), mirroring d4-completed-project-count.test.ts. Service role for fixtures,
  * teardown, and the admin-hide step only — every status WRITE under test goes through the real
  * owner's own signed-in session, so RLS and the triggers run exactly as they would for a real
@@ -16,6 +30,7 @@
 
 import { describe, it, expect, beforeAll, afterAll } from 'vitest'
 import { createClient, SupabaseClient } from '@supabase/supabase-js'
+import { countServiceTabs } from '@/lib/marche/seller-services'
 
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -235,5 +250,82 @@ describe.skipIf(!hasCreds)('admin_hide_content draft guard — a draft cannot be
     expect(after?.admin_hidden_at).toBeNull()
 
     await admin.from('service_listings').delete().eq('id', svc)
+  })
+})
+
+describe.skipIf(!hasCreds)('a draft insert never flips is_published', () => {
+  it('is_published stays false both before and after inserting a draft-only listing', async () => {
+    // Entering this test the fixture freelancer has zero listings of any kind — every prior
+    // describe block in this file deletes its own rows before returning control. Assert that
+    // starting state explicitly rather than assume it, since "false before AND after" is only
+    // proof a draft doesn't flip it if the two reads can't both be trivially true by accident.
+    expect(await isPublished()).toBe(false)
+
+    const { data, error: insertErr } = await admin
+      .from('service_listings')
+      .insert({
+        freelancer_profile_id: freelancerProfileId,
+        title: 'H5 draft never-publishes test',
+        starting_price_tnd: 50,
+        status: 'draft',
+      })
+      .select('id')
+      .single()
+    if (insertErr || !data) throw new Error(`draft insert failed: ${insertErr?.message}`)
+
+    // trg_sync_freelancer_is_published fires AFTER INSERT unconditionally (not just on active
+    // rows) — it recomputes via freelancer_has_active_listing(), which only counts
+    // status='active'. This is the direct assertion the founder asked for: the draft's own
+    // INSERT ran the trigger and it did NOT flip the flag.
+    expect(await isPublished()).toBe(false)
+
+    await admin.from('service_listings').delete().eq('id', data.id)
+  })
+})
+
+describe.skipIf(!hasCreds)("getSellerServices' live query shape — the DB-side twin of the 'all' tab predicate", () => {
+  it('the Tous tab query (.neq status draft) excludes a real draft row, matching countServiceTabs for the same rows', async () => {
+    const activeId = await insertActiveListing('H5 live-query test — active')
+    const { data: draftRow, error: draftErr } = await admin
+      .from('service_listings')
+      .insert({
+        freelancer_profile_id: freelancerProfileId,
+        title: 'H5 live-query test — draft',
+        starting_price_tnd: 50,
+        status: 'draft',
+      })
+      .select('id')
+      .single()
+    if (draftErr || !draftRow) throw new Error(`draft insert failed: ${draftErr?.message}`)
+    const draftId = draftRow.id
+
+    // The exact three query shapes getSellerServices builds (seller-services-query.ts) for the
+    // 'active' / 'paused' / 'all' tabs, run as the owner so RLS applies as it would through the
+    // app — not a call into the function itself, which needs next/headers request scope this
+    // file doesn't have.
+    const [activeTab, pausedTab, allTab] = await Promise.all([
+      ownerClient.from('service_listings').select('id, status').eq('freelancer_profile_id', freelancerProfileId).eq('status', 'active'),
+      ownerClient.from('service_listings').select('id, status').eq('freelancer_profile_id', freelancerProfileId).eq('status', 'hidden'),
+      ownerClient.from('service_listings').select('id, status').eq('freelancer_profile_id', freelancerProfileId).neq('status', 'draft'),
+    ])
+    expect(activeTab.error).toBeNull()
+    expect(pausedTab.error).toBeNull()
+    expect(allTab.error).toBeNull()
+
+    const allIds = (allTab.data ?? []).map((r) => r.id)
+    expect(allIds).toContain(activeId)
+    expect(allIds).not.toContain(draftId)
+    expect((pausedTab.data ?? []).map((r) => r.id)).not.toContain(draftId)
+
+    // Cross-check against the pure predicate's own count for the identical row set — this is the
+    // divergence seller-services.ts's own comment warns about: the live 'all' query and
+    // countServiceTabs must agree on how many rows are in play, not just which one is excluded.
+    const liveRows: { status: 'active' | 'hidden' | 'draft' }[] = [
+      ...(allTab.data ?? []),
+      { id: draftId, status: 'draft' },
+    ]
+    expect(countServiceTabs(liveRows).all).toBe(allIds.length)
+
+    await admin.from('service_listings').delete().in('id', [activeId, draftId])
   })
 })
