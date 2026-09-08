@@ -15,7 +15,10 @@ import {
 // safe to import from a client component) for the same next/headers-leak reason seller-products.ts
 // documents at its own header.
 
-type CountRow = { id: string; status: string }
+// Widened to the literal union here, at the query boundary, so everything downstream (the tab
+// predicate, ServiceRow's switch) is compiler-exhaustive over the real DB domain instead of a bare
+// `string` that silently accepts anything.
+type CountRow = { id: string; status: 'active' | 'hidden' | 'draft' }
 
 function countOf(embed: { count: number }[] | { count: number } | null | undefined): number {
   if (Array.isArray(embed)) return embed[0]?.count ?? 0
@@ -32,7 +35,7 @@ type ContentRow = {
   title: string
   description: string | null
   starting_price_tnd: number | string
-  status: string
+  status: 'active' | 'hidden' | 'draft'
   admin_hidden_at: string | null
   commandes: { count: number }[] | { count: number } | null
   all_orders: { count: number }[] | { count: number } | null
@@ -94,7 +97,7 @@ export const getSellerServices = cache(
       throw new Error(`seller services counts fetch failed: ${countsError.message}`)
     }
 
-    const rows = (countRows ?? []) as CountRow[]
+    const rows = (countRows ?? []) as unknown as CountRow[]
     const counts = countServiceTabs(rows)
     const activeCount = counts.active
     // Pagination is scoped to the CURRENT TAB's count; the stats tile below needs `counts.all`
@@ -115,6 +118,11 @@ export const getSellerServices = cache(
 
     if (opts.tab === 'active') query = query.eq('status', 'active')
     else if (opts.tab === 'paused') query = query.eq('status', 'hidden')
+    // 'all' (Tous) is every status EXCEPT draft — a draft was never published by its owner, and H5
+    // must not be the surface that first makes it visible (mirrors matchesServiceTab's 'all' case
+    // in seller-services.ts; the DB-side filter and the pure predicate must agree or the tab's
+    // fetched rows and its reported count would silently diverge).
+    else query = query.neq('status', 'draft')
 
     if (opts.q && opts.q.trim().length > 0) {
       query = query.ilike('title', `%${opts.q.trim()}%`)

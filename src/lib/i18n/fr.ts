@@ -950,6 +950,10 @@ export const fr: Record<string, string> = {
   // in the DB, distinguished only by admin_hidden_at, and enforce_admin_moderation_lock blocks the
   // owner from reactivating a moderated row — this pill is what keeps that distinction visible.
   'service.status_moderated':         "Masqué par la modération",
+  // Third status the DB allows (H6 draft-status guard PR) — never rendered in H5 today
+  // (getSellerServices excludes drafts from every tab, docs/follow-ups.md logs why), kept so
+  // ServiceRow.tsx's status switch stays compiler-exhaustive rather than comment-exhaustive.
+  'service.status_draft':             "Brouillon",
   'service.action_view':              "Voir",
   'service.action_activate':          "Activer",
   'service.action_pause':             "Mettre en pause",
@@ -2072,6 +2076,12 @@ export const fr: Record<string, string> = {
   'freelance.back':               "Retour à mon espace freelance",
   // My services list
   'freelance.services_title':     "Mes services",
+  // Introduced by the H5 draft-status guard PR (validateServiceInput's status field, currently
+  // unreachable — no production form calls validateServiceInput yet). Sibling keys
+  // freelance.services.form.error.{required,title_too_long,description_too_long,price_invalid}
+  // predate this PR and are themselves untranslated in fr.ts/ar.ts — a pre-existing gap, logged in
+  // docs/follow-ups.md, not fixed here.
+  'freelance.services.form.error.status_invalid': "Statut de service invalide.",
   // Service world-class fields: deliverables / revisions / tags / briefing (PR-F2.3 + F2.3.1, preserved 2026-06-27 Option B)
   'freelance.services.form.deliverables.label':       "Livrables",
   'freelance.services.form.deliverables.helper':      "3 à 8 éléments décrivant ce que le client reçoit",

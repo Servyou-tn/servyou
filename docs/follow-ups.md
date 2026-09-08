@@ -3632,3 +3632,59 @@ coupling" claim on that specific function is stale, not a remaining blocker.
 - **Not fixed here** — out of the migration PR's focus; a visual-gate pass, not a schema change.
 - **Trigger:** next PR that touches `/categories/[slug]` or the drill-down strip specifically —
   or before considering that route "done," whichever comes first.
+
+### H6 must detect and resume an existing draft, or a freelancer can create one and never reach it again
+
+- **What:** `service_listings.status` now allows `'draft'` (H5 draft-status guard PR). H5 (Mes
+  services) deliberately excludes drafts from every tab — Tous included — per founder ruling: a
+  draft being invisible in H5 is correct for that PR and is H6's problem to solve, not H5's.
+- **Why it matters:** H6 (the service-creation wizard) is the only thing that will ever create a
+  draft row. If H6 ships without a way to detect "I already have an in-progress draft" and resume
+  it, a freelancer who leaves the wizard partway through has created a row that is invisible
+  everywhere (H5 excludes it, every public surface already filters `status='active'`) and
+  unreachable — not recoverable, not even visible as "you have unfinished work."
+- **Not fixed here** — H6 doesn't exist in code yet; this PR only widens the schema and makes H5's
+  read paths handle a third status correctly ahead of H6 shipping.
+- **Trigger:** blocking for H6. Must be part of H6's own scope, not discovered after it ships.
+
+### `admin_hide_content`'s failure modes are indistinguishable to the caller and unlogged — a failed moderation cannot be diagnosed after the fact
+
+- **What:** every branch of `admin_hide_content` (product/service/shop/freelancer_profile/job_post)
+  returns the same generic "not found or already moderated" exception for at least two distinct
+  causes — target genuinely missing, vs. target already moderated — and, as of the H5 draft-status
+  guard PR, a third for the service branch: target is a draft. The function returns early via
+  `if not found then raise exception ...` before reaching `log_admin_action()`, so none of these
+  failure modes leaves any row in `admin_audit_log` — only a *successful* hide is logged.
+- **Why it matters:** the uniform error text is deliberate and correct for the caller (founder
+  ruling on the H5 draft-status guard PR — do not make it more specific, it would leak which guard
+  tripped). But that same uniformity means an admin who reports "I tried to hide X and nothing
+  happened" cannot be diagnosed from the audit log after the fact — there is no record a moderation
+  attempt was even made, let alone why it failed. This gap existed for the original two causes
+  before this PR; the draft guard adds a third cause to the same blind spot rather than creating it.
+- **Not fixed here** — restructuring `admin_hide_content` to log failed attempts (a different
+  transaction shape than "log only after the mutation succeeds") is a real change to all five
+  target types, out of scope for a PR that only added one guard clause to one branch.
+- **Trigger:** next time a failed moderation attempt needs to be debugged and the audit log has
+  nothing to show for it — or proactively, before `admin_hide_content` grows a 4th or 5th silent
+  failure cause.
+
+### `freelance.services.form.error.{required,title_too_long,description_too_long,price_invalid}` have no fr/ar translations
+
+- **What:** `service-validation.ts`'s `ERR` object has two i18n-key namespaces for the same form:
+  `freelance.services.form.<field>.errors.<kind>` (deliverables/revisions/tags/briefing — all
+  translated) and `freelance.services.form.error.<kind>` (required/title_too_long/
+  description_too_long/price_invalid — none translated in fr.ts or ar.ts). `t()` falls back to the
+  raw key on a miss, so any of these four, if surfaced, would render the literal key string to a
+  user instead of a message.
+- **Why it matters:** discovered while adding the fifth key in this namespace,
+  `freelance.services.form.error.status_invalid` (H5 draft-status guard PR — now translated in
+  both locales). Currently low-severity: `validateServiceInput` has zero callers in production
+  code today (no add/edit-service form is wired to it yet — H6/H7's accordion bodies are mostly
+  unbuilt per project memory), so none of these five keys can reach a real user yet. That changes
+  the moment a form starts calling this function.
+- **Not fixed here** — the four missing keys predate this PR and are outside a PR scoped to the
+  draft-status guard; fixing them means picking real FR/AR copy for four messages nobody has
+  reviewed yet.
+- **Trigger:** blocking before whichever PR first wires an add/edit-service form to
+  `validateServiceInput` (expected: H6 and/or H7) — translate all five `form.error.*` keys as part
+  of that PR's own scope, not discovered after it ships.

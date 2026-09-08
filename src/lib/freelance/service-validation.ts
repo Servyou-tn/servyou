@@ -16,6 +16,7 @@ export type ServiceField =
   | 'revisions'
   | 'tags'
   | 'briefing'
+  | 'status'
 
 export type ServiceInput = {
   title: string
@@ -75,6 +76,12 @@ const ERR = {
   tagsMax: 'freelance.services.form.tags.errors.max',
   tagsFormat: 'freelance.services.form.tags.errors.format',
   briefingMax: 'freelance.services.form.briefing.errors.max',
+  // This form only ever toggles Publier/Mettre en pause — 'draft' is set exclusively by H6 (the
+  // service-creation wizard) on insert, never through this edit path. An unrecognized status
+  // (including 'draft') is a real validation error here, not a value to silently coerce: the same
+  // coercion class as the pre-fix `input.status === 'hidden' ? 'hidden' : 'active'` line below used
+  // to be — a function with no awareness of a new status must not default to the one that publishes.
+  statusInvalid: 'freelance.services.form.error.status_invalid',
 } as const
 
 // Dedupe case-insensitively, preserving the first occurrence's casing.
@@ -121,6 +128,15 @@ export function validateServiceInput(input: ServiceInput): ServiceValidation {
   const deliveryTime = input.deliveryTime.trim()
   if (!deliveryTime) errors.delivery = ERR.required
 
+  // Status — a real field, not a default branch. Anything other than exactly 'active' or 'hidden'
+  // (including 'draft', which this form must never set) is a validation error.
+  let status: 'active' | 'hidden' = 'active'
+  if (input.status === 'active' || input.status === 'hidden') {
+    status = input.status
+  } else {
+    errors.status = ERR.statusInvalid
+  }
+
   // Deliverables — trim each, drop empties, dedupe; then count + per-item length.
   const deliverables = dedupeCI(input.deliverables.map((d) => d.trim()).filter(Boolean))
   if (deliverables.some((d) => d.length < DELIVERABLE_MIN_LEN || d.length > DELIVERABLE_MAX_LEN)) {
@@ -160,7 +176,6 @@ export function validateServiceInput(input: ServiceInput): ServiceValidation {
 
   if (Object.keys(errors).length > 0) return { ok: false, errors }
 
-  const status: 'active' | 'hidden' = input.status === 'hidden' ? 'hidden' : 'active'
   return {
     ok: true,
     value: {

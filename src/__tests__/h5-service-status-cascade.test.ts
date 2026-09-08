@@ -200,3 +200,40 @@ describe.skipIf(!hasCreds)('admin-moderation lock — the owner cannot reactivat
     await admin.from('service_listings').delete().eq('id', svc)
   })
 })
+
+describe.skipIf(!hasCreds)('admin_hide_content draft guard — a draft cannot be moderated into existence', () => {
+  it('admin_hide_content on a draft raises the generic not-found error rather than hiding it', async () => {
+    const { data, error: insertErr } = await admin
+      .from('service_listings')
+      .insert({
+        freelancer_profile_id: freelancerProfileId,
+        title: 'H5 draft guard test',
+        starting_price_tnd: 50,
+        status: 'draft',
+      })
+      .select('id')
+      .single()
+    if (insertErr || !data) throw new Error(`draft insert failed: ${insertErr?.message}`)
+    const svc = data.id
+
+    const { error } = await adminClient.rpc('admin_hide_content', {
+      target_type: 'service',
+      target_id: svc,
+      reason: 'H5 draft guard test',
+    })
+    expect(error).not.toBeNull()
+    expect(error?.message).toMatch(/not found or already moderated/)
+
+    // Confirm the row genuinely never moved — same "not just an error message" bar as the
+    // moderation-lock test above.
+    const { data: after } = await admin
+      .from('service_listings')
+      .select('status, admin_hidden_at')
+      .eq('id', svc)
+      .single()
+    expect(after?.status).toBe('draft')
+    expect(after?.admin_hidden_at).toBeNull()
+
+    await admin.from('service_listings').delete().eq('id', svc)
+  })
+})

@@ -17,12 +17,16 @@ export const SERVICE_SORTS = ['recent', 'price_asc', 'price_desc'] as const
 export type ServiceSort = (typeof SERVICE_SORTS)[number]
 export const DEFAULT_SERVICE_SORT: ServiceSort = 'recent'
 
-type TabFields = { status: string }
+// A service can also be 'draft' (H6, the creation wizard, is its only writer — not yet in code).
+// A draft is excluded from ALL THREE tabs, Tous included: it was never published by its owner, so
+// H5 must not be the surface that first makes it visible. Making it resumable/visible again is
+// H6's job (see docs/follow-ups.md), not this file's.
+type TabFields = { status: 'active' | 'hidden' | 'draft' }
 
 export function matchesServiceTab(s: TabFields, tab: ServiceTab): boolean {
   switch (tab) {
     case 'all':
-      return true
+      return s.status !== 'draft'
     case 'active':
       return s.status === 'active'
     case 'paused':
@@ -34,7 +38,7 @@ export type ServiceTabCounts = Record<ServiceTab, number>
 
 export function countServiceTabs(rows: TabFields[]): ServiceTabCounts {
   return {
-    all: rows.length,
+    all: rows.filter((r) => matchesServiceTab(r, 'all')).length,
     active: rows.filter((r) => matchesServiceTab(r, 'active')).length,
     paused: rows.filter((r) => matchesServiceTab(r, 'paused')).length,
   }
@@ -45,7 +49,7 @@ export type SellerServiceRow = {
   title: string
   description: string | null
   priceTnd: number
-  status: string
+  status: 'active' | 'hidden' | 'draft'
   adminHiddenAt: string | null
   /** Non-cancelled orders against THIS listing — the "Commandes" column. */
   ordersCount: number

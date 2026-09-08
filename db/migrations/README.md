@@ -131,6 +131,29 @@ this PR and is not attempted here.
     — without it the picker would have silently grown from ~9 options to 105 the moment this
     migration made `categories` a real parent/child table for the first time.
 
+50. **20260908192000_service_listings_draft_status** — Widens `service_listings.status` from
+    `('active','hidden')` to `('active','hidden','draft')` ahead of H6 (the service-creation
+    wizard, not yet in code) shipping — H6 is the only future writer of `'draft'`, so an
+    in-progress service survives leaving the wizard instead of publishing early or being lost.
+    `CREATE OR REPLACE`s `admin_hide_content` (migration 32's definition) so its `service` branch
+    adds `and status <> 'draft'` to the guard: without it, a freelancer's unpublished draft would
+    become admin-hidden-and-moderated the moment any report (mistaken or buggy) targeted one — same
+    coercion class as `validateServiceInput` defaulting an unrecognized status to `'active'`, a
+    function with no awareness of the new status defaulting to the one that publishes. Reuses the
+    exact "not found or already moderated" exception text the pre-existing already-moderated case
+    raises, so `actions.ts`'s `translateModerationError()` needs no change. `admin_unhide_content`
+    is deliberately untouched: its `WHERE admin_hidden_at is not null` clause only ever matches rows
+    `admin_hide_content` itself moderated, which (by this same guard) can never have been `'draft'`
+    — there is no state it restores to `'active'` from that it didn't itself verify. The `products`
+    branch is untouched too — `products.status` has no `'draft'` value to guard against. Every
+    public read path (`/marche/services`, D2, D4's Ses services box) already filtered
+    `status='active'` explicitly before this migration, so a draft is invisible there by
+    construction; `freelancer_has_active_listing()` filters the same way, so a draft never flips
+    `is_published`. `docs/follow-ups.md` logs two items this migration surfaces but does not fix:
+    H6 must detect and resume an existing draft or a freelancer can create one and never reach it
+    again, and `admin_hide_content`'s failure modes (not-found / already-moderated / now draft) are
+    indistinguishable to the caller and unlogged on failure across all five target types.
+
 ## Rollback paths
 
 Each migration in this folder represents work that has already been applied to production. Rollback is therefore reverse migration work, not file deletion. If a rollback is ever needed, write a new dated migration that reverses the relevant changes — never delete history from this folder.
