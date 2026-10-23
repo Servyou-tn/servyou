@@ -14,6 +14,7 @@ export const INTEGRATION_GLOBS = [
   '**/order-delivery-fee-snapshot.test.ts',
   '**/orders-insert-integrity.test.ts',
   '**/seller-capability-integrity.test.ts',
+  '**/job-responses-integrity.test.ts',
   '**/profiles-rls.test.ts',
   '**/profiles-client-insert-delete-revoked.test.ts',
   '**/job-limits.test.ts',

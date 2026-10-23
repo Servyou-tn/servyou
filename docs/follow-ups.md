@@ -3795,8 +3795,16 @@ orders INSERT gap (migration 54). Ranked most severe first; each is its own PR u
 - **Fix:** BEFORE INSERT trigger on both tables requiring the caller's `profiles.seller_type` to be
   the matching value (which is itself age-gated), so the one-capability rule follows too.
 
-### HIGH — `job_responses` INSERT bypasses the 18+ and freelancer-capability rules (and unlocks phones)
+### ✅ CLOSED — HIGH — `job_responses` INSERT bypasses the 18+ and freelancer-capability rules (and unlocks phones)
 
+- **Closed by** migration 59 (`20261023212946_job_responses_responder_integrity`,
+  `fix/job-responses-integrity`, 2026-10-23), switch-path corollary included:
+  `enforce_job_responder_capability()` (BEFORE INSERT, fires before the limits trigger) requires the
+  caller's own row first, then `seller_type = 'freelancer'`, 18+, not suspended and an unmoderated
+  freelancer profile (all `42501`); `enforce_seller_capability_switch()` now also refuses a move away
+  from `freelancer` while the account holds any response (D1); anon lost INSERT / UPDATE and
+  authenticated lost UPDATE on the table (D3). D2: direct 18+ check kept. D4: moderation shedding
+  logged below, not fixed. Live proof: `src/__tests__/job-responses-integrity.test.ts`.
 - **Found by:** `/gstack-review` of PR #180 (security specialist + adversarial pass, independently),
   2026-10-23; confirmed live by the architect. Not caused by migration 55 — the policy dates from
   migration 8 (`20260603182702_job_posts_skills_responses`).
@@ -3830,6 +3838,9 @@ orders INSERT gap (migration 54). Ranked most severe first; each is its own PR u
   or any server action on an unmatched route (e.g. `submitProductRequest`).
 - **Fix:** ban the auth user on suspension (admin API), add an `is_active()` helper to write policies,
   fix the matcher. Includes decision D3 below.
+- **Partial (2026-10-23):** migration 59 is the first DB-level read of `suspended_at` on a write path
+  — a suspended account can no longer insert a `job_responses` row. Every other write path is still
+  open.
 
 ### ✅ CLOSED — HIGH — admin area has no server-side `requireAdmin()`
 
@@ -3977,6 +3988,10 @@ orders INSERT gap (migration 54). Ranked most severe first; each is its own PR u
 - **Fix (needs a forward migration):** fail closed first —
   `if v_owner is distinct from auth.uid() then raise ... using errcode = '42501'` — before the
   `FOR SHARE` read.
+- **Also leaks more than `seller_type` (2026-10-23, `fix/job-responses-integrity` review):** the
+  "à la fois" message tells the caller whether the named account owns a freelancer profile — private
+  while that profile is unpublished. Migration 59 already uses the fail-closed-first shape on
+  `job_responses`; `enforce_seller_capability()` should copy it.
 
 ### LOW — `admin_hidden_*` can be set on INSERT (`shops`, `freelancer_profiles`)
 
@@ -4015,9 +4030,8 @@ orders INSERT gap (migration 54). Ranked most severe first; each is its own PR u
 
 ### LOW — Supabase advisor hygiene
 
-- 27 SECURITY DEFINER functions flagged as executable by anon/authenticated: the trigger functions
-  cannot be called over RPC and every admin RPC gates on `is_admin()`, so this is noise — but
-  revoking EXECUTE on the trigger functions from anon/authenticated would silence it honestly.
+- SECURITY DEFINER functions executable by anon/authenticated — now 31, tracked as its own entry
+  under "job_responses integrity" below (one hygiene PR, default privileges included).
 - Leaked-password protection (HaveIBeenPwned) is disabled in Auth.
 - Mutable `search_path` on `handle_updated_at`, `set_cancelled_at_on_transition`, `f_unaccent`; the
   `unaccent` extension lives in `public`.
@@ -4027,8 +4041,11 @@ orders INSERT gap (migration 54). Ranked most severe first; each is its own PR u
   both grant TRUNCATE to anon and authenticated. Migration 53 already revoked it on `profiles`.
 - `uploaded_objects` has RLS with no policies (intentional: service-role only) — document it.
 
-### LOW — `auth.admin.listUsers` fails on this project ("Database error finding users")
+### ✅ CLOSED — LOW — `auth.admin.listUsers` fails on this project ("Database error finding users")
 
+- **Closed by** migration 56 (`20261023195911_auth_users_null_token_columns_fix`, applied by the
+  architect 2026-10-23, recorded in `fix/job-responses-integrity`): the four columns coalesced to
+  `''`; 0 of 22 rows still hold a NULL.
 - **What:** 9 of 22 `auth.users` rows have NULL `confirmation_token` / `recovery_token` /
   `email_change` / `email_change_token_new` (seeded by SQL); GoTrue cannot scan NULL into those
   string fields, so every `listUsers` call fails. Found while writing
@@ -4133,3 +4150,91 @@ database change, so everything needing one lands here.
 - **Fix (product call):** reject URLs with a userinfo part (`new URL(u).username || .password`) in
   both `isHttpUrl` and the server schema (a `.refine` next to `.url(HTTP_URL)`), keeping
   freelancer-url-scheme.test.ts's parity check. Pairs with the DB CHECK and `safeHref` entries above.
+
+## job_responses integrity (`fix/job-responses-integrity`, 2026-10-23)
+
+Found during migration 59's discovery, `/gstack-review` (core + adversarial pass) and the Supabase
+advisors. Migration 59 itself closed the `job_responses` HIGH above.
+
+### MEDIUM — moderation is shed by deleting and re-creating the freelancer profile (decision D4)
+
+- **What:** "Owner deletes own freelancer profile" checks only `profile_id = auth.uid()`, and
+  `enforce_admin_marker_lock` is BEFORE UPDATE only. A moderated freelancer with no orders can
+  DELETE their profile and INSERT a fresh one (`enforce_seller_capability` passes: still
+  `seller_type = 'freelancer'`, no shop) with `admin_hidden_at` NULL — and respond to job posts
+  again, since migration 59's "not moderated" check reads the new row.
+- **Scope:** moderation evasion across the whole freelancer surface (profile, listings once
+  re-created), not only responses.
+- **Fix (design choice):** refuse the DELETE while `admin_hidden_at` is set (policy or trigger), or
+  move moderation to the account (`profiles`) so a re-created row inherits it.
+
+### MEDIUM — admin-moderated job posts stay readable and accept responses
+
+- **What:** `admin_hide_content('job_post', …)` only stamps `job_posts.admin_hidden_at`. The SELECT
+  policy "Open posts or own posts readable" is `status = 'open' OR consumer_id = auth.uid()`, and
+  `check_job_response_limits()` checks status and expiry but not `admin_hidden_at` — so a moderated
+  open post is still listed to everyone and still accepts responses (each one unlocks the poster's
+  phone).
+- **Fix:** add `admin_hidden_at is null` to the public branch of the SELECT policy (admins keep
+  "Admin reads all job_posts") and refuse a response on a moderated post in a BEFORE INSERT guard.
+
+### LOW — suspending or moderating a freelancer does not revoke the phone unlock they already hold
+
+- **What:** `get_contact_phone` returns the phone whenever any `job_responses` row links caller and
+  target, whatever the responder's current state. Migration 59 stops new responses from suspended or
+  moderated freelancers; existing ones keep working.
+- **Fix (product call):** gate `get_contact_phone`'s job_responses branches on the responder still
+  being active, or have suspension / moderation withdraw the responses.
+
+### LOW — 31 SECURITY DEFINER functions are executable by anon / authenticated (one hygiene PR)
+
+- **What:** advisor lints 0028 / 0029 flag every SECURITY DEFINER function in `public` (31 after
+  migration 59). Supabase's default privileges grant EXECUTE on each new function to `anon` and
+  `authenticated` directly, on top of Postgres' PUBLIC grant, so `revoke … from public` alone (what
+  older migrations did) leaves them callable over `/rest/v1/rpc`. Trigger functions cannot run that
+  way ("trigger functions can only be called as triggers"); the admin RPCs gate on `is_admin()`
+  internally — so most of this is noise, but it is one layer.
+- **Includes:** `enforce_job_responder_capability()` — its
+  `revoke execute … from public, anon, authenticated` was drafted after review and NOT applied with
+  migration 59.
+- **Fix (one PR):** revoke EXECUTE from `public, anon, authenticated` on every trigger function and
+  every function no client calls; keep the intended RPCs (`get_contact_phone`,
+  `get_completed_service_order_count`, the admin RPCs for `authenticated`) explicitly granted; and
+  `alter default privileges in schema public revoke execute on functions from public, anon,
+  authenticated` so new functions start closed. Prove every trigger still fires (the live suites do).
+
+### LOW — migration 48's README entry overstates `freelancer_has_active_listing`'s EXECUTE revoke
+
+- **What:** README #48 says EXECUTE was "revoked from public/granted to authenticated". Live ACL:
+  `{postgres, anon, authenticated, service_role}` — PUBLIC is gone but `anon` still holds a direct
+  grant (Supabase default privileges), and the advisor lists it under lint 0028.
+- **Fix:** revoke from `anon` in the hygiene PR above, then correct the README sentence.
+
+### LOW — `auth_rls_initplan`: 69 policies re-evaluate `auth.uid()` per row
+
+- **What:** advisor lint `auth_rls_initplan` flags 69 policies (all three `job_responses` policies
+  among them) that call `auth.uid()` / `is_admin()` unwrapped, so Postgres re-evaluates them per
+  row. The `job_responses` policies also have no `TO` clause (they apply to `public`).
+- **Fix:** one performance PR rewriting each predicate as `(select auth.uid())` and adding
+  `to authenticated` where the policy is never meant for `anon` — policy-by-policy, live-tested.
+
+### LOW (note) — the `security_definer_view` ERROR on `public_profiles` is intentional
+
+- The advisor reports `public_profiles` as a SECURITY DEFINER view (level ERROR). That is by design:
+  its protection IS its SELECT column list (CLAUDE.md — never add phone / email / date_of_birth).
+  Switching it to `security_invoker` would make it return nothing to other users (profiles RLS is
+  owner-only). Document the exception; do not "fix" it.
+
+### LOW — two `20260804*` migration files do not match their recorded versions
+
+- **What:** `20260804125106_remove_placeholder_product_image_pointers.sql` is recorded as
+  `20260804114751`, and `20260804132447_categories_kind_discriminator.sql` as `20260804122010`. The
+  README's Verification query lists only three known-divergent files, so these two read as drift.
+- **Fix:** add both to the `known_divergent` table (content unchanged), like the other three.
+
+### LOW — two June test users are still in `auth.users`
+
+- **What:** two `test-…@example.com` users created 2026-06-20 and 2026-06-24 (the `job-limits` /
+  `profiles-rls` email shape) survived their suites' teardown. Not created by this PR's runs (both
+  suites cleaned up after themselves on 2026-10-23).
+- **Fix:** confirm they own nothing real, then delete them with the service role.
