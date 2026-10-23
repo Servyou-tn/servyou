@@ -154,6 +154,16 @@ this PR and is not attempted here.
     again, and `admin_hide_content`'s failure modes (not-found / already-moderated / now draft) are
     indistinguishable to the caller and unlogged on failure across all five target types.
 
+51. **20260909203226_service_listings_subcategory_id** — Adds `service_listings.subcategory_id`
+    (nullable `uuid references categories(id)`) for H6's two-level category cascade: pick a
+    sector, then a subcategory within it. `category_id` keeps its existing meaning (the sector —
+    every one of the 21 pre-H6 rows already points at a top-level `categories` row) so nothing
+    that already reads it (`CATEGORY_ICONS`, `/marche/services` filters, search) needs to change;
+    `subcategory_id` carries the leaf the taxonomy cutover migration (49) made real. **For the
+    record:** this column was proposed and approved during migration 49's own PR discovery but
+    never made it into that applied migration — a gap surfaced by H6 being its first real
+    consumer, not new scope invented here.
+
 ## Rollback paths
 
 Each migration in this folder represents work that has already been applied to production. Rollback is therefore reverse migration work, not file deletion. If a rollback is ever needed, write a new dated migration that reverses the relevant changes — never delete history from this folder.
