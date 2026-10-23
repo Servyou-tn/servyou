@@ -13,6 +13,7 @@ import {
   WORKING_HOURS_MAX,
   WORKPLACE_LOCATION_MAX,
 } from '@/lib/marche/freelancer-profile-edit'
+import { HTTP_URL } from '@/lib/freelancer/http-url'
 
 // H3 "Modifier mon profil" save — Enregistrer is deliberately UNGATED (same posture as G6's
 // "Enregistrer le brouillon", docs/design/g6-write-path.md §6): no field here has a Zod `.min()`
@@ -22,15 +23,16 @@ import {
 // caps ARE enforced here; those are data-integrity limits, not completeness rules.
 
 const optionalText = (max: number) => z.string().trim().max(max).transform((v) => v || null)
-const optionalUrl = z.union([z.string().trim().max(500).url(), z.literal('')]).transform((v) => v || null)
+// Every URL here is http(s)-only (HTTP_URL) — they render as `href` on the public D4 profile.
+const optionalUrl = z.union([z.string().trim().max(500).url(HTTP_URL), z.literal('')]).transform((v) => v || null)
 
 const LinkRowInput = z.object({
   label: z.string().trim().min(1).max(100),
-  url: z.string().trim().min(1).max(500).url(),
+  url: z.string().trim().min(1).max(500).url(HTTP_URL),
 })
 
 const PortfolioRowInput = z.object({
-  imageUrl: z.string().trim().min(1).url(),
+  imageUrl: z.string().trim().min(1).url(HTTP_URL),
   title: optionalText(200),
   url: optionalUrl,
   description: optionalText(2000),

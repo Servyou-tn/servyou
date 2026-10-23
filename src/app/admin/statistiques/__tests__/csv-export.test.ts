@@ -22,17 +22,21 @@ const h = vi.hoisted(() => {
   }
 
   function makeBuilder(table: string) {
+    const profileRow = () =>
+      Promise.resolve(
+        table === 'profiles'
+          ? { data: state.isAdmin === null ? null : { is_admin: state.isAdmin }, error: null }
+          : { data: null, error: null },
+      )
     const builder: Record<string, unknown> = {
       select: () => builder,
       eq: () => builder,
       gte: () => builder,
       order: () => builder,
-      single: () =>
-        Promise.resolve(
-          table === 'profiles'
-            ? { data: state.isAdmin === null ? null : { is_admin: state.isAdmin }, error: null }
-            : { data: null, error: null },
-        ),
+      single: profileRow,
+      // The admin gate is the real checkAdmin (src/lib/auth/require-admin.ts), which reads
+      // profiles with maybeSingle — not mocked, so these tests still exercise the gate itself.
+      maybeSingle: profileRow,
       // Make the builder awaitable for the orders query (which ends in .order()).
       then: (resolve: (v: unknown) => void) =>
         Promise.resolve(table === 'orders' ? state.orders : { data: null, error: null }).then(resolve),

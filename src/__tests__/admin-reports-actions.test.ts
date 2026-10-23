@@ -44,7 +44,17 @@ vi.mock('next/cache', () => ({
   revalidatePath: h.revalidatePath,
 }))
 
+// checkAdmin (src/lib/auth/require-admin.ts) runs first in every admin action. Mocked to an admin
+// by default so the tests below exercise the action logic itself; the 'admin gate' block flips it.
+const guard = vi.hoisted(() => ({ checkAdmin: vi.fn() }))
+vi.mock('@/lib/auth/require-admin', () => ({ checkAdmin: guard.checkAdmin }))
+
 import { claimReport, resolveReport, dismissReport } from '@/app/admin/signalements/actions'
+
+beforeEach(() => {
+  guard.checkAdmin.mockReset()
+  guard.checkAdmin.mockResolvedValue({ ok: true, userId: 'admin-1' })
+})
 
 beforeEach(() => {
   h.state.result = { data: [{ id: 'r1' }], error: null }
@@ -186,4 +196,45 @@ describe('dismissReport', () => {
       p_note: 'Signalement infondé, aucune action.',
     })
   })
+})
+
+describe('admin gate (checkAdmin runs first)', () => {
+  it('claimReport rejects a non-admin before touching the database', async () => {
+    guard.checkAdmin.mockResolvedValue({ ok: false, reason: 'forbidden' })
+    const res = await claimReport('r1')
+    expect(res).toEqual({ success: false, error: 'admin.users.error_forbidden' })
+    expect(h.from).not.toHaveBeenCalled()
+    expect(h.rpc).not.toHaveBeenCalled()
+    expect(h.revalidatePath).not.toHaveBeenCalled()
+  })
+
+  it('resolveReport rejects a non-admin before touching the database', async () => {
+    guard.checkAdmin.mockResolvedValue({ ok: false, reason: 'forbidden' })
+    const res = await resolveReport('r1', 'Note.')
+    expect(res).toEqual({ success: false, error: 'admin.users.error_forbidden' })
+    expect(h.from).not.toHaveBeenCalled()
+    expect(h.rpc).not.toHaveBeenCalled()
+    expect(h.revalidatePath).not.toHaveBeenCalled()
+  })
+
+  it('dismissReport rejects a non-admin before touching the database', async () => {
+    guard.checkAdmin.mockResolvedValue({ ok: false, reason: 'forbidden' })
+    const res = await dismissReport('r1', 'Note.')
+    expect(res).toEqual({ success: false, error: 'admin.users.error_forbidden' })
+    expect(h.from).not.toHaveBeenCalled()
+    expect(h.rpc).not.toHaveBeenCalled()
+    expect(h.revalidatePath).not.toHaveBeenCalled()
+  })
+
+  it.each(['unauthenticated', 'query_failed'] as const)(
+    'claimReport also fails closed when the check returns %s',
+    async (reason) => {
+      guard.checkAdmin.mockResolvedValue({ ok: false, reason })
+      const res = await claimReport('r1')
+      expect(res).toEqual({ success: false, error: 'admin.users.error_forbidden' })
+      expect(h.from).not.toHaveBeenCalled()
+      expect(h.rpc).not.toHaveBeenCalled()
+      expect(h.revalidatePath).not.toHaveBeenCalled()
+    },
+  )
 })

@@ -11,6 +11,11 @@ import { FOCUS_RING } from '@/components/layout/styles'
 import { isValidPhone } from '@/lib/phone'
 import { submitServiceRequest } from '../actions'
 import { Textarea } from '@/components/ui/textarea'
+import {
+  SERVICE_DESCRIPTION_MAX as MAX_DESCRIPTION,
+  SERVICE_DESCRIPTION_MIN as MIN_DESCRIPTION,
+  TIMEFRAME_MAX,
+} from '../limits'
 
 // E1 MAIN — the form card, measured from Figma 680:56165 (empty) / 682:56521 (filled) /
 // 682:56805 (mobile). Client because it owns four controlled fields, inline validation and the
@@ -24,9 +29,6 @@ import { Textarea } from '@/components/ui/textarea'
 // Validation is duplicated on purpose, not defensively: these checks are UX (inline, on submit)
 // and the server action re-runs the real ones. The floors match — 20 chars, a valid TN phone —
 // so a client-side pass cannot produce a server-side reject the user can't see.
-
-const MAX_DESCRIPTION = 500
-const MIN_DESCRIPTION = 20
 
 type Errors = { description?: string; budget?: string; phone?: string }
 
@@ -128,6 +130,7 @@ export function ServiceRequestForm({
           label={t('demander.field.timeframe', lang)}
           placeholder={t('demander.field.timeframe_ph', lang)}
           helper={t('demander.field.optional', lang)}
+          maxLength={TIMEFRAME_MAX}
           value={timeframe}
           onChange={(e) => setTimeframe(e.target.value)}
         />

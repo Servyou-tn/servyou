@@ -29,7 +29,17 @@ vi.mock('next/cache', () => ({
   revalidatePath: h.revalidatePath,
 }))
 
+// checkAdmin (src/lib/auth/require-admin.ts) runs first in every admin action. Mocked to an admin
+// by default so the tests below exercise the action logic itself; the 'admin gate' block flips it.
+const guard = vi.hoisted(() => ({ checkAdmin: vi.fn() }))
+vi.mock('@/lib/auth/require-admin', () => ({ checkAdmin: guard.checkAdmin }))
+
 import { hideContent, unhideContent } from '@/app/admin/signalements/actions'
+
+beforeEach(() => {
+  guard.checkAdmin.mockReset()
+  guard.checkAdmin.mockResolvedValue({ ok: true, userId: 'admin-1' })
+})
 
 beforeEach(() => {
   h.state.result = { data: null, error: null }
@@ -128,4 +138,33 @@ describe('moderation of shops, freelancer profiles, and job posts (PR-N)', () =>
       expect(res).toEqual({ success: false, error: 'admin.moderation.error_not_moderated' })
     })
   }
+})
+
+describe('admin gate (checkAdmin runs first)', () => {
+  it('hideContent rejects a non-admin before touching the database', async () => {
+    guard.checkAdmin.mockResolvedValue({ ok: false, reason: 'forbidden' })
+    const res = await hideContent('product', 'p1', 'Contenu interdit.', 'r1')
+    expect(res).toEqual({ success: false, error: 'admin.moderation.error_forbidden' })
+    expect(h.rpc).not.toHaveBeenCalled()
+    expect(h.revalidatePath).not.toHaveBeenCalled()
+  })
+
+  it('unhideContent rejects a non-admin before touching the database', async () => {
+    guard.checkAdmin.mockResolvedValue({ ok: false, reason: 'forbidden' })
+    const res = await unhideContent('product', 'p1', 'r1')
+    expect(res).toEqual({ success: false, error: 'admin.moderation.error_forbidden' })
+    expect(h.rpc).not.toHaveBeenCalled()
+    expect(h.revalidatePath).not.toHaveBeenCalled()
+  })
+
+  it.each(['unauthenticated', 'query_failed'] as const)(
+    'hideContent also fails closed when the check returns %s',
+    async (reason) => {
+      guard.checkAdmin.mockResolvedValue({ ok: false, reason })
+      const res = await hideContent('product', 'p1', 'Contenu interdit.', 'r1')
+      expect(res).toEqual({ success: false, error: 'admin.moderation.error_forbidden' })
+      expect(h.rpc).not.toHaveBeenCalled()
+      expect(h.revalidatePath).not.toHaveBeenCalled()
+    },
+  )
 })

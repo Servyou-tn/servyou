@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
+import { checkAdmin } from '@/lib/auth/require-admin'
 import type { DisputeOutcome } from '@/lib/types/dispute'
 
 export type DisputeActionResult = { success: boolean; error?: string }
@@ -9,13 +10,14 @@ export type DisputeActionResult = { success: boolean; error?: string }
 const VALID_OUTCOMES: DisputeOutcome[] = ['sided_buyer', 'sided_seller', 'compromise']
 
 // Same rowcount-honest pattern as the reports actions (src/app/admin/signalements/
-// actions.ts). The admin layout's client guard does NOT protect server actions — only
-// RLS does, and the disputes UPDATE policy is is_admin(). A non-admin caller (or a
-// double-submit, or an already-claimed/closed dispute) matches zero rows and PostgREST
-// returns { data: [], error: null } — i.e. NO error. So we .select('id') after the
-// update and treat an empty result as failure. The DB CHECKs (disputes_terminal_
-// requires_admin_note, disputes_outcome_only_when_resolved) + RLS are the real guards;
-// this is the honest-result layer. Error values are i18n keys; the client translates.
+// actions.ts). Every action first runs checkAdmin (src/lib/auth/require-admin.ts) — a
+// non-admin caller is rejected before any query touches disputes. Under that, RLS is still
+// the real guard: the disputes UPDATE policy is is_admin(). A double-submit, or an
+// already-claimed/closed dispute, matches zero rows and PostgREST returns
+// { data: [], error: null } — i.e. NO error. So we .select('id') after the update and
+// treat an empty result as failure. The DB CHECKs (disputes_terminal_requires_admin_note,
+// disputes_outcome_only_when_resolved) + RLS are the real guards; this is the honest-result
+// layer. Error values are i18n keys; the client translates.
 
 // Audit logging (best-effort, by design) — same rationale as the reports actions
 // (src/app/admin/signalements/actions.ts). Each successful action writes a forensic
@@ -24,8 +26,21 @@ const VALID_OUTCOMES: DisputeOutcome[] = ['sided_buyer', 'sided_seller', 'compro
 // round-trip: a failed audit must NOT turn a succeeded action into a reported failure.
 // We surface the error to the server log per the never-swallow rule, then return success.
 
+const FORBIDDEN = 'admin.users.error_forbidden'
+
+// A transport-level throw is `unknown`, not a PostgrestError — log its message, never the raw value.
+function thrownMessage(e: unknown): string {
+  return e instanceof Error ? e.message : String(e)
+}
+
 export async function claimDispute(disputeId: string): Promise<DisputeActionResult> {
   const supabase = await createClient()
+  const admin = await checkAdmin(supabase)
+  if (!admin.ok) {
+    console.error(`[admin/litiges] claimDispute rejected: ${admin.reason}`)
+    return { success: false, error: FORBIDDEN }
+  }
+
   const { data, error } = await supabase
     .from('disputes')
     .update({ status: 'under_review' })
@@ -34,7 +49,7 @@ export async function claimDispute(disputeId: string): Promise<DisputeActionResu
     .select('id')
 
   if (error) {
-    console.error('[admin/litiges] claimDispute error:', error)
+    console.error('[admin/litiges] claimDispute error:', error.message, error.code, error.details)
     return { success: false, error: 'admin.disputes.error_claim_no_row' }
   }
   if (!data || data.length === 0) {
@@ -51,10 +66,10 @@ export async function claimDispute(disputeId: string): Promise<DisputeActionResu
       p_after_state: { status: 'under_review' },
     })
     if (logError) {
-      console.error('[admin/litiges] claimDispute audit log error:', logError)
+      console.error('[admin/litiges] claimDispute audit log error:', logError.message, logError.code, logError.details)
     }
   } catch (logError) {
-    console.error('[admin/litiges] claimDispute audit log error:', logError)
+    console.error('[admin/litiges] claimDispute audit log error:', thrownMessage(logError))
   }
 
   revalidatePath('/admin/litiges')
@@ -62,16 +77,23 @@ export async function claimDispute(disputeId: string): Promise<DisputeActionResu
   return { success: true }
 }
 
-// Resolve = terminal close that records the side the admin took. Both validations run
-// BEFORE any DB call so a bad request never touches the database: the note is required
-// (DB CHECK disputes_terminal_requires_admin_note backs it), and the outcome must be one
-// of the three valid sides (DB CHECK disputes_outcome_only_when_resolved requires a
+// Resolve = terminal close that records the side the admin took. After the admin gate, both
+// validations run BEFORE any disputes query so a bad request never touches the table: the note
+// is required (DB CHECK disputes_terminal_requires_admin_note backs it), and the outcome must be
+// one of the three valid sides (DB CHECK disputes_outcome_only_when_resolved requires a
 // non-null outcome when status='resolved'). updated_at is bumped by the trigger.
 export async function resolveDispute(
   disputeId: string,
   outcome: string,
   adminNote: string,
 ): Promise<DisputeActionResult> {
+  const supabase = await createClient()
+  const admin = await checkAdmin(supabase)
+  if (!admin.ok) {
+    console.error(`[admin/litiges] resolveDispute rejected: ${admin.reason}`)
+    return { success: false, error: FORBIDDEN }
+  }
+
   const note = adminNote.trim()
   if (note.length === 0) {
     return { success: false, error: 'admin.disputes.note_required' }
@@ -80,7 +102,6 @@ export async function resolveDispute(
     return { success: false, error: 'admin.disputes.outcome_required' }
   }
 
-  const supabase = await createClient()
   const { data, error } = await supabase
     .from('disputes')
     .update({ status: 'resolved', outcome, admin_note: note })
@@ -89,7 +110,7 @@ export async function resolveDispute(
     .select('id')
 
   if (error) {
-    console.error('[admin/litiges] resolveDispute error:', error)
+    console.error('[admin/litiges] resolveDispute error:', error.message, error.code, error.details)
     return { success: false, error: 'admin.disputes.error_resolve_no_row' }
   }
   if (!data || data.length === 0) {
@@ -106,10 +127,10 @@ export async function resolveDispute(
       p_note: note,
     })
     if (logError) {
-      console.error('[admin/litiges] resolveDispute audit log error:', logError)
+      console.error('[admin/litiges] resolveDispute audit log error:', logError.message, logError.code, logError.details)
     }
   } catch (logError) {
-    console.error('[admin/litiges] resolveDispute audit log error:', logError)
+    console.error('[admin/litiges] resolveDispute audit log error:', thrownMessage(logError))
   }
 
   revalidatePath('/admin/litiges')
@@ -118,16 +139,22 @@ export async function resolveDispute(
 }
 
 // Dismiss = terminal close with NO side taken (the dispute was judged invalid). Mirrors
-// resolveDispute minus the outcome: same admin_note requirement (DB CHECK backs it), same
-// RLS + rowcount-honest guard. outcome stays null (disputes_outcome_only_when_resolved
-// requires null outcome for any non-resolved status).
+// resolveDispute minus the outcome: same admin gate, same admin_note requirement (DB CHECK
+// backs it), same RLS + rowcount-honest guard. outcome stays null
+// (disputes_outcome_only_when_resolved requires null outcome for any non-resolved status).
 export async function dismissDispute(disputeId: string, adminNote: string): Promise<DisputeActionResult> {
+  const supabase = await createClient()
+  const admin = await checkAdmin(supabase)
+  if (!admin.ok) {
+    console.error(`[admin/litiges] dismissDispute rejected: ${admin.reason}`)
+    return { success: false, error: FORBIDDEN }
+  }
+
   const note = adminNote.trim()
   if (note.length === 0) {
     return { success: false, error: 'admin.disputes.dismiss_note_required' }
   }
 
-  const supabase = await createClient()
   const { data, error } = await supabase
     .from('disputes')
     .update({ status: 'dismissed', admin_note: note })
@@ -136,7 +163,7 @@ export async function dismissDispute(disputeId: string, adminNote: string): Prom
     .select('id')
 
   if (error) {
-    console.error('[admin/litiges] dismissDispute error:', error)
+    console.error('[admin/litiges] dismissDispute error:', error.message, error.code, error.details)
     return { success: false, error: 'admin.disputes.error_dismiss_no_row' }
   }
   if (!data || data.length === 0) {
@@ -153,10 +180,10 @@ export async function dismissDispute(disputeId: string, adminNote: string): Prom
       p_note: note,
     })
     if (logError) {
-      console.error('[admin/litiges] dismissDispute audit log error:', logError)
+      console.error('[admin/litiges] dismissDispute audit log error:', logError.message, logError.code, logError.details)
     }
   } catch (logError) {
-    console.error('[admin/litiges] dismissDispute audit log error:', logError)
+    console.error('[admin/litiges] dismissDispute audit log error:', thrownMessage(logError))
   }
 
   revalidatePath('/admin/litiges')

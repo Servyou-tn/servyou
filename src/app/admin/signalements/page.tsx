@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { getLang } from '@/lib/i18n/server'
 import { t } from '@/lib/i18n'
 import { createClient } from '@/lib/supabase/server'
+import { requireAdmin } from '@/lib/auth/require-admin'
 import type { Lang } from '@/lib/i18n'
 
 type ReportRow = {
@@ -44,6 +45,7 @@ function StatusBadge({ status, tr }: { status: string; tr: (k: string) => string
 }
 
 export default async function ReportsQueuePage() {
+  await requireAdmin('/admin/signalements')
   const lang = await getLang()
   const tr = (key: string): string => t(key, lang)
   const supabase = await createClient()
@@ -55,7 +57,7 @@ export default async function ReportsQueuePage() {
     .in('status', ['open', 'under_review'])
     .order('created_at', { ascending: false })
 
-  if (error) console.error('[admin/signalements] list fetch error:', error)
+  if (error) console.error('[admin/signalements] list fetch error:', error.message, error.code, error.details)
   const rows = (reports as ReportRow[] | null) ?? []
 
   // Batch-resolve reporter names via public_profiles (robust against PostgREST
@@ -65,7 +67,7 @@ export default async function ReportsQueuePage() {
   if (reporterIds.length > 0) {
     const { data: profiles, error: pErr } = await supabase
       .from('public_profiles').select('id, full_name').in('id', reporterIds)
-    if (pErr) console.error('[admin/signalements] reporter names fetch error:', pErr)
+    if (pErr) console.error('[admin/signalements] reporter names fetch error:', pErr.message, pErr.code, pErr.details)
     for (const p of (profiles ?? []) as Array<{ id: string; full_name: string }>) {
       nameById.set(p.id, p.full_name)
     }

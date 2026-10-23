@@ -9,6 +9,7 @@ import { resolveOwnedFreelancerProfileId } from '@/lib/freelancer/owner-profile'
 import { reconcile } from '@/lib/shops/reconcile'
 import { diffLanguages } from '@/lib/freelancer/diff-languages'
 import { LANGUAGE_CODES, PROFICIENCY_CODES } from '@/lib/freelancer/language-options'
+import { HTTP_URL } from '@/lib/freelancer/http-url'
 
 // H2 step 2 "Compétences & langues" — Figma 467:20404, full reasoning in
 // docs/design/h2-discovery.md §3.
@@ -45,9 +46,10 @@ const SaveCompetencesInput = z.object({
     .max(LANGUAGE_CODES.length),
   yearsExperience: z.number().int().min(0).max(YEARS_MAX),
   // '' from an untouched Input collapses to null — matches saveShopConfigAction's optionalText
-  // convention (the DB stores "never set" as NULL, not "").
+  // convention (the DB stores "never set" as NULL, not ""). http(s)-only (HTTP_URL) — it renders
+  // as `href` on the public D4 profile; CompetencesForm's /^https?:\/\// check is the UX mirror.
   portfolioLink: z
-    .union([z.string().trim().max(500).url(), z.literal('')])
+    .union([z.string().trim().max(500).url(HTTP_URL), z.literal('')])
     .transform((v) => v || null),
 })
 

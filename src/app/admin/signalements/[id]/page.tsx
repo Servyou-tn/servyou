@@ -3,6 +3,7 @@ import { getLang } from '@/lib/i18n/server'
 import { t } from '@/lib/i18n'
 import type { Lang } from '@/lib/i18n'
 import { createClient } from '@/lib/supabase/server'
+import { requireAdmin } from '@/lib/auth/require-admin'
 import { ClaimButton } from './ClaimButton'
 import { ResolveForm } from './ResolveForm'
 import { DismissForm } from './DismissForm'
@@ -73,6 +74,7 @@ const STATUS_BADGE: Record<string, string> = {
 
 export default async function ReportDetailPage({ params }: Props) {
   const { id } = await params
+  await requireAdmin(`/admin/signalements/${id}`)
   const lang = await getLang()
   const tr = (key: string): string => t(key, lang)
   const supabase = await createClient()
@@ -83,7 +85,7 @@ export default async function ReportDetailPage({ params }: Props) {
     .eq('id', id)
     .single()
 
-  if (error) console.error('[admin/signalements/[id]] fetch error:', error)
+  if (error) console.error('[admin/signalements/[id]] fetch error:', error.message, error.code, error.details)
 
   if (!report) {
     return (
@@ -116,7 +118,7 @@ export default async function ReportDetailPage({ params }: Props) {
       .select('full_name, suspended_at, suspended_reason')
       .eq('id', r.target_id)
       .maybeSingle()
-    if (tuError) console.error('[admin/signalements/[id]] target user fetch error:', tuError)
+    if (tuError) console.error('[admin/signalements/[id]] target user fetch error:', tuError.message, tuError.code, tuError.details)
     targetUser = (tu as TargetUser | null) ?? null
   }
   const isSelfTarget = r.target_type === 'user' && me?.id === r.target_id
@@ -139,7 +141,7 @@ export default async function ReportDetailPage({ params }: Props) {
       .select('id, admin_hidden_at, admin_hidden_reason')
       .eq('id', r.target_id)
       .maybeSingle()
-    if (targetError) console.error('[admin/signalements/[id]] moderation target fetch error:', targetError)
+    if (targetError) console.error('[admin/signalements/[id]] moderation target fetch error:', targetError.message, targetError.code, targetError.details)
     moderationTarget = (targetRow as ModerationTarget | null) ?? null
   }
 

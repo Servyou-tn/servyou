@@ -3,6 +3,7 @@ import { getLang } from '@/lib/i18n/server'
 import { t } from '@/lib/i18n'
 import type { Lang } from '@/lib/i18n'
 import { createClient } from '@/lib/supabase/server'
+import { requireAdmin } from '@/lib/auth/require-admin'
 import { resolveRole, roleI18nKey } from '@/lib/roles'
 
 // NOTE: reads the RAW profiles table (not public_profiles) — the admin needs email
@@ -36,6 +37,7 @@ function StatusBadge({ suspended, tr }: { suspended: boolean; tr: (k: string) =>
 }
 
 export default async function UsersListPage() {
+  await requireAdmin('/admin/utilisateurs')
   const lang = await getLang()
   const tr = (key: string): string => t(key, lang)
   const supabase = await createClient()
@@ -45,7 +47,7 @@ export default async function UsersListPage() {
     .select('id, full_name, email, seller_type, is_admin, city, created_at, suspended_at')
     .order('created_at', { ascending: false })
 
-  if (error) console.error('[admin/utilisateurs] list fetch error:', error)
+  if (error) console.error('[admin/utilisateurs] list fetch error:', error.message, error.code, error.details)
   const rows = (profiles as ProfileRow[] | null) ?? []
 
   return (

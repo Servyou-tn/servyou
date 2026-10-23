@@ -3,6 +3,7 @@ import { getLang } from '@/lib/i18n/server'
 import { t } from '@/lib/i18n'
 import type { Lang } from '@/lib/i18n'
 import { createClient } from '@/lib/supabase/server'
+import { requireAdmin } from '@/lib/auth/require-admin'
 import { resolveRole, roleI18nKey } from '@/lib/roles'
 import { SuspendForm } from './SuspendForm'
 import { UnsuspendButton } from './UnsuspendButton'
@@ -41,6 +42,7 @@ function Field({ label, value }: { label: string; value: string }) {
 
 export default async function UserDetailPage({ params }: Props) {
   const { id } = await params
+  await requireAdmin(`/admin/utilisateurs/${id}`)
   const lang = await getLang()
   const tr = (key: string): string => t(key, lang)
   const supabase = await createClient()
@@ -53,7 +55,7 @@ export default async function UserDetailPage({ params }: Props) {
     .eq('id', id)
     .maybeSingle()
 
-  if (error) console.error('[admin/utilisateurs/[id]] fetch error:', error)
+  if (error) console.error('[admin/utilisateurs/[id]] fetch error:', error.message, error.code, error.details)
 
   if (!profile) {
     return (

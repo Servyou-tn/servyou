@@ -13,6 +13,14 @@ import { ProductCoverImage } from '@/app/marche/produits/_components/ProductCove
 import { submitProductRequest } from '../actions'
 import { Textarea } from '@/components/ui/textarea'
 import { NumberStepper } from './NumberStepper'
+import {
+  DELIVERY_NAME_MAX,
+  DELIVERY_STREET_MAX,
+  QUARTIER_MAX,
+  VILLE_MAX,
+  PRODUCT_NOTE_MAX as NOTE_MAX,
+  QUANTITY_MAX,
+} from '../limits'
 
 // E1-product — form + summary, ONE component. Measured from Figma 589:43997 §6c/§6d
 // (docs/design/d1-discovery.md). Labels/helpers are founder-screenshot-sourced, not Figma text —
@@ -44,8 +52,6 @@ import { NumberStepper } from './NumberStepper'
 // the founder's screenshot nor a Figma text read named its copy, and the ruling on section
 // headings named exactly two: "Coordonnées de livraison" and "Quantité". The address fields flow
 // directly under section1's own heading rather than inventing a third label's copy.
-
-const NOTE_MAX = 300
 
 type Errors = {
   fullName?: string
@@ -96,8 +102,9 @@ export function ProductRequestForm({
   // ⚑ Reachable only via a stale tab or a hand-typed URL — D1's CTA already disables the link to
   // here once a tracked product hits 0. Not defensively re-clamped: the server re-validates
   // authoritatively (`qty > stockCount` rejected in submitProductRequest) regardless of what this
-  // control shows.
-  const stepperMax = tracksStock ? (stockCount ?? undefined) : undefined
+  // control shows. QUANTITY_MAX is the server's own ceiling (../limits.ts) — without it a
+  // "Toujours disponible" product's stepper would run past what the action accepts.
+  const stepperMax = Math.min(tracksStock ? (stockCount ?? QUANTITY_MAX) : QUANTITY_MAX, QUANTITY_MAX)
 
   const subtotal = price * quantity
   const total = subtotal + deliveryFee
@@ -235,6 +242,7 @@ export function ProductRequestForm({
             helper={t('demander.field.fullName_helper', lang)}
             error={errors.fullName}
             required
+            maxLength={DELIVERY_NAME_MAX}
             value={fullName}
             onChange={(e) => setFullName(e.target.value)}
           />
@@ -265,6 +273,7 @@ export function ProductRequestForm({
             placeholder={t('demander.field.street_ph', lang)}
             error={errors.street}
             required
+            maxLength={DELIVERY_STREET_MAX}
             value={street}
             onChange={(e) => setStreet(e.target.value)}
           />
@@ -274,6 +283,7 @@ export function ProductRequestForm({
             placeholder={t('demander.field.quartier_ph', lang)}
             error={errors.quartier}
             required
+            maxLength={QUARTIER_MAX}
             value={quartier}
             onChange={(e) => setQuartier(e.target.value)}
           />
@@ -288,6 +298,7 @@ export function ProductRequestForm({
               placeholder={t('demander.field.ville_ph', lang)}
               error={errors.ville}
               required
+              maxLength={VILLE_MAX}
               value={ville}
               onChange={(e) => setVille(e.target.value)}
             />

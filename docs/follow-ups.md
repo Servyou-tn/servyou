@@ -3793,8 +3793,12 @@ orders INSERT gap (migration 54). Ranked most severe first; each is its own PR u
 - **Fix:** ban the auth user on suspension (admin API), add an `is_active()` helper to write policies,
   fix the matcher. Includes decision D3 below.
 
-### HIGH — admin area has no server-side `requireAdmin()`
+### ✅ CLOSED — HIGH — admin area has no server-side `requireAdmin()`
 
+- **Closed by** `fix/app-server-guards` (2026-10-23): `src/lib/auth/require-admin.ts` —
+  `requireAdmin(path)` in a now-server `admin/layout.tsx` AND in all 8 admin `page.tsx` (a layout
+  does not re-render on client navigation), `checkAdmin(supabase)` first in all 13 admin actions
+  (`statistiques` swapped from its inline check, which swallowed the profiles error).
 - **What:** `src/app/admin/layout.tsx` is `'use client'` and checks `is_admin` in a `useEffect`; the
   actions in `admin/{litiges,signalements,utilisateurs}/actions.ts` never call `getUser()` or check
   admin (only `statistiques/actions.ts` does).
@@ -3813,8 +3817,12 @@ orders INSERT gap (migration 54). Ranked most severe first; each is its own PR u
 - **Fix:** lock the three once set (identity lock), stamp `received_at` in a trigger and revoke its
   grant; move `ReceiptConfirmButton` / `OrdersList` / `CancelOrderModal` writes to server actions.
 
-### MEDIUM — `demander/[id]/actions.ts` has no Zod schema
+### ✅ CLOSED — MEDIUM — `demander/[id]/actions.ts` has no Zod schema
 
+- **Closed by** `fix/app-server-guards` (2026-10-23): `demander/[id]/schema.ts` (caps in
+  `limits.ts`, founder ruling — `orders` has no DB length CHECK), `seller_id` dropped from both
+  inserts, errors logged as `message` / `code` / `details`. The schema also rejects input that would
+  corrupt the folded `delivery_address` / `buyer_note`.
 - **What:** `submitProductRequest` / `submitServiceRequest` validate by hand: ids aren't checked as
   UUIDs; `note`, `description`, `timeframe`, `deliveryName` have no max length; `quantity` no upper
   bound.
@@ -3825,16 +3833,23 @@ orders INSERT gap (migration 54). Ranked most severe first; each is its own PR u
   `insErr` object (`console.error('[submit…Request] insert error:', insErr)` — CLAUDE.md "never log
   raw error objects"; log `message` / `code` / `details`).
 
-### MEDIUM — `src/app/actions/products.ts` relies on RLS alone for ownership
+### ✅ CLOSED — MEDIUM — `src/app/actions/products.ts` relies on RLS alone for ownership
 
+- **Closed by** `fix/app-server-guards` (2026-10-23): toggle / update / delete resolve the shop and
+  filter by `shop_id`; `deleteProductImageAction` confirms the parent product (`id` + `shop_id`)
+  first, since `product_images` has no `shop_id`; the two bulk writes carry the filter too. The
+  wrong `:976` comment is corrected.
 - **What:** toggle status (`:462`), delete (`:526`), update (`:778`) and `deleteProductImageAction`
   (`:965`) take a caller `productId` and never add `.eq('shop_id', …)`. Safe today because products
   UPDATE/DELETE and product_images DELETE are owner-gated in RLS. The comment at `:976` ("RLS scoped
   the read to zero rows") is wrong — product_images SELECT is `using (true)`.
 - **Fix:** add `.eq('shop_id', shop.shopId)` after `resolveOwnedShopId`, as the bulk actions do.
 
-### MEDIUM — freelancer URL fields accept `javascript:` / `data:`
+### ✅ CLOSED (app layer) — MEDIUM — freelancer URL fields accept `javascript:` / `data:`
 
+- **Closed by** `fix/app-server-guards` (2026-10-23) for the server actions: every freelancer URL
+  field uses `.url(HTTP_URL)` (`src/lib/freelancer/http-url.ts`, protocol `^https?$`). The DB CHECK
+  and a render-time guard are still open — see the `fix/app-server-guards` section below.
 - **What:** Zod `.url()` accepts `javascript:alert(1)`; used in
   `mon-profil-freelance/modifier/schema.ts` (`:25,29,35`) and `creer/competences/actions.ts:49-50`,
   rendered as `href` in `freelance/[id]/_components/FreelancerDetail.tsx` (`:119,236,253`). React 19
@@ -3893,3 +3908,37 @@ orders INSERT gap (migration 54). Ranked most severe first; each is its own PR u
 - The `gstack-cso` launcher is not installed (`~/.claude/skills/gstack/bin/` has none); building it
   on Windows needs Visual Studio Build Tools. Until then every `/cso` run reports "not assessed" and
   audits are manual static reviews like this one.
+
+## App server guards (`fix/app-server-guards`, 2026-10-23)
+
+Logged-not-fixed by the app-layer PR that closed four of the audit findings above. That PR made no
+database change, so everything needing one lands here.
+
+### MEDIUM — no DB CHECK on freelancer URL schemes
+
+- **What:** `freelancer_profiles.portfolio_link`, `freelancer_links.url`,
+  `freelancer_portfolio_items.url` / `image_url` and `freelancer_certifications.credential_url` are
+  unconstrained text. `HTTP_URL` (`src/lib/freelancer/http-url.ts`) guards the three server actions
+  only — the row's owner can still `PATCH` a `javascript:` / `data:` value straight over REST.
+- **Fix:** a CHECK `col ~* '^https?://'` (NULL allowed) on all five columns, RLS-neutral. Live
+  2026-10-23: all five hold 0 rows, so the constraint validates without a backfill.
+- **Trigger:** the next freelancer-tables migration, or the pre-launch security pass.
+
+### LOW — no render-time `href` guard in `FreelancerDetail.tsx`
+
+- **What:** `src/app/freelance/[id]/_components/FreelancerDetail.tsx` renders the stored URLs as
+  `href` (`link.url`, `item.url`, `freelancer.portfolioLink`, `row.credentialUrl`) with no scheme
+  check. React 19 neutralises `javascript:` hrefs at render; `data:` and anything a non-React
+  consumer (OG tags, email) emits is not covered.
+- **Fix:** a small `safeHref(url)` that returns the URL only for `http:` / `https:` (else `null`,
+  and the row renders as plain text), used at all four sites. Belt to the DB CHECK's braces — it also
+  covers rows written before the CHECK exists.
+
+### LOW — E1 request actions show a generic error for the new order-integrity rejections
+
+- **What:** `enforce_order_insert_integrity` (migration 54) raises 23514 "Cet article n'est plus
+  disponible." (item went non-live between page load and submit) and 23514 "Vous ne pouvez pas
+  commander votre propre article." (self-order). `submitProductRequest` / `submitServiceRequest`
+  map every insert error to `common.error_generic`.
+- **Fix:** branch on `insErr.code === '23514'` + the message, returning two new FR/AR keys
+  (vocabulary-lock skill applies). Do not surface the raw DB message — it is FR-only.

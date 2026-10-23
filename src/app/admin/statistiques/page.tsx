@@ -1,6 +1,8 @@
 import { getLang } from '@/lib/i18n/server'
 import { t } from '@/lib/i18n'
 import { createClient } from '@/lib/supabase/server'
+import { requireAdmin } from '@/lib/auth/require-admin'
+import type { PostgrestError } from '@supabase/supabase-js'
 import { AdminMetricCard } from '@/components/AdminMetricCard'
 import { CsvExportButton } from './CsvExportButton'
 
@@ -21,6 +23,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 }
 
 export default async function StatistiquesPage() {
+  await requireAdmin('/admin/statistiques')
   const lang = await getLang()
   const tr = (key: string): string => t(key, lang)
   const supabase = await createClient()
@@ -60,12 +63,12 @@ export default async function StatistiquesPage() {
   ])
 
   // Surface any query error rather than silently showing 0 (CLAUDE.md rule).
-  const named: Record<string, { error: unknown }> = {
+  const named: Record<string, { error: PostgrestError | null }> = {
     usersTotal, usersLast7d, shops, freelancers, products, services, jobsOpen,
     ordersTotal, ordersReceived, ordersReceivedLast7d, ordersCancelled, receivedSellerRows,
   }
   for (const [key, res] of Object.entries(named)) {
-    if (res.error) console.error(`[admin/statistiques] ${key} query error:`, res.error)
+    if (res.error) console.error(`[admin/statistiques] ${key} query error:`, res.error.message, res.error.code, res.error.details)
   }
 
   const n = (r: CountResult) => r.count ?? 0
