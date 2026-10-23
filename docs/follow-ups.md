@@ -3970,6 +3970,25 @@ database change, so everything needing one lands here.
   returning the existing i18n error keys. Only admins can reach these, so it is hygiene, not
   exposure.
 
+### MEDIUM — client forms store translated error TEXT in state, so errors stay in the old language after FR ⇄ AR
+
+- **What:** the founder-gate bug fixed on PR #178, still present everywhere else. `LanguageToggle`
+  sets the cookie and calls `router.refresh()`, which re-renders client components with the new
+  `lang` but keeps their state. A form that does `setErrors({ x: t(key, lang) })` keeps showing the
+  old language (and in AR the RTL page reorders the French punctuation). Fixed in this PR for H3
+  `ProfileEditForm` and E1 `ServiceRequestForm`: keys / row ids in state, translated at render (H3's
+  `FieldError textKey` was already right).
+- **Still affected (grep 2026-10-23, count of `t(…)` stored into state):** `AnnonceForm` (10),
+  `ProductRequestForm` (7), `CreateFreelancerProfileForm`, `EditShopForm`, `CreateShopForm`,
+  `SignupForm` (6 each), `NewPasswordForm`, `EditProductForm`, `SigninForm` (4 each),
+  `CompetencesForm` (3), `VerifyEmailFlow`, `ForgotPasswordForm`, H3 `PortfolioRepeater` (upload
+  error), H2 `DetailsForm` (1 each).
+- **Also:** server actions return already-translated `error` strings, so any server error shown in a
+  form has the same staleness. Narrower fix: return a key (+ vars) or clear the error on a `lang`
+  change.
+- **Fix:** store `{ key, vars }` and call `t()` at render (the pattern in `ServiceRequestForm`), one
+  form per PR, with the jsdom re-render test in `form-errors-retranslate.test.tsx` as the template.
+
 ### LOW — `HTTP_URL` accepts `user:pass@host` URLs
 
 - **What:** `http://user:pass@evil.example` passes `.url(HTTP_URL)` and `isHttpUrl`, so

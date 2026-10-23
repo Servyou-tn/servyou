@@ -39,14 +39,17 @@ import { ValidationBanner, FieldError } from './ValidationBanner'
 // that cannot be honestly computed is omitted, not zeroed), "Informations complémentaires" (no
 // column, no clear semantic to invent).
 
-// Per-field URL errors from checkUrls(), keyed by row id per repeater.
-type UrlErrors = {
-  links: Record<string, string>
-  portfolio: Record<string, string>
-  certifications: Record<string, string>
-  portfolioLink: string | null
-}
-const NO_URL_ERRORS: UrlErrors = { links: {}, portfolio: {}, certifications: {}, portfolioLink: null }
+// Which URL fields failed checkUrls() — row ids per repeater, NOT messages. The language toggle
+// re-renders this client component with a new `lang` via router.refresh(), which keeps its state,
+// so a message translated at validation time would stay in the old language (founder gate,
+// 2026-10-23: the French URL error stayed under the field in AR). Messages are built at render,
+// in the current lang — the same reason FieldError takes a textKey, not text.
+type UrlInvalid = { links: string[]; portfolio: string[]; certifications: string[]; portfolioLink: boolean }
+const NO_INVALID_URLS: UrlInvalid = { links: [], portfolio: [], certifications: [], portfolioLink: false }
+
+// The page-level error: a URL summary is kept as the failing fields and rebuilt at render (so it
+// re-translates); a server error arrives as already-translated text.
+type FormError = { urlFields: UrlField[] } | { text: string }
 
 export function ProfileEditForm({ initial, lang }: { initial: FreelancerProfileEditData; lang: Lang }) {
   const [headline, setHeadline] = React.useState(initial.headline)
@@ -86,10 +89,10 @@ export function ProfileEditForm({ initial, lang }: { initial: FreelancerProfileE
   const [dirty, setDirty] = React.useState(false)
   const [saving, setSaving] = React.useState(false)
   const [publishing, setPublishing] = React.useState(false)
-  const [formError, setFormError] = React.useState<string | null>(null)
+  const [formError, setFormError] = React.useState<FormError | null>(null)
   const [publishMissing, setPublishMissing] = React.useState<('headline' | 'bio' | 'skills')[]>([])
   const [publishNotice, setPublishNotice] = React.useState<'published' | 'needs_listing' | null>(null)
-  const [urlErrors, setUrlErrors] = React.useState<UrlErrors>(NO_URL_ERRORS)
+  const [urlInvalid, setUrlInvalid] = React.useState<UrlInvalid>(NO_INVALID_URLS)
 
   // One touch-tracker for every field — this page has no per-accordion save, so a single "has
   // anything changed since the last successful save" flag is what the footer's dirty indicator
@@ -160,51 +163,55 @@ export function ProfileEditForm({ initial, lang }: { initial: FreelancerProfileE
   // plus a summary naming the section (Portfolio is collapsed by default). Checks only what
   // buildPayload actually sends: a link row needs a label AND a URL, a certification row a name;
   // imageUrl comes from the upload, never typed. Recomputed on every attempt, so a fixed field
-  // loses its error on the next save. Returns the summary, or null when every URL passes.
-  function checkUrls(): string | null {
-    const message = t('freelance.edit.error_url', lang)
+  // loses its error on the next save. Returns the failing fields ([] when every URL passes).
+  function checkUrls(): UrlField[] {
     const invalid = (url: string) => url.trim() !== '' && !isHttpUrl(url)
-    const next: UrlErrors = { links: {}, portfolio: {}, certifications: {}, portfolioLink: null }
+    const next: UrlInvalid = { links: [], portfolio: [], certifications: [], portfolioLink: false }
     const fields: UrlField[] = []
     for (const r of linkRows) {
       if (r.label.trim() && invalid(r.url)) {
-        next.links[r.id] = message
+        next.links.push(r.id)
         fields.push('links')
       }
     }
     for (const r of portfolioRows) {
       if (invalid(r.url)) {
-        next.portfolio[r.id] = message
+        next.portfolio.push(r.id)
         fields.push('portfolio')
       }
     }
     if (invalid(portfolioLink)) {
-      next.portfolioLink = message
+      next.portfolioLink = true
       fields.push('portfolioLink')
     }
     for (const r of certificationRows) {
       if (r.name.trim() && invalid(r.credentialUrl)) {
-        next.certifications[r.id] = message
+        next.certifications.push(r.id)
         fields.push('certifications')
       }
     }
-    setUrlErrors(next)
-    return urlErrorSummary(fields, lang)
+    setUrlInvalid(next)
+    return fields
+  }
+
+  // A rejected save keeps a URL rejection as its fields, anything else as the server's text.
+  function serverError(res: { error: string; urlFields?: UrlField[] }): FormError {
+    return res.urlFields && res.urlFields.length > 0 ? { urlFields: res.urlFields } : { text: res.error }
   }
 
   async function onSave() {
     if (saving || publishing) return
     setFormError(null)
-    const urlProblem = checkUrls()
-    if (urlProblem) {
-      setFormError(urlProblem)
+    const badUrls = checkUrls()
+    if (badUrls.length > 0) {
+      setFormError({ urlFields: badUrls })
       return
     }
     setSaving(true)
     const res = await saveProfileAction(buildPayload())
     setSaving(false)
     if (!res.ok) {
-      setFormError(res.error)
+      setFormError(serverError(res))
       return
     }
     setDirty(false)
@@ -215,9 +222,9 @@ export function ProfileEditForm({ initial, lang }: { initial: FreelancerProfileE
     setFormError(null)
     setPublishMissing([])
     setPublishNotice(null)
-    const urlProblem = checkUrls()
-    if (urlProblem) {
-      setFormError(urlProblem)
+    const badUrls = checkUrls()
+    if (badUrls.length > 0) {
+      setFormError({ urlFields: badUrls })
       return
     }
     setPublishing(true)
@@ -229,12 +236,18 @@ export function ProfileEditForm({ initial, lang }: { initial: FreelancerProfileE
         setDirty(false) // the save half of publishProfileAction still succeeded
         return
       }
-      setFormError(res.error)
+      setFormError(serverError(res))
       return
     }
     setDirty(false)
     setPublishNotice(res.status === 'published' ? 'published' : 'needs_listing')
   }
+
+  // Every URL message is built HERE, at render, in the current lang (see UrlInvalid above).
+  const urlMessage = t('freelance.edit.error_url', lang)
+  const urlErrorsFor = (ids: string[]) => Object.fromEntries(ids.map((id) => [id, urlMessage]))
+  const formErrorText =
+    formError === null ? null : 'urlFields' in formError ? urlErrorSummary(formError.urlFields, lang) : formError.text
 
   return (
     <div className="flex flex-col gap-6 pb-6">
@@ -292,7 +305,7 @@ export function ProfileEditForm({ initial, lang }: { initial: FreelancerProfileE
 
           <div>
             <p className="text-sm font-medium text-text-secondary">{t('freelance.edit.links_title', lang)}</p>
-            <LinksRepeater rows={linkRows} onChange={setLinksT} lang={lang} errors={urlErrors.links} />
+            <LinksRepeater rows={linkRows} onChange={setLinksT} lang={lang} errors={urlErrorsFor(urlInvalid.links)} />
           </div>
         </AccordionSection>
 
@@ -345,14 +358,14 @@ export function ProfileEditForm({ initial, lang }: { initial: FreelancerProfileE
         </AccordionSection>
 
         <AccordionSection title={t('freelance.edit.portfolio_title', lang)} complete={portfolioRows.length > 0}>
-          <PortfolioRepeater rows={portfolioRows} onChange={setPortfolioT} lang={lang} errors={urlErrors.portfolio} />
+          <PortfolioRepeater rows={portfolioRows} onChange={setPortfolioT} lang={lang} errors={urlErrorsFor(urlInvalid.portfolio)} />
           <div className="border-t border-border-subtle pt-4">
             <Input
               label={t('freelance.edit.portfolio_link_label', lang)}
               dir="ltr"
               value={portfolioLink}
               onChange={(e) => setPortfolioLinkT(e.target.value)}
-              error={urlErrors.portfolioLink ?? undefined}
+              error={urlInvalid.portfolioLink ? urlMessage : undefined}
             />
           </div>
         </AccordionSection>
@@ -373,7 +386,7 @@ export function ProfileEditForm({ initial, lang }: { initial: FreelancerProfileE
           <div className="border-t border-border-subtle pt-4">
             <p className="mb-2 text-sm font-medium text-text-secondary">{t('freelance.edit.certifications_title', lang)}</p>
             <p className="mb-2 text-sm text-text-muted">{t('freelance.edit.certifications_helper', lang)}</p>
-            <CertificationRepeater rows={certificationRows} onChange={setCertificationsT} lang={lang} error={urlErrors.certifications} />
+            <CertificationRepeater rows={certificationRows} onChange={setCertificationsT} lang={lang} error={urlErrorsFor(urlInvalid.certifications)} />
           </div>
         </AccordionSection>
 
@@ -409,9 +422,9 @@ export function ProfileEditForm({ initial, lang }: { initial: FreelancerProfileE
           </a>
         </div>
       ) : null}
-      {formError ? (
+      {formErrorText ? (
         <p role="alert" className="text-sm text-danger-500">
-          {formError}
+          {formErrorText}
         </p>
       ) : null}
 

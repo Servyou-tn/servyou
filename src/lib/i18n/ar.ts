@@ -1910,7 +1910,8 @@ export const ar: Record<string, string> = {
   'freelance.edit.skills_label':        "مهاراتك",
   'freelance.edit.skills_helper':       "3 كحد أدنى، 15 كحد أقصى. تُستخدم في بحث العملاء.",
   'freelance.edit.error_skills':        "اختر بين 3 و15 مهارة لنشر ملفك الشخصي.",
-  // error_url reuses the reviewed freelance.create.step2/step3 URL error verbatim.
+  // REVIEW_AR_TRANSLATION: same Arabic as the shipped freelance.create.step2/step3 URL errors
+  // (kept identical on purpose) — not confirmed by a native-speaker review; review all three together.
   'freelance.edit.error_url':           "يرجى إدخال رابط صالح (https://…).",
   // REVIEW_AR_TRANSLATION: H3 URL summary (fix/app-server-guards) — first-draft Arabic;
   // {sections} interpolates the AR accordion titles.

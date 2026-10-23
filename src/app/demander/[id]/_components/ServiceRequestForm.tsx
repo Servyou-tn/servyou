@@ -37,7 +37,13 @@ import {
 // client-side pass cannot produce a server-side reject the user can't see. Add a server rule
 // there, not here, and import it in both.
 
-type Errors = { description?: string; timeframe?: string; budget?: string; phone?: string }
+// Errors are stored as i18n KEYS (+ vars) and translated at render, never as translated text: the
+// language toggle re-renders this client component with a new `lang` via router.refresh(), which
+// keeps its state — a message translated at validation time would stay in the old language.
+type Message = { key: string; vars?: Record<string, string | number> }
+type Errors = { description?: Message; timeframe?: Message; budget?: Message; phone?: Message }
+// The client-side toast is a key; a server error arrives as already-translated text.
+type FormError = { key: string } | { text: string }
 
 export function ServiceRequestForm({
   serviceId,
@@ -58,26 +64,28 @@ export function ServiceRequestForm({
   const [budget, setBudget] = React.useState('')
   const [phone, setPhone] = React.useState(initialPhone)
   const [errors, setErrors] = React.useState<Errors>({})
-  const [formError, setFormError] = React.useState<string | null>(null)
+  const [formError, setFormError] = React.useState<FormError | null>(null)
+  // Translated here, at render, in the CURRENT lang — see the Message type above.
+  const say = (m: Message | undefined) => (m ? t(m.key, lang, m.vars) : undefined)
   const [pending, setPending] = React.useState(false)
 
   function validate(): Errors {
     const next: Errors = {}
     if (description.trim().length < MIN_DESCRIPTION) {
-      next.description = t('demander.error.minLength', lang, { n: MIN_DESCRIPTION })
+      next.description = { key: 'demander.error.minLength', vars: { n: MIN_DESCRIPTION } }
     } else if (BUYER_NOTE_TAG.test(description)) {
-      next.description = t('demander.error.descriptionTags', lang)
+      next.description = { key: 'demander.error.descriptionTags' }
     }
     if (!TIMEFRAME_ALLOWED.test(timeframe.trim())) {
-      next.timeframe = t('demander.error.timeframeChars', lang)
+      next.timeframe = { key: 'demander.error.timeframeChars' }
     }
     // Optional field: '' is fine; anything else must be a finite amount in 0..BUDGET_MAX.
     // noValidate means min={0} does not block a typed "-5", so this is the real gate.
     if (!isValidBudget(budget)) {
-      next.budget = t('demander.error.amount', lang)
+      next.budget = { key: 'demander.error.amount' }
     }
     if (!isValidPhone(phone)) {
-      next.phone = t('demander.error.phoneFormat', lang)
+      next.phone = { key: 'demander.error.phoneFormat' }
     }
     return next
   }
@@ -88,7 +96,7 @@ export function ServiceRequestForm({
     const found = validate()
     setErrors(found)
     if (Object.keys(found).length > 0) {
-      setFormError(t('demander.toast.error', lang))
+      setFormError({ key: 'demander.toast.error' })
       return
     }
 
@@ -97,7 +105,7 @@ export function ServiceRequestForm({
     const res = await submitServiceRequest({ serviceId, description, timeframe, budget, phone })
     if (!res.ok) {
       setPending(false)
-      setFormError(res.error)
+      setFormError({ text: res.error })
       return
     }
     // Stay pending through the navigation — the button must not go back to idle on a page
@@ -130,7 +138,7 @@ export function ServiceRequestForm({
           label={t('demander.field.description', lang)}
           placeholder={t('demander.field.description_ph', lang)}
           helper={t('demander.field.description_helper', lang)}
-          error={errors.description}
+          error={say(errors.description)}
           required
           counter
           maxLength={MAX_DESCRIPTION}
@@ -142,7 +150,7 @@ export function ServiceRequestForm({
           label={t('demander.field.timeframe', lang)}
           placeholder={t('demander.field.timeframe_ph', lang)}
           helper={t('demander.field.optional', lang)}
-          error={errors.timeframe}
+          error={say(errors.timeframe)}
           maxLength={TIMEFRAME_MAX}
           value={timeframe}
           onChange={(e) => setTimeframe(e.target.value)}
@@ -186,7 +194,7 @@ export function ServiceRequestForm({
             id="budget-helper"
             className={errors.budget ? 'text-caption text-danger-500' : 'text-caption text-text-muted'}
           >
-            {errors.budget ?? t('demander.field.budgetHint', lang)}
+            {say(errors.budget) ?? t('demander.field.budgetHint', lang)}
           </p>
         </div>
 
@@ -197,7 +205,7 @@ export function ServiceRequestForm({
           label={t('demander.field.phone', lang)}
           placeholder={t('demander.field.phone_ph', lang)}
           helper={t('demander.field.phone_helper', lang)}
-          error={errors.phone}
+          error={say(errors.phone)}
           required
           type="tel"
           inputMode="tel"
@@ -218,7 +226,7 @@ export function ServiceRequestForm({
 
       {formError && (
         <p role="alert" className="text-body-sm text-danger-500">
-          {formError}
+          {'key' in formError ? t(formError.key, lang) : formError.text}
         </p>
       )}
 

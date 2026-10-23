@@ -179,7 +179,12 @@ describe('H3 — a rejected URL names its section instead of a bare generic erro
 
   it('saveProfileAction: a javascript: link → the summary naming « Confiance & liens », before any DB call', async () => {
     const res = await saveProfileAction(profileWith.linkUrl('javascript:alert(1)'))
-    expect(res).toEqual({ ok: false, error: t('freelance.edit.error_urls', 'fr', { sections: t('freelance.edit.trust_title', 'fr') }) })
+    // urlFields lets the client rebuild the summary in the CURRENT language after a switch.
+    expect(res).toEqual({
+      ok: false,
+      error: t('freelance.edit.error_urls', 'fr', { sections: t('freelance.edit.trust_title', 'fr') }),
+      urlFields: ['links'],
+    })
     expect(h.createClient).not.toHaveBeenCalled()
   })
 
@@ -189,6 +194,7 @@ describe('H3 — a rejected URL names its section instead of a bare generic erro
       ok: false,
       status: 'error',
       error: t('freelance.edit.error_urls', 'fr', { sections: t('freelance.edit.formation_title', 'fr') }),
+      urlFields: ['certifications'],
     })
     expect(h.createClient).not.toHaveBeenCalled()
   })
