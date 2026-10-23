@@ -3988,10 +3988,12 @@ orders INSERT gap (migration 54). Ranked most severe first; each is its own PR u
 - **Fix (needs a forward migration):** fail closed first —
   `if v_owner is distinct from auth.uid() then raise ... using errcode = '42501'` — before the
   `FOR SHARE` read.
-- **Also leaks more than `seller_type` (2026-10-23, `fix/job-responses-integrity` review):** the
-  "à la fois" message tells the caller whether the named account owns a freelancer profile — private
-  while that profile is unpublished. Migration 59 already uses the fail-closed-first shape on
-  `job_responses`; `enforce_seller_capability()` should copy it.
+- **Can leak more than `seller_type` (2026-10-23, `fix/job-responses-integrity` review):** the
+  "à la fois" message would tell the caller whether the named account owns the other capability's
+  row (private while a freelancer profile is unpublished) — but it only fires for a mixed account (a
+  shop owner holding a freelancer profile, or a freelancer owning a shop). Live there are 0 of each
+  and client paths cannot create one, so this is latent. Migration 59 already uses the
+  fail-closed-first shape on `job_responses`; `enforce_seller_capability()` should copy it.
 
 ### LOW — `admin_hidden_*` can be set on INSERT (`shops`, `freelancer_profiles`)
 
@@ -4039,6 +4041,8 @@ orders INSERT gap (migration 54). Ranked most severe first; each is its own PR u
   anon/authenticated on most tables — not exposed by PostgREST, but worth a sweeping revoke.
   Re-confirmed on `shops` and `freelancer_profiles` 2026-10-23 (`fix/seller-capability-insert`):
   both grant TRUNCATE to anon and authenticated. Migration 53 already revoked it on `profiles`.
+  Migration 59 revoked INSERT / UPDATE on `job_responses` from anon and UPDATE from authenticated
+  but left TRUNCATE (and REFERENCES / TRIGGER) on both — include it in the sweep.
 - `uploaded_objects` has RLS with no policies (intentional: service-role only) — document it.
 
 ### ✅ CLOSED — LOW — `auth.admin.listUsers` fails on this project ("Database error finding users")
@@ -4200,8 +4204,13 @@ advisors. Migration 59 itself closed the `job_responses` HIGH above.
 - **Fix (one PR):** revoke EXECUTE from `public, anon, authenticated` on every trigger function and
   every function no client calls; keep the intended RPCs (`get_contact_phone`,
   `get_completed_service_order_count`, the admin RPCs for `authenticated`) explicitly granted; and
-  `alter default privileges in schema public revoke execute on functions from public, anon,
-  authenticated` so new functions start closed. Prove every trigger still fires (the live suites do).
+  close new functions by default. PUBLIC's EXECUTE comes from Postgres' built-in global default,
+  which a per-schema `alter default privileges` cannot revoke — it needs the global form
+  (`alter default privileges for role postgres revoke execute on functions from public`, and the
+  same for `supabase_admin` if it creates functions), plus the per-schema
+  `alter default privileges for role postgres in schema public revoke execute on functions from
+  anon, authenticated` for Supabase's explicit grants. Prove every trigger still fires (the live
+  suites do).
 
 ### LOW — migration 48's README entry overstates `freelancer_has_active_listing`'s EXECUTE revoke
 
@@ -4213,8 +4222,10 @@ advisors. Migration 59 itself closed the `job_responses` HIGH above.
 ### LOW — `auth_rls_initplan`: 69 policies re-evaluate `auth.uid()` per row
 
 - **What:** advisor lint `auth_rls_initplan` flags 69 policies (all three `job_responses` policies
-  among them) that call `auth.uid()` / `is_admin()` unwrapped, so Postgres re-evaluates them per
-  row. The `job_responses` policies also have no `TO` clause (they apply to `public`).
+  among them) that call `auth.<function>()` or `current_setting()` unwrapped, so Postgres
+  re-evaluates them per row. The lint does not look at `is_admin()`; the policies that call only
+  `is_admin()` are not in the 69 but have the same shape. The `job_responses` policies also have no
+  `TO` clause (they apply to `public`).
 - **Fix:** one performance PR rewriting each predicate as `(select auth.uid())` and adding
   `to authenticated` where the policy is never meant for `anon` — policy-by-policy, live-tested.
 
@@ -4238,3 +4249,15 @@ advisors. Migration 59 itself closed the `job_responses` HIGH above.
   `profiles-rls` email shape) survived their suites' teardown. Not created by this PR's runs (both
   suites cleaned up after themselves on 2026-10-23).
 - **Fix:** confirm they own nothing real, then delete them with the service role.
+
+### LOW — eight live-DB suites promote a production admin with a password committed to a public repo
+
+- **What:** `d4-freelancer-services-visibility`, `freelancer-publish-gate-rls`,
+  `h3-links-portfolio-rls`, `h5-service-status-cascade`, `h6-service-listings-hardening-rls`,
+  `orders-insert-integrity`, `profiles-client-insert-delete-revoked` and
+  `seller-capability-integrity` set `is_admin = true` on a fixture account whose password is a
+  constant in the file. The repo is public and the suites run against production, so a run killed
+  between `beforeAll` and `afterAll` leaves a working admin login until the next run's teardown.
+  Found by the `/gstack-review` of `fix/job-responses-integrity`; that PR's own suite already uses a
+  per-run `randomUUID()` password.
+- **Fix:** the same one-line change in each suite (`` const PASSWORD = `…-${randomUUID()}-Aa1!` ``).

@@ -283,14 +283,15 @@ this PR and is not attempted here.
     (`auth.admin.listUsers`, admin `updateUserById`) failed with HTTP 500, and those accounts
     could not complete password flows. Sets each NULL to `''` — the value GoTrue itself writes for
     "no pending token" — only on rows with at least one NULL; rows with real values are
-    untouched. The file is the applied statement byte-for-byte (same md5 as
+    untouched. The file is the applied statement plus a trailing newline (without it, same md5 as
     `supabase_migrations.schema_migrations.statements`). Verified after apply: 0 of 22 rows still
     hold a NULL in any of the four columns. Nothing to roll back — restoring NULLs would re-break
     the Auth admin API.
 59. **20261023212946_job_responses_responder_integrity** — Closes the HIGH audit finding
     "`job_responses` INSERT bypasses the 18+ and freelancer-capability rules (and unlocks phones)"
-    (2026-10-23), including its switch-path corollary. (#57 / #58 are the other agent's
-    `short_description` and photography migrations, recorded in their own PR.) The only INSERT
+    (2026-10-23), including its switch-path corollary. (#57 `20261023212930_service_listings_short_description`
+    and #58 `20261023212933_categories_photographie_retouche_produit` are recorded by their own
+    PR; until it merges, the Verification query below lists those two as missing.) The only INSERT
     gate was the policy "Freelancer creates own response", `with check (freelancer_id =
     auth.uid())`, and no app code inserts responses — so any signed-in account (consumer,
     self-declared minor, shop owner) could respond to an open post over REST and then read the

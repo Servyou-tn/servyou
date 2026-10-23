@@ -46,9 +46,11 @@ const hasCreds = Boolean(
 const PREFIX = 'job-resp-'
 const EMAIL_SUFFIX = '@rls-smoke.servyou.invalid'
 const email = (local: string) => `${PREFIX}${local}${EMAIL_SUFFIX}`
-const PASSWORD = 'Job-Responses-Test-7k2!' // ephemeral test users only; never a real account
-const TITLE = 'Job responses integrity test'
 const RUN = randomUUID().slice(0, 8)
+// Per run, never committed: this suite promotes an admin in production, and a run killed before
+// afterAll leaves it until the next run's teardown — with an unknown password, not a public one.
+const PASSWORD = `Jr-${randomUUID()}-Aa1!`
+const TITLE = 'Job responses integrity test'
 const POSTER_PHONE = '+21620000077'
 
 // 15 years before today (UTC), so the minor stays under 18 whatever day the suite runs.
@@ -304,7 +306,8 @@ describe.skipIf(!hasCreds)('the exploit — a non-freelancer response and the ph
   })
 
   it('control: a freelancer responds, and get_contact_phone(poster) then returns the phone', async () => {
-    const { data: before } = await freelancerClient.rpc('get_contact_phone', { target: posterId })
+    const { data: before, error: beforeErr } = await freelancerClient.rpc('get_contact_phone', { target: posterId })
+    expect(beforeErr).toBeNull()
     expect(before).toBeNull()
 
     const { error } = await respond(freelancerClient, openPostId, freelancerId)
@@ -390,6 +393,7 @@ describe.skipIf(!hasCreds)('Part 1 — firing order against check_job_response_l
     const { error } = await respond(consumerClient, filledPostId, consumerId)
     expect(error?.code).toBe('42501')
     expect(error?.message).toBe(NOT_FREELANCER)
+    expect(await responseCount(consumerId)).toBe(0)
   })
 
   it('a freelancer on a filled post still gets the limits trigger\'s own rejection', async () => {
@@ -402,6 +406,10 @@ describe.skipIf(!hasCreds)('Part 1 — firing order against check_job_response_l
 
 describe.skipIf(!hasCreds)('Part 2 — seller_type cannot leave freelancer while responses exist (42501)', () => {
   it("a freelancer who still owns a profile gets migration 55's message first", async () => {
+    // Holds both a profile and a response (the control above), so both checks would reject — this
+    // pins which one runs first.
+    expect(await fpCount(freelancerId)).toBe(1)
+    expect(await responseCount(freelancerId)).toBe(1)
     const { error } = await freelancerClient.from('profiles').update({ seller_type: 'shop_owner' }).eq('id', freelancerId)
     expect(error?.code).toBe('42501')
     expect(error?.message).toBe(SWITCH)

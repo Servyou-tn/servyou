@@ -65,7 +65,9 @@
 -- granted to anon and authenticated but no UPDATE policy exists and no code updates a response;
 -- revoking it makes "INSERT only" hold at the grant level, so a future UPDATE policy cannot move a
 -- response past Part 1 and the caps without a deliberate re-grant. The service role keeps every
--- privilege; authenticated keeps SELECT / INSERT / DELETE.
+-- privilege. anon keeps SELECT / DELETE and authenticated SELECT / INSERT / DELETE, both plus the
+-- Supabase defaults REFERENCES / TRIGGER / TRUNCATE (TRUNCATE skips RLS but PostgREST never issues
+-- it -- the table-wide TRUNCATE sweep is logged in docs/follow-ups.md).
 --
 -- Bypass: auth.uid() NULL and is_admin(), like every other guard trigger. Load-bearing: three
 -- live-DB suites insert responses through the service role for accounts that hold no seller_type
