@@ -13,6 +13,7 @@ export const INTEGRATION_GLOBS = [
   '**/buyer-cancellation-history.test.ts',
   '**/order-delivery-fee-snapshot.test.ts',
   '**/profiles-rls.test.ts',
+  '**/profiles-client-insert-delete-revoked.test.ts',
   '**/job-limits.test.ts',
   '**/progressive-phone.integration.test.ts',
   '**/uploaded-objects-provenance-rls.test.ts',

@@ -198,6 +198,23 @@ this PR and is not attempted here.
     checks bypass RLS; and moving a subcategory to another sector is never re-checked against
     `subcategory_id`. Rollback SQL is in a comment block at the bottom of the migration file.
 
+53. **20261023170907_profiles_revoke_client_insert_delete** — CRITICAL hotfix from the
+    2026-10-23 security audit. Supabase's default grants had left `anon`/`authenticated` with
+    INSERT and DELETE on `profiles` (migration 20260609190541 revoked only UPDATE), and the
+    original policies "Users can insert their own profile" / "Users can delete their own profile"
+    let a user write their own row. Both guards — `enforce_profile_admin_marker_lock` and
+    `enforce_seller_type_age_gate` — are BEFORE UPDATE only, so a signed-in user could delete their
+    profile and re-insert it with `is_admin = true` (every admin policy and RPC), a cleared
+    `suspended_at`, or a `seller_type` under 18; the delete alone also cascaded away the other
+    party's orders and disputes. Revokes INSERT, DELETE and TRUNCATE on `profiles` from `anon` and
+    `authenticated` and drops both policies; SELECT and UPDATE are untouched. Safe because
+    profiles are created only by `handle_new_user` (SECURITY DEFINER, AFTER INSERT on
+    `auth.users`) and removed only by the `auth.users` FK cascade, whose referential action runs as
+    the table owner; no app code inserts or deletes profiles, and user-facing deletion goes through
+    `deletion_requests`. Verified unexploited before applying: one admin (the founder), 0 of 22
+    profiles re-created after their auth user. Rollback SQL is in a comment block at the bottom of
+    the migration file — it re-opens the hole, so it must only ever ship with BEFORE INSERT guards.
+
 ## Rollback paths
 
 Each migration in this folder represents work that has already been applied to production. Rollback is therefore reverse migration work, not file deletion. If a rollback is ever needed, write a new dated migration that reverses the relevant changes — never delete history from this folder.
