@@ -80,6 +80,13 @@ Load conditionally per task. Index: `.claude/skills/README.md`.
 - After any context compaction, run `/reload-skills` before continuing UI or migration work.
 - Figma: the CDP bridge (figma-cli) is NOT working on Figma Desktop 126.7.10 — do not use it. Until the founder confirms Figma Pro, the official Figma MCP is the only instrument and is capped at 20 reads/month for the whole account: spend reads only on final per-frame comparison, one read per frame, never for exploration. Report each read used.
 
+## Working setup (Oct 2026)
+
+- **Parallel agents: max 2, each in its own git worktree** (`C:/Users/Zolo/Projects/servyou-wt-*`). Prefix every shell command with `cd "<worktree>" &&` (the shell resets to the main checkout) and use absolute paths under the worktree. Never touch the main checkout from a worktree task. Push only with `git push -u origin <branch>` — never to `main`, never `--force`.
+- **Live-DB tests hit production.** Use unique fixture names; on a uniqueness/collision failure re-run once before investigating. **Never run `rls-smoke`** — it deletes every test-domain user on production.
+- **gstack is installed with the `gstack-` prefix.** Use `/gstack-review` on the diff before reporting a PR, `/gstack-qa` or `/gstack-browse` for real-browser checks, `/gstack-investigate` for bugs. `/gstack-cso` needs VS Build Tools on Windows (not installed) — do audits by hand. **Never** `/gstack-ship`, `/gstack-land-and-deploy`, `/gstack-canary` (the founder merges by hand with a merge commit) or `/gstack-design-*` (the design system is locked).
+- **Effort:** High by default. Max/Ultracode only for security or migration work.
+
 ## When in doubt
 
 Ask Moatez (the founder). Do not invent product decisions. Do not assume design preferences. Do not skip discovery to save time.
@@ -100,7 +107,7 @@ Ask Moatez (the founder). Do not invent product decisions. Do not assume design 
 - Every business rule (fairness caps, age 18+ to sell, one seller capability) enforced in the DB (constraint/trigger/RLS), not only app code.
 - Money: `numeric(10,2)` in TND. Stock: `tracks_stock` + `stock_count` (`tracks_stock=false` = "Toujours disponible").
 - `seller_type`: null = consumer; `'shop_owner'` or `'freelancer'`, never both; switching deletes own role content but preserves completed transactions.
-- Migrations: every one presented for approval before applying. Never auto-apply; never "don't ask again."
+- Migrations: every one presented for approval before applying. Never auto-apply; never "don't ask again." CC writes the migration file + discovery, then STOPS — **CC never calls `apply_migration`**. The architect (Claude in claude.ai) reviews the SQL, verifies against the live DB, and applies it via Supabase MCP. After apply, CC renames the file to the version Supabase recorded and updates its README entry.
 
 ### MVP scope & market anchors
 - **In MVP:** identity; categories + RLS skeleton; shop owners; freelancers; consumer discovery + requests (COD + WhatsApp); favorites; job-posting (caps ~10/post, ~5 active/freelancer); FR + AR with RTL; admin dashboard + reports + stats; polish/launch.
