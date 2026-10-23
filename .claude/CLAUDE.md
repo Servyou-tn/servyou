@@ -74,6 +74,12 @@ Load conditionally per task. Index: `.claude/skills/README.md`.
 - `servyou-phase-aware-features` — widgets, stats, dashboards
 - `servyou-discovery-first-migration` — schema changes
 
+## Dev loop
+
+- While editing, prefer next-devtools `get_errors` / `compile_route` for fast feedback. tsc + lint + test + build are still mandatory before claiming done (DoD item 3 unchanged).
+- After any context compaction, run `/reload-skills` before continuing UI or migration work.
+- Figma: official MCP reads are capped at 20/month on the current Starter/View seat — use the CDP bridge for measurement until the founder confirms Figma Pro.
+
 ## When in doubt
 
 Ask Moatez (the founder). Do not invent product decisions. Do not assume design preferences. Do not skip discovery to save time.
