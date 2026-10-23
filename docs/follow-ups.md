@@ -3773,8 +3773,20 @@ Manual static review of the live schema + app code (gstack-cso itself did not ru
 entry). Fixed in this PR, so NOT listed below: the profiles self-admin hole (migration 53) and the
 orders INSERT gap (migration 54). Ranked most severe first; each is its own PR unless noted.
 
-### HIGH — `shops` / `freelancer_profiles` INSERT bypass the 18+ and one-seller-capability rules
+### ✅ CLOSED for `shops` + `freelancer_profiles` only — HIGH — `shops` / `freelancer_profiles` INSERT bypass the 18+ and one-seller-capability rules
 
+- **Scope of the closure:** these two tables only. `job_responses` lets any account act as a
+  freelancer with no age or capability check — that is still open, see the next entry.
+- **Closed by** migration 55 (`20261023182532_seller_capability_integrity`,
+  `fix/seller-capability-insert`, 2026-10-23): `enforce_seller_capability()` (BEFORE INSERT OR
+  UPDATE OF owner on both tables) requires the owner's matching `seller_type` and no row of the
+  other capability; `enforce_seller_capability_switch()` (BEFORE UPDATE OF `seller_type` on
+  `profiles`, founder decision D1) stops a seller moving away from a capability they still own.
+  Decision D2: the one existing freelancer profile on a `seller_type`-NULL account is left as is.
+  Live proof: `src/__tests__/seller-capability-integrity.test.ts`.
+- **Correction to the fix sketch below:** matching `seller_type` alone was not enough —
+  `seller_type` stays client-UPDATEable, so an adult freelancer could flip to `shop_owner` and then
+  POST a shop. Hence the "no other capability row" conjunct and the `profiles`-side guard.
 - **What:** "Owner inserts own shop" and "Owner inserts own freelancer profile" check only
   `owner_id` / `profile_id = auth.uid()`, and neither table has an INSERT trigger. The age gate
   lives on `profiles.seller_type` (BEFORE UPDATE), which creating a shop never touches.
@@ -3782,6 +3794,31 @@ orders INSERT gap (migration 54). Ranked most severe first; each is its own PR u
   over REST and becomes a seller without ever setting `seller_type`.
 - **Fix:** BEFORE INSERT trigger on both tables requiring the caller's `profiles.seller_type` to be
   the matching value (which is itself age-gated), so the one-capability rule follows too.
+
+### HIGH — `job_responses` INSERT bypasses the 18+ and freelancer-capability rules (and unlocks phones)
+
+- **Found by:** `/gstack-review` of PR #180 (security specialist + adversarial pass, independently),
+  2026-10-23; confirmed live by the architect. Not caused by migration 55 — the policy dates from
+  migration 8 (`20260603182702_job_posts_skills_responses`).
+- **What:** the only INSERT gate is the RLS policy "Freelancer creates own response",
+  `with check (freelancer_id = auth.uid())`; `freelancer_id` references `profiles`, not
+  `freelancer_profiles`, and `check_job_response_limits()` (BEFORE INSERT) checks open / expiry /
+  self-response / duplicate / the 10-per-post and 5-active caps but never `seller_type` or a
+  freelancer profile. No app code inserts responses, so the policy is the whole gate.
+- **Exploit:** any signed-in account — a consumer, a self-declared minor, a shop owner — POSTs
+  `/rest/v1/job_responses` on an open post and then calls `get_contact_phone(poster)`, which returns
+  the poster's phone whenever a response links the two. Deleting the response ("Freelancer deletes
+  own response") frees a slot under the 5-active cap, so it repeats.
+- **Switch-path corollary (red team):** responses are keyed on `profiles.id` and survive the
+  deletion of the freelancer profile. A freelancer with no orders can delete their profile, switch
+  to `shop_owner` (migration 55 allows it — no capability row left), open a shop, and keep live
+  responses plus the phone unlock with each poster.
+- **Live state (2026-10-23):** 3 responses, all from real freelancers — not exploited.
+- **Fix (its own PR, after #180 merges; architect to brief):** a responder check on the INSERT path
+  (extend `check_job_response_limits()` or a sibling trigger, same `auth.uid()` NULL / `is_admin()`
+  bypass): `seller_type = 'freelancer'` plus an owned `freelancer_profiles` row, `42501`. Decide
+  what happens to existing responses on a switch (count `job_responses` as freelancer capability
+  rows in `enforce_seller_capability_switch()`, or have the switch flow remove them).
 
 ### HIGH — suspension is enforced only in `src/middleware.ts`
 
@@ -3863,6 +3900,36 @@ orders INSERT gap (migration 54). Ranked most severe first; each is its own PR u
   `shop_categories` and `job_post_skills` are also `using (true)` (confirmed live 2026-10-23).
 - **Fix:** fold into the products/shops security PR with the same embed audit.
 
+### MEDIUM — `freelancer_profiles.is_published` is owner-settable (publish-gate bypass)
+
+- **Found by:** `fix/seller-capability-insert` discovery, 2026-10-23.
+- **What:** migration 48 defines `is_published` as "derived, never user-set" (true iff ≥1 active
+  `service_listings` row, kept by `sync_freelancer_is_published`). But `authenticated` holds column
+  INSERT and UPDATE on it and no trigger guards it: the sync trigger lives on `service_listings`
+  only, and `enforce_admin_marker_lock` covers `admin_hidden_*` only.
+- **Exploit:** an owner PATCHes (or INSERTs) `is_published = true` on a profile with no active
+  listing, making it and its five child tables (skills, tools, education, certifications,
+  languages) world-readable to anon. Self-exposure only, and the next listing write re-syncs it,
+  but it defeats the publish gate's invariant.
+- **Fix:** revoke INSERT/UPDATE on `is_published` from `anon`/`authenticated` (column grants).
+  Do NOT use a guard trigger with the usual `auth.uid()` bypass: `sync_freelancer_is_published` is
+  SECURITY DEFINER (owner `postgres`) but fires inside the user's own session, so `auth.uid()` is
+  still the user there and the guard would block the sync. The owner bypasses column grants.
+
+### MEDIUM — a "switch seller type" flow cannot be a user-session delete-then-switch
+
+- **Found by:** `/gstack-review` of PR #180 (red team), 2026-10-23. Founder decision needed before
+  any switch feature is built.
+- **What:** CLAUDE.md says switching deletes own role content but preserves completed transactions.
+  Migration 55's Part 2 allows a switch once the old content is gone, but for any seller with an
+  order the content cannot go: deleting a shop / freelancer profile cascades to products /
+  service_listings, whose orders FK is `ON DELETE SET NULL`, and `enforce_order_identity_lock`
+  rejects that cascaded `SET NULL` for a signed-in non-admin (`42501` — the same code
+  `actions/products.ts` / `actions/services.ts` already map to "has orders").
+- **Options:** a SECURITY DEFINER RPC or service-role action that archives (hides) role content
+  instead of deleting it; or exempt the FK-cascade `SET NULL` in `enforce_order_identity_lock` when
+  the referenced item is gone.
+
 ### LOW — storage provenance missing for avatars and shop assets
 
 - **What:** the `uploaded_objects` provenance trigger guards only `product_images` and
@@ -3879,6 +3946,73 @@ orders INSERT gap (migration 54). Ranked most severe first; each is its own PR u
 - **D4:** the stock rule (`tracks_stock` and `quantity > stock_count`) is app-only. Fix: add it to
   `enforce_order_insert_integrity`.
 
+### LOW — `shops.owner_id` is not unique
+
+- **Found by:** `fix/seller-capability-insert` discovery, 2026-10-23.
+- **What:** the only unique indexes on `shops` are the PK and `lower(name)`. A shop owner can POST
+  several shops over REST (migration 55 checks capability, not count), while the app assumes one —
+  `resolveOwnedShopId` and the G2 action's "already owns a shop" check.
+- **Fix:** a unique index on `shops.owner_id` (discovery first: 1 shop in prod today), or a
+  founder decision that multi-shop is a future feature and the app should handle it.
+
+### LOW — the D2 account is shown the G2 form and gets an unexplained error
+
+- **Found by:** `/gstack-review` of PR #180, 2026-10-23.
+- **What:** the one account kept as is by decision D2 (`seller_type` NULL, owns a freelancer
+  profile) passes G2's guards — `ma-boutique/creer/page.tsx` and `createShopAction` check
+  `seller_type === 'freelancer'` only, not freelancer-profile ownership — so it sees "Créer ma
+  boutique". On submit its `seller_type` flip to `shop_owner` fails migration 55's `42501`, which
+  the action maps to `common.error_generic`. The DB refusal is correct; the dead end is UX only.
+- **Fix:** guard G2's page and action with `resolveOwnedFreelancerProfileId` and show the existing
+  "already a freelancer" card; or map a `42501` from the `seller_type` UPDATE to specific copy; or
+  repair the account to `seller_type = 'freelancer'` (migration 55 allows it).
+
+### LOW — migration 55 locks the target owner's profile row before RLS rejects a foreign write
+
+- **Found by:** `/gstack-review` of PR #180 (adversarial pass), 2026-10-23.
+- **What:** `enforce_seller_capability()` reads the NEW owner's `profiles` row `FOR SHARE` before
+  the RLS WITH CHECK rejects an insert naming someone else as owner, so any signed-in user can
+  briefly lock any profile row (for the length of the failing statement) and get one of three
+  error texts. `seller_type` is public via `public_profiles`, so the text leaks little.
+- **Fix (needs a forward migration):** fail closed first —
+  `if v_owner is distinct from auth.uid() then raise ... using errcode = '42501'` — before the
+  `FOR SHARE` read.
+
+### LOW — `admin_hidden_*` can be set on INSERT (`shops`, `freelancer_profiles`)
+
+- **Found by:** `fix/seller-capability-insert` discovery, 2026-10-23.
+- **What:** `authenticated` holds column INSERT on `admin_hidden_at` / `admin_hidden_reason`, and
+  `enforce_admin_marker_lock` is BEFORE UPDATE only. An owner can create their own row already
+  "admin-moderated", with any reason text. Self-harm only (it hides their own content), but the
+  marker is meant to be admin-written.
+- **Fix:** revoke column INSERT on both from `anon`/`authenticated`, or extend the lock to INSERT.
+
+### LOW — two live-DB suites reuse a fixed shop name and fail on `shops_name_lower_key`
+
+- **Found by:** `fix/seller-capability-insert`, full integration run, 2026-10-23 — pre-existing,
+  not caused by migration 55 (the failing insert is service-role, which the new trigger bypasses).
+- **What:** `buyer-cancellation-history.test.ts` creates three shops all named `'BCH Shop'`, and
+  `order-delivery-fee-snapshot.test.ts` two named `'DFee Shop'`. Since migration 20260811055734
+  made `lower(name)` unique, the second insert fails with 23505 and both suites skip every test —
+  they have proven nothing since 2026-08-11.
+- **Fix:** give each fixture shop a distinct name (label + run id), as
+  `orders-insert-integrity.test.ts` and `seller-capability-integrity.test.ts` do.
+
+### LOW — `freelancer-publish-gate-rls.test.ts` "getActiveServices list shape" is flaky under parallel runs
+
+- **Found by:** `fix/seller-capability-insert`, default vitest run, 2026-10-23 (failed 24 vs 25, then
+  passed 22/22 alone).
+- **What:** the case counts all active `service_listings` (service role), then reads the anon list
+  shape, and compares the two. Any other suite in the same run (or another agent) that creates an
+  active listing between the two reads fails it.
+- **Fix:** scope both reads to rows that exist before the test starts (e.g. exclude the
+  `@rls-smoke.servyou.invalid` owners), or compare id sets instead of lengths.
+
+### LOW — `orders-insert-integrity.test.ts` header cites the pre-rename migration file
+
+- The header names `db/migrations/20261023165345_orders_insert_integrity.sql`; the file was renamed
+  to the recorded version `20261023170918_orders_insert_integrity.sql`. One-line fix.
+
 ### LOW — Supabase advisor hygiene
 
 - 27 SECURITY DEFINER functions flagged as executable by anon/authenticated: the trigger functions
@@ -3889,6 +4023,8 @@ orders INSERT gap (migration 54). Ranked most severe first; each is its own PR u
   `unaccent` extension lives in `public`.
 - Default table grants still include TRUNCATE (and DELETE/INSERT where no policy exists) to
   anon/authenticated on most tables — not exposed by PostgREST, but worth a sweeping revoke.
+  Re-confirmed on `shops` and `freelancer_profiles` 2026-10-23 (`fix/seller-capability-insert`):
+  both grant TRUNCATE to anon and authenticated. Migration 53 already revoked it on `profiles`.
 - `uploaded_objects` has RLS with no policies (intentional: service-role only) — document it.
 
 ### LOW — `auth.admin.listUsers` fails on this project ("Database error finding users")
