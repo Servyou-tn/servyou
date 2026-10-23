@@ -154,6 +154,50 @@ this PR and is not attempted here.
     again, and `admin_hide_content`'s failure modes (not-found / already-moderated / now draft) are
     indistinguishable to the caller and unlogged on failure across all five target types.
 
+51. **20260909203226_service_listings_subcategory_id** — Adds `service_listings.subcategory_id`
+    (nullable `uuid references categories(id)`) for H6's two-level category cascade: pick a
+    sector, then a subcategory within it. `category_id` keeps its existing meaning (the sector —
+    every one of the 21 pre-H6 rows already points at a top-level `categories` row) so nothing
+    that already reads it (`CATEGORY_ICONS`, `/marche/services` filters, search) needs to change;
+    `subcategory_id` carries the leaf the taxonomy cutover migration (49) made real. **For the
+    record:** this column was proposed and approved during migration 49's own PR discovery but
+    never made it into that applied migration — a gap surfaced by H6 being its first real
+    consumer, not new scope invented here.
+
+52. **20261023153918_harden_service_listings_h6** — Hardens `service_listings` before H6 (the
+    service-creation wizard) starts writing drafts, per rulings G1–G3 (founder + architect,
+    2026-10-23). **G1:** replaces the SELECT policy "Services viewable by everyone" (`using (true)`
+    — any draft, owner-paused or admin-moderated row was readable by anyone holding its id through
+    the REST API; only the app's own `status='active'` filters kept them off public pages) with
+    "Services readable when live, or by owner, buyer, or admin": the public sees `status='active'
+    and admin_hidden_at is null`; the owner sees every own row (H5's list and counts, the
+    moderation banner, and the `RETURNING` of H5's toggle/delete and H6's `insert().select()` all
+    depend on that branch); the admin sees everything via `is_admin()`, so `/admin/signalements/[id]`
+    still reads a hidden target to render the unhide UI. The fourth, buyer branch — any listing the
+    caller has an order on — is PR-1 discovery decision D1 (founder, 2026-10-23): `/mes-commandes`
+    and the E2 recap embed the live listing, and all 10 pre-snapshot service orders have NULL
+    `item_title`/`unit_price_tnd`, so without it an owner pausing a service would blank the buyer's
+    own order history. It is deliberately not gated on `admin_hidden_at` (a buyer's record of their
+    own transaction outlives moderation) and cannot recurse (no `orders` policy references
+    `service_listings`). Every public read path already filtered `status='active'` and
+    `admin_hidden_at is null` in code, so none of them changes; `/mes-favoris` already dropped
+    non-active favourites in code. **G2:** `starting_price_tnd` becomes nullable, with
+    `service_listings_price_required_unless_draft` (`status = 'draft' or starting_price_tnd is not
+    null`) so only a draft may lack a price; `title` stays NOT NULL. **G3:** the `subcategory_id` FK
+    is re-created `on delete set null`, and the new `trg_enforce_service_subcategory_parent`
+    (`enforce_service_subcategory_parent()`, SECURITY DEFINER, `BEFORE INSERT OR UPDATE OF
+    category_id, subcategory_id`) requires a set `subcategory_id` to be a `kind='service'` child of
+    the row's own `category_id`, raising `23514`. It is kept separate from
+    `enforce_service_category_kind`, which governs the sector and still accepts `'both'`. By
+    decision D2, deleting a sector whose services carry a subcategory **fails** here (the FK nulls
+    `category_id` while `subcategory_id` is still set), so those services must be moved first.
+    All 21 pre-existing rows were active, priced and had no subcategory, so no backfill was needed.
+    `docs/follow-ups.md` logs what this migration surfaces but does not fix: `products`, `shops` and
+    `product_images` still read `using (true)` (their own security PR); an orders INSERT never
+    checks that the listing is active, because `set_order_snapshot` is SECURITY DEFINER and FK
+    checks bypass RLS; and moving a subcategory to another sector is never re-checked against
+    `subcategory_id`. Rollback SQL is in a comment block at the bottom of the migration file.
+
 ## Rollback paths
 
 Each migration in this folder represents work that has already been applied to production. Rollback is therefore reverse migration work, not file deletion. If a rollback is ever needed, write a new dated migration that reverses the relevant changes — never delete history from this folder.

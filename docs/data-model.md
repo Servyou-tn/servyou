@@ -98,11 +98,13 @@ The `freelancer_profiles` table holds the professional layer on top of the centr
 
 Three child tables capture multi-value freelancer attributes. The `freelancer_skills` table holds one row per skill tag. The `freelancer_tools` table holds one row per tool or software. The `freelancer_education` table holds one row per education entry (institution, degree, field, year_start, year_end nullable for ongoing). The `freelancer_certifications` table holds one row per certification (name, issuing organization, year obtained, optional credential URL).
 
-The `service_listings` table holds one row per service, linked to the freelancer and to a category. Starting price in TND, delivery time as flexible text, status enum (`'active'`, `'hidden'`).
+The `service_listings` table holds one row per service, linked to the freelancer and to a category. Starting price in TND (NULL allowed only while the row is a draft), delivery time as flexible text, status enum (`'active'`, `'hidden'`, `'draft'`).
 
 The `service_media` table holds one row per work sample linked to a service listing, with media_type enum (`'image'`, `'video'`).
 
-RLS on freelancer_profiles, freelancer_skills, service_listings, service_media: anyone reads; only the owning freelancer manages.
+RLS on freelancer_profiles, freelancer_skills, service_media: anyone reads; only the owning freelancer manages.
+
+RLS on service_listings (migration `20261023153918_harden_service_listings_h6`): the public reads only live listings (`status = 'active'` and not admin-moderated); the owning freelancer reads every one of their own rows, drafts included; a buyer reads any listing they have an order on, so their order history survives the seller pausing it; an admin reads everything. Only the owning freelancer manages.
 
 ## Orders: the lifecycle table
 
