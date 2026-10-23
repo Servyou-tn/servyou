@@ -275,6 +275,51 @@ this PR and is not attempted here.
     under 18; 1 freelancer profile belongs to a `seller_type` NULL account (adult, unpublished, no
     listings, no orders) and is left as is (founder decision D2). Rollback SQL is in a comment
     block at the bottom of the migration file.
+56. **20261023195911_auth_users_null_token_columns_fix** — Data-only repair of `auth.users`,
+    applied by the architect on 2026-10-23 and recorded here after the fact; no schema change.
+    9 of 22 rows (seeded demo/test accounts) carried NULL in `confirmation_token`,
+    `recovery_token`, `email_change_token_new` and `email_change`, which the Supabase Auth service
+    reads as non-null strings: any Auth admin call that loads those rows
+    (`auth.admin.listUsers`, admin `updateUserById`) failed with HTTP 500, and those accounts
+    could not complete password flows. Sets each NULL to `''` — the value GoTrue itself writes for
+    "no pending token" — only on rows with at least one NULL; rows with real values are
+    untouched. The file is the applied statement plus a trailing newline (without it, same md5 as
+    `supabase_migrations.schema_migrations.statements`). Verified after apply: 0 of 22 rows still
+    hold a NULL in any of the four columns. Nothing to roll back — restoring NULLs would re-break
+    the Auth admin API.
+59. **20261023212946_job_responses_responder_integrity** — Closes the HIGH audit finding
+    "`job_responses` INSERT bypasses the 18+ and freelancer-capability rules (and unlocks phones)"
+    (2026-10-23), including its switch-path corollary. (#57 `20261023212930_service_listings_short_description`
+    and #58 `20261023212933_categories_photographie_retouche_produit` are recorded by their own
+    PR; until it merges, the Verification query below lists those two as missing.) The only INSERT
+    gate was the policy "Freelancer creates own response", `with check (freelancer_id =
+    auth.uid())`, and no app code inserts responses — so any signed-in account (consumer,
+    self-declared minor, shop owner) could respond to an open post over REST and then read the
+    poster's phone through `get_contact_phone`. **Part 1:** `enforce_job_responder_capability()`
+    (SECURITY DEFINER), trigger `trg_check_job_responder_capability` BEFORE INSERT on
+    `job_responses` — named to fire before `trg_check_job_response_limits` (untouched). For
+    signed-in non-admin callers, in order: the row must be the caller's own (checked before any
+    lookup, because the trigger runs ahead of the RLS WITH CHECK and its messages must never
+    describe another account — this also closes the limits trigger's "déjà répondu" / 5-active
+    oracle for signed-in callers), then `seller_type = 'freelancer'`, 18+ (the age gate's own
+    expression — redundant for client paths, not for an admin- or service-role-set `seller_type`),
+    `suspended_at` NULL, and an owned `freelancer_profiles` row that is not admin-moderated — all
+    `42501`. The account's `profiles` row is read `FOR SHARE` (the FK only takes KEY SHARE) so the
+    check serializes against a `seller_type` switch. **Part 2 (decision D1):**
+    `enforce_seller_capability_switch()` from migration 55, body verbatim plus one conjunct: when
+    `seller_type` changes to anything but `freelancer`, the account must hold no `job_responses`
+    row at all (`42501`, its own message — migration 55's stays pinned). Any response, not only
+    live ones, because `get_contact_phone` ignores post status and expiry; withdrawing responses
+    then switching passes. **Part 3 (decision D3):** revokes INSERT and UPDATE on `job_responses`
+    from `anon` (it skipped Part 1 and still reached the limits trigger's oracle before RLS) and
+    UPDATE from `authenticated` (no UPDATE policy exists). Decision D2: the direct 18+ check is
+    kept. Decision D4: moderation shedding by deleting and re-creating the freelancer profile is
+    logged, not fixed. A `revoke execute` on the new function was drafted after review and NOT
+    applied — the function keeps Supabase's default EXECUTE grants like every other trigger
+    function (logged for one hygiene PR). New writes only: all 3 existing responses pass Part 1
+    and none is held by a non-freelancer. Verified by
+    `src/__tests__/job-responses-integrity.test.ts`. Rollback SQL is in a comment block at the
+    bottom of the migration file.
 
 ## Rollback paths
 
