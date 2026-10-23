@@ -12,6 +12,7 @@ export const INTEGRATION_GLOBS = [
   '**/freelancer-config-rls.test.ts',
   '**/buyer-cancellation-history.test.ts',
   '**/order-delivery-fee-snapshot.test.ts',
+  '**/orders-insert-integrity.test.ts',
   '**/profiles-rls.test.ts',
   '**/profiles-client-insert-delete-revoked.test.ts',
   '**/job-limits.test.ts',

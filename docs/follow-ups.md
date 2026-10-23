@@ -3728,8 +3728,11 @@ coupling" claim on that specific function is stale, not a remaining blocker.
 - **Trigger:** its own security PR — before any product gains a draft-like state, or in the
   pre-launch security pass, whichever comes first.
 
-### Orders INSERT never checks that the target listing is live — and since migration 52 an order is also a read grant
+### ✅ CLOSED — Orders INSERT never checks that the target listing is live — and since migration 52 an order is also a read grant
 
+- **Closed by** migration 54 (`20261023170918_orders_insert_integrity`, `fix/orders-insert-integrity`,
+  2026-10-23): `trg_enforce_order_insert_integrity` derives `seller_id` from the item and, for
+  signed-in non-admin callers, requires a live item, a `pending` start and no self-order.
 - **What:** "Buyer creates own order" checks only `buyer_id = auth.uid()`. `set_order_snapshot` is
   SECURITY DEFINER (it reads the target regardless of RLS) and FK checks bypass RLS, so a
   signed-in user holding a listing's UUID can create an order on a draft, paused or admin-moderated
@@ -3762,3 +3765,131 @@ coupling" claim on that specific function is stale, not a remaining blocker.
 - **Trigger:** the next taxonomy migration that changes any subcategory's `parent_id` — it must
   re-home or re-validate the affected services in the same migration, or add the categories-side
   guard then.
+
+## Security audit — open findings (`fix/orders-insert-integrity`, 2026-10-23)
+
+Manual static review of the live schema + app code (gstack-cso itself did not run — see the last
+entry). Fixed in this PR, so NOT listed below: the profiles self-admin hole (migration 53) and the
+orders INSERT gap (migration 54). Ranked most severe first; each is its own PR unless noted.
+
+### HIGH — `shops` / `freelancer_profiles` INSERT bypass the 18+ and one-seller-capability rules
+
+- **What:** "Owner inserts own shop" and "Owner inserts own freelancer profile" check only
+  `owner_id` / `profile_id = auth.uid()`, and neither table has an INSERT trigger. The age gate
+  lives on `profiles.seller_type` (BEFORE UPDATE), which creating a shop never touches.
+- **Exploit:** a consumer of any age `POST`s `/rest/v1/shops` (or `freelancer_profiles`, or both)
+  over REST and becomes a seller without ever setting `seller_type`.
+- **Fix:** BEFORE INSERT trigger on both tables requiring the caller's `profiles.seller_type` to be
+  the matching value (which is itself age-gated), so the one-capability rule follows too.
+
+### HIGH — suspension is enforced only in `src/middleware.ts`
+
+- **What:** `suspended_at` is checked only in `src/middleware.ts:31-55`, which clears cookies on
+  matched routes. No RLS policy reads it; the matcher misses `/demander`, `/mes-commandes`,
+  `/commandes-recues`, `/mes-produits`, `/mes-services`, `/mon-compte`, `/parametres`, the
+  dashboards, `/boutique/[id]` and `/freelance/[id]` (and lists stale paths).
+- **Exploit:** a suspended user signs in again or reuses a token and keeps writing through PostgREST
+  or any server action on an unmatched route (e.g. `submitProductRequest`).
+- **Fix:** ban the auth user on suspension (admin API), add an `is_active()` helper to write policies,
+  fix the matcher. Includes decision D3 below.
+
+### HIGH — admin area has no server-side `requireAdmin()`
+
+- **What:** `src/app/admin/layout.tsx` is `'use client'` and checks `is_admin` in a `useEffect`; the
+  actions in `admin/{litiges,signalements,utilisateurs}/actions.ts` never call `getUser()` or check
+  admin (only `statistiques/actions.ts` does).
+- **Exploit:** none today — every write is gated by `is_admin()` in RLS/RPCs. But it is a single
+  layer: migration 53's hole would have handed over the whole admin UI with no second check.
+- **Fix:** server `requireAdmin()` in a server `admin/layout.tsx` and at the top of every admin action.
+
+### MEDIUM — orders UPDATE: lifecycle columns stay writable after the fact
+
+- **What:** `authenticated` holds UPDATE on `cancelled_by`, `cancellation_reason`, `received_at`;
+  `check_order_status_transition` lets status-free edits "sail through" and
+  `enforce_order_identity_lock` doesn't cover these three.
+- **Exploit:** a buyer flips `cancelled_by` 'buyer' → 'seller' on an already-cancelled order to clean
+  `buyer_cancellation_history` (or a seller frames a buyer the other way); either party backdates
+  `received_at`.
+- **Fix:** lock the three once set (identity lock), stamp `received_at` in a trigger and revoke its
+  grant; move `ReceiptConfirmButton` / `OrdersList` / `CancelOrderModal` writes to server actions.
+
+### MEDIUM — `demander/[id]/actions.ts` has no Zod schema
+
+- **What:** `submitProductRequest` / `submitServiceRequest` validate by hand: ids aren't checked as
+  UUIDs; `note`, `description`, `timeframe`, `deliveryName` have no max length; `quantity` no upper
+  bound.
+- **Exploit:** a direct action call stores a multi-MB `buyer_note` on a seller's order, rendered on
+  their dashboard.
+- **Fix:** Zod schema like `actions/orders.ts` (CLAUDE.md hard standard). Same PR: drop the now
+  redundant `seller_id` from both inserts (migration 54 derives it) and stop logging the raw
+  `insErr` object (`console.error('[submit…Request] insert error:', insErr)` — CLAUDE.md "never log
+  raw error objects"; log `message` / `code` / `details`).
+
+### MEDIUM — `src/app/actions/products.ts` relies on RLS alone for ownership
+
+- **What:** toggle status (`:462`), delete (`:526`), update (`:778`) and `deleteProductImageAction`
+  (`:965`) take a caller `productId` and never add `.eq('shop_id', …)`. Safe today because products
+  UPDATE/DELETE and product_images DELETE are owner-gated in RLS. The comment at `:976` ("RLS scoped
+  the read to zero rows") is wrong — product_images SELECT is `using (true)`.
+- **Fix:** add `.eq('shop_id', shop.shopId)` after `resolveOwnedShopId`, as the bulk actions do.
+
+### MEDIUM — freelancer URL fields accept `javascript:` / `data:`
+
+- **What:** Zod `.url()` accepts `javascript:alert(1)`; used in
+  `mon-profil-freelance/modifier/schema.ts` (`:25,29,35`) and `creer/competences/actions.ts:49-50`,
+  rendered as `href` in `freelance/[id]/_components/FreelancerDetail.tsx` (`:119,236,253`). React 19
+  blocks it at render today; any non-React consumer (email, OG tags) would not.
+- **Fix:** `.refine((u) => /^https?:\/\//i.test(u))` plus a DB CHECK on the columns.
+
+### MEDIUM — `using (true)` SELECT family (extends the H6 PR-1 entry above)
+
+- **What:** besides `products` / `shops` / `product_images` (entry above), `shop_payment_methods`,
+  `shop_categories` and `job_post_skills` are also `using (true)` (confirmed live 2026-10-23).
+- **Fix:** fold into the products/shops security PR with the same embed audit.
+
+### LOW — storage provenance missing for avatars and shop assets
+
+- **What:** the `uploaded_objects` provenance trigger guards only `product_images` and
+  `freelancer_portfolio_items`. `profiles.avatar_url` and `shops.logo_url` / `banner_url` can be
+  PATCHed over REST to any URL, and raw bytes can be PUT to the `avatars` / `shop-assets` buckets
+  without `normalize.ts`. Bounded: `next/image` `remotePatterns` only renders the Supabase host.
+- **Fix:** the owed Storage-REST provenance PR — extend the provenance gate to those columns.
+
+### LOW — order-insert decisions deferred from migration 54 (D2 / D3 / D4)
+
+- **D2:** clients can still set `created_at` / `updated_at` on INSERT (backdating skews H5's monthly
+  stats, which bucket by `created_at`). Fix: force both to `now()` for non-admin inserts.
+- **D3:** orders are not blocked when the buyer or seller is suspended — with the suspension PR above.
+- **D4:** the stock rule (`tracks_stock` and `quantity > stock_count`) is app-only. Fix: add it to
+  `enforce_order_insert_integrity`.
+
+### LOW — Supabase advisor hygiene
+
+- 27 SECURITY DEFINER functions flagged as executable by anon/authenticated: the trigger functions
+  cannot be called over RPC and every admin RPC gates on `is_admin()`, so this is noise — but
+  revoking EXECUTE on the trigger functions from anon/authenticated would silence it honestly.
+- Leaked-password protection (HaveIBeenPwned) is disabled in Auth.
+- Mutable `search_path` on `handle_updated_at`, `set_cancelled_at_on_transition`, `f_unaccent`; the
+  `unaccent` extension lives in `public`.
+- Default table grants still include TRUNCATE (and DELETE/INSERT where no policy exists) to
+  anon/authenticated on most tables — not exposed by PostgREST, but worth a sweeping revoke.
+- `uploaded_objects` has RLS with no policies (intentional: service-role only) — document it.
+
+### LOW — `auth.admin.listUsers` fails on this project ("Database error finding users")
+
+- **What:** 9 of 22 `auth.users` rows have NULL `confirmation_token` / `recovery_token` /
+  `email_change` / `email_change_token_new` (seeded by SQL); GoTrue cannot scan NULL into those
+  string fields, so every `listUsers` call fails. Found while writing
+  `profiles-client-insert-delete-revoked.test.ts` (which now avoids `listUsers`).
+- **Fix:** coalesce the four columns to `''` for existing rows — a migration for the architect.
+
+### LOW — `db/migrations/README.md` "Rollback paths" section is stale
+
+- Still says "the inverse SQL for migrations 13 and 14 (the most recent two) is documented in the PR
+  descriptions" — every migration since carries its own rollback block. Rewrite the paragraph.
+
+### LOW — gstack-cso cannot run on this Windows machine
+
+- The `gstack-cso` launcher is not installed (`~/.claude/skills/gstack/bin/` has none); building it
+  on Windows needs Visual Studio Build Tools. Until then every `/cso` run reports "not assessed" and
+  audits are manual static reviews like this one.

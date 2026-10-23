@@ -215,6 +215,33 @@ this PR and is not attempted here.
     profiles re-created after their auth user. Rollback SQL is in a comment block at the bottom of
     the migration file — it re-opens the hole, so it must only ever ship with BEFORE INSERT guards.
 
+54. **20261023170918_orders_insert_integrity** — Closes the orders INSERT gap logged by migration
+    52. The only INSERT gate was the RLS WITH CHECK `buyer_id = auth.uid()`, so through the REST
+    API a signed-in user could order a draft, paused or admin-moderated item (which, since 52's
+    buyer branch, also grants READ on that service listing), pin the order on any profile as
+    `seller_id` (which also unlocked `get_contact_phone` for that profile — it returns the phone
+    whenever any order links caller and target), or insert an order already `received` (inflating
+    `get_completed_service_order_count` on the public D4 profile) or past `pending` (opening the
+    `disputes` INSERT path). Adds `trg_enforce_order_insert_integrity`
+    (`enforce_order_insert_integrity()`, SECURITY DEFINER, BEFORE INSERT), a sibling of
+    `set_order_snapshot` that fires before it by name; the snapshot itself is unchanged. **Every
+    caller:** `seller_id` is set from the item's owner (product → `shops.owner_id`; service →
+    `freelancer_profiles.profile_id`), discarding any client value — the snapshot's unconditional-
+    assignment pattern; a missing item raises the snapshot's own `23503`. **Signed-in non-admin
+    callers only** (`auth.uid()` NULL and `is_admin()` bypass, like every other orders trigger, so
+    seeds, the service role and live-DB fixtures inserting `received`/`cancelled` rows keep
+    working): `status` must be `pending` and `cancelled_by`, `cancelled_at`, `cancellation_reason`,
+    `received_at`, `carrier`, `tracking_number` NULL (`42501`); the item must be live — product
+    `status='active'` (so not `hidden`/`sold_out`), not admin-moderated, shop not admin-moderated;
+    service `status='active'` (so not `draft`/`hidden`), not admin-moderated, freelancer profile not
+    admin-moderated (`23514`); and the buyer cannot be the seller (`23514`). Both app paths
+    (`demander/[id]/actions.ts`) already send `status:'pending'`, the true owner as `seller_id`,
+    and only order live items, so neither changes. New inserts only: of the 16 existing orders, 0
+    had a mismatched seller, 0 were self-orders, 0 sat on a non-live item; 14 predate
+    `order_events`, so their insert-time status is unknowable. The seller age gate is on
+    `profiles` (BEFORE UPDATE) and is untouched. Rollback SQL is in a comment block at the bottom
+    of the migration file.
+
 ## Rollback paths
 
 Each migration in this folder represents work that has already been applied to production. Rollback is therefore reverse migration work, not file deletion. If a rollback is ever needed, write a new dated migration that reverses the relevant changes — never delete history from this folder.
