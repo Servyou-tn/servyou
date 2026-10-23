@@ -17,10 +17,15 @@
  * The "à la fois" conjunct of Part 1 is unreachable through a user session once Part 2 is live
  * (that is the point of Part 2), so its two cases seed the mixed state with the service role.
  *
- * Fixtures (all `sel-cap-`): a consumer, a minor, a freelancer, a shop owner, an "orphan" (a
- * freelancer profile on a seller_type-NULL account — the shape of the one such row in prod), two
- * mixed accounts, two onboarding users (G2, H2), a service-role bypass target and an admin.
- * shops.name is unique case-insensitively across prod, so every fixture shop carries this run's id.
+ * Fixtures (all `sel-cap-`): a consumer, a minor (15 years old on the day of the run), a freelancer,
+ * a shop owner, an "orphan" (a freelancer profile on a seller_type-NULL account — the shape of the
+ * one such row in prod, decision D2), two mixed accounts, a row-less shop_owner (the G2 race
+ * leftover), a shop owner with no orders who switches, two onboarding users (G2, H2), a
+ * service-role bypass target and an admin. shops.name is unique case-insensitively across prod, so
+ * every fixture shop carries this run's id.
+ *
+ * Not proven here: the FOR SHARE serialization between an insert and a concurrent seller_type
+ * switch (supabase-js over PostgREST cannot hold two transactions open; the repo has no pg client).
  *
  * Pattern A (live-DB). Service role for fixtures, ground truth and teardown only.
  *
@@ -47,6 +52,13 @@ const email = (local: string) => `${PREFIX}${local}${EMAIL_SUFFIX}`
 const PASSWORD = 'Seller-Capability-Test-4q9!' // ephemeral test users only; never a real account
 const TITLE = 'Seller capability test'
 const RUN = randomUUID().slice(0, 8)
+
+// 15 years before today (UTC), so the minor stays under 18 whatever day the suite runs.
+const MINOR_DOB = (() => {
+  const d = new Date()
+  d.setUTCFullYear(d.getUTCFullYear() - 15)
+  return d.toISOString().slice(0, 10)
+})()
 
 // The guards' error shapes, pinned by text so a rejection from some OTHER trigger, policy or
 // constraint can't pass for the rule under test.
@@ -139,6 +151,8 @@ let shopOwnerId: string
 let orphanId: string
 let mixedShopOwnerId: string
 let mixedFreelancerId: string
+let rowlessShopOwnerId: string
+let switcherId: string
 let g2Id: string
 let h2Id: string
 let bypassId: string
@@ -147,6 +161,7 @@ let adminId: string
 let freelancerFpId: string
 let shopOwnerShopId: string
 let orphanFpId: string
+let mixedFreelancerShopId: string
 
 let consumerClient: SupabaseClient
 let minorClient: SupabaseClient
@@ -155,6 +170,8 @@ let shopOwnerClient: SupabaseClient
 let orphanClient: SupabaseClient
 let mixedShopOwnerClient: SupabaseClient
 let mixedFreelancerClient: SupabaseClient
+let rowlessShopOwnerClient: SupabaseClient
+let switcherClient: SupabaseClient
 let g2Client: SupabaseClient
 let h2Client: SupabaseClient
 let adminClient: SupabaseClient
@@ -164,12 +181,14 @@ beforeAll(async () => {
   await teardown()
 
   consumerId = await createUser('consumer')
-  minorId = await createUser('minor', '2010-01-01')
+  minorId = await createUser('minor', MINOR_DOB)
   freelancerId = await createUser('free')
   shopOwnerId = await createUser('shop')
   orphanId = await createUser('orphan')
   mixedShopOwnerId = await createUser('mixed-shop')
   mixedFreelancerId = await createUser('mixed-free')
+  rowlessShopOwnerId = await createUser('rowless-shop')
+  switcherId = await createUser('switcher')
   g2Id = await createUser('g2')
   h2Id = await createUser('h2')
   bypassId = await createUser('bypass')
@@ -190,7 +209,12 @@ beforeAll(async () => {
   await seedFreelancerProfile(mixedShopOwnerId)
 
   await seedSellerType(mixedFreelancerId, 'freelancer')
-  await seedShop(mixedFreelancerId, 'mixed freelancer')
+  mixedFreelancerShopId = await seedShop(mixedFreelancerId, 'mixed freelancer')
+
+  await seedSellerType(rowlessShopOwnerId, 'shop_owner') // no shop: G2's name-race leftover
+
+  await seedSellerType(switcherId, 'shop_owner')
+  await seedShop(switcherId, 'switcher') // no products, so no orders
 
   consumerClient = await signIn('consumer')
   minorClient = await signIn('minor')
@@ -199,6 +223,8 @@ beforeAll(async () => {
   orphanClient = await signIn('orphan')
   mixedShopOwnerClient = await signIn('mixed-shop')
   mixedFreelancerClient = await signIn('mixed-free')
+  rowlessShopOwnerClient = await signIn('rowless-shop')
+  switcherClient = await signIn('switcher')
   g2Client = await signIn('g2')
   h2Client = await signIn('h2')
   adminClient = await signIn('admin')
@@ -239,9 +265,22 @@ describe.skipIf(!hasCreds)('ground truth for every case below', () => {
     expect(await shopCount(mixedFreelancerId)).toBe(1)
     expect(await fpCount(mixedFreelancerId)).toBe(0)
 
+    expect(await sellerTypeOf(rowlessShopOwnerId)).toBe('shop_owner')
+    expect(await shopCount(rowlessShopOwnerId)).toBe(0)
+    expect(await fpCount(rowlessShopOwnerId)).toBe(0)
+
+    expect(await sellerTypeOf(switcherId)).toBe('shop_owner')
+    expect(await shopCount(switcherId)).toBe(1)
+    const { count: switcherOrders, error: ordersErr } = await admin
+      .from('orders')
+      .select('id', { count: 'exact', head: true })
+      .eq('seller_id', switcherId)
+    expect(ordersErr).toBeNull()
+    expect(switcherOrders).toBe(0)
+
     const { data: minor, error } = await admin.from('profiles').select('date_of_birth').eq('id', minorId).single()
     expect(error).toBeNull()
-    expect(minor?.date_of_birth).toBe('2010-01-01')
+    expect(minor?.date_of_birth).toBe(MINOR_DOB)
   })
 })
 
@@ -322,6 +361,12 @@ describe.skipIf(!hasCreds)('Part 1 — an INSERT needs the matching seller_type 
     expect(roleErr?.code).toBe('23514')
     expect(roleErr?.message).toBe(UNDER_18)
 
+    // H2's direction too. Part 2 fires first by name and passes (the minor owns nothing), so the age
+    // gate's 23514 — the code both actions map to the "18 ans" copy — is still what surfaces.
+    const { error: freeErr } = await minorClient.from('profiles').update({ seller_type: 'freelancer' }).eq('id', minorId)
+    expect(freeErr?.code).toBe('23514')
+    expect(freeErr?.message).toBe(UNDER_18)
+
     expect(await shopCount(minorId)).toBe(0)
     expect(await fpCount(minorId)).toBe(0)
     expect(await sellerTypeOf(minorId)).toBeNull()
@@ -339,6 +384,14 @@ describe.skipIf(!hasCreds)('Part 1 — an INSERT needs the matching seller_type 
     expect(error?.code).toBe('42501')
     expect(error?.message).toBe(NOT_FREELANCER)
     expect(await fpCount(shopOwnerId)).toBe(0)
+  })
+
+  it('the D2 shape (seller_type NULL, owns a freelancer profile) cannot create a shop', async () => {
+    expect(await sellerTypeOf(orphanId)).toBeNull() // Part 2's repair case below flips it later
+    const { error } = await orphanClient.from('shops').insert({ owner_id: orphanId, name: shopName('orphan') })
+    expect(error?.code).toBe('42501')
+    expect(error?.message).toBe(NOT_SHOP_OWNER)
+    expect(await shopCount(orphanId)).toBe(0)
   })
 })
 
@@ -361,11 +414,13 @@ describe.skipIf(!hasCreds)('Part 1 — an INSERT cannot add a second capability 
 })
 
 describe.skipIf(!hasCreds)('Part 1 — owner changes', () => {
-  // RLS (USING / WITH CHECK owner = auth.uid()) already refuses these; which error surfaces first
-  // depends on the target's seller_type, so only the outcome is pinned.
+  // RLS (USING / WITH CHECK owner = auth.uid()) would refuse these too, but BEFORE ROW triggers run
+  // before the WITH CHECK and the target here is the consumer (seller_type NULL), so the trigger's
+  // own rejection is what surfaces — pinned, so dropping the UPDATE OF branch fails the test.
   it('a shop owner cannot hand their shop to another account', async () => {
     const { error } = await shopOwnerClient.from('shops').update({ owner_id: consumerId }).eq('id', shopOwnerShopId)
-    expect(error).not.toBeNull()
+    expect(error?.code).toBe('42501')
+    expect(error?.message).toBe(NOT_SHOP_OWNER)
     const { data } = await admin.from('shops').select('owner_id').eq('id', shopOwnerShopId).single()
     expect(data?.owner_id).toBe(shopOwnerId)
   })
@@ -375,14 +430,28 @@ describe.skipIf(!hasCreds)('Part 1 — owner changes', () => {
       .from('freelancer_profiles')
       .update({ profile_id: consumerId })
       .eq('id', freelancerFpId)
-    expect(error).not.toBeNull()
+    expect(error?.code).toBe('42501')
+    expect(error?.message).toBe(NOT_FREELANCER)
     const { data } = await admin.from('freelancer_profiles').select('profile_id').eq('id', freelancerFpId).single()
     expect(data?.profile_id).toBe(freelancerId)
   })
 
-  it('an unchanged owner in the SET list is not re-checked (UPDATE OF fires anyway)', async () => {
+  it('an unchanged owner in the SET list is not re-checked — shops', async () => {
+    // The mixed freelancer's seller_type is 'freelancer', so the full Part 1 check WOULD reject its
+    // shop — only the IS DISTINCT FROM early return lets the edit through.
+    const { error } = await mixedFreelancerClient
+      .from('shops')
+      .update({ owner_id: mixedFreelancerId, description: 'Mixed edit' })
+      .eq('id', mixedFreelancerShopId)
+    expect(error).toBeNull()
+    const { data } = await admin.from('shops').select('description').eq('id', mixedFreelancerShopId).single()
+    expect(data?.description).toBe('Mixed edit')
+  })
+
+  it('an unchanged owner in the SET list is not re-checked — freelancer_profiles', async () => {
     // The orphan's seller_type is NULL, so the full Part 1 check WOULD reject this row — only the
     // IS DISTINCT FROM early return lets the edit through.
+    expect(await sellerTypeOf(orphanId)).toBeNull() // Part 2's repair case below flips it later
     const { error } = await orphanClient
       .from('freelancer_profiles')
       .update({ profile_id: orphanId, headline: 'Orphan edit' })
@@ -412,7 +481,8 @@ describe.skipIf(!hasCreds)('Part 2 — seller_type cannot move away from an owne
     expect(await sellerTypeOf(shopOwnerId)).toBe('shop_owner')
   })
 
-  it('re-sending the same seller_type is allowed', async () => {
+  it('re-sending the same seller_type is not re-checked, even on an account whose rows disagree', async () => {
+    // Consistent accounts — the G2 retry and H2 "Retour" shapes.
     const { error: shopErr } = await shopOwnerClient.from('profiles').update({ seller_type: 'shop_owner' }).eq('id', shopOwnerId)
     expect(shopErr).toBeNull()
     const { error: freeErr } = await freelancerClient
@@ -420,6 +490,59 @@ describe.skipIf(!hasCreds)('Part 2 — seller_type cannot move away from an owne
       .update({ seller_type: 'freelancer', full_name: 'Freelance Test' })
       .eq('id', freelancerId)
     expect(freeErr).toBeNull()
+
+    // Mixed accounts: each owns the other capability's row, so the full check WOULD reject both —
+    // only the IS NOT DISTINCT FROM early return lets a same-value re-send through.
+    const { error: mixedShopErr } = await mixedShopOwnerClient
+      .from('profiles')
+      .update({ seller_type: 'shop_owner' })
+      .eq('id', mixedShopOwnerId)
+    expect(mixedShopErr).toBeNull()
+    const { error: mixedFreeErr } = await mixedFreelancerClient
+      .from('profiles')
+      .update({ seller_type: 'freelancer' })
+      .eq('id', mixedFreelancerId)
+    expect(mixedFreeErr).toBeNull()
+    expect(await sellerTypeOf(mixedShopOwnerId)).toBe('shop_owner')
+    expect(await sellerTypeOf(mixedFreelancerId)).toBe('freelancer')
+  })
+
+  it('a shop_owner who owns nothing (the G2 race leftover) can still move to freelancer, then to consumer', async () => {
+    const { error: toFreelancer } = await rowlessShopOwnerClient
+      .from('profiles')
+      .update({ seller_type: 'freelancer' })
+      .eq('id', rowlessShopOwnerId)
+    expect(toFreelancer).toBeNull()
+    expect(await sellerTypeOf(rowlessShopOwnerId)).toBe('freelancer')
+
+    const { error: toConsumer } = await rowlessShopOwnerClient
+      .from('profiles')
+      .update({ seller_type: null })
+      .eq('id', rowlessShopOwnerId)
+    expect(toConsumer).toBeNull()
+    expect(await sellerTypeOf(rowlessShopOwnerId)).toBeNull()
+  })
+
+  it('a shop owner with no orders can delete their shop, switch to freelancer and create a profile', async () => {
+    // The delete-then-switch path. It only works without orders: with one, the shop DELETE itself
+    // fails — enforce_order_identity_lock rejects the cascaded SET NULL (docs/follow-ups.md).
+    const { data: deleted, error: delErr } = await switcherClient
+      .from('shops')
+      .delete()
+      .eq('owner_id', switcherId)
+      .select('id')
+    expect(delErr).toBeNull()
+    expect(deleted).toHaveLength(1)
+    expect(await shopCount(switcherId)).toBe(0)
+
+    const { error: roleErr } = await switcherClient.from('profiles').update({ seller_type: 'freelancer' }).eq('id', switcherId)
+    expect(roleErr).toBeNull()
+    const { error: insErr } = await switcherClient.from('freelancer_profiles').insert({ profile_id: switcherId })
+    expect(insErr).toBeNull()
+
+    expect(await sellerTypeOf(switcherId)).toBe('freelancer')
+    expect(await fpCount(switcherId)).toBe(1)
+    expect(await shopCount(switcherId)).toBe(0)
   })
 
   it('an orphan profile owner can still edit their account, cannot become shop_owner, can repair to freelancer', async () => {

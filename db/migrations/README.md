@@ -243,8 +243,9 @@ this PR and is not attempted here.
     of the migration file.
 
 55. **20261023182532_seller_capability_integrity** — Closes the HIGH audit finding "`shops` /
-    `freelancer_profiles` INSERT bypass the 18+ and one-seller-capability rules" (2026-10-23).
-    Both INSERT policies checked only `owner_id` / `profile_id = auth.uid()` and neither table had
+    `freelancer_profiles` INSERT bypass the 18+ and one-seller-capability rules" (2026-10-23)
+    for those two tables. The sibling `job_responses` path, where an account also acts as a
+    freelancer, is not covered and is logged as its own HIGH. Both INSERT policies checked only `owner_id` / `profile_id = auth.uid()` and neither table had
     an INSERT trigger, while the 18+ gate (`enforce_seller_type_age_gate`) is BEFORE UPDATE on
     `profiles.seller_type` — so over REST a consumer of any age could create a shop and/or a
     freelancer profile without ever setting `seller_type`. **Part 1:**
@@ -258,12 +259,18 @@ this PR and is not attempted here.
     `FOR SHARE` so the check cannot interleave with a `seller_type` switch; UPDATE returns early
     unless the owner actually changes. **Part 2 (founder decision D1):**
     `enforce_seller_capability_switch()` (BEFORE UPDATE OF `seller_type` on `profiles`, sibling of
-    the age gate, which is untouched): when `seller_type` actually changes, the new value must match every capability row the account owns
-    (`42501`) — without it a shop owner could move to NULL or `freelancer` and keep a live shop.
-    `auth.uid()` NULL and `is_admin()` bypass both parts, like every other guard trigger; the
-    service-role fixtures (one of which gives a user both a shop and a freelancer profile) depend
-    on it, and anon is still stopped by the RLS WITH CHECK. Both app paths (`ma-boutique/creer`,
-    `mon-profil-freelance/creer`) flip `seller_type` first and insert second, so neither changes.
+    the age gate, which is untouched): when `seller_type` actually changes, the new value must
+    match every capability row the account owns (`42501`) — without it a shop owner could move to
+    NULL or `freelancer` and keep a live shop. Deleting the old content and then switching passes
+    Part 2 only for a seller with no orders (`enforce_order_identity_lock` rejects the cascaded
+    `SET NULL` on their orders), so a future "switch" flow needs its own design (logged).
+    `auth.uid()` NULL and `is_admin()` bypass both parts, like every other guard trigger; rls-smoke
+    and twelve live-DB suites (listed in the migration header) seed shops or freelancer profiles
+    through the service role without setting `seller_type` and depend on it, and anon is still
+    stopped by the RLS WITH CHECK. Both app paths (`ma-boutique/creer`,
+    `mon-profil-freelance/creer`) flip `seller_type` first and insert second, so neither changes —
+    except for the D2 account below: G2 checks `seller_type` only, so it still shows that account
+    the form, and its flip now fails with `42501`, shown as G2's generic error (logged).
     New writes only: of 1 shop and 11 freelancer profiles, 0 accounts owned both and 0 sellers were
     under 18; 1 freelancer profile belongs to a `seller_type` NULL account (adult, unpublished, no
     listings, no orders) and is left as is (founder decision D2). Rollback SQL is in a comment

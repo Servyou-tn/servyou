@@ -6,7 +6,8 @@
 -- therefore POST /rest/v1/shops and/or /rest/v1/freelancer_profiles and become a seller -- or both
 -- -- without ever setting seller_type. Closes docs/follow-ups.md "Security audit -- open findings
 -- (2026-10-23)", HIGH "shops / freelancer_profiles INSERT bypass the 18+ and one-seller-capability
--- rules".
+-- rules" -- for shops and freelancer_profiles only. job_responses, a sibling path where an account
+-- also acts as a freelancer, is not covered here and is logged as its own HIGH.
 --
 -- Part 1 -- shops / freelancer_profiles (BEFORE INSERT OR UPDATE OF owner_id / profile_id).
 -- One shared function, per-table triggers -- the enforce_admin_marker_lock() shape. For signed-in
@@ -33,7 +34,10 @@
 -- 42501, not 23514: both creation actions (ma-boutique/creer, mon-profil-freelance/creer) map a
 -- 23514 on their seller_type UPDATE to the age-gate copy ("18 ans"); a capability rejection must not
 -- surface as an age refusal. The app's own order -- flip seller_type (age-gated) THEN insert -- passes
--- unchanged, and both actions already refuse the cross-capability case before writing.
+-- unchanged. Both actions refuse the cross-capability case by seller_type only, not by owned rows,
+-- so the one D2 account below (seller_type NULL, owns a freelancer profile) is still shown the G2
+-- form; its seller_type flip to 'shop_owner' now fails Part 2's 42501, which G2 maps to its generic
+-- error (logged in docs/follow-ups.md).
 --
 -- Part 2 -- profiles (BEFORE UPDATE OF seller_type), founder decision D1. Part 1 stops a second
 -- capability from being CREATED, but a seller could still move seller_type away from the
@@ -42,18 +46,25 @@
 -- changes, the NEW value must match every capability row the account owns (42501). Keyed on the
 -- new value, so a seller_type-NULL account that already owns a freelancer profile can still move to
 -- 'freelancer' (repairs it) but not to 'shop_owner'. No app path moves seller_type away from a
--- non-null value (only the two creation actions write it, NULL -> matching value or same value); a
--- future "switch" flow (CLAUDE.md: switching deletes own role content) deletes the old content
--- first, which this allows. Sibling of enforce_seller_type_age_gate_trigger, which is untouched; the
--- two fire in name order, this one first.
+-- non-null value (only the two creation actions write it, NULL -> matching value or same value).
+-- Deleting the old content and then switching passes this guard, but only for a seller with no
+-- orders: deleting a shop or freelancer profile cascades to products / service_listings, the orders
+-- FK on those is ON DELETE SET NULL, and enforce_order_identity_lock rejects that cascaded SET NULL
+-- for a signed-in non-admin (42501). A "switch" flow (CLAUDE.md: switching deletes own role content
+-- but preserves completed transactions) therefore needs its own design -- logged in
+-- docs/follow-ups.md. Sibling of enforce_seller_type_age_gate_trigger, which is untouched; the two
+-- fire in name order, this one first.
 --
 -- Bypass: auth.uid() NULL and is_admin(), like every other guard trigger (enforce_seller_type_age_gate,
--- enforce_order_insert_integrity). Load-bearing: the service-role fixtures and seeds (rls-smoke,
--- buyer-cancellation-history, shop-check-constraints, shop-config-rls, freelancer-details-wizard,
--- freelancer-publish-gate-rls, h3-links-portfolio-rls, order-delivery-fee-snapshot -- which gives one
--- user BOTH a shop and a freelancer profile) insert without setting seller_type first. anon also has
--- auth.uid() NULL but can never insert: the RLS WITH CHECK owner = auth.uid() fails for it, and
--- owner_id / profile_id are NOT NULL.
+-- enforce_order_insert_integrity). Load-bearing: these service-role fixtures and seeds insert a shop
+-- or freelancer profile without setting seller_type first -- rls-smoke (charlie's shop),
+-- shop-check-constraints, shop-config-rls, freelancer-details-wizard, freelancer-publish-gate-rls,
+-- h3-links-portfolio-rls, d4-completed-project-count, d4-freelancer-services-visibility,
+-- h5-service-delete-orders-gate, h5-service-monthly-stats, h5-service-status-cascade,
+-- h6-service-listings-hardening-rls and uploaded-objects-provenance-rls -- and
+-- seller-capability-integrity seeds its mixed (both capabilities) and orphan states the same way.
+-- anon also has auth.uid() NULL but can never insert: the RLS WITH CHECK owner = auth.uid() fails
+-- for it, and owner_id / profile_id are NOT NULL.
 --
 -- New writes only; no existing row is rewritten. Discovery (2026-10-23): 1 shop (owner seller_type
 -- 'shop_owner'), 11 freelancer profiles, 0 accounts owning both, 0 sellers under 18. 1 freelancer
