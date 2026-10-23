@@ -37,7 +37,7 @@ const h = vi.hoisted(() => {
 vi.mock('@/lib/supabase/server', () => ({ createClient: h.createClient }))
 vi.mock('next/navigation', () => ({ redirect: h.redirect }))
 
-import { checkAdmin, requireAdmin } from '@/lib/auth/require-admin'
+import { checkAdmin, requireAdmin, adminRejectionError } from '@/lib/auth/require-admin'
 
 const client = h.client as unknown as SupabaseClient
 
@@ -86,6 +86,16 @@ describe('checkAdmin (server-action guard)', () => {
     expect(spy).toHaveBeenCalledWith(expect.any(String), 'boom', 'XX000', 'detail')
     expect(spy.mock.calls.flat()).not.toContain(error)
     spy.mockRestore()
+  })
+})
+
+describe('adminRejectionError (what an action shows for a rejected check)', () => {
+  it('shows a failed lookup as the generic error, never as access denied', () => {
+    expect(adminRejectionError('query_failed', 'admin.users.error_forbidden')).toBe('common.error_generic')
+  })
+
+  it.each(['forbidden', 'unauthenticated'] as const)('shows %s as the action’s own forbidden key', (reason) => {
+    expect(adminRejectionError(reason, 'admin.moderation.error_forbidden')).toBe('admin.moderation.error_forbidden')
   })
 })
 

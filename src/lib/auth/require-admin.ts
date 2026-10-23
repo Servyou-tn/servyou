@@ -48,6 +48,18 @@ export async function checkAdmin(supabase: SupabaseClient): Promise<AdminCheck> 
   return { ok: true, userId: user.id }
 }
 
+export type AdminRejection = Extract<AdminCheck, { ok: false }>['reason']
+
+/**
+ * The i18n key an admin action returns when checkAdmin rejects it. A failed lookup is an outage,
+ * not a denial — "Accès non autorisé." would send a real admin chasing a permission problem they
+ * don't have — so it reads as the generic error. Every other rejection is the action's own
+ * forbidden key. Either way the action still fails closed.
+ */
+export function adminRejectionError(reason: AdminRejection, forbiddenKey: string): string {
+  return reason === 'query_failed' ? 'common.error_generic' : forbiddenKey
+}
+
 // Memoized per request (React cache), argument-free on purpose: the layout and the page call
 // requireAdmin with different paths, and keying the cache on the path would run the lookup twice.
 const checkAdminForRequest = cache(async (): Promise<AdminCheck> => checkAdmin(await createClient()))

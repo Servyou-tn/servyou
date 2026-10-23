@@ -1040,6 +1040,10 @@ export const ar: Record<string, string> = {
   'demander.error.minLength':      "الحد الأدنى {n} حرفًا",
   'demander.error.stock':          "الكمية تتجاوز المخزون المتاح",
   'demander.error.notAuth':        "يجب أن تكون متصلاً.",
+  // REVIEW_AR_TRANSLATION: the two E1 service-form bracket errors (fix/app-server-guards) are
+  // first-draft Arabic, not yet reviewed by a native speaker.
+  'demander.error.descriptionTags': "يرجى حذف الأقواس المعقوفة [ ] من الوصف.",
+  'demander.error.timeframeChars': "يرجى حذف القوس المعقوف ] من هذا الحقل.",
   'demander.submit.product':       "تأكيد الطلب",
   'demander.submit.service':       "إرسال الطلب",
   'demander.submit.loading':       "جارٍ الإرسال…",
@@ -1906,6 +1910,11 @@ export const ar: Record<string, string> = {
   'freelance.edit.skills_label':        "مهاراتك",
   'freelance.edit.skills_helper':       "3 كحد أدنى، 15 كحد أقصى. تُستخدم في بحث العملاء.",
   'freelance.edit.error_skills':        "اختر بين 3 و15 مهارة لنشر ملفك الشخصي.",
+  // error_url reuses the reviewed freelance.create.step2/step3 URL error verbatim.
+  'freelance.edit.error_url':           "يرجى إدخال رابط صالح (https://…).",
+  // REVIEW_AR_TRANSLATION: H3 URL summary (fix/app-server-guards) — first-draft Arabic;
+  // {sections} interpolates the AR accordion titles.
+  'freelance.edit.error_urls':          "بعض الروابط غير صالحة (يجب أن تبدأ بـ https://). يرجى تصحيحها في: {sections}.",
   'freelance.edit.remove_skill':        "إزالة {name}",
   'freelance.edit.languages_title':     "اللغات",
   'freelance.edit.languages_helper':    "اللغات التي تتحدثها ومستواك فيها.",

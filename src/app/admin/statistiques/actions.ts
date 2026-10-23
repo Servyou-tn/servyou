@@ -31,7 +31,9 @@ export async function generateCompletedOrdersCsv(): Promise<CsvExportResult> {
   const admin = await checkAdmin(supabase)
   if (!admin.ok) {
     console.error(`[admin/statistiques] completed-orders CSV rejected: ${admin.reason}`)
-    return { error: 'forbidden' }
+    // A failed lookup is an outage, not a denial (see adminRejectionError) — CsvExportButton maps
+    // 'error' to the generic message and 'forbidden' to its access-denied one.
+    return { error: admin.reason === 'query_failed' ? 'error' : 'forbidden' }
   }
 
   const { data, error } = await supabase

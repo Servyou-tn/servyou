@@ -14,10 +14,12 @@ const h = vi.hoisted(() => {
   const state: {
     user: { id: string } | null
     isAdmin: boolean | null
+    profileError: { message: string; code: string; details: string } | null
     orders: { data: Array<{ id: string; order_type: string; received_at: string | null }>; error: unknown }
   } = {
     user: { id: 'admin-1' },
     isAdmin: true,
+    profileError: null,
     orders: { data: [], error: null },
   }
 
@@ -25,7 +27,7 @@ const h = vi.hoisted(() => {
     const profileRow = () =>
       Promise.resolve(
         table === 'profiles'
-          ? { data: state.isAdmin === null ? null : { is_admin: state.isAdmin }, error: null }
+          ? { data: state.isAdmin === null ? null : { is_admin: state.isAdmin }, error: state.profileError }
           : { data: null, error: null },
       )
     const builder: Record<string, unknown> = {
@@ -59,6 +61,7 @@ import { generateCompletedOrdersCsv } from '@/app/admin/statistiques/actions'
 beforeEach(() => {
   h.state.user = { id: 'admin-1' }
   h.state.isAdmin = true
+  h.state.profileError = null
   h.state.orders = { data: [], error: null }
 })
 
@@ -105,5 +108,13 @@ describe('generateCompletedOrdersCsv', () => {
     h.state.user = null
     const res = await generateCompletedOrdersCsv()
     expect(res).toEqual({ error: 'forbidden' })
+  })
+
+  it('returns the generic { error: error } — not forbidden — when the is_admin lookup itself fails', async () => {
+    const spy = vi.spyOn(console, 'error').mockImplementation(() => {})
+    h.state.profileError = { message: 'boom', code: 'XX000', details: '' }
+    const res = await generateCompletedOrdersCsv()
+    expect(res).toEqual({ error: 'error' })
+    spy.mockRestore()
   })
 })

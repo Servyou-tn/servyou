@@ -11,7 +11,10 @@ import {
   SERVICE_DESCRIPTION_MIN,
   SERVICE_DESCRIPTION_MAX,
   TIMEFRAME_MAX,
-  BUDGET_MAX,
+  PHONE_INPUT_MAX,
+  BUYER_NOTE_TAG,
+  TIMEFRAME_ALLOWED,
+  isValidBudget,
 } from './limits'
 
 // Server-side input schemas for the two E1 request actions (actions.ts). Split out because a
@@ -25,16 +28,13 @@ import {
 //     single-line;
 //   buyer_note = "{description}\n\n[Délai: {timeframe}]\n[Budget: {n} TND]" — a `]` or line break
 //     in the timeframe, or a literal tag marker in the description, would mis-split it.
-
-// Generous on purpose: isValidPhone does the real shape check; this only bounds the raw input
-// (separators included) before it is cleaned.
-const PHONE_MAX = 30
+// The buyer_note rules and the budget bound live in ./limits.ts too, so ServiceRequestForm runs the
+// very same predicates in the browser.
 
 const NO_LINE_BREAK = /^[^\r\n]*$/
-const BUYER_NOTE_TAG = /\[(Délai|Budget):/
 
 const singleLine = (max: number) => z.string().trim().min(1).max(max).regex(NO_LINE_BREAK)
-const phone = z.string().max(PHONE_MAX).refine(isValidPhone)
+const phone = z.string().max(PHONE_INPUT_MAX).refine(isValidPhone)
 
 export const ProductRequestSchema = z.object({
   productId: z.string().uuid(),
@@ -61,12 +61,12 @@ export const ServiceRequestSchema = z.object({
     .min(SERVICE_DESCRIPTION_MIN)
     .max(SERVICE_DESCRIPTION_MAX)
     .refine((d) => !BUYER_NOTE_TAG.test(d)),
-  timeframe: z.string().trim().max(TIMEFRAME_MAX).regex(/^[^\r\n\]]*$/),
-  // A text input: '' means "not given". Anything else must be a finite, non-negative amount.
+  timeframe: z.string().trim().max(TIMEFRAME_MAX).regex(TIMEFRAME_ALLOWED),
+  // A text input: '' means "not given". Anything else must be a finite amount in 0..BUDGET_MAX.
   budget: z
     .string()
     .trim()
-    .refine((v) => v === '' || (Number.isFinite(Number(v)) && Number(v) >= 0 && Number(v) <= BUDGET_MAX))
+    .refine(isValidBudget)
     .transform((v) => (v === '' ? null : Number(v))),
   phone,
 })

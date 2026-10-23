@@ -24,6 +24,8 @@ import {
   SERVICE_DESCRIPTION_MAX,
   TIMEFRAME_MAX,
   BUDGET_MAX,
+  PHONE_INPUT_MAX,
+  isValidBudget,
 } from '@/app/demander/[id]/limits'
 
 const PRODUCT = {
@@ -63,6 +65,7 @@ describe('the caps match the founder ruling', () => {
       SERVICE_DESCRIPTION_MAX,
       TIMEFRAME_MAX,
       BUDGET_MAX,
+      PHONE_INPUT_MAX,
     }).toEqual({
       DELIVERY_NAME_MAX: 100,
       DELIVERY_STREET_MAX: 200,
@@ -74,6 +77,7 @@ describe('the caps match the founder ruling', () => {
       SERVICE_DESCRIPTION_MAX: 500,
       TIMEFRAME_MAX: 100,
       BUDGET_MAX: 1_000_000,
+      PHONE_INPUT_MAX: 30,
     })
   })
 })
@@ -189,6 +193,14 @@ describe('ServiceRequestSchema', () => {
     expect(ok(String(BUDGET_MAX + 1))).toBe('rejected')
     expect(ok('-1')).toBe('rejected')
     expect(ok('abc')).toBe('rejected')
+    // Number('Infinity') >= 0 is true — the old browser check let it through; isValidBudget does not.
+    expect(ok('Infinity')).toBe('rejected')
+  })
+
+  it('budget: the form and the schema share one predicate (isValidBudget)', () => {
+    for (const v of ['', '0', '1250.5', String(BUDGET_MAX), String(BUDGET_MAX + 1), '-1', 'abc', 'Infinity']) {
+      expect(isValidBudget(v)).toBe(service({ budget: v }).success)
+    }
   })
 
   it('rejects a malformed phone and a serviceId that is not a uuid', () => {

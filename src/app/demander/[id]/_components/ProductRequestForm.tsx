@@ -20,6 +20,7 @@ import {
   VILLE_MAX,
   PRODUCT_NOTE_MAX as NOTE_MAX,
   QUANTITY_MAX,
+  PHONE_INPUT_MAX,
 } from '../limits'
 
 // E1-product — form + summary, ONE component. Measured from Figma 589:43997 §6c/§6d
@@ -258,6 +259,7 @@ export function ProductRequestForm({
             type="tel"
             inputMode="tel"
             dir="ltr"
+            maxLength={PHONE_INPUT_MAX}
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
             iconStart={

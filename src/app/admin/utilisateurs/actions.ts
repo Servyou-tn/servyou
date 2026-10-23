@@ -2,7 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
-import { checkAdmin } from '@/lib/auth/require-admin'
+import { checkAdmin, adminRejectionError } from '@/lib/auth/require-admin'
 
 export type UserActionResult = { success: boolean; error?: string }
 
@@ -27,7 +27,7 @@ export async function suspendUser(targetUserId: string, reason: string): Promise
   const admin = await checkAdmin(supabase)
   if (!admin.ok) {
     console.error(`[admin/utilisateurs] suspendUser rejected: ${admin.reason}`)
-    return { success: false, error: 'admin.users.error_forbidden' }
+    return { success: false, error: adminRejectionError(admin.reason, 'admin.users.error_forbidden') }
   }
 
   const trimmed = reason.trim()
@@ -57,7 +57,7 @@ export async function unsuspendUser(targetUserId: string): Promise<UserActionRes
   const admin = await checkAdmin(supabase)
   if (!admin.ok) {
     console.error(`[admin/utilisateurs] unsuspendUser rejected: ${admin.reason}`)
-    return { success: false, error: 'admin.users.error_forbidden' }
+    return { success: false, error: adminRejectionError(admin.reason, 'admin.users.error_forbidden') }
   }
 
   const { error } = await supabase.rpc('admin_unsuspend_user', {

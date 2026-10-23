@@ -15,6 +15,10 @@ import {
   SERVICE_DESCRIPTION_MAX as MAX_DESCRIPTION,
   SERVICE_DESCRIPTION_MIN as MIN_DESCRIPTION,
   TIMEFRAME_MAX,
+  PHONE_INPUT_MAX,
+  BUYER_NOTE_TAG,
+  TIMEFRAME_ALLOWED,
+  isValidBudget,
 } from '../limits'
 
 // E1 MAIN — the form card, measured from Figma 680:56165 (empty) / 682:56521 (filled) /
@@ -27,10 +31,13 @@ import {
 // wrapper at base and moves to the <form> at lg, which is the same trick D2 uses for its buy box.
 //
 // Validation is duplicated on purpose, not defensively: these checks are UX (inline, on submit)
-// and the server action re-runs the real ones. The floors match — 20 chars, a valid TN phone —
-// so a client-side pass cannot produce a server-side reject the user can't see.
+// and the server action re-runs the real ones (../schema.ts). Every rule here is the SAME
+// predicate the schema uses, imported from ../limits.ts — length caps (as maxLength), the
+// description floor, the buyer_note fold rules, the budget bound, the phone shape — so a
+// client-side pass cannot produce a server-side reject the user can't see. Add a server rule
+// there, not here, and import it in both.
 
-type Errors = { description?: string; budget?: string; phone?: string }
+type Errors = { description?: string; timeframe?: string; budget?: string; phone?: string }
 
 export function ServiceRequestForm({
   serviceId,
@@ -58,10 +65,15 @@ export function ServiceRequestForm({
     const next: Errors = {}
     if (description.trim().length < MIN_DESCRIPTION) {
       next.description = t('demander.error.minLength', lang, { n: MIN_DESCRIPTION })
+    } else if (BUYER_NOTE_TAG.test(description)) {
+      next.description = t('demander.error.descriptionTags', lang)
     }
-    // Optional field: only a value that IS present and is not a non-negative number is an
-    // error. noValidate means min={0} does not block a typed "-5", so this is the real gate.
-    if (budget.trim() && !(Number(budget) >= 0)) {
+    if (!TIMEFRAME_ALLOWED.test(timeframe.trim())) {
+      next.timeframe = t('demander.error.timeframeChars', lang)
+    }
+    // Optional field: '' is fine; anything else must be a finite amount in 0..BUDGET_MAX.
+    // noValidate means min={0} does not block a typed "-5", so this is the real gate.
+    if (!isValidBudget(budget)) {
       next.budget = t('demander.error.amount', lang)
     }
     if (!isValidPhone(phone)) {
@@ -130,6 +142,7 @@ export function ServiceRequestForm({
           label={t('demander.field.timeframe', lang)}
           placeholder={t('demander.field.timeframe_ph', lang)}
           helper={t('demander.field.optional', lang)}
+          error={errors.timeframe}
           maxLength={TIMEFRAME_MAX}
           value={timeframe}
           onChange={(e) => setTimeframe(e.target.value)}
@@ -189,6 +202,7 @@ export function ServiceRequestForm({
           type="tel"
           inputMode="tel"
           dir="ltr"
+          maxLength={PHONE_INPUT_MAX}
           value={phone}
           onChange={(e) => setPhone(e.target.value)}
           iconStart={

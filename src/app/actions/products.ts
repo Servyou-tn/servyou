@@ -520,8 +520,10 @@ export async function deleteProductAction(input: unknown): Promise<ProductAction
     return { ok: false, error: t('product.error.notAuth', lang) }
   }
 
-  // Ownership first, before the order-history probe — a non-owner learns nothing about another
-  // shop's product, not even whether it has orders.
+  // Shop first: a caller with no resolvable shop never reaches the order-history probe. This proves
+  // the caller owns A shop, not THIS product — the DELETE below is what is scoped to it (shop_id).
+  // The count itself can name any product id, but orders RLS limits it to the caller's own
+  // buyer/seller rows, so it reveals nothing about another shop's sales.
   const shop = await resolveOwnedShopId(supabase, user.id)
   if (!shop.ok) {
     console.error(`[deleteProduct] shop unresolved (${shop.reason}) for user ${user.id}`)

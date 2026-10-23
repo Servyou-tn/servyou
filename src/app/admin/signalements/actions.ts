@@ -2,7 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
-import { checkAdmin } from '@/lib/auth/require-admin'
+import { checkAdmin, adminRejectionError } from '@/lib/auth/require-admin'
 
 export type ReportActionResult = { success: boolean; error?: string }
 
@@ -45,7 +45,7 @@ export async function claimReport(reportId: string): Promise<ReportActionResult>
   const admin = await checkAdmin(supabase)
   if (!admin.ok) {
     console.error(`[admin/signalements] claimReport rejected: ${admin.reason}`)
-    return { success: false, error: FORBIDDEN }
+    return { success: false, error: adminRejectionError(admin.reason, FORBIDDEN) }
   }
 
   const { data, error } = await supabase
@@ -112,7 +112,7 @@ export async function hideContent(
   const admin = await checkAdmin(supabase)
   if (!admin.ok) {
     console.error(`[admin/signalements] hideContent rejected: ${admin.reason}`)
-    return { success: false, error: 'admin.moderation.error_forbidden' }
+    return { success: false, error: adminRejectionError(admin.reason, 'admin.moderation.error_forbidden') }
   }
 
   const trimmed = reason.trim()
@@ -144,7 +144,7 @@ export async function unhideContent(
   const admin = await checkAdmin(supabase)
   if (!admin.ok) {
     console.error(`[admin/signalements] unhideContent rejected: ${admin.reason}`)
-    return { success: false, error: 'admin.moderation.error_forbidden' }
+    return { success: false, error: adminRejectionError(admin.reason, 'admin.moderation.error_forbidden') }
   }
 
   const { error } = await supabase.rpc('admin_unhide_content', {
@@ -166,7 +166,7 @@ export async function resolveReport(reportId: string, adminNote: string): Promis
   const admin = await checkAdmin(supabase)
   if (!admin.ok) {
     console.error(`[admin/signalements] resolveReport rejected: ${admin.reason}`)
-    return { success: false, error: FORBIDDEN }
+    return { success: false, error: adminRejectionError(admin.reason, FORBIDDEN) }
   }
 
   const note = adminNote.trim()
@@ -223,7 +223,7 @@ export async function dismissReport(reportId: string, adminNote: string): Promis
   const admin = await checkAdmin(supabase)
   if (!admin.ok) {
     console.error(`[admin/signalements] dismissReport rejected: ${admin.reason}`)
-    return { success: false, error: FORBIDDEN }
+    return { success: false, error: adminRejectionError(admin.reason, FORBIDDEN) }
   }
 
   const note = adminNote.trim()
@@ -294,7 +294,7 @@ export async function suspendReportedUser(
   const admin = await checkAdmin(supabase)
   if (!admin.ok) {
     console.error(`[admin/signalements] suspendReportedUser rejected: ${admin.reason}`)
-    return { success: false, error: FORBIDDEN }
+    return { success: false, error: adminRejectionError(admin.reason, FORBIDDEN) }
   }
 
   const trimmed = reason.trim()
@@ -329,7 +329,7 @@ export async function unsuspendReportedUser(
   const admin = await checkAdmin(supabase)
   if (!admin.ok) {
     console.error(`[admin/signalements] unsuspendReportedUser rejected: ${admin.reason}`)
-    return { success: false, error: FORBIDDEN }
+    return { success: false, error: adminRejectionError(admin.reason, FORBIDDEN) }
   }
 
   const { error } = await supabase.rpc('admin_unsuspend_user', {

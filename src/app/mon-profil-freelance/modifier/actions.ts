@@ -6,13 +6,18 @@ import { revalidatePath } from 'next/cache'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/server'
 import { getLang } from '@/lib/i18n/server'
-import { t } from '@/lib/i18n'
+import { t, type Lang } from '@/lib/i18n'
 import { resolveOwnedFreelancerProfileId } from '@/lib/freelancer/owner-profile'
 import { reconcile } from '@/lib/shops/reconcile'
 import { diffLanguages } from '@/lib/freelancer/diff-languages'
 import { normalizePortfolioImage, MAX_INPUT_MB } from '@/lib/images/normalize'
 import { recordUploadProvenance } from '@/lib/images/provenance'
-import { validateForPublish } from '@/lib/marche/freelancer-profile-edit'
+import {
+  validateForPublish,
+  urlErrorSummary,
+  URL_FIELD_SECTION_KEYS,
+  type UrlField,
+} from '@/lib/marche/freelancer-profile-edit'
 import { SaveProfileInput, type SaveProfileInputType } from './schema'
 
 // Publish model — option A (founder ruling, H3 discovery pass).
@@ -233,6 +238,19 @@ export async function applyProfileSave(
   return { ok: true }
 }
 
+// A URL that fails HTTP_URL names its accordion ("À corriger dans : Portfolio") instead of a bare
+// generic error. ProfileEditForm's isHttpUrl check normally catches these first; this covers a
+// payload that gets past it. Leaf = the URL-bearing key at the end of the Zod issue path.
+const URL_LEAVES = new Set(['url', 'imageUrl', 'credentialUrl', 'portfolioLink'])
+
+function urlErrorFor(issues: readonly { path: readonly PropertyKey[] }[], lang: Lang): string | null {
+  const fields = issues
+    .filter((i) => URL_LEAVES.has(String(i.path[i.path.length - 1])))
+    .map((i) => i.path[0])
+    .filter((f): f is UrlField => typeof f === 'string' && f in URL_FIELD_SECTION_KEYS)
+  return urlErrorSummary(fields, lang)
+}
+
 function revalidateProfileEditSurfaces() {
   revalidatePath('/mon-profil-freelance/modifier')
   revalidatePath('/tableau-de-bord')
@@ -246,7 +264,7 @@ export async function saveProfileAction(input: unknown): Promise<SaveProfileResu
       '[saveProfile] rejected: input failed validation — ' +
         parsed.error.issues.map((i) => `${i.path.join('.') || '(root)'}:${i.message}`).join(', '),
     )
-    return { ok: false, error: t('common.error_generic', lang) }
+    return { ok: false, error: urlErrorFor(parsed.error.issues, lang) ?? t('common.error_generic', lang) }
   }
 
   const supabase = await createClient()
@@ -276,7 +294,7 @@ export async function publishProfileAction(input: unknown): Promise<PublishProfi
       '[publishProfile] rejected: input failed validation — ' +
         parsed.error.issues.map((i) => `${i.path.join('.') || '(root)'}:${i.message}`).join(', '),
     )
-    return { ok: false, status: 'error', error: t('common.error_generic', lang) }
+    return { ok: false, status: 'error', error: urlErrorFor(parsed.error.issues, lang) ?? t('common.error_generic', lang) }
   }
 
   const supabase = await createClient()

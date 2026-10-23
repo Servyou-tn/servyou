@@ -2,7 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
-import { checkAdmin } from '@/lib/auth/require-admin'
+import { checkAdmin, adminRejectionError } from '@/lib/auth/require-admin'
 import type { DisputeOutcome } from '@/lib/types/dispute'
 
 export type DisputeActionResult = { success: boolean; error?: string }
@@ -38,7 +38,7 @@ export async function claimDispute(disputeId: string): Promise<DisputeActionResu
   const admin = await checkAdmin(supabase)
   if (!admin.ok) {
     console.error(`[admin/litiges] claimDispute rejected: ${admin.reason}`)
-    return { success: false, error: FORBIDDEN }
+    return { success: false, error: adminRejectionError(admin.reason, FORBIDDEN) }
   }
 
   const { data, error } = await supabase
@@ -91,7 +91,7 @@ export async function resolveDispute(
   const admin = await checkAdmin(supabase)
   if (!admin.ok) {
     console.error(`[admin/litiges] resolveDispute rejected: ${admin.reason}`)
-    return { success: false, error: FORBIDDEN }
+    return { success: false, error: adminRejectionError(admin.reason, FORBIDDEN) }
   }
 
   const note = adminNote.trim()
@@ -147,7 +147,7 @@ export async function dismissDispute(disputeId: string, adminNote: string): Prom
   const admin = await checkAdmin(supabase)
   if (!admin.ok) {
     console.error(`[admin/litiges] dismissDispute rejected: ${admin.reason}`)
-    return { success: false, error: FORBIDDEN }
+    return { success: false, error: adminRejectionError(admin.reason, FORBIDDEN) }
   }
 
   const note = adminNote.trim()

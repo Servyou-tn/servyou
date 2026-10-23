@@ -152,7 +152,10 @@ describe('an unresolvable shop never reaches a write', () => {
     expect(h.state.chains).toEqual([])
   })
 
-  it('deleteProductAction resolves ownership BEFORE probing another product’s order history', async () => {
+  // Pins only what the code checks: the caller's shop resolves before the count runs. It does not
+  // (and the action does not) prove this product belongs to that shop — the DELETE's shop_id
+  // filter does, and orders RLS bounds the count.
+  it('deleteProductAction: a caller whose shop does not resolve never reaches the order-history count', async () => {
     h.state.shop = { ok: false, reason: 'query_failed' }
     await deleteProductAction({ productId: OTHER_PRODUCT })
     expect(h.state.chains.some((c) => c.table === 'orders')).toBe(false)

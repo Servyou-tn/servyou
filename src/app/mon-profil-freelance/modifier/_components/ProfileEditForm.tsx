@@ -13,8 +13,11 @@ import {
   WORKPLACE_LOCATION_MAX,
   YEARS_MAX,
   validateForPublish,
+  urlErrorSummary,
   type FreelancerProfileEditData,
+  type UrlField,
 } from '@/lib/marche/freelancer-profile-edit'
+import { isHttpUrl } from '@/lib/freelancer/http-url'
 import { saveProfileAction, publishProfileAction } from '../actions'
 import { AccordionSection } from './AccordionSection'
 import { AvatarField } from './AvatarField'
@@ -35,6 +38,15 @@ import { ValidationBanner, FieldError } from './ValidationBanner'
 // its own PR), "Note et projets livrés" (no reviews table, ratings are Phase 3+ — a frame number
 // that cannot be honestly computed is omitted, not zeroed), "Informations complémentaires" (no
 // column, no clear semantic to invent).
+
+// Per-field URL errors from checkUrls(), keyed by row id per repeater.
+type UrlErrors = {
+  links: Record<string, string>
+  portfolio: Record<string, string>
+  certifications: Record<string, string>
+  portfolioLink: string | null
+}
+const NO_URL_ERRORS: UrlErrors = { links: {}, portfolio: {}, certifications: {}, portfolioLink: null }
 
 export function ProfileEditForm({ initial, lang }: { initial: FreelancerProfileEditData; lang: Lang }) {
   const [headline, setHeadline] = React.useState(initial.headline)
@@ -77,6 +89,7 @@ export function ProfileEditForm({ initial, lang }: { initial: FreelancerProfileE
   const [formError, setFormError] = React.useState<string | null>(null)
   const [publishMissing, setPublishMissing] = React.useState<('headline' | 'bio' | 'skills')[]>([])
   const [publishNotice, setPublishNotice] = React.useState<'published' | 'needs_listing' | null>(null)
+  const [urlErrors, setUrlErrors] = React.useState<UrlErrors>(NO_URL_ERRORS)
 
   // One touch-tracker for every field — this page has no per-accordion save, so a single "has
   // anything changed since the last successful save" flag is what the footer's dirty indicator
@@ -142,10 +155,52 @@ export function ProfileEditForm({ initial, lang }: { initial: FreelancerProfileE
   const clientValidation = validateForPublish({ headline, bio, skillsCount: skills.length })
   const canPublish = clientValidation.ok
 
+  // The server accepts http(s) URLs only (HTTP_URL) and one bad URL rejects the whole save, so the
+  // same rule runs here first — isHttpUrl is HTTP_URL's zod-free twin — giving a per-field error
+  // plus a summary naming the section (Portfolio is collapsed by default). Checks only what
+  // buildPayload actually sends: a link row needs a label AND a URL, a certification row a name;
+  // imageUrl comes from the upload, never typed. Recomputed on every attempt, so a fixed field
+  // loses its error on the next save. Returns the summary, or null when every URL passes.
+  function checkUrls(): string | null {
+    const message = t('freelance.edit.error_url', lang)
+    const invalid = (url: string) => url.trim() !== '' && !isHttpUrl(url)
+    const next: UrlErrors = { links: {}, portfolio: {}, certifications: {}, portfolioLink: null }
+    const fields: UrlField[] = []
+    for (const r of linkRows) {
+      if (r.label.trim() && invalid(r.url)) {
+        next.links[r.id] = message
+        fields.push('links')
+      }
+    }
+    for (const r of portfolioRows) {
+      if (invalid(r.url)) {
+        next.portfolio[r.id] = message
+        fields.push('portfolio')
+      }
+    }
+    if (invalid(portfolioLink)) {
+      next.portfolioLink = message
+      fields.push('portfolioLink')
+    }
+    for (const r of certificationRows) {
+      if (r.name.trim() && invalid(r.credentialUrl)) {
+        next.certifications[r.id] = message
+        fields.push('certifications')
+      }
+    }
+    setUrlErrors(next)
+    return urlErrorSummary(fields, lang)
+  }
+
   async function onSave() {
     if (saving || publishing) return
-    setSaving(true)
     setFormError(null)
+    const urlProblem = checkUrls()
+    if (urlProblem) {
+      setFormError(urlProblem)
+      return
+    }
+    setSaving(true)
     const res = await saveProfileAction(buildPayload())
     setSaving(false)
     if (!res.ok) {
@@ -157,10 +212,15 @@ export function ProfileEditForm({ initial, lang }: { initial: FreelancerProfileE
 
   async function onPublish() {
     if (saving || publishing) return
-    setPublishing(true)
     setFormError(null)
     setPublishMissing([])
     setPublishNotice(null)
+    const urlProblem = checkUrls()
+    if (urlProblem) {
+      setFormError(urlProblem)
+      return
+    }
+    setPublishing(true)
     const res = await publishProfileAction(buildPayload())
     setPublishing(false)
     if (!res.ok) {
@@ -232,7 +292,7 @@ export function ProfileEditForm({ initial, lang }: { initial: FreelancerProfileE
 
           <div>
             <p className="text-sm font-medium text-text-secondary">{t('freelance.edit.links_title', lang)}</p>
-            <LinksRepeater rows={linkRows} onChange={setLinksT} lang={lang} />
+            <LinksRepeater rows={linkRows} onChange={setLinksT} lang={lang} errors={urlErrors.links} />
           </div>
         </AccordionSection>
 
@@ -285,13 +345,14 @@ export function ProfileEditForm({ initial, lang }: { initial: FreelancerProfileE
         </AccordionSection>
 
         <AccordionSection title={t('freelance.edit.portfolio_title', lang)} complete={portfolioRows.length > 0}>
-          <PortfolioRepeater rows={portfolioRows} onChange={setPortfolioT} lang={lang} />
+          <PortfolioRepeater rows={portfolioRows} onChange={setPortfolioT} lang={lang} errors={urlErrors.portfolio} />
           <div className="border-t border-border-subtle pt-4">
             <Input
               label={t('freelance.edit.portfolio_link_label', lang)}
               dir="ltr"
               value={portfolioLink}
               onChange={(e) => setPortfolioLinkT(e.target.value)}
+              error={urlErrors.portfolioLink ?? undefined}
             />
           </div>
         </AccordionSection>
@@ -312,7 +373,7 @@ export function ProfileEditForm({ initial, lang }: { initial: FreelancerProfileE
           <div className="border-t border-border-subtle pt-4">
             <p className="mb-2 text-sm font-medium text-text-secondary">{t('freelance.edit.certifications_title', lang)}</p>
             <p className="mb-2 text-sm text-text-muted">{t('freelance.edit.certifications_helper', lang)}</p>
-            <CertificationRepeater rows={certificationRows} onChange={setCertificationsT} lang={lang} />
+            <CertificationRepeater rows={certificationRows} onChange={setCertificationsT} lang={lang} error={urlErrors.certifications} />
           </div>
         </AccordionSection>
 

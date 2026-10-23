@@ -47,7 +47,12 @@ vi.mock('next/cache', () => ({
 // checkAdmin (src/lib/auth/require-admin.ts) runs first in every admin action. Mocked to an admin
 // by default so the tests below exercise the action logic itself; the 'admin gate' block flips it.
 const guard = vi.hoisted(() => ({ checkAdmin: vi.fn() }))
-vi.mock('@/lib/auth/require-admin', () => ({ checkAdmin: guard.checkAdmin }))
+// Only checkAdmin is mocked; adminRejectionError stays the real helper, so the query_failed →
+// generic-error mapping below is the production one.
+vi.mock('@/lib/auth/require-admin', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/lib/auth/require-admin')>()),
+  checkAdmin: guard.checkAdmin,
+}))
 
 import { claimReport, resolveReport, dismissReport } from '@/app/admin/signalements/actions'
 
@@ -226,12 +231,17 @@ describe('admin gate (checkAdmin runs first)', () => {
     expect(h.revalidatePath).not.toHaveBeenCalled()
   })
 
-  it.each(['unauthenticated', 'query_failed'] as const)(
-    'claimReport also fails closed when the check returns %s',
-    async (reason) => {
+  // A failed lookup is an outage, not a denial (adminRejectionError): it fails closed with the
+  // generic error rather than 'Accès non autorisé.'; a logged-out caller still gets the forbidden key.
+  it.each([
+    ['unauthenticated', 'admin.users.error_forbidden'],
+    ['query_failed', 'common.error_generic'],
+  ] as const)(
+    'claimReport also fails closed when the check returns %s (→ %s)',
+    async (reason, error) => {
       guard.checkAdmin.mockResolvedValue({ ok: false, reason })
       const res = await claimReport('r1')
-      expect(res).toEqual({ success: false, error: 'admin.users.error_forbidden' })
+      expect(res).toEqual({ success: false, error })
       expect(h.from).not.toHaveBeenCalled()
       expect(h.rpc).not.toHaveBeenCalled()
       expect(h.revalidatePath).not.toHaveBeenCalled()

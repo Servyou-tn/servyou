@@ -21,10 +21,15 @@ vi.mock('@/lib/supabase/server', () => ({ createClient: h.createClient }))
 vi.mock('next/cache', () => ({ revalidatePath: vi.fn() }))
 vi.mock('@/lib/i18n/server', () => ({ getLang: vi.fn(async () => 'fr') }))
 
+import { z } from 'zod'
 import { SaveProfileInput } from '@/app/mon-profil-freelance/modifier/schema'
 import { SaveDetailsInput } from '@/app/mon-profil-freelance/creer/details/schema'
 import { saveCompetencesAction } from '@/app/mon-profil-freelance/creer/competences/actions'
+import { saveProfileAction, publishProfileAction } from '@/app/mon-profil-freelance/modifier/actions'
 import { LANGUAGE_CODES, PROFICIENCY_CODES } from '@/lib/freelancer/language-options'
+import { HTTP_URL, isHttpUrl } from '@/lib/freelancer/http-url'
+import { urlErrorSummary } from '@/lib/marche/freelancer-profile-edit'
+import { t } from '@/lib/i18n'
 
 const REJECTED = [
   'javascript:alert(1)',
@@ -137,5 +142,59 @@ describe('H2 step 2 — saveCompetencesAction portfolioLink', () => {
     expect(res.ok).toBe(false)
     expect(res).not.toHaveProperty('field')
     expect(h.createClient).toHaveBeenCalledTimes(1)
+  })
+})
+
+// The H3 form runs isHttpUrl (zod-free) in the browser so a bad URL gets a field-level error
+// before the save; the server runs .url(HTTP_URL). If the two ever disagreed, the browser would
+// pass a URL the server then rejects — the exact "server-only reject" this pairing exists to stop.
+describe('isHttpUrl ≡ z.string().trim().url(HTTP_URL)', () => {
+  const server = z.string().trim().url(HTTP_URL)
+  const EDGES = [
+    'https://',
+    'https://a b',
+    'http:example.com',
+    'HTTPS://EXEMPLE.TN',
+    'http://localhost:54321/storage/v1/object/public/x.webp',
+    '\thttps://exemple.tn',
+    'https://exemple.tn\n',
+    '',
+    '   ',
+  ]
+  it.each([...REJECTED, ...ACCEPTED, ...EDGES])('agrees with the server on %j', (url) => {
+    expect(isHttpUrl(url)).toBe(server.safeParse(url).success)
+  })
+})
+
+describe('H3 — a rejected URL names its section instead of a bare generic error', () => {
+  it('urlErrorSummary lists each affected section once, in page order', () => {
+    const summary = urlErrorSummary(['certifications', 'portfolioLink', 'portfolio', 'links'], 'fr')
+    const sections = [t('freelance.edit.trust_title', 'fr'), t('freelance.edit.portfolio_title', 'fr'), t('freelance.edit.formation_title', 'fr')]
+    expect(summary).toBe(t('freelance.edit.error_urls', 'fr', { sections: sections.join(', ') }))
+  })
+
+  it('urlErrorSummary is null when no URL field failed', () => {
+    expect(urlErrorSummary([], 'fr')).toBeNull()
+  })
+
+  it('saveProfileAction: a javascript: link → the summary naming « Confiance & liens », before any DB call', async () => {
+    const res = await saveProfileAction(profileWith.linkUrl('javascript:alert(1)'))
+    expect(res).toEqual({ ok: false, error: t('freelance.edit.error_urls', 'fr', { sections: t('freelance.edit.trust_title', 'fr') }) })
+    expect(h.createClient).not.toHaveBeenCalled()
+  })
+
+  it('publishProfileAction: a mailto: credential URL → the summary naming the Formation section', async () => {
+    const res = await publishProfileAction(profileWith.credentialUrl('mailto:contact@exemple.tn'))
+    expect(res).toMatchObject({
+      ok: false,
+      status: 'error',
+      error: t('freelance.edit.error_urls', 'fr', { sections: t('freelance.edit.formation_title', 'fr') }),
+    })
+    expect(h.createClient).not.toHaveBeenCalled()
+  })
+
+  it('a non-URL validation failure still gets the generic error', async () => {
+    const res = await saveProfileAction({ ...PROFILE_BASE, headline: 'x'.repeat(1000) })
+    expect(res).toEqual({ ok: false, error: t('common.error_generic', 'fr') })
   })
 })
