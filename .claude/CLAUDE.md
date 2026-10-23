@@ -76,9 +76,9 @@ Load conditionally per task. Index: `.claude/skills/README.md`.
 
 ## Dev loop
 
-- While editing, prefer next-devtools `get_errors` / `compile_route` for fast feedback. tsc + lint + test + build are still mandatory before claiming done (DoD item 3 unchanged).
+- While editing, load the touched route in the browser, then call next-devtools `get_errors` for fast feedback (Next 16.2.11 has no `compile_route`; adopt it when a Next upgrade ships it). tsc + lint + test + build are still mandatory before claiming done (DoD item 3 unchanged).
 - After any context compaction, run `/reload-skills` before continuing UI or migration work.
-- Figma: official MCP reads are capped at 20/month on the current Starter/View seat — use the CDP bridge for measurement until the founder confirms Figma Pro.
+- Figma: the CDP bridge (figma-cli) is NOT working on Figma Desktop 126.7.10 — do not use it. Until the founder confirms Figma Pro, the official Figma MCP is the only instrument and is capped at 20 reads/month for the whole account: spend reads only on final per-frame comparison, one read per frame, never for exploration. Report each read used.
 
 ## When in doubt
 

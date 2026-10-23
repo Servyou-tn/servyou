@@ -19,9 +19,9 @@ The skill runs **after CC has finished writing code** but **before the push/merg
 
 Added in the workflow upgrade (Oct 23, 2026). The agent checks its own work before spending the founder's attention.
 
-1. **Compile/runtime errors.** With the dev server running, call next-devtools `get_errors` and `compile_route` for every touched route. Any error = fix before continuing.
+1. **Compile/runtime errors.** With the dev server running, load every touched route in the browser, then call next-devtools `get_errors`. Any error = fix before continuing.
 2. **Screenshots.** Screenshot every touched page with Playwright at 1440px and 375px, in FR and in AR (RTL): 4 screenshots per page, saved under `.preview-screenshots/<branch>/`. (Playwright is not yet a project dependency — until it is, use the headless-Chrome CDP harness; see memory `reference_cdp_visual_gate`.)
-3. **Figma comparison.** Compare each screenshot against its Figma frame (CDP bridge measurement today; official Figma MCP `get_screenshot` once the founder is on Figma Pro). List every visible deviation, fix, re-shoot. **Max 3 fix rounds**, then report remaining deviations honestly instead of looping.
+3. **Figma comparison.** Compare each screenshot against its Figma frame (official Figma MCP `get_screenshot`, one read per frame — 20/month account cap until Figma Pro; CDP bridge is broken on Figma Desktop 126.7.10). List every visible deviation, fix, re-shoot. **Max 3 fix rounds**, then report remaining deviations honestly instead of looping.
 4. **Only then** run Gates 1–6 and report to the founder, with the final screenshots attached.
 
 > These screenshots are an instrument for the agent — not a replacement for the founder's final visual gate or for CI VRT.
