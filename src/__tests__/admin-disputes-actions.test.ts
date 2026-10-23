@@ -46,7 +46,22 @@ vi.mock('next/cache', () => ({
   revalidatePath: h.revalidatePath,
 }))
 
+// checkAdmin (src/lib/auth/require-admin.ts) runs first in every admin action. Mocked to an admin
+// by default so the tests below exercise the action logic itself; the 'admin gate' block flips it.
+const guard = vi.hoisted(() => ({ checkAdmin: vi.fn() }))
+// Only checkAdmin is mocked; adminRejectionError stays the real helper, so the query_failed →
+// generic-error mapping below is the production one.
+vi.mock('@/lib/auth/require-admin', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/lib/auth/require-admin')>()),
+  checkAdmin: guard.checkAdmin,
+}))
+
 import { claimDispute, resolveDispute, dismissDispute } from '@/app/admin/litiges/actions'
+
+beforeEach(() => {
+  guard.checkAdmin.mockReset()
+  guard.checkAdmin.mockResolvedValue({ ok: true, userId: 'admin-1' })
+})
 
 beforeEach(() => {
   h.state.result = { data: [{ id: 'd1' }], error: null }
@@ -174,4 +189,50 @@ describe('dismissDispute', () => {
       p_note: 'Litige infondé, aucune action prise.',
     })
   })
+})
+
+describe('admin gate (checkAdmin runs first)', () => {
+  it('claimDispute rejects a non-admin before touching the database', async () => {
+    guard.checkAdmin.mockResolvedValue({ ok: false, reason: 'forbidden' })
+    const res = await claimDispute('d1')
+    expect(res).toEqual({ success: false, error: 'admin.users.error_forbidden' })
+    expect(h.from).not.toHaveBeenCalled()
+    expect(h.rpc).not.toHaveBeenCalled()
+    expect(h.revalidatePath).not.toHaveBeenCalled()
+  })
+
+  it('resolveDispute rejects a non-admin before touching the database', async () => {
+    guard.checkAdmin.mockResolvedValue({ ok: false, reason: 'forbidden' })
+    const res = await resolveDispute('d1', 'sided_buyer', 'Note.')
+    expect(res).toEqual({ success: false, error: 'admin.users.error_forbidden' })
+    expect(h.from).not.toHaveBeenCalled()
+    expect(h.rpc).not.toHaveBeenCalled()
+    expect(h.revalidatePath).not.toHaveBeenCalled()
+  })
+
+  it('dismissDispute rejects a non-admin before touching the database', async () => {
+    guard.checkAdmin.mockResolvedValue({ ok: false, reason: 'forbidden' })
+    const res = await dismissDispute('d1', 'Note.')
+    expect(res).toEqual({ success: false, error: 'admin.users.error_forbidden' })
+    expect(h.from).not.toHaveBeenCalled()
+    expect(h.rpc).not.toHaveBeenCalled()
+    expect(h.revalidatePath).not.toHaveBeenCalled()
+  })
+
+  // A failed lookup is an outage, not a denial (adminRejectionError): it fails closed with the
+  // generic error rather than 'Accès non autorisé.'; a logged-out caller still gets the forbidden key.
+  it.each([
+    ['unauthenticated', 'admin.users.error_forbidden'],
+    ['query_failed', 'common.error_generic'],
+  ] as const)(
+    'claimDispute also fails closed when the check returns %s (→ %s)',
+    async (reason, error) => {
+      guard.checkAdmin.mockResolvedValue({ ok: false, reason })
+      const res = await claimDispute('d1')
+      expect(res).toEqual({ success: false, error })
+      expect(h.from).not.toHaveBeenCalled()
+      expect(h.rpc).not.toHaveBeenCalled()
+      expect(h.revalidatePath).not.toHaveBeenCalled()
+    },
+  )
 })

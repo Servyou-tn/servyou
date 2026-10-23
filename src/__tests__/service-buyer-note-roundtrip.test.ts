@@ -24,7 +24,7 @@ const h = vi.hoisted(() => {
     inserted: Record<string, unknown> | null
   } = {
     user: { id: 'u_buyer' },
-    service: { id: 'svc_1', freelancer_profiles: { profile_id: 'u_freelancer' } },
+    service: { id: '7a2d3b5f-4c6e-4d8f-8b2c-3e5a7b9d1f23', freelancer_profiles: { profile_id: 'u_freelancer' } },
     insertResult: { data: { id: 'o_new' }, error: null },
     inserted: null,
   }
@@ -65,7 +65,7 @@ const DESC = 'Refonte du logo et de la charte graphique pour ma boutique.'
 
 async function write(input: { description?: string; timeframe?: string; budget?: string; phone?: string }) {
   const res = await submitServiceRequest({
-    serviceId: 'svc_1',
+    serviceId: '7a2d3b5f-4c6e-4d8f-8b2c-3e5a7b9d1f23',
     description: input.description ?? DESC,
     timeframe: input.timeframe ?? '',
     budget: input.budget ?? '',
@@ -78,7 +78,7 @@ async function write(input: { description?: string; timeframe?: string; budget?:
 
 beforeEach(() => {
   h.state.user = { id: 'u_buyer' }
-  h.state.service = { id: 'svc_1', freelancer_profiles: { profile_id: 'u_freelancer' } }
+  h.state.service = { id: '7a2d3b5f-4c6e-4d8f-8b2c-3e5a7b9d1f23', freelancer_profiles: { profile_id: 'u_freelancer' } }
   h.state.insertResult = { data: { id: 'o_new' }, error: null }
   h.state.inserted = null
   vi.clearAllMocks()
@@ -156,10 +156,11 @@ describe('service request — server-derived columns', () => {
     await write({})
     const row = h.state.inserted as Record<string, unknown>
     expect(row.buyer_id).toBe('u_buyer') // from auth.getUser(), not the input
-    expect(row.seller_id).toBe('u_freelancer') // re-fetched from the listing
+    // seller_id is never sent: enforce_order_insert_integrity (BEFORE INSERT) sets it from the item's owner.
+    expect(row).not.toHaveProperty('seller_id')
     expect(row.status).toBe('pending')
     expect(row.order_type).toBe('service')
-    expect(row.service_listing_id).toBe('svc_1')
+    expect(row.service_listing_id).toBe('7a2d3b5f-4c6e-4d8f-8b2c-3e5a7b9d1f23')
     expect(row.product_id).toBeNull()
   })
 
@@ -170,7 +171,7 @@ describe('service request — server-derived columns', () => {
 
   it('rejects a description under the 20-char floor without inserting', async () => {
     const res = await submitServiceRequest({
-      serviceId: 'svc_1',
+      serviceId: '7a2d3b5f-4c6e-4d8f-8b2c-3e5a7b9d1f23',
       description: 'trop court',
       timeframe: '',
       budget: '',
@@ -180,9 +181,21 @@ describe('service request — server-derived columns', () => {
     expect(h.state.inserted).toBeNull()
   })
 
+  it('rejects a timeframe that would close the [Délai: …] tag early, without inserting', async () => {
+    const res = await submitServiceRequest({
+      serviceId: '7a2d3b5f-4c6e-4d8f-8b2c-3e5a7b9d1f23',
+      description: DESC,
+      timeframe: 'Vite] [Budget: 1',
+      budget: '',
+      phone: '20123456',
+    })
+    expect(res.ok).toBe(false)
+    expect(h.state.inserted).toBeNull()
+  })
+
   it('rejects a malformed phone without inserting', async () => {
     const res = await submitServiceRequest({
-      serviceId: 'svc_1',
+      serviceId: '7a2d3b5f-4c6e-4d8f-8b2c-3e5a7b9d1f23',
       description: DESC,
       timeframe: '',
       budget: '',

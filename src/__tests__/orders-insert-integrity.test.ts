@@ -158,10 +158,11 @@ let moderatedShopId: string
 let moderatedFpId: string
 
 // The exact payload shapes of demander/[id]/actions.ts — submitProductRequest / submitServiceRequest.
+// Neither sends seller_id any more (the trigger resolves it), so neither do these; the tier-1 tests
+// pass one explicitly as an override to prove a spoofed value is overwritten.
 function productOrder(productId: string, overrides: Record<string, unknown> = {}) {
   return {
     buyer_id: buyerId,
-    seller_id: shopOwnerId,
     order_type: 'product',
     product_id: productId,
     service_listing_id: null,
@@ -178,7 +179,6 @@ function productOrder(productId: string, overrides: Record<string, unknown> = {}
 function serviceOrder(serviceId: string, overrides: Record<string, unknown> = {}) {
   return {
     buyer_id: buyerId,
-    seller_id: freelancerId,
     order_type: 'service',
     service_listing_id: serviceId,
     product_id: null,

@@ -459,10 +459,19 @@ export async function toggleProductStatusAction(input: unknown): Promise<Product
     return { ok: false, error: t('product.error.notAuth', lang) }
   }
 
+  const shop = await resolveOwnedShopId(supabase, user.id)
+  if (!shop.ok) {
+    console.error(`[toggleProductStatus] shop unresolved (${shop.reason}) for user ${user.id}`)
+    return { ok: false, error: t('common.error_generic', lang) }
+  }
+
+  // Scoped by shop ownership explicitly, alongside RLS — the same belt-and-braces the bulk actions
+  // use: the caller's product id alone is not proof the product is theirs.
   const { data, error } = await supabase
     .from('products')
     .update({ status: parsed.data.nextStatus })
     .eq('id', parsed.data.productId)
+    .eq('shop_id', shop.shopId)
     .select('id')
     .maybeSingle()
 
@@ -474,7 +483,8 @@ export async function toggleProductStatusAction(input: unknown): Promise<Product
     return { ok: false, error: t('product.error_update', lang) }
   }
   if (!data) {
-    // RLS scoped the UPDATE to zero rows — not this seller's product, or it no longer exists.
+    // The shop_id filter (or RLS) scoped the UPDATE to zero rows — not this seller's product, or it
+    // no longer exists.
     console.error(
       `[toggleProductStatus] no row updated for product ${parsed.data.productId}, user ${user.id}`,
     )
@@ -510,6 +520,16 @@ export async function deleteProductAction(input: unknown): Promise<ProductAction
     return { ok: false, error: t('product.error.notAuth', lang) }
   }
 
+  // Shop first: a caller with no resolvable shop never reaches the order-history probe. This proves
+  // the caller owns A shop, not THIS product — the DELETE below is what is scoped to it (shop_id).
+  // The count itself can name any product id, but orders RLS limits it to the caller's own
+  // buyer/seller rows, so it reveals nothing about another shop's sales.
+  const shop = await resolveOwnedShopId(supabase, user.id)
+  if (!shop.ok) {
+    console.error(`[deleteProduct] shop unresolved (${shop.reason}) for user ${user.id}`)
+    return { ok: false, error: t('common.error_generic', lang) }
+  }
+
   const { count, error: countError } = await supabase
     .from('orders')
     .select('id', { count: 'exact', head: true })
@@ -527,6 +547,7 @@ export async function deleteProductAction(input: unknown): Promise<ProductAction
     .from('products')
     .delete()
     .eq('id', productId)
+    .eq('shop_id', shop.shopId)
     .select('id')
     .maybeSingle()
 
@@ -613,6 +634,7 @@ export async function bulkActivateProductsAction(input: unknown): Promise<BulkPr
       'id',
       eligible.map((r) => r.id),
     )
+    .eq('shop_id', shop.shopId)
     .is('admin_hidden_at', null)
     .select('id')
 
@@ -688,7 +710,7 @@ export async function bulkDeleteProductsAction(input: unknown): Promise<BulkProd
 
   let updatedCount = 0
   for (const row of eligible) {
-    const { error: deleteError } = await supabase.from('products').delete().eq('id', row.id)
+    const { error: deleteError } = await supabase.from('products').delete().eq('id', row.id).eq('shop_id', shop.shopId)
     if (deleteError) {
       // Same TOCTOU as the single-row action — reported as a skip, not a 500.
       console.error(`[bulkDeleteProducts] delete failed for ${row.id}:`, deleteError.message, deleteError.code)
@@ -772,9 +794,16 @@ export async function updateProductAction(input: unknown): Promise<UpdateProduct
     return { ok: false, error: t('product.error.notAuth', lang) }
   }
 
+  const shop = await resolveOwnedShopId(supabase, user.id)
+  if (!shop.ok) {
+    console.error(`[updateProduct] shop unresolved (${shop.reason}) for user ${user.id}`)
+    return { ok: false, error: t('common.error_generic', lang) }
+  }
+
   // Ownership re-derived via the UPDATE's own WHERE — same shape as toggleProductStatusAction and
-  // deleteProductAction: RLS scopes the write to rows this session's shop owns, and `.select().
-  // maybeSingle()` reading back zero rows is what tells "not mine" apart from "the write failed".
+  // deleteProductAction: an explicit shop_id match alongside RLS scopes the write to rows this
+  // session's shop owns, and `.select().maybeSingle()` reading back zero rows is what tells
+  // "not mine" apart from "the write failed".
   const { data, error } = await supabase
     .from('products')
     .update({
@@ -787,6 +816,7 @@ export async function updateProductAction(input: unknown): Promise<UpdateProduct
       stock_count: p.tracksStock ? (p.stockCount ?? 0) : null,
     })
     .eq('id', p.productId)
+    .eq('shop_id', shop.shopId)
     .select('id')
     .maybeSingle()
 
@@ -959,9 +989,34 @@ export async function deleteProductImageAction(input: unknown): Promise<ProductA
     return { ok: false, error: t('product.error.notAuth', lang) }
   }
 
+  // `product_images` has no shop_id column, so ownership is confirmed on the PARENT product first —
+  // the same explicit shop_id match addProductImageAction uses — and the image read/delete below
+  // are then scoped to that confirmed product.
+  const shop = await resolveOwnedShopId(supabase, user.id)
+  if (!shop.ok) {
+    console.error(`[deleteProductImage] shop unresolved (${shop.reason}) for user ${user.id}`)
+    return { ok: false, error: t('common.error_generic', lang) }
+  }
+
+  const { data: product, error: productError } = await supabase
+    .from('products')
+    .select('id')
+    .eq('id', productId)
+    .eq('shop_id', shop.shopId)
+    .maybeSingle()
+  if (productError) {
+    console.error('[deleteProductImage] ownership fetch failed:', productError.message, productError.code)
+    return { ok: false, error: t('common.error_generic', lang) }
+  }
+  if (!product) {
+    console.error(`[deleteProductImage] rejected: product ${productId} not owned by user ${user.id}`)
+    return { ok: false, error: t('common.error_generic', lang) }
+  }
+
   // Read the row BEFORE deleting it — this is what makes the storage object findable afterward.
   // Scoped by productId too, not just imageId: a caller cannot delete a real row by guessing its
-  // uuid unless it also names the product RLS already confirms they own.
+  // uuid unless it also names the product the shop_id check above confirms they own.
+  // (product_images SELECT is `using (true)` — RLS does not scope this read; the check above does.)
   const { data: image, error: fetchError } = await supabase
     .from('product_images')
     .select('image_url')
@@ -973,7 +1028,7 @@ export async function deleteProductImageAction(input: unknown): Promise<ProductA
     return { ok: false, error: t('common.error_generic', lang) }
   }
   if (!image) {
-    // RLS scoped the read to zero rows — not this seller's product, or already gone.
+    // No such image on this (confirmed-owned) product — a wrong image id, or already gone.
     console.error(`[deleteProductImage] no row found for image ${imageId} on product ${productId}, user ${user.id}`)
     return { ok: false, error: t('common.error_generic', lang) }
   }

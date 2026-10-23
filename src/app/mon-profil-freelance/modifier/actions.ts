@@ -6,13 +6,18 @@ import { revalidatePath } from 'next/cache'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/server'
 import { getLang } from '@/lib/i18n/server'
-import { t } from '@/lib/i18n'
+import { t, type Lang } from '@/lib/i18n'
 import { resolveOwnedFreelancerProfileId } from '@/lib/freelancer/owner-profile'
 import { reconcile } from '@/lib/shops/reconcile'
 import { diffLanguages } from '@/lib/freelancer/diff-languages'
 import { normalizePortfolioImage, MAX_INPUT_MB } from '@/lib/images/normalize'
 import { recordUploadProvenance } from '@/lib/images/provenance'
-import { validateForPublish } from '@/lib/marche/freelancer-profile-edit'
+import {
+  validateForPublish,
+  urlErrorSummary,
+  URL_FIELD_SECTION_KEYS,
+  type UrlField,
+} from '@/lib/marche/freelancer-profile-edit'
 import { SaveProfileInput, type SaveProfileInputType } from './schema'
 
 // Publish model — option A (founder ruling, H3 discovery pass).
@@ -32,12 +37,15 @@ import { SaveProfileInput, type SaveProfileInputType } from './schema'
 // "actually do something": don't. The gate PR #164 built is deliberately the single source of
 // truth. Route the fix through service_listings, not through a new column here.
 
-export type SaveProfileResult = { ok: true } | { ok: false; error: string }
+// `urlFields` rides along when the rejection was a URL: `error` is translated in the request's
+// language, and the client rebuilds the summary from `urlFields` so it re-translates on a language
+// switch (router.refresh keeps client state; a stored string would not).
+export type SaveProfileResult = { ok: true } | { ok: false; error: string; urlFields?: UrlField[] }
 export type PublishProfileResult =
   | { ok: true; status: 'published' }
   | { ok: true; status: 'needs_active_listing' }
   | { ok: false; status: 'validation_failed'; missing: ('headline' | 'bio' | 'skills')[] }
-  | { ok: false; status: 'error'; error: string }
+  | { ok: false; status: 'error'; error: string; urlFields?: UrlField[] }
 
 /**
  * Core write, factored out so it's exercisable directly against a real Supabase client in tests
@@ -233,6 +241,27 @@ export async function applyProfileSave(
   return { ok: true }
 }
 
+// A URL that fails HTTP_URL names its accordion ("À corriger dans : Portfolio") instead of a bare
+// generic error. ProfileEditForm's isHttpUrl check normally catches these first; this covers a
+// payload that gets past it. Leaf = the URL-bearing key at the end of the Zod issue path.
+const URL_LEAVES = new Set(['url', 'imageUrl', 'credentialUrl', 'portfolioLink'])
+
+function urlFieldsIn(issues: readonly { path: readonly PropertyKey[] }[]): UrlField[] {
+  const fields = issues
+    .filter((i) => URL_LEAVES.has(String(i.path[i.path.length - 1])))
+    .map((i) => i.path[0])
+    .filter((f): f is UrlField => typeof f === 'string' && f in URL_FIELD_SECTION_KEYS)
+  return [...new Set(fields)]
+}
+
+// The rejection for a payload that failed SaveProfileInput: the section summary (+ urlFields) when a
+// URL was the problem, the generic error otherwise.
+function rejection(issues: readonly { path: readonly PropertyKey[] }[], lang: Lang): { error: string; urlFields?: UrlField[] } {
+  const urlFields = urlFieldsIn(issues)
+  if (urlFields.length === 0) return { error: t('common.error_generic', lang) }
+  return { error: urlErrorSummary(urlFields, lang) ?? t('common.error_generic', lang), urlFields }
+}
+
 function revalidateProfileEditSurfaces() {
   revalidatePath('/mon-profil-freelance/modifier')
   revalidatePath('/tableau-de-bord')
@@ -246,7 +275,7 @@ export async function saveProfileAction(input: unknown): Promise<SaveProfileResu
       '[saveProfile] rejected: input failed validation — ' +
         parsed.error.issues.map((i) => `${i.path.join('.') || '(root)'}:${i.message}`).join(', '),
     )
-    return { ok: false, error: t('common.error_generic', lang) }
+    return { ok: false, ...rejection(parsed.error.issues, lang) }
   }
 
   const supabase = await createClient()
@@ -276,7 +305,7 @@ export async function publishProfileAction(input: unknown): Promise<PublishProfi
       '[publishProfile] rejected: input failed validation — ' +
         parsed.error.issues.map((i) => `${i.path.join('.') || '(root)'}:${i.message}`).join(', '),
     )
-    return { ok: false, status: 'error', error: t('common.error_generic', lang) }
+    return { ok: false, status: 'error', ...rejection(parsed.error.issues, lang) }
   }
 
   const supabase = await createClient()

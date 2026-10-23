@@ -30,7 +30,7 @@ const h = vi.hoisted(() => {
   } = {
     user: { id: 'u_buyer' },
     product: {
-      id: 'prod_1',
+      id: '6f1c2a4e-3b5d-4c7e-9a1b-2d4f6a8c0e12',
       tracks_stock: true,
       stock_count: 10,
       shops: { owner_id: 'u_shopowner', admin_hidden_at: null },
@@ -71,7 +71,7 @@ import { submitProductRequest } from '@/app/demander/[id]/actions'
 import { parseDeliveryAddress, encodeDeliveryAddress } from '@/lib/marche/order-detail'
 
 const VALID = {
-  productId: 'prod_1',
+  productId: '6f1c2a4e-3b5d-4c7e-9a1b-2d4f6a8c0e12',
   deliveryName: 'Ahmed Ben Ali',
   deliveryStreet: '12 Rue de la Liberté',
   quartier: 'Ennasr 2',
@@ -90,7 +90,7 @@ async function write(overrides: Partial<typeof VALID> = {}) {
 beforeEach(() => {
   h.state.user = { id: 'u_buyer' }
   h.state.product = {
-    id: 'prod_1',
+    id: '6f1c2a4e-3b5d-4c7e-9a1b-2d4f6a8c0e12',
     tracks_stock: true,
     stock_count: 10,
     shops: { owner_id: 'u_shopowner', admin_hidden_at: null },
@@ -188,10 +188,11 @@ describe('product request — server-derived columns', () => {
     await write()
     const row = h.state.inserted as Record<string, unknown>
     expect(row.buyer_id).toBe('u_buyer') // from auth.getUser(), not the input
-    expect(row.seller_id).toBe('u_shopowner') // re-fetched from the shop
+    // seller_id is never sent: enforce_order_insert_integrity (BEFORE INSERT) sets it from the item's owner.
+    expect(row).not.toHaveProperty('seller_id')
     expect(row.status).toBe('pending')
     expect(row.order_type).toBe('product')
-    expect(row.product_id).toBe('prod_1')
+    expect(row.product_id).toBe('6f1c2a4e-3b5d-4c7e-9a1b-2d4f6a8c0e12')
     expect(row.service_listing_id).toBeNull()
     // unit_price_tnd / item_title / delivery_fee_tnd are BEFORE INSERT trigger columns
     // (set_order_snapshot) — any client-supplied value is discarded server-side. Not present
@@ -214,6 +215,12 @@ describe('product request — server-derived columns', () => {
 
   it('rejects a missing ville without inserting', async () => {
     const { res } = await write({ ville: '' })
+    expect(res.ok).toBe(false)
+    expect(h.state.inserted).toBeNull()
+  })
+
+  it('rejects a line break inside the street — it would shift quartier/ville in the fold', async () => {
+    const { res } = await write({ deliveryStreet: '12 Rue X\nFaux quartier' })
     expect(res.ok).toBe(false)
     expect(h.state.inserted).toBeNull()
   })

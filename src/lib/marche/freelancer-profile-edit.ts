@@ -1,4 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
+import { t, type Lang } from '@/lib/i18n'
 
 // H3 "Modifier mon profil" (Figma 404:11909) data layer. Read-only fetch + pure validation logic;
 // writes live in the route's own actions.ts (a 'use server' module may only export async
@@ -185,4 +186,27 @@ export function validateForPublish(input: { headline: string; bio: string; skill
   if (input.bio.trim().length < BIO_MIN_FOR_PUBLISH) missing.push('bio')
   if (input.skillsCount < SKILLS_MIN_FOR_PUBLISH || input.skillsCount > SKILLS_MAX) missing.push('skills')
   return missing.length > 0 ? { ok: false, missing } : { ok: true }
+}
+
+// The H3 accordion each URL-bearing field lives in, keyed by its top-level SaveProfileInput field
+// (in page order). Shared so the client's per-row URL check and the server's Zod issue paths
+// (`links.0.url`, `portfolioLink`, …) name the same sections in the "fix your links" summary —
+// Portfolio is collapsed by default, so an inline error alone can sit out of sight.
+export const URL_FIELD_SECTION_KEYS = {
+  links: 'freelance.edit.trust_title',
+  portfolio: 'freelance.edit.portfolio_title',
+  portfolioLink: 'freelance.edit.portfolio_title',
+  certifications: 'freelance.edit.formation_title',
+} as const
+
+export type UrlField = keyof typeof URL_FIELD_SECTION_KEYS
+
+/** The localized "these sections have an invalid link" summary, or null when none do. */
+export function urlErrorSummary(fields: Iterable<UrlField>, lang: Lang): string | null {
+  const bad = new Set(fields)
+  const sectionKeys = new Set(
+    (Object.keys(URL_FIELD_SECTION_KEYS) as UrlField[]).filter((f) => bad.has(f)).map((f) => URL_FIELD_SECTION_KEYS[f]),
+  )
+  if (sectionKeys.size === 0) return null
+  return t('freelance.edit.error_urls', lang, { sections: [...sectionKeys].map((k) => t(k, lang)).join(', ') })
 }

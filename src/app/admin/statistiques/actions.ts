@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import { checkAdmin } from '@/lib/auth/require-admin'
 
 export type CsvExportResult = { csv: string; filename: string } | { error: string }
 
@@ -20,18 +21,20 @@ function toDate(value: string | null): string {
 }
 
 // Generates a CSV of completed (received) orders for founder export. Admin-gated at
-// the action boundary (the orders RLS would also restrict a non-admin to their own
-// rows, but we fail closed with a friendly error first). Ships only aggregate fields
-// — order_id, order_type, received_at date — never buyer/seller IDs, delivery details,
-// or notes.
+// the action boundary by checkAdmin (the orders RLS would also restrict a non-admin to
+// their own rows, but we fail closed with a friendly error first — including when the
+// is_admin lookup itself fails). Ships only aggregate fields — order_id, order_type,
+// received_at date — never buyer/seller IDs, delivery details, or notes.
 export async function generateCompletedOrdersCsv(): Promise<CsvExportResult> {
   const supabase = await createClient()
 
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return { error: 'forbidden' }
-  const { data: profile } = await supabase
-    .from('profiles').select('is_admin').eq('id', user.id).single()
-  if (!profile?.is_admin) return { error: 'forbidden' }
+  const admin = await checkAdmin(supabase)
+  if (!admin.ok) {
+    console.error(`[admin/statistiques] completed-orders CSV rejected: ${admin.reason}`)
+    // A failed lookup is an outage, not a denial (see adminRejectionError) — CsvExportButton maps
+    // 'error' to the generic message and 'forbidden' to its access-denied one.
+    return { error: admin.reason === 'query_failed' ? 'error' : 'forbidden' }
+  }
 
   const { data, error } = await supabase
     .from('orders')
@@ -40,7 +43,7 @@ export async function generateCompletedOrdersCsv(): Promise<CsvExportResult> {
     .order('received_at', { ascending: false })
 
   if (error) {
-    console.error('[admin/statistiques] completed-orders CSV query error:', error)
+    console.error('[admin/statistiques] completed-orders CSV query error:', error.message, error.code, error.details)
     return { error: 'error' }
   }
 

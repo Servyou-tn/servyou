@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { getLang } from '@/lib/i18n/server'
 import { t } from '@/lib/i18n'
 import { createClient } from '@/lib/supabase/server'
+import { requireAdmin } from '@/lib/auth/require-admin'
 import type { Lang } from '@/lib/i18n'
 import type { DisputeRow } from '@/lib/types/dispute'
 
@@ -32,6 +33,7 @@ function StatusBadge({ status, tr }: { status: string; tr: (k: string) => string
 }
 
 export default async function DisputesQueuePage() {
+  await requireAdmin('/admin/litiges')
   const lang = await getLang()
   const tr = (key: string): string => t(key, lang)
   const supabase = await createClient()
@@ -44,7 +46,7 @@ export default async function DisputesQueuePage() {
     .in('status', ['open', 'under_review'])
     .order('created_at', { ascending: false })
 
-  if (error) console.error('[admin/litiges] list fetch error:', error)
+  if (error) console.error('[admin/litiges] list fetch error:', error.message, error.code, error.details)
   const rows = (disputes as DisputeListRow[] | null) ?? []
 
   return (

@@ -22,7 +22,18 @@ import { uploadPortfolioImageAction } from '../actions'
 // first, then reveals the row's text fields, rather than adding a blank row up front.
 export type PortfolioRow = { id: string; imageUrl: string; title: string; url: string; description: string }
 
-export function PortfolioRepeater({ rows, onChange, lang }: { rows: PortfolioRow[]; onChange: (next: PortfolioRow[]) => void; lang: Lang }) {
+export function PortfolioRepeater({
+  rows,
+  onChange,
+  lang,
+  errors,
+}: {
+  rows: PortfolioRow[]
+  onChange: (next: PortfolioRow[]) => void
+  lang: Lang
+  /** Per-row project-URL error, keyed by row id (ProfileEditForm's http(s) check). */
+  errors?: Record<string, string>
+}) {
   const [uploading, setUploading] = React.useState(false)
   const [uploadError, setUploadError] = React.useState<string | null>(null)
   const inputRef = React.useRef<HTMLInputElement>(null)
@@ -78,6 +89,7 @@ export function PortfolioRepeater({ rows, onChange, lang }: { rows: PortfolioRow
                   maxLength={500}
                   value={row.url}
                   onChange={(e) => updateRow(row.id, { url: e.target.value })}
+                  error={errors?.[row.id]}
                 />
               </div>
               <button

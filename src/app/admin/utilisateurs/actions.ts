@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
+import { checkAdmin, adminRejectionError } from '@/lib/auth/require-admin'
 
 export type UserActionResult = { success: boolean; error?: string }
 
@@ -9,7 +10,9 @@ export type UserActionResult = { success: boolean; error?: string }
 // keys. Unlike a bare UPDATE (which returns no error on a zero-row match), these
 // functions RAISE on every failure mode — admin gate, self-suspend, empty reason,
 // already-suspended / not-suspended — so a null error genuinely means the state
-// changed. No rowcount guard needed; the function is the guard.
+// changed. No rowcount guard needed; the function is the guard. checkAdmin
+// (src/lib/auth/require-admin.ts) runs first anyway, so a non-admin is rejected
+// before the RPC is ever called.
 function translateRpcError(message: string): string {
   if (message.includes('Forbidden')) return 'admin.users.error_forbidden'
   if (message.includes('cannot suspend themselves')) return 'admin.users.error_self_suspend'
@@ -20,18 +23,24 @@ function translateRpcError(message: string): string {
 }
 
 export async function suspendUser(targetUserId: string, reason: string): Promise<UserActionResult> {
+  const supabase = await createClient()
+  const admin = await checkAdmin(supabase)
+  if (!admin.ok) {
+    console.error(`[admin/utilisateurs] suspendUser rejected: ${admin.reason}`)
+    return { success: false, error: adminRejectionError(admin.reason, 'admin.users.error_forbidden') }
+  }
+
   const trimmed = reason.trim()
   if (trimmed.length === 0) {
     return { success: false, error: 'admin.users.suspend_reason_required' }
   }
 
-  const supabase = await createClient()
   const { error } = await supabase.rpc('admin_suspend_user', {
     target_user_id: targetUserId,
     reason: trimmed,
   })
   if (error) {
-    console.error('[admin/utilisateurs] suspendUser error:', error)
+    console.error('[admin/utilisateurs] suspendUser error:', error.message, error.code, error.details)
     return { success: false, error: translateRpcError(error.message) }
   }
 
@@ -45,11 +54,17 @@ export async function suspendUser(targetUserId: string, reason: string): Promise
 
 export async function unsuspendUser(targetUserId: string): Promise<UserActionResult> {
   const supabase = await createClient()
+  const admin = await checkAdmin(supabase)
+  if (!admin.ok) {
+    console.error(`[admin/utilisateurs] unsuspendUser rejected: ${admin.reason}`)
+    return { success: false, error: adminRejectionError(admin.reason, 'admin.users.error_forbidden') }
+  }
+
   const { error } = await supabase.rpc('admin_unsuspend_user', {
     target_user_id: targetUserId,
   })
   if (error) {
-    console.error('[admin/utilisateurs] unsuspendUser error:', error)
+    console.error('[admin/utilisateurs] unsuspendUser error:', error.message, error.code, error.details)
     return { success: false, error: translateRpcError(error.message) }
   }
 

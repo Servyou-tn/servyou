@@ -29,7 +29,22 @@ vi.mock('next/cache', () => ({
   revalidatePath: h.revalidatePath,
 }))
 
+// checkAdmin (src/lib/auth/require-admin.ts) runs first in every admin action. Mocked to an admin
+// by default so the tests below exercise the action logic itself; the 'admin gate' block flips it.
+const guard = vi.hoisted(() => ({ checkAdmin: vi.fn() }))
+// Only checkAdmin is mocked; adminRejectionError stays the real helper, so the query_failed →
+// generic-error mapping below is the production one.
+vi.mock('@/lib/auth/require-admin', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/lib/auth/require-admin')>()),
+  checkAdmin: guard.checkAdmin,
+}))
+
 import { suspendUser, unsuspendUser } from '@/app/admin/utilisateurs/actions'
+
+beforeEach(() => {
+  guard.checkAdmin.mockReset()
+  guard.checkAdmin.mockResolvedValue({ ok: true, userId: 'admin-1' })
+})
 
 beforeEach(() => {
   h.state.result = { data: null, error: null }
@@ -96,4 +111,38 @@ describe('unsuspendUser', () => {
     expect(h.revalidatePath).toHaveBeenCalledWith('/admin/utilisateurs')
     expect(h.revalidatePath).toHaveBeenCalledWith('/admin/utilisateurs/u1')
   })
+})
+
+describe('admin gate (checkAdmin runs first)', () => {
+  it('suspendUser rejects a non-admin before touching the database', async () => {
+    guard.checkAdmin.mockResolvedValue({ ok: false, reason: 'forbidden' })
+    const res = await suspendUser('u1', 'Spam répété.')
+    expect(res).toEqual({ success: false, error: 'admin.users.error_forbidden' })
+    expect(h.rpc).not.toHaveBeenCalled()
+    expect(h.revalidatePath).not.toHaveBeenCalled()
+  })
+
+  it('unsuspendUser rejects a non-admin before touching the database', async () => {
+    guard.checkAdmin.mockResolvedValue({ ok: false, reason: 'forbidden' })
+    const res = await unsuspendUser('u1')
+    expect(res).toEqual({ success: false, error: 'admin.users.error_forbidden' })
+    expect(h.rpc).not.toHaveBeenCalled()
+    expect(h.revalidatePath).not.toHaveBeenCalled()
+  })
+
+  // A failed lookup is an outage, not a denial (adminRejectionError): it fails closed with the
+  // generic error rather than 'Accès non autorisé.'; a logged-out caller still gets the forbidden key.
+  it.each([
+    ['unauthenticated', 'admin.users.error_forbidden'],
+    ['query_failed', 'common.error_generic'],
+  ] as const)(
+    'suspendUser also fails closed when the check returns %s (→ %s)',
+    async (reason, error) => {
+      guard.checkAdmin.mockResolvedValue({ ok: false, reason })
+      const res = await suspendUser('u1', 'Spam répété.')
+      expect(res).toEqual({ success: false, error })
+      expect(h.rpc).not.toHaveBeenCalled()
+      expect(h.revalidatePath).not.toHaveBeenCalled()
+    },
+  )
 })

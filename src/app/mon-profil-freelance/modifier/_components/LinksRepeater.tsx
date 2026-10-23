@@ -13,7 +13,18 @@ import { LINKS_CAP } from '@/lib/marche/freelancer-profile-edit'
 // (unedited component placeholders); labels are founder-ruled from content shape, not measured.
 export type LinkRow = { id: string; label: string; url: string }
 
-export function LinksRepeater({ rows, onChange, lang }: { rows: LinkRow[]; onChange: (next: LinkRow[]) => void; lang: Lang }) {
+export function LinksRepeater({
+  rows,
+  onChange,
+  lang,
+  errors,
+}: {
+  rows: LinkRow[]
+  onChange: (next: LinkRow[]) => void
+  lang: Lang
+  /** Per-row URL error, keyed by row id (ProfileEditForm's http(s) check). */
+  errors?: Record<string, string>
+}) {
   function addRow() {
     if (rows.length >= LINKS_CAP) return
     onChange([...rows, { id: crypto.randomUUID(), label: '', url: '' }])
@@ -44,6 +55,7 @@ export function LinksRepeater({ rows, onChange, lang }: { rows: LinkRow[]; onCha
               placeholder={t('freelance.edit.link_url_field', lang)}
               value={row.url}
               onChange={(e) => updateRow(row.id, { url: e.target.value })}
+              error={errors?.[row.id]}
             />
           </div>
           <button
