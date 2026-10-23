@@ -242,6 +242,33 @@ this PR and is not attempted here.
     `profiles` (BEFORE UPDATE) and is untouched. Rollback SQL is in a comment block at the bottom
     of the migration file.
 
+55. **20261023182532_seller_capability_integrity** — Closes the HIGH audit finding "`shops` /
+    `freelancer_profiles` INSERT bypass the 18+ and one-seller-capability rules" (2026-10-23).
+    Both INSERT policies checked only `owner_id` / `profile_id = auth.uid()` and neither table had
+    an INSERT trigger, while the 18+ gate (`enforce_seller_type_age_gate`) is BEFORE UPDATE on
+    `profiles.seller_type` — so over REST a consumer of any age could create a shop and/or a
+    freelancer profile without ever setting `seller_type`. **Part 1:**
+    `enforce_seller_capability()` (SECURITY DEFINER, one function shared by
+    `trg_enforce_seller_capability_shops` and `trg_enforce_seller_capability_freelancer_profiles`,
+    BEFORE INSERT OR UPDATE OF `owner_id` / `profile_id`): for signed-in non-admin callers the
+    row's owner must hold the matching `seller_type` (`shop_owner` / `freelancer`, itself
+    age-gated) and must not already own the other capability's row (both `42501`, not `23514` —
+    both creation actions map a `23514` from their `seller_type` UPDATE to the age-gate copy, and a
+    capability rejection must not read as an age refusal). The owner's `profiles` row is read
+    `FOR SHARE` so the check cannot interleave with a `seller_type` switch; UPDATE returns early
+    unless the owner actually changes. **Part 2 (founder decision D1):**
+    `enforce_seller_capability_switch()` (BEFORE UPDATE OF `seller_type` on `profiles`, sibling of
+    the age gate, which is untouched): when `seller_type` actually changes, the new value must match every capability row the account owns
+    (`42501`) — without it a shop owner could move to NULL or `freelancer` and keep a live shop.
+    `auth.uid()` NULL and `is_admin()` bypass both parts, like every other guard trigger; the
+    service-role fixtures (one of which gives a user both a shop and a freelancer profile) depend
+    on it, and anon is still stopped by the RLS WITH CHECK. Both app paths (`ma-boutique/creer`,
+    `mon-profil-freelance/creer`) flip `seller_type` first and insert second, so neither changes.
+    New writes only: of 1 shop and 11 freelancer profiles, 0 accounts owned both and 0 sellers were
+    under 18; 1 freelancer profile belongs to a `seller_type` NULL account (adult, unpublished, no
+    listings, no orders) and is left as is (founder decision D2). Rollback SQL is in a comment
+    block at the bottom of the migration file.
+
 ## Rollback paths
 
 Each migration in this folder represents work that has already been applied to production. Rollback is therefore reverse migration work, not file deletion. If a rollback is ever needed, write a new dated migration that reverses the relevant changes — never delete history from this folder.

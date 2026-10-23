@@ -3772,8 +3772,18 @@ Manual static review of the live schema + app code (gstack-cso itself did not ru
 entry). Fixed in this PR, so NOT listed below: the profiles self-admin hole (migration 53) and the
 orders INSERT gap (migration 54). Ranked most severe first; each is its own PR unless noted.
 
-### HIGH — `shops` / `freelancer_profiles` INSERT bypass the 18+ and one-seller-capability rules
+### ✅ CLOSED — HIGH — `shops` / `freelancer_profiles` INSERT bypass the 18+ and one-seller-capability rules
 
+- **Closed by** migration 55 (`20261023182532_seller_capability_integrity`,
+  `fix/seller-capability-insert`, 2026-10-23): `enforce_seller_capability()` (BEFORE INSERT OR
+  UPDATE OF owner on both tables) requires the owner's matching `seller_type` and no row of the
+  other capability; `enforce_seller_capability_switch()` (BEFORE UPDATE OF `seller_type` on
+  `profiles`, founder decision D1) stops a seller moving away from a capability they still own.
+  Decision D2: the one existing freelancer profile on a `seller_type`-NULL account is left as is.
+  Live proof: `src/__tests__/seller-capability-integrity.test.ts`.
+- **Correction to the fix sketch below:** matching `seller_type` alone was not enough —
+  `seller_type` stays client-UPDATEable, so an adult freelancer could flip to `shop_owner` and then
+  POST a shop. Hence the "no other capability row" conjunct and the `profiles`-side guard.
 - **What:** "Owner inserts own shop" and "Owner inserts own freelancer profile" check only
   `owner_id` / `profile_id = auth.uid()`, and neither table has an INSERT trigger. The age gate
   lives on `profiles.seller_type` (BEFORE UPDATE), which creating a shop never touches.
@@ -3847,6 +3857,22 @@ orders INSERT gap (migration 54). Ranked most severe first; each is its own PR u
   `shop_categories` and `job_post_skills` are also `using (true)` (confirmed live 2026-10-23).
 - **Fix:** fold into the products/shops security PR with the same embed audit.
 
+### MEDIUM — `freelancer_profiles.is_published` is owner-settable (publish-gate bypass)
+
+- **Found by:** `fix/seller-capability-insert` discovery, 2026-10-23.
+- **What:** migration 48 defines `is_published` as "derived, never user-set" (true iff ≥1 active
+  `service_listings` row, kept by `sync_freelancer_is_published`). But `authenticated` holds column
+  INSERT and UPDATE on it and no trigger guards it: the sync trigger lives on `service_listings`
+  only, and `enforce_admin_marker_lock` covers `admin_hidden_*` only.
+- **Exploit:** an owner PATCHes (or INSERTs) `is_published = true` on a profile with no active
+  listing, making it and its five child tables (skills, tools, education, certifications,
+  languages) world-readable to anon. Self-exposure only, and the next listing write re-syncs it,
+  but it defeats the publish gate's invariant.
+- **Fix:** revoke INSERT/UPDATE on `is_published` from `anon`/`authenticated` (column grants).
+  Do NOT use a guard trigger with the usual `auth.uid()` bypass: `sync_freelancer_is_published` is
+  SECURITY DEFINER (owner `postgres`) but fires inside the user's own session, so `auth.uid()` is
+  still the user there and the guard would block the sync. The owner bypasses column grants.
+
 ### LOW — storage provenance missing for avatars and shop assets
 
 - **What:** the `uploaded_objects` provenance trigger guards only `product_images` and
@@ -3863,6 +3889,50 @@ orders INSERT gap (migration 54). Ranked most severe first; each is its own PR u
 - **D4:** the stock rule (`tracks_stock` and `quantity > stock_count`) is app-only. Fix: add it to
   `enforce_order_insert_integrity`.
 
+### LOW — `shops.owner_id` is not unique
+
+- **Found by:** `fix/seller-capability-insert` discovery, 2026-10-23.
+- **What:** the only unique indexes on `shops` are the PK and `lower(name)`. A shop owner can POST
+  several shops over REST (migration 55 checks capability, not count), while the app assumes one —
+  `resolveOwnedShopId` and the G2 action's "already owns a shop" check.
+- **Fix:** a unique index on `shops.owner_id` (discovery first: 1 shop in prod today), or a
+  founder decision that multi-shop is a future feature and the app should handle it.
+
+### LOW — `admin_hidden_*` can be set on INSERT (`shops`, `freelancer_profiles`)
+
+- **Found by:** `fix/seller-capability-insert` discovery, 2026-10-23.
+- **What:** `authenticated` holds column INSERT on `admin_hidden_at` / `admin_hidden_reason`, and
+  `enforce_admin_marker_lock` is BEFORE UPDATE only. An owner can create their own row already
+  "admin-moderated", with any reason text. Self-harm only (it hides their own content), but the
+  marker is meant to be admin-written.
+- **Fix:** revoke column INSERT on both from `anon`/`authenticated`, or extend the lock to INSERT.
+
+### LOW — two live-DB suites reuse a fixed shop name and fail on `shops_name_lower_key`
+
+- **Found by:** `fix/seller-capability-insert`, full integration run, 2026-10-23 — pre-existing,
+  not caused by migration 55 (the failing insert is service-role, which the new trigger bypasses).
+- **What:** `buyer-cancellation-history.test.ts` creates three shops all named `'BCH Shop'`, and
+  `order-delivery-fee-snapshot.test.ts` two named `'DFee Shop'`. Since migration 20260811055734
+  made `lower(name)` unique, the second insert fails with 23505 and both suites skip every test —
+  they have proven nothing since 2026-08-11.
+- **Fix:** give each fixture shop a distinct name (label + run id), as
+  `orders-insert-integrity.test.ts` and `seller-capability-integrity.test.ts` do.
+
+### LOW — `freelancer-publish-gate-rls.test.ts` "getActiveServices list shape" is flaky under parallel runs
+
+- **Found by:** `fix/seller-capability-insert`, default vitest run, 2026-10-23 (failed 24 vs 25, then
+  passed 22/22 alone).
+- **What:** the case counts all active `service_listings` (service role), then reads the anon list
+  shape, and compares the two. Any other suite in the same run (or another agent) that creates an
+  active listing between the two reads fails it.
+- **Fix:** scope both reads to rows that exist before the test starts (e.g. exclude the
+  `@rls-smoke.servyou.invalid` owners), or compare id sets instead of lengths.
+
+### LOW — `orders-insert-integrity.test.ts` header cites the pre-rename migration file
+
+- The header names `db/migrations/20261023165345_orders_insert_integrity.sql`; the file was renamed
+  to the recorded version `20261023170918_orders_insert_integrity.sql`. One-line fix.
+
 ### LOW — Supabase advisor hygiene
 
 - 27 SECURITY DEFINER functions flagged as executable by anon/authenticated: the trigger functions
@@ -3873,6 +3943,8 @@ orders INSERT gap (migration 54). Ranked most severe first; each is its own PR u
   `unaccent` extension lives in `public`.
 - Default table grants still include TRUNCATE (and DELETE/INSERT where no policy exists) to
   anon/authenticated on most tables — not exposed by PostgREST, but worth a sweeping revoke.
+  Re-confirmed on `shops` and `freelancer_profiles` 2026-10-23 (`fix/seller-capability-insert`):
+  both grant TRUNCATE to anon and authenticated. Migration 53 already revoked it on `profiles`.
 - `uploaded_objects` has RLS with no policies (intentional: service-role only) — document it.
 
 ### LOW — `auth.admin.listUsers` fails on this project ("Database error finding users")
