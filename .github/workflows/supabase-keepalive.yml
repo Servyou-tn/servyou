@@ -1,0 +1,33 @@
+name: supabase-keepalive
+
+# Keeps the Supabase free-tier project from auto-pausing. Free-tier projects pause after ~7 days
+# with no database activity — this happened to Servyou in Sept–Oct 2026 and took production down.
+# Every 3 days this runs one real PostgREST read (categories is anon-readable: RLS policy
+# "Categories are viewable by everyone", USING true), so a genuine DB query lands, not just an
+# HTTP ping.
+#
+# Uses the publishable anon key ONLY — never the service role key.
+# Requires repo secrets SUPABASE_URL and SUPABASE_ANON_KEY.
+#
+# Delete this workflow once the project is on Supabase Pro (Pro projects don't auto-pause).
+
+on:
+  schedule:
+    - cron: '17 6 */3 * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Query categories via PostgREST
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: |
+          curl --fail-with-body -sS \
+            "$SUPABASE_URL/rest/v1/categories?select=id&limit=1" \
+            -H "apikey: $SUPABASE_ANON_KEY" -H "Authorization: Bearer $SUPABASE_ANON_KEY"

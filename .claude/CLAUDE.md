@@ -74,6 +74,12 @@ Load conditionally per task. Index: `.claude/skills/README.md`.
 - `servyou-phase-aware-features` — widgets, stats, dashboards
 - `servyou-discovery-first-migration` — schema changes
 
+## Dev loop
+
+- While editing, load the touched route in the browser, then call next-devtools `get_errors` for fast feedback (Next 16.2.11 has no `compile_route`; adopt it when a Next upgrade ships it). tsc + lint + test + build are still mandatory before claiming done (DoD item 3 unchanged).
+- After any context compaction, run `/reload-skills` before continuing UI or migration work.
+- Figma: the CDP bridge (figma-cli) is NOT working on Figma Desktop 126.7.10 — do not use it. Until the founder confirms Figma Pro, the official Figma MCP is the only instrument and is capped at 20 reads/month for the whole account: spend reads only on final per-frame comparison, one read per frame, never for exploration. Report each read used.
+
 ## When in doubt
 
 Ask Moatez (the founder). Do not invent product decisions. Do not assume design preferences. Do not skip discovery to save time.
