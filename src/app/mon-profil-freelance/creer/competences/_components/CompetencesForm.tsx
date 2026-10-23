@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button'
 import { TagInput } from '@/components/ui/tag-input'
 import { FOCUS_RING } from '@/components/layout/styles'
 import { NumberStepper } from '@/app/demander/[id]/_components/NumberStepper'
-import { Stepper } from '../../_components/Stepper'
+import { Stepper } from '@/components/ui/stepper'
 import { LanguageRepeater, type LanguageRow } from './LanguageRepeater'
 import { saveCompetencesAction } from '../actions'
 

@@ -13,7 +13,7 @@ import { Textarea } from '@/app/demander/[id]/_components/Textarea'
 import { FOCUS_RING } from '@/components/layout/styles'
 import { GOVERNORATES } from '@/lib/tunisia-governorates'
 import { createShopAction, uploadShopLogoAction, uploadShopBannerAction } from '../actions'
-import { Stepper } from './Stepper'
+import { Stepper } from '@/components/ui/stepper'
 import { LogoField } from './LogoField'
 import { BannerField } from './BannerField'
 

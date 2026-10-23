@@ -9,11 +9,12 @@
 (`/marche/services?categorie=<sector>&sous=<sub>`) **and** a DB value. Changing one is a migration,
 not an edit. Derivation: deburr accents → lowercase → non-alphanumeric → single hyphen → trim.
 
-**Skills** = per-sector type-ahead pool (add-your-own allowed). Matched by string; recurring skills are
+**Skills** = per-sector type-ahead pool (add-your-own allowed). Each skill has a stable `id` (stored in
+`service_listings.tags`; a custom skill is stored as typed); recurring skills keep one id and are
 byte-identical across pools. Tool/brand names keep the Latin term in AR. AR judgment calls are marked
 `REVIEW_AR_TRANSLATION` in the `.ts` source.
 
-**Counts:** 13 sectors · 91 subcategories · 168 skill entries.
+**Counts:** 13 sectors · 92 subcategories · 168 skill entries (148 distinct skill ids).
 
 ---
 
@@ -45,7 +46,7 @@ React · Next.js · Vue · Node.js · PHP · Laravel · WordPress · Flutter · 
 - **AR:** التصميم الغرافيكي والشعارات
 - **icon:** `palette` (lucide-react)
 
-**Subcategories (8):**
+**Subcategories (9):**
 
 | id | FR | AR |
 |---|---|---|
@@ -57,6 +58,7 @@ React · Next.js · Vue · Node.js · PHP · Laravel · WordPress · Flutter · 
 | `bannieres-reseaux-sociaux` | Bannières réseaux sociaux | بانرات وسائل التواصل الاجتماعي |
 | `pitch-deck-presentation` | Pitch deck & présentation | عرض تقديمي (Pitch Deck) |
 | `illustration-sur-mesure` | Illustration sur mesure | الرسم التوضيحي المخصص |
+| `photographie-retouche-produit` | Photographie & retouche produit | تصوير المنتجات وتعديل الصور |
 
 **Skill pool (15):**
 

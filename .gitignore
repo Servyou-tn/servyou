@@ -74,3 +74,7 @@ next-env.d.ts
 # dirs). This entry stays only to catch a stale directory from before that move; it also held a real
 # minted session cookie, which must never be committed.
 .gate-chrome-profile/
+
+# H6 Figma reference screenshots (get_design_context renders) — kept local, founder ruling 2026-10-23;
+# the measurements themselves are committed in docs/design/h6-measurements.md.
+docs/design/h6-figma/

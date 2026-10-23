@@ -5,7 +5,9 @@
 > - `/marche/services` — Catégorie filter (parents only; no sub filter for MVP)
 > - D2 (service detail) — breadcrumb + subcategory browse tag
 >
-> **13 parent categories · 91 subcategories · all remote-deliverable · Tunisia demand.**
+> **13 parent categories · 92 subcategories · all remote-deliverable · Tunisia demand.**
+> (92 since 2026-10-23: « Photographie & retouche produit » added under Design graphique & logo —
+> founder ruling, H6 PR-2, migration 20261023212933.)
 > Order below = order in dropdowns.
 >
 > Supersedes the deprecated 15-sector list (Développement, Design graphique, Design UI/UX,
@@ -39,6 +41,7 @@
 - Bannières réseaux sociaux
 - Pitch deck & présentation
 - Illustration sur mesure
+- Photographie & retouche produit
 
 ## 3. Design UI/UX
 - Maquette site web (Figma)

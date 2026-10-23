@@ -63,16 +63,22 @@
  * were reconciled against doc text alone; there is no competing Figma source for
  * them.
  *
+ * ── 2026-10-23 (H6 PR-2, founder rulings) ─────────────────────────────────────
+ * • Subcategory « Photographie & retouche produit » added under design-graphique-logo
+ *   (migration 20261023212933) — 13 sectors · 92 subcategories.
+ * • Every skill gained a stable `id` (same slug rule as above, applied to its labelFr
+ *   ONCE — from here on the id is fixed and the labels may be reworded freely).
+ *   168 entries → 148 distinct ids; a recurring skill carries one id everywhere.
+ *
  * ── SKILLS ────────────────────────────────────────────────────────────────────
  * `skills` is the per-sector type-ahead pool: the combo suggests from the ACTIVE
  * sector's pool as the freelancer types, and allows add-your-own beyond the list.
- * Skills are matched BY STRING (label) today — there is no skill slug/entity.
+ * `service_listings.tags` stores a pool skill as its `id` and an add-your-own skill
+ * as typed; `getSkill` resolves an id against ALL pools (a freelancer may change
+ * sector after picking skills), so anything it doesn't resolve is a custom skill.
  * Recurring skills (Python, Figma, Excel, réseaux sociaux, TikTok, français,
  * arabe, anglais, sous-titrage, …) are kept BYTE-IDENTICAL (FR + AR) across every
- * pool so the /marche/services filter never treats one skill as two.
- * OPEN QUESTION (raise before /marche/services is built): if that filter ever
- * needs canonical skill ENTITIES (rename-safe, dedup by id), skills need a stable
- * slug. Not added now — free-text add-your-own is the current product reality.
+ * pool so one skill never becomes two.
  *
  * ── AR PARITY ─────────────────────────────────────────────────────────────────
  * Labels are FR + AR; the app renders per language toggle. Tool / brand / tech
@@ -85,7 +91,10 @@
  */
 
 export interface TaxonomySkill {
-  /** French label (also the value stored/matched today). */
+  /** Stable slug — the value stored in `service_listings.tags`. Never change casually. A skill that
+   *  recurs in several pools carries the SAME id (and the same labels) in each. */
+  id: string;
+  /** French label. */
   labelFr: string;
   /** Arabic label — Latin term kept for tool/brand names. */
   labelAr: string;
@@ -126,26 +135,26 @@ export const serviceCategories: ServiceSector[] = [
       { id: 'correction-de-bug-maintenance', labelFr: 'Correction de bug & maintenance', labelAr: 'إصلاح الأخطاء والصيانة' }, // REVIEW_AR_TRANSLATION
     ],
     skills: [
-      { labelFr: 'React', labelAr: 'React' },
-      { labelFr: 'Next.js', labelAr: 'Next.js' },
-      { labelFr: 'Vue', labelAr: 'Vue' },
-      { labelFr: 'Node.js', labelAr: 'Node.js' },
-      { labelFr: 'PHP', labelAr: 'PHP' },
-      { labelFr: 'Laravel', labelAr: 'Laravel' },
-      { labelFr: 'WordPress', labelAr: 'WordPress' },
-      { labelFr: 'Flutter', labelAr: 'Flutter' },
-      { labelFr: 'React Native', labelAr: 'React Native' },
-      { labelFr: 'TypeScript', labelAr: 'TypeScript' },
-      { labelFr: 'Python', labelAr: 'Python' },
-      { labelFr: 'HTML/CSS', labelAr: 'HTML/CSS' },
-      { labelFr: 'Tailwind', labelAr: 'Tailwind' },
-      { labelFr: 'Supabase', labelAr: 'Supabase' },
-      { labelFr: 'Firebase', labelAr: 'Firebase' },
-      { labelFr: 'MySQL', labelAr: 'MySQL' },
-      { labelFr: 'REST API', labelAr: 'REST API' },
-      { labelFr: 'Shopify', labelAr: 'Shopify' },
-      { labelFr: 'WooCommerce', labelAr: 'WooCommerce' },
-      { labelFr: 'Git', labelAr: 'Git' },
+      { id: 'react', labelFr: 'React', labelAr: 'React' },
+      { id: 'next-js', labelFr: 'Next.js', labelAr: 'Next.js' },
+      { id: 'vue', labelFr: 'Vue', labelAr: 'Vue' },
+      { id: 'node-js', labelFr: 'Node.js', labelAr: 'Node.js' },
+      { id: 'php', labelFr: 'PHP', labelAr: 'PHP' },
+      { id: 'laravel', labelFr: 'Laravel', labelAr: 'Laravel' },
+      { id: 'wordpress', labelFr: 'WordPress', labelAr: 'WordPress' },
+      { id: 'flutter', labelFr: 'Flutter', labelAr: 'Flutter' },
+      { id: 'react-native', labelFr: 'React Native', labelAr: 'React Native' },
+      { id: 'typescript', labelFr: 'TypeScript', labelAr: 'TypeScript' },
+      { id: 'python', labelFr: 'Python', labelAr: 'Python' },
+      { id: 'html-css', labelFr: 'HTML/CSS', labelAr: 'HTML/CSS' },
+      { id: 'tailwind', labelFr: 'Tailwind', labelAr: 'Tailwind' },
+      { id: 'supabase', labelFr: 'Supabase', labelAr: 'Supabase' },
+      { id: 'firebase', labelFr: 'Firebase', labelAr: 'Firebase' },
+      { id: 'mysql', labelFr: 'MySQL', labelAr: 'MySQL' },
+      { id: 'rest-api', labelFr: 'REST API', labelAr: 'REST API' },
+      { id: 'shopify', labelFr: 'Shopify', labelAr: 'Shopify' },
+      { id: 'woocommerce', labelFr: 'WooCommerce', labelAr: 'WooCommerce' },
+      { id: 'git', labelFr: 'Git', labelAr: 'Git' },
     ],
   },
   {
@@ -162,23 +171,25 @@ export const serviceCategories: ServiceSector[] = [
       { id: 'bannieres-reseaux-sociaux', labelFr: 'Bannières réseaux sociaux', labelAr: 'بانرات وسائل التواصل الاجتماعي' }, // REVIEW_AR_TRANSLATION
       { id: 'pitch-deck-presentation', labelFr: 'Pitch deck & présentation', labelAr: 'عرض تقديمي (Pitch Deck)' }, // REVIEW_AR_TRANSLATION
       { id: 'illustration-sur-mesure', labelFr: 'Illustration sur mesure', labelAr: 'الرسم التوضيحي المخصص' }, // REVIEW_AR_TRANSLATION
+      // Founder ruling 2026-10-23 (H6 PR-2): product photography lives here, not in a 14th sector.
+      { id: 'photographie-retouche-produit', labelFr: 'Photographie & retouche produit', labelAr: 'تصوير المنتجات وتعديل الصور' }, // REVIEW_AR_TRANSLATION
     ],
     skills: [
-      { labelFr: 'Photoshop', labelAr: 'Photoshop' },
-      { labelFr: 'Illustrator', labelAr: 'Illustrator' },
-      { labelFr: 'InDesign', labelAr: 'InDesign' },
-      { labelFr: 'logo', labelAr: 'شعار' },
-      { labelFr: 'identité de marque', labelAr: 'هوية العلامة التجارية' },
-      { labelFr: 'charte graphique', labelAr: 'دليل الهوية البصرية' },
-      { labelFr: 'typographie', labelAr: 'التيبوغرافيا' }, // REVIEW_AR_TRANSLATION: loanword vs "فن الطباعة"
-      { labelFr: 'retouche', labelAr: 'تعديل الصور' },
-      { labelFr: 'vectorisation', labelAr: 'الرسم المتّجه' }, // REVIEW_AR_TRANSLATION
-      { labelFr: 'print', labelAr: 'الطباعة' },
-      { labelFr: 'flyer', labelAr: 'منشور' },
-      { labelFr: 'packaging', labelAr: 'التغليف' },
-      { labelFr: 'illustration', labelAr: 'الرسم التوضيحي' },
-      { labelFr: 'Canva', labelAr: 'Canva' },
-      { labelFr: 'Figma', labelAr: 'Figma' },
+      { id: 'photoshop', labelFr: 'Photoshop', labelAr: 'Photoshop' },
+      { id: 'illustrator', labelFr: 'Illustrator', labelAr: 'Illustrator' },
+      { id: 'indesign', labelFr: 'InDesign', labelAr: 'InDesign' },
+      { id: 'logo', labelFr: 'logo', labelAr: 'شعار' },
+      { id: 'identite-de-marque', labelFr: 'identité de marque', labelAr: 'هوية العلامة التجارية' },
+      { id: 'charte-graphique', labelFr: 'charte graphique', labelAr: 'دليل الهوية البصرية' },
+      { id: 'typographie', labelFr: 'typographie', labelAr: 'التيبوغرافيا' }, // REVIEW_AR_TRANSLATION: loanword vs "فن الطباعة"
+      { id: 'retouche', labelFr: 'retouche', labelAr: 'تعديل الصور' },
+      { id: 'vectorisation', labelFr: 'vectorisation', labelAr: 'الرسم المتّجه' }, // REVIEW_AR_TRANSLATION
+      { id: 'print', labelFr: 'print', labelAr: 'الطباعة' },
+      { id: 'flyer', labelFr: 'flyer', labelAr: 'منشور' },
+      { id: 'packaging', labelFr: 'packaging', labelAr: 'التغليف' },
+      { id: 'illustration', labelFr: 'illustration', labelAr: 'الرسم التوضيحي' },
+      { id: 'canva', labelFr: 'Canva', labelAr: 'Canva' },
+      { id: 'figma', labelFr: 'Figma', labelAr: 'Figma' },
     ],
   },
   {
@@ -195,19 +206,19 @@ export const serviceCategories: ServiceSector[] = [
       { id: 'refonte-dinterface-existante', labelFr: "Refonte d'interface existante", labelAr: 'إعادة تصميم واجهة قائمة' }, // REVIEW_AR_TRANSLATION
     ],
     skills: [
-      { labelFr: 'Figma', labelAr: 'Figma' },
-      { labelFr: 'Adobe XD', labelAr: 'Adobe XD' },
-      { labelFr: 'Sketch', labelAr: 'Sketch' },
-      { labelFr: 'wireframe', labelAr: 'مخطط هيكلي' }, // REVIEW_AR_TRANSLATION
-      { labelFr: 'prototype', labelAr: 'نموذج أولي' },
-      { labelFr: 'maquette', labelAr: 'نموذج تصميم' },
-      { labelFr: 'UI', labelAr: 'UI' },
-      { labelFr: 'UX', labelAr: 'UX' },
-      { labelFr: 'design system', labelAr: 'نظام التصميم' },
-      { labelFr: 'responsive', labelAr: 'تصميم متجاوب' },
-      { labelFr: 'parcours utilisateur', labelAr: 'رحلة المستخدم' },
-      { labelFr: 'accessibilité', labelAr: 'إمكانية الوصول' },
-      { labelFr: 'Framer', labelAr: 'Framer' },
+      { id: 'figma', labelFr: 'Figma', labelAr: 'Figma' },
+      { id: 'adobe-xd', labelFr: 'Adobe XD', labelAr: 'Adobe XD' },
+      { id: 'sketch', labelFr: 'Sketch', labelAr: 'Sketch' },
+      { id: 'wireframe', labelFr: 'wireframe', labelAr: 'مخطط هيكلي' }, // REVIEW_AR_TRANSLATION
+      { id: 'prototype', labelFr: 'prototype', labelAr: 'نموذج أولي' },
+      { id: 'maquette', labelFr: 'maquette', labelAr: 'نموذج تصميم' },
+      { id: 'ui', labelFr: 'UI', labelAr: 'UI' },
+      { id: 'ux', labelFr: 'UX', labelAr: 'UX' },
+      { id: 'design-system', labelFr: 'design system', labelAr: 'نظام التصميم' },
+      { id: 'responsive', labelFr: 'responsive', labelAr: 'تصميم متجاوب' },
+      { id: 'parcours-utilisateur', labelFr: 'parcours utilisateur', labelAr: 'رحلة المستخدم' },
+      { id: 'accessibilite', labelFr: 'accessibilité', labelAr: 'إمكانية الوصول' },
+      { id: 'framer', labelFr: 'Framer', labelAr: 'Framer' },
     ],
   },
   {
@@ -228,21 +239,21 @@ export const serviceCategories: ServiceSector[] = [
       { id: 'audit-analytics', labelFr: 'Audit & analytics (GA4, Meta Pixel)', labelAr: 'تدقيق وتحليلات (GA4, Meta Pixel)' }, // REVIEW_AR_TRANSLATION
     ],
     skills: [
-      { labelFr: 'SEO', labelAr: 'SEO' },
-      { labelFr: 'Google Ads', labelAr: 'Google Ads' },
-      { labelFr: 'Facebook Ads', labelAr: 'Facebook Ads' },
-      { labelFr: 'Instagram', labelAr: 'Instagram' },
-      { labelFr: 'community management', labelAr: 'إدارة المجتمعات' }, // REVIEW_AR_TRANSLATION
-      { labelFr: 'content strategy', labelAr: 'استراتيجية المحتوى' },
-      { labelFr: 'Google Analytics', labelAr: 'Google Analytics' },
-      { labelFr: 'Meta Business', labelAr: 'Meta Business' },
-      { labelFr: 'emailing', labelAr: 'التسويق عبر البريد الإلكتروني' },
-      { labelFr: 'Mailchimp', labelAr: 'Mailchimp' },
-      { labelFr: 'référencement', labelAr: 'تحسين محركات البحث' }, // REVIEW_AR_TRANSLATION: référencement≈SEO
-      { labelFr: 'réseaux sociaux', labelAr: 'وسائل التواصل الاجتماعي' },
-      { labelFr: 'TikTok', labelAr: 'TikTok' },
-      { labelFr: 'LinkedIn', labelAr: 'LinkedIn' },
-      { labelFr: 'copywriting publicitaire', labelAr: 'الكتابة الإعلانية' },
+      { id: 'seo', labelFr: 'SEO', labelAr: 'SEO' },
+      { id: 'google-ads', labelFr: 'Google Ads', labelAr: 'Google Ads' },
+      { id: 'facebook-ads', labelFr: 'Facebook Ads', labelAr: 'Facebook Ads' },
+      { id: 'instagram', labelFr: 'Instagram', labelAr: 'Instagram' },
+      { id: 'community-management', labelFr: 'community management', labelAr: 'إدارة المجتمعات' }, // REVIEW_AR_TRANSLATION
+      { id: 'content-strategy', labelFr: 'content strategy', labelAr: 'استراتيجية المحتوى' },
+      { id: 'google-analytics', labelFr: 'Google Analytics', labelAr: 'Google Analytics' },
+      { id: 'meta-business', labelFr: 'Meta Business', labelAr: 'Meta Business' },
+      { id: 'emailing', labelFr: 'emailing', labelAr: 'التسويق عبر البريد الإلكتروني' },
+      { id: 'mailchimp', labelFr: 'Mailchimp', labelAr: 'Mailchimp' },
+      { id: 'referencement', labelFr: 'référencement', labelAr: 'تحسين محركات البحث' }, // REVIEW_AR_TRANSLATION: référencement≈SEO
+      { id: 'reseaux-sociaux', labelFr: 'réseaux sociaux', labelAr: 'وسائل التواصل الاجتماعي' },
+      { id: 'tiktok', labelFr: 'TikTok', labelAr: 'TikTok' },
+      { id: 'linkedin', labelFr: 'LinkedIn', labelAr: 'LinkedIn' },
+      { id: 'copywriting-publicitaire', labelFr: 'copywriting publicitaire', labelAr: 'الكتابة الإعلانية' }, // REVIEW_AR_TRANSLATION: same AR as redaction-contenu's `copywriting` — two skills, one AR label
     ],
   },
   {
@@ -265,21 +276,21 @@ export const serviceCategories: ServiceSector[] = [
     skills: [
       // FOUNDER-UNREVIEWED — starter list, not sourced from a measured frame or prior art. Feeds
       // H6's type-ahead, so a freelancer sees it as-is — review when H6's picker ships.
-      { labelFr: 'Instagram', labelAr: 'Instagram' },
-      { labelFr: 'Facebook', labelAr: 'Facebook' },
-      { labelFr: 'TikTok', labelAr: 'TikTok' },
-      { labelFr: 'YouTube Shorts', labelAr: 'YouTube Shorts' },
-      { labelFr: 'LinkedIn', labelAr: 'LinkedIn' },
-      { labelFr: 'Meta Business Suite', labelAr: 'Meta Business Suite' },
-      { labelFr: 'Canva', labelAr: 'Canva' },
-      { labelFr: 'calendrier éditorial', labelAr: 'التقويم التحريري' }, // REVIEW_AR_TRANSLATION
-      { labelFr: 'community management', labelAr: 'إدارة المجتمعات' },
-      { labelFr: 'modération', labelAr: 'الإشراف' }, // REVIEW_AR_TRANSLATION
-      { labelFr: 'Reels', labelAr: 'Reels' },
-      { labelFr: 'Stories', labelAr: 'Stories' },
-      { labelFr: 'influenceurs', labelAr: 'المؤثرون' },
-      { labelFr: 'Later', labelAr: 'Later' },
-      { labelFr: 'Hootsuite', labelAr: 'Hootsuite' },
+      { id: 'instagram', labelFr: 'Instagram', labelAr: 'Instagram' },
+      { id: 'facebook', labelFr: 'Facebook', labelAr: 'Facebook' },
+      { id: 'tiktok', labelFr: 'TikTok', labelAr: 'TikTok' },
+      { id: 'youtube-shorts', labelFr: 'YouTube Shorts', labelAr: 'YouTube Shorts' },
+      { id: 'linkedin', labelFr: 'LinkedIn', labelAr: 'LinkedIn' },
+      { id: 'meta-business-suite', labelFr: 'Meta Business Suite', labelAr: 'Meta Business Suite' },
+      { id: 'canva', labelFr: 'Canva', labelAr: 'Canva' },
+      { id: 'calendrier-editorial', labelFr: 'calendrier éditorial', labelAr: 'التقويم التحريري' }, // REVIEW_AR_TRANSLATION
+      { id: 'community-management', labelFr: 'community management', labelAr: 'إدارة المجتمعات' },
+      { id: 'moderation', labelFr: 'modération', labelAr: 'الإشراف' }, // REVIEW_AR_TRANSLATION
+      { id: 'reels', labelFr: 'Reels', labelAr: 'Reels' },
+      { id: 'stories', labelFr: 'Stories', labelAr: 'Stories' },
+      { id: 'influenceurs', labelFr: 'influenceurs', labelAr: 'المؤثرون' },
+      { id: 'later', labelFr: 'Later', labelAr: 'Later' },
+      { id: 'hootsuite', labelFr: 'Hootsuite', labelAr: 'Hootsuite' },
     ],
   },
   {
@@ -297,20 +308,20 @@ export const serviceCategories: ServiceSector[] = [
       { id: 'correction-relecture', labelFr: 'Correction & relecture', labelAr: 'التصحيح والمراجعة' },
     ],
     skills: [
-      { labelFr: 'rédaction web', labelAr: 'الكتابة للويب' },
-      { labelFr: 'copywriting', labelAr: 'الكتابة الإعلانية' },
-      { labelFr: 'SEO writing', labelAr: 'الكتابة المحسّنة لمحركات البحث' }, // REVIEW_AR_TRANSLATION
-      { labelFr: 'article', labelAr: 'مقال' },
-      { labelFr: 'blog', labelAr: 'مدوّنة' },
-      { labelFr: 'storytelling', labelAr: 'السرد القصصي' },
-      { labelFr: 'correction', labelAr: 'التصحيح' },
-      { labelFr: 'relecture', labelAr: 'المراجعة' },
-      { labelFr: 'ghostwriting', labelAr: 'الكتابة بأسماء الآخرين' }, // REVIEW_AR_TRANSLATION: term often kept "ghostwriting"
-      { labelFr: 'content', labelAr: 'المحتوى' },
-      { labelFr: 'script', labelAr: 'النص' },
-      { labelFr: 'français', labelAr: 'الفرنسية' },
-      { labelFr: 'arabe', labelAr: 'العربية' },
-      { labelFr: 'anglais', labelAr: 'الإنجليزية' },
+      { id: 'redaction-web', labelFr: 'rédaction web', labelAr: 'الكتابة للويب' },
+      { id: 'copywriting', labelFr: 'copywriting', labelAr: 'الكتابة الإعلانية' }, // REVIEW_AR_TRANSLATION: same AR as marketing-digital's `copywriting-publicitaire`
+      { id: 'seo-writing', labelFr: 'SEO writing', labelAr: 'الكتابة المحسّنة لمحركات البحث' }, // REVIEW_AR_TRANSLATION
+      { id: 'article', labelFr: 'article', labelAr: 'مقال' },
+      { id: 'blog', labelFr: 'blog', labelAr: 'مدوّنة' },
+      { id: 'storytelling', labelFr: 'storytelling', labelAr: 'السرد القصصي' },
+      { id: 'correction', labelFr: 'correction', labelAr: 'التصحيح' },
+      { id: 'relecture', labelFr: 'relecture', labelAr: 'المراجعة' },
+      { id: 'ghostwriting', labelFr: 'ghostwriting', labelAr: 'الكتابة بأسماء الآخرين' }, // REVIEW_AR_TRANSLATION: term often kept "ghostwriting"
+      { id: 'content', labelFr: 'content', labelAr: 'المحتوى' },
+      { id: 'script', labelFr: 'script', labelAr: 'النص' },
+      { id: 'francais', labelFr: 'français', labelAr: 'الفرنسية' },
+      { id: 'arabe', labelFr: 'arabe', labelAr: 'العربية' },
+      { id: 'anglais', labelFr: 'anglais', labelAr: 'الإنجليزية' },
     ],
   },
   {
@@ -328,17 +339,17 @@ export const serviceCategories: ServiceSector[] = [
       { id: 'transcription-audio', labelFr: 'Transcription audio', labelAr: 'النسخ الصوتي' },
     ],
     skills: [
-      { labelFr: 'traduction', labelAr: 'الترجمة' },
-      { labelFr: 'français', labelAr: 'الفرنسية' },
-      { labelFr: 'arabe', labelAr: 'العربية' },
-      { labelFr: 'anglais', labelAr: 'الإنجليزية' },
-      { labelFr: 'localisation', labelAr: 'التوطين' }, // REVIEW_AR_TRANSLATION
-      { labelFr: 'transcription', labelAr: 'النسخ الصوتي' },
-      { labelFr: 'sous-titrage', labelAr: 'السترجة' }, // REVIEW_AR_TRANSLATION
-      { labelFr: 'relecture bilingue', labelAr: 'المراجعة ثنائية اللغة' },
-      { labelFr: 'interprétation', labelAr: 'الترجمة الفورية' },
-      { labelFr: 'MTPE', labelAr: 'MTPE' },
-      { labelFr: 'terminologie', labelAr: 'المصطلحات' },
+      { id: 'traduction', labelFr: 'traduction', labelAr: 'الترجمة' },
+      { id: 'francais', labelFr: 'français', labelAr: 'الفرنسية' },
+      { id: 'arabe', labelFr: 'arabe', labelAr: 'العربية' },
+      { id: 'anglais', labelFr: 'anglais', labelAr: 'الإنجليزية' },
+      { id: 'localisation', labelFr: 'localisation', labelAr: 'التوطين' }, // REVIEW_AR_TRANSLATION
+      { id: 'transcription', labelFr: 'transcription', labelAr: 'النسخ الصوتي' },
+      { id: 'sous-titrage', labelFr: 'sous-titrage', labelAr: 'السترجة' }, // REVIEW_AR_TRANSLATION
+      { id: 'relecture-bilingue', labelFr: 'relecture bilingue', labelAr: 'المراجعة ثنائية اللغة' },
+      { id: 'interpretation', labelFr: 'interprétation', labelAr: 'الترجمة الفورية' },
+      { id: 'mtpe', labelFr: 'MTPE', labelAr: 'MTPE' },
+      { id: 'terminologie', labelFr: 'terminologie', labelAr: 'المصطلحات' },
     ],
   },
   {
@@ -356,20 +367,20 @@ export const serviceCategories: ServiceSector[] = [
       { id: 'sound-design', labelFr: 'Sound design', labelAr: 'تصميم صوتي' }, // REVIEW_AR_TRANSLATION
     ],
     skills: [
-      { labelFr: 'Premiere Pro', labelAr: 'Premiere Pro' },
-      { labelFr: 'After Effects', labelAr: 'After Effects' },
-      { labelFr: 'DaVinci Resolve', labelAr: 'DaVinci Resolve' },
-      { labelFr: 'Final Cut', labelAr: 'Final Cut' },
-      { labelFr: 'montage', labelAr: 'المونتاج' }, // REVIEW_AR_TRANSLATION
-      { labelFr: 'motion design', labelAr: 'تصميم الحركة' }, // REVIEW_AR_TRANSLATION
-      { labelFr: 'animation 2D', labelAr: 'الرسوم المتحركة 2D' },
-      { labelFr: 'animation 3D', labelAr: 'الرسوم المتحركة 3D' },
-      { labelFr: 'sous-titrage', labelAr: 'السترجة' }, // REVIEW_AR_TRANSLATION (byte-identical with traduction pool)
-      { labelFr: 'color grading', labelAr: 'تدريج الألوان' },
-      { labelFr: 'Blender', labelAr: 'Blender' },
-      { labelFr: 'réseaux sociaux', labelAr: 'وسائل التواصل الاجتماعي' },
-      { labelFr: 'Reels', labelAr: 'Reels' },
-      { labelFr: 'TikTok', labelAr: 'TikTok' },
+      { id: 'premiere-pro', labelFr: 'Premiere Pro', labelAr: 'Premiere Pro' },
+      { id: 'after-effects', labelFr: 'After Effects', labelAr: 'After Effects' },
+      { id: 'davinci-resolve', labelFr: 'DaVinci Resolve', labelAr: 'DaVinci Resolve' },
+      { id: 'final-cut', labelFr: 'Final Cut', labelAr: 'Final Cut' },
+      { id: 'montage', labelFr: 'montage', labelAr: 'المونتاج' }, // REVIEW_AR_TRANSLATION
+      { id: 'motion-design', labelFr: 'motion design', labelAr: 'تصميم الحركة' }, // REVIEW_AR_TRANSLATION
+      { id: 'animation-2d', labelFr: 'animation 2D', labelAr: 'الرسوم المتحركة 2D' },
+      { id: 'animation-3d', labelFr: 'animation 3D', labelAr: 'الرسوم المتحركة 3D' },
+      { id: 'sous-titrage', labelFr: 'sous-titrage', labelAr: 'السترجة' }, // REVIEW_AR_TRANSLATION (byte-identical with traduction pool)
+      { id: 'color-grading', labelFr: 'color grading', labelAr: 'تدريج الألوان' },
+      { id: 'blender', labelFr: 'Blender', labelAr: 'Blender' },
+      { id: 'reseaux-sociaux', labelFr: 'réseaux sociaux', labelAr: 'وسائل التواصل الاجتماعي' },
+      { id: 'reels', labelFr: 'Reels', labelAr: 'Reels' },
+      { id: 'tiktok', labelFr: 'TikTok', labelAr: 'TikTok' },
     ],
   },
   {
@@ -391,16 +402,16 @@ export const serviceCategories: ServiceSector[] = [
     skills: [
       // FOUNDER-UNREVIEWED — starter list, not sourced from a measured frame or prior art. Feeds
       // H6's type-ahead, so a freelancer sees it as-is — review when H6's picker ships.
-      { labelFr: 'voix off', labelAr: 'تعليق صوتي' }, // REVIEW_AR_TRANSLATION
-      { labelFr: 'doublage', labelAr: 'الدبلجة' },
-      { labelFr: 'narration', labelAr: 'السرد' }, // REVIEW_AR_TRANSLATION
-      { labelFr: 'audiobook', labelAr: 'كتاب صوتي' },
-      { labelFr: 'jingle', labelAr: 'جينغل' },
-      { labelFr: 'IVR', labelAr: 'IVR' },
-      { labelFr: 'dialecte tunisien', labelAr: 'اللهجة التونسية' },
-      { labelFr: 'home studio', labelAr: 'استوديو منزلي' }, // REVIEW_AR_TRANSLATION
-      { labelFr: 'Adobe Audition', labelAr: 'Adobe Audition' },
-      { labelFr: 'montage audio', labelAr: 'مونتاج صوتي' }, // REVIEW_AR_TRANSLATION
+      { id: 'voix-off', labelFr: 'voix off', labelAr: 'تعليق صوتي' }, // REVIEW_AR_TRANSLATION
+      { id: 'doublage', labelFr: 'doublage', labelAr: 'الدبلجة' },
+      { id: 'narration', labelFr: 'narration', labelAr: 'السرد' }, // REVIEW_AR_TRANSLATION
+      { id: 'audiobook', labelFr: 'audiobook', labelAr: 'كتاب صوتي' },
+      { id: 'jingle', labelFr: 'jingle', labelAr: 'جينغل' },
+      { id: 'ivr', labelFr: 'IVR', labelAr: 'IVR' },
+      { id: 'dialecte-tunisien', labelFr: 'dialecte tunisien', labelAr: 'اللهجة التونسية' },
+      { id: 'home-studio', labelFr: 'home studio', labelAr: 'استوديو منزلي' }, // REVIEW_AR_TRANSLATION
+      { id: 'adobe-audition', labelFr: 'Adobe Audition', labelAr: 'Adobe Audition' },
+      { id: 'montage-audio', labelFr: 'montage audio', labelAr: 'مونتاج صوتي' }, // REVIEW_AR_TRANSLATION
     ],
   },
   {
@@ -418,19 +429,19 @@ export const serviceCategories: ServiceSector[] = [
       { id: 'cv-lettre-de-motivation', labelFr: 'CV & lettre de motivation', labelAr: 'السيرة الذاتية ورسالة تحفيزية' }, // REVIEW_AR_TRANSLATION
     ],
     skills: [
-      { labelFr: 'business plan', labelAr: 'خطة العمل' },
-      { labelFr: 'étude de marché', labelAr: 'دراسة السوق' },
-      { labelFr: 'assistance virtuelle', labelAr: 'المساعدة الافتراضية' },
-      { labelFr: 'comptabilité', labelAr: 'المحاسبة' },
-      { labelFr: 'gestion de projet', labelAr: 'إدارة المشاريع' },
-      { labelFr: 'Excel', labelAr: 'Excel' },
-      { labelFr: 'présentation', labelAr: 'العروض التقديمية' },
-      { labelFr: 'PowerPoint', labelAr: 'PowerPoint' },
-      { labelFr: 'conseil', labelAr: 'الاستشارة' },
-      { labelFr: 'stratégie', labelAr: 'الاستراتيجية' },
-      { labelFr: 'administratif', labelAr: 'الأعمال الإدارية' },
-      { labelFr: 'CRM', labelAr: 'CRM' },
-      { labelFr: 'Notion', labelAr: 'Notion' },
+      { id: 'business-plan', labelFr: 'business plan', labelAr: 'خطة العمل' },
+      { id: 'etude-de-marche', labelFr: 'étude de marché', labelAr: 'دراسة السوق' },
+      { id: 'assistance-virtuelle', labelFr: 'assistance virtuelle', labelAr: 'المساعدة الافتراضية' },
+      { id: 'comptabilite', labelFr: 'comptabilité', labelAr: 'المحاسبة' },
+      { id: 'gestion-de-projet', labelFr: 'gestion de projet', labelAr: 'إدارة المشاريع' },
+      { id: 'excel', labelFr: 'Excel', labelAr: 'Excel' },
+      { id: 'presentation', labelFr: 'présentation', labelAr: 'العروض التقديمية' },
+      { id: 'powerpoint', labelFr: 'PowerPoint', labelAr: 'PowerPoint' },
+      { id: 'conseil', labelFr: 'conseil', labelAr: 'الاستشارة' },
+      { id: 'strategie', labelFr: 'stratégie', labelAr: 'الاستراتيجية' },
+      { id: 'administratif', labelFr: 'administratif', labelAr: 'الأعمال الإدارية' },
+      { id: 'crm', labelFr: 'CRM', labelAr: 'CRM' },
+      { id: 'notion', labelFr: 'Notion', labelAr: 'Notion' },
     ],
   },
   {
@@ -451,14 +462,14 @@ export const serviceCategories: ServiceSector[] = [
     skills: [
       // FOUNDER-UNREVIEWED — starter list, not sourced from a measured frame or prior art. Feeds
       // H6's type-ahead, so a freelancer sees it as-is — review when H6's picker ships.
-      { labelFr: 'LinkedIn', labelAr: 'LinkedIn' },
-      { labelFr: 'personal branding', labelAr: 'العلامة الشخصية' }, // REVIEW_AR_TRANSLATION
-      { labelFr: 'storytelling', labelAr: 'السرد القصصي' },
-      { labelFr: 'bio professionnelle', labelAr: 'السيرة المهنية' }, // REVIEW_AR_TRANSLATION
-      { labelFr: 'photo de profil', labelAr: 'صورة الملف الشخصي' },
-      { labelFr: 'prise de parole', labelAr: 'التحدث أمام الجمهور' }, // REVIEW_AR_TRANSLATION
-      { labelFr: 'coaching vidéo', labelAr: 'تدريب فيديو' }, // REVIEW_AR_TRANSLATION
-      { labelFr: 'positionnement de marque', labelAr: 'تموضع العلامة' }, // REVIEW_AR_TRANSLATION
+      { id: 'linkedin', labelFr: 'LinkedIn', labelAr: 'LinkedIn' },
+      { id: 'personal-branding', labelFr: 'personal branding', labelAr: 'العلامة الشخصية' }, // REVIEW_AR_TRANSLATION
+      { id: 'storytelling', labelFr: 'storytelling', labelAr: 'السرد القصصي' },
+      { id: 'bio-professionnelle', labelFr: 'bio professionnelle', labelAr: 'السيرة المهنية' }, // REVIEW_AR_TRANSLATION
+      { id: 'photo-de-profil', labelFr: 'photo de profil', labelAr: 'صورة الملف الشخصي' },
+      { id: 'prise-de-parole', labelFr: 'prise de parole', labelAr: 'التحدث أمام الجمهور' }, // REVIEW_AR_TRANSLATION
+      { id: 'coaching-video', labelFr: 'coaching vidéo', labelAr: 'تدريب فيديو' }, // REVIEW_AR_TRANSLATION
+      { id: 'positionnement-de-marque', labelFr: 'positionnement de marque', labelAr: 'تموضع العلامة' }, // REVIEW_AR_TRANSLATION
     ],
   },
   {
@@ -483,16 +494,16 @@ export const serviceCategories: ServiceSector[] = [
     skills: [
       // FOUNDER-UNREVIEWED — starter list, not sourced from a measured frame or prior art. Feeds
       // H6's type-ahead, so a freelancer sees it as-is — review when H6's picker ships.
-      { labelFr: 'Meta Ads', labelAr: 'Meta Ads' },
-      { labelFr: 'Facebook Ads', labelAr: 'Facebook Ads' },
-      { labelFr: 'Instagram Ads', labelAr: 'Instagram Ads' },
-      { labelFr: 'Business Manager', labelAr: 'Business Manager' },
-      { labelFr: 'Pixel', labelAr: 'Pixel' },
-      { labelFr: 'Conversions API', labelAr: 'Conversions API' },
-      { labelFr: 'dropshipping', labelAr: 'الدروبشيبينغ' },
-      { labelFr: 'scaling', labelAr: 'التوسيع' }, // REVIEW_AR_TRANSLATION
-      { labelFr: 'retargeting', labelAr: 'إعادة الاستهداف' }, // REVIEW_AR_TRANSLATION
-      { labelFr: 'audience lookalike', labelAr: 'جمهور مشابه' }, // REVIEW_AR_TRANSLATION
+      { id: 'meta-ads', labelFr: 'Meta Ads', labelAr: 'Meta Ads' },
+      { id: 'facebook-ads', labelFr: 'Facebook Ads', labelAr: 'Facebook Ads' },
+      { id: 'instagram-ads', labelFr: 'Instagram Ads', labelAr: 'Instagram Ads' },
+      { id: 'business-manager', labelFr: 'Business Manager', labelAr: 'Business Manager' },
+      { id: 'pixel', labelFr: 'Pixel', labelAr: 'Pixel' },
+      { id: 'conversions-api', labelFr: 'Conversions API', labelAr: 'Conversions API' },
+      { id: 'dropshipping', labelFr: 'dropshipping', labelAr: 'الدروبشيبينغ' },
+      { id: 'scaling', labelFr: 'scaling', labelAr: 'التوسيع' }, // REVIEW_AR_TRANSLATION
+      { id: 'retargeting', labelFr: 'retargeting', labelAr: 'إعادة الاستهداف' }, // REVIEW_AR_TRANSLATION
+      { id: 'audience-lookalike', labelFr: 'audience lookalike', labelAr: 'جمهور مشابه' }, // REVIEW_AR_TRANSLATION
     ],
   },
   {
@@ -515,16 +526,16 @@ export const serviceCategories: ServiceSector[] = [
     skills: [
       // FOUNDER-UNREVIEWED — starter list, not sourced from a measured frame or prior art. Feeds
       // H6's type-ahead, so a freelancer sees it as-is — review when H6's picker ships.
-      { labelFr: 'Shopify', labelAr: 'Shopify' },
-      { labelFr: 'WooCommerce', labelAr: 'WooCommerce' },
-      { labelFr: 'dropshipping', labelAr: 'الدروبشيبينغ' },
-      { labelFr: 'COD', labelAr: 'الدفع عند الاستلام' }, // REVIEW_AR_TRANSLATION
-      { labelFr: 'produit gagnant', labelAr: 'المنتج الرابح' }, // REVIEW_AR_TRANSLATION
-      { labelFr: 'tunnel de vente', labelAr: 'قمع المبيعات' }, // REVIEW_AR_TRANSLATION
-      { labelFr: 'logistique', labelAr: 'اللوجستيات' },
-      { labelFr: 'e-commerce Tunisie', labelAr: 'التجارة الإلكترونية في تونس' }, // REVIEW_AR_TRANSLATION
-      { labelFr: 'fournisseurs', labelAr: 'الموردون' }, // REVIEW_AR_TRANSLATION
-      { labelFr: 'Meta Ads', labelAr: 'Meta Ads' },
+      { id: 'shopify', labelFr: 'Shopify', labelAr: 'Shopify' },
+      { id: 'woocommerce', labelFr: 'WooCommerce', labelAr: 'WooCommerce' },
+      { id: 'dropshipping', labelFr: 'dropshipping', labelAr: 'الدروبشيبينغ' },
+      { id: 'cod', labelFr: 'COD', labelAr: 'الدفع عند الاستلام' }, // REVIEW_AR_TRANSLATION
+      { id: 'produit-gagnant', labelFr: 'produit gagnant', labelAr: 'المنتج الرابح' }, // REVIEW_AR_TRANSLATION
+      { id: 'tunnel-de-vente', labelFr: 'tunnel de vente', labelAr: 'قمع المبيعات' }, // REVIEW_AR_TRANSLATION
+      { id: 'logistique', labelFr: 'logistique', labelAr: 'اللوجستيات' },
+      { id: 'e-commerce-tunisie', labelFr: 'e-commerce Tunisie', labelAr: 'التجارة الإلكترونية في تونس' }, // REVIEW_AR_TRANSLATION
+      { id: 'fournisseurs', labelFr: 'fournisseurs', labelAr: 'الموردون' }, // REVIEW_AR_TRANSLATION
+      { id: 'meta-ads', labelFr: 'Meta Ads', labelAr: 'Meta Ads' },
     ],
   },
 ];
@@ -548,3 +559,32 @@ export const getSkillPool = (sectorId: string): TaxonomySkill[] =>
 
 /** All sector slugs, in canonical display order. */
 export const allSectorIds: string[] = serviceCategories.map((s) => s.id);
+
+// One index over every pool: a stored tag resolves whatever sector the service now sits in. A
+// recurring skill is byte-identical in each pool, so keeping the first occurrence loses nothing.
+const skillsById = new Map<string, TaxonomySkill>();
+for (const sector of serviceCategories) {
+  for (const skill of sector.skills) if (!skillsById.has(skill.id)) skillsById.set(skill.id, skill);
+}
+
+const foldLabel = (s: string): string => s.trim().toLocaleLowerCase('fr');
+const matchesLabel = (skill: TaxonomySkill, folded: string): boolean =>
+  foldLabel(skill.labelFr) === folded || foldLabel(skill.labelAr) === folded;
+
+/** A pool skill by its stable id, from any sector (undefined for a custom, typed skill). */
+export const getSkill = (id: string): TaxonomySkill | undefined => skillsById.get(id);
+
+/**
+ * The pool skill whose French OR Arabic label equals `text` (case-insensitive), if any — looked up
+ * in `preferSectorId`'s pool first. Two DIFFERENT skills can share a label in one language
+ * (`copywriting` and `copywriting-publicitaire` are both « الكتابة الإعلانية » in AR), so the
+ * freelancer's own sector decides; any other sector's pool is the fallback.
+ */
+export function findSkillByLabel(text: string, preferSectorId?: string): TaxonomySkill | undefined {
+  const folded = foldLabel(text);
+  if (!folded) return undefined;
+  const preferred = preferSectorId ? getSkillPool(preferSectorId).find((s) => matchesLabel(s, folded)) : undefined;
+  if (preferred) return preferred;
+  for (const skill of skillsById.values()) if (matchesLabel(skill, folded)) return skill;
+  return undefined;
+}

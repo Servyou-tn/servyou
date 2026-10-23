@@ -12,7 +12,7 @@ import { Textarea } from '@/app/demander/[id]/_components/Textarea'
 import { FOCUS_RING } from '@/components/layout/styles'
 import { GOVERNORATES } from '@/lib/tunisia-governorates'
 import { createFreelancerProfileAction } from '../actions'
-import { Stepper } from './Stepper'
+import { Stepper } from '@/components/ui/stepper'
 import { AvatarField } from './AvatarField'
 
 // H2 step 1 "Bases" — Figma 466:20244, measured in docs/design/h2-discovery.md.
