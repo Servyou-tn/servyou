@@ -287,6 +287,28 @@ this PR and is not attempted here.
     `supabase_migrations.schema_migrations.statements`). Verified after apply: 0 of 22 rows still
     hold a NULL in any of the four columns. Nothing to roll back — restoring NULLs would re-break
     the Auth admin API.
+57. **20261023212930_service_listings_short_description** — Applied by the architect 2026-10-23
+    (recorded version; executable SQL MD5-verified against `schema_migrations`). Adds
+    `service_listings.short_description text` (nullable) for H6 step 2 « Description courte »
+    (Figma 461:19405, measured in `docs/design/h6-measurements.md`), plus
+    `service_listings_short_description_length` CHECK (≤ 160 characters, drafts included). Nullable
+    because the 21 pre-H6 rows have none and H6 drafts are partial; whether a published service
+    must carry one is the PR-4 publish-rule ruling. `search_vector` (GENERATED STORED over title +
+    description) is deliberately untouched — widening it is its own focused migration. No GRANT:
+    the table-level grants cover the new column; no view depends on the table.
+
+58. **20261023212933_categories_photographie_retouche_produit** — Applied by the architect
+    2026-10-23 (recorded version; executable SQL MD5-verified; listing e5bec0f8 confirmed under the
+    new subcategory, 92 subcategories). Founder ruling (2026-10-23): product photography is a subcategory
+    « Photographie & retouche produit » (`photographie-retouche-produit`, kind `service`) under
+    `design-graphique-logo`, not a 14th sector (subcategories 91 → 92). Re-files the one waiting
+    listing, « Photo produits e-commerce » (`e5bec0f8-…`, a placeholder filing from migration 49),
+    into it: `subcategory_id` set, sector unchanged. Parent resolved by slug inside a DO block that
+    raises unless the sector exists and exactly 1 listing is re-filed. The listing's `updated_at`
+    moves to the apply time. `src/lib/taxonomy/service-categories.ts` gains the same entry in the
+    same PR (TS `id` = `categories.slug`). Rollback SQL is in a comment block at the bottom of the
+    migration file.
+
 59. **20261023212946_job_responses_responder_integrity** — Closes the HIGH audit finding
     "`job_responses` INSERT bypasses the 18+ and freelancer-capability rules (and unlocks phones)"
     (2026-10-23), including its switch-path corollary. (#57 `20261023212930_service_listings_short_description`

@@ -21,7 +21,7 @@ import {
   type PaymentMethod,
 } from '@/lib/types/shop-config'
 import { saveShopConfigAction } from '../actions'
-import { Stepper } from '../../_components/Stepper'
+import { Stepper } from '@/components/ui/stepper'
 import { AccordionSection } from './AccordionSection'
 import { CheckboxRow, RadioRow } from './FormControls'
 
