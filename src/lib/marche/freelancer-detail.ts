@@ -163,7 +163,7 @@ export async function getFreelancerServices(
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('service_listings')
-    .select('id, title, description, starting_price_tnd, delivery_time, tags, categories ( name_fr, name_ar )')
+    .select('id, title, description, starting_price_tnd, delivery_time, tags, categories!service_listings_category_id_fkey ( name_fr, name_ar )')
     .eq('freelancer_profile_id', freelancerProfileId)
     .eq('status', 'active')
     .is('admin_hidden_at', null)

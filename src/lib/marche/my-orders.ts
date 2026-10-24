@@ -106,7 +106,7 @@ export async function getMyServiceOrders(
     .from('orders')
     .select(
       `id, status, created_at, received_at, cancelled_by, cancellation_reason, seller_id,
-       service_listings ( title, starting_price_tnd, freelancer_profiles ( city ), categories ( name_fr ) )`,
+       service_listings ( title, starting_price_tnd, freelancer_profiles ( city ), categories!service_listings_category_id_fkey ( name_fr ) )`,
     )
     .eq('buyer_id', userId)
     .eq('order_type', 'service')

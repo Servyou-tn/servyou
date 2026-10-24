@@ -215,7 +215,7 @@ export const getOrderDetail = cache(
                     shops ( id, name, city, logo_url ),
                     product_images ( image_url, display_order ) ),
          service_listings ( id, title, starting_price_tnd, freelancer_profile_id,
-                    categories ( name_fr ),
+                    categories!service_listings_category_id_fkey ( name_fr ),
                     freelancer_profiles ( id, city, headline ) )`,
       )
       .eq('id', orderId)
@@ -223,7 +223,7 @@ export const getOrderDetail = cache(
 
     if (error) {
       // Includes the invalid-UUID case (Postgres 22P02) → graceful not-found, no crash.
-      console.error('[order-detail] fetch error:', error)
+      console.error('[order-detail] fetch error:', error.message, error.code, error.details)
       return null
     }
     if (!data) return null
