@@ -8,6 +8,8 @@
  *     silent insert;
  *   • the category pair is checked against the TS taxonomy, then resolved slug → uuid;
  *   • tags are re-normalized server-side (pool label → id, duplicates dropped);
+ *   • steps 3–4 never fail a save: a bad price is written NULL, « Ce qui est inclus » keeps 8 items;
+ *     unit and mode are limited to the ruled values (D13, D15);
  *   • validateServiceInput is NOT called (founder ruling: drafts bypass it).
  * The live-DB side (RLS, the subcategory trigger) is covered by h6-service-listings-hardening-rls.
  */
@@ -71,6 +73,12 @@ const INPUT = {
   skills: ['React', 'react', 'Tricot artisanal'],
   shortDescription: '  Boutique prête  ',
   description: '',
+  price: '1 200,50',
+  priceUnit: 'month',
+  deliveryTime: '  5-7 jours  ',
+  deliverablesText: 'Design UI\n\ndesign ui\nFichiers sources\n',
+  deliveryMode: 'hybrid',
+  buyerBriefing: '   ',
 }
 const DRAFT_ID = '7d6a2f0e-4b7a-4c51-9a55-2c0b1f5e9a10'
 
@@ -105,10 +113,39 @@ describe('saveServiceDraftAction — first save (insert)', () => {
       tags: ['react', 'Tricot artisanal'],
       short_description: 'Boutique prête',
       description: null,
+      starting_price_tnd: 1200.5,
+      price_unit: 'month',
+      delivery_time: '5-7 jours',
+      deliverables: ['Design UI', 'Fichiers sources'],
+      delivery_mode: 'hybrid',
+      buyer_briefing: null,
       status: 'draft',
       freelancer_profile_id: 'fp-1',
     })
     expect(writes('update')).toHaveLength(0)
+  })
+
+  it('writes an unparseable price as NULL instead of failing the save', async () => {
+    const res = await saveServiceDraftAction({ ...INPUT, price: '800 TND' })
+    expect(res.ok).toBe(true)
+    expect(writes('insert')[0].args[0]).toMatchObject({ starting_price_tnd: null })
+  })
+
+  it('keeps the first 8 « Ce qui est inclus » items (DB CHECK cardinality <= 8)', async () => {
+    const nine = Array.from({ length: 9 }, (_, i) => `Élément ${i + 1}`).join('\n')
+    await saveServiceDraftAction({ ...INPUT, deliverablesText: nine })
+    const { deliverables } = writes('insert')[0].args[0] as { deliverables: string[] }
+    expect(deliverables).toHaveLength(8)
+    expect(deliverables[7]).toBe('Élément 8')
+  })
+
+  it('refuses a unit or mode outside the ruled values, before touching Supabase', async () => {
+    for (const bad of [{ priceUnit: 'project' }, { deliveryMode: 'onsite' }]) {
+      h.state.calls = []
+      const res = await saveServiceDraftAction({ ...INPUT, ...bad })
+      expect(res).toEqual({ ok: false, errorKey: 'service.wizard.error.save_failed' })
+      expect(h.state.calls).toHaveLength(0)
+    }
   })
 
   it('looks categories up among kind=service rows only', async () => {

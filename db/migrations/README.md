@@ -399,6 +399,19 @@ this PR and is not attempted here.
     storage, a suspended vs an active admin, unsuspension, and the ban against GoTrue). Rollback
     SQL is in a comment block at the bottom of the migration file.
 
+62. **20261024195134_service_listings_price_unit** — Applied by the architect 2026-10-24 (recorded
+    version; executable SQL MD5-verified against `schema_migrations`). (#60
+    `public_profiles_revoke_writes` and #61 `suspension_enforcement` are recorded by their own PR;
+    until it merges, the Verification query below lists those two as missing.) Adds
+    `service_listings.price_unit text` + `service_listings_price_unit_check` (`fixed | hour | day |
+    month`) for H6 step 3 « Unité » (Figma 459:18966, measured in `docs/design/h6-measurements.md`).
+    « Par mois » replaces the frame's « Par projet » — founder ruling D13
+    (`docs/design/h6-pr3-deltas.md`). Nullable, no default, no backfill: NULL = not stated, and all
+    23 rows (21 live + 2 drafts) were NULL after apply; publish-required + backfill of the 21 is the
+    PR-4 ruling. No GRANT/RLS change: table-level grants cover the new column; no view depends on the
+    table; `search_vector` untouched. Rollback SQL is in a comment block at the bottom of the
+    migration file.
+
 ## Rollback paths
 
 Each migration in this folder represents work that has already been applied to production. Rollback is therefore reverse migration work, not file deletion. If a rollback is ever needed, write a new dated migration that reverses the relevant changes — never delete history from this folder.

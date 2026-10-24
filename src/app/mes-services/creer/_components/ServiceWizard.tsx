@@ -5,9 +5,13 @@ import { useLang } from '@/components/LangProvider'
 import { Stepper, type StepState } from '@/components/ui/stepper'
 import { t } from '@/lib/i18n'
 import {
+  BUILT_STEPS,
   SERVICE_WIZARD_STEPS,
   step1Errors,
   step2Errors,
+  step3Errors,
+  step4Errors,
+  stepPasses,
   type DraftForm,
   type FieldError,
   type ServiceWizardStep,
@@ -15,11 +19,15 @@ import {
 import { saveServiceDraftAction } from '../actions'
 import { StepMetier } from './StepMetier'
 import { StepDescription } from './StepDescription'
+import { StepTarif } from './StepTarif'
+import { StepPrestation } from './StepPrestation'
 import { WizardFooter, type SaveState } from './WizardFooter'
 
 // H6 « Créer un service » — the client half of /mes-services/creer: step, form, autosave.
 // Layout from Figma 459:18610 (docs/design/h6-measurements.md): stepper → 32 → card (border-subtle,
-// radius 12, p 24, gap 20) → footer.
+// radius 12, p 24, gap 20) → footer. Steps 3–4 (459:18966 / 459:19023) reuse the same card.
+// « Suivant » runs the current step's gate and moves one step on, up to the last built step;
+// « Précédent » moves one step back (ruling D21).
 //
 // Autosave (founder ruling D8):
 //   • nothing is written until the title has text (service_listings.title is NOT NULL);
@@ -52,6 +60,9 @@ export function ServiceWizard({
   const [saveErrorKey, setSaveErrorKey] = React.useState<string | null>(null)
 
   const formRef = React.useRef(initialForm)
+  // The step the freelancer is on NOW — read after « Suivant »'s save resolves, because a
+  // « Précédent » clicked during that save must win over the pending move forward.
+  const stepRef = React.useRef(initialStep)
   const draftIdRef = React.useRef(initialDraftId)
   const dirtyRef = React.useRef(false)
   const chainRef = React.useRef<Promise<boolean>>(Promise.resolve(true))
@@ -120,6 +131,7 @@ export function ServiceWizard({
   }
 
   function goTo(target: ServiceWizardStep) {
+    stepRef.current = target
     setStep(target)
     setTouched({})
     window.scrollTo({ top: 0 })
@@ -128,13 +140,17 @@ export function ServiceWizard({
   }
 
   async function onNext() {
-    if (step !== 1 || Object.keys(step1Errors(formRef.current)).length > 0) return
-    if (await flush()) goTo(2)
+    const from = step
+    if (from >= BUILT_STEPS || !stepPasses(from, formRef.current)) return
+    const saved = await flush()
+    // Re-checked after the save: the freelancer may have gone back, or emptied a field, meanwhile.
+    if (saved && stepRef.current === from && stepPasses(from, formRef.current)) goTo((from + 1) as ServiceWizardStep)
   }
 
   function onPrevious() {
+    if (step === 1) return
     void flush()
-    goTo(1)
+    goTo((step - 1) as ServiceWizardStep)
   }
 
   function onSaveDraft() {
@@ -148,8 +164,6 @@ export function ServiceWizard({
   const shown = <E extends Partial<Record<string, FieldError>>>(errors: E): E =>
     Object.fromEntries(Object.entries(errors).filter(([field]) => touched[field])) as E
 
-  const errors1 = step1Errors(form)
-  const errors2 = step2Errors(form)
   const stepLabel = (i: number) => t(`service.wizard.steps.${SERVICE_WIZARD_STEPS[i]}`, lang)
   const steps = SERVICE_WIZARD_STEPS.map((_, i) => ({
     label: stepLabel(i),
@@ -172,10 +186,13 @@ export function ServiceWizard({
         <h2 ref={headingRef} tabIndex={-1} className="sr-only">
           {stepLabel(step - 1)}
         </h2>
-        {step === 1 ? (
-          <StepMetier lang={lang} form={form} errors={shown(errors1)} onChange={update} onTouch={touch} />
-        ) : (
-          <StepDescription lang={lang} form={form} errors={shown(errors2)} onChange={update} onTouch={touch} />
+        {step === 1 && <StepMetier lang={lang} form={form} errors={shown(step1Errors(form))} onChange={update} onTouch={touch} />}
+        {step === 2 && (
+          <StepDescription lang={lang} form={form} errors={shown(step2Errors(form))} onChange={update} onTouch={touch} />
+        )}
+        {step === 3 && <StepTarif lang={lang} form={form} errors={shown(step3Errors(form))} onChange={update} onTouch={touch} />}
+        {step === 4 && (
+          <StepPrestation lang={lang} form={form} errors={shown(step4Errors(form))} onChange={update} onTouch={touch} />
         )}
       </section>
 
@@ -184,7 +201,7 @@ export function ServiceWizard({
         step={step}
         saveState={saveState}
         saveErrorKey={saveErrorKey}
-        canNext={step === 1 && Object.keys(errors1).length === 0}
+        canNext={step < BUILT_STEPS && stepPasses(step, form)}
         onSaveDraft={onSaveDraft}
         onPrevious={onPrevious}
         onNext={() => void onNext()}

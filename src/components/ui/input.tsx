@@ -42,6 +42,13 @@ export type InputProps = {
   iconStart?: React.ReactNode
   /** Trailing slot inside the field (e.g. a password-visibility toggle). */
   iconEnd?: React.ReactNode
+  /**
+   * Flush trailing segment — Figma « Price Input » 202:15487 (H6 459:18994, docs/design/h6-measurements.md
+   * read 3): full field height, surface-sunken, a start-side border-subtle, ps 12 / pe 14, Medium 14 muted,
+   * clipped by the field's radius; the value keeps 12 before it. The field drops its end padding only
+   * when this is set — without it the markup is unchanged.
+   */
+  suffix?: React.ReactNode
   /** Shows a `length / maxLength` counter in the helper row (needs `maxLength` + a string `value`). */
   counter?: boolean
 } & React.InputHTMLAttributes<HTMLInputElement>
@@ -53,6 +60,7 @@ export function Input({
   required,
   iconStart,
   iconEnd,
+  suffix,
   counter,
   id,
   className,
@@ -64,7 +72,10 @@ export function Input({
   const inputId = id ?? `${reactId}-input`
   const helperId = `${reactId}-helper`
   const errorId = `${reactId}-error`
-  const describedBy = error ? errorId : helper ? helperId : undefined
+  const suffixId = `${reactId}-suffix`
+  // A suffix (the « TND » unit) is announced with the field, after its helper/error.
+  const describedBy =
+    [error ? errorId : helper ? helperId : null, suffix != null ? suffixId : null].filter(Boolean).join(' ') || undefined
 
   const stateBorder =
     disabled || readOnly
@@ -84,7 +95,7 @@ export function Input({
         </label>
       )}
 
-      <div className={cn(FIELD_BASE, stateBorder)}>
+      <div className={cn(FIELD_BASE, stateBorder, suffix != null && 'overflow-hidden pe-0')}>
         {iconStart}
         <input
           {...props}
@@ -97,6 +108,11 @@ export function Input({
           className="w-full min-w-0 bg-transparent text-base text-text-primary outline-none placeholder:text-text-muted disabled:cursor-not-allowed"
         />
         {iconEnd}
+        {suffix != null && (
+          <span id={suffixId} className="ms-1 flex shrink-0 items-center self-stretch border-s border-border-subtle bg-surface-sunken ps-3 pe-3.5 text-sm font-medium text-text-muted">
+            {suffix}
+          </span>
+        )}
       </div>
 
       {(error || helper || count != null) && (

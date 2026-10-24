@@ -16,9 +16,10 @@ export const metadata: Metadata = { title: 'Créer un service — Servyou' }
 
 const ROUTE = '/mes-services/creer'
 
-// H6 « Créer un service » — Figma 459:18610 (step 1) / 461:19405 (step 2), measured in
-// docs/design/h6-measurements.md; diff + founder rulings in docs/design/h6-pr2-deltas.md.
-// PR-2 of 4: shell + steps 1–2. NOT linked from anywhere yet — PR-4 turns on the four inert
+// H6 « Créer un service » — Figma 459:18610 (step 1) / 461:19405 (step 2) / 459:18966 (step 3) /
+// 459:19023 (step 4), measured in docs/design/h6-measurements.md; diffs + founder rulings in
+// docs/design/h6-pr2-deltas.md and docs/design/h6-pr3-deltas.md.
+// PR-2 shipped the shell + steps 1–2, PR-3 steps 3–4. NOT linked from anywhere yet — PR-4 turns on the four inert
 // « Créer un service » CTAs (H5 header + empty state, H4 dashboard ×2).
 //
 // The page resolves who is creating and where they left off; everything after that is the client
