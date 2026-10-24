@@ -7,10 +7,13 @@ import { createServerClient } from '@supabase/ssr'
 // mutating them (no updateSession boilerplate — that would change session-refresh
 // behavior platform-wide). Only the suspended branch writes to the response.
 //
-// A suspended, logged-in user hitting any matched (authenticated-only) route is
-// signed out (sb-* auth cookies cleared) and redirected to /connexion?suspended=1, where
-// a generic banner explains. Anonymous and active users sail through — their existing
-// per-page checks handle "is the user logged in" for their own contexts.
+// A suspended, logged-in user hitting any matched route is signed out (sb-* auth
+// cookies cleared) and redirected to /connexion?suspended=1, where a generic banner
+// explains. Anonymous and active users sail through — their existing per-page checks
+// handle "is the user logged in" for their own contexts. This is the session layer;
+// the database refuses a suspended account's writes on its own (migration
+// 20261024191215_suspension_enforcement), and the auth ban (src/lib/auth/auth-ban.ts)
+// stops it signing in or refreshing.
 export async function middleware(request: NextRequest) {
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -27,21 +30,30 @@ export async function middleware(request: NextRequest) {
   )
 
   // getUser() validates the JWT with the auth server (never trust getSession() for a
-  // security gate). Expired/absent session → no user → pass through as anonymous.
-  const { data: { user } } = await supabase.auth.getUser()
+  // security gate). Expired/absent session → no user → pass through as anonymous. A
+  // banned account — the auth half of a suspension — gets 403 user_banned here even
+  // while its access token is unexpired, so that is a suspension too.
+  const { data: { user }, error: userError } = await supabase.auth.getUser()
+  if (userError?.code === 'user_banned') return signOutSuspended(request)
   if (!user) return NextResponse.next()
 
   // One indexed PK lookup. Owner-read RLS lets the user read their own row's
   // suspended_at. Active (or unreadable) → pass through; only a confirmed
   // suspended_at bounces.
-  const { data: profile } = await supabase
+  const { data: profile, error: profileError } = await supabase
     .from('profiles')
     .select('suspended_at')
     .eq('id', user.id)
     .maybeSingle()
+  if (profileError) {
+    console.error('[middleware] suspended_at lookup error:', profileError.message, profileError.code, profileError.details)
+  }
 
   if (!profile || !profile.suspended_at) return NextResponse.next()
+  return signOutSuspended(request)
+}
 
+function signOutSuspended(request: NextRequest): NextResponse {
   const redirectUrl = new URL('/connexion', request.url)
   redirectUrl.searchParams.set('suspended', '1')
   const response = NextResponse.redirect(redirectUrl)
@@ -57,23 +69,19 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  // Closed-by-default allowlist of authenticated-only prefixes. /foo/:path* matches
-  // the base /foo and its children. Public browse pages, the auth flows, and
-  // /connexion (the bounce target — matching it would loop) are deliberately excluded.
+  // Everything EXCEPT static assets, the auth pages and the Sentry tunnel — open by
+  // default, so a new route is covered the day it ships (the closed allowlist this
+  // replaces had drifted: it missed /demander, /mes-commandes, /mon-compte, /parametres
+  // and every dashboard). Excluded:
+  //   * Next's build assets and image optimizer, and any path ending in a static-file
+  //     extension (public/ assets, favicon, robots.txt, sitemap.xml);
+  //   * /connexion — the bounce target, matching it would loop — and the other auth
+  //     flows (/inscription, /mot-de-passe-oublie, /nouveau-mot-de-passe,
+  //     /verifier-email, /auth/*);
+  //   * /monitoring — next.config.ts's Sentry tunnelRoute.
+  // Each excluded page segment is anchored to "/" or the end, so /connexion-x is still
+  // matched. Pinned by src/__tests__/middleware-suspension.test.ts.
   matcher: [
-    '/admin/:path*',
-    '/ma-boutique/:path*',
-    '/mon-profil-freelance/:path*',
-    '/mes-demandes/:path*',
-    '/mes-favoris/:path*',
-    '/mes-annonces/:path*',
-    '/mes-reponses/:path*',
-    '/missions/:path*',
-    '/profile/:path*',
-    '/devenir-vendeur/:path*',
-    '/poster-mission/:path*',
-    '/demande/:path*',
-    '/produit/:id/demande',
-    '/service/:id/demande',
+    '/((?!_next/static/|_next/image(?:/|$)|(?:connexion|inscription|mot-de-passe-oublie|nouveau-mot-de-passe|verifier-email|auth|monitoring)(?:/|$)|.*\\.(?:ico|png|jpe?g|gif|webp|avif|svg|txt|xml|webmanifest|woff2?|ttf|otf|map)$).*)',
   ],
 }

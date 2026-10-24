@@ -18,6 +18,7 @@ export const INTEGRATION_GLOBS = [
   '**/profiles-rls.test.ts',
   '**/profiles-client-insert-delete-revoked.test.ts',
   '**/public-profiles-read-only.test.ts',
+  '**/suspension-enforcement.test.ts',
   '**/job-limits.test.ts',
   '**/progressive-phone.integration.test.ts',
   '**/uploaded-objects-provenance-rls.test.ts',

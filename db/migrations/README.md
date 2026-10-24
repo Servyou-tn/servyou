@@ -362,6 +362,42 @@ this PR and is not attempted here.
     `buyer_cancellation_history` revoke is defense in depth — the rewriter refuses writes there
     with `55000` before any privilege check). Rollback SQL (which re-opens the hole) is in a
     comment block at the bottom of the migration file.
+61. **20261024191215_suspension_enforcement** — Applied by the architect on 2026-10-24; the
+    applied statements match this file once comments are stripped (md5 79590b58, 99 lines).
+    Closes the HIGH audit finding "suspension is enforced only in `src/middleware.ts`" for the
+    database: until now no policy or trigger read `profiles.suspended_at` (except migration 59's
+    `job_responses` check),
+    so a suspended user who signed in again or replayed a saved token kept writing over
+    PostgREST, storage and every server action. **Part 1:** `is_active_user()` (SECURITY
+    DEFINER, empty `search_path`) — false only when the caller's own profile is suspended;
+    EXECUTE for `authenticated` and `service_role` only (an intentional lint 0029 finding, like
+    `is_admin()`). **Part 2 (decision D1):** `enforce_active_user()`, a STATEMENT-level BEFORE
+    trigger function raising `42501` "Ce compte est suspendu." — chosen over restrictive write
+    policies because it errors on every write (a policy's USING makes a suspended UPDATE/DELETE
+    silently match 0 rows), covers SECURITY DEFINER write paths, and fires before every row
+    trigger. The check is on the actor, never the row owner. Decision D2: no admin bypass — an
+    active admin passes on their own row, and a bypass would let a suspended admin unsuspend
+    themselves (`admin_unsuspend_user` has no self-check); the service role still bypasses.
+    **Part 3:** `trg_enforce_active_user` on all 26 tables where `authenticated` holds a
+    table-level or column-level write grant (25 table-level, plus `profiles` through its
+    column-level UPDATE); full block except D3 (`data_exports`, `deletion_requests`: UPDATE/DELETE
+    only, so the GDPR requests stay open) and D4 (`disputes`: UPDATE/DELETE only — the existing
+    "Dispute creation by order party" policy already limits an INSERT to the caller's own orders);
+    D5 blocks `reports`, D6 blocks `orders` both sides (the counterparty and admins still act),
+    D7 blocks own-content deletes, D8 blocks every profile edit. Decisions D1–D8 approved by the
+    founder on 2026-10-24. **Part 4:** restrictive INSERT / UPDATE / DELETE policies on
+    `storage.objects` with the `(select …)` initplan pattern (DELETE no-ops silently). TRUNCATE is
+    not covered (no PostgREST path; grant sweep logged). Migration 59's `job_responses`
+    suspension check stays but is now shadowed: this statement trigger fires first, so a
+    suspended responder gets "Ce compte est suspendu." New writes only; 0 suspended accounts (and
+    0 suspended admins) at discovery, re-verified 2026-10-24. The same PR ships the session side:
+    an auth ban mirroring `suspended_at` (`src/lib/auth/auth-ban.ts`, from both admin suspend
+    actions, database first) and a middleware matcher inverted to every route but static assets,
+    the auth pages and `/monitoring`. Verified by `src/__tests__/suspension-enforcement.test.ts`
+    (live: the catalog check against the PostgREST relation set, every table × verb from a
+    suspended session and an active control, own-row refusals with ground truth, D3 / D4 / D6,
+    storage, a suspended vs an active admin, unsuspension, and the ban against GoTrue). Rollback
+    SQL is in a comment block at the bottom of the migration file.
 
 ## Rollback paths
 
