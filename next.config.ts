@@ -120,8 +120,8 @@ export default withSentryConfig(nextConfig, {
   project: process.env.SENTRY_PROJECT,
   authToken: process.env.SENTRY_AUTH_TOKEN,
   widenClientFileUpload: true,
-  // Proxy Sentry events through the app to dodge ad blockers. /monitoring is NOT in
-  // src/middleware.ts's closed-allowlist matcher, so the tunnel is unobstructed.
+  // Proxy Sentry events through the app to dodge ad blockers. /monitoring is explicitly
+  // excluded from src/middleware.ts's matcher, so the tunnel is unobstructed.
   tunnelRoute: "/monitoring",
   // Tree-shakes Sentry's internal debug logging from bundles. Emits a deprecation
   // notice under Turbopack (the webpack.* replacement isn't Turbopack-compatible yet);

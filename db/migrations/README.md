@@ -342,6 +342,66 @@ this PR and is not attempted here.
     and none is held by a non-freelancer. Verified by
     `src/__tests__/job-responses-integrity.test.ts`. Rollback SQL is in a comment block at the
     bottom of the migration file.
+60. **20261023231434_public_profiles_revoke_writes** — CRITICAL hotfix found while reviewing
+    migration 61, applied by the architect on 2026-10-24 (the two `revoke` statements verbatim).
+    `public_profiles` is a simple view over `profiles`, so Postgres made it auto-updatable; it is
+    owned by `postgres` (BYPASSRLS) with `security_invoker = false`, and Supabase's default
+    privileges had granted INSERT / UPDATE / DELETE / TRUNCATE on it to `anon` and
+    `authenticated`. On such a view the base table's privileges and RLS are checked as the view
+    owner, so anyone holding the public anon key could PATCH any account's name, city, language,
+    avatar or `seller_type` over PostgREST, or DELETE the row — cascading to that account's shops,
+    products, orders on both sides, freelancer profile, listings, job posts, responses, favorites
+    and reports. Migration 53 had revoked client INSERT / DELETE on the `profiles` table; the view
+    kept them. Revokes every write privilege on `public_profiles` and `buyer_cancellation_history`
+    (not updatable, included because a view is never a write path) from `anon` and
+    `authenticated`; SELECT stays — `public_profiles`' protection is its column list. No row
+    touched. Discovery: 22 users, 22 profiles; 24 h of edge logs showed only GET / HEAD on the
+    view (earlier writes cannot be ruled out). Verified after apply: no view in `public` keeps a
+    write grant. Live suite `src/__tests__/public-profiles-read-only.test.ts` (anon and a
+    signed-in user get `42501` on PATCH / DELETE / POST; SELECT unchanged; the
+    `buyer_cancellation_history` revoke is defense in depth — the rewriter refuses writes there
+    with `55000` before any privilege check). Rollback SQL (which re-opens the hole) is in a
+    comment block at the bottom of the migration file.
+61. **20261024191215_suspension_enforcement** — Applied by the architect on 2026-10-24; the
+    applied statements match this file once column-0 `--` comment lines and blank lines are
+    removed and the rollback block is cut (md5 79590b58, 99 lines; the indented comment inside
+    `enforce_active_user()` is part of the applied statements and stays):
+    `sed -n '/^-- ─── ROLLBACK/q;p' <file> | grep -v '^--' | grep -v '^$' | md5sum`, and on the
+    database side the same filter over `supabase_migrations.schema_migrations.statements` lines.
+    Closes the HIGH audit finding "suspension is enforced only in `src/middleware.ts`" for the
+    database: until now no policy or trigger read `profiles.suspended_at` (except migration 59's
+    `job_responses` check),
+    so a suspended user who signed in again or replayed a saved token kept writing over
+    PostgREST, storage and every server action. **Part 1:** `is_active_user()` (SECURITY
+    DEFINER, empty `search_path`) — false only when the caller's own profile is suspended;
+    EXECUTE for `authenticated` and `service_role` only (an intentional lint 0029 finding, like
+    `is_admin()`). **Part 2 (decision D1):** `enforce_active_user()`, a STATEMENT-level BEFORE
+    trigger function raising `42501` "Ce compte est suspendu." — chosen over restrictive write
+    policies because it errors on every write (a policy's USING makes a suspended UPDATE/DELETE
+    silently match 0 rows), covers SECURITY DEFINER write paths, and fires before every row
+    trigger. The check is on the actor, never the row owner. Decision D2: no admin bypass — an
+    active admin passes on their own row, and a bypass would let a suspended admin unsuspend
+    themselves (`admin_unsuspend_user` has no self-check); the service role still bypasses.
+    **Part 3:** `trg_enforce_active_user` on all 26 tables where `authenticated` holds a
+    table-level or column-level write grant (25 table-level, plus `profiles` through its
+    column-level UPDATE); full block except D3 (`data_exports`, `deletion_requests`: UPDATE/DELETE
+    only, so the GDPR requests stay open) and D4 (`disputes`: UPDATE/DELETE only — the existing
+    "Dispute creation by order party" policy already limits an INSERT to the caller's own orders);
+    D5 blocks `reports`, D6 blocks `orders` both sides (the counterparty and admins still act),
+    D7 blocks own-content deletes, D8 blocks every profile edit. Decisions D1–D8 approved by the
+    founder on 2026-10-24. **Part 4:** restrictive INSERT / UPDATE / DELETE policies on
+    `storage.objects` with the `(select …)` initplan pattern (DELETE no-ops silently). TRUNCATE is
+    not covered (no PostgREST path; grant sweep logged). Migration 59's `job_responses`
+    suspension check stays but is now shadowed: this statement trigger fires first, so a
+    suspended responder gets "Ce compte est suspendu." New writes only; 0 suspended accounts (and
+    0 suspended admins) at discovery, re-verified 2026-10-24. The same PR ships the session side:
+    an auth ban mirroring `suspended_at` (`src/lib/auth/auth-ban.ts`, from both admin suspend
+    actions, database first) and a middleware matcher inverted to every route but static assets,
+    the auth pages and `/monitoring`. Verified by `src/__tests__/suspension-enforcement.test.ts`
+    (live: the catalog check against the PostgREST relation set, every table × verb from a
+    suspended session and an active control, own-row refusals with ground truth, D3 / D4 / D6,
+    storage, a suspended vs an active admin, unsuspension, and the ban against GoTrue). Rollback
+    SQL is in a comment block at the bottom of the migration file.
 
 62. **20261024195134_service_listings_price_unit** — Applied by the architect 2026-10-24 (recorded
     version; executable SQL MD5-verified against `schema_migrations`). (#60
@@ -355,6 +415,22 @@ this PR and is not attempted here.
     PR-4 ruling. No GRANT/RLS change: table-level grants cover the new column; no view depends on the
     table; `search_vector` untouched. Rollback SQL is in a comment block at the bottom of the
     migration file.
+63. **20261024215559_is_admin_requires_active** — Applied by the architect on 2026-10-24; the
+    applied statements match this file with the same normalization as #61 (md5 3a05cd3f, 12
+    lines). Found by the PR #183 review: `is_admin()` never read `profiles.suspended_at`, so a
+    suspended admin kept every admin READ ("Admin reads all profiles": every account's email,
+    phone, date_of_birth; the admin branches on orders, disputes, reports, data exports, deletion
+    requests, moderation; the verifications bucket) for its token's lifetime, and indefinitely
+    whenever its auth ban was missing. Migration 61 already refused its writes; this applies D2 to
+    reads, at the gate. `is_admin()` now also requires `suspended_at is null`; LANGUAGE sql, STABLE,
+    SECURITY DEFINER, `search_path 'public'`, owner and EXECUTE grants are unchanged (verified after
+    apply). 25 policies (1 on `storage.objects`) and 17 functions call it; for an active admin the
+    result is unchanged (1 admin, 0 suspended at apply). A suspended admin now gets `Forbidden: admin
+    access required` from every admin RPC, `admin_unsuspend_user` on themselves included, and loses
+    every admin read. Same PR: `checkAdmin` (`src/lib/auth/require-admin.ts`) rejects a suspended
+    admin too. Verified by `src/__tests__/suspension-enforcement.test.ts` (suspended admin: RPCs
+    Forbidden, no cross-account profile read; active admin: both work) and `require-admin.test.ts`.
+    Rollback SQL is in a comment block at the bottom of the migration file.
 
 ## Rollback paths
 

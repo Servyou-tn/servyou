@@ -2201,6 +2201,8 @@ export const ar: Record<string, string> = {
   'admin.users.error_already_suspended':          "هذا المستخدم معلّق بالفعل.",
   'admin.users.error_not_suspended':              "هذا المستخدم غير معلّق.",
   'admin.users.error_self_suspend':               "لا يمكنك تعليق نفسك.",
+  'admin.users.error_ban_failed':                 "تم تسجيل التعليق، لكن تعذّر منع الحساب من تسجيل الدخول. أعد المحاولة.",
+  'admin.users.error_unban_failed':               "تم رفع التعليق، لكن تعذّرت إعادة تمكين تسجيل الدخول إلى الحساب. أعد المحاولة.",
   'admin.users.error_forbidden':                  "وصول غير مصرّح به.",
   'auth.suspended_banner':                        "تم تعليق حسابك. يرجى التواصل مع الدعم لمزيد من المعلومات.",
   'admin.statistiques.page_title':                   "الإحصائيات",
