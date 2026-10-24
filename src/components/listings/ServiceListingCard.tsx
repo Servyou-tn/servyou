@@ -6,16 +6,25 @@ import { t } from '@/lib/i18n'
 import { CARD_SHADOW, HOVER_SHADOW, FOCUS_RING } from '@/components/layout/styles'
 import { FavoriteButton } from '@/components/FavoriteButton'
 import { Avatar } from '@/components/ui/avatar'
+import type { SkillLabelPair } from '@/lib/freelance/service-draft'
+import { servicePriceLabel } from '@/lib/freelance/service-price'
 
 export type ServiceListing = {
   id: string
   title: string
   description: string | null
+  /** service_listings.short_description (H6 step 2, « le résumé qui apparaît dans les résultats de
+   *  recherche ») — the card's summary when set, else `description` (H6 PR-4 ruling D32). */
+  short_description?: string | null
   price_starting: number | null
+  /** service_listings.price_unit — « 450 TND / mois »; `fixed` and NULL print no unit (D32). */
+  price_unit?: string | null
   delivery_time: string | null
   // Optional so the other producers of this shared type (homepage getActiveServices,
-  // favorites, D2 related) compile unchanged — only /marche/services supplies them today.
-  tags?: string[]
+  // favorites, D2 related) compile unchanged — /marche/services and D4 supply them.
+  /** The listing's skills, BOTH labels resolved server-side by the producer (skillLabelPair): the card
+   *  picks by lang, so the service taxonomy never ships in this client bundle (H6 PR-4 ruling D31). */
+  tags?: SkillLabelPair[]
   category?: { name_fr: string; name_ar?: string } | null
   freelancer: { full_name: string; city: string | null }
 }
@@ -28,10 +37,9 @@ export type ServiceListing = {
 //   footer (89, pinned) — left cluster: avatar + name; right cluster is a VERTICAL stack,
 //                         raw price on top, "Voir le service" beneath (no "À partir de").
 // Rating / verified are drawn in Figma but deferred; avatars have no data source (no
-// avatar_url column) → person-glyph fallback (shared Avatar). CHIP LABEL: the Figma shows human skill words, but the
-// `tags` column stores unlabeled slugs ("identite-visuelle") with no label map, so — per
-// founder direction, not title-casing slugs — the chip renders the localized *category*
-// name until tags carry real labels (see docs/follow-ups.md).
+// avatar_url column) → person-glyph fallback (shared Avatar). CHIP LABEL: the listing's skills —
+// pool skills as their FR/AR label, custom and legacy free-text tags as typed (H6 PR-4); a listing
+// with no skills shows the localized *category* name instead, so the chip row is never empty.
 //
 // OFF-TOKEN VALUES (no Servyou token equals the measured Figma value — flagged per the
 // no-arbitrary rule): card height 279, price 17px, CTA radius 10 (radius/lg exists but isn't
@@ -42,8 +50,9 @@ export function ServiceListingCard({ service }: { service: ServiceListing }) {
   const start = service.price_starting != null ? Number(service.price_starting) : 0
   const priceLabel =
     start > 0
-      ? t('listing.service.priceRaw', lang, { price: start })
+      ? servicePriceLabel(String(start), service.price_unit, lang)
       : t('listing.service.priceOnRequest', lang)
+  const summary = service.short_description?.trim() || service.description
 
   const categoryLabel = service.category
     ? lang === 'ar' && service.category.name_ar
@@ -51,9 +60,11 @@ export function ServiceListingCard({ service }: { service: ServiceListing }) {
       : service.category.name_fr
     : null
   // Up to 3 skill chips from `tags` (the v3.7 frame shows three). Listings with no tags fall back
-  // to the single localized category label, so the chip row never renders empty — see the note
-  // above on why slugs are not title-cased.
-  const tags = (service.tags ?? []).map((tag) => tag.trim()).filter(Boolean).slice(0, 3)
+  // to the single localized category label, so the chip row never renders empty.
+  const tags = (service.tags ?? [])
+    .map((pair) => (lang === 'ar' ? pair.ar : pair.fr).trim())
+    .filter(Boolean)
+    .slice(0, 3)
   const chips = tags.length > 0 ? tags : categoryLabel ? [categoryLabel] : []
 
   return (
@@ -71,9 +82,7 @@ export function ServiceListingCard({ service }: { service: ServiceListing }) {
           <div className="flex flex-col gap-3">
             {/* title: 16/Semi Bold, 2-line clamp; pe-8 clears the corner heart. */}
             <h3 className="line-clamp-2 pe-8 text-h4 text-brand-blue-800">{service.title}</h3>
-            {service.description && (
-              <p className="line-clamp-3 text-body-sm text-text-secondary">{service.description}</p>
-            )}
+            {summary && <p className="line-clamp-3 text-body-sm text-text-secondary">{summary}</p>}
           </div>
           {/* skillChips — up to 3 skill tags (v3.7 frame 611:45637), category label as the
               fallback. Pinned to the bottom of colorBlock by SPACE_BETWEEN. */}

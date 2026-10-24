@@ -39,8 +39,11 @@ export type ServiceRequestTarget = {
   id: string
   title: string
   startingPrice: number | null
+  /** service_listings.price_unit — « 450 TND / mois » (H6 PR-4 ruling D32). */
+  priceUnit: string | null
   deliveryTime: string | null
-  /** Summary-panel chips: the category first, then the freelancer's own tags. */
+  /** Summary-panel chips: the category first, then the freelancer's own tags (stored values —
+   *  ServiceRequestScreen resolves pool ids to labels). */
   category: string | null
   tags: string[]
   /**
@@ -73,6 +76,7 @@ type ServiceRow = {
   id: string
   title: string
   starting_price_tnd: number | string | null
+  price_unit: string | null
   delivery_time: string | null
   buyer_briefing: string | null
   tags: string[] | null
@@ -122,7 +126,7 @@ export const getRequestTarget = cache(async (id: string): Promise<RequestTarget 
   const { data: service, error: sErr } = await supabase
     .from('service_listings')
     .select(
-      `id, title, starting_price_tnd, delivery_time, status, buyer_briefing, tags,
+      `id, title, starting_price_tnd, price_unit, delivery_time, status, buyer_briefing, tags,
        categories ( name_fr ),
        freelancer_profiles!inner ( profile_id, city, headline, admin_hidden_at )`,
     )
@@ -152,6 +156,7 @@ export const getRequestTarget = cache(async (id: string): Promise<RequestTarget 
         id: row.id,
         title: row.title,
         startingPrice: row.starting_price_tnd != null ? Number(row.starting_price_tnd) : null,
+        priceUnit: row.price_unit ?? null,
         deliveryTime: row.delivery_time ?? null,
         category: one(row.categories)?.name_fr ?? null,
         tags: row.tags ?? [],

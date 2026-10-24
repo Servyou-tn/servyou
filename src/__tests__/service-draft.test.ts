@@ -10,6 +10,8 @@ import { describe, it, expect } from 'vitest'
 import {
   BUILT_STEPS,
   DRAFT_LIMITS,
+  FIELD_STEP,
+  charCount,
   DraftInputSchema,
   EMPTY_DRAFT,
   draftDeliverables,
@@ -19,6 +21,7 @@ import {
   parsePrice,
   resumeStep,
   skillLabel,
+  skillLabelPair,
   splitDeliverables,
   step1Errors,
   step1Passes,
@@ -28,6 +31,9 @@ import {
   step3Passes,
   step4Errors,
   step4Passes,
+  step5Passes,
+  stepErrors,
+  stepPasses,
   type DraftForm,
   type DraftRow,
 } from '@/lib/freelance/service-draft'
@@ -199,9 +205,52 @@ describe('resumeStep (founder ruling D7)', () => {
     expect(resumeStep(STEP2_OK)).toBe(3)
     expect(resumeStep(STEP3_OK)).toBe(4)
   })
-  it('never lands past the last built step (4), even when every gate passes', () => {
-    expect(BUILT_STEPS).toBe(4)
-    expect(resumeStep(COMPLETE)).toBe(4)
+  it('opens a draft that passes steps 1–4 on step 5, the récapitulatif (PR-4)', () => {
+    expect(BUILT_STEPS).toBe(5)
+    expect(resumeStep(COMPLETE)).toBe(5)
+  })
+})
+
+describe('step 5 « Publication » (PR-4)', () => {
+  it('« Publier » needs every step 1–4 to pass', () => {
+    expect(step5Passes(COMPLETE)).toBe(true)
+    expect(stepPasses(5, COMPLETE)).toBe(true)
+    expect(step5Passes({ ...COMPLETE, shortDescription: '' })).toBe(false)
+    expect(step5Passes({ ...COMPLETE, price: '' })).toBe(false)
+    expect(step5Passes({ ...COMPLETE, deliverablesText: 'Une seule ligne ici' })).toBe(false)
+  })
+
+  it('stepErrors returns the gate of the asked step, and nothing for step 5', () => {
+    expect(Object.keys(stepErrors(2, { ...COMPLETE, shortDescription: '' }))).toEqual(['shortDescription'])
+    expect(stepErrors(5, EMPTY_DRAFT)).toEqual({})
+  })
+
+  it('FIELD_STEP sends every wizard field to the step that edits it', () => {
+    expect(FIELD_STEP).toEqual({
+      title: 1, sector: 1, subcategory: 1, skills: 1,
+      shortDescription: 2, description: 2,
+      price: 3, priceUnit: 3, deliveryTime: 3,
+      deliverables: 4, deliveryMode: 4, buyerBriefing: 4,
+    })
+  })
+})
+
+describe('charCount — code points, like the DB char_length (ruling D28)', () => {
+  it('counts an emoji once', () => {
+    expect(charCount('😀')).toBe(1)
+    expect('😀'.length).toBe(2)
+    expect(charCount('abc')).toBe(3)
+    expect(charCount('مرحبا')).toBe(5)
+  })
+
+  it('the title gate accepts 10 code points that are 15 UTF-16 units, and refuses 9 emoji (18 units)', () => {
+    expect(step1Errors({ ...STEP1_OK, title: '😀😀😀😀😀 abcd' }).title).toBeUndefined()
+    expect(step1Errors({ ...STEP1_OK, title: '😀'.repeat(9) }).title?.key).toBe('service.wizard.error.title_min')
+  })
+
+  it('the description gate counts code points too', () => {
+    expect(step2Errors({ ...STEP2_OK, description: '😀'.repeat(100) }).description).toBeUndefined()
+    expect(step2Errors({ ...STEP2_OK, description: '😀'.repeat(99) }).description?.key).toBe('service.wizard.error.description_min')
   })
 })
 
@@ -235,6 +284,12 @@ describe('skills (founder ruling D1)', () => {
 
   it('shows a custom skill as stored', () => {
     expect(skillLabel('Tricot artisanal', 'ar')).toBe('Tricot artisanal')
+  })
+
+  it('skillLabelPair: both labels for a pool id, the stored text twice otherwise (ruling D31)', () => {
+    expect(skillLabelPair('logo')).toEqual({ fr: 'logo', ar: 'شعار' })
+    expect(skillLabelPair('Google Ads')).toEqual({ fr: 'Google Ads', ar: 'Google Ads' })
+    expect(skillLabelPair('identite-visuelle')).toEqual({ fr: 'identite-visuelle', ar: 'identite-visuelle' })
   })
 
   it('normalizeSkills drops duplicates (label vs id), blanks, and anything past 5', () => {

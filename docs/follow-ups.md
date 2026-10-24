@@ -3684,7 +3684,11 @@ coupling" claim on that specific function is stale, not a remaining blocker.
   nothing to show for it — or proactively, before `admin_hide_content` grows a 4th or 5th silent
   failure cause.
 
-### `freelance.services.form.error.{required,title_too_long,description_too_long,price_invalid}` have no fr/ar translations
+### ✅ `freelance.services.form.error.{required,title_too_long,description_too_long,price_invalid}` have no fr/ar translations — RESOLVED in H6 PR-4
+
+- **Resolved 2026-10-24 in H6 PR-4 (`feat/h6-publish-step5`):** translated in both locales, with the new G4-rule keys (title_too_short,
+  description_too_short, short_description_too_long, delivery_too_long) and the tag messages rewritten for
+  the 1–5 skills rule. History below.
 
 - **What:** `service-validation.ts`'s `ERR` object has two i18n-key namespaces for the same form:
   `freelance.services.form.<field>.errors.<kind>` (deliverables/revisions/tags/briefing — all
@@ -4279,7 +4283,11 @@ advisors. Migration 59 itself closed the `job_responses` HIGH above.
 
 ## H6 PR-2 — wizard shell + steps 1–2 (`feat/h6-wizard-steps-1-2`, 2026-10-23)
 
-### 🔴 PR-4 blocker — `service_listings.tags` now holds skill IDS; 4 public surfaces print tags raw
+### ✅ PR-4 blocker — `service_listings.tags` now holds skill IDS; 4 public surfaces print tags raw — RESOLVED in H6 PR-4
+
+- **Resolved 2026-10-24 in H6 PR-4 (`feat/h6-publish-step5`):** D2 and E1 map tags through `skillLabel(tag, lang)`; the card's two producers
+  (`/marche/services`, D4) send `{ fr, ar }` pairs (`skillLabelPair`) so the taxonomy stays out of the
+  client bundle (ruling D31). History below.
 
 - H6 stores a pool skill as its taxonomy id (`next-js`, `identite-de-marque`) and a custom skill as
   typed (founder ruling D1). Drafts are private, so nothing shows yet — but the moment PR-4 publishes
@@ -4357,6 +4365,8 @@ advisors. Migration 59 itself closed the `job_responses` HIGH above.
 
 ### H6 drafts: nothing limits how many one freelancer can create
 
+- **H6 PR-4 (ruling D34): kept logged.** Live data: 2 drafts on 2 freelancers.
+
 - `saveServiceDraftAction` inserts whenever it is called with `draftId: null`; the wizard only does that
   once per page load, but the action is callable directly, so a script could create drafts without end
   (each private, owner-only). Resume takes the newest and logs when there are more.
@@ -4374,7 +4384,12 @@ advisors. Migration 59 itself closed the `job_responses` HIGH above.
 
 Rulings D13–D22 in `docs/design/h6-pr3-deltas.md`.
 
-### `price_unit` is stored but shown nowhere — « À partir de 800 TND » misleads for hourly/monthly
+### ✅ `price_unit` is stored but shown nowhere — « À partir de 800 TND » misleads for hourly/monthly — RESOLVED in H6 PR-4
+
+- **Resolved 2026-10-24 in H6 PR-4 (`feat/h6-publish-step5`):** D2, the card (all 5 producers) and E1 print « 450 TND / mois » via
+  `servicePriceLabel` (D32); `fixed` and NULL print no unit. The publish rules require a unit; the 21 legacy
+  rows stay NULL (no backfill — the DB gate only checks rows leaving draft). H5 rows and order screens: see
+  the H6 PR-4 section. History below.
 
 - H6 writes `service_listings.price_unit` (migration `20261024195134`); D2, `ServiceListingCard`, E1 and
   the D4 cards still print a bare « À partir de {price} TND ». For « Par heure » / « Par mois » that reads
@@ -4382,7 +4397,9 @@ Rulings D13–D22 in `docs/design/h6-pr3-deltas.md`.
 - **Trigger:** PR-4 (publish) — show the unit wherever the price shows, and rule the publish requirement
   + backfill for the 21 (founder ruling D13 deferred both to PR-4).
 
-### D2 labels `hybrid` « Hybride » / « مختلط »; the wizard writes it as « Sur site possible »
+### ✅ D2 labels `hybrid` « Hybride » / « مختلط »; the wizard writes it as « Sur site possible » — RESOLVED in H6 PR-4
+
+- **Resolved 2026-10-24 in H6 PR-4 (`feat/h6-publish-step5`):** `serviceDetail.mode.hybrid` = « À distance ou sur site » / « عن بُعد أو في الموقع » (D32).
 
 - Ruling D15 maps « Sur site possible » → `hybrid`. D2's `serviceDetail.mode.hybrid` says « Hybride », so a
   published H6 service would describe itself in a word the freelancer never chose. Drafts never reach D2.
@@ -4396,7 +4413,10 @@ Rulings D13–D22 in `docs/design/h6-pr3-deltas.md`.
 - **Trigger:** a design for a structured délai (number + unit); then a migration with a backfill of the
   21 « N jours ».
 
-### `validateServiceInput` must change before « Publier » can call it on an H6 draft
+### ✅ `validateServiceInput` must change before « Publier » can call it on an H6 draft — RESOLVED in H6 PR-4
+
+- **Resolved 2026-10-24 in H6 PR-4 (`feat/h6-publish-step5`):** it now checks the G4 publish rules (docs/design/h6-pr4-deltas.md §2), counts code
+  points, and is pinned against the step gates by a matrix test. History below.
 
 - `deliveryTime` is required there but optional in H6 (D14); briefing cap 1000 vs H6's 500 (D17 — H6 is
   stricter, so no failure); it knows nothing of `price_unit`, `delivery_mode`, `short_description`,
@@ -4438,3 +4458,76 @@ Rulings D13–D22 in `docs/design/h6-pr3-deltas.md`.
   « montant invalide » and the draft saves NULL. Unlikely in Tunisia (Western digits are the norm).
 - **Fix:** map U+0660–0669 / U+06F0–06F9 → 0–9 and U+066B (٫) → `.` before the regex; add tests.
 - **Trigger:** a founder-gate or real-user report of it.
+
+## H6 PR-4 — step 5 « Publication », publish, entry points (`feat/h6-publish-step5`, 2026-10-24)
+
+Rulings D23–D35 in `docs/design/h6-pr4-deltas.md`; DB gate = migration `20261024215730` (README #64).
+
+### 🔴 PGRST201 blocks this PR's founder gate on every public service surface (and H5)
+
+- The HIGH entry « every `service_listings → categories` embed fails with PGRST201 » (logged on main by the
+  suspension PR) also breaks **H5 `/mes-services`** (`seller-services-query.ts:114` `categories(slug)` → the
+  route's error page) and every surface PR-4 changed: D2 (404), E1, the `/marche/services` grid, D4, favoris,
+  home, D2 related — and therefore the success screen's « Voir mon service » link.
+- PR-4 did not fix it (one PR, one focus). Verified locally with the embeds qualified **temporarily**
+  (`categories!service_listings_category_id_fkey`), then restored by hash: once qualified, H5 renders with the
+  live CTA, D2/E1 show pool labels and the per-language price.
+- **Trigger:** before the PR-4 founder gate's public-page checks — the PGRST201 PR first.
+
+### No live test of the publish gate itself
+
+- The trigger (`trg_service_publish_requirements`) is must-test per CLAUDE.md (a business rule in the DB). PR-4
+  ships mock tests only (brief), and the architect verified the gate by hand after apply (263c5565 → `[]`;
+  the 21 legacy rows fail the rules and stay pause/unpause-able). The hardening suite was only made gate-proof.
+- **Fix:** a live suite — leaving draft incomplete refused (draft → active and → hidden); non-draft insert
+  refused; legacy-style row: unpause passes, an edit that leaves a changed column invalid refused; service role
+  exempt; hint/detail shape.
+- **Trigger:** the next live-DB run window (founder « go »).
+
+### Subcategory is shown nowhere public
+
+- H6 requires a subcategory; no buyer surface prints it. D2's breadcrumb (Accueil › Services › secteur ›
+  titre) is the natural slot — needs a design call.
+
+### D2 / E1 / related cards: category label is `name_fr` in Arabic
+
+- `service-detail.ts` and `demander.ts` select `categories ( name_fr )` only, so AR pages show the French
+  sector. Same for the related-cards and favoris producers (their card fallback chip).
+
+### 24 legacy tags match a pool skill but are stored as text
+
+- Of the 39 tags on the 21 legacy listings, 1 is a pool id (`logo`), 23 match a pool label (« Google Ads »,
+  « SEO », « Figma »…) and render as typed — i.e. French on AR pages — and 15 are custom.
+- **Fix:** a data migration rewriting the matchable ones to their ids (`findSkillByLabel`), reviewed row by row.
+
+### H5 rows and the order screens print a price without its unit
+
+- H5 (`seller-services-query.ts`) and `/mes-commandes` / order detail show « 120 TND » with no unit. Orders
+  snapshot the price, not the unit — a snapshot column would be its own migration.
+
+### The DB still allows non-draft → `draft`
+
+- Unreachable from the UI (autosave only updates drafts; the H5 toggle only sets active/hidden). Harmless
+  under the gate (leaving draft again is checked), but an owner's direct API call could move a live service
+  back into « draft », where H6 would resume it. A one-line rule if the founder wants « draft only on insert ».
+
+### D2 / E1 breadcrumb `aria-label` is hard-coded French
+
+- `ServiceDetail.tsx` and `ServiceRequestScreen.tsx`: `aria-label="Fil d'Ariane"` (same class as the G6 entry).
+
+### Step 5 footer is three rows at 375
+
+- « Publier mon service » is longer than « Suivant », so below `sm` the footer wraps to caption / « Enregistrer
+  le brouillon » / [Précédent][Publier]. Works; no mobile frame — founder check on a phone.
+
+### No « start over » from a resumed draft
+
+- Founder ruling (PR-4): the wizard says « Vous reprenez votre brouillon « … » » when it resumes; there is no
+  way to discard the draft and start a new one. Logged.
+
+### Input / Textarea counters count UTF-16 units; the gates count code points
+
+- Deliberate (ruling D28 build note): the counters sit next to the native `maxLength`, which counts UTF-16
+  units, so « 40/80 » with typing blocked would be wrong. Minimums (where app ⇄ DB must agree) use code points
+  everywhere. Only an emoji-heavy value can show a counter above its code-point length.
+

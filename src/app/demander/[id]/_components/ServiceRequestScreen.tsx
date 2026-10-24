@@ -3,6 +3,8 @@ import { ChevronRight, Clock, MapPin } from 'lucide-react'
 import { t, type Lang } from '@/lib/i18n'
 import { Avatar } from '@/components/ui/avatar'
 import { getInitials } from '@/components/ui/initials'
+import { skillLabel } from '@/lib/freelance/service-draft'
+import { formatServicePrice, servicePriceLabel } from '@/lib/freelance/service-price'
 import type { ServiceRequestTarget } from '@/lib/marche/demander'
 import { ServiceRequestForm } from './ServiceRequestForm'
 
@@ -43,11 +45,17 @@ export function ServiceRequestScreen({
   initialPhone: string
   lang: Lang
 }) {
+  // H6 PR-4 (rulings D31/D32): the price carries its unit and the currency per language; pool skills
+  // show their label in the page language, custom skills as typed.
   const price =
-    service.startingPrice != null ? `${service.startingPrice.toLocaleString('fr-FR')} TND` : null
+    service.startingPrice != null
+      ? servicePriceLabel(formatServicePrice(service.startingPrice, lang), service.priceUnit, lang)
+      : null
   // Figma shows two chips (category + a tag). Real rows carry one category and 0–5 tags, so the
   // list is category-first and simply shorter when the freelancer set no tags.
-  const chips = [service.category, ...service.tags].filter((c): c is string => Boolean(c))
+  const chips = [service.category, ...service.tags.map((tag) => skillLabel(tag, lang))].filter(
+    (c): c is string => Boolean(c),
+  )
 
   const summary = (
     <aside className="flex flex-col gap-3 rounded-card border-2 border-brand-blue-600 bg-surface-base p-4 lg:col-start-2 lg:row-start-1 lg:gap-4 lg:p-6">

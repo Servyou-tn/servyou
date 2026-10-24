@@ -1433,7 +1433,6 @@ export const fr: Record<string, string> = {
   'recherche.empty.subtitle':        "Essayez d'autres mots-clés ou parcourez les catégories.",
   'recherche.empty.cta':             "Parcourir les catégories",
   'listing.service.startingPrice':   "à partir de {price} TND",
-  'listing.service.priceRaw':        "{price} TND",
   'listing.service.priceOnRequest':  "Prix sur demande",
   // relativeAdded (+ frenchRelativeAdded() in listing-utils.ts) deleted — dead code, no caller,
   // and its ar.ts value was literal French text.
@@ -1513,7 +1512,7 @@ export const fr: Record<string, string> = {
   'serviceDetail.mode.title':        "Mode de prestation",
   'serviceDetail.mode.remote':       "À distance",
   'serviceDetail.mode.onsite':       "Sur place",
-  'serviceDetail.mode.hybrid':       "Hybride",
+  'serviceDetail.mode.hybrid':       "À distance ou sur site",
   'serviceDetail.priceFrom':         "À partir de",
   'serviceDetail.deliveredIn':       "Livré en {time}",
   'serviceDetail.cta':               "Demander ce service",
@@ -2080,12 +2079,18 @@ export const fr: Record<string, string> = {
   'freelance.back':               "Retour à mon espace freelance",
   // My services list
   'freelance.services_title':     "Mes services",
-  // Introduced by the H5 draft-status guard PR (validateServiceInput's status field, currently
-  // unreachable — no production form calls validateServiceInput yet). Sibling keys
-  // freelance.services.form.error.{required,title_too_long,description_too_long,price_invalid}
-  // predate this PR and are themselves untranslated in fr.ts/ar.ts — a pre-existing gap, logged in
-  // docs/follow-ups.md, not fixed here.
+  // validateServiceInput's error keys — the G4 publish rules (H6 PR-4, docs/design/h6-pr4-deltas.md §2).
+  // Its first production caller is « Publier mon service »; the wizard shows its own step messages, so
+  // these surface through H7's form. The four that predate PR-4 were untranslated until now.
   'freelance.services.form.error.status_invalid': "Statut de service invalide.",
+  'freelance.services.form.error.required':       "Ce champ est obligatoire.",
+  'freelance.services.form.error.title_too_short': "Au moins 10 caractères.",
+  'freelance.services.form.error.title_too_long': "80 caractères maximum.",
+  'freelance.services.form.error.short_description_too_long': "160 caractères maximum.",
+  'freelance.services.form.error.description_too_short': "Au moins 100 caractères.",
+  'freelance.services.form.error.description_too_long': "2000 caractères maximum.",
+  'freelance.services.form.error.price_invalid':  "Entrez un prix valide, supérieur à 0.",
+  'freelance.services.form.error.delivery_too_long': "50 caractères maximum.",
   // Service world-class fields: deliverables / revisions / tags / briefing (PR-F2.3 + F2.3.1, preserved 2026-06-27 Option B)
   'freelance.services.form.deliverables.label':       "Livrables",
   'freelance.services.form.deliverables.helper':      "3 à 8 éléments décrivant ce que le client reçoit",
@@ -2103,9 +2108,9 @@ export const fr: Record<string, string> = {
   'freelance.services.form.tags.helper':              "3 à 5 mots-clés pour la recherche",
   'freelance.services.form.tags.placeholder':         "Tapez et appuyez sur Entrée",
   'freelance.services.form.tags.counter':             "{count}/5",
-  'freelance.services.form.tags.errors.min':          "Au moins 3 tags requis",
-  'freelance.services.form.tags.errors.max':          "Maximum 5 tags",
-  'freelance.services.form.tags.errors.format':       "Lettres minuscules, chiffres, tirets uniquement (2-30 caractères)",
+  'freelance.services.form.tags.errors.min':          "Ajoutez au moins 1 compétence.",
+  'freelance.services.form.tags.errors.max':          "5 compétences maximum.",
+  'freelance.services.form.tags.errors.format':       "Chaque compétence fait 50 caractères maximum.",
   'freelance.services.form.tags.warning_initial':     "Ces champs sont nouveaux — ajoutez au moins 3 tags pour publier",
   'freelance.services.form.briefing.label':           "Avant de commencer",
   'freelance.services.form.briefing.helper':          "Instructions sur ce que le client doit fournir (optionnel)",
@@ -3211,7 +3216,6 @@ export const fr: Record<string, string> = {
   // H6 PR-3 — steps 3 « Tarif » (Figma 459:18966) and 4 « Prestation » (459:19023); labels and helpers
   // verbatim from the frames, except « Par mois » (founder ruling D13 — replaces the frame's « Par projet »).
   // Error strings are not in any frame (docs/design/h6-pr3-deltas.md §7).
-  'service.wizard.footer.coming_soon':  "Bientôt disponible",
   'service.wizard.price.label':         "Prix de départ",
   'service.wizard.price.helper':        "Le prix de départ. Le prix final se négocie avec le client sur WhatsApp.",
   'service.wizard.unit.label':          "Unité",
@@ -3242,5 +3246,33 @@ export const fr: Record<string, string> = {
   'service.wizard.error.deliverable_length': "Chaque ligne doit faire entre {min} et {max} caractères.",
   'service.wizard.error.mode_required': "Choisissez un mode de prestation.",
   'service.wizard.error.briefing_max':  "{max} caractères maximum.",
+  // H6 PR-4 — step 5 « Publication » (Figma 459:19071: row labels, « Modifier », « Publier mon service »
+  // verbatim), the resume line and the success screen (no frame — founder rulings, docs/design/h6-pr4-deltas.md).
+  //   inside the guillemets: the closing « » » must not wrap onto its own line (375).
+  'service.wizard.resume_notice':       "Vous reprenez votre brouillon « {title} ».",
+  'service.wizard.recap.title':         "Titre",
+  'service.wizard.recap.category':      "Catégorie",
+  'service.wizard.recap.skills':        "Compétences",
+  'service.wizard.recap.description':   "Description",
+  'service.wizard.recap.price':         "Prix",
+  'service.wizard.recap.delivery_time': "Délai",
+  'service.wizard.recap.mode':          "Mode",
+  'service.wizard.recap.edit':          "Modifier",
+  'service.wizard.recap.edit_aria':     "Modifier — {field}",
+  'service.wizard.recap.not_set':       "Non précisé",
+  'service.wizard.recap.price_value':   "{price} TND · {unit}",
+  'service.wizard.recap.flagged':       "(à corriger)",
+  'service.wizard.footer.publish':      "Publier mon service",
+  'service.wizard.error.publish_incomplete': "Certaines informations manquent. Corrigez les lignes signalées, puis publiez.",
+  'service.wizard.error.publish_failed': "La publication a échoué. Réessayez.",
+  'service.wizard.succes.title':        "Votre service est en ligne !",
+  'service.wizard.succes.subline':      "Les clients peuvent le trouver sur le marché et vous contacter sur WhatsApp.",
+  'service.wizard.succes.view':         "Voir mon service",
+  'service.wizard.succes.list':         "Aller à mes services",
+  // A service's price as buyers read it (src/lib/freelance/service-price.ts): `fixed` / not stated → no unit.
+  'service.price.fixed':                "{price} TND",
+  'service.price.hour':                 "{price} TND / heure",
+  'service.price.day':                  "{price} TND / jour",
+  'service.price.month':                "{price} TND / mois",
 
 }

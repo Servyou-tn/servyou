@@ -1400,7 +1400,6 @@ export const ar: Record<string, string> = {
   // startingPrice / priceOnRequest / viewCta localized for the /marche/services rebuild;
   // deliveryTime / by stay French pending the Phase 8 AR batch.
   'listing.service.startingPrice':   "ابتداءً من {price} د.ت",
-  'listing.service.priceRaw':        "{price} د.ت",
   'listing.service.priceOnRequest':  "السعر عند الطلب",
   // relativeAdded deleted — dead code, no caller; this ar.ts value was literal French text.
   'listing.service.deliveryTime':    "Livraison : {time}",
@@ -1471,7 +1470,7 @@ export const ar: Record<string, string> = {
   'serviceDetail.mode.title':        "طريقة تقديم الخدمة",
   'serviceDetail.mode.remote':       "عن بُعد",
   'serviceDetail.mode.onsite':       "في الموقع",
-  'serviceDetail.mode.hybrid':       "مختلط",
+  'serviceDetail.mode.hybrid':       "عن بُعد أو في الموقع", // REVIEW_AR_TRANSLATION (H6 PR-4 D32)
   'serviceDetail.priceFrom':         "ابتداءً من",
   'serviceDetail.deliveredIn':       "التسليم خلال {time}",
   'serviceDetail.cta':               "اطلب هذه الخدمة",
@@ -2012,12 +2011,17 @@ export const ar: Record<string, string> = {
   'freelance.back':               "العودة إلى مساحتي كمستقل",
   // My services list
   'freelance.services_title':     "خدماتي",
-  // Introduced by the H5 draft-status guard PR (validateServiceInput's status field, currently
-  // unreachable — no production form calls validateServiceInput yet). Sibling keys
-  // freelance.services.form.error.{required,title_too_long,description_too_long,price_invalid}
-  // predate this PR and are themselves untranslated in fr.ts/ar.ts — a pre-existing gap, logged in
-  // docs/follow-ups.md, not fixed here.
+  // validateServiceInput's error keys — the G4 publish rules (H6 PR-4, docs/design/h6-pr4-deltas.md §2).
+  // REVIEW_AR_TRANSLATION: the PR-4 additions below are first drafts.
   'freelance.services.form.error.status_invalid': "حالة الخدمة غير صالحة.",
+  'freelance.services.form.error.required':       "هذا الحقل إلزامي.",
+  'freelance.services.form.error.title_too_short': "10 أحرف على الأقل.",
+  'freelance.services.form.error.title_too_long': "80 حرفًا كحد أقصى.",
+  'freelance.services.form.error.short_description_too_long': "160 حرفًا كحد أقصى.",
+  'freelance.services.form.error.description_too_short': "100 حرف على الأقل.",
+  'freelance.services.form.error.description_too_long': "2000 حرف كحد أقصى.",
+  'freelance.services.form.error.price_invalid':  "أدخل سعرًا صحيحًا أكبر من 0.",
+  'freelance.services.form.error.delivery_too_long': "50 حرفًا كحد أقصى.",
   // Service world-class fields: deliverables / revisions / tags / briefing (PR-F2.3 + F2.3.1, preserved 2026-06-27 Option B)
   'freelance.services.form.deliverables.label':       "المخرجات",
   'freelance.services.form.deliverables.helper':      "من 3 إلى 8 عناصر تصف ما يستلمه العميل",
@@ -2035,9 +2039,9 @@ export const ar: Record<string, string> = {
   'freelance.services.form.tags.helper':              "من 3 إلى 5 كلمات مفتاحية للبحث",
   'freelance.services.form.tags.placeholder':         "اكتب ثم اضغط Enter",
   'freelance.services.form.tags.counter':             "{count}/5",
-  'freelance.services.form.tags.errors.min':          "مطلوب 3 كلمات مفتاحية على الأقل",
-  'freelance.services.form.tags.errors.max':          "5 كلمات مفتاحية كحد أقصى",
-  'freelance.services.form.tags.errors.format':       "أحرف صغيرة وأرقام وشرطات فقط (2-30 حرفًا)",
+  'freelance.services.form.tags.errors.min':          "أضف مهارة واحدة على الأقل.",
+  'freelance.services.form.tags.errors.max':          "5 مهارات كحد أقصى.",
+  'freelance.services.form.tags.errors.format':       "يجب ألا تتجاوز كل مهارة 50 حرفًا.",
   'freelance.services.form.tags.warning_initial':     "هذه الحقول جديدة — أضف 3 كلمات مفتاحية على الأقل للنشر",
   'freelance.services.form.briefing.label':           "قبل أن نبدأ",
   'freelance.services.form.briefing.helper':          "تعليمات حول ما يجب أن يوفّره العميل (اختياري)",
@@ -3099,10 +3103,9 @@ export const ar: Record<string, string> = {
   'service.wizard.error.category_unavailable': "هذه الفئة لم تعد متاحة. اختر فئة أخرى.",
   'service.wizard.error.draft_gone':    "هذه المسودة لم تعد موجودة. أعد تحميل الصفحة للبدء من جديد.",
   // H6 PR-3 — steps 3 « Tarif » / 4 « Prestation » (docs/design/h6-pr3-deltas.md §7).
-  // « قريباً » is the phase-aware skill's locked AR for « Bientôt disponible »; « عن بُعد » reuses
+  // « عن بُعد » reuses
   // serviceDetail.mode.remote and « طريقة تقديم الخدمة » serviceDetail.mode.title.
   // REVIEW_AR_TRANSLATION: every other string in this block is a first draft (no AR frame).
-  'service.wizard.footer.coming_soon':  "قريباً",
   'service.wizard.price.label':         "السعر الابتدائي",
   'service.wizard.price.helper':        "السعر الذي تبدأ منه. يُتفاوض على السعر النهائي مع العميل عبر واتساب.",
   'service.wizard.unit.label':          "وحدة التسعير",
@@ -3135,5 +3138,31 @@ export const ar: Record<string, string> = {
   'service.wizard.error.deliverable_length': "يجب أن يتراوح طول كل سطر بين {min} و{max} حرفًا.",
   'service.wizard.error.mode_required': "اختر طريقة تقديم الخدمة.",
   'service.wizard.error.briefing_max':  "{max} حرفًا كحد أقصى.",
+  // H6 PR-4 — step 5 « Publication », the resume line and the success screen (docs/design/h6-pr4-deltas.md
+  // §13). « خدماتي » is the locked AR for « Mes services ». REVIEW_AR_TRANSLATION: the rest are first drafts.
+  'service.wizard.resume_notice':       "أنت تستأنف مسودتك « {title} ».",
+  'service.wizard.recap.title':         "العنوان",
+  'service.wizard.recap.category':      "الفئة",
+  'service.wizard.recap.skills':        "المهارات",
+  'service.wizard.recap.description':   "الوصف",
+  'service.wizard.recap.price':         "السعر",
+  'service.wizard.recap.delivery_time': "المدة",
+  'service.wizard.recap.mode':          "طريقة التقديم",
+  'service.wizard.recap.edit':          "تعديل",
+  'service.wizard.recap.edit_aria':     "تعديل — {field}",
+  'service.wizard.recap.not_set':       "غير محدد",
+  'service.wizard.recap.price_value':   "{price} د.ت · {unit}",
+  'service.wizard.recap.flagged':       "(يجب التصحيح)",
+  'service.wizard.footer.publish':      "انشر خدمتي",
+  'service.wizard.error.publish_incomplete': "بعض المعلومات ناقصة. صحّح الأسطر المحددة ثم انشر.",
+  'service.wizard.error.publish_failed': "تعذّر النشر. أعد المحاولة.",
+  'service.wizard.succes.title':        "خدمتك منشورة الآن!",
+  'service.wizard.succes.subline':      "يمكن للعملاء العثور عليها في السوق والتواصل معك عبر واتساب.",
+  'service.wizard.succes.view':         "عرض خدمتي",
+  'service.wizard.succes.list':         "الذهاب إلى خدماتي",
+  'service.price.fixed':                "{price} د.ت",
+  'service.price.hour':                 "{price} د.ت / الساعة",
+  'service.price.day':                  "{price} د.ت / اليوم",
+  'service.price.month':                "{price} د.ت / الشهر",
 
 }

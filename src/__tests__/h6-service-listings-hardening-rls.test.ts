@@ -26,6 +26,13 @@
  * The temporary sector exists because D2's test has to delete a sector; no real category row is
  * ever written. G3's rows are drafts, so nothing in that block is publicly visible.
  *
+ * H6 PR-4 — the publish gate (migration 20261024215730, trg_service_publish_requirements) refuses a
+ * non-draft row written through a JWT unless it meets the G4 publish rules. The owner-written live,
+ * paused and moderated fixtures are therefore COMPLETE rows (completeRow(), pointing at a real service
+ * sector + subcategory that are only read, never written), and the G2 price cases accept either the
+ * price CHECK or the gate as the 23514 — the gate fires first (BEFORE trigger) once applied. So this
+ * file passes with and without the gate, whatever order it is applied and merged in.
+ *
  * Pattern A (live-DB), mirroring freelancer-publish-gate-rls.test.ts and
  * d4-freelancer-services-visibility.test.ts. Service role for fixtures, ground truth and teardown
  * only.
@@ -59,6 +66,9 @@ const TITLE = 'H6 hardening test'
 // constraint or trigger can't pass for the one under test.
 const PRICE_CHECK = 'service_listings_price_required_unless_draft'
 const SUBCATEGORY_ERROR = 'Sous-catégorie invalide'
+// H6 PR-4's publish gate — on a non-draft write without a price it reports before the CHECK does.
+const PUBLISH_GATE = 'Service incomplet'
+const PRICE_REFUSAL = new RegExp(`${PRICE_CHECK}|${PUBLISH_GATE}`)
 
 const admin: SupabaseClient = hasCreds
   ? createClient(url, serviceKey, { auth: { autoRefreshToken: false, persistSession: false } })
@@ -154,6 +164,23 @@ let sectorId: string
 let subId: string
 let productKindSubId: string
 let realSectorId: string
+// A real service sector + one of its subcategories, read once: what completeRow() points at.
+let realPairSectorId: string
+let realPairSubId: string
+
+/** Everything the publish gate requires besides title / price / status (G4 rules, H6 PR-4). */
+function completeRow(): Record<string, unknown> {
+  return {
+    category_id: realPairSectorId,
+    subcategory_id: realPairSubId,
+    tags: [`${PREFIX}skill`],
+    short_description: `${TITLE} — résumé`,
+    description: `${TITLE} — description détaillée. `.repeat(4),
+    price_unit: 'fixed',
+    deliverables: ['Premier livrable du test', 'Deuxième livrable du test', 'Troisième livrable du test'],
+    delivery_mode: 'remote',
+  }
+}
 
 async function ownerInsert(row: Record<string, unknown>): Promise<string> {
   const { data, error } = await ownerClient
@@ -190,10 +217,23 @@ beforeAll(async () => {
   if (promoteErr) throw new Error(`admin promotion failed: ${promoteErr.message}`)
   // is_admin() reads profiles per call (not cached at sign-in), so adminClient needs no re-auth.
 
-  activeId = await ownerInsert({ title: `${TITLE} — A active`, starting_price_tnd: 50, status: 'active' })
+  const { data: pair, error: pairErr } = await admin
+    .from('categories')
+    .select('id, parent_id')
+    .eq('kind', 'service')
+    .not('parent_id', 'is', null)
+    .not('slug', 'like', `${PREFIX}%`)
+    .order('slug')
+    .limit(1)
+    .single()
+  if (pairErr || !pair) throw new Error(`real subcategory lookup failed: ${pairErr?.message}`)
+  realPairSubId = pair.id
+  realPairSectorId = pair.parent_id
+
+  activeId = await ownerInsert({ title: `${TITLE} — A active`, starting_price_tnd: 50, status: 'active', ...completeRow() })
 
   // H: ordered while live, THEN paused by its owner — the D1 scenario.
-  pausedId = await ownerInsert({ title: `${TITLE} — H paused`, starting_price_tnd: 60, status: 'active' })
+  pausedId = await ownerInsert({ title: `${TITLE} — H paused`, starting_price_tnd: 60, status: 'active', ...completeRow() })
   const { error: orderErr } = await admin.from('orders').insert({
     buyer_id: buyerId,
     seller_id: ownerId,
@@ -214,7 +254,7 @@ beforeAll(async () => {
   pauseReturnedId = paused?.id ?? null
 
   // M: inserted already paused (never live), then moderated through the real admin RPC.
-  moderatedId = await ownerInsert({ title: `${TITLE} — M moderated`, starting_price_tnd: 70, status: 'hidden' })
+  moderatedId = await ownerInsert({ title: `${TITLE} — M moderated`, starting_price_tnd: 70, status: 'hidden', ...completeRow() })
   const { error: hideErr } = await adminClient.rpc('admin_hide_content', {
     target_type: 'service',
     target_id: moderatedId,
@@ -355,29 +395,30 @@ describe.skipIf(!hasCreds)('G2 — starting_price_tnd is optional for drafts onl
     expect(data?.starting_price_tnd).toBeNull()
   })
 
-  it('an active listing without a price is rejected by the CHECK (23514)', async () => {
+  // Complete except the price, so the only refusal either check can give is the missing price.
+  it('an active listing without a price is rejected (23514: the price CHECK, or the publish gate first)', async () => {
     const { error } = await ownerClient
       .from('service_listings')
-      .insert({ freelancer_profile_id: freelancerProfileId, title: `${TITLE} — G2 active, no price`, status: 'active' })
+      .insert({ freelancer_profile_id: freelancerProfileId, title: `${TITLE} — G2 active, no price`, status: 'active', ...completeRow() })
     expect(error?.code).toBe('23514')
-    expect(error?.message).toContain(PRICE_CHECK)
+    expect(error?.message).toMatch(PRICE_REFUSAL)
   })
 
   it("the column default status ('active') without a price is rejected too", async () => {
     const { error } = await ownerClient
       .from('service_listings')
-      .insert({ freelancer_profile_id: freelancerProfileId, title: `${TITLE} — G2 default status, no price` })
+      .insert({ freelancer_profile_id: freelancerProfileId, title: `${TITLE} — G2 default status, no price`, ...completeRow() })
     expect(error?.code).toBe('23514')
-    expect(error?.message).toContain(PRICE_CHECK)
+    expect(error?.message).toMatch(PRICE_REFUSAL)
   })
 
   it('a price-less draft can be neither published nor paused, and publishes once priced', async () => {
-    const id = await ownerInsert({ title: `${TITLE} — G2 publish`, status: 'draft' })
+    const id = await ownerInsert({ title: `${TITLE} — G2 publish`, status: 'draft', ...completeRow() })
 
     for (const status of ['active', 'hidden']) {
       const { error } = await ownerClient.from('service_listings').update({ status }).eq('id', id)
       expect(error?.code).toBe('23514')
-      expect(error?.message).toContain(PRICE_CHECK)
+      expect(error?.message).toMatch(PRICE_REFUSAL)
     }
     const { data: still, error: stillErr } = await admin.from('service_listings').select('status').eq('id', id).single()
     expect(stillErr).toBeNull()
