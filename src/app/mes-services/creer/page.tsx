@@ -17,10 +17,10 @@ export const metadata: Metadata = { title: 'Créer un service — Servyou' }
 const ROUTE = '/mes-services/creer'
 
 // H6 « Créer un service » — Figma 459:18610 (step 1) / 461:19405 (step 2) / 459:18966 (step 3) /
-// 459:19023 (step 4), measured in docs/design/h6-measurements.md; diffs + founder rulings in
-// docs/design/h6-pr2-deltas.md and docs/design/h6-pr3-deltas.md.
-// PR-2 shipped the shell + steps 1–2, PR-3 steps 3–4. NOT linked from anywhere yet — PR-4 turns on the four inert
-// « Créer un service » CTAs (H5 header + empty state, H4 dashboard ×2).
+// 459:19023 (step 4) / 459:19071 (step 5), measured in docs/design/h6-measurements.md; diffs + founder
+// rulings in docs/design/h6-pr2-deltas.md, h6-pr3-deltas.md and h6-pr4-deltas.md.
+// PR-2 shipped the shell + steps 1–2, PR-3 steps 3–4, PR-4 step 5 + « Publier mon service » (→ ./succes)
+// and the four « Créer un service » CTAs that lead here (H5 header + empty state, H4 dashboard ×2).
 //
 // The page resolves who is creating and where they left off; everything after that is the client
 // ServiceWizard. Resume is silent (founder ruling): the newest draft, on the first step it doesn't

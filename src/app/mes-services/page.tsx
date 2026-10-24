@@ -17,6 +17,7 @@ import { getSellerServices } from '@/lib/marche/seller-services-query'
 import { getLang } from '@/lib/i18n/server'
 import { t } from '@/lib/i18n'
 import { FOCUS_RING } from '@/components/layout/styles'
+import { BASE as BUTTON_BASE, SIZE as BUTTON_SIZE, VARIANT_BASE, VARIANT_STATE } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { StatTile } from './_components/StatTile'
 import { ServiceFiltersBar } from './_components/ServiceFiltersBar'
@@ -25,6 +26,10 @@ import { ServicesList } from './_components/ServicesList'
 export const metadata: Metadata = { title: 'Mes services — Servyou' }
 
 const ROUTE = '/mes-services'
+
+// The four « Créer un service » CTAs (here ×2, H4 ×2) all lead to H6; Button's primary recipe on a Link.
+const CREATE_ROUTE = '/mes-services/creer'
+const CREATE_CTA = cn(BUTTON_BASE, BUTTON_SIZE.md, VARIANT_BASE.primary, VARIANT_STATE.primary, 'w-fit shrink-0')
 
 // H5 « Mes services » — Figma 242:7941. Full reasoning: the H5 discovery pass this PR ships
 // against, plus the founder's 9 rulings on top of it (PR body). Structure mirrors G5 (/mes-produits)
@@ -141,15 +146,10 @@ export default async function MesServicesPage({
               <Wrench className="h-16 w-16 text-icon-muted" aria-hidden="true" />
             </span>
             <p className="text-h3 text-text-primary">{t('service.empty', lang)}</p>
-            {/* INERT — H6 never shipped in code (/mes-services has no /creer subroute), same
-                treatment as the header's own "+ Créer un service" below. */}
-            <span
-              aria-disabled="true"
-              title={t('marche.sidebar.coming_soon', lang)}
-              className="inline-flex h-10 w-fit cursor-not-allowed items-center justify-center rounded-lg bg-brand-blue-600/40 px-4 text-body font-semibold text-text-inverse opacity-70"
-            >
+            {/* H6 /mes-services/creer — live since H6 PR-4 (it resumes an unfinished draft, if any). */}
+            <Link href={CREATE_ROUTE} className={CREATE_CTA}>
               {t('service.empty_cta', lang)}
-            </span>
+            </Link>
           </div>
         ) : (
           <>
@@ -184,20 +184,12 @@ function Header({ lang }: { lang: Awaited<ReturnType<typeof getLang>> }) {
         <h1 className="text-h1 text-text-primary">{t('service.list_title', lang)}</h1>
         <p className="text-body-sm text-text-secondary">{t('service.list_subtitle', lang)}</p>
       </div>
-      {/* INERT — H6 never shipped in code (no /mes-services/creer route). A real Link here would
-          404; flip to one the moment that route lands, same rule H4's own header CTA documents.
-          Figma 242:8100's own Button instance renders no separate icon — the "+" is baked into the
-          label text itself (measured via get_design_context, 2026-09-06); a lucide <Plus> alongside
-          it doubled the glyph. */}
-      <button
-        type="button"
-        disabled
-        aria-disabled="true"
-        title={t('marche.sidebar.coming_soon', lang)}
-        className="inline-flex h-10 w-fit shrink-0 cursor-not-allowed items-center justify-center gap-2 rounded-lg bg-brand-blue-600/40 px-4 text-base font-semibold text-text-inverse opacity-70"
-      >
+      {/* H6 /mes-services/creer — live since H6 PR-4. Figma 242:8100's own Button instance renders no
+          separate icon — the "+" is baked into the label text itself (measured via get_design_context,
+          2026-09-06); a lucide <Plus> alongside it doubled the glyph. */}
+      <Link href={CREATE_ROUTE} className={CREATE_CTA}>
         {t('service.add_btn', lang)}
-      </button>
+      </Link>
     </div>
   )
 }

@@ -19,6 +19,8 @@ import { getFreelancerDashboard, VUES_DU_PROFIL } from '@/lib/marche/freelancer-
 import { getLang } from '@/lib/i18n/server'
 import { t, tn } from '@/lib/i18n'
 import { FOCUS_RING } from '@/components/layout/styles'
+import { BASE as BUTTON_BASE, SIZE as BUTTON_SIZE, VARIANT_BASE, VARIANT_STATE } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
 import { StatTile } from './_components/StatTile'
 import { Panel, PanelEmpty } from './_components/Panel'
 import { MissionRow } from './_components/MissionRow'
@@ -51,13 +53,12 @@ export default async function TableauDeBordPage() {
   )
   const firstName = (topBarUser.full_name ?? '').trim().split(/\s+/)[0] ?? ''
 
-  // "Créer un service" has no destination (/mes-services has no /ajouter subroute — H6 never
-  // shipped in code) — href: null renders an inert chip rather than a Link to a 404. "Voir mes
+  // "Créer un service" leads to H6 (/mes-services/creer, live since H6 PR-4). "Voir mes
   // commandes" carries a real count badge (h4-discovery.md §9): the freelancer's own active
   // purchases (orders where THEY are the buyer), a genuinely new query added this pass since a
   // badge that never renders is a hole, not a scope violation.
   const quickActions = [
-    { key: 'freelance.dashboard.createService', href: null, icon: Plus, badge: null },
+    { key: 'freelance.dashboard.createService', href: '/mes-services/creer', icon: Plus, badge: null },
     { key: 'shell.sidebar.findMissions', href: '/trouver-des-missions', icon: Search, badge: null },
     { key: 'freelance.dashboard.quick.buyProducts', href: '/marche/produits', icon: ShoppingBag, badge: null },
     {
@@ -81,18 +82,14 @@ export default async function TableauDeBordPage() {
             </h1>
             <p className="text-body text-text-secondary">{t('freelance.dashboard.subline', lang)}</p>
           </div>
-          {/* INERT — no route exists to create a service yet (/mes-services has no /ajouter
-              subroute; H6 never shipped in code). A real Link here would 404. Flip to a Link the
-              moment that route lands. */}
-          <button
-            type="button"
-            disabled
-            aria-disabled="true"
-            className="inline-flex h-10 w-fit shrink-0 cursor-not-allowed items-center justify-center gap-2 self-start rounded-lg bg-brand-blue-600/40 px-4 text-base font-semibold text-text-inverse opacity-70 sm:self-auto"
+          {/* H6 /mes-services/creer — live since H6 PR-4. Button's primary recipe on a Link. */}
+          <Link
+            href="/mes-services/creer"
+            className={cn(BUTTON_BASE, BUTTON_SIZE.md, VARIANT_BASE.primary, VARIANT_STATE.primary, 'w-fit shrink-0 self-start sm:self-auto')}
           >
-            <Plus className="h-4 w-4 shrink-0" aria-hidden="true" />
+            <Plus aria-hidden="true" />
             {t('freelance.dashboard.createService', lang)}
-          </button>
+          </Link>
         </div>
 
         {!freelancerProfile ? (
@@ -293,7 +290,7 @@ export default async function TableauDeBordPage() {
                           {label}
                         </Link>
                       ) : (
-                        // INERT — see the quickActions comment above (no /mes-services/ajouter route).
+                        // INERT — an action whose destination route doesn't exist yet (none today).
                         <button
                           type="button"
                           disabled

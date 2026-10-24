@@ -7,14 +7,15 @@ import { t, type Lang } from '@/lib/i18n'
 // H6 wizard footer — Figma 459:18873 (inside read 1, docs/design/h6-measurements.md): full width of
 // the main column, border-t border-subtle, bg base, px 32 / py 20, groups gap 12. Left: secondary
 // « Enregistrer le brouillon » + caption « Enregistré automatiquement » (body-sm muted). Right:
-// primary « Suivant », drawn disabled — the step gate (founder ruling D9).
+// primary « Suivant », drawn disabled — the step gate (founder ruling D9). On step 5 (Figma 459:19149,
+// read 6) the primary is « Publier mon service ».
 //
-// Not in the frame, founder-ruled or proposed in docs/design/h6-pr2-deltas.md:
+// Not in the frames, founder-ruled or proposed in docs/design/h6-pr2-deltas.md / h6-pr4-deltas.md:
 //   • sticky to the viewport bottom, bleeding over AppShell main's padding (-mx/-mb = its px/py);
-//   • « Précédent » (secondary) from step 2 on;
-//   • the last built step's « Suivant » (step 4 since PR-3) stays disabled with « Bientôt disponible »
-//     until step 5 ships in PR-4 (D6, D21) — the wizard's own key: the sidebar's
-//     marche.sidebar.coming_soon is French in ar.ts (logged);
+//   • « Précédent » (secondary) from step 2 on — kept on step 5 too, as is the caption, though 459:19149
+//     draws neither (D27: the PR-2/3 footer carries over);
+//   • « Publier mon service » shows the Button's own loading state while it publishes; the whole footer
+//     is inert meanwhile, so a « Précédent » can't race the publish;
 //   • the caption follows the autosave: nothing before the first save, « Enregistrement… » while
 //     saving, the frame's text once saved, the save error (danger) when a save fails (D8);
 //   • below `sm` the caption sits on its own line above the buttons (no mobile frame).
@@ -28,18 +29,23 @@ export function WizardFooter({
   saveState,
   saveErrorKey,
   canNext,
+  publishing,
   onSaveDraft,
   onPrevious,
   onNext,
+  onPublish,
 }: {
   lang: Lang
   step: number
   saveState: SaveState
   saveErrorKey: string | null
+  /** Steps 1–4: the step's gate. Step 5: steps 1–4 all pass. */
   canNext: boolean
+  publishing: boolean
   onSaveDraft: () => void
   onPrevious: () => void
   onNext: () => void
+  onPublish: () => void
 }) {
   const caption =
     saveState === 'saving'
@@ -49,14 +55,13 @@ export function WizardFooter({
         : saveState === 'error' && saveErrorKey
           ? t(saveErrorKey, lang)
           : ''
-  // Step 5 isn't built yet (PR-4): « Suivant » on the last built step can't lead anywhere.
-  const nextComingSoon = step >= BUILT_STEPS
+  const lastStep = step >= BUILT_STEPS
 
   return (
     // One wrapping row. From `sm`: [brouillon][caption] ……… [précédent][suivant], as drawn. Below it the
     // caption takes its own line on top so the buttons share one row instead of stacking three deep.
     <div className="sticky bottom-0 z-10 -mx-4 -mb-6 mt-2 flex flex-wrap items-center gap-x-3 gap-y-2 border-t border-border-subtle bg-surface-base px-4 py-4 md:-mx-8 md:-mb-8 md:px-8 md:py-5">
-      <Button variant="secondary" onClick={onSaveDraft} className="order-2 sm:order-1">
+      <Button variant="secondary" onClick={onSaveDraft} disabled={publishing} className="order-2 sm:order-1">
         {t('service.wizard.footer.save_draft', lang)}
       </Button>
       <p
@@ -68,14 +73,14 @@ export function WizardFooter({
       </p>
       <div className="order-3 ms-auto flex items-center gap-3">
         {step > 1 && (
-          <Button variant="secondary" onClick={onPrevious}>
+          <Button variant="secondary" onClick={onPrevious} disabled={publishing}>
             {t('service.wizard.footer.previous', lang)}
           </Button>
         )}
-        {nextComingSoon ? (
-          <span title={t('service.wizard.footer.coming_soon', lang)}>
-            <Button disabled>{t('service.wizard.footer.next', lang)}</Button>
-          </span>
+        {lastStep ? (
+          <Button disabled={!canNext} loading={publishing} onClick={onPublish}>
+            {t('service.wizard.footer.publish', lang)}
+          </Button>
         ) : (
           <Button disabled={!canNext} onClick={onNext}>
             {t('service.wizard.footer.next', lang)}

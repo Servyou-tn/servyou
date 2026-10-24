@@ -4,9 +4,12 @@
  * H6 wizard (src/app/mes-services/creer/_components/ServiceWizard.tsx), server action mocked:
  *   • a field error shown in FR is shown in AR after the language switch (router.refresh keeps
  *     client state — reference_i18n_store_keys_not_text; same replay as form-errors-retranslate);
- *   • « Suivant » stays disabled until the current step passes; it moves one step on (2 → 3 since
- *     PR-3), and on step 4 it stays disabled with the wizard's own « Bientôt disponible » (step 5 is
- *     PR-4, ruling D21); « Précédent » moves one step back;
+ *   • « Suivant » stays disabled until the current step passes; it moves one step on, step 4 → the
+ *     step-5 récapitulatif since PR-4; « Précédent » moves one step back;
+ *   • step 5 (PR-4): seven récap rows (D23) in the page language, « Non précisé » for an empty délai
+ *     (D24), « Modifier » opens its step (D26); « Publier mon service » flushes the autosave, publishes
+ *     the draft id only, and REPLACES the page with the success screen (D29, D33); a refusal flags rows;
+ *   • a resumed draft says so in one line (founder ruling, PR-4);
  *   • Unité / Mode are radio groups whose choice reaches the autosave (rulings D13, D15, D19);
  *   • nothing is saved before the title has text; « Enregistrer le brouillon » saves with the
  *     returned id reused on the next save (no second insert).
@@ -19,8 +22,9 @@ import { LangProvider } from '@/components/LangProvider'
 import { t, type Lang } from '@/lib/i18n'
 import { EMPTY_DRAFT, type DraftForm, type ServiceWizardStep } from '@/lib/freelance/service-draft'
 
-const h = vi.hoisted(() => ({ save: vi.fn() }))
-vi.mock('@/app/mes-services/creer/actions', () => ({ saveServiceDraftAction: h.save }))
+const h = vi.hoisted(() => ({ save: vi.fn(), publish: vi.fn(), replace: vi.fn() }))
+vi.mock('@/app/mes-services/creer/actions', () => ({ saveServiceDraftAction: h.save, publishServiceDraftAction: h.publish }))
+vi.mock('next/navigation', () => ({ useRouter: () => ({ replace: h.replace }) }))
 
 import { ServiceWizard } from '@/app/mes-services/creer/_components/ServiceWizard'
 
@@ -43,8 +47,10 @@ const READY: DraftForm = {
   skills: ['react'],
 }
 const STEP2_OK: DraftForm = { ...READY, shortDescription: 'Boutique prête', description: 'x'.repeat(100) }
+const FULL: DraftForm = { ...STEP2_OK, price: '800', deliverablesText: 'Design UI iOS\n3 écrans\nFichiers sources' }
 const DRAFT_ID = '7d6a2f0e-4b7a-4c51-9a55-2c0b1f5e9a10'
 const next = () => screen.getByRole('button', { name: t('service.wizard.footer.next', 'fr') })
+const publish = () => screen.getByRole('button', { name: t('service.wizard.footer.publish', 'fr') })
 
 describe('H6 wizard', () => {
   it('re-translates a visible field error after an FR → AR switch', () => {
@@ -106,15 +112,17 @@ describe('H6 wizard', () => {
     expect(h.save).toHaveBeenLastCalledWith(expect.objectContaining({ price: '800,50', priceUnit: 'month' }))
   })
 
-  it('on step 4, « Suivant » stays disabled with the wizard\'s own « Bientôt disponible », in both languages', () => {
-    const ready4 = { ...STEP2_OK, price: '800', deliverablesText: 'Design UI iOS\n3 écrans\nFichiers sources' }
-    const view = render(ui('fr', ready4, 4, DRAFT_ID))
-    expect(next()).toBeDisabled()
-    expect(next().parentElement).toHaveAttribute('title', 'Bientôt disponible')
+  it('on step 4, « Suivant » waits for the step-4 gate, then opens the step-5 récapitulatif', async () => {
+    h.save.mockResolvedValue({ ok: true, draftId: DRAFT_ID })
+    render(ui('fr', { ...FULL, deliverablesText: 'Une seule ligne' }, 4, DRAFT_ID))
     expect(screen.getByRole('radio', { name: t('service.wizard.mode.remote', 'fr') })).toBeChecked()
-
-    view.rerender(ui('ar', ready4, 4, DRAFT_ID))
-    expect(screen.getByRole('button', { name: t('service.wizard.footer.next', 'ar') }).parentElement).toHaveAttribute('title', 'قريباً')
+    expect(next()).toBeDisabled()
+    fireEvent.change(screen.getByLabelText(new RegExp(t('service.wizard.deliverables.label', 'fr'))), {
+      target: { value: FULL.deliverablesText },
+    })
+    fireEvent.click(next())
+    expect(await screen.findByRole('button', { name: t('service.wizard.footer.publish', 'fr') })).toBeEnabled()
+    expect(screen.queryByRole('button', { name: t('service.wizard.footer.next', 'fr') })).not.toBeInTheDocument()
   })
 
   it('a « Précédent » clicked while « Suivant »\'s save is in flight wins — no jump to step 3', async () => {
@@ -173,5 +181,78 @@ describe('H6 wizard', () => {
     fireEvent.change(title, { target: { value: 'Je crée votre boutique en ligne' } })
     fireEvent.click(screen.getByRole('button', { name: t('service.wizard.footer.save_draft', 'fr') }))
     await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent(t('service.wizard.error.draft_gone', 'fr')))
+  })
+
+  describe('step 5 « Publication » (PR-4)', () => {
+    // A récap row is the <li> holding a « Modifier » button (the stepper's « Description » is an <li> too).
+    const row = (labelKey: string, lang: Lang = 'fr') =>
+      screen
+        .getAllByText(t(labelKey, lang))
+        .map((el) => el.closest('li'))
+        .find((li) => li?.querySelector('button')) as HTMLElement
+
+    it('lists the seven rows in the page language, with « Non précisé » for an empty délai', () => {
+      const view = render(ui('fr', FULL, 5, DRAFT_ID))
+      expect(screen.getAllByRole('button', { name: /^Modifier — / })).toHaveLength(7)
+      expect(row('service.wizard.recap.title')).toHaveTextContent('Je crée votre boutique')
+      expect(row('service.wizard.recap.category')).toHaveTextContent('Développement web & mobile › E-commerce')
+      expect(row('service.wizard.recap.skills')).toHaveTextContent('React')
+      expect(row('service.wizard.recap.description')).toHaveTextContent('Boutique prête')
+      expect(row('service.wizard.recap.price')).toHaveTextContent('800 TND · Fixe')
+      expect(row('service.wizard.recap.delivery_time')).toHaveTextContent(t('service.wizard.recap.not_set', 'fr'))
+      expect(row('service.wizard.recap.mode')).toHaveTextContent(t('service.wizard.mode.remote', 'fr'))
+      expect(screen.getByRole('button', { name: 'Modifier — Titre' })).toBeInTheDocument()
+
+      view.rerender(ui('ar', FULL, 5, DRAFT_ID))
+      expect(row('service.wizard.recap.price', 'ar')).toHaveTextContent('800 د.ت · سعر ثابت')
+      expect(row('service.wizard.recap.category', 'ar')).toHaveTextContent('تطوير الويب والموبايل')
+    })
+
+    it('« Modifier » opens its step (Description → step 2)', () => {
+      render(ui('fr', FULL, 5, DRAFT_ID))
+      fireEvent.click(screen.getByRole('button', { name: 'Modifier — Description' }))
+      expect(screen.getByLabelText(new RegExp(t('service.wizard.short.label', 'fr')))).toHaveValue('Boutique prête')
+      expect(screen.getByRole('button', { name: t('service.wizard.footer.next', 'fr') })).toBeEnabled()
+    })
+
+    it('« Publier mon service » publishes the saved draft by id and replaces the page with the success screen', async () => {
+      h.publish.mockResolvedValue({ ok: true, serviceId: DRAFT_ID })
+      render(ui('fr', FULL, 5, DRAFT_ID))
+      fireEvent.click(publish())
+      await waitFor(() => expect(h.publish).toHaveBeenCalledWith({ draftId: DRAFT_ID }))
+      expect(h.replace).toHaveBeenCalledWith(`/mes-services/creer/succes?service=${DRAFT_ID}`)
+      // Nothing was dirty: publishing never re-sends the form, and the footer stays inert until the page goes.
+      expect(h.save).not.toHaveBeenCalled()
+      expect(screen.getByRole('button', { name: t('service.wizard.footer.previous', 'fr') })).toBeDisabled()
+    })
+
+    it('a refusal shows the message, flags the failing rows, and re-opens the footer', async () => {
+      h.publish.mockResolvedValue({ ok: false, errorKey: 'service.wizard.error.publish_incomplete', fields: ['shortDescription', 'deliverables'] })
+      render(ui('fr', FULL, 5, DRAFT_ID))
+      fireEvent.click(publish())
+      expect(await screen.findByRole('alert')).toHaveTextContent(t('service.wizard.error.publish_incomplete', 'fr'))
+      expect(row('service.wizard.recap.description')).toHaveTextContent(t('service.wizard.recap.flagged', 'fr'))
+      expect(row('service.wizard.recap.mode')).toHaveTextContent(t('service.wizard.recap.flagged', 'fr'))
+      expect(row('service.wizard.recap.title')).not.toHaveTextContent(t('service.wizard.recap.flagged', 'fr'))
+      expect(h.replace).not.toHaveBeenCalled()
+      expect(publish()).toBeEnabled()
+    })
+
+    it('a failed save before publishing stops the publish', async () => {
+      h.save.mockResolvedValue({ ok: false, errorKey: 'service.wizard.error.save_failed' })
+      render(ui('fr', FULL, 5, null))
+      fireEvent.click(publish())
+      await waitFor(() => expect(h.save).toHaveBeenCalledTimes(1))
+      expect(h.publish).not.toHaveBeenCalled()
+      await waitFor(() => expect(publish()).toBeEnabled())
+    })
+  })
+
+  it('a resumed draft says so in one line; a fresh wizard does not', () => {
+    render(ui('fr', READY, 2, DRAFT_ID))
+    expect(screen.getByText(/Vous reprenez votre brouillon/)).toHaveTextContent('Je crée votre boutique')
+    cleanup()
+    render(ui('fr'))
+    expect(screen.queryByText(/Vous reprenez votre brouillon/)).not.toBeInTheDocument()
   })
 })
