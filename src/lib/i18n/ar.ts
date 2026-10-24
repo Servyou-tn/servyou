@@ -3098,5 +3098,42 @@ export const ar: Record<string, string> = {
   'service.wizard.error.session':       "انتهت جلستك. سجّل الدخول مجددًا للحفظ.",
   'service.wizard.error.category_unavailable': "هذه الفئة لم تعد متاحة. اختر فئة أخرى.",
   'service.wizard.error.draft_gone':    "هذه المسودة لم تعد موجودة. أعد تحميل الصفحة للبدء من جديد.",
+  // H6 PR-3 — steps 3 « Tarif » / 4 « Prestation » (docs/design/h6-pr3-deltas.md §7).
+  // « قريباً » is the phase-aware skill's locked AR for « Bientôt disponible »; « عن بُعد » reuses
+  // serviceDetail.mode.remote and « طريقة تقديم الخدمة » serviceDetail.mode.title.
+  // REVIEW_AR_TRANSLATION: every other string in this block is a first draft (no AR frame).
+  'service.wizard.footer.coming_soon':  "قريباً",
+  'service.wizard.price.label':         "السعر الابتدائي",
+  'service.wizard.price.helper':        "السعر الذي تبدأ منه. يُتفاوض على السعر النهائي مع العميل عبر واتساب.",
+  'service.wizard.unit.label':          "وحدة التسعير",
+  'service.wizard.unit.fixed':          "سعر ثابت",
+  'service.wizard.unit.hour':           "بالساعة",
+  'service.wizard.unit.day':            "باليوم",
+  'service.wizard.unit.month':          "بالشهر",
+  'service.wizard.unit.helper':         "طريقة احتساب سعر هذه الخدمة.",
+  'service.wizard.delivery_time.label': "المدة التقديرية للإنجاز",
+  'service.wizard.delivery_time.placeholder': "مثال: 5-7 أيام",
+  'service.wizard.delivery_time.helper': "اختياري — حدّد إن كانت لخدمتك مدة معتادة (مثال: 5-7 أيام، أسبوعان، شهر)",
+  'service.wizard.deliverables.label':  "ما تتضمنه الخدمة",
+  // ‏ (RLM) after « Android »: without it the « 3 » joins the Latin run and is drawn beside
+  // « واجهات » instead of « شاشات » (bidi W7 — reference_ar_latin_adjacency_bidi).
+  'service.wizard.deliverables.placeholder': "مثال: تصميم واجهات iOS/Android‏ · 3 شاشات · تعديل واحد · الملفات المصدرية",
+  'service.wizard.deliverables.helper': "عنصر واحد في كل سطر. مثال: تصميم واجهات iOS/Android",
+  'service.wizard.mode.label':          "طريقة تقديم الخدمة",
+  'service.wizard.mode.remote':         "عن بُعد",
+  'service.wizard.mode.hybrid':         "ممكن في الموقع",
+  'service.wizard.mode.helper':         "معظم الخدمات تُقدَّم عن بُعد. اختر « ممكن في الموقع » إن كان بإمكانك التنقل إلى العميل.",
+  'service.wizard.briefing.label':      "ما يجب أن تزوّدني به (اختياري)",
+  'service.wizard.briefing.placeholder': "مثال: شعارك، نصوصك، ألوان علامتك، أمثلة تعجبك",
+  'service.wizard.briefing.helper':     "ما يجب أن يحضّره العميل لتبدأ العمل. يقلّل الذهاب والإياب.",
+  'service.wizard.error.price_required': "أدخل السعر الابتدائي.",
+  'service.wizard.error.price_invalid': "أدخل مبلغًا صحيحًا (مثال: 800 أو 800,50).",
+  'service.wizard.error.unit_required': "اختر وحدة التسعير.",
+  'service.wizard.error.delivery_time_max': "{max} حرفًا كحد أقصى.",
+  'service.wizard.error.deliverables_min': "أضف {min} عناصر على الأقل، عنصرًا في كل سطر.",
+  'service.wizard.error.deliverables_max': "{max} عناصر كحد أقصى.",
+  'service.wizard.error.deliverable_length': "يجب أن يتراوح طول كل سطر بين {min} و{max} حرفًا.",
+  'service.wizard.error.mode_required': "اختر طريقة تقديم الخدمة.",
+  'service.wizard.error.briefing_max':  "{max} حرفًا كحد أقصى.",
 
 }

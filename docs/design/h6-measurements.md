@@ -8,9 +8,17 @@ AND for the final comparison — do not re-read a frame that is recorded here.**
 |---|---|---|---|---|
 | 1 | 2026-10-23 | `459:18610` | Step 1 « Métier » — 1440 frame (includes stepper `459:18609`, footer `459:18873`, SelectTrigger ×2, skills combo) | ✅ success |
 | 2 | 2026-10-23 | `461:19405` | « H6 — Box 2 Description » — a SPECIMEN board (stepper + card), not a 1440 page frame | ✅ success |
+| 3 | 2026-10-24 | `459:18966` | « H6 — Box 3 Tarif & délai » — SPECIMEN board (stepper + card) | ✅ success |
+| 4 | 2026-10-24 | `459:19023` | « H6 — Box 4 Prestation » — SPECIMEN board (stepper + card) | ✅ success |
+| 5 | 2026-10-24 | `654:53743` | « H6 spécimen — délai renseigné » — read to settle whether Délai is composed | ✅ success |
+
+Not read: `654:53794` (délai empty) — read 5 settled the structure, and its empty state is the read-3
+placeholder. PR-3 used 3 reads (3–5); 5 this month.
 
 Screenshots: `docs/design/h6-figma/459-18610-step1-metier.png` (1024-wide render of the 1440 frame),
-`docs/design/h6-figma/461-19405-step2-description.png`.
+`docs/design/h6-figma/461-19405-step2-description.png`, `docs/design/h6-figma/459-18966-step3-tarif.png`,
+`docs/design/h6-figma/459-19023-step4-prestation.png`, `docs/design/h6-figma/654-53743-delai-renseigne.png`
+(gitignored — local only).
 
 Not read (and why): `459:18609` stepper and `459:18873` footer are both instances INSIDE read 1 — fully
 measured there. `653:53676` cascade and `459:19238` skills combo are open-state specimens (dropdown
@@ -164,6 +172,132 @@ Text styles declared: H3 (board title only), Body Small, Body, Overline.
 
 ---
 
+## Read 3 — `459:18966` « H6 — Box 3 Tarif & délai » (step 3)
+
+**Specimen board again** (same shell as read 2: bg surface/subtle, border/subtle, radius/xl, p 32, gap 24,
+H3 board title). Draws the stepper and the step-3 card only — **no page header, no footer**.
+
+### Stepper (`461:19459`) — matches read 2
+
+Fixed-40 connectors (specimen width). Steps 1–2 **done** (blue/600 circle + check 18, label Body Small
+Regular text/secondary), done→done and done→active connectors **blue/600**; step 3 **active** (blue/600,
+« 3 » SemiBold 16 inverse, label SemiBold 14/21 primary); 4–5 upcoming (surface/base + border-2
+border/subtle, number SemiBold 16 muted, label Regular 14/21 muted); connectors after the active step
+border/subtle. Identical per-state values to read 2 — nothing new for `ui/stepper.tsx`.
+
+### Card `box` (`459:18992`) — same shell as steps 1–2
+
+bg surface/base, border/subtle 1px, radius/xl 12, p 24, flex-col gap **20**.
+
+1. **`field-prix`** (`459:18993`) — flex-col **gap 6** (not 8), wraps a **Price Input** instance
+   (`459:18994`, component `202:15487`) + a helper.
+   - Label « Prix de départ * » — **Inter SemiBold 14**, leading normal, text/secondary; the asterisk is
+     part of the text run (not danger-coloured). Differs from the F3 Input label (Medium 14/21 + danger
+     asterisk) and from the Unité label below.
+   - Price Input internal gap label→field **6**.
+   - Field: h 44, bg surface/base, border 1px border/strong, radius/lg 10, **ps 16, no pe** (the suffix
+     sits flush on the end edge, clipped by the radius).
+     - `value` box: flex-1, full height, items-center, pe 12. Value « 800 » Inter Regular 16, leading
+       normal, **text/primary** — a FILLED value, not a placeholder (no placeholder text is drawn).
+     - `suffix`: full height, bg **surface/sunken**, **border on the start-side edge** (left in LTR) 1px
+       border/subtle, ps 12 / pe 14, centred; « TND » Inter Medium 14 text/muted.
+   - Helper (`459:19001`) « Le prix de départ. Le prix final se négocie avec le client sur WhatsApp. » —
+     Body Small (14/21/400) **text/secondary** (not muted).
+2. **`field-unite`** (`459:19002`) — flex-col gap 8.
+   - Label « Unité * » — **Inter Medium 16 / leading body 26, text/primary**, plain asterisk in the run
+     (same style as step 1's « Compétences * » label).
+   - `segmented` (`459:19004`) — **full width**, bg surface/sunken, radius/lg 10, p 4, gap 4, items-start.
+     Four options, each **flex-1** (equal width), px 16 / py 8, radius/md 8, centred:
+     - selected « **Fixe** » — bg surface/base, shadow 0 1 2 rgba(0,0,0,.06), label **Inter Medium 14/21
+       text/primary**;
+     - « Par heure », « Par jour », « Par projet » — no fill, label **Body Small Regular 14/21
+       text/secondary**.
+     - Each option box is **h 100** — a fixed-height authoring artefact (Figma `createFrame` default;
+       the content is one 21px line + py 8 = 37). See the PR-3 diff.
+   - Helper (`459:19013`) « Comment vous facturez ce service. » — Body Small **text/secondary**.
+3. **Délai** — a plain **F3 `Input` instance** (`22:512`), **not a composed field**, not required.
+   - Label « Délai de réalisation estimé » (Medium 14/21 text/secondary, no asterisk).
+   - Placeholder « Ex: 5-7 jours » Body 16 text/muted.
+   - Helper « Optionnel — précisez si votre prestation a un délai type (ex: 5-7 jours, 2 semaines,
+     1 mois) » Body Small text/muted (F3 default). No counter. The screenshot centres it — the same
+     fixed-280 helperRow authoring artefact noted in read 1; built `text-start`.
+
+### Values
+
+| Element | Value | Token |
+|---|---|---|
+| card padding / gap / radius | 24 / 20 / 12 | space-6 / space-5 / radius-xl |
+| field-prix gap (input↔helper) and label↔field | 6 | space-1.5 |
+| field-unite gap | 8 | space-2 |
+| price field | h 44, ps 16, radius 10, border/strong | h-11 ps-4 rounded-lg |
+| price value box end padding | 12 | pe-3 |
+| suffix | ps 12 / pe 14, bg surface/sunken, start border border/subtle | ps-3 pe-3.5 |
+| segmented track | p 4, gap 4, radius 10, surface/sunken, full width | p-1 gap-1 rounded-lg |
+| segment | flex-1, px 16, py 8, radius 8 | flex-1 px-4 py-2 rounded-md |
+| selected segment shadow | 0 1 2 rgba(0,0,0,.06) | (shadow-xs is .04 — see diff) |
+
+Raw output kept out of the repo (see read 1). Text styles declared: H3 (board title), Body Small, Body.
+
+---
+
+## Read 4 — `459:19023` « H6 — Box 4 Prestation » (step 4)
+
+**Specimen board** (same shell as reads 2–3). Stepper + step-4 card only — **no page header, no footer**.
+
+### Stepper (`461:19490`)
+
+Steps 1–3 done, step 4 « Prestation » active, step 5 upcoming; connectors blue/600 up to the active step,
+border/subtle after it. Same per-state values as reads 2–3.
+
+### Card `box` (`459:19050`) — same shell (surface/base, border/subtle, radius/xl, p 24, gap 20)
+
+1. **« Ce qui est inclus »** — F3 **`Textarea`** instance (`86:2299`), **required** (danger asterisk),
+   **no counter**.
+   - Label Medium 14/21 text/secondary + danger « * » (gap 2).
+   - Field h 120, px 16, py 12, items-start, radius/lg, border/strong, bg surface/base, resize grip 12
+     bottom-end.
+   - Placeholder « Ex: Design UI iOS/Android · 3 écrans · 1 révision · Fichiers sources » Body 16/26 muted.
+   - Helper « Une ligne par élément. Ex: Design UI iOS/Android » Body Small text/muted (screenshot centres
+     it — same helperRow artefact).
+2. **`field-mode`** (`459:19051`) — flex-col gap 8. Same composition as step 3's `field-unite`.
+   - Label « Mode de prestation * » Medium 16/26 text/primary, plain asterisk.
+   - `segmented` (`459:19053`) — full width, surface/sunken, radius/lg, p 4, gap 4; **two** flex-1 options:
+     - selected « **À distance** » — surface/base, shadow 0 1 2 rgba(0,0,0,.06), Medium 14/21 primary;
+     - « **Sur site possible** » — Body Small Regular 14/21 text/secondary.
+     - Option boxes again h 100 (same fixed-height artefact).
+   - Helper (`459:19058`) « La plupart des services sont à distance. « Sur site possible » si vous pouvez
+     vous déplacer chez le client. » Body Small **text/secondary**.
+   - « À distance » is drawn selected on a card whose two textareas are EMPTY (placeholders) — reads as
+     the default value, not a filled state.
+3. **« Ce qu'il faut me fournir (optionnel) »** — F3 `Textarea`, **not required** (the word « optionnel »
+   is part of the label text), **counter « 0/500 »** (Overline 12/17/500/0.48 uppercase muted).
+   - Placeholder « Ex: votre logo, vos textes, vos couleurs de marque, des exemples que vous aimez ».
+   - Helper « Ce que le client doit préparer pour que vous commenciez. Réduit les allers-retours. » Body
+     Small text/muted.
+   - The counter cap drawn is **500**; the DB CHECK on `buyer_briefing` is **1000** (see the PR-3 diff).
+
+Raw output kept out of the repo. Text styles declared: H3 (board title), Body Small, Body, Overline.
+
+---
+
+## Read 5 — `654:53743` « H6 spécimen — délai renseigné »
+
+A white specimen card (border/subtle, radius 16, p 28, gap 20), title « Spécimen H6 — Coaching Meta Ads
+(délai renseigné) » SemiBold 16. Three fields, each 534 wide:
+
+- Catégorie — SelectTrigger searchable, value « Coaching Meta Ads », helper « Le domaine principal de votre
+  service. »
+- Sous-catégorie — SelectTrigger single, **state=filled**, value « Formation dropshipping avec Meta »,
+  helper « Affine votre domaine. »
+- **Délai de réalisation estimé** — F3 `Input` (`22:531`), **state=filled**, value « 5-7 jours » Body 16
+  **text/primary**; helper unchanged from read 3 (« Optionnel — précisez… »).
+
+**Finding: Délai is a single free-text Input in its filled state too — there is no composed number +
+unit control anywhere in reads 3 or 5.** The specimen's purpose is the sector context (a coaching service
+with a délai), not a different control.
+
+---
+
 ## Unmeasured (🧠 not in any read) — founder call before building
 
 - **Mobile (375).** Neither read has a mobile variant. 5 columns × 100 = 500 > 343 content width even
@@ -172,3 +306,7 @@ Text styles declared: H3 (board title only), Body Small, Body, Overline.
 - **Open states:** Catégorie searchable panel (`653:53676` cascade specimen), skills suggestion list
   (`459:19238` combo specimen), error states, saving/saved transitions of « Enregistré automatiquement ».
 - **AR.** No AR frame (as for every H-series screen) — mirrored by logical properties.
+- **Steps 3–4 (reads 3–5):** no footer drawn (PR-2's footer carries over); no mobile variant (four flex-1
+  segments at 343 wide do not fit « Par heure » / « Par projet »); no error, focus or hover state for the
+  segmented fields or the Price Input inside the H6 boards (Price Input `202:15487` has a 4-state set on
+  the Components page — not read); no specimen for « Ce qui est inclus » filled.
