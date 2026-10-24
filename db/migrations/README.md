@@ -356,6 +356,25 @@ this PR and is not attempted here.
     table; `search_vector` untouched. Rollback SQL is in a comment block at the bottom of the
     migration file.
 
+64. **20261024215730_service_listings_publish_gate** — Applied by the architect 2026-10-24 (recorded
+    version; executable SQL MD5-verified against `schema_migrations`, comments stripped). (#63
+    `20261024215559_is_admin_requires_active` is recorded by its own PR; until it merges, the
+    Verification query below lists it as missing.) H6 PR-4 « Publier mon service » — G8, rulings
+    D30a/D30b in `docs/design/h6-pr4-deltas.md` §3. Adds the pure helper
+    `service_listing_publish_problems(service_listings) → text[]` (failing column names under the G4
+    publish rules: title 10–80, category + subcategory, tags 1–5 × 1–50, short_description 1–160,
+    description 100–2000, price > 0, price_unit, deliverables 3–8 × 5–150, delivery_mode; lengths =
+    `char_length` of the btrim'd value) and the BEFORE INSERT/UPDATE trigger
+    `trg_service_publish_requirements` (SECURITY DEFINER, `search_path ''`): skipped when
+    `auth.uid()` is null (service role, migrations, live-DB fixtures) or the new status is `draft`;
+    a non-draft INSERT or a row leaving draft must pass whole; a non-draft → non-draft UPDATE must
+    leave every column it CHANGES valid — so the 21 pre-H6 listings (all failing the rules) keep
+    pause/unpause and admin unhide. Raises 23514 with hint `service_publish_requirements` and
+    detail = failing columns. EXECUTE revoked from public/anon/authenticated on both functions.
+    Verified after apply (architect): draft `263c5565` → `[]`; the 21 legacy rows fail the rules and
+    stay pause/unpause-able. No table, column, RLS or grant change; `search_vector` untouched.
+    Rollback SQL is in a comment block at the bottom of the migration file.
+
 ## Rollback paths
 
 Each migration in this folder represents work that has already been applied to production. Rollback is therefore reverse migration work, not file deletion. If a rollback is ever needed, write a new dated migration that reverses the relevant changes — never delete history from this folder.
