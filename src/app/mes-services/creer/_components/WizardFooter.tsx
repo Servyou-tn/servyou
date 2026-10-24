@@ -1,6 +1,7 @@
 'use client'
 
 import { Button } from '@/components/ui/button'
+import { BUILT_STEPS } from '@/lib/freelance/service-draft'
 import { t, type Lang } from '@/lib/i18n'
 
 // H6 wizard footer — Figma 459:18873 (inside read 1, docs/design/h6-measurements.md): full width of
@@ -11,7 +12,9 @@ import { t, type Lang } from '@/lib/i18n'
 // Not in the frame, founder-ruled or proposed in docs/design/h6-pr2-deltas.md:
 //   • sticky to the viewport bottom, bleeding over AppShell main's padding (-mx/-mb = its px/py);
 //   • « Précédent » (secondary) from step 2 on;
-//   • step 2's « Suivant » stays disabled with « Bientôt disponible » until step 3 ships (D6);
+//   • the last built step's « Suivant » (step 4 since PR-3) stays disabled with « Bientôt disponible »
+//     until step 5 ships in PR-4 (D6, D21) — the wizard's own key: the sidebar's
+//     marche.sidebar.coming_soon is French in ar.ts (logged);
 //   • the caption follows the autosave: nothing before the first save, « Enregistrement… » while
 //     saving, the frame's text once saved, the save error (danger) when a save fails (D8);
 //   • below `sm` the caption sits on its own line above the buttons (no mobile frame).
@@ -46,8 +49,8 @@ export function WizardFooter({
         : saveState === 'error' && saveErrorKey
           ? t(saveErrorKey, lang)
           : ''
-  // Step 3 isn't built yet (PR-3): « Suivant » on the last built step can't lead anywhere.
-  const nextComingSoon = step >= 2
+  // Step 5 isn't built yet (PR-4): « Suivant » on the last built step can't lead anywhere.
+  const nextComingSoon = step >= BUILT_STEPS
 
   return (
     // One wrapping row. From `sm`: [brouillon][caption] ……… [précédent][suivant], as drawn. Below it the
@@ -70,7 +73,7 @@ export function WizardFooter({
           </Button>
         )}
         {nextComingSoon ? (
-          <span title={t('marche.sidebar.coming_soon', lang)}>
+          <span title={t('service.wizard.footer.coming_soon', lang)}>
             <Button disabled>{t('service.wizard.footer.next', lang)}</Button>
           </span>
         ) : (

@@ -35,6 +35,12 @@ const ROW = {
   tags: ['react'],
   short_description: null,
   description: null,
+  starting_price_tnd: null,
+  price_unit: null,
+  delivery_time: null,
+  deliverables: [],
+  delivery_mode: null,
+  buyer_briefing: null,
 }
 const CATS = {
   data: [
@@ -77,6 +83,19 @@ describe('getResumableDraft', () => {
       step: 2,
       form: { sectorId: 'developpement-web-mobile', subcategoryId: 'e-commerce', skills: ['react'] },
     })
+  })
+
+  it('selects the step 3–4 columns and resumes a step-2-complete draft on step 3', async () => {
+    const { supabase, calls } = client(
+      { data: [{ ...ROW, short_description: 'Boutique prête', description: 'x'.repeat(100) }], error: null },
+      CATS,
+    )
+    const draft = await getResumableDraft(supabase, 'fp-1')
+    const select = calls.find(([table, op]) => table === 'service_listings' && op === 'select')
+    for (const column of ['starting_price_tnd', 'price_unit', 'delivery_time', 'deliverables', 'delivery_mode', 'buyer_briefing']) {
+      expect(String(select?.[2][0])).toContain(column)
+    }
+    expect(draft).toMatchObject({ step: 3, form: { priceUnit: 'fixed', deliveryMode: 'remote' } })
   })
 
   it('takes the newest of two drafts and logs both ids', async () => {

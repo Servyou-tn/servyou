@@ -1,5 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
-import { draftRowToForm, resumeStep, type DraftForm, type DraftRow, type ServiceWizardStep } from './service-draft'
+import { DRAFT_ROW_COLUMNS, draftRowToForm, resumeStep, type DraftForm, type DraftRow, type ServiceWizardStep } from './service-draft'
 
 // H6 silent resume (founder ruling, 2026-09-09; confirmed as D7 2026-10-23): /mes-services/creer
 // reopens the freelancer's newest draft, with no banner and no link, on the first step its data
@@ -17,7 +17,7 @@ export async function getResumableDraft(
 ): Promise<ResumableDraft | null> {
   const { data, error } = await supabase
     .from('service_listings')
-    .select('id, title, category_id, subcategory_id, tags, short_description, description')
+    .select(DRAFT_ROW_COLUMNS)
     .eq('freelancer_profile_id', freelancerProfileId)
     .eq('status', 'draft')
     .order('updated_at', { ascending: false })

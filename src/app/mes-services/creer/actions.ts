@@ -2,7 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { resolveOwnedFreelancerProfileId } from '@/lib/freelancer/owner-profile'
-import { DraftInputSchema, normalizeSkills } from '@/lib/freelance/service-draft'
+import { DraftInputSchema, draftDeliverables, normalizeSkills, parsePrice } from '@/lib/freelance/service-draft'
 import { getSector, getSubcategory } from '@/lib/taxonomy/service-categories'
 
 // H6 « Créer un service » autosave. Returns i18n KEYS, not text: the wizard keeps the key in state
@@ -19,6 +19,8 @@ import { getSector, getSubcategory } from '@/lib/taxonomy/service-categories'
 //     touch a live or paused service;
 //   • the category pair is checked against the TS taxonomy (the wizard's source of truth, which
 //     keeps out the DB-only `maison` row) and then resolved slug → uuid in the DB;
+//   • steps 3–4 never fail a save: a price that doesn't parse is written NULL (the step-3 gate
+//     reports it), and « Ce qui est inclus » keeps its first 8 items (the DB CHECK's cap);
 //   • RLS (owner-only INSERT/UPDATE) and trg_enforce_service_subcategory_parent back all of it.
 // No revalidatePath: a draft appears on no H5, dashboard or public surface.
 
@@ -91,6 +93,12 @@ export async function saveServiceDraftAction(input: unknown): Promise<SaveDraftR
     tags: normalizeSkills(draft.skills, draft.sectorId),
     short_description: draft.shortDescription.trim() || null,
     description: draft.description.trim() || null,
+    starting_price_tnd: parsePrice(draft.price),
+    price_unit: draft.priceUnit,
+    delivery_time: draft.deliveryTime.trim() || null,
+    deliverables: draftDeliverables(draft.deliverablesText),
+    delivery_mode: draft.deliveryMode,
+    buyer_briefing: draft.buyerBriefing.trim() || null,
     status: 'draft' as const,
   }
 
