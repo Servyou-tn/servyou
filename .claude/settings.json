@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "deny": [
+      "Bash(npm run rls-smoke:*)",
+      "Bash(node scripts/rls-smoke.mjs:*)",
+      "Bash(git push --force:*)",
+      "Bash(git push -f:*)",
+      "Bash(git push --force-with-lease:*)",
+      "Bash(git push origin main:*)",
+      "Bash(git push origin HEAD:main:*)",
+      "mcp__claude_ai_Supabase__apply_migration",
+      "mcp__supabase__apply_migration",
+      "mcp__Supabase__apply_migration"
+    ]
+  }
+}

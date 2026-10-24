@@ -13,6 +13,8 @@
 | Claim a PR done with UI changes — before push | [`servyou-visual-gate`](./servyou-visual-gate/SKILL.md) |
 | Build a stat tile, chart, or widget that touches deferred features | [`servyou-phase-aware-features`](./servyou-phase-aware-features/SKILL.md) |
 | Run any schema change, migration, or DDL | [`servyou-discovery-first-migration`](./servyou-discovery-first-migration/SKILL.md) |
+| Start a task briefed "Role: page-builder" (Figma → code screen) | [`servyou-page-builder`](./servyou-page-builder/SKILL.md) — role skill, loads the others it needs |
+| Start a task briefed "Role: db-guardian" (DB, RLS, security) | [`servyou-db-guardian`](./servyou-db-guardian/SKILL.md) — role skill, loads the others it needs |
 
 ## The 5 skills
 

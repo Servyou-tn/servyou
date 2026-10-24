@@ -73,6 +73,12 @@ Load conditionally per task. Index: `.claude/skills/README.md`.
 - `servyou-visual-gate` — pre-merge UI walkthrough
 - `servyou-phase-aware-features` — widgets, stats, dashboards
 - `servyou-discovery-first-migration` — schema changes
+- **Role skills** (load first when a brief says "Role: …"): `servyou-page-builder` (Figma → code
+  screens) · `servyou-db-guardian` (DB, RLS, migrations, security). They hold each agent's full rules
+  and definition of done, so a founder brief can be three lines.
+- **DB types:** `src/lib/supabase/database.types.ts` is generated from the live schema — regenerate it
+  after every applied migration. Type new Supabase clients/queries with `Database`.
+- **Hard guardrails** live in `.claude/settings.json` (permission deny rules), not only in this file.
 
 ## Dev loop
 
