@@ -342,6 +342,26 @@ this PR and is not attempted here.
     and none is held by a non-freelancer. Verified by
     `src/__tests__/job-responses-integrity.test.ts`. Rollback SQL is in a comment block at the
     bottom of the migration file.
+60. **20261023231434_public_profiles_revoke_writes** — CRITICAL hotfix found while reviewing
+    migration 61, applied by the architect on 2026-10-24 (the two `revoke` statements verbatim).
+    `public_profiles` is a simple view over `profiles`, so Postgres made it auto-updatable; it is
+    owned by `postgres` (BYPASSRLS) with `security_invoker = false`, and Supabase's default
+    privileges had granted INSERT / UPDATE / DELETE / TRUNCATE on it to `anon` and
+    `authenticated`. On such a view the base table's privileges and RLS are checked as the view
+    owner, so anyone holding the public anon key could PATCH any account's name, city, language,
+    avatar or `seller_type` over PostgREST, or DELETE the row — cascading to that account's shops,
+    products, orders on both sides, freelancer profile, listings, job posts, responses, favorites
+    and reports. Migration 53 had revoked client INSERT / DELETE on the `profiles` table; the view
+    kept them. Revokes every write privilege on `public_profiles` and `buyer_cancellation_history`
+    (not updatable, included because a view is never a write path) from `anon` and
+    `authenticated`; SELECT stays — `public_profiles`' protection is its column list. No row
+    touched. Discovery: 22 users, 22 profiles; 24 h of edge logs showed only GET / HEAD on the
+    view (earlier writes cannot be ruled out). Verified after apply: no view in `public` keeps a
+    write grant. Live suite `src/__tests__/public-profiles-read-only.test.ts` (anon and a
+    signed-in user get `42501` on PATCH / DELETE / POST; SELECT unchanged; the
+    `buyer_cancellation_history` revoke is defense in depth — the rewriter refuses writes there
+    with `55000` before any privilege check). Rollback SQL (which re-opens the hole) is in a
+    comment block at the bottom of the migration file.
 
 ## Rollback paths
 
