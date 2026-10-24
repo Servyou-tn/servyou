@@ -5,7 +5,9 @@
  * /parametres and every dashboard), so it was inverted to "everything except static assets, the auth
  * pages and the Sentry tunnel". unstable_doesMiddlewareMatch runs Next's own matcher compiler, so
  * these cases pin what production actually matches — including that each excluded segment is
- * anchored (/connexion is excluded, /connexion-x is not).
+ * anchored (/connexion is excluded, /connexion-x is not), and that a file extension is excluded only
+ * where public/ assets live (the root and /brand/): a dotted dynamic segment such as
+ * /admin/utilisateurs/x.png is a page and a server-action endpoint, so it stays matched.
  *
  * Handler: @supabase/ssr is mocked. A suspended account is signed out on either signal — the
  * profiles.suspended_at lookup, or getUser()'s 403 user_banned (the auth ban answers that on a
@@ -65,6 +67,12 @@ describe('matcher — everything but static assets, auth pages and the Sentry tu
     '/authentique',
     '/monitoring-report',
     '/inscriptions',
+    // A dotted dynamic segment is a page (and a server-action endpoint), not a static file: the
+    // extension exclusion covers only where public/ assets live (the root and /brand/).
+    '/admin/utilisateurs/x.png',
+    '/demander/x.txt',
+    '/mes-commandes/x.xml',
+    '/produits/x.svg',
   ])('matches %s', (path) => {
     expect(matches(path)).toBe(true)
   })
@@ -79,7 +87,7 @@ describe('matcher — everything but static assets, auth pages and the Sentry tu
     '/brand/icons/facebook-app-symbol.png',
     '/brand/logo.svg',
     '/brand/photo.jpg',
-    '/fonts/cairo.woff2',
+    '/file.svg',
     '/connexion',
     '/connexion?suspended=1',
     '/inscription',
@@ -95,9 +103,10 @@ describe('matcher — everything but static assets, auth pages and the Sentry tu
   })
 })
 
-function request(path: string) {
+function request(path: string, init: { method?: string; headers?: Record<string, string> } = {}) {
   return new NextRequest(`http://localhost${path}`, {
-    headers: { cookie: 'sb-xggo-auth-token=abc; sb-xggo-auth-token.1=def; lang=ar' },
+    method: init.method ?? 'GET',
+    headers: { cookie: 'sb-xggo-auth-token=abc; sb-xggo-auth-token.1=def; lang=ar', ...init.headers },
   })
 }
 
@@ -119,6 +128,24 @@ beforeEach(() => {
 })
 
 describe('handler', () => {
+  // Every Next prefetch (segment cache) sends next-router-prefetch '1' or '2'; navigations never do.
+  it.each(['1', '2'])('lets a GET <Link> prefetch (next-router-prefetch: %s) through without any Auth call', async (value) => {
+    h.getUser.mockResolvedValue({ data: { user: null }, error: { code: 'user_banned', status: 403, message: 'User is banned' } })
+    const res = await middleware(request('/mes-commandes', { headers: { 'next-router-prefetch': value } }))
+    expect(passedThrough(res)).toBe(true)
+    expect(h.getUser).not.toHaveBeenCalled()
+  })
+
+  it('still checks a POST carrying the prefetch header (a server action never skips)', async () => {
+    h.getUser.mockResolvedValue({ data: { user: null }, error: { code: 'user_banned', status: 403, message: 'User is banned' } })
+    expectSignedOut(await middleware(request('/mes-commandes', { method: 'POST', headers: { 'next-router-prefetch': '1' } })))
+  })
+
+  it('still checks the navigation that follows a prefetch (no header)', async () => {
+    h.getUser.mockResolvedValue({ data: { user: null }, error: { code: 'user_banned', status: 403, message: 'User is banned' } })
+    expectSignedOut(await middleware(request('/mes-commandes', { headers: { rsc: '1' } })))
+  })
+
   it('passes an anonymous visitor through without a profile lookup', async () => {
     h.getUser.mockResolvedValue({ data: { user: null }, error: { code: undefined, name: 'AuthSessionMissingError', status: 400 } })
     const res = await middleware(request('/mes-commandes'))

@@ -15,9 +15,10 @@ import { createClient } from '@/lib/supabase/server'
 //     reason src/lib/shops/owner-shop.ts gives: an action's caller is a form that renders
 //     { success, error }, and a redirect thrown mid-action is not something it can render.
 //
-// `profiles.is_admin` is a trustworthy signal: authenticated cannot write it (migration
-// 20260609190541_lock_profiles_privileged_columns). This is defence in depth on top of the DB —
-// the admin RLS policies and the is_admin()-gated SECURITY DEFINER RPCs stay the real boundary.
+// `profiles.is_admin` and `suspended_at` are trustworthy signals: authenticated cannot write either
+// (migration 20260609190541_lock_profiles_privileged_columns). A suspended admin is not an admin.
+// This is defence in depth on top of the DB — the admin RLS policies and the is_admin()-gated
+// SECURITY DEFINER RPCs stay the real boundary.
 
 export type AdminCheck =
   | { ok: true; userId: string }
@@ -32,10 +33,12 @@ export async function checkAdmin(supabase: SupabaseClient): Promise<AdminCheck> 
   } = await supabase.auth.getUser()
   if (!user) return { ok: false, reason: 'unauthenticated' }
 
-  // Owner-read RLS lets a user read their own row, so this resolves the caller's own flag.
+  // Owner-read RLS lets a user read their own row, so this resolves the caller's own flags. A
+  // suspended admin is not an admin — the same rule as is_admin() since migration
+  // 20261024215559_is_admin_requires_active. Anything but an explicit NULL suspended_at fails closed.
   const { data, error } = await supabase
     .from('profiles')
-    .select('is_admin')
+    .select('is_admin, suspended_at')
     .eq('id', user.id)
     .maybeSingle()
 
@@ -43,7 +46,7 @@ export async function checkAdmin(supabase: SupabaseClient): Promise<AdminCheck> 
     console.error('[require-admin] is_admin fetch failed:', error.message, error.code, error.details)
     return { ok: false, reason: 'query_failed' }
   }
-  if (data?.is_admin !== true) return { ok: false, reason: 'forbidden' }
+  if (data?.is_admin !== true || data.suspended_at !== null) return { ok: false, reason: 'forbidden' }
 
   return { ok: true, userId: user.id }
 }

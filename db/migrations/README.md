@@ -363,7 +363,11 @@ this PR and is not attempted here.
     with `55000` before any privilege check). Rollback SQL (which re-opens the hole) is in a
     comment block at the bottom of the migration file.
 61. **20261024191215_suspension_enforcement** — Applied by the architect on 2026-10-24; the
-    applied statements match this file once comments are stripped (md5 79590b58, 99 lines).
+    applied statements match this file once column-0 `--` comment lines and blank lines are
+    removed and the rollback block is cut (md5 79590b58, 99 lines; the indented comment inside
+    `enforce_active_user()` is part of the applied statements and stays):
+    `sed -n '/^-- ─── ROLLBACK/q;p' <file> | grep -v '^--' | grep -v '^$' | md5sum`, and on the
+    database side the same filter over `supabase_migrations.schema_migrations.statements` lines.
     Closes the HIGH audit finding "suspension is enforced only in `src/middleware.ts`" for the
     database: until now no policy or trigger read `profiles.suspended_at` (except migration 59's
     `job_responses` check),
@@ -411,6 +415,22 @@ this PR and is not attempted here.
     PR-4 ruling. No GRANT/RLS change: table-level grants cover the new column; no view depends on the
     table; `search_vector` untouched. Rollback SQL is in a comment block at the bottom of the
     migration file.
+63. **20261024215559_is_admin_requires_active** — Applied by the architect on 2026-10-24; the
+    applied statements match this file with the same normalization as #61 (md5 3a05cd3f, 12
+    lines). Found by the PR #183 review: `is_admin()` never read `profiles.suspended_at`, so a
+    suspended admin kept every admin READ ("Admin reads all profiles": every account's email,
+    phone, date_of_birth; the admin branches on orders, disputes, reports, data exports, deletion
+    requests, moderation; the verifications bucket) for its token's lifetime, and indefinitely
+    whenever its auth ban was missing. Migration 61 already refused its writes; this applies D2 to
+    reads, at the gate. `is_admin()` now also requires `suspended_at is null`; LANGUAGE sql, STABLE,
+    SECURITY DEFINER, `search_path 'public'`, owner and EXECUTE grants are unchanged (verified after
+    apply). 25 policies (1 on `storage.objects`) and 17 functions call it; for an active admin the
+    result is unchanged (1 admin, 0 suspended at apply). A suspended admin now gets `Forbidden: admin
+    access required` from every admin RPC, `admin_unsuspend_user` on themselves included, and loses
+    every admin read. Same PR: `checkAdmin` (`src/lib/auth/require-admin.ts`) rejects a suspended
+    admin too. Verified by `src/__tests__/suspension-enforcement.test.ts` (suspended admin: RPCs
+    Forbidden, no cross-account profile read; active admin: both work) and `require-admin.test.ts`.
+    Rollback SQL is in a comment block at the bottom of the migration file.
 
 ## Rollback paths
 

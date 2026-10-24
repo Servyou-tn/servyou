@@ -3,8 +3,9 @@
  * must-test per CLAUDE.md.
  *
  * checkAdmin (server actions) and requireAdmin (layout + pages) both decide on the caller's own
- * profiles.is_admin. The Supabase client is mocked: these cover the guard's DECISION logic —
- * logged out vs non-admin vs lookup failure vs admin, and that every non-admin outcome fails
+ * profiles.is_admin and suspended_at (a suspended admin is not an admin, as in is_admin()). The
+ * Supabase client is mocked: these cover the guard's DECISION logic — logged out vs non-admin vs
+ * suspended admin vs lookup failure vs admin, and that every non-admin outcome fails
  * closed — not RLS. `next/navigation`'s redirect is mocked to throw, as the real one does
  * (it returns `never`), so control flow stops where production's would.
  */
@@ -18,7 +19,7 @@ const h = vi.hoisted(() => {
     profile: { data: unknown; error: { message: string; code: string; details: string } | null }
   } = {
     user: { id: 'admin-1' },
-    profile: { data: { is_admin: true }, error: null },
+    profile: { data: { is_admin: true, suspended_at: null }, error: null },
   }
   // profiles: select -> eq -> maybeSingle
   const maybeSingle = vi.fn(() => Promise.resolve(state.profile))
@@ -43,7 +44,7 @@ const client = h.client as unknown as SupabaseClient
 
 beforeEach(() => {
   h.state.user = { id: 'admin-1' }
-  h.state.profile = { data: { is_admin: true }, error: null }
+  h.state.profile = { data: { is_admin: true, suspended_at: null }, error: null }
   vi.clearAllMocks()
 })
 
@@ -52,8 +53,19 @@ describe('checkAdmin (server-action guard)', () => {
     const res = await checkAdmin(client)
     expect(res).toEqual({ ok: true, userId: 'admin-1' })
     expect(h.from).toHaveBeenCalledWith('profiles')
-    expect(h.select).toHaveBeenCalledWith('is_admin')
+    expect(h.select).toHaveBeenCalledWith('is_admin, suspended_at')
     expect(h.eq).toHaveBeenCalledWith('id', 'admin-1')
+  })
+
+  // Same rule as is_admin() (migration 20261024215559): a suspended admin is not an admin.
+  it('rejects a SUSPENDED admin as forbidden', async () => {
+    h.state.profile = { data: { is_admin: true, suspended_at: '2026-10-24T19:00:00Z' }, error: null }
+    expect(await checkAdmin(client)).toEqual({ ok: false, reason: 'forbidden' })
+  })
+
+  it('fails closed when suspended_at is missing from the row (only an explicit NULL passes)', async () => {
+    h.state.profile = { data: { is_admin: true }, error: null }
+    expect(await checkAdmin(client)).toEqual({ ok: false, reason: 'forbidden' })
   })
 
   it('rejects a signed-in non-admin as forbidden', async () => {
@@ -103,6 +115,12 @@ describe('requireAdmin (layout + page guard)', () => {
   it('returns the admin’s id without redirecting', async () => {
     expect(await requireAdmin('/admin')).toEqual({ userId: 'admin-1' })
     expect(h.redirect).not.toHaveBeenCalled()
+  })
+
+  it('sends a suspended admin to / like any non-admin', async () => {
+    h.state.profile = { data: { is_admin: true, suspended_at: '2026-10-24T19:00:00Z' }, error: null }
+    await expect(requireAdmin('/admin')).rejects.toThrow('NEXT_REDIRECT /')
+    expect(h.redirect).toHaveBeenCalledWith('/')
   })
 
   it('sends a non-admin to / (the same target as the old client layout)', async () => {

@@ -22,18 +22,28 @@
  *   * orders — D6 both directions: the suspended side is refused, the active counterparty still acts;
  *   * D3 / D4 — a suspended buyer can still open a dispute on their own order and file an export /
  *     deletion request, but not change or delete them;
- *   * storage — upload / upsert refused, delete a silent no-op, an active account unaffected;
- *   * admins — no bypass (D2): a suspended admin is refused everywhere, including through the admin
- *     RPCs and admin_unsuspend_user on themselves; an active admin still acts on a suspended account;
+ *   * storage — upload refused (an active account still uploads), delete a silent no-op; an
+ *     overwrite is refused for every account today (no permissive UPDATE policy), pinned as such;
+ *   * admins — no bypass (D2): a suspended admin's table writes meet the trigger, and since migration
+ *     20261024215559 (is_admin() requires an active admin) its admin RPCs — admin_unsuspend_user on
+ *     itself included — are Forbidden and its admin READS are gone; an active admin still reads and
+ *     acts on a suspended account;
+ *   * the RPCs' exact "already / not currently suspended" raise, which the admin actions' retry
+ *     branch keys on;
  *   * unsuspension — the same session writes again;
  *   * the auth ban — setAuthBan against GoTrue: sign-in (right AND wrong password), refresh and
- *     getUser all refused with user_banned, idempotent both ways, unknown id → not_found; and the
- *     access-token lifetime that bounds the read-only window (3600 s, measured 2026-10-24).
+ *     getUser all refused with user_banned, idempotent both ways, unknown id → not_found; syncAuthBan
+ *     following suspended_at both ways; and the access-token lifetime that bounds the read-only
+ *     window (3600 s, measured 2026-10-24).
  *
  * Fixtures (all `susp-enf-`): two shop owners, a freelancer, a consumer, an active and a suspended
  * admin, a matrix account and its active control, and a ban account. Teardown deletes orders, then
  * the fixture admins' audit rows (admin_id is ON DELETE RESTRICT), then their avatar objects, then
  * the auth users, which cascades to every other row seeded here.
+ *
+ * The cases are SEQUENTIAL, in file order (vitest's default within a file): the D3 / D4 pairs,
+ * the ban chain and the closing unsuspension build on the cases before them. Run the whole file,
+ * never one case alone (-t / .only) — an isolated case fails in ways that look like regressions.
  *
  * Pattern A (live-DB). Service role for fixtures, suspensions, ground truth and teardown only.
  *
@@ -43,7 +53,7 @@
 import { describe, it, expect, beforeAll, afterAll, vi } from 'vitest'
 import { randomUUID } from 'node:crypto'
 import { createClient, SupabaseClient } from '@supabase/supabase-js'
-import { setAuthBan } from '@/lib/auth/auth-ban'
+import { setAuthBan, syncAuthBan, isSuspensionAlreadyApplied } from '@/lib/auth/auth-ban'
 
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -67,6 +77,7 @@ const TITLE = 'Suspension enforcement test'
 const SUSPENDED = 'Ce compte est suspendu.'
 const DENIED = '42501'
 const UPLOAD_REFUSED = 'new row violates row-level security policy'
+const FORBIDDEN_RPC = 'Forbidden: admin access required' // the admin RPCs' is_admin() gate
 const AVATAR = () => new Blob([new Uint8Array([82, 73, 70, 70, 0, 0, 0, 0, 87, 69, 66, 80])], { type: 'image/webp' })
 
 type Verb = 'insert' | 'update' | 'delete'
@@ -523,13 +534,6 @@ describe.skipIf(!hasCreds)('storage — restrictive policies on storage.objects'
     expect(await avatarNames(sellerId)).toEqual([BEFORE_AVATAR])
   })
 
-  it('…nor overwrite its existing object (upsert)', async () => {
-    const { error } = await sellerClient.storage
-      .from('avatars')
-      .upload(`${sellerId}/${BEFORE_AVATAR}`, AVATAR(), { contentType: 'image/webp', upsert: true })
-    expect(error?.message).toBe(UPLOAD_REFUSED)
-  })
-
   it('…and its delete is a silent no-op: the object survives', async () => {
     const { data, error } = await sellerClient.storage.from('avatars').remove([`${sellerId}/${BEFORE_AVATAR}`])
     expect(error).toBeNull()
@@ -542,6 +546,38 @@ describe.skipIf(!hasCreds)('storage — restrictive policies on storage.objects'
     expect(error).toBeNull()
     expect(await avatarNames(seller2Id)).toEqual([`active-${RUN}.webp`])
   })
+
+  // storage.objects has no permissive UPDATE policy, so an overwrite (upsert = INSERT … ON CONFLICT
+  // DO UPDATE) is refused for EVERY account today — the active control proves it. This pins that
+  // state; it is not evidence for the restrictive UPDATE policy, which stays unobservable until a
+  // permissive UPDATE policy exists (then this control flips and the suspended case starts to matter).
+  it('an overwrite (upsert) is refused for every account today — active control and suspended alike', async () => {
+    const active = await seller2Client.storage
+      .from('avatars')
+      .upload(`${seller2Id}/active-${RUN}.webp`, AVATAR(), { contentType: 'image/webp', upsert: true })
+    expect(active.error?.message).toBe(UPLOAD_REFUSED)
+    const suspended = await sellerClient.storage
+      .from('avatars')
+      .upload(`${sellerId}/${BEFORE_AVATAR}`, AVATAR(), { contentType: 'image/webp', upsert: true })
+    expect(suspended.error?.message).toBe(UPLOAD_REFUSED)
+  })
+})
+
+// The admin actions' retry branch (src/lib/auth/auth-ban.ts isSuspensionAlreadyApplied) keys on the
+// RPCs' exact raise — pinned here against the live functions, not a copied string. Both calls raise,
+// so no row and no audit entry is written.
+describe.skipIf(!hasCreds)("the RPC raise the admin actions' retry branch keys on", () => {
+  it('admin_suspend_user on an already-suspended account', async () => {
+    const { error } = await adminClient.rpc('admin_suspend_user', { target_user_id: buyerId, reason: TITLE })
+    expect(error).not.toBeNull()
+    expect(isSuspensionAlreadyApplied(error!, true)).toBe(true)
+  })
+
+  it('admin_unsuspend_user on an active account', async () => {
+    const { error } = await adminClient.rpc('admin_unsuspend_user', { target_user_id: controlId })
+    expect(error).not.toBeNull()
+    expect(isSuspensionAlreadyApplied(error!, false)).toBe(true)
+  })
 })
 
 describe.skipIf(!hasCreds)('admins — no bypass for a suspended admin (D2); the actor rule for an active one', () => {
@@ -549,19 +585,38 @@ describe.skipIf(!hasCreds)('admins — no bypass for a suspended admin (D2); the
     expectSuspended((await admin2Client.from('categories').update({ name_fr: 'x' }).eq('id', randomUUID())).error)
   })
 
-  it('…nor moderate through the SECURITY DEFINER admin RPCs', async () => {
-    expectSuspended((await admin2Client.rpc('admin_hide_content', { target_type: 'product', target_id: productS2, reason: TITLE })).error)
+  // Since migration 20261024215559 is_admin() requires suspended_at IS NULL, so a suspended admin's
+  // admin RPCs stop at their is_admin() gate — before any write could reach the statement trigger.
+  it('…nor moderate through the SECURITY DEFINER admin RPCs (is_admin() gate)', async () => {
+    const { error } = await admin2Client.rpc('admin_hide_content', { target_type: 'product', target_id: productS2, reason: TITLE })
+    expect(error?.message).toBe(FORBIDDEN_RPC)
     expect((await readRow('products', productS2, 'admin_hidden_at'))?.admin_hidden_at).toBeNull()
   })
 
   it('…nor suspend someone else', async () => {
-    expectSuspended((await admin2Client.rpc('admin_suspend_user', { target_user_id: controlId, reason: TITLE })).error)
+    const { error } = await admin2Client.rpc('admin_suspend_user', { target_user_id: controlId, reason: TITLE })
+    expect(error?.message).toBe(FORBIDDEN_RPC)
     expect((await readRow('profiles', controlId, 'suspended_at'))?.suspended_at).toBeNull()
   })
 
   it('…nor unsuspend themselves — the reason D2 has no admin bypass', async () => {
-    expectSuspended((await admin2Client.rpc('admin_unsuspend_user', { target_user_id: admin2Id })).error)
+    const { error } = await admin2Client.rpc('admin_unsuspend_user', { target_user_id: admin2Id })
+    expect(error?.message).toBe(FORBIDDEN_RPC)
     expect((await readRow('profiles', admin2Id, 'suspended_at'))?.suspended_at).not.toBeNull()
+  })
+
+  it("…nor READ another account's profile through the admin policy (is_admin() requires an active admin)", async () => {
+    const { data, error } = await admin2Client.from('profiles').select('id, email, phone, date_of_birth').eq('id', controlId)
+    expect(error).toBeNull()
+    expect(data).toEqual([])
+    expect(await admin2Client.rpc('is_admin')).toMatchObject({ data: false, error: null })
+  })
+
+  it("control: an active admin still reads another account's profile", async () => {
+    const { data, error } = await adminClient.from('profiles').select('id').eq('id', controlId)
+    expect(error).toBeNull()
+    expect(data).toEqual([{ id: controlId }])
+    expect(await adminClient.rpc('is_admin')).toMatchObject({ data: true, error: null })
   })
 
   it('an active admin passes the trigger on an admin-only table', async () => {
@@ -640,5 +695,20 @@ describe.skipIf(!hasCreds)('the auth ban — setAuthBan against GoTrue', () => {
     const log = vi.spyOn(console, 'error').mockImplementation(() => {})
     expect(await setAuthBan(randomUUID(), true)).toEqual({ ok: false, reason: 'not_found' })
     log.mockRestore()
+  })
+
+  // What the admin actions call: the ban follows the COMMITTED suspended_at, both ways.
+  it('syncAuthBan bans a suspended account and lifts the ban once suspended_at is cleared', async () => {
+    await suspend(banId)
+    expect(await syncAuthBan(banId)).toEqual({ ok: true, suspended: true })
+    expect((await freshClient().auth.signInWithPassword({ email: email('ban'), password: PASSWORD })).error?.code).toBe('user_banned')
+
+    await serviceUpdate('profiles', { suspended_at: null, suspended_reason: null }, banId)
+    expect(await syncAuthBan(banId)).toEqual({ ok: true, suspended: false })
+    expect((await freshClient().auth.signInWithPassword({ email: email('ban'), password: PASSWORD })).error).toBeNull()
+  })
+
+  it('syncAuthBan reports an id with no profile as not_found', async () => {
+    expect(await syncAuthBan(randomUUID())).toEqual({ ok: false, reason: 'not_found' })
   })
 })

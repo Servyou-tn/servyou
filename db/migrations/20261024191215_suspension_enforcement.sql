@@ -27,7 +27,8 @@
 --   * BEFORE STATEMENT triggers fire before every row-level trigger, so the suspension error always
 --     surfaces first and no row trigger (snapshots, FOR SHARE reads, caps) runs for a suspended
 --     caller. There are no other statement-level triggers in public today;
---   * one trigger per table, one indexed PK lookup per statement.
+--   * one trigger per table, one indexed PK lookup per executed statement (per parent row under
+--     an FK cascade, which runs one statement per parent).
 -- The cost of statement level: no NEW / OLD, so a row-dependent exception (for example "a
 -- suspended buyer may still cancel their own pending order") would need a row-level trigger on
 -- that table instead -- see decision D6.

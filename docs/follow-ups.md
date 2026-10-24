@@ -4453,22 +4453,114 @@ Found during migration 61's discovery (decisions D1–D8). TRUNCATE grants are t
 
 ### LOW — `src/middleware.ts` now costs one Auth round trip per signed-in request on every route
 
-- **What:** the inverted matcher runs the existing getUser() (network call to Auth) plus one PK
-  lookup on every non-static, non-auth route — previously only on the allowlisted ones. Anonymous
-  visitors cost nothing (no session, no call).
-- **Fix (if latency shows):** getClaims() verifies the ES256 token locally; the `suspended_at`
-  lookup still catches a suspension, but a ban would then only be caught there (it is, since both
-  are set together).
+- **What:** the inverted matcher runs the existing getUser() (network call to Auth) then one PK
+  lookup, in sequence, on every non-static, non-auth navigation and server action — previously only
+  on the allowlisted routes. `<Link>` prefetches (~15–30 per signed-in page view) were the bulk of
+  it; PR #183 skips GET prefetches (`next-router-prefetch`, founder ruling 2026-10-24). Anonymous
+  visitors make no network call, but every request is still a middleware invocation against Vercel
+  Hobby limits, and getUser() has no timeout, so an Auth slowdown stalls every signed-in page.
+- **Fix (if latency shows):** run getUser() and `rpc('is_active_user')` in parallel; or getClaims()
+  — note it goes through getSession() and refreshes too.
 
-### LOW — a failed ban is visible only in the action's error, not on the admin user page
+### LOW — the auth ban can still drift from `suspended_at` outside the admin actions, or after a failed sync
 
-- **What:** the suspend actions write the database first, then ban; if the ban fails they return
-  `admin.users.error_ban_failed` without revalidating, so resubmitting retries it. An admin who
-  reloads instead sees the account as suspended with nothing saying the ban is missing. The
-  database refuses its writes and middleware signs it out regardless; only sign-in / refresh stay
-  open.
-- **Fix:** read `banned_until` (service role, `auth.admin.getUserById`) on `/admin/utilisateurs/[id]`
-  and offer "re-apply" when it disagrees with `suspended_at`.
+- **Partly fixed in PR #183 (founder ruling 2026-10-24):** the four admin actions now call
+  `syncAuthBan`, which sets the ban from the committed `suspended_at` — concurrent admins and
+  resubmits converge on the database.
+- **What remains:** (a) the ban exists only on the app path — a direct
+  `/rest/v1/rpc/admin_suspend_user` call (both RPCs stay EXECUTE-granted to authenticated), a Studio
+  / SQL edit of `suspended_at`, or any future code path suspends without a ban (and a direct unsuspend
+  leaves one); (b) when the sync itself fails, the action says so without revalidating, but an admin
+  who reloads sees only the database state, with no control to re-sync. Reverting the app code does
+  not lift bans either; the README rollback covers SQL only.
+- **Fix:** keep `banned_until` in step inside the database (the RPCs or a trigger on
+  `suspended_at`, if writing `auth.users` is permitted here — needs SQL), or revoke direct EXECUTE on
+  the two RPCs; on `/admin/utilisateurs/[id]` read `banned_until` (`auth.admin.getUserById`) and offer
+  a re-sync when it disagrees.
+
+### ✅ CLOSED — HIGH — a suspended admin keeps admin READ access (`is_admin()` ignores `suspended_at`)
+
+- **Closed by** PR #183 (2026-10-24): migration 63 (`20261024215559_is_admin_requires_active`,
+  `is_admin()` requires `suspended_at is null`) and `checkAdmin` rejecting a suspended admin. Verified
+  live: a suspended admin's admin RPCs are Forbidden and it reads no other account's profile; an
+  active admin is unchanged.
+- **What:** `is_admin()` checks only `is_admin = true`, and `checkAdmin` reads only that column. A
+  suspended admin keeps "Admin reads all profiles" (every account's email, phone, date_of_birth) and
+  every other `is_admin()` read branch for its token's lifetime (≤ 3600 s), indefinitely if its ban
+  is missing. Writes are already refused by migration 61. Found by the PR #183 review.
+
+### LOW (hardening) — PR #183 review leftovers
+
+- `src/middleware.ts`'s sign-out is a 307: a server-action POST from a suspended session is
+  replayed as a POST to `/connexion`, so the action errors instead of showing the banner (cookies
+  are still cleared). A 303 for non-GET requests would turn it into a GET. Unverified against Next
+  16.2's action client.
+- `src/lib/auth/auth-ban.ts` and `src/lib/supabase/admin.ts` guard "server only" by comment; the
+  repo does not use the `server-only` package (adding it is a dependency change). `setAuthBan` /
+  `syncAuthBan` could also take the `checkAdmin` result so the admin gate is structural.
+
+
+### MEDIUM — server-side getUser() refreshes near expiry and throws the rotated tokens away
+
+- **What:** auth-js refreshes inside getUser() once the cookie session is within ~90 s of expiry,
+  but neither `src/middleware.ts` (no-op `setAll`) nor Server Components (`src/lib/supabase/server.ts`
+  swallows the cookie write — its comment "session refresh is handled by middleware instead" is not
+  true) persist the result, and no browser client is mounted globally. Once a session goes stale,
+  every request — now every route and every prefetch — re-refreshes the same refresh token: extra
+  `/token` calls from Vercel's shared egress IPs (Auth's per-IP refresh rate limit; a 429 reads as
+  logged-out), plus refresh-token rotation reuse handling. Pre-existing; PR #183 widened it.
+- **Fix — its own PR (founder ruling 2026-10-24):** the standard @supabase/ssr updateSession pattern
+  (middleware writes `cookiesToSet` onto the response), or a middleware that validates the raw access
+  token with getUser(jwt) and never refreshes. Correct the server.ts comment either way.
+
+### MEDIUM — Supabase default privileges re-grant writes on any new or re-created view
+
+- **What:** migration 60 revoked writes on the two existing views only. A new view, or a
+  drop-and-recreate of `public_profiles`, gets INSERT / UPDATE / DELETE for anon and authenticated
+  again, and a simple owner-run view is auto-updatable — which re-opens the hole migration 60
+  closed. Likewise `trg_enforce_active_user` is a per-table list: a new client-writable table ships
+  unguarded until someone adds it. The live catalog check in `suspension-enforcement.test.ts`
+  catches both, but only in the integration config, which CI (`npx vitest run`) does not run.
+- **Fix:** default privileges scoped so views never get client writes (or a `ddl_command_end` event
+  trigger that revokes them / attaches the trigger), plus a migration-checklist item: "new table →
+  trigger; new view → revoke writes".
+
+### MEDIUM (investigate) — no integrity sweep for writes that may have gone through the `public_profiles` hole
+
+- **What:** migration 60 notes "earlier writes cannot be ruled out from the logs". DELETE is ruled
+  out (22 users = 22 profiles); a PATCH (name / city / avatar / `seller_type`) is not.
+- **Fix:** read-only checks — every `profiles.avatar_url` has a matching `uploaded_objects`
+  (`avatars`, `owner_id = id`) row; `seller_type` agrees with the account's shop / freelancer rows;
+  `updated_at` anomalies around the exposure window.
+
+### LOW — the delete actions read the suspension error as "has orders"
+
+- **What:** `deleteProductAction` (`src/app/actions/products.ts:558`) and `deleteService`
+  (`src/app/actions/services.ts:156`) map `error.code === '42501'` to the "an order landed" race
+  message; migration 61 raises 42501 too, so a suspended seller deleting a product / service with no
+  orders is told it has orders. Unreachable in the app once PR #183 deploys (middleware signs the
+  account out before any action runs); reachable until then on `/mes-produits` and `/mes-services`.
+- **Fix:** check `error.message === 'Ce compte est suspendu.'` before the 42501 mapping.
+
+### LOW — suspension does not revoke sessions
+
+- **What:** `setAuthBan` sets `banned_until` only. A device that made no request while the account
+  was suspended keeps its refresh cookie and resumes after the unban — relevant if suspension is
+  ever the response to a compromised account.
+- **Fix (if it matters):** sign out every session on suspension (Admin API, or `auth.sessions` via a
+  service-role RPC).
+
+### LOW — `suspension-enforcement.test.ts` teardown stops at the first failure
+
+- **What:** teardown throws on the first failed delete, leaving the remaining fixtures — possibly
+  one of the two `is_admin` accounts (per-run password) — until the next run's teardown. It shares
+  the `@rls-smoke.servyou.invalid` suffix the rls-smoke reaper deletes wholesale.
+- **Fix:** collect errors, delete every fixture, throw once at the end; demote fixture admins first.
+
+### LOW (note) — no last-active-admin guard
+
+- Two admins suspending each other at the same moment both pass the statement trigger; recovery is
+  the SQL editor only. Moot with one admin.
 
 ## Found while gating `fix/suspension-enforcement` (2026-10-24) — not suspension
 

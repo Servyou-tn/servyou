@@ -2,10 +2,12 @@ import { NextResponse, type NextRequest } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
 
 // Platform-wide enforcement of the suspended state, and ONLY that. This middleware
-// does not refresh sessions, does not duplicate the per-page login checks, and does
-// no other auth work. On the happy path it reads cookies and passes through WITHOUT
-// mutating them (no updateSession boilerplate — that would change session-refresh
-// behavior platform-wide). Only the suspended branch writes to the response.
+// never persists a session refresh, does not duplicate the per-page login checks, and
+// does no other auth work. On the happy path it reads cookies and passes through
+// WITHOUT mutating them (no updateSession boilerplate — that would change
+// session-refresh behavior platform-wide). Only the suspended branch writes to the
+// response. Note getUser() itself refreshes a session within ~90 s of expiry; the
+// no-op setAll() discards the rotated tokens (logged in docs/follow-ups.md).
 //
 // A suspended, logged-in user hitting any matched route is signed out (sb-* auth
 // cookies cleared) and redirected to /connexion?suspended=1, where a generic banner
@@ -15,6 +17,12 @@ import { createServerClient } from '@supabase/ssr'
 // 20261024191215_suspension_enforcement), and the auth ban (src/lib/auth/auth-ban.ts)
 // stops it signing in or refreshing.
 export async function middleware(request: NextRequest) {
+  // Link prefetches skip the check: every Next prefetch sends next-router-prefetch and no
+  // navigation does, there is one per visible <Link>, they only read, and the navigation that
+  // follows is checked. The header is client-set, so GET only — a server-action POST never
+  // skips — and a forged header on a GET buys a read the API would serve that token anyway.
+  if (request.method === 'GET' && request.headers.has('next-router-prefetch')) return NextResponse.next()
+
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -23,7 +31,7 @@ export async function middleware(request: NextRequest) {
         getAll() {
           return request.cookies.getAll()
         },
-        // Read-only: middleware does not refresh sessions. Intentional no-op.
+        // Read-only: a refresh getUser() performs is never written back. Intentional no-op.
         setAll() {},
       },
     },
@@ -73,8 +81,10 @@ export const config = {
   // default, so a new route is covered the day it ships (the closed allowlist this
   // replaces had drifted: it missed /demander, /mes-commandes, /mon-compte, /parametres
   // and every dashboard). Excluded:
-  //   * Next's build assets and image optimizer, and any path ending in a static-file
-  //     extension (public/ assets, favicon, robots.txt, sitemap.xml);
+  //   * Next's build assets and image optimizer, and a static-file extension only where
+  //     public/ assets live — a root-level file (favicon, the root SVGs, robots.txt,
+  //     sitemap.xml) or anything under /brand/. A dotted dynamic segment such as
+  //     /admin/utilisateurs/x.png is a page and a server-action endpoint, so it stays matched;
   //   * /connexion — the bounce target, matching it would loop — and the other auth
   //     flows (/inscription, /mot-de-passe-oublie, /nouveau-mot-de-passe,
   //     /verifier-email, /auth/*);
@@ -82,6 +92,6 @@ export const config = {
   // Each excluded page segment is anchored to "/" or the end, so /connexion-x is still
   // matched. Pinned by src/__tests__/middleware-suspension.test.ts.
   matcher: [
-    '/((?!_next/static/|_next/image(?:/|$)|(?:connexion|inscription|mot-de-passe-oublie|nouveau-mot-de-passe|verifier-email|auth|monitoring)(?:/|$)|.*\\.(?:ico|png|jpe?g|gif|webp|avif|svg|txt|xml|webmanifest|woff2?|ttf|otf|map)$).*)',
+    '/((?!_next/static/|_next/image(?:/|$)|(?:connexion|inscription|mot-de-passe-oublie|nouveau-mot-de-passe|verifier-email|auth|monitoring)(?:/|$)|(?:[^/]+|brand/.+)\\.(?:ico|png|jpe?g|gif|webp|avif|svg|txt|xml|webmanifest|woff2?|ttf|otf|map)$).*)',
   ],
 }
