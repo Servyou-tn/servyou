@@ -14,7 +14,8 @@
  * proves the string parses; the public marketplace selects additionally assert a row comes back with
  * a `categories` object, proving the result key the mappers read is unchanged.
  *
- * When you add or change a select that embeds categories through service_listings, add it here.
+ * When you add or change a select that embeds categories through service_listings, update
+ * category-embed-cases.ts (the hint-guard unit test fails until you do).
  *
  * Pattern A (live-DB). Service role for the fixture user and teardown only.
  *
@@ -24,6 +25,7 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest'
 import { randomUUID } from 'node:crypto'
 import { createClient, SupabaseClient } from '@supabase/supabase-js'
+import { CASES } from './category-embed-cases'
 
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -47,117 +49,6 @@ const anon: SupabaseClient = hasCreds
   ? createClient(url, anonKey, { auth: { autoRefreshToken: false, persistSession: false } })
   : (undefined as unknown as SupabaseClient)
 
-type Role = 'anon' | 'authenticated'
-interface EmbedCase {
-  site: string
-  table: 'service_listings' | 'orders' | 'favorites'
-  select: string
-  role: Role
-  // Public marketplace reads: at least one row must come back carrying a `categories` object.
-  expectRowWithCategory?: boolean
-}
-
-// Copied verbatim from the call sites (whitespace included) so a drift is a visible diff here.
-const CASES: EmbedCase[] = [
-  {
-    site: 'lib/marche/data.ts getActiveServices',
-    table: 'service_listings',
-    select:
-      'id, title, description, starting_price_tnd, delivery_time, freelancer_profiles!inner(profile_id, city, admin_hidden_at), categories!service_listings_category_id_fkey(name_fr)',
-    role: 'anon',
-    expectRowWithCategory: true,
-  },
-  {
-    site: 'lib/marche/demander.ts getRequestTarget (service)',
-    table: 'service_listings',
-    select: `id, title, starting_price_tnd, delivery_time, status, buyer_briefing, tags,
-       categories!service_listings_category_id_fkey ( name_fr ),
-       freelancer_profiles!inner ( profile_id, city, headline, admin_hidden_at )`,
-    role: 'authenticated',
-    expectRowWithCategory: true,
-  },
-  {
-    site: 'lib/marche/freelancer-detail.ts services',
-    table: 'service_listings',
-    select:
-      'id, title, description, starting_price_tnd, delivery_time, tags, categories!service_listings_category_id_fkey ( name_fr, name_ar )',
-    role: 'anon',
-    expectRowWithCategory: true,
-  },
-  {
-    site: 'lib/marche/my-data.ts getMyOrders',
-    table: 'orders',
-    select: `id, order_type, status, quantity, cancelled_by, cancellation_reason, received_at, created_at,
-       products ( title, price_tnd, shops ( name, city ), categories ( name_fr ), product_images ( image_url, display_order ) ),
-       service_listings ( title, starting_price_tnd, freelancer_profiles ( profile_id, city ), categories!service_listings_category_id_fkey ( name_fr ) )`,
-    role: 'authenticated',
-  },
-  {
-    site: 'lib/marche/my-data.ts getMyFavorites',
-    table: 'favorites',
-    select: `item_type, created_at,
-       products ( id, title, description, price_tnd, status, admin_hidden_at, shops ( name, city, admin_hidden_at ), categories ( name_fr, name_ar ), product_images ( image_url, display_order ) ),
-       service_listings ( id, title, description, starting_price_tnd, delivery_time, status, admin_hidden_at, freelancer_profiles ( profile_id, city, admin_hidden_at ), categories!service_listings_category_id_fkey ( name_fr ) )`,
-    role: 'authenticated',
-  },
-  {
-    site: 'lib/marche/my-orders.ts getMyServiceOrders',
-    table: 'orders',
-    select: `id, status, created_at, received_at, cancelled_by, cancellation_reason, seller_id,
-       service_listings ( title, starting_price_tnd, freelancer_profiles ( city ), categories!service_listings_category_id_fkey ( name_fr ) )`,
-    role: 'authenticated',
-  },
-  {
-    site: 'lib/marche/order-detail.ts getOrderDetail',
-    table: 'orders',
-    select: `id, order_type, status, quantity, buyer_id, seller_id,
-         delivery_name, delivery_address, delivery_phone, buyer_note,
-         created_at, updated_at, cancelled_by, cancellation_reason, received_at,
-         unit_price_tnd, delivery_fee_tnd,
-         products ( id, title, price_tnd, shop_id,
-                    categories ( name_fr ),
-                    shops ( id, name, city, logo_url ),
-                    product_images ( image_url, display_order ) ),
-         service_listings ( id, title, starting_price_tnd, freelancer_profile_id,
-                    categories!service_listings_category_id_fkey ( name_fr ),
-                    freelancer_profiles ( id, city, headline ) )`,
-    role: 'authenticated',
-  },
-  {
-    site: 'lib/marche/seller-services-query.ts content',
-    table: 'service_listings',
-    select: `id, title, description, starting_price_tnd, status, admin_hidden_at,
-         commandes:orders(count), all_orders:orders(count), categories!service_listings_category_id_fkey(slug)`,
-    role: 'authenticated',
-  },
-  {
-    site: 'lib/marche/service-detail.ts getServiceDetail',
-    table: 'service_listings',
-    select: `id, title, description, starting_price_tnd, delivery_time, status, category_id, freelancer_profile_id,
-       deliverables, delivery_mode, revisions_count, tags,
-       categories!service_listings_category_id_fkey ( name_fr ),
-       freelancer_profiles!inner ( id, profile_id, city, headline, admin_hidden_at )`,
-    role: 'anon',
-    expectRowWithCategory: true,
-  },
-  {
-    site: 'lib/marche/service-detail.ts related',
-    table: 'service_listings',
-    select: `id, title, description, starting_price_tnd, delivery_time,
-         categories!service_listings_category_id_fkey ( name_fr ),
-         freelancer_profiles!inner ( profile_id, city, admin_hidden_at )`,
-    role: 'anon',
-    expectRowWithCategory: true,
-  },
-  {
-    site: 'lib/search/search-marketplace.ts fetchServices',
-    table: 'service_listings',
-    select:
-      'id, title, description, starting_price_tnd, delivery_time, tags, created_at, category_id, freelancer_profiles!inner(profile_id, city, admin_hidden_at), categories!service_listings_category_id_fkey(name_fr, name_ar)',
-    role: 'anon',
-    expectRowWithCategory: true,
-  },
-]
 
 // Idempotent and surgical to this file's prefix; runs first (recovers a crashed prior run) and last.
 async function teardown(): Promise<void> {
