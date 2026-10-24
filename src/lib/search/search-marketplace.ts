@@ -242,7 +242,7 @@ async function fetchServices(
   let query = supabase
     .from('service_listings')
     .select(
-      'id, title, description, starting_price_tnd, delivery_time, tags, created_at, category_id, freelancer_profiles!inner(profile_id, city, admin_hidden_at), categories(name_fr, name_ar)',
+      'id, title, description, starting_price_tnd, delivery_time, tags, created_at, category_id, freelancer_profiles!inner(profile_id, city, admin_hidden_at), categories!service_listings_category_id_fkey(name_fr, name_ar)',
     )
     .eq('status', 'active')
     .is('admin_hidden_at', null)
@@ -252,7 +252,7 @@ async function fetchServices(
 
   const { data, error } = await query
   if (error) {
-    console.error('[search] services fetch error:', error)
+    console.error('[search] services fetch error:', error.message, error.code, error.details)
     return []
   }
 
