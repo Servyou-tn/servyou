@@ -8,8 +8,8 @@ import { FOCUS_RING } from '@/components/layout/styles'
 import type { SellerOrder } from '@/lib/marche/seller-orders'
 import { shortRef } from '@/lib/orders/order-status'
 import { WhatsAppContactButton } from '@/components/orders/WhatsAppContactButton'
-import { AdvanceOrderButton } from './AdvanceOrderButton'
-import { CancelOrderButton } from './CancelOrderButton'
+import { AdvanceOrderButton } from '@/components/orders/AdvanceOrderButton'
+import { CancelOrderButton } from '@/components/orders/CancelOrderButton'
 
 // OrderActionRow — measured from Figma 488:24951 (9 variants) via instance 490:25700.
 // surface/base + border/subtle 1px + radius 10 + pad 16 + gap 16, items-center:

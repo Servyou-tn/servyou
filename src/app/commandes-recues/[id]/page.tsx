@@ -21,8 +21,8 @@ import {
 import { getLang } from '@/lib/i18n/server'
 import { t, type Lang } from '@/lib/i18n'
 import { FOCUS_RING } from '@/components/layout/styles'
-import { AdvanceOrderButton } from '../_components/AdvanceOrderButton'
-import { CancelOrderButton } from '../_components/CancelOrderButton'
+import { AdvanceOrderButton } from '@/components/orders/AdvanceOrderButton'
+import { CancelOrderButton } from '@/components/orders/CancelOrderButton'
 import { TrackingNumberForm } from '../_components/TrackingNumberForm'
 
 export const metadata: Metadata = { title: 'Détail de la commande — Servyou' }

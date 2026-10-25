@@ -4,24 +4,7 @@ import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { toast } from 'sonner'
-import {
-  Wrench,
-  MoreVertical,
-  Code,
-  Palette,
-  LayoutTemplate,
-  Megaphone,
-  MessageCircle,
-  PenLine,
-  Languages,
-  Clapperboard,
-  Mic,
-  Briefcase,
-  UserRound,
-  Target,
-  ShoppingCart,
-} from 'lucide-react'
-import type { LucideIcon } from 'lucide-react'
+import { Wrench, MoreVertical } from 'lucide-react'
 import { t, type Lang } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
 import { FOCUS_RING } from '@/components/layout/styles'
@@ -38,6 +21,7 @@ import { tndPrice } from '@/components/listings/listing-utils'
 import type { SellerServiceRow } from '@/lib/marche/seller-services'
 import { CascadeWarningModal } from './CascadeWarningModal'
 import { DeleteServiceModal } from './DeleteServiceModal'
+import { CATEGORY_ICONS } from './category-icons'
 import { getStatusPresentation } from './service-status'
 
 // H5's row — Figma 258:7898 (Service Row, state[default,hover] × status[active,paused]), measured
@@ -51,31 +35,6 @@ import { getStatusPresentation } from './service-status'
 // (/mes-services/[id]/modifier) — a moderated row included, which H7 opens read-only with the notice.
 // The kebab is Activer/Mettre en pause (not Dupliquer/Partager, which the generic Kebab Menu master
 // component draws but nothing in the schema or this app's plumbing backs).
-
-// Founder-ruled, NOT measured against Figma (2026-09-06, rekeyed 2026-09-07 for the 13-sector
-// taxonomy cutover): `public.categories` has no icon column, so this map is a client-side lookup
-// keyed to `categories.slug` values, sourced from the same `icon:` field on each sector in
-// src/lib/taxonomy/service-categories.ts. A row's category is now always a SECTOR (the top-level
-// 13, `parent_id is null`) — SellerServiceRow's categorySlug comes from service_listings.category_id,
-// which after the taxonomy cutover migration can only be a leaf/root the freelancer picked at
-// creation, and creation only offers sectors until H6 ships subcategory selection. Wrench stays
-// the fallback for null/unmapped (a service filed under a subcategory once H6 exists, or any future
-// sector added here without a matching icon import).
-const CATEGORY_ICONS: Record<string, LucideIcon> = {
-  'developpement-web-mobile': Code,
-  'design-graphique-logo': Palette,
-  'design-ui-ux': LayoutTemplate,
-  'marketing-digital': Megaphone,
-  'community-management': MessageCircle,
-  'redaction-contenu': PenLine,
-  traduction: Languages,
-  'montage-video-motion': Clapperboard,
-  'voix-off-doublage': Mic,
-  'consulting-assistanat': Briefcase,
-  'personal-branding': UserRound,
-  'coaching-meta-ads': Target,
-  'coaching-ecommerce': ShoppingCart,
-}
 
 export function ServiceRow({ service, lang }: { service: SellerServiceRow; lang: Lang }) {
   const [pending, startTransition] = useTransition()

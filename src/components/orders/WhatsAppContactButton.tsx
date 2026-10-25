@@ -1,6 +1,8 @@
 'use client'
 
 import { useState } from 'react'
+import Image from 'next/image'
+import { toast } from 'sonner'
 import { createClient } from '@/lib/supabase/client'
 import { useLang } from '@/components/LangProvider'
 import { t } from '@/lib/i18n'
@@ -28,6 +30,7 @@ export function WhatsAppContactButton({
   size = 'sm',
   errorMessageKey = 'seller.orders.whatsapp_error',
   noPhoneMessageKey = 'seller.orders.whatsapp_none',
+  iconOnly = false,
 }: {
   /** get_contact_phone's `target` — the other party's profile id (buyer, seller, or annonce responder). */
   targetId: string
@@ -39,11 +42,22 @@ export function WhatsAppContactButton({
   /** Override for a non-order caller — the defaults read "…cette commande" (PR-E/AnnonceResponseCard). */
   errorMessageKey?: string
   noPhoneMessageKey?: string
+  /**
+   * H8's table row (Figma 274:9204 `whatsapp`): a bare 36×36 icon button with the brand glyph — no label, no
+   * fill. `label` becomes its accessible name, and a failure is a toast (a message under a 36 px cell would
+   * break the row).
+   */
+  iconOnly?: boolean
 }) {
   const supabase = createClient()
   const lang = useLang()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  function fail(message: string) {
+    if (iconOnly) toast.error(message)
+    else setError(message)
+  }
 
   async function contact() {
     setError(null)
@@ -52,14 +66,37 @@ export function WhatsAppContactButton({
     setLoading(false)
     if (rpcError) {
       console.error('[whatsapp] phone reveal error:', rpcError.message, rpcError.code)
-      setError(t(errorMessageKey, lang))
+      fail(t(errorMessageKey, lang))
       return
     }
     if (!data) {
-      setError(t(noPhoneMessageKey, lang))
+      fail(t(noPhoneMessageKey, lang))
       return
     }
     window.open(buildWhatsAppUrl(data as string, message), '_blank', 'noopener,noreferrer')
+  }
+
+  if (iconOnly) {
+    return (
+      <button
+        type="button"
+        onClick={contact}
+        disabled={loading}
+        aria-busy={loading || undefined}
+        aria-label={label}
+        title={label}
+        className={cn(
+          'relative flex size-9 shrink-0 items-center justify-center rounded-lg transition-colors',
+          'hover:bg-surface-sunken disabled:cursor-not-allowed disabled:opacity-60 motion-reduce:transition-none',
+          FOCUS_RING,
+        )}
+      >
+        {/* The Figma glyph (134:7966), fetched once into /public — an SVG, so next/image serves it as is. */}
+        <Image src="/brand/icons/whatsapp.svg" alt="" width={20} height={20} unoptimized aria-hidden="true" />
+        {/* Touch target: the visible button is 36 px; the hit area reaches 44 (touch-target rule). */}
+        <span aria-hidden="true" className="absolute -inset-1" />
+      </button>
+    )
   }
 
   return (

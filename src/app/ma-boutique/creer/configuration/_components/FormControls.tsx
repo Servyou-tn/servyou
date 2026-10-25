@@ -6,7 +6,7 @@ import { cn } from '@/lib/utils'
 // Route-local Checkbox/Radio rows — no shared `ui/checkbox` or `ui/radio` exists yet (same gap
 // Toggle.tsx's own header notes for switches: "the Figma component existed; the REACT one did
 // not"). Native inputs styled with `accent-brand-blue-600`, the same token-bound pattern already
-// proven at `commandes-recues/_components/CancelOrderButton.tsx:129`.
+// proven at `components/orders/CancelOrderButton.tsx`.
 
 export function CheckboxRow({
   id,
