@@ -239,27 +239,33 @@ const sorted = (...ids: string[]): string[] => [...ids].sort()
 
 // Idempotent and surgical to this file's prefix; runs first (recovers a crashed prior run) and last.
 // The order matters:
-//   1. orders — enforce_order_identity_lock guards the orders.product_id SET NULL that a cascaded
-//      product delete would cause;
+//   1. orders — a product delete sets orders.product_id NULL, which order_target_matches_type then
+//      rejects, so the fixture orders go first. Deleted by BUYER only, never by seller: fixture product
+//      L is live on production while this runs, and a real customer's order on it must make the
+//      teardown fail loudly (the cascade trips that same CHECK), not be deleted with the fixtures;
 //   2. admin_audit_log — admin_id is ON DELETE RESTRICT;
 //   3. users — cascades profiles -> shops -> products -> product_images / shop_payment_methods /
 //      shop_categories, profiles -> job_posts -> job_post_skills, favorites, and (via auth.users)
-//      uploaded_objects.
+//      uploaded_objects. (A real user's favourite of L or response to the open post, made during the
+//      run, cascades away with them — the residual every live-fixture suite here shares.)
 async function teardown(): Promise<void> {
   const { data, error } = await admin.from('profiles').select('id').like('email', `${PREFIX}%${EMAIL_SUFFIX}`)
   if (error) throw new Error(`teardown lookup failed: ${error.message}`)
   const ids = (data ?? []).map((row) => row.id as string)
   if (ids.length === 0) return
 
-  for (const column of ['seller_id', 'buyer_id']) {
-    const { error: orderErr } = await admin.from('orders').delete().in(column, ids)
-    if (orderErr) throw new Error(`orders cleanup (${column}) failed: ${orderErr.message}`)
-  }
+  const { error: orderErr } = await admin.from('orders').delete().in('buyer_id', ids)
+  if (orderErr) throw new Error(`orders cleanup failed: ${orderErr.message}`)
   const { error: auditErr } = await admin.from('admin_audit_log').delete().in('admin_id', ids)
   if (auditErr) throw new Error(`admin_audit_log cleanup failed: ${auditErr.message}`)
   for (const id of ids) {
     const { error: delErr } = await admin.auth.admin.deleteUser(id)
-    if (delErr) throw new Error(`deleteUser failed for ${id}: ${delErr.message}`)
+    if (delErr) {
+      throw new Error(
+        `deleteUser failed for ${id}: ${delErr.message} — if a NON-fixture order references a fixture ` +
+          'product, a real customer ordered it during the run: resolve by hand, never force-delete.',
+      )
+    }
   }
 }
 
@@ -290,6 +296,7 @@ let imageB2: string
 
 let childrenS: { method: string; category: string }
 let childrenH: { method: string; category: string }
+let childrenB: { method: string; category: string }
 
 let postOpen: { post: string; skill: string }
 let postModerated: { post: string; skill: string }
@@ -312,8 +319,8 @@ let posterClient: Client
 const allProducts = () => [productL, productP, productP2, productM, productX, productB1, productB2]
 const allImages = () => [imageL, imageP, imageP2, imageM, imageX, imageB1, imageB2]
 const allShops = () => [shopS, shopH, shopB]
-const allMethods = () => [childrenS.method, childrenH.method]
-const allShopCategories = () => [childrenS.category, childrenH.category]
+const allMethods = () => [childrenS.method, childrenH.method, childrenB.method]
+const allShopCategories = () => [childrenS.category, childrenH.category, childrenB.category]
 const allPosts = () => [postOpen.post, postModerated.post, postFilled.post]
 const allSkills = () => [postOpen.skill, postModerated.skill, postFilled.skill]
 
@@ -361,6 +368,7 @@ beforeAll(async () => {
 
   childrenS = await makeShopChildren(shopS, categoryId)
   childrenH = await makeShopChildren(shopH, categoryId)
+  childrenB = await makeShopChildren(shopB, categoryId)
 
   postOpen = await makePost(posterId, 'open', 'open')
   postModerated = await makePost(posterId, 'open then moderated', 'open')
@@ -444,8 +452,8 @@ describe.skipIf(!hasCreds)('ground truth for every negative read below', () => {
 
   it('every image, shop child, post and skill exists; the posts are open, open+moderated and filled', async () => {
     expect(await readable(admin, 'product_images', allImages())).toHaveLength(7)
-    expect(await readable(admin, 'shop_payment_methods', allMethods())).toHaveLength(2)
-    expect(await readable(admin, 'shop_categories', allShopCategories())).toHaveLength(2)
+    expect(await readable(admin, 'shop_payment_methods', allMethods())).toHaveLength(3)
+    expect(await readable(admin, 'shop_categories', allShopCategories())).toHaveLength(3)
     expect(await readable(admin, 'job_post_skills', allSkills())).toHaveLength(3)
     const { data, error } = await admin.from('job_posts').select('id, status, admin_hidden_at').in('id', allPosts())
     expect(error).toBeNull()
@@ -588,6 +596,11 @@ describe.skipIf(!hasCreds)('buyer — keeps what they ordered, nothing more', ()
 
   it('shops: the moderated shop it bought from, not the other moderated shop', async () => {
     expect(await readable(buyerClient, 'shops', allShops())).toEqual(sorted(shopS, shopB))
+  })
+
+  it("that shop's payment methods and categories follow it through the delegated policy — H's do not", async () => {
+    expect(await readable(buyerClient, 'shop_payment_methods', allMethods())).toEqual(sorted(childrenS.method, childrenB.method))
+    expect(await readable(buyerClient, 'shop_categories', allShopCategories())).toEqual(sorted(childrenS.category, childrenB.category))
   })
 
   it('the order-detail embed keeps the title, the shop and the image on both orders', async () => {

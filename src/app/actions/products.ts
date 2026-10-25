@@ -603,8 +603,8 @@ export async function bulkActivateProductsAction(input: unknown): Promise<BulkPr
     return { ok: false, error: t('common.error_generic', lang) }
   }
 
-  // Scoped by shop ownership explicitly — `products` is public-read, so the caller's ids alone
-  // cannot be trusted to be theirs.
+  // Scoped by shop ownership explicitly — live `products` are public-read, so the caller's ids
+  // alone cannot be trusted to be theirs.
   const { data: rows, error: fetchError } = await supabase
     .from('products')
     .select('id, title, admin_hidden_at')

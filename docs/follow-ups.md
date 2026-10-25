@@ -4222,7 +4222,10 @@ advisors. Migration 59 itself closed the `job_responses` HIGH above.
 - **Read half closed by** migration 65 (`20261025213214_prelaunch_shop_read_rls`, 2026-10-25): the public
   branch of "Open posts or own posts readable" now requires `admin_hidden_at is null`. **Still open:** a
   moderated post still ACCEPTS responses (`check_job_response_limits()` does not read `admin_hidden_at`), so
-  the BEFORE INSERT guard below is still owed.
+  the BEFORE INSERT guard below is still owed. **Priority raised (PR #192 review):** each such response also
+  unlocks the poster's phone, because `get_contact_phone`'s job_responses branches check neither the post's
+  status nor `admin_hidden_at`. A freelancer who kept a moderated post's id can still respond and read the
+  phone. Fix both together: the response guard, and the same post-state condition in `get_contact_phone`.
 
 - **What:** `admin_hide_content('job_post', …)` only stamps `job_posts.admin_hidden_at`. The SELECT
   policy "Open posts or own posts readable" is `status = 'open' OR consumer_id = auth.uid()`, and
@@ -4836,8 +4839,24 @@ cancel-metadata lock) are the same batch, not follow-ups.
   meant for buyers only (a RIB, a D17 number), RLS cannot help — rows, not columns — so the fix is a
   column-level SELECT grant. Product call before anyone writes to it.
 
-### LOW (note) — the `shops` buyer branch is keyed on the seller, not the shop
+### LOW — the `shops` buyer branch is keyed on the seller, and one-shop-per-owner is app-only
 
-- It matches `orders.seller_id = shops.owner_id`, never joining through `products` (that would recurse). An
-  owner has exactly one shop today, but nothing in the DB enforces it; if that changes, a buyer of one shop
-  can read every shop of that seller, moderated ones included. Revisit the branch if multi-shop ever ships.
+- The branch matches `orders.seller_id = shops.owner_id`, never joining through `products` (that would
+  recurse). The app keeps an owner to one shop (`resolveOwnedShopId`), but **nothing in the DB does**: the only
+  unique index on `shops` is `lower(name)`, and `enforce_seller_capability` checks `seller_type` only. So an
+  owner can INSERT a second shop through REST today, and anyone who bought from their live shop can then read
+  that second shop — moderated or not — with its payment methods and categories (not its products, whose
+  public branch needs an un-moderated shop and whose buyer branch needs an order on the product).
+- **Fix (product call first):** if one shop per owner is a business rule, enforce it in the DB
+  (`create unique index on public.shops (owner_id)`; 0 duplicates today), per CLAUDE.md's "every business
+  rule enforced in the DB". If multi-shop is ever wanted instead, rework this branch.
+
+### LOW — the shop-name pre-checks can no longer see moderated shops' names
+
+- `ma-boutique/creer/actions.ts` and `ma-boutique/modifier/actions.ts` pre-check
+  `.from('shops').select('id').ilike('name', …)` as the user. Since migration 65 a moderated shop is invisible
+  to them, so a name it holds passes the pre-check and is caught by `shops_name_lower_key` at insert/update
+  instead: the user still gets `name_taken` (the 23505 handler), but in the create flow `seller_type` has
+  already been flipped to `shop_owner` with no shop — the same not-rolled-back state the file already
+  accepts for concurrent submits. Rare (moderated names only). Fix if it matters: check uniqueness through
+  a definer RPC, or roll `seller_type` back on 23505.
