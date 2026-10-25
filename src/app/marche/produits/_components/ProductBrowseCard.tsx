@@ -6,6 +6,7 @@ import { FOCUS_RING } from '@/components/layout/styles'
 import { FavoriteButton } from '@/components/FavoriteButton'
 import { useLang } from '@/components/LangProvider'
 import { tndPrice } from '@/components/listings/listing-utils'
+import { getInitials } from '@/components/ui/initials'
 import type { ProductListing } from '@/components/listings/ProductListingCard'
 import { ProductCoverImage } from './ProductCoverImage'
 
@@ -33,13 +34,7 @@ export function ProductBrowseCard({ product }: { product: ProductListing }) {
 
   // The shop badge is initials, not a logo: `shops.logo_url` is null on every row today, and the
   // frame's badge draws a two-letter monogram ("AS"). Two words → two initials, one word → one.
-  const initials =
-    product.shop.name
-      .split(/\s+/)
-      .filter(Boolean)
-      .slice(0, 2)
-      .map((w) => w[0]?.toUpperCase() ?? '')
-      .join('') || '?'
+  const initials = getInitials(product.shop.name)
 
   return (
     <div className="relative overflow-hidden rounded-xl border border-border-subtle bg-white">

@@ -4,14 +4,8 @@ import { t, tn } from '@/lib/i18n'
 import type { Lang } from '@/lib/i18n'
 import { Avatar } from '@/components/ui/avatar'
 import { WhatsAppContactButton } from '@/components/orders/WhatsAppContactButton'
+import { getInitials } from '@/components/ui/initials'
 import type { AnnonceResponse } from '@/lib/marche/annonce-detail'
-
-function initials(name: string | null): string {
-  if (!name) return '?'
-  const parts = name.trim().split(/\s+/).filter(Boolean)
-  if (parts.length === 0) return '?'
-  return parts.slice(0, 2).map((p) => p[0]!.toUpperCase()).join('')
-}
 
 // Whole days between the response timestamp and now (never negative).
 function daysAgo(iso: string): number {
@@ -27,7 +21,7 @@ function daysAgo(iso: string): number {
 // Avatar size: `md` (40px, avatar.tsx's own scale), not the old hand-rolled 48px. Precedent is
 // OrdersList.tsx's "named party in a card" usage, not ServiceDetail's `lg` — that one is reserved
 // for a single page-defining identity, and up to MAX_RESPONSES_PER_POST (10) of these can stack on
-// one page. Avatar does not compute initials itself (avatar.tsx:44) — this file's own initials()
+// one page. Avatar does not compute initials itself (avatar.tsx:44) — the shared getInitials()
 // feeds it, same helper the old hand-rolled circle used.
 //
 // Headline is NOT truncated: measured live at 1024 (lg:col-span-3 of the page's 5-col grid leaves
@@ -52,7 +46,7 @@ export function AnnonceResponseCard({
   return (
     <div className="card-premium outline-brand rounded-2xl bg-white p-6">
       <div className="flex flex-col gap-4 sm:flex-row">
-        <Avatar size="md" initials={initials(response.fullName)} className="shrink-0" />
+        <Avatar size="md" initials={getInitials(response.fullName)} className="shrink-0" />
 
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-x-2 gap-y-1">

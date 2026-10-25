@@ -1,5 +1,6 @@
 import type { StatusValue } from '@/components/ui/status-pill'
 import type { Lang } from '@/lib/i18n'
+import { formatTunisDate, formatTunisDateTime } from '@/lib/datetime'
 
 // Order presentation helpers, shared by BOTH sides of an order: E3 `/mes-commandes` (buyer) and
 // G8 `/commandes-recues` (seller). Promoted out of `app/mes-commandes/_components/` when G8 became
@@ -173,32 +174,23 @@ export function shortRef(id: string): string {
   return `#${id.replace(/-/g, '').slice(0, 6).toUpperCase()}`
 }
 
-// Latin digits in both locales: the AR default numbering system is Arabic-Indic, and prices and
-// dates must stay LTR-readable per the bilingual rules.
-const LOCALE: Record<Lang, string> = { fr: 'fr-FR', ar: 'ar-TN-u-nu-latn' }
+// Date formatting is one shared helper (lib/datetime.ts) so every one of these renders in Africa/Tunis, not in
+// the server's timezone — an order placed at 00:30 in Tunis used to print the previous day on Vercel (UTC).
+// These three keep their names and signatures: every call site (E3, G8, G9, H8) is unchanged.
 
 /** Header date — Figma "24 nov". */
 export function shortDate(iso: string, lang: Lang): string {
-  return new Date(iso).toLocaleDateString(LOCALE[lang], { day: 'numeric', month: 'short' })
+  return formatTunisDate(iso, lang, 'short')
 }
 
 /** Meta date — Figma "20 novembre 2024". */
 export function longDate(iso: string, lang: Lang): string {
-  return new Date(iso).toLocaleDateString(LOCALE[lang], { day: 'numeric', month: 'long', year: 'numeric' })
+  return formatTunisDate(iso, lang, 'long')
 }
 
-/**
- * Timeline stamp — Figma's historique reads "18/07 09h12" (504:27049).
- *
- * Built by hand rather than through `toLocaleString`: the frame's separator is the FRENCH hour mark
- * ("09h12"), which no locale's time format produces — `fr-FR` gives "09:12". Day and month are
- * zero-padded 2-digit to match, and `LOCALE` keeps the digits Latin in Arabic too.
- */
+/** Timeline stamp — Figma's historique reads "18/07 09h12" (504:27049). See formatTunisDateTime. */
 export function shortDateTime(iso: string, lang: Lang): string {
-  const d = new Date(iso)
-  const date = d.toLocaleDateString(LOCALE[lang], { day: '2-digit', month: '2-digit' })
-  const time = d.toLocaleTimeString(LOCALE[lang], { hour: '2-digit', minute: '2-digit', hour12: false })
-  return `${date} ${time.replace(':', 'h')}`
+  return formatTunisDateTime(iso, lang)
 }
 
 /**

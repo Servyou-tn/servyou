@@ -95,6 +95,26 @@ export function pickCategoryIds(
   return slugResolvedIds
 }
 
+// A service stores TWO category pointers: `category_id` = its sector (always) and `subcategory_id` = the leaf
+// the freelancer picked (H6). A category page can be either level — /categories/<sector> or
+// /categories/<subcategory> — so the scope has to match the id against BOTH columns. Filtering
+// `category_id` alone (as this did) made every subcategory page return 0 services: no listing has a
+// subcategory id in `category_id`. A sector id still matches through `category_id`, exactly as before
+// (a sector can never appear in `subcategory_id`, so the extra branch costs nothing there).
+//
+// Returned as a PostgREST `or=` body. The ids are interpolated into a filter STRING (not bound), so only
+// UUID-shaped values are let through — a category id comes from the DB, but a slug-resolved list is
+// request-derived and an unvalidated comma or parenthesis would otherwise inject a clause. `null` =
+// nothing valid to match: the caller must then match NOTHING (an empty `in`), never "no filter".
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
+export function serviceCategoryOrClause(ids: readonly string[]): string | null {
+  const valid = ids.filter((id) => UUID_RE.test(id))
+  if (valid.length === 0) return null
+  const list = valid.join(',')
+  return `category_id.in.(${list}),subcategory_id.in.(${list})`
+}
+
 /** The opposite catalog — powers the "Voir l'autre type" toggle on the empty state. */
 export function otherType(type: SearchType): SearchType {
   return type === 'product' ? 'service' : 'product'
