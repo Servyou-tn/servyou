@@ -363,9 +363,9 @@ export const getFreelancerDashboard = cache(
         const postIds = matchingPostIds(skills, (matchRows ?? []) as { job_post_id: string; skill: string }[])
 
         if (postIds.length > 0) {
-          // RLS grants status='open' rows to a non-owner reader but does NOT filter
-          // admin_hidden_at — that half of "public surfaces must filter admin_hidden_at IS NULL"
-          // (20260607160156) has to be enforced here explicitly, not assumed from RLS.
+          // RLS grants a non-owner reader open, unmoderated rows (admin_hidden_at joined the policy
+          // in 20261025213214); both filters stay explicit here anyway — defence in depth, and the
+          // "public surfaces must filter admin_hidden_at IS NULL" rule (20260607160156).
           const { data: postRows, error: postsError } = await supabase
             .from('job_posts')
             .select('id, title, budget_min, budget_max, city, is_remote, created_at')

@@ -2794,7 +2794,10 @@ coupling" claim on that specific function is stale, not a remaining blocker.
 
 ## PR-C — Mes annonces list rebuild (`feat/annonces-list-ds`, 2026-08-22)
 
-### `job_post_skills` is publicly readable — a direct query (not through `job_posts`) would leak skills off posts the caller can't read
+### ✅ CLOSED — `job_post_skills` is publicly readable — a direct query (not through `job_posts`) would leak skills off posts the caller can't read
+
+- **Closed by** migration 65 (`20261025213214_prelaunch_shop_read_rls`, pre-launch security batch PR-1,
+  2026-10-25): "Post skills readable with their post" delegates to `job_posts`' SELECT policies.
 
 - **What:** `job_post_skills` RLS is `for select using (true)` — fully public, with no status or
   ownership check of its own. `getMyAnnonces`/`getAnnonceDetail` are safe because the embed hangs
@@ -3730,7 +3733,12 @@ coupling" claim on that specific function is stale, not a remaining blocker.
 
 ## H6 PR-1 — `service_listings` hardening (`feat/h6-data-foundation`, 2026-10-23)
 
-### `products` / `shops` / `product_images` are still SELECT `using (true)` — their own security PR
+### ✅ CLOSED — `products` / `shops` / `product_images` are still SELECT `using (true)` — their own security PR
+
+- **Closed by** migration 65 (`20261025213214_prelaunch_shop_read_rls`, pre-launch security batch PR-1,
+  2026-10-25), with the embed audit this entry asked for (`docs/design/prelaunch-security-batch-discovery.md`
+  §2) and the buyer-of-order branch on both `products` and `shops`. Live-tested by
+  `prelaunch-shop-read-rls.test.ts`.
 
 - **What:** "Products viewable by everyone", "Shops viewable by everyone" and "Product images
   viewable by everyone" are all `using (true)` (confirmed live, 2026-10-23) — exactly the shape
@@ -3932,7 +3940,11 @@ orders INSERT gap (migration 54). Ranked most severe first; each is its own PR u
   blocks it at render today; any non-React consumer (email, OG tags) would not.
 - **Fix:** `.refine((u) => /^https?:\/\//i.test(u))` plus a DB CHECK on the columns.
 
-### MEDIUM — `using (true)` SELECT family (extends the H6 PR-1 entry above)
+### ✅ CLOSED — MEDIUM — `using (true)` SELECT family (extends the H6 PR-1 entry above)
+
+- **Closed by** migration 65 (`20261025213214_prelaunch_shop_read_rls`, 2026-10-25): `shop_payment_methods`,
+  `shop_categories` and `job_post_skills` now delegate to their parent's SELECT policy. `categories` is the only
+  `using (true)` SELECT left in `public`, and is meant to be.
 
 - **What:** besides `products` / `shops` / `product_images` (entry above), `shop_payment_methods`,
   `shop_categories` and `job_post_skills` are also `using (true)` (confirmed live 2026-10-23).
@@ -4205,7 +4217,12 @@ advisors. Migration 59 itself closed the `job_responses` HIGH above.
 - **Fix (design choice):** refuse the DELETE while `admin_hidden_at` is set (policy or trigger), or
   move moderation to the account (`profiles`) so a re-created row inherits it.
 
-### MEDIUM — admin-moderated job posts stay readable and accept responses
+### MEDIUM — admin-moderated job posts stay readable and accept responses (READ half ✅ closed)
+
+- **Read half closed by** migration 65 (`20261025213214_prelaunch_shop_read_rls`, 2026-10-25): the public
+  branch of "Open posts or own posts readable" now requires `admin_hidden_at is null`. **Still open:** a
+  moderated post still ACCEPTS responses (`check_job_response_limits()` does not read `admin_hidden_at`), so
+  the BEFORE INSERT guard below is still owed.
 
 - **What:** `admin_hide_content('job_post', …)` only stamps `job_posts.admin_hidden_at`. The SELECT
   policy "Open posts or own posts readable" is `status = 'open' OR consumer_id = auth.uid()`, and
@@ -4788,3 +4805,39 @@ Rulings D23–D35 in `docs/design/h6-pr4-deltas.md`; DB gate = migration `202610
 - The budget's unit (« / heure », « / mois ») is `service_listings.price_unit` as of NOW — `orders` snapshots only
   the price. A listing edited in H7 after the order can show a different unit than the one ordered. A `price_unit`
   column on `orders` (set by `set_order_snapshot`) would freeze it; optional DB gap.
+
+## Pre-launch security batch PR-1 — shop-side read RLS (`fix/prelaunch-shop-read-rls`, 2026-10-25)
+
+Found during migration 65's discovery (`docs/design/prelaunch-security-batch-discovery.md` §2 / §10). PR-2
+(function EXECUTE, request-table INSERT columns, default-grant sweep) and PR-3 (`orders.received_at` +
+cancel-metadata lock) are the same batch, not follow-ups.
+
+### MEDIUM — the freelancer side has the gap migration 65 closed on the shop side (inferred, not live-tested)
+
+- **What:** `service_listings`' public branch (migration 52) is `status = 'active' and admin_hidden_at is null`
+  with no `freelancer_profiles.admin_hidden_at` cascade, and "Freelancer profiles viewable by everyone" is
+  `is_published = true OR owner OR admin`, where `is_published` is derived from active listings only. So
+  `admin_hide_content('freelancer_profile')` — which stamps `admin_hidden_at` alone — appears to leave the
+  profile, its seven child tables and its listings REST-readable while the app hides them in code. Inferred
+  from the policy text and the RPC body; not exercised live.
+- **Fix:** the products/shops shape from migration 65 — add the parent cascade to the `service_listings`
+  public branch and `admin_hidden_at is null` to the `freelancer_profiles` public branch (the children already
+  delegate through it). Live-test first: prove the read with a moderated fixture profile.
+
+### LOW — moderated product images stay fetchable by URL (public buckets)
+
+- `product-images`, `shop-assets`, `avatars` and `portfolio-media` are `public = true`. Migration 65 stops the
+  REST API from handing out a moderated product's image URLs, but a URL already known keeps serving. Fix only
+  if moderation must also take the file down: private bucket + signed URLs, or delete/move the object on hide.
+
+### LOW — `shop_payment_methods.note` is readable by everyone who can read the shop (decision 6: leave)
+
+- No app path selects `note` (only `method`), and 0 rows carry one. If it ever holds payment instructions
+  meant for buyers only (a RIB, a D17 number), RLS cannot help — rows, not columns — so the fix is a
+  column-level SELECT grant. Product call before anyone writes to it.
+
+### LOW (note) — the `shops` buyer branch is keyed on the seller, not the shop
+
+- It matches `orders.seller_id = shops.owner_id`, never joining through `products` (that would recurse). An
+  owner has exactly one shop today, but nothing in the DB enforces it; if that changes, a buyer of one shop
+  can read every shop of that seller, moderated ones included. Revisit the branch if multi-shop ever ships.
