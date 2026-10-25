@@ -603,8 +603,8 @@ export async function bulkActivateProductsAction(input: unknown): Promise<BulkPr
     return { ok: false, error: t('common.error_generic', lang) }
   }
 
-  // Scoped by shop ownership explicitly — `products` is public-read, so the caller's ids alone
-  // cannot be trusted to be theirs.
+  // Scoped by shop ownership explicitly — live `products` are public-read, so the caller's ids
+  // alone cannot be trusted to be theirs.
   const { data: rows, error: fetchError } = await supabase
     .from('products')
     .select('id, title, admin_hidden_at')
@@ -1016,7 +1016,8 @@ export async function deleteProductImageAction(input: unknown): Promise<ProductA
   // Read the row BEFORE deleting it — this is what makes the storage object findable afterward.
   // Scoped by productId too, not just imageId: a caller cannot delete a real row by guessing its
   // uuid unless it also names the product the shop_id check above confirms they own.
-  // (product_images SELECT is `using (true)` — RLS does not scope this read; the check above does.)
+  // (product_images SELECT follows its product's policy, so another shop's live images are still
+  // readable — RLS does not scope this read to the caller's shop; the check above does.)
   const { data: image, error: fetchError } = await supabase
     .from('product_images')
     .select('image_url')

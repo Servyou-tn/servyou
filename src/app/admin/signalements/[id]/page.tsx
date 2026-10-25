@@ -127,8 +127,8 @@ export default async function ReportDetailPage({ params }: Props) {
   const targetUrl = targetBase ? `${targetBase}/${r.target_id}` : null
 
   // Moderation target row — only for moderatable target_types. The admin can read the
-  // row even after it is hidden so the unhide UI renders: products/shops are SELECT
-  // `using (true)`; service_listings (migration 52) and freelancer_profiles (publish gate)
+  // row even after it is hidden so the unhide UI renders: products/shops (migration
+  // 20261025213214), service_listings (migration 52) and freelancer_profiles (publish gate)
   // each have an `is_admin()` branch in their SELECT policy; job_posts gets the dedicated
   // "Admin reads all job_posts" policy (migration 27) so non-open posts are readable too.
   // The section is gated on `moderationTable`; within it, a null moderationTarget means

@@ -285,8 +285,9 @@ export const getFreelancerDashboard = cache(
 
     // Ecosystem — consumers: public_profiles bypasses base-table RLS by design (security_invoker
     // false), so this also counts suspended profiles; there is no flag on the view to exclude
-    // them. Shops: plain count, no admin_hidden_at filter — see docs/design/h4-discovery.md §3 for
-    // the stated tension against 20260607160156's "public surfaces must filter" comment.
+    // them. Shops: no admin_hidden_at filter in the query, but since 20261025213214 RLS drops
+    // moderated shops (except the viewer's own, or one they bought from), so the count is per-viewer
+    // — see docs/design/h4-discovery.md §3 for the original tension with 20260607160156.
     const { count: consumersCount, error: consumersError } = await supabase
       .from('public_profiles')
       .select('id', { count: 'exact', head: true })
@@ -363,9 +364,9 @@ export const getFreelancerDashboard = cache(
         const postIds = matchingPostIds(skills, (matchRows ?? []) as { job_post_id: string; skill: string }[])
 
         if (postIds.length > 0) {
-          // RLS grants status='open' rows to a non-owner reader but does NOT filter
-          // admin_hidden_at — that half of "public surfaces must filter admin_hidden_at IS NULL"
-          // (20260607160156) has to be enforced here explicitly, not assumed from RLS.
+          // RLS grants a non-owner reader open, unmoderated rows (admin_hidden_at joined the policy
+          // in 20261025213214); both filters stay explicit here anyway — defence in depth, and the
+          // "public surfaces must filter admin_hidden_at IS NULL" rule (20260607160156).
           const { data: postRows, error: postsError } = await supabase
             .from('job_posts')
             .select('id, title, budget_min, budget_max, city, is_remote, created_at')
