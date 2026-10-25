@@ -3117,8 +3117,8 @@ export const ar: Record<string, string> = {
   'service.wizard.unit.month':          "بالشهر",
   'service.wizard.unit.helper':         "طريقة احتساب سعر هذه الخدمة.",
   'service.wizard.delivery_time.label': "المدة التقديرية للإنجاز",
-  'service.wizard.delivery_time.placeholder': "مثال: 5-7 أيام",
-  'service.wizard.delivery_time.helper': "اختياري — حدّد إن كانت لخدمتك مدة معتادة (مثال: 5-7 أيام، أسبوعان، شهر)",
+  'service.wizard.delivery_time.placeholder': "مثال: 7 أيام", // REVIEW_AR_TRANSLATION (H7: « ex : 7 jours »)
+  'service.wizard.delivery_time.helper': "اختياري — حدّد المدة مع وحدتها (مثال: 7 أيام، أسبوعان، شهر)", // REVIEW_AR_TRANSLATION (H7)
   'service.wizard.deliverables.label':  "ما تتضمنه الخدمة",
   // ‏ (RLM) after « Android »: without it the « 3 » joins the Latin run and is drawn beside
   // « واجهات » instead of « شاشات » (bidi W7 — reference_ar_latin_adjacency_bidi).
@@ -3158,6 +3158,17 @@ export const ar: Record<string, string> = {
   'service.wizard.footer.publish':      "انشر خدمتي",
   'service.wizard.error.publish_incomplete': "بعض المعلومات ناقصة. صحّح الأسطر المحددة ثم انشر.",
   'service.wizard.error.publish_failed': "تعذّر النشر. أعد المحاولة.",
+  // H7 « Modifier un service » — REVIEW_AR_TRANSLATION (draft Arabic, docs/design/h7-deltas.md)
+  'service.edit.page_title':            "تعديل الخدمة",
+  'service.edit.page_subtitle':         "لا تظهر تغييراتك للعملاء إلا بعد حفظها.",
+  'service.edit.footer.save':           "حفظ التعديلات",
+  'service.edit.footer.dirty':          "تعديلات غير محفوظة",
+  'service.edit.saved':                 "تم حفظ التعديلات.",
+  'service.edit.leave_confirm':         "لديك تعديلات غير محفوظة. هل تريد مغادرة هذه الصفحة؟",
+  'service.edit.error.incomplete':      "بعض المعلومات ناقصة. صحّح الأسطر المحددة ثم احفظ.",
+  'service.edit.error.save_failed':     "تعذّر الحفظ. أعد المحاولة.",
+  'service.edit.error.gone':            "لم تعد هذه الخدمة قابلة للتعديل. ارجع إلى خدماتي.",
+  'service.edit.readonly_note':         "هذه الخدمة للقراءة فقط ما دامت مخفية بسبب الإشراف.",
   'service.wizard.succes.title':        "خدمتك منشورة الآن!",
   'service.wizard.succes.subline':      "يمكن للعملاء العثور عليها في السوق والتواصل معك عبر واتساب.",
   'service.wizard.succes.view':         "عرض خدمتي",

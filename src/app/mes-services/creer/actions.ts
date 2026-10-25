@@ -13,6 +13,7 @@ import {
   type WizardField,
 } from '@/lib/freelance/service-draft'
 import { validateServiceInput, type ServiceField, type ServiceInput } from '@/lib/freelance/service-validation'
+import { VALIDATOR_FIELD, gateRefusalFields, resolveCategoryIds } from '@/lib/freelance/service-write'
 import { revalidateServiceSurfaces } from '@/lib/freelance/service-revalidate'
 import { getSector, getSubcategory } from '@/lib/taxonomy/service-categories'
 
@@ -74,29 +75,9 @@ export async function saveServiceDraftAction(input: unknown): Promise<SaveDraftR
     return { ok: false, errorKey: ERR.generic }
   }
 
-  let categoryId: string | null = null
-  let subcategoryId: string | null = null
-  const slugs = [draft.sectorId, draft.subcategoryId].filter(Boolean)
-  if (slugs.length > 0) {
-    const { data: cats, error } = await supabase
-      .from('categories')
-      .select('id, slug, parent_id')
-      .eq('kind', 'service')
-      .in('slug', slugs)
-    if (error) {
-      console.error('[saveServiceDraft] category lookup failed:', error.message, error.code, error.details)
-      return { ok: false, errorKey: ERR.generic }
-    }
-    const sector = (cats ?? []).find((c) => c.slug === draft.sectorId && c.parent_id === null)
-    const sub = draft.subcategoryId ? (cats ?? []).find((c) => c.slug === draft.subcategoryId) : undefined
-    // In the TS taxonomy but not (or no longer) in the DB, or re-parented there: refuse, don't guess.
-    if (!sector || (draft.subcategoryId && (!sub || sub.parent_id !== sector.id))) {
-      console.error(`[saveServiceDraft] category pair ${draft.sectorId}/${draft.subcategoryId} not found in categories`)
-      return { ok: false, errorKey: ERR.category }
-    }
-    categoryId = sector.id as string
-    subcategoryId = sub ? (sub.id as string) : null
-  }
+  const categories = await resolveCategoryIds(supabase, draft.sectorId, draft.subcategoryId, 'saveServiceDraft')
+  if (!categories.ok) return { ok: false, errorKey: categories.reason === 'unavailable' ? ERR.category : ERR.generic }
+  const { categoryId, subcategoryId } = categories
 
   const row = {
     title: draft.title,
@@ -172,38 +153,6 @@ const PUBLISH_ERR = {
   incomplete: 'service.wizard.error.publish_incomplete',
   failed: 'service.wizard.error.publish_failed',
 } as const
-
-/** validateServiceInput's fields → the wizard field that edits each (null: not a wizard field). */
-const VALIDATOR_FIELD: Record<ServiceField, WizardField | null> = {
-  title: 'title',
-  category: 'sector',
-  subcategory: 'subcategory',
-  tags: 'skills',
-  shortDescription: 'shortDescription',
-  description: 'description',
-  price: 'price',
-  priceUnit: 'priceUnit',
-  delivery: 'deliveryTime',
-  deliverables: 'deliverables',
-  deliveryMode: 'deliveryMode',
-  briefing: 'buyerBriefing',
-  revisions: null,
-  status: null,
-}
-
-/** The DB gate's detail (service_listings columns) → the wizard field that edits each. */
-const COLUMN_FIELD: Record<string, WizardField> = {
-  title: 'title',
-  category_id: 'sector',
-  subcategory_id: 'subcategory',
-  tags: 'skills',
-  short_description: 'shortDescription',
-  description: 'description',
-  starting_price_tnd: 'price',
-  price_unit: 'priceUnit',
-  deliverables: 'deliverables',
-  delivery_mode: 'deliveryMode',
-}
 
 function rowToServiceInput(row: PublishRow): ServiceInput {
   return {
@@ -283,11 +232,7 @@ export async function publishServiceDraftAction(input: unknown): Promise<Publish
   if (error) {
     console.error('[publishServiceDraft] update failed:', error.message, error.code, error.details, error.hint)
     if (error.hint === 'service_publish_requirements') {
-      const fields = (error.details ?? '')
-        .split(',')
-        .map((column) => COLUMN_FIELD[column.trim()])
-        .filter((f): f is WizardField => f !== undefined)
-      return { ok: false, errorKey: PUBLISH_ERR.incomplete, fields }
+      return { ok: false, errorKey: PUBLISH_ERR.incomplete, fields: gateRefusalFields(error.details) }
     }
     return { ok: false, errorKey: PUBLISH_ERR.failed, fields: [] }
   }
