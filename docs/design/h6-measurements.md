@@ -11,14 +11,15 @@ AND for the final comparison — do not re-read a frame that is recorded here.**
 | 3 | 2026-10-24 | `459:18966` | « H6 — Box 3 Tarif & délai » — SPECIMEN board (stepper + card) | ✅ success |
 | 4 | 2026-10-24 | `459:19023` | « H6 — Box 4 Prestation » — SPECIMEN board (stepper + card) | ✅ success |
 | 5 | 2026-10-24 | `654:53743` | « H6 spécimen — délai renseigné » — read to settle whether Délai is composed | ✅ success |
+| 6 | 2026-10-24 | `459:19071` | « H6 — Box 5 Publication (récapitulatif) » — SPECIMEN board (stepper + card + footer) | ✅ success |
 
 Not read: `654:53794` (délai empty) — read 5 settled the structure, and its empty state is the read-3
-placeholder. PR-3 used 3 reads (3–5); 5 this month.
+placeholder. PR-3 used 3 reads (3–5); PR-4 used 1 (read 6); **6 this month**.
 
 Screenshots: `docs/design/h6-figma/459-18610-step1-metier.png` (1024-wide render of the 1440 frame),
 `docs/design/h6-figma/461-19405-step2-description.png`, `docs/design/h6-figma/459-18966-step3-tarif.png`,
-`docs/design/h6-figma/459-19023-step4-prestation.png`, `docs/design/h6-figma/654-53743-delai-renseigne.png`
-(gitignored — local only).
+`docs/design/h6-figma/459-19023-step4-prestation.png`, `docs/design/h6-figma/654-53743-delai-renseigne.png`,
+`docs/design/h6-figma/459-19071-step5-publication.png` (gitignored — local only).
 
 Not read (and why): `459:18609` stepper and `459:18873` footer are both instances INSIDE read 1 — fully
 measured there. `653:53676` cascade and `459:19238` skills combo are open-state specimens (dropdown
@@ -295,6 +296,77 @@ A white specimen card (border/subtle, radius 16, p 28, gap 20), title « Spécim
 **Finding: Délai is a single free-text Input in its filled state too — there is no composed number +
 unit control anywhere in reads 3 or 5.** The specimen's purpose is the sector context (a coaching service
 with a délai), not a different control.
+
+---
+
+## Read 6 — `459:19071` « H6 — Box 5 Publication (récapitulatif) » (step 5)
+
+**Specimen board** (same shell as reads 2–4: bg surface/subtle, border/subtle, radius/xl, p 32, gap 24, H3
+board title). Unlike reads 2–4 it **does draw a footer**. No page header. **No gallery** — the pre-build
+discovery summary (`project_figma_h6_creer_service`, « composed gallery: cover badge + dashed add-slots »)
+is superseded: the frame no longer has one (per-service gallery retired → portfolio).
+
+### Stepper (`461:19522`)
+
+Steps 1–4 **done** (blue/600 circle + check 18 inverse; label Body Small Regular text/secondary), all four
+connectors **blue/600** (fixed w 40 — specimen width), step 5 « Publication » **active** (blue/600, « 5 »
+SemiBold 16 inverse, label SemiBold 14/21 primary). Same per-state values as reads 2–4 — `ui/stepper.tsx`
+REUSE, nothing new.
+
+### Card `box` (`459:19099`)
+
+bg surface/base, border/subtle 1px, radius/xl 12, **p 24**, flex-col, one child (no gap in play).
+
+`recapitulatif` (`459:19118`) — full width, bg **surface/subtle**, border 1px **border/subtle**, radius/lg
+10, **px 16 / py 4**, flex-col. Every text run 14 / leading 21.
+
+Six rows (`459:19119`, `…19124`, `…19129`, `…19134`, `…19139`, `…19144`), each: flex, justify-between,
+items-center, **py 8**, **border-b border/subtle** (the last row: border 0).
+- Left group: flex, items-center, **gap 12** — label **Body Small Regular text/muted** + value **Inter
+  Medium 14/21 text/primary**.
+- Right: « **Modifier** » — **Body Small Regular, blue/600**, plain text (no underline, no button chrome).
+- Runs are `whitespace-nowrap` and the row clips (`overflow-clip`) — nothing wraps in the frame.
+
+| Row | Label | Value drawn | « Modifier » → step |
+|---|---|---|---|
+| 1 | Titre | Je crée votre boutique en ligne clé en main | 1 |
+| 2 | Catégorie | Développement web › Sites web (sector › subcategory) | 1 |
+| 3 | Compétences | React · Next.js · TypeScript (« · » separated) | 1 |
+| 4 | Prix | 800 TND · Par projet (price TND · unit — « Par projet » predates ruling D13) | 3 |
+| 5 | Délai | 3 à 5 jours | 3 |
+| 6 | Mode | À distance | 4 |
+
+**Not drawn:** a row for any step-2 field (Description courte / détaillée), « Ce qui est inclus », « Ce
+qu'il faut me fournir »; an empty Délai row (Délai is optional); a heading or helper on the card; a preview
+of the public card.
+
+### Footer (`459:19149`)
+
+bg surface/base, **border-t** border/subtle, **px 24 / py 20** (board-scaled; the page frame's footer in read
+1 is px 32), flex justify-between items-center.
+- Left: Button **secondary** « Enregistrer le brouillon » (h 40, px 16, radius/lg, border/strong).
+- Right: Button **primary**, default (enabled) state, « **Publier mon service** » (h 40, px 16, radius/lg,
+  bg blue/600, label SemiBold 16/26 inverse).
+- **No « Précédent »**, **no « Enregistré automatiquement » caption** — both present in code since PR-2
+  (rulings D8/D21).
+
+### Values
+
+| Element | Value | Token |
+|---|---|---|
+| card padding / radius | 24 / 12 | p-6 / radius-xl |
+| récap block | px 16, py 4, radius 10, surface-subtle, border-subtle | px-4 py-1 rounded-lg |
+| récap row | py 8, border-b border-subtle (not the last) | py-2 |
+| label ↔ value gap | 12 | gap-3 |
+| footer | px 24 (board) / py 20, border-t | (page footer px 32 per read 1) |
+
+Raw output kept out of the repo (see read 1). Text styles declared: H3 (board title), Body Small. The one
+asset (`icon-check`, 18px, inside the stepper) is already drawn by `ui/stepper.tsx` — nothing downloaded.
+
+### Not in read 6 (🧠)
+
+Success / « publié » state; publishing (in-flight) and publish-error states; mobile 375 (an 80-char title
+on a nowrap row cannot fit 343); AR.
 
 ---
 

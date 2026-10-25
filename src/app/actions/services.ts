@@ -1,11 +1,11 @@
 'use server'
 
 import { z } from 'zod'
-import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 import { getLang } from '@/lib/i18n/server'
 import { t } from '@/lib/i18n'
 import { resolveOwnedFreelancerProfileId } from '@/lib/freelancer/owner-profile'
+import { revalidateServiceSurfaces } from '@/lib/freelance/service-revalidate'
 
 // Local, not exported — a 'use server' module may export only async functions (see
 // src/lib/products/constants.ts's own header for why the equivalent product type lives in a
@@ -16,9 +16,8 @@ type ServiceActionResult = { ok: true } | { ok: false; error: string }
 // H5 « Mes services » write actions — mirrors products.ts's toggleProductStatusAction /
 // deleteProductAction shape (ownership re-derived server-side, RLS backs it up, never trusted
 // from the client). Two real deltas from the product version:
-//   1. Every write revalidates `/freelance/[id]` too (D4) — a status change can flip
-//      `freelancer_profiles.is_published` via `sync_freelancer_is_published`, and that route is a
-//      dynamic segment: `revalidatePath` needs the CONCRETE path or it silently no-ops.
+//   1. Every write revalidates `/freelance/[id]` too (D4) — see revalidateServiceSurfaces, shared
+//      with H6's publish action since PR-4 (src/lib/freelance/service-revalidate.ts).
 //   2. deleteServiceAction's zero-order gate exists for the SAME reason products' does —
 //      `enforce_order_identity_lock` raises on the `orders.service_listing_id` ON DELETE SET NULL
 //      cascade for ANY existing order, any status. Verified live against this exact schema shape
@@ -26,13 +25,6 @@ type ServiceActionResult = { ok: true } | { ok: false; error: string }
 //      "vos engagements en cours ne sont pas affectés", which is false: a service with any order
 //      cannot be deleted at all, so that copy was dropped rather than shipped (service.delete_modal
 //      .body in fr.ts/ar.ts).
-
-function revalidateServiceSurfaces(freelancerProfileId: string) {
-  revalidatePath('/mes-services')
-  revalidatePath('/tableau-de-bord')
-  revalidatePath('/marche/services')
-  revalidatePath(`/freelance/${freelancerProfileId}`)
-}
 
 const ToggleStatusInput = z.object({
   serviceId: z.string().uuid(),

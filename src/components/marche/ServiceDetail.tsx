@@ -8,6 +8,8 @@ import { ListingResults } from '@/components/listings/ListingResults'
 import type { ServiceListing } from '@/components/listings/ServiceListingCard'
 import { FOCUS_RING } from '@/components/layout/styles'
 import type { ServiceDetailData, DeliveryMode } from '@/lib/marche/service-detail'
+import { skillLabel } from '@/lib/freelance/service-draft'
+import { formatServicePrice, servicePriceLabel } from '@/lib/freelance/service-price'
 
 // D2 — service detail. Measured against Figma 666:55479 (1440) and 668:55920 (375).
 //
@@ -23,6 +25,10 @@ import type { ServiceDetailData, DeliveryMode } from '@/lib/marche/service-detai
 // No ratings anywhere: the Avis section is a shell + empty state (reviews are post-MVP and there
 // is no reviews table), and the related cards reuse ServiceListingCard, which already omits the
 // rating row the Figma mock shows — the C1 phase-aware decision holding, not an omission.
+//
+// H6 PR-4 (docs/design/h6-pr4-deltas.md §6, rulings D31/D32): skill chips show the pool label in the
+// page language (custom skills as typed); the price carries its unit (« 450 TND / mois ») and the
+// currency per language; `hybrid` reads « À distance ou sur site », the wizard's « Sur site possible ».
 
 const MODE_ICON: Record<DeliveryMode, typeof Globe> = {
   remote: Globe,
@@ -50,7 +56,9 @@ export function ServiceDetail({
   lang: Lang
 }) {
   const price =
-    service.startingPrice != null ? `${service.startingPrice.toLocaleString('fr-FR')} TND` : null
+    service.startingPrice != null
+      ? servicePriceLabel(formatServicePrice(service.startingPrice, lang), service.priceUnit, lang)
+      : null
   const ModeIcon = service.deliveryMode ? MODE_ICON[service.deliveryMode] : null
 
   // Buy box — the SIDEBAR on desktop (354, pad 24, gap 16, r=12, 2px brand-blue-600 outline:
@@ -174,7 +182,7 @@ export function ServiceDetail({
                   key={tag}
                   className="rounded-md bg-brand-blue-50 px-2 py-1 text-caption font-medium text-brand-blue-700"
                 >
-                  {tag}
+                  {skillLabel(tag, lang)}
                 </li>
               ))}
             </ul>

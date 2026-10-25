@@ -216,7 +216,9 @@ type FavoriteRow = {
         id: string
         title: string
         description: string | null
+        short_description: string | null
         starting_price_tnd: number | string | null
+        price_unit: string | null
         delivery_time: string | null
         status: string
         admin_hidden_at: string | null
@@ -271,7 +273,7 @@ export async function getMyFavorites(
     .select(
       `item_type, created_at,
        products ( id, title, description, price_tnd, status, admin_hidden_at, shops ( name, city, admin_hidden_at ), categories ( name_fr, name_ar ), product_images ( image_url, display_order ) ),
-       service_listings ( id, title, description, starting_price_tnd, delivery_time, status, admin_hidden_at, freelancer_profiles ( profile_id, city, admin_hidden_at ), categories!service_listings_category_id_fkey ( name_fr ) )`,
+       service_listings ( id, title, description, short_description, starting_price_tnd, price_unit, delivery_time, status, admin_hidden_at, freelancer_profiles ( profile_id, city, admin_hidden_at ), categories!service_listings_category_id_fkey ( name_fr ) )`,
     )
     .eq('user_id', userId)
     .order('created_at', { ascending: false })
@@ -284,7 +286,7 @@ export async function getMyFavorites(
   const rows = (data ?? []) as unknown as FavoriteRow[]
 
   const products: ProductListing[] = []
-  const serviceRows: { id: string; title: string; description: string | null; price_starting: number | null; delivery_time: string | null; category: { name_fr: string } | null; profileId: string | null; city: string | null }[] = []
+  const serviceRows: { id: string; title: string; description: string | null; short_description: string | null; price_starting: number | null; price_unit: string | null; delivery_time: string | null; category: { name_fr: string } | null; profileId: string | null; city: string | null }[] = []
   // The global favorited-at-DESC order across both kinds (drives the combined "Tous" list).
   const order: { kind: 'product' | 'service'; id: string }[] = []
 
@@ -314,7 +316,9 @@ export async function getMyFavorites(
         id: s.id,
         title: s.title,
         description: s.description ?? null,
+        short_description: s.short_description ?? null,
         price_starting: s.starting_price_tnd != null ? Number(s.starting_price_tnd) : null,
+        price_unit: s.price_unit ?? null,
         delivery_time: s.delivery_time ?? null,
         category: one(s.categories) ? { name_fr: one(s.categories)!.name_fr } : null,
         profileId: fp?.profile_id ?? null,
@@ -342,7 +346,9 @@ export async function getMyFavorites(
     id: s.id,
     title: s.title,
     description: s.description,
+    short_description: s.short_description,
     price_starting: s.price_starting,
+    price_unit: s.price_unit,
     delivery_time: s.delivery_time,
     category: s.category,
     freelancer: {

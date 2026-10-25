@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import type { ProductListing } from '@/components/listings/ProductListingCard'
 import type { ServiceListing } from '@/components/listings/ServiceListingCard'
+import { skillLabelPair } from '@/lib/freelance/service-draft'
 import {
   compareRanked,
   paginate,
@@ -110,7 +111,9 @@ type ServiceRow = {
   id: string
   title: string
   description: string | null
+  short_description: string | null
   starting_price_tnd: number | string | null
+  price_unit: string | null
   delivery_time: string | null
   tags: string[] | null
   created_at: string
@@ -242,7 +245,7 @@ async function fetchServices(
   let query = supabase
     .from('service_listings')
     .select(
-      'id, title, description, starting_price_tnd, delivery_time, tags, created_at, category_id, freelancer_profiles!inner(profile_id, city, admin_hidden_at), categories!service_listings_category_id_fkey(name_fr, name_ar)',
+      'id, title, description, short_description, starting_price_tnd, price_unit, delivery_time, tags, created_at, category_id, freelancer_profiles!inner(profile_id, city, admin_hidden_at), categories!service_listings_category_id_fkey(name_fr, name_ar)',
     )
     .eq('status', 'active')
     .is('admin_hidden_at', null)
@@ -287,12 +290,14 @@ async function fetchServices(
         id: row.id,
         title: row.title,
         description: row.description ?? null,
+        short_description: row.short_description ?? null,
         price_starting: row.starting_price_tnd != null ? Number(row.starting_price_tnd) : null,
+        price_unit: row.price_unit ?? null,
         delivery_time: row.delivery_time ?? null,
-        // Skill chips on the v3.7 card. Column exists but is sparsely populated today
-        // (most listings ship with []), so the card falls back to the category label —
-        // see ServiceListingCard. Backfill lands when H6/H7 make tags required.
-        tags: row.tags ?? [],
+        // Skill chips on the v3.7 card, both labels resolved here (H6 PR-4 ruling D31). H6 makes 1–5
+        // required to publish; 8 of the 21 older listings have none, and the card falls back to the
+        // category label for those — see ServiceListingCard.
+        tags: (row.tags ?? []).map(skillLabelPair),
         category: cat ? { name_fr: cat.name_fr, name_ar: cat.name_ar } : null,
         freelancer: {
           full_name: (fp?.profile_id ? names.get(fp.profile_id) : '') ?? '',

@@ -35,6 +35,8 @@ export type ServiceDetailData = {
   title: string
   description: string | null
   startingPrice: number | null
+  /** service_listings.price_unit — « 450 TND / mois » in the buy box (H6 PR-4 ruling D32). */
+  priceUnit: string | null
   deliveryTime: string | null
   category: string | null
   categoryId: string | null
@@ -50,6 +52,7 @@ export type ServiceDetailData = {
    * docs/follow-ups.md before adding UI for it.
    */
   revisionsCount: number
+  /** Stored values (pool skill ids or custom text) — ServiceDetail resolves the labels (skillLabel). */
   tags: string[]
 }
 
@@ -58,6 +61,7 @@ type DetailRow = {
   title: string
   description: string | null
   starting_price_tnd: number | string | null
+  price_unit: string | null
   delivery_time: string | null
   category_id: string | null
   freelancer_profile_id: string | null
@@ -77,7 +81,7 @@ export const getServiceDetail = cache(async (id: string): Promise<ServiceDetailD
   const { data, error } = await supabase
     .from('service_listings')
     .select(
-      `id, title, description, starting_price_tnd, delivery_time, status, category_id, freelancer_profile_id,
+      `id, title, description, starting_price_tnd, price_unit, delivery_time, status, category_id, freelancer_profile_id,
        deliverables, delivery_mode, revisions_count, tags,
        categories!service_listings_category_id_fkey ( name_fr ),
        freelancer_profiles!inner ( id, profile_id, city, headline, admin_hidden_at )`,
@@ -113,6 +117,7 @@ export const getServiceDetail = cache(async (id: string): Promise<ServiceDetailD
     title: row.title,
     description: row.description ?? null,
     startingPrice: row.starting_price_tnd != null ? Number(row.starting_price_tnd) : null,
+    priceUnit: row.price_unit ?? null,
     deliveryTime: row.delivery_time ?? null,
     category: one(row.categories)?.name_fr ?? null,
     categoryId: row.category_id,
@@ -129,7 +134,9 @@ type RelatedRow = {
   id: string
   title: string
   description: string | null
+  short_description: string | null
   starting_price_tnd: number | string | null
+  price_unit: string | null
   delivery_time: string | null
   categories: { name_fr: string } | { name_fr: string }[] | null
   freelancer_profiles: { profile_id: string | null; city: string | null } | { profile_id: string | null; city: string | null }[] | null
@@ -169,7 +176,7 @@ export async function getRelatedServices(opts: {
     supabase
       .from('service_listings')
       .select(
-        `id, title, description, starting_price_tnd, delivery_time,
+        `id, title, description, short_description, starting_price_tnd, price_unit, delivery_time,
          categories!service_listings_category_id_fkey ( name_fr ),
          freelancer_profiles!inner ( profile_id, city, admin_hidden_at )`,
       )
@@ -226,7 +233,9 @@ export async function getRelatedServices(opts: {
       id: row.id,
       title: row.title,
       description: row.description ?? null,
+      short_description: row.short_description ?? null,
       price_starting: row.starting_price_tnd != null ? Number(row.starting_price_tnd) : null,
+      price_unit: row.price_unit ?? null,
       delivery_time: row.delivery_time ?? null,
       category: one(row.categories) ? { name_fr: one(row.categories)!.name_fr } : null,
       freelancer: {

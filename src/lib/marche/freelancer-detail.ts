@@ -1,6 +1,7 @@
 import { cache } from 'react'
 import { createClient } from '@/lib/supabase/server'
 import type { ServiceListing } from '@/components/listings/ServiceListingCard'
+import { skillLabelPair } from '@/lib/freelance/service-draft'
 
 // D4 « Profil freelance public » — /freelance/[id]. Bare freelancer_profiles.id, matching every
 // sibling public-detail route (shop-detail.ts, product-detail.ts, service-detail.ts). Visibility
@@ -143,7 +144,9 @@ type ServiceRow = {
   id: string
   title: string
   description: string | null
+  short_description: string | null
   starting_price_tnd: number | string | null
+  price_unit: string | null
   delivery_time: string | null
   tags: string[] | null
   categories: { name_fr: string; name_ar: string | null } | { name_fr: string; name_ar: string | null }[] | null
@@ -163,7 +166,7 @@ export async function getFreelancerServices(
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('service_listings')
-    .select('id, title, description, starting_price_tnd, delivery_time, tags, categories!service_listings_category_id_fkey ( name_fr, name_ar )')
+    .select('id, title, description, short_description, starting_price_tnd, price_unit, delivery_time, tags, categories!service_listings_category_id_fkey ( name_fr, name_ar )')
     .eq('freelancer_profile_id', freelancerProfileId)
     .eq('status', 'active')
     .is('admin_hidden_at', null)
@@ -180,9 +183,11 @@ export async function getFreelancerServices(
       id: row.id,
       title: row.title,
       description: row.description ?? null,
+      short_description: row.short_description ?? null,
       price_starting: row.starting_price_tnd != null ? Number(row.starting_price_tnd) : null,
+      price_unit: row.price_unit ?? null,
       delivery_time: row.delivery_time ?? null,
-      tags: row.tags ?? [],
+      tags: (row.tags ?? []).map(skillLabelPair),
       category: category ? { name_fr: category.name_fr, name_ar: category.name_ar ?? undefined } : null,
       freelancer: { full_name: freelancerName, city: freelancerCity },
     }

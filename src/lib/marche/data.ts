@@ -78,7 +78,9 @@ type ServiceRow = {
   id: string
   title: string
   description: string | null
+  short_description: string | null
   starting_price_tnd: number | string | null
+  price_unit: string | null
   delivery_time: string | null
   freelancer_profiles:
     | { profile_id: string; city: string | null }
@@ -99,7 +101,7 @@ export const getActiveServices = cache(async (q?: string): Promise<ServiceListin
   // predicate their whole catalogue stays on the marketplace.
   let query = supabase
     .from('service_listings')
-    .select('id, title, description, starting_price_tnd, delivery_time, freelancer_profiles!inner(profile_id, city, admin_hidden_at), categories!service_listings_category_id_fkey(name_fr)')
+    .select('id, title, description, short_description, starting_price_tnd, price_unit, delivery_time, freelancer_profiles!inner(profile_id, city, admin_hidden_at), categories!service_listings_category_id_fkey(name_fr)')
     .eq('status', 'active')
     .is('admin_hidden_at', null)
     .is('freelancer_profiles.admin_hidden_at', null)
@@ -144,7 +146,9 @@ export const getActiveServices = cache(async (q?: string): Promise<ServiceListin
       id: row.id,
       title: row.title,
       description: row.description ?? null,
+      short_description: row.short_description ?? null,
       price_starting: row.starting_price_tnd != null ? Number(row.starting_price_tnd) : null,
+      price_unit: row.price_unit ?? null,
       delivery_time: row.delivery_time ?? null,
       category: cat ? { name_fr: cat.name_fr } : null,
       freelancer: {
