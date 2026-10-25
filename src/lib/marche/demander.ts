@@ -127,7 +127,7 @@ export const getRequestTarget = cache(async (id: string): Promise<RequestTarget 
     .from('service_listings')
     .select(
       `id, title, starting_price_tnd, price_unit, delivery_time, status, buyer_briefing, tags,
-       categories ( name_fr ),
+       categories!service_listings_category_id_fkey ( name_fr ),
        freelancer_profiles!inner ( profile_id, city, headline, admin_hidden_at )`,
     )
     .eq('id', id)
@@ -135,7 +135,7 @@ export const getRequestTarget = cache(async (id: string): Promise<RequestTarget 
     .is('admin_hidden_at', null)
     .is('freelancer_profiles.admin_hidden_at', null)
     .maybeSingle()
-  if (sErr) console.error('[demander] service fetch error:', sErr)
+  if (sErr) console.error('[demander] service fetch error:', sErr.message, sErr.code, sErr.details)
 
   if (service) {
     const row = service as unknown as ServiceRow

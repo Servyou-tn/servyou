@@ -9,6 +9,8 @@
  * Part 2 — enforce_seller_capability_switch() (migration 55, extended): seller_type cannot move away
  *          from 'freelancer' while the account holds any job_responses row (42501, own message).
  * Part 3 — anon lost INSERT / UPDATE on job_responses and authenticated lost UPDATE.
+ * Since migration 20261024191215_suspension_enforcement the suspended case is refused one step
+ * earlier, by its statement-level trigger, with 'Ce compte est suspendu.' (still 42501, no row).
  *
  * Every write under test goes through a signed-in user's own session (the REST path the guards
  * exist for); the service role seeds fixtures, reads ground truth and runs the bypass control.
@@ -65,7 +67,10 @@ const MINOR_DOB = (() => {
 const NOT_SELF = "Vous ne pouvez répondre à une annonce qu'en votre propre nom."
 const NOT_FREELANCER = 'Seul un compte freelance peut répondre à une annonce.'
 const UNDER_18 = 'Il faut avoir 18 ans pour répondre à une annonce.'
-const SUSPENDED = 'Un compte suspendu ne peut pas répondre à une annonce.'
+// Migration 59's own suspension message ('Un compte suspendu ne peut pas répondre à une annonce.') is
+// shadowed since migration 20261024191215_suspension_enforcement: its statement-level
+// trg_enforce_active_user fires before every row trigger and refuses a suspended caller first.
+const SUSPENDED = 'Ce compte est suspendu.'
 const NO_PROFILE = 'Un profil freelance est requis pour répondre à une annonce.'
 const HIDDEN = 'Un profil freelance masqué par la modération ne peut pas répondre à une annonce.'
 const SWITCH = 'Le type de vendeur ne peut pas changer tant que le compte possède une boutique ou un profil freelance.' // migration 55

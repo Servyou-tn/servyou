@@ -17,9 +17,12 @@ export const INTEGRATION_GLOBS = [
   '**/job-responses-integrity.test.ts',
   '**/profiles-rls.test.ts',
   '**/profiles-client-insert-delete-revoked.test.ts',
+  '**/public-profiles-read-only.test.ts',
+  '**/suspension-enforcement.test.ts',
   '**/job-limits.test.ts',
   '**/progressive-phone.integration.test.ts',
   '**/uploaded-objects-provenance-rls.test.ts',
+  '**/category-embeds-unambiguous.test.ts',
 ]
 
 // Tooling artifacts that must never be scanned for tests: the headless-Chrome VRT profiles (a

@@ -2274,6 +2274,8 @@ export const fr: Record<string, string> = {
   'admin.users.error_already_suspended':          "Cet utilisateur est déjà suspendu.",
   'admin.users.error_not_suspended':              "Cet utilisateur n'est pas suspendu.",
   'admin.users.error_self_suspend':               "Vous ne pouvez pas vous suspendre vous-même.",
+  'admin.users.error_ban_failed':                 "La suspension est enregistrée, mais la connexion du compte n'a pas pu être bloquée. Réessayez.",
+  'admin.users.error_unban_failed':               "La suspension est levée, mais la connexion du compte n'a pas pu être rétablie. Réessayez.",
   'admin.users.error_forbidden':                  "Accès non autorisé.",
   'auth.suspended_banner':                        "Votre compte a été suspendu. Veuillez contacter le support pour plus d'informations.",
   'admin.statistiques.page_title':                   "Statistiques",

@@ -101,7 +101,7 @@ export const getActiveServices = cache(async (q?: string): Promise<ServiceListin
   // predicate their whole catalogue stays on the marketplace.
   let query = supabase
     .from('service_listings')
-    .select('id, title, description, short_description, starting_price_tnd, price_unit, delivery_time, freelancer_profiles!inner(profile_id, city, admin_hidden_at), categories(name_fr)')
+    .select('id, title, description, short_description, starting_price_tnd, price_unit, delivery_time, freelancer_profiles!inner(profile_id, city, admin_hidden_at), categories!service_listings_category_id_fkey(name_fr)')
     .eq('status', 'active')
     .is('admin_hidden_at', null)
     .is('freelancer_profiles.admin_hidden_at', null)
@@ -113,7 +113,7 @@ export const getActiveServices = cache(async (q?: string): Promise<ServiceListin
 
   const { data, error } = await query
   if (error) {
-    console.error('[marche/data] services fetch error:', error)
+    console.error('[marche/data] services fetch error:', error.message, error.code, error.details)
     return []
   }
 

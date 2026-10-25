@@ -80,7 +80,7 @@ export async function getMyOrders(userId: string): Promise<MyOrder[]> {
     .select(
       `id, order_type, status, quantity, cancelled_by, cancellation_reason, received_at, created_at,
        products ( title, price_tnd, shops ( name, city ), categories ( name_fr ), product_images ( image_url, display_order ) ),
-       service_listings ( title, starting_price_tnd, freelancer_profiles ( profile_id, city ), categories ( name_fr ) )`,
+       service_listings ( title, starting_price_tnd, freelancer_profiles ( profile_id, city ), categories!service_listings_category_id_fkey ( name_fr ) )`,
     )
     .eq('buyer_id', userId)
     .order('created_at', { ascending: false })
@@ -273,13 +273,13 @@ export async function getMyFavorites(
     .select(
       `item_type, created_at,
        products ( id, title, description, price_tnd, status, admin_hidden_at, shops ( name, city, admin_hidden_at ), categories ( name_fr, name_ar ), product_images ( image_url, display_order ) ),
-       service_listings ( id, title, description, short_description, starting_price_tnd, price_unit, delivery_time, status, admin_hidden_at, freelancer_profiles ( profile_id, city, admin_hidden_at ), categories ( name_fr ) )`,
+       service_listings ( id, title, description, short_description, starting_price_tnd, price_unit, delivery_time, status, admin_hidden_at, freelancer_profiles ( profile_id, city, admin_hidden_at ), categories!service_listings_category_id_fkey ( name_fr ) )`,
     )
     .eq('user_id', userId)
     .order('created_at', { ascending: false })
 
   if (error) {
-    console.error('[my-data] favorites fetch error:', error)
+    console.error('[my-data] favorites fetch error:', error.message, error.code, error.details)
     return { products: [], services: [], combined: [] }
   }
 

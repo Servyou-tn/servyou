@@ -132,9 +132,10 @@ in `src/__tests__/sentry-scrubber.test.ts`.)
 ## Note on the `/monitoring` tunnel
 
 Sentry events are proxied through `/monitoring` (set via `tunnelRoute`) to dodge ad
-blockers. `src/middleware.ts` uses a closed-allowlist matcher that does **not** include
-`/monitoring`, so the tunnel is unobstructed. If the middleware matcher is ever widened,
-keep `/monitoring` excluded or browser events will silently stop arriving.
+blockers. Since `fix/suspension-enforcement` (2026-10-24) `src/middleware.ts` matches every
+route except static assets, the auth pages and `/monitoring`, which it excludes explicitly so
+the tunnel is unobstructed (pinned in `src/__tests__/middleware-suspension.test.ts`). Keep
+`/monitoring` excluded or browser events will silently stop arriving.
 
 ## Backup and disaster recovery
 

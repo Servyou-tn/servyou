@@ -111,7 +111,7 @@ export const getSellerServices = cache(
       .from('service_listings')
       .select(
         `id, title, description, starting_price_tnd, status, admin_hidden_at,
-         commandes:orders(count), all_orders:orders(count), categories(slug)`,
+         commandes:orders(count), all_orders:orders(count), categories!service_listings_category_id_fkey(slug)`,
       )
       .eq('freelancer_profile_id', freelancerProfileId)
       .neq('commandes.status', 'cancelled')

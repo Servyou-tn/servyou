@@ -2,16 +2,27 @@ import { NextResponse, type NextRequest } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
 
 // Platform-wide enforcement of the suspended state, and ONLY that. This middleware
-// does not refresh sessions, does not duplicate the per-page login checks, and does
-// no other auth work. On the happy path it reads cookies and passes through WITHOUT
-// mutating them (no updateSession boilerplate — that would change session-refresh
-// behavior platform-wide). Only the suspended branch writes to the response.
+// never persists a session refresh, does not duplicate the per-page login checks, and
+// does no other auth work. On the happy path it reads cookies and passes through
+// WITHOUT mutating them (no updateSession boilerplate — that would change
+// session-refresh behavior platform-wide). Only the suspended branch writes to the
+// response. Note getUser() itself refreshes a session within ~90 s of expiry; the
+// no-op setAll() discards the rotated tokens (logged in docs/follow-ups.md).
 //
-// A suspended, logged-in user hitting any matched (authenticated-only) route is
-// signed out (sb-* auth cookies cleared) and redirected to /connexion?suspended=1, where
-// a generic banner explains. Anonymous and active users sail through — their existing
-// per-page checks handle "is the user logged in" for their own contexts.
+// A suspended, logged-in user hitting any matched route is signed out (sb-* auth
+// cookies cleared) and redirected to /connexion?suspended=1, where a generic banner
+// explains. Anonymous and active users sail through — their existing per-page checks
+// handle "is the user logged in" for their own contexts. This is the session layer;
+// the database refuses a suspended account's writes on its own (migration
+// 20261024191215_suspension_enforcement), and the auth ban (src/lib/auth/auth-ban.ts)
+// stops it signing in or refreshing.
 export async function middleware(request: NextRequest) {
+  // Link prefetches skip the check: every Next prefetch sends next-router-prefetch and no
+  // navigation does, there is one per visible <Link>, they only read, and the navigation that
+  // follows is checked. The header is client-set, so GET only — a server-action POST never
+  // skips — and a forged header on a GET buys a read the API would serve that token anyway.
+  if (request.method === 'GET' && request.headers.has('next-router-prefetch')) return NextResponse.next()
+
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -20,28 +31,37 @@ export async function middleware(request: NextRequest) {
         getAll() {
           return request.cookies.getAll()
         },
-        // Read-only: middleware does not refresh sessions. Intentional no-op.
+        // Read-only: a refresh getUser() performs is never written back. Intentional no-op.
         setAll() {},
       },
     },
   )
 
   // getUser() validates the JWT with the auth server (never trust getSession() for a
-  // security gate). Expired/absent session → no user → pass through as anonymous.
-  const { data: { user } } = await supabase.auth.getUser()
+  // security gate). Expired/absent session → no user → pass through as anonymous. A
+  // banned account — the auth half of a suspension — gets 403 user_banned here even
+  // while its access token is unexpired, so that is a suspension too.
+  const { data: { user }, error: userError } = await supabase.auth.getUser()
+  if (userError?.code === 'user_banned') return signOutSuspended(request)
   if (!user) return NextResponse.next()
 
   // One indexed PK lookup. Owner-read RLS lets the user read their own row's
   // suspended_at. Active (or unreadable) → pass through; only a confirmed
   // suspended_at bounces.
-  const { data: profile } = await supabase
+  const { data: profile, error: profileError } = await supabase
     .from('profiles')
     .select('suspended_at')
     .eq('id', user.id)
     .maybeSingle()
+  if (profileError) {
+    console.error('[middleware] suspended_at lookup error:', profileError.message, profileError.code, profileError.details)
+  }
 
   if (!profile || !profile.suspended_at) return NextResponse.next()
+  return signOutSuspended(request)
+}
 
+function signOutSuspended(request: NextRequest): NextResponse {
   const redirectUrl = new URL('/connexion', request.url)
   redirectUrl.searchParams.set('suspended', '1')
   const response = NextResponse.redirect(redirectUrl)
@@ -57,23 +77,21 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  // Closed-by-default allowlist of authenticated-only prefixes. /foo/:path* matches
-  // the base /foo and its children. Public browse pages, the auth flows, and
-  // /connexion (the bounce target — matching it would loop) are deliberately excluded.
+  // Everything EXCEPT static assets, the auth pages and the Sentry tunnel — open by
+  // default, so a new route is covered the day it ships (the closed allowlist this
+  // replaces had drifted: it missed /demander, /mes-commandes, /mon-compte, /parametres
+  // and every dashboard). Excluded:
+  //   * Next's build assets and image optimizer, and a static-file extension only where
+  //     public/ assets live — a root-level file (favicon, the root SVGs, robots.txt,
+  //     sitemap.xml) or anything under /brand/. A dotted dynamic segment such as
+  //     /admin/utilisateurs/x.png is a page and a server-action endpoint, so it stays matched;
+  //   * /connexion — the bounce target, matching it would loop — and the other auth
+  //     flows (/inscription, /mot-de-passe-oublie, /nouveau-mot-de-passe,
+  //     /verifier-email, /auth/*);
+  //   * /monitoring — next.config.ts's Sentry tunnelRoute.
+  // Each excluded page segment is anchored to "/" or the end, so /connexion-x is still
+  // matched. Pinned by src/__tests__/middleware-suspension.test.ts.
   matcher: [
-    '/admin/:path*',
-    '/ma-boutique/:path*',
-    '/mon-profil-freelance/:path*',
-    '/mes-demandes/:path*',
-    '/mes-favoris/:path*',
-    '/mes-annonces/:path*',
-    '/mes-reponses/:path*',
-    '/missions/:path*',
-    '/profile/:path*',
-    '/devenir-vendeur/:path*',
-    '/poster-mission/:path*',
-    '/demande/:path*',
-    '/produit/:id/demande',
-    '/service/:id/demande',
+    '/((?!_next/static/|_next/image(?:/|$)|(?:connexion|inscription|mot-de-passe-oublie|nouveau-mot-de-passe|verifier-email|auth|monitoring)(?:/|$)|(?:[^/]+|brand/.+)\\.(?:ico|png|jpe?g|gif|webp|avif|svg|txt|xml|webmanifest|woff2?|ttf|otf|map)$).*)',
   ],
 }

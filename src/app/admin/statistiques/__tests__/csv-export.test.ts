@@ -27,7 +27,7 @@ const h = vi.hoisted(() => {
     const profileRow = () =>
       Promise.resolve(
         table === 'profiles'
-          ? { data: state.isAdmin === null ? null : { is_admin: state.isAdmin }, error: state.profileError }
+          ? { data: state.isAdmin === null ? null : { is_admin: state.isAdmin, suspended_at: null }, error: state.profileError }
           : { data: null, error: null },
       )
     const builder: Record<string, unknown> = {

@@ -83,7 +83,7 @@ export const getServiceDetail = cache(async (id: string): Promise<ServiceDetailD
     .select(
       `id, title, description, starting_price_tnd, price_unit, delivery_time, status, category_id, freelancer_profile_id,
        deliverables, delivery_mode, revisions_count, tags,
-       categories ( name_fr ),
+       categories!service_listings_category_id_fkey ( name_fr ),
        freelancer_profiles!inner ( id, profile_id, city, headline, admin_hidden_at )`,
     )
     .eq('id', id)
@@ -93,7 +93,7 @@ export const getServiceDetail = cache(async (id: string): Promise<ServiceDetailD
     .maybeSingle()
 
   if (error) {
-    console.error('[service-detail] fetch error:', error)
+    console.error('[service-detail] fetch error:', error.message, error.code, error.details)
     return null
   }
   if (!data) return null
@@ -177,7 +177,7 @@ export async function getRelatedServices(opts: {
       .from('service_listings')
       .select(
         `id, title, description, short_description, starting_price_tnd, price_unit, delivery_time,
-         categories ( name_fr ),
+         categories!service_listings_category_id_fkey ( name_fr ),
          freelancer_profiles!inner ( profile_id, city, admin_hidden_at )`,
       )
       .eq('status', 'active')

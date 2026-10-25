@@ -29,6 +29,7 @@ export function SigninForm({ showResetSuccess = false }: { showResetSuccess?: bo
   const [password, setPassword] = useState('')
   const [emailError, setEmailError] = useState('')
   const [formError, setFormError] = useState('')
+  const [suspended, setSuspended] = useState(false)
   const [loading, setLoading] = useState(false)
 
   // Success banner after a password reset (redirected here from /nouveau-mot-de-passe
@@ -47,6 +48,7 @@ export function SigninForm({ showResetSuccess = false }: { showResetSuccess?: bo
   async function handleSubmit(ev: FormEvent) {
     ev.preventDefault()
     setFormError('')
+    setSuspended(false)
     setEmailError('')
 
     if (!isValidEmail(email)) {
@@ -63,8 +65,17 @@ export function SigninForm({ showResetSuccess = false }: { showResetSuccess?: bo
       })
 
       if (error) {
-        // Anti-enumeration: ONE generic message for every failure (wrong password,
-        // unknown email, unconfirmed email) so an attacker can't probe which
+        // A suspended account is banned in Supabase Auth (src/lib/auth/auth-ban.ts):
+        // show the same banner middleware's bounce shows. GoTrue answers user_banned
+        // before it checks the password, so this reveals nothing its public API does
+        // not already tell anyone who asks.
+        if (error.code === 'user_banned') {
+          setSuspended(true)
+          setLoading(false)
+          return
+        }
+        // Anti-enumeration: ONE generic message for every other failure (wrong
+        // password, unknown email, unconfirmed email) so an attacker can't probe which
         // accounts exist. The real error is not surfaced.
         setFormError(t('signin.errors.invalidCredentials', lang))
         setLoading(false)
@@ -99,7 +110,7 @@ export function SigninForm({ showResetSuccess = false }: { showResetSuccess?: bo
   return (
     <>
       <Suspense fallback={null}>
-        <SuspendedBanner />
+        <SuspendedBanner show={suspended} />
       </Suspense>
 
       {showResetBanner ? (

@@ -1,8 +1,10 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
+import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
 import { checkAdmin, adminRejectionError } from '@/lib/auth/require-admin'
+import { syncAuthBan, isSuspensionAlreadyApplied } from '@/lib/auth/auth-ban'
 
 export type ReportActionResult = { success: boolean; error?: string }
 
@@ -274,7 +276,9 @@ export async function dismissReport(reportId: string, adminNote: string): Promis
 // actions is the revalidate target: these refresh the report detail page (where the
 // action is invoked) as well as the user surfaces. The functions RAISE on every
 // failure mode (admin gate, self-suspend, empty reason, already/not-suspended), so a
-// null error genuinely means the state changed — no rowcount guard needed.
+// null error genuinely means the state changed — no rowcount guard needed. Like the
+// utilisateurs actions, each then mirrors the new state as an auth ban
+// (src/lib/auth/auth-ban.ts), database first, retry-safe.
 
 function translateSuspendError(message: string): string {
   if (message.includes('Forbidden')) return 'admin.users.error_forbidden'
@@ -285,11 +289,17 @@ function translateSuspendError(message: string): string {
   return 'common.error_generic'
 }
 
+// The target arrives from the client. A uuid is the only valid shape — anything else would fail the
+// RPC's cast (22P02) before its admin gate and audit log ever ran.
+const TargetUserId = z.string().uuid()
+
 export async function suspendReportedUser(
   targetUserId: string,
   reason: string,
   reportId: string,
 ): Promise<ReportActionResult> {
+  if (!TargetUserId.safeParse(targetUserId).success) return { success: false, error: 'common.error_generic' }
+
   const supabase = await createClient()
   const admin = await checkAdmin(supabase)
   if (!admin.ok) {
@@ -306,18 +316,31 @@ export async function suspendReportedUser(
     target_user_id: targetUserId,
     reason: trimmed,
   })
-  if (error) {
+  // Retry-safe: "already suspended" means an earlier attempt's database write landed, so fall
+  // through and (re-)apply the idempotent ban. Every other raise stops here, before the ban.
+  if (error && !isSuspensionAlreadyApplied(error, true)) {
     console.error('[admin/signalements] suspendReportedUser error:', error.message, error.code, error.details)
     return { success: false, error: translateSuspendError(error.message) }
   }
 
+  // Database first, then the auth ban, set from the committed suspended_at (service role, which
+  // CLAUDE.md allows in server actions): the account can no longer sign in or refresh, and
+  // middleware.ts signs out its current session on the next request.
+  const sync = await syncAuthBan(targetUserId)
+  if (!sync.ok) {
+    // The RPC's "not found or already suspended" was the not-found half.
+    if (sync.reason === 'not_found') return { success: false, error: 'admin.users.error_not_found' }
+    // Not revalidated, so the form stays up and resubmitting lands in the retry branch above.
+    return { success: false, error: 'admin.users.error_ban_failed' }
+  }
+
   // Suspension changed global state: refresh the report page (we're on it) and the
-  // user surfaces so they aren't stale on the next visit. The suspended user is signed
-  // out by middleware.ts on their next protected-route request (no service-role
-  // signout here — the service role key stays out of app code).
+  // user surfaces so they aren't stale on the next visit.
   revalidatePath('/admin/signalements/' + reportId)
   revalidatePath('/admin/utilisateurs')
   revalidatePath('/admin/utilisateurs/' + targetUserId)
+  // A concurrent unsuspend committed between the RPC and the sync: the account, and so its ban, is active.
+  if (!sync.suspended) return { success: false, error: 'admin.users.error_not_suspended' }
   return { success: true }
 }
 
@@ -325,6 +348,8 @@ export async function unsuspendReportedUser(
   targetUserId: string,
   reportId: string,
 ): Promise<ReportActionResult> {
+  if (!TargetUserId.safeParse(targetUserId).success) return { success: false, error: 'common.error_generic' }
+
   const supabase = await createClient()
   const admin = await checkAdmin(supabase)
   if (!admin.ok) {
@@ -335,13 +360,23 @@ export async function unsuspendReportedUser(
   const { error } = await supabase.rpc('admin_unsuspend_user', {
     target_user_id: targetUserId,
   })
-  if (error) {
+  // Retry-safe, mirroring suspendReportedUser: "not currently suspended" falls through to the unban.
+  if (error && !isSuspensionAlreadyApplied(error, false)) {
     console.error('[admin/signalements] unsuspendReportedUser error:', error.message, error.code, error.details)
     return { success: false, error: translateSuspendError(error.message) }
+  }
+
+  // Database first, then lift the auth ban — again from the committed suspended_at.
+  const sync = await syncAuthBan(targetUserId)
+  if (!sync.ok) {
+    if (sync.reason === 'not_found') return { success: false, error: 'admin.users.error_not_found' }
+    return { success: false, error: 'admin.users.error_unban_failed' }
   }
 
   revalidatePath('/admin/signalements/' + reportId)
   revalidatePath('/admin/utilisateurs')
   revalidatePath('/admin/utilisateurs/' + targetUserId)
+  // A concurrent suspend committed between the RPC and the sync: the account, and so its ban, is suspended.
+  if (sync.suspended) return { success: false, error: 'admin.users.error_already_suspended' }
   return { success: true }
 }
