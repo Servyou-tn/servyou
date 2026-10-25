@@ -4,6 +4,7 @@ import { z } from 'zod'
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 import { getLang } from '@/lib/i18n/server'
+import { SELLER_ORDER_PATHS } from '@/lib/orders/seller-paths'
 import { t } from '@/lib/i18n'
 import {
   nextSellerStatus,
@@ -28,11 +29,11 @@ import {
 //      of the next status ever drifts from the trigger's, the trigger wins and the write fails —
 //      which is why the error is surfaced verbatim rather than swallowed.
 
-// The caller passes the path to revalidate: G4, G8 and G9 all render the same orders and each
-// needs its own page refreshed after a transition. Constrained to a known set rather than
-// accepting an arbitrary string from the client — `revalidatePath` takes a route, and letting a
-// caller name any route is a needless capability.
-const SELLER_PATHS = ['/tableau-de-bord-vendeur', '/commandes-recues'] as const
+// The caller passes the path to revalidate: G4, G8, G9 and H8 all render the same orders and each
+// needs its own page refreshed after a transition. Constrained to a known set (SELLER_ORDER_PATHS, a
+// plain module a client button can import too) rather than accepting an arbitrary string from the
+// client — `revalidatePath` takes a route, and letting a caller name any route is a needless capability.
+const SELLER_PATHS = SELLER_ORDER_PATHS
 
 const AdvanceOrderInput = z.object({
   orderId: z.string().uuid(),
@@ -247,7 +248,11 @@ export async function cancelOrderAction(input: unknown): Promise<ActionResult> {
       status: 'cancelled',
       cancelled_by: role,
       cancellation_reason: reason === '' ? null : reason,
-      cancelled_at: new Date().toISOString(),
+      // NOT `cancelled_at`: `authenticated` has no UPDATE grant on that column (the column allow-list is
+      // status, cancelled_by, cancellation_reason, received_at, carrier, tracking_number), and Postgres
+      // refuses an UPDATE whose SET list names a column the role cannot write — 42501 for the WHOLE
+      // statement. trg_set_cancelled_at_on_transition stamps it from now() on the status change anyway.
+      // Sending it here made every seller-side cancel fail (G8, G9) with nothing in a mock test to say so.
     })
     .eq('id', order.id)
 

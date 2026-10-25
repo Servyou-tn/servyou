@@ -201,6 +201,64 @@ describe('cancelOrderAction', () => {
     expect(res.ok).toBe(false)
     expect(state.updates).toEqual([])
   })
+
+  // H8 D7. `authenticated` has NO UPDATE grant on orders.cancelled_at (the allow-list is status, cancelled_by,
+  // cancellation_reason, received_at, carrier, tracking_number — verified live with has_column_privilege), and
+  // Postgres refuses an UPDATE whose SET list names a column the role cannot write, for the WHOLE statement
+  // (42501). trg_set_cancelled_at_on_transition stamps the column itself. The action used to send it, which
+  // broke every seller-side cancel (G8, G9) — and this mock cannot see a column grant, so the PAYLOAD is what
+  // is pinned: it may contain only columns the role can write.
+  it('writes only columns the role is granted — never cancelled_at (trigger-stamped)', async () => {
+    const GRANTED_UPDATE_COLUMNS = ['status', 'cancelled_by', 'cancellation_reason', 'received_at', 'carrier', 'tracking_number']
+    const { cancelOrderAction } = await import('@/app/actions/orders')
+    await cancelOrderAction({ orderId: ID, reason: 'Client injoignable' })
+    expect(state.updates).toHaveLength(1)
+    expect(state.updates[0]).toEqual({
+      status: 'cancelled',
+      cancelled_by: 'seller',
+      cancellation_reason: 'Client injoignable',
+    })
+    for (const column of Object.keys(state.updates[0])) expect(GRANTED_UPDATE_COLUMNS).toContain(column)
+    expect(state.updates[0]).not.toHaveProperty('cancelled_at')
+  })
+
+  it('accepts the freelancer inbox as a revalidate path', async () => {
+    state.order = { ...state.order!, order_type: 'service' }
+    const { cancelOrderAction } = await import('@/app/actions/orders')
+    const res = await cancelOrderAction({ orderId: ID, revalidate: '/mes-engagements' })
+    expect(res.ok).toBe(true)
+  })
+})
+
+describe('advanceOrderAction — a freelancer service order (H8)', () => {
+  it('accepts a pending service request: pending → accepted, revalidating /mes-engagements', async () => {
+    state.order = { id: ID, seller_id: SELLER, buyer_id: BUYER, status: 'pending', order_type: 'service' }
+    const { advanceOrderAction } = await import('@/app/actions/orders')
+    const res = await advanceOrderAction({ orderId: ID, revalidate: '/mes-engagements' })
+    expect(res.ok).toBe(true)
+    expect(state.updates).toEqual([{ status: 'accepted' }])
+  })
+
+  it('delivers an accepted service: accepted → arrived (never the product chain prepared step)', async () => {
+    state.order = { id: ID, seller_id: SELLER, buyer_id: BUYER, status: 'accepted', order_type: 'service' }
+    const { advanceOrderAction } = await import('@/app/actions/orders')
+    expect((await advanceOrderAction({ orderId: ID })).ok).toBe(true)
+    expect(state.updates).toEqual([{ status: 'arrived' }])
+  })
+
+  it('stops at arrived: the buyer alone confirms receipt', async () => {
+    state.order = { id: ID, seller_id: SELLER, buyer_id: BUYER, status: 'arrived', order_type: 'service' }
+    const { advanceOrderAction } = await import('@/app/actions/orders')
+    expect((await advanceOrderAction({ orderId: ID })).ok).toBe(false)
+    expect(state.updates).toEqual([])
+  })
+
+  it('refuses an order the caller does not sell', async () => {
+    state.user = { id: 'stranger' }
+    const { advanceOrderAction } = await import('@/app/actions/orders')
+    expect((await advanceOrderAction({ orderId: ID })).ok).toBe(false)
+    expect(state.updates).toEqual([])
+  })
 })
 
 // ── 4. Status pill coverage — the G8 delta S5 regression guard ────────────────────────────────
