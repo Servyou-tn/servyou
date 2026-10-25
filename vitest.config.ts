@@ -24,6 +24,7 @@ export const INTEGRATION_GLOBS = [
   '**/uploaded-objects-provenance-rls.test.ts',
   '**/category-embeds-unambiguous.test.ts',
   '**/prelaunch-shop-read-rls.test.ts',
+  '**/orders-lifecycle-columns.test.ts',
 ]
 
 // Tooling artifacts that must never be scanned for tests: the headless-Chrome VRT profiles (a

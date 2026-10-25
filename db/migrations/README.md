@@ -480,6 +480,32 @@ this PR and is not attempted here.
     `src/__tests__/prelaunch-shop-read-rls.test.ts` (live-DB). Rollback SQL is in a comment block at
     the bottom of the migration file.
 
+66. **20261025222218_order_lifecycle_columns** — Applied by the architect 2026-10-25 (recorded
+    version; executable SQL MD5-verified against `schema_migrations`, comments and whitespace
+    stripped: `5a58f236`). Pre-checked by the architect with a buyer JWT in a rolled-back
+    transaction: a client `received_at` of 2000-01-01 was discarded for `now()`, and a
+    `cancellation_reason` rewrite was refused 42501. Admin behaviour approved. Pre-launch security batch PR-3
+    item E1 (architect decisions 12–13, 2026-10-25; prioritised ahead of PR-2 so H8 PR-2 #191 can
+    stop the browser writes). Adds `enforce_order_lifecycle_columns()` (SECURITY DEFINER,
+    `search_path ''`, EXECUTE revoked from public/anon/authenticated) and
+    `trg_enforce_order_lifecycle_columns` (BEFORE INSERT OR UPDATE on `orders`). For callers with a
+    JWT — admins included — `received_at` is `now()` on the transition into
+    `received` and on an INSERT at `received`, and otherwise keeps its OLD value (a client value is
+    discarded, not refused); `cancelled_by` / `cancellation_reason` may change only inside the
+    transition into `cancelled`, else 42501 « Les informations d'annulation ne peuvent pas être
+    modifiées. ». Callers without a JWT (service role, migrations, fixtures) keep explicit values,
+    but an order INSERTED at `received` with none is still stamped (the trigger's UPDATE-side
+    stamp for them is defensive only: `check_order_status_transition` refuses any status change
+    without a JWT). **Caveat (post-apply review):** an admin who is a *party* to an order passes
+    `check_order_status_transition`'s admin override, so they can leave a terminal state and
+    re-enter a transition (restamping `received_at`, rewriting cancel metadata), and can INSERT at
+    `cancelled` with any cancel columns; logged in `docs/follow-ups.md`. Fires after
+    `trg_check_order_status_transition` and before `trg_set_cancelled_at_on_transition`; no existing
+    function or grant changes. No backfill: the one seeded `received` order with a NULL
+    `received_at` stays NULL. E2 (revoke `UPDATE (received_at)` from authenticated) follows once H8
+    PR-2 has shipped. Verified by `src/__tests__/orders-lifecycle-columns.test.ts` (live-DB).
+    Rollback SQL is in a comment block at the bottom of the migration file.
+
 ## Rollback paths
 
 Each migration in this folder represents work that has already been applied to production. Rollback is therefore reverse migration work, not file deletion. If a rollback is ever needed, write a new dated migration that reverses the relevant changes — never delete history from this folder.
