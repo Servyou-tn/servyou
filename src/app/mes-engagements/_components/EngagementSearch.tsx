@@ -22,7 +22,11 @@ export function EngagementSearch({ q, lang }: { q: string; lang: Lang }) {
       role="search"
       onSubmit={(e) => {
         e.preventDefault()
-        const qs = buildSearchQuery(sp, { q: query.trim() || null }, { resetPage: true })
+        const term = query.trim()
+        // From the default tab (« À traiter », pending only — no `statut` in the URL) a search would miss every
+        // other engagement, so it widens to « Tous ». A tab the freelancer chose stays: they narrowed on purpose.
+        const widen = term && !sp.get('statut') ? { statut: 'all' } : {}
+        const qs = buildSearchQuery(sp, { q: term || null, ...widen }, { resetPage: true })
         router.push(qs ? `${ROUTE}?${qs}` : ROUTE)
       }}
       className="w-full min-w-0 sm:w-[372px]"

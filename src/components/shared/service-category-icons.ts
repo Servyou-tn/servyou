@@ -26,7 +26,8 @@ import type { LucideIcon } from 'lucide-react'
 // sector added here without a matching icon import).
 //
 // Shared by H5's ServiceRow and H8's EngagementRow (the second consumer): both draw the category glyph of
-// the same service. A plain module so a Server Component can import it too.
+// the same service. A plain module in src/components/shared (not in either route's private _components)
+// so a Server Component can import it and neither route depends on the other.
 export const CATEGORY_ICONS: Record<string, LucideIcon> = {
   'developpement-web-mobile': Code,
   'design-graphique-logo': Palette,

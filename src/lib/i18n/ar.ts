@@ -3209,7 +3209,7 @@ export const ar: Record<string, string> = {
   'engagements.client_type.shop':       "متجر",
   'engagements.client_type.freelancer': "مستقل",
   'engagements.client_unknown':         "عميل",
-  'engagements.budget_from':            "ابتداءً من {price} د.ت",
+  'engagements.budget_from':            "ابتداءً من {price}",
   'engagements.requested_on':           "طُلبت في {date}",
   'engagements.timeframe_none':         "غير محدد",
   'engagements.note.awaiting_confirmation': "بانتظار تأكيد العميل",

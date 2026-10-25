@@ -3318,7 +3318,7 @@ export const fr: Record<string, string> = {
   'engagements.client_type.shop':       "Boutique",
   'engagements.client_type.freelancer': "Freelance",
   'engagements.client_unknown':         "Client",
-  'engagements.budget_from':            "Dès {price} TND",
+  'engagements.budget_from':            "Dès {price}",
   'engagements.requested_on':           "Demandée le {date}",
   'engagements.timeframe_none':         "Non précisé",
   'engagements.note.awaiting_confirmation': "en attente de confirmation",

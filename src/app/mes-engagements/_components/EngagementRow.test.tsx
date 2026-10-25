@@ -56,6 +56,7 @@ const BASE: Engagement = {
   cancelledAt: null,
   cancellationReason: null,
   startingPrice: 300,
+  priceUnit: null,
   requestedTimeframe: null,
 }
 
@@ -110,6 +111,17 @@ describe('EngagementRow — what the cells say', () => {
     cleanup()
     renderRow({ startingPrice: null })
     expect(screen.queryByText(/^Dès/)).not.toBeInTheDocument()
+  })
+
+  it('keeps an hourly / daily / monthly listing\'s unit, so a rate does not read as a total', () => {
+    renderRow({ startingPrice: 50, priceUnit: 'hour' })
+    expect(screen.getByText('Dès 50 TND / heure')).toBeInTheDocument()
+    cleanup()
+    renderRow({ startingPrice: 450, priceUnit: 'month' })
+    expect(screen.getByText('Dès 450 TND / mois')).toBeInTheDocument()
+    cleanup()
+    renderRow({ startingPrice: 450, priceUnit: 'fixed' })
+    expect(screen.getByText('Dès 450 TND')).toBeInTheDocument()
   })
 
   it('labels the client: Consommateur / Boutique / Freelance', () => {

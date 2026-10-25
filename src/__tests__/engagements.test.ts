@@ -40,6 +40,7 @@ function engagement(over: Partial<Engagement> = {}): Engagement {
     cancelledAt: null,
     cancellationReason: null,
     startingPrice: 300,
+    priceUnit: null,
     requestedTimeframe: null,
     ...over,
   }
@@ -143,6 +144,14 @@ describe('pageEngagements', () => {
     const c = engagement({ createdAt: '2026-10-02T10:00:00Z' })
     expect(pageEngagements([a, b, c], base).engagements.map((x) => x.id)).toEqual([b.id, c.id, a.id])
     expect(pageEngagements([a, b, c], { ...base, sort: 'oldest' }).engagements.map((x) => x.id)).toEqual([a.id, c.id, b.id])
+  })
+
+  it('serves an INTEGER page whatever the URL said (?page=1.5 must not slice from row 5)', () => {
+    const all = Array.from({ length: ENGAGEMENTS_PER_PAGE + 3 }, () => engagement())
+    const page = pageEngagements(all, { ...base, page: 1.5 })
+    expect(page.page).toBe(1)
+    expect(page.engagements).toHaveLength(ENGAGEMENTS_PER_PAGE)
+    expect(pageEngagements(all, { ...base, page: Number.NaN }).page).toBe(1)
   })
 
   it('pages by ENGAGEMENTS_PER_PAGE and clamps an out-of-range page', () => {

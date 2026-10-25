@@ -21,7 +21,7 @@ import { tndPrice } from '@/components/listings/listing-utils'
 import type { SellerServiceRow } from '@/lib/marche/seller-services'
 import { CascadeWarningModal } from './CascadeWarningModal'
 import { DeleteServiceModal } from './DeleteServiceModal'
-import { CATEGORY_ICONS } from './category-icons'
+import { CATEGORY_ICONS } from '@/components/shared/service-category-icons'
 import { getStatusPresentation } from './service-status'
 
 // H5's row — Figma 258:7898 (Service Row, state[default,hover] × status[active,paused]), measured

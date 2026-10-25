@@ -4,11 +4,11 @@ import { Avatar } from '@/components/ui/avatar'
 import { getInitials } from '@/components/ui/initials'
 import { StatusPill } from '@/components/ui/status-pill'
 import { t, type Lang } from '@/lib/i18n'
-import { formatServicePrice } from '@/lib/freelance/service-price'
+import { formatServicePrice, servicePriceLabel } from '@/lib/freelance/service-price'
 import { statusPillFor, shortDate, shortRef } from '@/lib/orders/order-status'
 import { getSector } from '@/lib/taxonomy/service-categories'
 import type { Engagement, EngagementClientType } from '@/lib/marche/engagements'
-import { CATEGORY_ICONS } from '@/app/mes-services/_components/category-icons'
+import { CATEGORY_ICONS } from '@/components/shared/service-category-icons'
 import { EngagementActions } from './EngagementActions'
 
 // Engagement Row — Figma 274:9204 (state default; hover not measured), docs/design/h8-measurements.md.
@@ -22,7 +22,9 @@ import { EngagementActions } from './EngagementActions'
 //
 // Deviations from the frame, each an architect ruling (D1–D10) or a necessity:
 //   • Budget reads « Dès 300 TND » (D3): orders.unit_price_tnd is the listing's STARTING price, so a bare
-//     « 300 TND » would claim a negotiated amount. The column is 140 wide, not 95, to hold « Dès 3 500 TND » and the longer Arabic « ابتداءً من 350 د.ت » on one line.
+//     « 300 TND » would claim a negotiated amount. An hourly / daily / monthly listing keeps its unit
+//     (« Dès 50 TND / heure ») so a rate does not read as a total — the unit is the listing's CURRENT one;
+//     orders snapshot none (docs/follow-ups.md). The column is 140 wide, not 95, to hold « Dès 3 500 TND » and the longer Arabic « ابتداءً من 350 د.ت » on one line.
 //   • The échéance column is « Délai souhaité » (D4): there is no deadline column yet (PR-3). The two lines
 //     are « Demandée le {date} » over what the buyer asked for; terminal states keep the frame's single note.
 //   • The actions cell is 208, not 205: the frame's own content (120+8+36+8+36) is 208 and the frame clips it.
@@ -105,7 +107,9 @@ export function EngagementRow({ engagement: e, lang }: { engagement: Engagement;
           <p className="text-caption text-text-muted lg:hidden">{t('engagements.col.budget', lang)}</p>
           <p className="whitespace-nowrap text-body font-bold leading-6 text-text-primary">
             {e.startingPrice != null
-              ? t('engagements.budget_from', lang, { price: formatServicePrice(e.startingPrice, lang) })
+              ? t('engagements.budget_from', lang, {
+                  price: servicePriceLabel(formatServicePrice(e.startingPrice, lang), e.priceUnit, lang),
+                })
               : '—'}
           </p>
         </div>

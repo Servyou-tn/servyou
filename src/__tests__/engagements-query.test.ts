@@ -53,7 +53,7 @@ const ROW = {
   buyer_note: 'Je veux un logo moderne.\n\n[Délai: 2 semaines]\n[Budget: 400 TND]',
   item_title: 'Création de logo professionnel',
   unit_price_tnd: '300.00',
-  service_listings: { title: 'Titre actuel', starting_price_tnd: '250.00', categories: { slug: 'design-graphique-logo' } },
+  service_listings: { title: 'Titre actuel', starting_price_tnd: '250.00', price_unit: 'hour', categories: { slug: 'design-graphique-logo' } },
 }
 
 beforeEach(() => {
@@ -103,6 +103,7 @@ describe('getEngagements', () => {
         cancelledAt: null,
         cancellationReason: null,
         startingPrice: 300,
+        priceUnit: 'hour',
         requestedTimeframe: '2 semaines',
       },
     ])
@@ -124,6 +125,11 @@ describe('getEngagements', () => {
     expect(byId['o-3']).toMatchObject({ title: '', categorySlug: null, startingPrice: null })
   })
 
+  it('throws on a failed clients query too — a list of unnamed consumers is a silently wrong list', async () => {
+    h.state.profiles = { data: null, error: { message: 'denied', code: '42501', details: null } }
+    await expect(getEngagements('user-1', OPTS)).rejects.toThrow('engagements clients fetch failed')
+  })
+
   it('keeps a row whose buyer profile is missing, as an unnamed consumer', async () => {
     h.state.profiles = { data: [], error: null }
     const { engagements } = await getEngagements('user-1', OPTS)
@@ -139,7 +145,7 @@ describe('getEngagements', () => {
 
   it('takes a single embed object or an array (PostgREST returns either)', async () => {
     h.state.orders = {
-      data: [{ ...ROW, service_listings: [{ title: 'T', starting_price_tnd: null, categories: [{ slug: 'traduction' }] }] }],
+      data: [{ ...ROW, service_listings: [{ title: 'T', starting_price_tnd: null, price_unit: null, categories: [{ slug: 'traduction' }] }] }],
       error: null,
     }
     const { engagements } = await getEngagements('user-1', OPTS)

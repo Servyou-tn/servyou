@@ -68,7 +68,7 @@ export default async function MesEngagementsPage({
   const tab = parseTab(first(sp.statut))
   const sort = parseSort(first(sp.tri))
   const q = (first(sp.q) ?? '').slice(0, 100)
-  const page = Math.max(1, Number(first(sp.page) ?? '1') || 1)
+  const page = Math.max(1, Math.floor(Number(first(sp.page) ?? '1')) || 1)
 
   const data = await getEngagements(userId, { tab, q, sort, page })
 
@@ -150,8 +150,9 @@ export default async function MesEngagementsPage({
                 2 px bottom indicator, inactive = Medium text/muted, a 1 px border/subtle rule under the strip,
                 NO count chips.
                 derived: the strip scrolls horizontally below-lg so the active tab stays reachable (G8). */}
-            <div
-              role="tablist"
+            {/* A <nav> of links, not role="tablist": every item is a full-page navigation, so there is no tabpanel,
+                no aria-controls and no arrow-key model to promise (G8's strip carries the tab roles; this one does not). */}
+            <nav
               aria-label={t('engagements.tabs_aria', lang)}
               className="flex min-w-0 max-w-full overflow-x-auto border-b border-border-subtle"
             >
@@ -161,8 +162,7 @@ export default async function MesEngagementsPage({
                   <Link
                     key={key}
                     href={hrefFor({ statut: key })}
-                    role="tab"
-                    aria-selected={active}
+                    aria-current={active ? 'page' : undefined}
                     className={cn(
                       'relative flex h-11 shrink-0 items-center justify-center px-4 text-body whitespace-nowrap transition-colors',
                       active
@@ -178,7 +178,7 @@ export default async function MesEngagementsPage({
                   </Link>
                 )
               })}
-            </div>
+            </nav>
 
             <div className="flex w-full flex-wrap items-center gap-3 sm:w-auto">
               <EngagementSearch key={q} q={q} lang={lang} />

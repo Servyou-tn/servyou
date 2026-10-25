@@ -4779,3 +4779,12 @@ Rulings D23–D35 in `docs/design/h6-pr4-deltas.md`; DB gate = migration `202610
 - The frame's ÉCHÉANCE column and « À livrer » tile need `orders.deadline` (set at accept — founder decision,
   2026-07). PR-1 shows the buyer's requested timeframe under « Délai souhaité » and an « À traiter » tile instead.
 - `orders` snapshots no `price_unit`, so the budget reads « Dès 300 TND » with no « / heure ». Optional DB gap.
+
+### `getEngagements` fetches every order, and the budget unit is the listing's current one
+
+- Small-data posture (as G8): all of a freelancer's service orders are fetched and tabbed / searched / paged in
+  JS. PostgREST caps a response at 1000 rows, so a freelancer past 1000 service orders would silently lose the
+  oldest and the tiles would undercount. Move tab / sort / page into SQL with `count` queries when anyone nears it.
+- The budget's unit (« / heure », « / mois ») is `service_listings.price_unit` as of NOW — `orders` snapshots only
+  the price. A listing edited in H7 after the order can show a different unit than the one ordered. A `price_unit`
+  column on `orders` (set by `set_order_snapshot`) would freeze it; optional DB gap.

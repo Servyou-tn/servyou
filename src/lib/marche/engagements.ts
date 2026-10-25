@@ -72,6 +72,8 @@ export type Engagement = {
   cancellationReason: string | null
   /** orders.unit_price_tnd — the listing's STARTING price at the time of the order (ruling D3), not a negotiated one. */
   startingPrice: number | null
+  /** service_listings.price_unit as of NOW (orders snapshot no unit): hour / day / month print « / heure » etc.; fixed and NULL print none. */
+  priceUnit: string | null
   /** The timeframe the buyer typed in the request (« Délai souhaité ») — free text, ruling D4. */
   requestedTimeframe: string | null
 }
@@ -144,7 +146,8 @@ export function pageEngagements(
 
   const totalCount = sorted.length
   const totalPages = Math.max(1, Math.ceil(totalCount / ENGAGEMENTS_PER_PAGE))
-  const page = Math.min(Math.max(1, opts.page), totalPages)
+  // An integer, whatever the URL said: `?page=1.5` would otherwise slice from row 5 and print a wrong caption.
+  const page = Math.min(Math.max(1, Math.floor(opts.page) || 1), totalPages)
   const start = (page - 1) * ENGAGEMENTS_PER_PAGE
   return {
     engagements: sorted.slice(start, start + ENGAGEMENTS_PER_PAGE),

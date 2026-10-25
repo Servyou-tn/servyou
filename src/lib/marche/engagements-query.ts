@@ -1,4 +1,3 @@
-import { cache } from 'react'
 import { createClient } from '@/lib/supabase/server'
 import { parseServiceBuyerNote } from '@/lib/marche/order-detail'
 import type { OrderStatus } from '@/lib/types/order-status'
@@ -21,12 +20,17 @@ import {
 // the list can never show a row the freelancer could not act on. For a freelancer that id is the
 // freelancer's profile id (enforce_order_insert_integrity writes it from freelancer_profiles.profile_id).
 //
+// NOT wrapped in react `cache()`: it keys on argument identity and `opts` is a fresh object per call, so it would
+// never hit. Small-data posture, as G8: every order of the freelancer is fetched and filtered in JS — PostgREST
+// caps a response at 1000 rows, so a freelancer past that would silently lose the oldest (docs/follow-ups.md).
+//
 // `order_type = 'service'` is asked for explicitly even though the one-seller-capability rule means a
 // freelancer cannot own a product order: the page's contract should not depend on that.
 
 type ListingEmbed = {
   title: string
   starting_price_tnd: number | string | null
+  price_unit: string | null
   categories: { slug: string } | { slug: string }[] | null
 }
 
@@ -63,11 +67,10 @@ function one<T>(embed: T | T[] | null | undefined): T | null {
  * Never degrades to « you have no engagements » on a failed query — that reads as « nothing to do » and
  * the freelancer simply does not answer. It throws, like getSellerOrders.
  */
-export const getEngagements = cache(
-  async (
-    userId: string,
-    opts: { tab: EngagementTab; q: string; sort: EngagementSort; page: number },
-  ): Promise<EngagementsPage> => {
+export async function getEngagements(
+  userId: string,
+  opts: { tab: EngagementTab; q: string; sort: EngagementSort; page: number },
+): Promise<EngagementsPage> {
     const supabase = await createClient()
 
     // `categories!service_listings_category_id_fkey`: service_listings has TWO foreign keys to categories
@@ -78,7 +81,7 @@ export const getEngagements = cache(
       .select(
         `id, status, created_at, received_at, cancelled_at, cancellation_reason, buyer_id, buyer_note,
          item_title, unit_price_tnd,
-         service_listings ( title, starting_price_tnd, categories!service_listings_category_id_fkey ( slug ) )`,
+         service_listings ( title, starting_price_tnd, price_unit, categories!service_listings_category_id_fkey ( slug ) )`,
       )
       .eq('seller_id', userId)
       .eq('order_type', 'service')
@@ -100,7 +103,12 @@ export const getEngagements = cache(
         .from('public_profiles')
         .select('id, full_name, city, avatar_url, seller_type')
         .in('id', buyerIds)
-      if (pErr) console.error('[engagements] public_profiles error:', pErr.message, pErr.code)
+      // Not degraded: without it every client is an unnamed consumer and the client-name search matches nothing —
+      // a silently wrong list, not an empty one.
+      if (pErr) {
+        console.error('[engagements] public_profiles error:', pErr.message, pErr.code, pErr.details)
+        throw new Error(`engagements clients fetch failed: ${pErr.message}`)
+      }
       for (const p of (profiles ?? []) as ProfileRow[]) buyers.set(p.id, p)
     }
 
@@ -126,10 +134,10 @@ export const getEngagements = cache(
         cancelledAt: r.cancelled_at,
         cancellationReason: r.cancellation_reason,
         startingPrice: price != null ? Number(price) : null,
+        priceUnit: listing?.price_unit ?? null,
         requestedTimeframe: parseServiceBuyerNote(r.buyer_note).timeframe,
       }
     })
 
     return pageEngagements(all, opts)
-  },
-)
+}

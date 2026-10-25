@@ -3,6 +3,7 @@
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
 import { advanceOrderAction } from '@/app/actions/orders'
 import type { SellerOrderPath } from '@/lib/orders/seller-paths'
 
@@ -43,7 +44,7 @@ export function AdvanceOrderButton({
       <Button
         variant={variant}
         size={size}
-        className={fullWidth ? 'w-full' : className}
+        className={cn(fullWidth && 'w-full', className)}
         loading={pending}
         onClick={() => {
           setError(null)
