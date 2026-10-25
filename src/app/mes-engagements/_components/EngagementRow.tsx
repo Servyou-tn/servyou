@@ -10,6 +10,7 @@ import { getSector } from '@/lib/taxonomy/service-categories'
 import type { Engagement, EngagementClientType } from '@/lib/marche/engagements'
 import { CATEGORY_ICONS } from '@/components/shared/service-category-icons'
 import { EngagementActions } from './EngagementActions'
+import { COL } from './engagement-columns'
 
 // Engagement Row — Figma 274:9204 (state default; hover not measured), docs/design/h8-measurements.md.
 // A FLAT divided table row: h 96, px 24, py 20, gap 16, `surface/base`, bottom 1 px `border/subtle`.
@@ -29,7 +30,9 @@ import { EngagementActions } from './EngagementActions'
 //     are « Demandée le {date} » over what the buyer asked for; terminal states keep the frame's single note.
 //   • The actions cell is 208, not 205: the frame's own content (120+8+36+8+36) is 208 and the frame clips it.
 //   • Pills are `statusPillFor`, unchanged (D2): lifecycle colours stay as E3 / G8 draw them.
-//   • Below `lg` the row stacks as a card (no mobile frame exists): client + pill, service, then the two
+//   • Column widths / padding / gap are `COL` (engagement-columns.ts), shared with the header — client and service
+//     share the remainder 4 : 5 instead of the client holding a fixed 200 (service was ≈ 119 px at 1366).
+//   • Below `xl` (was `lg`) the row stacks as a card (no mobile frame exists): client + pill, service, then the two
 //     value cells with captions, then the actions — the same shape as H5's ServiceRow.
 //
 // Server Component: only the actions cell is interactive.
@@ -59,9 +62,9 @@ export function EngagementRow({ engagement: e, lang }: { engagement: Engagement;
   })
 
   return (
-    <li className="flex flex-col gap-3 border-b border-border-subtle bg-surface-base p-4 last:border-b-0 lg:flex-row lg:items-center lg:gap-4 lg:px-6 lg:py-5">
+    <li className={`flex flex-col gap-3 border-b border-border-subtle bg-surface-base p-4 last:border-b-0 xl:py-5 ${COL.line}`}>
       {/* client + (below lg) the pill on the same line */}
-      <div className="flex items-center justify-between gap-3 lg:w-[200px] lg:shrink-0 lg:justify-start">
+      <div className={`flex items-center justify-between gap-3 ${COL.client}`}>
         <div className="flex min-w-0 items-center gap-3">
           <Avatar size="md" src={e.clientAvatarUrl} name={clientName} initials={getInitials(e.clientName)} />
           <div className="flex min-w-0 flex-col gap-0.5">
@@ -75,14 +78,14 @@ export function EngagementRow({ engagement: e, lang }: { engagement: Engagement;
           </div>
         </div>
         {pill ? (
-          <span className="lg:hidden">
+          <span className="xl:hidden">
             <StatusPill status={pill.pill}>{t(pill.labelKey, lang)}</StatusPill>
           </span>
         ) : null}
       </div>
 
       {/* service */}
-      <div className="flex min-w-0 items-center gap-3 lg:flex-1">
+      <div className={`flex min-w-0 items-center gap-3 ${COL.service}`}>
         <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-brand-blue-50">
           <CategoryIcon className="size-5 text-brand-blue-300" aria-hidden="true" />
         </span>
@@ -96,15 +99,15 @@ export function EngagementRow({ engagement: e, lang }: { engagement: Engagement;
         </div>
       </div>
 
-      {/* statut — its own column from lg */}
-      <div className="hidden lg:flex lg:w-[105px] lg:shrink-0">
+      {/* statut — its own column from xl */}
+      <div className={`hidden xl:flex ${COL.statut}`}>
         {pill ? <StatusPill status={pill.pill}>{t(pill.labelKey, lang)}</StatusPill> : null}
       </div>
 
-      <div className="grid grid-cols-2 gap-4 lg:contents">
+      <div className="grid grid-cols-2 gap-4 xl:contents">
         {/* budget */}
-        <div className="flex flex-col gap-0.5 lg:w-[140px] lg:shrink-0">
-          <p className="text-caption text-text-muted lg:hidden">{t('engagements.col.budget', lang)}</p>
+        <div className={`flex flex-col gap-0.5 ${COL.budget}`}>
+          <p className="text-caption text-text-muted xl:hidden">{t('engagements.col.budget', lang)}</p>
           <p className="whitespace-nowrap text-body font-bold leading-6 text-text-primary">
             {e.startingPrice != null
               ? t('engagements.budget_from', lang, {
@@ -115,14 +118,14 @@ export function EngagementRow({ engagement: e, lang }: { engagement: Engagement;
         </div>
 
         {/* délai souhaité */}
-        <div className="flex min-w-0 flex-col gap-0.5 lg:w-[160px] lg:shrink-0">
-          <p className="text-caption text-text-muted lg:hidden">{t('engagements.col.timeframe', lang)}</p>
+        <div className={`flex min-w-0 flex-col gap-0.5 ${COL.delai}`}>
+          <p className="text-caption text-text-muted xl:hidden">{t('engagements.col.timeframe', lang)}</p>
           <TimeframeCell engagement={e} lang={lang} />
         </div>
       </div>
 
       {/* actions */}
-      <div className="lg:w-[208px] lg:shrink-0">
+      <div className={COL.actions}>
         <EngagementActions
           orderId={e.id}
           status={e.status}
