@@ -6,8 +6,9 @@ import type { ProductListing } from '@/components/listings/ProductListingCard'
 // (commit 59cb952^) and extended with product_images + shop logo/description for the
 // redesigned gallery + seller block. Moderation is preserved exactly: status='active'
 // AND shops.admin_hidden_at IS NULL via shops!inner — a hidden product or a product of an
-// admin-moderated shop returns null, so the page 404s (cascade moderation). products /
-// product_images / shops are public-read, so this resolves for anonymous visitors too.
+// admin-moderated shop returns null, so the page 404s (cascade moderation). Live products, their
+// images and live shops are public-read (RLS enforces the same cascade since 20261025213214), so
+// this resolves for anonymous visitors too.
 
 function one<T>(embed: T | T[] | null | undefined): T | null {
   if (Array.isArray(embed)) return embed[0] ?? null

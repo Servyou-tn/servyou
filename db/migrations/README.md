@@ -451,6 +451,35 @@ this PR and is not attempted here.
     stay pause/unpause-able. No table, column, RLS or grant change; `search_vector` untouched.
     Rollback SQL is in a comment block at the bottom of the migration file.
 
+65. **20261025213214_prelaunch_shop_read_rls** — Applied by the architect 2026-10-25 (recorded
+    version; executable SQL MD5-verified against `schema_migrations`, comments and whitespace
+    stripped: `1de51e23`). Verified after apply (architect): anon counts exactly as predicted
+    (products 25, product_images 32, shops 1, shop_payment_methods 1, shop_categories 3, job_posts 5,
+    job_post_skills 2); the products → shops → product_images join as anon returns 32 rows (no
+    42P17); production `/marche/produits` still renders 12 product links on page 1. Pre-launch security batch PR-1
+    (item A; architect decisions 3–6, 2026-10-25; discovery in
+    `docs/design/prelaunch-security-batch-discovery.md` §2). The six SELECT policies that were still
+    `using (true)` for PUBLIC are replaced, same shape as #52 on `service_listings`. **`shops`:**
+    readable when `admin_hidden_at is null`, by the owner, by an admin, or by a buyer who ordered a
+    product from that owner (keyed on `orders.seller_id`, never through `products`, so no
+    recursion). **`products`:** readable when `status = 'active'`, not moderated **and its shop not
+    moderated** (`admin_hide_content('shop')` leaves products active), by the owner, by an admin, or
+    by the buyer of an order on it (not gated on moderation, as #52 D1: `order-detail.ts` /
+    `my-data.ts` render the live title and image). **`product_images`, `shop_payment_methods`,
+    `shop_categories`, `job_post_skills`:** delegate to their parent's policy with a bare `EXISTS`,
+    so they inherit every branch. **`job_posts`:** "Open posts or own posts readable" keeps its name
+    and gains `admin_hidden_at is null` on the open branch, closing the moderated-open-post read
+    (the "refuse responses on a moderated post" half of that follow-up is not in this migration).
+    Helper calls are wrapped `(select …)`. The buyer branches cannot be minted: #54 refuses an order
+    on a non-live item. They read `orders` as the caller, so anon must keep SELECT on `orders`. Apply
+    took 1 product (status hidden) and its 1 image out of public reach; 0 shops, payment methods,
+    shop categories, job posts or skills. Every public read path
+    already applied the same filters in code, so none changes; a freelancer whose responded-to post
+    is later moderated now gets it as null in `freelancer-dashboard.ts`'s activity feed, the same
+    already-handled path as a filled post. Write policies, grants and columns are untouched. Verified by
+    `src/__tests__/prelaunch-shop-read-rls.test.ts` (live-DB). Rollback SQL is in a comment block at
+    the bottom of the migration file.
+
 ## Rollback paths
 
 Each migration in this folder represents work that has already been applied to production. Rollback is therefore reverse migration work, not file deletion. If a rollback is ever needed, write a new dated migration that reverses the relevant changes — never delete history from this folder.
