@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { Manrope } from 'next/font/google'
+import localFont from 'next/font/local'
 import { getLang } from '@/lib/i18n/server'
 import { t } from '@/lib/i18n'
 import { VerifyEmailFlow, type VerifyInitialView } from '@/components/auth/VerifyEmailFlow'
@@ -9,9 +9,16 @@ import { VerifyEmailFlow, type VerifyInitialView } from '@/components/auth/Verif
 // because the header text changes with client auth state; it provides the white
 // canvas + font + static footer, and VerifyEmailFlow owns the per-state header +
 // navy AuthShell box.
-const manrope = Manrope({
-  subsets: ['latin'],
-  weight: ['400', '500', '600', '700'],
+// One face per weight Google served, all the same variable file (src/fonts/README.md). Every
+// Manrope call site names its const `manrope`: localFont uses it as the family name, so the faces
+// of all call sites on a page merge into one family, as Google's shared "Manrope" family did.
+const manrope = localFont({
+  src: [
+    { path: '../../fonts/manrope-latin.woff2', weight: '400', style: 'normal' },
+    { path: '../../fonts/manrope-latin.woff2', weight: '500', style: 'normal' },
+    { path: '../../fonts/manrope-latin.woff2', weight: '600', style: 'normal' },
+    { path: '../../fonts/manrope-latin.woff2', weight: '700', style: 'normal' },
+  ],
   variable: '--font-display',
   display: 'swap',
 })
