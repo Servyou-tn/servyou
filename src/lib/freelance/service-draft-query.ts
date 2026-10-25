@@ -72,6 +72,9 @@ export type EditableService = {
 
 const ServiceIdSchema = z.string().uuid()
 
+/** Whether a route segment can be a service id at all (a malformed one would 500 as a PostgREST 22P02). */
+export const isServiceId = (id: string): boolean => ServiceIdSchema.safeParse(id).success
+
 /**
  * One of THIS freelancer's services (any status) as a wizard form, or null when the id is malformed,
  * unknown, or somebody else's — the caller 404s on null, so the three are indistinguishable (the response
@@ -82,8 +85,7 @@ export async function getServiceForEdit(
   freelancerProfileId: string,
   serviceId: string,
 ): Promise<EditableService | null> {
-  // A malformed id would otherwise reach PostgREST as a 22P02 and 500 instead of 404.
-  if (!ServiceIdSchema.safeParse(serviceId).success) return null
+  if (!isServiceId(serviceId)) return null
 
   const { data, error } = await supabase
     .from('service_listings')

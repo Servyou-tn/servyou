@@ -32,6 +32,8 @@ export function useLeaveGuard(isDirty: () => boolean, message: string) {
       const anchor = (e.target as Element | null)?.closest?.('a[href]') as HTMLAnchorElement | null
       if (!anchor || anchor.target === '_blank' || anchor.hasAttribute('download')) return
       const url = new URL(anchor.href, window.location.href)
+      // mailto: / tel: / javascript: leave nothing behind.
+      if (url.protocol !== 'http:' && url.protocol !== 'https:') return
       // Same page (a #fragment, or the current URL): nothing is being left.
       if (url.origin === window.location.origin && url.pathname === window.location.pathname && url.search === window.location.search) return
       if (!window.confirm(messageRef.current)) {

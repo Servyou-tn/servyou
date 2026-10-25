@@ -57,14 +57,12 @@ const h = vi.hoisted(() => {
   }))
   const resolveOwned = vi.fn(async () => state.owned)
   const revalidate = vi.fn()
-  const revalidatePath = vi.fn()
-  return { state, createClient, resolveOwned, revalidate, revalidatePath }
+  return { state, createClient, resolveOwned, revalidate }
 })
 
 vi.mock('@/lib/supabase/server', () => ({ createClient: h.createClient }))
 vi.mock('@/lib/freelancer/owner-profile', () => ({ resolveOwnedFreelancerProfileId: h.resolveOwned }))
 vi.mock('@/lib/freelance/service-revalidate', () => ({ revalidateServiceSurfaces: h.revalidate }))
-vi.mock('next/cache', () => ({ revalidatePath: h.revalidatePath }))
 
 import { updateServiceAction } from '@/app/mes-services/[id]/modifier/actions'
 
@@ -98,7 +96,6 @@ beforeEach(() => {
   h.state.results = []
   h.state.calls = []
   h.revalidate.mockClear()
-  h.revalidatePath.mockClear()
 })
 
 describe('updateServiceAction — guards', () => {
@@ -108,6 +105,12 @@ describe('updateServiceAction — guards', () => {
       errorKey: 'service.edit.error.save_failed',
       fields: [],
     })
+    expect(h.createClient).not.toHaveBeenCalled()
+  })
+
+  it('names the row when a legacy value passes the step gates but not the input caps (no dead-end retry)', async () => {
+    const res = await updateServiceAction({ ...FORM, skills: ['react', 'x'.repeat(60)] })
+    expect(res).toEqual({ ok: false, errorKey: 'service.edit.error.incomplete', fields: ['skills'] })
     expect(h.createClient).not.toHaveBeenCalled()
   })
 
@@ -213,7 +216,24 @@ describe('updateServiceAction — the write', () => {
     expect(listingCalls('in').map((c) => c.args)).toEqual([['status', ['active', 'hidden']]])
     expect(listingCalls('is').map((c) => c.args)).toEqual([['admin_hidden_at', null]])
     expect(h.revalidate).toHaveBeenCalledWith('fp-1')
-    expect(h.revalidatePath).toHaveBeenCalledWith(`/services/${SERVICE_ID}`)
+  })
+
+  it('keeps a stored `onsite` mode when the form still shows its nearest choice (« Sur site possible »)', async () => {
+    h.state.results = [
+      { data: { ...HIDDEN_ROW, delivery_mode: 'onsite' }, error: null },
+      { data: { id: SERVICE_ID }, error: null },
+    ]
+    expect(await updateServiceAction({ ...FORM, deliveryMode: 'hybrid' })).toEqual({ ok: true })
+    expect(listingCalls('update')[0].args[0]).toMatchObject({ delivery_mode: 'onsite' })
+  })
+
+  it('writes the chosen mode otherwise', async () => {
+    h.state.results = [
+      { data: { ...HIDDEN_ROW, delivery_mode: 'onsite' }, error: null },
+      { data: { id: SERVICE_ID }, error: null },
+    ]
+    expect(await updateServiceAction({ ...FORM, deliveryMode: 'remote' })).toEqual({ ok: true })
+    expect(listingCalls('update')[0].args[0]).toMatchObject({ delivery_mode: 'remote' })
   })
 
   it('validates a live service with its own status (an active row stays an active row)', async () => {

@@ -25,7 +25,9 @@ The Arabic is a draft: every new AR string is marked `REVIEW_AR_TRANSLATION`.
 | **D37** | **Leave guard**: footer caption « Modifications non enregistrées » while the form differs from what was loaded; `beforeunload`; a `window.confirm` on any in-app link click. | The codebase has **no** leave-confirm pattern (G7 / H3 only show a dirty caption), so this is the smallest one that covers the tab close and every link. `window.confirm` is what the admin buttons already use. **Not covered: the browser Back button** (App Router exposes no blocker). |
 | **D38** | A service **hidden by the moderation** (`admin_hidden_at`) opens **read-only**: `ModerationBanner variant="service"` (the existing notice), a note, and the récap without « Modifier ». | The pattern exists (`ModerationBanner`, `owner.moderation_banner.service`), so no 404. `updateServiceAction` refuses it too: the DB lock only blocks a moderated row's *status* change, not field edits. |
 | **D39** | Saving **validates the whole row** with `validateServiceInput` (status = the row's current one), stricter than the DB's changed-fields rule. A legacy service (the 21 that fail the G4 rules) must be completed before any edit saves. | An edit form that saves half of a legacy row would re-create the « incomplete service under an old id » the gate exists to stop. The récap says which rows. |
+| **D39b** | What the form shows is what is saved — except one case that is kept. A stored `onsite` mode (H6 never writes it; older listings can have it) reads as « Sur site possible » (D15) and is **not** rewritten to `hybrid` by an unchanged save. A NULL unit reads as « Fixe » (D22) and a 6th+ tag is dropped on load (the G4 rule is 1–5): both are written back, which the récap shows before the save. | The review found the silent `onsite` → `hybrid` rewrite; the other two are the G4 rules, and the gate refuses a row without them anyway. |
 | **D40** | The write sends **neither `status` nor `revisions_count`**, and is scoped to (id, owner, status in active/hidden, `admin_hidden_at` null). | Saving can't publish, pause or unpause; the validator's default of 1 revision must not overwrite a legacy row's value. |
+| **D40b** | A Zod refusal on a legacy value (a custom skill over 50 characters, a title that is over 80 only in UTF-16 units) names the failing récap row like any other refusal, instead of a dead-end « Réessayez ». | The step gates count code points and the input caps don't (D28). |
 | **D41** | Délai (step 3): placeholder and helper now say « ex : 7 jours » (AR « مثال: 7 أيام »). | Bug 2: the free text invited « 7 jour ». The helper repeats it because a placeholder disappears once typing starts. |
 | **D42** | « Enregistrer les modifications » takes its own row below `sm`. | At 375 px it overflowed beside « Précédent » (measured: 397 px page in a 375 px viewport). |
 
@@ -47,6 +49,11 @@ whether it was the first field of a freshly opened step, and whether the page ha
 The data was corrected through the H7 UI (the founder's fix).
 
 ## Not in this PR (logged)
+
+- **Last write wins**: two tabs open on the same service overwrite each other's whole form on save (no version
+  guard). Same as G7 and the H6 autosave; a `updated_at` guard would fix all three.
+- **A stalled navigation after a successful save** leaves the page inert until reload (same as H6's publish
+  success, ruling D33).
 
 - Mehdi's `delivery_time` is still « 7 jour » — not part of the brief; the new hint prevents the next one.
 - Browser Back is not guarded (D37).

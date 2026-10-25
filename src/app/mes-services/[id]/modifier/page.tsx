@@ -1,20 +1,16 @@
 import type { Metadata } from 'next'
-import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import type { ReactNode } from 'react'
-import { ChevronRight } from 'lucide-react'
 import { AppShell } from '@/components/shell/AppShell'
 import { ModerationBanner } from '@/components/ModerationBanner'
 import { StatusPill } from '@/components/ui/status-pill'
-import { FOCUS_RING } from '@/components/layout/styles'
 import { requireFreelancer } from '@/lib/auth/require-seller'
-import { getServiceForEdit } from '@/lib/freelance/service-draft-query'
+import { getServiceForEdit, isServiceId } from '@/lib/freelance/service-draft-query'
 import { getLang } from '@/lib/i18n/server'
-import { t, type Lang } from '@/lib/i18n'
+import { t } from '@/lib/i18n'
 import { createClient } from '@/lib/supabase/server'
-import { cn } from '@/lib/utils'
 import { ServiceWizard } from '../../creer/_components/ServiceWizard'
 import { StepPublication } from '../../creer/_components/StepPublication'
+import { WizardPageIntro } from '../../_components/WizardPageIntro'
 import { getStatusPresentation } from '../../_components/service-status'
 
 export const metadata: Metadata = { title: 'Modifier le service — Servyou' }
@@ -33,6 +29,8 @@ export const metadata: Metadata = { title: 'Modifier le service — Servyou' }
 
 export default async function ModifierServicePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
+  // Before the session is touched: a malformed id is a 404 for everyone, and never reaches the sign-in `next`.
+  if (!isServiceId(id)) notFound()
   const [lang, { topBarUser, freelancerProfile }] = await Promise.all([
     getLang(),
     requireFreelancer(`/mes-services/${id}/modifier`),
@@ -49,7 +47,7 @@ export default async function ModifierServicePage({ params }: { params: Promise<
     return (
       <AppShell user={topBarUser}>
         <div className="flex flex-col gap-6">
-          <PageIntro lang={lang} titleKey="service.wizard.page_title" subtitleKey="service.wizard.page_subtitle" />
+          <WizardPageIntro lang={lang} titleKey="service.wizard.page_title" subtitleKey="service.wizard.page_subtitle" />
           <ServiceWizard initialDraftId={service.id} initialForm={service.form} initialStep={service.step} />
         </div>
       </AppShell>
@@ -61,7 +59,7 @@ export default async function ModifierServicePage({ params }: { params: Promise<
   return (
     <AppShell user={topBarUser}>
       <div className="flex flex-col gap-6">
-        <PageIntro
+        <WizardPageIntro
           lang={lang}
           titleKey="service.edit.page_title"
           subtitleKey="service.edit.page_subtitle"
@@ -86,42 +84,5 @@ export default async function ModifierServicePage({ params }: { params: Promise<
         )}
       </div>
     </AppShell>
-  )
-}
-
-// The H6 page-header (459:18746): breadcrumb → H1 → subtitle, stacked gap 8; here the H1 carries the
-// service's current status pill beside it. « Mes services » links back to H5.
-function PageIntro({
-  lang,
-  titleKey,
-  subtitleKey,
-  pill,
-}: {
-  lang: Lang
-  titleKey: string
-  subtitleKey: string
-  pill?: ReactNode
-}) {
-  return (
-    <div className="flex flex-col gap-2">
-      <nav aria-label={t('service.wizard.breadcrumb_aria', lang)}>
-        <ol className="flex items-center gap-2 text-sm font-medium text-text-muted">
-          <li>
-            <Link href="/mes-services" className={cn('rounded hover:text-text-primary hover:underline', FOCUS_RING)}>
-              {t('service.list_title', lang)}
-            </Link>
-          </li>
-          <li aria-hidden="true" className="flex items-center">
-            <ChevronRight className="h-3.5 w-3.5 rtl:rotate-180" />
-          </li>
-          <li aria-current="page">{t(titleKey, lang)}</li>
-        </ol>
-      </nav>
-      <div className="flex flex-wrap items-center gap-3">
-        <h1 className="text-h1 text-text-primary">{t(titleKey, lang)}</h1>
-        {pill}
-      </div>
-      <p className="text-body-sm text-text-secondary">{t(subtitleKey, lang)}</p>
-    </div>
   )
 }

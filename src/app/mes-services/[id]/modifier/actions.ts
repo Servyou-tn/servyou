@@ -13,7 +13,6 @@ import { validateServiceInput, type ServiceField } from '@/lib/freelance/service
 import { revalidateServiceSurfaces } from '@/lib/freelance/service-revalidate'
 import { VALIDATOR_FIELD, gateRefusalFields, resolveCategoryIds } from '@/lib/freelance/service-write'
 import { getSector, getSubcategory } from '@/lib/taxonomy/service-categories'
-import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 
 // H7 « Modifier un service » — saves the wizard's form onto a LIVE or PAUSED service
@@ -34,6 +33,22 @@ import { z } from 'zod'
 
 const UpdateServiceInputSchema = DraftInputSchema.omit({ draftId: true }).extend({ serviceId: z.string().uuid() })
 
+/** The draft schema's input keys → the wizard field a Zod refusal should flag on the récap. */
+const INPUT_FIELD: Record<string, WizardField> = {
+  title: 'title',
+  sectorId: 'sector',
+  subcategoryId: 'subcategory',
+  skills: 'skills',
+  shortDescription: 'shortDescription',
+  description: 'description',
+  price: 'price',
+  priceUnit: 'priceUnit',
+  deliveryTime: 'deliveryTime',
+  deliverablesText: 'deliverables',
+  deliveryMode: 'deliveryMode',
+  buyerBriefing: 'buyerBriefing',
+}
+
 type UpdateServiceResult = { ok: true } | { ok: false; errorKey: string; fields: WizardField[] }
 
 const ERR = {
@@ -49,7 +64,12 @@ export async function updateServiceAction(input: unknown): Promise<UpdateService
   const parsed = UpdateServiceInputSchema.safeParse(input)
   if (!parsed.success) {
     console.error('[updateService] rejected: invalid input —', parsed.error.issues[0]?.message)
-    return { ok: false, errorKey: ERR.failed, fields: [] }
+    // A legacy value the step gates accept but the input caps don't (a custom skill over 50 characters, an
+    // emoji-heavy title counted in UTF-16 units): name the row so the owner can fix it, not a dead-end retry.
+    const fields = [...new Set(parsed.error.issues.map((i) => INPUT_FIELD[String(i.path[0])]).filter((f): f is WizardField => f !== undefined))]
+    return fields.length > 0
+      ? { ok: false, errorKey: ERR.incomplete, fields }
+      : { ok: false, errorKey: ERR.failed, fields: [] }
   }
   const { serviceId, ...form } = parsed.data
 
@@ -75,12 +95,16 @@ export async function updateServiceAction(input: unknown): Promise<UpdateService
     return { ok: false, errorKey: ERR.failed, fields: [] }
   }
 
-  const { data: current, error: readError } = await supabase
-    .from('service_listings')
-    .select('id, status, admin_hidden_at')
-    .eq('id', serviceId)
-    .eq('freelancer_profile_id', owned.freelancerProfileId)
-    .maybeSingle()
+  // Independent reads, so one round trip: the row (status, moderation, stored mode) and the category pair.
+  const [{ data: current, error: readError }, categories] = await Promise.all([
+    supabase
+      .from('service_listings')
+      .select('id, status, admin_hidden_at, delivery_mode')
+      .eq('id', serviceId)
+      .eq('freelancer_profile_id', owned.freelancerProfileId)
+      .maybeSingle(),
+    resolveCategoryIds(supabase, form.sectorId, form.subcategoryId, 'updateService'),
+  ])
   if (readError) {
     console.error('[updateService] read failed:', readError.message, readError.code, readError.details)
     return { ok: false, errorKey: ERR.failed, fields: [] }
@@ -95,7 +119,6 @@ export async function updateServiceAction(input: unknown): Promise<UpdateService
     return { ok: false, errorKey: ERR.moderated, fields: [] }
   }
 
-  const categories = await resolveCategoryIds(supabase, form.sectorId, form.subcategoryId, 'updateService')
   if (!categories.ok) {
     return { ok: false, errorKey: categories.reason === 'unavailable' ? ERR.category : ERR.failed, fields: [] }
   }
@@ -141,7 +164,9 @@ export async function updateServiceAction(input: unknown): Promise<UpdateService
       price_unit: v.price_unit,
       delivery_time: v.delivery_time,
       deliverables: v.deliverables,
-      delivery_mode: v.delivery_mode,
+      // H6 offers remote / hybrid only, and an `onsite` row reads as « Sur site possible » (ruling D15): saving
+      // that unchanged form must not rewrite the stored `onsite` as `hybrid`.
+      delivery_mode: current.delivery_mode === 'onsite' && v.delivery_mode === 'hybrid' ? 'onsite' : v.delivery_mode,
       buyer_briefing: v.buyer_briefing,
     })
     .eq('id', serviceId)
@@ -163,7 +188,7 @@ export async function updateServiceAction(input: unknown): Promise<UpdateService
     return { ok: false, errorKey: ERR.gone, fields: [] }
   }
 
+  // /services/[id] is dynamic (rendered per request), so there is no cached copy of it to revalidate.
   revalidateServiceSurfaces(owned.freelancerProfileId)
-  revalidatePath(`/services/${serviceId}`)
   return { ok: true }
 }
