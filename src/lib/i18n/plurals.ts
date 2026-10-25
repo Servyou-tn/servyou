@@ -56,6 +56,7 @@ const frPlurals: Record<string, PluralVariants> = {
   'freelance.public.portfolio_count':      { one: '{count} réalisation', other: '{count} réalisations' },
 
   'seller.orders.count':                   { one: '{count} commande', other: '{count} commandes' },
+  'engagements.count':                     { one: '{count} engagement', other: '{count} engagements' },
   'seller.dashboard.tile.profit_sub':      { one: 'Sur {count} commande livrée', other: 'Sur {count} commandes livrées' },
 
   'product.bulk.selected_count':           { one: '{count} sélectionné', other: '{count} sélectionnés' },
@@ -107,6 +108,7 @@ const arPlurals: Record<string, PluralVariants> = {
   'freelance.public.portfolio_count':      { one: '{count} إنجاز', two: '{count} إنجازان', other: '{count} إنجازات' },
 
   'seller.orders.count':                   { one: '{count} طلب', two: '{count} طلبان', other: '{count} طلبات' },
+  'engagements.count':                     { one: '{count} مهمة', two: '{count} مهمتان', other: '{count} مهام' },
   // Preceded by "من" (from) → dual takes the oblique form (طلبين, not طلبان). Non-human plural
   // "طلبات" takes feminine-singular adjective agreement ("مُستلَمة", not "مُستلَمين").
   'seller.dashboard.tile.profit_sub':      {

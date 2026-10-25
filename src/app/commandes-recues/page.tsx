@@ -17,7 +17,7 @@ import { t, tn } from '@/lib/i18n'
 import { FOCUS_RING } from '@/components/layout/styles'
 import { cn } from '@/lib/utils'
 import { OrderActionRow } from './_components/OrderActionRow'
-import { SortSelect } from './_components/SortSelect'
+import { SortSelect } from '@/components/orders/SortSelect'
 
 export const metadata: Metadata = { title: 'Commandes reçues — Servyou' }
 

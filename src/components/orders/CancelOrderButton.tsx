@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { cancelOrderAction } from '@/app/actions/orders'
 import { requiresCancellationReason, type OrderStatus, type OrderType } from '@/lib/types/order-status'
+import { CANCEL_REASON_OTHER, SHOP_CANCEL_REASONS } from '@/lib/orders/cancel-reasons'
+import type { SellerOrderPath } from '@/lib/orders/seller-paths'
 import { t, type Lang } from '@/lib/i18n'
 import { FOCUS_RING } from '@/components/layout/styles'
 
@@ -13,35 +15,38 @@ import { FOCUS_RING } from '@/components/layout/styles'
 // Rebuilt on the F3 primitives rather than reusing `components/CancelOrderModal.tsx`: that one
 // predates them, renders a bespoke shell, and — the actual reason — writes with a direct
 // browser `supabase.update()`. G4 set the counter-precedent that seller mutations go through a
-// server action. Its REASON MODEL is kept verbatim (the five seller presets + free text) and so is
+// server action. Its REASON MODEL is kept verbatim (presets + free text) and so is
 // `requiresCancellationReason`, which encodes the trigger's post-pivot rule.
 //
 // The old modal keeps its three buyer-side call sites (it has none today) until those migrate onto
 // `cancelOrderAction`, which is already written role-aware for exactly that. Logged.
-const SELLER_REASONS = [
-  'common.cancel_reason_seller_out_of_stock',
-  'common.cancel_reason_seller_invalid_address',
-  'common.cancel_reason_seller_unreachable',
-  'common.cancel_reason_seller_product_error',
-  'common.cancel_reason_seller_other',
-] as const
+//
+// PROMOTED to src/components/orders when H8 became the second consumer, and split in two:
+//   • CancelOrderDialog — the modal itself, controlled by its parent (H8's row opens it from a kebab item);
+//   • CancelOrderButton — G8/G9's trigger (ghost button or text link) + the dialog, behaviour unchanged.
+// `reasons` defaults to the shop owner's product presets; H8 passes SERVICE_CANCEL_REASONS.
 
-export function CancelOrderButton({
-  orderId,
-  status,
-  orderType,
-  lang,
-  asLink,
-}: {
+type DialogProps = {
   orderId: string
   status: OrderStatus
   orderType: OrderType
   lang: Lang
-  /** G9's rail renders "Annuler la commande" as a text link at the panel foot (Figma 497:26470),
-   *  not as a button. G8's row keeps the ghost button. */
-  asLink?: boolean
-}) {
-  const [open, setOpen] = useState(false)
+  /** Preset reasons, as i18n keys. Defaults to the shop owner's. */
+  reasons?: readonly string[]
+  /** The page that shows this order's status — refreshed server-side after the cancel. */
+  revalidate?: SellerOrderPath
+  onClose: () => void
+}
+
+export function CancelOrderDialog({
+  orderId,
+  status,
+  orderType,
+  lang,
+  reasons = SHOP_CANCEL_REASONS,
+  revalidate = '/commandes-recues',
+  onClose,
+}: DialogProps) {
   const [selected, setSelected] = useState<string>('')
   const [custom, setCustom] = useState('')
   const [error, setError] = useState<string | null>(null)
@@ -51,7 +56,7 @@ export function CancelOrderButton({
   // After the pivot the trigger REQUIRES a reason; before it, one is optional. Surfacing the rule
   // here keeps the write from bouncing off the database for something the UI already knew.
   const reasonRequired = requiresCancellationReason(status, orderType)
-  const isOther = selected === 'common.cancel_reason_seller_other'
+  const isOther = selected === CANCEL_REASON_OTHER
   const resolved = isOther ? custom.trim() : selected ? t(selected, lang) : ''
   const blocked = reasonRequired && resolved === ''
 
@@ -61,42 +66,15 @@ export function CancelOrderButton({
       const result = await cancelOrderAction({
         orderId,
         reason: resolved === '' ? undefined : resolved,
-        revalidate: '/commandes-recues',
+        revalidate,
       })
       if (result.ok) {
-        setOpen(false)
+        onClose()
         router.refresh()
       } else {
         setError(result.error)
       }
     })
-  }
-
-  if (!open) {
-    if (asLink) {
-      return (
-        // G9 delta AC4. Figma 497:26470 paints this `#e5484d`, centres it, and gives it the panel's
-        // full 312 width. It shipped as `brand-blue-600`, start-aligned, hug-width — i.e. a
-        // DESTRUCTIVE action wearing the same colour as "Accepter" directly above it, reading as a
-        // peer of the primary action rather than as the one that ends the order. That is a hazard,
-        // not a colour delta, which is why it is closed here rather than logged.
-        //
-        // NOT `cn()` — `text-body-sm` and `text-danger-500` are a size token and a colour token, and
-        // tailwind-merge would evict the size (see OrderRail's label and docs/follow-ups.md).
-        <button
-          type="button"
-          onClick={() => setOpen(true)}
-          className={`w-full rounded text-center text-body-sm text-danger-500 hover:underline ${FOCUS_RING}`}
-        >
-          {t('seller.orderDetail.cancel_link', lang)}
-        </button>
-      )
-    }
-    return (
-      <Button variant="ghost" size="sm" onClick={() => setOpen(true)}>
-        {t('seller.orders.cancel', lang)}
-      </Button>
-    )
   }
 
   return (
@@ -118,7 +96,7 @@ export function CancelOrderButton({
 
         <fieldset className="flex flex-col gap-2">
           <legend className="sr-only">{t('seller.orders.cancel_reason_legend', lang)}</legend>
-          {SELLER_REASONS.map((key) => (
+          {reasons.map((key) => (
             <label key={key} className="flex items-center gap-2 text-body text-text-primary">
               <input
                 type="radio"
@@ -155,20 +133,53 @@ export function CancelOrderButton({
               reading "Annuler" is genuinely ambiguous. These two keys already existed for exactly
               this pair. (The previous `common.back` did not exist at all and rendered as a raw key
               — caught by measuring the modal OPEN, which a closed-state check never sees.) */}
-          <Button variant="ghost" size="md" onClick={() => setOpen(false)} disabled={pending}>
+          <Button variant="ghost" size="md" onClick={onClose} disabled={pending}>
             {t('common.cancel_keep_action', lang)}
           </Button>
-          <Button
-            variant="danger"
-            size="md"
-            loading={pending}
-            disabled={blocked}
-            onClick={submit}
-          >
+          <Button variant="danger" size="md" loading={pending} disabled={blocked} onClick={submit}>
             {t('common.cancel_confirm_action', lang)}
           </Button>
         </div>
       </div>
     </div>
+  )
+}
+
+export function CancelOrderButton({
+  asLink,
+  ...dialog
+}: Omit<DialogProps, 'onClose'> & {
+  /** G9's rail renders "Annuler la commande" as a text link at the panel foot (Figma 497:26470),
+   *  not as a button. G8's row keeps the ghost button. */
+  asLink?: boolean
+}) {
+  const [open, setOpen] = useState(false)
+  const { lang } = dialog
+
+  if (open) return <CancelOrderDialog {...dialog} onClose={() => setOpen(false)} />
+
+  if (asLink) {
+    return (
+      // G9 delta AC4. Figma 497:26470 paints this `#e5484d`, centres it, and gives it the panel's
+      // full 312 width. It shipped as `brand-blue-600`, start-aligned, hug-width — i.e. a
+      // DESTRUCTIVE action wearing the same colour as "Accepter" directly above it, reading as a
+      // peer of the primary action rather than as the one that ends the order. That is a hazard,
+      // not a colour delta, which is why it is closed here rather than logged.
+      //
+      // NOT `cn()` — `text-body-sm` and `text-danger-500` are a size token and a colour token, and
+      // tailwind-merge would evict the size (see OrderRail's label and docs/follow-ups.md).
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        className={`w-full rounded text-center text-body-sm text-danger-500 hover:underline ${FOCUS_RING}`}
+      >
+        {t('seller.orderDetail.cancel_link', lang)}
+      </button>
+    )
+  }
+  return (
+    <Button variant="ghost" size="sm" onClick={() => setOpen(true)}>
+      {t('seller.orders.cancel', lang)}
+    </Button>
   )
 }
