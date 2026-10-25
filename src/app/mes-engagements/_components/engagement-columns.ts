@@ -21,15 +21,22 @@
 //     alone (≈ 750 px) exceed the table's ≈ 690 px, so the service column was squeezed to nothing. Below
 //     `xl` the row stacks as the card it already was under `lg`.
 //
+// The two tiers are written as NON-overlapping ranges (`xl:max-[1400px]:` vs `min-[1400px]:`), never as a base
+// plus an override: an override only wins by CSS source order, which depends on how the breakpoints are declared
+// (tokens.css keeps `xl` in px; stock rem breakpoints would flip it and silently kill the ≥ 1400 tier).
+// ⚑ Tailwind v4 `max-[N]` is `width < N` and `min-[N]` is `width >= N`: the pair that tiles the axis is
+// `max-[1400px]` + `min-[1400px]`. `max-[1399px]` left 1399.x in neither tier (measured: no gap, no padding, délai
+// 103 px, header off its rows) — checked at 1399 and 1400.
+//
 // Plain strings (not cn()) — tailwind-merge would evict a `text-<size>` next to a colour
 // (reference_twmerge_text_size_color_footgun), and these hold no text utilities anyway.
 export const COL = {
   /** The flex container shared by header and row: direction + padding + gap, table layout from `xl`. */
-  line: 'xl:flex-row xl:items-center xl:gap-3 xl:px-4 min-[1400px]:gap-4 min-[1400px]:px-6',
+  line: 'xl:flex-row xl:items-center xl:max-[1400px]:gap-3 xl:max-[1400px]:px-4 min-[1400px]:gap-4 min-[1400px]:px-6',
   client: 'xl:min-w-[132px] xl:max-w-[200px] xl:flex-[4_1_0%] xl:justify-start',
   service: 'xl:min-w-0 xl:flex-[5_1_0%]',
   statut: 'xl:w-[105px] xl:shrink-0',
   budget: 'xl:w-[140px] xl:shrink-0',
-  delai: 'xl:w-[140px] xl:shrink-0 min-[1400px]:w-[160px]',
+  delai: 'xl:max-[1400px]:w-[140px] xl:shrink-0 min-[1400px]:w-[160px]',
   actions: 'xl:w-[208px] xl:shrink-0',
 } as const

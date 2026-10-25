@@ -55,7 +55,14 @@ describe('getInitials', () => {
     expect(getInitials('123')).toBe('?')
     expect(getInitials('(3)')).toBe('?')
     expect(getInitials('🙂')).toBe('?')
-    expect(getInitials('@servyou.tn')).toBe('?')
+    expect(getInitials('@')).toBe('?')
+  })
+
+  it('a display name containing « @ » is a name, not an address', () => {
+    expect(getInitials('Café @ Tunis')).toBe('CT')
+    expect(getInitials('Deco @home')).toBe('DH')
+    expect(getInitials('@Home Deco')).toBe('HD')
+    expect(getInitials('@servyou.tn')).toBe('S')
   })
 
   it('Arabic names (no case) keep their letters, brackets skipped', () => {

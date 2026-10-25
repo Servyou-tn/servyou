@@ -14,6 +14,7 @@
 // Unicode property escapes need the `u` flag; the first CODE POINT is taken (not UTF-16 unit), so an
 // astral-plane letter is never cut in half.
 const LETTER = /\p{L}/u
+const EMAIL = /^[^\s@]+@[^\s@]+$/
 
 function firstLetter(word: string): string | null {
   const m = LETTER.exec(word)
@@ -25,7 +26,9 @@ function firstLetter(word: string): string | null {
 export function getInitials(nameOrEmail: string | null | undefined): string {
   const source = (nameOrEmail ?? '').trim()
   if (!source) return '?'
-  const base = source.includes('@') ? source.split('@')[0] : source
+  // An address, not a display name: no whitespace and something on both sides of the `@`. A shop called
+  // « Café @ Tunis » or « Deco @home » is a NAME and must keep its words.
+  const base = EMAIL.test(source) ? source.split('@')[0] : source
   const letters = base
     .split(/\s+/)
     .map(firstLetter)
