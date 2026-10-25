@@ -237,8 +237,8 @@ function WhatsAppGlyph() {
 
 // The buyer's only write on an existing row. check_order_status_transition permits it from
 // 'arrived' ONLY and for the buyer ONLY; RLS alone would allow any status, so the trigger is
-// the real gate. received_at is stamped here because the trigger does not set it — without
-// this, "Reçue le" has nothing to show.
+// the real gate. Only the status is sent: `received_at` is stamped by the database on the transition
+// (H8 PR-2, DB-batch ruling #12), not from the browser's clock — do not add it back to the payload.
 function ConfirmReceipt({ orderId }: { orderId: string }) {
   const lang = useLang()
   const router = useRouter()
@@ -250,7 +250,7 @@ function ConfirmReceipt({ orderId }: { orderId: string }) {
     setSaving(true)
     const { error } = await supabase
       .from('orders')
-      .update({ status: 'received', received_at: new Date().toISOString() })
+      .update({ status: 'received' })
       .eq('id', orderId)
     if (error) {
       console.error('[OrdersList] confirmReceipt error:', error.message, error.code, error.details)

@@ -23,6 +23,7 @@ export const INTEGRATION_GLOBS = [
   '**/progressive-phone.integration.test.ts',
   '**/uploaded-objects-provenance-rls.test.ts',
   '**/category-embeds-unambiguous.test.ts',
+  '**/prelaunch-shop-read-rls.test.ts',
   '**/orders-lifecycle-columns.test.ts',
 ]
 

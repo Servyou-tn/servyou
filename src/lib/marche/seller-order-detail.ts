@@ -48,6 +48,8 @@ export type SellerOrderDetail = {
   itemTitle: string
   /** Same snapshot-first rule as itemTitle — `orders.unit_price_tnd`, then the live join. */
   unitPrice: number | null
+  /** service_listings.price_unit as of NOW (orders snapshot no unit) — null for a product, a deleted listing, or a fixed price. */
+  priceUnit: string | null
   /**
    * `orders.unit_price_tnd` ALONE — no fallback, deliberately. Distinct from `unitPrice`.
    *
@@ -131,8 +133,8 @@ type Row = {
     | null
   products: { title: string; price_tnd: number | string } | { title: string; price_tnd: number | string }[] | null
   service_listings:
-    | { title: string; starting_price_tnd: number | string | null }
-    | { title: string; starting_price_tnd: number | string | null }[]
+    | { title: string; starting_price_tnd: number | string | null; price_unit: string | null }
+    | { title: string; starting_price_tnd: number | string | null; price_unit: string | null }[]
     | null
 }
 
@@ -145,9 +147,12 @@ function one<T>(embed: T | T[] | null | undefined): T | null {
  * One order, from the SELLER's side. Returns null for a missing order, an invalid id, or an order
  * this user does not sell — all the same not-found state, so the response cannot be used to probe
  * whether an order id exists.
+ *
+ * A failed QUERY is also null by default (G9 relies on it for a malformed uuid → 22P02); pass `strict` to throw on
+ * it instead.
  */
 export const getSellerOrderDetail = cache(
-  async (orderId: string, sellerId: string): Promise<SellerOrderDetail | null> => {
+  async (orderId: string, sellerId: string, strict = false): Promise<SellerOrderDetail | null> => {
     const supabase = await createClient()
 
     const { data, error } = await supabase
@@ -158,7 +163,7 @@ export const getSellerOrderDetail = cache(
          delivery_name, delivery_address, delivery_phone, buyer_note,
          item_title, unit_price_tnd, delivery_fee_tnd, carrier, tracking_number,
          products ( title, price_tnd ),
-         service_listings ( title, starting_price_tnd ),
+         service_listings ( title, starting_price_tnd, price_unit ),
          order_events ( event_type, from_status, to_status, actor_role, note, created_at )`,
       )
       .eq('id', orderId)
@@ -171,6 +176,9 @@ export const getSellerOrderDetail = cache(
     if (error) {
       // An invalid uuid lands here as Postgres 22P02 — a graceful not-found, not a crash.
       console.error('[seller-order-detail] fetch error:', error.message, error.code, error.details)
+      // `strict`: a caller that has already validated the id (H8's detail page) must not read a real failure as « not
+      // found » — a timeout would show a permanent-looking 404 for the freelancer's own order.
+      if (strict) throw new Error(`seller order fetch failed: ${error.message}`)
       return null
     }
     if (!data) return null
@@ -213,6 +221,7 @@ export const getSellerOrderDetail = cache(
       quantity: row.quantity ?? 1,
       itemTitle: row.item_title ?? product?.title ?? service?.title ?? '',
       unitPrice: rawPrice != null ? Number(rawPrice) : null,
+      priceUnit: service?.price_unit ?? null,
       // NO `??` chain on either of these — see the field docs. A breakdown built on a fallback
       // would state a total that was never charged.
       unitPriceFrozen: row.unit_price_tnd != null ? Number(row.unit_price_tnd) : null,
