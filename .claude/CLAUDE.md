@@ -82,7 +82,7 @@ Load conditionally per task. Index: `.claude/skills/README.md`.
 
 ## Dev loop
 
-- While editing, load the touched route in the browser, then call next-devtools `get_errors` for fast feedback (Next 16.2.11 has no `compile_route`; adopt it when a Next upgrade ships it). tsc + lint + test + build are still mandatory before claiming done (DoD item 3 unchanged).
+- While editing, use the `next-dev-loop` skill (Next 16.4.3 + agent-browser ≥0.31.1 meet its floors): `compile_route` / `get_compilation_issues` for compile checks, then load the route in agent-browser and call `get_errors` (needs a live browser session). If the next-devtools MCP won't connect, POST JSON-RPC `tools/call` to `http://localhost:<port>/_next/mcp` and read the `data:` line. On Windows, redirect agent-browser output to a file — piping it (`| tail`) hangs, because its daemon holds the pipe open. tsc + lint + test + build are still mandatory before claiming done (DoD item 3 unchanged).
 - After any context compaction, run `/reload-skills` before continuing UI or migration work.
 - Figma: the CDP bridge (figma-cli) is NOT working on Figma Desktop 126.7.10 — do not use it. Until the founder confirms Figma Pro, the official Figma MCP is the only instrument and is capped at 20 reads/month for the whole account: spend reads only on final per-frame comparison, one read per frame, never for exploration. Report each read used.
 

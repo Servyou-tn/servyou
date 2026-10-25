@@ -3,16 +3,23 @@
 import { useId, useRef, useState, type KeyboardEvent } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { Manrope } from 'next/font/google'
+import localFont from 'next/font/local'
 import { AnimatePresence, motion, useReducedMotion, type Variants } from 'motion/react'
 import { t, type Lang } from '@/lib/i18n'
 import { BlurFade } from '@/components/magicui/blur-fade'
 
 // Manrope for the title + card titles, scoped via --font-display (same pattern as
 // the hero, so this section reads as a continuation).
-const manrope = Manrope({
-  subsets: ['latin'],
-  weight: ['400', '600', '700', '800'],
+// One face per weight Google served, all the same variable file (src/fonts/README.md). Every
+// Manrope call site names its const `manrope`: localFont uses it as the family name, so the faces
+// of all call sites on a page merge into one family, as Google's shared "Manrope" family did.
+const manrope = localFont({
+  src: [
+    { path: '../../fonts/manrope-latin.woff2', weight: '400', style: 'normal' },
+    { path: '../../fonts/manrope-latin.woff2', weight: '600', style: 'normal' },
+    { path: '../../fonts/manrope-latin.woff2', weight: '700', style: 'normal' },
+    { path: '../../fonts/manrope-latin.woff2', weight: '800', style: 'normal' },
+  ],
   variable: '--font-display',
   display: 'swap',
 })

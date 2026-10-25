@@ -1,27 +1,48 @@
 import type { Metadata } from "next"
-import { Inter, Geist_Mono, Cairo } from "next/font/google"
+import localFont from "next/font/local"
 import "./globals.css"
 import { Toaster } from "sonner"
 import { getLang } from "@/lib/i18n/server"
 import { LangProvider } from "@/components/LangProvider"
 
-const inter = Inter({
+// Self-hosted (src/fonts/README.md): the exact files next/font/google used to download, so the
+// build never touches the network. Each call mirrors the @font-face set Google returned (same
+// weight descriptors). localFont names the family after the JS const; that name is only reached
+// through the CSS variables. Don't rename it via `declarations` — under Turbopack the override
+// reaches the @font-face but not the variable, so the variable points at a family that doesn't exist.
+const inter = localFont({
+  src: "../fonts/inter-latin.woff2",
+  weight: "100 900",
+  style: "normal",
   variable: "--font-inter",
-  subsets: ["latin"],
 })
 
 // Arabic UI font (design system Section 2.3, locked to Cairo). Cairo carries the full
 // 400/500/600/700 range — exact weight parity with Inter (Tajawal lacks 600). Applied to RTL
 // via globals.css. Cairo is also widely used across MENA/Tunisian marketplaces.
-const cairo = Cairo({
+//
+// Two subset files under one family. localFont has no per-file unicode-range, so the browser picks
+// per glyph: latin is listed first so the fallback metrics are computed from Latin glyphs. Rendering
+// was verified pixel-identical to the unicode-range version Google served.
+const cairo = localFont({
+  src: [
+    { path: "../fonts/cairo-latin.woff2", weight: "400", style: "normal" },
+    { path: "../fonts/cairo-arabic.woff2", weight: "400", style: "normal" },
+    { path: "../fonts/cairo-latin.woff2", weight: "500", style: "normal" },
+    { path: "../fonts/cairo-arabic.woff2", weight: "500", style: "normal" },
+    { path: "../fonts/cairo-latin.woff2", weight: "600", style: "normal" },
+    { path: "../fonts/cairo-arabic.woff2", weight: "600", style: "normal" },
+    { path: "../fonts/cairo-latin.woff2", weight: "700", style: "normal" },
+    { path: "../fonts/cairo-arabic.woff2", weight: "700", style: "normal" },
+  ],
   variable: "--font-cairo",
-  subsets: ["arabic", "latin"],
-  weight: ["400", "500", "600", "700"],
 })
 
-const geistMono = Geist_Mono({
+const geistMono = localFont({
+  src: "../fonts/geist-mono-latin.woff2",
+  weight: "100 900",
+  style: "normal",
   variable: "--font-geist-mono",
-  subsets: ["latin"],
 })
 
 export const metadata: Metadata = {

@@ -1,6 +1,6 @@
 import { type ComponentType, type SVGProps } from 'react'
 import Link from 'next/link'
-import { Manrope } from 'next/font/google'
+import localFont from 'next/font/local'
 import { t, type Lang } from '@/lib/i18n'
 import {
   ShirtIcon,
@@ -20,9 +20,15 @@ import {
 // is pure presentation — hover lift, focus ring and reduced-motion are all CSS,
 // and <Link> + next/font work server-side. Keeping it server-rendered serves the
 // "lightweight, fast load" intent (no JS shipped for this section).
-const manrope = Manrope({
-  subsets: ['latin'],
-  weight: ['500', '600', '700'],
+// One face per weight Google served, all the same variable file (src/fonts/README.md). Every
+// Manrope call site names its const `manrope`: localFont uses it as the family name, so the faces
+// of all call sites on a page merge into one family, as Google's shared "Manrope" family did.
+const manrope = localFont({
+  src: [
+    { path: '../../fonts/manrope-latin.woff2', weight: '500', style: 'normal' },
+    { path: '../../fonts/manrope-latin.woff2', weight: '600', style: 'normal' },
+    { path: '../../fonts/manrope-latin.woff2', weight: '700', style: 'normal' },
+  ],
   variable: '--font-display',
   display: 'swap',
 })
