@@ -38,6 +38,7 @@ import { tndPrice } from '@/components/listings/listing-utils'
 import type { SellerServiceRow } from '@/lib/marche/seller-services'
 import { CascadeWarningModal } from './CascadeWarningModal'
 import { DeleteServiceModal } from './DeleteServiceModal'
+import { getStatusPresentation } from './service-status'
 
 // H5's row — Figma 258:7898 (Service Row, state[default,hover] × status[active,paused]), measured
 // as a FLAT divided table row (cornerRadius 0, bottom-only 1px hairline, INSIDE stroke), not a
@@ -46,8 +47,8 @@ import { DeleteServiceModal } from './DeleteServiceModal'
 // as ProductRow's own inferred reflow) — this one stacks below lg the same shape ProductRow uses.
 //
 // Column shape deviates from G5 on purpose (founder rulings): "Voir" (not "Modifier") is the
-// visible link — it goes to the PUBLIC service page (D2); edit is a kebab item, permanently
-// disabled because H6/H7 don't exist in code yet, same "coming soon" tooltip H4's inert CTAs use.
+// visible link — it goes to the PUBLIC service page (D2); edit is a kebab item that opens H7
+// (/mes-services/[id]/modifier) — a moderated row included, which H7 opens read-only with the notice.
 // The kebab is Activer/Mettre en pause (not Dupliquer/Partager, which the generic Kebab Menu master
 // component draws but nothing in the schema or this app's plumbing backs).
 
@@ -74,35 +75,6 @@ const CATEGORY_ICONS: Record<string, LucideIcon> = {
   'personal-branding': UserRound,
   'coaching-meta-ads': Target,
   'coaching-ecommerce': ShoppingCart,
-}
-
-function assertNever(x: never): never {
-  throw new Error(`ServiceRow: unhandled status ${JSON.stringify(x)}`)
-}
-
-// Exhaustive over SellerServiceRow['status'] ('active' | 'hidden' | 'draft') — a switch, not a
-// ternary chain, so a future 4th status fails at assertNever (compile time) instead of silently
-// falling through to whichever branch a ternary's `else` happened to catch. The 'draft' case is
-// unreachable in practice: getSellerServices excludes drafts from every H5 tab (founder ruling —
-// H5 must not be the surface that first makes an unpublished draft visible; making one resumable is
-// H6's job, see docs/follow-ups.md). Handled here anyway so the switch stays compiler-exhaustive
-// rather than comment-exhaustive the moment that upstream filter ever changes.
-function getStatusPresentation(
-  service: SellerServiceRow,
-  lang: Lang,
-): { isActive: boolean; pillStatus: 'active' | 'moderated' | 'paused' | 'draft'; pillLabel: string } {
-  switch (service.status) {
-    case 'active':
-      return { isActive: true, pillStatus: 'active', pillLabel: t('common.status_active', lang) }
-    case 'hidden':
-      return service.adminHiddenAt != null
-        ? { isActive: false, pillStatus: 'moderated', pillLabel: t('service.status_moderated', lang) }
-        : { isActive: false, pillStatus: 'paused', pillLabel: t('service.status_paused', lang) }
-    case 'draft':
-      return { isActive: false, pillStatus: 'draft', pillLabel: t('service.status_draft', lang) }
-    default:
-      return assertNever(service.status)
-  }
 }
 
 export function ServiceRow({ service, lang }: { service: SellerServiceRow; lang: Lang }) {
@@ -201,8 +173,8 @@ export function ServiceRow({ service, lang }: { service: SellerServiceRow; lang:
                 {t('service.action_activate', lang)}
               </DropdownMenuItem>
             )}
-            <DropdownMenuItem disabled title={t('marche.sidebar.coming_soon', lang)}>
-              {t('service.action_edit', lang)}
+            <DropdownMenuItem asChild>
+              <Link href={`/mes-services/${service.id}/modifier`}>{t('service.action_edit', lang)}</Link>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem

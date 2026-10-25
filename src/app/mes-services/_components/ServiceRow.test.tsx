@@ -187,13 +187,21 @@ describe('ServiceRow — delete kebab item, disabled when the service has orders
   })
 })
 
-describe('ServiceRow — "Modifier" is permanently disabled (H6/H7 do not exist in code)', () => {
-  it('the kebab\'s Modifier item is disabled with a tooltip, regardless of row state', async () => {
+describe('ServiceRow — "Modifier" opens H7', () => {
+  it('the Modifier kebab item is a link to /mes-services/[id]/modifier, enabled in every row state', async () => {
     const user = userEvent.setup()
-    renderRow({ title: 'Edit target' })
-    const menu = await openKebab(user, 'Edit target')
-    const edit = within(menu).getByRole('menuitem', { name: 'Modifier' })
-    expect(edit).toHaveAttribute('aria-disabled', 'true')
-    expect(edit).toHaveAttribute('title', 'Bientôt disponible')
+    for (const state of [
+      { title: 'Active target' },
+      { title: 'Paused target', status: 'hidden' as const },
+      // H7 opens a moderated row read-only with the notice — the entry stays reachable.
+      { title: 'Moderated target', status: 'hidden' as const, adminHiddenAt: '2026-10-01T10:00:00Z' },
+    ]) {
+      renderRow(state)
+      const menu = await openKebab(user, state.title)
+      const edit = within(menu).getByRole('menuitem', { name: 'Modifier' })
+      expect(edit).not.toHaveAttribute('aria-disabled', 'true')
+      expect(edit).toHaveAttribute('href', `/mes-services/${BASE.id}/modifier`)
+      cleanup()
+    }
   })
 })

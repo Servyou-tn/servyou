@@ -28,6 +28,8 @@ import { getSector, getSubcategory } from '@/lib/taxonomy/service-categories'
 //   • Price row: « 800 TND · Fixe » — the stored unit's D13 label (the frame's « Par projet » predates D13).
 // A publish refusal (validator or DB gate) flags the rows whose « Modifier » leads to a failing field:
 // « Ce qui est inclus » and the brief have no row of their own and flag « Mode », the only step-4 row.
+// READ-ONLY (H7, a moderated service — docs/design/h7-deltas.md D38): no « Modifier »; the page passes no
+// onEdit, which also keeps this component usable from a Server Component (functions can't cross the boundary).
 // User text (title, skills, description, délai) is isolated with <bdi>, so a French value can't reorder
 // an Arabic row (reference_ar_latin_adjacency_bidi).
 
@@ -109,6 +111,7 @@ export function StepPublication({
   failedFields,
   disabled,
   onEdit,
+  readOnly = false,
 }: {
   lang: Lang
   form: DraftForm
@@ -116,7 +119,8 @@ export function StepPublication({
   errorKey: string | null
   failedFields: readonly WizardField[]
   disabled: boolean
-  onEdit: (step: ServiceWizardStep) => void
+  onEdit?: (step: ServiceWizardStep) => void
+  readOnly?: boolean
 }) {
   const rows = recapRows(form, lang)
 
@@ -153,17 +157,19 @@ export function StepPublication({
               >
                 {value}
               </span>
-              <button
-                type="button"
-                disabled={disabled}
-                onClick={() => onEdit(row.step)}
-                aria-label={t('service.wizard.recap.edit_aria', lang, { field: label })}
-                className={`relative order-2 shrink-0 rounded text-body-sm text-brand-blue-600 hover:underline disabled:cursor-not-allowed disabled:text-text-muted disabled:no-underline sm:order-3 ${FOCUS_RING}`}
-              >
-                {t('service.wizard.recap.edit', lang)}
-                {/* Touch target: ≥ 44 px tall without moving the 21 px text (Button's own hit-area pattern). */}
-                <span aria-hidden="true" className="absolute -inset-x-2 -inset-y-3" />
-              </button>
+              {!readOnly && onEdit && (
+                <button
+                  type="button"
+                  disabled={disabled}
+                  onClick={() => onEdit(row.step)}
+                  aria-label={t('service.wizard.recap.edit_aria', lang, { field: label })}
+                  className={`relative order-2 shrink-0 rounded text-body-sm text-brand-blue-600 hover:underline disabled:cursor-not-allowed disabled:text-text-muted disabled:no-underline sm:order-3 ${FOCUS_RING}`}
+                >
+                  {t('service.wizard.recap.edit', lang)}
+                  {/* Touch target: ≥ 44 px tall without moving the 21 px text (Button's own hit-area pattern). */}
+                  <span aria-hidden="true" className="absolute -inset-x-2 -inset-y-3" />
+                </button>
+              )}
             </li>
           )
         })}
