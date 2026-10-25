@@ -302,7 +302,13 @@ undo them. A closed decision is not a deferral.
   logged (the topbar right cluster) — at 375 this page currently reports a **73px** document
   overflow in total, and the two causes should be separated by measurement, not guessed at.
 
-### 🔴 `received_at` is stamped in app code only — nothing in the database enforces it
+### ✅ CLOSED (DB side) — 🔴 `received_at` is stamped in app code only — nothing in the database enforces it
+
+- **Closed by** migration 66 (`20261025222218_order_lifecycle_columns`, pre-launch security batch PR-3 E1,
+  2026-10-25): `trg_enforce_order_lifecycle_columns` stamps `now()` on the transition into `received` (and on
+  an INSERT at `received`) and discards any client value. The two browser writes are removed by H8 PR-2
+  (#191). **Still owed:** E2, `revoke update (received_at) on orders from authenticated`, once #191 has
+  merged. No backfill (decision 14): `33b822ec` stays NULL.
 
 - **What:** `orders.received_at` is written at exactly **two client call sites** —
   `src/components/ReceiptConfirmButton.tsx:33` and
@@ -3882,7 +3888,13 @@ orders INSERT gap (migration 54). Ranked most severe first; each is its own PR u
   layer: migration 53's hole would have handed over the whole admin UI with no second check.
 - **Fix:** server `requireAdmin()` in a server `admin/layout.tsx` and at the top of every admin action.
 
-### MEDIUM — orders UPDATE: lifecycle columns stay writable after the fact
+### ✅ CLOSED (except E2) — MEDIUM — orders UPDATE: lifecycle columns stay writable after the fact
+
+- **Closed by** migration 66 (`20261025222218_order_lifecycle_columns`, 2026-10-25): with a JWT,
+  `received_at` can no longer be backdated (discarded outside the receipt transition) and
+  `cancelled_by` / `cancellation_reason` change only inside the transition into `cancelled` (else 42501).
+  Live-tested by `orders-lifecycle-columns.test.ts`. **Still open:** E2 (the `received_at` column grant
+  revoke, after H8 #191) and moving the buyer-side client `.update()`s to server actions.
 
 - **What:** `authenticated` holds UPDATE on `cancelled_by`, `cancellation_reason`, `received_at`;
   `check_order_status_transition` lets status-free edits "sail through" and
@@ -4788,3 +4800,27 @@ Rulings D23–D35 in `docs/design/h6-pr4-deltas.md`; DB gate = migration `202610
 - The budget's unit (« / heure », « / mois ») is `service_listings.price_unit` as of NOW — `orders` snapshots only
   the price. A listing edited in H7 after the order can show a different unit than the one ordered. A `price_unit`
   column on `orders` (set by `set_order_snapshot`) would freeze it; optional DB gap.
+
+## Pre-launch security batch PR-3 E1 — orders lifecycle columns (`fix/prelaunch-order-lifecycle`, 2026-10-25)
+
+### LOW — an admin who is a PARTY to an order can still rewrite its lifecycle columns
+
+- **Found by** the post-apply review of migration 66. `check_order_status_transition` opens with
+  `IF is_admin() THEN RETURN NEW`, so an admin who is the buyer or seller of an order can leave a terminal
+  state (`cancelled → pending → cancelled`, `received → arrived → received`). Each re-entry is a fresh
+  transition to `enforce_order_lifecycle_columns`, so cancel metadata can be rewritten and `received_at`
+  restamped forward (never backdated: it is always `now()`). On INSERT, admins skip migration 54's tier 2 and
+  `authenticated` holds INSERT on every column, so an admin buying as themselves can insert at `cancelled`
+  with any `cancelled_by` / reason and a chosen `cancelled_at`.
+- **Bounded:** only an admin's OWN orders (orders has no admin UPDATE policy for anyone else's), and admins are
+  trusted. **Fix if wanted:** in `enforce_order_lifecycle_columns`, refuse any JWT change once
+  `old.status in ('received', 'cancelled')`, and on a JWT INSERT force the cancel columns NULL unless the
+  status is `cancelled` — a new forward migration.
+
+### ⚠ The `prelaunch-shop-read-rls` teardown has the cascade gap fixed here in `orders-lifecycle-columns`
+
+- Deleting a fixture SELLER cascades `orders.seller_id` (ON DELETE CASCADE), and RI cascades run breadth-first,
+  so a real customer's order on a live fixture product would be deleted silently — the "fails loudly" comment
+  in PR #192's suite is wrong. This suite now refuses to tear down while a non-fixture order references a
+  fixture seller. **PR #192 needs the same guard before its suite is run again** (pending the architect's call
+  on a third commit there).
