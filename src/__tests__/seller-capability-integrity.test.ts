@@ -574,12 +574,16 @@ describe.skipIf(!hasCreds)('bypasses — consistent with the other guard trigger
     expect(await shopCount(adminId)).toBe(1)
   })
 
-  it('anon skips the trigger (auth.uid() NULL) but the RLS WITH CHECK still refuses it', async () => {
+  // Since migration 68 (D2) anon holds no INSERT at all, so the privilege check refuses it before the
+  // trigger (which anon would skip: auth.uid() NULL) or the RLS WITH CHECK is ever reached.
+  it('anon is refused by privilege before the trigger or RLS', async () => {
     const anon = createClient(url, anonKey, { auth: { autoRefreshToken: false, persistSession: false } })
     const { error: shopErr } = await anon.from('shops').insert({ owner_id: consumerId, name: shopName('anon') })
-    expect(shopErr).not.toBeNull()
+    expect(shopErr?.code).toBe('42501')
+    expect(shopErr?.message).toBe('permission denied for table shops')
     const { error: fpErr } = await anon.from('freelancer_profiles').insert({ profile_id: consumerId })
-    expect(fpErr).not.toBeNull()
+    expect(fpErr?.code).toBe('42501')
+    expect(fpErr?.message).toBe('permission denied for table freelancer_profiles')
     expect(await shopCount(consumerId)).toBe(0)
     expect(await fpCount(consumerId)).toBe(0)
   })

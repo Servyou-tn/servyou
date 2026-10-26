@@ -47,7 +47,9 @@ gstack-investigate (root cause) · gstack-review (before every report).
     policy `to authenticated` and `grant execute … to authenticated`; a PUBLIC-role policy calling a
     helper anon cannot execute makes every anon read of that table fail;
   · never re-grant table-level INSERT / UPDATE on a column-granted table (`orders`, `job_posts`,
-    `data_exports`, `deletion_requests`): it silently reopens every locked column.
+    `data_exports`, `deletion_requests`): it silently reopens every locked column;
+  · the PUBLIC EXECUTE revoke is global for objects postgres creates: a future `create extension`
+    run as postgres also gets no client EXECUTE — grant what the app or a generated column needs.
 - After every applied migration, the generated types in `src/lib/supabase/database.types.ts` must
   be regenerated (Supabase MCP generate_typescript_types) in the same PR.
 
