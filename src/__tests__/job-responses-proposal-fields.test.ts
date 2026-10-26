@@ -234,6 +234,16 @@ describe.skipIf(!hasCreds)('G4 — proposal field rules', () => {
     expect(count).toBe(0)
   })
 
+  it('migration 72: an oversized array is refused by the shape check up front, never looped over', async () => {
+    const many = Array.from({ length: 5000 }, (_, i) => ({ url: `https://example.com/${i}` }))
+    expectCheck((await respond(fMain, post.main, { portfolio_links: many })).error, 'job_responses_portfolio_links_shape')
+  })
+
+  it('migration 72: link validation runs before the limits trigger — an invalid link on a filled post reports invalid_links', async () => {
+    const { error } = await respond(fOther, post.filled, { portfolio_links: [{ url: 'javascript:alert(1)' }] })
+    expect(error?.hint).toBe('invalid_links') // before migration 72 the limits trigger fired first: job_filled
+  })
+
   it('a valid proposal stores every field', async () => {
     const links = [{ url: 'https://www.behance.net/servyou-test', label: 'Behance' }, { url: 'http://example.com/portfolio' }]
     const { data, error } = await respond(fMain, post.main, { proposed_price_tnd: 250, proposed_timeframe: '5 jours', portfolio_links: links })

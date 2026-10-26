@@ -1,7 +1,7 @@
 // Generated from the live Supabase schema (project xggomcitqrkaylqezjjz) — DO NOT EDIT BY HAND.
 // Regenerate after every applied migration: Supabase MCP generate_typescript_types (or
 // `npx supabase gen types typescript --project-id xggomcitqrkaylqezjjz`), then commit.
-// Generated 2026-10-26 after migration 20261026200934 job_posts_responder_read.
+// Generated 2026-10-26 after migration 20261026205458 storage_upload_provenance.
 
 export type Json =
   | string
@@ -1546,6 +1546,10 @@ export type Database = {
       service_listing_publish_problems: {
         Args: { r: Database["public"]["Tables"]["service_listings"]["Row"] }
         Returns: string[]
+      }
+      storage_public_object_path: {
+        Args: { p_bucket: string; p_url: string }
+        Returns: string
       }
       unaccent: { Args: { "": string }; Returns: string }
     }

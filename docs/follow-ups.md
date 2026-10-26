@@ -118,6 +118,10 @@ undo them. A closed decision is not a deferral.
 
 ### Orphaned storage objects need a reconciliation sweep before the first deletable image surface
 
+- **Add to the sweep (2026-10-26, decision S-4):** 5 objects in avatars / shop-assets / product-images /
+  portfolio-media have no `uploaded_objects` record (pre-provenance uploads or raw PUTs). Since migration 71
+  nothing can publish them; the sweep should list and delete them (and any future ones until S-3 ships).
+
 - **What:** there is **no transaction spanning Postgres and Supabase Storage**, so a row delete
   cannot atomically delete its object and a trigger cannot reliably do it either. Orphans are a
   **reconciliation problem, not a prevention problem.**
@@ -4001,7 +4005,23 @@ orders INSERT gap (migration 54). Ranked most severe first; each is its own PR u
   instead of deleting it; or exempt the FK-cascade `SET NULL` in `enforce_order_identity_lock` when
   the referenced item is gone.
 
-### LOW — storage provenance missing for avatars and shop assets
+### ✅ PARTLY RESOLVED (migration 71 `20261026205458`, 2026-10-26) — storage provenance missing for avatars and shop assets
+
+- **Column side fixed:** `avatar_url`, `logo_url` and `banner_url` now require a host-anchored URL with an
+  `uploaded_objects` record owned by the row's owner (no bypass); the product / portfolio checks are
+  host-anchored too. **Still open — S-3, the next PR:** raw bytes can still be PUT into one's own folder
+  (unpublishable through the INSERT-guarded columns — but see the portfolio UPDATE gap below); the upload actions move to the service role and the four client INSERT storage
+  policies are dropped.
+- ✅ **RESOLVED by migration 73 (`20261026212227`) — `freelancer_portfolio_items.image_url` could be PATCHed past provenance:**
+  its trigger is BEFORE INSERT only, the owner has an UPDATE policy and authenticated holds UPDATE, so an
+  owner can insert a recorded item and then point `image_url` at a raw-PUT object (or any URL on the host).
+  The app never updates items (delete + re-insert). 0 items today. Fix: the trigger on UPDATE OF image_url too.
+- **The project host is hard-coded** in `storage_public_object_path` (S-2): a custom domain, a preview-branch
+  database or a replay on another project refuses every image until the helper is redefined.
+- **If Google OAuth is ever re-enabled:** a provider avatar URL is refused by `trg_enforce_avatar_provenance`;
+  it must be downloaded, normalized, uploaded and recorded like any other avatar (`handle_new_user` does not
+  touch `avatar_url` today, so signup is unaffected).
+- Original entry:
 
 - **What:** the `uploaded_objects` provenance trigger guards only `product_images` and
   `freelancer_portfolio_items`. `profiles.avatar_url` and `shops.logo_url` / `banner_url` can be
@@ -4927,7 +4947,10 @@ returns `[]`, i.e. a silent empty list — the rule is to surface the error.
   write of one fails 23514 even from the service role. **Fix if one ever needs editing:** lengthen its
   message in the same UPDATE, or delete it (they are test-era rows).
 
-### LOW→MEDIUM — the per-link loop runs before the 3-link CHECK, under the post lock (fix in the next migration)
+### ✅ RESOLVED (migration 72 `20261026212216`, 2026-10-26) — the per-link loop runs before the 3-link CHECK, under the post lock
+
+- Fixed: the trigger is renamed `trg_check_job_response_fields` (fires before the limits lock) and refuses a
+  non-array or more than 3 links up front with the CHECK's own error. Original entry:
 
 - `enforce_job_response_fields` fires after `check_job_response_limits` (alphabetical), i.e. while the post
   row is locked FOR UPDATE and the freelancer's advisory lock is held, and the `<= 3` rule lives only in the
