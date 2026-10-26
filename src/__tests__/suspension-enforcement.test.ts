@@ -84,7 +84,7 @@ const AVATAR = () => new Blob([new Uint8Array([82, 73, 70, 70, 0, 0, 0, 0, 87, 6
 type Verb = 'insert' | 'update' | 'delete'
 const ALL: Verb[] = ['insert', 'update', 'delete']
 
-// The 26 tables on which authenticated holds a table- or column-level write grant: the verbs
+// The 27 tables on which authenticated holds a table- or column-level write grant: the verbs
 // trg_enforce_active_user guards, the verbs authenticated holds NO privilege for (refused by the
 // privilege check, which runs before any trigger), and an UPDATE probe column (`set`) / INSERT probe
 // column (`insertKey`) where the grant is column-level (profiles, orders, job_posts, data_exports,
@@ -108,6 +108,7 @@ const TRIGGERED: Record<string, { guarded: Verb[]; noGrant?: Verb[]; set?: Recor
   job_posts: { guarded: ALL, set: { status: 'open' }, insertKey: 'consumer_id' }, // id is not client-writable since M-A
   job_post_skills: { guarded: ALL, noGrant: ['update'] }, // D3
   job_responses: { guarded: ALL, noGrant: ['update'] },
+  job_response_skills: { guarded: ALL, noGrant: ['update'] }, // migration 69 (M-C): no UPDATE grant
   favorites: { guarded: ALL, noGrant: ['update'] }, // D3
   categories: { guarded: ALL },
   admin_audit_log: { guarded: ALL, noGrant: ['update', 'delete'] }, // D3
@@ -357,7 +358,7 @@ describe.skipIf(!hasCreds)('ground truth', () => {
 })
 
 describe.skipIf(!hasCreds)('catalog', () => {
-  it('the exposed relations are exactly the 26 guarded tables plus the 4 with no client write', async () => {
+  it('the exposed relations are exactly the 27 guarded tables plus the 4 with no client write', async () => {
     const res = await fetch(`${url}/rest/v1/`, {
       headers: { apikey: serviceKey, Authorization: `Bearer ${serviceKey}`, Accept: 'application/openapi+json' },
     })
@@ -367,7 +368,7 @@ describe.skipIf(!hasCreds)('catalog', () => {
       .filter((p) => p !== '/' && !p.startsWith('/rpc/'))
       .map((p) => p.slice(1))
       .sort()
-    expect(Object.keys(TRIGGERED)).toHaveLength(26)
+    expect(Object.keys(TRIGGERED)).toHaveLength(27)
     expect(relations).toEqual([...Object.keys(TRIGGERED), ...Object.keys(NO_CLIENT_WRITES)].sort())
   })
 })
