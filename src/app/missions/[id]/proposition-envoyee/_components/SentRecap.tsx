@@ -50,7 +50,7 @@ export function SentRecap({ sent, lang }: { sent: SentProposal; lang: Lang }) {
             {sent.links.map((l) => (
               <li key={l.url} className="text-body-sm [overflow-wrap:anywhere]">
                 <a href={l.url} target="_blank" rel="noopener noreferrer nofollow" className="text-brand-blue-600 hover:underline">
-                  {l.label ?? hostOf(l.url)} — {hostOf(l.url)}
+                  {l.label ? `${l.label} — ${hostOf(l.url)}` : hostOf(l.url)}
                 </a>
               </li>
             ))}

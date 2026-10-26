@@ -109,7 +109,7 @@ describe('H13 SentRecap', () => {
     expect(link).toHaveAttribute('href', 'https://www.behance.net/me')
     expect(link).toHaveAttribute('target', '_blank')
     expect(link.getAttribute('rel')).toMatch(/noopener/)
-    expect(screen.getByRole('link', { name: 'a.tn — a.tn' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'a.tn' })).toBeInTheDocument() // no label → the host once, never « a.tn — a.tn »
     expect(screen.getByText(/Envoyée le 26 octobre 2026 à 14h32/)).toBeInTheDocument()
   })
 

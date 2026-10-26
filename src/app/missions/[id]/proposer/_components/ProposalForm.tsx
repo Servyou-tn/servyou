@@ -79,7 +79,16 @@ export function ProposalForm({ jobPostId, clientFirstName, budgetMin, budgetMax,
     setErrors({})
     setFailure(null)
     startTransition(async () => {
-      const res = await submitProposalAction({ jobPostId, message, links, price, timeframe, skills })
+      let res: Awaited<ReturnType<typeof submitProposalAction>> | undefined
+      try {
+        res = await submitProposalAction({ jobPostId, message, links, price, timeframe, skills })
+      } catch (e) {
+        // A rejected call (network down, a 5xx) would otherwise reach the error boundary and unmount the form with everything
+        // typed. NEXT_REDIRECT never lands here: Next handles the success redirect itself.
+        console.error('[ProposalForm] submit rejected:', e instanceof Error ? e.message : String(e))
+        setFailure('technical')
+        return
+      }
       // Success redirects server-side (never resolves here); only failures come back.
       if (!res || res.ok) return
       if (res.kind === 'invalid') {

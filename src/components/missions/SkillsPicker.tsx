@@ -196,7 +196,11 @@ export function SkillsPicker({
                 <span className="max-w-[200px] truncate">{skill}</span>
                 <button
                   type="button"
-                  onClick={() => toggle(skill)}
+                  onClick={() => {
+                    toggle(skill)
+                    // The ✕ unmounts with its chip, which would drop focus to <body>; hand it back to the field.
+                    document.getElementById(triggerId)?.focus()
+                  }}
                   disabled={disabled}
                   aria-label={removeLabel(skill)}
                   className={`relative ms-0.5 inline-flex size-6 items-center justify-center rounded-full hover:bg-brand-blue-100 disabled:cursor-not-allowed ${FOCUS_RING}`}

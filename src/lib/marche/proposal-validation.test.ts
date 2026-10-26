@@ -61,6 +61,18 @@ describe('links (≤ 3, http(s) only, de-duplicated)', () => {
   })
 })
 
+describe('parity with the DB (what its CHECKs and the link trigger would refuse)', () => {
+  it('a URL with whitespace inside is refused (the trigger requires ^https?://[^[:space:]]+$) even though `new URL` parses it', () => {
+    expect(errors({ links: [{ label: '', url: 'https://site.tn/mon portfolio' }] }).links?.[0]).toBe('proposal.error.link_url')
+  })
+  it('length is counted in code points like char_length, not UTF-16 units: ten emoji are 10, not 20', () => {
+    expect(errors({ message: '😀'.repeat(10) }).message).toBe('proposal.error.message_short')
+    expect(value({ message: '😀'.repeat(20) }).message).toHaveLength(40) // 20 code points = 40 UTF-16 units
+    expect(errors({ timeframe: '😀'.repeat(61) }).timeframe).toBe('proposal.error.timeframe_long')
+    expect(value({ timeframe: '😀'.repeat(60) }).timeframe).not.toBeNull()
+  })
+})
+
 describe('price (numeric(10,2), ≥ 0, < 1 000 000)', () => {
   it.each([
     ['', null],

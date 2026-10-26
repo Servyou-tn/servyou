@@ -53,13 +53,16 @@ export type ProposalValidation = { ok: true; value: ProposalValue } | { ok: fals
 
 const PRICE_RE = /^\d+(\.\d{1,2})?$/
 
+// The DB measures char_length (code points); JS `.length` counts UTF-16 units, so ten emoji read as 20. Count code points.
+const len = (s: string) => Array.from(s).length
+
 export function validateProposal(input: Pick<ProposalInput, 'message' | 'links' | 'price' | 'timeframe' | 'skills'>): ProposalValidation {
   const errors: ProposalErrors = {}
 
   const message = input.message.trim()
   if (message === '') errors.message = 'proposal.error.message_required'
-  else if (message.length < PROPOSAL_MESSAGE_MIN) errors.message = 'proposal.error.message_short'
-  else if (message.length > PROPOSAL_MESSAGE_MAX) errors.message = 'proposal.error.message_long'
+  else if (len(message) < PROPOSAL_MESSAGE_MIN) errors.message = 'proposal.error.message_short'
+  else if (len(message) > PROPOSAL_MESSAGE_MAX) errors.message = 'proposal.error.message_long'
 
   // Links: a row with neither a label nor a URL is simply empty and skipped; a row with a label but no URL is an error.
   const links: { url: string; label?: string }[] = []
@@ -75,9 +78,10 @@ export function validateProposal(input: Pick<ProposalInput, 'message' | 'links' 
     }
     usedRows += 1
     let err: string | undefined
-    if (url === '' || !isHttpUrl(url)) err = 'proposal.error.link_url'
-    else if (url.length > PROPOSAL_LINK_URL_MAX) err = 'proposal.error.link_url_long'
-    else if (label.length > PROPOSAL_LINK_LABEL_MAX) err = 'proposal.error.link_label_long'
+    // The DB trigger requires ^https?://[^[:space:]]+$ — a URL with any whitespace inside is refused there, so refuse it here.
+    if (url === '' || !isHttpUrl(url) || /\s/.test(url)) err = 'proposal.error.link_url'
+    else if (len(url) > PROPOSAL_LINK_URL_MAX) err = 'proposal.error.link_url_long'
+    else if (len(label) > PROPOSAL_LINK_LABEL_MAX) err = 'proposal.error.link_label_long'
     else if (seen.has(url.toLowerCase())) err = 'proposal.error.link_duplicate'
     linkErrors.push(err)
     if (!err) {
@@ -97,7 +101,7 @@ export function validateProposal(input: Pick<ProposalInput, 'message' | 'links' 
   }
 
   const timeframe = input.timeframe.trim()
-  if (timeframe.length > PROPOSAL_TIMEFRAME_MAX) errors.timeframe = 'proposal.error.timeframe_long'
+  if (len(timeframe) > PROPOSAL_TIMEFRAME_MAX) errors.timeframe = 'proposal.error.timeframe_long'
 
   const skills: string[] = []
   const skillSeen = new Set<string>()
@@ -106,7 +110,7 @@ export function validateProposal(input: Pick<ProposalInput, 'message' | 'links' 
     const key = skillKey(s)
     if (!key || skillSeen.has(key)) continue
     skillSeen.add(key)
-    if (s.length > PROPOSAL_SKILL_MAX) {
+    if (len(s) > PROPOSAL_SKILL_MAX) {
       errors.skills = 'proposal.error.skills_invalid'
       continue
     }

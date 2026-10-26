@@ -38,6 +38,8 @@ export function MissionCta({ state, missionId, answeredAt, lang }: { state: Miss
     return (
       <Link href={`/missions/${missionId}/proposer`} className={cn(BUTTON_BASE, BUTTON_SIZE.md, VARIANT_BASE.primary, VARIANT_STATE.primary, 'w-full')}>
         {t('missiondetail.cta.send', lang)}
+        {/* Touch target: the visible button is 40 px, the hit area reaches 44 (what Button's md does). */}
+        <span aria-hidden="true" className="absolute -inset-0.5" />
       </Link>
     )
   }
@@ -54,6 +56,7 @@ export function MissionCta({ state, missionId, answeredAt, lang }: { state: Miss
           className={cn(BUTTON_BASE, BUTTON_SIZE.md, VARIANT_BASE.secondary, VARIANT_STATE.secondary, 'w-full')}
         >
           {t('missiondetail.cta.view_mine', lang)}
+          <span aria-hidden="true" className="absolute -inset-0.5" />
         </Link>
         {answeredAt ? (
           <p className="text-center text-caption text-text-muted">
