@@ -591,6 +591,24 @@ this PR and is not attempted here.
     including both cap races). Rollback (in the file) drops the new columns and table — **lossy once
     H12 has written proposals**.
 
+70. **20261026200934_job_posts_responder_read** — Applied by the architect 2026-10-26 (recorded
+    version; executable SQL MD5-verified against `schema_migrations`, comments and whitespace
+    stripped: `48594c5b`). Post-apply checks (architect): `has_responded` EXECUTE anon f /
+    authenticated t; in a rolled-back block on a live post set to `filled`, the responder read the
+    post and their response, another freelancer 0, the post owner read the response (no 42P17), anon
+    0. Missions M-B, gap G2 (`docs/design/h9-h13-measurements.md` §6.4 on `feat/h9-missions`, D3;
+    M-B-1 approved 2026-10-26: deleted and moderated posts stay hidden, filled and expired become
+    readable); unblocks H11's « Fermées » tab, H13's refresh after a post closes and the dashboard's
+    « Activité récente » titles. Adds `has_responded(p_job_post_id uuid)` (SQL, STABLE, SECURITY
+    DEFINER, `search_path ''`; answers only about the caller's own responses) — EXECUTE revoked from
+    public / anon and **granted to authenticated** (P2-2: a policy helper is checked with the caller's
+    EXECUTE) — and the `job_posts` SELECT policy « Responders read the posts they answered » **TO
+    authenticated**: `status <> 'deleted' and admin_hidden_at is null and has_responded(id)`. The
+    helper reads `job_responses` as its owner, so the policy cannot recurse through `job_responses`'
+    own post-owner branch. `job_post_skills` follows `job_posts` (EXISTS). No write path changes;
+    advisor 0029 = 11 by design. Verified by `src/__tests__/job-posts-responder-read.test.ts`
+    (live-DB). Rollback (drop the policy, then the function) is at the bottom of the file.
+
 ## Rollback paths
 
 Each migration in this folder represents work that has already been applied to production. Rollback is therefore reverse migration work, not file deletion. If a rollback is ever needed, write a new dated migration that reverses the relevant changes — never delete history from this folder.

@@ -1,7 +1,7 @@
 // Generated from the live Supabase schema (project xggomcitqrkaylqezjjz) — DO NOT EDIT BY HAND.
 // Regenerate after every applied migration: Supabase MCP generate_typescript_types (or
 // `npx supabase gen types typescript --project-id xggomcitqrkaylqezjjz`), then commit.
-// Generated 2026-10-26 after migration 20261026195409 job_responses_proposal_fields.
+// Generated 2026-10-26 after migration 20261026200934 job_posts_responder_read.
 
 export type Json =
   | string
@@ -1529,6 +1529,7 @@ export type Database = {
         Returns: number
       }
       get_contact_phone: { Args: { target: string }; Returns: string }
+      has_responded: { Args: { p_job_post_id: string }; Returns: boolean }
       is_active_user: { Args: never; Returns: boolean }
       is_admin: { Args: never; Returns: boolean }
       log_admin_action: {
