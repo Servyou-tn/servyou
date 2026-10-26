@@ -5,6 +5,8 @@ import type { Lang } from '@/lib/i18n'
 import { Avatar } from '@/components/ui/avatar'
 import { WhatsAppContactButton } from '@/components/orders/WhatsAppContactButton'
 import { getInitials } from '@/components/ui/initials'
+import { SkillChip } from '@/components/missions/MissionChips'
+import { tndAmount } from '@/components/listings/listing-utils'
 import type { AnnonceResponse } from '@/lib/marche/annonce-detail'
 
 // Whole days between the response timestamp and now (never negative).
@@ -14,10 +16,13 @@ function daysAgo(iso: string): number {
 }
 
 // PR-E — the response-card composite the discovery pass found no DS owner for. Anatomy is exactly
-// the six fields getAnnonceDetail's query supports (lib/marche/annonce-detail.ts) — nothing
-// invented (no rating; the proposal price / délai / links / skills that migration 69 added to
-// job_responses are not read by getAnnonceDetail yet — H11 / PR-4 work):
-// avatar, name + city, headline, message body, relative timestamp, contact CTA.
+// the fields getAnnonceDetail's query supports (lib/marche/annonce-detail.ts) — nothing invented (no rating):
+// avatar, name + city, headline, message body, then — since missions PR-4 — the proposal's TERMS (price, délai),
+// portfolio links and skills, relative timestamp, contact CTA. Before PR-4 the freelancer's price / links / skills were
+// write-only: the form (H12) collected them and this card could not show them.
+//
+// Links come from a jsonb column the DB trigger validates (http(s) only, ≤ 500, ≤ 3), and are still rendered as plain
+// anchors with rel="noopener noreferrer nofollow" + target=_blank — never as HTML.
 //
 // Avatar size: `md` (40px, avatar.tsx's own scale), not the old hand-rolled 48px. Precedent is
 // OrdersList.tsx's "named party in a card" usage, not ServiceDetail's `lg` — that one is reserved
@@ -71,6 +76,7 @@ export function AnnonceResponseCard({
               {response.proposalMessage}
             </p>
           )}
+          <ProposalTerms response={response} lang={lang} />
           <p className="mt-3 text-xs text-text-muted">
             {days === 0
               ? t('annonces.detail.responded_today', lang)
@@ -89,6 +95,67 @@ export function AnnonceResponseCard({
           />
         </div>
       </div>
+    </div>
+  )
+}
+
+function hostOf(url: string): string {
+  try {
+    return new URL(url).hostname.replace(/^www\./, '')
+  } catch {
+    return url
+  }
+}
+
+// Price + délai as two labelled facts, then the links and skills. Every piece is absent (not blank) when the freelancer left
+// it empty; a proposal with none of them renders nothing here, exactly as before.
+function ProposalTerms({ response, lang }: { response: AnnonceResponse; lang: Lang }) {
+  const { proposedPrice, proposedTimeframe, links, skills } = response
+  if (proposedPrice == null && !proposedTimeframe && links.length === 0 && skills.length === 0) return null
+  return (
+    <div className="mt-4 flex flex-col gap-3 border-t border-border-subtle pt-4">
+      {(proposedPrice != null || proposedTimeframe) && (
+        <dl className="flex flex-wrap gap-x-8 gap-y-2 text-sm">
+          {proposedPrice != null && (
+            <div className="flex gap-1.5">
+              <dt className="text-text-muted">{t('annonces.detail.proposed_price', lang)}</dt>
+              <dd dir="ltr" className="font-semibold text-text-primary">
+                {tndAmount(proposedPrice)} TND
+              </dd>
+            </div>
+          )}
+          {proposedTimeframe && (
+            <div className="flex gap-1.5">
+              <dt className="text-text-muted">{t('annonces.detail.proposed_timeframe', lang)}</dt>
+              <dd className="font-semibold text-text-primary wrap-anywhere">{proposedTimeframe}</dd>
+            </div>
+          )}
+        </dl>
+      )}
+      {links.length > 0 && (
+        <div className="flex flex-col gap-1">
+          <p className="text-xs font-medium text-text-muted">{t('annonces.detail.proposal_links', lang)}</p>
+          <ul className="flex flex-col gap-1">
+            {links.map((l) => (
+              <li key={l.url} className="text-sm wrap-anywhere">
+                <a href={l.url} target="_blank" rel="noopener noreferrer nofollow" className="text-brand-blue-600 hover:underline">
+                  {l.label ? `${l.label} — ${hostOf(l.url)}` : hostOf(l.url)}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+      {skills.length > 0 && (
+        <div className="flex flex-col gap-1.5">
+          <p className="text-xs font-medium text-text-muted">{t('annonces.detail.proposal_skills', lang)}</p>
+          <div className="flex flex-wrap gap-2">
+            {skills.map((s) => (
+              <SkillChip key={s}>{s}</SkillChip>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   )
 }

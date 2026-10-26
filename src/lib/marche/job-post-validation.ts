@@ -1,3 +1,5 @@
+import { uniqueSkills } from './skills-match'
+
 // Pure validation for the minimal create-mission form. Extracted from the form + server
 // action so the rules are unit-tested and shared by both. The DB (RLS: consumer_id =
 // auth.uid() on INSERT) is the real authorization guard; these are app-layer UX checks
@@ -82,7 +84,8 @@ export function validateJobPost(input: JobPostInput, now: Date = new Date()): Jo
 
   // Server action input is attacker-controlled and TS types are erased at runtime — `?? []`
   // guards a hand-crafted request with `skills` omitted or null from throwing on `.map`.
-  const skills = (input.skills ?? []).map((s) => s.trim()).filter((s) => s.length > 0)
+  // De-duplicated accent- and case-insensitively (« Figma » and « figma » are one skill), keeping the first spelling.
+  const skills = uniqueSkills(input.skills ?? [])
   if (skills.length > ANNONCE_SKILLS_MAX) {
     return { ok: false, errorKey: 'annonce.error.skills_max' }
   }

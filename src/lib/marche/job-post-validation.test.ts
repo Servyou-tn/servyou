@@ -116,3 +116,10 @@ describe('validateJobPost', () => {
     if (r.ok) expect(r.value.skills).toEqual([])
   })
 })
+
+describe('skills — de-duplicated, accent- and case-insensitively (missions PR-4)', () => {
+  it('keeps the first spelling and drops repeats', () => {
+    const r = validateJobPost({ ...base, skills: ['Figma', 'figma', ' Rédaction ', 'redaction', ''] }, NOW)
+    expect(r.ok && r.value.skills).toEqual(['Figma', 'Rédaction'])
+  })
+})
