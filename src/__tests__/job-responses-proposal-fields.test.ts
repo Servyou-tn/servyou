@@ -258,7 +258,16 @@ describe.skipIf(!hasCreds)('G4 — job_response_skills', () => {
     expectCheck((await add('x'.repeat(61))).error, 'job_response_skills_skill_length')
   })
 
-  it('at most 8 per response, rows of the same statement included', async () => {
+  it('9 skills in one statement are refused whole (the trigger sees the earlier rows of its own statement)', async () => {
+    const { data: resp, error } = await respond(fOther, post.main).select('id').single()
+    expect(error).toBeNull()
+    const rows = Array.from({ length: 9 }, (_, i) => ({ job_response_id: resp!.id, skill: `Skill ${i + 1}` }))
+    expectHint((await fOther.client.from('job_response_skills').insert(rows)).error, '23514', 'too_many_skills')
+    const { count } = await admin.from('job_response_skills').select('id', { count: 'exact', head: true }).eq('job_response_id', resp!.id)
+    expect(count).toBe(0)
+  })
+
+  it('at most 8 per response across statements', async () => {
     const rows = ['Illustrator', 'Photoshop', 'Logo', 'Branding', 'Typographie', 'InDesign', 'Canva'].map((skill) => ({ job_response_id: mainResponseId, skill }))
     expect((await fMain.client.from('job_response_skills').insert(rows)).error).toBeNull() // 1 + 7 = 8
     expectHint((await fMain.client.from('job_response_skills').insert({ job_response_id: mainResponseId, skill: 'Blender' })).error, '23514', 'too_many_skills')

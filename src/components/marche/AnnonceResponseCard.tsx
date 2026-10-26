@@ -15,7 +15,8 @@ function daysAgo(iso: string): number {
 
 // PR-E — the response-card composite the discovery pass found no DS owner for. Anatomy is exactly
 // the six fields getAnnonceDetail's query supports (lib/marche/annonce-detail.ts) — nothing
-// invented (no rating, no proposed price: neither exists in the job_responses schema):
+// invented (no rating; the proposal price / délai / links / skills that migration 69 added to
+// job_responses are not read by getAnnonceDetail yet — H11 / PR-4 work):
 // avatar, name + city, headline, message body, relative timestamp, contact CTA.
 //
 // Avatar size: `md` (40px, avatar.tsx's own scale), not the old hand-rolled 48px. Precedent is

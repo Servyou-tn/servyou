@@ -581,7 +581,8 @@ this PR and is not attempted here.
     races:** `check_job_response_limits()` (now `search_path ''`) keeps every French message and adds
     HINT codes `job_not_found` (23503), `job_unavailable` (moderated post — refused, and no longer
     counted toward the 5-active cap), `job_filled`, `job_deleted`, `job_expired` (stored status or
-    > 30 days), `job_closed`, `own_post` (42501), `duplicate` (23505), `job_full`, `cap_active`; it locks
+    > 30 days), `job_closed` (unreachable today — `job_posts.status` allows only open / filled / expired /
+    deleted — reserved for a future status), `own_post` (42501), `duplicate` (23505), `job_full`, `cap_active`; it locks
     the post FOR UPDATE (the 10-cap reads the committed `response_count`) and takes a per-freelancer
     advisory lock (the 5-cap), post lock first for every caller. `enforce_job_responder_capability()`:
     same body, hints `not_self`, `not_freelancer`, `under_18`, `suspended` (shadowed for JWT callers
