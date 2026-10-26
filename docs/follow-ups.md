@@ -5075,9 +5075,6 @@ fixtures. `scripts/rls-smoke.mjs` (not a suite, never run) seeds an active produ
 
 ### E3 Produits tab — logged, not fixed
 
-- **Services rows print « Commande ##4774AE »**: `mesCommandes.ref` is `Commande #{ref}` and the Services row passes `shortRef()`, which already
-  carries the `#`. Seen live on the seed buyer's service order. The Produits row slices it off. One-line fix: drop the `#` from the key and
-  pass `shortRef()` in both lists (fr + ar) — separate PR by the one-PR-one-focus rule.
 - **Tracking is not shown** on a product order (`carrier`, `tracking_number`): not in Figma 704:58976. A natural line under the rail once
   the seller has dispatched.
 - **Rail scroll position on mobile**: the 7-step rail scrolls sideways below `lg`; it starts at the first stage, so an order that is

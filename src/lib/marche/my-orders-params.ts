@@ -28,11 +28,17 @@ export type ProductOrderStatus = (typeof PRODUCT_STATUSES)[number]
 export const ORDER_TABS = ['produits', 'services'] as const
 export type OrdersTab = (typeof ORDER_TABS)[number]
 /**
- * Figma authors Produits first and selected (704:58976 is the Produits frame). Services was the default only
- * while Produits was a disabled « Bientôt » (founder call, E3 services PR): a designed default would have landed
- * the page on nothing. Now that both tabs exist the frame wins; flip this one constant to undo.
+ * The tab when the buyer has no orders at all — Figma authors Produits first and selected (704:58976). With orders,
+ * a bare /mes-commandes opens the tab of the buyer's MOST RECENT order instead (architect ruling on #202; see
+ * getDefaultOrdersTab in my-orders.ts), so the sidebar link never lands a services-only buyer on an empty Produits tab.
  */
 export const DEFAULT_ORDERS_TAB: OrdersTab = 'produits'
+
+/** True when `?tab=` names a real tab. An absent or unknown value means « pick the smart default ». */
+export function hasExplicitTab(sp: Record<string, string | string[] | undefined>): boolean {
+  const raw = Array.isArray(sp.tab) ? sp.tab[0] : sp.tab
+  return (ORDER_TABS as readonly string[]).includes(raw ?? '')
+}
 
 export function statusesForTab(tab: OrdersTab): readonly (ProductOrderStatus | ServiceOrderStatus)[] {
   return tab === 'produits' ? PRODUCT_STATUSES : SERVICE_STATUSES
@@ -53,11 +59,15 @@ export type MyOrdersQuery = {
   page: number
 }
 
-export function parseOrdersParams(sp: Record<string, string | string[] | undefined>): MyOrdersQuery {
+export function parseOrdersParams(
+  sp: Record<string, string | string[] | undefined>,
+  /** The tab to use when `?tab=` is absent or unknown — the page passes the smart default; statut is validated against it. */
+  fallbackTab: OrdersTab = DEFAULT_ORDERS_TAB,
+): MyOrdersQuery {
   const first = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v)
 
   const rawTab = first(sp.tab)
-  const tab = (ORDER_TABS as readonly string[]).includes(rawTab ?? '') ? (rawTab as OrdersTab) : DEFAULT_ORDERS_TAB
+  const tab = (ORDER_TABS as readonly string[]).includes(rawTab ?? '') ? (rawTab as OrdersTab) : fallbackTab
 
   const rawStatut = first(sp.statut)
   const statut = (statusesForTab(tab) as readonly string[]).includes(rawStatut ?? '')

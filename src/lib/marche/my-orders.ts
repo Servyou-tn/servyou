@@ -1,6 +1,12 @@
 import { createClient } from '@/lib/supabase/server'
 import { paginate, stripAccents } from '@/lib/search/search-params'
-import { ORDERS_PER_PAGE, type MyOrdersQuery, type OrderSort } from './my-orders-params'
+import {
+  DEFAULT_ORDERS_TAB,
+  ORDERS_PER_PAGE,
+  type MyOrdersQuery,
+  type OrdersTab,
+  type OrderSort,
+} from './my-orders-params'
 
 // E3 — the buyer's SERVICE orders for /mes-commandes (Figma 709:59662 / 710:59945).
 //
@@ -308,4 +314,35 @@ export async function getMyProductOrders(userId: string, query: MyOrdersQuery): 
   }
 
   return pageMyProductOrders(((data ?? []) as unknown as ProductRow[]).map(toMyProductOrder), query)
+}
+
+// ─── Default tab ─────────────────────────────────────────────────────────────────────────────────────────
+
+/** The tab of the buyer's newest order; Produits when they have none. Pure. */
+export function pickDefaultOrdersTab(latest: { order_type: string } | null | undefined): OrdersTab {
+  if (latest?.order_type === 'service') return 'services'
+  if (latest?.order_type === 'product') return 'produits'
+  return DEFAULT_ORDERS_TAB
+}
+
+/**
+ * What a bare /mes-commandes opens (architect ruling on #202): the tab of the buyer's MOST RECENT order, service or
+ * product, so a services-only buyer coming from the sidebar is not shown an empty Produits tab. One tiny indexed read
+ * (newest order, one column). A failed read throws like every other query on this page — falling back to Produits would
+ * be a silent wrong answer for a services buyer.
+ */
+export async function getDefaultOrdersTab(userId: string): Promise<OrdersTab> {
+  const supabase = await createClient()
+  const { data, error } = await supabase
+    .from('orders')
+    .select('order_type')
+    .eq('buyer_id', userId)
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+  if (error) {
+    console.error('[my-orders] default tab fetch error:', error.message, error.code, error.details)
+    throw new Error(`default orders tab fetch failed: ${error.message}`)
+  }
+  return pickDefaultOrdersTab(data as { order_type: string } | null)
 }

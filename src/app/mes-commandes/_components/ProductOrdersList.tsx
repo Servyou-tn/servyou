@@ -108,7 +108,7 @@ function ProductOrderRow({ order, open, onToggle }: { order: MyProductOrder; ope
       )}
 
       <p className="text-caption leading-[17px] text-text-muted">
-        {t('mesCommandes.ref', lang, { ref: shortRef(order.id).slice(1), date: longDate(order.createdAt, lang) })}
+        {t('mesCommandes.ref', lang, { ref: shortRef(order.id), date: longDate(order.createdAt, lang) })}
       </p>
     </OrderAccordionRow>
   )

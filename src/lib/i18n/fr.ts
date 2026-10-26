@@ -1563,7 +1563,7 @@ export const fr: Record<string, string> = {
   'mesCommandes.collapse':         "Masquer le détail",
   'mesCommandes.untitled':         "Service indisponible",
   'mesCommandes.priceFrom':        "À partir de",
-  'mesCommandes.ref':              "Commande #{ref} · Passée le {date}",
+  'mesCommandes.ref':              "Commande {ref} · Passée le {date}",
   'mesCommandes.whatsapp':         "Contacter sur WhatsApp",
   'mesCommandes.whatsapp.message': "Bonjour, je vous contacte au sujet de ma commande « {service} » sur Servyou.",
   'mesCommandes.whatsapp.none':    "Ce freelance n'a pas encore ajouté de numéro WhatsApp.",

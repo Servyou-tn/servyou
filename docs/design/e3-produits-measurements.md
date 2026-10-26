@@ -22,14 +22,14 @@ Frame pills seen: « Livré » (success), « Acceptée » (blue), « En attente 
 
 ## 2. Decisions (numbered, for the founder)
 
-1. **D1 — default tab is Produits** (the frame: `selected=0` on Produits). The Services PR made Services the default only because Produits was a disabled « Bientôt »; that reason is gone. One constant to undo: `DEFAULT_ORDERS_TAB` in `lib/marche/my-orders-params.ts`. The two inbound links that know their type now say it: `/demander/succes` → `?tab=produits|services`.
+1. **D1 — smart default (architect ruling on #202, supersedes « default = Produits »).** An explicit `?tab=` is taken as given. Without it, `/mes-commandes` opens the tab of the buyer's **most recent order** (service or product); no orders → Produits (the frame's `selected=0`). The sidebar link, the dashboard quick action and old bookmarks (`?statut=` without a tab) all follow it, and `statut` is validated against the resolved tab. `/demander/succes` still links to `?tab=produits|services`.
 2. **D2 — the rail walks the full 7-step product chain**, not the frame's 4 mock stages (En attente · Acceptée · Livrée · Reçue): a parcel is prepared, shipped, out for delivery and arrives; collapsing that hides where the order is. Labels are the shipped product ones (`common.status_*`, « Arrivée » not « Travail livré »). The 8th status, `cancelled`, is off the rail.
 3. **D3 — the frame's « Livré » pill is not used**: it paints `arrived` green (`delivered`), identical to « Reçue »; the code keeps `arrivee` (blue), so a buyer can see at a glance that they still owe a confirmation (same ruling as the Services tab).
 4. **D4 — cancelled orders drop the rail and show « Annulée par {vous | le vendeur} » + the stored reason.** Not in the frame; the reason is already in `orders.cancellation_reason` and a buyer whose order the shop cancelled should read why.
 5. **D5 — buyer cancel**: a text link « Annuler la commande » while the order is non-terminal, through the existing role-aware `cancelOrderAction` (cancelled_by derived from the caller; a reason is required from `dispatched` on, as the DB trigger demands). Buyer reason presets are the keys the legacy buyer modal already shipped. The frame draws no cancel affordance; the Services tab's earlier « buyer cancellation dropped » follow-up is **not** closed by this (services keep the frame as built).
 6. **D6 — the price is what the buyer pays**: snapshot unit price × quantity + the delivery-fee snapshot (`orders.delivery_fee_tnd`); the live product price is the fallback for pre-snapshot orders; no price shown when none is known. The frame shows one figure.
 7. **D7 — `received_at` is never sent**: confirmation updates `{ status: 'received' }` only; the DB stamps the timestamp. Pinned by a test on the Produits call site.
-8. **D8 — the reference is the shipped `#A4F729`**, not the frame's invented `#CMD-2024-0312` (no such column; ruling from the Services tab).
+8. **D8 — the reference is the shipped `#A4F729`**, not the frame's invented `#CMD-2024-0312` (no such column; ruling from the Services tab). `mesCommandes.ref` no longer carries its own `#` (it printed `##A4F729` on Services rows).
 9. **D9 — « Voir le détail » is not rendered**: the accordion carries the detail in place (same as Services), and `/mes-commandes/[id]` stays the placeholder — E4 needs a Figma design first. If you want the link anyway it is one `<Link>` in the row body.
 10. **D10 — mobile (derived)**: header folds shop + date into one line (as Services). The 7-step rail is ~540 px wide at 56 px a node, so below `lg` it scrolls sideways inside its own strip instead of overflowing the page (G9's seller rail has the same logged overflow, unfixed).
 11. **D11 — unreadable product**: if RLS hides a product the buyer ordered (seller unpublished it), the order stays in the list with the snapshot title and no shop / image, never silently dropped.
@@ -38,5 +38,4 @@ Frame pills seen: « Livré » (success), « Acceptée » (blue), « En attente 
 ## 3. Not done / logged
 
 - Tracking (`carrier`, `tracking_number`) is not shown — not in the frame.
-- Services rows print « Commande ##A4F729 » (the key carries a `#` and `shortRef` already adds one) — pre-existing, out of scope; the Produits row prints one.
 - Filtering/sorting run in memory after fetching all of a buyer's product orders (PostgREST caps at 1000), as the Services tab and H8.

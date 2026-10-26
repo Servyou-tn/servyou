@@ -46,6 +46,7 @@ vi.mock('@/lib/supabase/client', () => ({
 }))
 
 import { ProductOrdersList } from './ProductOrdersList'
+import { OrdersList } from './OrdersList'
 import { OrdersTabs } from './OrdersTabs'
 
 afterEach(() => {
@@ -88,7 +89,7 @@ describe('ProductOrdersList — header', () => {
     expect(header).toHaveTextContent('320 TND')
     expect(header).toHaveTextContent(t('common.status_arrived', 'fr'))
     await user.click(header)
-    // one « # » only: shortRef already carries it (the services row prints two — logged, not fixed here)
+    // one « # » only: shortRef already carries it and the key no longer adds a second
     expect(screen.getByText(/Commande #3CF896 · Passée le/)).toBeInTheDocument()
   })
 
@@ -188,6 +189,37 @@ describe('ProductOrdersList — body', () => {
   it('AR renders with translated labels and no raw key', async () => {
     await open(order({ status: 'in_delivery' }), 'ar')
     expect(document.body.textContent).not.toMatch(/\b(mesCommandes|common)\.[a-z_]+/)
+  })
+})
+
+describe('reference line — one « # » on BOTH lists', () => {
+  it('the Services row no longer prints « ##… »', async () => {
+    const user = userEvent.setup()
+    render(
+      <LangProvider lang="fr">
+        <OrdersList
+          orders={[
+            {
+              id: ID,
+              status: 'accepted',
+              createdAt: '2026-10-20T10:00:00Z',
+              receivedAt: null,
+              cancelledBy: null,
+              cancellationReason: null,
+              title: 'Logo professionnel',
+              category: null,
+              startingPrice: 300,
+              sellerId: 's',
+              sellerName: 'Zina',
+              sellerCity: null,
+            },
+          ]}
+        />
+      </LangProvider>,
+    )
+    await user.click(screen.getByRole('button', { name: /Logo professionnel/ }))
+    expect(screen.getByText(/Commande #3CF896 · Passée le/)).toBeInTheDocument()
+    expect(document.body.textContent).not.toContain('##')
   })
 })
 

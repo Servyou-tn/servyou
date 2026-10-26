@@ -1519,7 +1519,7 @@ export const ar: Record<string, string> = {
   'mesCommandes.collapse':         "إخفاء التفاصيل",
   'mesCommandes.untitled':         "الخدمة غير متاحة",
   'mesCommandes.priceFrom':        "ابتداءً من",
-  'mesCommandes.ref':              "الطلب #{ref} · بتاريخ {date}",
+  'mesCommandes.ref':              "الطلب {ref} · بتاريخ {date}",
   'mesCommandes.whatsapp':         "التواصل عبر واتساب",
   'mesCommandes.whatsapp.message': "مرحبًا، أتواصل معك بخصوص طلبي « {service} » على Servyou.",
   'mesCommandes.whatsapp.none':    "لم يضِف هذا المستقل رقم واتساب بعد.",
