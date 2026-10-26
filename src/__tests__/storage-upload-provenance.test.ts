@@ -116,6 +116,7 @@ let ownerId: string
 let otherOwnerId: string
 let userClient: Client
 let ownerClient: Client
+let freelancerClient: Client
 let shopId: string
 let productId: string
 let freelancerProfileId: string
@@ -153,6 +154,7 @@ beforeAll(async () => {
 
   userClient = await signIn('user')
   ownerClient = await signIn('owner')
+  freelancerClient = await signIn('freelancer')
 }, 180000)
 
 afterAll(async () => {
@@ -262,5 +264,31 @@ describe.skipIf(!hasCreds)('S-2 — product and portfolio images require this pr
     expect(error?.message).toBe(`portfolio-media provenance check failed: ${foreignHost('portfolio-media', path)} is not a recognized portfolio-media object url`)
     const { error: okErr } = await admin.from('freelancer_portfolio_items').insert({ freelancer_profile_id: freelancerProfileId, image_url: publicUrl('portfolio-media', path), title: TITLE })
     expect(okErr).toBeNull()
+  })
+
+  it('migration 73: portfolio image_url is checked on UPDATE too; unchanged and other columns pass', async () => {
+    const first = await record('portfolio-media', freelancerId, freelancerId)
+    const { data: item, error } = await freelancerClient
+      .from('freelancer_portfolio_items')
+      .insert({ freelancer_profile_id: freelancerProfileId, image_url: publicUrl('portfolio-media', first), title: `${TITLE} — own` })
+      .select('id')
+      .single()
+    expect(error).toBeNull()
+    const patch = (values: Database['public']['Tables']['freelancer_portfolio_items']['Update']) =>
+      freelancerClient.from('freelancer_portfolio_items').update(values).eq('id', item!.id)
+    const foreign = foreignHost('portfolio-media', first)
+    expect((await patch({ image_url: foreign })).error?.message).toBe(`portfolio-media provenance check failed: ${foreign} is not a recognized portfolio-media object url`)
+    const unrecorded = `${freelancerId}/${randomUUID()}.webp`
+    expect((await patch({ image_url: publicUrl('portfolio-media', unrecorded) })).error?.message).toBe(
+      `portfolio-media provenance check failed: ${unrecorded} has no validated upload record for owner ${freelancerId}`,
+    )
+    // With the record gone, only the unchanged short-circuit can let this through.
+    const { error: dropErr } = await admin.from('uploaded_objects').delete().eq('bucket', 'portfolio-media').eq('path', first)
+    expect(dropErr).toBeNull()
+    expect((await patch({ image_url: publicUrl('portfolio-media', first), title: `${TITLE} — renamed` })).error).toBeNull()
+    const second = await record('portfolio-media', freelancerId, freelancerId)
+    expect((await patch({ image_url: publicUrl('portfolio-media', second) })).error).toBeNull()
+    const { data } = await admin.from('freelancer_portfolio_items').select('image_url, title').eq('id', item!.id).single()
+    expect(data).toEqual({ image_url: publicUrl('portfolio-media', second), title: `${TITLE} — renamed` })
   })
 })

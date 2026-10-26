@@ -627,11 +627,31 @@ this PR and is not attempted here.
     into one's own folder until S-3 (the next PR: uploads through the service role, client INSERT
     storage policies dropped), and no INSERT-guarded column can publish them — **except**
     `freelancer_portfolio_items.image_url` on UPDATE (its trigger is BEFORE INSERT only and the owner
-    holds UPDATE; pre-existing; a forward migration is pending). **The host is hard-coded**
+    holds UPDATE; pre-existing; closed by #73). **The host is hard-coded**
     (`xggomcitqrkaylqezjjz.supabase.co`): a custom domain or another project needs the helper redefined. The 5 orphan objects stay (S-4: the
     pre-launch orphan sweep). Note: a provider avatar URL (Google OAuth, if re-enabled) is refused by
     the trigger — it must go through upload + provenance. Verified by
     `src/__tests__/storage-upload-provenance.test.ts` (live-DB). Rollback is at the bottom of the file.
+72. **20261026212216_job_response_links_limit_first** — Applied by the architect 2026-10-26 (recorded
+    version; executable SQL MD5-verified against `schema_migrations`, comments and whitespace
+    stripped: `fd683717`). Post-apply checks (architect, rolled back, freelancer JWT): BEFORE trigger
+    order on `job_responses` = `trg_check_job_responder_capability` > `trg_check_job_response_fields` >
+    `trg_check_job_response_limits`; 5 000 links → 23514 naming `job_responses_portfolio_links_shape`
+    in 4 ms; a `javascript:` link → `invalid_links`. M-C hardening (Sonnet review of #204): the per-link
+    loop ran after the post lock and before the 3-link CHECK, so an oversized `portfolio_links` array
+    held the post's row lock for O(n²) work. `trg_enforce_job_response_fields` is renamed
+    `trg_check_job_response_fields` (fires before the limits trigger takes any lock), and
+    `enforce_job_response_fields()` refuses a non-array or more than 3 links up front with the CHECK's
+    own error (23514, same message), so H12's mapping is unchanged. Verified by
+    `src/__tests__/job-responses-proposal-fields.test.ts` (live-DB). Rollback at the bottom of the file.
+73. **20261026212227_portfolio_image_update_provenance** — Applied by the architect 2026-10-26
+    (recorded version; MD5 as above: `502081a0`). Post-apply check (architect): the trigger is
+    `BEFORE INSERT OR UPDATE OF image_url`. Closes the gap the Sonnet review of #206 found in #71:
+    `trg_enforce_portfolio_image_provenance` was BEFORE INSERT only while the owner holds UPDATE, so
+    `image_url` could be PATCHed to an unrecorded or foreign URL. The trigger now also fires on
+    UPDATE OF `image_url`; an unchanged value passes on its own (the avatar / shop rule). Function body
+    otherwise identical to #71's. Verified by `src/__tests__/storage-upload-provenance.test.ts`
+    (live-DB). Rollback at the bottom of the file.
 
 ## Rollback paths
 
