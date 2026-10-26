@@ -54,6 +54,7 @@ import { describe, it, expect, beforeAll, afterAll, vi } from 'vitest'
 import { randomUUID } from 'node:crypto'
 import { createClient, SupabaseClient } from '@supabase/supabase-js'
 import { setAuthBan, syncAuthBan, isSuspensionAlreadyApplied } from '@/lib/auth/auth-ban'
+import { refuseTeardownOnForeignOrders } from './live-teardown-guard'
 
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -199,6 +200,7 @@ async function teardown(): Promise<void> {
   if (error) throw new Error(`teardown lookup failed: ${error.message}`)
   const ids = (data ?? []).map((row) => row.id as string)
   if (ids.length === 0) return
+  await refuseTeardownOnForeignOrders(admin, ids, PREFIX)
 
   // orders first — enforce_order_identity_lock guards the product_id SET NULL a cascaded product
   // delete would cause; admin_audit_log next — admin_id is ON DELETE RESTRICT.

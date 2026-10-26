@@ -49,21 +49,43 @@ gstack-browse · gstack-review. If a skill is missing, say so in your first repo
 
 ## Tests and gates
 - Mock / unit tests only. The DB & Security agent owns the live database; ask before running any
-  live-DB suite. Never run rls-smoke.
-- Gate in your worktree: `npx tsc --noEmit`, `npm run lint` (committed tree), `npm run build`,
-  then the mock suites you touched.
+  live-DB suite. Never run rls-smoke. Never run a bare `vitest run` (some live suites may be
+  missing from INTEGRATION_GLOBS) — always pass file paths or use `vitest related`.
+- Follow the **Fast loop** below: local = fast checks; CI = the full gate.
+
+## Fast loop (speed rules — the dev PC has 2 cores / 8–16 GB)
+CI (GitHub Actions) runs the FULL gate on every push in ~2 min: tsc, lint, the whole vitest run,
+`next build`, Storybook VRT, token drift, plus the Vercel preview. Don't repeat it locally.
+1. **Local checks while iterating:** `npx tsc --noEmit` · `npx eslint <changed files>` ·
+   `npx vitest related --run <changed src files>` (or the test files by path).
+2. **Local `npm run build` ONLY when** you changed next.config, route structure (new/moved
+   route segments, layouts, `generateStaticParams`), dependencies, or CI's build failed.
+   Otherwise CI's build is the build gate.
+3. **Never stop the dev server to build.** Since Next 16, `next dev` and `next build` use separate
+   output dirs and run concurrently. Keep one dev server per worktree alive for the whole job.
+4. **Push early.** Push commit 1 as soon as the local checks pass, so CI and the Vercel preview run
+   in parallel with your self-verify. Read CI with `gh pr checks <n>`; fix only real failures.
+5. **One review per PR**, on the diff only, as a subagent on **Sonnet** (not Opus) — either
+   /gstack-review OR an independent reviewer, never both. Fix critical/high findings; log the rest
+   in docs/follow-ups.md. Skip the review for docs-only or test-only changes.
+6. **Self-verify in one scripted pass** (agent-browser / one Playwright script capturing FR+AR ×
+   1440+375 for each state). After a small fix, re-check only the affected views.
+7. **Read narrowly:** the files you will change and their direct imports; grep before opening.
+   Use Explore subagents for wide searches (they return conclusions, not file dumps).
+8. **Short reports:** ≤ 40 lines — what shipped, what was checked, numbered decisions. Detail goes
+   in the PR body or the deltas doc, not the chat.
 
 ## Self-verify before reporting
-next-devtools get_errors + agent-browser on the real route: FR and AR × 1440 and 375, against the
-saved measurements. Max 3 fix rounds, then report what remains. Leave any test draft you create
-noted in the report.
+next-devtools get_errors (+ compile_route) + agent-browser on the real route: FR and AR × 1440 and
+375, against the saved measurements. Max 3 fix rounds, then report what remains. Leave any test
+draft you create noted in the report.
 
 ## Shipping
-Max 2 commits (conventional prefix, cite the ruling/section in the body, no Co-Authored-By).
-`git push -u origin <branch>` only — never main, NEVER force-push (ask for a 3rd-commit exception
-instead). Open the PR with the preview URL, run /gstack-review on the diff, report, STOP. The
-founder does the final visual gate and the merge.
+Max 3 commits (feature · review fixes · follow-up), conventional prefix, cite the ruling/section in
+the body, no Co-Authored-By. `git push -u origin <branch>` only — never main, NEVER force-push (a 4th
+commit needs the architect's OK). Open the PR with the preview URL, report, STOP. The founder does
+the final visual gate and the merge.
 
 ## Definition of done
-measure → diff/decisions report approved → build → self-verify → gates green → /gstack-review →
-PR + preview → report → STOP.
+measure → diff/decisions report approved → build → local fast checks → push (CI + preview start) →
+self-verify → one Sonnet review → CI green → report → STOP.

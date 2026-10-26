@@ -1,17 +1,6 @@
 // Pure helpers for the listing cards. Kept render-free so the relative-time logic
 // is unit-testable (see listing-utils.test.ts).
 
-/** Avatar initials: first letter of up to the first two words, uppercase. */
-export function initials(name: string | null): string {
-  if (!name) return '?'
-  const words = name.trim().split(/\s+/).filter(Boolean)
-  if (words.length === 0) return '?'
-  return words
-    .slice(0, 2)
-    .map((w) => w[0]?.toUpperCase() ?? '')
-    .join('')
-}
-
 /**
  * The NUMBER half of a price, with no currency code: integers stay bare, anything else gets
  * exactly two decimals.

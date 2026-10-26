@@ -302,7 +302,13 @@ undo them. A closed decision is not a deferral.
   logged (the topbar right cluster) — at 375 this page currently reports a **73px** document
   overflow in total, and the two causes should be separated by measurement, not guessed at.
 
-### 🔴 `received_at` is stamped in app code only — nothing in the database enforces it
+### ✅ CLOSED (DB side) — 🔴 `received_at` is stamped in app code only — nothing in the database enforces it
+
+- **Closed by** migration 66 (`20261025222218_order_lifecycle_columns`, pre-launch security batch PR-3 E1,
+  2026-10-25): `trg_enforce_order_lifecycle_columns` stamps `now()` on the transition into `received` (and on
+  an INSERT at `received`) and discards any client value. The two browser writes are removed by H8 PR-2
+  (#191). **Still owed:** E2, `revoke update (received_at) on orders from authenticated`, once #191 has
+  merged. No backfill (decision 14): `33b822ec` stays NULL.
 
 - **What:** `orders.received_at` is written at exactly **two client call sites** —
   `src/components/ReceiptConfirmButton.tsx:33` and
@@ -2794,7 +2800,10 @@ coupling" claim on that specific function is stale, not a remaining blocker.
 
 ## PR-C — Mes annonces list rebuild (`feat/annonces-list-ds`, 2026-08-22)
 
-### `job_post_skills` is publicly readable — a direct query (not through `job_posts`) would leak skills off posts the caller can't read
+### ✅ CLOSED — `job_post_skills` is publicly readable — a direct query (not through `job_posts`) would leak skills off posts the caller can't read
+
+- **Closed by** migration 65 (`20261025213214_prelaunch_shop_read_rls`, pre-launch security batch PR-1,
+  2026-10-25): "Post skills readable with their post" delegates to `job_posts`' SELECT policies.
 
 - **What:** `job_post_skills` RLS is `for select using (true)` — fully public, with no status or
   ownership check of its own. `getMyAnnonces`/`getAnnonceDetail` are safe because the embed hangs
@@ -3730,7 +3739,12 @@ coupling" claim on that specific function is stale, not a remaining blocker.
 
 ## H6 PR-1 — `service_listings` hardening (`feat/h6-data-foundation`, 2026-10-23)
 
-### `products` / `shops` / `product_images` are still SELECT `using (true)` — their own security PR
+### ✅ CLOSED — `products` / `shops` / `product_images` are still SELECT `using (true)` — their own security PR
+
+- **Closed by** migration 65 (`20261025213214_prelaunch_shop_read_rls`, pre-launch security batch PR-1,
+  2026-10-25), with the embed audit this entry asked for (`docs/design/prelaunch-security-batch-discovery.md`
+  §2) and the buyer-of-order branch on both `products` and `shops`. Live-tested by
+  `prelaunch-shop-read-rls.test.ts`.
 
 - **What:** "Products viewable by everyone", "Shops viewable by everyone" and "Product images
   viewable by everyone" are all `using (true)` (confirmed live, 2026-10-23) — exactly the shape
@@ -3882,7 +3896,13 @@ orders INSERT gap (migration 54). Ranked most severe first; each is its own PR u
   layer: migration 53's hole would have handed over the whole admin UI with no second check.
 - **Fix:** server `requireAdmin()` in a server `admin/layout.tsx` and at the top of every admin action.
 
-### MEDIUM — orders UPDATE: lifecycle columns stay writable after the fact
+### ✅ CLOSED (except E2) — MEDIUM — orders UPDATE: lifecycle columns stay writable after the fact
+
+- **Closed by** migration 66 (`20261025222218_order_lifecycle_columns`, 2026-10-25): with a JWT,
+  `received_at` can no longer be backdated (discarded outside the receipt transition) and
+  `cancelled_by` / `cancellation_reason` change only inside the transition into `cancelled` (else 42501).
+  Live-tested by `orders-lifecycle-columns.test.ts`. **Still open:** E2 (the `received_at` column grant
+  revoke, after H8 #191) and moving the buyer-side client `.update()`s to server actions.
 
 - **What:** `authenticated` holds UPDATE on `cancelled_by`, `cancellation_reason`, `received_at`;
   `check_order_status_transition` lets status-free edits "sail through" and
@@ -3932,7 +3952,11 @@ orders INSERT gap (migration 54). Ranked most severe first; each is its own PR u
   blocks it at render today; any non-React consumer (email, OG tags) would not.
 - **Fix:** `.refine((u) => /^https?:\/\//i.test(u))` plus a DB CHECK on the columns.
 
-### MEDIUM — `using (true)` SELECT family (extends the H6 PR-1 entry above)
+### ✅ CLOSED — MEDIUM — `using (true)` SELECT family (extends the H6 PR-1 entry above)
+
+- **Closed by** migration 65 (`20261025213214_prelaunch_shop_read_rls`, 2026-10-25): `shop_payment_methods`,
+  `shop_categories` and `job_post_skills` now delegate to their parent's SELECT policy. `categories` is the only
+  `using (true)` SELECT left in `public`, and is meant to be.
 
 - **What:** besides `products` / `shops` / `product_images` (entry above), `shop_payment_methods`,
   `shop_categories` and `job_post_skills` are also `using (true)` (confirmed live 2026-10-23).
@@ -4205,7 +4229,15 @@ advisors. Migration 59 itself closed the `job_responses` HIGH above.
 - **Fix (design choice):** refuse the DELETE while `admin_hidden_at` is set (policy or trigger), or
   move moderation to the account (`profiles`) so a re-created row inherits it.
 
-### MEDIUM — admin-moderated job posts stay readable and accept responses
+### MEDIUM — admin-moderated job posts stay readable and accept responses (READ half ✅ closed)
+
+- **Read half closed by** migration 65 (`20261025213214_prelaunch_shop_read_rls`, 2026-10-25): the public
+  branch of "Open posts or own posts readable" now requires `admin_hidden_at is null`. **Still open:** a
+  moderated post still ACCEPTS responses (`check_job_response_limits()` does not read `admin_hidden_at`), so
+  the BEFORE INSERT guard below is still owed. **Priority raised (PR #192 review):** each such response also
+  unlocks the poster's phone, because `get_contact_phone`'s job_responses branches check neither the post's
+  status nor `admin_hidden_at`. A freelancer who kept a moderated post's id can still respond and read the
+  phone. Fix both together: the response guard, and the same post-state condition in `get_contact_phone`.
 
 - **What:** `admin_hide_content('job_post', …)` only stamps `job_posts.admin_hidden_at`. The SELECT
   policy "Open posts or own posts readable" is `status = 'open' OR consumer_id = auth.uid()`, and
@@ -4744,6 +4776,32 @@ Rulings D23–D35 in `docs/design/h6-pr4-deltas.md`; DB gate = migration `202610
   everywhere. Only an emoji-heavy value can show a counter above its code-point length.
 
 
+## Africa/Tunis — remaining date sites (`fix/ui-polish-1`, 2026-10-26)
+
+`lib/datetime.ts` (`formatTunisDate` / `formatTunisDateTime` / `tunisDayKey`) now formats every ORDER and ANNONCE date in
+`Africa/Tunis`; `order-status.ts`'s `shortDate` / `longDate` / `shortDateTime` delegate to it (E3, G8 detail, G9, H8 fixed
+with no call-site change), and `AnnonceDetail`, `OrderLifecycleStepper` and admin `litiges` use it directly. Before, a
+Server Component on Vercel (UTC) printed the previous day for anything stamped between 00:00 and 01:00 Tunis. What is NOT
+covered yet — same bug class, none of them an order or annonce date:
+
+- **Admin `signalements` list + detail and `utilisateurs` list + detail** — four copies of
+  `new Date(v).toLocaleDateString('fr-TN' | 'ar-TN', { day: '2-digit', month: 'short', year: 'numeric' })`
+  (`app/admin/signalements/page.tsx`, `…/[id]/page.tsx`, `app/admin/utilisateurs/page.tsx`, `…/[id]/page.tsx`).
+  Replace each local `formatDate` with `formatTunisDate(value, lang, 'medium')`. Worst case today: a report or sign-up in
+  the first hour after Tunis midnight shows the previous day.
+- **`ShopDetail` and `FreelancerDetail` « member since »** — month + year only
+  (`app/boutique/[id]/_components/ShopDetail.tsx`, `app/freelance/[id]/_components/FreelancerDetail.tsx`). Use
+  `formatTunisDate(iso, lang, 'month-year')`. Only wrong at a month boundary (a profile created in the first hour of
+  the 1st shows the previous month).
+- **Annonce `deadline` validation uses the server's « today »** — `lib/marche/job-post-validation.ts` builds `today` from
+  `now.getFullYear/Month/Date()` (UTC on Vercel) and `AnnonceForm.tsx` does the same from the browser clock. Between
+  00:00 and 01:00 Tunis the server still thinks it is yesterday, so a deadline of « today » passes (lenient) and the
+  server and the browser can disagree on a boundary date. Validation, not display — compare against `tunisDayKey(now)`
+  and test it across the midnight boundary like `datetime.test.ts`.
+
+Also noted while here (not date-related): `fetchServices` in `lib/search/search-marketplace.ts` logs a query error and
+returns `[]`, i.e. a silent empty list — the rule is to surface the error.
+
 ## H8 PR-1 — « Mes engagements » list (`feat/h8-mes-engagements`, 2026-10-25)
 
 ### H4 « Engagements actifs » and H8 « En cours » count different things (ruling D9)
@@ -4788,3 +4846,166 @@ Rulings D23–D35 in `docs/design/h6-pr4-deltas.md`; DB gate = migration `202610
 - The budget's unit (« / heure », « / mois ») is `service_listings.price_unit` as of NOW — `orders` snapshots only
   the price. A listing edited in H7 after the order can show a different unit than the one ordered. A `price_unit`
   column on `orders` (set by `set_order_snapshot`) would freeze it; optional DB gap.
+
+## H8 PR-2 — engagement detail (`feat/h8-engagement-detail`, 2026-10-25)
+
+### G9 still carries its own copy of the « Historique » timeline
+
+- H8's detail uses the new shared `components/orders/OrderTimeline` (it counts displayable events AFTER the skips, so
+  a heading never sits over a bare line). `commandes-recues/[id]/page.tsx` still has its inline copy and its own
+  `eventLabel`; moving it onto the component (`createdLabel` = « Commande créée ») is mechanical but touches a shipped
+  page that cannot be gated here without a shop-owner session — its own PR.
+
+### Order dates are formatted in the server's timezone
+
+- `shortDate` / `longDate` / `shortDateTime` (`lib/orders/order-status.ts`) call `toLocaleDateString` with no
+  `timeZone`, so on Vercel (UTC) an order placed at 00:30 Tunis time shows the previous day and the « 09h12 » timeline
+  stamps are an hour off (Tunisia is UTC+1, no DST). Affects E3, G8, G9 and H8. Fix: pass `timeZone: 'Africa/Tunis'`.
+
+### `received_at` — the app side is done, the database side is not (DB-batch ruling #12)
+
+- The two client writers are gone (`ReceiptConfirmButton`, E3's `OrdersList`). At the time of the PR **no trigger on
+  `orders` stamps the column**, so new receipts would carry `received_at = NULL` until the DB role's migration lands.
+  The H8 detail page dates a finished order from its receipt event as a fallback; the admin statistics export and the
+  admin dispute view read the column directly and would show nothing. **Merge after the migration.**
+
+### Page `<title>`s are static French strings
+
+- `metadata.title` on the H-series pages (including this one) is a literal, so an Arabic visitor gets a French tab
+  title. A `generateMetadata` reading `getLang()` fixes every page at once — its own cross-cutting PR.
+
+## Pre-launch security batch PR-1 — shop-side read RLS (`fix/prelaunch-shop-read-rls`, 2026-10-25)
+
+Found during migration 65's discovery (`docs/design/prelaunch-security-batch-discovery.md` §2 / §10). PR-2
+(function EXECUTE, request-table INSERT columns, default-grant sweep) and PR-3 (`orders.received_at` +
+cancel-metadata lock) are the same batch, not follow-ups.
+
+### MEDIUM — the freelancer side has the gap migration 65 closed on the shop side (inferred, not live-tested)
+
+- **What:** `service_listings`' public branch (migration 52) is `status = 'active' and admin_hidden_at is null`
+  with no `freelancer_profiles.admin_hidden_at` cascade, and "Freelancer profiles viewable by everyone" is
+  `is_published = true OR owner OR admin`, where `is_published` is derived from active listings only. So
+  `admin_hide_content('freelancer_profile')` — which stamps `admin_hidden_at` alone — appears to leave the
+  profile, its seven child tables and its listings REST-readable while the app hides them in code. Inferred
+  from the policy text and the RPC body; not exercised live.
+- **Fix:** the products/shops shape from migration 65 — add the parent cascade to the `service_listings`
+  public branch and `admin_hidden_at is null` to the `freelancer_profiles` public branch (the children already
+  delegate through it). Live-test first: prove the read with a moderated fixture profile.
+
+### LOW — moderated product images stay fetchable by URL (public buckets)
+
+- `product-images`, `shop-assets`, `avatars` and `portfolio-media` are `public = true`. Migration 65 stops the
+  REST API from handing out a moderated product's image URLs, but a URL already known keeps serving. Fix only
+  if moderation must also take the file down: private bucket + signed URLs, or delete/move the object on hide.
+
+### LOW — `shop_payment_methods.note` is readable by everyone who can read the shop (decision 6: leave)
+
+- No app path selects `note` (only `method`), and 0 rows carry one. If it ever holds payment instructions
+  meant for buyers only (a RIB, a D17 number), RLS cannot help — rows, not columns — so the fix is a
+  column-level SELECT grant. Product call before anyone writes to it.
+
+### LOW — the `shops` buyer branch is keyed on the seller, and one-shop-per-owner is app-only
+
+- The branch matches `orders.seller_id = shops.owner_id`, never joining through `products` (that would
+  recurse). The app keeps an owner to one shop (`resolveOwnedShopId`), but **nothing in the DB does**: the only
+  unique index on `shops` is `lower(name)`, and `enforce_seller_capability` checks `seller_type` only. So an
+  owner can INSERT a second shop through REST today, and anyone who bought from their live shop can then read
+  that second shop — moderated or not — with its payment methods and categories (not its products, whose
+  public branch needs an un-moderated shop and whose buyer branch needs an order on the product).
+- **Fix (product call first):** if one shop per owner is a business rule, enforce it in the DB
+  (`create unique index on public.shops (owner_id)`; 0 duplicates today), per CLAUDE.md's "every business
+  rule enforced in the DB". If multi-shop is ever wanted instead, rework this branch.
+
+### LOW — the shop-name pre-checks can no longer see moderated shops' names
+
+- `ma-boutique/creer/actions.ts` and `ma-boutique/modifier/actions.ts` pre-check
+  `.from('shops').select('id').ilike('name', …)` as the user. Since migration 65 a moderated shop is invisible
+  to them, so a name it holds passes the pre-check and is caught by `shops_name_lower_key` at insert/update
+  instead: the user still gets `name_taken` (the 23505 handler), but in the create flow `seller_type` has
+  already been flipped to `shop_owner` with no shop — the same not-rolled-back state the file already
+  accepts for concurrent submits. Rare (moderated names only). Fix if it matters: check uniqueness through
+  a definer RPC, or roll `seller_type` back on 23505.
+
+## Pre-launch security batch PR-3 E1 — orders lifecycle columns (`fix/prelaunch-order-lifecycle`, 2026-10-25)
+
+### LOW — an admin who is a PARTY to an order can still rewrite its lifecycle columns
+
+- **Found by** the post-apply review of migration 66. `check_order_status_transition` opens with
+  `IF is_admin() THEN RETURN NEW`, so an admin who is the buyer or seller of an order can leave a terminal
+  state (`cancelled → pending → cancelled`, `received → arrived → received`). Each re-entry is a fresh
+  transition to `enforce_order_lifecycle_columns`, so cancel metadata can be rewritten and `received_at`
+  restamped forward (never backdated: it is always `now()`). On INSERT, admins skip migration 54's tier 2 and
+  `authenticated` holds INSERT on every column, so an admin buying as themselves can insert at `cancelled`
+  with any `cancelled_by` / reason and a chosen `cancelled_at`.
+- **Bounded:** only an admin's OWN orders (orders has no admin UPDATE policy for anyone else's), and admins are
+  trusted. **Fix if wanted:** in `enforce_order_lifecycle_columns`, refuse any JWT change once
+  `old.status in ('received', 'cancelled')`, and on a JWT INSERT force the cancel columns NULL unless the
+  status is `cancelled` — a new forward migration.
+
+### ⚠ The `prelaunch-shop-read-rls` teardown has the cascade gap fixed here in `orders-lifecycle-columns`
+
+- Deleting a fixture SELLER cascades `orders.seller_id` (ON DELETE CASCADE), and RI cascades run breadth-first,
+  so a real customer's order on a live fixture product would be deleted silently — the "fails loudly" comment
+  in PR #192's suite is wrong. This suite now refuses to tear down while a non-fixture order references a
+  fixture seller. **PR #192 needs the same guard before its suite is run again** (pending the architect's call
+  on a third commit there).
+- ✅ **Resolved by `fix/rls-suite-teardown-guard` (2026-10-26)** — see the section below.
+
+## Live-suite teardown guard (`fix/rls-suite-teardown-guard`, 2026-10-26)
+
+The guard now lives in `src/__tests__/live-teardown-guard.ts` and runs in all 14 live suites that seed a
+fixture seller with an orderable item: `prelaunch-shop-read-rls`, `buyer-cancellation-history`,
+`order-delivery-fee-snapshot`, `orders-insert-integrity`, `suspension-enforcement`,
+`uploaded-objects-provenance-rls`, both `d4-*`, `freelancer-publish-gate-rls`, `h3-links-portfolio-rls`, the
+three `h5-service-*`, and `h6-service-listings-hardening-rls`. `orders-lifecycle-columns` keeps its original
+inline copy from PR #193. Any NEW live suite that seeds a seller must call it before its first orders delete.
+The other 11 live suites seed no product or service listing, so a real customer cannot order from their
+fixtures. `scripts/rls-smoke.mjs` (not a suite, never run) seeds an active product and listing and reaps every
+`@rls-smoke.servyou.invalid` user with no guard — other suites' live fixtures included.
+
+### LOW — the guard checks once, then deletes: a real order placed in between still cascades
+
+- The window runs from the SELECT to the last `deleteUser`: up to ~20 sequential round trips after the
+  check (`suspension-enforcement`: orders, audit log, an avatar sweep per user, 9 `deleteUser`), so seconds,
+  not milliseconds. **Narrow it if wanted:** hide every fixture product / listing (service role,
+  `status = 'hidden'`) first, so migration 54 refuses new orders, then run the guard, then delete. Admins are
+  not covered — migration 54 returns before its live check for `is_admin()` — which is why the guard must
+  still run after the hide. #193 has the same window.
+
+### LOW — favourites, job responses and fixture categories still go with the fixtures
+
+- A real user's favourite of a live fixture item, or a real freelancer's `job_responses` row on an open fixture
+  job post, is deleted with the fixtures (`favorites.product_id` / `service_listing_id` and
+  `job_responses.job_post_id` are ON DELETE CASCADE). Suites with an open fixture post: `prelaunch-shop-read-rls`,
+  `suspension-enforcement`, `profiles-rls`, `job-limits`, `progressive-phone.integration`,
+  `job-responses-integrity`. Three of them (`profiles-rls:88`, `job-limits:86`, `progressive-phone:82`) do not
+  even wait for the cascade: they run `job_responses.delete().in('job_post_id', testPostIds)` directly. Lower
+  stakes than an order (no money, no address), but it is still a real user's row. **Fix:** the same
+  refuse-then-resolve guard, keyed on `favorites.user_id` / `job_responses.freelancer_id` outside the fixture
+  set, placed before those direct deletes.
+- `h6-service-listings-hardening-rls` seeds real `categories` rows (`h6-hard-sector-*` / `h6-hard-sub-*`) for
+  the whole run and deletes them last. If a real seller picks one meanwhile (not checked whether the pickers
+  list them), the delete clears their product / listing category (`category_id` / `subcategory_id` are ON
+  DELETE SET NULL) or deletes their `shop_categories` row (ON DELETE CASCADE). Never an order.
+
+### LOW — nine live suites run on every default `vitest run`, against production
+
+- `INTEGRATION_GLOBS` (vitest.config.ts) leaves out both `d4-*`, `freelancer-publish-gate-rls`,
+  `h3-links-portfolio-rls`, the three `h5-service-*`, `h6-service-listings-hardening-rls` and
+  `freelancer-details-wizard`. So DoD item 4 (`vitest run`) creates and deletes users on production whenever
+  `.env.local` holds the service key, and CI's "pure unit gate" claim holds only because CI has no
+  credentials. `--config vitest.integration.config.ts <file>` silently runs nothing for them. **Fix:** add
+  the nine to `INTEGRATION_GLOBS`.
+
+### LOW — three teardowns ignore their delete errors
+
+- `d4-completed-project-count`, `h5-service-delete-orders-gate` and `h5-service-monthly-stats` discard the
+  `error` of their orders deletes and of `deleteUser`, and `afterAll` never counts what is left. A failed
+  cleanup passes silently and leaves fixtures on production. **Fix:** throw on each error and verify with a
+  read-only count, as the newer suites do.
+
+### Still red — `buyer-cancellation-history` / `order-delivery-fee-snapshot` (`shops_name_lower_key`)
+
+- Seen again on this branch's run, 2026-10-26: same 23505, same cause, already logged twice above. The guarded
+  teardown still runs in `afterAll`, and cleanup was verified at 0. Their tests have proven nothing since
+  2026-08-11.

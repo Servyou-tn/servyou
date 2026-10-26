@@ -2,6 +2,7 @@
 
 import { useLang } from '@/components/LangProvider'
 import { t } from '@/lib/i18n'
+import { formatTunisDate } from '@/lib/datetime'
 import {
   type OrderStatus,
   type OrderType,
@@ -87,7 +88,7 @@ export function OrderLifecycleStepper({
       {status === 'received' && received_at && (
         <p className="text-xs text-green-700">
           <span className="font-medium">{t('common.received_on_label', lang)}</span>{' '}
-          {new Date(received_at).toLocaleDateString('fr-TN', { day: '2-digit', month: 'short', year: 'numeric' })}
+          {formatTunisDate(received_at, lang, 'medium')}
         </p>
       )}
     </div>

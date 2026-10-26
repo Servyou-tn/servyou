@@ -12,10 +12,11 @@ type Props = { orderId: string }
 // seller dashboards deliberately leave open. Mirrors the seller advance
 // buttons in ma-boutique/commandes: a direct client-side write, gated
 // authoritatively by the check_order_status_transition DB trigger
-// (buyer-only, only from 'arrived'). received_at is stamped here in app code
-// because the trigger does not set it (decision: client clock is acceptable
-// at MVP; a server-clock DB default is a future migration if disputes ever
-// need that precision).
+// (buyer-only, only from 'arrived').
+//
+// This writes ONLY the status. `received_at` is no longer sent from the browser (H8 PR-2, DB-batch ruling #12):
+// a client clock is forgeable and the column was seller-writable too, so the database stamps it on the
+// status transition. Do not add it back to the payload.
 export function ReceiptConfirmButton({ orderId }: Props) {
   const supabase = createClient()
   const router = useRouter()
@@ -30,7 +31,7 @@ export function ReceiptConfirmButton({ orderId }: Props) {
     setError(null)
     const { error } = await supabase
       .from('orders')
-      .update({ status: 'received', received_at: new Date().toISOString() })
+      .update({ status: 'received' })
       .eq('id', orderId)
     if (error) {
       console.error('[ReceiptConfirmButton] confirmReceipt error:', error)

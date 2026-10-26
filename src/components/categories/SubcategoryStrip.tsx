@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { t } from '@/lib/i18n'
 import type { Lang } from '@/lib/i18n'
 import { CARD_SHADOW, HOVER_SHADOW, FOCUS_RING } from '@/components/layout/styles'
+import { getInitials } from '@/components/ui/initials'
 import type { Subcategory } from '@/lib/categories/category-data'
 
 // A horizontal, scrollable strip of child-category cards rendered above the results grid.
@@ -30,7 +31,7 @@ export function SubcategoryStrip({ items, lang }: { items: Subcategory[]; lang: 
                 aria-hidden="true"
               >
                 <span className="text-2xl font-bold text-brand-blue-600">
-                  {(name.trim()[0] ?? '?').toUpperCase()}
+                  {getInitials(name).slice(0, 1)}
                 </span>
               </div>
               <span className="line-clamp-1 text-sm font-medium text-text-primary">{name}</span>

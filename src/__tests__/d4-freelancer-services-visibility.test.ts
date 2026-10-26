@@ -33,6 +33,7 @@
 
 import { describe, it, expect, beforeAll, afterAll } from 'vitest'
 import { createClient, SupabaseClient } from '@supabase/supabase-js'
+import { refuseTeardownOnForeignOrders } from './live-teardown-guard'
 
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -77,6 +78,7 @@ async function teardown(): Promise<void> {
   if (error) throw new Error(`teardown lookup failed: ${error.message}`)
   const ids = (data ?? []).map((row) => row.id)
   if (ids.length === 0) return
+  await refuseTeardownOnForeignOrders(admin, ids, EMAIL_PREFIX)
 
   // admin_audit_log.admin_id is ON DELETE RESTRICT (admin actions stay attributable forever, by
   // design) — deleteUser on the admin test fixture fails otherwise. No prior test file in this

@@ -411,9 +411,9 @@ type AnnonceRow = {
   created_at: string
   categories: { name_fr: string } | { name_fr: string }[] | null
   job_responses: { count: number }[] | null
-  // Public-read (`for select using (true)`) — no admin_hidden_at/status of its own, so nothing to
-  // moderation-scope on this table itself. Scoping comes from the parent job_posts query below
-  // (.eq('consumer_id', userId).neq('status', 'deleted')); the join direction is what protects it,
+  // Readable exactly when its post is (its SELECT policy delegates to job_posts', migration
+  // 20261025213214) — no admin_hidden_at/status of its own. Scoping comes from the parent job_posts
+  // query below (.eq('consumer_id', userId).neq('status', 'deleted')); the join direction is what protects it,
   // same as annonce-detail.ts's identical embed.
   job_post_skills: { skill: string }[] | null
   admin_hidden_at: string | null
