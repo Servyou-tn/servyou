@@ -7,6 +7,10 @@ import type { HeaderState, SellerType } from './select-variant'
 
 export type NavLink = { href: string; key: string }
 
+/** The signed-in viewer as the marketing Header needs them: shown in place of « Se connecter /
+ *  S'inscrire ». `spaceHref` is their own space (role dashboard, or /admin) — see accountSpaceHref. */
+export type HeaderAccount = { fullName: string | null; avatarUrl: string | null; spaceHref: string }
+
 /** Center-pill links for the resolved variant. Routes are the real ones that exist. */
 export function navLinks(state: HeaderState): NavLink[] {
   if (state.variant === 'public') {

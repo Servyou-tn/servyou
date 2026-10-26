@@ -1,7 +1,8 @@
 import { getLang } from '@/lib/i18n/server'
 import type { Lang } from '@/lib/i18n'
 import { createClient } from '@/lib/supabase/server'
-import { resolveRole } from '@/lib/roles'
+import { resolveRole, accountSpaceHref, type Role } from '@/lib/roles'
+import type { HeaderAccount } from '@/lib/layout/nav-config'
 import { Header } from '@/components/layout/Header'
 import { Hero } from '@/components/landing/Hero'
 import { Categories } from '@/components/landing/Categories'
@@ -17,8 +18,8 @@ import { ConsumerHomepage } from '@/components/home/ConsumerHomepage'
 //   • logged-out → marketing landing (unchanged)
 //   • logged-in consumer (seller_type = null, not admin) → thin landing pointing into the
 //     marketplace (no longer a browse surface — see ConsumerHomepage.tsx)
-//   • logged-in shop owner / freelancer / admin → marketing landing (their role
-//     dashboards have their own entry points; there is no / redirect to preserve today)
+//   • logged-in shop owner / freelancer / admin → marketing landing, whose header shows THEM
+//     (avatar + name + a link to their space) instead of « Se connecter / S'inscrire »
 export default async function HomePage() {
   const lang = await getLang()
 
@@ -27,15 +28,18 @@ export default async function HomePage() {
     data: { user },
   } = await supabase.auth.getUser()
 
+  let role: Role = null
+  let account: HeaderAccount | undefined
+
   if (user) {
     const { data: profile, error } = await supabase
       .from('profiles')
-      .select('full_name, seller_type, is_admin')
+      .select('full_name, seller_type, is_admin, avatar_url')
       .eq('id', user.id)
       .maybeSingle()
     if (error) console.error('[home] profile fetch error:', error)
 
-    const role = resolveRole(profile)
+    role = resolveRole(profile)
     const isAdmin = Boolean(profile?.is_admin)
 
     if (role === null && !isAdmin) {
@@ -51,18 +55,24 @@ export default async function HomePage() {
         />
       )
     }
+
+    account = {
+      fullName: profile?.full_name ?? null,
+      avatarUrl: profile?.avatar_url ?? null,
+      spaceHref: accountSpaceHref(role, isAdmin),
+    }
   }
 
-  return <LandingView lang={lang} />
+  return <LandingView lang={lang} role={role} account={account} />
 }
 
-// The public marketing landing page (unchanged) — shown to logged-out visitors and, for
-// now, to logged-in sellers/admins. The marketing Header lives here (it only ever renders
-// on this landing branch of `/`).
-function LandingView({ lang }: { lang: Lang }) {
+// The public marketing landing page — shown to logged-out visitors and to logged-in sellers/admins.
+// The marketing Header lives here (it only ever renders on this landing branch of `/`); with an
+// `account` it shows the viewer instead of the auth CTAs.
+function LandingView({ lang, role, account }: { lang: Lang; role: Role; account?: HeaderAccount }) {
   return (
     <>
-      <Header sellerType={null} fullName={null} />
+      <Header sellerType={role} fullName={account?.fullName ?? null} account={account} />
       <main>
       {/* Pure white at the very top so the floating navbar capsule sits on white
           (the Header lives in the root layout above <main>; the blue band there was

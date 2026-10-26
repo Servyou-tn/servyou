@@ -51,6 +51,9 @@ const frPlurals: Record<string, PluralVariants> = {
   'page_header.recherche.emphasis':        { one: '{count} résultat', other: '{count} résultats' },
   'page_header.categories.subtitle':       { one: '{count} produit dans {category}',   other: '{count} produits dans {category}' },
   'page_header.categories.emphasis':       { one: '{count} produit', other: '{count} produits' },
+  // Same header over SERVICE results (/categories/<slug>?type=service) — the noun follows the type.
+  'page_header.categories.subtitle_service': { one: '{count} service dans {category}',   other: '{count} services dans {category}' },
+  'page_header.categories.emphasis_service': { one: '{count} service', other: '{count} services' },
   'boutique.public.products_count':        { one: '{count} produit', other: '{count} produits' },
   'freelance.public.services_count':       { one: '{count} service', other: '{count} services' },
   'freelance.public.portfolio_count':      { one: '{count} réalisation', other: '{count} réalisations' },
@@ -103,7 +106,15 @@ const arPlurals: Record<string, PluralVariants> = {
     other: '{count} منتجات في {category}',
   },
   'page_header.categories.emphasis':       { one: '{count} منتج', two: '{count} منتجان', other: '{count} منتجات' },
-  'boutique.public.products_count':        { one: '{count} منتج', two: '{count} منتجان', other: '{count} منتجات' },
+  // REVIEW_AR_TRANSLATION — service-result header: same shape as the product pair above, and the
+  // خدمة/خدمتان/خدمات forms match freelance.public.services_count.
+  'page_header.categories.subtitle_service': {
+    one:   '{count} خدمة في {category}',
+    two:   '{count} خدمتان في {category}',
+    other: '{count} خدمات في {category}',
+  },
+  'page_header.categories.emphasis_service': { one: '{count} خدمة', two: '{count} خدمتان', other: '{count} خدمات' },
+  'boutique.public.products_count':       { one: '{count} منتج', two: '{count} منتجان', other: '{count} منتجات' },
   'freelance.public.services_count':       { one: '{count} خدمة', two: '{count} خدمتان', other: '{count} خدمات' },
   'freelance.public.portfolio_count':      { one: '{count} إنجاز', two: '{count} إنجازان', other: '{count} إنجازات' },
 

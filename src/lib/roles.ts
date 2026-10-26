@@ -80,3 +80,28 @@ export function roleWorkspacePath(role: Role): string {
       return assertNever(role)
   }
 }
+
+// Role → the dashboard a signed-in user lands on after sign-in (and the "my space" link in the
+// landing header). Distinct from roleWorkspacePath above, which is the post-email-verify fallback
+// and deliberately left alone. Consumers have no dashboard route, so they stay on the marketplace
+// entry; admins are handled by the callers (they keep `/` after sign-in, `/admin` as their space).
+// Exhaustive over Role.
+export function roleDashboardPath(role: Role): string {
+  switch (role) {
+    case 'shop_owner':
+      return '/tableau-de-bord-vendeur' // G4
+    case 'freelancer':
+      return '/tableau-de-bord' // H4
+    case null:
+      return '/'
+    default:
+      return assertNever(role)
+  }
+}
+
+// Where the signed-in header's "Tableau de bord" link points. `is_admin` wins (same precedence as
+// roleI18nKey): an admin who is also a seller gets the admin area.
+export function accountSpaceHref(role: Role, isAdmin: boolean): string {
+  if (isAdmin) return '/admin'
+  return role === null ? '/marche/produits' : roleDashboardPath(role)
+}
