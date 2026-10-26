@@ -4874,6 +4874,21 @@ returns `[]`, i.e. a silent empty list — the rule is to surface the error.
 - `metadata.title` on the H-series pages (including this one) is a literal, so an Arabic visitor gets a French tab
   title. A `generateMetadata` reading `getLang()` fixes every page at once — its own cross-cutting PR.
 
+## Missions M-C — proposal fields, typed response errors (`feat/missions-m-c`, 2026-10-26)
+
+### LOW — three legacy responses are below the 20-character floor
+
+- The 3 pre-M-C `job_responses` rows (3–12 characters) were kept (the CHECK is NOT VALID), so any later
+  write of one fails 23514 even from the service role. **Fix if one ever needs editing:** lengthen its
+  message in the same UPDATE, or delete it (they are test-era rows).
+
+### LOW — the 8-skill limit is checked before RLS on `job_response_skills`
+
+- `enforce_job_response_skills_limit` (BEFORE INSERT, SECURITY DEFINER) runs before the RLS WITH CHECK, so a
+  non-responder who knows a response id sees `too_many_skills` instead of the RLS refusal once that response
+  has 8 skills — learning only that count. Response ids are visible only to the responder and the post owner.
+  **Fix if wanted:** check `freelancer_id = auth.uid()` first inside the trigger.
+
 ## Missions M-A — `job_posts.response_count` + write lock (`feat/missions-m-a`, 2026-10-26)
 
 ### LOW — consumers can still set `job_posts.status`, and edit the content, freely through REST
@@ -4910,7 +4925,11 @@ returns `[]`, i.e. a silent empty list — the rule is to surface the error.
   now 42501, and Vercel previews hit the production database. `main` is unaffected; anything revived from those
   branches must drop `updated_at` from the payload.
 
-### LOW — concurrent responses can overshoot the 10-per-post cap (for M-C)
+### ✅ RESOLVED (M-C, migration 69 `20261026195409`, 2026-10-26) — concurrent responses can overshoot the 10-per-post cap (for M-C)
+
+- Fixed: `check_job_response_limits` locks the post FOR UPDATE and reads `response_count`; the 5-active
+  cap takes a per-freelancer advisory lock. Both races are proven by bursts in
+  `job-responses-proposal-fields.test.ts`. Original entry:
 
 - `check_job_response_limits` counts rows in a BEFORE trigger without locking the post, so two responses
   arriving together can both see 9. `response_count` is now the natural lock point: in M-C (which owns that

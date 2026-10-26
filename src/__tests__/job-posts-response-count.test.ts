@@ -129,7 +129,7 @@ async function expectCount(postId: string, expected: number): Promise<void> {
 }
 
 function respond(client: Client, postId: string, freelancerId: string) {
-  return client.from('job_responses').insert({ job_post_id: postId, freelancer_id: freelancerId, proposal_message: 'Proposition de test' })
+  return client.from('job_responses').insert({ job_post_id: postId, freelancer_id: freelancerId, proposal_message: 'Proposition de test pour le compteur' })
 }
 
 function expectDenied(error: { code?: string; message?: string } | null) {
