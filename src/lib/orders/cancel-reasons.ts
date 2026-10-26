@@ -14,6 +14,16 @@ export const SHOP_CANCEL_REASONS = [
   CANCEL_REASON_OTHER,
 ] as const
 
+/** E3 Produits — a buyer cancelling their own product order. Keys already shipped with the legacy buyer modal. */
+export const BUYER_CANCEL_REASONS = [
+  'common.cancel_reason_buyer_changed_mind',
+  'common.cancel_reason_buyer_too_slow',
+  'common.cancel_reason_buyer_unavailable',
+  'common.cancel_reason_buyer_found_cheaper',
+  'common.cancel_reason_buyer_order_error',
+  CANCEL_REASON_OTHER,
+] as const
+
 /** H8 — a freelancer cancelling a service engagement (nothing ships, so no stock / address / listing-photo reasons). */
 export const SERVICE_CANCEL_REASONS = [
   'common.cancel_reason_freelancer_unavailable',

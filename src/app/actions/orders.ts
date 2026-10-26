@@ -261,6 +261,8 @@ export async function cancelOrderAction(input: unknown): Promise<ActionResult> {
     return { ok: false, error: updateError.message || t('common.error_generic', lang) }
   }
 
-  revalidatePath(parsed.data.revalidate ?? '/commandes-recues')
+  // The buyer's own list is a fixed route derived from the caller's role (never from the client); the seller
+  // side keeps the allow-listed `revalidate` it always had.
+  revalidatePath(role === 'buyer' ? '/mes-commandes' : (parsed.data.revalidate ?? '/commandes-recues'))
   return { ok: true }
 }

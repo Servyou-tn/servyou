@@ -289,3 +289,25 @@ describe('statusPillFor', () => {
     expect(statusPillFor('not_a_status', 'product')).toBeUndefined()
   })
 })
+
+// The buyer's list is a fixed route derived from the caller's role — never from client input.
+describe('cancelOrderAction — which page is revalidated', () => {
+  it('a buyer cancel revalidates /mes-commandes, ignoring any client-supplied path', async () => {
+    const { revalidatePath } = await import('next/cache')
+    vi.mocked(revalidatePath).mockClear()
+    state.user = { id: BUYER }
+    const { cancelOrderAction } = await import('@/app/actions/orders')
+    await cancelOrderAction({ orderId: ID, revalidate: '/commandes-recues' })
+    expect(revalidatePath).toHaveBeenCalledWith('/mes-commandes')
+    expect(revalidatePath).not.toHaveBeenCalledWith('/commandes-recues')
+  })
+
+  it('a seller cancel keeps revalidating the seller page it asked for', async () => {
+    const { revalidatePath } = await import('next/cache')
+    vi.mocked(revalidatePath).mockClear()
+    state.user = { id: SELLER }
+    const { cancelOrderAction } = await import('@/app/actions/orders')
+    await cancelOrderAction({ orderId: ID, revalidate: '/mes-engagements' })
+    expect(revalidatePath).toHaveBeenCalledWith('/mes-engagements')
+  })
+})

@@ -1,6 +1,12 @@
 import { createClient } from '@/lib/supabase/server'
 import { paginate, stripAccents } from '@/lib/search/search-params'
-import { ORDERS_PER_PAGE, type MyOrdersQuery, type OrderSort } from './my-orders-params'
+import {
+  DEFAULT_ORDERS_TAB,
+  ORDERS_PER_PAGE,
+  type MyOrdersQuery,
+  type OrdersTab,
+  type OrderSort,
+} from './my-orders-params'
 
 // E3 — the buyer's SERVICE orders for /mes-commandes (Figma 709:59662 / 710:59945).
 //
@@ -14,8 +20,9 @@ import { ORDERS_PER_PAGE, type MyOrdersQuery, type OrderSort } from './my-orders
 // cannot be a PostgREST filter without a view. At MVP order volume per buyer this is the honest
 // trade; when a buyer can plausibly have hundreds of orders it wants a view + server-side ILIKE.
 //
-// Product orders are excluded at the query level (`order_type='service'`) — the Produits tab is
-// a later PR and there is deliberately no code path that would render one here.
+// This function stays SERVICE-only (`order_type='service'`). The Produits tab has its own sibling below,
+// getMyProductOrders, with the same contract: DB filters buyer + type + status, search / sort / paging run in
+// memory, a failed read throws.
 
 // The param vocabulary (statuses, sorts, page size, parser) lives in my-orders-params.ts so the
 // client filter bar can import it without dragging lib/supabase/server into the browser bundle.
@@ -175,4 +182,167 @@ export async function getMyServiceOrders(
     totalCount: sorted.length,
     perPage: ORDERS_PER_PAGE,
   }
+}
+
+// ─── Produits tab ────────────────────────────────────────────────────────────────────────────────────────
+//
+// E3 Produits (Figma 704:58976 / 706:59409). Same accordion as Services; what differs is the row's data: a product
+// thumbnail, the SHOP's name (not a freelancer's), a total (unit × quantity + delivery) instead of a « from » price,
+// and the full 8-status lifecycle.
+
+export type MyProductOrder = {
+  id: string
+  status: string
+  createdAt: string
+  receivedAt: string | null
+  cancelledBy: 'buyer' | 'seller' | null
+  cancellationReason: string | null
+  /** Snapshot title, else the live product's; null when neither is readable (product removed). */
+  title: string | null
+  imageUrl: string | null
+  /** null when the product is no longer readable — the order row carries no shop snapshot. */
+  shopName: string | null
+  quantity: number
+  /** What the buyer pays on delivery: unit price × quantity + the delivery fee snapshot. null when no price is known. */
+  total: number | null
+  /** profiles.id of the shop owner — the get_contact_phone(target) argument (orders.seller_id). */
+  sellerId: string
+}
+
+type ProductRow = {
+  id: string
+  status: string
+  created_at: string
+  received_at: string | null
+  cancelled_by: 'buyer' | 'seller' | null
+  cancellation_reason: string | null
+  seller_id: string
+  quantity: number
+  unit_price_tnd: number | string | null
+  item_title: string | null
+  delivery_fee_tnd: number | string | null
+  products:
+    | {
+        title: string
+        price_tnd: number | string
+        shops: { name: string | null } | { name: string | null }[] | null
+        product_images: { image_url: string; display_order: number }[] | null
+      }
+    | null
+}
+
+/** Row → display shape. Pure. The price snapshot wins; the live price is the fallback for pre-snapshot orders. */
+export function toMyProductOrder(row: ProductRow): MyProductOrder {
+  const p = one(row.products)
+  const unit = row.unit_price_tnd ?? p?.price_tnd ?? null
+  const images = p?.product_images ?? []
+  const first = [...images].sort((a, b) => a.display_order - b.display_order)[0]
+  return {
+    id: row.id,
+    status: row.status,
+    createdAt: row.created_at,
+    receivedAt: row.received_at,
+    cancelledBy: row.cancelled_by,
+    cancellationReason: row.cancellation_reason,
+    title: row.item_title ?? p?.title ?? null,
+    imageUrl: first?.image_url ?? null,
+    shopName: one(p?.shops)?.name ?? null,
+    quantity: row.quantity,
+    total: unit == null ? null : Number(unit) * row.quantity + Number(row.delivery_fee_tnd ?? 0),
+    sellerId: row.seller_id,
+  }
+}
+
+function productComparator(tri: OrderSort) {
+  return (a: MyProductOrder, b: MyProductOrder): number => {
+    const newest = b.createdAt.localeCompare(a.createdAt)
+    if (tri === 'ancien') return a.createdAt.localeCompare(b.createdAt)
+    if (tri === 'prix_asc' || tri === 'prix_desc') {
+      // An order with no known price sorts last in BOTH directions.
+      if (a.total == null && b.total == null) return newest
+      if (a.total == null) return 1
+      if (b.total == null) return -1
+      return (tri === 'prix_asc' ? a.total - b.total : b.total - a.total) || newest
+    }
+    return newest
+  }
+}
+
+export type MyProductOrdersResult = {
+  orders: MyProductOrder[]
+  page: number
+  totalPages: number
+  totalCount: number
+  perPage: number
+}
+
+/** Search (title or shop name, accent- and case-insensitive) → sort → page. Pure. */
+export function pageMyProductOrders(all: MyProductOrder[], query: MyOrdersQuery): MyProductOrdersResult {
+  const needle = stripAccents(query.q.toLowerCase()).trim()
+  const matched = needle
+    ? all.filter(
+        (o) =>
+          stripAccents((o.title ?? '').toLowerCase()).includes(needle) ||
+          stripAccents((o.shopName ?? '').toLowerCase()).includes(needle),
+      )
+    : all
+  const sorted = [...matched].sort(productComparator(query.tri))
+  const { totalPages, safePage, start, end } = paginate(sorted.length, query.page, ORDERS_PER_PAGE)
+  return { orders: sorted.slice(start, end), page: safePage, totalPages, totalCount: sorted.length, perPage: ORDERS_PER_PAGE }
+}
+
+export async function getMyProductOrders(userId: string, query: MyOrdersQuery): Promise<MyProductOrdersResult> {
+  const supabase = await createClient()
+
+  // products has ONE foreign key to categories and shops, and none is embedded twice, so no PGRST201 hint applies.
+  let q = supabase
+    .from('orders')
+    .select(
+      `id, status, created_at, received_at, cancelled_by, cancellation_reason, seller_id, quantity,
+       unit_price_tnd, item_title, delivery_fee_tnd,
+       products ( title, price_tnd, shops ( name ), product_images ( image_url, display_order ) )`,
+    )
+    .eq('buyer_id', userId)
+    .eq('order_type', 'product')
+  if (query.statut !== 'all') q = q.eq('status', query.statut)
+
+  const { data, error } = await q.order('created_at', { ascending: false })
+  // A failed read must never look like « you have no orders » — on this page that is the worst failure there is.
+  if (error) {
+    console.error('[my-orders] product orders fetch error:', error.message, error.code, error.details)
+    throw new Error(`product orders fetch failed: ${error.message}`)
+  }
+
+  return pageMyProductOrders(((data ?? []) as unknown as ProductRow[]).map(toMyProductOrder), query)
+}
+
+// ─── Default tab ─────────────────────────────────────────────────────────────────────────────────────────
+
+/** The tab of the buyer's newest order; Produits when they have none. Pure. */
+export function pickDefaultOrdersTab(latest: { order_type: string } | null | undefined): OrdersTab {
+  if (latest?.order_type === 'service') return 'services'
+  if (latest?.order_type === 'product') return 'produits'
+  return DEFAULT_ORDERS_TAB
+}
+
+/**
+ * What a bare /mes-commandes opens (architect ruling on #202): the tab of the buyer's MOST RECENT order, service or
+ * product, so a services-only buyer coming from the sidebar is not shown an empty Produits tab. One tiny indexed read
+ * (newest order, one column). A failed read throws like every other query on this page — falling back to Produits would
+ * be a silent wrong answer for a services buyer.
+ */
+export async function getDefaultOrdersTab(userId: string): Promise<OrdersTab> {
+  const supabase = await createClient()
+  const { data, error } = await supabase
+    .from('orders')
+    .select('order_type')
+    .eq('buyer_id', userId)
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+  if (error) {
+    console.error('[my-orders] default tab fetch error:', error.message, error.code, error.details)
+    throw new Error(`default orders tab fetch failed: ${error.message}`)
+  }
+  return pickDefaultOrdersTab(data as { order_type: string } | null)
 }
