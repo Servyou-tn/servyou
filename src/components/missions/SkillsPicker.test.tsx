@@ -120,6 +120,15 @@ describe('SkillsPicker', () => {
     expect(seen.at(-1)).toEqual(['Figma', 'Cobol', 'Node'])
   })
 
+  it('custom mode: the ARABIC comma and semicolon separate skills too (an Arabic keyboard types « ، » not « , »)', async () => {
+    const seen: string[][] = []
+    render(<Harness custom sections={[]} onValue={(v) => seen.push(v)} />)
+    const user = await open()
+    await user.type(screen.getByRole('searchbox', { name: 'Rechercher' }), 'تصميم، تسويق؛ محاسبة')
+    await user.click(screen.getByRole('button', { name: /Ajouter/ }))
+    expect(seen.at(-1)).toEqual(['تصميم', 'تسويق', 'محاسبة'])
+  })
+
   it('custom mode: typing exactly a pool option offers no add row (the option itself is listed)', async () => {
     render(<Harness custom />)
     const user = await open()

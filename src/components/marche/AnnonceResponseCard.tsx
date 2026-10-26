@@ -139,7 +139,7 @@ function ProposalTerms({ response, lang }: { response: AnnonceResponse; lang: La
             {links.map((l) => (
               <li key={l.url} className="text-sm wrap-anywhere">
                 <a href={l.url} target="_blank" rel="noopener noreferrer nofollow" className="text-brand-blue-600 hover:underline">
-                  {l.label ?? hostOf(l.url)} — {hostOf(l.url)}
+                  {l.label ? `${l.label} — ${hostOf(l.url)}` : hostOf(l.url)}
                 </a>
               </li>
             ))}

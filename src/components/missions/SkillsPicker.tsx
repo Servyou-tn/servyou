@@ -24,6 +24,10 @@ import { skillKey } from '@/lib/marche/skills-match'
 // Selection is matched accent- and case-insensitively (skillKey), so « React » and « react » can never both be chosen.
 // Chips remove with a ≥ 44 px hit area. No raw text is rendered as HTML.
 
+// « figma, adobe » · « figma; adobe » · a new line · and the ARABIC comma « ، » (U+060C) and semicolon « ؛ » (U+061B), which an Arabic
+// keyboard types where a Latin one types « , » and « ; ». A space never separates.
+const SKILL_SEPARATORS = /[,;\n\u060C\u061B]+/
+
 export type SkillSection = { id: string; label: string; options: string[] }
 
 export function SkillsPicker({
@@ -86,7 +90,7 @@ export function SkillsPicker({
     ? [
         ...new Map(
           typed
-            .split(/[,;\n]+/)
+            .split(SKILL_SEPARATORS)
             .map((p) => p.trim())
             .filter((p) => p !== '' && p.length <= custom.maxLength)
             .map((p) => poolByKey.get(skillKey(p)) ?? p)
@@ -95,7 +99,7 @@ export function SkillsPicker({
       ].filter((p) => !selectedKeys.has(skillKey(p)))
     : []
   // A single typed text that IS a pool option needs no add row: the option itself is listed (and checkable) above.
-  const typedIsPoolOption = typedParts.length === 1 && poolByKey.has(skillKey(typed)) && !/[,;\n]/.test(typed)
+  const typedIsPoolOption = typedParts.length === 1 && poolByKey.has(skillKey(typed)) && !SKILL_SEPARATORS.test(typed)
   const canAddTyped = custom != null && typedParts.length > 0 && !typedIsPoolOption
 
   function toggle(skill: string) {

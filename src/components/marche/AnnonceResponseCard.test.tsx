@@ -61,7 +61,7 @@ describe('AnnonceResponseCard — the proposal terms (missions PR-4)', () => {
     expect(link).toHaveAttribute('href', 'https://www.behance.net/me')
     expect(link).toHaveAttribute('target', '_blank')
     expect(link.getAttribute('rel')).toBe('noopener noreferrer nofollow')
-    expect(screen.getByRole('link', { name: 'a.tn — a.tn' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'a.tn' })).toBeInTheDocument()
   })
 
   it('a zero price is a real figure, not « none »', () => {
