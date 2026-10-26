@@ -4001,8 +4001,14 @@ orders INSERT gap (migration 54). Ranked most severe first; each is its own PR u
 - **Column side fixed:** `avatar_url`, `logo_url` and `banner_url` now require a host-anchored URL with an
   `uploaded_objects` record owned by the row's owner (no bypass); the product / portfolio checks are
   host-anchored too. **Still open — S-3, the next PR:** raw bytes can still be PUT into one's own folder
-  (unpublishable now); the upload actions move to the service role and the four client INSERT storage
+  (unpublishable through the INSERT-guarded columns — but see the portfolio UPDATE gap below); the upload actions move to the service role and the four client INSERT storage
   policies are dropped.
+- **LOW — `freelancer_portfolio_items.image_url` can be PATCHed past provenance (forward migration pending):**
+  its trigger is BEFORE INSERT only, the owner has an UPDATE policy and authenticated holds UPDATE, so an
+  owner can insert a recorded item and then point `image_url` at a raw-PUT object (or any URL on the host).
+  The app never updates items (delete + re-insert). 0 items today. Fix: the trigger on UPDATE OF image_url too.
+- **The project host is hard-coded** in `storage_public_object_path` (S-2): a custom domain, a preview-branch
+  database or a replay on another project refuses every image until the helper is redefined.
 - **If Google OAuth is ever re-enabled:** a provider avatar URL is refused by `trg_enforce_avatar_provenance`;
   it must be downloaded, normalized, uploaded and recorded like any other avatar (`handle_new_user` does not
   touch `avatar_url` today, so signup is unaffected).

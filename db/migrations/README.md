@@ -574,7 +574,10 @@ this PR and is not attempted here.
     `enforce_product_image_provenance` / `enforce_portfolio_image_provenance` now extract the path with
     the same host-anchored helper (S-2); messages and owner logic unchanged. Raw bytes can still be PUT
     into one's own folder until S-3 (the next PR: uploads through the service role, client INSERT
-    storage policies dropped), but nothing can publish them. The 5 orphan objects stay (S-4: the
+    storage policies dropped), and no INSERT-guarded column can publish them — **except**
+    `freelancer_portfolio_items.image_url` on UPDATE (its trigger is BEFORE INSERT only and the owner
+    holds UPDATE; pre-existing; a forward migration is pending). **The host is hard-coded**
+    (`xggomcitqrkaylqezjjz.supabase.co`): a custom domain or another project needs the helper redefined. The 5 orphan objects stay (S-4: the
     pre-launch orphan sweep). Note: a provider avatar URL (Google OAuth, if re-enabled) is refused by
     the trigger — it must go through upload + provenance. Verified by
     `src/__tests__/storage-upload-provenance.test.ts` (live-DB). Rollback is at the bottom of the file.

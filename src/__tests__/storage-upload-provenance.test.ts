@@ -199,6 +199,9 @@ describe.skipIf(!hasCreds)('profiles.avatar_url', () => {
     const value = `${publicUrl('avatars', mine)}?t=${RUN}`
     expect((await userClient.from('profiles').update({ avatar_url: value }).eq('id', userId)).error).toBeNull()
     expect(await avatarOf(userId)).toBe(value)
+    // Unchanged passes on its own: with the record gone (as after a folder sweep), only the short-circuit can let it through.
+    const { error: dropErr } = await admin.from('uploaded_objects').delete().eq('bucket', 'avatars').eq('path', mine)
+    expect(dropErr).toBeNull()
     expect((await userClient.from('profiles').update({ avatar_url: value, city: 'Sfax' }).eq('id', userId)).error).toBeNull()
     expect((await userClient.from('profiles').update({ avatar_url: null }).eq('id', userId)).error).toBeNull()
     expect(await avatarOf(userId)).toBeNull()
@@ -226,6 +229,15 @@ describe.skipIf(!hasCreds)('shops.logo_url / banner_url', () => {
     expect(error).toBeNull()
     const { data } = await admin.from('shops').select('logo_url, banner_url').eq('id', shopId).single()
     expect(data).toEqual({ logo_url: publicUrl('shop-assets', mine), banner_url: publicUrl('shop-assets', banner) })
+    // An unchanged logo does not block a banner-only change, even with the logo's record gone.
+    const { error: dropErr } = await admin.from('uploaded_objects').delete().eq('bucket', 'shop-assets').eq('path', mine)
+    expect(dropErr).toBeNull()
+    const nextBanner = await record('shop-assets', shopId, ownerId)
+    const { error: bannerErr } = await ownerClient
+      .from('shops')
+      .update({ logo_url: publicUrl('shop-assets', mine), banner_url: publicUrl('shop-assets', nextBanner) })
+      .eq('id', shopId)
+    expect(bannerErr).toBeNull()
     expect((await ownerClient.from('shops').update({ logo_url: null, banner_url: null }).eq('id', shopId)).error).toBeNull()
   })
 
