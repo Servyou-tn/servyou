@@ -3295,7 +3295,12 @@ coupling" claim on that specific function is stale, not a remaining blocker.
 
 ## H4 — Tableau de bord freelance (`feat/h4-dashboard-freelancer`, 2026-09-03)
 
-### `job_posts` RLS hides a non-open post's title from the freelancer who legitimately responded to it — Activité récente's proposal rows can render with no secondary line
+### ✅ RESOLVED (M-B, migration 70 `20261026200934`, 2026-10-26) — `job_posts` RLS hides a non-open post's title from the freelancer who legitimately responded to it — Activité récente's proposal rows can render with no secondary line
+
+- Fixed: a responder now reads every post they answered unless it is deleted or moderated (policy
+  « Responders read the posts they answered » via `has_responded()`); the embed shape is pinned in
+  `job-posts-responder-read.test.ts`. Deleted / moderated posts still embed as null by design (M-B-1).
+  Original entry:
 
 - **What:** `job_responses`' RLS grants a freelancer read access to their own response rows
   (`freelancer_id = auth.uid()`), but the embedded `job_posts ( title )` join runs under
