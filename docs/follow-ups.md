@@ -5072,3 +5072,14 @@ fixtures. `scripts/rls-smoke.mjs` (not a suite, never run) seeds an active produ
 - **AR budget labels in the Budget dropdown and chip** (« 200 – 500 د.ت ») are not pinned LTR, unlike the card and facts panel.
 - **Skill filter id list** is capped at 500 matching in-window open posts (explicit `.limit`); an RPC would remove the cap.
 - **Awareness bar « N sur 5 »** can read 4/5 while the DB blocks at 5 when a moderated-but-open post counts toward the cap (gap G5).
+
+### E3 Produits tab — logged, not fixed
+
+- **Services rows print « Commande ##4774AE »**: `mesCommandes.ref` is `Commande #{ref}` and the Services row passes `shortRef()`, which already
+  carries the `#`. Seen live on the seed buyer's service order. The Produits row slices it off. One-line fix: drop the `#` from the key and
+  pass `shortRef()` in both lists (fr + ar) — separate PR by the one-PR-one-focus rule.
+- **Tracking is not shown** on a product order (`carrier`, `tracking_number`): not in Figma 704:58976. A natural line under the rail once
+  the seller has dispatched.
+- **Rail scroll position on mobile**: the 7-step rail scrolls sideways below `lg`; it starts at the first stage, so an order that is
+  « En livraison » shows its current stage only after a swipe. Scroll the current node into view if it matters.
+- **Buyer-side cancel on Services** is still the frame's (none). Products have it (see docs/design/e3-produits-measurements.md D5).

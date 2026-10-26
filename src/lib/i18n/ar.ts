@@ -1528,6 +1528,15 @@ export const ar: Record<string, string> = {
   'mesCommandes.cancelledBy':      "أُلغيت من قِبل {who}",
   'mesCommandes.cancelled.buyer':  "طرفك",
   'mesCommandes.cancelled.seller': "المستقل",
+  // Produits tab (Figma 704:58976) — REVIEW_AR_TRANSLATION: drafts, no native pass yet.
+  'mesCommandes.cancelled.shop':           "البائع",
+  'mesCommandes.empty.produits':           "ليس لديك أي طلب منتج بعد.",
+  'mesCommandes.empty.produits.subtitle':  "ستظهر طلبات المنتجات هنا بمجرد إرسال أول طلب.",
+  'mesCommandes.empty.produits.cta':       "تصفّح المنتجات",
+  'mesCommandes.untitled.product':         "المنتج غير متاح",
+  'mesCommandes.whatsapp.message_product': "مرحبًا، أتواصل معك بخصوص طلبي {ref} « {product} » على Servyou.",
+  'mesCommandes.whatsapp.none_shop':       "لم يضِف هذا البائع رقم واتساب بعد.",
+  'mesCommandes.cancel.body':              "هذا الإجراء نهائي. سيتم إبلاغ البائع.",
 
   'orders.title':              "طلباتي",
   'orders.buyer_detail_title': "تفاصيل الطلب",

@@ -35,6 +35,8 @@ type DialogProps = {
   reasons?: readonly string[]
   /** The page that shows this order's status — refreshed server-side after the cancel. */
   revalidate?: SellerOrderPath
+  /** i18n key of the explanatory line; defaults to the seller's (« L'acheteur en sera informé »). A buyer passes their own. */
+  bodyKey?: string
   onClose: () => void
 }
 
@@ -45,6 +47,7 @@ export function CancelOrderDialog({
   lang,
   reasons = SHOP_CANCEL_REASONS,
   revalidate = '/commandes-recues',
+  bodyKey = 'seller.orders.cancel_body',
   onClose,
 }: DialogProps) {
   const [selected, setSelected] = useState<string>('')
@@ -91,7 +94,7 @@ export function CancelOrderDialog({
         <p className="text-body-sm text-text-secondary">
           {reasonRequired
             ? t('seller.orders.cancel_reason_required', lang)
-            : t('seller.orders.cancel_body', lang)}
+            : t(bodyKey, lang)}
         </p>
 
         <fieldset className="flex flex-col gap-2">

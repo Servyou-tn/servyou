@@ -343,7 +343,7 @@ export default async function DemandeSuccesPage({ searchParams }: Props) {
             {/* Desktop: centered pair. Mobile 691:57332: stacked full-width, primary first. */}
             <div className="flex flex-col gap-3 lg:flex-row lg:justify-center lg:gap-4">
               <Link
-                href="/mes-commandes"
+                href={product ? '/mes-commandes?tab=produits' : '/mes-commandes?tab=services'}
                 className={`inline-flex h-12 items-center justify-center rounded-lg bg-brand-blue-600 px-5 text-base font-semibold text-text-inverse transition-colors hover:bg-brand-blue-700 ${FOCUS_RING}`}
               >
                 {t('succes.cta.orders', lang)}

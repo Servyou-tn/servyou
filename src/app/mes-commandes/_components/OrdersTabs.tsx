@@ -1,48 +1,46 @@
+import Link from 'next/link'
 import { Package, Briefcase } from 'lucide-react'
 import { t, type Lang } from '@/lib/i18n'
+import { FOCUS_RING } from '@/components/layout/styles'
+import type { OrdersTab } from '@/lib/marche/my-orders-params'
 
-// The Produits · Services toggle (Figma segmented 709:59668 / 710:59947).
+// The Produits · Services toggle (Figma segmented 704:59172 / 709:59668 / 710:59947): surface/pill track, radius 10,
+// pad 4; the selected segment is white with a shadow, the other text/secondary. Produits stays FIRST, as drawn.
 //
-// Figma authors Produits FIRST and selected (`selected=0` on the Produits frames, `selected=1`
-// on the Services ones — the prop is 0-based). Only the Services tab is built, so the designed
-// default would land the page on nothing. Founder call: Services is the default and Produits
-// renders DISABLED with the same "Bientôt" badge the /marche/services lens toggle already uses,
-// so the two deferred-tab affordances look the same. Produits keeps its first position — the
-// order is the design's, only the selection moved.
+// Both segments are real links — `?tab=` is a URL fact, so the back button replays the tab and a bookmark opens it.
+// Switching tab drops q / statut / tri / page on purpose: the two tabs have different status sets, and a stale
+// `statut=prepared` would filter Services to nothing.
 //
-// Static markup, no client interaction, so this stays a server component: the tab is not a
-// client control but a URL fact (?tab=services), and ?tab=produits falls back to services
-// rather than 404-ing.
-export function OrdersTabs({ lang }: { lang: Lang }) {
+// Server component, no client interaction. A <nav> of links rather than role="tablist": each item is a full-page
+// navigation, so there is no tabpanel / arrow-key model to promise (same call as H8's tab strip).
+const BASE = '/mes-commandes'
+
+export function OrdersTabs({ lang, tab }: { lang: Lang; tab: OrdersTab }) {
+  const items: { key: OrdersTab; Icon: typeof Package }[] = [
+    { key: 'produits', Icon: Package },
+    { key: 'services', Icon: Briefcase },
+  ]
   return (
-    <div
-      role="tablist"
+    <nav
       aria-label={t('mesCommandes.tabsAria', lang)}
       className="inline-flex items-center self-start rounded-[10px] bg-surface-pill p-1"
     >
-      <button
-        type="button"
-        role="tab"
-        disabled
-        aria-disabled="true"
-        aria-selected={false}
-        title={t('mesCommandes.tab.soon', lang)}
-        className="inline-flex h-9 cursor-not-allowed items-center gap-1.5 rounded-md px-3 text-body-sm font-medium text-text-secondary"
-      >
-        <Package className="h-4 w-4" aria-hidden="true" />
-        {t('mesCommandes.tab.produits', lang)}
-        <span className="rounded-full bg-brand-blue-100 px-1.5 py-0.5 text-caption font-semibold text-brand-blue-600">
-          {t('mesCommandes.tab.soon', lang)}
-        </span>
-      </button>
-      <span
-        role="tab"
-        aria-selected
-        className="inline-flex h-9 items-center gap-1.5 rounded-md bg-white px-3 text-body-sm font-medium text-text-primary shadow-sm"
-      >
-        <Briefcase className="h-4 w-4" aria-hidden="true" />
-        {t('mesCommandes.tab.services', lang)}
-      </span>
-    </div>
+      {items.map(({ key, Icon }) => {
+        const active = key === tab
+        return (
+          <Link
+            key={key}
+            href={`${BASE}?tab=${key}`}
+            aria-current={active ? 'page' : undefined}
+            className={`inline-flex h-9 items-center gap-1.5 rounded-md px-3 text-body-sm font-medium transition-colors ${FOCUS_RING} ${
+              active ? 'bg-white text-text-primary shadow-sm' : 'text-text-secondary hover:text-text-primary'
+            }`}
+          >
+            <Icon className="h-4 w-4" aria-hidden="true" />
+            {t(`mesCommandes.tab.${key}`, lang)}
+          </Link>
+        )
+      })}
+    </nav>
   )
 }
