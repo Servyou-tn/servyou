@@ -90,7 +90,7 @@ beforeEach(() => {
 
 describe('getMissionBoard — every exclusion is asked for in the query (RLS is not the filter)', () => {
   it('open · not moderated · inside the 30-day window · not mine · not full · not already answered', async () => {
-    respondWith({ available: 3, filtered: 3, rows: [postRow('p1')], answered: [{ job_post_id: 'a1', job_posts: null }, { job_post_id: 'a2', job_posts: null }] })
+    respondWith({ available: 3, filtered: 3, rows: [postRow('p1')], answered: [{ job_post_id: 'a1', job_posts: { status: 'open', created_at: '2026-10-20T00:00:00Z' } }, { job_post_id: 'a2', job_posts: { status: 'open', created_at: '2026-10-21T00:00:00Z' } }, { job_post_id: 'old', job_posts: { status: 'open', created_at: '2026-06-01T00:00:00Z' } }, { job_post_id: 'gone', job_posts: null }] })
     await getMissionBoard('me', filters(), null, NOW)
     const page = state.calls.filter((c) => c.table === 'job_posts' && !c.head)[0]
     expect(has(page, 'eq', 'status', 'open')).toBe(true)
@@ -212,5 +212,6 @@ describe('getMyResponseState — « N sur 5 » counts only live proposals', () =
     const out = await getMyResponseState(await createClient(), 'me', NOW)
     expect(out.activeCount).toBe(2)
     expect(out.answeredIds).toEqual(['a', 'b', 'c', 'd', 'e'])
+    expect(out.answeredLiveIds).toEqual(['a', 'b']) // only these can still appear on the board
   })
 })

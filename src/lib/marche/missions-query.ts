@@ -98,7 +98,7 @@ export async function getMyResponseState(
   supabase: Client,
   userId: string,
   now: Date,
-): Promise<{ answeredIds: string[]; activeCount: number }> {
+): Promise<{ answeredIds: string[]; answeredLiveIds: string[]; activeCount: number }> {
   const { data, error } = await supabase
     .from('job_responses')
     .select('job_post_id, job_posts ( status, created_at )')
@@ -109,12 +109,15 @@ export async function getMyResponseState(
     job_post_id: string
     job_posts: { status: string; created_at: string } | { status: string; created_at: string }[] | null
   }[]
-  let activeCount = 0
+  // `answeredLiveIds` = answered AND still open inside the window: the only ones the board's `not in` needs (every
+  // other answered post is already excluded by the status / window predicates), which keeps that URL list short
+  // for a freelancer with a long history.
+  const answeredLiveIds: string[] = []
   for (const r of rows) {
     const post = one(r.job_posts)
-    if (post && post.status === 'open' && !isAnnoncePastExpiry(post.created_at, now)) activeCount += 1
+    if (post && post.status === 'open' && !isAnnoncePastExpiry(post.created_at, now)) answeredLiveIds.push(r.job_post_id)
   }
-  return { answeredIds: rows.map((r) => r.job_post_id), activeCount }
+  return { answeredIds: rows.map((r) => r.job_post_id), answeredLiveIds, activeCount: answeredLiveIds.length }
 }
 
 /** Service sectors for the Catégorie filter. Throws — the shared getCategories() swallows errors into []. */
@@ -191,12 +194,20 @@ export async function getMissionBoard(
   // would also cut the card's displayed skill chips down to the one matching row.
   let skillPostIds: string[] | null = null
   if (filters.competence) {
-    const { data, error } = await supabase.from('job_post_skills').select('job_post_id').eq('skill', filters.competence)
+    // Scoped to posts the board could show (open, inside the window) so old open posts never pile into the id
+    // list, and capped explicitly: PostgREST would otherwise truncate at max_rows without saying so.
+    const { data, error } = await supabase
+      .from('job_post_skills')
+      .select('job_post_id, job_posts!inner ( id )')
+      .eq('skill', filters.competence)
+      .eq('job_posts.status', 'open')
+      .gte('job_posts.created_at', missionCutoffIso(now))
+      .limit(500)
     if (error) fail('missions skill filter', error)
     skillPostIds = [...new Set((data ?? []).map((r) => r.job_post_id as string))]
   }
 
-  const common = { userId, now, answeredIds: mine.answeredIds }
+  const common = { userId, now, answeredIds: mine.answeredLiveIds }
   const skillFilterMatchesNothing = skillPostIds !== null && skillPostIds.length === 0
 
   const [availableRes, filteredRes] = await Promise.all([

@@ -32,8 +32,10 @@ export function MissionFacts({ mission, lang, children }: { mission: MissionFact
     <section className="flex flex-col gap-4 rounded-xl border border-border-subtle bg-surface-base p-6">
       <div className="flex flex-col gap-0.5">
         <p className="text-caption font-medium text-text-muted">{t('missiondetail.budget_label', lang)}</p>
-        <p dir={hasJobBudget(mission.budgetMin, mission.budgetMax) ? 'ltr' : undefined} className="text-start text-h1 text-text-primary">
-          {budget}
+        {/* The figure is isolated LTR inside the paragraph (not dir on the <p>, which would flip text-start to the left in
+            AR and strand it under the right-aligned label). */}
+        <p className="text-start text-h1 text-text-primary">
+          {hasJobBudget(mission.budgetMin, mission.budgetMax) ? <span dir="ltr">{budget}</span> : budget}
         </p>
       </div>
 

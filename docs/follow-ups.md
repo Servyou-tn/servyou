@@ -5009,3 +5009,14 @@ fixtures. `scripts/rls-smoke.mjs` (not a suite, never run) seeds an active produ
 - Seen again on this branch's run, 2026-10-26: same 23505, same cause, already logged twice above. The guarded
   teardown still runs in `afterAll`, and cleanup was verified at 0. Their tests have proven nothing since
   2026-08-11.
+
+### H9/H10 board (missions PR-1) — logged from the review pass, not fixed
+
+- **Skill filter is exact and case-sensitive** on two free-text fields (`freelancer_skills.skill` vs `job_post_skills.skill`):
+  « react » never matches « React », and a consumer who types « figma adobe » as one skill is one skill. Normalise at write
+  time or match via a lowercase column when skills get a taxonomy. `?competence=` also accepts any value, not only the viewer's own.
+- **« Budget décroissant »** orders by `budget_max` desc, then `budget_min`, nulls last: a « Dès 5 000 TND » post (no max)
+  ranks below every post that has a max. Sort on `coalesce(budget_max, budget_min)` through a generated column if it matters.
+- **AR budget labels in the Budget dropdown and chip** (« 200 – 500 د.ت ») are not pinned LTR, unlike the card and facts panel.
+- **Skill filter id list** is capped at 500 matching in-window open posts (explicit `.limit`); an RPC would remove the cap.
+- **Awareness bar « N sur 5 »** can read 4/5 while the DB blocks at 5 when a moderated-but-open post counts toward the cap (gap G5).

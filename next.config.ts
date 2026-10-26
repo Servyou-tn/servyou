@@ -109,8 +109,9 @@ const nextConfig: NextConfig = {
       // any in-flight bookmark/link to the list, create, or detail page working.
       { source: '/mes-missions/:path*', destination: '/mes-annonces/:path*', permanent: true },
       // /missions has no index of its own: the public header, footer, landing and the admin moderation report all
-      // link here. EXACT match on purpose — a `:path*` wildcard would swallow /missions/[id] (the H10 detail page).
-      { source: '/missions', destination: '/trouver-des-missions', permanent: true },
+      // link here. Temporary (307), not 308: browsers cache a permanent redirect indefinitely and /missions may become a
+      // real index later. EXACT match on purpose — a `:path*` wildcard would swallow /missions/[id] (the H10 detail page).
+      { source: '/missions', destination: '/trouver-des-missions', permanent: false },
     ]
   },
 };
