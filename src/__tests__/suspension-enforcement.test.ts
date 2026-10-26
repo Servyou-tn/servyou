@@ -87,16 +87,17 @@ const ALL: Verb[] = ['insert', 'update', 'delete']
 // The 26 tables on which authenticated holds a table- or column-level write grant: the verbs
 // trg_enforce_active_user guards, the verbs authenticated holds NO privilege for (refused by the
 // privilege check, which runs before any trigger), and an UPDATE probe column (`set`) / INSERT probe
-// column (`insertKey`) where the grant is column-level (profiles, orders, job_posts).
+// column (`insertKey`) where the grant is column-level (profiles, orders, job_posts, data_exports,
+// deletion_requests).
 const TRIGGERED: Record<string, { guarded: Verb[]; noGrant?: Verb[]; set?: Record<string, unknown>; insertKey?: string }> = {
   profiles: { guarded: ALL, noGrant: ['insert', 'delete'], set: { full_name: 'x' } },
   shops: { guarded: ALL },
   shop_categories: { guarded: ALL },
   shop_payment_methods: { guarded: ALL },
   products: { guarded: ALL },
-  product_images: { guarded: ALL },
+  product_images: { guarded: ALL, noGrant: ['update'] }, // no UPDATE grant since migration 68 (D3)
   freelancer_profiles: { guarded: ALL },
-  freelancer_skills: { guarded: ALL },
+  freelancer_skills: { guarded: ALL, noGrant: ['update'] }, // D3
   freelancer_tools: { guarded: ALL },
   freelancer_education: { guarded: ALL },
   freelancer_certifications: { guarded: ALL },
@@ -105,16 +106,16 @@ const TRIGGERED: Record<string, { guarded: Verb[]; noGrant?: Verb[]; set?: Recor
   freelancer_portfolio_items: { guarded: ALL },
   service_listings: { guarded: ALL },
   job_posts: { guarded: ALL, set: { status: 'open' }, insertKey: 'consumer_id' }, // id is not client-writable since M-A
-  job_post_skills: { guarded: ALL },
+  job_post_skills: { guarded: ALL, noGrant: ['update'] }, // D3
   job_responses: { guarded: ALL, noGrant: ['update'] },
-  favorites: { guarded: ALL },
+  favorites: { guarded: ALL, noGrant: ['update'] }, // D3
   categories: { guarded: ALL },
-  admin_audit_log: { guarded: ALL },
-  orders: { guarded: ALL, set: { status: 'cancelled' } }, // D6
-  reports: { guarded: ALL }, // D5
-  disputes: { guarded: ['update', 'delete'] }, // D4
-  data_exports: { guarded: ['update', 'delete'] }, // D3
-  deletion_requests: { guarded: ['update', 'delete'] }, // D3
+  admin_audit_log: { guarded: ALL, noGrant: ['update', 'delete'] }, // D3
+  orders: { guarded: ALL, noGrant: ['delete'], set: { status: 'cancelled' } }, // D6; no DELETE grant since migration 68
+  reports: { guarded: ALL, noGrant: ['delete'] }, // D5; no DELETE grant since migration 68
+  disputes: { guarded: ['update'], noGrant: ['delete'] }, // D4; no DELETE grant since migration 68
+  data_exports: { guarded: ['update'], noGrant: ['delete'], set: { status: 'pending' }, insertKey: 'user_id' }, // D3; column grants since migration 68 (C)
+  deletion_requests: { guarded: ['update'], noGrant: ['delete'], set: { status: 'pending' }, insertKey: 'user_id' }, // D3; column grants since migration 68 (C)
 }
 // Exposed relations with no client write privilege at all, and the error each refusal carries.
 const NO_CLIENT_WRITES: Record<string, { key: string; code: string; message?: string }> = {
@@ -511,7 +512,10 @@ describe.skipIf(!hasCreds)('D3 / D4 — what a suspended account can still file'
 
   it('…but cannot change or withdraw it', async () => {
     expectSuspended((await buyerClient.from('disputes').update({ reason: 'damaged' }).eq('order_id', orderB)).error)
-    expectSuspended((await buyerClient.from('disputes').delete().eq('order_id', orderB)).error)
+    // Withdrawing is refused by the privilege check, before the trigger: no client DELETE since migration 68.
+    const withdraw = await buyerClient.from('disputes').delete().eq('order_id', orderB)
+    expect(withdraw.error?.code).toBe(DENIED)
+    expect(withdraw.error?.message).toBe('permission denied for table disputes')
     expect(await countRows('disputes', 'order_id', orderB)).toBe(1)
   })
 
@@ -523,8 +527,12 @@ describe.skipIf(!hasCreds)('D3 / D4 — what a suspended account can still file'
   })
 
   it('…but cannot withdraw either request', async () => {
-    expectSuspended((await buyerClient.from('data_exports').delete().eq('user_id', buyerId)).error)
-    expectSuspended((await buyerClient.from('deletion_requests').delete().eq('user_id', buyerId)).error)
+    // Refused by the privilege check, before the trigger: no client DELETE since migration 68.
+    for (const table of ['data_exports', 'deletion_requests'] as const) {
+      const { error } = await buyerClient.from(table).delete().eq('user_id', buyerId)
+      expect(error?.code).toBe(DENIED)
+      expect(error?.message).toBe(`permission denied for table ${table}`)
+    }
     expect(await countRows('data_exports', 'user_id', buyerId)).toBe(1)
     expect(await countRows('deletion_requests', 'user_id', buyerId)).toBe(1)
   })

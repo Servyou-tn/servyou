@@ -4255,7 +4255,10 @@ advisors. Migration 59 itself closed the `job_responses` HIGH above.
 - **Fix (product call):** gate `get_contact_phone`'s job_responses branches on the responder still
   being active, or have suspension / moderation withdraw the responses.
 
-### LOW — 31 SECURITY DEFINER functions are executable by anon / authenticated (one hygiene PR)
+### ✅ RESOLVED (migration 68 `20261026190353`, 2026-10-26) — 31 SECURITY DEFINER functions are executable by anon / authenticated (one hygiene PR)
+
+- Fixed exactly as proposed below, plus the global and per-schema default-privilege revokes; advisors
+  0028 = 3, 0029 = 10 after apply. Original entry:
 
 - **What:** advisor lints 0028 / 0029 flag every SECURITY DEFINER function in `public` (31 after
   migration 59). Supabase's default privileges grant EXECUTE on each new function to `anon` and
@@ -4277,7 +4280,9 @@ advisors. Migration 59 itself closed the `job_responses` HIGH above.
   anon, authenticated` for Supabase's explicit grants. Prove every trigger still fires (the live
   suites do).
 
-### LOW — migration 48's README entry overstates `freelancer_has_active_listing`'s EXECUTE revoke
+### ✅ RESOLVED (migration 68, 2026-10-26) — migration 48's README entry overstates `freelancer_has_active_listing`'s EXECUTE revoke
+
+- anon's EXECUTE is revoked and README #48 carries a dated correction. Original entry:
 
 - **What:** README #48 says EXECUTE was "revoked from public/granted to authenticated". Live ACL:
   `{postgres, anon, authenticated, service_role}` — PUBLIC is gone but `anon` still holds a direct
@@ -4873,6 +4878,23 @@ returns `[]`, i.e. a silent empty list — the rule is to surface the error.
 
 - `metadata.title` on the H-series pages (including this one) is a literal, so an Arabic visitor gets a French tab
   title. A `generateMetadata` reading `getLang()` fixes every page at once — its own cross-cutting PR.
+
+## Pre-launch security batch PR-2 — grants (`fix/prelaunch-acl-hardening`, 2026-10-26)
+
+### LOW — `deletion_requests.reason` is unbounded text
+
+- Any length is accepted. Consistent with the founder ruling that caps live in app limits, but the DB does not
+  enforce one. **Fix if wanted:** `CHECK (char_length(reason) <= 1000)` (NOT VALID if a row ever violates).
+
+### LOW — advisor residue left on purpose
+
+- Still reported after migration 68, deliberately: 0010 `public_profiles` (an intentional SECURITY DEFINER
+  view — its column list is the protection), 0014 `unaccent` installed in `public` (moving it breaks the
+  generated `search_vector` columns), leaked-password protection (HIBP, an Auth setting), 0008
+  `uploaded_objects` (RLS on, no policy, no client grant — by design).
+- `supabase_admin`'s own default privileges in `public` still grant everything to anon / authenticated; they
+  cannot be altered as `postgres`. Only a table or function created by `supabase_admin` (platform tooling)
+  would inherit them.
 
 ## Missions M-A — `job_posts.response_count` + write lock (`feat/missions-m-a`, 2026-10-26)
 
