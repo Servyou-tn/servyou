@@ -29,6 +29,7 @@ import { createClient, SupabaseClient } from '@supabase/supabase-js'
 import { randomUUID } from 'node:crypto'
 import { applyProfileSave } from '@/app/mon-profil-freelance/modifier/actions'
 import { validateForPublish, BIO_MIN_FOR_PUBLISH } from '@/lib/marche/freelancer-profile-edit'
+import { refuseTeardownOnForeignOrders } from './live-teardown-guard'
 
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -76,6 +77,7 @@ async function createUser(email: string): Promise<string> {
 async function teardown(): Promise<void> {
   const { data, error } = await admin.from('profiles').select('id').like('email', `${EMAIL_PREFIX}%${EMAIL_SUFFIX}`)
   if (error) throw new Error(`teardown lookup failed: ${error.message}`)
+  await refuseTeardownOnForeignOrders(admin, (data ?? []).map((row) => row.id), EMAIL_PREFIX)
   for (const row of data ?? []) {
     const { error: delErr } = await admin.auth.admin.deleteUser(row.id)
     if (delErr) throw new Error(`deleteUser failed for ${row.id}: ${delErr.message}`)

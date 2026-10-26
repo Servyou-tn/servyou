@@ -35,6 +35,7 @@ import { describe, it, expect, beforeAll, afterAll } from 'vitest'
 import { createClient, SupabaseClient } from '@supabase/supabase-js'
 import { randomUUID } from 'crypto'
 import type { Database } from '@/lib/supabase/database.types'
+import { refuseTeardownOnForeignOrders } from './live-teardown-guard'
 
 type Client = SupabaseClient<Database>
 // The seven tables whose SELECT policies this migration owns.
@@ -239,10 +240,11 @@ const sorted = (...ids: string[]): string[] => [...ids].sort()
 
 // Idempotent and surgical to this file's prefix; runs first (recovers a crashed prior run) and last.
 // The order matters:
-//   1. orders — a product delete sets orders.product_id NULL, which order_target_matches_type then
-//      rejects, so the fixture orders go first. Deleted by BUYER only, never by seller: fixture product
-//      L is live on production while this runs, and a real customer's order on it must make the
-//      teardown fail loudly (the cascade trips that same CHECK), not be deleted with the fixtures;
+//   0. the guard — fixture product L is live on production while this runs, so a real customer could
+//      order it. Deleting its seller would NOT fail: orders.seller_id is ON DELETE CASCADE and RI
+//      cascades run breadth-first, so that order would be deleted silently, before any product_id SET
+//      NULL could trip a CHECK. refuseTeardownOnForeignOrders refuses instead; resolve it by hand;
+//   1. orders — the fixture orders, deleted explicitly by BUYER only, never by seller;
 //   2. admin_audit_log — admin_id is ON DELETE RESTRICT;
 //   3. users — cascades profiles -> shops -> products -> product_images / shop_payment_methods /
 //      shop_categories, profiles -> job_posts -> job_post_skills, favorites, and (via auth.users)
@@ -253,6 +255,7 @@ async function teardown(): Promise<void> {
   if (error) throw new Error(`teardown lookup failed: ${error.message}`)
   const ids = (data ?? []).map((row) => row.id as string)
   if (ids.length === 0) return
+  await refuseTeardownOnForeignOrders(admin, ids, PREFIX)
 
   const { error: orderErr } = await admin.from('orders').delete().in('buyer_id', ids)
   if (orderErr) throw new Error(`orders cleanup failed: ${orderErr.message}`)
@@ -260,12 +263,7 @@ async function teardown(): Promise<void> {
   if (auditErr) throw new Error(`admin_audit_log cleanup failed: ${auditErr.message}`)
   for (const id of ids) {
     const { error: delErr } = await admin.auth.admin.deleteUser(id)
-    if (delErr) {
-      throw new Error(
-        `deleteUser failed for ${id}: ${delErr.message} — if a NON-fixture order references a fixture ` +
-          'product, a real customer ordered it during the run: resolve by hand, never force-delete.',
-      )
-    }
+    if (delErr) throw new Error(`deleteUser failed for ${id}: ${delErr.message}`)
   }
 }
 
