@@ -9,3 +9,16 @@ export const NEW_MISSION_WINDOW_HOURS = 48
 // Competition pill levels over job_posts.response_count: 0–3 low · 4–7 medium · 8–10 high.
 export const COMPETITION_LOW_MAX = 3
 export const COMPETITION_MEDIUM_MAX = 7
+
+// H12 proposal form — mirrors the job_responses CHECKs / triggers (migration 20261026195409). The DB is the last
+// line; these keep the form and the server action from sending what it will refuse.
+export const PROPOSAL_MESSAGE_MIN = 20
+export const PROPOSAL_MESSAGE_MAX = 1000
+export const PROPOSAL_LINKS_MAX = 3
+export const PROPOSAL_LINK_LABEL_MAX = 60
+export const PROPOSAL_LINK_URL_MAX = 500
+export const PROPOSAL_TIMEFRAME_MAX = 60
+export const PROPOSAL_SKILLS_MAX = 8
+export const PROPOSAL_SKILL_MAX = 60
+/** proposed_price_tnd must be >= 0 and strictly below this. */
+export const PROPOSAL_PRICE_LIMIT = 1_000_000

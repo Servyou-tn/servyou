@@ -24,12 +24,29 @@ function Divider() {
   return <hr className="border-0 border-t border-border-subtle" />
 }
 
-export function MissionFacts({ mission, lang, children }: { mission: MissionFactsData; lang: Lang; children?: React.ReactNode }) {
+export function MissionFacts({
+  mission,
+  lang,
+  lead,
+  children,
+}: {
+  mission: MissionFactsData
+  lang: Lang
+  /** H12's recap opens with « LA MISSION » · category · title, then a divider. */
+  lead?: React.ReactNode
+  children?: React.ReactNode
+}) {
   const budget = formatJobBudget(mission.budgetMin, mission.budgetMax, lang)
   const place = mission.isRemote ? t('missioncard.remote', lang) : (localizeCity(mission.city, lang) ?? t('missiondetail.location_unspecified', lang))
 
   return (
     <section className="flex flex-col gap-4 rounded-xl border border-border-subtle bg-surface-base p-6">
+      {lead ? (
+        <>
+          {lead}
+          <Divider />
+        </>
+      ) : null}
       <div className="flex flex-col gap-0.5">
         <p className="text-caption font-medium text-text-muted">{t('missiondetail.budget_label', lang)}</p>
         {/* The figure is isolated LTR inside the paragraph (not dir on the <p>, which would flip text-start to the left in

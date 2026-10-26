@@ -111,7 +111,7 @@ export default async function MissionDetailPage({ params }: { params: Promise<{ 
           <aside className="flex flex-col gap-6 lg:sticky lg:top-[88px]">
             <ClientCard firstName={mission.client.firstName} city={mission.client.city} avatarUrl={mission.client.avatarUrl} lang={lang} />
             <MissionFacts mission={mission} lang={lang}>
-              {mission.cta ? <MissionCta state={mission.cta} answeredAt={mission.answeredAt} lang={lang} /> : null}
+              {mission.cta ? <MissionCta state={mission.cta} missionId={mission.id} answeredAt={mission.answeredAt} lang={lang} /> : null}
             </MissionFacts>
           </aside>
         </div>

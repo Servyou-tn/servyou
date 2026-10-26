@@ -37,8 +37,8 @@ export function WhatsAppContactButton({
   /** Fully composed, already localised. Truncated to the Arabic budget by buildWhatsAppUrl. */
   message: string
   label: string
-  /** `sm` = G8's row (h-9). `lg` = G9's rail button (Figma 312×48). */
-  size?: 'sm' | 'lg'
+  /** `sm` = G8's row (h-9). `md` = H13's CTA (Figma 134:8027, full-width, h 44). `lg` = G9's rail button (Figma 312×48). */
+  size?: 'sm' | 'md' | 'lg'
   /** Override for a non-order caller — the defaults read "…cette commande" (PR-E/AnnonceResponseCard). */
   errorMessageKey?: string
   noPhoneMessageKey?: string
@@ -110,7 +110,7 @@ export function WhatsAppContactButton({
           'inline-flex items-center justify-center gap-2 rounded-[10px] bg-wa-brand font-semibold',
           'whitespace-nowrap transition-colors hover:brightness-95',
           'disabled:cursor-not-allowed disabled:opacity-60 motion-reduce:transition-none',
-          size === 'lg' ? 'h-12 w-full px-4 text-body' : 'h-9 px-4 text-body-sm',
+          size === 'lg' ? 'h-12 w-full px-4 text-body' : size === 'md' ? 'h-11 w-full px-4 text-body' : 'h-9 px-4 text-body-sm',
           FOCUS_RING,
         )}
       >
