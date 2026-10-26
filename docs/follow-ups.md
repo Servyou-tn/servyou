@@ -4960,22 +4960,33 @@ fixture seller with an orderable item: `prelaunch-shop-read-rls`, `buyer-cancell
 three `h5-service-*`, and `h6-service-listings-hardening-rls`. `orders-lifecycle-columns` keeps its original
 inline copy from PR #193. Any NEW live suite that seeds a seller must call it before its first orders delete.
 The other 11 live suites seed no product or service listing, so a real customer cannot order from their
-fixtures.
+fixtures. `scripts/rls-smoke.mjs` (not a suite, never run) seeds an active product and listing and reaps every
+`@rls-smoke.servyou.invalid` user with no guard — other suites' live fixtures included.
 
 ### LOW — the guard checks once, then deletes: a real order placed in between still cascades
 
-- The window is the few hundred ms between the SELECT and the last `deleteUser`. **Close it if wanted:** hide
-  every fixture product / listing (service role, `status = 'hidden'`) first, so migration 54 refuses new
-  orders, then run the guard, then delete. #193 has the same window.
+- The window runs from the SELECT to the last `deleteUser`: up to ~20 sequential round trips after the
+  check (`suspension-enforcement`: orders, audit log, an avatar sweep per user, 9 `deleteUser`), so seconds,
+  not milliseconds. **Narrow it if wanted:** hide every fixture product / listing (service role,
+  `status = 'hidden'`) first, so migration 54 refuses new orders, then run the guard, then delete. Admins are
+  not covered — migration 54 returns before its live check for `is_admin()` — which is why the guard must
+  still run after the hide. #193 has the same window.
 
-### LOW — favourites and job responses still cascade away with the fixtures
+### LOW — favourites, job responses and fixture categories still go with the fixtures
 
 - A real user's favourite of a live fixture item, or a real freelancer's `job_responses` row on an open fixture
-  job post, is deleted with the fixture user (`favorites.product_id` / `service_listing_id` and
+  job post, is deleted with the fixtures (`favorites.product_id` / `service_listing_id` and
   `job_responses.job_post_id` are ON DELETE CASCADE). Suites with an open fixture post: `prelaunch-shop-read-rls`,
-  `profiles-rls`, `job-limits`, `progressive-phone.integration`, `job-responses-integrity`. Lower stakes than
-  an order (no money, no address), but it is still a real user's row. **Fix:** the same refuse-then-resolve
-  guard, keyed on `favorites.user_id` / `job_responses.freelancer_id` outside the fixture set.
+  `suspension-enforcement`, `profiles-rls`, `job-limits`, `progressive-phone.integration`,
+  `job-responses-integrity`. Three of them (`profiles-rls:88`, `job-limits:86`, `progressive-phone:82`) do not
+  even wait for the cascade: they run `job_responses.delete().in('job_post_id', testPostIds)` directly. Lower
+  stakes than an order (no money, no address), but it is still a real user's row. **Fix:** the same
+  refuse-then-resolve guard, keyed on `favorites.user_id` / `job_responses.freelancer_id` outside the fixture
+  set, placed before those direct deletes.
+- `h6-service-listings-hardening-rls` seeds real `categories` rows (`h6-hard-sector-*` / `h6-hard-sub-*`) for
+  the whole run and deletes them last. If a real seller picks one meanwhile (not checked whether the pickers
+  list them), the delete clears their product / listing category (`category_id` / `subcategory_id` are ON
+  DELETE SET NULL) or deletes their `shop_categories` row (ON DELETE CASCADE). Never an order.
 
 ### LOW — nine live suites run on every default `vitest run`, against production
 
