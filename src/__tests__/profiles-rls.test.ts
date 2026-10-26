@@ -161,7 +161,7 @@ describe.skipIf(!hasCreds)('get_contact_phone: relationship-gated access', () =>
     await admin.from('job_responses').insert({
       job_post_id: post!.id,
       freelancer_id: freelancer.id,
-      proposal_message: 'RLS test proposal',
+      proposal_message: 'RLS test proposal for profiles',
     })
 
     const { data: phone, error } = await clientFreelancer

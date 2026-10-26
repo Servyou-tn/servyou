@@ -11,8 +11,8 @@ import { isAnnoncePastExpiry, resolveAnnonceStatus, type AnnonceDisplayStatus } 
 // yield the same not-found state, no information leak). Errors are captured, never silent [].
 //
 // Schema notes (verified against the live DB, not assumed):
-//   - job_responses has only (id, job_post_id, freelancer_id, proposal_message, created_at) —
-//     no proposed_price / proposed_timeframe columns exist.
+//   - job_responses also carries proposed_price_tnd / proposed_timeframe / portfolio_links (and
+//     job_response_skills) since migration 69; this query does not read them yet.
 //   - job_responses.freelancer_id is a profiles.id (NOT freelancer_profiles.id); it is the
 //     get_contact_phone(target) value and the post-owner is authorized via the responder path.
 //   - There is no avatar column anywhere → the UI falls back to initials.

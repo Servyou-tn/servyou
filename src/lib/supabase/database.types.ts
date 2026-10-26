@@ -1,7 +1,7 @@
 // Generated from the live Supabase schema (project xggomcitqrkaylqezjjz) — DO NOT EDIT BY HAND.
 // Regenerate after every applied migration: Supabase MCP generate_typescript_types (or
 // `npx supabase gen types typescript --project-id xggomcitqrkaylqezjjz`), then commit.
-// Generated 2026-10-26 after migration 20261026173800 job_posts_response_count.
+// Generated 2026-10-26 after migration 20261026195409 job_responses_proposal_fields.
 
 export type Json =
   | string
@@ -702,27 +702,65 @@ export type Database = {
           },
         ]
       }
+      job_response_skills: {
+        Row: {
+          created_at: string
+          id: string
+          job_response_id: string
+          skill: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          job_response_id: string
+          skill: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          job_response_id?: string
+          skill?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "job_response_skills_job_response_id_fkey"
+            columns: ["job_response_id"]
+            isOneToOne: false
+            referencedRelation: "job_responses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       job_responses: {
         Row: {
           created_at: string
           freelancer_id: string
           id: string
           job_post_id: string
+          portfolio_links: Json
           proposal_message: string | null
+          proposed_price_tnd: number | null
+          proposed_timeframe: string | null
         }
         Insert: {
           created_at?: string
           freelancer_id: string
           id?: string
           job_post_id: string
+          portfolio_links?: Json
           proposal_message?: string | null
+          proposed_price_tnd?: number | null
+          proposed_timeframe?: string | null
         }
         Update: {
           created_at?: string
           freelancer_id?: string
           id?: string
           job_post_id?: string
+          portfolio_links?: Json
           proposal_message?: string | null
+          proposed_price_tnd?: number | null
+          proposed_timeframe?: string | null
         }
         Relationships: [
           {
