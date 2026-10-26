@@ -111,6 +111,23 @@ describe('SkillsPicker', () => {
     expect(seen.at(-1)).toEqual(['Motion design'])
   })
 
+  it('custom mode: commas / semicolons separate skills, a part that is in the pool uses the POOL spelling, nothing is dropped silently', async () => {
+    const seen: string[][] = []
+    render(<Harness custom onValue={(v) => seen.push(v)} />)
+    const user = await open()
+    await user.type(screen.getByRole('searchbox', { name: 'Rechercher' }), 'figma, Cobol; node')
+    await user.click(screen.getByRole('button', { name: /Ajouter « Figma, Cobol, Node »/ }))
+    expect(seen.at(-1)).toEqual(['Figma', 'Cobol', 'Node'])
+  })
+
+  it('custom mode: typing exactly a pool option offers no add row (the option itself is listed)', async () => {
+    render(<Harness custom />)
+    const user = await open()
+    await user.type(screen.getByRole('searchbox', { name: 'Rechercher' }), 'react')
+    expect(screen.queryByText(/Ajouter/)).not.toBeInTheDocument()
+    expect(screen.getByRole('checkbox', { name: 'React' })).toBeInTheDocument()
+  })
+
   it('custom mode does not offer to add something already in the pool or already selected (accent/case-insensitive)', async () => {
     render(<Harness custom initial={['Rédaction']} />)
     const user = await open()

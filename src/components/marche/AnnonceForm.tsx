@@ -3,15 +3,16 @@
 import { useState, useTransition, useId } from 'react'
 import Link from 'next/link'
 import { useLang } from '@/components/LangProvider'
-import { t } from '@/lib/i18n'
+import { t, tn } from '@/lib/i18n'
 import { GOVERNORATES } from '@/lib/tunisia-governorates'
 import { FOCUS_RING, CARD_SHADOW, SELECT_FIELD_BASE } from '@/components/layout/styles'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
-import { TagInput } from '@/components/ui/tag-input'
+import { SkillsPicker } from '@/components/missions/SkillsPicker'
 import { Button } from '@/components/ui/button'
 import { createAnnonce } from '@/app/mes-annonces/nouvelle/actions'
 import { ANNONCE_SKILLS_MAX } from '@/lib/marche/job-post-validation'
+import { getSkillPool } from '@/lib/taxonomy/service-categories'
 
 // PR-D — rebuilt on the design system, measured to be visually indistinguishable in identity
 // from G6 "Ajouter un produit" and E1 "Demander". Card/section shape borrows G6's (single
@@ -43,7 +44,7 @@ type Errors = {
   deadline?: string
 }
 
-export function AnnonceForm({ categories }: { categories: { id: string; name_fr: string }[] }) {
+export function AnnonceForm({ categories }: { categories: { id: string; slug: string; name_fr: string }[] }) {
   const lang = useLang()
   const [pending, startTransition] = useTransition()
   const [errors, setErrors] = useState<Errors>({})
@@ -58,6 +59,13 @@ export function AnnonceForm({ categories }: { categories: { id: string; name_fr:
   const [isRemote, setIsRemote] = useState(false)
   const [deadline, setDeadline] = useState('')
   const [skills, setSkills] = useState<string[]>([])
+
+  // Suggestions for the CHOSEN category only (taxonomy sector = categories.slug). Stored as the French label so a freelancer's
+  // profile skill and a post skill compare as the same text whichever language the poster browses in.
+  const chosenSlug = categories.find((c) => c.id === categoryId)?.slug
+  const skillSections = chosenSlug
+    ? [{ id: 'suggested', label: t('annonce.form.skills_suggested', lang), options: getSkillPool(chosenSlug).map((s) => s.labelFr) }]
+    : []
 
   // Validation is duplicated on purpose, not defensively — same posture as E1
   // (ServiceRequestForm.tsx): these are UX checks and job-post-validation.ts's validateJobPost
@@ -144,14 +152,22 @@ export function AnnonceForm({ categories }: { categories: { id: string; name_fr:
           onChange={(e) => setDescription(e.target.value)}
         />
 
-        <TagInput
+        {/* Skills are SEPARATE tags picked from the chosen category's pool, or typed and added one at a time (commas separate
+            several). The old TagInput took one free-text box and saved « higsfild claude adobe » as a single skill. The
+            category is never chosen for the user: the suggestions simply appear once they pick one. */}
+        <SkillsPicker
+          sections={skillSections}
           value={skills}
           onChange={setSkills}
           max={ANNONCE_SKILLS_MAX}
           label={t('annonce.form.skills_label', lang)}
-          placeholder={t('annonce.form.skills_ph', lang)}
-          helper={t('annonce.form.skills_helper', lang)}
-          getRemoveLabel={(skill) => t('annonce.form.skills_remove', lang, { name: skill })}
+          helper={`${t('annonce.form.skills_helper', lang)} ${t('annonce.form.skills_hint', lang)}`}
+          placeholder={t('annonce.form.skills_pick', lang)}
+          selectedLabel={(n) => tn('annonce.form.skills_selected', lang, n)}
+          removeLabel={(skill) => t('annonce.form.skills_remove', lang, { name: skill })}
+          searchPlaceholder={t('annonce.form.skills_search', lang)}
+          emptyLabel={t('annonce.form.skills_empty', lang)}
+          custom={{ addLabel: (name) => t('annonce.form.skills_add', lang, { name }), maxLength: 60 }}
         />
 
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">

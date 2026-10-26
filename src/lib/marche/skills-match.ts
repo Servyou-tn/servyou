@@ -14,7 +14,8 @@ export function skillKey(skill: string): string {
     .trim()
 }
 
-function unique(skills: readonly string[]): string[] {
+/** Trim, drop blanks, and keep the first spelling of each skill (accent/case-insensitive). */
+export function uniqueSkills(skills: readonly string[]): string[] {
   const seen = new Set<string>()
   const out: string[] = []
   for (const s of skills) {
@@ -35,8 +36,8 @@ export function splitSkills(
   required: readonly string[],
   mine: readonly string[],
 ): { required: string[]; others: string[]; preselected: string[] } {
-  const req = unique(required)
-  const own = unique(mine)
+  const req = uniqueSkills(required)
+  const own = uniqueSkills(mine)
   const ownKeys = new Set(own.map(skillKey))
   const reqKeys = new Set(req.map(skillKey))
   return {
@@ -57,7 +58,7 @@ export function canonicalizeSkills(
   mine: readonly string[],
 ): { accepted: string[]; rejected: string[] } {
   const pool = new Map<string, string>()
-  for (const s of [...unique(required), ...unique(mine)]) if (!pool.has(skillKey(s))) pool.set(skillKey(s), s)
+  for (const s of [...uniqueSkills(required), ...uniqueSkills(mine)]) if (!pool.has(skillKey(s))) pool.set(skillKey(s), s)
   const accepted: string[] = []
   const rejected: string[] = []
   const seen = new Set<string>()

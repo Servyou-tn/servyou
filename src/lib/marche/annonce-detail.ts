@@ -2,6 +2,7 @@ import { cache } from 'react'
 import { createClient } from '@/lib/supabase/server'
 import { MAX_RESPONSES_PER_POST } from '@/lib/job-constants'
 import { isAnnoncePastExpiry, resolveAnnonceStatus, type AnnonceDisplayStatus } from '@/lib/marche/annonce-status'
+import { parseSentLinks, type SentLink } from '@/lib/marche/sent-proposal-query'
 
 // Single-annonce detail fetch for /mes-annonces/[id] — the consumer's view of one job post
 // plus the freelancer responses to it. RLS already restricts job_posts SELECT to
@@ -11,8 +12,9 @@ import { isAnnoncePastExpiry, resolveAnnonceStatus, type AnnonceDisplayStatus } 
 // yield the same not-found state, no information leak). Errors are captured, never silent [].
 //
 // Schema notes (verified against the live DB, not assumed):
-//   - job_responses has only (id, job_post_id, freelancer_id, proposal_message, created_at) —
-//     no proposed_price / proposed_timeframe columns exist.
+//   - job_responses carries the proposal's terms since migration 20261026195409 (M-C): proposed_price_tnd,
+//     proposed_timeframe, portfolio_links (jsonb, ≤ 3 { url, label? }) and the job_response_skills join table. The post
+//     owner reads all of them through the same « Post owner and responder read responses » policy (missions PR-4).
 //   - job_responses.freelancer_id is a profiles.id (NOT freelancer_profiles.id); it is the
 //     get_contact_phone(target) value and the post-owner is authorized via the responder path.
 //   - There is no avatar column anywhere → the UI falls back to initials.
@@ -54,6 +56,11 @@ export type AnnonceResponse = {
   city: string | null
   proposalMessage: string | null
   createdAt: string
+  /** What the freelancer proposed to charge (TND); null = « selon budget ». */
+  proposedPrice: number | null
+  proposedTimeframe: string | null
+  links: SentLink[]
+  skills: string[]
 }
 
 export type AnnonceDetailData = {
@@ -137,15 +144,27 @@ export const getAnnonceDetail = cache(
     // Responses to this post. RLS lets the post owner read them all.
     const { data: respData, error: respErr } = await supabase
       .from('job_responses')
-      .select('id, freelancer_id, proposal_message, created_at')
+      .select(
+        `id, freelancer_id, proposal_message, created_at, proposed_price_tnd, proposed_timeframe, portfolio_links,
+         job_response_skills ( skill )`,
+      )
       .eq('job_post_id', row.id)
       .order('created_at', { ascending: false })
-    if (respErr) console.error('[annonce-detail] responses fetch error:', respErr)
-    const respRows = (respData ?? []) as {
+      .order('created_at', { referencedTable: 'job_response_skills', ascending: true })
+    // Throws instead of rendering « no responses »: a failed read must never tell the owner nobody answered.
+    if (respErr) {
+      console.error('[annonce-detail] responses fetch error:', respErr.message, respErr.code, respErr.details)
+      throw new Error(`annonce responses fetch failed: ${respErr.message}`)
+    }
+    const respRows = (respData ?? []) as unknown as {
       id: string
       freelancer_id: string
       proposal_message: string | null
       created_at: string
+      proposed_price_tnd: number | string | null
+      proposed_timeframe: string | null
+      portfolio_links: unknown
+      job_response_skills: { skill: string }[] | null
     }[]
 
     // Resolve responder display data. Names + profile-level city come from the public_profiles
@@ -183,6 +202,10 @@ export const getAnnonceDetail = cache(
       city: headlineCity.get(r.freelancer_id)?.city ?? nameCity.get(r.freelancer_id)?.city ?? null,
       proposalMessage: r.proposal_message,
       createdAt: r.created_at,
+      proposedPrice: r.proposed_price_tnd == null ? null : Number(r.proposed_price_tnd),
+      proposedTimeframe: r.proposed_timeframe,
+      links: parseSentLinks(r.portfolio_links),
+      skills: (r.job_response_skills ?? []).map((s) => s.skill),
     }))
 
     const isExpired = isAnnoncePastExpiry(row.created_at)

@@ -473,17 +473,18 @@ export async function getMyAnnonces(userId: string): Promise<MyAnnonce[]> {
 // subcategories interleaved alphabetically by name_fr. A job post files at SECTOR granularity only
 // (job_posts.category_id has no UI path to a leaf category today) — the picker offering leaves
 // would be a second, separate feature decision, not a side effect of this filter.
-export async function getCategories(): Promise<{ id: string; name_fr: string }[]> {
+export async function getCategories(): Promise<{ id: string; slug: string; name_fr: string }[]> {
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('categories')
-    .select('id, name_fr')
+    .select('id, slug, name_fr')
     .in('kind', ['service', 'both'])
     .is('parent_id', null)
     .order('name_fr')
   if (error) {
+    // Throws (it used to return []): an empty category select makes the form impossible to submit with no explanation.
     console.error('[my-data] categories fetch error:', error.message, error.code, error.details)
-    return []
+    throw new Error(`categories fetch failed: ${error.message}`)
   }
-  return (data ?? []) as { id: string; name_fr: string }[]
+  return (data ?? []) as { id: string; slug: string; name_fr: string }[]
 }

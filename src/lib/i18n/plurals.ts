@@ -64,6 +64,7 @@ const frPlurals: Record<string, PluralVariants> = {
   'missiondetail.expires':                 { one: 'Expire dans {count} jour', other: 'Expire dans {count} jours' },
   'missiondetail.expires_value':           { one: '{count} jour', other: '{count} jours' },
   'proposal.form.skills_selected':         { one: '{count} compétence sélectionnée', other: '{count} compétences sélectionnées' },
+  'annonce.form.skills_selected':          { one: '{count} compétence', other: '{count} compétences' },
   'proposal.sent.step3':                   { one: '{count} autre freelance a répondu à cette mission.', other: '{count} autres freelances ont répondu à cette mission.' },
   'seller.dashboard.tile.profit_sub':      { one: 'Sur {count} commande livrée', other: 'Sur {count} commandes livrées' },
 
@@ -124,6 +125,7 @@ const arPlurals: Record<string, PluralVariants> = {
   'missiondetail.expires':                 { one: 'تنتهي خلال {count} يوم', two: 'تنتهي خلال {count} يومين', other: 'تنتهي خلال {count} أيام' },
   'missiondetail.expires_value':           { one: '{count} يوم', two: '{count} يومين', other: '{count} أيام' },
   'proposal.form.skills_selected':         { one: 'تم اختيار {count} مهارة', two: 'تم اختيار {count} مهارتين', other: 'تم اختيار {count} مهارات' },
+  'annonce.form.skills_selected':          { one: '{count} مهارة', two: '{count} مهارتان', other: '{count} مهارات' },
   'proposal.sent.step3':                   { one: 'ردّ {count} مستقل آخر على هذه المهمة.', two: 'ردّ {count} مستقلان آخران على هذه المهمة.', other: 'ردّ {count} مستقلين آخرين على هذه المهمة.' },
   // Preceded by "من" (from) → dual takes the oblique form (طلبين, not طلبان). Non-human plural
   // "طلبات" takes feminine-singular adjective agreement ("مُستلَمة", not "مُستلَمين").

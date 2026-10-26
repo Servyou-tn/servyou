@@ -31,3 +31,13 @@ DB state used (all live): M-A `response_count`, M-B responder-read policy + `has
 ## Not done
 - The specimens `378:10947` (« offre fermée pendant l'écriture » banner) — L3, above.
 - The 20-character floor is the architect's number; the DB enforces it (`NOT VALID` CHECK, applied to new rows).
+
+---
+
+# PR-4 — consumer side (stacked on PR-2)
+
+- **The post owner sees each proposal's terms** on `/mes-annonces/[id]`: price (TND, pinned LTR), délai, portfolio links (anchors with `target=_blank rel="noopener noreferrer nofollow"`), skills. Absent when empty — a message-only proposal renders exactly as before. `getAnnonceDetail` reads the M-C columns + `job_response_skills`; a failed responses read now **throws** (it used to render « no responses », which tells the owner nobody answered).
+- **`/mes-annonces/nouvelle` skills field is the `SkillsPicker`** (custom mode): suggestions are the taxonomy pool of the *chosen* category; a typed text is added on its own, commas / semicolons separate several skills, a space never splits; a part that exists in the pool takes the pool's spelling. Server-side `validateJobPost` now de-duplicates accent/case-insensitively. This replaces the free-text `TagInput` that let « higsfild claude adobe » be saved as one tag.
+- **The category is never chosen for the user** — the code already started on the placeholder (verified live: `value=""`) and still refuses a submit without one; the suggestions simply appear once the user picks it. Pinned by a test.
+- Skills are stored in their **French label** (so a freelancer's profile skill and a post skill compare as one text whichever language the poster browses in); per-language labels for the suggestions are a follow-up.
+- `getCategories()` now returns `slug` (the taxonomy key) and **throws** on error instead of returning `[]` (an empty category select made the form impossible to submit with no explanation).
