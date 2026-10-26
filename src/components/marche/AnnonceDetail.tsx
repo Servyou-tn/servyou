@@ -16,6 +16,7 @@ import { EmptyState } from '@/components/marche/EmptyState'
 import { ConfirmModal } from '@/components/marche/ConfirmModal'
 import { AnnonceResponseCard } from '@/components/marche/AnnonceResponseCard'
 import { ANNONCE_STATUS_PILL } from '@/lib/marche/annonce-status'
+import { formatTunisDate } from '@/lib/datetime'
 import type { AnnonceDetailData } from '@/lib/marche/annonce-detail'
 import {
   closeMissionAction,
@@ -25,10 +26,6 @@ import {
 
 function formatPrice(n: number): string {
   return `${new Intl.NumberFormat('fr-TN').format(n)} TND`
-}
-
-function formatDate(iso: string): string {
-  return new Date(iso).toLocaleDateString('fr-TN', { day: 'numeric', month: 'long', year: 'numeric' })
 }
 
 export function AnnonceDetail({ annonce }: { annonce: AnnonceDetailData }) {
@@ -149,7 +146,7 @@ export function AnnonceDetail({ annonce }: { annonce: AnnonceDetailData }) {
           <div className="mt-2 flex flex-wrap items-center gap-2 text-body-sm text-text-muted">
             <StatusPill status={pillStatus}>{t(statusLabelKey, lang)}</StatusPill>
             <span aria-hidden="true">·</span>
-            <span>{t('annonces.detail.posted_on', lang, { date: formatDate(annonce.createdAt) })}</span>
+            <span>{t('annonces.detail.posted_on', lang, { date: formatTunisDate(annonce.createdAt, lang, 'long') })}</span>
             <span aria-hidden="true">·</span>
             <span className={cn('rounded-full px-3 py-1 text-xs font-medium', responseBadgeCls)}>
               {responseBadgeLabel}
@@ -221,11 +218,11 @@ export function AnnonceDetail({ annonce }: { annonce: AnnonceDetailData }) {
               </div>
               <div>
                 <dt className="text-sm font-medium text-text-muted">{t('annonces.detail.deadline_label', lang)}</dt>
-                {/* dir="ltr" only around the date string — "Aucune" (deadline_none) is real
-                    translated text and must stay in the ambient RTL flow. */}
+                {/* The date is formatted in the active language and Africa/Tunis (it used to be hard-coded fr-TN,
+                    which is why it was pinned dir="ltr"); an Arabic month name now flows with the RTL text. */}
                 <dd className="mt-1 text-base text-text-primary">
                   {annonce.deadline ? (
-                    <span dir="ltr">{formatDate(annonce.deadline)}</span>
+                    <span>{formatTunisDate(annonce.deadline, lang, 'long')}</span>
                   ) : (
                     t('annonces.detail.deadline_none', lang)
                   )}

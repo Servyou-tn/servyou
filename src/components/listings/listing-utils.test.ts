@@ -1,21 +1,7 @@
 import { describe, it, expect } from 'vitest'
-import { initials, tndPrice } from './listing-utils'
+import { tndPrice } from './listing-utils'
 
-describe('initials', () => {
-  it('two words → two letters, uppercase', () => {
-    expect(initials('Mohamed Ali')).toBe('MA')
-  })
-  it('one word → one letter', () => {
-    expect(initials('Sarra')).toBe('S')
-  })
-  it('three words → first two only', () => {
-    expect(initials('Ahmed Ben Salah')).toBe('AB')
-  })
-  it('null / empty → placeholder', () => {
-    expect(initials(null)).toBe('?')
-    expect(initials('   ')).toBe('?')
-  })
-})
+// `initials` moved to the one shared helper (components/ui/initials.ts) — its tests live there.
 
 describe('tndPrice', () => {
   it('integer → no decimals', () => {

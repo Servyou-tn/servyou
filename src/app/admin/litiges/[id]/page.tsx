@@ -9,6 +9,7 @@ import type { DisputeRow } from '@/lib/types/dispute'
 import { ClaimDisputeButton } from './ClaimDisputeButton'
 import { ResolveDisputeForm } from './ResolveDisputeForm'
 import { DismissDisputeForm } from './DismissDisputeForm'
+import { formatTunisDate } from '@/lib/datetime'
 
 type Props = { params: Promise<{ id: string }> }
 
@@ -25,10 +26,9 @@ type OrderContext = {
   cancellation_reason: string | null
 }
 
+// Africa/Tunis, not the server's timezone (lib/datetime.ts).
 function formatDate(value: string, lang: Lang): string {
-  return new Date(value).toLocaleDateString(lang === 'ar' ? 'ar-TN' : 'fr-TN', {
-    day: '2-digit', month: 'short', year: 'numeric',
-  })
+  return formatTunisDate(value, lang, 'medium')
 }
 
 const STATUS_BADGE: Record<string, string> = {

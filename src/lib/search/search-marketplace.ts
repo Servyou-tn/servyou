@@ -8,6 +8,7 @@ import {
   PER_PAGE,
   pickCategoryIds,
   scoreListing,
+  serviceCategoryOrClause,
   stripAccents,
   type SearchParams,
   type SearchType,
@@ -132,6 +133,7 @@ type ServiceRow = {
 type AnyQuery = {
   eq: (col: string, v: string | number) => AnyQuery
   in: (col: string, vals: readonly (string | number)[]) => AnyQuery
+  or: (filters: string) => AnyQuery
   gte: (col: string, v: number) => AnyQuery
   lte: (col: string, v: number) => AnyQuery
   textSearch: (
@@ -178,7 +180,12 @@ function applyServiceFilters<Q extends AnyQuery>(
   categoryIds: string[] | null,
 ): Q {
   let out = applySearch(q, params.q)
-  if (categoryIds) out = out.in('category_id', categoryIds) as Q
+  if (categoryIds) {
+    // category_id OR subcategory_id — a /categories/<subcategory> page must find the listings filed under that
+    // leaf (see serviceCategoryOrClause). No valid id → match nothing, never "no filter".
+    const scope = serviceCategoryOrClause(categoryIds)
+    out = (scope ? out.or(scope) : out.in('category_id', [])) as Q
+  }
   // City filter — city lives on freelancer_profiles, so the predicate is applied THROUGH the
   // services→freelancer embed, and only when a city is actually selected. It is never a gate:
   // with no ?ville=, no city clause is added at all, so listings whose freelancer has a blank

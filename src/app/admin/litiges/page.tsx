@@ -5,16 +5,16 @@ import { createClient } from '@/lib/supabase/server'
 import { requireAdmin } from '@/lib/auth/require-admin'
 import type { Lang } from '@/lib/i18n'
 import type { DisputeRow } from '@/lib/types/dispute'
+import { formatTunisDate } from '@/lib/datetime'
 
 // created_by_role is a literal ('buyer'/'seller'), not a user id — so unlike the
 // reports queue this list needs no public_profiles name resolution. The role renders
 // straight through admin.disputes.role_*.
 type DisputeListRow = Pick<DisputeRow, 'id' | 'order_id' | 'created_by_role' | 'reason' | 'created_at' | 'status'>
 
+// Africa/Tunis, not the server's timezone (lib/datetime.ts).
 function formatDate(value: string, lang: Lang): string {
-  return new Date(value).toLocaleDateString(lang === 'ar' ? 'ar-TN' : 'fr-TN', {
-    day: '2-digit', month: 'short', year: 'numeric',
-  })
+  return formatTunisDate(value, lang, 'medium')
 }
 
 const STATUS_BADGE: Record<string, string> = {

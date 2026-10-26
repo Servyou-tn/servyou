@@ -23,6 +23,7 @@ import { cn } from '@/lib/utils'
 import { StatTile } from '@/app/mes-services/_components/StatTile'
 import { EngagementRow } from './_components/EngagementRow'
 import { EngagementSearch } from './_components/EngagementSearch'
+import { COL } from './_components/engagement-columns'
 
 export const metadata: Metadata = { title: 'Mes engagements — Servyou' }
 
@@ -210,18 +211,19 @@ export default async function MesEngagementsPage({
           </div>
         ) : (
           <div className="overflow-hidden rounded-xl border border-border-subtle bg-surface-base">
-            {/* table-header: surface/subtle, px 24 py 12, gap 16, Medium 12 / 17 uppercase tracking 0.24.
-                lg only — below it each row labels its own cells. */}
+            {/* table-header: surface/subtle, py 12, Medium 12 / 17 uppercase tracking 0.24; px / gap / widths come from
+                COL, shared with the rows (px 24 / gap 16 from 1400 px, compact below). xl only — below it each row
+                labels its own cells. */}
             <div
               aria-hidden="true"
-              className="hidden items-center gap-4 border-b border-border-subtle bg-surface-subtle px-6 py-3 text-caption font-medium uppercase tracking-[0.24px] text-text-muted lg:flex"
+              className={`hidden items-center border-b border-border-subtle bg-surface-subtle py-3 text-caption font-medium uppercase tracking-[0.24px] text-text-muted xl:flex ${COL.line}`}
             >
-              <span className="w-[200px] shrink-0">{t('engagements.col.client', lang)}</span>
-              <span className="min-w-0 flex-1">{t('engagements.col.service', lang)}</span>
-              <span className="w-[105px] shrink-0">{t('engagements.col.status', lang)}</span>
-              <span className="w-[140px] shrink-0">{t('engagements.col.budget', lang)}</span>
-              <span className="w-[160px] shrink-0">{t('engagements.col.timeframe', lang)}</span>
-              <span className="w-[208px] shrink-0" />
+              <span className={COL.client}>{t('engagements.col.client', lang)}</span>
+              <span className={COL.service}>{t('engagements.col.service', lang)}</span>
+              <span className={COL.statut}>{t('engagements.col.status', lang)}</span>
+              <span className={COL.budget}>{t('engagements.col.budget', lang)}</span>
+              <span className={COL.delai}>{t('engagements.col.timeframe', lang)}</span>
+              <span className={COL.actions} />
             </div>
             <ul>
               {data.engagements.map((engagement) => (
