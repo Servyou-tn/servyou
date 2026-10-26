@@ -1563,7 +1563,7 @@ export const fr: Record<string, string> = {
   'mesCommandes.collapse':         "Masquer le détail",
   'mesCommandes.untitled':         "Service indisponible",
   'mesCommandes.priceFrom':        "À partir de",
-  'mesCommandes.ref':              "Commande #{ref} · Passée le {date}",
+  'mesCommandes.ref':              "Commande {ref} · Passée le {date}",
   'mesCommandes.whatsapp':         "Contacter sur WhatsApp",
   'mesCommandes.whatsapp.message': "Bonjour, je vous contacte au sujet de ma commande « {service} » sur Servyou.",
   'mesCommandes.whatsapp.none':    "Ce freelance n'a pas encore ajouté de numéro WhatsApp.",
@@ -1572,6 +1572,15 @@ export const fr: Record<string, string> = {
   'mesCommandes.cancelledBy':      "Annulée par {who}",
   'mesCommandes.cancelled.buyer':  "vous",
   'mesCommandes.cancelled.seller': "le freelance",
+  // Produits tab (Figma 704:58976)
+  'mesCommandes.cancelled.shop':           "le vendeur",
+  'mesCommandes.empty.produits':           "Vous n'avez pas encore de commande de produit.",
+  'mesCommandes.empty.produits.subtitle':  "Vos commandes de produits apparaîtront ici dès que vous en aurez passé une.",
+  'mesCommandes.empty.produits.cta':       "Parcourir les produits",
+  'mesCommandes.untitled.product':         "Produit indisponible",
+  'mesCommandes.whatsapp.message_product': "Bonjour, je vous contacte au sujet de ma commande {ref} « {product} » sur Servyou.",
+  'mesCommandes.whatsapp.none_shop':       "Ce vendeur n'a pas encore ajouté de numéro WhatsApp.",
+  'mesCommandes.cancel.body':              "Cette action est définitive. Le vendeur en sera informé.",
 
   // ─── Orders — my orders + confirmation ───────────────────────────────────────
   'orders.title':              "Mes demandes",

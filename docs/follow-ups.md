@@ -4904,6 +4904,42 @@ returns `[]`, i.e. a silent empty list — the rule is to surface the error.
 - `supabase_admin`'s own default privileges in `public` still grant everything to anon / authenticated; they
   cannot be altered as `postgres`. Only a table or function created by `supabase_admin` (platform tooling)
   would inherit them.
+## Missions M-C — proposal fields, typed response errors (`feat/missions-m-c`, 2026-10-26)
+
+### LOW — three legacy responses are below the 20-character floor
+
+- The 3 pre-M-C `job_responses` rows (3–12 characters) were kept (the CHECK is NOT VALID), so any later
+  write of one fails 23514 even from the service role. **Fix if one ever needs editing:** lengthen its
+  message in the same UPDATE, or delete it (they are test-era rows).
+
+### LOW→MEDIUM — the per-link loop runs before the 3-link CHECK, under the post lock (fix in the next migration)
+
+- `enforce_job_response_fields` fires after `check_job_response_limits` (alphabetical), i.e. while the post
+  row is locked FOR UPDATE and the freelancer's advisory lock is held, and the `<= 3` rule lives only in the
+  CHECK, which runs after BEFORE triggers. A freelancer can send thousands of distinct valid links: the loop is
+  O(n²) (`text[]` append + `= any`) and holds that post's lock until `statement_timeout`, stalling other
+  responders and the owner's updates; repeatable (the statement rolls back). **Fix (one line, forward
+  migration):** `if jsonb_array_length(new.portfolio_links) > 3 then return new; end if;` right after the
+  array guard, so the CHECK names the failure without the loop.
+
+### LOW — `job_unavailable` tells a moderated post apart
+
+- The message is the shared « n'est plus ouverte », but the HINT is distinct from `job_filled` /
+  `job_deleted`, so a freelancer holding a post's UUID can tell it was moderated. **Fix if wanted:** emit
+  `job_closed` for the moderated case too (H12 maps both to the same copy anyway).
+
+### LOW — a multi-row service-role INSERT can pass the 10-cap
+
+- The cap now reads `response_count`, which the AFTER ROW counter bumps, so one multi-row INSERT of different
+  freelancers into the same post sees the pre-statement count. Clients cannot do this (`freelancer_id =
+  auth.uid()` per row); only the service role can.
+
+### LOW — the 8-skill limit is checked before RLS on `job_response_skills`
+
+- `enforce_job_response_skills_limit` (BEFORE INSERT, SECURITY DEFINER) runs before the RLS WITH CHECK, so a
+  non-responder who knows a response id sees `too_many_skills` instead of the RLS refusal once that response
+  has 8 skills — learning only that count. Response ids are visible only to the responder and the post owner.
+  **Fix if wanted:** check `freelancer_id = auth.uid()` first inside the trigger.
 
 ## Missions M-A — `job_posts.response_count` + write lock (`feat/missions-m-a`, 2026-10-26)
 
@@ -4941,7 +4977,11 @@ returns `[]`, i.e. a silent empty list — the rule is to surface the error.
   now 42501, and Vercel previews hit the production database. `main` is unaffected; anything revived from those
   branches must drop `updated_at` from the payload.
 
-### LOW — concurrent responses can overshoot the 10-per-post cap (for M-C)
+### ✅ RESOLVED (M-C, migration 69 `20261026195409`, 2026-10-26) — concurrent responses can overshoot the 10-per-post cap (for M-C)
+
+- Fixed: `check_job_response_limits` locks the post FOR UPDATE and reads `response_count`; the 5-active
+  cap takes a per-freelancer advisory lock. Both races are exercised by bursts in
+  `job-responses-proposal-fields.test.ts`. Original entry:
 
 - `check_job_response_limits` counts rows in a BEFORE trigger without locking the post, so two responses
   arriving together can both see 9. `response_count` is now the natural lock point: in M-C (which owns that
@@ -5103,3 +5143,11 @@ fixtures. `scripts/rls-smoke.mjs` (not a suite, never run) seeds an active produ
 - **AR budget labels in the Budget dropdown and chip** (« 200 – 500 د.ت ») are not pinned LTR, unlike the card and facts panel.
 - **Skill filter id list** is capped at 500 matching in-window open posts (explicit `.limit`); an RPC would remove the cap.
 - **Awareness bar « N sur 5 »** can read 4/5 while the DB blocks at 5 when a moderated-but-open post counts toward the cap (gap G5).
+
+### E3 Produits tab — logged, not fixed
+
+- **Tracking is not shown** on a product order (`carrier`, `tracking_number`): not in Figma 704:58976. A natural line under the rail once
+  the seller has dispatched.
+- **Rail scroll position on mobile**: the 7-step rail scrolls sideways below `lg`; it starts at the first stage, so an order that is
+  « En livraison » shows its current stage only after a swipe. Scroll the current node into view if it matters.
+- **Buyer-side cancel on Services** is still the frame's (none). Products have it (see docs/design/e3-produits-measurements.md D5).

@@ -557,6 +557,40 @@ this PR and is not attempted here.
     verified by CC with an admin-API createUser → full `profiles` row. Verified by
     `src/__tests__/prelaunch-acl-hardening.test.ts` (live-DB). Rollback (exact, from live ACL
     dumps) is at the bottom of the file.
+69. **20261026195409_job_responses_proposal_fields** — Applied by the architect 2026-10-26 (recorded
+    version; executable SQL MD5-verified against `schema_migrations`, comments and whitespace
+    stripped: `1abad389`). Post-apply checks (architect): `job_response_skills` RLS on, 3 policies,
+    authenticated SELECT / INSERT / DELETE only, anon none; no client EXECUTE on the 4 new or replaced
+    functions; the 3 legacy short messages untouched; a freelancer JWT (rolled back) got
+    `invalid_links` for a `javascript:` link, the message CHECK for 18 characters, and a valid
+    proposal (250 TND, « 5 jours », a Behance link) moved `response_count` to 1. Missions M-C, gaps G4 +
+    G5 + G7 (`docs/design/h9-h13-measurements.md` §6.4 on `feat/h9-missions`; MC-1 = 20-character
+    floor, MC-2…MC-4 as recommended, 2026-10-26); unblocks H12 and the H11 « MA PROPOSITION » column.
+    **G4:** `job_responses` gains `proposed_price_tnd` numeric(10,2), `proposed_timeframe`,
+    `portfolio_links` jsonb NOT NULL DEFAULT `'[]'`; per-link rules (http(s) only, url ≤ 500, label ≤ 60,
+    keys `url` / `label` only, no duplicate url) in `enforce_job_response_fields()` (BEFORE INSERT /
+    UPDATE OF portfolio_links, hint `invalid_links`). New table `job_response_skills` (RLS: responder
+    inserts / deletes on their own response, readable with the response; authenticated SELECT /
+    INSERT / DELETE, no anon; `trg_enforce_active_user`; at most 8 per response via
+    `enforce_job_response_skills_limit()`, hint `too_many_skills`). **Constraint names H12 maps**
+    (23514 unless noted): `job_responses_proposal_message_length` (20–1000 after trim, NOT VALID: the 3
+    legacy rows of 3–12 characters stay, but any later write of them is checked),
+    `job_responses_proposed_price_range` (0 ≤ x < 1 000 000), `job_responses_proposed_timeframe_length`
+    (1–60), `job_responses_portfolio_links_shape` (array of ≤ 3), `job_response_skills_skill_length`
+    (1–60), unique index `job_response_skills_unique_skill` (23505, case-insensitive). **G5 + G7 +
+    races:** `check_job_response_limits()` (now `search_path ''`) keeps every French message and adds
+    HINT codes `job_not_found` (23503), `job_unavailable` (moderated post — refused, and no longer
+    counted toward the 5-active cap), `job_filled`, `job_deleted`, `job_expired` (stored status or
+    > 30 days), `job_closed` (unreachable today — `job_posts.status` allows only open / filled / expired /
+    deleted — reserved for a future status), `own_post` (42501), `duplicate` (23505), `job_full`, `cap_active`; it locks
+    the post FOR UPDATE (the 10-cap reads the committed `response_count`) and takes a per-freelancer
+    advisory lock (the 5-cap), post lock first for every caller. `enforce_job_responder_capability()`:
+    same body, hints `not_self`, `not_freelancer`, `under_18`, `suspended` (shadowed for JWT callers
+    by `trg_enforce_active_user`'s « Ce compte est suspendu. », MC-4), `no_freelancer_profile`,
+    `profile_hidden`. Verified by `src/__tests__/job-responses-proposal-fields.test.ts` (live-DB,
+    including both cap races). Rollback (in the file) drops the new columns and table — **lossy once
+    H12 has written proposals**.
+
 70. **20261026200934_job_posts_responder_read** — Applied by the architect 2026-10-26 (recorded
     version; executable SQL MD5-verified against `schema_migrations`, comments and whitespace
     stripped: `48594c5b`). Post-apply checks (architect): `has_responded` EXECUTE anon f /

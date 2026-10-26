@@ -15,12 +15,13 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import {
-  SERVICE_STATUSES,
   ORDER_SORTS,
-  type ServiceOrderStatus,
+  statusesForTab,
+  type OrdersTab,
+  type ProductOrderStatus,
   type OrderSort,
 } from '@/lib/marche/my-orders-params'
-import { STATUS_PILL } from '@/lib/orders/order-status'
+import { statusPillFor } from '@/lib/orders/order-status'
 import { MENU_CONTENT, MENU_ITEM } from '@/components/ui/menu-styles'
 
 // E3 filter bar — Figma filterBar 709:59669 (search 816 + Statut 148 + Trier par 148, gap 12)
@@ -51,16 +52,21 @@ const TRIGGER =
 // consumer (G8's sort select). Strings unchanged.
 
 export function OrdersFilterBar({
+  tab,
   q,
   statut,
   tri,
   basePath,
 }: {
+  /** Picks the status set (8 for Produits, 5 for Services) and the label noun (« Arrivée » vs « Travail livré »). */
+  tab: OrdersTab
   q: string
-  statut: ServiceOrderStatus | 'all'
+  statut: ProductOrderStatus | 'all'
   tri: OrderSort
   basePath: string
 }) {
+  const orderType = tab === 'produits' ? 'product' : 'service'
+  const pillLabelKey = (s: string) => statusPillFor(s, orderType)?.labelKey ?? `common.status_${s}`
   const router = useRouter()
   const sp = useSearchParams()
   const lang = useLang()
@@ -72,7 +78,7 @@ export function OrdersFilterBar({
   }
 
   const statusLabel =
-    statut === 'all' ? t('mesCommandes.filter.allStatus', lang) : t(STATUS_PILL[statut].labelKey, lang)
+    statut === 'all' ? t('mesCommandes.filter.allStatus', lang) : t(pillLabelKey(statut), lang)
 
   return (
     <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:gap-3">
@@ -115,9 +121,9 @@ export function OrdersFilterBar({
               <DropdownMenuRadioItem value="all" className={MENU_ITEM}>
                 {t('mesCommandes.filter.allStatus', lang)}
               </DropdownMenuRadioItem>
-              {SERVICE_STATUSES.map((s) => (
+              {statusesForTab(tab).map((s) => (
                 <DropdownMenuRadioItem key={s} value={s} className={MENU_ITEM}>
-                  {t(STATUS_PILL[s].labelKey, lang)}
+                  {t(pillLabelKey(s), lang)}
                 </DropdownMenuRadioItem>
               ))}
             </DropdownMenuRadioGroup>
