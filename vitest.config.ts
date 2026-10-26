@@ -26,6 +26,7 @@ export const INTEGRATION_GLOBS = [
   '**/orders-lifecycle-columns.test.ts',
   '**/job-posts-response-count.test.ts',
   '**/prelaunch-acl-hardening.test.ts',
+  '**/storage-upload-provenance.test.ts',
   // These nine wrote to production on every default run until 2026-10-26 (missions M-A PR).
   '**/d4-completed-project-count.test.ts',
   '**/d4-freelancer-services-visibility.test.ts',

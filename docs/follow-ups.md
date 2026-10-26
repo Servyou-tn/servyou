@@ -118,6 +118,10 @@ undo them. A closed decision is not a deferral.
 
 ### Orphaned storage objects need a reconciliation sweep before the first deletable image surface
 
+- **Add to the sweep (2026-10-26, decision S-4):** 5 objects in avatars / shop-assets / product-images /
+  portfolio-media have no `uploaded_objects` record (pre-provenance uploads or raw PUTs). Since migration 71
+  nothing can publish them; the sweep should list and delete them (and any future ones until S-3 ships).
+
 - **What:** there is **no transaction spanning Postgres and Supabase Storage**, so a row delete
   cannot atomically delete its object and a trigger cannot reliably do it either. Orphans are a
   **reconciliation problem, not a prevention problem.**
@@ -3992,7 +3996,17 @@ orders INSERT gap (migration 54). Ranked most severe first; each is its own PR u
   instead of deleting it; or exempt the FK-cascade `SET NULL` in `enforce_order_identity_lock` when
   the referenced item is gone.
 
-### LOW — storage provenance missing for avatars and shop assets
+### ✅ PARTLY RESOLVED (migration 71 `20261026205458`, 2026-10-26) — storage provenance missing for avatars and shop assets
+
+- **Column side fixed:** `avatar_url`, `logo_url` and `banner_url` now require a host-anchored URL with an
+  `uploaded_objects` record owned by the row's owner (no bypass); the product / portfolio checks are
+  host-anchored too. **Still open — S-3, the next PR:** raw bytes can still be PUT into one's own folder
+  (unpublishable now); the upload actions move to the service role and the four client INSERT storage
+  policies are dropped.
+- **If Google OAuth is ever re-enabled:** a provider avatar URL is refused by `trg_enforce_avatar_provenance`;
+  it must be downloaded, normalized, uploaded and recorded like any other avatar (`handle_new_user` does not
+  touch `avatar_url` today, so signup is unaffected).
+- Original entry:
 
 - **What:** the `uploaded_objects` provenance trigger guards only `product_images` and
   `freelancer_portfolio_items`. `profiles.avatar_url` and `shops.logo_url` / `banner_url` can be
