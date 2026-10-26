@@ -32,7 +32,7 @@
 
 - **Branch FIRST.** Every new piece of work starts with `git fetch origin && git checkout -b <name> origin/main` — **before any file is touched**, before the first migration, before the first edit. Whatever branch is checked out from the last task is the default state, not a signal about this one. Cutting the branch after the work is done is too late: the previous PR's branch is usually still open and under review.
 - **One PR, one focus.** Bugs found out-of-scope during a PR get LOGGED for a future PR, not fixed inline.
-- **One focused commit per PR** (or 2 max if cleanly separated, e.g. migration + app code).
+- **Focused commits, max 3 per PR** (e.g. feature · review fixes · follow-up). A 4th needs the architect's OK.
 - **NO `Co-Authored-By` trailers.** Ever.
 - **Conventional commit prefix:** `feat(scope):`, `fix(scope):`, `chore:`, `refactor:`, `docs:`.
 - **Commit body cites the spec section** it implements ("Per design system Section 4.6, ..." or "Per standards-reference Section 3 A09, ...").
@@ -82,7 +82,8 @@ Load conditionally per task. Index: `.claude/skills/README.md`.
 
 ## Dev loop
 
-- While editing, use the `next-dev-loop` skill (Next 16.4.3 + agent-browser ≥0.31.1 meet its floors): `compile_route` / `get_compilation_issues` for compile checks, then load the route in agent-browser and call `get_errors` (needs a live browser session). If the next-devtools MCP won't connect, POST JSON-RPC `tools/call` to `http://localhost:<port>/_next/mcp` and read the `data:` line. On Windows, redirect agent-browser output to a file — piping it (`| tail`) hangs, because its daemon holds the pipe open. tsc + lint + test + build are still mandatory before claiming done (DoD item 3 unchanged).
+- While editing, use the `next-dev-loop` skill (Next 16.4.3 + agent-browser ≥0.31.1 meet its floors): `compile_route` / `get_compilation_issues` for compile checks, then load the route in agent-browser and call `get_errors` (needs a live browser session). If the next-devtools MCP won't connect, POST JSON-RPC `tools/call` to `http://localhost:<port>/_next/mcp` and read the `data:` line. On Windows, redirect agent-browser output to a file — piping it (`| tail`) hangs, because its daemon holds the pipe open.
+- **Fast loop (the dev PC has 2 cores):** locally run `npx tsc --noEmit`, `npx eslint <changed files>` and `npx vitest related --run <changed files>` (or test files by path — never a bare `vitest run`). CI runs the full gate (tsc, lint, whole vitest, `next build`, Storybook VRT, token drift) on every push in ~2 min: push early and read it with `gh pr checks`. Local `npm run build` only for next.config / route-structure / dependency changes or a CI build failure. Never stop the dev server to build — Next 16 dev and build use separate output dirs. Full rules in the role skills' "Fast loop" section.
 - After any context compaction, run `/reload-skills` before continuing UI or migration work.
 - Figma: the CDP bridge (figma-cli) is NOT working on Figma Desktop 126.7.10 — do not use it. Until the founder confirms Figma Pro, the official Figma MCP is the only instrument and is capped at 20 reads/month for the whole account: spend reads only on final per-frame comparison, one read per frame, never for exploration. Report each read used.
 
@@ -90,7 +91,7 @@ Load conditionally per task. Index: `.claude/skills/README.md`.
 
 - **Parallel agents: max 2, each in its own git worktree** (`C:/Users/Zolo/Projects/servyou-wt-*`). Prefix every shell command with `cd "<worktree>" &&` (the shell resets to the main checkout) and use absolute paths under the worktree. Never touch the main checkout from a worktree task. Push only with `git push -u origin <branch>` — never to `main`, never `--force`.
 - **Live-DB tests hit production.** Use unique fixture names; on a uniqueness/collision failure re-run once before investigating. **Never run `rls-smoke`** — it deletes every test-domain user on production.
-- **gstack is installed with the `gstack-` prefix.** Use `/gstack-review` on the diff before reporting a PR, `/gstack-qa` or `/gstack-browse` for real-browser checks, `/gstack-investigate` for bugs. `/gstack-cso` needs VS Build Tools on Windows (not installed) — do audits by hand. **Never** `/gstack-ship`, `/gstack-land-and-deploy`, `/gstack-canary` (the founder merges by hand with a merge commit) or `/gstack-design-*` (the design system is locked).
+- **gstack is installed with the `gstack-` prefix.** One review per PR on the diff, as a **Sonnet** subagent: `/gstack-review` OR an independent reviewer, never both. Use `/gstack-qa` or `/gstack-browse` for real-browser checks, `/gstack-investigate` for bugs. `/gstack-cso` needs VS Build Tools on Windows (not installed) — do audits by hand. **Never** `/gstack-ship`, `/gstack-land-and-deploy`, `/gstack-canary` (the founder merges by hand with a merge commit) or `/gstack-design-*` (the design system is locked).
 - **Effort:** High by default. Max/Ultracode only for security or migration work.
 
 ## When in doubt
@@ -104,7 +105,7 @@ Ask Moatez (the founder). Do not invent product decisions. Do not assume design 
 - **Must-test:** auth paths, RLS policies, business-rule logic, data-integrity logic, security-sensitive transformations.
 - **May-skip:** UI rendering, layout, i18n strings, mechanical refactors.
 - Coverage thresholds are rejected — they corrupt what gets tested.
-- **Definition of Done (11):** (1) discovery approved before code; (2) scope matches, no opportunistic refactors; (3) `npx tsc --noEmit`, `npm run lint`, and `pnpm build`/`npm run build` all green locally — Next 16 dropped auto-lint-at-build, so `npm run lint` must be run explicitly; it is not caught by build and is otherwise only enforced in CI, which has no branch-protection gate on this repo, so a red lint run silently doesn't block anything unless checked here; (4) test suite passes; (5) tests added for must-test code; (6) diff read against scope; (7) PR body = What ships / Changes / Decisions / Out-of-scope / Verification / Followups; (8) agent report made; (9) Vercel green; (10) manual click-through (sanity check for mechanical refactors); (11) founder approves merge.
+- **Definition of Done (11):** (1) discovery approved before code; (2) scope matches, no opportunistic refactors; (3) local fast checks green (`npx tsc --noEmit`, eslint on changed files, related tests) AND the PR's CI green (`gh pr checks`: tsc, full lint, full vitest, `next build`, VRT, drift) — Next 16 dropped auto-lint-at-build, so lint must be green in CI before reporting; (4) test suite passes (in CI); (5) tests added for must-test code; (6) diff read against scope; (7) PR body = What ships / Changes / Decisions / Out-of-scope / Verification / Followups; (8) agent report made; (9) Vercel green; (10) manual click-through (sanity check for mechanical refactors); (11) founder approves merge.
 
 ### Security & data specifics (the DB is the source of truth for rules)
 - Never destructure only `data` from a Supabase call — capture and surface `error`; never a silent empty list.
