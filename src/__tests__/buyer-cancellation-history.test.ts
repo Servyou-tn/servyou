@@ -23,6 +23,7 @@
 
 import { describe, it, expect, beforeAll, afterAll } from 'vitest'
 import { createClient, SupabaseClient } from '@supabase/supabase-js'
+import { refuseTeardownOnForeignOrders } from './live-teardown-guard'
 
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -108,6 +109,7 @@ async function teardown() {
   const { data, error } = await admin
     .from('profiles').select('id').like('email', `${EMAIL_PREFIX}%${EMAIL_SUFFIX}`)
   if (error) throw new Error(`teardown lookup failed: ${error.message}`)
+  await refuseTeardownOnForeignOrders(admin, (data ?? []).map((row) => row.id), EMAIL_PREFIX)
   for (const row of data ?? []) {
     const { error: delErr } = await admin.auth.admin.deleteUser(row.id)
     if (delErr) throw new Error(`deleteUser failed for ${row.id}: ${delErr.message}`)

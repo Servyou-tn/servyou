@@ -4949,3 +4949,52 @@ cancel-metadata lock) are the same batch, not follow-ups.
   in PR #192's suite is wrong. This suite now refuses to tear down while a non-fixture order references a
   fixture seller. **PR #192 needs the same guard before its suite is run again** (pending the architect's call
   on a third commit there).
+- ✅ **Resolved by `fix/rls-suite-teardown-guard` (2026-10-26)** — see the section below.
+
+## Live-suite teardown guard (`fix/rls-suite-teardown-guard`, 2026-10-26)
+
+The guard now lives in `src/__tests__/live-teardown-guard.ts` and runs in all 14 live suites that seed a
+fixture seller with an orderable item: `prelaunch-shop-read-rls`, `buyer-cancellation-history`,
+`order-delivery-fee-snapshot`, `orders-insert-integrity`, `suspension-enforcement`,
+`uploaded-objects-provenance-rls`, both `d4-*`, `freelancer-publish-gate-rls`, `h3-links-portfolio-rls`, the
+three `h5-service-*`, and `h6-service-listings-hardening-rls`. `orders-lifecycle-columns` keeps its original
+inline copy from PR #193. Any NEW live suite that seeds a seller must call it before its first orders delete.
+The other 11 live suites seed no product or service listing, so a real customer cannot order from their
+fixtures.
+
+### LOW — the guard checks once, then deletes: a real order placed in between still cascades
+
+- The window is the few hundred ms between the SELECT and the last `deleteUser`. **Close it if wanted:** hide
+  every fixture product / listing (service role, `status = 'hidden'`) first, so migration 54 refuses new
+  orders, then run the guard, then delete. #193 has the same window.
+
+### LOW — favourites and job responses still cascade away with the fixtures
+
+- A real user's favourite of a live fixture item, or a real freelancer's `job_responses` row on an open fixture
+  job post, is deleted with the fixture user (`favorites.product_id` / `service_listing_id` and
+  `job_responses.job_post_id` are ON DELETE CASCADE). Suites with an open fixture post: `prelaunch-shop-read-rls`,
+  `profiles-rls`, `job-limits`, `progressive-phone.integration`, `job-responses-integrity`. Lower stakes than
+  an order (no money, no address), but it is still a real user's row. **Fix:** the same refuse-then-resolve
+  guard, keyed on `favorites.user_id` / `job_responses.freelancer_id` outside the fixture set.
+
+### LOW — nine live suites run on every default `vitest run`, against production
+
+- `INTEGRATION_GLOBS` (vitest.config.ts) leaves out both `d4-*`, `freelancer-publish-gate-rls`,
+  `h3-links-portfolio-rls`, the three `h5-service-*`, `h6-service-listings-hardening-rls` and
+  `freelancer-details-wizard`. So DoD item 4 (`vitest run`) creates and deletes users on production whenever
+  `.env.local` holds the service key, and CI's "pure unit gate" claim holds only because CI has no
+  credentials. `--config vitest.integration.config.ts <file>` silently runs nothing for them. **Fix:** add
+  the nine to `INTEGRATION_GLOBS`.
+
+### LOW — three teardowns ignore their delete errors
+
+- `d4-completed-project-count`, `h5-service-delete-orders-gate` and `h5-service-monthly-stats` discard the
+  `error` of their orders deletes and of `deleteUser`, and `afterAll` never counts what is left. A failed
+  cleanup passes silently and leaves fixtures on production. **Fix:** throw on each error and verify with a
+  read-only count, as the newer suites do.
+
+### Still red — `buyer-cancellation-history` / `order-delivery-fee-snapshot` (`shops_name_lower_key`)
+
+- Seen again on this branch's run, 2026-10-26: same 23505, same cause, already logged twice above. The guarded
+  teardown still runs in `afterAll`, and cleanup was verified at 0. Their tests have proven nothing since
+  2026-08-11.
