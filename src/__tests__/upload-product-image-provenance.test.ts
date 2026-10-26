@@ -50,7 +50,8 @@ vi.mock('@/lib/supabase/server', () => ({
     from: () => {
       throw new Error('uploadProductImageAction should not touch a Postgres table directly')
     },
-    storage: h.storage,
+    // S-3: the session client must never upload; uploadBucket (service role) is the only writer.
+    storage: { from: () => ({ ...h.storage.from(), upload: () => { throw new Error('session-client upload: must go through uploadBucket') } }) },
     auth: { getUser: async () => ({ data: { user: h.state.user } }) },
   })),
 }))

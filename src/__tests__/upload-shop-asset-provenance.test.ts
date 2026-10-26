@@ -25,6 +25,7 @@ const h = vi.hoisted(() => {
     uploaded: [] as string[],
     removed: [] as string[][],
     shopUpdates: [] as Record<string, unknown>[],
+    shopsEq: [] as [string, unknown][],
   }
   const storage = {
     from: () => ({
@@ -46,7 +47,10 @@ const h = vi.hoisted(() => {
       // Both files' shapes fit through the same chain: .select().eq(...).eq(...)?.maybeSingle()/.single(),
       // and .update(...).eq(...). eq() is chainable and returns `b` until a terminator is called.
       b.select = vi.fn(() => b)
-      b.eq = vi.fn(() => b)
+      b.eq = vi.fn((column: string, value: unknown) => {
+        calls.shopsEq.push([column, value])
+        return b
+      })
       b.maybeSingle = vi.fn(() => Promise.resolve(state.shopsSelectResult))
       b.single = vi.fn(() => Promise.resolve(state.currentAssetResult))
       b.update = vi.fn((row: Record<string, unknown>) => {
@@ -69,7 +73,8 @@ let provenanceInsertShouldFail = false
 vi.mock('@/lib/supabase/server', () => ({
   createClient: vi.fn(async () => ({
     from: h.from,
-    storage: h.storage,
+    // S-3: the session client must never upload; uploadBucket (service role) is the only writer.
+    storage: { from: () => ({ ...h.storage.from(), upload: () => { throw new Error('session-client upload: must go through uploadBucket') } }) },
     auth: { getUser: async () => ({ data: { user: h.state.user } }) },
   })),
 }))
@@ -124,6 +129,7 @@ beforeEach(() => {
   h.state.shopUpdateError = null
   h.calls.uploaded.length = 0
   h.calls.removed.length = 0
+  h.calls.shopsEq.length = 0
   h.calls.shopUpdates.length = 0
   provenanceCalls.length = 0
   provenanceDeleteCalls.length = 0
@@ -193,6 +199,7 @@ describe('S-3 — ownership is re-derived server-side before the service-role up
     h.state.shopsSelectResult = { data: null, error: null } // the .eq('owner_id', user.id) re-read found no row
     const res = await uploadShopLogoAction(assetFormData(true))
     expect(res).toMatchObject({ ok: false })
+    expect(h.calls.shopsEq).toContainEqual(['owner_id', h.USER_ID]) // the filter itself is pinned, not just its outcome
     expect(h.calls.uploaded).toEqual([])
     expect(provenanceCalls).toEqual([])
     h.state.shopsSelectResult = { data: { id: h.SHOP_ID }, error: null }

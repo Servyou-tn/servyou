@@ -222,8 +222,8 @@ async function uploadShopAsset(params: {
     }
   }
 
-  // Ownership re-derived from the session, not trusted from the client — the storage policy gates
-  // the SAME check independently, this is the "before the round trip" half of it.
+  // Ownership re-derived from the session, not trusted from the client. Since S-3 this re-read is the ONLY
+  // guard on the client's shopId: the bytes go through the service role, which skips storage RLS.
   const { data: shop, error: shopErr } = await supabase
     .from('shops')
     .select('id')
@@ -248,8 +248,7 @@ async function uploadShopAsset(params: {
     return { ok: false, error: t(FAILURE_KEY[normalized.reason], lang, { max: MAX_INPUT_MB }) }
   }
 
-  // First segment is the shop id — the storage policy gates on exactly that (migration
-  // 20260811055734's SELECT policy, plus the INSERT/DELETE pair fixed in 20260804104541).
+  // First segment is the shop id (the owner read / delete policies still key on it).
   // Since S-3 the bytes go through the service role (uploadBucket), which skips storage RLS: this first segment is
   // safe because it is the shop id re-read above with owner_id = user.id, never a value from the client.
   const path = `${shopId.data}/${kind}/${randomUUID()}.webp`

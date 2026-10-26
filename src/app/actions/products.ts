@@ -165,9 +165,8 @@ export async function uploadProductImageAction(formData: FormData): Promise<Uplo
     return { ok: false, error: t(FAILURE_KEY[normalized.reason], lang, { max: MAX_INPUT_MB }) }
   }
 
-  // First segment MUST be the shop id — the storage policy gates on exactly that
-  // (`(storage.foldername(objects.name))[1] in (select id::text from shops where owner_id = auth.uid())`,
-  // migration 20260804104541). Both segments are server-derived; neither comes from the caller.
+  // First segment MUST be the shop id (the owner read / delete policies key on it). Both segments are
+  // server-derived; neither comes from the caller.
   // Since S-3 the bytes go through the service role (uploadBucket), which skips storage RLS: this first segment is
   // safe because it is the shop resolved from the session (resolveOwnedShopId), never a value from the client.
   const path = `${shop.shopId}/${productId.data}/${randomUUID()}.webp`
@@ -211,9 +210,7 @@ export async function uploadProductImageAction(formData: FormData): Promise<Uplo
   // of body-encoding faults changes the object's LENGTH, so one integer comparison catches it at
   // write time instead of letting it surface to a buyer three screens away.
   //
-  // This runs on the seller's own client, so it is also an RLS assertion: the SELECT policy
-  // ("product-images: shop owner reads own") gates on the first path segment being one of their
-  // shops, which is the same segment the INSERT policy gated on.
+  // Read back through the same service-role handle that wrote it (S-3): an integrity check, not an RLS one.
   const { data: stored, error: infoError } = await uploadBucket(PRODUCT_BUCKET).info(path)
   if (infoError || !stored || stored.size !== normalized.blob.size) {
     // The object is uploaded but no product_images row will reference it, so it is an orphan for
