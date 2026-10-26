@@ -258,10 +258,9 @@ export const getFreelancerDashboard = cache(
     }
     const activePurchasesCount = activePurchaseCount(purchaseData ?? [])
 
-    // Proposals I sent — Activité récente's (c) rows. job_posts' RLS only grants a non-owner
-    // reader rows where status = 'open': a post that has since moved to filled/expired is
-    // invisible to the responder even though they legitimately responded to it, and the title
-    // embed comes back null. Logged in docs/follow-ups.md — no migration in this PR to widen it.
+    // Proposals I sent — Activité récente's (c) rows. Since migration 70 (M-B) a responder reads
+    // every post they answered unless it was deleted or moderated, so the title embed is null only
+    // for those two cases.
     const { data: responseData, error: responsesError } = await supabase
       .from('job_responses')
       .select('id, created_at, job_posts ( title )')

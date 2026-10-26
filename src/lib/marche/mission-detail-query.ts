@@ -9,8 +9,8 @@ import { isNewMission, missionDaysLeft } from './missions'
 // H10 mission detail data layer (docs/design/h9-h13-measurements.md §2). Read-only.
 //
 // What a viewer can see is whatever job_posts RLS lets through: a freelancer reads an OPEN, un-moderated post
-// (or their own); a post that has since been filled, deleted or hidden is simply not found for them until the
-// responder-read policy (M-B / gap G2) lands — they get a 404, not a stale page. An admin reads every post
+// (or their own), and since migration 70 (M-B / gap G2) also a post they answered that has since been filled or
+// expired; a deleted or moderated one is not found for them — they get a 404, not a stale page. An admin reads every post
 // (admin read-all policy), which is how the moderation report's /missions/{id} link works (D10).
 
 type PostRow = Pick<

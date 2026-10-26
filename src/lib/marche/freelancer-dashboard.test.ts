@@ -121,7 +121,7 @@ describe('buildActivityFeed', () => {
     expect(feed[1].createdAt).toBe('2026-09-02T08:00:00Z')
   })
 
-  it('carries a null proposal title through rather than substituting one — the job_posts RLS gap', () => {
+  it('carries a null proposal title through rather than substituting one — a deleted / moderated post', () => {
     const responses = [{ created_at: '2026-09-01T08:00:00Z', job_posts: null }]
     const feed = buildActivityFeed([], responses, new Map(), 10)
     expect(feed[0]).toMatchObject({ kind: 'proposal', title: null })

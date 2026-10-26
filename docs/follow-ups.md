@@ -3300,6 +3300,10 @@ coupling" claim on that specific function is stale, not a remaining blocker.
 - Fixed: a responder now reads every post they answered unless it is deleted or moderated (policy
   « Responders read the posts they answered » via `has_responded()`); the embed shape is pinned in
   `job-posts-responder-read.test.ts`. Deleted / moderated posts still embed as null by design (M-B-1).
+- **New LOW (page-builder):** a post the freelancer answered that was then filled now opens at
+  `/missions/[id]` (it 404'd before M-B), but `isNew` / `daysLeft` (`mission-detail-query.ts`) derive from
+  `created_at` only, so it can show « Nouveau » and « Expire dans N jours » next to a « pourvue » CTA. Hide or
+  replace both when `status !== 'open'` (`missions/[id]/page.tsx`, `MissionFacts.tsx`).
   Original entry:
 
 - **What:** `job_responses`' RLS grants a freelancer read access to their own response rows
