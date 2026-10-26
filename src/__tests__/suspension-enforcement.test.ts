@@ -86,9 +86,9 @@ const ALL: Verb[] = ['insert', 'update', 'delete']
 
 // The 26 tables on which authenticated holds a table- or column-level write grant: the verbs
 // trg_enforce_active_user guards, the verbs authenticated holds NO privilege for (refused by the
-// privilege check, which runs before any trigger), and an UPDATE probe column where the grant is
-// column-level (profiles, orders).
-const TRIGGERED: Record<string, { guarded: Verb[]; noGrant?: Verb[]; set?: Record<string, unknown> }> = {
+// privilege check, which runs before any trigger), and an UPDATE probe column (`set`) / INSERT probe
+// column (`insertKey`) where the grant is column-level (profiles, orders, job_posts).
+const TRIGGERED: Record<string, { guarded: Verb[]; noGrant?: Verb[]; set?: Record<string, unknown>; insertKey?: string }> = {
   profiles: { guarded: ALL, noGrant: ['insert', 'delete'], set: { full_name: 'x' } },
   shops: { guarded: ALL },
   shop_categories: { guarded: ALL },
@@ -104,7 +104,7 @@ const TRIGGERED: Record<string, { guarded: Verb[]; noGrant?: Verb[]; set?: Recor
   freelancer_links: { guarded: ALL },
   freelancer_portfolio_items: { guarded: ALL },
   service_listings: { guarded: ALL },
-  job_posts: { guarded: ALL },
+  job_posts: { guarded: ALL, set: { status: 'open' }, insertKey: 'consumer_id' }, // id is not client-writable since M-A
   job_post_skills: { guarded: ALL },
   job_responses: { guarded: ALL, noGrant: ['update'] },
   favorites: { guarded: ALL },
@@ -131,7 +131,8 @@ const matrixCells = Object.entries(TRIGGERED).flatMap(([table, spec]) => ALL.map
 function probe(client: SupabaseClient, table: string, verb: Verb, key = 'id') {
   const ghost: string = randomUUID()
   const row: Record<string, unknown> = { [key]: ghost }
-  if (verb === 'insert') return client.from(table).insert(row)
+  const insertRow: Record<string, unknown> = { [TRIGGERED[table]?.insertKey ?? key]: ghost }
+  if (verb === 'insert') return client.from(table).insert(insertRow)
   if (verb === 'update') return client.from(table).update(TRIGGERED[table]?.set ?? row).eq(key, ghost)
   return client.from(table).delete().eq(key, ghost)
 }

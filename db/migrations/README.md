@@ -505,6 +505,28 @@ this PR and is not attempted here.
     `received_at` stays NULL. E2 (revoke `UPDATE (received_at)` from authenticated) follows once H8
     PR-2 has shipped. Verified by `src/__tests__/orders-lifecycle-columns.test.ts` (live-DB).
     Rollback SQL is in a comment block at the bottom of the migration file.
+67. **20261026173800_job_posts_response_count** — Applied by the architect 2026-10-26 (recorded
+    version; executable SQL MD5-verified against `schema_migrations`, comments and whitespace
+    stripped: `092e59eb`). Post-apply checks (architect): authenticated holds column-level INSERT on
+    10 `job_posts` columns and UPDATE on 9, anon none; 0 `response_count` mismatches; a real post
+    owner's JWT (rolled back) was refused 42501 on `created_at` and allowed on `title`. Missions M-A,
+    gaps G3 + G9 (`docs/design/h9-h13-measurements.md` §6.4 on `feat/h9-missions`; decisions 1–7
+    approved 2026-10-26); unblocks H9 PR-1. Adds `job_posts.response_count` (integer NOT NULL
+    DEFAULT 0, `job_posts_response_count_nonnegative` CHECK ≥ 0, backfilled on the 3 posts with
+    responses) kept by `sync_job_post_response_count()` (SECURITY DEFINER, `search_path ''`, EXECUTE
+    revoked from public/anon/authenticated) via `trg_sync_job_post_response_count` (AFTER INSERT /
+    DELETE / UPDATE OF `job_post_id` on `job_responses`, ±1 — never a recount, which loses updates
+    under concurrency); index `job_posts_status_response_count_idx (status, response_count)`. Write
+    lock = column grants (the `orders` pattern): table-level INSERT / UPDATE revoked from anon and
+    authenticated; authenticated gets back INSERT on createAnnonce's 10 columns and UPDATE on the 9
+    content / status columns, so `id`, `created_at`, `updated_at`, `response_count`,
+    `admin_hidden_*` (and `consumer_id` on UPDATE) fail any client statement that names them with
+    42501, admins included; moderation RPCs are SECURITY DEFINER, unaffected. Every response bumps
+    the post's `updated_at` (decision 3; nothing reads it today). **The lock holds only while
+    nothing re-grants table-level INSERT / UPDATE on `job_posts` — the security PR-2 grant sweep
+    must not.** anon DELETE on `job_posts` is left to that sweep. No existing function, trigger or
+    policy changes. Verified by `src/__tests__/job-posts-response-count.test.ts` (live-DB).
+    Rollback SQL (restores anon's table-level INSERT / UPDATE too) is at the bottom of the file.
 
 ## Rollback paths
 
