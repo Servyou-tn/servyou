@@ -10,6 +10,7 @@ import { isValidPhone, normalizePhone } from '@/lib/phone'
 import { GOVERNORATES } from '@/lib/tunisia-governorates'
 import { normalizeAvatar, MAX_INPUT_BYTES, MAX_INPUT_MB, type NormalizeFailure } from '@/lib/images/normalize'
 import { recordUploadProvenance, deleteUploadProvenance } from '@/lib/images/provenance'
+import { isCallerActive, uploadBucket } from '@/lib/images/upload-guard'
 
 export type AccountActionResult = { ok: true } | { ok: false; error: string }
 
@@ -84,7 +85,8 @@ const FAILURE_KEY: Record<NormalizeFailure, string> = {
 }
 
 // Uploads a new avatar: normalize → store under the user's own path → point the profile at it →
-// sweep the user's folder. Writes with the USER'S session client, never service_role, so both
+// sweep the user's folder. The bytes go through the service role (uploadBucket, S-3); the profile write uses the
+// USER'S session client, never service_role, so both
 // gates stay live — RLS ("Users can update their own profile") enforces the row and the column
 // allow-list from 20260731073515 enforces the column.
 export async function uploadAvatarAction(formData: FormData): Promise<AccountActionResult> {
@@ -94,6 +96,9 @@ export async function uploadAvatarAction(formData: FormData): Promise<AccountAct
     data: { user },
   } = await supabase.auth.getUser()
   if (!user) return { ok: false, error: t('monCompte.error.notAuth', lang) }
+  // S-3: the bytes below are written by the service role, which skips the RESTRICTIVE « Suspended accounts
+  // cannot upload » storage policy -- so a suspended account is refused here, before anything is stored.
+  if (!(await isCallerActive(supabase))) return { ok: false, error: t('auth.suspended_banner', lang) }
 
   const parsed = avatarFileSchema.safeParse(formData.get('avatar'))
   if (!parsed.success) {
@@ -113,9 +118,11 @@ export async function uploadAvatarAction(formData: FormData): Promise<AccountAct
   // auto-invalidation, and both Vercel's optimizer and the storage CDN key on URL — an in-place
   // overwrite would serve the OLD image for the full one-year TTL. The storage policies enforce
   // this structurally by granting INSERT/DELETE and no UPDATE.
+  // Since S-3 the bytes go through the service role (uploadBucket), which skips storage RLS: this first segment is
+  // safe because it is the caller's own user.id, never a value from the client.
   const path = `${user.id}/${randomUUID()}.webp`
 
-  const { error: uploadError } = await supabase.storage.from(AVATAR_BUCKET).upload(path, normalized.blob, {
+  const { error: uploadError } = await uploadBucket(AVATAR_BUCKET).upload(path, normalized.blob, {
     contentType: 'image/webp',
     cacheControl: AVATAR_CACHE_CONTROL,
     upsert: false,
@@ -135,7 +142,7 @@ export async function uploadAvatarAction(formData: FormData): Promise<AccountAct
   const provenance = await recordUploadProvenance('avatars', path, user.id)
   if (!provenance.ok) {
     console.error(`[uploadAvatarAction] provenance insert failed, removing orphaned object at ${path}`)
-    await supabase.storage.from(AVATAR_BUCKET).remove([path])
+    await uploadBucket(AVATAR_BUCKET).remove([path])
     return { ok: false, error: t('monCompte.avatar.error.upload', lang) }
   }
 
@@ -147,7 +154,7 @@ export async function uploadAvatarAction(formData: FormData): Promise<AccountAct
   // failing — but it fed the same Buffer through the same storage-js branch as the product path and
   // would have corrupted the first avatar anyone uploaded. The check goes in for that reason: it is
   // guarding a defect that had not surfaced yet, not one already seen here.
-  const { data: stored, error: infoError } = await supabase.storage.from(AVATAR_BUCKET).info(path)
+  const { data: stored, error: infoError } = await uploadBucket(AVATAR_BUCKET).info(path)
   if (infoError || !stored || stored.size !== normalized.blob.size) {
     console.error(
       `[uploadAvatarAction] INTEGRITY CHECK FAILED — sent ${normalized.blob.size} bytes, ` +
@@ -157,7 +164,7 @@ export async function uploadAvatarAction(formData: FormData): Promise<AccountAct
     // Unlike the product path, this one CAN clean up safely: the object is unreferenced and this
     // action already removes it on the adjacent profile-update failure (below), so the behaviour
     // stays consistent within the file.
-    await supabase.storage.from(AVATAR_BUCKET).remove([path])
+    await uploadBucket(AVATAR_BUCKET).remove([path])
     await deleteUploadProvenance('avatars', path)
     return { ok: false, error: t('monCompte.avatar.error.upload', lang) }
   }
@@ -173,7 +180,7 @@ export async function uploadAvatarAction(formData: FormData): Promise<AccountAct
   if (updateError) {
     // The object is uploaded but unreferenced. Remove it rather than leave an orphan we would then
     // need the (not yet built) reconciliation sweep to find.
-    await supabase.storage.from(AVATAR_BUCKET).remove([path])
+    await uploadBucket(AVATAR_BUCKET).remove([path])
     await deleteUploadProvenance('avatars', path)
     console.error('[uploadAvatarAction] profile update failed:', updateError.message, updateError.code)
     return { ok: false, error: t('common.error_generic', lang) }

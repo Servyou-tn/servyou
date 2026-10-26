@@ -25,6 +25,7 @@ const h = vi.hoisted(() => {
     uploaded: [] as string[],
     removed: [] as string[][],
     shopUpdates: [] as Record<string, unknown>[],
+    shopsEq: [] as [string, unknown][],
   }
   const storage = {
     from: () => ({
@@ -46,7 +47,10 @@ const h = vi.hoisted(() => {
       // Both files' shapes fit through the same chain: .select().eq(...).eq(...)?.maybeSingle()/.single(),
       // and .update(...).eq(...). eq() is chainable and returns `b` until a terminator is called.
       b.select = vi.fn(() => b)
-      b.eq = vi.fn(() => b)
+      b.eq = vi.fn((column: string, value: unknown) => {
+        calls.shopsEq.push([column, value])
+        return b
+      })
       b.maybeSingle = vi.fn(() => Promise.resolve(state.shopsSelectResult))
       b.single = vi.fn(() => Promise.resolve(state.currentAssetResult))
       b.update = vi.fn((row: Record<string, unknown>) => {
@@ -69,7 +73,8 @@ let provenanceInsertShouldFail = false
 vi.mock('@/lib/supabase/server', () => ({
   createClient: vi.fn(async () => ({
     from: h.from,
-    storage: h.storage,
+    // S-3: the session client must never upload; uploadBucket (service role) is the only writer.
+    storage: { from: () => ({ ...h.storage.from(), upload: () => { throw new Error('session-client upload: must go through uploadBucket') } }) },
     auth: { getUser: async () => ({ data: { user: h.state.user } }) },
   })),
 }))
@@ -81,6 +86,13 @@ vi.mock('@/lib/images/normalize', () => ({
   normalizeShopBanner: vi.fn(async () => ({ ok: true, blob: new Blob(['test']), width: 10, height: 10 })),
   MAX_INPUT_BYTES: 5 * 1024 * 1024,
   MAX_INPUT_MB: 5,
+}))
+// S-3: new objects go through the service role (uploadBucket), routed here to the same storage mock; the
+// caller-active check is controllable per test.
+const guard = vi.hoisted(() => ({ active: true }))
+vi.mock('@/lib/images/upload-guard', () => ({
+  isCallerActive: vi.fn(async () => guard.active),
+  uploadBucket: () => h.storage.from(),
 }))
 vi.mock('@/lib/images/provenance', () => ({
   recordUploadProvenance: vi.fn(async (bucket: string, path: string, owner: string) => {
@@ -97,6 +109,7 @@ vi.mock('@/lib/i18n', () => ({ t: (k: string) => k }))
 vi.mock('@/lib/tunisia-governorates', () => ({ GOVERNORATES: [{ value: 'Tunis', label: 'Tunis' }] }))
 
 import { uploadShopLogoAction, uploadShopBannerAction } from '@/app/ma-boutique/creer/actions'
+import { resolveOwnedShopId } from '@/lib/shops/owner-shop'
 import { updateShopLogoAction, updateShopBannerAction } from '@/app/ma-boutique/modifier/actions'
 
 function assetFormData(withShopId: boolean): FormData {
@@ -108,6 +121,7 @@ function assetFormData(withShopId: boolean): FormData {
 
 beforeEach(() => {
   h.state.user = { id: USER_ID }
+  guard.active = true
   h.state.shopsSelectResult = { data: { id: SHOP_ID }, error: null }
   h.state.currentAssetResult = { data: { logo_url: null, banner_url: null }, error: null }
   h.state.uploadError = null
@@ -115,6 +129,7 @@ beforeEach(() => {
   h.state.shopUpdateError = null
   h.calls.uploaded.length = 0
   h.calls.removed.length = 0
+  h.calls.shopsEq.length = 0
   h.calls.shopUpdates.length = 0
   provenanceCalls.length = 0
   provenanceDeleteCalls.length = 0
@@ -166,5 +181,35 @@ describe.each([
     expect(res.ok).toBe(false)
     expect(h.calls.removed).toEqual([[h.calls.uploaded[0]]])
     expect(provenanceDeleteCalls).toEqual([{ bucket: 'shop-assets', path: h.calls.uploaded[0] }])
+  })
+})
+
+describe('S-3 — a suspended caller is refused before any byte is stored or recorded', () => {
+  it.each([['uploadShopAsset (create)', () => uploadShopLogoAction(assetFormData(true))], ['updateShopAsset (modify)', () => updateShopLogoAction(assetFormData(false))]] as const)('%s', async (_label, run) => {
+    guard.active = false
+    const res = await run()
+    expect(res).toMatchObject({ ok: false, error: 'auth.suspended_banner' })
+    expect(h.calls.uploaded).toEqual([])
+    expect(provenanceCalls).toEqual([])
+  })
+})
+
+describe('S-3 — ownership is re-derived server-side before the service-role upload', () => {
+  it('create-time: a client shopId the caller does not own is refused, nothing stored or recorded', async () => {
+    h.state.shopsSelectResult = { data: null, error: null } // the .eq('owner_id', user.id) re-read found no row
+    const res = await uploadShopLogoAction(assetFormData(true))
+    expect(res).toMatchObject({ ok: false })
+    expect(h.calls.shopsEq).toContainEqual(['owner_id', h.USER_ID]) // the filter itself is pinned, not just its outcome
+    expect(h.calls.uploaded).toEqual([])
+    expect(provenanceCalls).toEqual([])
+    h.state.shopsSelectResult = { data: { id: h.SHOP_ID }, error: null }
+  })
+
+  it('modify-time: no shop resolved from the session, nothing stored or recorded', async () => {
+    vi.mocked(resolveOwnedShopId).mockResolvedValueOnce({ ok: false, reason: 'no_shop' } as Awaited<ReturnType<typeof resolveOwnedShopId>>)
+    const res = await updateShopLogoAction(assetFormData(false))
+    expect(res).toMatchObject({ ok: false })
+    expect(h.calls.uploaded).toEqual([])
+    expect(provenanceCalls).toEqual([])
   })
 })

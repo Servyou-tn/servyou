@@ -12,6 +12,7 @@ import { reconcile } from '@/lib/shops/reconcile'
 import { diffLanguages } from '@/lib/freelancer/diff-languages'
 import { normalizePortfolioImage, MAX_INPUT_MB } from '@/lib/images/normalize'
 import { recordUploadProvenance } from '@/lib/images/provenance'
+import { isCallerActive, uploadBucket } from '@/lib/images/upload-guard'
 import {
   validateForPublish,
   urlErrorSummary,
@@ -372,6 +373,9 @@ export async function uploadPortfolioImageAction(formData: FormData): Promise<Up
     console.error('[uploadPortfolioImage] rejected: no authenticated user')
     return { ok: false, error: t('common.error_generic', lang) }
   }
+  // S-3: the bytes below are written by the service role, which skips the RESTRICTIVE « Suspended accounts
+  // cannot upload » storage policy -- so a suspended account is refused here, before anything is stored.
+  if (!(await isCallerActive(supabase))) return { ok: false, error: t('auth.suspended_banner', lang) }
 
   const rawFile = formData.get('image')
   const parsed = portfolioImageFileSchema.safeParse(rawFile)
@@ -400,9 +404,11 @@ export async function uploadPortfolioImageAction(formData: FormData): Promise<Up
 
   // First segment MUST be the caller's own uid — matches the storage policy
   // ("portfolio-media: owner inserts under own uid", `(storage.foldername(name))[1] = auth.uid()`).
+  // Since S-3 the bytes go through the service role (uploadBucket), which skips storage RLS: this first segment is
+  // safe because it is the caller's own user.id, never a value from the client.
   const path = `${user.id}/${randomUUID()}.webp`
 
-  const { error: uploadError } = await supabase.storage.from(PORTFOLIO_BUCKET).upload(path, normalized.blob, {
+  const { error: uploadError } = await uploadBucket(PORTFOLIO_BUCKET).upload(path, normalized.blob, {
     contentType: 'image/webp',
     cacheControl: PORTFOLIO_CACHE_CONTROL,
     upsert: false,

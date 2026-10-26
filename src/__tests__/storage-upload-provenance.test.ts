@@ -5,13 +5,14 @@
  *
  * profiles.avatar_url and shops.logo_url / banner_url accept only NULL, an unchanged value, or this project's
  * public URL of an object with an uploaded_objects record owned by the row's owner. Refused, 42501 HINT
- * unverified_upload: a foreign URL; a foreign host carrying a recorded path; bytes the user PUT straight into
- * their own folder (that upload itself still succeeds until S-3 — nothing can publish it); another user's
- * recorded object; the service role too (no bypass). product_images / freelancer_portfolio_items keep their
+ * unverified_upload: a foreign URL; a foreign host carrying a recorded path; bytes stored in the user's own
+ * folder without a provenance record (an orphan / pre-S-3 upload — since S-3 clients cannot PUT there at all);
+ * another user's recorded object; the service role too (no bypass). product_images / freelancer_portfolio_items keep their
  * own messages and now also require this project's host.
  *
  * Provenance records are seeded by the service role, exactly as src/lib/images/provenance.ts writes them;
- * the trigger reads only that table, so no bytes are needed except for the raw-PUT case.
+ * the trigger reads only that table, so no bytes are needed except for the unrecorded-object case (planted by
+ * the service role).
  *
  * Fixtures (all `st-prov-`, password random per run): a consumer, two shop owners, a freelancer.
  *
@@ -88,7 +89,7 @@ function expectUnverified(error: { code?: string; message?: string; hint?: strin
 }
 
 // Idempotent and surgical to this file's prefix; runs first (recovers a crashed prior run) and last.
-// The raw-PUT objects are removed from storage first (uploaded_objects rows cascade from auth.users); the
+// The planted (unrecorded) objects are removed from storage first (uploaded_objects rows cascade from auth.users); the
 // fixture product is hidden, but the orders guard runs anyway; then the users (cascades profiles -> shops ->
 // products -> product_images, freelancer_profiles -> portfolio items).
 async function teardown(): Promise<void> {
@@ -183,9 +184,12 @@ describe.skipIf(!hasCreds)('profiles.avatar_url', () => {
     expect(await avatarOf(userId)).toBeNull()
   })
 
-  it('bytes PUT straight into the own folder land (until S-3) but cannot be published', async () => {
+  // Since S-3 a client can no longer PUT into the bucket (storage-uploads-service-role.test.ts proves that), so
+  // the raw bytes are planted by the service role: the shape of an orphan or a pre-S-3 upload, i.e. bytes in the
+  // user's own folder with no provenance record. Publishing them must still be refused.
+  it('bytes stored in the own folder without a provenance record cannot be published', async () => {
     const path = `${userId}/${randomUUID()}.webp`
-    const { error: putErr } = await userClient.storage.from('avatars').upload(path, RAW_BYTES(), { contentType: 'image/webp' })
+    const { error: putErr } = await admin.storage.from('avatars').upload(path, RAW_BYTES(), { contentType: 'image/webp' })
     expect(putErr).toBeNull()
     expectUnverified((await userClient.from('profiles').update({ avatar_url: publicUrl('avatars', path) }).eq('id', userId)).error)
     expect(await avatarOf(userId)).toBeNull()

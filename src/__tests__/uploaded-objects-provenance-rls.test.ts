@@ -133,10 +133,10 @@ describe.skipIf(!hasCreds)('the demonstrated attack: direct-PUT then reference, 
   it('REJECTS via the addProductImageAction shape (single-row insert)', async () => {
     const path = `${attackerShopId}/${attackerProductId}/${randomUUID()}.webp`
 
-    // Step 1: authenticated attacker direct-PUTs into their OWN permitted prefix. This must
-    // succeed — the storage RLS policy legitimately allows it; that grant is what the app's real
-    // upload action also relies on. The point is that raw bytes never touched normalizeProductImage.
-    const { error: putError } = await attackerClient.storage.from('product-images').upload(path, RAW_BYTES, {
+    // Step 1: raw bytes land in the attacker's OWN prefix without ever touching normalizeProductImage. Since
+    // S-3 a client can no longer PUT there at all, so they are planted by the service role: the shape of any
+    // orphan or pre-S-3 upload, which is exactly what the trigger must keep unpublishable.
+    const { error: putError } = await admin.storage.from('product-images').upload(path, RAW_BYTES, {
       contentType: 'image/webp', // client-declared, trivially forged -- the real attack shape (see normalize.ts's own header comment)
     })
     expect(putError).toBeNull()
@@ -163,8 +163,9 @@ describe.skipIf(!hasCreds)('the demonstrated attack: direct-PUT then reference, 
       .insert({ bucket: 'product-images', path: legitPath, owner_id: attackerId })
     expect(provErr).toBeNull()
 
-    // ... but the second image is a direct-PUT the attacker never ran through the pipeline.
-    const { error: putError } = await attackerClient.storage.from('product-images').upload(attackPath, RAW_BYTES, {
+    // ... but the second image is raw bytes the attacker never ran through the pipeline (planted by the
+    // service role since S-3, as above).
+    const { error: putError } = await admin.storage.from('product-images').upload(attackPath, RAW_BYTES, {
       contentType: 'image/webp', // client-declared, trivially forged -- the real attack shape (see normalize.ts's own header comment)
     })
     expect(putError).toBeNull()

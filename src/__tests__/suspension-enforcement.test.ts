@@ -80,6 +80,9 @@ const DENIED = '42501'
 const UPLOAD_REFUSED = 'new row violates row-level security policy'
 const FORBIDDEN_RPC = 'Forbidden: admin access required' // the admin RPCs' is_admin() gate
 const AVATAR = () => new Blob([new Uint8Array([82, 73, 70, 70, 0, 0, 0, 0, 87, 69, 66, 80])], { type: 'image/webp' })
+// The private verifications bucket keeps its permissive owner INSERT policy after S-3 (the four public image
+// buckets lost theirs), so it is where the RESTRICTIVE suspension policy is still observable.
+const DOCUMENT = () => new Blob([new Uint8Array([37, 80, 68, 70, 45, 49, 46, 52])], { type: 'application/pdf' })
 
 type Verb = 'insert' | 'update' | 'delete'
 const ALL: Verb[] = ['insert', 'update', 'delete']
@@ -219,6 +222,12 @@ async function teardown(): Promise<void> {
       const { error: rmErr } = await admin.storage.from('avatars').remove(names.map((n) => `${id}/${n}`))
       if (rmErr) throw new Error(`avatar cleanup failed: ${rmErr.message}`)
     }
+    const { data: docs, error: docsErr } = await admin.storage.from('verifications').list(id)
+    if (docsErr) throw new Error(`verifications listing failed: ${docsErr.message}`)
+    if ((docs ?? []).length > 0) {
+      const { error: docRmErr } = await admin.storage.from('verifications').remove((docs ?? []).map((d) => `${id}/${d.name}`))
+      if (docRmErr) throw new Error(`verifications cleanup failed: ${docRmErr.message}`)
+    }
   }
   for (const id of ids) {
     const { error: delErr } = await admin.auth.admin.deleteUser(id)
@@ -318,12 +327,13 @@ beforeAll(async () => {
   matrixClient = await signIn('matrix')
   controlClient = await signIn('control')
 
-  // Active, through the users' own sessions: two orders, one accepted, and an avatar upload.
+  // Active, through the users' own sessions: two orders, one accepted. The avatar is written by the service role,
+  // as the app's upload action does since S-3 (clients can no longer INSERT into the avatars bucket).
   orderB = await placeOrder(buyerClient, buyerId, productS2)
   orderS2 = await placeOrder(seller2Client, seller2Id, productS)
   const { data: accepted, error: acceptErr } = await seller2Client.from('orders').update({ status: 'accepted' }).eq('id', orderB).select('id')
   if (acceptErr || accepted?.length !== 1) throw new Error(`accept failed: ${acceptErr?.message}`)
-  const { error: upErr } = await sellerClient.storage.from('avatars').upload(`${sellerId}/${BEFORE_AVATAR}`, AVATAR(), { contentType: 'image/webp' })
+  const { error: upErr } = await admin.storage.from('avatars').upload(`${sellerId}/${BEFORE_AVATAR}`, AVATAR(), { contentType: 'image/webp' })
   if (upErr) throw new Error(`active avatar upload failed: ${upErr.message}`)
 
   // Suspend: the buyer through the active admin's real RPC, everyone else through the service role.
@@ -540,9 +550,11 @@ describe.skipIf(!hasCreds)('D3 / D4 — what a suspended account can still file'
 })
 
 describe.skipIf(!hasCreds)('storage — restrictive policies on storage.objects', () => {
-  it('a suspended account cannot upload, even under its own folder', async () => {
-    const { error } = await sellerClient.storage.from('avatars').upload(`${sellerId}/after-${RUN}.webp`, AVATAR(), { contentType: 'image/webp' })
+  it('a suspended account cannot upload, even under its own folder (verifications keeps a permissive owner INSERT)', async () => {
+    const { error } = await sellerClient.storage.from('verifications').upload(`${sellerId}/after-${RUN}.pdf`, DOCUMENT(), { contentType: 'application/pdf' })
     expect(error?.message).toBe(UPLOAD_REFUSED)
+    const { data: docs } = await admin.storage.from('verifications').list(sellerId)
+    expect(docs ?? []).toEqual([])
     expect(await avatarNames(sellerId)).toEqual([BEFORE_AVATAR])
   })
 
@@ -553,10 +565,11 @@ describe.skipIf(!hasCreds)('storage — restrictive policies on storage.objects'
     expect(await avatarNames(sellerId)).toEqual([BEFORE_AVATAR])
   })
 
-  it('an active account still uploads', async () => {
-    const { error } = await seller2Client.storage.from('avatars').upload(`${seller2Id}/active-${RUN}.webp`, AVATAR(), { contentType: 'image/webp' })
+  it('an active account still uploads (same bucket: the control)', async () => {
+    const { error } = await seller2Client.storage.from('verifications').upload(`${seller2Id}/active-${RUN}.pdf`, DOCUMENT(), { contentType: 'application/pdf' })
     expect(error).toBeNull()
-    expect(await avatarNames(seller2Id)).toEqual([`active-${RUN}.webp`])
+    const { data } = await admin.storage.from('verifications').list(seller2Id)
+    expect((data ?? []).map((o) => o.name)).toEqual([`active-${RUN}.pdf`])
   })
 
   // storage.objects has no permissive UPDATE policy, so an overwrite (upsert = INSERT … ON CONFLICT
@@ -565,8 +578,8 @@ describe.skipIf(!hasCreds)('storage — restrictive policies on storage.objects'
   // permissive UPDATE policy exists (then this control flips and the suspended case starts to matter).
   it('an overwrite (upsert) is refused for every account today — active control and suspended alike', async () => {
     const active = await seller2Client.storage
-      .from('avatars')
-      .upload(`${seller2Id}/active-${RUN}.webp`, AVATAR(), { contentType: 'image/webp', upsert: true })
+      .from('verifications')
+      .upload(`${seller2Id}/active-${RUN}.pdf`, DOCUMENT(), { contentType: 'application/pdf', upsert: true })
     expect(active.error?.message).toBe(UPLOAD_REFUSED)
     const suspended = await sellerClient.storage
       .from('avatars')

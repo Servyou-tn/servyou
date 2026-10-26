@@ -65,7 +65,8 @@ let provenanceInsertShouldFail = false
 vi.mock('@/lib/supabase/server', () => ({
   createClient: vi.fn(async () => ({
     from: h.from,
-    storage: h.storage,
+    // S-3: the session client must never upload; uploadBucket (service role) is the only writer.
+    storage: { from: () => ({ ...h.storage.from(), upload: () => { throw new Error('session-client upload: must go through uploadBucket') } }) },
     auth: { getUser: async () => ({ data: { user: h.state.user } }) },
   })),
 }))
@@ -73,6 +74,13 @@ vi.mock('@/lib/images/normalize', () => ({
   normalizeAvatar: vi.fn(async () => ({ ok: true, blob: new Blob(['test']), width: 10, height: 10 })),
   MAX_INPUT_BYTES: 5 * 1024 * 1024,
   MAX_INPUT_MB: 5,
+}))
+// S-3: new objects go through the service role (uploadBucket), routed here to the same storage mock; the
+// caller-active check is controllable per test.
+const guard = vi.hoisted(() => ({ active: true }))
+vi.mock('@/lib/images/upload-guard', () => ({
+  isCallerActive: vi.fn(async () => guard.active),
+  uploadBucket: () => h.storage.from(),
 }))
 vi.mock('@/lib/images/provenance', () => ({
   recordUploadProvenance: vi.fn(async (bucket: string, path: string, owner: string) => {
@@ -99,6 +107,7 @@ function avatarFormData(): FormData {
 
 beforeEach(() => {
   h.state.user = { id: USER_ID }
+  guard.active = true
   h.state.uploadError = null
   h.state.infoResult = { data: { size: 4 }, error: null }
   h.state.profileUpdateError = null
@@ -146,5 +155,15 @@ describe('uploadAvatarAction — provenance ordering', () => {
     expect(res.ok).toBe(false)
     expect(h.calls.removed).toEqual([[h.calls.uploaded[0]]])
     expect(provenanceDeleteCalls).toEqual([{ bucket: 'avatars', path: h.calls.uploaded[0] }])
+  })
+})
+
+describe('S-3 — a suspended caller is refused before any byte is stored or recorded', () => {
+  it.each([['uploadAvatarAction', () => uploadAvatarAction(avatarFormData())]] as const)('%s', async (_label, run) => {
+    guard.active = false
+    const res = await run()
+    expect(res).toMatchObject({ ok: false, error: 'auth.suspended_banner' })
+    expect(h.calls.uploaded).toEqual([])
+    expect(provenanceCalls).toEqual([])
   })
 })

@@ -17,6 +17,7 @@ import {
   type NormalizeResult,
 } from '@/lib/images/normalize'
 import { recordUploadProvenance, deleteUploadProvenance } from '@/lib/images/provenance'
+import { isCallerActive, uploadBucket } from '@/lib/images/upload-guard'
 
 // G2 "Créer ma boutique" step 1. Full reasoning: docs/design/g2-discovery.md §7.
 //
@@ -192,6 +193,9 @@ async function uploadShopAsset(params: {
     console.error(`[uploadShopAsset:${kind}] rejected: no authenticated user`)
     return { ok: false, error: t('shop.create.error.notAuth', lang) }
   }
+  // S-3: the bytes below are written by the service role, which skips the RESTRICTIVE « Suspended accounts
+  // cannot upload » storage policy -- so a suspended account is refused here, before anything is stored.
+  if (!(await isCallerActive(supabase))) return { ok: false, error: t('auth.suspended_banner', lang) }
 
   const rawShopId = formData.get('shopId')
   const shopId = z.string().uuid().safeParse(rawShopId)
@@ -218,8 +222,8 @@ async function uploadShopAsset(params: {
     }
   }
 
-  // Ownership re-derived from the session, not trusted from the client — the storage policy gates
-  // the SAME check independently, this is the "before the round trip" half of it.
+  // Ownership re-derived from the session, not trusted from the client. Since S-3 this re-read is the ONLY
+  // guard on the client's shopId: the bytes go through the service role, which skips storage RLS.
   const { data: shop, error: shopErr } = await supabase
     .from('shops')
     .select('id')
@@ -244,11 +248,12 @@ async function uploadShopAsset(params: {
     return { ok: false, error: t(FAILURE_KEY[normalized.reason], lang, { max: MAX_INPUT_MB }) }
   }
 
-  // First segment is the shop id — the storage policy gates on exactly that (migration
-  // 20260811055734's SELECT policy, plus the INSERT/DELETE pair fixed in 20260804104541).
+  // First segment is the shop id (the owner read / delete policies still key on it).
+  // Since S-3 the bytes go through the service role (uploadBucket), which skips storage RLS: this first segment is
+  // safe because it is the shop id re-read above with owner_id = user.id, never a value from the client.
   const path = `${shopId.data}/${kind}/${randomUUID()}.webp`
 
-  const { error: uploadError } = await supabase.storage.from(SHOP_BUCKET).upload(path, normalized.blob, {
+  const { error: uploadError } = await uploadBucket(SHOP_BUCKET).upload(path, normalized.blob, {
     contentType: 'image/webp',
     cacheControl: SHOP_ASSET_CACHE_CONTROL,
     upsert: false,
@@ -268,20 +273,20 @@ async function uploadShopAsset(params: {
   const provenance = await recordUploadProvenance('shop-assets', path, user.id)
   if (!provenance.ok) {
     console.error(`[uploadShopAsset:${kind}] provenance insert failed, removing orphaned object at ${path}`)
-    await supabase.storage.from(SHOP_BUCKET).remove([path])
+    await uploadBucket(SHOP_BUCKET).remove([path])
     return { ok: false, error: t('product.image.error.upload', lang) }
   }
 
   // Post-upload integrity assertion (#122 forensics) — needs the SELECT policy added alongside
   // this PR's migration; see g2-discovery.md §6/§7a for why that policy had to ship here.
-  const { data: stored, error: infoError } = await supabase.storage.from(SHOP_BUCKET).info(path)
+  const { data: stored, error: infoError } = await uploadBucket(SHOP_BUCKET).info(path)
   if (infoError || !stored || stored.size !== normalized.blob.size) {
     console.error(
       `[uploadShopAsset:${kind}] INTEGRITY CHECK FAILED — sent ${normalized.blob.size} bytes, ` +
         `stored ${stored?.size ?? 'unknown'} at ${path}` +
         (infoError ? ` (info error: ${infoError.message})` : ''),
     )
-    await supabase.storage.from(SHOP_BUCKET).remove([path])
+    await uploadBucket(SHOP_BUCKET).remove([path])
     await deleteUploadProvenance('shop-assets', path)
     return { ok: false, error: t('product.image.error.upload', lang) }
   }
@@ -294,7 +299,7 @@ async function uploadShopAsset(params: {
   if (updateError) {
     // The object is uploaded but unreferenced — same compensating-delete shape as
     // uploadAvatarAction (mon-compte/actions.ts:157-163).
-    await supabase.storage.from(SHOP_BUCKET).remove([path])
+    await uploadBucket(SHOP_BUCKET).remove([path])
     await deleteUploadProvenance('shop-assets', path)
     console.error(`[uploadShopAsset:${kind}] shop update failed:`, updateError.message, updateError.code)
     return { ok: false, error: t('common.error_generic', lang) }
