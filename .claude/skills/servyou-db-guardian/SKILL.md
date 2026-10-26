@@ -45,12 +45,25 @@ gstack-investigate (root cause) · gstack-review (before every report).
 - PostgREST behaviour (embeds, RLS) can only be proven against the real API — mocks can't catch
   PGRST201 or a missing policy.
 
+## Fast loop (speed rules — the dev PC has 2 cores / 8–16 GB)
+CI runs the full gate (tsc, lint, the whole mock vitest run, `next build`, VRT) on every push in
+~2 min. Locally:
+1. `npx tsc --noEmit` · `npx eslint <changed files>` · the live suite you wrote + only the regression
+   suites that touch the same tables (by path). No local `npm run build` unless app code, config or
+   dependencies changed; never a bare `vitest run`.
+2. **One review per PR** on the migration + test diff, as a subagent on **Sonnet**: either
+   /gstack-review OR an independent reviewer, never both, time-boxed (~10 min). Fix critical/high,
+   log the rest. A SQL review by the architect before apply already happened — don't re-litigate it.
+3. **Push early** (commit 1 as soon as local checks pass) so CI runs while you finish the report.
+4. **Short reports:** ≤ 40 lines. SQL goes in the PENDING_ file, not pasted in chat — give the path,
+   the live counts, the decisions. The architect reads the file directly.
+
 ## Shipping
-Max 2 commits (cite the finding/ruling, no Co-Authored-By). `git push -u origin <branch>` only —
+Max 3 commits (cite the finding/ruling, no Co-Authored-By). `git push -u origin <branch>` only —
 never main, NEVER force-push; if main moved, merge origin/main in rather than rebasing pushed
-commits. Gates: tsc, lint (committed tree), vitest, build. Open the PR, /gstack-review, report,
-STOP. Log everything out of scope in `docs/follow-ups.md`, ranked.
+commits. Open the PR, report, STOP. Log everything out of scope in `docs/follow-ups.md`, ranked.
 
 ## Definition of done
 discovery approved → migration applied by the architect → file renamed + README + types
-regenerated → live tests green + cleanup verified → gates green → /gstack-review → PR → report → STOP.
+regenerated → live tests green + cleanup verified → local fast checks → push → one Sonnet review →
+CI green → PR → report → STOP.

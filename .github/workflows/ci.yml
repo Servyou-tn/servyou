@@ -32,5 +32,17 @@ jobs:
       - name: Test
         run: npx vitest run
 
+      # Turbopack's persistent build cache (on by default since Next 16.3) lives in .next/cache and only
+      # speeds CI up if that directory survives between runs. Keyed on the lockfile + source hash, with
+      # lockfile-only and generic fallbacks so a partial cache is still reused.
+      - name: Restore Next.js build cache
+        uses: actions/cache@v4
+        with:
+          path: .next/cache
+          key: nextjs-${{ runner.os }}-${{ hashFiles('package-lock.json') }}-${{ hashFiles('src/**', 'next.config.ts') }}
+          restore-keys: |
+            nextjs-${{ runner.os }}-${{ hashFiles('package-lock.json') }}-
+            nextjs-${{ runner.os }}-
+
       - name: Build
         run: npm run build
