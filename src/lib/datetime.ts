@@ -71,3 +71,14 @@ export function tunisDayKey(value: Instant): string {
   // `en-CA` renders ISO-ordered Y-M-D; only the digits are used.
   return new Date(value).toLocaleDateString('en-CA', { timeZone: TUNIS_TZ })
 }
+
+/** « 14h32 » — the time of an instant in Tunis, with the French hour mark (see formatTunisDateTime for why by hand). */
+export function formatTunisTime(value: Instant, lang: Lang): string {
+  const time = new Date(value).toLocaleTimeString(LOCALE[lang], {
+    hour: '2-digit',
+    minute: '2-digit',
+    hourCycle: 'h23',
+    timeZone: TUNIS_TZ,
+  })
+  return time.replace(':', 'h')
+}

@@ -85,7 +85,7 @@ export function Textarea({
             <span />
           )}
           {count != null && (
-            <span className="shrink-0 text-caption font-medium text-text-muted tabular-nums">
+            <span dir="ltr" className="shrink-0 text-caption font-medium text-text-muted tabular-nums">
               {count}/{props.maxLength}
             </span>
           )}
