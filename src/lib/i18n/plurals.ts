@@ -57,6 +57,12 @@ const frPlurals: Record<string, PluralVariants> = {
 
   'seller.orders.count':                   { one: '{count} commande', other: '{count} commandes' },
   'engagements.count':                     { one: '{count} engagement', other: '{count} engagements' },
+  // H9/H10 (PR-1). `count` is the number the noun agrees with.
+  'missionboard.count':                    { one: '{count} mission disponible', other: '{count} missions disponibles' },
+  'missionboard.awareness':                { one: 'Vous avez {count} proposition active sur {max}', other: 'Vous avez {count} propositions actives sur {max}' },
+  'missioncard.expires':                   { one: 'Expire dans {count}j', other: 'Expire dans {count}j' },
+  'missiondetail.expires':                 { one: 'Expire dans {count} jour', other: 'Expire dans {count} jours' },
+  'missiondetail.expires_value':           { one: '{count} jour', other: '{count} jours' },
   'seller.dashboard.tile.profit_sub':      { one: 'Sur {count} commande livrée', other: 'Sur {count} commandes livrées' },
 
   'product.bulk.selected_count':           { one: '{count} sélectionné', other: '{count} sélectionnés' },
@@ -109,6 +115,12 @@ const arPlurals: Record<string, PluralVariants> = {
 
   'seller.orders.count':                   { one: '{count} طلب', two: '{count} طلبان', other: '{count} طلبات' },
   'engagements.count':                     { one: '{count} مهمة', two: '{count} مهمتان', other: '{count} مهام' },
+  // REVIEW_AR_TRANSLATION (H9/H10 PR-1 drafts). "منذ/خلال" govern the oblique dual (يومين).
+  'missionboard.count':                    { one: '{count} مهمة متاحة', two: '{count} مهمتان متاحتان', other: '{count} مهام متاحة' },
+  'missionboard.awareness':                { one: 'لديك {count} عرض نشط من أصل {max}', two: 'لديك {count} عرضان نشطان من أصل {max}', other: 'لديك {count} عروض نشطة من أصل {max}' },
+  'missioncard.expires':                   { one: 'تنتهي خلال {count} يوم', two: 'تنتهي خلال {count} يومين', other: 'تنتهي خلال {count} أيام' },
+  'missiondetail.expires':                 { one: 'تنتهي خلال {count} يوم', two: 'تنتهي خلال {count} يومين', other: 'تنتهي خلال {count} أيام' },
+  'missiondetail.expires_value':           { one: '{count} يوم', two: '{count} يومين', other: '{count} أيام' },
   // Preceded by "من" (from) → dual takes the oblique form (طلبين, not طلبان). Non-human plural
   // "طلبات" takes feminine-singular adjective agreement ("مُستلَمة", not "مُستلَمين").
   'seller.dashboard.tile.profit_sub':      {
