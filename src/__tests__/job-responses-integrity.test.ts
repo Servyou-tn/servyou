@@ -152,7 +152,7 @@ async function fpCount(profileId: string): Promise<number> {
 }
 
 function respond(client: SupabaseClient, postId: string, freelancerId: string) {
-  return client.from('job_responses').insert({ job_post_id: postId, freelancer_id: freelancerId, proposal_message: 'Test proposal' })
+  return client.from('job_responses').insert({ job_post_id: postId, freelancer_id: freelancerId, proposal_message: 'Test proposal for the integrity suite' })
 }
 
 // Idempotent and surgical to this file's prefix; runs first (recovers a crashed prior run) and last.
@@ -488,7 +488,7 @@ describe.skipIf(!hasCreds)('Part 3 — grants', () => {
     expect(error?.code).toBe('42501')
     expect(error?.message).toBe(PERMISSION_DENIED)
     const { data } = await admin.from('job_responses').select('proposal_message').eq('freelancer_id', freelancerId).single()
-    expect(data?.proposal_message).toBe('Test proposal')
+    expect(data?.proposal_message).toBe('Test proposal for the integrity suite')
   })
 })
 
