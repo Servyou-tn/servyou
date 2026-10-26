@@ -19,8 +19,8 @@ import {
 // freelancer's own lists (H8 fetches everything and filters in JS). Every query throws on error — a failed
 // read must never render as « no missions ».
 //
-// RLS is NOT the filter. job_posts SELECT is `(status = 'open' AND admin_hidden_at IS NULL) OR consumer_id = me`
-// and has no expiry clause, so the freelancer's own (possibly old) posts and every 30-day-old open post are
+// RLS is NOT the filter. job_posts SELECT is `(status = 'open' AND admin_hidden_at IS NULL) OR consumer_id = me`,
+// plus (migration 70) any post I answered that is not deleted or moderated, and has no expiry clause, so the freelancer's own (possibly old) posts and every 30-day-old open post are
 // readable. Every exclusion below is therefore asked for explicitly: open · not moderated · inside the 30-day
 // window · not mine · not full (10/10) · not already answered (D-H9-3).
 
@@ -89,10 +89,10 @@ function fail(scope: string, error: { message: string; code?: string; details?: 
  * The viewer's own responses → which posts they already answered, and how many are still « active » (post open
  * and inside the window — the DB's own cap rule in check_job_response_limits).
  *
- * The post embed is a LEFT join: RLS hides a response's post from its responder once it stops being open
- * (docs/design/h9-h13-measurements.md gap G2), and a hidden post is correctly not active. Known drift (G5): a
- * moderated-but-open post counts toward the DB cap but is invisible here, so this can read 4/5 while the DB
- * refuses at 5.
+ * The post embed is a LEFT join: RLS hides a response's post from its responder only once it is deleted or
+ * moderated (migration 70, gap G2), and such a post is correctly not active; filled / expired posts are read and
+ * filtered out here explicitly. Since migration 69 (G5) the DB cap also ignores moderated posts, so this count
+ * and the DB agree.
  */
 export async function getMyResponseState(
   supabase: Client,

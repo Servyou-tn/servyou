@@ -65,7 +65,7 @@ async function tryRespond(freelancerId: string, postId: string): Promise<{ ok: b
   const { error } = await admin.from('job_responses').insert({
     job_post_id: postId,
     freelancer_id: freelancerId,
-    proposal_message: 'Test proposal',
+    proposal_message: 'Test proposal for the job limits suite',
   })
   return { ok: !error, msg: error?.message ?? '' }
 }
