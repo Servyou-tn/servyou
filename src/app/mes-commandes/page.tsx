@@ -63,7 +63,7 @@ export default async function MesCommandesPage({ searchParams }: Props) {
 
         <OrdersTabs lang={lang} tab={params.tab} />
 
-        <OrdersFilterBar tab={params.tab} q={params.q} statut={params.statut} tri={params.tri} basePath={BASE} />
+        <OrdersFilterBar key={`${params.tab}|${params.q}`} tab={params.tab} q={params.q} statut={params.statut} tri={params.tri} basePath={BASE} />
 
         {result.totalCount === 0 ? (
           <div className="flex flex-col items-center gap-5 rounded-2xl border border-border-subtle bg-surface-base px-6 py-12 text-center lg:px-10">
