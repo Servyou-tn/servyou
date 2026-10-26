@@ -28,6 +28,7 @@ export const INTEGRATION_GLOBS = [
   '**/prelaunch-acl-hardening.test.ts',
   '**/job-responses-proposal-fields.test.ts',
   '**/job-posts-responder-read.test.ts',
+  '**/storage-uploads-service-role.test.ts',
   // These nine wrote to production on every default run until 2026-10-26 (missions M-A PR).
   '**/d4-completed-project-count.test.ts',
   '**/d4-freelancer-services-visibility.test.ts',

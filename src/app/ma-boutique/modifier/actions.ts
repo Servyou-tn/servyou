@@ -17,6 +17,7 @@ import {
   type NormalizeResult,
 } from '@/lib/images/normalize'
 import { recordUploadProvenance, deleteUploadProvenance } from '@/lib/images/provenance'
+import { isCallerActive, uploadBucket } from '@/lib/images/upload-guard'
 
 // G3 "Modifier ma boutique" — the identity-field edit surface (name, city, description, logo,
 // banner). The other six accordions (type, livraison, horaires, adresse, paiement, catégories)
@@ -177,6 +178,9 @@ async function updateShopAsset(params: {
     console.error(`[updateShopAsset:${kind}] rejected: no authenticated user`)
     return { ok: false, error: t('shop.create.error.notAuth', lang) }
   }
+  // S-3: the bytes below are written by the service role, which skips the RESTRICTIVE « Suspended accounts
+  // cannot upload » storage policy -- so a suspended account is refused here, before anything is stored.
+  if (!(await isCallerActive(supabase))) return { ok: false, error: t('auth.suspended_banner', lang) }
 
   const owned = await resolveOwnedShopId(supabase, user.id)
   if (!owned.ok) {
@@ -233,9 +237,11 @@ async function updateShopAsset(params: {
   // A NEW path every time — never overwrite in place, same reasoning as every other bucket here
   // (no Smart CDN auto-invalidation on the free tier; an in-place overwrite would serve the OLD
   // image for the full one-year TTL).
+  // Since S-3 the bytes go through the service role (uploadBucket), which skips storage RLS: this first segment is
+  // safe because it is the shop resolved from the session (resolveOwnedShopId), never a value from the client.
   const path = `${shopId}/${kind}/${randomUUID()}.webp`
 
-  const { error: uploadError } = await supabase.storage.from(SHOP_BUCKET).upload(path, normalized.blob, {
+  const { error: uploadError } = await uploadBucket(SHOP_BUCKET).upload(path, normalized.blob, {
     contentType: 'image/webp',
     cacheControl: SHOP_ASSET_CACHE_CONTROL,
     upsert: false,
@@ -253,19 +259,19 @@ async function updateShopAsset(params: {
   const provenance = await recordUploadProvenance('shop-assets', path, user.id)
   if (!provenance.ok) {
     console.error(`[updateShopAsset:${kind}] provenance insert failed, removing orphaned object at ${path}`)
-    await supabase.storage.from(SHOP_BUCKET).remove([path])
+    await uploadBucket(SHOP_BUCKET).remove([path])
     return { ok: false, error: t('product.image.error.upload', lang) }
   }
 
   // Post-upload integrity assertion — same forensics as ma-boutique/creer/actions.ts (#122).
-  const { data: stored, error: infoError } = await supabase.storage.from(SHOP_BUCKET).info(path)
+  const { data: stored, error: infoError } = await uploadBucket(SHOP_BUCKET).info(path)
   if (infoError || !stored || stored.size !== normalized.blob.size) {
     console.error(
       `[updateShopAsset:${kind}] INTEGRITY CHECK FAILED — sent ${normalized.blob.size} bytes, ` +
         `stored ${stored?.size ?? 'unknown'} at ${path}` +
         (infoError ? ` (info error: ${infoError.message})` : ''),
     )
-    await supabase.storage.from(SHOP_BUCKET).remove([path])
+    await uploadBucket(SHOP_BUCKET).remove([path])
     await deleteUploadProvenance('shop-assets', path)
     return { ok: false, error: t('product.image.error.upload', lang) }
   }
@@ -278,7 +284,7 @@ async function updateShopAsset(params: {
   if (updateError) {
     // The new object is uploaded but unreferenced — clean it up, same compensating-delete shape
     // as every other upload action in this codebase.
-    await supabase.storage.from(SHOP_BUCKET).remove([path])
+    await uploadBucket(SHOP_BUCKET).remove([path])
     await deleteUploadProvenance('shop-assets', path)
     console.error(`[updateShopAsset:${kind}] shop update failed:`, updateError.message, updateError.code)
     return { ok: false, error: t('common.error_generic', lang) }

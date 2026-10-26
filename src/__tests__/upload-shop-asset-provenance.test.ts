@@ -82,6 +82,13 @@ vi.mock('@/lib/images/normalize', () => ({
   MAX_INPUT_BYTES: 5 * 1024 * 1024,
   MAX_INPUT_MB: 5,
 }))
+// S-3: new objects go through the service role (uploadBucket), routed here to the same storage mock; the
+// caller-active check is controllable per test.
+const guard = vi.hoisted(() => ({ active: true }))
+vi.mock('@/lib/images/upload-guard', () => ({
+  isCallerActive: vi.fn(async () => guard.active),
+  uploadBucket: () => h.storage.from(),
+}))
 vi.mock('@/lib/images/provenance', () => ({
   recordUploadProvenance: vi.fn(async (bucket: string, path: string, owner: string) => {
     provenanceCalls.push({ bucket, path, owner })
@@ -97,6 +104,7 @@ vi.mock('@/lib/i18n', () => ({ t: (k: string) => k }))
 vi.mock('@/lib/tunisia-governorates', () => ({ GOVERNORATES: [{ value: 'Tunis', label: 'Tunis' }] }))
 
 import { uploadShopLogoAction, uploadShopBannerAction } from '@/app/ma-boutique/creer/actions'
+import { resolveOwnedShopId } from '@/lib/shops/owner-shop'
 import { updateShopLogoAction, updateShopBannerAction } from '@/app/ma-boutique/modifier/actions'
 
 function assetFormData(withShopId: boolean): FormData {
@@ -108,6 +116,7 @@ function assetFormData(withShopId: boolean): FormData {
 
 beforeEach(() => {
   h.state.user = { id: USER_ID }
+  guard.active = true
   h.state.shopsSelectResult = { data: { id: SHOP_ID }, error: null }
   h.state.currentAssetResult = { data: { logo_url: null, banner_url: null }, error: null }
   h.state.uploadError = null
@@ -166,5 +175,34 @@ describe.each([
     expect(res.ok).toBe(false)
     expect(h.calls.removed).toEqual([[h.calls.uploaded[0]]])
     expect(provenanceDeleteCalls).toEqual([{ bucket: 'shop-assets', path: h.calls.uploaded[0] }])
+  })
+})
+
+describe('S-3 — a suspended caller is refused before any byte is stored or recorded', () => {
+  it.each([['uploadShopAsset (create)', () => uploadShopLogoAction(assetFormData(true))], ['updateShopAsset (modify)', () => updateShopLogoAction(assetFormData(false))]] as const)('%s', async (_label, run) => {
+    guard.active = false
+    const res = await run()
+    expect(res).toMatchObject({ ok: false, error: 'auth.suspended_banner' })
+    expect(h.calls.uploaded).toEqual([])
+    expect(provenanceCalls).toEqual([])
+  })
+})
+
+describe('S-3 — ownership is re-derived server-side before the service-role upload', () => {
+  it('create-time: a client shopId the caller does not own is refused, nothing stored or recorded', async () => {
+    h.state.shopsSelectResult = { data: null, error: null } // the .eq('owner_id', user.id) re-read found no row
+    const res = await uploadShopLogoAction(assetFormData(true))
+    expect(res).toMatchObject({ ok: false })
+    expect(h.calls.uploaded).toEqual([])
+    expect(provenanceCalls).toEqual([])
+    h.state.shopsSelectResult = { data: { id: h.SHOP_ID }, error: null }
+  })
+
+  it('modify-time: no shop resolved from the session, nothing stored or recorded', async () => {
+    vi.mocked(resolveOwnedShopId).mockResolvedValueOnce({ ok: false, reason: 'no_shop' } as Awaited<ReturnType<typeof resolveOwnedShopId>>)
+    const res = await updateShopLogoAction(assetFormData(false))
+    expect(res).toMatchObject({ ok: false })
+    expect(h.calls.uploaded).toEqual([])
+    expect(provenanceCalls).toEqual([])
   })
 })

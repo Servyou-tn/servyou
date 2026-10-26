@@ -50,6 +50,13 @@ vi.mock('@/lib/images/normalize', () => ({
   MAX_INPUT_BYTES: 5 * 1024 * 1024,
   MAX_INPUT_MB: 5,
 }))
+// S-3: new objects go through the service role (uploadBucket), routed here to the same storage mock; the
+// caller-active check is controllable per test.
+const guard = vi.hoisted(() => ({ active: true }))
+vi.mock('@/lib/images/upload-guard', () => ({
+  isCallerActive: vi.fn(async () => guard.active),
+  uploadBucket: () => h.storage.from(),
+}))
 vi.mock('@/lib/images/provenance', () => ({
   recordUploadProvenance: vi.fn(async (bucket: string, path: string, owner: string) => {
     provenanceCalls.push({ bucket, path, owner })
@@ -71,6 +78,7 @@ function imageFormData(): FormData {
 
 beforeEach(() => {
   h.state.user = { id: USER_ID }
+  guard.active = true
   h.state.uploadError = null
   h.calls.uploaded.length = 0
   provenanceCalls.length = 0
@@ -113,5 +121,15 @@ describe('uploadPortfolioImageAction — provenance ordering', () => {
     const res = await uploadPortfolioImageAction(imageFormData())
     expect(res.ok).toBe(false)
     expect(provenanceCalls).toHaveLength(0)
+  })
+})
+
+describe('S-3 — a suspended caller is refused before any byte is stored or recorded', () => {
+  it.each([['uploadPortfolioImageAction', () => uploadPortfolioImageAction(imageFormData())]] as const)('%s', async (_label, run) => {
+    guard.active = false
+    const res = await run()
+    expect(res).toMatchObject({ ok: false, error: 'auth.suspended_banner' })
+    expect(h.calls.uploaded).toEqual([])
+    expect(provenanceCalls).toEqual([])
   })
 })
