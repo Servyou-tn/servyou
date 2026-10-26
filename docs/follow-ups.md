@@ -4874,6 +4874,35 @@ returns `[]`, i.e. a silent empty list — the rule is to surface the error.
 - `metadata.title` on the H-series pages (including this one) is a literal, so an Arabic visitor gets a French tab
   title. A `generateMetadata` reading `getLang()` fixes every page at once — its own cross-cutting PR.
 
+## Missions M-A — `job_posts.response_count` + write lock (`feat/missions-m-a`, 2026-10-26)
+
+### LOW — consumers can still set `job_posts.status` to anything through REST
+
+- `status` stays column-granted (createAnnonce inserts it; mark-filled / reopen / delete update it), and only the
+  CHECK (`open`, `filled`, `expired`, `deleted`) constrains it — no transition guard. On their own posts a
+  consumer can un-delete (`deleted` → `open`), reopen past 30 days (the expiry check is app-only, in
+  `reopenMissionAction`; the post then shows open but `check_job_response_limits` still refuses every response),
+  or INSERT straight at `filled` / `deleted`. **Fix if wanted:** a BEFORE UPDATE transition trigger in the style
+  of `check_order_status_transition` (`deleted` terminal; `filled` ↔ `open` only within 30 days).
+
+### LOW — concurrent responses can overshoot the 10-per-post cap (for M-C)
+
+- `check_job_response_limits` counts rows in a BEFORE trigger without locking the post, so two responses
+  arriving together can both see 9. `response_count` is now the natural lock point: in M-C (which owns that
+  function, G5 / G7), read it `FOR UPDATE`, or add `CHECK (response_count <= 10)`.
+
+### LOW — the new suite guards `job_responses` inline
+
+- `job-posts-response-count.test.ts` refuses its teardown while a non-fixture freelancer has answered a fixture
+  post, inline, because PR #196's shared `live-teardown-guard.ts` was not on main yet. Move it into that helper
+  when the "favourites, job responses … still go with the fixtures" follow-up (PR #196) is picked up.
+
+### Observation — 5 orphaned test accounts on production
+
+- `auth.users` holds 5 `@example.com` test accounts created 2026-06-20 … 2026-08-22 (`test-*`, `rls-*`,
+  `detail-owner-*` / `detail-responder-*`), left by old runs; no current suite reaps them. Not deleted here —
+  the founder's call.
+
 ## Pre-launch security batch PR-1 — shop-side read RLS (`fix/prelaunch-shop-read-rls`, 2026-10-25)
 
 Found during migration 65's discovery (`docs/design/prelaunch-security-batch-discovery.md` §2 / §10). PR-2

@@ -1,7 +1,7 @@
 // Generated from the live Supabase schema (project xggomcitqrkaylqezjjz) — DO NOT EDIT BY HAND.
 // Regenerate after every applied migration: Supabase MCP generate_typescript_types (or
 // `npx supabase gen types typescript --project-id xggomcitqrkaylqezjjz`), then commit.
-// Generated 2026-10-25 after migration 20261025213214 prelaunch_shop_read_rls (policies only: body unchanged).
+// Generated 2026-10-26 after migration 20261026173800 job_posts_response_count.
 
 export type Json =
   | string
@@ -637,6 +637,7 @@ export type Database = {
           description: string
           id: string
           is_remote: boolean
+          response_count: number
           status: string
           title: string
           updated_at: string
@@ -654,6 +655,7 @@ export type Database = {
           description: string
           id?: string
           is_remote?: boolean
+          response_count?: number
           status?: string
           title: string
           updated_at?: string
@@ -671,6 +673,7 @@ export type Database = {
           description?: string
           id?: string
           is_remote?: boolean
+          response_count?: number
           status?: string
           title?: string
           updated_at?: string
