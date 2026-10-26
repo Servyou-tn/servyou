@@ -35,6 +35,21 @@ gstack-investigate (root cause) · gstack-review (before every report).
   · 42501 for "not allowed", 23514 for "invalid data"; French messages that never describe
     another account;
   · never rewrite existing rows unless the founder approves; new writes only.
+- **Grants are explicit since migration 68** (`20261026190353`, default privileges closed):
+  · a new table in `public` gets anon SELECT and authenticated SELECT / INSERT / UPDATE / DELETE —
+    nothing else. Decide every grant on purpose; a table with system-owned columns uses column-level
+    INSERT / UPDATE grants (the `orders`, `job_posts`, `data_exports` pattern);
+  · a new function gets NO EXECUTE for anyone but service_role. An RPC the app calls needs
+    `grant execute … to authenticated` (and anon only if an anonymous page calls it); a trigger
+    function needs none (EXECUTE is not checked when a trigger fires);
+  · **a helper called from an RLS policy** (`is_admin()`, M-B's `has_responded()`) is checked against
+    the caller's EXECUTE when the policy expression is set up — no OR short-circuit. Scope such a
+    policy `to authenticated` and `grant execute … to authenticated`; a PUBLIC-role policy calling a
+    helper anon cannot execute makes every anon read of that table fail;
+  · never re-grant table-level INSERT / UPDATE on a column-granted table (`orders`, `job_posts`,
+    `data_exports`, `deletion_requests`): it silently reopens every locked column;
+  · the PUBLIC EXECUTE revoke is global for objects postgres creates: a future `create extension`
+    run as postgres also gets no client EXECUTE — grant what the app or a generated column needs.
 - After every applied migration, the generated types in `src/lib/supabase/database.types.ts` must
   be regenerated (Supabase MCP generate_typescript_types) in the same PR.
 

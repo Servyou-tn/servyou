@@ -4255,7 +4255,10 @@ advisors. Migration 59 itself closed the `job_responses` HIGH above.
 - **Fix (product call):** gate `get_contact_phone`'s job_responses branches on the responder still
   being active, or have suspension / moderation withdraw the responses.
 
-### LOW — 31 SECURITY DEFINER functions are executable by anon / authenticated (one hygiene PR)
+### ✅ RESOLVED (migration 68 `20261026190353`, 2026-10-26) — 31 SECURITY DEFINER functions are executable by anon / authenticated (one hygiene PR)
+
+- Fixed exactly as proposed below, plus the global and per-schema default-privilege revokes; advisors
+  0028 = 3, 0029 = 10 after apply. Original entry:
 
 - **What:** advisor lints 0028 / 0029 flag every SECURITY DEFINER function in `public` (31 after
   migration 59). Supabase's default privileges grant EXECUTE on each new function to `anon` and
@@ -4277,7 +4280,9 @@ advisors. Migration 59 itself closed the `job_responses` HIGH above.
   anon, authenticated` for Supabase's explicit grants. Prove every trigger still fires (the live
   suites do).
 
-### LOW — migration 48's README entry overstates `freelancer_has_active_listing`'s EXECUTE revoke
+### ✅ RESOLVED (migration 68, 2026-10-26) — migration 48's README entry overstates `freelancer_has_active_listing`'s EXECUTE revoke
+
+- anon's EXECUTE is revoked and README #48 carries a dated correction. Original entry:
 
 - **What:** README #48 says EXECUTE was "revoked from public/granted to authenticated". Live ACL:
   `{postgres, anon, authenticated, service_role}` — PUBLIC is gone but `anon` still holds a direct
@@ -4874,6 +4879,22 @@ returns `[]`, i.e. a silent empty list — the rule is to surface the error.
 - `metadata.title` on the H-series pages (including this one) is a literal, so an Arabic visitor gets a French tab
   title. A `generateMetadata` reading `getLang()` fixes every page at once — its own cross-cutting PR.
 
+## Pre-launch security batch PR-2 — grants (`fix/prelaunch-acl-hardening`, 2026-10-26)
+
+### LOW — `deletion_requests.reason` is unbounded text
+
+- Any length is accepted. Consistent with the founder ruling that caps live in app limits, but the DB does not
+  enforce one. **Fix if wanted:** `CHECK (char_length(reason) <= 1000)` (NOT VALID if a row ever violates).
+
+### LOW — advisor residue left on purpose
+
+- Still reported after migration 68, deliberately: 0010 `public_profiles` (an intentional SECURITY DEFINER
+  view — its column list is the protection), 0014 `unaccent` installed in `public` (moving it breaks the
+  generated `search_vector` columns), leaked-password protection (HIBP, an Auth setting), 0008
+  `uploaded_objects` (RLS on, no policy, no client grant — by design).
+- `supabase_admin`'s own default privileges in `public` still grant everything to anon / authenticated; they
+  cannot be altered as `postgres`. Only a table or function created by `supabase_admin` (platform tooling)
+  would inherit them.
 ## Missions M-C — proposal fields, typed response errors (`feat/missions-m-c`, 2026-10-26)
 
 ### LOW — three legacy responses are below the 20-character floor
@@ -5080,3 +5101,14 @@ fixtures. `scripts/rls-smoke.mjs` (not a suite, never run) seeds an active produ
 - Seen again on this branch's run, 2026-10-26: same 23505, same cause, already logged twice above. The guarded
   teardown still runs in `afterAll`, and cleanup was verified at 0. Their tests have proven nothing since
   2026-08-11.
+
+### H9/H10 board (missions PR-1) — logged from the review pass, not fixed
+
+- **Skill filter is exact and case-sensitive** on two free-text fields (`freelancer_skills.skill` vs `job_post_skills.skill`):
+  « react » never matches « React », and a consumer who types « figma adobe » as one skill is one skill. Normalise at write
+  time or match via a lowercase column when skills get a taxonomy. `?competence=` also accepts any value, not only the viewer's own.
+- **« Budget décroissant »** orders by `budget_max` desc, then `budget_min`, nulls last: a « Dès 5 000 TND » post (no max)
+  ranks below every post that has a max. Sort on `coalesce(budget_max, budget_min)` through a generated column if it matters.
+- **AR budget labels in the Budget dropdown and chip** (« 200 – 500 د.ت ») are not pinned LTR, unlike the card and facts panel.
+- **Skill filter id list** is capped at 500 matching in-window open posts (explicit `.limit`); an RPC would remove the cap.
+- **Awareness bar « N sur 5 »** can read 4/5 while the DB blocks at 5 when a moderated-but-open post counts toward the cap (gap G5).
