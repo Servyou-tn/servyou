@@ -18,6 +18,8 @@ Servyou's security posture is defense-in-depth, anchored to OWASP standards.
 
 **Authorization via RLS, not application checks.** Every table has Row Level Security enabled. Application code does not perform "is this user allowed to do this" checks before database calls, because such checks are duplicative and become inconsistent. The database is the authority; the application asks and gets either the data or a permission denied.
 
+**Grants are explicit, not inherited (since migration 68, 2026-10-26).** Default privileges in `public` are closed: a new table gives anon SELECT only and authenticated SELECT / INSERT / UPDATE / DELETE, and a new function is executable by no client role. So every RPC the app calls needs an explicit `GRANT EXECUTE … TO authenticated` (anon only for anonymous pages), every helper used inside an RLS policy needs one too and its policy is scoped `TO authenticated`, and tables with system-owned columns use column-level INSERT / UPDATE grants (`orders`, `job_posts`, `data_exports`, `deletion_requests`) — never re-grant table-level INSERT / UPDATE on those. The db-guardian skill holds the full rule.
+
 **Rate limiting at the edge.** Vercel's per-IP rate limiting is enabled on auth endpoints. Heavier rate limiting (Cloudflare or Vercel Pro features) is deferred to Phase 10 polish before public launch.
 
 **Bot protection.** Cloudflare Turnstile is added on `/inscription` and `/connexion` in Phase 10, before opening to real users.
