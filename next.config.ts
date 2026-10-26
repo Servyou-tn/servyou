@@ -108,6 +108,9 @@ const nextConfig: NextConfig = {
       // own listing; "mission" stays reserved for the freelancer-facing job board). Wildcard keeps
       // any in-flight bookmark/link to the list, create, or detail page working.
       { source: '/mes-missions/:path*', destination: '/mes-annonces/:path*', permanent: true },
+      // /missions has no index of its own: the public header, footer, landing and the admin moderation report all
+      // link here. EXACT match on purpose — a `:path*` wildcard would swallow /missions/[id] (the H10 detail page).
+      { source: '/missions', destination: '/trouver-des-missions', permanent: true },
     ]
   },
 };

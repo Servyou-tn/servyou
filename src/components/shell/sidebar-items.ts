@@ -47,6 +47,10 @@ export type SidebarItemDef = {
   // be derived from `href` itself. Getting this wrong collapses the sub-items the instant a
   // visitor clicks into the Services engine — the exact case this field exists to keep open.
   expandOn?: string
+  // Extra route PREFIXES that also light this item (besides `href`'s own). For a leaf whose detail pages live
+  // under a different segment: « Trouver des missions » is /trouver-des-missions but its detail, proposal form
+  // and confirmation are /missions/[id]/… (Figma H10/H12/H13 all keep it active).
+  activeOn?: string[]
 }
 export type SidebarSectionDef = { labelKey: string; items: SidebarItemDef[] }
 
@@ -96,7 +100,7 @@ const ACTIVITIES: SidebarSectionDef = {
     { key: 'shell.sidebar.services', href: '/mes-services', icon: Briefcase },
     { key: 'shell.sidebar.engagements', href: '/mes-engagements', icon: Handshake },
     { key: 'shell.sidebar.proposals', href: '/mes-propositions', icon: Send },
-    { key: 'shell.sidebar.findMissions', href: '/trouver-des-missions', icon: Compass },
+    { key: 'shell.sidebar.findMissions', href: '/trouver-des-missions', icon: Compass, activeOn: ['/missions'] },
   ],
 }
 

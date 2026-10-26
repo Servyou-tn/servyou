@@ -9,7 +9,7 @@ import { useLang } from '@/components/LangProvider'
 import { t } from '@/lib/i18n'
 import { FOCUS_RING } from '@/components/layout/styles'
 import { sidebarSectionsForRole, type ShellRole } from './sidebar-items'
-import { isActiveRoute } from './active-route'
+import { isActiveRoute, isItemActive } from './active-route'
 import { SidebarSection } from './SidebarSection'
 import { SidebarItem } from './SidebarItem'
 
@@ -109,7 +109,7 @@ export function Sidebar({
                     // aria-current="page" in one <nav>. The chevron (via `expanded`) is this row's
                     // only visual state; the real "current" signal lives on whichever sub-item
                     // matches below.
-                    active={item.subItems ? false : isActiveRoute(pathname, item.href)}
+                    active={item.subItems ? false : isItemActive(pathname, item)}
                     onNavigate={onNavigate}
                     disabled={item.disabled}
                     soonLabel={item.disabled ? t('shell.sidebar.soon', lang) : undefined}
