@@ -187,6 +187,18 @@ describe('ProposalForm — typed failures in place (D-H13-3)', () => {
     await waitFor(() => expect(h.action).toHaveBeenCalledTimes(2))
   })
 
+  it('a REJECTED action (network down) keeps the form and everything typed, and offers « Réessayer »', async () => {
+    const user = userEvent.setup()
+    vi.spyOn(console, 'error').mockImplementation(() => {})
+    h.action.mockRejectedValueOnce(new Error('Failed to fetch'))
+    renderForm()
+    await fillMessage(user)
+    await user.click(screen.getByRole('button', { name: SEND }))
+    expect(await screen.findByRole('button', { name: t('proposal.fail.retry', 'fr') })).toBeInTheDocument()
+    expect(screen.getByRole('textbox', { name: t('proposal.form.message_label', 'fr') })).toHaveValue(MESSAGE)
+    expect(screen.getByRole('textbox', { name: t('proposal.form.message_label', 'fr') })).toBeEnabled()
+  })
+
   it('a field failure lands on its field, not in an amber notice', async () => {
     await submitWith({ ok: false, kind: 'failure', reason: 'invalid_price' })
     expect(await screen.findByText(t('proposal.error.price_invalid', 'fr'))).toBeInTheDocument()
