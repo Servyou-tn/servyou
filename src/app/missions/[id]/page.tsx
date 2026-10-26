@@ -14,6 +14,7 @@ import { resolveOwnedFreelancerProfileId } from '@/lib/freelancer/owner-profile'
 import { resolveRole } from '@/lib/roles'
 import { getLang } from '@/lib/i18n/server'
 import { t, tn } from '@/lib/i18n'
+import { localizeCity } from '@/lib/marche/missions'
 import { getMissionDetail, type MissionViewer } from '@/lib/marche/mission-detail-query'
 import { relativeTimeLabel } from '@/app/tableau-de-bord/_components/relative-time'
 import { MissionCta } from './_components/MissionCta'
@@ -54,7 +55,7 @@ export default async function MissionDetailPage({ params }: { params: Promise<{ 
   if (!mission) notFound()
 
   const published = relativeTimeLabel(mission.createdAt, lang)
-  const place = mission.isRemote ? t('missioncard.remote', lang) : mission.city
+  const place = mission.isRemote ? t('missioncard.remote', lang) : localizeCity(mission.city, lang)
 
   return (
     <AppShell user={shell.topBarUser}>

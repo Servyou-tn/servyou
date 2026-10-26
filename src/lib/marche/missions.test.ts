@@ -5,6 +5,7 @@ import {
   competitionLevel,
   firstName,
   isNewMission,
+  localizeCity,
   missionCutoffIso,
   missionDaysLeft,
   parseMissionParams,
@@ -114,5 +115,14 @@ describe('firstName', () => {
     expect(firstName('  Karim Ben Ali ')).toBe('Karim')
     expect(firstName(null)).toBe('')
     expect(firstName('   ')).toBe('')
+  })
+})
+
+describe('localizeCity', () => {
+  it('maps a governorate to the reader language, leaves free text and null alone', () => {
+    expect(localizeCity('Le Kef', 'fr')).toBe('Le Kef')
+    expect(localizeCity('Le Kef', 'ar')).toBe('الكاف')
+    expect(localizeCity('Tunis centre', 'ar')).toBe('Tunis centre')
+    expect(localizeCity(null, 'ar')).toBeNull()
   })
 })

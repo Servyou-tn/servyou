@@ -1,3 +1,5 @@
+import { GOVERNORATES } from '@/lib/tunisia-governorates'
+import type { Lang } from '@/lib/i18n'
 import { COMPETITION_LOW_MAX, COMPETITION_MEDIUM_MAX, JOB_POST_EXPIRY_DAYS, NEW_MISSION_WINDOW_HOURS } from '@/lib/job-constants'
 
 // H9 « Trouver des missions » — pure rules (no I/O, no clock reads of its own: every function takes `now`).
@@ -130,4 +132,11 @@ export function missionCutoffIso(now: Date): string {
 /** First word of a display name (« Karim Ben Ali » → « Karim »); '' when there is none. */
 export function firstName(fullName: string | null | undefined): string {
   return (fullName ?? '').trim().split(/\s+/)[0] ?? ''
+}
+
+/** A stored city (canonical governorate value) in the reader's language; free text that is not a governorate is shown as typed. */
+export function localizeCity(city: string | null | undefined, lang: Lang): string | null {
+  if (!city) return null
+  const g = GOVERNORATES.find((x) => x.value === city)
+  return g ? (lang === 'ar' ? g.ar : g.fr) : city
 }

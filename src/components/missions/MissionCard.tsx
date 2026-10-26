@@ -4,6 +4,7 @@ import { t, tn, type Lang } from '@/lib/i18n'
 import { MAX_RESPONSES_PER_POST } from '@/lib/job-constants'
 import { formatJobBudget, hasJobBudget } from '@/lib/marche/format-job-budget'
 import type { MissionSummary } from '@/lib/marche/missions-query'
+import { localizeCity } from '@/lib/marche/missions'
 import { FOCUS_RING } from '@/components/layout/styles'
 import { CompetitionPill } from './CompetitionPill'
 import { CategoryChip, NewChip, SkillChip } from './MissionChips'
@@ -19,7 +20,8 @@ export function MissionCard({ mission, lang }: { mission: MissionSummary; lang: 
   const budget = formatJobBudget(mission.budgetMin, mission.budgetMax, lang)
   const budgetIsFigure = hasJobBudget(mission.budgetMin, mission.budgetMax)
   const clientName = mission.clientFirstName || t('missioncard.client_unknown', lang)
-  const clientLine = mission.clientCity ? `${clientName} · ${mission.clientCity}` : clientName
+  const clientCity = localizeCity(mission.clientCity, lang)
+  const clientLine = clientCity ? `${clientName} · ${clientCity}` : clientName
 
   return (
     <article className="relative flex h-full flex-col gap-3 rounded-xl border border-border-subtle bg-surface-base p-5 transition-[border-color,box-shadow] focus-within:border-brand-blue-600 hover:border-brand-blue-600 hover:shadow-xs">
@@ -50,10 +52,10 @@ export function MissionCard({ mission, lang }: { mission: MissionSummary; lang: 
             <Globe className="size-4 shrink-0" aria-hidden="true" />
             {t('missioncard.remote', lang)}
           </span>
-        ) : mission.city ? (
+        ) : localizeCity(mission.city, lang) ? (
           <span className="inline-flex items-center gap-1.5">
             <MapPin className="size-4 shrink-0" aria-hidden="true" />
-            {mission.city}
+            {localizeCity(mission.city, lang)}
           </span>
         ) : null}
         <span className="inline-flex items-center gap-1.5">

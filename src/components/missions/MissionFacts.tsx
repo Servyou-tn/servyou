@@ -2,6 +2,7 @@ import { Clock, Globe, MapPin } from 'lucide-react'
 import { t, tn, type Lang } from '@/lib/i18n'
 import { MAX_RESPONSES_PER_POST } from '@/lib/job-constants'
 import { formatJobBudget, hasJobBudget } from '@/lib/marche/format-job-budget'
+import { localizeCity } from '@/lib/marche/missions'
 import { CompetitionPill } from './CompetitionPill'
 import { SkillChip } from './MissionChips'
 
@@ -25,7 +26,7 @@ function Divider() {
 
 export function MissionFacts({ mission, lang, children }: { mission: MissionFactsData; lang: Lang; children?: React.ReactNode }) {
   const budget = formatJobBudget(mission.budgetMin, mission.budgetMax, lang)
-  const place = mission.isRemote ? t('missioncard.remote', lang) : (mission.city ?? t('missiondetail.location_unspecified', lang))
+  const place = mission.isRemote ? t('missioncard.remote', lang) : (localizeCity(mission.city, lang) ?? t('missiondetail.location_unspecified', lang))
 
   return (
     <section className="flex flex-col gap-4 rounded-xl border border-border-subtle bg-surface-base p-6">
