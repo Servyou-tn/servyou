@@ -4876,7 +4876,7 @@ returns `[]`, i.e. a silent empty list — the rule is to surface the error.
 
 ## Missions M-A — `job_posts.response_count` + write lock (`feat/missions-m-a`, 2026-10-26)
 
-### LOW — consumers can still set `job_posts.status` to anything through REST
+### LOW — consumers can still set `job_posts.status`, and edit the content, freely through REST
 
 - `status` stays column-granted (createAnnonce inserts it; mark-filled / reopen / delete update it), and only the
   CHECK (`open`, `filled`, `expired`, `deleted`) constrains it — no transition guard. On their own posts a
@@ -4884,18 +4884,37 @@ returns `[]`, i.e. a silent empty list — the rule is to surface the error.
   `reopenMissionAction`; the post then shows open but `check_job_response_limits` still refuses every response),
   or INSERT straight at `filled` / `deleted`. **Fix if wanted:** a BEFORE UPDATE transition trigger in the style
   of `check_order_status_transition` (`deleted` terminal; `filled` ↔ `open` only within 30 days).
+- The other eight UPDATE-granted columns (title, description, category, city, remote, budgets, deadline) have
+  no app writer today (no edit screen) but stay granted, so a consumer can rewrite a post after freelancers
+  answered it (bait-and-switch). Pre-existing, not widened by M-A. **Decide when an edit screen is built:**
+  narrow the UPDATE grant to `status` until then, or lock content once `response_count > 0`.
+
+### LOW — M-A trade-offs, written down (`20261026173800`)
+
+- **Deadlock window:** a response delete now UPDATEs its post. A post hard-delete (REST DELETE or the
+  consumer's account deletion) that cascades into the same response while its freelancer deletes it can
+  deadlock (40P01; one side aborts and retries). Rare: the app only soft-deletes posts.
+- **Drift is a hard failure:** `CHECK (response_count >= 0)` makes a count that ever drifted low (responses
+  written with triggers off / in replica mode) fail the next −1 with 23514 — blocking that response delete
+  and any account-deletion cascade through it. Never bulk-load `job_responses` with triggers off; the repair
+  is the migration's backfill UPDATE (absolute, idempotent).
+- **Redundant index:** `job_posts_status_response_count_idx (status, response_count)` makes
+  `job_posts_status_idx (status)` redundant; drop it in a later migration. Counter writes touch an indexed
+  column, so they are never HOT updates (negligible at today's volume).
+
+### Note — stale branches that still write `job_posts.updated_at` will fail
+
+- `design/header-production`, `feature/buyer-cancellation-history`, `feature/configurable-workspace-fields-tests-docs`
+  and `feature/orders-lifecycle-seller-advance` carry an old `mes-missions` page that updates
+  `{ status: 'filled', updated_at: … }` (and a `modifier` page that sends `updated_at`). Under a user JWT that is
+  now 42501, and Vercel previews hit the production database. `main` is unaffected; anything revived from those
+  branches must drop `updated_at` from the payload.
 
 ### LOW — concurrent responses can overshoot the 10-per-post cap (for M-C)
 
 - `check_job_response_limits` counts rows in a BEFORE trigger without locking the post, so two responses
   arriving together can both see 9. `response_count` is now the natural lock point: in M-C (which owns that
   function, G5 / G7), read it `FOR UPDATE`, or add `CHECK (response_count <= 10)`.
-
-### LOW — the new suite guards `job_responses` inline
-
-- `job-posts-response-count.test.ts` refuses its teardown while a non-fixture freelancer has answered a fixture
-  post, inline, because PR #196's shared `live-teardown-guard.ts` was not on main yet. Move it into that helper
-  when the "favourites, job responses … still go with the fixtures" follow-up (PR #196) is picked up.
 
 ### Observation — 5 orphaned test accounts on production
 
@@ -5011,14 +5030,18 @@ fixtures. `scripts/rls-smoke.mjs` (not a suite, never run) seeds an active produ
   even wait for the cascade: they run `job_responses.delete().in('job_post_id', testPostIds)` directly. Lower
   stakes than an order (no money, no address), but it is still a real user's row. **Fix:** the same
   refuse-then-resolve guard, keyed on `favorites.user_id` / `job_responses.freelancer_id` outside the fixture
-  set, placed before those direct deletes.
+  set, placed before those direct deletes. *(Since M-A, `refuseTeardownOnForeignResponses` exists in
+  `live-teardown-guard.ts` and `job-posts-response-count` calls it; the six suites above still need the call,
+  and favourites still need their own check.)*
 - `h6-service-listings-hardening-rls` seeds real `categories` rows (`h6-hard-sector-*` / `h6-hard-sub-*`) for
   the whole run and deletes them last. If a real seller picks one meanwhile (not checked whether the pickers
   list them), the delete clears their product / listing category (`category_id` / `subcategory_id` are ON
   DELETE SET NULL) or deletes their `shop_categories` row (ON DELETE CASCADE). Never an order.
 
-### LOW — nine live suites run on every default `vitest run`, against production
+### ✅ RESOLVED (`feat/missions-m-a`, 2026-10-26) — nine live suites ran on every default `vitest run`, against production
 
+- Fixed: all nine are in `INTEGRATION_GLOBS`, and `integration-globs-guard.test.ts` fails the unit run if a test
+  file reading the service-role key is ever left out again. Original entry:
 - `INTEGRATION_GLOBS` (vitest.config.ts) leaves out both `d4-*`, `freelancer-publish-gate-rls`,
   `h3-links-portfolio-rls`, the three `h5-service-*`, `h6-service-listings-hardening-rls` and
   `freelancer-details-wizard`. So DoD item 4 (`vitest run`) creates and deletes users on production whenever

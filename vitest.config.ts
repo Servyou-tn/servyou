@@ -9,7 +9,6 @@ import { loadEnv } from 'vite'
 export const INTEGRATION_GLOBS = [
   '**/shop-config-rls.test.ts',
   '**/shop-check-constraints.test.ts',
-  '**/freelancer-config-rls.test.ts',
   '**/buyer-cancellation-history.test.ts',
   '**/order-delivery-fee-snapshot.test.ts',
   '**/orders-insert-integrity.test.ts',
@@ -25,6 +24,7 @@ export const INTEGRATION_GLOBS = [
   '**/category-embeds-unambiguous.test.ts',
   '**/prelaunch-shop-read-rls.test.ts',
   '**/orders-lifecycle-columns.test.ts',
+  '**/job-posts-response-count.test.ts',
   // These nine wrote to production on every default run until 2026-10-26 (missions M-A PR).
   '**/d4-completed-project-count.test.ts',
   '**/d4-freelancer-services-visibility.test.ts',
@@ -35,7 +35,6 @@ export const INTEGRATION_GLOBS = [
   '**/h5-service-monthly-stats.test.ts',
   '**/h5-service-status-cascade.test.ts',
   '**/h6-service-listings-hardening-rls.test.ts',
-  '**/job-posts-response-count.test.ts',
 ]
 
 // Tooling artifacts that must never be scanned for tests: the headless-Chrome VRT profiles (a

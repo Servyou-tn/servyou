@@ -25,6 +25,7 @@ import { describe, it, expect, beforeAll, afterAll } from 'vitest'
 import { createClient, SupabaseClient } from '@supabase/supabase-js'
 import { randomUUID } from 'crypto'
 import type { Database } from '@/lib/supabase/database.types'
+import { refuseTeardownOnForeignResponses } from './live-teardown-guard'
 
 type Client = SupabaseClient<Database>
 type PostInsert = Database['public']['Tables']['job_posts']['Insert']
@@ -137,35 +138,16 @@ function expectDenied(error: { code?: string; message?: string } | null) {
 }
 
 // Idempotent and surgical to this file's prefix; runs first (recovers a crashed prior run) and last.
-// The fixture posts are open on the board while this runs, so a real freelancer could answer one, and
-// deleting the poster would cascade that response away (job_responses.job_post_id is ON DELETE CASCADE).
-// So: refuse to tear down while a non-fixture freelancer has answered a fixture post (resolve by hand) —
-// the job_responses twin of the orders guard in live-teardown-guard.ts (PR #196). Then the users:
+// The fixture posts are open on the board while this runs, so a real freelancer could answer one:
+// refuseTeardownOnForeignResponses refuses rather than cascade that response away. Then the users:
 // deleting them cascades profiles -> job_posts -> job_responses, and freelancer_profiles. No orders, no
-// audited admin RPC.
+// orderable item (so no orders guard), no audited admin RPC.
 async function teardown(): Promise<void> {
   const { data, error } = await admin.from('profiles').select('id').like('email', `${PREFIX}%${EMAIL_SUFFIX}`)
   if (error) throw new Error(`teardown lookup failed: ${error.message}`)
   const ids = (data ?? []).map((row) => row.id)
   if (ids.length === 0) return
-
-  const { data: posts, error: postsErr } = await admin.from('job_posts').select('id').in('consumer_id', ids)
-  if (postsErr) throw new Error(`teardown post lookup failed: ${postsErr.message}`)
-  const postIds = (posts ?? []).map((row) => row.id)
-  if (postIds.length > 0) {
-    const { data: outside, error: outsideErr } = await admin
-      .from('job_responses')
-      .select('id')
-      .in('job_post_id', postIds)
-      .not('freelancer_id', 'in', `(${ids.join(',')})`)
-    if (outsideErr) throw new Error(`teardown safety check failed: ${outsideErr.message}`)
-    if ((outside ?? []).length > 0) {
-      throw new Error(
-        `teardown REFUSED: ${outside?.length} non-fixture response(s) on a ${PREFIX} post — a real freelancer ` +
-          'answered a fixture post during the run. Resolve by hand; never force-delete.',
-      )
-    }
-  }
+  await refuseTeardownOnForeignResponses(admin, ids, PREFIX)
 
   for (const id of ids) {
     const { error: delErr } = await admin.auth.admin.deleteUser(id)
@@ -255,6 +237,8 @@ describe.skipIf(!hasCreds)('G3 — response_count follows job_responses', () => 
     await expectCount(postA, 2)
   })
 
+  // A regression pin rather than a discovery: a refused statement rolls back, so today this holds by
+  // construction. It fails if the counter ever moves to a BEFORE trigger or a deferred path.
   it('a response refused by a BEFORE trigger leaves the count alone', async () => {
     const { error } = await respond(f2.client, postA, f2.id)
     expect(error?.message).toBe(DUPLICATE)
@@ -298,13 +282,15 @@ describe.skipIf(!hasCreds)('G3 — response_count follows job_responses', () => 
     expect(count).toBe(0)
   })
 
-  it('concurrent responses all count (+1 re-applied under the row lock, never a stale recount)', async () => {
+  // Three requests in flight at once. REST cannot force them to interleave inside the database, so this
+  // proves the end state; that "+ 1" survives a real overlap rests on the SQL (see the migration header).
+  it('concurrent responses all count', async () => {
     const results = await Promise.all([f1, f2, f4].map((f) => respond(f.client, postC, f.id)))
     for (const { error } of results) expect(error).toBeNull()
     await expectCount(postC, 3)
   })
 
-  it('anyone who can read the post can read its count: an unrelated freelancer, an outsider, anon', async () => {
+  it('anyone who can read the post can read its count: a responder (who sees only its own response), an outsider, anon', async () => {
     for (const reader of [f4.client, outsiderClient, anon]) {
       const { data, error } = await reader.from('job_posts').select('id, response_count').eq('id', postC).single()
       expect(error).toBeNull()

@@ -35,3 +35,33 @@ export async function refuseTeardownOnForeignOrders(
     )
   }
 }
+
+/**
+ * The job_responses twin, for every live-DB suite whose fixtures include an open job post: a post that
+ * is open and under 30 days old is on the board while the suite runs, so a real freelancer can answer
+ * it, and deleting the fixture poster would take that response with it (job_responses.job_post_id is
+ * ON DELETE CASCADE). Call it before any job_responses delete and before any deleteUser.
+ */
+export async function refuseTeardownOnForeignResponses(
+  admin: SupabaseClient<Database>,
+  fixtureIds: string[],
+  prefix: string,
+): Promise<void> {
+  if (fixtureIds.length === 0) return
+  const { data: posts, error: postsErr } = await admin.from('job_posts').select('id').in('consumer_id', fixtureIds)
+  if (postsErr) throw new Error(`teardown post lookup failed: ${postsErr.message}`)
+  const postIds = (posts ?? []).map((row) => row.id)
+  if (postIds.length === 0) return
+  const { data, error } = await admin
+    .from('job_responses')
+    .select('id')
+    .in('job_post_id', postIds)
+    .not('freelancer_id', 'in', `(${fixtureIds.join(',')})`)
+  if (error) throw new Error(`teardown safety check failed: ${error.message}`)
+  if ((data ?? []).length > 0) {
+    throw new Error(
+      `teardown REFUSED: ${data?.length} non-fixture response(s) on a ${prefix} post — a real freelancer ` +
+        'answered an open fixture post during the run. Resolve by hand; never force-delete.',
+    )
+  }
+}
