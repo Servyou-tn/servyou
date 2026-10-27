@@ -169,7 +169,9 @@ export const getAnnonceDetail = cache(
 
     // Resolve responder display data. Names + profile-level city come from the public_profiles
     // view (profiles is owner-only); the freelancer headline + freelancer-level city come from
-    // freelancer_profiles (public-read). Two small IN() lookups, same pattern as lib/marche/data.
+    // freelancer_profiles, readable only while the profile is live (migration 75): a moderated
+    // responder comes back without a row, so headline is null and city falls back to the profile-level
+    // one — the card renders both conditionally. Two small IN() lookups, same pattern as lib/marche/data.
     const freelancerIds = [...new Set(respRows.map((r) => r.freelancer_id))]
     const nameCity = new Map<string, { full_name: string | null; city: string | null }>()
     const headlineCity = new Map<string, { headline: string | null; city: string | null }>()
