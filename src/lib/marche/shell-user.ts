@@ -18,7 +18,7 @@ export async function getShellUser(): Promise<{ id: string; topBarUser: TopBarUs
     .select('full_name, seller_type, avatar_url')
     .eq('id', user.id)
     .maybeSingle()
-  if (error) console.error('[shell-user] profile fetch failed', error)
+  if (error) console.error('[shell-user] profile fetch failed:', error.message, error.code, error.details)
 
   return {
     id: user.id,

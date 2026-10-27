@@ -2,7 +2,7 @@
 
 import { useReducedMotion } from 'motion/react'
 import { BlurFade } from '@/components/magicui/blur-fade'
-import { ProductBrowseCard } from './ProductBrowseCard'
+import { ProductBrowseCard } from '@/components/produits/ProductBrowseCard'
 import type { ProductListing } from '@/components/listings/ProductListingCard'
 
 // C1's product grid — Figma 569:39817: 4 columns × 3 rows of 272×373 cards, gap 16 on BOTH axes
