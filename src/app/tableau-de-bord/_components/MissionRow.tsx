@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { t, type Lang } from '@/lib/i18n'
 import { tndAmount } from '@/components/listings/listing-utils'
 import { FOCUS_RING } from '@/components/layout/styles'
-import { relativeTimeLabel } from './relative-time'
+import { relativeTimeLabel } from '@/lib/relative-time'
 import type { MissionMatch } from '@/lib/marche/freelancer-dashboard'
 
 // Ruling 6 — no shared ListRow exists in code (Figma only), so this is a dedicated, route-local,

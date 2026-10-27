@@ -19,7 +19,7 @@ import { t } from '@/lib/i18n'
 import { FOCUS_RING } from '@/components/layout/styles'
 import { BASE as BUTTON_BASE, SIZE as BUTTON_SIZE, VARIANT_BASE, VARIANT_STATE } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
-import { StatTile } from './_components/StatTile'
+import { StatTile } from '@/components/shared/StatTile'
 import { ServiceFiltersBar } from './_components/ServiceFiltersBar'
 import { ServicesList } from './_components/ServicesList'
 
