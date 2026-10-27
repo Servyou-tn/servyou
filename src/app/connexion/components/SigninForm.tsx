@@ -7,7 +7,7 @@ import { createClient } from '@/lib/supabase/client'
 import { useLang } from '@/components/LangProvider'
 import { t } from '@/lib/i18n'
 import { isValidEmail } from '@/lib/signup-validation'
-import { resolvePostLoginDestination } from '@/lib/internal-path'
+import { resolveSignInDestination } from '@/lib/internal-path'
 import { SpinnerIcon, GoogleIcon, CheckCircleIcon } from '@/components/auth/Icons'
 import { PasswordField } from '@/components/auth/PasswordField'
 import { display, labelClass, errorClass, inputBase, primaryBtn } from '@/components/auth/field-styles'
@@ -59,7 +59,7 @@ export function SigninForm({ showResetSuccess = false }: { showResetSuccess?: bo
 
     setLoading(true)
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email: email.trim().toLowerCase(),
         password,
       })
@@ -83,11 +83,20 @@ export function SigninForm({ showResetSuccess = false }: { showResetSuccess?: bo
       }
 
       // Honour a safe ?next= (set when a guarded page bounced the user here — every guard
-      // in the app builds this key, e.g. require-seller.ts:42) or fall back to the
-      // marketplace landing. Role dashboards were removed in the design-phase reset and
-      // will get their own redirects when rebuilt; until then there is one fallback
-      // destination for all roles. Open-redirect guarded inside the resolver.
-      router.push(resolvePostLoginDestination(window.location.search))
+      // in the app builds this key, e.g. require-seller.ts:42); otherwise a freelancer lands on
+      // their dashboard and a shop owner on theirs, and consumers/admins keep `/`. Open-redirect
+      // guarded inside the resolver. The profile is the user's OWN row (owner-only RLS). If it
+      // cannot be read the user still signs in and falls back to `/` — a role-routing miss must
+      // never block a login — but the failure is logged, not swallowed.
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('seller_type, is_admin')
+        .eq('id', data.user.id)
+        .maybeSingle()
+      if (profileError) {
+        console.error('[SigninForm] profile read failed:', profileError.message, profileError.code, profileError.details)
+      }
+      router.push(resolveSignInDestination(window.location.search, profile))
     } catch (err) {
       console.error('[SigninForm] signin error:', err)
       setFormError(t('signin.errors.generic', lang))

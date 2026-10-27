@@ -5,8 +5,10 @@ import { useEffect, useRef, useState } from 'react'
 import { usePathname } from 'next/navigation'
 import { useLang } from '@/components/LangProvider'
 import { t } from '@/lib/i18n'
-import { navLinks, accountItems, activeHref } from '@/lib/layout/nav-config'
+import { navLinks, accountItems, activeHref, type HeaderAccount } from '@/lib/layout/nav-config'
 import type { HeaderState, SellerType } from '@/lib/layout/select-variant'
+import { Avatar } from '@/components/ui/avatar'
+import { getInitials } from '@/components/ui/initials'
 import { MenuIcon, CloseIcon } from './icons'
 import { Wordmark } from './Wordmark'
 import { FOCUS_RING } from './styles'
@@ -18,9 +20,12 @@ import { FOCUS_RING } from './styles'
 export function MobileMenu({
   state,
   sellerType,
+  account,
 }: {
   state: HeaderState
   sellerType: SellerType
+  /** The signed-in viewer on the marketing landing: shown instead of the auth CTAs. */
+  account?: HeaderAccount
 }) {
   const lang = useLang()
   const pathname = usePathname()
@@ -144,7 +149,37 @@ export function MobileMenu({
             </nav>
 
             <div className="mt-auto border-t border-border-subtle pt-4">
-              {state.variant === 'public' ? (
+              {account ? (
+                <div className="flex flex-col gap-2">
+                  <div className="flex items-center gap-3 px-4 py-2">
+                    <Avatar size="md" src={account.avatarUrl} initials={account.fullName ? getInitials(account.fullName) : undefined} />
+                    {account.fullName ? (
+                      <p dir="auto" className="min-w-0 flex-1 truncate text-base font-semibold text-text-primary">
+                        {account.fullName}
+                      </p>
+                    ) : null}
+                  </div>
+                  <Link
+                    href={account.spaceHref}
+                    onClick={() => setOpen(false)}
+                    className={`${rowClass} bg-brand-blue-600 text-center font-semibold text-white hover:bg-[#1D4ED8]`}
+                  >
+                    {t('nav.dashboard', lang)}
+                  </Link>
+                  {accountItems(sellerType)
+                    .filter(item => item.kind === 'logout')
+                    .map(item => (
+                      <form key="logout" action="/auth/signout" method="POST">
+                        <button
+                          type="submit"
+                          className={`${rowClass} w-full text-center text-red-600 hover:bg-red-50`}
+                        >
+                          {item.kind === 'logout' ? t(item.key, lang) : null}
+                        </button>
+                      </form>
+                    ))}
+                </div>
+              ) : state.variant === 'public' ? (
                 <div className="flex flex-col gap-2">
                   <Link
                     href="/connexion"

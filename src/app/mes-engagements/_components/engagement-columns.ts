@@ -11,8 +11,8 @@
 //     rest of the fixed columns that left the service column ≈ 119 px at 1366 (« Créati… / Design … ») —
 //     because the client column kept its full 200 px however narrow the table was.
 //   • So client and service now SHARE what is left (4 : 5), client clamped to 132–200 px. The service
-//     column is therefore always the larger of the two, and the client name — avatar + one truncated line —
-//     is the one that gives way. 4 : 5 rather than 2 : 3 because the « Consommateur » line under the name needs
+//     column is therefore always the larger of the two, and the client name — avatar + a name clamped to two
+//     lines (fix/post-login-and-polish-2; it was one truncated line) — is the one that gives way. 4 : 5 rather than 2 : 3 because the « Consommateur » line under the name needs
 //     ≈ 108 px of text (+ 52 for the avatar): at 160 px it fits whole at 1366.
 //   • Below 1400 px the table runs compact: px 16, gap 12, échéance 140 (« Demandée le 26 juil. » measures 135 px —
 //     a first try at 128 clipped it). Budget stays 140: the Arabic « ابتداءً من 150 د.ت » measures 125 px.

@@ -6,7 +6,9 @@ import { usePathname } from 'next/navigation'
 import { useLang } from '@/components/LangProvider'
 import { t } from '@/lib/i18n'
 import { selectVariant, type SellerType } from '@/lib/layout/select-variant'
-import { navLinks, activeHref } from '@/lib/layout/nav-config'
+import { navLinks, activeHref, type HeaderAccount } from '@/lib/layout/nav-config'
+import { Avatar } from '@/components/ui/avatar'
+import { getInitials } from '@/components/ui/initials'
 import { Wordmark } from './Wordmark'
 import { LanguageToggle } from './LanguageToggle'
 import { AccountMenu } from './AccountMenu'
@@ -24,10 +26,14 @@ import { FOCUS_RING } from './styles'
 export function Header({
   sellerType,
   fullName,
+  account,
   forceShow = false,
 }: {
   sellerType: SellerType
   fullName: string | null
+  // The signed-in viewer. When present the auth cluster shows them (avatar + name + a link to their
+  // space) instead of « Se connecter / S'inscrire » — for every role. Absent = logged out.
+  account?: HeaderAccount
   // The (marketing) content pages (/a-propos, /contact, /faq) mount the Header through
   // MarketingShell and need it visible even though selectVariant hides it off '/'. On
   // those routes isLanding is false, so it renders the standard full-width bar variant.
@@ -73,7 +79,8 @@ export function Header({
   // the landing treatment: a white floating capsule on a transparent header (the
   // page paints a soft-blue backdrop behind it) with a bright-blue Sign-up button.
   // The standard full-width-bar branch below is preserved for the future per-role
-  // navbars. The variant is always 'public' here, identically for every visitor.
+  // navbars. The variant is always 'public' here; a signed-in viewer (`account`) swaps the
+  // « Se connecter / S'inscrire » cluster for their avatar + name + a link to their space.
   const isLanding = pathname === '/'
 
   return (
@@ -158,7 +165,22 @@ export function Header({
 
           {/* md+ : auth CTAs (public) or account dropdown */}
           <div className={`hidden md:flex md:items-center ${isLanding ? 'gap-3' : 'md:gap-3'}`}>
-            {state.variant === 'public' ? (
+            {account ? (
+              <>
+                <AccountMenu
+                  sellerType={sellerType}
+                  fullName={account.fullName}
+                  avatarUrl={account.avatarUrl}
+                  showName
+                />
+                <Link
+                  href={account.spaceHref}
+                  className={`inline-flex h-10 items-center whitespace-nowrap rounded-full bg-brand-blue-600 px-5 text-sm font-semibold text-white transition-colors hover:bg-[#1D4ED8] ${FOCUS_RING}`}
+                >
+                  {t('nav.dashboard', lang)}
+                </Link>
+              </>
+            ) : state.variant === 'public' ? (
               <>
                 <Link
                   href="/connexion"
@@ -185,8 +207,19 @@ export function Header({
             )}
           </div>
 
+          {/* mobile : the avatar (a link to their space) beside the hamburger, whose overlay carries the name */}
+          {account ? (
+            <Link
+              href={account.spaceHref}
+              aria-label={t('nav.dashboard', lang)}
+              className={`inline-flex size-11 items-center justify-center rounded-full md:hidden ${FOCUS_RING}`}
+            >
+              <Avatar size="sm" src={account.avatarUrl} initials={account.fullName ? getInitials(account.fullName) : undefined} />
+            </Link>
+          ) : null}
+
           {/* mobile : hamburger + overlay */}
-          <MobileMenu state={state} sellerType={sellerType} />
+          <MobileMenu state={state} sellerType={sellerType} account={account} />
         </div>
       </nav>
     </header>

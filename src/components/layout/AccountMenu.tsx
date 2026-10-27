@@ -15,7 +15,18 @@ import { getInitials } from '@/components/ui/initials'
 // ARIA menu pattern: arrow-key navigation between items, Home/End, Escape and
 // Tab close (Escape returns focus to the trigger), and outside-click close.
 // Déconnexion is a POST form to the existing /auth/signout route.
-export function AccountMenu({ sellerType, fullName }: { sellerType: SellerType; fullName: string | null }) {
+export function AccountMenu({
+  sellerType,
+  fullName,
+  avatarUrl = null,
+  showName = false,
+}: {
+  sellerType: SellerType
+  fullName: string | null
+  avatarUrl?: string | null
+  /** Render the name beside the avatar (from lg up — the landing capsule is too tight below that). */
+  showName?: boolean
+}) {
   const lang = useLang()
   const [open, setOpen] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
@@ -85,7 +96,12 @@ export function AccountMenu({ sellerType, fullName }: { sellerType: SellerType; 
         aria-label={t('nav.account', lang)}
         className={`inline-flex h-10 items-center gap-1.5 rounded-full ps-1 pe-2 transition-colors hover:bg-surface-pill ${FOCUS_RING}`}
       >
-        <Avatar size="sm" initials={fullName ? getInitials(fullName) : undefined} />
+        <Avatar size="sm" src={avatarUrl} initials={fullName ? getInitials(fullName) : undefined} />
+        {showName && fullName ? (
+          <span dir="auto" className="hidden max-w-36 truncate text-sm font-medium text-text-primary lg:inline">
+            {fullName}
+          </span>
+        ) : null}
         <ChevronDownIcon
           className={`h-4 w-4 text-text-muted transition-transform rtl:-scale-x-100 ${open ? 'rotate-180' : ''}`}
         />

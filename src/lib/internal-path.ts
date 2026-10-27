@@ -1,3 +1,5 @@
+import { resolveRole, roleDashboardPath } from '@/lib/roles'
+
 // Open-redirect guard for a post-login ?next= target. A safe value is a
 // same-origin ABSOLUTE path: it starts with a single "/", is not protocol-relative
 // ("//host" → external), has no backslash tricks ("/\evil.com", which some browsers
@@ -26,4 +28,17 @@ export function isValidInternalPath(path: string | null | undefined): boolean {
 export function resolvePostLoginDestination(search: string, fallback = '/'): string {
   const next = new URLSearchParams(search).get('next')
   return next && isValidInternalPath(next) ? next : fallback
+}
+
+// Post-login destination once the viewer's profile is known. A safe ?next= always wins — a guard
+// bounced them from a specific page, and they should land back on it whatever their role. Without
+// one, freelancers and shop owners go to their own dashboard; consumers, admins and anyone whose
+// profile could not be read keep the historical `/` (an admin who is also a seller stays on `/`
+// too: the admin area is not a role dashboard). Pure, so the whole matrix is unit-testable.
+export function resolveSignInDestination(
+  search: string,
+  profile: { seller_type?: string | null; is_admin?: boolean | null } | null | undefined,
+): string {
+  const roleHome = profile && !profile.is_admin ? roleDashboardPath(resolveRole(profile)) : '/'
+  return resolvePostLoginDestination(search, roleHome)
 }

@@ -93,6 +93,29 @@ describe('tn() — surfaces not reachable via real data (unit-test is the only p
   })
 })
 
+// /categories/<slug>?type=service — the count noun follows the result type, not the product default.
+describe('tn() — category header over service results', () => {
+  const vars = { category: 'Beauté' }
+  it('French: « 1 service », « 0/2/5 services » — never « produit »', () => {
+    expect(tn('page_header.categories.emphasis_service', 'fr', 1)).toBe('1 service')
+    expect(tn('page_header.categories.emphasis_service', 'fr', 0)).toBe('0 services')
+    expect(tn('page_header.categories.emphasis_service', 'fr', 2)).toBe('2 services')
+    expect(tn('page_header.categories.subtitle_service', 'fr', 1, vars)).toBe('1 service dans Beauté')
+    expect(tn('page_header.categories.subtitle_service', 'fr', 5, vars)).toBe('5 services dans Beauté')
+  })
+  it('Arabic: one / two / other (خدمة / خدمتان / خدمات)', () => {
+    expect(tn('page_header.categories.emphasis_service', 'ar', 1)).toBe('1 خدمة')
+    expect(tn('page_header.categories.emphasis_service', 'ar', 2)).toBe('2 خدمتان')
+    expect(tn('page_header.categories.emphasis_service', 'ar', 3)).toBe('3 خدمات')
+    expect(tn('page_header.categories.emphasis_service', 'ar', 11)).toBe('11 خدمات')
+    expect(tn('page_header.categories.subtitle_service', 'ar', 2, vars)).toBe('2 خدمتان في Beauté')
+  })
+  it('the product pair is untouched', () => {
+    expect(tn('page_header.categories.emphasis', 'fr', 1)).toBe('1 produit')
+    expect(tn('page_header.categories.emphasis', 'ar', 2)).toBe('2 منتجان')
+  })
+})
+
 // PageHeader (src/components/shared/PageHeader.tsx) finds emphasisWord as a literal substring of
 // subtitle (`subtitle.indexOf(emphasisWord)`) to highlight it. recherche.* and categories.* build
 // subtitle and emphasis from two INDEPENDENT tn() lookups sharing the same count — if the wording
@@ -103,6 +126,7 @@ describe('tn() — PageHeader emphasis stays a substring of its subtitle', () =>
   const pairs: [string, string][] = [
     ['page_header.recherche.subtitle', 'page_header.recherche.emphasis'],
     ['page_header.categories.subtitle', 'page_header.categories.emphasis'],
+    ['page_header.categories.subtitle_service', 'page_header.categories.emphasis_service'],
   ]
   const vars = { query: 'chaise', category: 'Beauté' }
 
