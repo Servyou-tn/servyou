@@ -252,7 +252,7 @@ describe('EngagementRow — Arabic', () => {
     renderRow({ status: 'pending', startingPrice: 300, clientType: 'shop', requestedTimeframe: 'أسبوعان' }, 'ar')
     expect(screen.getByRole('button', { name: t('engagements.advance.accepted', 'ar') })).toBeInTheDocument()
     expect(screen.getByText(t('engagements.client_type.shop', 'ar'))).toBeInTheDocument()
-    expect(screen.getByText(/^ابتداءً من /)).toBeInTheDocument()
+    expect(screen.getByText(/^ابتداء من /)).toBeInTheDocument()
     expect(screen.getByText('أسبوعان')).toBeInTheDocument()
 
     await user.click(kebab(BASE.title, 'ar'))

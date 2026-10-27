@@ -1,10 +1,14 @@
+import { notFound } from 'next/navigation'
+
 // ⚠️ THROWAWAY — PR-DS-1 design-token verification page.
 // Proves the Section 2 tokens generate working Tailwind v4 utility classes. Dev-only, not
 // linked in any nav; the English labels are intentional (they are token names, not product copy,
 // so the i18n vocabulary lock does not apply here). REMOVE this route once the Settings page
 // (PR-PAGE-1) ships and serves as the real proof of the token system.
 
+// 404 in production (every Vercel build, preview included): an internal token proof must not be a public page. Dev keeps it.
 export default function DesignTokensVerificationPage() {
+  if (process.env.NODE_ENV === 'production') notFound()
   return (
     <main className="min-h-screen bg-surface-subtle p-6">
       <div className="mx-auto flex max-w-4xl flex-col gap-section">
