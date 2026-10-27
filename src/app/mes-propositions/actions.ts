@@ -9,8 +9,9 @@ import { resolveAnnonceStatus } from '@/lib/marche/annonce-status'
 // D-H11-2. The DB decrements job_posts.response_count (trg_sync_job_post_response_count) and frees one of the 5 active slots; the
 // post owner loses the proposal and the phone link.
 //
-// « Only while the post is open » is an APP rule, not a DB one (the policy is `freelancer_id = auth.uid()` alone — logged as a
-// follow-up for the DB role). So the state is re-derived here from the persisted post, never from the client's view of the row.
+// « Only while the post is open » is enforced by the DB too since migration 76 (DELETE policy « Freelancer withdraws own response
+// while the post is open »: open, unmoderated, within 30 days — a closed post's DELETE matches 0 rows). The state is still
+// re-derived here from the persisted post, never from the client's view of the row, so the user gets `not_open`, not `not_found`.
 //
 // Never logs the raw error object: message / code / details only.
 

@@ -4986,6 +4986,10 @@ returns `[]`, i.e. a silent empty list — the rule is to surface the error.
 
 ### LOW — consumers can still set `job_posts.status`, and edit the content, freely through REST
 
+- ✅ **Closed by migration 76** (`20261027203831_job_posts_write_guards`, 2026-10-27): status transitions, content
+  lock and `job_post_skills` lock once answered. The hard-DELETE half is open — see « Consumer hard-DELETE of an answered
+  post » below.
+
 - `status` stays column-granted (createAnnonce inserts it; mark-filled / reopen / delete update it), and only the
   CHECK (`open`, `filled`, `expired`, `deleted`) constrains it — no transition guard. On their own posts a
   consumer can un-delete (`deleted` → `open`), reopen past 30 days (the expiry check is app-only, in
@@ -5089,6 +5093,9 @@ cancel-metadata lock) are the same batch, not follow-ups.
 ## Pre-launch security batch PR-3 E1 — orders lifecycle columns (`fix/prelaunch-order-lifecycle`, 2026-10-25)
 
 ### LOW — an admin who is a PARTY to an order can still rewrite its lifecycle columns
+
+- ✅ **Closed by migration 76** (2026-10-27): the `is_admin()` override is gone from `check_order_status_transition`
+  (9a), and a JWT INSERT discards the cancel columns unless at `cancelled`, where `cancelled_at` is `now()` (10).
 
 - **Found by** the post-apply review of migration 66. `check_order_status_transition` opens with
   `IF is_admin() THEN RETURN NEW`, so an admin who is the buyer or seller of an order can leave a terminal
@@ -5195,7 +5202,7 @@ fixtures. `scripts/rls-smoke.mjs` (not a suite, never run) seeds an active produ
 
 ### H11 Mes propositions (PR-3) — logged, not fixed
 
-- **« Retirer » only-while-open is an app rule, not a DB one** (DB role): the `job_responses` DELETE policy is `freelancer_id = auth.uid()` alone, so a
+- ✅ **Closed by migration 76** (2026-10-27: DELETE policy « Freelancer withdraws own response while the post is open »). Was: **« Retirer » only-while-open is an app rule, not a DB one** (DB role): the `job_responses` DELETE policy is `freelancer_id = auth.uid()` alone, so a
   direct API call can delete a response on a filled / expired post. Harmless to counters (the -1 trigger still keeps `response_count` right) but it erases
   the consumer's record of the proposal. A `USING` clause joining `job_posts.status = 'open'` would enforce it.
 - **« Indisponible » pill** (post deleted or moderated, so unreadable to the responder) has no Figma specimen: it is `StatusPill withdrawn` (muted grey)
@@ -5223,3 +5230,21 @@ fixtures. `scripts/rls-smoke.mjs` (not a suite, never run) seeds an active produ
   `service_listings` reads too** (buyer branches read `orders` as the caller; the grant is checked even when the OR
   short-circuits), next to the shops / products dependency from #65. A grant sweep that revokes it turns every anon
   marketplace read into 42501.
+
+### Job-post write guards (`fix/job-posts-write-guards`, migration 76, 2026-10-27) — logged, not fixed
+
+- **MEDIUM — NEXT ITEM (founder, 2026-10-27): a consumer can hard-DELETE an ANSWERED post.** « Consumer deletes own post »
+  is `consumer_id = auth.uid()` and `job_responses.job_post_id` is ON DELETE CASCADE, so one REST DELETE erases every
+  freelancer's proposal (and the app only ever soft-deletes). Proposal to follow.
+- **LOW — a responder can still add / remove `job_response_skills` after the post closes** (insert / delete policies check
+  only response ownership). Same shape as the job_responses withdrawal window: gate both on the post being open.
+- **MEDIUM (Sonnet review of #76) — a JWT admin can still INSERT an order at any status.** `enforce_order_insert_integrity`
+  returns before tier 2 on `is_admin()`, and #76 only normalises the cancel columns: an admin buyer can insert at
+  `received` / `arrived` (with carrier / tracking) — a fake completed transaction — or at `cancelled` with
+  `cancelled_by = 'seller'`, pinning a cancellation on the seller. Same family as 9a / decision 7. Fix: drop the
+  `is_admin()` early return from tier 2 (then decision 10's INSERT-at-cancelled case disappears too).
+- **LOW (Sonnet review of #76) — the skills lock can race a response.** `enforce_job_post_skills_lock` reads
+  `response_count` with a plain SELECT, so a skill insert / delete concurrent with an uncommitted response sees 0. Fix:
+  `select … for share` (waits for the counter's transaction; the skill FK check already takes FOR KEY SHARE).
+- **Note — no status data-fix path on orders** (9a): neither an admin nor the service role can move an order's status
+  through the API now; a correction needs a migration.
