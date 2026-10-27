@@ -295,7 +295,7 @@ async function uploadShopAsset(params: {
     data: { publicUrl },
   } = supabase.storage.from(SHOP_BUCKET).getPublicUrl(path)
 
-  const { error: updateError } = await supabase.from('shops').update({ [column]: publicUrl }).eq('id', shopId.data)
+  const { error: updateError } = await supabase.from('shops').update(column === 'logo_url' ? { logo_url: publicUrl } : { banner_url: publicUrl }).eq('id', shopId.data)
   if (updateError) {
     // The object is uploaded but unreferenced — same compensating-delete shape as
     // uploadAvatarAction (mon-compte/actions.ts:157-163).
