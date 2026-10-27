@@ -157,7 +157,7 @@ The `job_responses` table holds one row per freelancer responding to a post: job
 
 **The fairness-limit trigger** (`check_job_response_limits`, BEFORE INSERT on job_responses) enforces the two locked limits: max 10 responses per post, max 5 active responses per freelancer (active = post still open AND not past the 30-day expiry). The trigger also enforces post-open status, post non-expiry, and prohibits self-response. Limits are encoded as constants in the trigger and mirrored in `src/lib/job-constants.ts` for client-side display — both must be updated together.
 
-RLS on job_posts: open posts readable by everyone, plus the poster's own posts at any status; only the poster manages. RLS on job_post_skills: anyone reads (needed for filtering); managed by the post owner. RLS on job_responses: readable by the post owner and the responding freelancer; freelancer creates own; freelancer deletes own.
+RLS on job_posts: open posts readable by everyone, plus the poster's own posts at any status; only the poster manages — soft delete only (status 'deleted'; no client DELETE since migration 77), with the status transitions and the content lock of migration 76. RLS on job_post_skills: anyone reads (needed for filtering); managed by the post owner until the post has a response (migration 76). RLS on job_responses: readable by the post owner and the responding freelancer; freelancer creates own; freelancer withdraws own only while the post is open, unmoderated and within 30 days (migration 76).
 
 ## Favorites and reports
 
