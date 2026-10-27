@@ -108,7 +108,7 @@ const TRIGGERED: Record<string, { guarded: Verb[]; noGrant?: Verb[]; set?: Recor
   freelancer_links: { guarded: ALL },
   freelancer_portfolio_items: { guarded: ALL },
   service_listings: { guarded: ALL },
-  job_posts: { guarded: ALL, set: { status: 'open' }, insertKey: 'consumer_id' }, // id is not client-writable since M-A
+  job_posts: { guarded: ALL, noGrant: ['delete'], set: { status: 'open' }, insertKey: 'consumer_id' }, // id is not client-writable since M-A; no DELETE grant since job_posts_no_hard_delete (#77)
   job_post_skills: { guarded: ALL, noGrant: ['update'] }, // D3
   job_responses: { guarded: ALL, noGrant: ['update'] },
   job_response_skills: { guarded: ALL, noGrant: ['update'] }, // migration 69 (M-C): no UPDATE grant
