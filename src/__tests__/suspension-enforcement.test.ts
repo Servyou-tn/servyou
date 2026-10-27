@@ -473,7 +473,11 @@ describe.skipIf(!hasCreds)('own rows, same session, after suspension (D5, D7, D8
 
   it('a suspended consumer cannot edit or delete their job post', async () => {
     expectSuspended((await buyerClient.from('job_posts').update({ title: 'Renamed' }).eq('id', jobPostId)).error)
-    expectSuspended((await buyerClient.from('job_posts').delete().eq('id', jobPostId)).error)
+    // No client holds DELETE on job_posts since job_posts_no_hard_delete: the privilege check answers before the
+    // suspension trigger, for every consumer (posts are soft-deleted through status).
+    const del = await buyerClient.from('job_posts').delete().eq('id', jobPostId)
+    expect(del.error?.code).toBe(DENIED)
+    expect(del.error?.message).toBe('permission denied for table job_posts')
     expect((await readRow('job_posts', jobPostId, 'title'))?.title).toBe(`${TITLE} — JP`)
   })
 })
