@@ -304,6 +304,8 @@ describe.skipIf(!hasCreds)('job_posts status — the app paths pass, everything 
 
 // ─── content lock ────────────────────────────────────────────────────────────────────────────────
 
+const CONTENT_COLUMNS = 'title, description, category_id, city, is_remote, budget_min, budget_max, deadline'
+
 describe.skipIf(!hasCreds)('content lock — frozen once a freelancer has answered', () => {
   let answered: string
   let unanswered: string
@@ -314,6 +316,9 @@ describe.skipIf(!hasCreds)('content lock — frozen once a freelancer has answer
     if (!hasCreds) return
     answered = await seedPost('answered')
     unanswered = await seedPost('unanswered')
+    // Off the board (older than 30 days), so no real freelancer can answer it mid-run; the content lock does
+    // not look at the age.
+    await seedStatus(unanswered, { created_at: OLD } as Database['public']['Tables']['job_posts']['Update'])
     for (const [postId, set] of [[answered, (v: string) => (answeredSkill = v)], [unanswered, (v: string) => (unansweredSkill = v)]] as const) {
       const { data, error } = await admin.from('job_post_skills').insert({ job_post_id: postId, skill: `${TITLE} skill` }).select('id').single()
       if (error || !data) throw new Error(`job_post_skills seed failed: ${error?.message}`)
@@ -327,15 +332,28 @@ describe.skipIf(!hasCreds)('content lock — frozen once a freelancer has answer
     expect((await post(unanswered)).response_count).toBe(0)
   })
 
-  it('editing the title or the budget of the answered post is refused (content_locked)', async () => {
-    for (const patch of [{ title: `${TITLE} — rewritten` }, { budget_max: 9000 }]) {
+  it('editing any of the 8 content columns of the answered post is refused (content_locked), row unchanged', async () => {
+    const { data: before, error: beforeErr } = await admin.from('job_posts').select(CONTENT_COLUMNS).eq('id', answered).single()
+    expect(beforeErr).toBeNull()
+    const { data: cat, error: catErr } = await admin.from('categories').select('id').eq('kind', 'service').is('parent_id', null).limit(1).single()
+    expect(catErr).toBeNull()
+    const patches: Database['public']['Tables']['job_posts']['Update'][] = [
+      { title: `${TITLE} — rewritten` },
+      { description: 'Mission réécrite après les réponses.' },
+      { category_id: cat!.id },
+      { city: 'Sfax' },
+      { is_remote: true },
+      { budget_min: 100 },
+      { budget_max: 9000 },
+      { deadline: '2030-01-01' },
+    ]
+    for (const patch of patches) {
       const { error } = await posterClient.from('job_posts').update(patch).eq('id', answered)
-      expect(error?.code).toBe('42501')
-      expect(error?.hint).toBe('content_locked')
+      expect(error?.code, JSON.stringify(patch)).toBe('42501')
+      expect(error?.hint, JSON.stringify(patch)).toBe('content_locked')
     }
-    const row = await post(answered)
-    expect(row.title).toBe(`${TITLE} — answered`)
-    expect(Number(row.budget_max)).toBe(300)
+    const { data: after } = await admin.from('job_posts').select(CONTENT_COLUMNS).eq('id', answered).single()
+    expect(after).toEqual(before)
   })
 
   it('the unanswered post stays editable', async () => {
@@ -473,6 +491,8 @@ describe.skipIf(!hasCreds)('orders — an admin who is a party follows the chain
       .single()
     const reopen = await adminClient.from('orders').update({ status: 'pending' }).eq('id', cancelled!.id)
     expect(reopen.error?.message).toBe('Cette commande est terminée et ne peut plus être modifiée.')
+    const { data: still } = await admin.from('orders').select('status').eq('id', cancelled!.id).single()
+    expect(still?.status).toBe('cancelled')
 
     const { data: pending } = await adminClient.from('orders').insert(adminOrder({})).select('id').single()
     const advance = await adminClient.from('orders').update({ status: 'accepted' }).eq('id', pending!.id)

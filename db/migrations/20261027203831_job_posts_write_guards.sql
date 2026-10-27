@@ -250,10 +250,20 @@ $function$;
 -- create policy "Freelancer deletes own response" on public.job_responses for delete
 --   using (freelancer_id = auth.uid());
 --
--- check_order_status_transition: the inverse DO block -- re-create from pg_get_functiondef() with this
--- block re-inserted right after `BEGIN\n` (the exact text section 4 removed):
---   E'  -- Admin override: data fixes always allowed\n  IF is_admin() THEN\n    RETURN NEW;\n  END IF;\n\n'
---   e.g. execute replace(v_def, E'BEGIN\n', E'BEGIN\n' || v_block)  -- BEGIN occurs once in the body.
+-- check_order_status_transition: the inverse of section 4. The removed block sat directly after the
+-- body's only `BEGIN\n` (verified live 2026-10-27: exactly one occurrence). Guarded like the forward block:
+-- do $do$
+-- declare
+--   v_def   text := pg_get_functiondef('public.check_order_status_transition()'::regprocedure);
+--   v_block text := E'  -- Admin override: data fixes always allowed\n  IF is_admin() THEN\n    RETURN NEW;\n  END IF;\n\n';
+-- begin
+--   if (length(v_def) - length(replace(v_def, E'BEGIN\n', ''))) / length(E'BEGIN\n') <> 1
+--      or position(v_block in v_def) > 0 then
+--     raise exception 'unexpected live definition -- aborting rollback';
+--   end if;
+--   execute replace(v_def, E'BEGIN\n', E'BEGIN\n' || v_block);
+-- end
+-- $do$;
 --
 -- enforce_order_lifecycle_columns: re-create with migration 20261025222218's body, i.e. the body in
 -- section 5 without the `if not v_system then ... end if;` block inside the INSERT branch.

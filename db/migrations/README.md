@@ -693,7 +693,10 @@ this PR and is not attempted here.
     content-locked; 5 open posts older than 30 days can now only be deleted; 3 of 4 responses are no
     longer withdrawable. **Not covered (logged):** a consumer can still hard-DELETE an answered post
     (« Consumer deletes own post »), cascading its responses away; a responder can still edit
-    `job_response_skills` after the post closes. No type change. Verified by
+    `job_response_skills` after the post closes; **a JWT admin still skips #54's tier 2 on INSERT** (an
+    admin buyer can insert at `received` / `arrived`, or at `cancelled` with `cancelled_by = 'seller'` —
+    only the cancel columns are normalised); the skills lock reads `response_count` without a row lock
+    (a skill write racing an uncommitted response can slip through). No type change. Verified by
     `src/__tests__/job-posts-write-guards.test.ts` (live-DB). Rollback at the bottom of the file.
 
 ## Rollback paths
