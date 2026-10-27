@@ -667,6 +667,31 @@ this PR and is not attempted here.
     (live-DB) plus a production upload smoke. Rollback (the four policies' exact definitions) is at the
     bottom of the file.
 
+75. **20261027195820_moderated_freelancer_read_rls** — Applied by the architect 2026-10-27 (recorded
+    version; executable SQL MD5-verified against `schema_migrations`, comments and whitespace
+    stripped: `28621aa3`). Post-apply proof (architect, rolled back, real `admin_hide_content` with an
+    admin JWT): a published freelancer with 2 live listings → anon reads profile 0 / listings 0 /
+    skills 0; anon still reads the 19 other live listings; `service_listings ⋈ freelancer_profiles ⋈
+    freelancer_skills` as anon returns no 42P17; the owner still reads both listings. Follow-up from
+    PR #192's discovery (MEDIUM): `admin_hide_content('freelancer_profile')` stamps only
+    `admin_hidden_at`, leaving `is_published` true and the listings active, so the profile, its 7 child
+    tables and its listings stayed REST-readable. Same shape as #65. **`freelancer_profiles`:**
+    readable when published and not moderated, by the owner, by an admin, or by a buyer with a service
+    order from that freelancer (keyed on `orders.seller_id`, never through `service_listings`). **The
+    policy name is truncated to 63 characters live** (« Freelancer profiles readable when live, or
+    by owner, buyer, or » — trailing space included); the file's statements use the full name, which
+    Postgres truncates identically. **`service_listings`:** same name as #52; the public branch also
+    requires the profile not to be moderated (EXISTS under `freelancer_profiles`' own policy, so it
+    also requires `is_published`). **The 7 children** (skills, tools, education, certifications,
+    languages, links, portfolio items) keep their names and gain the `admin_hidden_at` conjunct on
+    their public branch — an explicit cascade, **not** extended to buyers (decision 1). The optional
+    poster → responder branch is **not** applied (decision 2): a moderated responder's headline and
+    city come back null to the post author; name and proposal still render. The buyer branch cannot
+    be minted by a non-admin: #54's liveness check includes `fp.admin_hidden_at`. Rows that changed
+    visibility at apply: 0 (no profile was moderated). Write policies, grants, columns and functions
+    untouched. Verified by `src/__tests__/moderated-freelancer-read-rls.test.ts` (live-DB). Rollback
+    SQL is in a comment block at the bottom of the file.
+
 76. **20261027203831_job_posts_write_guards** — Applied by the architect 2026-10-27 (recorded
     version; executable SQL MD5-verified against `schema_migrations`, comments and whitespace
     stripped: `04ccda44`). Post-apply proof (architect, rolled back, on a live post with

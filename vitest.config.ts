@@ -30,6 +30,7 @@ export const INTEGRATION_GLOBS = [
   '**/job-posts-responder-read.test.ts',
   '**/storage-upload-provenance.test.ts',
   '**/storage-uploads-service-role.test.ts',
+  '**/moderated-freelancer-read-rls.test.ts',
   '**/job-posts-write-guards.test.ts',
   // These nine wrote to production on every default run until 2026-10-26 (missions M-A PR).
   '**/d4-completed-project-count.test.ts',
