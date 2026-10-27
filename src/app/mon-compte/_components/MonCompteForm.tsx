@@ -171,7 +171,9 @@ export function MonCompteForm({
             helper={t('monCompte.field.phoneHelp', lang)}
             error={errorFor('phone')}
             iconStart={
-              <span className="flex shrink-0 items-center gap-2 text-base text-text-secondary">
+              // dir="ltr" keeps « +216 | » reading in that order (RTL flipped it to « 216+ »), and
+              // rtl:order-last puts it on the left of the digits, where a phone number is read.
+              <span dir="ltr" className="flex shrink-0 items-center gap-2 text-base text-text-secondary rtl:order-last">
                 +216
                 <span aria-hidden="true" className="h-5 w-px bg-border-subtle" />
               </span>

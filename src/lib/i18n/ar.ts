@@ -1171,7 +1171,9 @@ export const ar: Record<string, string> = {
   'monCompte.breadcrumb.home':       "الرئيسية",
   'monCompte.section.profile':       "الملف الشخصي",
   'monCompte.section.security':      "تسجيل الدخول والأمان",
-  'monCompte.avatar.helpMax':        "JPEG أو PNG أو WebP أو AVIF، {max} ميغابايت كحد أقصى",
+  // The size leads and the Latin format names trail: with the number BEFORE a Latin run the bidi
+  // algorithm drags it into the run (« AVIF, 4 أو WebP … » on screen).
+  'monCompte.avatar.helpMax':        "{max} ميغابايت كحد أقصى — JPEG أو PNG أو WebP أو AVIF",
   'monCompte.field.accountType':     "نوع الحساب",
   'monCompte.accountType.client':    "عميل",
   'monCompte.accountType.freelance': "مستقل",
