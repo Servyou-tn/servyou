@@ -72,8 +72,8 @@ export function MonCompteForm({
   function save() {
     setFieldError(null)
     startTransition(async () => {
-      // Language is I2's: sent exactly as stored.
-      const res = await updateProfileAction({ fullName, phone, city, language: profile.language })
+      // Language is I2's: not sent, so this save never touches it.
+      const res = await updateProfileAction({ fullName, phone, city })
       if (!res.ok) {
         if (res.field) setFieldError({ field: res.field, text: res.error })
         else toast.error(res.error)
@@ -81,6 +81,7 @@ export function MonCompteForm({
       }
       setSaved({ fullName: fullName.trim(), city, phone: phone.trim() })
       setFullName(fullName.trim())
+      setPhone(phone.trim())
       toast.success(t('monCompte.toast.profileUpdated', lang))
       // The top bar shows the name.
       router.refresh()

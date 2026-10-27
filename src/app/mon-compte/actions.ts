@@ -26,7 +26,9 @@ const profileInputSchema = z.object({
   fullName: z.string().trim().min(1, 'monCompte.error.nameRequired').max(120, 'common.error_generic'),
   phone: z.string().trim().max(32, 'monCompte.error.phoneFormat'),
   city: z.string().trim().max(60, 'common.error_generic'),
-  language: z.string().max(8),
+  // Optional: I1 never sends it (language is I2's), so a save here cannot revert a language change
+  // that is still in flight from the topbar toggle. ParametresShell sends it.
+  language: z.string().max(8).optional(),
 })
 
 const PROFILE_FIELD: Record<string, AccountActionField | undefined> = {
@@ -39,7 +41,7 @@ export async function updateProfileAction(input: {
   fullName: string
   phone: string
   city: string
-  language: string
+  language?: string
 }): Promise<AccountActionResult> {
   const lang = await getLang()
   const supabase = await createClient()
@@ -66,11 +68,14 @@ export async function updateProfileAction(input: {
     return { ok: false, error: t('common.error_generic', lang), field: 'city' }
   }
 
-  const language = languageRaw === 'ar' ? 'ar' : 'fr'
-
   const { error } = await supabase
     .from('profiles')
-    .update({ full_name: fullName, phone, city, language })
+    .update({
+      full_name: fullName,
+      phone,
+      city,
+      ...(languageRaw === undefined ? {} : { language: languageRaw === 'ar' ? 'ar' : 'fr' }),
+    })
     .eq('id', user.id)
   if (error) {
     console.error('[updateProfileAction] update error:', error.message, error.code, error.details)
@@ -338,6 +343,13 @@ export async function changePasswordAction(input: {
     if (error.code === 'weak_password') return { ok: false, error: t('monCompte.password.invalid', lang), field: 'newPassword' }
     console.error('[changePasswordAction] update failed:', error.message, error.code, error.status)
     return { ok: false, error: t('monCompte.password.error', lang) }
+  }
+
+  // A changed password must end every OTHER session (a stolen one included); this one stays. Best
+  // effort: the password change itself already succeeded, so a failure is logged, not surfaced.
+  const { error: othersError } = await supabase.auth.signOut({ scope: 'others' })
+  if (othersError) {
+    console.error('[changePasswordAction] sign-out of other sessions failed:', othersError.message, othersError.code, othersError.status)
   }
 
   return { ok: true }

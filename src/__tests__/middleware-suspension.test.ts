@@ -211,40 +211,56 @@ describe('K2 — expired session', () => {
     expect(setCookie).not.toContain('lang=')
   }
 
+  const html = { accept: 'text/html,application/xhtml+xml' }
+
   it.each([
     'session_expired',
     'session_not_found',
     'refresh_token_not_found',
-    'refresh_token_already_used',
     'bad_jwt',
     'user_not_found',
-  ])('redirects a GET with an auth cookie on %s, clearing the cookies and keeping the page', async (code) => {
+  ])('redirects a GET navigation with an auth cookie on %s, clearing the cookies and keeping the page', async (code) => {
     h.getUser.mockResolvedValue(gone(code))
-    expectExpired(await middleware(request('/mes-commandes?tab=2')), '/mes-commandes?tab=2')
+    expectExpired(await middleware(request('/mes-commandes?tab=2', { headers: html })), '/mes-commandes?tab=2')
+  })
+
+  it('also redirects an RSC navigation fetch', async () => {
+    h.getUser.mockResolvedValue(gone('session_expired'))
+    expectExpired(await middleware(request('/mes-commandes', { headers: { rsc: '1', accept: 'text/x-component' } })), '/mes-commandes')
   })
 
   it('omits ?next= for the home page', async () => {
     h.getUser.mockResolvedValue(gone('session_expired'))
-    expectExpired(await middleware(request('/')), null)
+    expectExpired(await middleware(request('/', { headers: html })), null)
+  })
+
+  it('does NOT treat refresh_token_already_used as a gone session (the discarded rotation can cause it)', async () => {
+    h.getUser.mockResolvedValue(gone('refresh_token_already_used'))
+    expect(passedThrough(await middleware(request('/mes-commandes', { headers: html })))).toBe(true)
+  })
+
+  it('leaves a non-navigation GET (a JSON fetch) alone', async () => {
+    h.getUser.mockResolvedValue(gone('session_expired'))
+    expect(passedThrough(await middleware(request('/mes-commandes', { headers: { accept: 'application/json' } })))).toBe(true)
   })
 
   it('passes an anonymous visitor with NO auth cookie through, whatever the code', async () => {
     h.getUser.mockResolvedValue(gone('session_expired'))
-    const res = await middleware(request('/mes-commandes', { headers: { cookie: 'lang=ar' } }))
+    const res = await middleware(request('/mes-commandes', { headers: { cookie: 'lang=ar', accept: 'text/html' } }))
     expect(passedThrough(res)).toBe(true)
   })
 
   it('does not treat the PKCE code-verifier cookie as a session', async () => {
     h.getUser.mockResolvedValue(gone('session_not_found'))
-    const res = await middleware(request('/mes-commandes', { headers: { cookie: 'sb-xggo-auth-token-code-verifier=zzz' } }))
+    const res = await middleware(request('/mes-commandes', { headers: { cookie: 'sb-xggo-auth-token-code-verifier=zzz', accept: 'text/html' } }))
     expect(passedThrough(res)).toBe(true)
   })
 
   it('passes through on an error that is not a gone session (an auth outage must not log everyone out)', async () => {
     h.getUser.mockResolvedValue({ data: { user: null }, error: { name: 'AuthRetryableFetchError', status: 0, message: 'fetch failed' } })
-    expect(passedThrough(await middleware(request('/mes-commandes')))).toBe(true)
+    expect(passedThrough(await middleware(request('/mes-commandes', { headers: { accept: 'text/html' } })))).toBe(true)
     h.getUser.mockResolvedValue(gone('over_request_rate_limit'))
-    expect(passedThrough(await middleware(request('/mes-commandes')))).toBe(true)
+    expect(passedThrough(await middleware(request('/mes-commandes', { headers: { accept: 'text/html' } })))).toBe(true)
   })
 
   it('never redirects a POST (a server action fails its own auth check)', async () => {

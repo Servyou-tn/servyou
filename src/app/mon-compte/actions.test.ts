@@ -6,6 +6,7 @@ const h = vi.hoisted(() => ({
   getUser: vi.fn(),
   signInWithPassword: vi.fn(),
   updateUser: vi.fn(),
+  signOut: vi.fn(),
   update: vi.fn(),
   eq: vi.fn(),
   insert: vi.fn(),
@@ -23,6 +24,10 @@ vi.mock('@/lib/supabase/server', () => ({
       updateUser: (...a: unknown[]) => {
         h.calls.push('updateUser')
         return h.updateUser(...a)
+      },
+      signOut: (...a: unknown[]) => {
+        h.calls.push('signOut')
+        return h.signOut(...a)
       },
     },
     from: () => ({
@@ -45,9 +50,10 @@ import { updateProfileAction, requestAccountDeletionAction, changePasswordAction
 const USER = { id: 'u1', email: 'me@example.com' }
 
 beforeEach(() => {
-  for (const m of [h.getUser, h.signInWithPassword, h.updateUser, h.update, h.eq, h.insert]) m.mockReset()
+  for (const m of [h.getUser, h.signInWithPassword, h.updateUser, h.signOut, h.update, h.eq, h.insert]) m.mockReset()
   h.calls.length = 0
   h.getUser.mockResolvedValue({ data: { user: USER } })
+  h.signOut.mockResolvedValue({ error: null })
   h.eq.mockResolvedValue({ error: null })
   h.signInWithPassword.mockResolvedValue({ error: null })
   h.updateUser.mockResolvedValue({ error: null })
@@ -71,6 +77,11 @@ describe('updateProfileAction', () => {
   it('sends an unknown language as fr', async () => {
     await updateProfileAction({ ...valid, language: 'xx' })
     expect(h.update).toHaveBeenCalledWith(expect.objectContaining({ language: 'fr' }))
+  })
+
+  it('does not write language at all when the caller omits it (I1 leaves it to I2)', async () => {
+    await updateProfileAction({ fullName: 'A', phone: '', city: '' })
+    expect(h.update).toHaveBeenCalledWith({ full_name: 'A', phone: null, city: null })
   })
 
   it.each([
@@ -123,11 +134,26 @@ describe('requestAccountDeletionAction', () => {
 describe('changePasswordAction', () => {
   const input = { currentPassword: 'OldPass123', newPassword: 'NewPass456' }
 
-  it("re-authenticates with the SESSION user's email, then updates — in that order", async () => {
+  it("re-authenticates with the SESSION user's email, updates, then ends the OTHER sessions — in that order", async () => {
     expect(await changePasswordAction(input)).toEqual({ ok: true })
     expect(h.signInWithPassword).toHaveBeenCalledWith({ email: 'me@example.com', password: 'OldPass123' })
     expect(h.updateUser).toHaveBeenCalledWith({ password: 'NewPass456' })
-    expect(h.calls).toEqual(['signIn', 'updateUser'])
+    expect(h.signOut).toHaveBeenCalledWith({ scope: 'others' })
+    expect(h.calls).toEqual(['signIn', 'updateUser', 'signOut'])
+  })
+
+  it('still succeeds, and logs the fields, when ending the other sessions fails', async () => {
+    const log = vi.spyOn(console, 'error').mockImplementation(() => {})
+    h.signOut.mockResolvedValue({ error: { message: 'down', code: 'x', status: 500 } })
+    expect(await changePasswordAction(input)).toEqual({ ok: true })
+    expect(log).toHaveBeenCalledWith('[changePasswordAction] sign-out of other sessions failed:', 'down', 'x', 500)
+    log.mockRestore()
+  })
+
+  it('does not end other sessions when the update failed', async () => {
+    h.updateUser.mockResolvedValue({ error: { code: 'same_password', message: 'x', status: 422 } })
+    await changePasswordAction(input)
+    expect(h.signOut).not.toHaveBeenCalled()
   })
 
   it('names currentPassword on invalid_credentials and never updates', async () => {

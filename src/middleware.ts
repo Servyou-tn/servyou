@@ -30,12 +30,16 @@ import { createServerClient } from '@supabase/ssr'
 // error code must be one of SESSION_GONE_CODES (a network error / 5xx carries none of them and
 // passes through), and only GETs are redirected (a server action's POST fails its own auth check).
 
-// Codes GoTrue / supabase-js answer when the session behind the cookie is gone for good.
+// Codes GoTrue / supabase-js answer when the session behind the cookie is gone for good. Measured
+// read-only against the live project with forged cookies: an expired token with an unknown refresh
+// token → refresh_token_not_found; an unexpired token with a bad signature → bad_jwt (403); no cookie
+// or an unparsable one → AuthSessionMissingError with NO code (passes through). Deliberately absent:
+// refresh_token_already_used — this middleware discards the rotated tokens (no-op setAll), so a valid
+// session can legitimately hit it a few seconds after a refresh; a redirect there would log it out.
 const SESSION_GONE_CODES = new Set([
   'session_expired',
   'session_not_found',
   'refresh_token_not_found',
-  'refresh_token_already_used',
   'bad_jwt',
   'user_not_found',
 ])
@@ -79,7 +83,10 @@ export async function middleware(request: NextRequest) {
   if (userError?.code === 'user_banned') return signOutSuspended(request)
   if (!user) {
     const hasAuthCookie = request.cookies.getAll().some((c) => AUTH_COOKIE.test(c.name))
-    if (hasAuthCookie && request.method === 'GET' && userError?.code && SESSION_GONE_CODES.has(userError.code)) {
+    // Page navigations only (HTML or an RSC fetch): a JSON/fetch GET keeps getting its own 401 instead
+    // of an HTML redirect it cannot parse.
+    const isNavigation = (request.headers.get('accept') ?? '').includes('text/html') || request.headers.has('rsc')
+    if (hasAuthCookie && request.method === 'GET' && isNavigation && userError?.code && SESSION_GONE_CODES.has(userError.code)) {
       return sessionExpired(request)
     }
     return NextResponse.next()

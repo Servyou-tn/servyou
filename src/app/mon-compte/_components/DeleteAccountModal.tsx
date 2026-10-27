@@ -34,6 +34,8 @@ export function DeleteAccountModal({
       const res = await requestAccountDeletionAction(reason)
       if (!res.ok) {
         setError(res.error)
+        // « Already pending »: the page behind still shows the enabled button — re-read it.
+        router.refresh()
         return
       }
       toast.success(t('monCompte.toast.deleteRequested', lang))

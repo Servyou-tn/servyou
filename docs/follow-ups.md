@@ -5192,3 +5192,31 @@ fixtures. `scripts/rls-smoke.mjs` (not a suite, never run) seeds an active produ
 - **Rail scroll position on mobile**: the 7-step rail scrolls sideways below `lg`; it starts at the first stage, so an order that is
   « En livraison » shows its current stage only after a swipe. Scroll the current node into view if it matters.
 - **Buyer-side cancel on Services** is still the frame's (none). Products have it (see docs/design/e3-produits-measurements.md D5).
+
+### I1 « Mon compte » + K1–K4 — logged, not fixed (feat/i1-mon-compte)
+
+Ranked.
+
+1. **MEDIUM (db-guardian) — `auth.users.email` → `profiles.email` has no sync trigger** (only `on_auth_user_created`, INSERT).
+   Email is read-only on I1 for that reason (architect ruling 2). Self-service email change needs the trigger first; until then the
+   export modal and the admin pages read `profiles.email`.
+2. **MEDIUM — « secure password change » not confirmed live.** `changePasswordAction` re-authenticates with `signInWithPassword`
+   before `updateUser`, so it works whether the dashboard toggle is on or off; the toggle itself needs a founder read of
+   Auth → Providers → Email (or one throwaway fixture user). Not done: no test account was available to this agent.
+3. **LOW — open-orders warning is informational.** A hard block on deletion with open orders is a business rule and would need a
+   database trigger (CLAUDE.md « every business rule enforced in the DB »). Deletion stays an admin-processed request.
+4. **LOW — K4 maintenance flag is an env var**, so toggling needs a Vercel redeploy; the auth pages stay reachable (outside the
+   matcher) and a signed-in user is sent to /maintenance on their next navigation. A DB/edge-config flag is the alternative.
+5. **LOW — K4 social line** (muted « Facebook » text under the card, Figma 731:64476, derived) is not built: no Facebook URL exists
+   in the codebase.
+6. **LOW — K1/K2/K4 copy and the I1 delete modal are derived** (Figma reads were capped at 4; the modal frame 728:64303 rendered
+   empty). Arabic strings are drafts: grep `REVIEW_AR_TRANSLATION` in `src/lib/i18n/ar.ts`.
+7. **LOW — legacy `monCompte.delete.confirmPrompt` / `confirmWord` and `placeholders.comingSoon.account` keys are unused** now.
+8. **LOW — middleware `?next=` is built from `nextUrl.search`**: confirm in a browser that `_rsc` is not carried into the K2
+   `next` for an RSC navigation (not verified; the K2 page only forwards same-site paths either way).
+9. **LOW — `+216` prefix order in AR** (I1 phone, same markup as `ServiceRequestForm`): the prefix is a flex sibling of the
+   `dir="ltr"` input, so in a RTL container it sits on the right of the digits. A shared `Input` fix, not an I1-only one.
+10. **LOW — `ModalShell` focus restore**: the opener is read from `document.activeElement`; on Safari a clicked button is not
+    focused, and after a delete request the opener becomes the disabled « pending » button. Pass a trigger ref if it matters.
+11. **LOW — maintenance mode specifics**: prefetches return before the flag check; `/connexion` and `/auth/*` stay reachable
+    (outside the matcher); `/maintenance` answers 200 after a 307, so an uptime monitor reads « up »; admins are redirected too.
