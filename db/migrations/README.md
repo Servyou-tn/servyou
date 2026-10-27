@@ -738,6 +738,22 @@ this PR and is not attempted here.
     Rows touched: 0. No type change. Verified by `src/__tests__/job-posts-write-guards.test.ts`,
     `job-posts-response-count.test.ts` and `suspension-enforcement.test.ts` (live-DB). Rollback (grant +
     policy) is at the bottom of the file.
+78. **20261027215609_profiles_email_sync** — Applied by the architect 2026-10-27 (recorded version;
+    executable SQL MD5-verified against `schema_migrations`, comments and whitespace stripped:
+    `e7d1d9a2`). Post-apply proof (architect, rolled back): a sign-in does not touch `profiles`; a
+    confirmed change syncs; no client grants. `handle_new_user()` copied `auth.users.email` into
+    `profiles.email` at signup only, so a confirmed email change (Secure email change is ON: the address
+    waits in `email_change` until both links are confirmed) left `profiles.email` stale for the export
+    modal, `/mon-compte` and the admin user pages. Adds `sync_profile_email()` (SECURITY DEFINER,
+    `search_path ''`, EXECUTE revoked from public / anon / authenticated — trigger firing does not check
+    EXECUTE) and `on_auth_user_email_changed` (AFTER UPDATE OF email on `auth.users`, WHEN the email
+    actually changed — GoTrue rewrites the row on every sign-in). A NULL email is skipped
+    (`profiles.email` is NOT NULL). The trigger runs in the auth server's transaction with no JWT, so
+    every `profiles` BEFORE trigger takes its `auth.uid() is null` bypass. **Decision 1 (approved):** a
+    `profiles_email_key` collision fails the email change itself, loudly — never a silent divergence. The
+    Supabase-documented pattern; `postgres` holds TRIGGER on `auth.users` (owner `supabase_auth_admin`).
+    No backfill (0 mismatches at discovery); no type change. Verified by
+    `src/__tests__/profiles-email-sync.test.ts` (live-DB). Rollback at the bottom of the file.
 
 ## Rollback paths
 
