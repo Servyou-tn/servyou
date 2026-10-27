@@ -7,17 +7,34 @@ import { createClient } from '@/lib/supabase/server'
 import { getLang } from '@/lib/i18n/server'
 import { t } from '@/lib/i18n'
 import { isValidPhone, normalizePhone } from '@/lib/phone'
+import { isValidPassword } from '@/lib/signup-validation'
 import { GOVERNORATES } from '@/lib/tunisia-governorates'
 import { normalizeAvatar, MAX_INPUT_BYTES, MAX_INPUT_MB, type NormalizeFailure } from '@/lib/images/normalize'
 import { recordUploadProvenance, deleteUploadProvenance } from '@/lib/images/provenance'
 import { isCallerActive, uploadBucket } from '@/lib/images/upload-guard'
 
-export type AccountActionResult = { ok: true } | { ok: false; error: string }
+// `field` lets the form attach the message to the input it belongs to; callers that only toast
+// (ParametresShell, AvatarUploadCard) ignore it.
+export type AccountActionField = 'fullName' | 'phone' | 'city' | 'currentPassword' | 'newPassword'
+export type AccountActionResult = { ok: true } | { ok: false; error: string; field?: AccountActionField }
 
-// Updates the editable identity fields. RLS restricts authenticated UPDATE to exactly
-// full_name / city / language / phone (email, date_of_birth, is_admin, etc. are locked),
-// so this only touches the allowed columns. Phone is normalized; city must be a known
-// governorate; language is constrained to fr/ar.
+// Updates the editable identity fields. The column UPDATE grants on profiles also cover avatar_url
+// (its own actions below) and seller_type (never written here); email and date_of_birth are locked.
+// Phone is normalized; city must be a known governorate; language is constrained to fr/ar.
+// `''` means "no value" for phone and city: ParametresShell passes its unchanged null fields that way.
+const profileInputSchema = z.object({
+  fullName: z.string().trim().min(1, 'monCompte.error.nameRequired').max(120, 'common.error_generic'),
+  phone: z.string().trim().max(32, 'monCompte.error.phoneFormat'),
+  city: z.string().trim().max(60, 'common.error_generic'),
+  language: z.string().max(8),
+})
+
+const PROFILE_FIELD: Record<string, AccountActionField | undefined> = {
+  fullName: 'fullName',
+  phone: 'phone',
+  city: 'city',
+}
+
 export async function updateProfileAction(input: {
   fullName: string
   phone: string
@@ -31,33 +48,37 @@ export async function updateProfileAction(input: {
   } = await supabase.auth.getUser()
   if (!user) return { ok: false, error: t('monCompte.error.notAuth', lang) }
 
-  const fullName = input.fullName.trim()
-  if (!fullName) return { ok: false, error: t('monCompte.error.nameRequired', lang) }
+  const parsed = profileInputSchema.safeParse(input)
+  if (!parsed.success) {
+    const issue = parsed.error.issues[0]
+    return { ok: false, error: t(issue?.message ?? 'common.error_generic', lang), field: PROFILE_FIELD[String(issue?.path[0])] }
+  }
+  const { fullName, phone: phoneRaw, language: languageRaw } = parsed.data
 
-  const phoneRaw = input.phone.trim()
   let phone: string | null = null
   if (phoneRaw) {
-    if (!isValidPhone(phoneRaw)) return { ok: false, error: t('monCompte.error.phoneFormat', lang) }
+    if (!isValidPhone(phoneRaw)) return { ok: false, error: t('monCompte.error.phoneFormat', lang), field: 'phone' }
     phone = normalizePhone(phoneRaw)
   }
 
-  const city = input.city.trim() || null
+  const city = parsed.data.city || null
   if (city && !GOVERNORATES.some((g) => g.value === city)) {
-    return { ok: false, error: t('common.error_generic', lang) }
+    return { ok: false, error: t('common.error_generic', lang), field: 'city' }
   }
 
-  const language = input.language === 'ar' ? 'ar' : 'fr'
+  const language = languageRaw === 'ar' ? 'ar' : 'fr'
 
   const { error } = await supabase
     .from('profiles')
     .update({ full_name: fullName, phone, city, language })
     .eq('id', user.id)
   if (error) {
-    console.error('[updateProfileAction] update error:', error)
+    console.error('[updateProfileAction] update error:', error.message, error.code, error.details)
     return { ok: false, error: t('common.error_generic', lang) }
   }
 
   revalidatePath('/mon-compte')
+  revalidatePath('/', 'layout')
   return { ok: true }
 }
 
@@ -241,8 +262,10 @@ function revalidateAvatarSurfaces(): void {
   revalidatePath('/', 'layout')
 }
 
-// Records an account-deletion request (admin-mediated; does NOT delete). The partial
+// Records an account-deletion request (admin-mediated; does NOT delete anything). The partial
 // unique index blocks a second pending request (23505) → friendly "already pending".
+const deletionReasonSchema = z.string().trim().max(500)
+
 export async function requestAccountDeletionAction(reason: string): Promise<AccountActionResult> {
   const lang = await getLang()
   const supabase = await createClient()
@@ -251,15 +274,70 @@ export async function requestAccountDeletionAction(reason: string): Promise<Acco
   } = await supabase.auth.getUser()
   if (!user) return { ok: false, error: t('monCompte.error.notAuth', lang) }
 
+  const parsed = deletionReasonSchema.safeParse(reason)
+  if (!parsed.success) return { ok: false, error: t('monCompte.delete.reasonTooLong', lang) }
+
   const { error } = await supabase
     .from('deletion_requests')
-    .insert({ user_id: user.id, reason: reason.trim() || null })
+    .insert({ user_id: user.id, reason: parsed.data || null })
   if (error) {
-    if ((error as { code?: string }).code === '23505') {
+    if (error.code === '23505') {
       return { ok: false, error: t('monCompte.delete.alreadyPending', lang) }
     }
-    console.error('[requestAccountDeletionAction] insert error:', error)
+    console.error('[requestAccountDeletionAction] insert error:', error.message, error.code, error.details)
     return { ok: false, error: t('common.error_generic', lang) }
+  }
+
+  revalidatePath('/mon-compte')
+  return { ok: true }
+}
+
+const passwordInputSchema = z.object({
+  currentPassword: z.string().min(1, 'monCompte.password.required').max(200),
+  newPassword: z.string().max(200).refine(isValidPassword, 'monCompte.password.invalid'),
+})
+
+// Inline password change. The email used to re-authenticate is the SESSION user's, never a client
+// value. signInWithPassword proves the current password (and gives the session the "secure password
+// change" setting asks for, whether or not it is on); updateUser then writes the new one.
+export async function changePasswordAction(input: {
+  currentPassword: string
+  newPassword: string
+}): Promise<AccountActionResult> {
+  const lang = await getLang()
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user || !user.email) return { ok: false, error: t('monCompte.error.notAuth', lang) }
+
+  const parsed = passwordInputSchema.safeParse(input)
+  if (!parsed.success) {
+    const issue = parsed.error.issues[0]
+    const field: AccountActionField = issue?.path[0] === 'newPassword' ? 'newPassword' : 'currentPassword'
+    const key = issue?.message.startsWith('monCompte.') ? issue.message : 'monCompte.password.invalid'
+    return { ok: false, error: t(key, lang), field }
+  }
+  const { currentPassword, newPassword } = parsed.data
+  if (newPassword === currentPassword) {
+    return { ok: false, error: t('monCompte.password.same', lang), field: 'newPassword' }
+  }
+
+  const { error: reauthError } = await supabase.auth.signInWithPassword({ email: user.email, password: currentPassword })
+  if (reauthError) {
+    if (reauthError.code === 'invalid_credentials') {
+      return { ok: false, error: t('monCompte.password.wrongCurrent', lang), field: 'currentPassword' }
+    }
+    console.error('[changePasswordAction] re-auth failed:', reauthError.message, reauthError.code, reauthError.status)
+    return { ok: false, error: t('monCompte.password.error', lang) }
+  }
+
+  const { error } = await supabase.auth.updateUser({ password: newPassword })
+  if (error) {
+    if (error.code === 'same_password') return { ok: false, error: t('monCompte.password.same', lang), field: 'newPassword' }
+    if (error.code === 'weak_password') return { ok: false, error: t('monCompte.password.invalid', lang), field: 'newPassword' }
+    console.error('[changePasswordAction] update failed:', error.message, error.code, error.status)
+    return { ok: false, error: t('monCompte.password.error', lang) }
   }
 
   return { ok: true }

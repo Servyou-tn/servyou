@@ -83,13 +83,12 @@ export function AvatarUploadCard({
   const helpId = 'avatar-help'
 
   return (
-    <section className="flex flex-col gap-4 rounded-lg border border-border-subtle bg-surface-base p-6">
-      <h2 className="text-h4 font-semibold text-text-primary">{t('monCompte.avatar.title', lang)}</h2>
-
+    <div className="flex flex-col gap-3">
       <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center">
-        {/* decorative={false}: this avatar is the sole identity cue in the card — there is no
-            adjacent visible name for it to duplicate — so it is exposed with an accessible label. */}
-        <Avatar size="2xl" src={avatarUrl} name={fullName ?? undefined} decorative={false} />
+        {/* decorative={false}: this avatar is the sole identity cue in the row — there is no
+            adjacent visible name for it to duplicate — so it is exposed with an accessible label.
+            xl = 80, the I1 avatar-row (724:64064); the panel's « Profil » heading is the title. */}
+        <Avatar size="xl" src={avatarUrl} name={fullName ?? undefined} decorative={false} />
 
         <div className="flex flex-col gap-2">
           <div className="flex flex-wrap items-center gap-2">
@@ -111,7 +110,7 @@ export function AvatarUploadCard({
           </div>
 
           <p id={helpId} className="text-body-sm text-text-muted">
-            {t('monCompte.avatar.help', lang)}
+            {t('monCompte.avatar.helpMax', lang, { max: MAX_INPUT_MB })}
           </p>
         </div>
       </div>
@@ -150,6 +149,6 @@ export function AvatarUploadCard({
           {error}
         </p>
       ) : null}
-    </section>
+    </div>
   )
 }
