@@ -17,7 +17,8 @@ export type MissionFactsData = {
   isRemote: boolean
   responseCount: number
   skills: string[]
-  daysLeft: number
+  /** null = the post no longer takes proposals: the « Expire dans » row is dropped. */
+  daysLeft: number | null
 }
 
 function Divider() {
@@ -89,13 +90,15 @@ export function MissionFacts({
           </dt>
           <dd className="text-end font-semibold text-text-primary">{place}</dd>
         </div>
-        <div className="flex items-center justify-between gap-3">
-          <dt className="flex items-center gap-1.5 font-medium text-text-secondary">
-            <Clock className="size-4 shrink-0" aria-hidden="true" />
-            {t('missiondetail.expires_label', lang)}
-          </dt>
-          <dd className="text-end font-semibold text-text-primary">{tn('missiondetail.expires_value', lang, mission.daysLeft)}</dd>
-        </div>
+        {mission.daysLeft != null ? (
+          <div className="flex items-center justify-between gap-3">
+            <dt className="flex items-center gap-1.5 font-medium text-text-secondary">
+              <Clock className="size-4 shrink-0" aria-hidden="true" />
+              {t('missiondetail.expires_label', lang)}
+            </dt>
+            <dd className="text-end font-semibold text-text-primary">{tn('missiondetail.expires_value', lang, mission.daysLeft)}</dd>
+          </div>
+        ) : null}
       </dl>
 
       {/* The frame's three dividers separate budget · competition · skills · meta; the CTA follows meta at gap 16. */}

@@ -12,6 +12,8 @@ const ACCENT = {
   blue: 'bg-brand-blue-100 text-brand-blue-600',
   warning: 'bg-warning-100 text-warning-700',
   success: 'bg-success-100 text-success-700',
+  // H11 « Fermées » (D-H11-6): a recessive grey circle, not green — closed is not a win.
+  neutral: 'bg-surface-sunken text-text-secondary',
 } as const
 
 // ⚑ THIRD ROUTE-LOCAL COPY, DELIBERATELY NOT PROMOTED. tableau-de-bord-vendeur/_components/
@@ -28,6 +30,7 @@ export function StatTile({
   icon: Icon,
   accent,
   subtitle,
+  subtitleTone,
   delta,
 }: {
   label: string
@@ -36,6 +39,8 @@ export function StatTile({
   accent: keyof typeof ACCENT
   /** Plain subtitle line — mutually exclusive with `delta` (only one is ever measured per tile). */
   subtitle?: string
+  /** H11 « Actives » (D-H11-6): the one coloured caption in the frame (Semi Bold 12 `warning/700`). */
+  subtitleTone?: 'warning'
   /** "Commandes ce mois"'s delta row: a signed count plus a comparison caption. */
   delta?: { direction: 'up' | 'down' | 'flat'; text: string; caption: string }
 }) {
@@ -45,8 +50,14 @@ export function StatTile({
         <Icon className="size-5" aria-hidden="true" />
       </span>
       <p className="text-body-sm font-medium text-text-secondary">{label}</p>
-      <p className="text-[28px] font-bold leading-[normal] text-text-primary">{value}</p>
-      {subtitle ? <p className="text-caption text-text-muted">{subtitle}</p> : null}
+      {/* <bdi dir="ltr">: a « 3 / 5 » run is isolated, so it does not reorder to « 5 / 3 » inside an Arabic paragraph. */}
+      <p className="text-[28px] font-bold leading-[normal] text-text-primary">
+        <bdi dir="ltr">{value}</bdi>
+      </p>
+      {/* A template string, not cn(): tailwind-merge would evict `text-caption` next to a text colour. */}
+      {subtitle ? (
+        <p className={`text-caption ${subtitleTone === 'warning' ? 'font-semibold text-warning-700' : 'text-text-muted'}`}>{subtitle}</p>
+      ) : null}
       {delta ? (
         <p className="flex items-baseline gap-1.5">
           <span

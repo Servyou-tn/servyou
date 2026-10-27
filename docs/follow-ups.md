@@ -5220,3 +5220,34 @@ Ranked.
     focused, and after a delete request the opener becomes the disabled « pending » button. Pass a trigger ref if it matters.
 11. **LOW — maintenance mode specifics**: prefetches return before the flag check; `/connexion` and `/auth/*` stay reachable
     (outside the matcher); `/maintenance` answers 200 after a 307, so an uptime monitor reads « up »; admins are redirected too.
+
+### H11 Mes propositions (PR-3) — logged, not fixed
+
+- **« Retirer » only-while-open is an app rule, not a DB one** (DB role): the `job_responses` DELETE policy is `freelancer_id = auth.uid()` alone, so a
+  direct API call can delete a response on a filled / expired post. Harmless to counters (the -1 trigger still keeps `response_count` right) but it erases
+  the consumer's record of the proposal. A `USING` clause joining `job_posts.status = 'open'` would enforce it.
+- **« Indisponible » pill** (post deleted or moderated, so unreadable to the responder) has no Figma specimen: it is `StatusPill withdrawn` (muted grey)
+  with a new key. The frame's open-post pill is kept as « Ouverte »; switch the label to « En attente » with one key if the founder prefers.
+- **Empty-none and empty-active states** are derived (no frame) and were not eyeballed: the founder's account has 4 proposals, 1 active.
+- **Mobile search placeholder** clips (« …ou un clie ») below ~400 px, the same as H8's.
+
+### Moderated-freelancer read fix (`fix/moderated-freelancer-read`, 2026-10-27) — logged, not fixed
+
+- **MEDIUM — moderation-sheds-by-delete/re-create** (decision D4, above) is still open and is the natural pair of this
+  fix: once the profile is hidden at the RLS layer, the owner can still DELETE and re-INSERT it with `admin_hidden_at` NULL.
+- **LOW — `public_profiles` still exposes name and city of a moderated freelancer** (and of a moderated shop owner). The view
+  is keyed on `profiles`, not on seller moderation; the app's own filters hide the card. Same class as migration 65's shops;
+  decide whether the view should cascade seller moderation.
+- **LOW — cascade depends on `is_published`, which is owner-settable** (MEDIUM item above): the new `service_listings` cascade
+  reads `freelancer_profiles` under its own policy, so an owner who flips `is_published` to false hides their own live
+  listings from anon. Self-inflicted and the same as the app's `freelancer_profiles!inner` reads today; closed by revoking
+  the column grant (that item's fix).
+- **Residual — the `portfolio-media` / avatar buckets are public**: the policy hides URL discovery, not a known file URL.
+- **LOW (Sonnet review of #75) — `freelancer_profiles.admin_hidden_reason` is readable by the owner and, since #75, by a
+  past buyer** (table-level SELECT; no column revoke). Not a regression — everyone read it before — but the moderator's note
+  should be admin-internal (ModerationBanner already never renders it). Fix: revoke SELECT on `admin_hidden_reason` from
+  anon / authenticated and give admin pages a definer read. Same question for shops / products / service_listings / job_posts.
+- **LOW (Sonnet review of #75) — anon SELECT on `orders` is now a hard dependency of `freelancer_profiles` and
+  `service_listings` reads too** (buyer branches read `orders` as the caller; the grant is checked even when the OR
+  short-circuits), next to the shops / products dependency from #65. A grant sweep that revokes it turns every anon
+  marketplace read into 42501.

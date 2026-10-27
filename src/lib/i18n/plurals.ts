@@ -60,6 +60,7 @@ const frPlurals: Record<string, PluralVariants> = {
 
   'seller.orders.count':                   { one: '{count} commande', other: '{count} commandes' },
   'engagements.count':                     { one: '{count} engagement', other: '{count} engagements' },
+  'propositions.count':                    { one: '{count} proposition', other: '{count} propositions' },
   // H9/H10 (PR-1). `count` is the number the noun agrees with.
   'missionboard.count':                    { one: '{count} mission disponible', other: '{count} missions disponibles' },
   'missionboard.awareness':                { one: 'Vous avez {count} proposition active sur {max}', other: 'Vous avez {count} propositions actives sur {max}' },
@@ -129,6 +130,7 @@ const arPlurals: Record<string, PluralVariants> = {
 
   'seller.orders.count':                   { one: '{count} طلب', two: '{count} طلبان', other: '{count} طلبات' },
   'engagements.count':                     { one: '{count} مهمة', two: '{count} مهمتان', other: '{count} مهام' },
+  'propositions.count':                    { one: '{count} عرض', two: '{count} عرضان', other: '{count} عروض' },
   // REVIEW_AR_TRANSLATION (H9/H10 PR-1 drafts). "منذ/خلال" govern the oblique dual (يومين).
   'missionboard.count':                    { one: '{count} مهمة متاحة', two: '{count} مهمتان متاحتان', other: '{count} مهام متاحة' },
   'missionboard.awareness':                { one: 'لديك {count} عرض نشط من أصل {max}', two: 'لديك {count} عرضان نشطان من أصل {max}', other: 'لديك {count} عروض نشطة من أصل {max}' },
