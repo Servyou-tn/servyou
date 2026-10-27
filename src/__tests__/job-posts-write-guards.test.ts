@@ -384,11 +384,23 @@ describe.skipIf(!hasCreds)('content lock — frozen once a freelancer has answer
     expect((await post(answered)).status).toBe('filled')
   })
 
-  it('a hard delete of an unanswered post cascades its skills through the lock (parent already gone)', async () => {
+  it('no client hard delete (job_posts_no_hard_delete): the poster is refused, answered or not, and nothing moves', async () => {
+    for (const id of [answered, unanswered]) {
+      const { error } = await posterClient.from('job_posts').delete().eq('id', id)
+      expect(error?.code).toBe('42501')
+      expect(error?.message).toBe('permission denied for table job_posts')
+      const { count } = await admin.from('job_posts').select('id', { count: 'exact', head: true }).eq('id', id)
+      expect(count).toBe(1)
+    }
+    const { count: responses } = await admin.from('job_responses').select('id', { count: 'exact', head: true }).eq('job_post_id', answered)
+    expect(responses).toBe(1)
+  })
+
+  it('the cascade path stays open: a service-role hard delete (as account deletion) takes the post and its skills', async () => {
     const id = await seedPost('hard delete')
     const { error: skillErr } = await admin.from('job_post_skills').insert({ job_post_id: id, skill: `${TITLE} cascade` })
     expect(skillErr).toBeNull()
-    const { data, error } = await posterClient.from('job_posts').delete().eq('id', id).select('id')
+    const { data, error } = await admin.from('job_posts').delete().eq('id', id).select('id')
     expect(error).toBeNull()
     expect(data).toHaveLength(1)
     const { count } = await admin.from('job_post_skills').select('id', { count: 'exact', head: true }).eq('job_post_id', id)

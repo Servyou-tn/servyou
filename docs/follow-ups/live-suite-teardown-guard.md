@@ -156,7 +156,8 @@ Ranked.
 
 - **MEDIUM — NEXT ITEM (founder, 2026-10-27): a consumer can hard-DELETE an ANSWERED post.** « Consumer deletes own post »
   is `consumer_id = auth.uid()` and `job_responses.job_post_id` is ON DELETE CASCADE, so one REST DELETE erases every
-  freelancer's proposal (and the app only ever soft-deletes). Proposal to follow.
+  freelancer's proposal (and the app only ever soft-deletes). **Decision B (founder, 2026-10-27):** drop the policy and
+  revoke DELETE from authenticated — ✅ closed by migration 77 (`20261027211851_job_posts_no_hard_delete`).
 - **LOW — a responder can still add / remove `job_response_skills` after the post closes** (insert / delete policies check
   only response ownership). Same shape as the job_responses withdrawal window: gate both on the post being open.
 - **MEDIUM (Sonnet review of #76) — a JWT admin can still INSERT an order at any status.** `enforce_order_insert_integrity`
