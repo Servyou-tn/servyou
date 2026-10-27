@@ -4005,13 +4005,16 @@ orders INSERT gap (migration 54). Ranked most severe first; each is its own PR u
   instead of deleting it; or exempt the FK-cascade `SET NULL` in `enforce_order_identity_lock` when
   the referenced item is gone.
 
-### ✅ PARTLY RESOLVED (migration 71 `20261026205458`, 2026-10-26) — storage provenance missing for avatars and shop assets
+### ✅ RESOLVED (migrations 71 / 73 / 74 + PR #208, 2026-10-26) — storage provenance missing for avatars and shop assets
 
-- **Column side fixed:** `avatar_url`, `logo_url` and `banner_url` now require a host-anchored URL with an
+- **Column side fixed (71, 73):** `avatar_url`, `logo_url` and `banner_url` require a host-anchored URL with an
   `uploaded_objects` record owned by the row's owner (no bypass); the product / portfolio checks are
-  host-anchored too. **Still open — S-3, the next PR:** raw bytes can still be PUT into one's own folder
-  (unpublishable through the INSERT-guarded columns — but see the portfolio UPDATE gap below); the upload actions move to the service role and the four client INSERT storage
-  policies are dropped.
+  host-anchored, and portfolio `image_url` is checked on UPDATE too.
+- **Upload side fixed (S-3):** PR #208 moved the five upload actions to the service role (after normalize,
+  ownership re-derivation and the active-caller check), and migration 74 `20261026222408` dropped the four
+  client INSERT storage policies after that deploy: a client PUT into avatars / portfolio-media / shop-assets /
+  product-images is refused (`storage-uploads-service-role.test.ts`). Production smoke 2026-10-26: avatar,
+  shop logo, product image and portfolio image all uploaded through the deployed app.
 - ✅ **RESOLVED by migration 73 (`20261026212227`) — `freelancer_portfolio_items.image_url` could be PATCHed past provenance:**
   its trigger is BEFORE INSERT only, the owner has an UPDATE policy and authenticated holds UPDATE, so an
   owner can insert a recorded item and then point `image_url` at a raw-PUT object (or any URL on the host).

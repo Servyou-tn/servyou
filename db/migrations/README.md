@@ -652,6 +652,20 @@ this PR and is not attempted here.
     UPDATE OF `image_url`; an unchanged value passes on its own (the avatar / shop rule). Function body
     otherwise identical to #71's. Verified by `src/__tests__/storage-upload-provenance.test.ts`
     (live-DB). Rollback at the bottom of the file.
+74. **20261026222408_storage_drop_client_inserts** — Applied by the architect 2026-10-26, **after**
+    PR #208 (S-3: the five upload actions write through the service role) was merged and its production
+    deploy was READY (`dpl_F3TPrscFedQuVwxw2B8HAP6uRJdC`, sha `9096331`). Recorded version; executable
+    SQL MD5-verified against `schema_migrations`, comments and whitespace stripped: `a68ef8e2`.
+    Post-apply check (architect): the only INSERT policies left on `storage.objects` are the restrictive
+    « Suspended accounts cannot upload » and « verifications: owner uploads own document ». Drops the
+    four permissive client INSERT policies on `avatars`, `portfolio-media`, `shop-assets` and
+    `product-images` (decision S-3, 2026-10-26): a signed-in user can no longer PUT raw bytes into those
+    buckets; only the service role writes there, through the upload actions after `normalize.ts`,
+    ownership re-derivation and the active-caller check (`src/lib/images/upload-guard.ts`). Owner read /
+    delete policies, the restrictive suspension policies, buckets and the verifications policy are
+    unchanged; no type change. Verified by `src/__tests__/storage-uploads-service-role.test.ts`
+    (live-DB) plus a production upload smoke. Rollback (the four policies' exact definitions) is at the
+    bottom of the file.
 
 75. **20261027195820_moderated_freelancer_read_rls** — Applied by the architect 2026-10-27 (recorded
     version; executable SQL MD5-verified against `schema_migrations`, comments and whitespace
