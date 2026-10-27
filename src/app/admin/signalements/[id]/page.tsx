@@ -19,7 +19,7 @@ type Props = { params: Promise<{ id: string }> }
 // (PR-M) carry a status='hidden' seller feature; shops/freelancer_profiles/job_posts (PR-N)
 // have no status column, so the moderation marker is the sole signal. The section only ever
 // reads the three shared columns below, so a uniform fetch works across all five tables.
-const MODERATION_TABLES: Record<string, string> = {
+const MODERATION_TABLES: Record<string, 'products' | 'service_listings' | 'shops' | 'freelancer_profiles' | 'job_posts'> = {
   product: 'products',
   service: 'service_listings',
   shop: 'shops',

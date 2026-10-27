@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { ChevronLeft, ChevronRight, ImageIcon } from 'lucide-react'
 import { FOCUS_RING } from '@/components/layout/styles'
 import { FavoriteButton } from '@/components/FavoriteButton'
-import { ProductCoverImage } from '@/app/marche/produits/_components/ProductCoverImage'
+import { ProductCoverImage } from '@/components/produits/ProductCoverImage'
 import { useLang } from '@/components/LangProvider'
 import { t } from '@/lib/i18n'
 

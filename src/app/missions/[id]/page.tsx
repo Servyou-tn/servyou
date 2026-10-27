@@ -16,7 +16,7 @@ import { getLang } from '@/lib/i18n/server'
 import { t, tn } from '@/lib/i18n'
 import { localizeCity } from '@/lib/marche/missions'
 import { getMissionDetail, type MissionViewer } from '@/lib/marche/mission-detail-query'
-import { relativeTimeLabel } from '@/app/tableau-de-bord/_components/relative-time'
+import { relativeTimeLabel } from '@/lib/relative-time'
 import { MissionCta } from './_components/MissionCta'
 
 export const metadata: Metadata = { title: 'Mission — Servyou' }

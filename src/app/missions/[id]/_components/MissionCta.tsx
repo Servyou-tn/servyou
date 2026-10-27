@@ -6,7 +6,7 @@ import { FOCUS_RING } from '@/components/layout/styles'
 import { t, type Lang } from '@/lib/i18n'
 import { MAX_ACTIVE_RESPONSES_PER_FREELANCER, MAX_RESPONSES_PER_POST } from '@/lib/job-constants'
 import type { MissionCtaState } from '@/lib/marche/mission-cta'
-import { relativeTimeLabel } from '@/app/tableau-de-bord/_components/relative-time'
+import { relativeTimeLabel } from '@/lib/relative-time'
 
 // H10 CTA block (docs/design/h9-h13-measurements.md §2.1 node 323:11866 + §2.2 specimens 331:11979 / 331:12001).
 // The page is read-and-decide, so the CTA states WHY a freelancer cannot respond before they open the form.
