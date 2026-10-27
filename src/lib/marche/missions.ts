@@ -1,5 +1,6 @@
 import { GOVERNORATES } from '@/lib/tunisia-governorates'
 import type { Lang } from '@/lib/i18n'
+import { resolveAnnonceStatus } from '@/lib/marche/annonce-status'
 import { COMPETITION_LOW_MAX, COMPETITION_MEDIUM_MAX, JOB_POST_EXPIRY_DAYS, NEW_MISSION_WINDOW_HOURS } from '@/lib/job-constants'
 
 // H9 « Trouver des missions » — pure rules (no I/O, no clock reads of its own: every function takes `now`).
@@ -119,6 +120,22 @@ export function isNewMission(createdAt: string, now: Date): boolean {
 export function missionDaysLeft(createdAt: string, now: Date): number {
   const remaining = JOB_POST_EXPIRY_DAYS * DAY_MS - (now.getTime() - new Date(createdAt).getTime())
   return Math.max(0, Math.ceil(remaining / DAY_MS))
+}
+
+/**
+ * « Nouveau » and « Expire dans N jours » only describe a post that still takes proposals. A filled or expired post the
+ * viewer answered stays readable (migration 70), and the raw arithmetic would still print « Nouveau » on a 20-hour-old
+ * post the consumer already marked pourvue, or « Expire dans 12 jours » on a stored-expired one — so both are gated on
+ * the DISPLAY status being open and the post not moderated. `daysLeft` is null when there is nothing to count down.
+ */
+export function missionLiveness(
+  post: { status: 'open' | 'filled' | 'expired' | 'deleted'; createdAt: string; hidden?: boolean },
+  now: Date,
+): { isNew: boolean; daysLeft: number | null } {
+  const live = !post.hidden && resolveAnnonceStatus(post.status, post.createdAt, now) === 'open'
+  return live
+    ? { isNew: isNewMission(post.createdAt, now), daysLeft: missionDaysLeft(post.createdAt, now) }
+    : { isNew: false, daysLeft: null }
 }
 
 /**

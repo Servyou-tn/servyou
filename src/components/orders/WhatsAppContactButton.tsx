@@ -31,6 +31,7 @@ export function WhatsAppContactButton({
   errorMessageKey = 'seller.orders.whatsapp_error',
   noPhoneMessageKey = 'seller.orders.whatsapp_none',
   iconOnly = false,
+  disabled = false,
 }: {
   /** get_contact_phone's `target` — the other party's profile id (buyer, seller, or annonce responder). */
   targetId: string
@@ -48,6 +49,11 @@ export function WhatsAppContactButton({
    * break the row).
    */
   iconOnly?: boolean
+  /**
+   * `iconOnly` only — H11's closed rows (Figma 296:9022): a `surface/sunken` circle with a muted glyph, not clickable. A product
+   * choice (follow up live pitches only), not a data limit: get_contact_phone keeps working for any responder.
+   */
+  disabled?: boolean
 }) {
   const supabase = createClient()
   const lang = useLang()
@@ -74,6 +80,19 @@ export function WhatsAppContactButton({
       return
     }
     window.open(buildWhatsAppUrl(data as string, message), '_blank', 'noopener,noreferrer')
+  }
+
+  if (iconOnly && disabled) {
+    return (
+      <span
+        role="img"
+        aria-label={label}
+        title={label}
+        className="flex size-9 shrink-0 items-center justify-center rounded-full bg-surface-sunken"
+      >
+        <Image src="/brand/icons/whatsapp.svg" alt="" width={20} height={20} unoptimized aria-hidden="true" className="opacity-40 grayscale" />
+      </span>
+    )
   }
 
   if (iconOnly) {

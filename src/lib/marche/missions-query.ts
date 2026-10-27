@@ -6,9 +6,8 @@ import { isAnnoncePastExpiry } from '@/lib/marche/annonce-status'
 import {
   budgetBucketOrFilters,
   firstName,
-  isNewMission,
   missionCutoffIso,
-  missionDaysLeft,
+  missionLiveness,
   MISSIONS_PER_PAGE,
   type MissionFilters,
 } from './missions'
@@ -28,7 +27,7 @@ type Client = SupabaseClient
 
 type PostRow = Pick<
   Database['public']['Tables']['job_posts']['Row'],
-  'id' | 'title' | 'description' | 'budget_min' | 'budget_max' | 'city' | 'is_remote' | 'created_at' | 'consumer_id' | 'response_count'
+  'id' | 'title' | 'description' | 'budget_min' | 'budget_max' | 'city' | 'is_remote' | 'status' | 'created_at' | 'consumer_id' | 'response_count'
 >
 type CategoryEmbed = { slug: string; name_fr: string; name_ar: string }
 type BoardRow = PostRow & {
@@ -54,7 +53,7 @@ export type MissionSummary = {
   clientCity: string | null
   /** Server-clock fields, computed here so a client render never reads `now` (hydration). */
   isNew: boolean
-  daysLeft: number
+  daysLeft: number | null
 }
 
 export type MissionBoardPage = {
@@ -177,7 +176,7 @@ function boardQuery(supabase: Client, a: BoardQueryArgs) {
   return q
 }
 
-const CARD_SELECT = `id, title, description, budget_min, budget_max, city, is_remote, created_at, consumer_id, response_count,
+const CARD_SELECT = `id, title, description, budget_min, budget_max, city, is_remote, status, created_at, consumer_id, response_count,
   categories ( slug, name_fr, name_ar ),
   job_post_skills ( skill )`
 
@@ -273,8 +272,7 @@ export async function getMissionBoard(
       skills: (r.job_post_skills ?? []).slice(0, 3).map((s) => s.skill),
       clientFirstName: client?.firstName ?? '',
       clientCity: client?.city ?? null,
-      isNew: isNewMission(r.created_at, now),
-      daysLeft: missionDaysLeft(r.created_at, now),
+      ...missionLiveness({ status: r.status as 'open' | 'filled' | 'expired' | 'deleted', createdAt: r.created_at }, now),
     }
   })
 
