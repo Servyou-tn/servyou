@@ -235,7 +235,8 @@ export const getFreelancerDashboard = cache(
         )
       } else {
         for (const p of buyerProfiles ?? []) {
-          buyerNames.set(p.id, p.full_name ?? '')
+          // public_profiles is a view: every column is nullable in the generated type (`id` never is at runtime).
+          if (p.id) buyerNames.set(p.id, p.full_name ?? '')
         }
       }
     }

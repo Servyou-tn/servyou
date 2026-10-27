@@ -67,7 +67,8 @@ CI (GitHub Actions) runs the FULL gate on every push in ~2 min: tsc, lint, the w
    in parallel with your self-verify. Read CI with `gh pr checks <n>`; fix only real failures.
 5. **One review per PR**, on the diff only, as a subagent on **Sonnet** (not Opus) — either
    /gstack-review OR an independent reviewer, never both. Fix critical/high findings; log the rest
-   in docs/follow-ups.md. Skip the review for docs-only or test-only changes.
+   in ONE NEW file `docs/follow-ups/<pr-or-topic-slug>.md` (add a new file, never append to a shared one; format in
+   `docs/follow-ups/README.md`). Skip the review for docs-only or test-only changes.
 6. **Self-verify in one scripted pass** (agent-browser / one Playwright script capturing FR+AR ×
    1440+375 for each state). After a small fix, re-check only the affected views.
 7. **Read narrowly:** the files you will change and their direct imports; grep before opening.

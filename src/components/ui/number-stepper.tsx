@@ -49,7 +49,7 @@ export function NumberStepper({
       role="group"
       aria-label={label}
       className={cn(
-        'inline-flex h-10 w-[136px] items-stretch overflow-hidden rounded-lg border border-border-strong bg-surface-base',
+        'inline-flex h-10 w-34 items-stretch overflow-hidden rounded-lg border border-border-strong bg-surface-base',
         className,
       )}
     >

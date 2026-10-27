@@ -42,7 +42,8 @@ export default async function AdminOverviewPage() {
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         {METRIC_KEYS.map(key => {
           const col = key.slice(KEY_PREFIX.length)
-          const raw = stats ? stats[col] : null
+          // `col` is derived from METRIC_KEYS at runtime, so it cannot index the RPC's typed row directly.
+          const raw = stats ? (stats as Record<string, unknown>)[col] : null
           const value = raw != null ? String(raw) : undefined
           return <AdminMetricCard key={key} label={t(key, lang)} value={value} />
         })}

@@ -2,7 +2,7 @@
 
 import { useReducedMotion } from 'motion/react'
 import { BlurFade } from '@/components/magicui/blur-fade'
-import { ProductBrowseCard } from '@/app/marche/produits/_components/ProductBrowseCard'
+import { ProductBrowseCard } from '@/components/produits/ProductBrowseCard'
 import type { ProductListing } from '@/components/listings/ProductListingCard'
 
 // F1's product grid — reuses C1's card (`ProductBrowseCard`, measured against Figma `569:39818`)
