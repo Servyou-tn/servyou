@@ -1,5 +1,5 @@
 /**
- * Live-DB proof for db/migrations/PENDING_moderated_freelancer_read_rls.sql — a moderated freelancer
+ * Live-DB proof for db/migrations/20261027195820_moderated_freelancer_read_rls.sql — a moderated freelancer
  * stops being REST-readable (follow-up from PR #192's discovery; same shape as migration 65).
  *
  * admin_hide_content('freelancer_profile') stamps only freelancer_profiles.admin_hidden_at. is_published
