@@ -5205,3 +5205,11 @@ fixtures. `scripts/rls-smoke.mjs` (not a suite, never run) seeds an active produ
   listings from anon. Self-inflicted and the same as the app's `freelancer_profiles!inner` reads today; closed by revoking
   the column grant (that item's fix).
 - **Residual — the `portfolio-media` / avatar buckets are public**: the policy hides URL discovery, not a known file URL.
+- **LOW (Sonnet review of #75) — `freelancer_profiles.admin_hidden_reason` is readable by the owner and, since #75, by a
+  past buyer** (table-level SELECT; no column revoke). Not a regression — everyone read it before — but the moderator's note
+  should be admin-internal (ModerationBanner already never renders it). Fix: revoke SELECT on `admin_hidden_reason` from
+  anon / authenticated and give admin pages a definer read. Same question for shops / products / service_listings / job_posts.
+- **LOW (Sonnet review of #75) — anon SELECT on `orders` is now a hard dependency of `freelancer_profiles` and
+  `service_listings` reads too** (buyer branches read `orders` as the caller; the grant is checked even when the OR
+  short-circuits), next to the shops / products dependency from #65. A grant sweep that revokes it turns every anon
+  marketplace read into 42501.

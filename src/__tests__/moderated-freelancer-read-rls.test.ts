@@ -19,7 +19,9 @@
  *
  * Fixtures (all `mf-read-`, password random per run: the repo is public and this suite promotes an admin
  * in production): freelancer M (moderated after the order), freelancer L (live), a buyer, an unrelated
- * signed-in outsider and an admin. Each freelancer has one listing and one row in each of the 7 children.
+ * signed-in outsider and an admin. Each freelancer has one listing and one row in each of the 7 children; M has a
+ * second live listing the buyer never ordered (M2) — the only fixture that isolates the profile-moderation
+ * conjunct on service_listings' public branch, since the buyer can read M's profile through the buyer branch.
  *
  * Deliberately no global count: another suite writing freelancers in the same run would make it flaky.
  * Every read is scoped to this file's fixture ids.
@@ -195,6 +197,7 @@ let L: Freelancer // live throughout
 let buyerId: string
 let outsiderId: string
 let orderId: string
+let mListing2: string // M's second live listing, never ordered
 
 let adminClient: Client
 let ownerMClient: Client
@@ -202,7 +205,7 @@ let buyerClient: Client
 let outsiderClient: Client
 
 const bothProfiles = () => [M.profile, L.profile]
-const bothListings = () => [M.listing, L.listing]
+const allListings = () => [M.listing, mListing2, L.listing]
 const childIds = (table: ChildTable, ...fs: Freelancer[]): string[] =>
   fs.map((f) => CHILDREN.find((c) => c.table === table)!.pick(f))
 
@@ -220,6 +223,13 @@ beforeAll(async () => {
 
   M = await makeFreelancer(ownerMId, 'M')
   L = await makeFreelancer(ownerLId, 'L')
+  const { data: m2, error: m2Err } = await admin
+    .from('service_listings')
+    .insert({ freelancer_profile_id: M.profile, title: `${TITLE} — M2 service, never ordered`, starting_price_tnd: 60, status: 'active' })
+    .select('id')
+    .single()
+  if (m2Err || !m2) throw new Error(`service_listings insert failed (M2): ${m2Err?.message}`)
+  mListing2 = m2.id
 
   adminClient = await signIn('admin')
   ownerMClient = await signIn('owner-m')
@@ -259,6 +269,12 @@ afterAll(async () => {
     .like('headline', `${TITLE}%`)
   if (fErr) throw new Error(`cleanup check (freelancer_profiles) failed: ${fErr.message}`)
   if ((fps ?? 0) !== 0) throw new Error(`teardown left ${fps} fixture freelancer profiles`)
+  const { count: listings, error: lErr } = await admin
+    .from('service_listings')
+    .select('id', { count: 'exact', head: true })
+    .like('title', `${TITLE}%`)
+  if (lErr) throw new Error(`cleanup check (service_listings) failed: ${lErr.message}`)
+  if ((listings ?? 0) !== 0) throw new Error(`teardown left ${listings} fixture listings`)
 }, 120000)
 
 describe.skipIf(!hasCreds)('ground truth for every negative read below', () => {
@@ -274,11 +290,12 @@ describe.skipIf(!hasCreds)('ground truth for every negative read below', () => {
     expect(rows.get(L.profile)).toMatchObject({ is_published: true, admin_hidden_at: null })
   })
 
-  it("M's listing is still active and unmoderated (admin_hide_content only stamps the profile)", async () => {
-    const { data, error } = await admin.from('service_listings').select('id, status, admin_hidden_at').in('id', bothListings())
+  it("M's listings are still active and unmoderated (admin_hide_content only stamps the profile)", async () => {
+    const { data, error } = await admin.from('service_listings').select('id, status, admin_hidden_at').in('id', allListings())
     expect(error).toBeNull()
     const rows = new Map((data ?? []).map((row) => [row.id, row]))
     expect(rows.get(M.listing)).toMatchObject({ status: 'active', admin_hidden_at: null })
+    expect(rows.get(mListing2)).toMatchObject({ status: 'active', admin_hidden_at: null })
     expect(rows.get(L.listing)).toMatchObject({ status: 'active', admin_hidden_at: null })
   })
 
@@ -308,7 +325,7 @@ for (const [who, viewer] of publicViewers) {
     })
 
     it('service_listings: only L’s (M’s listing is active and unmoderated, its profile is not)', async () => {
-      expect(await readable(viewer(), 'service_listings', bothListings())).toEqual([L.listing])
+      expect(await readable(viewer(), 'service_listings', allListings())).toEqual([L.listing])
     })
 
     for (const { table, pick } of CHILDREN) {
@@ -322,7 +339,7 @@ for (const [who, viewer] of publicViewers) {
 describe.skipIf(!hasCreds)('owner — a moderated freelancer keeps reading their own rows', () => {
   it('the profile, the listing and all 7 children of M, plus L’s public rows', async () => {
     expect(await readable(ownerMClient, 'freelancer_profiles', bothProfiles())).toEqual(sorted(M.profile, L.profile))
-    expect(await readable(ownerMClient, 'service_listings', bothListings())).toEqual(sorted(M.listing, L.listing))
+    expect(await readable(ownerMClient, 'service_listings', allListings())).toEqual(sorted(M.listing, mListing2, L.listing))
     for (const { table, pick } of CHILDREN) {
       expect(await readable(ownerMClient, table, [pick(M), pick(L)])).toEqual(sorted(pick(M), pick(L)))
     }
@@ -332,7 +349,7 @@ describe.skipIf(!hasCreds)('owner — a moderated freelancer keeps reading their
 describe.skipIf(!hasCreds)('admin — everything', () => {
   it('reads every fixture row in every table', async () => {
     expect(await readable(adminClient, 'freelancer_profiles', bothProfiles())).toEqual(sorted(...bothProfiles()))
-    expect(await readable(adminClient, 'service_listings', bothListings())).toEqual(sorted(...bothListings()))
+    expect(await readable(adminClient, 'service_listings', allListings())).toEqual(sorted(...allListings()))
     for (const { table, pick } of CHILDREN) {
       expect(await readable(adminClient, table, [pick(M), pick(L)])).toEqual(sorted(pick(M), pick(L)))
     }
@@ -353,8 +370,8 @@ describe.skipIf(!hasCreds)('buyer — keeps what they ordered, nothing more', ()
     expect(await readable(buyerClient, 'freelancer_profiles', bothProfiles())).toEqual(sorted(M.profile, L.profile))
   })
 
-  it("service_listings: M's through the order (migration 52 D1) and L's", async () => {
-    expect(await readable(buyerClient, 'service_listings', bothListings())).toEqual(sorted(M.listing, L.listing))
+  it("service_listings: M's ordered one (migration 52 D1) and L's — not M2, though the buyer reads M's profile", async () => {
+    expect(await readable(buyerClient, 'service_listings', allListings())).toEqual(sorted(M.listing, L.listing))
   })
 
   for (const { table, pick } of CHILDREN) {
@@ -409,7 +426,7 @@ describe.skipIf(!hasCreds)('the policy graph is acyclic — nested embeds throug
       const listings = await viewer()
         .from('service_listings')
         .select('id, freelancer_profiles ( id, freelancer_skills ( id ), freelancer_languages ( id ) )')
-        .in('id', bothListings())
+        .in('id', allListings())
       expect(listings.error).toBeNull()
       const skills = await viewer().from('freelancer_skills').select('id, freelancer_profiles ( id )').in('id', childIds('freelancer_skills', M, L))
       expect(skills.error).toBeNull()
@@ -425,7 +442,7 @@ describe.skipIf(!hasCreds)('un-moderating restores the public read (control)', (
     const { error } = await adminClient.rpc('admin_unhide_content', { target_type: 'freelancer_profile', target_id: M.profile })
     expect(error).toBeNull()
     expect(await readable(anon, 'freelancer_profiles', bothProfiles())).toEqual(sorted(M.profile, L.profile))
-    expect(await readable(anon, 'service_listings', bothListings())).toEqual(sorted(M.listing, L.listing))
+    expect(await readable(anon, 'service_listings', allListings())).toEqual(sorted(M.listing, mListing2, L.listing))
     for (const { table, pick } of CHILDREN) {
       expect(await readable(anon, table, [pick(M), pick(L)])).toEqual(sorted(pick(M), pick(L)))
     }
