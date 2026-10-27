@@ -1,5 +1,5 @@
 /**
- * Live-DB proof for db/migrations/PENDING_profiles_email_sync.sql — profiles.email follows a confirmed
+ * Live-DB proof for db/migrations/20261027215609_profiles_email_sync.sql — profiles.email follows a confirmed
  * auth.users.email change (trigger on_auth_user_email_changed → sync_profile_email()).
  *
  * The confirmed change is driven through the Auth admin API (updateUserById with email_confirm), which
