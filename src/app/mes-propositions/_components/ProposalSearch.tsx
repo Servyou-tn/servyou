@@ -11,6 +11,8 @@ const ROUTE = '/mes-propositions'
 // The filter bar's search Input — Figma 298:9171 (w 372, h 44, icon-search 18, « Rechercher une mission ou un client... »), the H8
 // control on another route. Submitting writes `?q=`, keeping tab and sort and dropping `page`. The match itself runs server-side
 // over the loaded proposals (matchesProposalQuery). The default tab is « Toutes », so a search never needs to widen it.
+// The placeholder is 14 px below `sm` (the typed text stays 16 px — iOS zooms a focused input under 16): « Rechercher une mission ou un
+// client... » did not fit a 343 px field and clipped; `truncate` is the net for longer Arabic copy.
 export function ProposalSearch({ q, lang }: { q: string; lang: Lang }) {
   const router = useRouter()
   const sp = useSearchParams()
@@ -34,7 +36,7 @@ export function ProposalSearch({ q, lang }: { q: string; lang: Lang }) {
           onChange={(e) => setQuery(e.target.value)}
           aria-label={t('propositions.search_placeholder', lang)}
           placeholder={t('propositions.search_placeholder', lang)}
-          className="w-full min-w-0 bg-transparent text-body text-text-primary outline-none placeholder:text-text-muted"
+          className="w-full min-w-0 truncate bg-transparent text-body text-text-primary outline-none placeholder:text-body-sm placeholder:text-text-muted sm:placeholder:text-body"
         />
       </div>
     </form>

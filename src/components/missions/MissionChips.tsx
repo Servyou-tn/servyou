@@ -11,7 +11,7 @@ export function CategoryChip({ slug, nameFr, nameAr, lang }: { slug: string | nu
   if (!name) return null
   const Icon = (slug && CATEGORY_ICONS[slug]) || Wrench
   return (
-    <span className="inline-flex min-w-0 items-center gap-1 rounded-md bg-brand-blue-50 px-3 py-1 text-body-sm font-medium text-brand-blue-700">
+    <span className="inline-flex min-w-0 max-w-full items-center gap-1 rounded-md bg-brand-blue-50 px-3 py-1 text-body-sm font-medium text-brand-blue-700">
       <Icon className="size-3.5 shrink-0 text-brand-blue-600" aria-hidden="true" />
       <span className="truncate">{name}</span>
     </span>
