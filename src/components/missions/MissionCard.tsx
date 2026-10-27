@@ -25,7 +25,7 @@ export function MissionCard({ mission, lang }: { mission: MissionSummary; lang: 
 
   return (
     <article className="relative flex h-full flex-col gap-3 rounded-xl border border-border-subtle bg-surface-base p-5 transition-[border-color,box-shadow] focus-within:border-brand-blue-600 hover:border-brand-blue-600 hover:shadow-xs">
-      <div className="flex items-center justify-between gap-2">
+      <div className="flex flex-wrap items-center justify-between gap-2">
         <CategoryChip slug={mission.categorySlug} nameFr={mission.categoryNameFr} nameAr={mission.categoryNameAr} lang={lang} />
         {mission.isNew ? <NewChip lang={lang} /> : null}
       </div>
