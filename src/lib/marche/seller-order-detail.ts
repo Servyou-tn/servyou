@@ -149,8 +149,8 @@ function one<T>(embed: T | T[] | null | undefined): T | null {
  * this user does not sell — all the same not-found state, so the response cannot be used to probe
  * whether an order id exists.
  *
- * A failed QUERY is also null by default (G9 relies on it for a malformed uuid → 22P02); pass `strict` to throw on
- * it instead.
+ * A malformed uuid (22P02) and « no row » are null (G9 relies on it). Any OTHER failed query THROWS for every
+ * caller (loader-error-surfacing plan); `strict` is therefore a no-op, kept so H8's caller keeps compiling.
  */
 export const getSellerOrderDetail = cache(
   async (orderId: string, sellerId: string, strict = false): Promise<SellerOrderDetail | null> => {

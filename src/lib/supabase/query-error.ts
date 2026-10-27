@@ -51,12 +51,14 @@ export function failQuery(where: string, err: ErrorLike | Error): never {
   throw new QueryError(where, f.message, f.code)
 }
 
+function sendToSentry(where: string, message: string, code?: string): void {
+  Sentry.captureException(new Error(message), { tags: code ? { where, code } : { where } })
+}
+
 /** Deliberate partial-data display: log and send the message + code (no details/hint) to Sentry. */
 export function reportQueryError(where: string, err: ErrorLike | Error): void {
   const f = logQueryError(where, err)
-  Sentry.captureException(new Error(`${where}: ${f.message}`), {
-    tags: f.code ? { where, code: f.code } : { where },
-  })
+  sendToSentry(where, `${where}: ${f.message}`, f.code)
 }
 
 // 22P02 = invalid_text_representation (a junk uuid in the URL); PGRST116 = no row from .single().
@@ -78,7 +80,9 @@ export async function settle<T>(where: string, promise: Promise<T>): Promise<Set
     return { ok: true, data: await promise }
   } catch (e) {
     if (e instanceof QueryError) {
-      reportQueryError(where, e)
+      // failQuery already logged it (details included) and the message already names the loader, so
+      // this only reports: no second log line, no doubled « where: where: » prefix. `where` is the tag.
+      sendToSentry(where, e.message, e.code)
       return { ok: false }
     }
     throw e

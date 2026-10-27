@@ -89,6 +89,9 @@ describe('settle', () => {
     expect(await settle('outer', failing)).toEqual({ ok: false })
     expect(sentry.captureException).toHaveBeenCalledTimes(1)
     expect(sentry.captureException.mock.calls[0][1]).toEqual({ tags: { where: 'outer', code: 'PGRST201' } })
+    // The title is the QueryError's own message (no doubled prefix) and the line was logged once, by failQuery.
+    expect((sentry.captureException.mock.calls[0][0] as Error).message).toBe('inner: boom')
+    expect(log).toHaveBeenCalledTimes(1)
   })
 
   it('re-throws anything that is not a QueryError (notFound / redirect / a real bug)', async () => {
