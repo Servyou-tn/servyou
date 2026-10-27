@@ -5189,3 +5189,16 @@ fixtures. `scripts/rls-smoke.mjs` (not a suite, never run) seeds an active produ
 - **Rail scroll position on mobile**: the 7-step rail scrolls sideways below `lg`; it starts at the first stage, so an order that is
   « En livraison » shows its current stage only after a swipe. Scroll the current node into view if it matters.
 - **Buyer-side cancel on Services** is still the frame's (none). Products have it (see docs/design/e3-produits-measurements.md D5).
+
+### Moderated-freelancer read fix (`fix/moderated-freelancer-read`, 2026-10-27) — logged, not fixed
+
+- **MEDIUM — moderation-sheds-by-delete/re-create** (decision D4, above) is still open and is the natural pair of this
+  fix: once the profile is hidden at the RLS layer, the owner can still DELETE and re-INSERT it with `admin_hidden_at` NULL.
+- **LOW — `public_profiles` still exposes name and city of a moderated freelancer** (and of a moderated shop owner). The view
+  is keyed on `profiles`, not on seller moderation; the app's own filters hide the card. Same class as migration 65's shops;
+  decide whether the view should cascade seller moderation.
+- **LOW — cascade depends on `is_published`, which is owner-settable** (MEDIUM item above): the new `service_listings` cascade
+  reads `freelancer_profiles` under its own policy, so an owner who flips `is_published` to false hides their own live
+  listings from anon. Self-inflicted and the same as the app's `freelancer_profiles!inner` reads today; closed by revoking
+  the column grant (that item's fix).
+- **Residual — the `portfolio-media` / avatar buckets are public**: the policy hides URL discovery, not a known file URL.
