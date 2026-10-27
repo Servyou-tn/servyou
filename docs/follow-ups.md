@@ -5200,6 +5200,16 @@ fixtures. `scripts/rls-smoke.mjs` (not a suite, never run) seeds an active produ
   « En livraison » shows its current stage only after a swipe. Scroll the current node into view if it matters.
 - **Buyer-side cancel on Services** is still the frame's (none). Products have it (see docs/design/e3-produits-measurements.md D5).
 
+### H11 Mes propositions (PR-3) — logged, not fixed
+
+- ✅ **Closed by migration 76** (2026-10-27: DELETE policy « Freelancer withdraws own response while the post is open »). Was: **« Retirer » only-while-open is an app rule, not a DB one** (DB role): the `job_responses` DELETE policy is `freelancer_id = auth.uid()` alone, so a
+  direct API call can delete a response on a filled / expired post. Harmless to counters (the -1 trigger still keeps `response_count` right) but it erases
+  the consumer's record of the proposal. A `USING` clause joining `job_posts.status = 'open'` would enforce it.
+- **« Indisponible » pill** (post deleted or moderated, so unreadable to the responder) has no Figma specimen: it is `StatusPill withdrawn` (muted grey)
+  with a new key. The frame's open-post pill is kept as « Ouverte »; switch the label to « En attente » with one key if the founder prefers.
+- **Empty-none and empty-active states** are derived (no frame) and were not eyeballed: the founder's account has 4 proposals, 1 active.
+- **Mobile search placeholder** clips (« …ou un clie ») below ~400 px, the same as H8's.
+
 ### Job-post write guards (`fix/job-posts-write-guards`, migration 76, 2026-10-27) — logged, not fixed
 
 - **MEDIUM — NEXT ITEM (founder, 2026-10-27): a consumer can hard-DELETE an ANSWERED post.** « Consumer deletes own post »

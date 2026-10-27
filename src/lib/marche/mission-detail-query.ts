@@ -4,7 +4,7 @@ import { isUuid } from '@/lib/uuid'
 import { isAnnoncePastExpiry } from '@/lib/marche/annonce-status'
 import { resolveMissionCta, type MissionCtaState } from './mission-cta'
 import { getClientNames, getMyResponseState } from './missions-query'
-import { isNewMission, missionDaysLeft } from './missions'
+import { missionLiveness } from './missions'
 
 // H10 mission detail data layer (docs/design/h9-h13-measurements.md §2). Read-only.
 //
@@ -50,8 +50,10 @@ export type MissionDetail = {
   skills: string[]
   client: { firstName: string; fullName: string; city: string | null; avatarUrl: string | null }
   hidden: boolean
+  /** false unless the post still takes proposals (open, inside the window, not moderated). */
   isNew: boolean
-  daysLeft: number
+  /** null unless the post still takes proposals — no « Expire dans » on a filled / expired one. */
+  daysLeft: number | null
   expired: boolean
   /** null for an admin viewer — read-only, no CTA at all (D10). */
   cta: MissionCtaState | null
@@ -129,6 +131,11 @@ export async function getMissionDetail(id: string, viewer: MissionViewer, now: D
     )
   }
 
+  const liveness = missionLiveness(
+    { status: row.status as 'open' | 'filled' | 'expired' | 'deleted', createdAt: row.created_at, hidden: row.admin_hidden_at != null },
+    now,
+  )
+
   return {
     id: row.id,
     title: row.title,
@@ -145,8 +152,8 @@ export async function getMissionDetail(id: string, viewer: MissionViewer, now: D
     skills: (row.job_post_skills ?? []).map((s) => s.skill),
     client,
     hidden: row.admin_hidden_at != null,
-    isNew: isNewMission(row.created_at, now),
-    daysLeft: missionDaysLeft(row.created_at, now),
+    isNew: liveness.isNew,
+    daysLeft: liveness.daysLeft,
     expired: row.status === 'open' && isAnnoncePastExpiry(row.created_at, now),
     cta,
     activeResponses,

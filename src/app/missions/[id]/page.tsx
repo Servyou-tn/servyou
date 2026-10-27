@@ -93,10 +93,12 @@ export default async function MissionDetailPage({ params }: { params: Promise<{ 
                 {place}
               </li>
             ) : null}
-            <li className="inline-flex items-center gap-1.5">
-              <Clock className="size-4 shrink-0" aria-hidden="true" />
-              {tn('missiondetail.expires', lang, mission.daysLeft)}
-            </li>
+            {mission.daysLeft != null ? (
+              <li className="inline-flex items-center gap-1.5">
+                <Clock className="size-4 shrink-0" aria-hidden="true" />
+                {tn('missiondetail.expires', lang, mission.daysLeft)}
+              </li>
+            ) : null}
           </ul>
         </header>
 
