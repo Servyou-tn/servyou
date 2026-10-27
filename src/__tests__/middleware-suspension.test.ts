@@ -15,7 +15,7 @@
  * unreadable cases pass through untouched.
  */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { NextRequest } from 'next/server'
 import { unstable_doesMiddlewareMatch } from 'next/experimental/testing/server'
 
@@ -67,6 +67,8 @@ describe('matcher — everything but static assets, auth pages and the Sentry tu
     '/authentique',
     '/monitoring-report',
     '/inscriptions',
+    '/maintenance-x',
+    '/a-bientots',
     // A dotted dynamic segment is a page (and a server-action endpoint), not a static file: the
     // extension exclusion covers only where public/ assets live (the root and /brand/).
     '/admin/utilisateurs/x.png',
@@ -96,6 +98,12 @@ describe('matcher — everything but static assets, auth pages and the Sentry tu
     '/nouveau-mot-de-passe',
     '/verifier-email',
     '/auth/signout',
+    // The four K system pages are bounce targets: matching them would loop.
+    '/a-bientot',
+    '/session-expiree',
+    '/session-expiree?next=%2Fmes-commandes',
+    '/compte-suspendu',
+    '/maintenance',
     '/monitoring',
     '/monitoring?o=4500&p=123',
   ])('skips %s', (path) => {
@@ -114,7 +122,7 @@ const passedThrough = (res: Response) => res.headers.get('x-middleware-next') ==
 
 function expectSignedOut(res: Response) {
   expect(res.status).toBe(307)
-  expect(res.headers.get('location')).toBe('http://localhost/connexion?suspended=1')
+  expect(res.headers.get('location')).toBe('http://localhost/compte-suspendu')
   const setCookie = res.headers.get('set-cookie') ?? ''
   expect(setCookie).toContain('sb-xggo-auth-token=;')
   expect(setCookie).toContain('sb-xggo-auth-token.1=;')
@@ -185,5 +193,108 @@ describe('handler', () => {
     expect(passedThrough(await middleware(request('/')))).toBe(true)
     expect(log).toHaveBeenCalledWith('[middleware] suspended_at lookup error:', 'timeout', '57014', null)
     log.mockRestore()
+  })
+})
+
+// K2 — an expired session. Only a present auth cookie + a "session is gone" code + a GET may redirect.
+describe('K2 — expired session', () => {
+  const gone = (code: string) => ({ data: { user: null }, error: { code, status: 400, message: code } })
+
+  function expectExpired(res: Response, next: string | null) {
+    expect(res.status).toBe(307)
+    expect(res.headers.get('location')).toBe(
+      next === null ? 'http://localhost/session-expiree' : `http://localhost/session-expiree?next=${encodeURIComponent(next)}`,
+    )
+    const setCookie = res.headers.get('set-cookie') ?? ''
+    expect(setCookie).toContain('sb-xggo-auth-token=;')
+    expect(setCookie).toContain('sb-xggo-auth-token.1=;')
+    expect(setCookie).not.toContain('lang=')
+  }
+
+  const html = { accept: 'text/html,application/xhtml+xml' }
+
+  it.each([
+    'session_expired',
+    'session_not_found',
+    'refresh_token_not_found',
+    'bad_jwt',
+    'user_not_found',
+  ])('redirects a GET navigation with an auth cookie on %s, clearing the cookies and keeping the page', async (code) => {
+    h.getUser.mockResolvedValue(gone(code))
+    expectExpired(await middleware(request('/mes-commandes?tab=2', { headers: html })), '/mes-commandes?tab=2')
+  })
+
+  it('also redirects an RSC navigation fetch', async () => {
+    h.getUser.mockResolvedValue(gone('session_expired'))
+    expectExpired(await middleware(request('/mes-commandes', { headers: { rsc: '1', accept: 'text/x-component' } })), '/mes-commandes')
+  })
+
+  it('omits ?next= for the home page', async () => {
+    h.getUser.mockResolvedValue(gone('session_expired'))
+    expectExpired(await middleware(request('/', { headers: html })), null)
+  })
+
+  it('does NOT treat refresh_token_already_used as a gone session (the discarded rotation can cause it)', async () => {
+    h.getUser.mockResolvedValue(gone('refresh_token_already_used'))
+    expect(passedThrough(await middleware(request('/mes-commandes', { headers: html })))).toBe(true)
+  })
+
+  it('leaves a non-navigation GET (a JSON fetch) alone', async () => {
+    h.getUser.mockResolvedValue(gone('session_expired'))
+    expect(passedThrough(await middleware(request('/mes-commandes', { headers: { accept: 'application/json' } })))).toBe(true)
+  })
+
+  it('passes an anonymous visitor with NO auth cookie through, whatever the code', async () => {
+    h.getUser.mockResolvedValue(gone('session_expired'))
+    const res = await middleware(request('/mes-commandes', { headers: { cookie: 'lang=ar', accept: 'text/html' } }))
+    expect(passedThrough(res)).toBe(true)
+  })
+
+  it('does not treat the PKCE code-verifier cookie as a session', async () => {
+    h.getUser.mockResolvedValue(gone('session_not_found'))
+    const res = await middleware(request('/mes-commandes', { headers: { cookie: 'sb-xggo-auth-token-code-verifier=zzz', accept: 'text/html' } }))
+    expect(passedThrough(res)).toBe(true)
+  })
+
+  it('passes through on an error that is not a gone session (an auth outage must not log everyone out)', async () => {
+    h.getUser.mockResolvedValue({ data: { user: null }, error: { name: 'AuthRetryableFetchError', status: 0, message: 'fetch failed' } })
+    expect(passedThrough(await middleware(request('/mes-commandes', { headers: { accept: 'text/html' } })))).toBe(true)
+    h.getUser.mockResolvedValue(gone('over_request_rate_limit'))
+    expect(passedThrough(await middleware(request('/mes-commandes', { headers: { accept: 'text/html' } })))).toBe(true)
+  })
+
+  it('never redirects a POST (a server action fails its own auth check)', async () => {
+    h.getUser.mockResolvedValue(gone('session_expired'))
+    expect(passedThrough(await middleware(request('/mes-commandes', { method: 'POST' })))).toBe(true)
+  })
+})
+
+// K4 — MAINTENANCE_MODE=1 short-circuits before any auth call.
+describe('K4 — maintenance mode', () => {
+  beforeEach(() => {
+    vi.stubEnv('MAINTENANCE_MODE', '1')
+  })
+  afterEach(() => {
+    vi.unstubAllEnvs()
+  })
+
+  it('redirects a GET to /maintenance without calling Auth', async () => {
+    const res = await middleware(request('/marche/produits'))
+    expect(res.status).toBe(307)
+    expect(res.headers.get('location')).toBe('http://localhost/maintenance')
+    expect(h.getUser).not.toHaveBeenCalled()
+  })
+
+  it('answers any other method 503 with Retry-After', async () => {
+    const res = await middleware(request('/mes-commandes', { method: 'POST' }))
+    expect(res.status).toBe(503)
+    expect(res.headers.get('retry-after')).toBe('300')
+    expect(h.getUser).not.toHaveBeenCalled()
+  })
+
+  it.each(['0', '', 'true'])('is off for MAINTENANCE_MODE=%j (only the literal 1 turns it on)', async (value) => {
+    vi.stubEnv('MAINTENANCE_MODE', value)
+    h.getUser.mockResolvedValue({ data: { user: null }, error: { name: 'AuthSessionMissingError', status: 400 } })
+    expect(passedThrough(await middleware(request('/marche/produits')))).toBe(true)
   })
 })

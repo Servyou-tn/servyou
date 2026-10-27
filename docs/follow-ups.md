@@ -5200,6 +5200,47 @@ fixtures. `scripts/rls-smoke.mjs` (not a suite, never run) seeds an active produ
   « En livraison » shows its current stage only after a swipe. Scroll the current node into view if it matters.
 - **Buyer-side cancel on Services** is still the frame's (none). Products have it (see docs/design/e3-produits-measurements.md D5).
 
+### I1 « Mon compte » + K1–K4 — logged, not fixed (feat/i1-mon-compte)
+
+Ranked.
+
+1. **MEDIUM (db-guardian) — `auth.users.email` → `profiles.email` has no sync trigger** (only `on_auth_user_created`, INSERT).
+   Email is read-only on I1 for that reason (architect ruling 2). Self-service email change needs the trigger first; until then the
+   export modal and the admin pages read `profiles.email`.
+2. **✅ CONFIRMED (founder, 2026-10-27) — Email provider: « Secure password change » = OFF, « Require current password when
+   updating » = OFF**, both kept off for now. `changePasswordAction` re-authenticates with `signInWithPassword` before
+   `updateUser`, so it is correct under either setting. See item 12 for the pre-launch evaluation of turning the second one on.
+3. **LOW — open-orders warning is informational.** A hard block on deletion with open orders is a business rule and would need a
+   database trigger (CLAUDE.md « every business rule enforced in the DB »). Deletion stays an admin-processed request.
+4. **LOW — K4 maintenance flag is an env var**, so toggling needs a Vercel redeploy; the auth pages stay reachable (outside the
+   matcher) and a signed-in user is sent to /maintenance on their next navigation. A DB/edge-config flag is the alternative.
+5. **LOW — K4 social line** (muted « Facebook » text under the card, Figma 731:64476, derived) is not built: no Facebook URL exists
+   in the codebase.
+6. **LOW — K1/K2/K4 copy and the I1 delete modal are derived** (Figma reads were capped at 4; the modal frame 728:64303 rendered
+   empty). Arabic strings are drafts: grep `REVIEW_AR_TRANSLATION` in `src/lib/i18n/ar.ts`.
+7. **LOW — legacy `monCompte.delete.confirmPrompt` / `confirmWord` and `placeholders.comingSoon.account` keys are unused** now.
+8. **LOW — middleware `?next=` is built from `nextUrl.search`**: confirm in a browser that `_rsc` is not carried into the K2
+   `next` for an RSC navigation (not verified; the K2 page only forwards same-site paths either way).
+9. **LOW — `+216` prefix order in AR** (I1 phone, same markup as `ServiceRequestForm`): the prefix is a flex sibling of the
+   `dir="ltr"` input, so in a RTL container it sits on the right of the digits. A shared `Input` fix, not an I1-only one.
+10. **LOW — `ModalShell` focus restore**: the opener is read from `document.activeElement`; on Safari a clicked button is not
+    focused, and after a delete request the opener becomes the disabled « pending » button. Pass a trigger ref if it matters.
+11. **LOW — maintenance mode specifics**: prefetches return before the flag check; `/connexion` and `/auth/*` stay reachable
+    (outside the matcher); `/maintenance` answers 200 after a 307, so an uptime monitor reads « up »; admins are redirected too.
+12. **PRE-LAUNCH (MEDIUM) — evaluate « Require current password when updating » = ON, without breaking recovery.** Today it is
+    OFF and our own action is the only guard (`signInWithPassword` with the session user's email, then `updateUser`, then
+    `signOut({ scope: 'others' })`). Turning it on makes GoTrue enforce it server-side, so a stolen session cannot change the
+    password through the API directly. The risk: the **recovery flow** (`/mot-de-passe-oublie` → email link →
+    `/nouveau-mot-de-passe`, `NewPasswordForm`) calls `updateUser({ password })` from a recovery session with NO current
+    password, and must keep working. To do, in this order, on a throwaway fixture user (not a real account):
+    (a) with the setting still OFF, record the recovery flow end to end (request → link → set a new password → sign in);
+    (b) turn it ON and run **both** flows: recovery must still succeed (GoTrue is expected to waive the requirement for a
+    recovery/reauthenticated session, but that is unverified for this project's version), and I1's change must pass
+    `current_password` to `updateUser` — add it to `changePasswordAction` (it already holds the verified value) so the two
+    guards agree; (c) if recovery breaks, turn it back OFF and keep the app-level guard as the only one; (d) also re-test with
+    « Secure password change » ON, which asks for a fresh sign-in or a reauthentication nonce on the same call. Only enable in
+    production after (a)–(d) pass; the I1 unit tests in `src/app/mon-compte/actions.test.ts` need the extra argument asserted.
+
 ### H11 Mes propositions (PR-3) — logged, not fixed
 
 - ✅ **Closed by migration 76** (2026-10-27: DELETE policy « Freelancer withdraws own response while the post is open »). Was: **« Retirer » only-while-open is an app rule, not a DB one** (DB role): the `job_responses` DELETE policy is `freelancer_id = auth.uid()` alone, so a
