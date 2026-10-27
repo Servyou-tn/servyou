@@ -4986,6 +4986,10 @@ returns `[]`, i.e. a silent empty list — the rule is to surface the error.
 
 ### LOW — consumers can still set `job_posts.status`, and edit the content, freely through REST
 
+- ✅ **Closed by migration 76** (`20261027203831_job_posts_write_guards`, 2026-10-27): status transitions, content
+  lock and `job_post_skills` lock once answered. The hard-DELETE half is open — see « Consumer hard-DELETE of an answered
+  post » below.
+
 - `status` stays column-granted (createAnnonce inserts it; mark-filled / reopen / delete update it), and only the
   CHECK (`open`, `filled`, `expired`, `deleted`) constrains it — no transition guard. On their own posts a
   consumer can un-delete (`deleted` → `open`), reopen past 30 days (the expiry check is app-only, in
@@ -5090,6 +5094,9 @@ cancel-metadata lock) are the same batch, not follow-ups.
 
 ### LOW — an admin who is a PARTY to an order can still rewrite its lifecycle columns
 
+- ✅ **Closed by migration 76** (2026-10-27): the `is_admin()` override is gone from `check_order_status_transition`
+  (9a), and a JWT INSERT discards the cancel columns unless at `cancelled`, where `cancelled_at` is `now()` (10).
+
 - **Found by** the post-apply review of migration 66. `check_order_status_transition` opens with
   `IF is_admin() THEN RETURN NEW`, so an admin who is the buyer or seller of an order can leave a terminal
   state (`cancelled → pending → cancelled`, `received → arrived → received`). Each re-entry is a fresh
@@ -5192,3 +5199,13 @@ fixtures. `scripts/rls-smoke.mjs` (not a suite, never run) seeds an active produ
 - **Rail scroll position on mobile**: the 7-step rail scrolls sideways below `lg`; it starts at the first stage, so an order that is
   « En livraison » shows its current stage only after a swipe. Scroll the current node into view if it matters.
 - **Buyer-side cancel on Services** is still the frame's (none). Products have it (see docs/design/e3-produits-measurements.md D5).
+
+### Job-post write guards (`fix/job-posts-write-guards`, migration 76, 2026-10-27) — logged, not fixed
+
+- **MEDIUM — NEXT ITEM (founder, 2026-10-27): a consumer can hard-DELETE an ANSWERED post.** « Consumer deletes own post »
+  is `consumer_id = auth.uid()` and `job_responses.job_post_id` is ON DELETE CASCADE, so one REST DELETE erases every
+  freelancer's proposal (and the app only ever soft-deletes). Proposal to follow.
+- **LOW — a responder can still add / remove `job_response_skills` after the post closes** (insert / delete policies check
+  only response ownership). Same shape as the job_responses withdrawal window: gate both on the post being open.
+- **Note — no status data-fix path on orders** (9a): neither an admin nor the service role can move an order's status
+  through the API now; a correction needs a migration.

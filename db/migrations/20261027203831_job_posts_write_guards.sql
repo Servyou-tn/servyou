@@ -161,102 +161,23 @@ comment on policy "Freelancer withdraws own response while the post is open" on 
   'Own response, and only while its post is open, not moderated and within 30 days (the app rule of H11 « Retirer », PR #211). Replaced "Freelancer deletes own response" (freelancer_id = auth.uid(), PUBLIC), 2026-10-27. anon holds no DELETE grant.';
 
 -- ─── 4. orders: no admin override for a party (decision 9a) ────────────────────────────────────
--- Same body as live, minus the leading `IF is_admin() THEN RETURN NEW; END IF;`. An admin who is the
--- buyer or seller now follows the same chain as anyone. Nobody else is affected: orders has no admin
--- UPDATE policy, the service role was already refused any status change (v_caller is null), and no
--- function updates orders. Consequence: no status data-fix path exists; a fix needs a migration.
-create or replace function public.check_order_status_transition()
- returns trigger
- language plpgsql
- security definer
- set search_path to 'public'
-as $function$
-DECLARE
-  v_caller      uuid := auth.uid();
-  v_caller_role text;
-BEGIN
-  -- Non-status edits sail through (buyer_note, delivery_phone, etc.)
-  IF NEW.status IS NOT DISTINCT FROM OLD.status THEN
-    RETURN NEW;
-  END IF;
-
-  -- Resolve caller role on this order
-  IF v_caller = OLD.buyer_id THEN
-    v_caller_role := 'buyer';
-  ELSIF v_caller = OLD.seller_id THEN
-    v_caller_role := 'seller';
-  ELSE
-    RAISE EXCEPTION 'Vous n''êtes pas autorisé à modifier cette commande.';
-  END IF;
-
-  -- Terminal states cannot be transitioned out of
-  IF OLD.status IN ('received', 'cancelled') THEN
-    RAISE EXCEPTION 'Cette commande est terminée et ne peut plus être modifiée.';
-  END IF;
-
-  -- Cancellation path
-  IF NEW.status = 'cancelled' THEN
-    IF NEW.cancelled_by IS NULL THEN
-      RAISE EXCEPTION 'L''annulation doit indiquer son auteur.';
-    END IF;
-    IF NEW.cancelled_by <> v_caller_role THEN
-      RAISE EXCEPTION 'cancelled_by doit correspondre à votre rôle (% attendu).', v_caller_role;
-    END IF;
-    -- Post-pivot cancellation requires a reason
-    IF OLD.order_type = 'product'
-       AND OLD.status IN ('dispatched', 'in_delivery', 'arrived')
-       AND (NEW.cancellation_reason IS NULL OR btrim(NEW.cancellation_reason) = '') THEN
-      RAISE EXCEPTION 'Une raison d''annulation est requise après l''expédition.';
-    END IF;
-    IF OLD.order_type = 'service'
-       AND OLD.status IN ('accepted', 'arrived')
-       AND (NEW.cancellation_reason IS NULL OR btrim(NEW.cancellation_reason) = '') THEN
-      RAISE EXCEPTION 'Une raison d''annulation est requise après l''acceptation.';
-    END IF;
-    RETURN NEW;
-  END IF;
-
-  -- Buyer-only: received (from arrived)
-  IF NEW.status = 'received' THEN
-    IF v_caller_role <> 'buyer' THEN
-      RAISE EXCEPTION 'Seul l''acheteur peut confirmer la réception.';
-    END IF;
-    IF OLD.status <> 'arrived' THEN
-      RAISE EXCEPTION 'La réception ne peut être confirmée qu''après l''arrivée.';
-    END IF;
-    RETURN NEW;
-  END IF;
-
-  -- All remaining transitions are seller-only chain advancement
-  IF v_caller_role <> 'seller' THEN
-    RAISE EXCEPTION 'Seul le vendeur peut faire avancer la commande.';
-  END IF;
-
-  -- Per-order-type adjacent-transition validation
-  IF OLD.order_type = 'product' THEN
-    IF NOT (
-      (OLD.status = 'pending'     AND NEW.status = 'accepted')    OR
-      (OLD.status = 'accepted'    AND NEW.status = 'prepared')    OR
-      (OLD.status = 'prepared'    AND NEW.status = 'dispatched')  OR
-      (OLD.status = 'dispatched'  AND NEW.status = 'in_delivery') OR
-      (OLD.status = 'in_delivery' AND NEW.status = 'arrived')
-    ) THEN
-      RAISE EXCEPTION 'Transition invalide pour une commande produit: % → %.',
-        OLD.status, NEW.status;
-    END IF;
-  ELSIF OLD.order_type = 'service' THEN
-    IF NOT (
-      (OLD.status = 'pending'  AND NEW.status = 'accepted') OR
-      (OLD.status = 'accepted' AND NEW.status = 'arrived')
-    ) THEN
-      RAISE EXCEPTION 'Transition invalide pour une commande service: % → %.',
-        OLD.status, NEW.status;
-    END IF;
-  END IF;
-
-  RETURN NEW;
-END;
-$function$;
+-- An admin who is the buyer or seller now follows the same chain as anyone. Nobody else is affected:
+-- orders has no admin UPDATE policy, the service role was already refused any status change (v_caller is
+-- null), and no function updates orders. Consequence: no status data-fix path exists; a fix needs a
+-- migration.
+-- 9a: re-create check_order_status_transition from its live definition with ONLY the admin-override block
+-- removed (architect applied it this way so the French messages and arrows stay byte-identical).
+do $do$
+declare
+  v_def text := pg_get_functiondef('public.check_order_status_transition()'::regprocedure);
+  v_block text := E'  -- Admin override: data fixes always allowed\n  IF is_admin() THEN\n    RETURN NEW;\n  END IF;\n\n';
+begin
+  if position(v_block in v_def) = 0 then
+    raise exception 'admin override block not found -- live definition changed, aborting';
+  end if;
+  execute replace(v_def, v_block, '');
+end
+$do$;
 
 -- ─── 5. orders: JWT-INSERT cancel-column guard (follow-up of migration 66) ─────────────────────
 -- Same body as live, plus the INSERT branch's cancel columns. For a JWT caller (in practice only an
@@ -329,12 +250,10 @@ $function$;
 -- create policy "Freelancer deletes own response" on public.job_responses for delete
 --   using (freelancer_id = auth.uid());
 --
--- check_order_status_transition: re-create with the live body of migration 20260606155746 (as dumped
--- 2026-10-27), i.e. the body in section 4 with this block restored right after BEGIN:
---   -- Admin override: data fixes always allowed
---   IF is_admin() THEN
---     RETURN NEW;
---   END IF;
+-- check_order_status_transition: the inverse DO block -- re-create from pg_get_functiondef() with this
+-- block re-inserted right after `BEGIN\n` (the exact text section 4 removed):
+--   E'  -- Admin override: data fixes always allowed\n  IF is_admin() THEN\n    RETURN NEW;\n  END IF;\n\n'
+--   e.g. execute replace(v_def, E'BEGIN\n', E'BEGIN\n' || v_block)  -- BEGIN occurs once in the body.
 --
 -- enforce_order_lifecycle_columns: re-create with migration 20261025222218's body, i.e. the body in
 -- section 5 without the `if not v_system then ... end if;` block inside the INSERT branch.

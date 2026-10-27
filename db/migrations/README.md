@@ -667,6 +667,35 @@ this PR and is not attempted here.
     (live-DB) plus a production upload smoke. Rollback (the four policies' exact definitions) is at the
     bottom of the file.
 
+76. **20261027203831_job_posts_write_guards** — Applied by the architect 2026-10-27 (recorded
+    version; executable SQL MD5-verified against `schema_migrations`, comments and whitespace
+    stripped: `04ccda44`). Post-apply proof (architect, rolled back, on a live post with
+    `response_count` 1): owner budget edit → 42501 `content_locked`; owner → `expired` → 42501
+    `invalid_transition`; open → filled → open passes; the responder's withdrawal while open → 1 row;
+    `check_order_status_transition` no longer contains `is_admin()` and keeps its messages and arrows.
+    Founder decisions 4–8, 9a and 10 (2026-10-27). JWT callers only (admins included); no-JWT callers
+    bypass; no row rewritten. **`job_posts`:** `enforce_job_post_writes()` + `trg_enforce_job_post_writes`
+    (BEFORE INSERT OR UPDATE): INSERT only at `open` (42501 `invalid_status`); `deleted` is terminal
+    (42501 `job_deleted`); open / filled / expired → deleted always; open ↔ filled only while
+    `created_at` is within 30 days (23514 `job_expired`); anything into or out of `expired` 42501
+    `invalid_transition`; once `response_count > 0` the 8 content columns are frozen (42501
+    `content_locked`). **`job_post_skills`:** `enforce_job_post_skills_lock()` + trigger (BEFORE INSERT OR
+    DELETE): `content_locked` once the post has a response; a cascade from a post delete passes (parent
+    already gone). **`job_responses`:** DELETE policy « Freelancer withdraws own response while the post
+    is open » TO authenticated — own response, post open, not moderated, within 30 days (the rule of H11
+    « Retirer », PR #211); otherwise a silent 0-row DELETE. Replaced « Freelancer deletes own response ».
+    **`orders` (9a):** `check_order_status_transition` re-created **by a DO block** from
+    `pg_get_functiondef()` with only the « Admin override » block removed (it raises if the live text
+    differs), so every other byte is unchanged; an admin who is a party now follows the normal chain, and
+    no status data-fix path remains. **`orders` (10):** `enforce_order_lifecycle_columns` — on a JWT INSERT
+    not at `cancelled` the cancel columns are discarded; at `cancelled`, `cancelled_at` is `now()`. Both
+    new functions: SECURITY DEFINER, `search_path ''`, no client EXECUTE. Live at apply: 4 posts became
+    content-locked; 5 open posts older than 30 days can now only be deleted; 3 of 4 responses are no
+    longer withdrawable. **Not covered (logged):** a consumer can still hard-DELETE an answered post
+    (« Consumer deletes own post »), cascading its responses away; a responder can still edit
+    `job_response_skills` after the post closes. No type change. Verified by
+    `src/__tests__/job-posts-write-guards.test.ts` (live-DB). Rollback at the bottom of the file.
+
 ## Rollback paths
 
 Each migration in this folder represents work that has already been applied to production. Rollback is therefore reverse migration work, not file deletion. If a rollback is ever needed, write a new dated migration that reverses the relevant changes — never delete history from this folder.
