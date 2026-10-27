@@ -78,3 +78,6 @@ next-env.d.ts
 # H6 Figma reference screenshots (get_design_context renders) — kept local, founder ruling 2026-10-23;
 # the measurements themselves are committed in docs/design/h6-measurements.md.
 docs/design/h6-figma/
+
+# prelaunch-cleanup targets — real account emails; never commit (the repo is public)
+scripts/cleanup/*.local.json
