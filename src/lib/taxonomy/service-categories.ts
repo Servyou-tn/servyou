@@ -183,7 +183,7 @@ export const serviceCategories: ServiceSector[] = [
       { id: 'charte-graphique', labelFr: 'charte graphique', labelAr: 'دليل الهوية البصرية' },
       { id: 'typographie', labelFr: 'typographie', labelAr: 'التيبوغرافيا' }, // REVIEW_AR_TRANSLATION: loanword vs "فن الطباعة"
       { id: 'retouche', labelFr: 'retouche', labelAr: 'تعديل الصور' },
-      { id: 'vectorisation', labelFr: 'vectorisation', labelAr: 'الرسم المتّجه' }, // REVIEW_AR_TRANSLATION
+      { id: 'vectorisation', labelFr: 'vectorisation', labelAr: 'الرسم المتجه' }, // REVIEW_AR_TRANSLATION
       { id: 'print', labelFr: 'print', labelAr: 'الطباعة' },
       { id: 'flyer', labelFr: 'flyer', labelAr: 'منشور' },
       { id: 'packaging', labelFr: 'packaging', labelAr: 'التغليف' },
@@ -202,7 +202,7 @@ export const serviceCategories: ServiceSector[] = [
       { id: 'maquette-application-mobile', labelFr: 'Maquette application mobile', labelAr: 'نموذج تطبيق موبايل' },
       { id: 'wireframe-prototype-interactif', labelFr: 'Wireframe & prototype interactif', labelAr: 'مخطط هيكلي ونموذج أولي تفاعلي' }, // REVIEW_AR_TRANSLATION
       { id: 'audit-ux-recommandations', labelFr: 'Audit UX & recommandations', labelAr: 'تدقيق تجربة المستخدم وتوصيات' }, // REVIEW_AR_TRANSLATION
-      { id: 'design-system-composants', labelFr: 'Design system & composants', labelAr: 'نظام التصميم والمكوّنات' }, // REVIEW_AR_TRANSLATION
+      { id: 'design-system-composants', labelFr: 'Design system & composants', labelAr: 'نظام التصميم والمكونات' }, // REVIEW_AR_TRANSLATION
       { id: 'refonte-dinterface-existante', labelFr: "Refonte d'interface existante", labelAr: 'إعادة تصميم واجهة قائمة' }, // REVIEW_AR_TRANSLATION
     ],
     skills: [
@@ -310,9 +310,9 @@ export const serviceCategories: ServiceSector[] = [
     skills: [
       { id: 'redaction-web', labelFr: 'rédaction web', labelAr: 'الكتابة للويب' },
       { id: 'copywriting', labelFr: 'copywriting', labelAr: 'الكتابة الإعلانية' }, // REVIEW_AR_TRANSLATION: same AR as marketing-digital's `copywriting-publicitaire`
-      { id: 'seo-writing', labelFr: 'SEO writing', labelAr: 'الكتابة المحسّنة لمحركات البحث' }, // REVIEW_AR_TRANSLATION
+      { id: 'seo-writing', labelFr: 'SEO writing', labelAr: 'الكتابة المحسنة لمحركات البحث' }, // REVIEW_AR_TRANSLATION
       { id: 'article', labelFr: 'article', labelAr: 'مقال' },
-      { id: 'blog', labelFr: 'blog', labelAr: 'مدوّنة' },
+      { id: 'blog', labelFr: 'blog', labelAr: 'مدونة' },
       { id: 'storytelling', labelFr: 'storytelling', labelAr: 'السرد القصصي' },
       { id: 'correction', labelFr: 'correction', labelAr: 'التصحيح' },
       { id: 'relecture', labelFr: 'relecture', labelAr: 'المراجعة' },

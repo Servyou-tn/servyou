@@ -12,6 +12,8 @@ const ROUTE = '/mes-engagements'
 // 18, « Rechercher un client ou service… », no label and no helper). Submitting writes `?q=`, keeping the
 // tab and the sort (buildSearchQuery) and dropping `page` — a new result set starts at page 1. The match
 // itself is done server-side over the freelancer's loaded engagements (matchesEngagementQuery).
+// The placeholder is 14 px below `sm` (the typed text stays 16 px — iOS zooms a focused input under 16): « Rechercher une mission ou un
+// client... » did not fit a 343 px field and clipped; `truncate` is the net for longer Arabic copy.
 export function EngagementSearch({ q, lang }: { q: string; lang: Lang }) {
   const router = useRouter()
   const sp = useSearchParams()
@@ -39,7 +41,7 @@ export function EngagementSearch({ q, lang }: { q: string; lang: Lang }) {
           onChange={(e) => setQuery(e.target.value)}
           aria-label={t('engagements.search_placeholder', lang)}
           placeholder={t('engagements.search_placeholder', lang)}
-          className="w-full min-w-0 bg-transparent text-body text-text-primary outline-none placeholder:text-text-muted"
+          className="w-full min-w-0 truncate bg-transparent text-body text-text-primary outline-none placeholder:text-body-sm placeholder:text-text-muted sm:placeholder:text-body"
         />
       </div>
     </form>

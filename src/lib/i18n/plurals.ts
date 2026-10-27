@@ -102,7 +102,7 @@ const frPlurals: Record<string, PluralVariants> = {
 
 const arPlurals: Record<string, PluralVariants> = {
   'mesannonces.count':                     { one: '{count} إعلان', two: '{count} إعلانان', other: '{count} إعلانات' },
-  'mesfavoris.count':                      { one: '{count} مفضّلة', two: '{count} مفضّلتان', other: '{count} مفضّلات' },
+  'mesfavoris.count':                      { one: '{count} مفضلة', two: '{count} مفضلتان', other: '{count} مفضلات' },
 
   'page_header.recherche.subtitle':        {
     one:   '{count} نتيجة عن « {query} »',
@@ -139,13 +139,13 @@ const arPlurals: Record<string, PluralVariants> = {
   'missiondetail.expires_value':           { one: '{count} يوم', two: '{count} يومين', other: '{count} أيام' },
   'proposal.form.skills_selected':         { one: 'تم اختيار {count} مهارة', two: 'تم اختيار {count} مهارتين', other: 'تم اختيار {count} مهارات' },
   'annonce.form.skills_selected':          { one: '{count} مهارة', two: '{count} مهارتان', other: '{count} مهارات' },
-  'proposal.sent.step3':                   { one: 'ردّ {count} مستقل آخر على هذه المهمة.', two: 'ردّ {count} مستقلان آخران على هذه المهمة.', other: 'ردّ {count} مستقلين آخرين على هذه المهمة.' },
+  'proposal.sent.step3':                   { one: 'رد {count} مستقل آخر على هذه المهمة.', two: 'رد {count} مستقلان آخران على هذه المهمة.', other: 'رد {count} مستقلين آخرين على هذه المهمة.' },
   // Preceded by "من" (from) → dual takes the oblique form (طلبين, not طلبان). Non-human plural
   // "طلبات" takes feminine-singular adjective agreement ("مُستلَمة", not "مُستلَمين").
   'seller.dashboard.tile.profit_sub':      {
-    one:   'من {count} طلب مُستلَم',
-    two:   'من {count} طلبين مُستلَمين',
-    other: 'من {count} طلبات مُستلَمة',
+    one:   'من {count} طلب مستلم',
+    two:   'من {count} طلبين مستلمين',
+    other: 'من {count} طلبات مستلمة',
   },
 
   // Implied noun is "منتج(ات)" (product/s); adjective agrees with it even though the noun itself
@@ -162,7 +162,7 @@ const arPlurals: Record<string, PluralVariants> = {
 
   // Preceded by "خلال"/"منذ" → dual takes the oblique form (يومين, not يومان).
   'mesannonces.expiry_countdown':          { one: 'تنتهي خلال {count} يوم', two: 'تنتهي خلال {count} يومين', other: 'تنتهي خلال {count} أيام' },
-  'annonces.detail.responded_days_ago':    { one: 'ردّ منذ {count} يوم', two: 'ردّ منذ {count} يومين', other: 'ردّ منذ {count} أيام' },
+  'annonces.detail.responded_days_ago':    { one: 'رد منذ {count} يوم', two: 'رد منذ {count} يومين', other: 'رد منذ {count} أيام' },
 
   // "قيد التنفيذ" (in progress) is an invariant prepositional phrase — it doesn't take number
   // agreement, so only the noun changes across categories.
