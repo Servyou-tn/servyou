@@ -68,7 +68,9 @@ export function EngagementRow({ engagement: e, lang }: { engagement: Engagement;
         <div className="flex min-w-0 items-center gap-3">
           <Avatar size="md" src={e.clientAvatarUrl} name={clientName} initials={getInitials(e.clientName)} />
           <div className="flex min-w-0 flex-col gap-0.5">
-            <p dir="auto" className="truncate text-body font-semibold leading-6 text-text-primary">
+            {/* line-clamp-2, not truncate: at 1280–1440 the client column is 132–200 px and a one-line
+                ellipsis hid most of a real name. Wraps to two lines, ellipsis only past the second. */}
+            <p dir="auto" className="line-clamp-2 break-words text-body font-semibold leading-6 text-text-primary">
               {clientName}
             </p>
             <p className={`flex items-center gap-1 text-caption font-medium ${client.tone}`}>
@@ -90,9 +92,10 @@ export function EngagementRow({ engagement: e, lang }: { engagement: Engagement;
           <CategoryIcon className="size-5 text-brand-blue-300" aria-hidden="true" />
         </span>
         <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-          {/* dir="auto": a French title inside an Arabic row takes its own direction, so it truncates at its END
-              (a <bdi> inside an RTL paragraph clips the HEAD of the string — measured). */}
-          <p dir="auto" className="truncate text-body leading-6 text-text-primary">
+          {/* dir="auto": a French title inside an Arabic row takes its own direction, so it clamps at its END
+              (a <bdi> inside an RTL paragraph clips the HEAD of the string — measured). line-clamp-2: the
+              title wraps to two lines instead of a one-line ellipsis. */}
+          <p dir="auto" className="line-clamp-2 break-words text-body leading-6 text-text-primary">
             {e.title}
           </p>
           {category ? <p className="truncate text-caption font-medium text-text-muted">{category}</p> : null}

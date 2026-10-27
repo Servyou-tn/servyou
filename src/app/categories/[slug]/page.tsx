@@ -89,9 +89,19 @@ export default async function CategoryPage({
         <span className="font-medium text-text-primary">{name}</span>
       </nav>
 
+      {/* The count noun follows the result type: « 1 produit » over services was a wrong label. */}
       <PageHeader
-        subtitle={tn('page_header.categories.subtitle', lang, result.totalCount, { category: name })}
-        emphasisWord={tn('page_header.categories.emphasis', lang, result.totalCount)}
+        subtitle={tn(
+          result.type === 'service' ? 'page_header.categories.subtitle_service' : 'page_header.categories.subtitle',
+          lang,
+          result.totalCount,
+          { category: name },
+        )}
+        emphasisWord={tn(
+          result.type === 'service' ? 'page_header.categories.emphasis_service' : 'page_header.categories.emphasis',
+          lang,
+          result.totalCount,
+        )}
       />
 
       {/* Sub-category drill-down — renders nothing while the taxonomy is flat. */}

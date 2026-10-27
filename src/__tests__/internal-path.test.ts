@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import { isValidInternalPath, resolvePostLoginDestination } from '@/lib/internal-path'
+import { isValidInternalPath, resolvePostLoginDestination, resolveSignInDestination } from '@/lib/internal-path'
+import { accountSpaceHref, roleDashboardPath } from '@/lib/roles'
 
 describe('isValidInternalPath — open-redirect guard', () => {
   it('accepts same-origin absolute paths', () => {
@@ -58,5 +59,65 @@ describe('resolvePostLoginDestination — post-login redirect target', () => {
   })
   it('honours a custom fallback', () => {
     expect(resolvePostLoginDestination('', '/tableau-de-bord-vendeur')).toBe('/tableau-de-bord-vendeur')
+  })
+})
+
+// Role-aware landing after sign-in. A safe ?next= beats the role dashboard for EVERY role (a guard
+// bounced them from a specific page); the open-redirect guard still applies on top of it.
+describe('resolveSignInDestination — role dashboard after sign-in', () => {
+  const freelancer = { seller_type: 'freelancer', is_admin: false }
+  const shopOwner = { seller_type: 'shop_owner', is_admin: false }
+  const consumer = { seller_type: null, is_admin: false }
+
+  it('freelancer → /tableau-de-bord', () => {
+    expect(resolveSignInDestination('', freelancer)).toBe('/tableau-de-bord')
+  })
+  it('shop owner → /tableau-de-bord-vendeur', () => {
+    expect(resolveSignInDestination('', shopOwner)).toBe('/tableau-de-bord-vendeur')
+  })
+  it('consumer keeps "/"', () => {
+    expect(resolveSignInDestination('', consumer)).toBe('/')
+  })
+  it('admin keeps "/", even when also a seller', () => {
+    expect(resolveSignInDestination('', { seller_type: null, is_admin: true })).toBe('/')
+    expect(resolveSignInDestination('', { seller_type: 'freelancer', is_admin: true })).toBe('/')
+    expect(resolveSignInDestination('', { seller_type: 'shop_owner', is_admin: true })).toBe('/')
+  })
+  it('an unreadable profile (null/undefined) falls back to "/" instead of throwing', () => {
+    expect(resolveSignInDestination('', null)).toBe('/')
+    expect(resolveSignInDestination('', undefined)).toBe('/')
+  })
+  it('an unknown seller_type resolves to consumer behaviour', () => {
+    expect(resolveSignInDestination('', { seller_type: 'something_else', is_admin: false })).toBe('/')
+  })
+  it('a safe ?next= wins over the dashboard for every role', () => {
+    const search = '?next=' + encodeURIComponent('/mes-engagements')
+    expect(resolveSignInDestination(search, freelancer)).toBe('/mes-engagements')
+    expect(resolveSignInDestination(search, shopOwner)).toBe('/mes-engagements')
+    expect(resolveSignInDestination(search, consumer)).toBe('/mes-engagements')
+    expect(resolveSignInDestination(search, { seller_type: null, is_admin: true })).toBe('/mes-engagements')
+  })
+  it('an UNSAFE ?next= is ignored and the role dashboard applies (open-redirect guard)', () => {
+    for (const bad of ['//evil.example.com', 'https://evil.example.com', '/\\evil.com']) {
+      const search = '?next=' + encodeURIComponent(bad)
+      expect(resolveSignInDestination(search, freelancer)).toBe('/tableau-de-bord')
+      expect(resolveSignInDestination(search, shopOwner)).toBe('/tableau-de-bord-vendeur')
+      expect(resolveSignInDestination(search, consumer)).toBe('/')
+    }
+  })
+})
+
+describe('roleDashboardPath / accountSpaceHref', () => {
+  it('maps each role to its dashboard', () => {
+    expect(roleDashboardPath('freelancer')).toBe('/tableau-de-bord')
+    expect(roleDashboardPath('shop_owner')).toBe('/tableau-de-bord-vendeur')
+    expect(roleDashboardPath(null)).toBe('/')
+  })
+  it('the header space link: admin wins, then role dashboard, consumers go to the marketplace', () => {
+    expect(accountSpaceHref('freelancer', false)).toBe('/tableau-de-bord')
+    expect(accountSpaceHref('shop_owner', false)).toBe('/tableau-de-bord-vendeur')
+    expect(accountSpaceHref(null, false)).toBe('/marche/produits')
+    expect(accountSpaceHref(null, true)).toBe('/admin')
+    expect(accountSpaceHref('freelancer', true)).toBe('/admin')
   })
 })
