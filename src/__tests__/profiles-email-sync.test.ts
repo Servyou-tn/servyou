@@ -95,7 +95,9 @@ describe.skipIf(!hasCreds)('profiles.email follows auth.users.email', () => {
     expect(await profileEmail(userId)).toBe(RENAMED)
   })
 
-  it('a sign-in (auth.users rewritten, email unchanged) does not touch profiles', async () => {
+  // Proves the observable contract only: profiles is not rewritten on sign-in. It does not isolate the trigger's
+  // WHEN clause — the function's own `email is distinct from` guard would also make that a 0-row no-op.
+  it('a sign-in (auth.users rewritten, email unchanged) leaves profiles unchanged', async () => {
     const { data: before } = await admin.from('profiles').select('updated_at').eq('id', userId).single()
     const client = createClient<Database>(url, anonKey, opts)
     const { error } = await client.auth.signInWithPassword({ email: RENAMED, password: PASSWORD })
