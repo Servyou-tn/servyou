@@ -10,8 +10,10 @@ export const COL = {
   line: 'xl:flex-row xl:items-center xl:max-[1400px]:gap-3 xl:max-[1400px]:px-4 min-[1400px]:gap-4 min-[1400px]:px-6',
   mission: 'xl:min-w-0 xl:flex-1',
   client: 'xl:w-[170px] xl:shrink-0',
-  terms: 'xl:w-[120px] xl:shrink-0',
-  statut: 'xl:w-[120px] xl:shrink-0',
-  sentOn: 'xl:w-[120px] xl:shrink-0',
-  actions: 'xl:w-[207px] xl:shrink-0',
+  // `xl:order-*`: the row's DOM follows the stacked (card) reading order — the pill rides with the mission line — so from xl the
+  // cells are re-ordered to the header's: mission · client · ma proposition · statut · envoyée le · actions.
+  terms: 'xl:order-1 xl:w-[120px] xl:shrink-0',
+  statut: 'xl:order-2 xl:w-[120px] xl:shrink-0',
+  sentOn: 'xl:order-3 xl:w-[120px] xl:shrink-0',
+  actions: 'xl:order-4 xl:w-[207px] xl:shrink-0',
 } as const

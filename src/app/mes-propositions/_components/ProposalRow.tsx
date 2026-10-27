@@ -72,9 +72,16 @@ export function ProposalRow({ proposal: p, lang }: { proposal: Proposal; lang: L
           <p className="text-body leading-6 text-text-muted">—</p>
         ) : (
           <>
-            <p dir="auto" className="line-clamp-2 break-words text-body font-semibold leading-6 text-text-primary">
-              {clientName}
-              {city ? <span className="font-semibold"> · {city}</span> : null}
+            {/* <bdi> around each part, no dir="auto" on the <p>: a Latin first name beside an Arabic city must not flip the whole
+                line's direction or reorder (reference_ar_latin_adjacency_bidi). */}
+            <p className="line-clamp-2 break-words text-body font-semibold leading-6 text-text-primary">
+              <bdi>{clientName}</bdi>
+              {city ? (
+                <>
+                  {' · '}
+                  <bdi>{city}</bdi>
+                </>
+              ) : null}
             </p>
             <p className="flex items-center gap-1 text-caption font-medium text-text-secondary">
               <User className="size-4 shrink-0" aria-hidden="true" />
