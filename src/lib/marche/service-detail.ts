@@ -1,5 +1,6 @@
 import { cache } from 'react'
 import { createClient } from '@/lib/supabase/server'
+import { failQuery, isNoRowLike, reportQueryError } from '@/lib/supabase/query-error'
 import type { ServiceListing } from '@/components/listings/ServiceListingCard'
 
 // Single-service detail fetch for /services/[id], mirroring product-detail.ts. Resurrected
@@ -92,10 +93,8 @@ export const getServiceDetail = cache(async (id: string): Promise<ServiceDetailD
     .is('freelancer_profiles.admin_hidden_at', null)
     .maybeSingle()
 
-  if (error) {
-    console.error('[service-detail] fetch error:', error.message, error.code, error.details)
-    return null
-  }
+  // « No row » (or a junk id) is a 404; a failed query is not — it throws to the root error.tsx.
+  if (error && !isNoRowLike(error)) failQuery('service-detail', error)
   if (!data) return null
 
   const row = data as unknown as DetailRow
@@ -108,7 +107,7 @@ export const getServiceDetail = cache(async (id: string): Promise<ServiceDetailD
       .select('full_name')
       .eq('id', fp.profile_id)
       .maybeSingle()
-    if (pErr) console.error('[service-detail] public_profiles error:', pErr)
+    if (pErr) reportQueryError('service-detail public_profiles', pErr)
     name = prof?.full_name ?? ''
   }
 
@@ -166,8 +165,9 @@ export async function getRelatedServices(opts: {
     apply: (q: ReturnType<typeof base>) => ReturnType<typeof base>,
   ): Promise<RelatedRow[]> => {
     const { data, error } = await apply(base())
+    // Secondary (the « related » strip): report and render the page without it.
     if (error) {
-      console.error('[service-detail] related fetch error:', error.message, error.code, error.details)
+      reportQueryError('service-detail related', error)
       return []
     }
     return (data ?? []) as unknown as RelatedRow[]
@@ -221,7 +221,7 @@ export async function getRelatedServices(opts: {
       .from('public_profiles')
       .select('id, full_name')
       .in('id', profileIds)
-    if (pErr) console.error('[service-detail] related public_profiles error:', pErr)
+    if (pErr) reportQueryError('service-detail related public_profiles', pErr)
     for (const p of (profiles ?? []) as { id: string; full_name: string | null }[]) {
       names.set(p.id, p.full_name ?? '')
     }

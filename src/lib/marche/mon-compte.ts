@@ -1,5 +1,6 @@
 import { cache } from 'react'
 import { createClient } from '@/lib/supabase/server'
+import { failQuery, reportQueryError } from '@/lib/supabase/query-error'
 
 // Current user's own profile for /mon-compte. profiles is owner-only read, so this
 // resolves only for the signed-in user. There's no avatar_url column in the schema, so
@@ -28,10 +29,9 @@ export const getCurrentProfile = cache(async (): Promise<CurrentProfile | null> 
     .select('id, full_name, email, phone, city, date_of_birth, language, seller_type, created_at')
     .eq('id', user.id)
     .maybeSingle()
-  if (error) {
-    console.error('[mon-compte] profile fetch error:', error.message, error.code, error.details)
-    return null
-  }
+  // Throws: null here makes /mon-compte and /parametres redirect to /connexion, so an outage read
+  // as « you are signed out ». A signed-in user with no row still returns null.
+  if (error) failQuery('mon-compte profile', error)
   return (data as CurrentProfile | null) ?? null
 })
 
@@ -57,11 +57,7 @@ export async function getDeletionContext(userId: string): Promise<DeletionContex
       .or(`buyer_id.eq.${userId},seller_id.eq.${userId}`)
       .not('status', 'in', '(received,cancelled)'),
   ])
-  if (pending.error) {
-    console.error('[mon-compte] pending deletion lookup error:', pending.error.message, pending.error.code, pending.error.details)
-  }
-  if (open.error) {
-    console.error('[mon-compte] open orders count error:', open.error.message, open.error.code, open.error.details)
-  }
+  if (pending.error) reportQueryError('mon-compte pending deletion', pending.error)
+  if (open.error) reportQueryError('mon-compte open orders', open.error)
   return { pending: (pending.data ?? []).length > 0, openOrders: open.count ?? 0 }
 }

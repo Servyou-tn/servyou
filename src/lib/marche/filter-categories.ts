@@ -2,13 +2,14 @@ import { createClient } from '@/lib/supabase/server'
 import type { FilterCategory } from '@/components/recherche/SearchFilters'
 import type { SearchType } from '@/lib/search/search-params'
 import { distinctActiveCategoryIds } from './category-scope'
+import { reportQueryError } from '@/lib/supabase/query-error'
 
 // The category-filter list for one browse engine, scoped by USAGE (see category-scope.ts):
 // only categories that have ≥1 active listing of the given type, ordered by French name.
 // Two small queries — the active rows' category_ids, then the matching category labels —
-// matching the rest of the marketplace's small-data posture. Errors are surfaced (never a
-// silent empty list): a query failure logs and returns [] so the filter degrades to "no
-// categories" rather than crashing the page.
+// matching the rest of the marketplace's small-data posture. SECONDARY to the results grid: a
+// failure here is reported (log + Sentry, loader-error-surfacing plan) and the filter degrades to
+// "no categories" while the results still render — it must not take the whole page down.
 export async function getFilterCategoriesForType(
   type: SearchType,
 ): Promise<FilterCategory[]> {
@@ -28,7 +29,7 @@ export async function getFilterCategoriesForType(
     .is('admin_hidden_at', null)
     .is(`${parent}.admin_hidden_at`, null)
   if (error) {
-    console.error(`[filter-categories] ${table} category_id fetch error:`, error)
+    reportQueryError(`filter-categories ${table} category_id`, error)
     return []
   }
 
@@ -43,7 +44,7 @@ export async function getFilterCategoriesForType(
     .in('id', ids)
     .order('name_fr')
   if (catsError) {
-    console.error('[filter-categories] categories fetch error:', catsError)
+    reportQueryError('filter-categories categories', catsError)
     return []
   }
   return (cats ?? []) as FilterCategory[]

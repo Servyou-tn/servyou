@@ -1,5 +1,6 @@
 import { cache } from 'react'
 import { createClient } from '@/lib/supabase/server'
+import { failQuery, isNoRowLike } from '@/lib/supabase/query-error'
 import type { ProductListing } from '@/components/listings/ProductListingCard'
 import type { PaymentMethod, ShopType, DeliverySetup } from '@/lib/types/shop-config'
 
@@ -56,10 +57,8 @@ export const getShopDetail = cache(async (id: string): Promise<ShopDetailData | 
     .is('admin_hidden_at', null)
     .maybeSingle()
 
-  if (error) {
-    console.error('[shop-detail] fetch error:', error.message, error.code, error.details)
-    return null
-  }
+  // « No row » (or a junk id) is a 404; a failed query is not — it throws to the root error.tsx.
+  if (error && !isNoRowLike(error)) failQuery('shop-detail', error)
   if (!data) return null
 
   const row = data as unknown as ShopRow
@@ -116,10 +115,9 @@ export async function getShopProducts(shopId: string, shopName: string, shopCity
     .eq('status', 'active')
     .order('created_at', { ascending: false })
 
-  if (error) {
-    console.error('[shop-detail] products fetch error:', error.message, error.code, error.details)
-    return []
-  }
+  // The shop's product grid is the page's main content: a failure throws (« this shop has no
+  // products » would be a lie), unlike a related strip.
+  if (error) failQuery('shop-detail products', error)
 
   return ((data ?? []) as unknown as ShopProductRow[]).map((row) => {
     const category = one(row.categories)

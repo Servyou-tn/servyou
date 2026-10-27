@@ -8,6 +8,8 @@ import { t, tn } from '@/lib/i18n'
 import { FOCUS_RING } from '@/components/layout/styles'
 import { otherType, parseSearchParams } from '@/lib/search/search-params'
 import { searchMarketplace } from '@/lib/search/search-marketplace'
+import { settle } from '@/lib/supabase/query-error'
+import { ErrorState } from '@/components/marche/ErrorState'
 import { buildSearchQuery } from '@/components/recherche/search-url'
 import { SearchFilters } from '@/components/recherche/SearchFilters'
 import { SearchFiltersSheet } from '@/components/recherche/SearchFiltersSheet'
@@ -48,9 +50,23 @@ export default async function CategoryPage({
 
   // Browse-by-default within the category (default sort = newest, since q is always empty
   // here so 'pertinence' collapses to created_at DESC).
-  const result = await searchMarketplace(sParams, { categoryId: category.id })
-  const isEmpty = result.totalCount === 0
+  const searched = await settle('categories search', searchMarketplace(sParams, { categoryId: category.id }))
   const name = lang === 'ar' ? category.name_ar : category.name_fr
+  // A failed search is an inline error state inside the shell (the search box stays) — never the
+  // « this category is empty » card.
+  if (!searched.ok) {
+    return (
+      <AppShell user={topBarUser}>
+        <div className="mb-4">
+          <SearchQueryInput initialQuery={sParams.q} type={sParams.type} basePath={`/categories/${category.slug}`} />
+        </div>
+        <h1 className="mb-4 text-xl font-semibold text-text-primary">{name}</h1>
+        <ErrorState lang={lang} />
+      </AppShell>
+    )
+  }
+  const result = searched.data
+  const isEmpty = result.totalCount === 0
   // Description deferred — the categories table has no description_fr/_ar columns yet
   // (migration logged in docs/follow-ups.md), so no description block is rendered.
 

@@ -10,6 +10,8 @@ import { getFilterCategoriesForType } from '@/lib/marche/filter-categories'
 import { getProductCities } from '@/lib/marche/filter-cities'
 import { parseSearchParams } from '@/lib/search/search-params'
 import { searchMarketplace } from '@/lib/search/search-marketplace'
+import { settle } from '@/lib/supabase/query-error'
+import { ErrorState } from '@/components/marche/ErrorState'
 import { getLang } from '@/lib/i18n/server'
 import { t } from '@/lib/i18n'
 import { FOCUS_RING } from '@/components/layout/styles'
@@ -49,13 +51,16 @@ export default async function ProduitsPage({
   const shell = await getShellUser()
   const topBarUser = shell?.topBarUser ?? null
 
-  const [categories, cities, result] = await Promise.all([
+  const [categories, cities, searched] = await Promise.all([
     getFilterCategoriesForType('product'),
     getProductCities(),
-    searchMarketplace(params, { perPage: PRODUCT_PER_PAGE }),
+    settle('marche/produits search', searchMarketplace(params, { perPage: PRODUCT_PER_PAGE })),
   ])
+  // null = the search itself failed: the results area becomes an inline ErrorState (the shell and the
+  // filter bar stay) — never the « aucun résultat » card.
+  const result = searched.ok ? searched.data : null
 
-  const isEmpty = result.totalCount === 0
+  const isEmpty = result !== null && result.totalCount === 0
   const hasFilters =
     params.categorie.length > 0 ||
     params.ville != null ||
@@ -119,7 +124,9 @@ export default async function ProduitsPage({
           </div>
         </div>
 
-        {isEmpty ? (
+        {result === null ? (
+          <ErrorState lang={lang} />
+        ) : isEmpty ? (
           // Empty state — C1 specimen 571:41125 ("aucun résultat"), same treatment the services
           // surface landed on: a 1px border-subtle stroke rather than a drop shadow, pad 48/40, and
           // a 112px tinted circle around the glyph.

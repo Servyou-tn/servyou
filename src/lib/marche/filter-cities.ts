@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { reportQueryError } from '@/lib/supabase/query-error'
 
 // The Ville filter's option list for /marche/services: the distinct freelancer cities that have
 // ≥1 active service listing. City lives on freelancer_profiles, reached through the same embed
@@ -6,9 +7,9 @@ import { createClient } from '@/lib/supabase/server'
 // options. Free-text column, so values are compared/deduped after trimming.
 //
 // Small-data posture (matches filter-categories.ts): one query, distinct + French collation sort
-// in JS rather than a DISTINCT/RPC round-trip. Errors are surfaced, never a silent empty list —
-// a failure logs and returns [] so the control degrades to "no cities" instead of crashing the
-// page. Revisit with a DISTINCT query or a materialized city list when the catalog grows.
+// in JS rather than a DISTINCT/RPC round-trip. SECONDARY to the results grid: a failure is
+// reported (log + Sentry, loader-error-surfacing plan) and the control degrades to "no cities"
+// while the results still render. Revisit with a DISTINCT query or a materialized city list when the catalog grows.
 type CityRow = {
   freelancer_profiles: { city: string | null } | { city: string | null }[] | null
 }
@@ -26,12 +27,7 @@ export async function getServiceCities(): Promise<string[]> {
     .is('admin_hidden_at', null)
     .is('freelancer_profiles.admin_hidden_at', null)
   if (error) {
-    console.error(
-      '[filter-cities] service cities fetch error:',
-      error.message,
-      error.code,
-      error.details,
-    )
+    reportQueryError('filter-cities service cities', error)
     return []
   }
 
@@ -71,12 +67,7 @@ export async function getProductCities(): Promise<string[]> {
     .is('admin_hidden_at', null)
     .is('shops.admin_hidden_at', null)
   if (error) {
-    console.error(
-      '[filter-cities] product cities fetch error:',
-      error.message,
-      error.code,
-      error.details,
-    )
+    reportQueryError('filter-cities product cities', error)
     return []
   }
 

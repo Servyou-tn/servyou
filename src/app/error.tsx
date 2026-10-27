@@ -10,17 +10,23 @@ import { MarketingShell } from '@/components/layout/MarketingShell'
 
 // Route-segment error boundary (500). Composed with the marketing chrome. Kept dependency-
 // light so the error render itself can't easily cascade into a worse failure.
+//
+// « Réessayer » calls `retry`, not `reset`: reset() only re-renders the client subtree, so it could
+// never recover from a failed server read (a loader that threw); retry() re-fetches and re-renders the
+// segment. Next 16.4 names the stable prop `retry` (it was `unstable_retry` in 16.2, the plan's name) —
+// see node_modules/next/dist/docs/01-app/03-api-reference/03-file-conventions/error.md.
 export default function Error({
   error,
-  reset,
+  retry,
 }: {
   error: Error & { digest?: string }
-  reset: () => void
+  retry: () => void
 }) {
   const lang = useLang()
 
   useEffect(() => {
-    console.error('[error boundary]', error)
+    // The digest ties this to the server log line; never the raw error object.
+    console.error('[error boundary]', error.message, error.digest)
   }, [error])
 
   return (
@@ -38,7 +44,7 @@ export default function Error({
         <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
           <button
             type="button"
-            onClick={() => reset()}
+            onClick={() => retry()}
             className={`inline-flex h-12 items-center justify-center rounded-full bg-brand-blue-600 px-6 text-sm font-semibold text-white transition-colors hover:bg-brand-blue-800 ${FOCUS_RING}`}
           >
             {t('system.error.retry', lang)}

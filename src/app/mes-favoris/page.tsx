@@ -2,6 +2,8 @@ import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 import { AppShell } from '@/components/shell/AppShell'
 import { PageHeader } from '@/components/marche/PageHeader'
+import { ErrorState } from '@/components/marche/ErrorState'
+import { settle } from '@/lib/supabase/query-error'
 import { getShellUser } from '@/lib/marche/shell-user'
 import { getMyFavorites } from '@/lib/marche/my-data'
 import { getLang } from '@/lib/i18n/server'
@@ -19,7 +21,19 @@ export default async function MesFavorisPage() {
   const shell = await getShellUser()
   if (!shell) redirect('/connexion')
 
-  const [lang, { products, services }] = await Promise.all([getLang(), getMyFavorites(shell.id)])
+  const [lang, favorites] = await Promise.all([getLang(), settle('mes-favoris', getMyFavorites(shell.id))])
+
+  // A failed read is an inline error state inside the shell — never « you have no favourites ».
+  if (!favorites.ok) {
+    return (
+      <AppShell user={shell.topBarUser}>
+        <PageHeader title={t('shell.sidebar.favorites', lang)} />
+        <ErrorState lang={lang} />
+      </AppShell>
+    )
+  }
+
+  const { products, services } = favorites.data
   const total = products.length + services.length
 
   return (

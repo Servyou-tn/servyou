@@ -2800,6 +2800,9 @@ export const ar: Record<string, string> = {
   'system.error.retry':          "إعادة المحاولة",
   'system.error.home':           "العودة إلى الرئيسية",
   'system.error.contact':        "اتصل بنا",
+  // الحالة المضمنة لصفحة قائمة فشل تحميلها — بدون تشكيل (قاعدة #215).
+  'system.loadError.title':      "تعذر تحميل المحتوى",
+  'system.loadError.body':       "حدث خلل مؤقت يمنع عرضه. أعد المحاولة بعد لحظات.",
 
   // ─── Disputes (litiges) — party-facing creation + display (PR-P3) ────────────
   'dispute.section_title':                "نزاع حول هذا الطلب",

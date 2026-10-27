@@ -1,6 +1,7 @@
 import { getLang } from '@/lib/i18n/server'
 import type { Lang } from '@/lib/i18n'
 import { createClient } from '@/lib/supabase/server'
+import { failQuery } from '@/lib/supabase/query-error'
 import { resolveRole, accountSpaceHref, type Role } from '@/lib/roles'
 import type { HeaderAccount } from '@/lib/layout/nav-config'
 import { Header } from '@/components/layout/Header'
@@ -37,7 +38,9 @@ export default async function HomePage() {
       .select('full_name, seller_type, is_admin, avatar_url')
       .eq('id', user.id)
       .maybeSingle()
-    if (error) console.error('[home] profile fetch error:', error)
+    // Ruling 3: throw rather than guess. A failed read used to resolve to « consumer » (or the logged-out
+    // landing), so a seller was shown the consumer home during an outage.
+    if (error) failQuery('home profile', error)
 
     role = resolveRole(profile)
     const isAdmin = Boolean(profile?.is_admin)

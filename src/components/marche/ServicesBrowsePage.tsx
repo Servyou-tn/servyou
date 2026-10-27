@@ -12,6 +12,8 @@ import { getFilterCategoriesForType } from '@/lib/marche/filter-categories'
 import { getServiceCities } from '@/lib/marche/filter-cities'
 import { parseSearchParams } from '@/lib/search/search-params'
 import { searchMarketplace } from '@/lib/search/search-marketplace'
+import { settle } from '@/lib/supabase/query-error'
+import { ErrorState } from './ErrorState'
 import { getLang } from '@/lib/i18n/server'
 import { t } from '@/lib/i18n'
 import { FOCUS_RING } from '@/components/layout/styles'
@@ -45,13 +47,16 @@ export async function ServicesBrowsePage({
   const shell = await getShellUser()
   const topBarUser = shell?.topBarUser ?? null
 
-  const [categories, cities, result] = await Promise.all([
+  const [categories, cities, searched] = await Promise.all([
     getFilterCategoriesForType('service'),
     getServiceCities(),
-    searchMarketplace(params, { perPage: SERVICE_PER_PAGE }),
+    settle('marche/services search', searchMarketplace(params, { perPage: SERVICE_PER_PAGE })),
   ])
+  // null = the search itself failed: the results area becomes an inline ErrorState (the shell and the
+  // filter bar stay) — never the « aucun résultat » card.
+  const result = searched.ok ? searched.data : null
 
-  const isEmpty = result.totalCount === 0
+  const isEmpty = result !== null && result.totalCount === 0
   const hasFilters =
     params.categorie.length > 0 ||
     params.ville != null ||
@@ -114,7 +119,9 @@ export async function ServicesBrowsePage({
           </div>
         </div>
 
-        {isEmpty ? (
+        {result === null ? (
+          <ErrorState lang={lang} />
+        ) : isEmpty ? (
           // Empty state — Figma 611:47916 (deltas S3, S4, P6-P10, C5, T2-T4). A 1px border-subtle
           // stroke, NOT the CARD_SHADOW drop shadow it used to carry; pad 48/40; a 112px tinted
           // circle around the 64px glyph, where it used to be a bare 40px icon.

@@ -108,6 +108,6 @@ describe('getCategories — the annonce picker is service-side', () => {
   // to submit with no explanation) -- the repo-wide "never a silent empty list" rule.
   it('throws rather than returning an empty list when the query errors', async () => {
     h.state.result = { data: null, error: { message: 'boom', code: '42703' } }
-    await expect(getCategories()).rejects.toThrow('categories fetch failed: boom')
+    await expect(getCategories()).rejects.toThrow('my-data categories: boom')
   })
 })

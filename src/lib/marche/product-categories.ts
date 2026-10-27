@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { failQuery } from '@/lib/supabase/query-error'
 
 // Categories for the G6 « Ajouter un produit » picker. Public-readable reference data.
 //
@@ -40,9 +41,9 @@ export async function getProductCategories(): Promise<ProductCategory[]> {
     // between FR and AR, and a picker whose order depends on the language is harder to learn.
     .order('name_fr')
 
-  if (error) {
-    console.error('[product-categories] fetch error:', error.message, error.code, error.details)
-    return []
-  }
+  // Throws: the create/edit forms must not render with an empty picker (the owner could not list a
+  // product), and the configuration action validates category ids against this list — an empty list
+  // would refuse every submit. The root error.tsx shows the failure.
+  if (error) failQuery('product-categories', error)
   return (data ?? []) as ProductCategory[]
 }

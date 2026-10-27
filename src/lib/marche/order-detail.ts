@@ -1,5 +1,6 @@
 import { cache } from 'react'
 import { createClient } from '@/lib/supabase/server'
+import { failQuery, isNoRowLike, reportQueryError } from '@/lib/supabase/query-error'
 import { GOVERNORATES } from '@/lib/tunisia-governorates'
 
 // Single-order detail fetch for /mes-commandes/[id] — the buyer's view of one order.
@@ -221,11 +222,8 @@ export const getOrderDetail = cache(
       .eq('id', orderId)
       .maybeSingle()
 
-    if (error) {
-      // Includes the invalid-UUID case (Postgres 22P02) → graceful not-found, no crash.
-      console.error('[order-detail] fetch error:', error.message, error.code, error.details)
-      return null
-    }
+    // The invalid-UUID case (22P02) and « no row » stay a graceful not-found; any other failure throws.
+    if (error && !isNoRowLike(error)) failQuery('order-detail', error)
     if (!data) return null
 
     const row = data as unknown as OrderRow
@@ -291,7 +289,7 @@ export const getOrderDetail = cache(
       .select('full_name')
       .eq('id', row.seller_id)
       .maybeSingle()
-    if (pErr) console.error('[order-detail] public_profiles error:', pErr)
+    if (pErr) reportQueryError('order-detail public_profiles', pErr)
     const parsed = parseServiceBuyerNote(row.buyer_note)
 
     return {
