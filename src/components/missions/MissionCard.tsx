@@ -58,10 +58,12 @@ export function MissionCard({ mission, lang }: { mission: MissionSummary; lang: 
             {localizeCity(mission.city, lang)}
           </span>
         ) : null}
-        <span className="inline-flex items-center gap-1.5">
-          <Clock className="size-4 shrink-0" aria-hidden="true" />
-          {tn('missioncard.expires', lang, mission.daysLeft)}
-        </span>
+        {mission.daysLeft != null ? (
+          <span className="inline-flex items-center gap-1.5">
+            <Clock className="size-4 shrink-0" aria-hidden="true" />
+            {tn('missioncard.expires', lang, mission.daysLeft)}
+          </span>
+        ) : null}
       </div>
 
       {mission.skills.length > 0 ? (
