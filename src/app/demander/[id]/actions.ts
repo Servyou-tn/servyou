@@ -6,6 +6,7 @@ import { getLang } from '@/lib/i18n/server'
 import { t } from '@/lib/i18n'
 import { normalizePhone } from '@/lib/phone'
 import { encodeDeliveryAddress } from '@/lib/marche/order-detail'
+import { asOrderInsert } from '@/lib/supabase/insert-drafts'
 import { ProductRequestSchema, ServiceRequestSchema } from './schema'
 
 // Both actions create an order with status='pending'. RLS enforces buyer_id = auth.uid()
@@ -79,7 +80,7 @@ export async function submitProductRequest(input: ProductRequestInput): Promise<
 
   const { data: order, error: insErr } = await supabase
     .from('orders')
-    .insert({
+    .insert(asOrderInsert({
       buyer_id: user.id,
       order_type: 'product',
       product_id: p.productId,
@@ -100,7 +101,7 @@ export async function submitProductRequest(input: ProductRequestInput): Promise<
       delivery_phone: normalizePhone(p.deliveryPhone),
       quantity: p.quantity,
       buyer_note: p.note || null,
-    })
+    }))
     .select('id')
     .single()
 
@@ -164,7 +165,7 @@ export async function submitServiceRequest(input: ServiceRequestInput): Promise<
 
   const { data: order, error: insErr } = await supabase
     .from('orders')
-    .insert({
+    .insert(asOrderInsert({
       buyer_id: user.id,
       order_type: 'service',
       service_listing_id: s.serviceId,
@@ -173,7 +174,7 @@ export async function submitServiceRequest(input: ServiceRequestInput): Promise<
       // Stored on the order so the choice never leaks into the next request.
       delivery_phone: normalizePhone(s.phone),
       buyer_note: note,
-    })
+    }))
     .select('id')
     .single()
 

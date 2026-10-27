@@ -1,4 +1,5 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
+import type { Database } from './database.types'
 
 // service_role client -- bypasses RLS entirely. Per CLAUDE.md: "No client-side service_role
 // Supabase client. Service role only in server actions and admin endpoints." Every caller of this
@@ -14,8 +15,8 @@ import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 // who is asking. Do not reach for this where the caller's own session client (src/lib/supabase/
 // server.ts) already works; RLS enforcing the caller's real permissions is the point, not overhead
 // to route around.
-export function createAdminClient(): SupabaseClient {
-  return createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!, {
+export function createAdminClient(): SupabaseClient<Database> {
+  return createClient<Database>(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!, {
     auth: { autoRefreshToken: false, persistSession: false },
   })
 }

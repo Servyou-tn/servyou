@@ -4,7 +4,7 @@ import { t, type Lang } from '@/lib/i18n'
 import { statusPillFor } from '@/lib/orders/order-status'
 import type { ActivityEvent } from '@/lib/marche/freelancer-dashboard'
 import { Panel, PanelEmpty } from './Panel'
-import { relativeTimeLabel } from './relative-time'
+import { relativeTimeLabel } from '@/lib/relative-time'
 
 // Pass 4 (167:12333, figma-cli Safe Mode read) — Ruling 8 is SUPERSEDED. The frame draws this
 // panel's body after all; it did not when Ruling 8 was written (quota exhausted before reaching

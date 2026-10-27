@@ -1,0 +1,6 @@
+# DS-3b lint — architectural follow-ups (deferred from chore/fix-lint #75, 2026-07-23)
+
+✅ **CLOSED by `fix/app-server-guards` (PR #178, 2026-10-23)** — the server-component guard this entry asked for: `requireAdmin` in a now-server `admin/layout.tsx` and every admin page, `checkAdmin` first in every admin action (see the "Security audit — open findings" section). Still owed from the line below: a run against a real non-admin account.
+~~🔴 **SECURITY (pre-launch) — Admin routes have no server-side guard.**~~ `middleware.ts` matches `/admin/:path*` but enforces only the suspended state, not `is_admin`. A non-admin can load the admin shell before the client-side `useEffect` (`src/app/admin/layout.tsx:36`) redirects them. Data is protected by RLS (admin reads require `is_admin()` per policy), so no records leak — but route access is gated client-side, which `engineering-standards.md` prohibits: "no client-side feature gating as security." Fix: `is_admin` check in `middleware.ts`, or a server-component guard in the admin layout. **Own PR — needs its own review, tested against a non-admin account before merging.**
+
+🟡 Buyer/seller dispute UI removed as teardown orphan (PR #64 deleted its render surfaces). Rebuild prop-based when E3 order surfaces are rebuilt from Figma. Backend and admin dispute flow unaffected.

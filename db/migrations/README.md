@@ -724,6 +724,20 @@ this PR and is not attempted here.
     (a skill write racing an uncommitted response can slip through). No type change. Verified by
     `src/__tests__/job-posts-write-guards.test.ts` (live-DB). Rollback at the bottom of the file.
 
+77. **20261027211851_job_posts_no_hard_delete** — Applied by the architect 2026-10-27 (recorded
+    version; executable SQL MD5-verified against `schema_migrations`, comments and whitespace
+    stripped: `1f8d2c44`). Post-apply proof (architect, rolled back, as the poster of a live post): hard
+    DELETE → 42501; UPDATE `status = 'deleted'` → 1 row. Founder decision B (2026-10-27) on #76's
+    decision 11: a client hard DELETE of an answered post cascaded away every freelancer's proposal,
+    bypassing #76's soft-delete rules. Drops the policy « Consumer deletes own post » and revokes DELETE
+    on `job_posts` from authenticated, so every client delete goes through `status = 'deleted'` and is
+    refused with 42501 « permission denied for table job_posts » (privilege, before RLS). Unchanged: soft
+    delete (`deleteMissionAction`); the FK cascade path (account deletion → profiles → job_posts →
+    job_responses / job_post_skills runs as referential actions, which check neither the caller's grants
+    nor RLS); the service role's DELETE (admin data fixes, fixtures). anon already held none (#68).
+    Rows touched: 0. No type change. Verified by `src/__tests__/job-posts-write-guards.test.ts`,
+    `job-posts-response-count.test.ts` and `suspension-enforcement.test.ts` (live-DB). Rollback (grant +
+    policy) is at the bottom of the file.
 78. **20261027215609_profiles_email_sync** — Applied by the architect 2026-10-27 (recorded version;
     executable SQL MD5-verified against `schema_migrations`, comments and whitespace stripped:
     `e7d1d9a2`). Post-apply proof (architect, rolled back): a sign-in does not touch `profiles`; a

@@ -9,10 +9,10 @@ import { FOCUS_RING } from '@/components/layout/styles'
 import { isValidPhone } from '@/lib/phone'
 import { GOVERNORATES } from '@/lib/tunisia-governorates'
 import { tndPrice } from '@/components/listings/listing-utils'
-import { ProductCoverImage } from '@/app/marche/produits/_components/ProductCoverImage'
+import { ProductCoverImage } from '@/components/produits/ProductCoverImage'
 import { submitProductRequest } from '../actions'
 import { Textarea } from '@/components/ui/textarea'
-import { NumberStepper } from './NumberStepper'
+import { NumberStepper } from '@/components/ui/number-stepper'
 import {
   DELIVERY_NAME_MAX,
   DELIVERY_STREET_MAX,

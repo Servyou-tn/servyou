@@ -7,7 +7,7 @@ import { localizeCity } from '@/lib/marche/missions'
 import type { Proposal } from '@/lib/marche/proposals'
 import { formatServicePrice, servicePriceLabel } from '@/lib/freelance/service-price'
 import { shortDate } from '@/lib/orders/order-status'
-import { relativeTimeLabel } from '@/app/tableau-de-bord/_components/relative-time'
+import { relativeTimeLabel } from '@/lib/relative-time'
 import { ProposalActions } from './ProposalActions'
 import { COL } from './proposal-columns'
 

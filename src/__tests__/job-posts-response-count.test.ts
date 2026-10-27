@@ -273,8 +273,18 @@ describe.skipIf(!hasCreds)('G3 — response_count follows job_responses', () => 
     await expectCount(postB, 1)
   })
 
-  it('a hard-deleted post takes its responses, and the counter does not get in the way', async () => {
-    const { data, error } = await posterClient.from('job_posts').delete().eq('id', postB).select('id')
+  it('the poster cannot hard-delete an answered post (job_posts_no_hard_delete): refused, the responses stay', async () => {
+    const { error } = await posterClient.from('job_posts').delete().eq('id', postB)
+    expect(error?.code).toBe('42501')
+    expect(error?.message).toBe('permission denied for table job_posts')
+    await expectCount(postB, 1)
+    const { count, error: countErr } = await admin.from('job_responses').select('id', { count: 'exact', head: true }).eq('job_post_id', postB)
+    expect(countErr).toBeNull()
+    expect(count).toBe(1)
+  })
+
+  it('a hard delete on the cascade path (service role, as account deletion) takes its responses, and the counter does not get in the way', async () => {
+    const { data, error } = await admin.from('job_posts').delete().eq('id', postB).select('id')
     expect(error).toBeNull()
     expect(data).toHaveLength(1)
     const { count, error: countErr } = await admin.from('job_responses').select('id', { count: 'exact', head: true }).eq('job_post_id', postB)

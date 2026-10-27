@@ -2,6 +2,7 @@
 
 import { z } from 'zod'
 import { revalidatePath } from 'next/cache'
+import type { SupabaseClient } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/server'
 import { getLang } from '@/lib/i18n/server'
 import { t } from '@/lib/i18n'
@@ -120,8 +121,11 @@ async function reconcileTable(
   params: { table: 'shop_payment_methods' | 'shop_categories'; shopId: string; column: 'method' | 'category_id'; selected: string[] },
 ): Promise<{ ok: true } | { ok: false }> {
   const { table, shopId, column, selected } = params
+  // `table` and `column` are paired unions chosen by the caller (shop_payment_methods.method / shop_categories.category_id): the
+  // generated types cannot follow a table name held in a variable, so this one helper talks to the untyped client.
+  const db = supabase as unknown as SupabaseClient
 
-  const { data: existing, error: fetchErr } = await supabase.from(table).select(column).eq('shop_id', shopId)
+  const { data: existing, error: fetchErr } = await db.from(table).select(column).eq('shop_id', shopId)
   if (fetchErr) {
     console.error(`[saveShopConfig] ${table} fetch failed:`, fetchErr.message, fetchErr.code, fetchErr.details)
     return { ok: false }
@@ -131,7 +135,7 @@ async function reconcileTable(
   const { toDelete, toInsert } = reconcile(previous, selected)
 
   if (toDelete.length > 0) {
-    const { error: delErr } = await supabase.from(table).delete().eq('shop_id', shopId).in(column, toDelete)
+    const { error: delErr } = await db.from(table).delete().eq('shop_id', shopId).in(column, toDelete)
     if (delErr) {
       console.error(`[saveShopConfig] ${table} delete failed:`, delErr.message, delErr.code, delErr.details)
       return { ok: false }
@@ -139,7 +143,7 @@ async function reconcileTable(
   }
 
   if (toInsert.length > 0) {
-    const { error: insErr } = await supabase.from(table).insert(toInsert.map((value) => ({ shop_id: shopId, [column]: value })))
+    const { error: insErr } = await db.from(table).insert(toInsert.map((value) => ({ shop_id: shopId, [column]: value })))
     if (insErr) {
       console.error(`[saveShopConfig] ${table} insert failed:`, insErr.message, insErr.code, insErr.details)
       return { ok: false }

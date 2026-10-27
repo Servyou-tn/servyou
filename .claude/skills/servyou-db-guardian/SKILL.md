@@ -76,7 +76,7 @@ CI runs the full gate (tsc, lint, the whole mock vitest run, `next build`, VRT) 
 ## Shipping
 Max 3 commits (cite the finding/ruling, no Co-Authored-By). `git push -u origin <branch>` only —
 never main, NEVER force-push; if main moved, merge origin/main in rather than rebasing pushed
-commits. Open the PR, report, STOP. Log everything out of scope in `docs/follow-ups.md`, ranked.
+commits. Open the PR, report, STOP. Log everything out of scope, ranked, in ONE NEW file `docs/follow-ups/<pr-or-topic-slug>.md` (add a new file, never append to a shared one — see `docs/follow-ups/README.md`).
 
 ## Definition of done
 discovery approved → migration applied by the architect → file renamed + README + types
