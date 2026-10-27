@@ -32,6 +32,7 @@
 
 - **Branch FIRST.** Every new piece of work starts with `git fetch origin && git checkout -b <name> origin/main` — **before any file is touched**, before the first migration, before the first edit. Whatever branch is checked out from the last task is the default state, not a signal about this one. Cutting the branch after the work is done is too late: the previous PR's branch is usually still open and under review.
 - **One PR, one focus.** Bugs found out-of-scope during a PR get LOGGED for a future PR, not fixed inline.
+- **Follow-ups: add a new file, never append to a shared one.** Log them in `docs/follow-ups/<pr-or-topic-slug>.md` (format in `docs/follow-ups/README.md`); `docs/follow-ups.md` is a stub. Do not edit the README index in a feature PR.
 - **Focused commits, max 3 per PR** (e.g. feature · review fixes · follow-up). A 4th needs the architect's OK.
 - **NO `Co-Authored-By` trailers.** Ever.
 - **Conventional commit prefix:** `feat(scope):`, `fix(scope):`, `chore:`, `refactor:`, `docs:`.
