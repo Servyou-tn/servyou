@@ -161,12 +161,7 @@ export default async function ReportDetailPage({ params }: Props) {
     const row = (targetRow as Omit<ModerationTarget, 'admin_hidden_reason'> | null) ?? null
     moderationTarget = row ? { ...row, admin_hidden_reason: null } : null
     if (row?.admin_hidden_at) {
-      // Untyped until database.types.ts is regenerated after the function's migration is applied.
-      const rpc = supabase.rpc as unknown as (
-        fn: 'get_moderation_reason',
-        args: { target_type: string; target_id: string },
-      ) => PromiseLike<{ data: string | null; error: { message: string; code: string; details: string } | null }>
-      const { data: reason, error: reasonError } = await rpc.call(supabase, 'get_moderation_reason', {
+      const { data: reason, error: reasonError } = await supabase.rpc('get_moderation_reason', {
         target_type: r.target_type,
         target_id: r.target_id,
       })

@@ -1,7 +1,7 @@
 // Generated from the live Supabase schema (project xggomcitqrkaylqezjjz) — DO NOT EDIT BY HAND.
 // Regenerate after every applied migration: Supabase MCP generate_typescript_types (or
 // `npx supabase gen types typescript --project-id xggomcitqrkaylqezjjz`), then commit.
-// Generated 2026-10-27 after migration 20261027215609 profiles_email_sync.
+// Generated 2026-10-28 after migration 20261028205353 suspended_content_hidden.
 
 export type Json =
   | string
@@ -1529,6 +1529,10 @@ export type Database = {
         Returns: number
       }
       get_contact_phone: { Args: { target: string }; Returns: string }
+      get_moderation_reason: {
+        Args: { target_id: string; target_type: string }
+        Returns: string
+      }
       has_responded: { Args: { p_job_post_id: string }; Returns: boolean }
       is_active_user: { Args: never; Returns: boolean }
       is_admin: { Args: never; Returns: boolean }

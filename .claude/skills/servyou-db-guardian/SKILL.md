@@ -52,6 +52,15 @@ gstack-investigate (root cause) · gstack-review (before every report).
   · **new columns on `freelancer_profiles` / `shops` / `disputes` need an explicit column GRANT**
     (founder ruling, 2026-10-28, migrations 81–83): without one the app's insert / update naming the
     column fails 42501 `permission denied for table …`. Grant only what the client really writes;
+  · **SELECT is column-granted on `shops`, `products`, `service_listings`, `freelancer_profiles`,
+    `job_posts`** (migration 96, `20261028205833`): every column but `admin_hidden_reason`, which only the
+    owner / an admin reads, via `get_moderation_reason()`. A NEW column on these five tables is not
+    client-readable until a migration grants SELECT on it to anon / authenticated (every app select and
+    embed naming it fails 42501). Never re-grant table-level SELECT on them (it reopens the reason), and
+    no client `select('*')` / bare `.select()` (RETURNING *) on them;
+  · **a policy helper that anon must execute lives in schema `private`** (migration 95,
+    `private.is_account_active`): USAGE + EXECUTE for anon / authenticated, but PostgREST does not expose
+    the schema, so the helper is not also an anonymous RPC;
 
   · the PUBLIC EXECUTE revoke is global for objects postgres creates: a future `create extension`
     run as postgres also gets no client EXECUTE — grant what the app or a generated column needs.
