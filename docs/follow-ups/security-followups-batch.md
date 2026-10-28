@@ -2,36 +2,39 @@
 
 Live re-verification (read-only, 2026-10-28) of every open DB-side finding in `security-audit-open-findings.md`,
 `jobresponses-integrity.md`, `pre-public-security-audit-follow-ups.md`, `suspension-enforcement.md`,
-`live-suite-teardown-guard.md` and `missions-m-c-…md`. Seven fixes are written as `db/migrations/PENDING_*.sql`, and
-the red proof is `src/__tests__/security-followups-batch.test.ts` (14 red / 5 controls green before apply).
+`live-suite-teardown-guard.md` and `missions-m-c-…md`. Eight fixes were written as PENDING files, and the architect
+applied all eight on 2026-10-28 (migrations 79–86, `20261028194710` … `20261028194729`). The proof is
+`src/__tests__/security-followups-batch.test.ts`: 14 red / 5 controls green before apply, 19/19 green after.
 
-## Must change when the PENDING files are applied
+## ✅ Done in this PR (founder rulings 1–4, 2026-10-28)
 
-- `PENDING_orders_admin_insert_tier2`: `job-posts-write-guards.test.ts` (admin INSERTs with cancel columns / at
-  `cancelled`, lines ~476–512) and `orders-lifecycle-columns.test.ts` (« an admin JWT … inserting at received »)
-  assert today's admin bypass and turn red. Rewrite them to expect `Une commande est toujours créée en attente.`
-- `PENDING_orders_received_at_revoke`: `orders-lifecycle-columns.test.ts` « a seller cannot plant received_at »
-  expects a silent pass and turns into 42501 `permission denied for table orders`.
-- The column-grant files make new columns on `freelancer_profiles` (INSERT / UPDATE) and `shops` (INSERT) not
-  client-writable until a migration grants them. Record this in the db-guardian skill next to P2-1.
+- Wording approved. An admin inserts orders at `pending` only.
+- The db-guardian skill now says that new columns on `freelancer_profiles` / `shops` / `disputes` need an explicit
+  column GRANT.
+- Live suites updated for the new refusals:
+  - `job-posts-write-guards.test.ts`: the admin inserts with cancel columns or at `cancelled` are now refused, and
+    the terminal-state order is seeded by the service role.
+  - `orders-lifecycle-columns.test.ts`: the admin insert at `received` is refused, and three `received_at` writes
+    now get 42501 (E2).
+  - `job-responses-proposal-fields.test.ts`: a foreign skill insert is now `not_self`.
+  - `seller-capability-integrity.test.ts`: handing a shop or a profile to another account is now `not_self` (found
+    by the regression run, not in the original list).
 
-## Open — founder decision needed (no SQL written)
+## Second batch (founder rulings 5–9, 2026-10-28): moved to `fix/security-followups-batch-2`
 
-- **MEDIUM — moderation is shed by DELETE + re-INSERT of the freelancer profile** (live: the DELETE policy is
-  `profile_id = auth.uid()` only). Options: refuse the DELETE while `admin_hidden_at` is set, or move moderation to
-  `profiles`.
-- **MEDIUM — `get_contact_phone` ignores post state.** Responses to a moderated post (0 live) still unlock the
-  phone. A `status` condition would cut the legitimate filled-post contact, so the only candidate condition is
-  `jp.admin_hidden_at is null`. A related product call: should suspension or moderation of the responder revoke the
-  phone unlocks they already hold?
-- **MEDIUM — suspended counterparty:** orders and responses can still target a suspended account, and that
-  account's content stays public.
-- **LOW — orders D2 / D4:** a client can set `created_at` / `updated_at` on INSERT (table-level INSERT grant), and
-  the stock rule is enforced in the app only. If approved, D4 goes in the same function as the admin tier-2 fix
-  (one DO block per function).
-- **LOW — `shops.owner_id` not unique** (max 1 shop per owner live): add a unique index, or decide that multi-shop
-  is a future feature.
-- **LOW — `admin_hidden_reason` is readable by the owner and anon** (SELECT column grant). Revoking it needs a
-  definer read for the admin pages.
-- **LOW — `public_profiles` exposes the name and city of a moderated seller.**
-- **Design — the "switch seller type" flow** (cannot be a user-session delete-then-switch).
+Each of these now has a ruling, and they ship as their own PENDING batch.
+
+- **5:** refuse deleting a freelancer profile or a shop while it is moderated.
+- **6:** `get_contact_phone` refuses when the post is moderated or either party is suspended.
+- **7:** refuse new orders and responses aimed at a suspended account. Hiding a suspended account's content in the
+  read policies gets a plan only.
+- **8:** orders `created_at` / `updated_at` are forced on insert, and the stock rule moves into the trigger.
+- **9:** one shop per owner; `admin_hidden_reason` readable by its owner and admins only; `public_profiles` hides
+  moderated sellers.
+
+## Out of scope (ruling 10, confirmed)
+
+- The "switch seller type" flow design.
+- The storage content-gate gap.
+- Auth leaked-password protection.
+- The docs, performance and test-password items.

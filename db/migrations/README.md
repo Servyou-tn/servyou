@@ -755,6 +755,81 @@ this PR and is not attempted here.
     No backfill (0 mismatches at discovery); no type change. Verified by
     `src/__tests__/profiles-email-sync.test.ts` (live-DB). Rollback at the bottom of the file.
 
+Migrations 79–86 are the security follow-ups batch (`fix/security-followups-batch`, 2026-10-28). The open
+DB-side findings were re-verified live (read-only), each fix was written as a PENDING file with a red live
+suite, and the architect applied all eight on 2026-10-28 and checked the grants and triggers. Each file's
+executable SQL is MD5-verified against `schema_migrations` (comments and whitespace stripped; hash given
+per entry). Founder rulings 1–4 (2026-10-28): wording approved; an admin inserts orders at `pending` only;
+new columns on `freelancer_profiles` / `shops` / `disputes` need an explicit column GRANT (db-guardian
+skill); the affected live suites are updated in the same PR. No row was rewritten and no type changed.
+All eight are verified by `src/__tests__/security-followups-batch.test.ts` (live-DB, 19/19; it was 14 red
+before apply), except 86. Rollback is at the bottom of each file.
+
+79. **20261028194710_job_response_skills_open_post** (`d96b5747`) — closes « a responder can still add /
+    remove `job_response_skills` after the post closes » (#76 Not covered) and M-C's « the 8-skill limit
+    is checked before RLS ». Adds `enforce_job_response_skills_window()` (SECURITY DEFINER,
+    `search_path ''`, no client EXECUTE) and `trg_check_job_response_skills_window` (BEFORE INSERT OR DELETE
+    on `job_response_skills`).
+    - JWT callers, admins included, must own the response (42501 `not_self`, « Vous ne pouvez modifier que
+      vos propres propositions. »).
+    - The post must be open, unmoderated and under 30 days old: #76's withdrawal predicate (42501
+      `proposal_locked`).
+    - The trigger name sorts before `trg_enforce_job_response_skills_limit`, so a non-responder never
+      reaches the count.
+    - A DELETE cascaded from a withdrawn response finds no parent and passes. No-JWT callers bypass.
+    - `job-responses-proposal-fields.test.ts` now expects `not_self` on a foreign insert.
+80. **20261028194712_orders_admin_insert_tier2** (`f81dd727`) — closes « a JWT admin can still INSERT an
+    order at any status » (Sonnet review of #76). `enforce_order_insert_integrity` is re-created by a DO
+    block from `pg_get_functiondef()`, with only the `is_admin()` early return removed (#76's 9a pattern;
+    it raises if the block is not there exactly once).
+    - A JWT admin now meets tier 2 like any client: `pending` with every lifecycle column NULL, a live item,
+      and not their own item.
+    - #76's JWT-INSERT branch of `enforce_order_lifecycle_columns` is now unreachable from a JWT; it stays
+      as defence in depth.
+    - `job-posts-write-guards.test.ts` and `orders-lifecycle-columns.test.ts` now expect the 42501.
+81. **20261028194715_freelancer_profiles_column_grants** (`85fd4304`) — closes « `is_published` is
+    owner-settable » and the `freelancer_profiles` half of « `admin_hidden_*` can be set on INSERT ».
+    Table-level INSERT / UPDATE is revoked from authenticated, then column lists are re-granted.
+    - INSERT: every column except `is_published`, `admin_hidden_at` and `admin_hidden_reason`.
+    - UPDATE: every column except `is_published`. The marker lock trigger still refuses `admin_hidden_*` to
+      non-admins.
+    - `sync_freelancer_is_published`, `admin_hide_content` and `admin_unhide_content` are SECURITY DEFINER
+      owned by `postgres`, so column grants do not affect them (checked live). JWT activation still syncs
+      (`h5-service-status-cascade.test.ts`).
+    - **New columns are not client-writable until granted.**
+82. **20261028194717_shops_admin_marker_insert_grant** (`f2fda764`) — the `shops` half of the same LOW.
+    Table-level INSERT is revoked from authenticated, and INSERT is re-granted on every column except
+    `admin_hidden_at` and `admin_hidden_reason`. UPDATE stays table-level, guarded by the marker lock.
+    **New columns are not client-insertable until granted.**
+83. **20261028194719_disputes_insert_columns** (`830cdb02`) — closes the `disputes` half of « disputes,
+    data_exports and deletion_requests accept admin fields on INSERT »; the other two were closed by #68 C.
+    - Table-level INSERT is revoked, and INSERT is granted on (`order_id`, `created_by_role`, `reason`,
+      `description`) only: exactly `createDispute`'s payload.
+    - A party can no longer insert a dispute that is already `resolved` / `dismissed`, or one with an
+      outcome, an admin note or a backdated `created_at`.
+    - The admin UPDATE path (`admin/litiges`) is untouched.
+84. **20261028194721_orders_received_at_revoke** (`afe6a44c`) — E2, owed since #66 and unblocked by #191.
+    Column UPDATE on `received_at` is revoked from authenticated.
+    - A client statement that names it is refused whole (42501 `permission denied for table orders`).
+      Before, #66's trigger silently discarded the value.
+    - The trigger stamp on the transition into `received` is unaffected. INSERT is unchanged (#66
+      handles it).
+    - `orders-lifecycle-columns.test.ts` is updated.
+85. **20261028194726_seller_capability_fail_closed** (`ef4964b7`) — closes « migration 55 locks the
+    target owner's profile row before RLS rejects a foreign write ».
+    - `enforce_seller_capability()` now refuses a row whose owner is not the caller first (42501
+      `not_self`, « Vous ne pouvez créer ce contenu qu'en votre propre nom. »), before its FOR SHARE read.
+    - A JWT caller can no longer lock another account's profile, nor learn its seller type or mixed
+      capability from the message.
+    - Everything else in the body is byte-identical; `search_path` stays `public`.
+    - It also covers an owner hand-off (UPDATE OF `owner_id` / `profile_id` to another account), which is
+      now `not_self` too; `seller-capability-integrity.test.ts` is updated.
+86. **20261028194729_job_post_skills_lock_for_share** (`1f47a3b9`) — closes « the skills lock can race a
+    response » (Sonnet review of #76). `enforce_job_post_skills_lock()` now reads `response_count` FOR
+    SHARE, so it waits for an in-flight response's transaction, which holds FOR UPDATE on the post. The
+    rest of the body is byte-identical. There is no live test: a race against an uncommitted response
+    cannot be staged through PostgREST. Verified by reading the definition.
+
 ## Rollback paths
 
 Each migration in this folder represents work that has already been applied to production. Rollback is therefore reverse migration work, not file deletion. If a rollback is ever needed, write a new dated migration that reverses the relevant changes — never delete history from this folder.

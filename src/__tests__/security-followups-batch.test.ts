@@ -1,20 +1,20 @@
 /**
- * Live-DB proof for the security follow-ups batch (fix/security-followups-batch, 2026-10-28). Each describe
- * maps to one db/migrations/PENDING_<name>.sql and is RED until that file is applied: it asserts the
- * refusal the migration introduces, so today's exploit (the write succeeding) fails it.
+ * Live-DB proof for the security follow-ups batch (fix/security-followups-batch, migrations 79–86,
+ * applied 2026-10-28). Each describe maps to one db/migrations file; written while they were PENDING, it was
+ * 14 red / 5 green before apply (each exploit succeeded) and is fully green after.
  *
- *   PENDING_job_response_skills_open_post   — skills frozen once the post leaves the withdrawal window;
- *                                             ownership checked before the 8-skill count.
- *   PENDING_orders_admin_insert_tier2       — a JWT admin inserts at 'pending' like any client.
- *   PENDING_freelancer_profiles_column_grants — is_published never client-written; admin markers never
- *                                             client-inserted.
- *   PENDING_shops_admin_marker_insert_grant — admin markers never client-inserted on shops.
- *   PENDING_disputes_insert_columns          — a party cannot insert a pre-decided dispute.
- *   PENDING_orders_received_at_revoke        — no client UPDATE grant on received_at (E2).
- *   PENDING_seller_capability_fail_closed    — a row owned by someone else is refused before that
- *                                             account's profile is read.
- * PENDING_job_post_skills_lock_for_share has no test: a race against an uncommitted response cannot be
- * staged through PostgREST (one transaction per request).
+ *   20261028194710_job_response_skills_open_post      — skills frozen once the post leaves the withdrawal
+ *                                                      window; ownership checked before the 8-skill count.
+ *   20261028194712_orders_admin_insert_tier2          — a JWT admin inserts at 'pending' like any client.
+ *   20261028194715_freelancer_profiles_column_grants  — is_published never client-written; admin markers
+ *                                                      never client-inserted.
+ *   20261028194717_shops_admin_marker_insert_grant    — admin markers never client-inserted on shops.
+ *   20261028194719_disputes_insert_columns            — a party cannot insert a pre-decided dispute.
+ *   20261028194721_orders_received_at_revoke          — no client UPDATE grant on received_at (E2).
+ *   20261028194726_seller_capability_fail_closed      — a row owned by someone else is refused before that
+ *                                                      account's profile is read.
+ * 20261028194729_job_post_skills_lock_for_share has no test: a race against an uncommitted response cannot
+ * be staged through PostgREST (one transaction per request).
  *
  * Every refusal is paired with a service-role read showing nothing was written, and each block keeps one
  * control showing the app's own write path still passes.
@@ -245,7 +245,7 @@ afterAll(async () => {
   if ((shops ?? 0) !== 0) throw new Error(`teardown left ${shops} fixture shops`)
 }, 120000)
 
-// ─── PENDING_job_response_skills_open_post ───────────────────────────────────────────────────────
+// ─── 20261028194710_job_response_skills_open_post ───────────────────────────────────────────────────────
 
 describe.skipIf(!hasCreds)('job_response_skills — writable only while the post is open', () => {
   it('control: while the post is open the responder adds and removes a skill', async () => {
@@ -298,7 +298,7 @@ describe.skipIf(!hasCreds)('job_response_skills — writable only while the post
   })
 })
 
-// ─── PENDING_orders_admin_insert_tier2 ───────────────────────────────────────────────────────────
+// ─── 20261028194712_orders_admin_insert_tier2 ───────────────────────────────────────────────────────────
 
 describe.skipIf(!hasCreds)('orders INSERT — a JWT admin starts at pending like any client', () => {
   const forged: Array<[string, Partial<OrderInsert>]> = [
@@ -324,7 +324,7 @@ describe.skipIf(!hasCreds)('orders INSERT — a JWT admin starts at pending like
   })
 })
 
-// ─── PENDING_freelancer_profiles_column_grants ───────────────────────────────────────────────────
+// ─── 20261028194715_freelancer_profiles_column_grants ───────────────────────────────────────────────────
 
 describe.skipIf(!hasCreds)('freelancer_profiles — is_published and the admin markers are not client-writable', () => {
   async function clearFreelancer2(): Promise<void> {
@@ -373,7 +373,7 @@ describe.skipIf(!hasCreds)('freelancer_profiles — is_published and the admin m
   })
 })
 
-// ─── PENDING_shops_admin_marker_insert_grant ─────────────────────────────────────────────────────
+// ─── 20261028194717_shops_admin_marker_insert_grant ─────────────────────────────────────────────────────
 
 describe.skipIf(!hasCreds)('shops — the admin markers are not client-insertable', () => {
   async function seller2Shops(): Promise<number> {
@@ -404,7 +404,7 @@ describe.skipIf(!hasCreds)('shops — the admin markers are not client-insertabl
   })
 })
 
-// ─── PENDING_disputes_insert_columns + PENDING_orders_received_at_revoke ────────────────────────
+// ─── 20261028194719_disputes_insert_columns + 20261028194721_orders_received_at_revoke ────────────────────────
 
 describe.skipIf(!hasCreds)('disputes and received_at — a party writes only what the app writes', () => {
   let orderId: string
@@ -458,7 +458,7 @@ describe.skipIf(!hasCreds)('disputes and received_at — a party writes only wha
   })
 })
 
-// ─── PENDING_seller_capability_fail_closed ───────────────────────────────────────────────────────
+// ─── 20261028194726_seller_capability_fail_closed ───────────────────────────────────────────────────────
 
 describe.skipIf(!hasCreds)('enforce_seller_capability — a row for someone else fails before their profile is read', () => {
   it('a shop naming another account as owner is refused not_self, not with that account’s seller_type', async () => {

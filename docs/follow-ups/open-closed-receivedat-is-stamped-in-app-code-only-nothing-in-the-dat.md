@@ -3,7 +3,7 @@
 - **Closed by** migration 66 (`20261025222218_order_lifecycle_columns`, pre-launch security batch PR-3 E1,
   2026-10-25): `trg_enforce_order_lifecycle_columns` stamps `now()` on the transition into `received` (and on
   an INSERT at `received`) and discards any client value. The two browser writes are removed by H8 PR-2
-  (#191). **Still owed:** E2, `revoke update (received_at) on orders from authenticated`, once #191 has
+  (#191). **Still owed:** E2, ✅ done by migration 84 `20261028194721_orders_received_at_revoke` (2026-10-28) — `revoke update (received_at) on orders from authenticated`, once #191 has
   merged. No backfill (decision 14): `33b822ec` stays NULL.
 
 - **What:** `orders.received_at` is written at exactly **two client call sites** —
