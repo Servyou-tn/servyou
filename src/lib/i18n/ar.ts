@@ -2905,6 +2905,7 @@ export const ar: Record<string, string> = {
   'aide.title': "المساعدة",
   'aide.subtitle': "ابحث عن إجابة، أو راسلنا مباشرة عبر واتساب.",
   'aide.breadcrumb.home': "الرئيسية",
+  'aide.writeUs': "راسلنا",
   'aide.breadcrumb.label': "مسار التنقل",
   'aide.search.label': "ابحث عن سؤال",
   'aide.search.placeholder.freelancer': "ابحث عن سؤال — مثال: «كيف أنشر ملفي الشخصي»",

@@ -29,8 +29,9 @@ const LEGAL: { href: string; key: string }[] = [
 export function ContactPanel({ lang }: { lang: Lang }) {
   return (
     <aside
+      id="aide-contact"
       aria-labelledby="aide-contact-heading"
-      className="flex flex-col gap-6 rounded-xl border border-border-subtle bg-surface-base p-6"
+      className="flex scroll-mt-24 flex-col gap-6 rounded-xl border border-border-subtle bg-surface-base p-6"
     >
       <div className="flex flex-col gap-2">
         <h2 id="aide-contact-heading" className="text-xl font-semibold text-text-primary">

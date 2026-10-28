@@ -2980,6 +2980,7 @@ export const fr: Record<string, string> = {
   'aide.title': "Aide",
   'aide.subtitle': "Trouvez une réponse, ou écrivez-nous directement sur WhatsApp.",
   'aide.breadcrumb.home': "Accueil",
+  'aide.writeUs': "Nous écrire",
   'aide.breadcrumb.label': "Fil d'Ariane",
   'aide.search.label': "Rechercher une question",
   'aide.search.placeholder.freelancer': "Rechercher une question — ex : « comment publier mon profil »",
