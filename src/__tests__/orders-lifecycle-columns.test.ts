@@ -3,9 +3,8 @@
  * PR-3 item E1 (architect decisions 12–13, 2026-10-25) — plus item F, the seller-cancel path.
  *
  * E1, trg_enforce_order_lifecycle_columns, for callers with a JWT (admins included):
- *   * received_at = now() on the transition into 'received' — with or without a client value (the
- *     browser sends one until H8 PR-2 ships; that value is discarded) — and unchanged on every other
- *     write;
+ *   * received_at = now() on the transition into 'received', and unchanged on every other write (since
+ *     E2, 20261028194721, a client cannot even name the column: 42501, the whole statement refused);
  *   * cancelled_by / cancellation_reason change only inside the transition into 'cancelled'; any other
  *     change is refused 42501.
  *   Without a JWT (service role, fixtures) explicit values are kept, and an order inserted at
@@ -17,9 +16,10 @@
  * transaction's now(), so a database-stamped received_at / cancelled_at EQUALS updated_at.
  *
  * Admins: orders has no admin UPDATE policy, so an admin UPDATE on someone else's order matches 0 rows
- * under RLS and never reaches the trigger — asserting on it would be vacuous. The one path where an
- * admin JWT reaches the trigger today is an INSERT as buyer (migration 54 exempts admins from its tier
- * 2), which is what pins "admins are treated like any client" below.
+ * under RLS and never reaches the trigger — asserting on it would be vacuous. An admin INSERT as buyer
+ * used to reach it (migration 54 exempted admins from its tier 2); since 20261028194712 it is refused by
+ * tier 2 like any client's, which is what pins "admins are treated like any client" below.
+ * received_at holds no client UPDATE grant since 20261028194721 (E2): naming it is refused 42501.
  *
  * Every order is inserted through the buyer's own session and advanced by the seller through the real
  * transitions (check_order_status_transition refuses a status change without a JWT, so fixtures cannot
@@ -271,45 +271,40 @@ describe.skipIf(!hasCreds)('E1 — received_at is the database’s', () => {
     expect(data?.received_at).toBe(data?.updated_at) // same transaction's now()
   })
 
-  it('a client-supplied received_at on the receipt (today’s browser payload) is discarded', async () => {
-    const { data, error } = await buyerClient
-      .from('orders')
-      .update({ status: 'received', received_at: FORGED })
-      .eq('id', orderR2)
-      .select(LIFECYCLE)
-      .single()
-    expect(error).toBeNull()
-    expect(data?.received_at).not.toBe(FORGED)
-    expect(data?.received_at).toBe(data?.updated_at)
+  it('a receipt that still names received_at (the pre-H8 browser payload) is refused whole (E2)', async () => {
+    const { error } = await buyerClient.from('orders').update({ status: 'received', received_at: FORGED }).eq('id', orderR2)
+    expect(error?.code).toBe('42501')
+    expect(error?.message).toBe('permission denied for table orders')
+    expect(await lifecycle(orderR2)).toMatchObject({ status: 'arrived', received_at: null })
   })
 
-  it('afterwards neither party moves it, and the write is silently discarded', async () => {
+  it('afterwards neither party can name received_at, and the stamp stays (E2)', async () => {
     const before = await lifecycle(orderR1)
     for (const client of [buyerClient, sellerClient]) {
-      // .select proves the row matched — the trigger ran and discarded the value, RLS did not filter it.
-      const { data, error } = await client.from('orders').update({ received_at: FORGED }).eq('id', orderR1).select('id')
-      expect(error).toBeNull()
-      expect(data).toHaveLength(1)
+      const { error } = await client.from('orders').update({ received_at: FORGED }).eq('id', orderR1)
+      expect(error?.code).toBe('42501')
+      expect(error?.message).toBe('permission denied for table orders')
     }
     expect((await lifecycle(orderR1)).received_at).toBe(before.received_at)
   })
 
-  it('a seller cannot plant received_at on an order that is not received', async () => {
-    const { data, error } = await sellerClient.from('orders').update({ received_at: FORGED }).eq('id', orderN1).select('id')
-    expect(error).toBeNull()
-    expect(data).toHaveLength(1)
+  it('a seller cannot plant received_at on an order that is not received (no UPDATE grant since E2)', async () => {
+    // 20261028194721_orders_received_at_revoke: the value used to be discarded silently; now the grant is gone.
+    const { error } = await sellerClient.from('orders').update({ received_at: FORGED }).eq('id', orderN1)
+    expect(error?.code).toBe('42501')
+    expect(error?.message).toBe('permission denied for table orders')
     expect((await lifecycle(orderN1)).received_at).toBeNull()
   })
 
-  it('an admin JWT is treated like any client: inserting at received as buyer stamps now(), not its value', async () => {
-    const { data, error } = await adminClient
+  it('an admin JWT is treated like any client: inserting at received as buyer is refused (tier 2)', async () => {
+    // 20261028194712_orders_admin_insert_tier2: the admin no longer skips migration 54's tier 2.
+    const { error } = await adminClient
       .from('orders')
       .insert(productOrder({ buyer_id: adminId, status: 'received', received_at: FORGED }))
-      .select('received_at, created_at')
-      .single()
-    expect(error).toBeNull()
-    expect(data?.received_at).not.toBe(FORGED)
-    expect(data?.received_at).toBe(data?.created_at) // created_at defaults to the same now()
+    expect(error?.code).toBe('42501')
+    expect(error?.message).toBe('Une commande est toujours créée en attente.')
+    const { count } = await admin.from('orders').select('id', { count: 'exact', head: true }).eq('buyer_id', adminId)
+    expect(count).toBe(0)
   })
 
   it('without a JWT: an order inserted at received is stamped, and an explicit value is kept', async () => {

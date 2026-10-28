@@ -4,6 +4,7 @@ import { t } from '@/lib/i18n'
 import type { Lang } from '@/lib/i18n'
 import { createClient } from '@/lib/supabase/server'
 import { requireAdmin } from '@/lib/auth/require-admin'
+import { failQuery, isNoRowLike, reportQueryError } from '@/lib/supabase/query-error'
 import { OrderLifecycleStepper } from '@/components/OrderLifecycleStepper'
 import type { DisputeRow } from '@/lib/types/dispute'
 import { ClaimDisputeButton } from './ClaimDisputeButton'
@@ -51,7 +52,8 @@ export default async function DisputeDetailPage({ params }: Props) {
     .eq('id', id)
     .single()
 
-  if (error) console.error('[admin/litiges/[id]] fetch error:', error.message, error.code, error.details)
+  // « No row » (or a junk id) keeps the not-found block below; a failed query throws to error.tsx.
+  if (error && !isNoRowLike(error)) failQuery('admin/litiges/[id] dispute', error)
 
   if (!dispute) {
     return (
@@ -73,7 +75,8 @@ export default async function DisputeDetailPage({ params }: Props) {
     .select('id, order_type, status, received_at, cancelled_at, cancelled_by, cancellation_reason')
     .eq('id', d.order_id)
     .maybeSingle()
-  if (orderError) console.error('[admin/litiges/[id]] order context fetch error:', orderError.message, orderError.code, orderError.details)
+  // Partial display: the dispute still renders, the evidence section falls back to « — ».
+  if (orderError) reportQueryError('admin/litiges/[id] order context', orderError)
   const order = (orderRow as OrderContext | null) ?? null
 
   return (

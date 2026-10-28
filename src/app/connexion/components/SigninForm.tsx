@@ -98,7 +98,7 @@ export function SigninForm({ showResetSuccess = false }: { showResetSuccess?: bo
       }
       router.push(resolveSignInDestination(window.location.search, profile))
     } catch (err) {
-      console.error('[SigninForm] signin error:', err)
+      console.error('[SigninForm] signin error:', err instanceof Error ? err.message : String(err))
       setFormError(t('signin.errors.generic', lang))
       setLoading(false)
     }
@@ -111,7 +111,7 @@ export function SigninForm({ showResetSuccess = false }: { showResetSuccess?: bo
       options: { redirectTo: `${window.location.origin}/auth/callback` },
     })
     if (error) {
-      console.error('[SigninForm] Google OAuth error:', error)
+      console.error('[SigninForm] Google OAuth error:', error.message, error.code, error.status)
       setFormError(t('signin.errors.generic', lang))
     }
   }

@@ -1,6 +1,6 @@
 import { cache } from 'react'
 import { createClient } from '@/lib/supabase/server'
-import { failQuery, isNoRowLike } from '@/lib/supabase/query-error'
+import { failQuery, isNoRowLike, reportQueryError } from '@/lib/supabase/query-error'
 import type { ServiceListing } from '@/components/listings/ServiceListingCard'
 import { skillLabelPair } from '@/lib/freelance/service-draft'
 
@@ -74,7 +74,8 @@ export const getFreelancerDetail = cache(async (id: string): Promise<FreelancerD
     .select('full_name, avatar_url')
     .eq('id', profile.profile_id)
     .maybeSingle()
-  if (identityErr) console.error('[freelancer-detail] public_profiles fetch failed:', identityErr.message, identityErr.code, identityErr.details)
+  // Sub-queries below are partial display: the profile renders without the failed block, and it is reported.
+  if (identityErr) reportQueryError('freelancer-detail public_profiles', identityErr)
 
   const [skillsRes, langRes, toolsRes, linksRes, portfolioRes, eduRes, certRes] = await Promise.all([
     supabase.from('freelancer_skills').select('skill').eq('freelancer_profile_id', id),
@@ -95,7 +96,7 @@ export const getFreelancerDetail = cache(async (id: string): Promise<FreelancerD
     ['freelancer_education', eduRes],
     ['freelancer_certifications', certRes],
   ] as const) {
-    if (res.error) console.error(`[freelancer-detail] ${label} fetch failed:`, res.error.message, res.error.code, res.error.details)
+    if (res.error) reportQueryError(`freelancer-detail ${label}`, res.error)
   }
 
   return {
@@ -195,14 +196,15 @@ export async function getFreelancerServices(
 // "Projets livrés" — public trust-metric aggregate. orders' own SELECT RLS is buyer/seller-scoped
 // (orders.sql), so a stranger reads zero rows directly; get_completed_service_order_count is the
 // SECURITY DEFINER RPC that bridges that gap with a bare count, no row data (founder-approved
-// migration, see PR description). Errors degrade to 0, never thrown — a trust tile is not worth
-// failing the whole page render over.
-export async function getCompletedProjectCount(profileId: string): Promise<number> {
+// migration, see PR description). Never thrown — a trust tile is not worth failing the whole page
+// render over — but an error is null, not 0: the page hides the stat instead of showing a false « 0 »
+// (loader-error-surfacing ruling 6).
+export async function getCompletedProjectCount(profileId: string): Promise<number | null> {
   const supabase = await createClient()
   const { data, error } = await supabase.rpc('get_completed_service_order_count', { target: profileId })
   if (error) {
-    console.error('[freelancer-detail] get_completed_service_order_count failed:', error.message, error.code, error.details)
-    return 0
+    reportQueryError('freelancer-detail get_completed_service_order_count', error)
+    return null
   }
   return typeof data === 'number' ? data : 0
 }
@@ -216,7 +218,7 @@ export async function getViewerContactPhone(profileId: string): Promise<string |
   const supabase = await createClient()
   const { data, error } = await supabase.rpc('get_contact_phone', { target: profileId })
   if (error) {
-    console.error('[freelancer-detail] get_contact_phone failed:', error.message, error.code, error.details)
+    reportQueryError('freelancer-detail get_contact_phone', error)
     return null
   }
   return (data as string | null) ?? null

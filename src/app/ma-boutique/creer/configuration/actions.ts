@@ -9,6 +9,7 @@ import { t } from '@/lib/i18n'
 import { resolveOwnedShopId } from '@/lib/shops/owner-shop'
 import { reconcile } from '@/lib/shops/reconcile'
 import { getProductCategories } from '@/lib/marche/product-categories'
+import { QueryError, reportQueryError } from '@/lib/supabase/query-error'
 import { SHOP_TYPES, DELIVERY_SETUPS, PAYMENT_METHODS } from '@/lib/types/shop-config'
 
 // G2 step 2 "Configuration". Full reasoning: docs/design/g2-discovery.md §12-17.
@@ -68,6 +69,24 @@ export async function saveShopConfigAction(input: unknown): Promise<SaveShopConf
   }
   const shopId = owned.shopId
 
+  // shop_categories references the SAME flat `categories` table product/service/job picking share
+  // (product-categories.ts's own header: "categories.kind is the only thing separating them"). The
+  // UI only ever offers product-kind categories, but the action must not trust that — a crafted
+  // payload could otherwise tag a shop with a service-only category id. Intersect against the real
+  // product-kind set rather than trusting the client's list.
+  // Read BEFORE any write: getProductCategories() throws a QueryError on a failed read, and doing it
+  // after the shops update / payment reconcile left a half-saved config (loader-error-surfacing PR-2).
+  let validCategoryIds: Set<string>
+  try {
+    validCategoryIds = new Set((await getProductCategories()).map((c) => c.id))
+  } catch (e) {
+    if (!(e instanceof QueryError)) throw e
+    // failQuery only logged it; caught here, it would never reach Sentry otherwise.
+    reportQueryError('saveShopConfig categories', e)
+    return { ok: false, error: t('common.error_generic', lang) }
+  }
+  const scopedCategoryIds = categoryIds.filter((id) => validCategoryIds.has(id))
+
   const { error: shopErr } = await supabase
     .from('shops')
     .update({
@@ -92,14 +111,6 @@ export async function saveShopConfigAction(input: unknown): Promise<SaveShopConf
     selected: [...selectedMethods],
   })
   if (!paymentResult.ok) return { ok: false, error: t('common.error_generic', lang) }
-
-  // shop_categories references the SAME flat `categories` table product/service/job picking share
-  // (product-categories.ts's own header: "categories.kind is the only thing separating them"). The
-  // UI only ever offers product-kind categories, but the action must not trust that — a crafted
-  // payload could otherwise tag a shop with a service-only category id. Intersect against the real
-  // product-kind set rather than trusting the client's list.
-  const validCategoryIds = new Set((await getProductCategories()).map((c) => c.id))
-  const scopedCategoryIds = categoryIds.filter((id) => validCategoryIds.has(id))
 
   const categoryResult = await reconcileTable(supabase, {
     table: 'shop_categories',

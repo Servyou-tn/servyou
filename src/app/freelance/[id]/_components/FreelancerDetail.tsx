@@ -40,7 +40,7 @@ export function FreelancerDetail({
 }: {
   freelancer: FreelancerDetailData
   services: ServiceListing[]
-  completedProjectCount: number
+  completedProjectCount: number | null
   contactPhone: string | null
   lang: Lang
   isLoggedIn: boolean
@@ -99,11 +99,16 @@ export function FreelancerDetail({
               </span>
               <span className="text-caption text-text-muted">{t('freelance.public.no_reviews_yet', lang)}</span>
             </div>
-            <div className="h-8 w-px bg-border-subtle" />
-            <div className="flex flex-col">
-              <span className="text-xl font-bold text-text-primary">{completedProjectCount}</span>
-              <span className="text-caption text-text-muted">{t('freelance.public.projects_delivered', lang)}</span>
-            </div>
+            {/* null = the count failed to load: hidden rather than a false « 0 » (loader-error-surfacing ruling 6) */}
+            {completedProjectCount !== null && (
+              <>
+                <div className="h-8 w-px bg-border-subtle" />
+                <div className="flex flex-col">
+                  <span className="text-xl font-bold text-text-primary">{completedProjectCount}</span>
+                  <span className="text-caption text-text-muted">{t('freelance.public.projects_delivered', lang)}</span>
+                </div>
+              </>
+            )}
             <div className="h-8 w-px bg-border-subtle" />
             <div className="flex flex-col">
               <span className="text-xl font-bold text-text-primary">{t('freelance.public.years_value', lang, { years: yearsExperience })}</span>

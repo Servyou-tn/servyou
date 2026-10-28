@@ -61,8 +61,8 @@ export default async function EngagementDetailPage({ params }: { params: Promise
   if (!isUuid(id)) notFound()
   const [lang, { userId, topBarUser }] = await Promise.all([getLang(), requireFreelancer(`${LIST}/${id}`)])
 
-  // strict: a failed query throws (an error page), it is NOT a 404 — only a missing / foreign order is.
-  const order = await getSellerOrderDetail(id, userId, true)
+  // A failed query throws (an error page), it is NOT a 404 — only a missing / foreign order is.
+  const order = await getSellerOrderDetail(id, userId)
   if (!order || !isEngagementOrder(order)) notFound()
 
   const stageDates = stageTimestamps(order.events)

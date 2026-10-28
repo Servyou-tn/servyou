@@ -1,5 +1,6 @@
 import { cache } from 'react'
 import { createClient } from '@/lib/supabase/server'
+import { reportQueryError } from '@/lib/supabase/query-error'
 import { PRODUCT_LIFECYCLE, type OrderStatus, type OrderType } from '@/lib/types/order-status'
 
 // G8 « Commandes reçues » data layer (Figma 489:25211, specimens 490:25690 / 490:26034).
@@ -207,7 +208,8 @@ export const getSellerOrders = cache(
         .from('public_profiles')
         .select('id, full_name, city')
         .in('id', buyerIds)
-      if (pErr) console.error('[seller-orders] public_profiles error:', pErr.message, pErr.code)
+      // Partial display: the inbox still renders, the names fall back to ''.
+      if (pErr) reportQueryError('seller-orders public_profiles', pErr)
       for (const p of (profiles ?? []) as {
         id: string
         full_name: string | null

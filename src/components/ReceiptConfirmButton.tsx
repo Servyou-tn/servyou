@@ -34,7 +34,7 @@ export function ReceiptConfirmButton({ orderId }: Props) {
       .update({ status: 'received' })
       .eq('id', orderId)
     if (error) {
-      console.error('[ReceiptConfirmButton] confirmReceipt error:', error)
+      console.error('[ReceiptConfirmButton] confirmReceipt error:', error.message, error.code, error.details)
       setError(t('common.receipt_confirm_error', lang))
       setIsSubmitting(false)
       return

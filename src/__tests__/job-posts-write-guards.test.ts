@@ -9,9 +9,9 @@
  *                     from a post delete still passes.
  *   job_responses   — a freelancer withdraws their response only while its post is open, unmoderated and
  *                     within 30 days; otherwise the DELETE matches 0 rows and the response stays.
- *   orders          — no is_admin() override for an admin who is a party (9a); on a JWT INSERT the cancel
- *                     columns are discarded unless the order is inserted at cancelled, and then cancelled_at
- *                     is the database's clock (10).
+ *   orders          — no is_admin() override for an admin who is a party (9a). Decision 10's JWT-INSERT
+ *                     branch is now shadowed: since 20261028194712_orders_admin_insert_tier2 an admin's
+ *                     INSERT with cancel columns or at cancelled is refused by migration 54's tier 2.
  *
  * The service role (no JWT) seeds fixtures and backdates created_at: every guard here bypasses it. Every
  * refusal is checked by its hint / message and paired with a service-role read showing the row unchanged.
@@ -472,35 +472,46 @@ function adminOrder(extra: Partial<OrderInsert>): OrderInsert {
   return payload as OrderInsert
 }
 
+// Since migration 20261028194712 (orders_admin_insert_tier2) a JWT admin also meets migration 54's tier 2,
+// which fires before trg_enforce_order_lifecycle_columns: an INSERT carrying cancel columns or a non-pending
+// status is refused outright, so decision 10's INSERT branch is no longer reachable from a JWT.
+const NOT_PENDING = 'Une commande est toujours créée en attente.'
+
+async function adminOrderCount(): Promise<number> {
+  const { count, error } = await admin.from('orders').select('id', { count: 'exact', head: true }).eq('buyer_id', adminId)
+  if (error) throw new Error(`orders read failed: ${error.message}`)
+  return count ?? 0
+}
+
 describe.skipIf(!hasCreds)('orders — an admin who is a party follows the chain (9a, 10)', () => {
-  it('JWT INSERT not at cancelled: client-supplied cancel columns are discarded', async () => {
-    const { data, error } = await adminClient
+  it('JWT INSERT not at cancelled, with client-supplied cancel columns: refused (tier 2), nothing written', async () => {
+    const before = await adminOrderCount()
+    const { error } = await adminClient
       .from('orders')
       .insert(adminOrder({ cancelled_by: 'seller', cancellation_reason: 'forged', cancelled_at: '2000-01-01T00:00:00Z' }))
-      .select('status, cancelled_by, cancellation_reason, cancelled_at')
-      .single()
-    expect(error).toBeNull()
-    expect(data).toEqual({ status: 'pending', cancelled_by: null, cancellation_reason: null, cancelled_at: null })
+    expect(error?.code).toBe('42501')
+    expect(error?.message).toBe(NOT_PENDING)
+    expect(await adminOrderCount()).toBe(before)
   })
 
-  it('JWT INSERT at cancelled: cancelled_at is the database clock, not the client value', async () => {
-    const before = Date.now()
-    const { data, error } = await adminClient
+  it('JWT INSERT at cancelled: refused (tier 2), nothing written', async () => {
+    const before = await adminOrderCount()
+    const { error } = await adminClient
       .from('orders')
       .insert(adminOrder({ status: 'cancelled', cancelled_by: 'buyer', cancellation_reason: 'test', cancelled_at: '2000-01-01T00:00:00Z' }))
-      .select('id, cancelled_at')
-      .single()
-    expect(error).toBeNull()
-    const stamped = new Date(data!.cancelled_at as string).getTime()
-    expect(stamped).toBeGreaterThan(before - 60_000) // DB clock, allowing for skew
+    expect(error?.code).toBe('42501')
+    expect(error?.message).toBe(NOT_PENDING)
+    expect(await adminOrderCount()).toBe(before)
   })
 
   it('the admin buyer cannot leave a terminal state, nor advance the seller chain', async () => {
-    const { data: cancelled } = await adminClient
+    // Seeded without a JWT: no client, admin included, can insert at cancelled any more.
+    const { data: cancelled, error: seedErr } = await admin
       .from('orders')
       .insert(adminOrder({ status: 'cancelled', cancelled_by: 'buyer' }))
       .select('id')
       .single()
+    if (seedErr || !cancelled) throw new Error(`cancelled order seed failed: ${seedErr?.message}`)
     const reopen = await adminClient.from('orders').update({ status: 'pending' }).eq('id', cancelled!.id)
     expect(reopen.error?.message).toBe('Cette commande est terminée et ne peut plus être modifiée.')
     const { data: still } = await admin.from('orders').select('status').eq('id', cancelled!.id).single()

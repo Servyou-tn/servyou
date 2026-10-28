@@ -260,10 +260,10 @@ describe.skipIf(!hasCreds)('G4 — job_response_skills', () => {
     const add = (skill: string) => fMain.client.from('job_response_skills').insert({ job_response_id: mainResponseId, skill })
     expect((await add('Figma')).error).toBeNull()
     expect((await add('  figma ')).error?.code).toBe('23505')
-    // Probed while the response has room: the 8-skill trigger (BEFORE ROW) runs before RLS's WITH CHECK.
+    // Since 20261028194710 the ownership check is the first BEFORE ROW trigger (before the 8-skill count and
+    // RLS's WITH CHECK), so a foreign insert is refused as not_self whatever the response's skill count.
     const { error: foreign } = await fOther.client.from('job_response_skills').insert({ job_response_id: mainResponseId, skill: 'Intrus' })
-    expect(foreign?.code).toBe('42501')
-    expect(foreign?.message).toBe('new row violates row-level security policy for table "job_response_skills"')
+    expectHint(foreign, '42501', 'not_self', 'Vous ne pouvez modifier que vos propres propositions.')
     expectCheck((await add('   ')).error, 'job_response_skills_skill_length')
     expectCheck((await add('x'.repeat(61))).error, 'job_response_skills_skill_length')
   })

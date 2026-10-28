@@ -10,7 +10,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 const admin = vi.hoisted(() => ({ from: vi.fn((bucket: string) => ({ bucket, via: 'service_role' })) }))
 vi.mock('@/lib/supabase/admin', () => ({ createAdminClient: () => ({ storage: { from: admin.from } }) }))
 
-import { isCallerActive, uploadBucket } from '@/lib/images/upload-guard'
+import { callerActivity, isCallerActive, uploadBucket } from '@/lib/images/upload-guard'
 
 type RpcResult = { data: unknown; error: { message: string; code?: string; details?: string } | null }
 const session = (result: RpcResult) =>
@@ -35,6 +35,20 @@ describe('isCallerActive — fails closed', () => {
     ['a non-boolean truthy value', { data: 'true', error: null }],
   ] as const)('%s → not active', async (_label, result) => {
     expect(await isCallerActive(session(result as RpcResult))).toBe(false)
+  })
+})
+
+// Loader-error-surfacing PR-2: the tri-state behind isCallerActive, so a caller can tell a failed check
+// (generic error) from a suspended account. Swapping 'error' and 'inactive' must fail here.
+describe('callerActivity — tri-state', () => {
+  it.each([
+    ['true', { data: true, error: null }, 'active'],
+    ['false (suspended)', { data: false, error: null }, 'inactive'],
+    ['null', { data: null, error: null }, 'inactive'],
+    ['a non-boolean truthy value', { data: 'true', error: null }, 'inactive'],
+    ['an RPC error', { data: null, error: { message: 'timeout', code: '57014' } }, 'error'],
+  ] as const)('%s → %s', async (_label, result, expected) => {
+    expect(await callerActivity(session(result as RpcResult))).toBe(expected)
   })
 })
 

@@ -158,14 +158,14 @@ Ranked.
   is `consumer_id = auth.uid()` and `job_responses.job_post_id` is ON DELETE CASCADE, so one REST DELETE erases every
   freelancer's proposal (and the app only ever soft-deletes). **Decision B (founder, 2026-10-27):** drop the policy and
   revoke DELETE from authenticated — ✅ closed by migration 77 (`20261027211851_job_posts_no_hard_delete`).
-- **LOW — a responder can still add / remove `job_response_skills` after the post closes** (insert / delete policies check
+- **LOW — a responder can still add / remove `job_response_skills` after the post closes** ✅ **CLOSED by migration 79** (`20261028194710`). (insert / delete policies check
   only response ownership). Same shape as the job_responses withdrawal window: gate both on the post being open.
-- **MEDIUM (Sonnet review of #76) — a JWT admin can still INSERT an order at any status.** `enforce_order_insert_integrity`
+- **MEDIUM (Sonnet review of #76) — a JWT admin can still INSERT an order at any status.** ✅ **CLOSED by migration 80** (`20261028194712`). `enforce_order_insert_integrity`
   returns before tier 2 on `is_admin()`, and #76 only normalises the cancel columns: an admin buyer can insert at
   `received` / `arrived` (with carrier / tracking) — a fake completed transaction — or at `cancelled` with
   `cancelled_by = 'seller'`, pinning a cancellation on the seller. Same family as 9a / decision 7. Fix: drop the
   `is_admin()` early return from tier 2 (then decision 10's INSERT-at-cancelled case disappears too).
-- **LOW (Sonnet review of #76) — the skills lock can race a response.** `enforce_job_post_skills_lock` reads
+- **LOW (Sonnet review of #76) — the skills lock can race a response.** ✅ **CLOSED by migration 86** (`20261028194729`). `enforce_job_post_skills_lock` reads
   `response_count` with a plain SELECT, so a skill insert / delete concurrent with an uncommitted response sees 0. Fix:
   `select … for share` (waits for the counter's transaction; the skill FK check already takes FOR KEY SHARE).
 - **Note — no status data-fix path on orders** (9a): neither an admin nor the service role can move an order's status
