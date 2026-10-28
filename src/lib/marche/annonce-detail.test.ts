@@ -108,7 +108,7 @@ describe('getAnnonceDetail — the proposal reaches the post owner', () => {
 
   it('a failed responses read THROWS — never « no responses yet »', async () => {
     respond({ responsesError: true })
-    await expect(getAnnonceDetail('p2', OWNER)).rejects.toThrow(/responses fetch failed/)
+    await expect(getAnnonceDetail('p2', OWNER)).rejects.toThrow(/annonce-detail responses/)
   })
 
   it('stays author-only: another user gets null and no responses query is made', async () => {

@@ -8,6 +8,8 @@ import type { Lang } from '@/lib/i18n'
 import { FOCUS_RING } from '@/components/layout/styles'
 import { otherType, parseSearchParams, type SearchType } from '@/lib/search/search-params'
 import { searchMarketplace } from '@/lib/search/search-marketplace'
+import { settle } from '@/lib/supabase/query-error'
+import { ErrorState } from '@/components/marche/ErrorState'
 import { getFilterCategoriesForType } from '@/lib/marche/filter-categories'
 import { isWeakResult, shouldShowSearchLanding } from '@/lib/search/recherche-logic'
 import { buildSearchQuery } from '@/components/recherche/search-url'
@@ -63,7 +65,20 @@ export default async function RecherchePage({
   const categories = await getFilterCategoriesForType(params.type)
   const topCategories = categories.slice(0, 3)
 
-  const result = await searchMarketplace(params)
+  const searched = await settle('recherche search', searchMarketplace(params))
+  // A failed search is an inline error state inside the shell (the search box stays) — never the
+  // « aucun résultat » card.
+  if (!searched.ok) {
+    return (
+      <AppShell user={topBarUser}>
+        <div className="mb-4">
+          <SearchQueryInput initialQuery={params.q} type={params.type} basePath="/recherche" />
+        </div>
+        <ErrorState lang={lang} />
+      </AppShell>
+    )
+  }
+  const result = searched.data
   const isEmpty = result.totalCount === 0
   const hasQuery = params.q !== ''
   const hasFilters =

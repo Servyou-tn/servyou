@@ -1,5 +1,6 @@
 import { cache } from 'react'
 import { createClient } from '@/lib/supabase/server'
+import { failQuery, isNoRowLike, reportQueryError } from '@/lib/supabase/query-error'
 import { parseDeliveryAddress, parseServiceBuyerNote } from '@/lib/marche/order-detail'
 import type { OrderStatus, OrderType } from '@/lib/types/order-status'
 
@@ -148,8 +149,8 @@ function one<T>(embed: T | T[] | null | undefined): T | null {
  * this user does not sell — all the same not-found state, so the response cannot be used to probe
  * whether an order id exists.
  *
- * A failed QUERY is also null by default (G9 relies on it for a malformed uuid → 22P02); pass `strict` to throw on
- * it instead.
+ * A malformed uuid (22P02) and « no row » are null (G9 relies on it). Any OTHER failed query THROWS for every
+ * caller (loader-error-surfacing plan); `strict` is therefore a no-op, kept so H8's caller keeps compiling.
  */
 export const getSellerOrderDetail = cache(
   async (orderId: string, sellerId: string, strict = false): Promise<SellerOrderDetail | null> => {
@@ -173,14 +174,12 @@ export const getSellerOrderDetail = cache(
       .order('created_at', { referencedTable: 'order_events', ascending: true })
       .maybeSingle()
 
-    if (error) {
-      // An invalid uuid lands here as Postgres 22P02 — a graceful not-found, not a crash.
-      console.error('[seller-order-detail] fetch error:', error.message, error.code, error.details)
-      // `strict`: a caller that has already validated the id (H8's detail page) must not read a real failure as « not
-      // found » — a timeout would show a permanent-looking 404 for the freelancer's own order.
-      if (strict) throw new Error(`seller order fetch failed: ${error.message}`)
-      return null
-    }
+    // An invalid uuid (22P02) and « no row » stay a graceful not-found. Any other failure now throws
+    // for EVERY caller (loader-error-surfacing plan): a timeout must not show a permanent-looking 404
+    // for the seller's own order. `strict` (H8's caller) is therefore redundant; the parameter stays
+    // so that caller and its test keep compiling.
+    void strict
+    if (error && !isNoRowLike(error)) failQuery('seller-order-detail', error)
     if (!data) return null
 
     const row = data as unknown as Row
@@ -199,7 +198,7 @@ export const getSellerOrderDetail = cache(
       .select('full_name, city')
       .eq('id', row.buyer_id)
       .maybeSingle()
-    if (pErr) console.error('[seller-order-detail] public_profiles error:', pErr.message, pErr.code)
+    if (pErr) reportQueryError('seller-order-detail public_profiles', pErr)
     if (profile) {
       buyerName = (profile as { full_name: string | null }).full_name ?? ''
       buyerCity = (profile as { city: string | null }).city

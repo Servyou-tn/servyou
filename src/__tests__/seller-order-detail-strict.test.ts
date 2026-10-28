@@ -1,8 +1,10 @@
 /**
- * getSellerOrderDetail (src/lib/marche/seller-order-detail.ts), Supabase mocked — the `strict` flag H8's detail page uses.
- *   • default (G9): a failed query is « not found » (null) — an invalid uuid lands as 22P02 and must stay graceful;
- *   • strict (H8): a failed query THROWS, so a timeout never reads as a permanent 404 for the freelancer's own order;
- *   • either way a missing row and someone else's order are null, and price_unit is read from the listing.
+ * getSellerOrderDetail (src/lib/marche/seller-order-detail.ts), Supabase mocked.
+ *   • an invalid uuid lands as 22P02 and stays « not found » (null) — G9 relies on it;
+ *   • ANY OTHER failed query THROWS for every caller (loader-error-surfacing plan; before it, only `strict` — H8's
+ *     detail page — did), so a timeout never reads as a permanent 404 for the freelancer's own order. `strict` is
+ *     now redundant and kept only so that caller compiles;
+ *   • a missing row and someone else's order are null, and price_unit is read from the listing.
  */
 
 import { describe, it, expect, beforeEach, vi } from 'vitest'
@@ -64,14 +66,18 @@ beforeEach(() => {
 })
 
 describe('getSellerOrderDetail', () => {
-  it('returns null on a failed query by default (G9: an invalid uuid is 22P02, a graceful not-found)', async () => {
+  it('returns null for an invalid uuid (G9: 22P02 is a graceful not-found)', async () => {
     h.result = { data: null, error: { message: 'invalid input syntax for type uuid', code: '22P02', details: null } }
     expect(await getSellerOrderDetail('x', 'seller-1')).toBeNull()
+    expect(await getSellerOrderDetail('x', 'seller-1', true)).toBeNull()
   })
 
-  it('THROWS on a failed query in strict mode — an outage is not a 404', async () => {
+  it('THROWS on any other failed query — an outage is not a 404, strict or not', async () => {
+    const log = vi.spyOn(console, 'error').mockImplementation(() => {})
     h.result = { data: null, error: { message: 'timeout', code: '57014', details: null } }
-    await expect(getSellerOrderDetail('o-1', 'seller-1', true)).rejects.toThrow('seller order fetch failed: timeout')
+    await expect(getSellerOrderDetail('o-1', 'seller-1', true)).rejects.toThrow('seller-order-detail: timeout')
+    await expect(getSellerOrderDetail('o-1', 'seller-1')).rejects.toThrow('seller-order-detail: timeout')
+    log.mockRestore()
   })
 
   it('is null for a missing row and for another seller\'s order, strict or not', async () => {

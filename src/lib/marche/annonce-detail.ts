@@ -1,5 +1,6 @@
 import { cache } from 'react'
 import { createClient } from '@/lib/supabase/server'
+import { failQuery, isNoRowLike, reportQueryError } from '@/lib/supabase/query-error'
 import { MAX_RESPONSES_PER_POST } from '@/lib/job-constants'
 import { isAnnoncePastExpiry, resolveAnnonceStatus, type AnnonceDisplayStatus } from '@/lib/marche/annonce-status'
 import { parseSentLinks, type SentLink } from '@/lib/marche/sent-proposal-query'
@@ -129,11 +130,8 @@ export const getAnnonceDetail = cache(
       .eq('id', annonceId)
       .maybeSingle()
 
-    if (error) {
-      // The invalid-UUID case (Postgres 22P02) lands here too → graceful not-found, no crash.
-      console.error('[annonce-detail] fetch error:', error)
-      return null
-    }
+    // The invalid-UUID case (22P02) and « no row » stay a graceful not-found; any other failure throws.
+    if (error && !isNoRowLike(error)) failQuery('annonce-detail', error)
     if (!data) return null
 
     const row = data as unknown as AnnonceRow
@@ -152,10 +150,7 @@ export const getAnnonceDetail = cache(
       .order('created_at', { ascending: false })
       .order('created_at', { referencedTable: 'job_response_skills', ascending: true })
     // Throws instead of rendering « no responses »: a failed read must never tell the owner nobody answered.
-    if (respErr) {
-      console.error('[annonce-detail] responses fetch error:', respErr.message, respErr.code, respErr.details)
-      throw new Error(`annonce responses fetch failed: ${respErr.message}`)
-    }
+    if (respErr) failQuery('annonce-detail responses', respErr)
     const respRows = (respData ?? []) as unknown as {
       id: string
       freelancer_id: string
@@ -180,7 +175,7 @@ export const getAnnonceDetail = cache(
         .from('public_profiles')
         .select('id, full_name, city')
         .in('id', freelancerIds)
-      if (pErr) console.error('[annonce-detail] public_profiles error:', pErr)
+      if (pErr) reportQueryError('annonce-detail public_profiles', pErr)
       for (const p of (profs ?? []) as { id: string; full_name: string | null; city: string | null }[]) {
         nameCity.set(p.id, { full_name: p.full_name, city: p.city })
       }
@@ -189,7 +184,7 @@ export const getAnnonceDetail = cache(
         .from('freelancer_profiles')
         .select('profile_id, headline, city')
         .in('profile_id', freelancerIds)
-      if (fErr) console.error('[annonce-detail] freelancer_profiles error:', fErr)
+      if (fErr) reportQueryError('annonce-detail freelancer_profiles', fErr)
       for (const f of (fps ?? []) as { profile_id: string; headline: string | null; city: string | null }[]) {
         headlineCity.set(f.profile_id, { headline: f.headline, city: f.city })
       }

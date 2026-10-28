@@ -2870,6 +2870,9 @@ export const fr: Record<string, string> = {
   'system.error.retry':          "Réessayer",
   'system.error.home':           "Retour à l'accueil",
   'system.error.contact':        "Nous contacter",
+  // Inline error state for a list page whose loader failed (docs/design/loader-error-surfacing-plan.md).
+  'system.loadError.title':      "Impossible de charger ce contenu",
+  'system.loadError.body':       "Un problème temporaire nous empêche de l'afficher. Réessayez dans un instant.",
 
   // ─── Disputes (litiges) — party-facing creation + display (PR-P3) ────────────
   'dispute.section_title':                "Litige sur cette commande",

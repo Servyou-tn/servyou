@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { failQuery, reportQueryError } from '@/lib/supabase/query-error'
 import type { ProductListing } from '@/components/listings/ProductListingCard'
 import type { ServiceListing } from '@/components/listings/ServiceListingCard'
 import { skillLabelPair } from '@/lib/freelance/service-draft'
@@ -224,10 +225,8 @@ async function fetchProducts(
   query = applyProductFilters(query as unknown as AnyQuery, params, categoryIds) as unknown as typeof query
 
   const { data, error } = await query
-  if (error) {
-    console.error('[search] products fetch error:', error)
-    return []
-  }
+  // Throws instead of « no results »; the list pages settle() it into an inline ErrorState.
+  if (error) failQuery('search products', error)
 
   const rows = (data ?? []) as unknown as ProductRow[]
   return rows
@@ -261,10 +260,7 @@ async function fetchServices(
   query = applyServiceFilters(query as unknown as AnyQuery, params, categoryIds) as unknown as typeof query
 
   const { data, error } = await query
-  if (error) {
-    console.error('[search] services fetch error:', error.message, error.code, error.details)
-    return []
-  }
+  if (error) failQuery('search services', error)
 
   const rows = (data ?? []) as unknown as ServiceRow[]
 
@@ -283,7 +279,8 @@ async function fetchServices(
       .from('public_profiles')
       .select('id, full_name')
       .in('id', profileIds)
-    if (profilesError) console.error('[search] public_profiles fetch error:', profilesError)
+    // Secondary (display names): report; the cards render without the freelancer's name.
+    if (profilesError) reportQueryError('search public_profiles', profilesError)
     for (const p of (profiles ?? []) as { id: string; full_name: string | null }[]) {
       names.set(p.id, p.full_name ?? '')
     }
@@ -339,7 +336,8 @@ export async function searchMarketplace(
       .from('categories')
       .select('id')
       .in('slug', params.categorie)
-    if (error) console.error('[search] category resolve error:', error)
+    // A failed lookup must not read as « that category has no listings » (0 results).
+    if (error) failQuery('search category resolve', error)
     slugResolvedIds = ((data ?? []) as { id: string }[]).map((r) => r.id)
   }
   const categoryIds = pickCategoryIds(opts.categoryId, slugResolvedIds)

@@ -4,6 +4,8 @@ import { redirect } from 'next/navigation'
 import { AppShell } from '@/components/shell/AppShell'
 import { PageHeader } from '@/components/marche/PageHeader'
 import { EmptyState } from '@/components/marche/EmptyState'
+import { ErrorState } from '@/components/marche/ErrorState'
+import { settle } from '@/lib/supabase/query-error'
 import { AnnonceCard } from '@/components/marche/AnnonceCard'
 import { getShellUser } from '@/lib/marche/shell-user'
 import { getMyAnnonces } from '@/lib/marche/my-data'
@@ -29,7 +31,18 @@ export default async function MesAnnoncesPage({
   if (!shell) redirect('/connexion')
 
   const lang = await getLang()
-  const annonces = await getMyAnnonces(shell.id)
+  const loaded = await settle('mes-annonces', getMyAnnonces(shell.id))
+
+  // A failed read is an inline error state inside the shell — never « you have no annonces ».
+  if (!loaded.ok) {
+    return (
+      <AppShell user={shell.topBarUser}>
+        <PageHeader title={t('mesannonces.title', lang)} />
+        <ErrorState lang={lang} />
+      </AppShell>
+    )
+  }
+  const annonces = loaded.data
 
   const sp = await searchParams
   const rawPage = Array.isArray(sp.page) ? sp.page[0] : sp.page

@@ -8,6 +8,7 @@ import { getInitials } from '@/components/ui/initials'
 import { FOCUS_RING } from '@/components/layout/styles'
 import { getShellUser } from '@/lib/marche/shell-user'
 import { getOrderDetail, type OrderDetail } from '@/lib/marche/order-detail'
+import { settle } from '@/lib/supabase/query-error'
 import { getLang } from '@/lib/i18n/server'
 import { t, type Lang } from '@/lib/i18n'
 import { tndPrice } from '@/components/listings/listing-utils'
@@ -269,7 +270,11 @@ export default async function DemandeSuccesPage({ searchParams }: Props) {
   if (!shell) redirect('/connexion')
 
   const [{ order: orderId }, lang] = await Promise.all([searchParams, getLang()])
-  const order = orderId ? await getOrderDetail(orderId, shell.id) : null
+  // The order is already COMMITTED when the buyer lands here, so a failed récap read must not become a 500
+  // (they may order again): it is reported and the generic confirmation is shown — the one caller for
+  // which « null on a failed read » is the deliberate safety net.
+  const loaded = orderId ? await settle('demander/succes order', getOrderDetail(orderId, shell.id)) : null
+  const order = loaded?.ok ? loaded.data : null
   const service = order?.orderType === 'service' ? order : null
   const product = order?.orderType === 'product' ? order : null
 

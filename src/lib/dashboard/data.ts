@@ -1,5 +1,6 @@
 import { cache } from 'react'
 import { createClient } from '@/lib/supabase/server'
+import { failQuery, isNoRowLike } from '@/lib/supabase/query-error'
 
 // Shared, request-deduped reads for the dashboard shell. The App Router can't pass
 // props from a layout to its page, so the layout, the right rail, and the page each
@@ -26,6 +27,7 @@ export const getDashboardProfile = cache(async (userId: string): Promise<Dashboa
     .select('full_name, city, seller_type')
     .eq('id', userId)
     .single()
-  if (error) console.error('[dashboard/data] profile fetch error:', error)
+  // No row → null (as before); any other failure throws rather than reading as « no profile ».
+  if (error && !isNoRowLike(error)) failQuery('dashboard profile', error)
   return (data as DashboardProfile) ?? null
 })

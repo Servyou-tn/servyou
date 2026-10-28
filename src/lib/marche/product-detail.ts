@@ -1,5 +1,6 @@
 import { cache } from 'react'
 import { createClient } from '@/lib/supabase/server'
+import { failQuery, isNoRowLike, reportQueryError } from '@/lib/supabase/query-error'
 import type { ProductListing } from '@/components/listings/ProductListingCard'
 
 // Single-product detail fetch for /produits/[id]. Resurrected from the pre-reset page
@@ -80,10 +81,8 @@ export const getProductDetail = cache(async (id: string): Promise<ProductDetailD
     .is('shops.admin_hidden_at', null)
     .maybeSingle()
 
-  if (error) {
-    console.error('[product-detail] fetch error:', error)
-    return null
-  }
+  // « No row » (or a junk id) is a 404; a failed query is not — it throws to the root error.tsx.
+  if (error && !isNoRowLike(error)) failQuery('product-detail', error)
   if (!data) return null
 
   const row = data as unknown as DetailRow
@@ -165,8 +164,9 @@ export async function getRelatedProducts(opts: {
     .order('created_at', { ascending: false })
     .limit(8)
 
+  // Secondary (the « related » strip): report and render the page without it.
   if (error) {
-    console.error('[product-detail] related fetch error:', error)
+    reportQueryError('product-detail related', error)
     return []
   }
 

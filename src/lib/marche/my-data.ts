@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { failQuery, reportQueryError } from '@/lib/supabase/query-error'
 import type { ProductListing } from '@/components/listings/ProductListingCard'
 import type { ServiceListing } from '@/components/listings/ServiceListingCard'
 import { resolveAnnonceStatus, type AnnonceDisplayStatus } from '@/lib/marche/annonce-status'
@@ -88,10 +89,7 @@ export async function getMyOrders(userId: string): Promise<MyOrder[]> {
   // A failed query must NEVER degrade to "you have no orders" — that is the worst possible
   // failure on this page, and the file header above already promised it would not happen.
   // Throwing surfaces it (error boundary) instead of silently rendering an empty list.
-  if (error) {
-    console.error('[my-data] orders fetch error:', error.message, error.code, error.details)
-    throw new Error(`orders fetch failed: ${error.message}`)
-  }
+  if (error) failQuery('my-data orders', error)
 
   const rows = (data ?? []) as unknown as OrderRow[]
 
@@ -112,7 +110,7 @@ export async function getMyOrders(userId: string): Promise<MyOrder[]> {
       .from('public_profiles')
       .select('id, full_name')
       .in('id', profileIds)
-    if (pErr) console.error('[my-data] orders public_profiles error:', pErr)
+    if (pErr) reportQueryError('my-data orders public_profiles', pErr)
     for (const p of (profiles ?? []) as { id: string; full_name: string | null }[]) {
       names.set(p.id, p.full_name ?? '')
     }
@@ -278,10 +276,8 @@ export async function getMyFavorites(
     .eq('user_id', userId)
     .order('created_at', { ascending: false })
 
-  if (error) {
-    console.error('[my-data] favorites fetch error:', error.message, error.code, error.details)
-    return { products: [], services: [], combined: [] }
-  }
+  // Throws instead of « you have no favourites »; /mes-favoris settle()s it into an inline error state.
+  if (error) failQuery('my-data favorites', error)
 
   const rows = (data ?? []) as unknown as FavoriteRow[]
 
@@ -336,7 +332,7 @@ export async function getMyFavorites(
       .from('public_profiles')
       .select('id, full_name')
       .in('id', profileIds)
-    if (pErr) console.error('[my-data] favorites public_profiles error:', pErr)
+    if (pErr) reportQueryError('my-data favorites public_profiles', pErr)
     for (const p of (profiles ?? []) as { id: string; full_name: string | null }[]) {
       names.set(p.id, p.full_name ?? '')
     }
@@ -431,10 +427,8 @@ export async function getMyAnnonces(userId: string): Promise<MyAnnonce[]> {
     .neq('status', 'deleted')
     .order('created_at', { ascending: false })
 
-  if (error) {
-    console.error('[my-data] annonces fetch error:', error)
-    return []
-  }
+  // Throws instead of « you have no annonces »; /mes-annonces settle()s it into an inline error state.
+  if (error) failQuery('my-data annonces', error)
 
   return ((data ?? []) as unknown as AnnonceRow[]).map((row) => ({
     id: row.id,
@@ -481,10 +475,7 @@ export async function getCategories(): Promise<{ id: string; slug: string; name_
     .in('kind', ['service', 'both'])
     .is('parent_id', null)
     .order('name_fr')
-  if (error) {
-    // Throws (it used to return []): an empty category select makes the form impossible to submit with no explanation.
-    console.error('[my-data] categories fetch error:', error.message, error.code, error.details)
-    throw new Error(`categories fetch failed: ${error.message}`)
-  }
+  // Throws (it used to return []): an empty category select makes the form impossible to submit with no explanation.
+  if (error) failQuery('my-data categories', error)
   return (data ?? []) as { id: string; slug: string; name_fr: string }[]
 }

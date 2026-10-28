@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { reportQueryError } from '@/lib/supabase/query-error'
 import type { TopBarUser } from '@/components/marche/ProfileAvatarMenu'
 
 // Resolves the current user + their display name for the marche shell top bar.
@@ -18,7 +19,10 @@ export async function getShellUser(): Promise<{ id: string; topBarUser: TopBarUs
     .select('full_name, seller_type, avatar_url')
     .eq('id', user.id)
     .maybeSingle()
-  if (error) console.error('[shell-user] profile fetch failed:', error.message, error.code, error.details)
+  // Ruling 3: the top bar keeps a partial display (the user, without name / role / avatar) and the
+  // failure is reported — a shell read must not take ~33 pages down. Pages that gate on the ROLE
+  // read it themselves and throw.
+  if (error) reportQueryError('shell-user profile', error)
 
   return {
     id: user.id,

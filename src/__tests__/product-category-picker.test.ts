@@ -75,8 +75,12 @@ describe('getProductCategories — the product picker is product-side', () => {
     expect(h.calls.select[0]).toContain('name_fr')
   })
 
-  it('returns an empty list rather than throwing when the query errors', async () => {
+  // Loader-error-surfacing PR-1: it used to return [] (an empty picker the owner could not list a product
+  // with, and a configuration action that refused every category id). It throws, like the mission picker.
+  it('throws rather than returning an empty list when the query errors', async () => {
+    const log = vi.spyOn(console, 'error').mockImplementation(() => {})
     h.state.result = { data: null, error: { message: 'boom', code: '42703' } }
-    await expect(getProductCategories()).resolves.toEqual([])
+    await expect(getProductCategories()).rejects.toThrow('product-categories: boom')
+    log.mockRestore()
   })
 })

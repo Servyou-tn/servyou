@@ -44,7 +44,7 @@ describe('error (500)', () => {
   it('renders the apologetic title and a working retry button', () => {
     const out = renderToString(
       <LangProvider lang="fr">
-        {createElement(ErrorPage, { error: new Error('boom'), reset: () => {} })}
+        {createElement(ErrorPage, { error: new Error('boom'), retry: () => {} })}
       </LangProvider>,
     )
     expect(out).toContain('Une erreur') // apostrophe in "s'est" is escaped by renderToString

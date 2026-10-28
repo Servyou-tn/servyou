@@ -1,5 +1,6 @@
 import { cache } from 'react'
 import { createClient } from '@/lib/supabase/server'
+import { failQuery, isNoRowLike } from '@/lib/supabase/query-error'
 import type { ServiceListing } from '@/components/listings/ServiceListingCard'
 import { skillLabelPair } from '@/lib/freelance/service-draft'
 
@@ -64,10 +65,8 @@ export const getFreelancerDetail = cache(async (id: string): Promise<FreelancerD
     .eq('id', id)
     .is('admin_hidden_at', null)
     .maybeSingle()
-  if (profileErr) {
-    console.error('[freelancer-detail] freelancer_profiles fetch failed:', profileErr.message, profileErr.code, profileErr.details)
-    return null
-  }
+  // « No row » (or a junk id) is a 404; a failed query is not — it throws to the root error.tsx.
+  if (profileErr && !isNoRowLike(profileErr)) failQuery('freelancer-detail profile', profileErr)
   if (!profile) return null
 
   const { data: identity, error: identityErr } = await supabase
@@ -172,10 +171,9 @@ export async function getFreelancerServices(
     .is('admin_hidden_at', null)
     .order('created_at', { ascending: false })
 
-  if (error) {
-    console.error('[freelancer-detail] services fetch error:', error.message, error.code, error.details)
-    return []
-  }
+  // The services grid is the profile's main content: a failure throws rather than showing a
+  // freelancer with « no services ».
+  if (error) failQuery('freelancer-detail services', error)
 
   return ((data ?? []) as unknown as ServiceRow[]).map((row) => {
     const category = one(row.categories)

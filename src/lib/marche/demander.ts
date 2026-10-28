@@ -1,5 +1,6 @@
 import { cache } from 'react'
 import { createClient } from '@/lib/supabase/server'
+import { failQuery, isNoRowLike, reportQueryError } from '@/lib/supabase/query-error'
 
 // Target resolution for /demander/[id]: one route serves both product and service
 // requests. We try the id as a product first, then as a service_listing. Moderation is
@@ -102,7 +103,9 @@ export const getRequestTarget = cache(async (id: string): Promise<RequestTarget 
     .eq('status', 'active')
     .is('shops.admin_hidden_at', null)
     .maybeSingle()
-  if (pErr) console.error('[demander] product fetch error:', pErr)
+  // A junk id (22P02) just means « not a product » and falls through to the service lookup; any
+  // other failure throws instead of reading as « introuvable ».
+  if (pErr && !isNoRowLike(pErr)) failQuery('demander product', pErr)
 
   if (product) {
     const row = product as unknown as ProductRow
@@ -135,7 +138,7 @@ export const getRequestTarget = cache(async (id: string): Promise<RequestTarget 
     .is('admin_hidden_at', null)
     .is('freelancer_profiles.admin_hidden_at', null)
     .maybeSingle()
-  if (sErr) console.error('[demander] service fetch error:', sErr.message, sErr.code, sErr.details)
+  if (sErr && !isNoRowLike(sErr)) failQuery('demander service', sErr)
 
   if (service) {
     const row = service as unknown as ServiceRow
@@ -147,7 +150,7 @@ export const getRequestTarget = cache(async (id: string): Promise<RequestTarget 
         .select('full_name')
         .eq('id', fp.profile_id)
         .maybeSingle()
-      if (prErr) console.error('[demander] public_profiles error:', prErr)
+      if (prErr) reportQueryError('demander public_profiles', prErr)
       name = prof?.full_name ?? ''
     }
     return {
@@ -182,6 +185,7 @@ export async function getBuyerPhone(userId: string): Promise<string | null> {
     .select('phone')
     .eq('id', userId)
     .maybeSingle()
-  if (error) console.error('[demander] buyer phone fetch error:', error.message, error.code, error.details)
+  // Secondary (a form prefill): report and leave the field empty.
+  if (error) reportQueryError('demander buyer phone', error)
   return data?.phone ?? null
 }
