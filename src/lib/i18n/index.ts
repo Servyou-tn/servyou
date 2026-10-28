@@ -21,7 +21,9 @@ export function t(
   let str = dicts[lang][key] ?? key
   if (vars) {
     for (const [k, v] of Object.entries(vars)) {
-      str = str.replace(`{${k}}`, String(v))
+      // A replacer FUNCTION: a string replacement treats `$&` and `$$` as patterns, and /aide is the first
+      // place raw user input (the search query) goes through t().
+      str = str.replace(`{${k}}`, () => String(v))
     }
   }
   return str
