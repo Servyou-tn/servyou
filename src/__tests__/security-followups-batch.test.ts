@@ -285,6 +285,50 @@ describe.skipIf(!hasCreds)('job_response_skills — writable only while the post
     expect(await skillCount(responseId)).toBe(1)
   })
 
+  // The other two conjuncts of the window (review of PR #222): moderated, and stored-open past 30 days.
+  const closedWindow: Array<[string, (postId: string) => Promise<void>]> = [
+    [
+      'admin-moderated',
+      async (postId) => {
+        const { error } = await adminClient.rpc('admin_hide_content', { target_type: 'job_post', target_id: postId, reason: `${TITLE} moderation` })
+        if (error) throw new Error(`admin_hide_content failed: ${error.message}`)
+      },
+    ],
+    [
+      'older than 30 days (still stored open)',
+      async (postId) => {
+        const old = new Date(Date.now() - 31 * 24 * 60 * 60 * 1000).toISOString()
+        const { error } = await admin.from('job_posts').update({ created_at: old } as Database['public']['Tables']['job_posts']['Update']).eq('id', postId)
+        if (error) throw new Error(`backdate failed: ${error.message}`)
+      },
+    ],
+  ]
+  for (const [label, close] of closedWindow) {
+    it(`${label}: adding a skill is refused (proposal_locked)`, async () => {
+      const postId = await seedPost(`skills ${label}`)
+      const responseId = await respond(postId)
+      await close(postId)
+      const { error } = await responderClient.from('job_response_skills').insert({ job_response_id: responseId, skill: 'InDesign' })
+      expect(error?.code).toBe(DENIED)
+      expect(error?.hint).toBe('proposal_locked')
+      expect(await skillCount(responseId)).toBe(0)
+    })
+  }
+
+  it('the cascade passes: withdrawing a response that has skills (open post) takes its skills with it', async () => {
+    const responseId = await respond(await seedPost('skills cascade'))
+    const { error: seedErr } = await responderClient
+      .from('job_response_skills')
+      .insert([{ job_response_id: responseId, skill: 'Figma' }, { job_response_id: responseId, skill: 'Canva' }])
+    if (seedErr) throw new Error(`skill seed failed: ${seedErr.message}`)
+    // The JWT path: « Retirer » deletes the response; the FK cascade deletes the skills under the same JWT,
+    // and the trigger finds no parent response and passes.
+    const { data, error } = await responderClient.from('job_responses').delete().eq('id', responseId).select('id')
+    expect(error).toBeNull()
+    expect(data).toHaveLength(1)
+    expect(await skillCount(responseId)).toBe(0)
+  })
+
   it('a non-responder is refused as not_self before the 8-skill count can answer (M-C leak)', async () => {
     const responseId = await respond(await seedPost('skills leak'))
     const skills = Array.from({ length: 8 }, (_, i) => ({ job_response_id: responseId, skill: `Compétence ${i + 1}` }))

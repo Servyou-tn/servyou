@@ -762,8 +762,11 @@ executable SQL is MD5-verified against `schema_migrations` (comments and whitesp
 per entry). Founder rulings 1–4 (2026-10-28): wording approved; an admin inserts orders at `pending` only;
 new columns on `freelancer_profiles` / `shops` / `disputes` need an explicit column GRANT (db-guardian
 skill); the affected live suites are updated in the same PR. No row was rewritten and no type changed.
-All eight are verified by `src/__tests__/security-followups-batch.test.ts` (live-DB, 19/19; it was 14 red
-before apply), except 86. Rollback is at the bottom of each file.
+Migrations 79–85 are verified by `src/__tests__/security-followups-batch.test.ts` (live-DB; 14 red before
+apply, all green after; the PR #222 review added the moderated, past-30-days and cascade cases for 79). 86 has
+no live test. Rollback is at the bottom of each file. The files are byte-identical to what was applied, so
+their header comments still name sibling files by their `PENDING_` names; read those as the recorded
+`20261028…` names above.
 
 79. **20261028194710_job_response_skills_open_post** (`d96b5747`) — closes « a responder can still add /
     remove `job_response_skills` after the post closes » (#76 Not covered) and M-C's « the 8-skill limit
