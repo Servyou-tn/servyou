@@ -18,6 +18,8 @@ const h = vi.hoisted(() => ({
   lookup: { data: { id: 'x' }, error: null } as { data: unknown; error: unknown },
   insertResult: { error: null } as { error: unknown },
   calls: [] as string[],
+  // Every touch of the client in order: auth, select, eq — so a test can prove WHAT was filtered and that nothing ran early.
+  trace: [] as string[],
   inserted: [] as unknown[],
   captureException: vi.fn(),
 }))
@@ -26,12 +28,24 @@ vi.mock('@sentry/nextjs', () => ({ captureException: h.captureException }))
 vi.mock('@/lib/i18n/server', () => ({ getLang: async () => 'fr' }))
 vi.mock('@/lib/supabase/server', () => ({
   createClient: async () => ({
-    auth: { getUser: async () => ({ data: { user: h.user }, error: null }) },
+    auth: {
+      getUser: async () => {
+        h.trace.push('auth:getUser')
+        return { data: { user: h.user }, error: null }
+      },
+    },
     from: (table: string) => {
       h.calls.push(`from:${table}`)
+      h.trace.push(`from:${table}`)
       const builder = {
-        select: () => builder,
-        eq: () => builder,
+        select: (cols: string) => {
+          h.trace.push(`select:${cols}`)
+          return builder
+        },
+        eq: (col: string, val: unknown) => {
+          h.trace.push(`eq:${col}=${String(val)}`)
+          return builder
+        },
         maybeSingle: async (): Promise<Result> => h.lookup,
         insert: async (row: unknown) => {
           h.inserted.push(row)
@@ -52,16 +66,22 @@ const SERVICE_ID = '22222222-2222-4222-8222-222222222222'
 const valid = { kind: 'product', targetId: PRODUCT_ID, reason: 'fake_scam', description: 'Faux produit' }
 
 let log: ReturnType<typeof vi.spyOn>
+let warn: ReturnType<typeof vi.spyOn>
 beforeEach(() => {
   h.user = { id: 'user-1' }
   h.lookup = { data: { id: PRODUCT_ID }, error: null }
   h.insertResult = { error: null }
   h.calls = []
+  h.trace = []
   h.inserted = []
   h.captureException.mockReset()
   log = vi.spyOn(console, 'error').mockImplementation(() => {})
+  warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
 })
-afterEach(() => log.mockRestore())
+afterEach(() => {
+  log.mockRestore()
+  warn.mockRestore()
+})
 
 describe('input validation — runs before any database access', () => {
   it.each([
@@ -73,6 +93,8 @@ describe('input validation — runs before any database access', () => {
     ['a non-object', 'nope'],
   ])('rejects %s with the generic error and touches nothing', async (_label, input) => {
     expect(await createListingReportAction(input)).toEqual(GENERIC)
+    // Not even the auth call: Zod runs BEFORE any client access, so a malformed request costs no round trip.
+    expect(h.trace).toEqual([])
     expect(h.calls).toEqual([])
     expect(h.inserted).toEqual([])
   })
@@ -82,6 +104,8 @@ describe('what gets filed', () => {
   it('a product report: target_type "product", the session user as reporter, description kept', async () => {
     expect(await createListingReportAction(valid)).toEqual({ ok: true })
     expect(h.calls).toEqual(['from:products', 'from:reports'])
+    // The existence check filters on THIS id (a dropped or wrong filter would pass every other assertion).
+    expect(h.trace).toEqual(['auth:getUser', 'from:products', 'select:id', `eq:id=${PRODUCT_ID}`, 'from:reports'])
     expect(h.inserted).toEqual([
       { reporter_id: 'user-1', target_type: 'product', target_id: PRODUCT_ID, reason: 'fake_scam', description: 'Faux produit' },
     ])
@@ -91,6 +115,7 @@ describe('what gets filed', () => {
     h.lookup = { data: { id: SERVICE_ID }, error: null }
     expect(await createListingReportAction({ kind: 'service', targetId: SERVICE_ID, reason: 'wrong_category' })).toEqual({ ok: true })
     expect(h.calls).toEqual(['from:service_listings', 'from:reports'])
+    expect(h.trace).toContain(`eq:id=${SERVICE_ID}`)
     expect(h.inserted).toEqual([
       { reporter_id: 'user-1', target_type: 'service', target_id: SERVICE_ID, reason: 'wrong_category', description: null },
     ])

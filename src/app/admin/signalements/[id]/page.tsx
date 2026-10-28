@@ -53,9 +53,12 @@ type Report = {
 // detail page (/admin/utilisateurs/[id]) — internal, same tab.
 const TARGET_ROUTES: Record<string, string> = {
   shop: '/boutique',
-  product: '/produit',
+  // The public detail routes are /produits/[id] and /services/[id] (plural). These two pointed at '/produit' and
+  // '/service' — routes that do not exist — and went unnoticed only because no product/service report could be filed
+  // until the « Signaler » modal shipped (feat/signaler-product-service).
+  product: '/produits',
   freelancer_profile: '/freelance',
-  service: '/service',
+  service: '/services',
   job_post: '/missions',
   user: '/admin/utilisateurs',
 }

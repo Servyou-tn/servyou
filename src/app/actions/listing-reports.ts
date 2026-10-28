@@ -69,7 +69,8 @@ export async function createListingReportAction(input: unknown): Promise<CreateL
     return generic
   }
   if (!lookup.data) {
-    console.error(`[createListingReport] rejected: ${kind} ${targetId} not found or not visible to the reporter`)
+    // warn, not error: « not found / not visible » is an expected refusal, not a failure (and a caller can trigger it at will).
+    console.warn(`[createListingReport] rejected: ${kind} ${targetId} not found or not visible to the reporter`)
     return generic
   }
 
