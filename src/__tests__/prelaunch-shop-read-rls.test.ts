@@ -635,13 +635,18 @@ describe.skipIf(!hasCreds)('buyer — keeps what they ordered, nothing more', ()
 type FavoriteRow = { id: string; products: Embed<{ id: string }> }
 
 describe.skipIf(!hasCreds)('favorites — what /mes-favoris receives', () => {
-  it('the live favourite embeds its product; the paused one embeds null (my-data.ts drops it)', async () => {
+  it('the live favourite embeds its product; the paused one is not returned at all', async () => {
+    // Since migration 98 (20261028221956, architect ruling 2) « Users read own favorites » also requires the
+    // target to be readable by the caller: a favourite of a product the outsider cannot see is hidden (never
+    // deleted), instead of coming back with a null embed for my-data.ts to drop.
     const { data, error } = await outsiderClient.from('favorites').select('id, products ( id )').in('id', [favoriteL, favoriteP2])
     expect(error).toBeNull()
     const byId = new Map(((data ?? []) as unknown as FavoriteRow[]).map((row) => [row.id, one(row.products)]))
-    expect(byId.size).toBe(2)
+    expect(byId.size).toBe(1)
     expect(byId.get(favoriteL)?.id).toBe(productL)
-    expect(byId.get(favoriteP2)).toBeNull()
+    expect(byId.has(favoriteP2)).toBe(false)
+    const { count } = await admin.from('favorites').select('id', { count: 'exact', head: true }).eq('id', favoriteP2)
+    expect(count).toBe(1) // still stored
   })
 })
 

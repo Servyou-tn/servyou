@@ -1,8 +1,9 @@
 /**
- * Live-DB proof for PENDING_notification_preferences.sql and PENDING_favorites_shops_freelancers.sql (founder
- * brief 2026-10-28; Figma 558:38878 Paramètres › Notifications, 720:62084 / 720:62688 Mes favoris Boutiques /
- * Freelances; architect rulings 1–4 of 2026-10-28). RED until both are applied: the table does not exist yet,
- * and favorites accepts only products / services, whatever its target's visibility, on insert and on read.
+ * Live-DB proof for db/migrations/20261028221948_notification_preferences.sql and
+ * 20261028221956_favorites_shops_freelancers.sql (founder brief 2026-10-28; Figma 558:38878 Paramètres ›
+ * Notifications, 720:62084 / 720:62688 Mes favoris Boutiques / Freelances; architect rulings 1–4 of 2026-10-28).
+ * Written while both were PENDING: 13 red / 1 green before apply (no table; favorites accepted only products /
+ * services, whatever the target's visibility, on insert and on read), all green after.
  *
  *   notification_preferences — owner-only select / insert / update through the app's upsert, Figma defaults on
  *                              the first save (email_low_stock OFF, ruling 1), no delete, updated_at never
@@ -26,9 +27,6 @@ import type { Database } from '@/lib/supabase/database.types'
 import { refuseTeardownOnForeignOrders } from './live-teardown-guard'
 
 type Client = SupabaseClient<Database>
-// The table and the new favorites columns are not in the generated types until the migrations are applied
-// (regenerate database.types.ts then, and drop this untyped alias).
-type Untyped = SupabaseClient
 
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -50,8 +48,7 @@ const DENIED = '42501'
 
 const opts = { auth: { autoRefreshToken: false, persistSession: false } }
 const admin: Client = hasCreds ? createClient<Database>(url, serviceKey, opts) : (undefined as unknown as Client)
-const adminUntyped: Untyped = hasCreds ? createClient(url, serviceKey, opts) : (undefined as unknown as Untyped)
-const anon: Untyped = hasCreds ? createClient(url, anonKey, opts) : (undefined as unknown as Untyped)
+const anon: Client = hasCreds ? createClient<Database>(url, anonKey, opts) : (undefined as unknown as Client)
 
 async function createUser(local: string): Promise<string> {
   const { data, error } = await admin.auth.admin.createUser({
@@ -64,8 +61,8 @@ async function createUser(local: string): Promise<string> {
   return data.user.id
 }
 
-async function signIn(local: string): Promise<Untyped> {
-  const client = createClient(url, anonKey, opts)
+async function signIn(local: string): Promise<Client> {
+  const client = createClient<Database>(url, anonKey, opts)
   const { error } = await client.auth.signInWithPassword({ email: email(local), password: PASSWORD })
   if (error) throw new Error(`signIn failed for ${local}: ${error.message}`)
   return client
@@ -107,9 +104,9 @@ let productId: string
 let freelancerProfileId: string
 let serviceId: string
 
-let userA: Untyped
-let userB: Untyped
-let adminClient: Untyped
+let userA: Client
+let userB: Client
+let adminClient: Client
 
 beforeAll(async () => {
   if (!hasCreds) return
@@ -185,7 +182,7 @@ describe.skipIf(!hasCreds)('notification_preferences — owner-only, defaults on
   })
 
   it('a second save goes through the upsert UPDATE path and moves updated_at', async () => {
-    const { data: before } = await adminUntyped.from('notification_preferences').select('updated_at').eq('profile_id', userAId).single()
+    const { data: before } = await admin.from('notification_preferences').select('updated_at').eq('profile_id', userAId).single()
     const { data, error } = await userA
       .from('notification_preferences')
       .upsert({ profile_id: userAId, email_low_stock: true, email_newsletter: false }, { onConflict: 'profile_id' })
@@ -193,7 +190,7 @@ describe.skipIf(!hasCreds)('notification_preferences — owner-only, defaults on
       .single()
     expect(error).toBeNull()
     expect(data).toMatchObject({ email_low_stock: true, email_newsletter: false })
-    expect(Date.parse(data!.updated_at)).toBeGreaterThan(Date.parse((before as { updated_at: string }).updated_at))
+    expect(Date.parse(data!.updated_at)).toBeGreaterThan(Date.parse(before!.updated_at))
   })
 
   it('another user can neither read, create, nor change the owner’s row', async () => {
@@ -205,8 +202,8 @@ describe.skipIf(!hasCreds)('notification_preferences — owner-only, defaults on
     const { data: upd, error: updErr } = await userB.from('notification_preferences').update({ email_newsletter: true }).eq('profile_id', userAId).select('profile_id')
     expect(updErr).toBeNull()
     expect(upd).toEqual([])
-    const { data: row } = await adminUntyped.from('notification_preferences').select('email_newsletter').eq('profile_id', userAId).single()
-    expect((row as { email_newsletter: boolean }).email_newsletter).toBe(false)
+    const { data: row } = await admin.from('notification_preferences').select('email_newsletter').eq('profile_id', userAId).single()
+    expect(row!.email_newsletter).toBe(false)
   })
 
   it('no delete, no client-written updated_at, nothing for anon', async () => {
