@@ -3,18 +3,17 @@
  * their follow-ups, 2026-10-28). Each describe maps to one db/migrations file. Written while each was PENDING,
  * it asserts the refusal the migration introduces, so it is RED until that file is applied:
  *
- *   applied (migrations 87–91, green):
+ *   applied (migrations 87–96, green):
  *   20261028201727_moderated_seller_no_delete       — a moderated freelancer profile / shop cannot be deleted.
  *   20261028201733_get_contact_phone_state_gate     — no phone via a moderated post, nor when a party is suspended.
  *   20261028201741_orders_insert_counterparty_stock_timestamps — no order to a suspended seller; stock; server clock.
  *   20261028201745_job_responses_suspended_poster   — no response to a suspended poster's post.
  *   20261028201746_shops_one_per_owner              — one shop per owner.
- *   PENDING (red until applied):
- *   PENDING_suspended_content_hidden                — a suspended account's public content is hidden.
- *   PENDING_moderated_item_no_delete                — a moderated product / service cannot be deleted.
- *   PENDING_job_responses_cap_excludes_suspended_poster — a suspended poster's posts hold no cap slot.
- *   PENDING_get_moderation_reason_fn + PENDING_moderation_reason_column_revoke
- *                                                   — admin_hidden_reason: owner / admin via RPC, no column read.
+ *   20261028205338_get_moderation_reason_fn         — admin_hidden_reason for the owner / an admin via RPC.
+ *   20261028205341_moderated_item_no_delete         — a moderated product / service cannot be deleted.
+ *   20261028205344_job_responses_cap_excludes_suspended_poster — a suspended poster's posts hold no cap slot.
+ *   20261028205353_suspended_content_hidden         — a suspended account's public content is hidden.
+ *   20261028205833_moderation_reason_column_revoke  — no client column read of admin_hidden_reason.
  *
  * Suspension is set and cleared directly by the service role (no auth ban), and always cleared in a finally.
  * Every refusal is paired with a service-role read, and each block keeps a control showing the normal path passes.
@@ -425,7 +424,7 @@ describe.skipIf(!hasCreds)('shops — one per owner', () => {
   })
 })
 
-// ─── PENDING_suspended_content_hidden (ruling 7, read half) ─────────────────────────────────────────────────
+// ─── 20261028205353_suspended_content_hidden (ruling 7, read half) ───────────────────────────────────────────
 
 describe.skipIf(!hasCreds)('a suspended account’s public content is hidden; owner, past buyer and admin still read it', () => {
   let openPostId: string
@@ -482,7 +481,7 @@ describe.skipIf(!hasCreds)('a suspended account’s public content is hidden; ow
   })
 })
 
-// ─── PENDING_moderated_item_no_delete (ruling 5a) ───────────────────────────────────────────────────────────
+// ─── 20261028205341_moderated_item_no_delete (ruling 5a) ─────────────────────────────────────────────────────
 
 describe.skipIf(!hasCreds)('a moderated product / service cannot be deleted by its owner', () => {
   it('the product: DELETE refused (moderated), the product stays', async () => {
@@ -504,7 +503,7 @@ describe.skipIf(!hasCreds)('a moderated product / service cannot be deleted by i
   })
 })
 
-// ─── PENDING_job_responses_cap_excludes_suspended_poster (ruling 5c) ────────────────────────────────────────
+// ─── 20261028205344_job_responses_cap_excludes_suspended_poster (ruling 5c) ──────────────────────────────────
 
 describe.skipIf(!hasCreds)('the 5-active cap ignores a suspended poster’s posts', () => {
   async function postBy(consumerId: string, label: string): Promise<string> {
@@ -532,12 +531,11 @@ describe.skipIf(!hasCreds)('the 5-active cap ignores a suspended poster’s post
   })
 })
 
-// ─── PENDING_get_moderation_reason_fn + _column_revoke (ruling 9) — moderates the main shop: runs late ───────
+// ─── 20261028205338 + 20261028205833 moderation reason (ruling 9) — moderates the main shop: runs late ───
 
 describe.skipIf(!hasCreds)('admin_hidden_reason — owner and admin only', () => {
-  // get_moderation_reason does not exist before apply, so it is not in the generated types yet.
   const reasonOf = (client: Client, targetType: string, targetId: string) =>
-    (client as unknown as SupabaseClient).rpc('get_moderation_reason', { target_type: targetType, target_id: targetId })
+    client.rpc('get_moderation_reason', { target_type: targetType, target_id: targetId })
 
   beforeAll(async () => {
     if (!hasCreds) return

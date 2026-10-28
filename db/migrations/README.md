@@ -872,6 +872,52 @@ was deleted unapplied.
     - `createShopAction` maps its 23505 to `shop.create.error.already_owns` (« Vous avez déjà une boutique. »).
     - `shops_owner_idx` is now redundant and is kept.
 
+Migrations 92–95 are the batch-2 follow-ups (#224, follow-up rulings 1, 3 and 5 of 2026-10-28). The architect
+applied them on 2026-10-28, after #224 merged. Each file's executable SQL is MD5-verified against
+`schema_migrations` (comments and whitespace stripped; hash given per entry).
+- Post-apply check (architect, as anon): the marketplace counts are unchanged (25 products, 21 services, 1 shop,
+  10 freelancers, 7 posts).
+- Both technical choices are approved: the `private` schema, and the two-step reason split.
+- `database.types.ts` is regenerated (only `get_moderation_reason` is new), and the admin page's rpc cast is
+  removed.
+- No row was rewritten. Verified by `src/__tests__/security-followups-batch-2.test.ts` (live-DB).
+- The anon EXPLAIN plans for the marketplace reads are in the PR that recorded these. Rollback is at the bottom
+  of each file.
+- Step 2 of the reason split followed after #224 deployed: entry 96.
+
+92. **20261028205338_get_moderation_reason_fn** (`3d0467c0`) — ruling 9, step 1. Adds
+    `get_moderation_reason(target_type, target_id)`, which returns `admin_hidden_reason` to the row's owner
+    or to an admin, else NULL (SECURITY DEFINER, `search_path ''`, STABLE). EXECUTE is granted to
+    authenticated only. `admin/signalements/[id]` reads the note through it.
+93. **20261028205341_moderated_item_no_delete** (`465de81c`) — ruling 5a. Extends #87's
+    `trg_enforce_moderated_row_no_delete` to `products` and `service_listings`.
+    - A JWT owner's DELETE of a moderated item gets 42501 `moderated`; the delete actions map the hint to
+      `*.error_delete_moderated`.
+    - A parent that holds a moderated item can't be deleted under a JWT either (the cascade runs under the
+      same JWT). This is intended.
+94. **20261028205344_job_responses_cap_excludes_suspended_poster** (`8d1cead9`) — ruling 5c.
+    - `check_job_response_limits` is re-created by a guarded DO block. The 5-active count also requires the
+      post's consumer not to be suspended, the same way the count already skips a moderated post.
+    - Every other byte is unchanged.
+95. **20261028205353_suspended_content_hidden** (`90f7893b`) — ruling 7, read half (Option A).
+    - Adds `private.is_account_active(uuid)`, a SECURITY DEFINER policy helper in the new schema `private`.
+      That schema isn't exposed by PostgREST, so the anon EXECUTE a policy helper needs is not also an RPC.
+      USAGE and EXECUTE are granted to anon and authenticated.
+    - The public branch of the 5 parent SELECT policies (shops, products, freelancer_profiles,
+      service_listings, job_posts) now also requires the owning account to be active.
+    - The owner, admin, past-buyer and responder branches are unchanged. Child tables follow their parent;
+      `public_profiles` is unchanged.
+96. **20261028205833_moderation_reason_column_revoke** (`9008d520`) — ruling 9, step 2. The architect applied
+    it on 2026-10-28, after #224 (the app side) was merged and deployed and #92 was live.
+    - Table-level SELECT on `shops`, `products`, `service_listings`, `freelancer_profiles` and `job_posts` is
+      revoked from anon / authenticated.
+    - SELECT is re-granted column by column: every column except `admin_hidden_reason`.
+    - Row visibility (RLS) is unchanged. The owner and admins read the note through `get_moderation_reason()`.
+    - A past buyer or anyone else can no longer read it.
+    - **New columns on these five tables need an explicit SELECT grant** (db-guardian skill rule).
+    - Verified by `security-followups-batch-2.test.ts`: every client select of the column gets 42501, and
+      the rest of the row stays readable.
+
 ## Rollback paths
 
 Each migration in this folder represents work that has already been applied to production. Rollback is therefore reverse migration work, not file deletion. If a rollback is ever needed, write a new dated migration that reverses the relevant changes — never delete history from this folder.
