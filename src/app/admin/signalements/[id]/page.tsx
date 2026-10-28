@@ -136,13 +136,29 @@ export default async function ReportDetailPage({ params }: Props) {
   const moderationTable = MODERATION_TABLES[r.target_type]
   let moderationTarget: ModerationTarget | null = null
   if (moderationTable) {
+    // admin_hidden_reason has no client SELECT grant (founder ruling 9): the row read names only the
+    // marker, and the note comes from get_moderation_reason() (owner or admin).
     const { data: targetRow, error: targetError } = await supabase
       .from(moderationTable)
-      .select('id, admin_hidden_at, admin_hidden_reason')
+      .select('id, admin_hidden_at')
       .eq('id', r.target_id)
       .maybeSingle()
     if (targetError) console.error('[admin/signalements/[id]] moderation target fetch error:', targetError.message, targetError.code, targetError.details)
-    moderationTarget = (targetRow as ModerationTarget | null) ?? null
+    const row = (targetRow as Omit<ModerationTarget, 'admin_hidden_reason'> | null) ?? null
+    moderationTarget = row ? { ...row, admin_hidden_reason: null } : null
+    if (row?.admin_hidden_at) {
+      // Untyped until database.types.ts is regenerated after the function's migration is applied.
+      const rpc = supabase.rpc as unknown as (
+        fn: 'get_moderation_reason',
+        args: { target_type: string; target_id: string },
+      ) => PromiseLike<{ data: string | null; error: { message: string; code: string; details: string } | null }>
+      const { data: reason, error: reasonError } = await rpc.call(supabase, 'get_moderation_reason', {
+        target_type: r.target_type,
+        target_id: r.target_id,
+      })
+      if (reasonError) console.error('[admin/signalements/[id]] moderation reason fetch error:', reasonError.message, reasonError.code, reasonError.details)
+      moderationTarget = { ...row, admin_hidden_reason: reason ?? null }
+    }
   }
 
   return (
@@ -212,7 +228,7 @@ export default async function ReportDetailPage({ params }: Props) {
                   </p>
                   <p className="text-sm text-red-800">
                     <span className="font-medium">{tr('admin.moderation.moderated_reason_label')}:</span>{' '}
-                    {moderationTarget.admin_hidden_reason}
+                    {moderationTarget.admin_hidden_reason ?? '—'}
                   </p>
                 </div>
                 <UnhideButton targetType={r.target_type as ModerationTargetType} targetId={r.target_id} reportId={r.id} />

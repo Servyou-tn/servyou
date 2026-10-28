@@ -556,6 +556,11 @@ export async function deleteProductAction(input: unknown): Promise<ProductAction
 
   if (error) {
     console.error('[deleteProduct] delete failed:', error.message, error.code, error.details)
+    // A moderated product cannot be deleted (trg_enforce_moderated_row_no_delete, founder ruling 5):
+    // same 42501, told apart by its hint.
+    if (error.code === '42501' && error.hint === 'moderated') {
+      return { ok: false, error: t('product.error_delete_moderated', lang) }
+    }
     // TOCTOU: an order landed between the count check above and this delete, and
     // `enforce_order_identity_lock` raised on the cascading SET NULL — verified live, §7.
     if (error.code === '42501') {

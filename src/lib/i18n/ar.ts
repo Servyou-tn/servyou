@@ -758,6 +758,7 @@ export const ar: Record<string, string> = {
   'product.tab_empty':              "لا توجد منتجات في هذا التبويب.",
   'product.error_delete':           "حدث خطأ أثناء الحذف. يرجى المحاولة مرة أخرى.",
   'product.error_delete_has_orders': "هذا المنتج لديه طلبات ولا يمكن حذفه. يمكنك إخفاءه بدلا من ذلك.",
+  'product.error_delete_moderated':  "هذا المحتوى قيد مراجعة الإشراف ولا يمكن حذفه. تواصل مع الدعم.",
   // selected_count / confirm_delete migrated to tn() — see src/lib/i18n/plurals.ts. (The old
   // confirm_delete text used "منتج(ات)", a literal copy of the French "(s)" trick — not standard
   // Arabic. Rewritten with real number agreement instead.)
@@ -984,6 +985,7 @@ export const ar: Record<string, string> = {
   'service.error_update':             "حدث خطأ أثناء التحديث. يرجى المحاولة مرة أخرى.",
   'service.error_delete':             "حدث خطأ أثناء الحذف. يرجى المحاولة مرة أخرى.",
   'service.error_delete_has_orders':  "هذه الخدمة لديها طلبات ولا يمكن حذفها. يمكنك إيقافها مؤقتا بدلا من ذلك.",
+  'service.error_delete_moderated':   "هذا المحتوى قيد مراجعة الإشراف ولا يمكن حذفه. تواصل مع الدعم.",
   'service.stats.active_label':       "الخدمات النشطة",
   'service.stats.active_subtitle':    "من أصل {total}",
   'service.stats.pending_label':      "طلبات قيد الانتظار",
@@ -1329,6 +1331,7 @@ export const ar: Record<string, string> = {
   'shop.create.error.name_required': "اسم المتجر مطلوب.",
   'shop.create.error.name_max':      "لا يمكن أن يتجاوز الاسم {max} حرفا.",
   'shop.create.error.name_taken':    "اسم المتجر هذا مستخدم بالفعل.",
+  'shop.create.error.already_owns':  "لديك متجر بالفعل.",
   'shop.create.error.name_invalid':  "اسم المتجر غير صالح.",
   'shop.create.error.city_required': "يرجى اختيار ولاية.",
   'shop.create.error.desc_min':      "يجب أن يحتوي الوصف على {min} حرفا على الأقل.",

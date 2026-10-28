@@ -108,8 +108,6 @@ type AnnonceRow = {
   categories: { name_fr: string } | { name_fr: string }[] | null
   job_post_skills: { skill: string }[] | null
   admin_hidden_at: string | null
-  /** Selected but never returned by getAnnonceDetail — stays admin-internal. */
-  admin_hidden_reason: string | null
 }
 
 // Wrapped in React cache() so generateMetadata + the page share a single fetch per request.
@@ -119,11 +117,10 @@ export const getAnnonceDetail = cache(
     const { data, error } = await supabase
       .from('job_posts')
       .select(
-        // admin_hidden_reason is selected (mirroring the pair the admin write-side and the DB's
-        // own CHECK constraint always keep together) but deliberately never leaves this function —
-        // ModerationBanner's own contract is that the reason stays admin-internal.
+        // admin_hidden_reason is NOT selected: it stays admin-internal (ModerationBanner's contract) and
+        // has no client SELECT grant once moderation_reason_owner_admin_only applies (founder ruling 9).
         `id, consumer_id, title, description, budget_min, budget_max, city, is_remote,
-         deadline, status, created_at, updated_at, admin_hidden_at, admin_hidden_reason,
+         deadline, status, created_at, updated_at, admin_hidden_at,
          categories ( name_fr ),
          job_post_skills ( skill )`,
       )

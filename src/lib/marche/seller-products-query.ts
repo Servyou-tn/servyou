@@ -45,7 +45,6 @@ type ContentRow = {
   stock_count: number | null
   status: string
   admin_hidden_at: string | null
-  admin_hidden_reason: string | null
   product_images: ImageRow[] | null
   sold: { count: number }[] | { count: number } | null
   all_orders: { count: number }[] | { count: number } | null
@@ -92,7 +91,8 @@ export const getSellerProducts = cache(
     let query = supabase
       .from('products')
       .select(
-        `id, title, price_tnd, tracks_stock, stock_count, status, admin_hidden_at, admin_hidden_reason,
+        // No admin_hidden_reason: never rendered here, and no client SELECT grant on it (founder ruling 9).
+        `id, title, price_tnd, tracks_stock, stock_count, status, admin_hidden_at,
          product_images ( image_url, display_order ),
          sold:orders(count), all_orders:orders(count)`,
       )
@@ -128,7 +128,6 @@ export const getSellerProducts = cache(
       stockCount: r.stock_count,
       status: r.status,
       adminHiddenAt: r.admin_hidden_at,
-      adminHiddenReason: r.admin_hidden_reason,
       imageUrl: primaryImage(r.product_images),
       soldCount: countOf(r.sold),
       hasOrders: countOf(r.all_orders) > 0,

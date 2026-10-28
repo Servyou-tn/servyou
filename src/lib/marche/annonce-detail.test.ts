@@ -50,7 +50,6 @@ const post = {
   created_at: new Date().toISOString(),
   updated_at: new Date().toISOString(),
   admin_hidden_at: null,
-  admin_hidden_reason: null,
   categories: { name_fr: 'Design' },
   job_post_skills: [],
 }

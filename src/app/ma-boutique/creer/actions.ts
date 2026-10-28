@@ -146,6 +146,11 @@ export async function createShopAction(input: unknown): Promise<CreateShopResult
     // the same name). seller_type is already 'shop_owner' with no shop: not rolled back — see the
     // header note, this is require-seller.ts's own "shop_owner who never completed G2" state, and
     // this same form is the way back to it.
+    // Since migration 20261028201746 a second 23505 source exists: shops_owner_id_key (one shop per owner),
+    // reached only when a double submit beat the « already owns a shop » check above.
+    if (insErr?.code === '23505' && insErr.message.includes('shops_owner_id_key')) {
+      return { ok: false, error: t('shop.create.error.already_owns', lang) }
+    }
     if (insErr?.code === '23505') {
       return { ok: false, error: t('shop.create.error.name_taken', lang), field: 'name' }
     }

@@ -1,6 +1,6 @@
 # Plan — hide a suspended account's public content (founder ruling 7, read half)
 
-Status: **PLAN ONLY, no SQL yet** (ruling 7, 2026-10-28: "big change, review first"). Branch `fix/security-followups-batch-2`.
+Status: **APPROVED (Option A; ruling 3 of 2026-10-28)** — written as `db/migrations/PENDING_suspended_content_hidden.sql` with its red block in `security-followups-batch-2.test.ts`. One change from the sketch below: the helper lives in a new `private` schema (`private.is_account_active`), so the anon EXECUTE a policy helper needs does not also make it an anonymous RPC answering « is account X suspended ». `public_profiles` is NOT changed (ruling 3).
 The write half, "no new orders or responses aimed at a suspended account", is in that branch's PENDING files.
 
 ## What is live today (verified read-only, 2026-10-28)
