@@ -9,12 +9,14 @@ import { t, LANG_COOKIE, type Lang } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
 import { FOCUS_RING } from '@/components/layout/styles'
 import { Button } from '@/components/ui/button'
+import { showSuccessToast } from '@/components/ui/success-toast'
 import { updateProfileAction } from '@/app/mon-compte/actions'
 import type { CurrentProfile } from '@/lib/marche/mon-compte'
 import type { Role } from '@/lib/roles'
 import { LangueRegionTab } from './LangueRegionTab'
 import { ConfidentialiteTab } from './ConfidentialiteTab'
 import { PlaceholderTab } from './PlaceholderTab'
+import { ComptesConnectesTab } from './ComptesConnectesTab'
 
 type TabKey = 'notifications' | 'confidentialite' | 'langue' | 'comptes'
 
@@ -107,6 +109,9 @@ export function ParametresShell({ profile, role }: { profile: CurrentProfile; ro
         return
       }
       setSavedLanguage(language)
+      // Toast 424:17492. Resolved NOW, in the language just saved: the refresh below flips the UI to it, so
+      // the message must not come out in the language being left (and a toast is not re-rendered by t()).
+      showSuccessToast(t('parametres.toast.saved', language), t('parametres.toast.close', language))
       // Ruling: saving here must also flip the UI, not just the DB column. Mirrors the topbar
       // LanguageToggle's own recipe verbatim (cookie first, then refresh) rather than inventing a
       // second way to change the app's language — see LanguageToggle.tsx.
@@ -162,7 +167,7 @@ export function ParametresShell({ profile, role }: { profile: CurrentProfile; ro
           {activeTab === 'notifications' && <PlaceholderTab title={t('parametres.rail.notifications', lang)} />}
           {activeTab === 'confidentialite' && <ConfidentialiteTab profile={profile} role={role} />}
           {activeTab === 'langue' && <LangueRegionTab value={language} onChange={setLanguage} />}
-          {activeTab === 'comptes' && <PlaceholderTab title={t('parametres.rail.comptes', lang)} />}
+          {activeTab === 'comptes' && <ComptesConnectesTab />}
         </div>
       </div>
 
@@ -184,7 +189,8 @@ export function ParametresShell({ profile, role }: { profile: CurrentProfile; ro
               </>
             ) : (
               <>
-                <CheckCircle2 className="size-4 shrink-0 text-icon-muted" aria-hidden="true" />
+                {/* success/500 in BOTH 558:38900 and 424:17442 (this was icon-muted: a part-1 measurement miss) */}
+                <CheckCircle2 className="size-4 shrink-0 text-success-500" aria-hidden="true" />
                 {t('parametres.footer.saved', lang)}
               </>
             )}
