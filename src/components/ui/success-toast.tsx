@@ -19,7 +19,8 @@ function SuccessToast({ id, message, closeLabel }: { id: string | number; messag
   // prefers-reduced-motion the bar is not drawn at all — a frozen full bar would misstate the timer.
   const [drained, setDrained] = useState(false)
   // Read once at mount (this only ever renders client-side, inside sonner's portal — no hydration pass).
-  const [reducedMotion] = useState(() => window.matchMedia('(prefers-reduced-motion: reduce)').matches)
+  // `?.` so a jsdom test or a Storybook story (no matchMedia) renders the bar instead of throwing.
+  const [reducedMotion] = useState(() => window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches === true)
   useEffect(() => {
     if (reducedMotion) return
     const raf = requestAnimationFrame(() => setDrained(true))
@@ -27,7 +28,8 @@ function SuccessToast({ id, message, closeLabel }: { id: string | number; messag
   }, [reducedMotion])
 
   return (
-    <div role="status" className="w-full overflow-hidden rounded-xl border border-border-subtle bg-surface-base shadow-lg">
+    // No role: sonner's <section aria-live="polite"> already announces it; a nested live region can read twice.
+    <div className="w-full overflow-hidden rounded-xl border border-border-subtle bg-surface-base shadow-lg">
       <div className="flex items-center gap-3 p-4">
         <CheckCircle2 className="size-5 shrink-0 text-success-500" aria-hidden="true" />
         <p className="min-w-0 flex-1 text-body-sm text-text-primary">{message}</p>
@@ -53,9 +55,12 @@ function SuccessToast({ id, message, closeLabel }: { id: string | number; messag
 }
 
 export function showSuccessToast(message: string, closeLabel: string) {
-  // `style.width` overrides the root toaster's --width (356px) for this toast only, to the measured 380.
+  // Width = the root toaster's own --width (356px), NOT the frame's 380. A custom toast has no width of its own (it
+  // shrink-wraps its text) and sonner only offsets left/right toasts, so any width other than the centre container's
+  // sits flush with its start edge and renders off-centre (380 → +12px, shrink-wrap → −11px). Matching 380 means
+  // changing <Toaster>'s --width for every toast — logged in docs/follow-ups/parametres-tabs-b1.md.
   toast.custom((id) => <SuccessToast id={id} message={message} closeLabel={closeLabel} />, {
     duration: SUCCESS_TOAST_MS,
-    style: { width: 380, maxWidth: 'calc(100vw - 32px)' },
+    style: { width: 'var(--width)' },
   })
 }
