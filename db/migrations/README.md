@@ -833,6 +833,45 @@ their header comments still name sibling files by their `PENDING_` names; read t
     rest of the body is byte-identical. There is no live test: a race against an uncommitted response
     cannot be staged through PostgREST. Verified by reading the definition.
 
+Migrations 87–91 are the security follow-ups batch 2 (`fix/security-followups-batch-2`), founder rulings 5–9 of
+2026-10-28. They were written as PENDING files with a red live suite, and the architect applied these five on
+2026-10-28 and verified them. Each file's executable SQL is MD5-verified against `schema_migrations` (comments
+and whitespace stripped; hash given per entry). Live at apply: 0 suspended accounts, 0 moderated rows, 0
+duplicate shop owners. No row was rewritten and no type changed. Verified by
+`src/__tests__/security-followups-batch-2.test.ts` (live-DB; the five blocks were red before apply and are green
+after). Rollback is at the bottom of each file. Ruling 9's `public_profiles` change was rejected, and its file
+was deleted unapplied.
+
+87. **20261028201727_moderated_seller_no_delete** (`8c349a5e`) — ruling 5 (Option A) on « moderation is shed by
+    deleting and re-creating the freelancer profile » (D4).
+    - Adds `enforce_moderated_row_no_delete()` (SECURITY DEFINER, `search_path ''`, no client EXECUTE).
+    - Adds `trg_enforce_moderated_row_no_delete`, BEFORE DELETE on `freelancer_profiles` and `shops`.
+    - A JWT caller's DELETE of a row with `admin_hidden_at` set gets 42501 `moderated` (« Ce contenu est en cours
+      de modération … »). Admins are included; no-JWT callers, including the account-deletion cascade, bypass.
+88. **20261028201733_get_contact_phone_state_gate** (`9532ae46`) — ruling 6. `get_contact_phone(target)` now
+    returns NULL when either party is suspended, on every branch.
+    - Its two `job_responses` branches also require the post not moderated. The post's status is not checked:
+      a filled post is the normal contact path.
+    - It is checked at call time, so unlocks granted earlier are withdrawn too.
+    - Reading your own phone is unchanged. The ACL is kept (anon + authenticated).
+89. **20261028201741_orders_insert_counterparty_stock_timestamps** (`d149ef18`) — rulings 7 (orders half) and
+    8 (D2 + D4), in one file because all three change the same function. `enforce_order_insert_integrity`
+    tier 2 (JWT callers):
+    - a suspended seller → 23514 « Cet article n'est plus disponible. » (the not-live message);
+    - `tracks_stock` and `quantity > stock_count` → 23514 « Quantité supérieure au stock disponible. », hint
+      `stock`. The product row is read FOR SHARE;
+    - `created_at` / `updated_at` are set to `now()`.
+    No-JWT callers keep tier 1 only.
+90. **20261028201745_job_responses_suspended_poster** (`404606b4`) — ruling 7 (responses half).
+    - `check_job_response_limits` is re-created by a guarded DO block, adding one check right after the
+      moderation check: a JWT caller's response to a suspended poster's post gets 23514 « Cette annonce n'est
+      plus ouverte. », hint `job_unavailable`.
+    - Every other byte is unchanged.
+91. **20261028201746_shops_one_per_owner** (`bcf0baa0`) — ruling 9 on « `shops.owner_id` is not unique ».
+    - Adds the unique index `shops_owner_id_key` on `shops (owner_id)`, for every caller.
+    - `createShopAction` maps its 23505 to `shop.create.error.already_owns` (« Vous avez déjà une boutique. »).
+    - `shops_owner_idx` is now redundant and is kept.
+
 ## Rollback paths
 
 Each migration in this folder represents work that has already been applied to production. Rollback is therefore reverse migration work, not file deletion. If a rollback is ever needed, write a new dated migration that reverses the relevant changes — never delete history from this folder.

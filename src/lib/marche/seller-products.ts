@@ -81,7 +81,6 @@ export type SellerProductRow = {
   stockCount: number | null
   status: string
   adminHiddenAt: string | null
-  adminHiddenReason: string | null
   imageUrl: string | null
   /** Delivered-order count — Vendus. */
   soldCount: number

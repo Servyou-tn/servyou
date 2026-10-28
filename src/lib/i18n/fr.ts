@@ -728,6 +728,7 @@ export const fr: Record<string, string> = {
   'product.tab_empty':              "Aucun produit dans cet onglet.",
   'product.error_delete':           "Une erreur est survenue lors de la suppression. Veuillez réessayer.",
   'product.error_delete_has_orders': "Ce produit a des commandes et ne peut pas être supprimé. Masquez-le à la place.",
+  'product.error_delete_moderated':  "Ce contenu est en cours de modération et ne peut pas être supprimé. Contactez le support.",
   // selected_count / confirm_delete migrated to tn() — see src/lib/i18n/plurals.ts. (The old
   // "(s)" convention is gone; that was improvisation, not a mechanism.)
   'product.bulk.deselect':          "Désélectionner",
@@ -979,6 +980,7 @@ export const fr: Record<string, string> = {
   'service.error_update':             "Une erreur est survenue lors de la mise à jour. Veuillez réessayer.",
   'service.error_delete':             "Une erreur est survenue lors de la suppression. Veuillez réessayer.",
   'service.error_delete_has_orders':  "Ce service a des commandes et ne peut pas être supprimé. Mettez-le en pause à la place.",
+  'service.error_delete_moderated':   "Ce contenu est en cours de modération et ne peut pas être supprimé. Contactez le support.",
   'service.stats.active_label':       "Services actifs",
   'service.stats.active_subtitle':    "sur {total} au total",
   'service.stats.pending_label':      "Demandes en attente",
@@ -1363,6 +1365,7 @@ export const fr: Record<string, string> = {
   'shop.create.error.name_required': "Le nom de la boutique est requis.",
   'shop.create.error.name_max':      "Le nom ne peut pas dépasser {max} caractères.",
   'shop.create.error.name_taken':    "Ce nom de boutique est déjà pris.",
+  'shop.create.error.already_owns':  "Vous avez déjà une boutique.",
   'shop.create.error.name_invalid':  "Le nom de la boutique n'est pas valide.",
   'shop.create.error.city_required': "Veuillez choisir une ville.",
   'shop.create.error.desc_min':      "La description doit contenir au moins {min} caractères.",

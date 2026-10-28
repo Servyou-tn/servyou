@@ -143,6 +143,11 @@ export async function deleteServiceAction(input: unknown): Promise<ServiceAction
 
   if (error) {
     console.error('[deleteService] delete failed:', error.message, error.code, error.details)
+    // A moderated service cannot be deleted (trg_enforce_moderated_row_no_delete, founder ruling 5):
+    // same 42501, told apart by its hint.
+    if (error.code === '42501' && error.hint === 'moderated') {
+      return { ok: false, error: t('service.error_delete_moderated', lang) }
+    }
     // TOCTOU: an order landed between the count check above and this delete —
     // enforce_order_identity_lock raises on the cascading SET NULL, same as deleteProductAction.
     if (error.code === '42501') {
