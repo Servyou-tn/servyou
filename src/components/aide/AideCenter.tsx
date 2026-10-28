@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, type ReactNode } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import Link from 'next/link'
 import {
   Briefcase,
@@ -23,7 +23,7 @@ import {
 import { useLang } from '@/components/LangProvider'
 import { Input } from '@/components/ui/input'
 import { FOCUS_RING } from '@/components/layout/styles'
-import { t } from '@/lib/i18n'
+import { t, tn } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
 import type { AideIcon } from '@/lib/aide/groups'
 import { countAideItems, filterAideGroups, type AideGroupView } from '@/lib/aide/search'
@@ -51,6 +51,8 @@ const ICONS: Record<AideIcon, LucideIcon> = {
   shield: Shield,
   user: User,
 }
+
+const SEARCH_ID = 'aide-search'
 
 export function AideCenter({
   groups,
@@ -80,25 +82,38 @@ export function AideCenter({
     })
   }
 
-  // One live region for the whole search block: the static hint while idle, the count while filtering.
-  // Empty when nothing matches — the no-result state below announces itself (role=status) and Figma 449:18375
-  // shows no « 0 questions » line above it.
+  // The VISIBLE caption: the static hint while idle, the count while filtering. Empty when nothing matches —
+  // Figma 449:18375 shows no « 0 questions » line above the empty state.
   const caption = !searching
     ? t('aide.search.hint', lang)
     : noResult
       ? ''
-      : matches === 1
-        ? t('aide.search.countOne', lang, { q: trimmed })
-        : t('aide.search.countMany', lang, { n: matches, q: trimmed })
+      : tn('aide.search.count', lang, matches, { q: trimmed })
+
+  // What a screen reader hears, DEBOUNCED: a live region that echoes the query on every keystroke announces
+  // « 3 questions correspondent à « c » », « … « co » »… letter by letter. The no-result text lives here too
+  // (one persistent region — a role=status node inserted already filled is often not announced).
+  const spoken = !searching
+    ? ''
+    : noResult
+      ? t('aide.empty.title', lang, { q: trimmed })
+      : caption
+  const [announced, setAnnounced] = useState('')
+  useEffect(() => {
+    const id = setTimeout(() => setAnnounced(spoken), 500)
+    return () => clearTimeout(id)
+  }, [spoken])
 
   return (
     <div className="flex flex-col gap-8">
       <div className="flex flex-col gap-2">
         <Input
+          id={SEARCH_ID}
           type="text"
           inputMode="search"
           enterKeyHint="search"
           autoComplete="off"
+          maxLength={100}
           aria-label={t('aide.search.label', lang)}
           placeholder={placeholder}
           value={query}
@@ -108,20 +123,28 @@ export function AideCenter({
             searching ? (
               <button
                 type="button"
-                onClick={() => setQuery('')}
+                onClick={() => {
+                  setQuery('')
+                  // The button unmounts with the query: hand focus back to the field or it falls to <body>.
+                  document.getElementById(SEARCH_ID)?.focus()
+                }}
                 aria-label={t('aide.search.clear', lang)}
-                className={cn('rounded text-text-muted hover:text-text-secondary', FOCUS_RING)}
+                // 18px glyph; the ::after grows the hit area to 46px (the project's ≥44px touch-target rule).
+                className={cn(
+                  'relative rounded text-text-muted hover:text-text-secondary after:absolute after:-inset-3.5 after:content-[""]',
+                  FOCUS_RING,
+                )}
               >
                 <X className="size-[18px]" aria-hidden="true" />
               </button>
             ) : undefined
           }
         />
-        <p
-          aria-live="polite"
-          className={searching ? 'text-body-sm text-text-secondary' : 'text-caption font-medium text-text-muted'}
-        >
+        <p className={cn('break-words', searching ? 'text-body-sm text-text-secondary' : 'text-caption font-medium text-text-muted')}>
           {caption}
+        </p>
+        <p role="status" aria-live="polite" className="sr-only">
+          {announced}
         </p>
       </div>
 
@@ -208,8 +231,6 @@ function AccordionItem({
       </h3>
       <div
         id={panelId}
-        role="region"
-        aria-labelledby={buttonId}
         hidden={!expanded}
         className="whitespace-pre-line px-6 pb-6 text-base text-text-secondary"
       >
@@ -226,13 +247,12 @@ function NoResult({ query }: { query: string }) {
   return (
     <div className="flex justify-center py-4">
       <div
-        role="status"
         className="flex w-full max-w-[440px] flex-col items-center gap-5 rounded-2xl border border-border-subtle bg-surface-base px-6 py-10 text-center sm:px-10 sm:py-12"
       >
         <div className="flex size-28 shrink-0 items-center justify-center rounded-full bg-surface-sunken" aria-hidden="true">
           <SearchX size={64} strokeWidth={2} absoluteStrokeWidth className="text-text-muted" />
         </div>
-        <h2 className="text-xl font-semibold text-text-primary">{t('aide.empty.title', lang, { q: query })}</h2>
+        <h2 className="min-w-0 max-w-full break-words text-xl font-semibold text-text-primary">{t('aide.empty.title', lang, { q: query })}</h2>
         <p className="text-base text-text-muted">{t('aide.empty.body', lang)}</p>
         <Link
           href={SUPPORT_WHATSAPP_HREF}

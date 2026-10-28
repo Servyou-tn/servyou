@@ -98,6 +98,9 @@ const frPlurals: Record<string, PluralVariants> = {
   // there's no reason to assume the same no-space treatment carries over to a different unit.
   'activite.time_ago_hours':               { one: 'il y a {count}h', other: 'il y a {count}h' },
   'activite.time_ago_days':                { one: 'il y a {count} jour', other: 'il y a {count} jours' },
+
+  // /aide search caption (the search term is user input — see the replacer note in tn()).
+  'aide.search.count':                     { one: '{count} question correspond à « {q} »', other: '{count} questions correspondent à « {q} »' },
 }
 
 const arPlurals: Record<string, PluralVariants> = {
@@ -182,6 +185,9 @@ const arPlurals: Record<string, PluralVariants> = {
   // dual by the same rule as the "خلال"/"منذ" pair above (يومين/ساعتين, not يومان/ساعتان).
   'activite.time_ago_hours':               { one: 'منذ {count} ساعة', two: 'منذ {count} ساعتين', other: 'منذ {count} ساعات' },
   'activite.time_ago_days':                { one: 'منذ {count} يوم', two: 'منذ {count} يومين', other: 'منذ {count} أيام' },
+
+  // REVIEW_AR_TRANSLATION — /aide search caption. Like the other counts here, 11+ folds into `other`.
+  'aide.search.count':                     { one: 'سؤال واحد يطابق «{q}»', two: 'سؤالان يطابقان «{q}»', other: '{count} أسئلة تطابق «{q}»' },
 }
 
 const pluralDicts: Record<Lang, Record<string, PluralVariants>> = { fr: frPlurals, ar: arPlurals }
@@ -202,7 +208,8 @@ export function tn(
   let str = pickVariant(variants, lang, count)
   const merged: Record<string, string | number> = { count, ...vars }
   for (const [k, v] of Object.entries(merged)) {
-    str = str.replace(`{${k}}`, String(v))
+    // Replacer FUNCTION: a string replacement expands `$&` / `$$` — and `query`/`q` here are raw user input.
+    str = str.replace(`{${k}}`, () => String(v))
   }
   return str
 }

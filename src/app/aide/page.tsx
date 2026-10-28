@@ -23,13 +23,10 @@ export const metadata: Metadata = { title: 'Aide — Servyou' }
 // when the profile read fails, and a role-dependent page must not guess — a freelancer would silently get the
 // buyer's help. A failed read throws to error.tsx instead (loader-error-surfacing ruling 3, as on /parametres).
 export default async function AidePage() {
-  const shell = await getShellUser()
-  if (!shell) redirect('/connexion?next=/aide')
+  // Independent reads, one round trip; the guards run after.
+  const [shell, profile, lang] = await Promise.all([getShellUser(), getCurrentProfile(), getLang()])
+  if (!shell || !profile) redirect('/connexion?next=/aide')
 
-  const profile = await getCurrentProfile()
-  if (!profile) redirect('/connexion?next=/aide')
-
-  const lang = await getLang()
   const role = resolveRole(profile)
 
   const groups: AideGroupView[] = aideGroupIdsForRole(role).map((id) => ({
@@ -46,7 +43,7 @@ export default async function AidePage() {
     <AppShell user={shell.topBarUser}>
       <div className="flex flex-col gap-6">
         <div className="flex flex-col gap-2">
-          <nav aria-label={t('aide.title', lang)} className="flex items-center gap-2 text-sm text-text-muted">
+          <nav aria-label={t('aide.breadcrumb.label', lang)} className="flex items-center gap-2 text-sm text-text-muted">
             <Link href="/" className={`rounded hover:underline ${FOCUS_RING}`}>
               {t('aide.breadcrumb.home', lang)}
             </Link>

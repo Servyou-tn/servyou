@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { t } from '@/lib/i18n'
+import { t, tn } from '@/lib/i18n'
 import { aideGroupIdsForRole, AIDE_GROUP_ICON, AIDE_QUESTIONS_PER_GROUP, type AideGroupId } from './groups'
 import { filterAideGroups, normalizeForSearch, countAideItems, type AideGroupView } from './search'
 
@@ -124,11 +124,23 @@ describe('aide content completeness', () => {
     }
   })
 
-  it('the results-count captions interpolate {q} and {n}', () => {
-    expect(t('aide.search.countOne', 'fr', { q: 'x' })).toContain('« x »')
-    const many = t('aide.search.countMany', 'fr', { n: 4, q: 'commande' })
-    expect(many).toContain('4')
-    expect(many).toContain('commande')
-    expect(t('aide.search.countMany', 'ar', { n: 4, q: 'x' })).toContain('4')
+  it('a query containing replacement patterns ($&, $$) is shown literally, not expanded — t() and tn()', () => {
+    expect(tn('aide.search.count', 'fr', 1, { q: '$&' })).toBe('1 question correspond à « $& »')
+    expect(t('aide.empty.title', 'fr', { q: 'a$$b' })).toBe('Aucun résultat pour « a$$b »')
+  })
+
+  it('FR and AR use the same {placeholders} in the dynamic aide keys', () => {
+    const tokens = (s: string) => (s.match(/\{[a-z]+\}/g) ?? []).filter((x) => x !== '{count}').sort().join(',')
+    expect(tokens(t('aide.empty.title', 'ar'))).toBe(tokens(t('aide.empty.title', 'fr')))
+    expect(tokens(tn('aide.search.count', 'ar', 5, { q: 'x' }))).toBe('')
+    expect(tn('aide.search.count', 'ar', 5, { q: 'x' })).toContain('«x»')
+  })
+
+  it('the results caption agrees in number: 1 / many in French, 1 / 2 / many in Arabic', () => {
+    expect(tn('aide.search.count', 'fr', 1, { q: 'x' })).toBe('1 question correspond à « x »')
+    expect(tn('aide.search.count', 'fr', 4, { q: 'commande' })).toBe('4 questions correspondent à « commande »')
+    expect(tn('aide.search.count', 'ar', 1, { q: 'x' })).toBe('سؤال واحد يطابق «x»')
+    expect(tn('aide.search.count', 'ar', 2, { q: 'x' })).toBe('سؤالان يطابقان «x»')
+    expect(tn('aide.search.count', 'ar', 4, { q: 'x' })).toBe('4 أسئلة تطابق «x»')
   })
 })
