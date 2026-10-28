@@ -1212,6 +1212,13 @@ export const ar: Record<string, string> = {
 
   'parametres.placeholder.body':        "محتوى هذا القسم سيتوفر في تحديث قادم.",
 
+  // REVIEW_AR_TRANSLATION — Comptes connectés + save toast (feat/parametres-tabs, Figma 423:17360 / 424:17492).
+  'parametres.comptes.title':           "الحسابات المرتبطة — قريبا",
+  'parametres.comptes.body':            "قريبا، اربط حسابك على فيسبوك أو جوجل أو إنستغرام لتسجيل الدخول إلى Servyou بسرعة أكبر ومشاركة ملفك الشخصي.",
+  'parametres.comptes.soon':            "قريبا",
+  'parametres.toast.saved':             "تم حفظ تعديلاتك.",
+  'parametres.toast.close':             "إغلاق",
+
   'parametres.lang.title':              "اللغة",
   'parametres.langue.sectionTitle':     "لغة المنصة",
   'parametres.langue.sectionSubtitle':  "ستظهر واجهة Servyou بهذه اللغة. تبقى نصوص ملفك الشخصي كما كتبتها.",

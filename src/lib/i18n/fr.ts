@@ -1233,6 +1233,16 @@ export const fr: Record<string, string> = {
   // key the old ParametresForm already used for this exact "Bientôt disponible" badge).
   'parametres.placeholder.body':        "Le contenu de cette section arrive dans une prochaine mise à jour.",
 
+  // Comptes connectés (Figma 423:17360) — UI only, every provider is « Bientôt ». Provider names
+  // (Facebook / Google / Instagram) are proper nouns and stay in the component.
+  'parametres.comptes.title':           "Comptes connectés — bientôt disponible",
+  'parametres.comptes.body':            "Bientôt, connectez votre compte Facebook, Google, ou Instagram pour vous connecter plus rapidement à Servyou et partager votre profil.",
+  'parametres.comptes.soon':            "Bientôt",
+
+  // Save-success toast (Figma 424:17492).
+  'parametres.toast.saved':             "Vos modifications ont été enregistrées.",
+  'parametres.toast.close':             "Fermer",
+
   // Langue & région — the one working tab. Row label reuses parametres.lang.title below.
   'parametres.lang.title':              "Langue",
   'parametres.langue.sectionTitle':     "Langue de la plateforme",
