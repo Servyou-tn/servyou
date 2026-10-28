@@ -19,6 +19,7 @@ const h = vi.hoisted(() => ({
   results: {} as Record<string, Result>,
   rpc: {} as Record<string, Result>,
   calls: [] as string[],
+  args: [] as unknown[][],
   user: { id: 'u1', email: 'me@example.com' } as { id: string; email: string } | null,
   captureException: vi.fn(),
 }))
@@ -40,8 +41,9 @@ vi.mock('@/lib/supabase/server', () => ({
         {
           get: (_target, prop) => {
             if (prop === 'then') return (resolve: (r: Result) => unknown) => resolve(result)
-            return () => {
+            return (...args: unknown[]) => {
               h.calls.push(`${table}.${String(prop)}`)
+              h.args.push([`${table}.${String(prop)}`, ...args])
               return chain
             }
           },
@@ -71,6 +73,7 @@ beforeEach(() => {
   h.results = {}
   h.rpc = {}
   h.calls = []
+  h.args = []
   h.user = { id: 'u1', email: 'me@example.com' }
   h.captureException.mockReset()
   log = vi.spyOn(console, 'error').mockImplementation(() => {})
@@ -132,6 +135,7 @@ describe('saveShopConfigAction: a categories outage writes nothing (PR-1 follow-
     expect(await saveShopConfigAction(input)).toEqual({ ok: false, error: GENERIC })
     expect(h.calls.filter((c) => /\.(update|insert|delete)$/.test(c))).toEqual([])
     expect(h.calls.some((c) => c.startsWith('shops.') || c.startsWith('shop_payment_methods.'))).toBe(false)
+    expect(h.captureException).toHaveBeenCalledTimes(1)
   })
 })
 
@@ -172,7 +176,7 @@ describe('?categorie= slug filter (PR-1 follow-up item 2)', () => {
     expect(h.calls.some((c) => c.startsWith('categories.'))).toBe(false)
     // [] resolved ids → the category filter is still applied (`.in('category_id', [])` = nothing),
     // never dropped (which would show the whole catalogue).
-    expect(h.calls).toContain('products.in')
+    expect(h.args).toContainEqual(['products.in', 'category_id', []])
     expect(h.captureException).not.toHaveBeenCalled()
   })
 })

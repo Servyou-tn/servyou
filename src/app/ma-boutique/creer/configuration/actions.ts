@@ -9,7 +9,7 @@ import { t } from '@/lib/i18n'
 import { resolveOwnedShopId } from '@/lib/shops/owner-shop'
 import { reconcile } from '@/lib/shops/reconcile'
 import { getProductCategories } from '@/lib/marche/product-categories'
-import { QueryError } from '@/lib/supabase/query-error'
+import { QueryError, reportQueryError } from '@/lib/supabase/query-error'
 import { SHOP_TYPES, DELIVERY_SETUPS, PAYMENT_METHODS } from '@/lib/types/shop-config'
 
 // G2 step 2 "Configuration". Full reasoning: docs/design/g2-discovery.md §12-17.
@@ -81,6 +81,8 @@ export async function saveShopConfigAction(input: unknown): Promise<SaveShopConf
     validCategoryIds = new Set((await getProductCategories()).map((c) => c.id))
   } catch (e) {
     if (!(e instanceof QueryError)) throw e
+    // failQuery only logged it; caught here, it would never reach Sentry otherwise.
+    reportQueryError('saveShopConfig categories', e)
     return { ok: false, error: t('common.error_generic', lang) }
   }
   const scopedCategoryIds = categoryIds.filter((id) => validCategoryIds.has(id))

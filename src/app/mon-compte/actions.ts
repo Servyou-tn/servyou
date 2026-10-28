@@ -124,10 +124,12 @@ export async function uploadAvatarAction(formData: FormData): Promise<AccountAct
   if (!user) return { ok: false, error: t('monCompte.error.notAuth', lang) }
   // S-3: the bytes below are written by the service role, which skips the RESTRICTIVE « Suspended accounts
   // cannot upload » storage policy -- so a suspended account is refused here, before anything is stored.
-  // A failed check refuses too (fail closed), but with the generic error, not « suspended ».
+  // A failed check refuses too (fail closed), but with the generic error, not « suspended ». Anything
+  // but an explicit 'active' is refused.
   const activity = await callerActivity(supabase)
-  if (activity === 'error') return { ok: false, error: t('common.error_generic', lang) }
-  if (activity === 'inactive') return { ok: false, error: t('auth.suspended_banner', lang) }
+  if (activity !== 'active') {
+    return { ok: false, error: t(activity === 'error' ? 'common.error_generic' : 'auth.suspended_banner', lang) }
+  }
 
   const parsed = avatarFileSchema.safeParse(formData.get('avatar'))
   if (!parsed.success) {

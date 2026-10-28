@@ -91,8 +91,8 @@ export default async function UserDetailPage({ params }: Props) {
     supabase.from('reports').select('id', { count: 'exact', head: true }).eq('target_type', 'user').eq('target_id', u.id),
   ])
 
-  // Partial display: a failed activity read is reported and its value shows « — », never a false « 0 »
-  // or a silently missing seller link.
+  // Partial display: a failed activity read is reported and its count shows « — », never a false « 0 »;
+  // a failed shop / freelancer lookup is reported and its link is omitted.
   const activity = { shopRes, freelancerRes, ordersBuyer, ordersSeller, reportsCreated, reportsAgainst }
   for (const [key, res] of Object.entries(activity)) {
     if (res.error) reportQueryError(`admin/utilisateurs/[id] ${key}`, res.error)
