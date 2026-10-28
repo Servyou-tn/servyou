@@ -178,8 +178,10 @@ export function ParametresShell({ profile, role }: { profile: CurrentProfile; ro
           rail on the left. `ps` = rail width (w-60, 240px) + the row's gap-8 (32px), the exact two
           numbers the rail/content split above already uses; `max-w-[720px]` is the same cap
           contentCol uses, so the inner group's right edge lands on the card's right edge at any
-          width instead of a fixed offset that only happens to line up at one viewport. */}
-      <div className="border-t border-border-subtle py-5 ps-[calc(240px_+_32px)]">
+          width instead of a fixed offset that only happens to line up at one viewport. The offset is
+          `lg:` only: below `lg` the rail is a horizontal scroller on top of the content, so there is no
+          rail column to clear (the unconditional 272px pushed the buttons off-screen at 375). */}
+      <div className="border-t border-border-subtle py-5 lg:ps-[calc(240px_+_32px)]">
         <div className="flex w-full max-w-[720px] flex-wrap items-center justify-between gap-3">
           <p className="flex items-center gap-2 text-sm font-medium text-text-muted">
             {isDirty ? (
@@ -195,7 +197,8 @@ export function ParametresShell({ profile, role }: { profile: CurrentProfile; ro
               </>
             )}
           </p>
-          <div className="flex items-center gap-3">
+          {/* flex-wrap: « Annuler les modifications » + « Enregistrer » are wider than a 375 screen's row in FR. */}
+          <div className="flex flex-wrap items-center gap-3">
             {/* Measured clean state (558:38900) keeps both buttons enabled, not just visible — not
                 gating Cancel on isDirty even though it's a no-op with nothing pending. */}
             <Button type="button" variant="secondary" size="md" onClick={handleCancel} disabled={pending}>
