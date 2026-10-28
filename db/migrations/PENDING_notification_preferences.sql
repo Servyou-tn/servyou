@@ -16,8 +16,8 @@
 --   * owner-only SELECT / INSERT / UPDATE; no DELETE (preferences are reset by saving defaults; the row goes with
 --     the account through ON DELETE CASCADE); no admin bypass; nothing for anon.
 --
--- Defaults are the brief's. NOTE: Figma draws « Alerte stock faible » OFF (with « Newsletter » OFF; the other
--- three ON), the brief says email_low_stock default true -- decision 1 of the report; the brief is followed here.
+-- Defaults follow Figma 558:38878 (architect ruling 1, 2026-10-28: « Figma is the source »): the three activity
+-- rows ON, « Alerte stock faible » OFF, « Newsletter » OFF (opt-in). The brief's draft had email_low_stock true.
 --
 -- Grants (P2-1: a new public table inherits anon SELECT + authenticated SELECT/INSERT/UPDATE/DELETE from the
 -- default privileges -- all revoked, then granted column by column):
@@ -33,7 +33,7 @@ create table public.notification_preferences (
   email_new_orders boolean not null default true,   -- « Nouvelles commandes reçues » (shop) / new service requests (freelancer)
   email_proposals  boolean not null default true,   -- « Propositions reçues sur mes annonces »
   email_reviews    boolean not null default true,   -- « Nouveaux avis clients » (reviews ship later; stored now)
-  email_low_stock  boolean not null default true,   -- « Alerte stock faible » (shop only, in the UI)
+  email_low_stock  boolean not null default false,  -- « Alerte stock faible » (shop only, in the UI; OFF per Figma)
   email_newsletter boolean not null default false,  -- « Newsletter et actualités Servyou » (opt-in)
   updated_at       timestamptz not null default now()
 );

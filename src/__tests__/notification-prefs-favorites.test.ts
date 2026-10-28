@@ -1,14 +1,16 @@
 /**
  * Live-DB proof for PENDING_notification_preferences.sql and PENDING_favorites_shops_freelancers.sql (founder
  * brief 2026-10-28; Figma 558:38878 Paramètres › Notifications, 720:62084 / 720:62688 Mes favoris Boutiques /
- * Freelances). RED until both are applied: the table does not exist yet, and favorites accepts only
- * products / services and shows a favorite whatever its target's visibility.
+ * Freelances; architect rulings 1–4 of 2026-10-28). RED until both are applied: the table does not exist yet,
+ * and favorites accepts only products / services, whatever its target's visibility, on insert and on read.
  *
- *   notification_preferences — owner-only select / insert / update through the app's upsert, defaults on the
- *                              first save, no delete, updated_at never client-written, nothing for anon.
+ *   notification_preferences — owner-only select / insert / update through the app's upsert, Figma defaults on
+ *                              the first save (email_low_stock OFF, ruling 1), no delete, updated_at never
+ *                              client-written, nothing for anon.
  *   favorites                — 'shop' / 'freelancer' rows with their FK, one per user per target, the type-match
- *                              CHECK, a moderated / suspended target drops out of the owner's reads (all four
- *                              types) and comes back, and the FK cascade.
+ *                              CHECK, an invisible target cannot be favorited (insert WITH CHECK, ruling 4), a
+ *                              moderated / suspended target drops out of the owner's reads (all four types,
+ *                              ruling 2) and comes back, and the FK cascade.
  *
  * Fixtures (all `np-fav-`, password random per run: the repo is public and this suite promotes an admin in
  * production): two consumers, a shop owner with a live product, a freelancer with an active service, an admin.
@@ -177,7 +179,7 @@ describe.skipIf(!hasCreds)('notification_preferences — owner-only, defaults on
       email_new_orders: true,
       email_proposals: true,
       email_reviews: true,
-      email_low_stock: true,
+      email_low_stock: false, // OFF by default per Figma 558:38878 (architect ruling 1)
       email_newsletter: true,
     })
   })
@@ -186,11 +188,11 @@ describe.skipIf(!hasCreds)('notification_preferences — owner-only, defaults on
     const { data: before } = await adminUntyped.from('notification_preferences').select('updated_at').eq('profile_id', userAId).single()
     const { data, error } = await userA
       .from('notification_preferences')
-      .upsert({ profile_id: userAId, email_low_stock: false, email_newsletter: false }, { onConflict: 'profile_id' })
+      .upsert({ profile_id: userAId, email_low_stock: true, email_newsletter: false }, { onConflict: 'profile_id' })
       .select('email_low_stock, email_newsletter, updated_at')
       .single()
     expect(error).toBeNull()
-    expect(data).toMatchObject({ email_low_stock: false, email_newsletter: false })
+    expect(data).toMatchObject({ email_low_stock: true, email_newsletter: false })
     expect(Date.parse(data!.updated_at)).toBeGreaterThan(Date.parse((before as { updated_at: string }).updated_at))
   })
 
@@ -266,11 +268,44 @@ describe.skipIf(!hasCreds)('favorites — shops and freelancers, target visibili
   })
 
   it('the type must match exactly one target (favorite_target_matches_type)', async () => {
-    const { error: wrongFk } = await userB.from('favorites').insert({ user_id: userBId, item_type: 'shop', freelancer_profile_id: freelancerProfileId })
-    expect(wrongFk?.code).toBe('23514')
-    expect(wrongFk?.message).toContain('favorite_target_matches_type')
-    const { error: twoFks } = await userB.from('favorites').insert({ user_id: userBId, item_type: 'shop', shop_id: shopId, product_id: productId })
-    expect(twoFks?.code).toBe('23514')
+    // Each payload names a VISIBLE target of its item_type, so the insert's WITH CHECK (which runs before table
+    // constraints) passes and the CHECK is what refuses the extra FK.
+    const { error: shopPlusProduct } = await userB.from('favorites').insert({ user_id: userBId, item_type: 'shop', shop_id: shopId, product_id: productId })
+    expect(shopPlusProduct?.code).toBe('23514')
+    expect(shopPlusProduct?.message).toContain('favorite_target_matches_type')
+    const { error: freelancerPlusShop } = await userB
+      .from('favorites')
+      .insert({ user_id: userBId, item_type: 'freelancer', freelancer_profile_id: freelancerProfileId, shop_id: shopId })
+    expect(freelancerPlusShop?.code).toBe('23514')
+    expect(freelancerPlusShop?.message).toContain('favorite_target_matches_type')
+  })
+
+  it('a target the caller cannot see cannot be favorited (insert WITH CHECK, ruling 4), on every type', async () => {
+    async function userBFavorites(): Promise<number> {
+      const { count, error } = await admin.from('favorites').select('id', { count: 'exact', head: true }).eq('user_id', userBId)
+      if (error) throw new Error(`favorites read failed: ${error.message}`)
+      return count ?? 0
+    }
+    const before = await userBFavorites()
+    await hide('service', serviceId)
+    try {
+      const { error } = await userB.from('favorites').insert({ user_id: userBId, item_type: 'service', service_listing_id: serviceId })
+      expect(error?.code).toBe(DENIED)
+      expect(error?.message).toBe('new row violates row-level security policy for table "favorites"')
+    } finally {
+      await unhide('service', serviceId)
+    }
+    await hide('shop', shopId)
+    try {
+      const { error } = await userB.from('favorites').insert({ user_id: userBId, item_type: 'shop', shop_id: shopId })
+      expect(error?.code).toBe(DENIED)
+    } finally {
+      await unhide('shop', shopId)
+    }
+    // A type pointing at no target at all is refused the same way (nothing to see).
+    const { error: noTarget } = await userB.from('favorites').insert({ user_id: userBId, item_type: 'shop', freelancer_profile_id: freelancerProfileId })
+    expect(noTarget?.code).toBe(DENIED)
+    expect(await userBFavorites()).toBe(before)
   })
 
   it('a moderated shop drops out of the owner’s favorites (with its product), and comes back when unhidden', async () => {

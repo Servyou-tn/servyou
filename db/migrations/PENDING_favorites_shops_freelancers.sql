@@ -23,8 +23,14 @@
 --      (and an unpublished freelancer profile, which is not public either), and comes back when unhidden: the
 --      favorite row is never deleted. Applied to all four types (the brief's « reads must respect the target's
 --      visibility »); the owner / past-buyer branches of the target policies still apply as everywhere.
---   3. INSERT / DELETE policies and grants unchanged (« RLS same as today »). The new columns are covered by
---      authenticated's table-level INSERT; anon's SELECT grant matches no policy (anon reads nothing), unchanged.
+--   3. INSERT (« Users insert own favorites », same name, same PUBLIC role) requires the same target visibility as
+--      the read rule, as its WITH CHECK (architect ruling 4, 2026-10-28): a caller cannot favorite something they
+--      cannot see (a guessed id of a moderated / suspended / unpublished target) -- refused 42501 « new row violates
+--      row-level security policy ». Rulings 2 + 3: the rule covers all four types, and an unpublished freelancer
+--      (no active service) drops out until they publish.
+--   4. DELETE policy and grants unchanged: a user can always remove their own favorite, visible or not. The new
+--      columns are covered by authenticated's table-level INSERT; anon's SELECT grant matches no policy (anon reads
+--      nothing), unchanged.
 -- No row is rewritten. Column privileges: the EXISTS subqueries name only `id` on each target (granted).
 
 -- ─── 1. columns, checks, uniqueness ───────────────────────────────────────────────────────────
@@ -65,10 +71,26 @@ alter policy "Users read own favorites" on public.favorites
 comment on policy "Users read own favorites" on public.favorites is
   'Own favorites whose target the caller can currently read (the target table''s own RLS applies inside the EXISTS): a moderated / suspended / unpublished target is hidden, never deleted. 2026-10-28.';
 
+-- ─── 3. inserts require the same visibility (ruling 4) ────────────────────────────────────────
+alter policy "Users insert own favorites" on public.favorites
+  with check (
+    user_id = (select auth.uid())
+    and (
+         (item_type = 'product'    and exists (select 1 from public.products p where p.id = favorites.product_id))
+      or (item_type = 'service'    and exists (select 1 from public.service_listings sl where sl.id = favorites.service_listing_id))
+      or (item_type = 'shop'       and exists (select 1 from public.shops s where s.id = favorites.shop_id))
+      or (item_type = 'freelancer' and exists (select 1 from public.freelancer_profiles fp where fp.id = favorites.freelancer_profile_id))
+    )
+  );
+
+comment on policy "Users insert own favorites" on public.favorites is
+  'Own favorites only, and only of a target the caller can currently read -- the same predicate as the read rule (architect ruling 4, 2026-10-28).';
+
 -- ─── ROLLBACK (do not run as part of this migration) ───────────────────────────────────────────
 -- Per README "Rollback paths": apply as a NEW dated forward migration, never by deleting this file.
 -- Lossy for shop / freelancer favorites (they must be deleted before the old CHECKs can return).
 --
+-- alter policy "Users insert own favorites" on public.favorites with check (user_id = auth.uid());
 -- alter policy "Users read own favorites" on public.favorites using (user_id = auth.uid());
 -- delete from public.favorites where item_type in ('shop', 'freelancer');
 -- drop index if exists public.favorites_freelancer_profile_id_idx;
