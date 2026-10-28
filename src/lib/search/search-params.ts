@@ -108,6 +108,16 @@ export function pickCategoryIds(
 // nothing valid to match: the caller must then match NOTHING (an empty `in`), never "no filter".
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
+// Every live categories.slug is lowercase ASCII, digits and hyphens (111/111 checked 2026-10-28, max 43
+// chars). A ?categorie= value outside that shape can match no category, so it is dropped before the
+// `.in('slug', …)` lookup: a crafted value (`a"b`) could otherwise raise PGRST100, which now surfaces as
+// an ErrorState + a Sentry event instead of the « 0 results » it deserves.
+const SLUG_RE = /^[a-z0-9-]{1,64}$/
+
+export function validCategorySlugs(slugs: readonly string[]): string[] {
+  return slugs.filter((s) => SLUG_RE.test(s))
+}
+
 export function serviceCategoryOrClause(ids: readonly string[]): string | null {
   const valid = ids.filter((id) => UUID_RE.test(id))
   if (valid.length === 0) return null

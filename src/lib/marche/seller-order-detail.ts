@@ -150,10 +150,10 @@ function one<T>(embed: T | T[] | null | undefined): T | null {
  * whether an order id exists.
  *
  * A malformed uuid (22P02) and « no row » are null (G9 relies on it). Any OTHER failed query THROWS for every
- * caller (loader-error-surfacing plan); `strict` is therefore a no-op, kept so H8's caller keeps compiling.
+ * caller (loader-error-surfacing plan).
  */
 export const getSellerOrderDetail = cache(
-  async (orderId: string, sellerId: string, strict = false): Promise<SellerOrderDetail | null> => {
+  async (orderId: string, sellerId: string): Promise<SellerOrderDetail | null> => {
     const supabase = await createClient()
 
     const { data, error } = await supabase
@@ -176,9 +176,7 @@ export const getSellerOrderDetail = cache(
 
     // An invalid uuid (22P02) and « no row » stay a graceful not-found. Any other failure now throws
     // for EVERY caller (loader-error-surfacing plan): a timeout must not show a permanent-looking 404
-    // for the seller's own order. `strict` (H8's caller) is therefore redundant; the parameter stays
-    // so that caller and its test keep compiling.
-    void strict
+    // for the seller's own order.
     if (error && !isNoRowLike(error)) failQuery('seller-order-detail', error)
     if (!data) return null
 

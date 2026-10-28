@@ -16,8 +16,8 @@ export async function requestDataExportAction(): Promise<ExportResult> {
 
   const { error } = await supabase.from('data_exports').insert({ user_id: user.id })
   if (error) {
-    if ((error as { code?: string }).code === '23505') return { ok: false, reason: 'already_pending' }
-    console.error('[requestDataExportAction] insert error:', error)
+    if (error.code === '23505') return { ok: false, reason: 'already_pending' }
+    console.error('[requestDataExportAction] insert error:', error.message, error.code, error.details)
     return { ok: false, reason: 'error' }
   }
   return { ok: true }

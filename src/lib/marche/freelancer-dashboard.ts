@@ -1,5 +1,6 @@
 import { cache } from 'react'
 import { createClient } from '@/lib/supabase/server'
+import { reportQueryError } from '@/lib/supabase/query-error'
 
 // H4 « Tableau de bord freelance » data layer (Figma 166:12086). Every field below traces to
 // docs/design/h4-discovery.md — read that file before changing a mapping here, it carries the
@@ -228,11 +229,7 @@ export const getFreelancerDashboard = cache(
         .select('id, full_name')
         .in('id', buyerIds)
       if (buyerProfilesError) {
-        console.error(
-          '[freelancer-dashboard] buyer public_profiles error:',
-          buyerProfilesError.message,
-          buyerProfilesError.code,
-        )
+        reportQueryError('freelancer-dashboard buyer public_profiles', buyerProfilesError)
       } else {
         for (const p of buyerProfiles ?? []) {
           // public_profiles is a view: every column is nullable in the generated type (`id` never is at runtime).

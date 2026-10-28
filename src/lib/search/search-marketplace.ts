@@ -11,6 +11,7 @@ import {
   scoreListing,
   serviceCategoryOrClause,
   stripAccents,
+  validCategorySlugs,
   type SearchParams,
   type SearchType,
 } from './search-params'
@@ -332,13 +333,20 @@ export async function searchMarketplace(
   // For slug resolution: null = no filter; [] = filter given but matched nothing → zero.
   let slugResolvedIds: string[] | null = null
   if (!opts.categoryId && params.categorie.length > 0) {
-    const { data, error } = await supabase
-      .from('categories')
-      .select('id')
-      .in('slug', params.categorie)
-    // A failed lookup must not read as « that category has no listings » (0 results).
-    if (error) failQuery('search category resolve', error)
-    slugResolvedIds = ((data ?? []) as { id: string }[]).map((r) => r.id)
+    // A malformed slug matches nothing: all-malformed is « filter given, matched nothing » (0 results),
+    // never « no filter », and it never reaches PostgREST.
+    const slugs = validCategorySlugs(params.categorie)
+    if (slugs.length === 0) {
+      slugResolvedIds = []
+    } else {
+      const { data, error } = await supabase
+        .from('categories')
+        .select('id')
+        .in('slug', slugs)
+      // A failed lookup must not read as « that category has no listings » (0 results).
+      if (error) failQuery('search category resolve', error)
+      slugResolvedIds = ((data ?? []) as { id: string }[]).map((r) => r.id)
+    }
   }
   const categoryIds = pickCategoryIds(opts.categoryId, slugResolvedIds)
 

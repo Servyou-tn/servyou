@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
+import { isNoRowLike, reportQueryError } from '@/lib/supabase/query-error'
 import { getLang } from '@/lib/i18n/server'
 import { t } from '@/lib/i18n'
 import { normalizePhone } from '@/lib/phone'
@@ -69,7 +70,11 @@ export async function submitProductRequest(input: ProductRequestInput): Promise<
     .eq('status', 'active')
     .is('shops.admin_hidden_at', null)
     .maybeSingle()
-  if (pErr) console.error('[submitProductRequest] product fetch error:', pErr.message, pErr.code, pErr.details)
+  // A failed read is the generic error, never « introuvable »; a junk id (22P02) stays « introuvable ».
+  if (pErr && !isNoRowLike(pErr)) {
+    reportQueryError('submitProductRequest product', pErr)
+    return { ok: false, error: t('common.error_generic', lang) }
+  }
   if (!product) return { ok: false, error: t('demander.notFound', lang) }
 
   const tracksStock = Boolean((product as { tracks_stock: boolean | null }).tracks_stock)
@@ -155,7 +160,11 @@ export async function submitServiceRequest(input: ServiceRequestInput): Promise<
     .is('admin_hidden_at', null)
     .is('freelancer_profiles.admin_hidden_at', null)
     .maybeSingle()
-  if (sErr) console.error('[submitServiceRequest] service fetch error:', sErr.message, sErr.code, sErr.details)
+  // Same rule as submitProductRequest: a failed read is the generic error, not « introuvable ».
+  if (sErr && !isNoRowLike(sErr)) {
+    reportQueryError('submitServiceRequest service', sErr)
+    return { ok: false, error: t('common.error_generic', lang) }
+  }
   if (!service) return { ok: false, error: t('demander.notFound', lang) }
 
   // Fold the optional timeframe/budget into buyer_note (no dedicated columns).

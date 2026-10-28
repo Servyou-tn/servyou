@@ -85,7 +85,7 @@ export function CancelOrderModal({ orderId, cancelledBy, currentStatus, orderTyp
       })
       .eq('id', orderId)
     if (error) {
-      console.error('[CancelOrderModal] cancel error:', error)
+      console.error('[CancelOrderModal] cancel error:', error.message, error.code, error.details)
       setError(t('common.cancel_submit_error', lang))
       setIsSubmitting(false)
       return

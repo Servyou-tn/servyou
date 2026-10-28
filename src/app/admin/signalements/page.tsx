@@ -3,6 +3,8 @@ import { getLang } from '@/lib/i18n/server'
 import { t } from '@/lib/i18n'
 import { createClient } from '@/lib/supabase/server'
 import { requireAdmin } from '@/lib/auth/require-admin'
+import { reportQueryError } from '@/lib/supabase/query-error'
+import { ErrorState } from '@/components/marche/ErrorState'
 import type { Lang } from '@/lib/i18n'
 
 type ReportRow = {
@@ -57,7 +59,8 @@ export default async function ReportsQueuePage() {
     .in('status', ['open', 'under_review'])
     .order('created_at', { ascending: false })
 
-  if (error) console.error('[admin/signalements] list fetch error:', error.message, error.code, error.details)
+  // A failed read is an error state, never the « no reports » empty queue.
+  if (error) reportQueryError('admin/signalements list', error)
   const rows = (reports as ReportRow[] | null) ?? []
 
   // Batch-resolve reporter names via public_profiles (robust against PostgREST
@@ -67,7 +70,8 @@ export default async function ReportsQueuePage() {
   if (reporterIds.length > 0) {
     const { data: profiles, error: pErr } = await supabase
       .from('public_profiles').select('id, full_name').in('id', reporterIds)
-    if (pErr) console.error('[admin/signalements] reporter names fetch error:', pErr.message, pErr.code, pErr.details)
+    // Partial display: the queue still renders, the names fall back to « — ».
+    if (pErr) reportQueryError('admin/signalements reporter names', pErr)
     for (const p of (profiles ?? []) as Array<{ id: string; full_name: string }>) {
       nameById.set(p.id, p.full_name)
     }
@@ -77,7 +81,9 @@ export default async function ReportsQueuePage() {
     <div className="max-w-5xl">
       <h1 className="mb-6 text-2xl font-bold text-gray-800">{tr('admin.reports.title')}</h1>
 
-      {rows.length === 0 ? (
+      {error ? (
+        <ErrorState lang={lang} />
+      ) : rows.length === 0 ? (
         <p className="text-sm text-gray-500">{tr('admin.reports.empty')}</p>
       ) : (
         <div className="overflow-x-auto rounded-lg border border-gray-200 bg-white">

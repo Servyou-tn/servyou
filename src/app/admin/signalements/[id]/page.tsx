@@ -4,6 +4,7 @@ import { t } from '@/lib/i18n'
 import type { Lang } from '@/lib/i18n'
 import { createClient } from '@/lib/supabase/server'
 import { requireAdmin } from '@/lib/auth/require-admin'
+import { failQuery, isNoRowLike, reportQueryError } from '@/lib/supabase/query-error'
 import { ClaimButton } from './ClaimButton'
 import { ResolveForm } from './ResolveForm'
 import { DismissForm } from './DismissForm'
@@ -85,7 +86,8 @@ export default async function ReportDetailPage({ params }: Props) {
     .eq('id', id)
     .single()
 
-  if (error) console.error('[admin/signalements/[id]] fetch error:', error.message, error.code, error.details)
+  // « No row » (or a junk id) keeps the not-found block below; a failed query throws to error.tsx.
+  if (error && !isNoRowLike(error)) failQuery('admin/signalements/[id] report', error)
 
   if (!report) {
     return (
@@ -100,8 +102,10 @@ export default async function ReportDetailPage({ params }: Props) {
 
   const r = report as Report
 
-  const { data: reporter } = await supabase
+  const { data: reporter, error: reporterError } = await supabase
     .from('public_profiles').select('full_name').eq('id', r.reporter_id).single()
+  // Partial display: the name falls back to « — ». A gone reporter (PGRST116) is not a failure.
+  if (reporterError && !isNoRowLike(reporterError)) reportQueryError('admin/signalements/[id] reporter name', reporterError)
   const reporterName = (reporter as { full_name: string } | null)?.full_name ?? '—'
 
   // Current admin — used only to block self-suspend in the UI (the RPC blocks it too).
@@ -111,14 +115,20 @@ export default async function ReportDetailPage({ params }: Props) {
   // the suspend section. Permitted by the "Admin reads all profiles" SELECT policy
   // (migration 23). A null targetUser means the row is gone.
   type TargetUser = { full_name: string | null; suspended_at: string | null; suspended_reason: string | null }
+  // A failed read (as opposed to a gone row) shows « — » in its section, never « introuvable », and
+  // renders no action form: the admin cannot tell which action (suspend / unsuspend) is valid.
   let targetUser: TargetUser | null = null
+  let targetUserFailed = false
   if (r.target_type === 'user') {
     const { data: tu, error: tuError } = await supabase
       .from('profiles')
       .select('full_name, suspended_at, suspended_reason')
       .eq('id', r.target_id)
       .maybeSingle()
-    if (tuError) console.error('[admin/signalements/[id]] target user fetch error:', tuError.message, tuError.code, tuError.details)
+    if (tuError && !isNoRowLike(tuError)) {
+      reportQueryError('admin/signalements/[id] target user', tuError)
+      targetUserFailed = true
+    }
     targetUser = (tu as TargetUser | null) ?? null
   }
   const isSelfTarget = r.target_type === 'user' && me?.id === r.target_id
@@ -135,13 +145,17 @@ export default async function ReportDetailPage({ params }: Props) {
   // the row is gone.
   const moderationTable = MODERATION_TABLES[r.target_type]
   let moderationTarget: ModerationTarget | null = null
+  let moderationTargetFailed = false
   if (moderationTable) {
     const { data: targetRow, error: targetError } = await supabase
       .from(moderationTable)
       .select('id, admin_hidden_at, admin_hidden_reason')
       .eq('id', r.target_id)
       .maybeSingle()
-    if (targetError) console.error('[admin/signalements/[id]] moderation target fetch error:', targetError.message, targetError.code, targetError.details)
+    if (targetError && !isNoRowLike(targetError)) {
+      reportQueryError('admin/signalements/[id] moderation target', targetError)
+      moderationTargetFailed = true
+    }
     moderationTarget = (targetRow as ModerationTarget | null) ?? null
   }
 
@@ -200,7 +214,9 @@ export default async function ReportDetailPage({ params }: Props) {
             <h2 className="text-sm font-semibold uppercase tracking-wide text-gray-500">
               {tr('admin.moderation.section_title')}
             </h2>
-            {moderationTarget === null ? (
+            {moderationTargetFailed ? (
+              <p className="text-sm text-gray-500">—</p>
+            ) : moderationTarget === null ? (
               <p className="text-sm text-gray-500">{tr('admin.moderation.target_not_found')}</p>
             ) : moderationTarget.admin_hidden_at ? (
               <div className="space-y-3">
@@ -228,7 +244,9 @@ export default async function ReportDetailPage({ params }: Props) {
             <h2 className="text-sm font-semibold uppercase tracking-wide text-gray-500">
               {tr('admin.reports.suspend_section_title')}
             </h2>
-            {targetUser === null ? (
+            {targetUserFailed ? (
+              <p className="text-sm text-gray-500">—</p>
+            ) : targetUser === null ? (
               <p className="text-sm text-gray-500">{tr('admin.users.error_not_found')}</p>
             ) : isSelfTarget ? (
               <p className="text-sm text-gray-500">{tr('admin.users.self_action_blocked')}</p>
