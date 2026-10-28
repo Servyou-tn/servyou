@@ -1,7 +1,7 @@
 // Generated from the live Supabase schema (project xggomcitqrkaylqezjjz) — DO NOT EDIT BY HAND.
 // Regenerate after every applied migration: Supabase MCP generate_typescript_types (or
 // `npx supabase gen types typescript --project-id xggomcitqrkaylqezjjz`), then commit.
-// Generated 2026-10-28 after migration 20261028205353 suspended_content_hidden.
+// Generated 2026-10-28 after migration 20261028221956 favorites_shops_freelancers.
 
 export type Json =
   | string
@@ -221,29 +221,42 @@ export type Database = {
       favorites: {
         Row: {
           created_at: string
+          freelancer_profile_id: string | null
           id: string
           item_type: string
           product_id: string | null
           service_listing_id: string | null
+          shop_id: string | null
           user_id: string
         }
         Insert: {
           created_at?: string
+          freelancer_profile_id?: string | null
           id?: string
           item_type: string
           product_id?: string | null
           service_listing_id?: string | null
+          shop_id?: string | null
           user_id: string
         }
         Update: {
           created_at?: string
+          freelancer_profile_id?: string | null
           id?: string
           item_type?: string
           product_id?: string | null
           service_listing_id?: string | null
+          shop_id?: string | null
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "favorites_freelancer_profile_id_fkey"
+            columns: ["freelancer_profile_id"]
+            isOneToOne: false
+            referencedRelation: "freelancer_profiles"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "favorites_product_id_fkey"
             columns: ["product_id"]
@@ -256,6 +269,13 @@ export type Database = {
             columns: ["service_listing_id"]
             isOneToOne: false
             referencedRelation: "service_listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "favorites_shop_id_fkey"
+            columns: ["shop_id"]
+            isOneToOne: false
+            referencedRelation: "shops"
             referencedColumns: ["id"]
           },
           {
@@ -782,6 +802,51 @@ export type Database = {
             columns: ["job_post_id"]
             isOneToOne: false
             referencedRelation: "job_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notification_preferences: {
+        Row: {
+          email_low_stock: boolean
+          email_new_orders: boolean
+          email_newsletter: boolean
+          email_proposals: boolean
+          email_reviews: boolean
+          profile_id: string
+          updated_at: string
+        }
+        Insert: {
+          email_low_stock?: boolean
+          email_new_orders?: boolean
+          email_newsletter?: boolean
+          email_proposals?: boolean
+          email_reviews?: boolean
+          profile_id: string
+          updated_at?: string
+        }
+        Update: {
+          email_low_stock?: boolean
+          email_new_orders?: boolean
+          email_newsletter?: boolean
+          email_proposals?: boolean
+          email_reviews?: boolean
+          profile_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notification_preferences_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notification_preferences_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: true
+            referencedRelation: "public_profiles"
             referencedColumns: ["id"]
           },
         ]

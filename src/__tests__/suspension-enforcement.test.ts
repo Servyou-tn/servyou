@@ -13,7 +13,7 @@
  * failed refresh silently drops supabase-js back to anon and would fake a refusal. Every refusal pins
  * the trigger's exact text, so a policy, grant or other trigger can't pass for it.
  *
- *   * catalog — the service-role OpenAPI relation set is exactly the 26 guarded tables plus the 4
+ *   * catalog — the service-role OpenAPI relation set is exactly the 28 guarded tables plus the 4
  *     relations with no client write; a new table fails here until it is classified;
  *   * matrix — each table × INSERT / UPDATE / DELETE, probed at a RANDOM id (no real row is ever
  *     touched), from a suspended session and from an active control session;
@@ -87,12 +87,12 @@ const DOCUMENT = () => new Blob([new Uint8Array([37, 80, 68, 70, 45, 49, 46, 52]
 type Verb = 'insert' | 'update' | 'delete'
 const ALL: Verb[] = ['insert', 'update', 'delete']
 
-// The 27 tables on which authenticated holds a table- or column-level write grant: the verbs
+// The 28 tables on which authenticated holds a table- or column-level write grant: the verbs
 // trg_enforce_active_user guards, the verbs authenticated holds NO privilege for (refused by the
 // privilege check, which runs before any trigger), and an UPDATE probe column (`set`) / INSERT probe
 // column (`insertKey`) where the grant is column-level (profiles, orders, job_posts, data_exports,
-// deletion_requests).
-const TRIGGERED: Record<string, { guarded: Verb[]; noGrant?: Verb[]; set?: Record<string, unknown>; insertKey?: string }> = {
+// deletion_requests), and the probe's filter column (`key`, default id) for a table without an id.
+const TRIGGERED: Record<string, { guarded: Verb[]; noGrant?: Verb[]; set?: Record<string, unknown>; insertKey?: string; key?: string }> = {
   profiles: { guarded: ALL, noGrant: ['insert', 'delete'], set: { full_name: 'x' } },
   shops: { guarded: ALL },
   shop_categories: { guarded: ALL },
@@ -120,6 +120,7 @@ const TRIGGERED: Record<string, { guarded: Verb[]; noGrant?: Verb[]; set?: Recor
   disputes: { guarded: ['update'], noGrant: ['delete'] }, // D4; no DELETE grant since migration 68
   data_exports: { guarded: ['update'], noGrant: ['delete'], set: { status: 'pending' }, insertKey: 'user_id' }, // D3; column grants since migration 68 (C)
   deletion_requests: { guarded: ['update'], noGrant: ['delete'], set: { status: 'pending' }, insertKey: 'user_id' }, // D3; column grants since migration 68 (C)
+  notification_preferences: { guarded: ALL, noGrant: ['delete'], set: { email_newsletter: false }, insertKey: 'profile_id', key: 'profile_id' }, // migration 97: keyed on profile_id, column grants, no DELETE grant
 }
 // Exposed relations with no client write privilege at all, and the error each refusal carries.
 const NO_CLIENT_WRITES: Record<string, { key: string; code: string; message?: string }> = {
@@ -368,7 +369,7 @@ describe.skipIf(!hasCreds)('ground truth', () => {
 })
 
 describe.skipIf(!hasCreds)('catalog', () => {
-  it('the exposed relations are exactly the 27 guarded tables plus the 4 with no client write', async () => {
+  it('the exposed relations are exactly the 28 guarded tables plus the 4 with no client write', async () => {
     const res = await fetch(`${url}/rest/v1/`, {
       headers: { apikey: serviceKey, Authorization: `Bearer ${serviceKey}`, Accept: 'application/openapi+json' },
     })
@@ -378,14 +379,14 @@ describe.skipIf(!hasCreds)('catalog', () => {
       .filter((p) => p !== '/' && !p.startsWith('/rpc/'))
       .map((p) => p.slice(1))
       .sort()
-    expect(Object.keys(TRIGGERED)).toHaveLength(27)
+    expect(Object.keys(TRIGGERED)).toHaveLength(28)
     expect(relations).toEqual([...Object.keys(TRIGGERED), ...Object.keys(NO_CLIENT_WRITES)].sort())
   })
 })
 
 describe.skipIf(!hasCreds)('matrix — a suspended session, every table × verb, at a random id', () => {
   it.each(matrixCells)('$table $verb', async ({ table, verb, spec }) => {
-    const { error } = await probe(matrixClient, table, verb)
+    const { error } = await probe(matrixClient, table, verb, spec.key)
     if (spec.noGrant?.includes(verb)) {
       expect(error?.code).toBe(DENIED)
       expect(error?.message).toBe(`permission denied for table ${table}`)
@@ -410,7 +411,7 @@ describe.skipIf(!hasCreds)('matrix — a suspended session, every table × verb,
 
 describe.skipIf(!hasCreds)('matrix — the same probes from an active session pass the trigger', () => {
   it.each(matrixCells)('$table $verb', async ({ table, verb, spec }) => {
-    const { error } = await probe(controlClient, table, verb)
+    const { error } = await probe(controlClient, table, verb, spec.key)
     if (spec.noGrant?.includes(verb)) {
       expect(error?.message).toBe(`permission denied for table ${table}`)
     } else if (verb === 'insert') {

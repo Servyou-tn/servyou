@@ -918,6 +918,43 @@ applied them on 2026-10-28, after #224 merged. Each file's executable SQL is MD5
     - Verified by `security-followups-batch-2.test.ts`: every client select of the column gets 42501, and
       the rest of the row stays readable.
 
+Migrations 97–98 store the e-mail notification preferences and add shop / freelancer favorites (#228; founder
+brief and architect rulings 1–4 of 2026-10-28; Figma 558:38878, 720:62084, 720:62688). The architect applied
+both on 2026-10-28.
+- Each file's executable SQL is MD5-verified against `schema_migrations` (comments and whitespace stripped;
+  hash given per entry).
+- Post-apply check (architect, rolled back, as the owner of the existing favorites): still 2 favorites, and a
+  shop favorite inserts.
+- `database.types.ts` is regenerated: the `notification_preferences` table, plus `favorites.shop_id` /
+  `freelancer_profile_id`.
+- Verified by `src/__tests__/notification-prefs-favorites.test.ts` (live-DB; 13 red before apply, all green
+  after).
+- No row was rewritten. Rollback is at the bottom of each file.
+
+97. **20261028221948_notification_preferences** (`05f9e1d0`) — a new table keyed on `profile_id` (→ profiles,
+    ON DELETE CASCADE).
+    - Five e-mail flags with defaults from Figma (ruling 1): `email_new_orders`, `email_proposals` and
+      `email_reviews` default true; `email_low_stock` and `email_newsletter` default false. Plus `updated_at`.
+    - « Alertes de sécurité » (always on) and « Notifications sur la plateforme » (Bientôt) are not stored.
+    - **No row = all defaults.** The app upserts on first save; nothing is backfilled.
+    - **RLS:** the owner can select, insert and update. No delete, no admin bypass, nothing for anon.
+    - **Grants (P2-1):** every default grant is revoked, then:
+      - SELECT on all columns;
+      - INSERT and UPDATE on `profile_id` plus the five flags. `profile_id` is in UPDATE only because a
+        PostgREST upsert sets every payload column; the WITH CHECK pins it to the caller.
+    - `updated_at` is set by `handle_updated_at` on update and by its default on insert, never by a client.
+    - `trg_enforce_active_user` is attached.
+98. **20261028221956_favorites_shops_freelancers** (`c05d9735`) — favorites gains two target types.
+    - `item_type` also accepts `shop` and `freelancer`, through `shop_id` (→ shops) and `freelancer_profile_id`
+      (→ freelancer_profiles), both ON DELETE CASCADE.
+    - `favorite_target_matches_type` requires exactly one of the four targets. UNIQUE per user per shop and per
+      freelancer, plus a partial index on each new FK.
+    - « Users read own favorites » now also requires the caller to be able to read the target, for all four
+      types (rulings 2 + 3). A moderated, suspended or unpublished target is hidden, never deleted.
+    - « Users insert own favorites » uses the same predicate as its WITH CHECK (ruling 4): you can't favorite
+      what you can't see.
+    - Delete and grants are unchanged. The 2 existing rows (services) passed the new CHECKs and stay readable.
+
 ## Rollback paths
 
 Each migration in this folder represents work that has already been applied to production. Rollback is therefore reverse migration work, not file deletion. If a rollback is ever needed, write a new dated migration that reverses the relevant changes — never delete history from this folder.
