@@ -10,10 +10,11 @@ import { t } from '@/lib/i18n'
 // title, 16 body) and three provider rows (r8, border-subtle, p16, gap12, name 16/Medium + a « Bientôt »
 // category badge r8 · 4/12 padding · 14/Medium).
 //
-// ⚑ The three rows sit at OPACITY 0.5 — the dump does not record it. Measured from the frame's pixels:
+// ⚑ The frame fades each WHOLE row to OPACITY 0.5 — the dump does not record it. Measured from its pixels:
 // the Facebook label's darkest pixel is (135,139,148) = text/primary (15,23,42) at exactly 50% on white,
 // the badge text (163,170,180) = text/secondary at 50%, the badge fill (248,250,252) = surface/sunken at 50%.
-// They read as disabled, which is the point of « Bientôt ».
+// RULING (founder, PR #223): fade only the icon + provider name; the « Bientôt » badge stays at full contrast
+// (4.5:1 — the 50% badge text measured ~2.2:1). Deliberate deviation from the frame.
 //
 // Route-local, not shared/ui: this is the first consumer of the big-circle Empty State (marche/EmptyState
 // is a different card — shadow, no circle, 16px title) and of the brand glyphs. lucide-react 1.x ships no
@@ -43,9 +44,11 @@ export function ComptesConnectesTab() {
         {PROVIDERS.map(({ key, name, Icon }) => (
           <li
             key={key}
-            className="flex items-center justify-between gap-3 rounded-lg border border-border-subtle bg-surface-base p-4 opacity-50"
+            className="flex items-center justify-between gap-3 rounded-lg border border-border-subtle bg-surface-base p-4"
           >
-            <span className="flex items-center gap-3">
+            {/* Founder ruling (PR #223): fade ONLY the icon + name. The frame fades the whole row, which left the
+                « Bientôt » badge text at ~2.2:1; at full text-secondary on surface-sunken it is ~6.9:1 (≥ 4.5:1). */}
+            <span className="flex items-center gap-3 opacity-50">
               <Icon />
               <span className="text-base font-medium text-text-primary">{name}</span>
             </span>
