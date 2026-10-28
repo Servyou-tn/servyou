@@ -40,7 +40,7 @@ export default async function ServicePage({ params }: { params: Promise<{ id: st
 
   return (
     <AppShell user={shell?.topBarUser ?? null}>
-      <ServiceDetail service={service} related={related} lang={lang} />
+      <ServiceDetail service={service} related={related} lang={lang} isLoggedIn={Boolean(shell)} />
     </AppShell>
   )
 }

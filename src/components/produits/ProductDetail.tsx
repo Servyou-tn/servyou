@@ -15,6 +15,7 @@ import { resolveStockState } from '@/lib/marche/product-stock'
 import { ProductGallery } from './ProductGallery'
 import { ProductDescription } from './ProductDescription'
 import { ShareLinkButton } from './ShareLinkButton'
+import { ReportListingModal } from '@/components/report/ReportListingModal'
 
 // D1 « Détail du produit » — rebuilt from Figma `562:39013`. Every desktop number below is measured
 // and recorded in docs/design/d1-discovery.md §2; nothing here is a recollection.
@@ -30,9 +31,9 @@ import { ShareLinkButton } from './ShareLinkButton'
 // 1440 frame and four DESKTOP specimens). The mobile ramp follows D2's pattern by founder ruling,
 // not by measurement. Logged in docs/follow-ups.md beside C1's identical gap.
 //
-// Deliberately NOT built, each by ruling and each recorded in the discovery doc: the share dialog
-// (`563:39668`) and the report modal (`563:39705`) — see ShareLinkButton for the icon reason and
-// the report line at the foot of this file. Both « Voir la boutique » affordances now link to
+// Deliberately NOT built, by ruling, recorded in the discovery doc: the share dialog (`563:39668`) — see
+// ShareLinkButton for the icon reason. The report modal (`563:39705`) is BUILT (feat/signaler-product-service):
+// the report line at the foot of this file opens ReportListingModal. Both « Voir la boutique » affordances now link to
 // `/boutique/[id]` (D3 shipped 2026-08-12, bare uuid — `shops` has no slug column, see
 // docs/follow-ups.md "D3 URL shape — RESOLVED").
 
@@ -50,10 +51,12 @@ export function ProductDetail({
   product,
   related,
   lang,
+  isLoggedIn,
 }: {
   product: ProductDetailData
   related: ProductListing[]
   lang: Lang
+  isLoggedIn: boolean
 }) {
   const category = product.category
     ? lang === 'ar' && product.category.name_ar
@@ -305,14 +308,11 @@ export function ProductDetail({
           />
         </Section>
 
-        {/* « Signaler ce produit » — static muted text. The `reports` table is ready for it
-            (target_type accepts 'product', and its reason CHECK matches the modal's four options
-            one-for-one), but the modal is a WRITE path: a server action, a Zod schema, an RLS
-            check and the still-missing icon-flag. That is its own PR, not a second focus in a
-            read-only detail page. Same treatment as ServiceDetail.tsx:232. */}
-        <p className="text-body-sm leading-[21px] text-text-muted">
-          {t('product.detail.report', lang)}
-        </p>
+        {/* « Signaler ce produit » — Figma 563:39705. Muted text trigger (the frame draws no icon) that opens the
+            shared report modal; logged-out visitors are sent to sign in first. */}
+        <div>
+          <ReportListingModal kind="product" targetId={product.id} targetName={product.title} isLoggedIn={isLoggedIn} />
+        </div>
       </div>
     </div>
   )

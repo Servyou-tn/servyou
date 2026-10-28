@@ -47,7 +47,7 @@ export default async function ProduitPage({ params }: { params: Promise<{ id: st
 
   return (
     <AppShell user={shell?.topBarUser ?? null}>
-      <ProductDetail product={product} related={related} lang={lang} />
+      <ProductDetail product={product} related={related} lang={lang} isLoggedIn={Boolean(shell)} />
     </AppShell>
   )
 }
