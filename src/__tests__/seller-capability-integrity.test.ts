@@ -415,12 +415,13 @@ describe.skipIf(!hasCreds)('Part 1 — an INSERT cannot add a second capability 
 
 describe.skipIf(!hasCreds)('Part 1 — owner changes', () => {
   // RLS (USING / WITH CHECK owner = auth.uid()) would refuse these too, but BEFORE ROW triggers run
-  // before the WITH CHECK and the target here is the consumer (seller_type NULL), so the trigger's
-  // own rejection is what surfaces — pinned, so dropping the UPDATE OF branch fails the test.
+  // before the WITH CHECK, so the trigger's own rejection is what surfaces — pinned, so dropping the
+  // UPDATE OF branch fails the test. Since migration 85 (20261028194726_seller_capability_fail_closed)
+  // that rejection is the fail-closed not_self check, raised before the target's profile is read.
   it('a shop owner cannot hand their shop to another account', async () => {
     const { error } = await shopOwnerClient.from('shops').update({ owner_id: consumerId }).eq('id', shopOwnerShopId)
     expect(error?.code).toBe('42501')
-    expect(error?.message).toBe(NOT_SHOP_OWNER)
+    expect(error?.hint).toBe('not_self')
     const { data } = await admin.from('shops').select('owner_id').eq('id', shopOwnerShopId).single()
     expect(data?.owner_id).toBe(shopOwnerId)
   })
@@ -431,7 +432,7 @@ describe.skipIf(!hasCreds)('Part 1 — owner changes', () => {
       .update({ profile_id: consumerId })
       .eq('id', freelancerFpId)
     expect(error?.code).toBe('42501')
-    expect(error?.message).toBe(NOT_FREELANCER)
+    expect(error?.hint).toBe('not_self')
     const { data } = await admin.from('freelancer_profiles').select('profile_id').eq('id', freelancerFpId).single()
     expect(data?.profile_id).toBe(freelancerId)
   })

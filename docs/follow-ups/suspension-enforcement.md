@@ -5,6 +5,8 @@ Found during migration 61's discovery (decisions D1–D8). TRUNCATE grants are t
 
 ## MEDIUM — `disputes`, `data_exports` and `deletion_requests` accept admin fields on INSERT
 
+- ✅ **CLOSED**: `data_exports` / `deletion_requests` by migration 68 C; `disputes` by migration 83 `20261028194719_disputes_insert_columns` (`fix/security-followups-batch`, 2026-10-28; proof: `security-followups-batch.test.ts`). `disputes.created_by` was not added.
+
 - **What:** each INSERT policy checks only who the row belongs to — "Dispute creation by order
   party" (the caller is the order's buyer or seller, order past `pending`), "Users insert own export
   request" / "Users insert own deletion request" (`auth.uid() = user_id`) — and `authenticated`

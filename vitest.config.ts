@@ -33,6 +33,7 @@ export const INTEGRATION_GLOBS = [
   '**/moderated-freelancer-read-rls.test.ts',
   '**/job-posts-write-guards.test.ts',
   '**/profiles-email-sync.test.ts',
+  '**/security-followups-batch.test.ts',
   // These nine wrote to production on every default run until 2026-10-26 (missions M-A PR).
   '**/d4-completed-project-count.test.ts',
   '**/d4-freelancer-services-visibility.test.ts',

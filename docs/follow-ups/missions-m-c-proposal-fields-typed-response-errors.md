@@ -33,6 +33,8 @@
 
 ## LOW — the 8-skill limit is checked before RLS on `job_response_skills`
 
+- ✅ **CLOSED by migration 79** `20261028194710_job_response_skills_open_post`: ownership is checked first (`not_self`).
+
 - `enforce_job_response_skills_limit` (BEFORE INSERT, SECURITY DEFINER) runs before the RLS WITH CHECK, so a
   non-responder who knows a response id sees `too_many_skills` instead of the RLS refusal once that response
   has 8 skills — learning only that count. Response ids are visible only to the responder and the post owner.

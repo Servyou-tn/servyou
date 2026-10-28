@@ -99,7 +99,7 @@ orders INSERT gap (migration 54). Ranked most severe first; each is its own PR u
 - **Closed by** migration 66 (`20261025222218_order_lifecycle_columns`, 2026-10-25): with a JWT,
   `received_at` can no longer be backdated (discarded outside the receipt transition) and
   `cancelled_by` / `cancellation_reason` change only inside the transition into `cancelled` (else 42501).
-  Live-tested by `orders-lifecycle-columns.test.ts`. **Still open:** E2 (the `received_at` column grant
+  Live-tested by `orders-lifecycle-columns.test.ts`. **Still open:** E2 (✅ E2 closed by migration 84 `20261028194721_orders_received_at_revoke`, 2026-10-28) (the `received_at` column grant
   revoke, after H8 #191) and moving the buyer-side client `.update()`s to server actions.
 
 - **What:** `authenticated` holds UPDATE on `cancelled_by`, `cancellation_reason`, `received_at`;
@@ -161,6 +161,8 @@ orders INSERT gap (migration 54). Ranked most severe first; each is its own PR u
 - **Fix:** fold into the products/shops security PR with the same embed audit.
 
 ## MEDIUM — `freelancer_profiles.is_published` is owner-settable (publish-gate bypass)
+
+- ✅ **CLOSED by migration 81** `20261028194715_freelancer_profiles_column_grants` (`fix/security-followups-batch`, 2026-10-28; proof: `security-followups-batch.test.ts`).
 
 - **Found by:** `fix/seller-capability-insert` discovery, 2026-10-23.
 - **What:** migration 48 defines `is_published` as "derived, never user-set" (true iff ≥1 active
@@ -248,6 +250,8 @@ orders INSERT gap (migration 54). Ranked most severe first; each is its own PR u
 
 ## LOW — migration 55 locks the target owner's profile row before RLS rejects a foreign write
 
+- ✅ **CLOSED by migration 85** `20261028194726_seller_capability_fail_closed` (`fix/security-followups-batch`, 2026-10-28; proof: `security-followups-batch.test.ts`).
+
 - **Found by:** `/gstack-review` of PR #180 (adversarial pass), 2026-10-23.
 - **What:** `enforce_seller_capability()` reads the NEW owner's `profiles` row `FOR SHARE` before
   the RLS WITH CHECK rejects an insert naming someone else as owner, so any signed-in user can
@@ -264,6 +268,8 @@ orders INSERT gap (migration 54). Ranked most severe first; each is its own PR u
   fail-closed-first shape on `job_responses`; `enforce_seller_capability()` should copy it.
 
 ## LOW — `admin_hidden_*` can be set on INSERT (`shops`, `freelancer_profiles`)
+
+- ✅ **CLOSED by migrations 81 + 82** (`…194715` / `…194717`) (`fix/security-followups-batch`, 2026-10-28; proof: `security-followups-batch.test.ts`).
 
 - **Found by:** `fix/seller-capability-insert` discovery, 2026-10-23.
 - **What:** `authenticated` holds column INSERT on `admin_hidden_at` / `admin_hidden_reason`, and
