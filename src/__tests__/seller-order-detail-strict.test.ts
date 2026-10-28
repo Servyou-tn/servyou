@@ -2,8 +2,8 @@
  * getSellerOrderDetail (src/lib/marche/seller-order-detail.ts), Supabase mocked.
  *   • an invalid uuid lands as 22P02 and stays « not found » (null) — G9 relies on it;
  *   • ANY OTHER failed query THROWS for every caller (loader-error-surfacing plan; before it, only `strict` — H8's
- *     detail page — did), so a timeout never reads as a permanent 404 for the freelancer's own order. `strict` is
- *     now redundant and kept only so that caller compiles;
+ *     detail page — did), so a timeout never reads as a permanent 404 for the freelancer's own order. The
+ *     redundant `strict` parameter was removed in loader-error-surfacing PR-2;
  *   • a missing row and someone else's order are null, and price_unit is read from the listing.
  */
 
@@ -69,26 +69,24 @@ describe('getSellerOrderDetail', () => {
   it('returns null for an invalid uuid (G9: 22P02 is a graceful not-found)', async () => {
     h.result = { data: null, error: { message: 'invalid input syntax for type uuid', code: '22P02', details: null } }
     expect(await getSellerOrderDetail('x', 'seller-1')).toBeNull()
-    expect(await getSellerOrderDetail('x', 'seller-1', true)).toBeNull()
   })
 
-  it('THROWS on any other failed query — an outage is not a 404, strict or not', async () => {
+  it('THROWS on any other failed query — an outage is not a 404', async () => {
     const log = vi.spyOn(console, 'error').mockImplementation(() => {})
     h.result = { data: null, error: { message: 'timeout', code: '57014', details: null } }
-    await expect(getSellerOrderDetail('o-1', 'seller-1', true)).rejects.toThrow('seller-order-detail: timeout')
     await expect(getSellerOrderDetail('o-1', 'seller-1')).rejects.toThrow('seller-order-detail: timeout')
     log.mockRestore()
   })
 
-  it('is null for a missing row and for another seller\'s order, strict or not', async () => {
+  it('is null for a missing row and for another seller\'s order', async () => {
     h.result = { data: null, error: null }
-    expect(await getSellerOrderDetail('o-1', 'seller-1', true)).toBeNull()
+    expect(await getSellerOrderDetail('o-1', 'seller-1')).toBeNull()
     h.result = { data: ROW, error: null }
-    expect(await getSellerOrderDetail('o-1', 'someone-else', true)).toBeNull()
+    expect(await getSellerOrderDetail('o-1', 'someone-else')).toBeNull()
   })
 
   it('reads the listing\'s price_unit and parses the buyer\'s brief', async () => {
-    const order = await getSellerOrderDetail('o-1', 'seller-1', true)
+    const order = await getSellerOrderDetail('o-1', 'seller-1')
     expect(h.selects[0]).toContain('price_unit')
     expect(order).toMatchObject({
       priceUnit: 'hour',

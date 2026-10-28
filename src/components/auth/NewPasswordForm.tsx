@@ -69,7 +69,7 @@ export function NewPasswordForm({ initialView }: { initialView: NewPasswordIniti
     try {
       const { error } = await supabase.auth.updateUser({ password })
       if (error) {
-        console.error('[NewPasswordForm] updateUser error:', error)
+        console.error('[NewPasswordForm] updateUser error:', error.message, error.code, error.status)
         setFormError(t('newPassword.errors.updateFailed', lang))
         setLoading(false)
         return
@@ -78,7 +78,7 @@ export function NewPasswordForm({ initialView }: { initialView: NewPasswordIniti
       await supabase.auth.signOut()
       router.push('/connexion?passwordReset=success')
     } catch (err) {
-      console.error('[NewPasswordForm] unexpected error:', err)
+      console.error('[NewPasswordForm] unexpected error:', err instanceof Error ? err.message : String(err))
       setFormError(t('newPassword.errors.updateFailed', lang))
       setLoading(false)
     }

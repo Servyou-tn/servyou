@@ -39,7 +39,7 @@ export function LanguageToggle() {
       const { data: { user } } = await supabase.auth.getUser()
       if (user) {
         const { error } = await supabase.from('profiles').update({ language: next }).eq('id', user.id)
-        if (error) console.error('[LanguageToggle] profile language update error:', error)
+        if (error) console.error('[LanguageToggle] profile language update error:', error.message, error.code, error.details)
       }
     })()
   }

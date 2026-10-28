@@ -3,6 +3,7 @@ import { t } from '@/lib/i18n'
 import { createClient } from '@/lib/supabase/server'
 import { requireAdmin } from '@/lib/auth/require-admin'
 import type { PostgrestError } from '@supabase/supabase-js'
+import { reportQueryError } from '@/lib/supabase/query-error'
 import { AdminMetricCard } from '@/components/AdminMetricCard'
 import { CsvExportButton } from './CsvExportButton'
 
@@ -11,7 +12,7 @@ import { CsvExportButton } from './CsvExportButton'
 // PR-L, job_posts via PR-N) or a public-read table. No charts: at 1 completed order
 // there is nothing to chart; trend charts are post-MVP per the spec.
 
-type CountResult = { count: number | null; error: unknown }
+type CountResult = { count: number | null; error: PostgrestError | null }
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -62,22 +63,24 @@ export default async function StatistiquesPage() {
     supabase.from('orders').select('seller_id').eq('status', 'received'),
   ])
 
-  // Surface any query error rather than silently showing 0 (CLAUDE.md rule).
+  // Surface any query error rather than silently showing 0 (CLAUDE.md rule): it is reported, and
+  // the card falls back to AdminMetricCard's « — » instead of a false « 0 ».
   const named: Record<string, { error: PostgrestError | null }> = {
     usersTotal, usersLast7d, shops, freelancers, products, services, jobsOpen,
     ordersTotal, ordersReceived, ordersReceivedLast7d, ordersCancelled, receivedSellerRows,
   }
   for (const [key, res] of Object.entries(named)) {
-    if (res.error) console.error(`[admin/statistiques] ${key} query error:`, res.error.message, res.error.code, res.error.details)
+    if (res.error) reportQueryError(`admin/statistiques ${key}`, res.error)
   }
 
-  const n = (r: CountResult) => r.count ?? 0
-  const totalOrders = n(ordersTotal)
-  const cancelledOrders = n(ordersCancelled)
-  const sellersWithSales = new Set(
-    ((receivedSellerRows.data ?? []) as { seller_id: string }[]).map(r => r.seller_id),
-  ).size
-  const cancellationRate = totalOrders > 0
+  // undefined → the card's « — » placeholder.
+  const n = (r: CountResult): string | undefined => (r.error ? undefined : String(r.count ?? 0))
+  const totalOrders = ordersTotal.error ? null : ordersTotal.count ?? 0
+  const cancelledOrders = ordersCancelled.error ? null : ordersCancelled.count ?? 0
+  const sellersWithSales = receivedSellerRows.error
+    ? undefined
+    : String(new Set(((receivedSellerRows.data ?? []) as { seller_id: string }[]).map(r => r.seller_id)).size)
+  const cancellationRate = totalOrders != null && cancelledOrders != null && totalOrders > 0
     ? `${((cancelledOrders / totalOrders) * 100).toFixed(1)} %`
     : '—'
 
@@ -86,25 +89,25 @@ export default async function StatistiquesPage() {
       <h1 className="mb-6 text-2xl font-bold text-gray-800">{tr('admin.statistiques.page_title')}</h1>
 
       <Section title={tr('admin.statistiques.section_users')}>
-        <AdminMetricCard label={tr('admin.statistiques.label_users_total')} value={String(n(usersTotal))} />
-        <AdminMetricCard label={tr('admin.statistiques.label_users_last_7d')} value={String(n(usersLast7d))} />
+        <AdminMetricCard label={tr('admin.statistiques.label_users_total')} value={n(usersTotal)} />
+        <AdminMetricCard label={tr('admin.statistiques.label_users_last_7d')} value={n(usersLast7d)} />
       </Section>
 
       <Section title={tr('admin.statistiques.section_marketplace')}>
-        <AdminMetricCard label={tr('admin.statistiques.label_shops')} value={String(n(shops))} />
-        <AdminMetricCard label={tr('admin.statistiques.label_freelancers')} value={String(n(freelancers))} />
-        <AdminMetricCard label={tr('admin.statistiques.label_products')} value={String(n(products))} />
-        <AdminMetricCard label={tr('admin.statistiques.label_services')} value={String(n(services))} />
-        <AdminMetricCard label={tr('admin.statistiques.label_jobs_open')} value={String(n(jobsOpen))} />
+        <AdminMetricCard label={tr('admin.statistiques.label_shops')} value={n(shops)} />
+        <AdminMetricCard label={tr('admin.statistiques.label_freelancers')} value={n(freelancers)} />
+        <AdminMetricCard label={tr('admin.statistiques.label_products')} value={n(products)} />
+        <AdminMetricCard label={tr('admin.statistiques.label_services')} value={n(services)} />
+        <AdminMetricCard label={tr('admin.statistiques.label_jobs_open')} value={n(jobsOpen)} />
       </Section>
 
       <Section title={tr('admin.statistiques.section_transactions')}>
-        <AdminMetricCard label={tr('admin.statistiques.label_orders_total')} value={String(totalOrders)} />
-        <AdminMetricCard label={tr('admin.statistiques.label_orders_completed_total')} value={String(n(ordersReceived))} />
-        <AdminMetricCard label={tr('admin.statistiques.label_orders_completed_last_7d')} value={String(n(ordersReceivedLast7d))} />
-        <AdminMetricCard label={tr('admin.statistiques.label_orders_cancelled')} value={String(cancelledOrders)} />
+        <AdminMetricCard label={tr('admin.statistiques.label_orders_total')} value={n(ordersTotal)} />
+        <AdminMetricCard label={tr('admin.statistiques.label_orders_completed_total')} value={n(ordersReceived)} />
+        <AdminMetricCard label={tr('admin.statistiques.label_orders_completed_last_7d')} value={n(ordersReceivedLast7d)} />
+        <AdminMetricCard label={tr('admin.statistiques.label_orders_cancelled')} value={n(ordersCancelled)} />
         <AdminMetricCard label={tr('admin.statistiques.label_cancellation_rate')} value={cancellationRate} />
-        <AdminMetricCard label={tr('admin.statistiques.label_sellers_completed')} value={String(sellersWithSales)} />
+        <AdminMetricCard label={tr('admin.statistiques.label_sellers_completed')} value={sellersWithSales} />
       </Section>
 
       <p className="mb-8 text-xs text-gray-400">{tr('admin.statistiques.updated_now')}</p>

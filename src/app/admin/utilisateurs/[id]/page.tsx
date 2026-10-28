@@ -4,6 +4,7 @@ import { t } from '@/lib/i18n'
 import type { Lang } from '@/lib/i18n'
 import { createClient } from '@/lib/supabase/server'
 import { requireAdmin } from '@/lib/auth/require-admin'
+import { failQuery, isNoRowLike, reportQueryError } from '@/lib/supabase/query-error'
 import { resolveRole, roleI18nKey } from '@/lib/roles'
 import { SuspendForm } from './SuspendForm'
 import { UnsuspendButton } from './UnsuspendButton'
@@ -55,7 +56,8 @@ export default async function UserDetailPage({ params }: Props) {
     .eq('id', id)
     .maybeSingle()
 
-  if (error) console.error('[admin/utilisateurs/[id]] fetch error:', error.message, error.code, error.details)
+  // « No row » (or a junk id) keeps the not-found block below; a failed query throws to error.tsx.
+  if (error && !isNoRowLike(error)) failQuery('admin/utilisateurs/[id] profile', error)
 
   if (!profile) {
     return (
@@ -79,15 +81,23 @@ export default async function UserDetailPage({ params }: Props) {
   const [shopRes, freelancerRes, ordersBuyer, ordersSeller, reportsCreated, reportsAgainst] = await Promise.all([
     role === 'shop_owner'
       ? supabase.from('shops').select('id').eq('owner_id', u.id).maybeSingle()
-      : Promise.resolve({ data: null }),
+      : Promise.resolve({ data: null, error: null }),
     role === 'freelancer'
       ? supabase.from('freelancer_profiles').select('id').eq('profile_id', u.id).maybeSingle()
-      : Promise.resolve({ data: null }),
+      : Promise.resolve({ data: null, error: null }),
     supabase.from('orders').select('id', { count: 'exact', head: true }).eq('buyer_id', u.id),
     supabase.from('orders').select('id', { count: 'exact', head: true }).eq('seller_id', u.id),
     supabase.from('reports').select('id', { count: 'exact', head: true }).eq('reporter_id', u.id),
     supabase.from('reports').select('id', { count: 'exact', head: true }).eq('target_type', 'user').eq('target_id', u.id),
   ])
+
+  // Partial display: a failed activity read is reported and its count shows « — », never a false « 0 »;
+  // a failed shop / freelancer lookup is reported and its link is omitted.
+  const activity = { shopRes, freelancerRes, ordersBuyer, ordersSeller, reportsCreated, reportsAgainst }
+  for (const [key, res] of Object.entries(activity)) {
+    if (res.error) reportQueryError(`admin/utilisateurs/[id] ${key}`, res.error)
+  }
+  const countValue = (r: { count: number | null; error: unknown }): string => (r.error ? '—' : String(r.count ?? 0))
 
   const shopId = (shopRes.data as { id: string } | null)?.id ?? null
   const freelancerId = (freelancerRes.data as { id: string } | null)?.id ?? null
@@ -128,10 +138,10 @@ export default async function UserDetailPage({ params }: Props) {
       <div className="space-y-3 rounded-lg border border-gray-200 bg-white p-6">
         <h2 className="text-sm font-semibold uppercase tracking-wide text-gray-500">{tr('admin.users.activity_section_title')}</h2>
         <div className="grid grid-cols-2 gap-3 text-sm sm:grid-cols-4">
-          <Field label={tr('admin.users.activity_orders_as_buyer')} value={String(ordersBuyer.count ?? 0)} />
-          <Field label={tr('admin.users.activity_orders_as_seller')} value={String(ordersSeller.count ?? 0)} />
-          <Field label={tr('admin.users.activity_reports_created')} value={String(reportsCreated.count ?? 0)} />
-          <Field label={tr('admin.users.activity_reports_against')} value={String(reportsAgainst.count ?? 0)} />
+          <Field label={tr('admin.users.activity_orders_as_buyer')} value={countValue(ordersBuyer)} />
+          <Field label={tr('admin.users.activity_orders_as_seller')} value={countValue(ordersSeller)} />
+          <Field label={tr('admin.users.activity_reports_created')} value={countValue(reportsCreated)} />
+          <Field label={tr('admin.users.activity_reports_against')} value={countValue(reportsAgainst)} />
         </div>
         {(shopId || freelancerId) && (
           <div className="flex flex-wrap gap-4 pt-1 text-sm">

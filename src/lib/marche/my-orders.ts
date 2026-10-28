@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { reportQueryError } from '@/lib/supabase/query-error'
 import { paginate, stripAccents } from '@/lib/search/search-params'
 import {
   DEFAULT_ORDERS_TAB,
@@ -136,7 +137,8 @@ export async function getMyServiceOrders(
       .from('public_profiles')
       .select('id, full_name')
       .in('id', sellerIds)
-    if (pErr) console.error('[my-orders] public_profiles error:', pErr.message, pErr.code, pErr.details)
+    // Partial display: the orders still render, the names fall back to ''.
+    if (pErr) reportQueryError('my-orders public_profiles', pErr)
     for (const p of (profiles ?? []) as { id: string; full_name: string | null }[]) {
       names.set(p.id, p.full_name ?? '')
     }

@@ -43,7 +43,7 @@ vi.mock('@/lib/i18n/server', () => ({ getLang: async () => 'fr' }))
 vi.mock('next/cache', () => ({ revalidatePath: vi.fn() }))
 vi.mock('@/lib/images/normalize', () => ({ normalizeAvatar: vi.fn(), MAX_INPUT_BYTES: 1, MAX_INPUT_MB: 1 }))
 vi.mock('@/lib/images/provenance', () => ({ recordUploadProvenance: vi.fn(), deleteUploadProvenance: vi.fn() }))
-vi.mock('@/lib/images/upload-guard', () => ({ isCallerActive: vi.fn(), uploadBucket: vi.fn() }))
+vi.mock('@/lib/images/upload-guard', () => ({ callerActivity: vi.fn(), uploadBucket: vi.fn() }))
 
 import { updateProfileAction, requestAccountDeletionAction, changePasswordAction } from './actions'
 

@@ -102,10 +102,10 @@ describe('guards — one 404', () => {
     expect(h.getDetail).not.toHaveBeenCalled()
   })
 
-  it('asks the loader for the CALLER\'s order only (seller scope), in STRICT mode', async () => {
+  it('asks the loader for the CALLER\'s order only (seller scope)', async () => {
     await renderPage({})
-    // strict: a failed query throws instead of reading as « not found »
-    expect(h.getDetail).toHaveBeenCalledWith(ID, USER, true)
+    // The loader throws on a failed query for every caller (loader-error-surfacing PR-2 removed `strict`).
+    expect(h.getDetail).toHaveBeenCalledWith(ID, USER)
   })
 
   it('a failed query is an ERROR, not a 404', async () => {

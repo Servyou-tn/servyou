@@ -77,9 +77,9 @@ vi.mock('@/lib/images/normalize', () => ({
 }))
 // S-3: new objects go through the service role (uploadBucket), routed here to the same storage mock; the
 // caller-active check is controllable per test.
-const guard = vi.hoisted(() => ({ active: true }))
+const guard = vi.hoisted(() => ({ active: true, failed: false }))
 vi.mock('@/lib/images/upload-guard', () => ({
-  isCallerActive: vi.fn(async () => guard.active),
+  callerActivity: vi.fn(async () => (guard.failed ? 'error' : guard.active ? 'active' : 'inactive')),
   uploadBucket: () => h.storage.from(),
 }))
 vi.mock('@/lib/images/provenance', () => ({
@@ -108,6 +108,7 @@ function avatarFormData(): FormData {
 beforeEach(() => {
   h.state.user = { id: USER_ID }
   guard.active = true
+  guard.failed = false
   h.state.uploadError = null
   h.state.infoResult = { data: { size: 4 }, error: null }
   h.state.profileUpdateError = null
@@ -163,6 +164,16 @@ describe('S-3 — a suspended caller is refused before any byte is stored or rec
     guard.active = false
     const res = await run()
     expect(res).toMatchObject({ ok: false, error: 'auth.suspended_banner' })
+    expect(h.calls.uploaded).toEqual([])
+    expect(provenanceCalls).toEqual([])
+  })
+
+  // Loader-error-surfacing PR-2: a FAILED activity check still refuses (fail closed) but must not tell an
+  // active user they are suspended.
+  it('a failed activity check refuses with the generic error, not « suspended »', async () => {
+    guard.failed = true
+    const res = await uploadAvatarAction(avatarFormData())
+    expect(res).toMatchObject({ ok: false, error: 'common.error_generic' })
     expect(h.calls.uploaded).toEqual([])
     expect(provenanceCalls).toEqual([])
   })

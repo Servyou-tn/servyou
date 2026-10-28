@@ -160,7 +160,7 @@ export function SignupForm({ role }: { role: SignupRole }) {
         } else if (msg.includes('rate') || msg.includes('many requests')) {
           setFormError(t('common.rate_limit', lang))
         } else {
-          console.error('[SignupForm] signUp error:', error)
+          console.error('[SignupForm] signUp error:', error.message, error.code, error.status)
           setFormError(t('signup.form.errors.generic', lang))
         }
         setLoading(false)
@@ -179,7 +179,7 @@ export function SignupForm({ role }: { role: SignupRole }) {
         router.push(`/verifier-email?email=${encodeURIComponent(email.trim().toLowerCase())}`)
       }, 700)
     } catch (err) {
-      console.error('[SignupForm] unexpected signup error:', err)
+      console.error('[SignupForm] unexpected signup error:', err instanceof Error ? err.message : String(err))
       setFormError(t('signup.form.errors.generic', lang))
       setLoading(false)
     }
@@ -194,7 +194,7 @@ export function SignupForm({ role }: { role: SignupRole }) {
       },
     })
     if (error) {
-      console.error('[SignupForm] Google OAuth error:', error)
+      console.error('[SignupForm] Google OAuth error:', error.message, error.code, error.status)
       setFormError(t('signup.form.errors.googleFailed', lang))
     }
   }

@@ -49,7 +49,7 @@ function useResend() {
     setCooldown(RESEND_COOLDOWN_SECONDS)
     const { error } = await supabase.auth.resend({ type: 'signup', email: email.trim().toLowerCase() })
     if (error) {
-      console.error('[VerifyEmail] resend error:', error)
+      console.error('[VerifyEmail] resend error:', error.message, error.code, error.status)
       setStatus('error')
       return
     }
@@ -118,7 +118,7 @@ export function VerifyEmailFlow({
         .select('seller_type')
         .eq('id', userId)
         .single()
-      if (error) console.error('[VerifyEmail] profile fetch error:', error)
+      if (error) console.error('[VerifyEmail] profile fetch error:', error.message, error.code, error.details)
       sellerType = resolveRole(profile)
     }
     try {

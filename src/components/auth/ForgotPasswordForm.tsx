@@ -38,7 +38,7 @@ export function ForgotPasswordForm() {
     const { error } = await supabase.auth.resetPasswordForEmail(email.trim().toLowerCase(), {
       redirectTo: `${window.location.origin}/nouveau-mot-de-passe`,
     })
-    if (error) console.error('[ForgotPasswordForm] reset error:', error)
+    if (error) console.error('[ForgotPasswordForm] reset error:', error.message, error.code, error.status)
     setLoading(false)
     setSubmitted(true) // same success state whether or not the email exists
   }

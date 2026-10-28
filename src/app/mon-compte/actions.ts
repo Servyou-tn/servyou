@@ -11,7 +11,7 @@ import { isValidPassword } from '@/lib/signup-validation'
 import { GOVERNORATES } from '@/lib/tunisia-governorates'
 import { normalizeAvatar, MAX_INPUT_BYTES, MAX_INPUT_MB, type NormalizeFailure } from '@/lib/images/normalize'
 import { recordUploadProvenance, deleteUploadProvenance } from '@/lib/images/provenance'
-import { isCallerActive, uploadBucket } from '@/lib/images/upload-guard'
+import { callerActivity, uploadBucket } from '@/lib/images/upload-guard'
 
 // `field` lets the form attach the message to the input it belongs to; callers that only toast
 // (ParametresShell, AvatarUploadCard) ignore it.
@@ -124,7 +124,12 @@ export async function uploadAvatarAction(formData: FormData): Promise<AccountAct
   if (!user) return { ok: false, error: t('monCompte.error.notAuth', lang) }
   // S-3: the bytes below are written by the service role, which skips the RESTRICTIVE « Suspended accounts
   // cannot upload » storage policy -- so a suspended account is refused here, before anything is stored.
-  if (!(await isCallerActive(supabase))) return { ok: false, error: t('auth.suspended_banner', lang) }
+  // A failed check refuses too (fail closed), but with the generic error, not « suspended ». Anything
+  // but an explicit 'active' is refused.
+  const activity = await callerActivity(supabase)
+  if (activity !== 'active') {
+    return { ok: false, error: t(activity === 'error' ? 'common.error_generic' : 'auth.suspended_banner', lang) }
+  }
 
   const parsed = avatarFileSchema.safeParse(formData.get('avatar'))
   if (!parsed.success) {

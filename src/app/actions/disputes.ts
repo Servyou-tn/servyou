@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
+import { isNoRowLike, reportQueryError } from '@/lib/supabase/query-error'
 import type { DisputeReason, DisputeCreatedByRole } from '@/lib/types/dispute'
 
 export type CreateDisputeResult =
@@ -48,7 +49,11 @@ export async function createDispute(
     .select('buyer_id, seller_id, status, order_type')
     .eq('id', orderId)
     .maybeSingle()
-  if (orderError) console.error('[createDispute] order fetch error:', orderError)
+  // A failed read is the generic error, never « not eligible »; a junk id (22P02) stays « not eligible ».
+  if (orderError && !isNoRowLike(orderError)) {
+    reportQueryError('createDispute order', orderError)
+    return { success: false, error: 'dispute.error_generic' }
+  }
   if (!order) {
     return { success: false, error: 'dispute.error_order_not_eligible' }
   }
@@ -78,7 +83,7 @@ export async function createDispute(
     if (insertError.code === '23505') {
       return { success: false, error: 'dispute.error_already_active' }
     }
-    console.error('[createDispute] insert error:', insertError)
+    console.error('[createDispute] insert error:', insertError.message, insertError.code, insertError.details)
     return { success: false, error: 'dispute.error_generic' }
   }
   if (!data || data.length === 0) {

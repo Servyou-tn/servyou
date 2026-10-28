@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
+import { isNoRowLike, reportQueryError } from '@/lib/supabase/query-error'
 import { JOB_POST_EXPIRY_DAYS } from '@/lib/job-constants'
 
 // Manage actions for a consumer's own mission. Each is author-scoped by the WHERE clause AND
@@ -35,7 +36,7 @@ export async function closeMissionAction(missionId: string): Promise<MissionActi
     .select('id')
 
   if (error) {
-    console.error('[closeMissionAction] update error:', error)
+    console.error('[closeMissionAction] update error:', error.message, error.code, error.details)
     return { ok: false, errorKey: 'common.error_generic' }
   }
   if (!data || data.length === 0) return { ok: false, errorKey: 'common.error_generic' }
@@ -62,7 +63,8 @@ export async function reopenMissionAction(missionId: string): Promise<MissionAct
     .eq('consumer_id', user.id)
     .maybeSingle()
   if (readErr) {
-    console.error('[reopenMissionAction] read error:', readErr)
+    // A junk id (22P02) is not an outage: same generic answer, no Sentry event.
+    if (!isNoRowLike(readErr)) reportQueryError('reopenMissionAction read', readErr)
     return { ok: false, errorKey: 'common.error_generic' }
   }
   if (!post) return { ok: false, errorKey: 'common.error_generic' }
@@ -81,7 +83,7 @@ export async function reopenMissionAction(missionId: string): Promise<MissionAct
     .select('id')
 
   if (error) {
-    console.error('[reopenMissionAction] update error:', error)
+    console.error('[reopenMissionAction] update error:', error.message, error.code, error.details)
     return { ok: false, errorKey: 'common.error_generic' }
   }
   if (!data || data.length === 0) return { ok: false, errorKey: 'common.error_generic' }
@@ -108,7 +110,7 @@ export async function deleteMissionAction(missionId: string): Promise<MissionAct
     .select('id')
 
   if (error) {
-    console.error('[deleteMissionAction] update error:', error)
+    console.error('[deleteMissionAction] update error:', error.message, error.code, error.details)
     return { ok: false, errorKey: 'common.error_generic' }
   }
   if (!data || data.length === 0) return { ok: false, errorKey: 'common.error_generic' }

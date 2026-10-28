@@ -2,6 +2,7 @@ import { getLang } from '@/lib/i18n/server'
 import { t } from '@/lib/i18n'
 import { createClient } from '@/lib/supabase/server'
 import { requireAdmin } from '@/lib/auth/require-admin'
+import { reportQueryError } from '@/lib/supabase/query-error'
 import { AdminMetricCard } from '@/components/AdminMetricCard'
 
 // Live counts arrive via the admin_overview_stats() RPC (PR-I-stats).
@@ -31,9 +32,9 @@ export default async function AdminOverviewPage() {
   // columns arrive as strings from PostgREST; we render them as strings.
   // On any error (incl. the is_admin() gate raising for a non-admin), fall
   // back to undefined so each card shows its built-in '—' placeholder
-  // rather than breaking the page.
+  // rather than breaking the page — and report it, so the '—' is not silent.
   const { data, error } = await supabase.rpc('admin_overview_stats')
-  if (error) console.error('[admin/overview] admin_overview_stats RPC error:', error.message, error.code, error.details)
+  if (error) reportQueryError('admin/overview admin_overview_stats', error)
   const stats = (!error && Array.isArray(data) && data.length > 0) ? data[0] : null
 
   return (

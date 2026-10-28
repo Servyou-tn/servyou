@@ -4,6 +4,8 @@ import { t } from '@/lib/i18n'
 import type { Lang } from '@/lib/i18n'
 import { createClient } from '@/lib/supabase/server'
 import { requireAdmin } from '@/lib/auth/require-admin'
+import { reportQueryError } from '@/lib/supabase/query-error'
+import { ErrorState } from '@/components/marche/ErrorState'
 import { resolveRole, roleI18nKey } from '@/lib/roles'
 
 // NOTE: reads the RAW profiles table (not public_profiles) — the admin needs email
@@ -47,14 +49,17 @@ export default async function UsersListPage() {
     .select('id, full_name, email, seller_type, is_admin, city, created_at, suspended_at')
     .order('created_at', { ascending: false })
 
-  if (error) console.error('[admin/utilisateurs] list fetch error:', error.message, error.code, error.details)
+  // A failed read is an error state, never the « no users » empty list.
+  if (error) reportQueryError('admin/utilisateurs list', error)
   const rows = (profiles as ProfileRow[] | null) ?? []
 
   return (
     <div className="max-w-5xl">
       <h1 className="mb-6 text-2xl font-bold text-gray-800">{tr('admin.users.title')}</h1>
 
-      {rows.length === 0 ? (
+      {error ? (
+        <ErrorState lang={lang} />
+      ) : rows.length === 0 ? (
         <p className="text-sm text-gray-500">{tr('admin.users.empty')}</p>
       ) : (
         <div className="overflow-x-auto rounded-lg border border-gray-200 bg-white">

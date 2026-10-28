@@ -51,7 +51,7 @@ export function ContactForm() {
         setErrors({ [result.field]: true })
       }
     } catch (err) {
-      console.error('[ContactForm] submit error:', err)
+      console.error('[ContactForm] submit error:', err instanceof Error ? err.message : String(err))
       toast.error(t('contact.form.error.generic', lang))
     } finally {
       setSubmitting(false)

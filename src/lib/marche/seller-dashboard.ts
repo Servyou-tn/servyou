@@ -1,5 +1,6 @@
 import { cache } from 'react'
 import { createClient } from '@/lib/supabase/server'
+import { reportQueryError } from '@/lib/supabase/query-error'
 
 // G4 « Tableau de bord vendeur » data layer (Figma 475:21134, specimen 484:24205).
 //
@@ -178,13 +179,8 @@ export const getSellerDashboard = cache(
         .from('public_profiles')
         .select('id, full_name, city')
         .in('id', buyerIds)
-      if (profilesError) {
-        console.error(
-          '[seller-dashboard] public_profiles fetch error:',
-          profilesError.message,
-          profilesError.code,
-        )
-      }
+      // Partial display: the dashboard still renders, the names fall back to ''.
+      if (profilesError) reportQueryError('seller-dashboard public_profiles', profilesError)
       for (const p of (profiles ?? []) as { id: string; full_name: string | null; city: string | null }[]) {
         names.set(p.id, { name: p.full_name ?? '', city: p.city })
       }
