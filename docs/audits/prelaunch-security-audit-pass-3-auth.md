@@ -21,15 +21,23 @@ nobody and create nothing (curl on the auth routes and `/auth/signout`), plus a 
 
   A normal session sees « lien invalide » after the existing 2 s wait. The flag is cleared after a successful reset.
   The `signOut()` after the reset is now checked and logged.
-- **Not closed by the app:** any session can still call `auth.updateUser({ password })` against GoTrue directly. The
-  server-side guard is founder action **A2** below.
+- **Not closed by the app:** any session can still call `auth.updateUser({ password })` against GoTrue directly. Founder
+  action **A2** below narrows that server-side; it does not close it.
+- **Known limits** (none of them is new):
+  - The event fires only when the reset link opens in the same browser that asked for it (the PKCE verifier is
+    stored there). Another browser or an in-app email webview shows « lien invalide », as before.
+  - If the event fired before the component subscribed, the form would not open. In practice the exchange waits on
+    a network round trip first, and nothing else on the page creates the browser client. A `?code=`-based fallback
+    was rejected: a signed-in session could append a junk code and reopen the form.
+  - The tab flag lives until the tab closes or the reset succeeds.
 - Tests: `NewPasswordForm.test.tsx` (5).
 
 ### 2. LOW — sign-out could leave the user signed in
 - **Before:** `/auth/signout` ignored `signOut()`'s result. On a GoTrue 5xx or network error, auth-js returns before
   removing the session, so the sb-* cookies survived while the user landed on « À bientôt ».
 - **After:** the route deletes every `sb-*` cookie on its response whatever `signOut()` answers (the middleware's
-  suspended-account sweep), and logs the error.
+  suspended-account sweep), and logs the error. This protects the browser only: when GoTrue is down, the refresh
+  token is not revoked server-side.
 - Tests: `auth-signout-route.test.ts` (2).
 
 ## Founder actions (Supabase dashboard; no code)
@@ -47,8 +55,10 @@ nobody and create nothing (curl on the auth routes and `/auth/signout`), plus a 
   small follow-up PR, done after the whitelist exists, otherwise GoTrue falls back to the Site URL anyway.
 
 **A2. Turn ON « Secure password change »** (Auth › Providers › Email).
-- GoTrue then requires a recent sign-in, or a reauthentication nonce, for `updateUser({ password })`. This is the real
-  fix for finding 1.
+- GoTrue then requires a recent sign-in (within about 24 h), or a reauthentication nonce, for
+  `updateUser({ password })`. That narrows finding 1 to sessions younger than 24 h; it does not close it.
+- Fully closing it means every password change goes through `auth.reauthenticate()` (an emailed nonce), or only
+  through `changePasswordAction`. That is a product call.
 - The recovery flow (a fresh session) and `changePasswordAction` (re-authenticates first) keep working.
 
 **A3. Enable Leaked-password protection (HIBP), and set GoTrue's minimum password rules to match the app**
