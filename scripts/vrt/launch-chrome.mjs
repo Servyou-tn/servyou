@@ -12,6 +12,7 @@
 import { spawn } from 'node:child_process'
 import http from 'node:http'
 import fs from 'node:fs'
+import path from 'node:path'
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
 
@@ -28,10 +29,13 @@ function versionOnce(port) {
 }
 
 async function killAndWait(child) {
-  if (child.exitCode !== null || child.signalCode !== null) return
+  // Never spawned (ENOENT: no pid, no 'exit' coming) or already gone.
+  if (!child.pid || child.exitCode !== null || child.signalCode !== null) return
+  let timer
   const exited = new Promise((r) => child.once('exit', r))
   child.kill('SIGKILL')
-  await Promise.race([exited, sleep(5000)])
+  await Promise.race([exited, new Promise((r) => { timer = setTimeout(r, 5000) })])
+  clearTimeout(timer)
 }
 
 /**
@@ -40,12 +44,19 @@ async function killAndWait(child) {
  * @returns {Promise<{ child: import('node:child_process').ChildProcess, version: { webSocketDebuggerUrl: string } }>}
  */
 export async function launchChrome({ chrome, port, profile, args, waitMs = 30000 }) {
-  const attempts = Math.max(1, Number(process.env.CHROME_LAUNCH_ATTEMPTS || 3))
+  const attempts = Math.max(1, Number(process.env.CHROME_LAUNCH_ATTEMPTS) || 3)
   for (let attempt = 1; attempt <= attempts; attempt++) {
-    if (attempt > 1) fs.rmSync(profile, { recursive: true, force: true }) // a half-started profile can hold a lock
+    // A half-started profile can hold a lock. Only ever wipe the harness's own `.vrt-*` profiles, and never let a
+    // locked file (Windows: a leftover Chrome helper) turn a retry into a crash.
+    if (attempt > 1 && path.basename(profile).startsWith('.vrt-')) {
+      try { fs.rmSync(profile, { recursive: true, force: true }) } catch (e) { console.error(`chrome: profile wipe skipped (${e.message})`) }
+    }
     const child = spawn(chrome, [`--remote-debugging-port=${port}`, `--user-data-dir=${profile}`, ...args], {
       stdio: ['ignore', 'ignore', 'pipe'],
     })
+    // Unref'd: a Chrome helper that inherits stderr and outlives the main process must not keep node alive (the
+    // callers end with child.kill() and no process.exit). The pipe is still drained while the process runs.
+    child.stderr.unref()
     let stderr = ''
     child.stderr.on('data', (d) => { stderr = (stderr + String(d)).slice(-4096) })
     let exitInfo = null
@@ -56,7 +67,8 @@ export async function launchChrome({ chrome, port, profile, args, waitMs = 30000
     while (Date.now() < deadline && !exitInfo) {
       try {
         const version = await versionOnce(port)
-        if (version && version.webSocketDebuggerUrl) {
+        // Re-check: our child may have exited while the request was in flight (another process on the port).
+        if (version && version.webSocketDebuggerUrl && !exitInfo) {
           if (attempt > 1) console.error(`chrome: started on attempt ${attempt}/${attempts}`)
           return { child, version }
         }
@@ -65,9 +77,9 @@ export async function launchChrome({ chrome, port, profile, args, waitMs = 30000
     }
 
     const why = exitInfo || `no /json/version answer within ${waitMs / 1000}s`
+    await killAndWait(child) // first, so the stderr tail is as complete as it gets
     console.error(`chrome: launch attempt ${attempt}/${attempts} failed — ${why}`)
     if (stderr.trim()) console.error(`chrome stderr (tail):\n${stderr.trim()}`)
-    await killAndWait(child)
   }
   throw new Error(`Chrome did not start after ${attempts} attempts (port ${port})`)
 }
