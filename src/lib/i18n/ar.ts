@@ -1084,6 +1084,9 @@ export const ar: Record<string, string> = {
   // first-draft Arabic, not yet reviewed by a native speaker.
   'demander.error.descriptionTags': "يرجى حذف الأقواس المعقوفة [ ] من الوصف.",
   'demander.error.timeframeChars': "يرجى حذف القوس المعقوف ] من هذا الحقل.",
+  // Order anti-abuse caps (orders rate-limit migration).
+  'demander.error.cap_seller':     "لديك بالفعل 5 طلبات قيد الانتظار لدى هذا البائع. انتظر حتى يعالج أحدها، أو ألغِ أحدها، قبل تقديم طلب آخر.",
+  'demander.error.cap_daily':      "لقد بلغت الحد الأقصى وهو 20 طلبًا خلال 24 ساعة. حاول مرة أخرى لاحقًا.",
   'demander.submit.product':       "تأكيد الطلب",
   'demander.submit.service':       "إرسال الطلب",
   'demander.submit.loading':       "جار الإرسال…",
@@ -1777,6 +1780,9 @@ export const ar: Record<string, string> = {
   'annonce.error.skills_max':           "يمكنك إضافة 8 مهارات كحد أقصى.",
   'annonce.error.skills_length':        "يجب أن تحتوي كل مهارة على ما بين 1 و60 حرفا.",
   'annonce.error.not_authorized':       "يجب أن تكون متصلا لنشر إعلان.",
+  // Job post anti-abuse caps (job_posts cap migration) — also returned by « Rouvrir ».
+  'annonce.error.cap_open':             "لديك بالفعل 5 إعلانات مفتوحة. أغلق أحدها قبل فتح إعلان آخر.",
+  'annonce.error.cap_daily':            "لقد بلغت الحد الأقصى وهو 10 إعلانات خلال 24 ساعة. حاول مرة أخرى لاحقًا.",
 
   // ─── Annonce detail (/mes-annonces/[id]) ──────────────────────────────────────
   'annonces.detail.not_found':            "الإعلان غير موجود",
@@ -3676,6 +3682,34 @@ export const ar: Record<string, string> = {
   'service.price.hour':                 "{price} د.ت / الساعة",
   'service.price.day':                  "{price} د.ت / اليوم",
   'service.price.month':                "{price} د.ت / الشهر",
+
+  // B5 Paramètres › Notifications — REVIEW_AR_TRANSLATION (draft Arabic)
+  'parametres.notifications.emails.title':                       "البريد الإلكتروني",
+  'parametres.notifications.emails.subtitle':                    "اختر رسائل البريد الإلكتروني التي ترغب في تلقيها. يمكنك تعديل هذه التفضيلات في أي وقت.",
+  'parametres.notifications.email_new_orders.shop_owner.label':  "الطلبات الجديدة المستلمة",
+  'parametres.notifications.email_new_orders.shop_owner.desc':   "استلم رسالة بريد إلكتروني عندما يقدّم عميل طلبًا في متجرك. تظهر في صندوق بريدك فقط، وليس في متجرك العام.",
+  'parametres.notifications.email_new_orders.freelancer.label':  "الطلبات الجديدة المستلمة",
+  'parametres.notifications.email_new_orders.freelancer.desc':   "استلم رسالة بريد إلكتروني عندما يطلب عميل خدماتك. تظهر في صندوق بريدك فقط، وليس في ملفك العام.",
+  'parametres.notifications.email_proposals.label':              "العروض المستلمة على إعلاناتي",
+  'parametres.notifications.email_proposals.desc':               "استلم رسالة بريد إلكتروني عندما يردّ مستقل على مهمة نشرتها. يعدّل رسائل بريدك فقط.",
+  'parametres.notifications.email_reviews.shop_owner.label':     "تقييمات العملاء الجديدة",
+  'parametres.notifications.email_reviews.shop_owner.desc':      "استلم رسالة بريد إلكتروني عندما يترك عميل تقييمًا لمتجرك. تبقى التقييمات ظاهرة للجميع في كل الأحوال.",
+  'parametres.notifications.email_reviews.freelancer.label':     "تقييمات العملاء الجديدة",
+  'parametres.notifications.email_reviews.freelancer.desc':      "استلم رسالة بريد إلكتروني عندما يترك عميل تقييمًا لملفك. تبقى التقييمات ظاهرة للجميع في كل الأحوال.",
+  'parametres.notifications.security.label':                     "تنبيهات الأمان",
+  'parametres.notifications.security.desc':                      "عمليات الدخول غير المعتادة وتغييرات كلمة المرور. مفعّلة دائمًا لحماية حسابك ولا يمكن تعطيلها.",
+  'parametres.notifications.email_low_stock.label':              "تنبيه انخفاض المخزون",
+  'parametres.notifications.email_low_stock.desc':               "استلم رسالة بريد إلكتروني عندما ينخفض مخزون منتج أو ينفد، حتى لا تبيع ما لا تملك.",
+  'parametres.notifications.email_newsletter.shop_owner.label':  "النشرة الإخبارية وأخبار Servyou",
+  'parametres.notifications.email_newsletter.shop_owner.desc':   "ميزات جديدة ونصائح وفرص. تُرسل مرة واحدة في الشهر كحد أقصى. دون أي تأثير على متجرك.",
+  'parametres.notifications.email_newsletter.freelancer.label':  "النشرة الإخبارية وأخبار Servyou",
+  'parametres.notifications.email_newsletter.freelancer.desc':   "ميزات جديدة ونصائح وفرص. تُرسل مرة واحدة في الشهر كحد أقصى. دون أي تأثير على ملفك.",
+  'parametres.notifications.email_newsletter.consumer.label':    "النشرة الإخبارية وأخبار Servyou",
+  'parametres.notifications.email_newsletter.consumer.desc':     "ميزات جديدة ونصائح وفرص. تُرسل مرة واحدة في الشهر كحد أقصى. دون أي تأثير على حسابك.",
+  'parametres.notifications.platform.title':                     "الإشعارات داخل المنصة",
+  'parametres.notifications.platform.body':                      "ستصل الإشعارات الفورية داخل المنصة (الجرس + اللوحة الجانبية) في تحديث قادم.",
+  'parametres.notifications.load_error':                         "تعذّر تحميل تفضيلات البريد الإلكتروني حاليًا.",
+  'parametres.notifications.error_save':                         "تعذّر حفظ تفضيلاتك. حاول مرة أخرى.",
 
   // E4 « Détail de ma commande » — REVIEW_AR_TRANSLATION (draft Arabic)
   'buyerOrder.error_service_cancel':          "لا يمكن للعميل إلغاء طلب خدمة. تواصل مع المستقل عند الحاجة.",

@@ -37,6 +37,7 @@ export const INTEGRATION_GLOBS = [
   '**/security-followups-batch-2.test.ts',
   '**/notification-prefs-favorites.test.ts',
   '**/reports-anti-abuse.test.ts',
+  '**/orders-jobposts-caps.test.ts',
   // These nine wrote to production on every default run until 2026-10-26 (missions M-A PR).
   '**/d4-completed-project-count.test.ts',
   '**/d4-freelancer-services-visibility.test.ts',

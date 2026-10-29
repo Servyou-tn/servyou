@@ -1097,6 +1097,9 @@ export const fr: Record<string, string> = {
   'demander.error.notAuth':        "Vous devez être connecté.",
   'demander.error.descriptionTags': "Retirez les crochets [ ] de la description.",
   'demander.error.timeframeChars': "Retirez le crochet ] de ce champ.",
+  // Order anti-abuse caps (orders rate-limit migration).
+  'demander.error.cap_seller':     "Vous avez déjà 5 commandes en attente chez ce vendeur. Attendez qu'il en traite une, ou annulez-en une, avant d'en passer une autre.",
+  'demander.error.cap_daily':      "Vous avez atteint la limite de 20 commandes par 24 heures. Réessayez plus tard.",
   'demander.submit.product':       "Confirmer la demande",
   'demander.submit.service':       "Envoyer la demande",
   'demander.submit.loading':       "Envoi en cours…",
@@ -1825,6 +1828,9 @@ export const fr: Record<string, string> = {
   'annonce.error.skills_max':           "Vous pouvez ajouter jusqu'à 8 compétences maximum.",
   'annonce.error.skills_length':        "Chaque compétence doit contenir entre 1 et 60 caractères.",
   'annonce.error.not_authorized':       "Vous devez être connecté pour publier une annonce.",
+  // Job post anti-abuse caps (job_posts cap migration) — also returned by « Rouvrir ».
+  'annonce.error.cap_open':             "Vous avez déjà 5 annonces ouvertes. Clôturez-en une avant d'en ouvrir une autre.",
+  'annonce.error.cap_daily':            "Vous avez atteint la limite de 10 annonces par 24 heures. Réessayez plus tard.",
 
   // ─── Annonce detail (/mes-annonces/[id]) ──────────────────────────────────────
   'annonces.detail.not_found':            "Annonce introuvable",
@@ -3794,6 +3800,34 @@ export const fr: Record<string, string> = {
   'service.price.hour':                 "{price} TND / heure",
   'service.price.day':                  "{price} TND / jour",
   'service.price.month':                "{price} TND / mois",
+
+  // B5 Paramètres › Notifications — Figma 424:17442 (freelancer) / 558:38878 (shop_owner).
+  'parametres.notifications.emails.title':                       "E-mails",
+  'parametres.notifications.emails.subtitle':                    "Choisissez les e-mails que vous souhaitez recevoir. Vous pouvez modifier ces préférences à tout moment.",
+  'parametres.notifications.email_new_orders.shop_owner.label':  "Nouvelles commandes reçues",
+  'parametres.notifications.email_new_orders.shop_owner.desc':   "Recevez un e-mail quand un client passe commande dans votre boutique. S’affiche uniquement dans votre boîte e-mail, jamais sur votre boutique publique.",
+  'parametres.notifications.email_new_orders.freelancer.label':  "Nouvelles commandes reçues",
+  'parametres.notifications.email_new_orders.freelancer.desc':   "Recevez un e-mail quand un client demande vos services. S’affiche uniquement dans votre boîte e-mail, jamais sur votre profil public.",
+  'parametres.notifications.email_proposals.label':              "Propositions reçues sur mes annonces",
+  'parametres.notifications.email_proposals.desc':               "Recevez un e-mail quand un freelance répond à un emploi que vous avez posté. Modifie uniquement vos e-mails.",
+  'parametres.notifications.email_reviews.shop_owner.label':     "Nouveaux avis clients",
+  'parametres.notifications.email_reviews.shop_owner.desc':      "Recevez un e-mail quand un client laisse un avis sur votre boutique. Les avis restent visibles publiquement dans tous les cas.",
+  'parametres.notifications.email_reviews.freelancer.label':     "Nouveaux avis clients",
+  'parametres.notifications.email_reviews.freelancer.desc':      "Recevez un e-mail quand un client laisse un avis sur votre profil. Les avis restent visibles publiquement dans tous les cas.",
+  'parametres.notifications.security.label':                     "Alertes de sécurité",
+  'parametres.notifications.security.desc':                      "Connexions inhabituelles et modifications de mot de passe. Toujours activé pour la sécurité de votre compte, ne peut être désactivé.",
+  'parametres.notifications.email_low_stock.label':              "Alerte stock faible",
+  'parametres.notifications.email_low_stock.desc':               "Recevez un e-mail quand le stock d’un produit devient faible ou en rupture, pour ne jamais vendre à découvert.",
+  'parametres.notifications.email_newsletter.shop_owner.label':  "Newsletter et actualités Servyou",
+  'parametres.notifications.email_newsletter.shop_owner.desc':   "Nouvelles fonctionnalités, conseils, et opportunités. Envoyé une fois par mois maximum. Aucun impact sur votre boutique.",
+  'parametres.notifications.email_newsletter.freelancer.label':  "Newsletter et actualités Servyou",
+  'parametres.notifications.email_newsletter.freelancer.desc':   "Nouvelles fonctionnalités, conseils, et opportunités. Envoyé une fois par mois maximum. Aucun impact sur votre profil.",
+  'parametres.notifications.email_newsletter.consumer.label':    "Newsletter et actualités Servyou",
+  'parametres.notifications.email_newsletter.consumer.desc':     "Nouvelles fonctionnalités, conseils, et opportunités. Envoyé une fois par mois maximum. Aucun impact sur votre compte.",
+  'parametres.notifications.platform.title':                     "Notifications sur la plateforme",
+  'parametres.notifications.platform.body':                      "Les notifications en temps réel dans la plateforme (cloche + tiroir) arriveront dans une prochaine mise à jour.",
+  'parametres.notifications.load_error':                         "Impossible de charger vos préférences e-mail pour le moment.",
+  'parametres.notifications.error_save':                         "Impossible d’enregistrer vos préférences. Réessayez.",
 
   // E4 « Détail de ma commande » (/mes-commandes/[id]) — buyer-voice copy from Figma 1469:23519 and its state frames.
   'buyerOrder.error_service_cancel':          "Une demande de service ne peut pas être annulée par le client. Contactez le freelance si besoin.",
