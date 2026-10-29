@@ -42,7 +42,7 @@ export function ActionsRow({
         size="lg"
       />
       {/* Added at the founder's request (B6): 390:10676 draws hearts only on the service thumbnails. */}
-      <FavoriteHeart kind="freelancer" targetId={freelancerId} initialFavorited={isFavorited} isLoggedIn={isLoggedIn} />
+      <FavoriteHeart kind="freelancer" targetId={freelancerId} name={freelancerName} initialFavorited={isFavorited} isLoggedIn={isLoggedIn} />
       <FreelancerShareButton />
       <FreelancerReportModal freelancerProfileId={freelancerProfileId} freelancerName={freelancerName} isLoggedIn={isLoggedIn} />
     </div>

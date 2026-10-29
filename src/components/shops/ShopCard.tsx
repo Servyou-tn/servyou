@@ -72,8 +72,9 @@ export function ShopCard({
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          {shop.thumbs.map((src) => (
-            <span key={src} className="relative size-[72px] shrink-0 overflow-hidden rounded-lg bg-surface-sunken">
+          {shop.thumbs.map((src, i) => (
+            // pointer-events-none: the thumbnails are positioned and would otherwise sit above the name link's stretched ::after.
+            <span key={`${i}-${src}`} className="pointer-events-none relative size-[72px] shrink-0 overflow-hidden rounded-lg bg-surface-sunken">
               <Image src={src} alt="" fill sizes="72px" className="object-cover" />
             </span>
           ))}
@@ -88,7 +89,7 @@ export function ShopCard({
       </div>
 
       {/* logo ring: 88 = 80 avatar + 4 ring, centred on the banner's bottom edge (140 − 44 = 96 from the top) */}
-      <span className="absolute start-6 top-24 flex size-[88px] items-center justify-center rounded-full bg-surface-base">
+      <span className="pointer-events-none absolute start-6 top-24 flex size-[88px] items-center justify-center rounded-full bg-surface-base">
         <Avatar size="xl" src={shop.logoUrl} name={shop.name} initials={getInitials(shop.name)} />
       </span>
 
@@ -96,6 +97,7 @@ export function ShopCard({
         <FavoriteHeart
           kind="shop"
           targetId={shop.id}
+          name={shop.name}
           initialFavorited={heart.initialFavorited}
           isLoggedIn={heart.isLoggedIn}
           onChange={heart.onChange}

@@ -66,6 +66,7 @@ export function FreelancerCard({
             <FavoriteHeart
               kind="freelancer"
               targetId={freelancer.id}
+              name={freelancer.name}
               initialFavorited={heart.initialFavorited}
               isLoggedIn={heart.isLoggedIn}
               onChange={heart.onChange}

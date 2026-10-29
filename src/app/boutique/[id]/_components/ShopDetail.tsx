@@ -153,7 +153,7 @@ export function ShopDetail({
           <div className="flex items-center gap-3 py-1">
             {/* Not drawn on 540:32918 (its only hearts are on the product thumbnails) — added at the founder's request (B6), as the
                 frame's own 44 « Favorite Heart » beside the existing Partager / Signaler actions. */}
-            <FavoriteHeart kind="shop" targetId={shop.id} initialFavorited={isFavorited} isLoggedIn={isLoggedIn} />
+            <FavoriteHeart kind="shop" targetId={shop.id} name={shop.name} initialFavorited={isFavorited} isLoggedIn={isLoggedIn} />
             <ShopShareButton />
             <ShopReportModal shopId={shop.id} shopName={shop.name} isLoggedIn={isLoggedIn} />
           </div>

@@ -8,6 +8,9 @@ import { getFreelancerCards, type FreelancerCardData } from './freelancer-cards'
  * services), which is unchanged. RLS already hides favorites whose target is hidden / suspended; a target that disappears between
  * the two reads is dropped by the card loaders. A failed read throws (never « you have no favorites »); the page settle()s it.
  */
+/** Most recent favorites loaded per call. Bounds the `.in()` URL lengths and the per-shop card queries; paging comes with the follow-up. */
+export const FAVORITE_TARGETS_CAP = 60
+
 export async function getMyFavoriteTargets(
   userId: string,
 ): Promise<{ shops: ShopCardData[]; freelancers: FreelancerCardData[] }> {
@@ -18,6 +21,7 @@ export async function getMyFavoriteTargets(
     .eq('user_id', userId)
     .in('item_type', ['shop', 'freelancer'])
     .order('created_at', { ascending: false })
+    .limit(FAVORITE_TARGETS_CAP)
   if (error) failQuery('favorite-targets favorites', error)
 
   const rows = data ?? []

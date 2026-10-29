@@ -61,24 +61,29 @@ export async function getShopCards(ids: string[]): Promise<ShopCardData[]> {
   const shops = (data ?? []) as unknown as ShopRow[]
   if (shops.length === 0) return []
 
-  const visibleIds = shops.map((s) => s.id)
-  const { data: productRows, error: productsError } = await supabase
-    .from('products')
-    .select('shop_id, product_images ( image_url, display_order )')
-    .in('shop_id', visibleIds)
-    .eq('status', 'active')
-    .order('created_at', { ascending: false })
-  if (productsError) reportQueryError('shop-cards products', productsError)
-
-  const counts = new Map<string, number>()
-  const thumbs = new Map<string, string[]>()
-  for (const p of (productRows ?? []) as unknown as ProductRow[]) {
-    counts.set(p.shop_id, (counts.get(p.shop_id) ?? 0) + 1)
-    const img = firstImage(p.product_images)
-    const list = thumbs.get(p.shop_id) ?? []
-    if (img && list.length < SHOP_CARD_THUMBS) list.push(img)
-    thumbs.set(p.shop_id, list)
-  }
+  // ONE small query PER SHOP: the exact count of its active products (from the Content-Range, whatever the page size) plus its
+  // newest few products for the thumbnails. A single query over every shop's whole catalogue would be truncated at the API's max-rows
+  // and give late shops a wrong « N produits » and no thumbnails. The callers cap the number of shops (favorites: FAVORITE_TARGETS_CAP;
+  // a listing page: its page size), so the fan-out is bounded.
+  const peeks = await Promise.all(
+    shops.map(async (s) => {
+      const { data: rows, count, error: productsError } = await supabase
+        .from('products')
+        .select('shop_id, product_images ( image_url, display_order )', { count: 'exact' })
+        .eq('shop_id', s.id)
+        .eq('status', 'active')
+        .order('created_at', { ascending: false })
+        .limit(SHOP_CARD_THUMBS)
+      if (productsError) reportQueryError('shop-cards products', productsError)
+      return {
+        id: s.id,
+        failed: Boolean(productsError),
+        count: count ?? 0,
+        thumbs: ((rows ?? []) as unknown as ProductRow[]).map((p) => firstImage(p.product_images)).filter((u): u is string => u !== null),
+      }
+    }),
+  )
+  const peekById = new Map(peeks.map((p) => [p.id, p]))
 
   const byId = new Map<string, ShopCardData>(
     shops.map((s) => [
@@ -89,9 +94,9 @@ export async function getShopCards(ids: string[]): Promise<ShopCardData[]> {
         city: s.city,
         logoUrl: s.logo_url,
         bannerUrl: s.banner_url,
-        productCount: productsError ? null : (counts.get(s.id) ?? 0),
+        productCount: peekById.get(s.id)?.failed ? null : (peekById.get(s.id)?.count ?? 0),
         categories: (s.shop_categories ?? []).map((r) => one(r.categories)).filter((c): c is Cat => c !== null),
-        thumbs: thumbs.get(s.id) ?? [],
+        thumbs: peekById.get(s.id)?.thumbs ?? [],
       },
     ]),
   )

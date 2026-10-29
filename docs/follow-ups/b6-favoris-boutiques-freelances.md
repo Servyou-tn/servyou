@@ -18,3 +18,11 @@
 ## Shop Card `state` variants (hover / etc.)
 **What:** `Shop Card` has more states (578:42186 / 42216 / 42246) that B4 will measure; the card here is the default state only.
 **Trigger:** B4.
+
+## Favorites list is capped, not paged
+**What:** `getMyFavoriteTargets` loads the 60 most recent shop/freelancer favorites (`FAVORITE_TARGETS_CAP`) — it bounds the `.in()` URL length and the one-query-per-shop card fan-out (review of #237). Older favorites are not shown.
+**Trigger:** a user with more than 60 shop/freelancer favorites → real paging for all four tabs (also resolves the « Affichage 1 à N » footer above).
+
+## Freelancer service count reads ids, not a count
+**What:** `getFreelancerCards` counts services client-side from `select freelancer_profile_id` over the visible freelancers; with ≤ 60 freelancers it stays well under the API row cap, but a bigger listing page (B4-style) would need per-freelancer `count: 'exact'`.
+**Trigger:** the first caller with more than ~100 freelancers per batch.

@@ -3771,6 +3771,7 @@ export const ar: Record<string, string> = {
   'buyerOrder.event.cancelled_freelancer_reason':  "ألغاه المستقل · السبب: « {reason} »",
 
   // B6 Favoris Boutiques / Freelances — REVIEW_AR_TRANSLATION (draft Arabic)
+  'favorites.toggle_named':                                "مفضلة: {name}",
   'favorites.error_signin':                                "سجّل الدخول لإضافة المفضلة.",
   'shopCard.view':                                         "عرض المتجر",
   'freelancerCard.view':                                   "عرض الملف",
