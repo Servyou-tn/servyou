@@ -9,6 +9,7 @@ import { t } from '@/lib/i18n'
 import { GOVERNORATES } from '@/lib/tunisia-governorates'
 import { SIGNUP_ROLE_KEY, roleConfig, type SignupRole } from '@/lib/signup-role'
 import { computeAge, isValidEmail, isValidPassword } from '@/lib/signup-validation'
+import { verifyEmailRedirectUrl } from '@/lib/auth/email-redirect'
 import { CheckIcon, SpinnerIcon, GoogleIcon } from '@/components/auth/Icons'
 import { PasswordField } from '@/components/auth/PasswordField'
 import { display, labelClass, helpClass, errorClass, inputBase, primaryBtn } from '@/components/auth/field-styles'
@@ -142,6 +143,8 @@ export function SignupForm({ role }: { role: SignupRole }) {
         email: email.trim().toLowerCase(),
         password,
         options: {
+          // The confirmation link lands on /verifier-email of THIS origin (must be on the Redirect URLs allow list).
+          emailRedirectTo: verifyEmailRedirectUrl(window.location.origin),
           data: {
             full_name: fullName.trim(),
             date_of_birth: dateOfBirth,
