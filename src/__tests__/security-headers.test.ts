@@ -8,10 +8,11 @@
  */
 
 import { describe, it, expect } from 'vitest'
-import { contentSecurityPolicy, securityHeaders, SUPABASE_ORIGIN } from '@/lib/security/headers'
+import { contentSecurityPolicy, cspReportUrl, securityHeaders, CSP_REPORT_GROUP, SUPABASE_ORIGIN } from '@/lib/security/headers'
 import nextConfig from '../../next.config'
 
 const byKey = (isDev: boolean) => Object.fromEntries(securityHeaders(isDev).map((h) => [h.key, h.value]))
+const byKeyWith = (reportUrl: string) => Object.fromEntries(securityHeaders(false, reportUrl).map((h) => [h.key, h.value]))
 const directive = (csp: string, name: string) =>
   csp.split(';').map((d) => d.trim()).find((d) => d.startsWith(`${name} `))?.split(/\s+/).slice(1) ?? null
 
@@ -65,6 +66,53 @@ describe('report-only CSP', () => {
 
   it('has no upgrade-insecure-requests (ignored and warned about in a report-only policy)', () => {
     expect(prod).not.toContain('upgrade-insecure-requests')
+  })
+})
+
+describe('violation reporting (Sentry security endpoint, derived from the DSN)', () => {
+  const DSN = 'https://abc123publickey@o4500.ingest.de.sentry.io/4511'
+
+  it('builds the security-endpoint URL from a DSN, with the environment', () => {
+    expect(cspReportUrl(DSN, 'preview')).toBe(
+      'https://o4500.ingest.de.sentry.io/api/4511/security/?sentry_key=abc123publickey&sentry_environment=preview',
+    )
+    expect(cspReportUrl(DSN)).toBe('https://o4500.ingest.de.sentry.io/api/4511/security/?sentry_key=abc123publickey')
+  })
+
+  it('keeps a path prefix (self-hosted behind a sub-path) and encodes the key', () => {
+    expect(cspReportUrl('https://k%20ey@sentry.example.com/errors/7')).toBe(
+      'https://sentry.example.com/errors/api/7/security/?sentry_key=k%20ey',
+    )
+  })
+
+  it('is OFF (null) for an unset, malformed, non-https, key-less or project-less DSN — and never throws', () => {
+    for (const bad of [undefined, null, '', 'not a url', 'http://k@host/1', 'https://host/1', 'https://k@host/', 'https://k@host/abc']) {
+      expect(cspReportUrl(bad as string | null | undefined)).toBeNull()
+    }
+  })
+
+  it('the Report-Only policy carries report-uri AND report-to, and a Reporting-Endpoints header names the same URL', () => {
+    const url = cspReportUrl(DSN, 'production')!
+    const csp = contentSecurityPolicy(false, url)
+    expect(csp).toContain(`report-uri ${url}`)
+    expect(csp).toContain(`report-to ${CSP_REPORT_GROUP}`)
+    const h = byKeyWith(url)
+    expect(h['Content-Security-Policy-Report-Only']).toBe(csp)
+    expect(h['Reporting-Endpoints']).toBe(`${CSP_REPORT_GROUP}="${url}"`)
+  })
+
+  it('without a DSN nothing changes: no report directives, no Reporting-Endpoints header', () => {
+    expect(contentSecurityPolicy(false)).not.toContain('report-')
+    expect(byKey(false)['Reporting-Endpoints']).toBeUndefined()
+  })
+
+  it('the ENFORCED header stays frame-ancestors-only — reporting never widens what is enforced', () => {
+    expect(byKeyWith(cspReportUrl(DSN)!)['Content-Security-Policy']).toBe("frame-ancestors 'none'")
+  })
+
+  it('the report URL is not a CSP source of its own: report-uri is a reporting target, not a connect-src entry', () => {
+    const csp = contentSecurityPolicy(false, cspReportUrl(DSN)!)
+    expect(directive(csp, 'connect-src')?.join(' ')).not.toContain('/security/')
   })
 })
 
