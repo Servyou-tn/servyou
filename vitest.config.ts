@@ -35,6 +35,8 @@ export const INTEGRATION_GLOBS = [
   '**/profiles-email-sync.test.ts',
   '**/security-followups-batch.test.ts',
   '**/security-followups-batch-2.test.ts',
+  '**/order-cancel-buyer-service.test.ts',
+  '**/notification-prefs-missions.test.ts',
   '**/notification-prefs-favorites.test.ts',
   '**/reports-anti-abuse.test.ts',
   // These nine wrote to production on every default run until 2026-10-26 (missions M-A PR).
