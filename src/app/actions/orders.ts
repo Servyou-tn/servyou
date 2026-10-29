@@ -7,6 +7,7 @@ import { getLang } from '@/lib/i18n/server'
 import { SELLER_ORDER_PATHS } from '@/lib/orders/seller-paths'
 import { t } from '@/lib/i18n'
 import { cancelErrorKey } from '@/lib/orders/cancel-error'
+import { advanceErrorKey, trackingErrorKey } from '@/lib/orders/order-write-error'
 import {
   nextSellerStatus,
   isCancellable,
@@ -19,16 +20,17 @@ import {
 // the pattern the other nine G pages copy: server action, Zod-validated input, auth + ownership
 // checked server-side, no client-side .update() on a table.
 //
-// (The three buyer-side transitions still call supabase.update() straight from a client component
-// — OrdersList.tsx, ReceiptConfirmButton.tsx. (CancelOrderModal.tsx, the third, was mounted nowhere and is deleted.) They are correct-but-unmigrated
-// and logged in docs/follow-ups.md; deliberately NOT touched here, per the one-PR-one-focus rule.)
+// (The buyer-side transitions used to call supabase.update() straight from client components — OrdersList.tsx,
+// ReceiptConfirmButton.tsx, CancelOrderModal.tsx. All three are gone: the receipt goes through confirmReceiptAction
+// below and the cancel through cancelOrderAction (pre-launch audit pass 2); CancelOrderModal was deleted in #238.)
 //
 // THREE layers guard this, and the DB is the authority in all of them:
 //   1. Zod parses the input before anything touches the database.
 //   2. This action re-reads the order and checks seller_id === auth.uid() before writing.
 //   3. RLS + `check_order_status_transition` enforce it again in Postgres. If this action's idea
-//      of the next status ever drifts from the trigger's, the trigger wins and the write fails —
-//      which is why the error is surfaced verbatim rather than swallowed.
+//      of the next status ever drifts from the trigger's, the trigger wins and the write fails. The
+//      refusal is mapped to an FR + AR key (lib/orders/order-write-error.ts, cancel-error.ts), never
+//      returned verbatim: trigger text is French-only and not written for the client (audit pass 2).
 
 // The caller passes the path to revalidate: G4, G8, G9 and H8 all render the same orders and each
 // needs its own page refreshed after a transition. Constrained to a known set (SELLER_ORDER_PATHS, a
@@ -90,11 +92,10 @@ export async function advanceOrderAction(input: unknown): Promise<ActionResult> 
     .eq('id', order.id)
 
   if (updateError) {
-    // The trigger raises human-readable French for a genuinely invalid transition (e.g. someone
-    // advanced the same order in another tab first). Surface that rather than a generic message —
-    // it is the DB telling the seller precisely what happened.
+    // A stale transition (advanced in another tab, cancelled by the buyer) answers « n'attend plus d'action »;
+    // anything else the generic error. Never the raw trigger text (audit pass 2).
     console.error('[advanceOrder] update error:', updateError.message, updateError.code)
-    return { ok: false, error: updateError.message || t('common.error_generic', lang) }
+    return { ok: false, error: t(advanceErrorKey(updateError), lang) }
   }
 
   revalidatePath(parsed.data.revalidate ?? '/tableau-de-bord-vendeur')
@@ -170,7 +171,8 @@ export async function setOrderTrackingAction(input: unknown): Promise<ActionResu
 
   if (updateError) {
     console.error('[setOrderTracking] update error:', updateError.message, updateError.code)
-    return { ok: false, error: updateError.message || t('common.error_generic', lang) }
+    // Mapped (terminal order / service order) or generic — never the raw DB text (audit pass 2).
+    return { ok: false, error: t(trackingErrorKey(updateError), lang) }
   }
 
   // The order id is a Zod-validated uuid, not arbitrary client text, so interpolating it is safe
@@ -272,5 +274,57 @@ export async function cancelOrderAction(input: unknown): Promise<ActionResult> {
   // The buyer's own list is a fixed route derived from the caller's role (never from the client); the seller
   // side keeps the allow-listed `revalidate` it always had.
   revalidatePath(role === 'buyer' ? '/mes-commandes' : (parsed.data.revalidate ?? '/commandes-recues'))
+  return { ok: true }
+}
+
+// ── Buyer receipt confirmation ────────────────────────────────────────────────────────────────
+//
+// The final 'arrived' → 'received' hop, the buyer's alone. Replaces the two browser-side
+// `.update({ status: 'received' })` calls (OrdersList's ConfirmReceipt, ReceiptConfirmButton) — pre-launch audit
+// pass 2: same three layers as the seller writes (Zod, ownership re-read, the trigger).
+// Only the status is written: `received_at` is stamped by the database on the transition (H8 PR-2, DB-batch ruling
+// #12), never from a client clock — do not add it to the payload.
+
+const ConfirmReceiptInput = z.object({ orderId: z.string().uuid() })
+
+export async function confirmReceiptAction(input: unknown): Promise<ActionResult> {
+  const lang = await getLang()
+  const generic: ActionResult = { ok: false, error: t('common.error_generic', lang) }
+  const parsed = ConfirmReceiptInput.safeParse(input)
+  if (!parsed.success) return generic
+
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return generic
+
+  const { data: order, error: readError } = await supabase
+    .from('orders')
+    .select('id, buyer_id, status')
+    .eq('id', parsed.data.orderId)
+    .maybeSingle()
+
+  if (readError) {
+    console.error('[confirmReceipt] read error:', readError.message, readError.code, readError.details)
+    return generic
+  }
+  // Not found and not-yours collapse to one answer, as everywhere else in this file.
+  if (!order || order.buyer_id !== user.id) return generic
+  // The trigger refuses anything but 'arrived' too; answering here saves the round trip.
+  if (order.status !== 'arrived') return generic
+
+  const { error: updateError } = await supabase
+    .from('orders')
+    .update({ status: 'received' })
+    .eq('id', order.id)
+
+  if (updateError) {
+    console.error('[confirmReceipt] update error:', updateError.message, updateError.code)
+    return generic
+  }
+
+  revalidatePath('/mes-commandes')
+  revalidatePath(`/mes-commandes/${order.id}`)
   return { ok: true }
 }

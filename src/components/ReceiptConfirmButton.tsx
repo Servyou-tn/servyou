@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
+import { confirmReceiptAction } from '@/app/actions/orders'
 import { Button } from '@/components/ui/button'
 import { useLang } from '@/components/LangProvider'
 import { t } from '@/lib/i18n'
@@ -17,16 +17,14 @@ type Props = {
 }
 
 // Buyer-only receipt confirmation — the final 'arrived' → 'received' hop the
-// seller dashboards deliberately leave open. Mirrors the seller advance
-// buttons in ma-boutique/commandes: a direct client-side write, gated
-// authoritatively by the check_order_status_transition DB trigger
-// (buyer-only, only from 'arrived').
+// seller dashboards deliberately leave open. Goes through confirmReceiptAction
+// (Zod, buyer ownership, then the check_order_status_transition trigger), not a
+// browser-side write (pre-launch audit pass 2).
 //
-// This writes ONLY the status. `received_at` is no longer sent from the browser (H8 PR-2, DB-batch ruling #12):
+// The action writes ONLY the status. `received_at` is no longer sent from the browser (H8 PR-2, DB-batch ruling #12):
 // a client clock is forgeable and the column was seller-writable too, so the database stamps it on the
 // status transition. Do not add it back to the payload.
 export function ReceiptConfirmButton({ orderId, panel = false }: Props) {
-  const supabase = createClient()
   const router = useRouter()
   const lang = useLang()
 
@@ -37,12 +35,8 @@ export function ReceiptConfirmButton({ orderId, panel = false }: Props) {
   async function confirmReceipt() {
     setIsSubmitting(true)
     setError(null)
-    const { error } = await supabase
-      .from('orders')
-      .update({ status: 'received' })
-      .eq('id', orderId)
-    if (error) {
-      console.error('[ReceiptConfirmButton] confirmReceipt error:', error.message, error.code, error.details)
+    const result = await confirmReceiptAction({ orderId })
+    if (!result.ok) {
       setError(t('common.receipt_confirm_error', lang))
       setIsSubmitting(false)
       return

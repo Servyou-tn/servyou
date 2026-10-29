@@ -9,6 +9,7 @@ import { OrderAccordionRow } from './OrderAccordionRow'
 import { useLang } from '@/components/LangProvider'
 import { t } from '@/lib/i18n'
 import { createClient } from '@/lib/supabase/client'
+import { confirmReceiptAction } from '@/app/actions/orders'
 import { Avatar } from '@/components/ui/avatar'
 import { getInitials } from '@/components/ui/initials'
 import { Button } from '@/components/ui/button'
@@ -189,25 +190,20 @@ function WhatsAppGlyph() {
   )
 }
 
-// The buyer's only write on an existing row. check_order_status_transition permits it from
-// 'arrived' ONLY and for the buyer ONLY; RLS alone would allow any status, so the trigger is
-// the real gate. Only the status is sent: `received_at` is stamped by the database on the transition
+// The buyer's only write on an existing row, through confirmReceiptAction (pre-launch audit pass 2): Zod, buyer
+// ownership, then check_order_status_transition, which permits it from 'arrived' ONLY and for the buyer ONLY. Only
+// the status is written: `received_at` is stamped by the database on the transition
 // (H8 PR-2, DB-batch ruling #12), not from the browser's clock — do not add it back to the payload.
 export function ConfirmReceipt({ orderId }: { orderId: string }) {
   const lang = useLang()
   const router = useRouter()
-  const supabase = createClient()
   const [saving, setSaving] = useState(false)
   const [, startTransition] = useTransition()
 
   async function confirm() {
     setSaving(true)
-    const { error } = await supabase
-      .from('orders')
-      .update({ status: 'received' })
-      .eq('id', orderId)
-    if (error) {
-      console.error('[OrdersList] confirmReceipt error:', error.message, error.code, error.details)
+    const result = await confirmReceiptAction({ orderId })
+    if (!result.ok) {
       toast.error(t('mesCommandes.confirmError', lang))
       setSaving(false)
       return

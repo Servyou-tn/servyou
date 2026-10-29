@@ -2,8 +2,9 @@
  * @vitest-environment jsdom
  *
  * E3 Produits tab — the list, its pills across the full 8-status lifecycle, the buyer's actions, and the tab links.
- * Mock-only: nothing here touches the database. The receipt-confirmation payload (status only, never received_at)
- * is pinned here for the Produits call site as receipt-confirm-payload.test.tsx pins it for Services.
+ * Mock-only: nothing here touches the database. The Produits call site confirms receipt through confirmReceiptAction
+ * with only the order id (audit pass 2); the action's payload (status only, never received_at) is pinned in
+ * confirm-receipt-action.test.ts.
  */
 
 import '@testing-library/jest-dom/vitest'
@@ -16,7 +17,7 @@ import { t } from '@/lib/i18n'
 import type { MyProductOrder } from '@/lib/marche/my-orders'
 import { PRODUCT_STATUSES } from '@/lib/marche/my-orders-params'
 
-const h = vi.hoisted(() => ({ updates: [] as Record<string, unknown>[], eqs: [] as unknown[][] }))
+const h = vi.hoisted(() => ({ receipts: [] as unknown[] }))
 
 vi.mock('next/navigation', () => ({ useRouter: () => ({ refresh: vi.fn(), push: vi.fn() }) }))
 vi.mock('sonner', () => ({ toast: { error: vi.fn(), success: vi.fn() } }))
@@ -27,23 +28,15 @@ vi.mock('next/link', () => ({
 vi.mock('next/image', () => ({
   default: ({ src, alt }: { src: string; alt: string }) => createElement('img', { src, alt }),
 }))
-vi.mock('@/app/actions/orders', () => ({ cancelOrderAction: vi.fn() }))
-vi.mock('@/lib/supabase/client', () => ({
-  createClient: () => ({
-    from: () => ({
-      update: (payload: Record<string, unknown>) => {
-        h.updates.push(payload)
-        return {
-          eq: async (...args: unknown[]) => {
-            h.eqs.push(args)
-            return { error: null }
-          },
-        }
-      },
-    }),
-    rpc: vi.fn(),
-  }),
+vi.mock('@/app/actions/orders', () => ({
+  cancelOrderAction: vi.fn(),
+  confirmReceiptAction: async (input: unknown) => {
+    h.receipts.push(input)
+    return { ok: true }
+  },
 }))
+// OrdersList still reads the seller's phone through the browser client (an RPC read, not a write).
+vi.mock('@/lib/supabase/client', () => ({ createClient: () => ({ rpc: vi.fn() }) }))
 
 import { ProductOrdersList } from './ProductOrdersList'
 import { OrdersList } from './OrdersList'
@@ -51,8 +44,7 @@ import { OrdersTabs } from './OrdersTabs'
 
 afterEach(() => {
   cleanup()
-  h.updates = []
-  h.eqs = []
+  h.receipts = []
 })
 
 const ID = '3cf896e1-0000-4000-8000-000000000000'
@@ -143,14 +135,12 @@ describe('ProductOrdersList — body', () => {
     expect(screen.queryByRole('button', { name: t('seller.orderDetail.cancel_link', 'fr') })).not.toBeInTheDocument()
   })
 
-  it('« Confirmer la réception » only from arrived, and it sends the status and NOT received_at', async () => {
+  it('« Confirmer la réception » only from arrived, through confirmReceiptAction with only the order id', async () => {
     const confirm = t('common.confirm_receipt_action', 'fr')
     const user = await open(order({ status: 'arrived' }))
     await user.click(await screen.findByRole('button', { name: confirm }))
-    await waitFor(() => expect(h.updates).toHaveLength(1))
-    expect(h.updates[0]).toEqual({ status: 'received' })
-    expect(h.updates[0]).not.toHaveProperty('received_at')
-    expect(h.eqs[0]).toEqual(['id', ID])
+    await waitFor(() => expect(h.receipts).toHaveLength(1))
+    expect(h.receipts[0]).toEqual({ orderId: ID })
 
     cleanup()
     await open(order({ status: 'in_delivery' }))
