@@ -30,3 +30,31 @@ export const getFavoriteState = cache(async (kind: FavoriteKind, targetId: strin
   }
   return data !== null
 })
+
+/**
+ * Which of THESE shops / freelancers has the signed-in viewer favorited? One query for a whole page of cards (the « Boutiques » lens
+ * hearts). Same secondary posture as `getFavoriteState`: a guest, or a failed read, is an empty set — the hearts then render « off »
+ * and the idempotent action makes a tap harmless either way.
+ */
+export const getFavoritedIds = cache(async (kind: FavoriteKind, targetIds: readonly string[]): Promise<ReadonlySet<string>> => {
+  if (targetIds.length === 0) return new Set()
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return new Set()
+
+  const column = TARGET_COLUMN[kind]
+  const { data, error } = await supabase
+    .from('favorites')
+    .select('shop_id, freelancer_profile_id')
+    .eq('user_id', user.id)
+    .eq('item_type', kind)
+    .in(column, [...targetIds])
+  if (error) {
+    reportQueryError(`favorite-state ${kind} batch`, error)
+    return new Set()
+  }
+  return new Set((data ?? []).flatMap((r) => (r[column] ? [r[column] as string] : [])))
+})
+

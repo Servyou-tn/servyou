@@ -33,13 +33,14 @@ export function ShopCard({
   const chips = shop.categories.slice(0, 3)
 
   return (
-    <article className="relative flex flex-col rounded-xl border border-border-subtle bg-surface-base">
-      {/* banner — the shop's own image when it has one, else the same gradient D3's hero uses */}
+    <article className="relative flex flex-col rounded-xl border border-border-subtle bg-surface-base transition-shadow hover:shadow-md">
+      {/* banner — the shop's own image when it has one; without one, the frame's banner=false state: a flat surface/sunken block
+          (Shop Card state=… banner=false, 578:42216 / 42246). */}
       <div className="relative h-[140px] w-full overflow-hidden rounded-t-xl">
         {shop.bannerUrl ? (
           <Image src={shop.bannerUrl} alt="" fill sizes="(min-width: 1024px) 560px, 100vw" className="object-cover" />
         ) : (
-          <div className="size-full bg-gradient-to-r from-[#5b57f2] to-brand-blue-600" />
+          <div className="size-full bg-surface-sunken" />
         )}
       </div>
 

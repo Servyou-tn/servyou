@@ -18,6 +18,7 @@ import { FOCUS_RING } from '@/components/layout/styles'
 import { ProduitsLensToggle } from './_components/ProduitsLensToggle'
 import { ProduitsFilterBar } from './_components/ProduitsFilterBar'
 import { ProductBrowseGrid } from './_components/ProductBrowseGrid'
+import { BoutiquesLens } from './_components/BoutiquesLens'
 
 export const metadata: Metadata = { title: 'Produits — Servyou' }
 
@@ -50,6 +51,10 @@ export default async function ProduitsPage({
 
   const shell = await getShellUser()
   const topBarUser = shell?.topBarUser ?? null
+
+  // `?vue=boutiques` — the Boutiques lens (B4): the same route, a different result set. Everything below is the Produits lens.
+  const vue = Array.isArray(sp.vue) ? sp.vue[0] : sp.vue
+  if (vue === 'boutiques') return <BoutiquesLens sp={sp} lang={lang} topBarUser={topBarUser} />
 
   const [categories, cities, searched] = await Promise.all([
     getFilterCategoriesForType('product'),

@@ -3816,4 +3816,13 @@ export const ar: Record<string, string> = {
   'mesfavoris.empty.freelances.subtitle':                  "أضف مستقلين إلى مفضلتك بالنقر على ♡.",
   'mesfavoris.empty.freelances.cta':                       "استكشف الخدمات",
 
+  // B4 /marche/produits › Boutiques lens — REVIEW_AR_TRANSLATION (draft Arabic)
+  'boutiques.filters.searchPlaceholder':                   "ابحث عن متجر…",
+  'boutiques.sort.recent':                                 "الأحدث",
+  'boutiques.sort.nom':                                    "الاسم (أ–ي)",
+  'boutiques.empty.title':                                 "لا توجد متاجر حاليًا",
+  'boutiques.empty.subtitle':                              "المتاجر الأولى في الطريق. عد قريبًا.",
+  'boutiques.empty.filtered':                              "لا يوجد متجر مطابق لبحثك",
+  'boutiques.empty.filteredSubtitle':                      "جرّب توسيع المرشحات أو تغيير الفئة.",
+
 }

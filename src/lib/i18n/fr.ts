@@ -3934,4 +3934,13 @@ export const fr: Record<string, string> = {
   'mesfavoris.empty.freelances.subtitle':                  "Ajoutez des freelances à vos favoris en cliquant sur ♡.",
   'mesfavoris.empty.freelances.cta':                       "Explorer les services",
 
+  // B4 /marche/produits › Boutiques lens (Figma 578:42528).
+  'boutiques.filters.searchPlaceholder':                   "Rechercher une boutique…",
+  'boutiques.sort.recent':                                 "Plus récentes",
+  'boutiques.sort.nom':                                    "Nom (A–Z)",
+  'boutiques.empty.title':                                 "Aucune boutique pour le moment",
+  'boutiques.empty.subtitle':                              "Les premières boutiques arrivent. Revenez bientôt.",
+  'boutiques.empty.filtered':                              "Aucune boutique ne correspond à votre recherche",
+  'boutiques.empty.filteredSubtitle':                      "Essayez d'élargir vos filtres ou de changer de catégorie.",
+
 }
