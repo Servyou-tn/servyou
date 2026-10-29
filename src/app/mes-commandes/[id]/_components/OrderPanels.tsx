@@ -79,7 +79,7 @@ export function ItemPanel({ order, lang }: { order: OrderDetail; lang: Lang }) {
               ) : null}
             </>
           ) : order.item.deliveryTime ? (
-            <p className="text-body-sm text-text-muted">{t('buyerOrder.service_delay', lang, { delay: order.item.deliveryTime })}</p>
+            <p className="text-body-sm text-text-muted">{t('buyerOrder.service_delay', lang, { delay: `⁨${order.item.deliveryTime}⁩` })}</p>
           ) : null}
         </div>
       </div>
@@ -195,7 +195,9 @@ export function DeliveryPanel({ order, lang }: { order: OrderDetail; lang: Lang 
       {order.buyerNote ? (
         <div className="flex flex-col gap-1 rounded-lg border-s-4 border-brand-blue-300 bg-surface-subtle p-3">
           <p className="text-caption font-medium uppercase text-text-muted">{t('buyerOrder.your_note', lang)}</p>
-          <p className="text-body-sm text-text-primary">« {order.buyerNote} »</p>
+          <p className="text-body-sm text-text-primary">
+            « <bdi>{order.buyerNote}</bdi> »
+          </p>
         </div>
       ) : null}
     </Panel>

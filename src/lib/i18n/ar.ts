@@ -3675,6 +3675,7 @@ export const ar: Record<string, string> = {
   'service.price.month':                "{price} د.ت / الشهر",
 
   // E4 « Détail de ma commande » — REVIEW_AR_TRANSLATION (draft Arabic)
+  'buyerOrder.error_service_cancel':          "لا يمكن للعميل إلغاء طلب خدمة. تواصل مع المستقل عند الحاجة.",
   'buyerOrder.view_detail':                   "عرض التفاصيل",
   'buyerOrder.title':                          "الطلب {ref}",
   'buyerOrder.placed_on':                      "تم الطلب في {date}",

@@ -3793,6 +3793,7 @@ export const fr: Record<string, string> = {
   'service.price.month':                "{price} TND / mois",
 
   // E4 « Détail de ma commande » (/mes-commandes/[id]) — buyer-voice copy from Figma 1469:23519 and its state frames.
+  'buyerOrder.error_service_cancel':          "Une demande de service ne peut pas être annulée par le client. Contactez le freelance si besoin.",
   'buyerOrder.view_detail':                   "Voir le détail",
   'buyerOrder.title':                          "Commande {ref}",
   'buyerOrder.placed_on':                      "Passée le {date}",
