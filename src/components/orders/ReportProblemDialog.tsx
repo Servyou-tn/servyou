@@ -49,7 +49,16 @@ export function ReportProblemDialog({
     if (!canSubmit) return
     setSubmitting(true)
     setErrorKey(null)
-    const res = await createDispute(orderId, reason, description)
+    let res: Awaited<ReturnType<typeof createDispute>>
+    try {
+      res = await createDispute(orderId, reason, description)
+    } catch (e) {
+      // Offline / 5xx / expired session: the action itself rejected. Without this the dialog stays busy and every exit is frozen.
+      console.error('[ReportProblemDialog] createDispute rejected:', e instanceof Error ? e.message : 'unknown')
+      setErrorKey('dispute.error_generic')
+      setSubmitting(false)
+      return
+    }
     if (!res.success) {
       setErrorKey(res.error)
       setSubmitting(false)

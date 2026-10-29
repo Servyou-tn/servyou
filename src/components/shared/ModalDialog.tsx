@@ -48,17 +48,23 @@ export function ModalDialog({
   useEffect(() => {
     const dialog = dialogRef.current
     if (!dialog) return
-    if (open && !dialog.open) {
-      dialog.showModal()
+    // Where focus was before the dialog took it — the footer buttons and a successful submit hand control back to the parent,
+    // which unmounts a STILL-OPEN dialog, so the browser's own focus restoration (close()) never runs on those paths.
+    const previouslyFocused = document.activeElement as HTMLElement | null
+    if (open) {
+      if (!dialog.open) dialog.showModal()
+      // Applied whenever open, not only on the first open: React Strict Mode runs effect → cleanup → effect in dev, and the
+      // second run finds the dialog already open.
       document.body.style.overflow = 'hidden'
       // showModal() focuses the first focusable element (the close button); the first field is where the user acts.
       dialog.querySelector<HTMLElement>('select, textarea, input')?.focus()
-    } else if (!open && dialog.open) {
+    } else if (dialog.open) {
       dialog.close()
     }
     return () => {
-      // Unmounted while open (a route change): the scroll lock must not outlive the dialog.
-      if (dialog.open) document.body.style.overflow = ''
+      // Closed or unmounted (a route change, a footer button): the scroll lock must not outlive the dialog.
+      document.body.style.overflow = ''
+      if (open && previouslyFocused?.isConnected) previouslyFocused.focus()
     }
   }, [open])
 
@@ -68,6 +74,11 @@ export function ModalDialog({
       aria-labelledby={titleId}
       // Fires on EVERY way out (button, Escape, backdrop, programmatic close) — the parent resets its state here.
       onClose={() => {
+        // Chrome closes on a SECOND Escape even though `cancel` was prevented: while a request is in flight, reopen.
+        if (busy) {
+          dialogRef.current?.showModal()
+          return
+        }
         document.body.style.overflow = ''
         onClose()
       }}

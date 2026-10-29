@@ -19,7 +19,8 @@ import { FOCUS_RING } from '@/components/layout/styles'
 // the two means a seller accepts an order they have never discussed. Both surfaces now render
 // this button for contact and a separate control for the transition.
 //
-// Phone is revealed on click via get_contact_phone(target), never rendered into the page: the RPC
+// This BUTTON reveals the phone on click via get_contact_phone(target), never rendering it into the page (E4's buyer page is the one
+// deliberate exception: its Vendeur panel prints the seller's number, per the founder's brief and Figma 1469:23519). The RPC
 // is relationship-gated (it returns a number only to the two parties of a shared order OR — since
 // PR-E — an annonce and its responder), so the reveal has to happen behind a user action, not at
 // render.

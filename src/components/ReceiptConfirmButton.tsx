@@ -49,6 +49,9 @@ export function ReceiptConfirmButton({ orderId, panel = false }: Props) {
     }
     setConfirmed(true)
     router.refresh()
+    // Panel mode stays busy only until the refreshed server tree replaces it; if the refresh stalls the user is not left
+    // looking at a spinner, and the write already succeeded so a retry is a harmless no-op on the DB side.
+    if (panel) setTimeout(() => setIsSubmitting(false), 8000)
   }
 
   if (panel) {

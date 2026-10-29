@@ -120,7 +120,25 @@ export default async function BuyerOrderDetailPage({ params }: { params: Promise
 
         {/* ── twoCol: main 752 + rail 360 (desktop); below lg the wrappers dissolve and `order-*` sets the mobile sequence ── */}
         <div className="flex flex-col gap-4 lg:grid lg:grid-cols-[752fr_360fr] lg:gap-6">
-          <div className="contents lg:flex lg:flex-col lg:gap-4">
+          {/* DOM order = reading / tab order: the action panel and the seller come FIRST (a keyboard user on a phone must not tab through every static panel to reach « Confirmer la réception »); `lg:order-*` restores main-left / rail-right. */}
+          <div className="contents lg:order-2 lg:flex lg:flex-col lg:gap-4">
+            <div className="order-1 lg:order-2">
+              <BuyerOrderActions
+                orderId={order.id}
+                status={status}
+                orderType={order.orderType}
+                activeDispute={activeDispute}
+                cancellationBy={order.cancelledBy}
+                cancellationReason={order.cancellationReason}
+                receivedOn={receivedOn}
+                cancelledOn={cancelledOn}
+              />
+            </div>
+            <div className="order-3 lg:order-1">
+              <SellerPanel order={order} phone={phone} lang={lang} />
+            </div>
+          </div>
+          <div className="contents lg:order-1 lg:flex lg:flex-col lg:gap-4">
             <div className="order-2 lg:order-none">
               <ItemPanel order={order} lang={lang} />
             </div>
@@ -153,24 +171,6 @@ export default async function BuyerOrderDetailPage({ params }: { params: Promise
                     (key, vars) => t(key, lang, vars),
                   )
                 }
-              />
-            </div>
-          </div>
-
-          <div className="contents lg:flex lg:flex-col lg:gap-4">
-            <div className="order-3 lg:order-none">
-              <SellerPanel order={order} phone={phone} lang={lang} />
-            </div>
-            <div className="order-1 lg:order-none">
-              <BuyerOrderActions
-                orderId={order.id}
-                status={status}
-                orderType={order.orderType}
-                activeDispute={activeDispute}
-                cancellationBy={order.cancelledBy}
-                cancellationReason={order.cancellationReason}
-                receivedOn={receivedOn}
-                cancelledOn={cancelledOn}
               />
             </div>
           </div>
