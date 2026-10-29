@@ -99,7 +99,7 @@ const state = {
   user: null as { id: string } | null,
   order: null as Record<string, unknown> | null,
   updates: [] as Record<string, unknown>[],
-  updateError: null as { message: string } | null,
+  updateError: null as { message: string; code?: string; hint?: string } | null,
 }
 
 vi.mock('next/cache', () => ({ revalidatePath: vi.fn() }))
@@ -327,5 +327,25 @@ describe('cancelOrderAction — which page is revalidated', () => {
     const { cancelOrderAction } = await import('@/app/actions/orders')
     await cancelOrderAction({ orderId: ID, revalidate: '/mes-engagements' })
     expect(revalidatePath).toHaveBeenCalledWith('/mes-engagements')
+  })
+})
+
+describe('cancelOrderAction — a DB refusal is mapped, never returned raw', () => {
+  it('migration 102 (buyer_cancel_service) answers the FR service-cancel text', async () => {
+    // The action's own pre-check normally answers first; if the database is ever the one refusing, the mapping holds.
+    state.updateError = { message: 'Une demande de service ne peut pas être annulée par le client.', code: '42501', hint: 'buyer_cancel_service' }
+    const { cancelOrderAction } = await import('@/app/actions/orders')
+    const { t } = await import('@/lib/i18n')
+    const res = await cancelOrderAction({ orderId: ID })
+    expect(res).toEqual({ ok: false, error: t('buyerOrder.error_service_cancel', 'fr') })
+  })
+
+  it('a trigger message that names a role is never passed through', async () => {
+    state.updateError = { message: 'cancelled_by doit correspondre à votre rôle (buyer attendu).', code: 'P0001' }
+    const { cancelOrderAction } = await import('@/app/actions/orders')
+    const { t } = await import('@/lib/i18n')
+    const res = await cancelOrderAction({ orderId: ID })
+    expect(res).toEqual({ ok: false, error: t('common.error_generic', 'fr') })
+    expect(JSON.stringify(res)).not.toContain('cancelled_by')
   })
 })

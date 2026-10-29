@@ -1,6 +1,6 @@
 /**
- * Live-DB proof for db/migrations/PENDING_notification_prefs_missions_column.sql (architect brief 2026-10-29 step 2b;
- * B5 decision D2). Written while PENDING: red before apply (no column), all green after.
+ * Live-DB proof for db/migrations/20261029204435_notification_prefs_missions_column.sql (migration 103) (architect brief 2026-10-29 step 2b;
+ * B5 decision D2). Written while PENDING: red before apply (4 / 4, no column), all green after.
  *
  *   email_missions_matching — defaults ON when the owner's first save omits it, and the owner can insert, read and
  *   update it through their session (column grants). Like its siblings, another user and anon read nothing.
@@ -13,9 +13,9 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest'
 import { createClient, SupabaseClient } from '@supabase/supabase-js'
 import { randomUUID } from 'crypto'
+import type { Database } from '@/lib/supabase/database.types'
 
-// Untyped on purpose: the generated Database type gains email_missions_matching only after apply + regeneration.
-type Client = SupabaseClient
+type Client = SupabaseClient<Database>
 
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -34,8 +34,8 @@ const PASSWORD = `Nm-${randomUUID()}-Aa1!`
 const COLUMNS = 'profile_id, email_new_orders, email_missions_matching'
 
 const opts = { auth: { autoRefreshToken: false, persistSession: false } }
-const admin: Client = hasCreds ? createClient(url, serviceKey, opts) : (undefined as unknown as Client)
-const anon: Client = hasCreds ? createClient(url, anonKey, opts) : (undefined as unknown as Client)
+const admin: Client = hasCreds ? createClient<Database>(url, serviceKey, opts) : (undefined as unknown as Client)
+const anon: Client = hasCreds ? createClient<Database>(url, anonKey, opts) : (undefined as unknown as Client)
 
 let aId: string
 let bId: string
@@ -54,7 +54,7 @@ async function createUser(local: string): Promise<string> {
 }
 
 async function signIn(local: string): Promise<Client> {
-  const client = createClient(url, anonKey, opts)
+  const client = createClient<Database>(url, anonKey, opts)
   const { error } = await client.auth.signInWithPassword({ email: email(local), password: PASSWORD })
   if (error) throw new Error(`signIn failed for ${local}: ${error.message}`)
   return client

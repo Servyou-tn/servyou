@@ -2,20 +2,29 @@
 
 Ranked.
 
-## 1. MEDIUM — `cancelOrderAction` returns the raw database message to the client
-**What:** `src/app/actions/orders.ts`: `return { ok: false, error: updateError.message || t('common.error_generic', lang) }`.
-Any trigger or constraint text reaches the UI as-is: the transition errors, `cancelled_by doit correspondre à votre
-rôle (% attendu)`, and from now on the new rule's message. That breaks the "generic error, never the raw message"
-rule, and in AR it shows French.
-**Why deferred:** app-layer error handling is audit pass 2's scope (next). This PR only adds the DB rule.
-**Trigger:** audit pass 2. Map known hints to keys and fall back to the generic error.
+## 1. ✅ CLOSED in this PR — `cancelOrderAction` returned the raw database message to the client
+Architect brief 2026-10-29 (« fold in if small »). It now answers `t(cancelErrorKey(updateError))`
+(`src/lib/orders/cancel-error.ts`): hint `buyer_cancel_service`, and `check_order_status_transition`'s « raison
+requise » / « terminée » refusals, map to their FR + AR keys. Everything else gets the generic error.
 
-## 2. LOW — `src/components/CancelOrderModal.tsx` cancels orders straight from the browser
-**What:** a browser-side `supabase.from('orders').update({ status: 'cancelled', … })` that skips `cancelOrderAction`
-(and its Zod / role checks). After this migration the database refuses the one case that action alone blocked. Check
-whether the component is still mounted anywhere. If it is, route it through the action. If not, delete it.
-**Trigger:** audit pass 2 (it is the same "client write bypasses the action" class).
+## 2. ✅ CLOSED in this PR — `src/components/CancelOrderModal.tsx` cancelled orders straight from the browser
+Mounted nowhere: `grep -rn "CancelOrderModal" src .storybook` finds only comments, and no import site. Deleted. The
+live cancel UI is `components/orders/CancelOrderButton.tsx`, which calls `cancelOrderAction`.
 
-## 3. INFO — `email_missions_matching` has no UI or sender yet
+## 3. MEDIUM — the same raw-message pattern is still in two other order actions
+**What:** `advanceOrderAction` and `setOrderTracking` (`src/app/actions/orders.ts`) still return
+`updateError.message || t('common.error_generic')`. The file header calls this deliberate (« surfaced verbatim »),
+but it shows French trigger text on the AR site. `check_order_status_transition` messages can also name the expected
+role.
+**Why deferred:** the brief named `cancelOrderAction` only.
+**Trigger:** audit pass 2. Same treatment: map known refusals, otherwise the generic error.
+
+## 4. LOW — two more buyer-side order writes still go straight from the browser
+**What:** the actions header names `OrdersList.tsx` and `ReceiptConfirmButton.tsx` as « correct-but-unmigrated »
+client `.update()` calls. The database guards them (RLS + transition trigger), but they skip Zod and the action's
+error mapping.
+**Trigger:** audit pass 2. Check whether each is still mounted, then route through an action or delete it.
+
+## 5. INFO — `email_missions_matching` has no UI or sender yet
 **What:** the column exists so B5's Paramètres › Notifications toggle can save it. The writer lands with B5. No email
 is sent on it at MVP (notifications are Phase 3+).

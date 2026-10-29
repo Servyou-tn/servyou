@@ -809,6 +809,7 @@ export type Database = {
       notification_preferences: {
         Row: {
           email_low_stock: boolean
+          email_missions_matching: boolean
           email_new_orders: boolean
           email_newsletter: boolean
           email_proposals: boolean
@@ -818,6 +819,7 @@ export type Database = {
         }
         Insert: {
           email_low_stock?: boolean
+          email_missions_matching?: boolean
           email_new_orders?: boolean
           email_newsletter?: boolean
           email_proposals?: boolean
@@ -827,6 +829,7 @@ export type Database = {
         }
         Update: {
           email_low_stock?: boolean
+          email_missions_matching?: boolean
           email_new_orders?: boolean
           email_newsletter?: boolean
           email_proposals?: boolean

@@ -1,6 +1,6 @@
 /**
- * Live-DB proof for db/migrations/PENDING_orders_buyer_cancel_product_only.sql (architect brief 2026-10-29 step 2a;
- * founder ruling E4 / #233). Written while PENDING: red before apply (the buyer's direct PATCH cancels a service
+ * Live-DB proof for db/migrations/20261029204433_orders_buyer_cancel_product_only.sql (migration 102) (architect brief 2026-10-29 step 2a;
+ * founder ruling E4 / #233). Written while PENDING: red before apply (3 / 6 red; the buyer's direct PATCH cancels a service
  * order), all green after.
  *
  *   refused — the buyer moving their own SERVICE order to 'cancelled', pending or accepted (with a reason): 42501,
