@@ -28,3 +28,13 @@ export function normalizePhone(raw: string): string {
   if (s.startsWith('0'))     return '+216' + s.slice(1)
   return '+216' + s
 }
+
+/**
+ * A stored phone for DISPLAY: « +21671555210 » → « +216 71 555 210 » (Figma E4 1469:23519, the seller's number in the
+ * Vendeur panel). Anything that is not a +216 number (the `+` or `00` may be missing on legacy rows) is returned as it came — never mangled, never dropped.
+ * Pair it with `dir="ltr"` in an RTL page: the groups are digit runs that must not reverse.
+ */
+export function formatPhoneDisplay(stored: string): string {
+  const m = /^(?:\+|00)?216([0-9]{2})([0-9]{3})([0-9]{3})$/.exec(stored.replace(/\s/g, ''))
+  return m ? `+216 ${m[1]} ${m[2]} ${m[3]}` : stored
+}
