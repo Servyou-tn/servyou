@@ -1097,6 +1097,9 @@ export const fr: Record<string, string> = {
   'demander.error.notAuth':        "Vous devez être connecté.",
   'demander.error.descriptionTags': "Retirez les crochets [ ] de la description.",
   'demander.error.timeframeChars': "Retirez le crochet ] de ce champ.",
+  // Order anti-abuse caps (orders rate-limit migration).
+  'demander.error.cap_seller':     "Vous avez déjà 5 commandes en attente chez ce vendeur. Attendez qu'il en traite une avant d'en passer une autre.",
+  'demander.error.cap_daily':      "Vous avez atteint la limite de 20 commandes par 24 heures. Réessayez plus tard.",
   'demander.submit.product':       "Confirmer la demande",
   'demander.submit.service':       "Envoyer la demande",
   'demander.submit.loading':       "Envoi en cours…",
@@ -1825,6 +1828,9 @@ export const fr: Record<string, string> = {
   'annonce.error.skills_max':           "Vous pouvez ajouter jusqu'à 8 compétences maximum.",
   'annonce.error.skills_length':        "Chaque compétence doit contenir entre 1 et 60 caractères.",
   'annonce.error.not_authorized':       "Vous devez être connecté pour publier une annonce.",
+  // Job post anti-abuse caps (job_posts cap migration) — also returned by « Rouvrir ».
+  'annonce.error.cap_open':             "Vous avez déjà 5 annonces ouvertes. Clôturez-en une avant d'en ouvrir une autre.",
+  'annonce.error.cap_daily':            "Vous avez atteint la limite de 10 annonces par 24 heures. Réessayez plus tard.",
 
   // ─── Annonce detail (/mes-annonces/[id]) ──────────────────────────────────────
   'annonces.detail.not_found':            "Annonce introuvable",

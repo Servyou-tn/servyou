@@ -8,6 +8,7 @@ import { t } from '@/lib/i18n'
 import { normalizePhone } from '@/lib/phone'
 import { encodeDeliveryAddress } from '@/lib/marche/order-detail'
 import { asOrderInsert } from '@/lib/supabase/insert-drafts'
+import { orderCapKey } from '@/lib/marche/cap-refusal'
 import { ProductRequestSchema, ServiceRequestSchema } from './schema'
 
 // Both actions create an order with status='pending'. RLS enforces buyer_id = auth.uid()
@@ -111,6 +112,12 @@ export async function submitProductRequest(input: ProductRequestInput): Promise<
     .single()
 
   if (insErr || !order) {
+    // The two anti-abuse caps (5 pending per seller, 20 per 24 h) are the buyer's own doing: say which.
+    const cap = orderCapKey(insErr)
+    if (cap) {
+      console.warn('[submitProductRequest] refused:', insErr?.code, insErr?.hint)
+      return { ok: false, error: t(cap, lang) }
+    }
     console.error('[submitProductRequest] insert error:', insErr?.message, insErr?.code, insErr?.details)
     return { ok: false, error: t('common.error_generic', lang) }
   }
@@ -188,6 +195,12 @@ export async function submitServiceRequest(input: ServiceRequestInput): Promise<
     .single()
 
   if (insErr || !order) {
+    // The two anti-abuse caps (5 pending per seller, 20 per 24 h) are the buyer's own doing: say which.
+    const cap = orderCapKey(insErr)
+    if (cap) {
+      console.warn('[submitServiceRequest] refused:', insErr?.code, insErr?.hint)
+      return { ok: false, error: t(cap, lang) }
+    }
     console.error('[submitServiceRequest] insert error:', insErr?.message, insErr?.code, insErr?.details)
     return { ok: false, error: t('common.error_generic', lang) }
   }

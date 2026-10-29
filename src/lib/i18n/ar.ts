@@ -1084,6 +1084,9 @@ export const ar: Record<string, string> = {
   // first-draft Arabic, not yet reviewed by a native speaker.
   'demander.error.descriptionTags': "يرجى حذف الأقواس المعقوفة [ ] من الوصف.",
   'demander.error.timeframeChars': "يرجى حذف القوس المعقوف ] من هذا الحقل.",
+  // Order anti-abuse caps (orders rate-limit migration).
+  'demander.error.cap_seller':     "لديك بالفعل 5 طلبات قيد الانتظار لدى هذا البائع. انتظر حتى يعالج أحدها قبل تقديم طلب آخر.",
+  'demander.error.cap_daily':      "لقد بلغت الحد الأقصى وهو 20 طلبًا خلال 24 ساعة. حاول مرة أخرى لاحقًا.",
   'demander.submit.product':       "تأكيد الطلب",
   'demander.submit.service':       "إرسال الطلب",
   'demander.submit.loading':       "جار الإرسال…",
@@ -1777,6 +1780,9 @@ export const ar: Record<string, string> = {
   'annonce.error.skills_max':           "يمكنك إضافة 8 مهارات كحد أقصى.",
   'annonce.error.skills_length':        "يجب أن تحتوي كل مهارة على ما بين 1 و60 حرفا.",
   'annonce.error.not_authorized':       "يجب أن تكون متصلا لنشر إعلان.",
+  // Job post anti-abuse caps (job_posts cap migration) — also returned by « Rouvrir ».
+  'annonce.error.cap_open':             "لديك بالفعل 5 إعلانات مفتوحة. أغلق أحدها قبل فتح إعلان آخر.",
+  'annonce.error.cap_daily':            "لقد بلغت الحد الأقصى وهو 10 إعلانات خلال 24 ساعة. حاول مرة أخرى لاحقًا.",
 
   // ─── Annonce detail (/mes-annonces/[id]) ──────────────────────────────────────
   'annonces.detail.not_found':            "الإعلان غير موجود",
