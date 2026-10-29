@@ -3,10 +3,18 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { Button } from '@/components/ui/button'
 import { useLang } from '@/components/LangProvider'
 import { t } from '@/lib/i18n'
 
-type Props = { orderId: string }
+type Props = {
+  orderId: string
+  /**
+   * E4's action panel (Figma 1469:23519): a full-width primary lg Button, no inline help (the panel carries its own helper line),
+   * the error shown inline. Default `false` = the legacy inline button every other caller (E3, the dashboard snapshot) renders.
+   */
+  panel?: boolean
+}
 
 // Buyer-only receipt confirmation — the final 'arrived' → 'received' hop the
 // seller dashboards deliberately leave open. Mirrors the seller advance
@@ -17,7 +25,7 @@ type Props = { orderId: string }
 // This writes ONLY the status. `received_at` is no longer sent from the browser (H8 PR-2, DB-batch ruling #12):
 // a client clock is forgeable and the column was seller-writable too, so the database stamps it on the
 // status transition. Do not add it back to the payload.
-export function ReceiptConfirmButton({ orderId }: Props) {
+export function ReceiptConfirmButton({ orderId, panel = false }: Props) {
   const supabase = createClient()
   const router = useRouter()
   const lang = useLang()
@@ -41,6 +49,22 @@ export function ReceiptConfirmButton({ orderId }: Props) {
     }
     setConfirmed(true)
     router.refresh()
+  }
+
+  if (panel) {
+    // After a successful write the button stays busy until router.refresh() swaps the panel for « Commande terminée ».
+    return (
+      <div className="flex flex-col gap-2">
+        <Button variant="primary" size="lg" className="w-full" loading={isSubmitting} onClick={confirmReceipt}>
+          {t('common.confirm_receipt_action', lang)}
+        </Button>
+        {error && (
+          <p role="alert" className="text-body-sm text-danger-500">
+            {error}
+          </p>
+        )}
+      </div>
+    )
   }
 
   if (confirmed) {

@@ -1,4 +1,5 @@
-import { Check } from 'lucide-react'
+import type { CSSProperties } from 'react'
+import { Check, X } from 'lucide-react'
 import { stageStateIn } from '@/lib/orders/order-status'
 import { t, type Lang } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
@@ -29,6 +30,10 @@ export function OrderRail({
   labelKeyFor,
   timestampFor,
   lang,
+  look = 'compact',
+  cancelledAfter,
+  cancelledLabelKey,
+  ariaLabel,
 }: {
   /** The chain to walk — `lifecycleFor(orderType)`. */
   stages: readonly string[]
@@ -46,7 +51,37 @@ export function OrderRail({
    */
   timestampFor?: (stage: string) => string | null
   lang: Lang
+  /**
+   * `compact` (default) is the rail E3, G9 and H8 render today — NOTHING about it changes.
+   * `detail` is the E4 buyer-detail stepper (Figma « Order Stepper », 1469:23519 / 1475:25872): 14px labels, a connector that
+   * turns blue behind a completed stage, equal columns on desktop and a VERTICAL layout with dates below `lg`. Opt-in, so the
+   * three existing consumers keep their measured look (their connector/label deltas stay open, S8/S9).
+   */
+  look?: 'compact' | 'detail'
+  /**
+   * `detail` only. When set the order was CANCELLED after this stage: stages up to and including it are completed, the NEXT one
+   * is replaced by a red « Annulée » node (Figma 1472:25035) and the rest stay upcoming.
+   */
+  cancelledAfter?: string
+  /** i18n key of that red node's label. */
+  cancelledLabelKey?: string
+  /** `detail` only — the list's accessible name. */
+  ariaLabel?: string
 }) {
+  if (look === 'detail') {
+    return (
+      <DetailRail
+        stages={stages}
+        status={status}
+        labelKeyFor={labelKeyFor}
+        timestampFor={timestampFor}
+        lang={lang}
+        cancelledAfter={cancelledAfter}
+        cancelledLabelKey={cancelledLabelKey}
+        ariaLabel={ariaLabel}
+      />
+    )
+  }
   return (
     <ol className="flex items-start">
       {stages.map((stage, i) => {
@@ -159,6 +194,123 @@ export function OrderRail({
                 />
               </div>
             ) : null}
+          </li>
+        )
+      })}
+    </ol>
+  )
+}
+
+type DetailState = 'completed' | 'current' | 'upcoming' | 'cancelled'
+
+// E4's stepper. Measured from the dump of 1469:23519 (horizontal) and 1475:25872 (vertical):
+//   • node = a 32px circle + a 14px label (Medium; current Semi Bold blue; cancelled Semi Bold danger); gap 4
+//   • horizontal: seven EQUAL columns (the circle centres sit 141px apart in a ~990px band); the connector is 2px and runs
+//     between circle CENTRES — blue/600 behind a completed stage, border/strong otherwise (all border/strong once cancelled)
+//   • vertical (below lg): circle + [label over a 12px date], connectors 2×26 between circles — the dates exist ONLY here (the desktop
+//     frame has the date layer hidden)
+// One <ol>, restyled by breakpoint, so a screen reader meets each stage once.
+//
+// ⚑ Label classes are a plain template, NOT cn(): tailwind-merge files our custom `text-*` size tokens in the colour group and
+// would evict the size (the OrderRail eviction recorded above).
+function DetailRail({
+  stages,
+  status,
+  labelKeyFor,
+  timestampFor,
+  lang,
+  cancelledAfter,
+  cancelledLabelKey,
+  ariaLabel,
+}: {
+  stages: readonly string[]
+  status: string
+  labelKeyFor: (stage: string) => string
+  timestampFor?: (stage: string) => string | null
+  lang: Lang
+  cancelledAfter?: string
+  cancelledLabelKey?: string
+  ariaLabel?: string
+}) {
+  const cancelledIndex = cancelledAfter ? stages.indexOf(cancelledAfter) + 1 : -1
+  const isCancelled = cancelledAfter !== undefined && cancelledIndex > 0 && cancelledIndex < stages.length
+
+  function stateOf(i: number): DetailState {
+    if (isCancelled) {
+      if (i < cancelledIndex) return 'completed'
+      if (i === cancelledIndex) return 'cancelled'
+      return 'upcoming'
+    }
+    return stageStateIn(stages, status, i)
+  }
+
+  // Equal columns whose width is MEASURED per chain: the circle centres sit 141px apart on the 7-step product frame and 162px
+  // apart on the 4-step service frame. The band is `columns × that`, centred in the panel; below lg it is a single vertical list
+  // (the template/--rail-w only take effect from lg).
+  const columnWidth = stages.length <= 4 ? 162 : 141
+  const railStyle = {
+    '--rail-w': `${stages.length * columnWidth}px`,
+    gridTemplateColumns: `repeat(${stages.length}, minmax(0, 1fr))`,
+  } as CSSProperties
+
+  return (
+    <ol
+      aria-label={ariaLabel}
+      className="mx-auto flex max-w-sm flex-col gap-[26px] lg:grid lg:max-w-[var(--rail-w)] lg:gap-0"
+      style={railStyle}
+    >
+      {stages.map((stage, i) => {
+        const state = stateOf(i)
+        const timestamp = state === 'cancelled' ? null : (timestampFor?.(stage) ?? null)
+        const labelKey = state === 'cancelled' && cancelledLabelKey ? cancelledLabelKey : labelKeyFor(stage)
+        // The connector AFTER this node: blue only when this stage is completed and the order is not cancelled.
+        const connectorBlue = !isCancelled && state === 'completed'
+        return (
+          <li
+            key={stage}
+            aria-current={state === 'current' ? 'step' : undefined}
+            className="relative flex h-8 items-center gap-3 lg:h-auto lg:flex-col lg:items-center lg:gap-1"
+          >
+            {i < stages.length - 1 ? (
+              <span
+                aria-hidden="true"
+                className={`absolute start-4 top-full h-[26px] w-0.5 lg:start-1/2 lg:top-4 lg:h-0.5 lg:w-full ${
+                  connectorBlue ? 'bg-brand-blue-600' : 'bg-border-strong'
+                }`}
+              />
+            ) : null}
+            <span
+              aria-hidden="true"
+              className={cn(
+                'relative z-10 flex h-8 w-8 shrink-0 items-center justify-center rounded-full',
+                state === 'completed' && 'bg-brand-blue-600',
+                state === 'current' && 'border-2 border-brand-blue-600 bg-surface-base',
+                state === 'upcoming' && 'border-[1.5px] border-border-strong bg-surface-base',
+                state === 'cancelled' && 'bg-danger-500',
+              )}
+            >
+              {state === 'completed' ? <Check className="h-4 w-4 text-text-inverse" /> : null}
+              {state === 'cancelled' ? <X className="h-4 w-4 text-text-inverse" /> : null}
+              {state === 'current' ? <span className="h-2.5 w-2.5 rounded-full bg-brand-blue-600" /> : null}
+            </span>
+            <span className="flex flex-col lg:items-center">
+              <span
+                className={`text-body-sm lg:text-center ${
+                  state === 'current'
+                    ? 'font-semibold text-brand-blue-600'
+                    : state === 'cancelled'
+                      ? 'font-semibold text-danger-500'
+                      : state === 'upcoming'
+                        ? 'font-medium text-text-muted'
+                        : 'font-medium text-text-primary'
+                }`}
+              >
+                {t(labelKey, lang)}
+              </span>
+              {timestamp ? (
+                <span className="text-caption font-medium text-text-muted lg:hidden">{timestamp}</span>
+              ) : null}
+            </span>
           </li>
         )
       })}

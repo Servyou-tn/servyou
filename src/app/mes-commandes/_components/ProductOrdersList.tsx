@@ -2,8 +2,10 @@
 
 import { useState } from 'react'
 import Image from 'next/image'
+import Link from 'next/link'
 import { Package } from 'lucide-react'
 import { OrderRail } from '@/components/orders/OrderRail'
+import { FOCUS_RING } from '@/components/layout/styles'
 import { CancelOrderButton } from '@/components/orders/CancelOrderButton'
 import { WhatsAppContactButton } from '@/components/orders/WhatsAppContactButton'
 import { useLang } from '@/components/LangProvider'
@@ -107,9 +109,17 @@ function ProductOrderRow({ order, open, onToggle }: { order: MyProductOrder; ope
         </div>
       )}
 
-      <p className="text-caption leading-[17px] text-text-muted">
-        {t('mesCommandes.ref', lang, { ref: shortRef(order.id), date: longDate(order.createdAt, lang) })}
-      </p>
+      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
+        <p className="text-caption leading-[17px] text-text-muted">
+          {t('mesCommandes.ref', lang, { ref: shortRef(order.id), date: longDate(order.createdAt, lang) })}
+        </p>
+        <Link
+          href={`/mes-commandes/${order.id}`}
+          className={`rounded text-body-sm font-semibold text-brand-blue-600 hover:underline ${FOCUS_RING}`}
+        >
+          {t('buyerOrder.view_detail', lang)}
+        </Link>
+      </div>
     </OrderAccordionRow>
   )
 }
