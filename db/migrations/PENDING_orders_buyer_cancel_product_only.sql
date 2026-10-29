@@ -20,6 +20,9 @@
 --   * a buyer's cancel of a product order;
 --   * every other transition;
 --   * service role (auth.uid() is null).
+-- No is_admin() exception: an admin who is the BUYER of a service order is refused like any buyer (the ruling has
+-- no exception, as with migrations 99-101). A buyer cancelling an accepted / arrived service order WITHOUT a reason
+-- still gets check_order_status_transition's « raison requise » error first. Refused either way.
 -- A separate trigger, not a rewrite of check_order_status_transition: that function's other rules stay byte-identical.
 -- It fires after trg_check_order_status_transition (name order), so a terminal order or a wrong cancelled_by keeps
 -- its existing error. order_type cannot change on an update: it is not in authenticated's UPDATE grant (cancellation_reason,

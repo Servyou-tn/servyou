@@ -123,7 +123,8 @@ describe.skipIf(!hasCreds)('email_missions_matching', () => {
     expect(other.error).toBeNull()
     expect(other.data).toEqual([])
     const anonRead = await anon.from('notification_preferences').select('email_missions_matching').eq('profile_id', aId)
-    // No anon grant at all: refused by privilege (or an empty set); never a row.
+    // No anon grant at all (migration 97): refused by privilege, not merely an empty set.
+    expect(anonRead.error?.code).toBe('42501')
     expect(anonRead.data ?? []).toEqual([])
   })
 })

@@ -166,6 +166,25 @@ describe.skipIf(!hasCreds)('a buyer cannot cancel a service order', () => {
     expect(error?.hint).toBe('buyer_cancel_service')
     expect(await statusOf(orderId)).toBe('accepted')
   })
+
+  it('arrived, with a reason: refused; the order stays arrived', async () => {
+    const orderId = await placeServiceOrder()
+    for (const status of ['accepted', 'arrived']) {
+      const step = await freelancer.from('orders').update({ status }).eq('id', orderId).select('id')
+      expect(step.error, `advance to ${status}`).toBeNull()
+    }
+    const { error } = await cancel(buyer, orderId, 'buyer', 'Prestation non souhaitée.')
+    expect(error?.hint).toBe('buyer_cancel_service')
+    expect(await statusOf(orderId)).toBe('arrived')
+  })
+
+  it('a buyer forging cancelled_by "seller" is still refused; the order stays pending', async () => {
+    const orderId = await placeServiceOrder()
+    const { error } = await cancel(buyer, orderId, 'seller')
+    // check_order_status_transition refuses the role mismatch first (P0001); either refusal is fine, a success is not.
+    expect(error).not.toBeNull()
+    expect(await statusOf(orderId)).toBe('pending')
+  })
 })
 
 describe.skipIf(!hasCreds)('unchanged', () => {
