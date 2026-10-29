@@ -178,7 +178,7 @@ export function ParametresShell({
           numbers the rail/content split above already uses; `max-w-[720px]` is the same cap
           contentCol uses, so the inner group's right edge lands on the card's right edge at any
           width instead of a fixed offset that only happens to line up at one viewport. The offset is
-          `lg:` only: below `lg` the rail is a horizontal scroller on top of the content, so there is no
+          `lg:` only: below `lg` the rail is a stack on top of the content, so there is no
           rail column to clear (the unconditional 272px pushed the buttons off-screen at 375). */}
       <div className="border-t border-border-subtle py-5 lg:ps-[calc(240px_+_32px)]">
         <div className="flex w-full max-w-[720px] flex-wrap items-center justify-between gap-3">

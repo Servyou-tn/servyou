@@ -93,7 +93,7 @@ describe('changedKeys — only the role’s visible rows count towards « unsave
 })
 
 describe('NotifPrefsInput — the server-side shape', () => {
-  it('accepts any subset of the five booleans', () => {
+  it('accepts any subset of the six booleans', () => {
     expect(NotifPrefsInput.safeParse({ email_newsletter: true }).success).toBe(true)
     expect(NotifPrefsInput.safeParse({ email_missions_matching: false }).success).toBe(true)
     expect(NotifPrefsInput.safeParse({}).success).toBe(true)
