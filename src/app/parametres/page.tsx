@@ -5,6 +5,7 @@ import { redirect } from 'next/navigation'
 import { AppShell } from '@/components/shell/AppShell'
 import { ParametresShell } from '@/components/parametres/ParametresShell'
 import { getShellUser } from '@/lib/marche/shell-user'
+import { getNotificationPrefs } from '@/lib/marche/notification-prefs'
 import { getCurrentProfile } from '@/lib/marche/mon-compte'
 import { getLang } from '@/lib/i18n/server'
 import { t } from '@/lib/i18n'
@@ -31,6 +32,8 @@ export default async function ParametresPage() {
   // Part 2: the ONE call to resolveRole for this whole page tree — ParametresShell and its tabs
   // take the resulting Role as a prop, they never re-derive seller_type themselves.
   const role = resolveRole(profile)
+  // SECONDARY read: a failure is reported and the Notifications tab shows a retry state; every other tab still works.
+  const notifPrefs = await getNotificationPrefs(profile.id)
 
   return (
     <AppShell user={shell.topBarUser}>
@@ -52,7 +55,7 @@ export default async function ParametresPage() {
       </div>
 
       <div className="mt-6">
-        <ParametresShell profile={profile} role={role} />
+        <ParametresShell profile={profile} role={role} notifPrefs={notifPrefs.ok ? notifPrefs.prefs : null} />
       </div>
     </AppShell>
   )

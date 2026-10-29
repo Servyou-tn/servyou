@@ -11,18 +11,19 @@ import { FOCUS_RING } from '@/components/layout/styles'
 import { Button } from '@/components/ui/button'
 import { showSuccessToast } from '@/components/ui/success-toast'
 import { updateProfileAction } from '@/app/mon-compte/actions'
+import { saveNotificationPrefsAction } from '@/app/parametres/actions'
+import { changedKeys, type NotifKey, type NotifPrefs } from '@/lib/notifications/prefs'
 import type { CurrentProfile } from '@/lib/marche/mon-compte'
 import type { Role } from '@/lib/roles'
 import { LangueRegionTab } from './LangueRegionTab'
 import { ConfidentialiteTab } from './ConfidentialiteTab'
-import { PlaceholderTab } from './PlaceholderTab'
+import { NotificationsTab } from './NotificationsTab'
 import { ComptesConnectesTab } from './ComptesConnectesTab'
 
 type TabKey = 'notifications' | 'confidentialite' | 'langue' | 'comptes'
 
 // Order + default active tab match the measured rail (423:17078..423:17113) — Notifications is
-// the frame's own pre-selected tab, kept even though its content is a placeholder this PR (not
-// re-picking a "nicer" default the frame didn't specify).
+// the frame's own pre-selected tab (not re-picking a "nicer" default the frame didn't specify).
 const TABS: { key: TabKey; icon: LucideIcon; labelKey: string }[] = [
   { key: 'notifications', icon: Bell, labelKey: 'parametres.rail.notifications' },
   { key: 'confidentialite', icon: Shield, labelKey: 'parametres.rail.confidentialite' },
@@ -33,8 +34,18 @@ const TABS: { key: TabKey; icon: LucideIcon; labelKey: string }[] = [
 // I2 shell, part 1 (feat/parametres-shell). Owns the two things that outlive a single tab: which
 // tab is showing, and the batched dirty/save state (423:16882 dirty / 558:38900 clean) — a footer
 // sitting outside the two-col row needs to know about edits regardless of which tab made them.
-// Only `language` carries real state this PR; part 2's tabs plug into the same isDirty/onSave shape.
-export function ParametresShell({ profile, role }: { profile: CurrentProfile; role: Role }) {
+// Two things carry state: `language` and (B5) the e-mail notification preferences. Both feed the SAME dirty flag, Cancel and Save.
+// `notifPrefs` is null when the stored preferences could not be read — the tab then shows a retry state and never a toggle list of
+// defaults the user could save over their real choices.
+export function ParametresShell({
+  profile,
+  role,
+  notifPrefs,
+}: {
+  profile: CurrentProfile
+  role: Role
+  notifPrefs: NotifPrefs | null
+}) {
   const lang = useLang()
   const router = useRouter()
   const [activeTab, setActiveTab] = useState<TabKey>('notifications')
@@ -44,7 +55,19 @@ export function ParametresShell({ profile, role }: { profile: CurrentProfile; ro
   const [language, setLanguage] = useState<Lang>(initialLanguage)
   const [savedLanguage, setSavedLanguage] = useState<Lang>(initialLanguage)
 
-  const isDirty = language !== savedLanguage
+  const [notif, setNotif] = useState<NotifPrefs | null>(notifPrefs)
+  const [savedNotif, setSavedNotif] = useState<NotifPrefs | null>(notifPrefs)
+  // « Réessayer » on a failed read is router.refresh(): the shell stays mounted, and useState ignores a later prop. When the
+  // server hands over prefs after we started with none, adopt them (state adjusted during render — no effect, no remount that
+  // would drop the active tab or an unsaved language edit).
+  if (notif === null && savedNotif === null && notifPrefs !== null) {
+    setNotif(notifPrefs)
+    setSavedNotif(notifPrefs)
+  }
+
+  const languageDirty = language !== savedLanguage
+  const notifChanged: NotifKey[] = notif && savedNotif ? changedKeys(role, notif, savedNotif) : []
+  const isDirty = languageDirty || notifChanged.length > 0
 
   // Rail-at-375 edge fade: below `lg` the rail is a horizontal `overflow-x-auto` scroller, not the
   // vertical column, and 4 tabs don't fit in ~343px — the last tab was clipped with no affordance
@@ -92,10 +115,26 @@ export function ParametresShell({ profile, role }: { profile: CurrentProfile; ro
 
   function handleCancel() {
     setLanguage(savedLanguage)
+    setNotif(savedNotif)
   }
 
   function handleSave() {
     startTransition(async () => {
+      // E-mail preferences first: they change nothing on screen, whereas a language save flips the UI and refreshes, so it goes last
+      // and a failed preference save never leaves the page half-translated. Only the toggles that CHANGED are sent.
+      if (notif && notifChanged.length > 0) {
+        const payload = Object.fromEntries(notifChanged.map((k) => [k, notif[k]]))
+        const saved = await saveNotificationPrefsAction(payload)
+        if (!saved.ok) {
+          toast.error(saved.error)
+          return
+        }
+        setSavedNotif(notif)
+        if (!languageDirty) {
+          showSuccessToast(t('parametres.toast.saved', language), t('parametres.toast.close', language))
+          return
+        }
+      }
       // updateProfileAction validates the full profile shape — pass the unchanged fields through
       // (same trick the old ParametresForm used) so this save only actually changes language.
       const res = await updateProfileAction({
@@ -164,7 +203,14 @@ export function ParametresShell({ profile, role }: { profile: CurrentProfile; ro
         </nav>
 
         <div className="min-w-0 w-full max-w-[720px]">
-          {activeTab === 'notifications' && <PlaceholderTab title={t('parametres.rail.notifications', lang)} />}
+          {activeTab === 'notifications' && (
+            <NotificationsTab
+              role={role}
+              value={notif}
+              onChange={(key, next) => setNotif((cur) => (cur ? { ...cur, [key]: next } : cur))}
+              disabled={pending}
+            />
+          )}
           {activeTab === 'confidentialite' && <ConfidentialiteTab profile={profile} role={role} />}
           {activeTab === 'langue' && <LangueRegionTab value={language} onChange={setLanguage} />}
           {activeTab === 'comptes' && <ComptesConnectesTab />}
