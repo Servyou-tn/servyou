@@ -47,7 +47,8 @@ gstack-investigate (root cause) · gstack-review (before every report).
     policy `to authenticated` and `grant execute … to authenticated`; a PUBLIC-role policy calling a
     helper anon cannot execute makes every anon read of that table fail;
   · never re-grant table-level INSERT / UPDATE on a column-granted table (`orders`, `job_posts`,
-    `data_exports`, `deletion_requests`, `freelancer_profiles`, `shops` (INSERT), `disputes` (INSERT)):
+    `data_exports`, `deletion_requests`, `freelancer_profiles`, `shops` (INSERT), `disputes` (INSERT),
+    `reports` (INSERT, migration 99)):
     it silently reopens every locked column;
   · **new columns on `freelancer_profiles` / `shops` / `disputes` need an explicit column GRANT**
     (founder ruling, 2026-10-28, migrations 81–83): without one the app's insert / update naming the

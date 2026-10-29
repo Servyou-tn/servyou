@@ -1,4 +1,4 @@
-// The two expected refusals of a `reports` insert (db/migrations/PENDING_reports_anti_abuse.sql), shared by the
+// The two expected refusals of a `reports` insert (db/migrations/20261029183540_reports_anti_abuse.sql), shared by the
 // three report actions (boutique/[id], freelance/[id], actions/listing-reports). Anything else stays the generic
 // error: only these two are the user's own doing and safe to explain.
 //

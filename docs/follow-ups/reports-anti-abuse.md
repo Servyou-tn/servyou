@@ -16,10 +16,8 @@ column-granted.
 than needed.
 **Trigger:** same pass as item 1 (revoke anon SELECT, check no anonymous page reads it).
 
-## 3. LOW — add `reports` to the role skill's « never re-grant table-level INSERT » list
-**What:** `.claude/skills/servyou-db-guardian/SKILL.md` names the column-granted tables; `reports` (INSERT) joins them
-once this migration is applied. Not edited here (skill files are not changed in a feature PR).
-**Trigger:** next skills / docs tidy.
+## 3. ✅ CLOSED in this PR — `reports` added to the role skill's « never re-grant table-level INSERT » list
+Architect ruling 1 (2026-10-29), applied as migration 99 (`20261029183540`); `.claude/skills/servyou-db-guardian/SKILL.md`.
 
 ## 4. INFO — the cap also binds admins, and counts every status
 **What:** decision 2 in the migration header. An admin filing more than 10 reports a day (none do today) would be

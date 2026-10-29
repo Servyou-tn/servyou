@@ -1,7 +1,7 @@
 /**
- * Live-DB proof for db/migrations/PENDING_reports_anti_abuse.sql (founder brief 2026-10-29, from
- * docs/follow-ups/signaler-product-service-b3.md item 1). Written while the migration was PENDING: red before apply
- * (no dedupe, no cap, every column client-writable), all green after.
+ * Live-DB proof for db/migrations/20261029183540_reports_anti_abuse.sql (migration 99; founder brief 2026-10-29, from
+ * docs/follow-ups/signaler-product-service-b3.md item 1). Written while the migration was PENDING: 11 red / 5 green
+ * before apply (no dedupe, no cap, every column client-writable), all green after.
  *
  *   dedupe  — one open / under_review report per (reporter, target_type, target_id): 23505 on
  *             reports_one_open_per_reporter_target, which the app maps (reportInsertRefusalKey) to
