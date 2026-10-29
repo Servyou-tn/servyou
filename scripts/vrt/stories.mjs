@@ -89,10 +89,18 @@ fs.rmSync(outDir, { recursive: true, force: true })
 fs.mkdirSync(outDir, { recursive: true })
 
 // capture.mjs VERBATIM: routes are comma-joined (story URLs contain no commas); BASE points at us.
-await run('capture.mjs', [rel(outDir), routes.join(',')], {
+const cap = await run('capture.mjs', [rel(outDir), routes.join(',')], {
   BASE: `http://localhost:${PORT}`, WIDTHS: '1440,380', CDP_PORT: '9351',
   CHROME_PROFILE: path.join(REPO, '.vrt-stories-profile'),
 })
+// A capture that crashed (e.g. Chrome never started, after launch-chrome.mjs's retries) used to fall through and
+// fail as « N orphan » — every baseline looked deleted. Fail here instead, with the real cause. Still a FAIL.
+if (cap.code !== 0) {
+  server.close()
+  console.error(`
+VRT: capture.mjs crashed (exit ${cap.code}) — nothing to compare. Not a visual diff: see the FATAL above.`)
+  process.exit(1)
+}
 
 if (MODE === 'baseline') {
   server.close()
@@ -122,6 +130,7 @@ if (missing.length) {
 let maxPct = 0
 if (compared.length) {
   const dif = await run('diff.mjs', [rel(BASELINE), rel(CURRENT)], { THRESH, CDP_PORT: '9353' })
+  if (dif.code !== 0) { console.error(`diff.mjs crashed (exit ${dif.code}) — see the FATAL above`); process.exit(1) }
   const m = dif.out.match(/max\s+([\d.]+)%/)
   if (!m) { console.error('could not parse `max %` from diff.mjs output'); process.exit(1) }
   maxPct = Number(m[1])
