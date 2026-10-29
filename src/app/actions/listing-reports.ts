@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/server'
 import { getLang } from '@/lib/i18n/server'
 import { t } from '@/lib/i18n'
 import { reportQueryError } from '@/lib/supabase/query-error'
+import { reportInsertRefusalKey } from '@/lib/reports/insert-refusal'
 import {
   LISTING_REPORT_DESCRIPTION_MAX,
   LISTING_REPORT_KINDS,
@@ -82,6 +83,12 @@ export async function createListingReportAction(input: unknown): Promise<CreateL
     description: description ?? null,
   })
   if (error) {
+    // Already reported / 10 in 24 h: the reporter's own doing, so say which (warn, not error: expected refusals).
+    const refusal = reportInsertRefusalKey(error)
+    if (refusal) {
+      console.warn('[createListingReport] refused:', error.code, error.hint)
+      return { ok: false, error: t(refusal, lang) }
+    }
     console.error('[createListingReport] insert failed:', error.message, error.code, error.details)
     return generic
   }

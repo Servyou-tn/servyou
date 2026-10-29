@@ -91,7 +91,7 @@ const ALL: Verb[] = ['insert', 'update', 'delete']
 // trg_enforce_active_user guards, the verbs authenticated holds NO privilege for (refused by the
 // privilege check, which runs before any trigger), and an UPDATE probe column (`set`) / INSERT probe
 // column (`insertKey`) where the grant is column-level (profiles, orders, job_posts, data_exports,
-// deletion_requests), and the probe's filter column (`key`, default id) for a table without an id.
+// deletion_requests, reports), and the probe's filter column (`key`, default id) for a table without an id.
 const TRIGGERED: Record<string, { guarded: Verb[]; noGrant?: Verb[]; set?: Record<string, unknown>; insertKey?: string; key?: string }> = {
   profiles: { guarded: ALL, noGrant: ['insert', 'delete'], set: { full_name: 'x' } },
   shops: { guarded: ALL },
@@ -116,7 +116,7 @@ const TRIGGERED: Record<string, { guarded: Verb[]; noGrant?: Verb[]; set?: Recor
   categories: { guarded: ALL },
   admin_audit_log: { guarded: ALL, noGrant: ['update', 'delete'] }, // D3
   orders: { guarded: ALL, noGrant: ['delete'], set: { status: 'cancelled' } }, // D6; no DELETE grant since migration 68
-  reports: { guarded: ALL, noGrant: ['delete'] }, // D5; no DELETE grant since migration 68
+  reports: { guarded: ALL, noGrant: ['delete'], insertKey: 'reporter_id' }, // D5; no DELETE grant since migration 68; INSERT column-granted (id excluded) since the reports anti-abuse migration
   disputes: { guarded: ['update'], noGrant: ['delete'] }, // D4; no DELETE grant since migration 68
   data_exports: { guarded: ['update'], noGrant: ['delete'], set: { status: 'pending' }, insertKey: 'user_id' }, // D3; column grants since migration 68 (C)
   deletion_requests: { guarded: ['update'], noGrant: ['delete'], set: { status: 'pending' }, insertKey: 'user_id' }, // D3; column grants since migration 68 (C)

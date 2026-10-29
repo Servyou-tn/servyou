@@ -173,3 +173,17 @@ describe('refusals — nothing is filed, the answer is generic', () => {
     expect(JSON.stringify(res)).not.toContain('suspended')
   })
 })
+
+describe('anti-abuse refusals (reports anti-abuse migration) — the reporter is told which', () => {
+  it('a second open report on the same listing: « Vous avez déjà signalé ce contenu »', async () => {
+    h.insertResult = {
+      error: { code: '23505', message: 'duplicate key value violates unique constraint "reports_one_open_per_reporter_target"', details: null },
+    }
+    expect(await createListingReportAction(valid)).toEqual({ ok: false, error: t('report.already_reported', 'fr') })
+  })
+
+  it('the 11th report in 24 h: the rate-limit message', async () => {
+    h.insertResult = { error: { code: '23514', message: 'Vous avez atteint…', hint: 'rate_limited', details: null } }
+    expect(await createListingReportAction(valid)).toEqual({ ok: false, error: t('report.rate_limited', 'fr') })
+  })
+})
