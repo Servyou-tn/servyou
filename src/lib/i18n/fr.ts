@@ -3922,4 +3922,16 @@ export const fr: Record<string, string> = {
   'buyerOrder.event.cancelled_freelancer':     "Annulée par le freelance",
   'buyerOrder.event.cancelled_freelancer_reason':  "Annulée par le freelance · motif : « {reason} »",
 
+  // B6 Favoris Boutiques / Freelances + the shop / freelancer cards.
+  'favorites.toggle_named':                                "Favori : {name}",
+  'favorites.error_signin':                                "Connectez-vous pour ajouter des favoris.",
+  'shopCard.view':                                         "Voir la boutique",
+  'freelancerCard.view':                                   "Voir le profil",
+  'mesfavoris.empty.boutiques.title':                      "Aucune boutique en favori",
+  'mesfavoris.empty.boutiques.subtitle':                   "Ajoutez des boutiques à vos favoris en cliquant sur ♡.",
+  'mesfavoris.empty.boutiques.cta':                        "Explorer les boutiques",
+  'mesfavoris.empty.freelances.title':                     "Aucun freelance en favori",
+  'mesfavoris.empty.freelances.subtitle':                  "Ajoutez des freelances à vos favoris en cliquant sur ♡.",
+  'mesfavoris.empty.freelances.cta':                       "Explorer les services",
+
 }

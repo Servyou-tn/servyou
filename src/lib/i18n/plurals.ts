@@ -56,6 +56,7 @@ const frPlurals: Record<string, PluralVariants> = {
   'page_header.categories.emphasis_service': { one: '{count} service', other: '{count} services' },
   'boutique.public.products_count':        { one: '{count} produit', other: '{count} produits' },
   'freelance.public.services_count':       { one: '{count} service', other: '{count} services' },
+  'freelancerCard.services':               { one: '{count} service offert', other: '{count} services offerts' },
   'freelance.public.portfolio_count':      { one: '{count} réalisation', other: '{count} réalisations' },
 
   'seller.orders.count':                   { one: '{count} commande', other: '{count} commandes' },
@@ -129,6 +130,7 @@ const arPlurals: Record<string, PluralVariants> = {
   'page_header.categories.emphasis_service': { one: '{count} خدمة', two: '{count} خدمتان', other: '{count} خدمات' },
   'boutique.public.products_count':       { one: '{count} منتج', two: '{count} منتجان', other: '{count} منتجات' },
   'freelance.public.services_count':       { one: '{count} خدمة', two: '{count} خدمتان', other: '{count} خدمات' },
+  'freelancerCard.services':               { one: '{count} خدمة مقدّمة', two: '{count} خدمتان مقدّمتان', other: '{count} خدمات مقدّمة' },
   'freelance.public.portfolio_count':      { one: '{count} إنجاز', two: '{count} إنجازان', other: '{count} إنجازات' },
 
   'seller.orders.count':                   { one: '{count} طلب', two: '{count} طلبان', other: '{count} طلبات' },
