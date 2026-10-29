@@ -9,8 +9,7 @@
 // noise floor is ~0.13% (see capture.mjs); set a gate threshold above it.
 //
 // Usage: node scripts/vrt/diff.mjs <dirA> <dirB>   env: CHROME_PATH · CDP_PORT · THRESH
-import { spawn } from 'node:child_process'
-import http from 'node:http'
+import { launchChrome } from './launch-chrome.mjs'
 import fs from 'node:fs'
 import path from 'node:path'
 
@@ -31,8 +30,6 @@ const PAIRS = [...setA].filter((f) => setB.has(f)).sort()
 const MISSING = [...setB].filter((f) => !setA.has(f)).sort()
 const ORPHAN = [...setA].filter((f) => !setB.has(f)).sort()
 
-function httpJson(p) { return new Promise((res, rej) => { http.get({ host: '127.0.0.1', port: PORT, path: p }, (r) => { let d = ''; r.on('data', (c) => (d += c)); r.on('end', () => res(JSON.parse(d))) }).on('error', rej) }) }
-async function waitFor(fn, n, g) { for (let i = 0; i < n; i++) { try { return await fn() } catch { await new Promise((r) => setTimeout(r, g)) } } throw new Error('timeout') }
 class CDP {
   constructor(ws) { this.ws = ws; this.id = 0; this.p = new Map(); this.w = []
     ws.addEventListener('message', (e) => { const m = JSON.parse(typeof e.data === 'string' ? e.data : String(e.data)); if (m.id && this.p.has(m.id)) { const { resolve, reject } = this.p.get(m.id); this.p.delete(m.id); m.error ? reject(new Error(m.error.message)) : resolve(m.result) } else if (m.method) this.w = this.w.filter((f) => !f(m)) }) }
@@ -50,8 +47,8 @@ const DIFF_FN = (ba, bb, th) => `(async()=>{
 })()`
 
 async function main() {
-  const child = spawn(CHROME, ['--headless=new', `--remote-debugging-port=${PORT}`, '--no-first-run', '--disable-gpu', `--user-data-dir=${path.join(REPO, '.vrt-diff-profile')}`, 'about:blank'], { stdio: 'ignore' })
-  const ver = await waitFor(() => httpJson('/json/version'), 40, 250)
+  // Retried launch (launch-chrome.mjs), same as capture.mjs.
+  const { child, version: ver } = await launchChrome({ chrome: CHROME, port: PORT, profile: path.join(REPO, '.vrt-diff-profile'), args: ['--headless=new', '--no-first-run', '--disable-gpu', 'about:blank'] })
   const ws = new WebSocket(ver.webSocketDebuggerUrl)
   await new Promise((res, rej) => { ws.addEventListener('open', () => res(), { once: true }); ws.addEventListener('error', rej, { once: true }) })
   const cdp = new CDP(ws)

@@ -13,7 +13,7 @@
 // Usage:  node scripts/vrt/capture.mjs <outDir> [route1,route2,...]
 //   env:  BASE (default http://localhost:3000) · CHROME_PATH · CDP_PORT · WIDTHS (default 1440,380)
 //         SHELL_HIDE=1 → neutralize fixed/sticky chrome for a content-only capture
-import { spawn } from 'node:child_process'
+import { launchChrome } from './launch-chrome.mjs'
 import http from 'node:http'
 import fs from 'node:fs'
 import path from 'node:path'
@@ -35,7 +35,6 @@ const ROUTES = process.argv[3]
   : [['/', 'root'], ['/marche/services', 'marche-services'], ['/categories/electronique', 'categories-electronique'], ['/inscription', 'inscription']]
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
-function httpJson(p) { return new Promise((res, rej) => { http.get({ host: '127.0.0.1', port: PORT, path: p }, (r) => { let d = ''; r.on('data', (c) => (d += c)); r.on('end', () => res(JSON.parse(d))) }).on('error', rej) }) }
 async function waitFor(fn, tries, gap) { for (let i = 0; i < tries; i++) { try { return await fn() } catch { await sleep(gap) } } throw new Error('waitFor exhausted') }
 
 class CDP {
@@ -63,8 +62,8 @@ const HIDE_SHELL = `(() => { let n=0; for (const el of document.querySelectorAll
 
 async function main() {
   await waitFor(() => new Promise((res, rej) => { const r = http.get(BASE + '/', (x) => { x.resume(); res(x.statusCode) }); r.on('error', rej); r.setTimeout(4000, () => r.destroy(new Error('t'))) }), 120, 1000)
-  const child = spawn(CHROME, ['--headless=new', `--remote-debugging-port=${PORT}`, '--no-first-run', '--no-default-browser-check', '--disable-gpu', '--force-device-scale-factor=1', `--user-data-dir=${PROFILE}`, 'about:blank'], { stdio: 'ignore' })
-  const version = await waitFor(() => httpJson('/json/version'), 40, 250)
+  // Retried launch (launch-chrome.mjs): the runner's Chrome sometimes never answers on the first start.
+  const { child, version } = await launchChrome({ chrome: CHROME, port: PORT, profile: PROFILE, args: ['--headless=new', '--no-first-run', '--no-default-browser-check', '--disable-gpu', '--force-device-scale-factor=1', 'about:blank'] })
   const ws = new WebSocket(version.webSocketDebuggerUrl) // Node 20+ global WHATWG WebSocket
   await new Promise((res, rej) => { ws.addEventListener('open', () => res(), { once: true }); ws.addEventListener('error', (e) => rej(e), { once: true }) })
   const cdp = new CDP(ws)
