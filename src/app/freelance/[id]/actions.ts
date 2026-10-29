@@ -4,6 +4,7 @@ import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
 import { getLang } from '@/lib/i18n/server'
 import { t } from '@/lib/i18n'
+import { reportInsertRefusalKey } from '@/lib/reports/insert-refusal'
 import { FREELANCER_REPORT_REASONS } from './report-reasons'
 
 // D4's « Signaler ce profil » — mirrors boutique/[id]/actions.ts's createShopReportAction exactly.
@@ -53,6 +54,12 @@ export async function createFreelancerReportAction(input: unknown): Promise<Crea
     description: description ?? null,
   })
   if (error) {
+    // Already reported / 10 in 24 h: the reporter's own doing, so say which (warn, not error: expected refusals).
+    const refusal = reportInsertRefusalKey(error)
+    if (refusal) {
+      console.warn('[createFreelancerReport] refused:', error.code, error.hint)
+      return { ok: false, error: t(refusal, lang) }
+    }
     console.error('[createFreelancerReport] insert failed:', error.message, error.code, error.details)
     return { ok: false, error: t('common.error_generic', lang) }
   }

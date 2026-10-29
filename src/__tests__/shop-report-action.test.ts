@@ -106,3 +106,19 @@ describe('createShopReportAction — insert shape', () => {
     expect(res).toEqual({ ok: false, error: GENERIC_ERROR })
   })
 })
+
+describe('createShopReportAction — anti-abuse refusals (reports anti-abuse migration)', () => {
+  it('a second open report on the same shop: « Vous avez déjà signalé ce contenu »', async () => {
+    h.state.insertResult = {
+      error: { code: '23505', message: 'duplicate key value violates unique constraint "reports_one_open_per_reporter_target"' },
+    }
+    const res = await createShopReportAction({ shopId: SHOP_ID, reason: 'other' })
+    expect(res).toEqual({ ok: false, error: t('report.already_reported', 'fr') })
+  })
+
+  it('the 11th report in 24 h: the rate-limit message', async () => {
+    h.state.insertResult = { error: { code: '23514', message: 'Vous avez atteint…', hint: 'rate_limited' } }
+    const res = await createShopReportAction({ shopId: SHOP_ID, reason: 'other' })
+    expect(res).toEqual({ ok: false, error: t('report.rate_limited', 'fr') })
+  })
+})

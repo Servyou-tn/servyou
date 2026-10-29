@@ -954,6 +954,18 @@ both on 2026-10-28.
     - « Users insert own favorites » uses the same predicate as its WITH CHECK (ruling 4): you can't favorite
       what you can't see.
     - Delete and grants are unchanged. The 2 existing rows (services) passed the new CHECKs and stay readable.
+99. **20261029183540_reports_anti_abuse** (`f34556a4`) — reports: one live report per reporter per target, 10 per
+    24 h. Closes `docs/follow-ups/signaler-product-service-b3.md` item 1.
+    - INSERT is column-granted to `reporter_id, target_type, target_id, reason, description` (decision 1). A client
+      sending `status` / `admin_note` / `created_at` / `updated_at` / `id` gets 42501. `reports` joins the
+      never-re-grant-table-level-INSERT list.
+    - Partial unique index `reports_one_open_per_reporter_target` (status `open` / `under_review`): a duplicate
+      fails 23505 (the app answers « Vous avez déjà signalé ce contenu »); resolving or dismissing frees the slot.
+    - `enforce_report_rate_limit` (BEFORE INSERT, row): 10 reports per reporter per rolling 24 h, every status,
+      no admin exception (decision 2), 23514 hint `rate_limited`, per-reporter advisory lock, service role bypass.
+      A row filed in someone else's name skips the count and RLS refuses it (no quota leak). No client EXECUTE.
+    - The recorded statement (MD5 above) carries a shorter header comment than this file; the executable SQL
+      is identical (comment-stripped diff, 2026-10-29). 1 existing row (resolved), nothing rewritten.
 
 ## Rollback paths
 

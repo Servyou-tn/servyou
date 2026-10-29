@@ -656,6 +656,9 @@ export const fr: Record<string, string> = {
   'report.listing.description_placeholder': "Décrivez le problème rencontré…",
   'report.listing.cancel': "Annuler",
   'report.listing.close': "Fermer",
+  // Refusals shared by the three report actions (shop, freelancer, product / service) — reports anti-abuse migration.
+  'report.already_reported': "Vous avez déjà signalé ce contenu.",
+  'report.rate_limited': "Vous avez atteint la limite de 10 signalements par 24 heures. Réessayez plus tard.",
 
   // ─── D4 — Public freelancer profile (/freelance/[id]) ─────────────────────────
   'freelance.public.member_since':      "Membre depuis {date}",
