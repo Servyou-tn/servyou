@@ -6,6 +6,7 @@ import { ErrorState } from '@/components/marche/ErrorState'
 import { settle } from '@/lib/supabase/query-error'
 import { getShellUser } from '@/lib/marche/shell-user'
 import { getMyFavorites } from '@/lib/marche/my-data'
+import { getMyFavoriteTargets } from '@/lib/marche/favorite-targets'
 import { getLang } from '@/lib/i18n/server'
 import { t, tn } from '@/lib/i18n'
 import { FavorisTabs } from './_components/FavorisTabs'
@@ -21,10 +22,14 @@ export default async function MesFavorisPage() {
   const shell = await getShellUser()
   if (!shell) redirect('/connexion')
 
-  const [lang, favorites] = await Promise.all([getLang(), settle('mes-favoris', getMyFavorites(shell.id))])
+  const [lang, favorites, targets] = await Promise.all([
+    getLang(),
+    settle('mes-favoris', getMyFavorites(shell.id)),
+    settle('mes-favoris shops/freelancers', getMyFavoriteTargets(shell.id)),
+  ])
 
   // A failed read is an inline error state inside the shell — never « you have no favourites ».
-  if (!favorites.ok) {
+  if (!favorites.ok || !targets.ok) {
     return (
       <AppShell user={shell.topBarUser}>
         <PageHeader title={t('shell.sidebar.favorites', lang)} />
@@ -34,7 +39,8 @@ export default async function MesFavorisPage() {
   }
 
   const { products, services } = favorites.data
-  const total = products.length + services.length
+  const { shops, freelancers } = targets.data
+  const total = products.length + services.length + shops.length + freelancers.length
 
   return (
     <AppShell user={shell.topBarUser}>
@@ -42,7 +48,7 @@ export default async function MesFavorisPage() {
         title={t('shell.sidebar.favorites', lang)}
         countLabel={total > 0 ? tn('mesfavoris.count', lang, total) : undefined}
       />
-      <FavorisTabs products={products} services={services} />
+      <FavorisTabs products={products} services={services} shops={shops} freelancers={freelancers} />
     </AppShell>
   )
 }

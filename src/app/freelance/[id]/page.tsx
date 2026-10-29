@@ -9,6 +9,7 @@ import {
   getViewerContactPhone,
 } from '@/lib/marche/freelancer-detail'
 import { getShellUser } from '@/lib/marche/shell-user'
+import { getFavoriteState } from '@/lib/marche/favorite-state'
 import { getLang } from '@/lib/i18n/server'
 
 // D4 — public freelancer profile, rebuilt from Figma 390:10676. Mirrors /boutique/[id]/page.tsx
@@ -31,12 +32,13 @@ export default async function FreelancePage({ params }: { params: Promise<{ id: 
   const freelancer = await getFreelancerDetail(id)
   if (!freelancer) notFound()
 
-  const [shell, lang, services, completedProjectCount, contactPhone] = await Promise.all([
+  const [shell, lang, services, completedProjectCount, contactPhone, isFavorited] = await Promise.all([
     getShellUser(),
     getLang(),
     getFreelancerServices(freelancer.id, freelancer.fullName, freelancer.city),
     getCompletedProjectCount(freelancer.profileId),
     getViewerContactPhone(freelancer.profileId),
+    getFavoriteState('freelancer', freelancer.id),
   ])
 
   return (
@@ -48,6 +50,7 @@ export default async function FreelancePage({ params }: { params: Promise<{ id: 
         contactPhone={contactPhone}
         lang={lang}
         isLoggedIn={Boolean(shell)}
+        isFavorited={isFavorited}
       />
     </AppShell>
   )

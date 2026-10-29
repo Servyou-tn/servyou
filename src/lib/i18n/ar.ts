@@ -3770,4 +3770,15 @@ export const ar: Record<string, string> = {
   'buyerOrder.event.cancelled_freelancer':     "ألغاه المستقل",
   'buyerOrder.event.cancelled_freelancer_reason':  "ألغاه المستقل · السبب: « {reason} »",
 
+  // B6 Favoris Boutiques / Freelances — REVIEW_AR_TRANSLATION (draft Arabic)
+  'favorites.error_signin':                                "سجّل الدخول لإضافة المفضلة.",
+  'shopCard.view':                                         "عرض المتجر",
+  'freelancerCard.view':                                   "عرض الملف",
+  'mesfavoris.empty.boutiques.title':                      "لا توجد متاجر في المفضلة",
+  'mesfavoris.empty.boutiques.subtitle':                   "أضف متاجر إلى مفضلتك بالنقر على ♡.",
+  'mesfavoris.empty.boutiques.cta':                        "استكشف المتاجر",
+  'mesfavoris.empty.freelances.title':                     "لا يوجد مستقلون في المفضلة",
+  'mesfavoris.empty.freelances.subtitle':                  "أضف مستقلين إلى مفضلتك بالنقر على ♡.",
+  'mesfavoris.empty.freelances.cta':                       "استكشف الخدمات",
+
 }

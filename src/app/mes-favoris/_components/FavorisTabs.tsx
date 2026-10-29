@@ -9,7 +9,11 @@ import { FavorisProductGrid } from './FavorisProductGrid'
 import { EmptyState } from '@/components/marche/EmptyState'
 import { Pagination } from '@/components/shared/Pagination'
 import { paginate } from '@/lib/search/search-params'
-import { PackageIcon, BriefcaseIcon } from '@/components/marche/icons'
+import { PackageIcon, BriefcaseIcon, StorefrontIcon, HeartIcon } from '@/components/marche/icons'
+import { ShopCard } from '@/components/shops/ShopCard'
+import { FreelancerCard } from '@/components/freelancers/FreelancerCard'
+import type { ShopCardData } from '@/lib/marche/shop-cards'
+import type { FreelancerCardData } from '@/lib/marche/freelancer-cards'
 import type { ProductListing } from '@/components/listings/ProductListingCard'
 import type { ServiceListing } from '@/components/listings/ServiceListingCard'
 
@@ -17,27 +21,39 @@ type TabValue = 'produits' | 'services' | 'boutiques' | 'freelances'
 
 const BASE = '/mes-favoris'
 
-// Tab state is local (client) rather than a URL query param or a separate route: getMyFavorites
-// already fetched every favorited product AND service in one server call, so switching tabs has
-// nothing to re-fetch — the same "small personal list" reasoning that dropped F1's filter bar.
-// Boutiques/Freelances render disabled (Ruling 1): favorites.item_type only allows
-// 'product'/'service' at the DB level, so there is no data those tabs could ever show, and no
-// body is rendered for them at all. Because tab state never reaches the URL, there is no such
-// thing as a direct link to a disabled tab — ?tab=boutiques would simply be inert; the page
-// always opens on Produits.
+// Tab state is local (client) rather than a URL query param or a separate route: the page already fetched every favorited product,
+// service, shop AND freelancer in one server pass, so switching tabs has nothing to re-fetch — the same « small personal list »
+// reasoning that dropped F1's filter bar. All four tabs are live (B6; migration 98 added the 'shop' / 'freelancer' item types).
+//
+// Un-hearting a shop / freelancer card removes it from the list AT ONCE (optimistic, local `removed` sets); if the server refuses,
+// the heart rolls back and the card reappears. The page's own refresh (the action revalidates /mes-favoris) then re-syncs the list
+// and the header count.
 export function FavorisTabs({
   products,
   services,
+  shops,
+  freelancers,
 }: {
   products: ProductListing[]
   services: ServiceListing[]
+  shops: ShopCardData[]
+  freelancers: FreelancerCardData[]
 }) {
   const lang = useLang()
   const [tab, setTab] = useState<TabValue>('produits')
+  // Ids un-hearted in this session — hidden immediately, restored if the server says no.
+  const [removedShops, setRemovedShops] = useState<ReadonlySet<string>>(new Set())
+  const [removedFreelancers, setRemovedFreelancers] = useState<ReadonlySet<string>>(new Set())
 
-  const soon = t('mesfavoris.tab.soon', lang)
-  const enabledTabs: TabValue[] = ['produits', 'services']
-  const disabledTabs: TabValue[] = ['boutiques', 'freelances']
+  const tabs: TabValue[] = ['produits', 'services', 'boutiques', 'freelances']
+  const toggleIn = (set: ReadonlySet<string>, id: string, hidden: boolean): ReadonlySet<string> => {
+    const next = new Set(set)
+    if (hidden) next.add(id)
+    else next.delete(id)
+    return next
+  }
+  const visibleShops = shops.filter((s) => !removedShops.has(s.id))
+  const visibleFreelancers = freelancers.filter((f) => !removedFreelancers.has(f.id))
 
   // Pagination is reused for visual/structural consistency with the cached Figma audit ("single-
   // page Pagination"); at current favorites volumes every tab is one page, so Pagination
@@ -58,7 +74,7 @@ export function FavorisTabs({
         aria-label={t('mesfavoris.tabsAria', lang)}
         className="inline-flex max-w-full items-center self-start overflow-x-auto rounded-[10px] bg-surface-sunken p-1"
       >
-        {enabledTabs.map((value) => {
+        {tabs.map((value) => {
           const isActive = tab === value
           return (
             <button
@@ -75,26 +91,57 @@ export function FavorisTabs({
             </button>
           )
         })}
-        {disabledTabs.map((value) => (
-          <button
-            key={value}
-            type="button"
-            role="tab"
-            disabled
-            aria-disabled="true"
-            aria-selected={false}
-            title={soon}
-            className="inline-flex h-9 shrink-0 cursor-not-allowed items-center gap-1 rounded-md px-3 text-body-sm font-medium text-text-secondary"
-          >
-            {t(`mesfavoris.tab.${value}`, lang)}
-            <span className="rounded-full bg-brand-blue-100 px-1.5 py-0.5 text-caption font-semibold text-brand-blue-600">
-              {soon}
-            </span>
-          </button>
-        ))}
       </div>
 
-      {tab === 'services' ? (
+      {tab === 'boutiques' ? (
+        visibleShops.length === 0 ? (
+          <EmptyState
+            icon={<StorefrontIcon className="mx-auto h-12 w-12" />}
+            message={t('mesfavoris.empty.boutiques.title', lang)}
+            subtitle={t('mesfavoris.empty.boutiques.subtitle', lang)}
+            cta={{ label: t('mesfavoris.empty.boutiques.cta', lang), href: '/marche/produits?vue=boutiques' }}
+          />
+        ) : (
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+            {visibleShops.map((shop) => (
+              <ShopCard
+                key={shop.id}
+                shop={shop}
+                lang={lang}
+                heart={{
+                  initialFavorited: true,
+                  isLoggedIn: true,
+                  onChange: (fav) => setRemovedShops((cur) => toggleIn(cur, shop.id, !fav)),
+                }}
+              />
+            ))}
+          </div>
+        )
+      ) : tab === 'freelances' ? (
+        visibleFreelancers.length === 0 ? (
+          <EmptyState
+            icon={<HeartIcon className="mx-auto h-12 w-12" />}
+            message={t('mesfavoris.empty.freelances.title', lang)}
+            subtitle={t('mesfavoris.empty.freelances.subtitle', lang)}
+            cta={{ label: t('mesfavoris.empty.freelances.cta', lang), href: '/marche/services' }}
+          />
+        ) : (
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+            {visibleFreelancers.map((freelancer) => (
+              <FreelancerCard
+                key={freelancer.id}
+                freelancer={freelancer}
+                lang={lang}
+                heart={{
+                  initialFavorited: true,
+                  isLoggedIn: true,
+                  onChange: (fav) => setRemovedFreelancers((cur) => toggleIn(cur, freelancer.id, !fav)),
+                }}
+              />
+            ))}
+          </div>
+        )
+      ) : tab === 'services' ? (
         services.length === 0 ? (
           <EmptyState
             icon={<BriefcaseIcon className="mx-auto h-12 w-12" />}

@@ -9,6 +9,7 @@ import type { ShopDetailData } from '@/lib/marche/shop-detail'
 import { shopTypeLabelKey, deliverySetupLabelKey, paymentMethodLabelKey } from '@/lib/types/shop-config'
 import { t, tn, type Lang } from '@/lib/i18n'
 import { ShopShareButton } from './ShopShareButton'
+import { FavoriteHeart } from '@/components/favorites/FavoriteHeart'
 import { ShopReportModal } from './ShopReportModal'
 
 // D3 « Boutique publique » — rebuilt from Figma 540:32918/540:32920, measured in
@@ -48,11 +49,13 @@ export function ShopDetail({
   products,
   lang,
   isLoggedIn,
+  isFavorited,
 }: {
   shop: ShopDetailData
   products: ProductListing[]
   lang: Lang
   isLoggedIn: boolean
+  isFavorited: boolean
 }) {
   const initials = getInitials(shop.name)
   const hasMeta = Boolean(shop.shopType || shop.deliverySetup)
@@ -148,6 +151,9 @@ export function ShopDetail({
           </div>
 
           <div className="flex items-center gap-3 py-1">
+            {/* Not drawn on 540:32918 (its only hearts are on the product thumbnails) — added at the founder's request (B6), as the
+                frame's own 44 « Favorite Heart » beside the existing Partager / Signaler actions. */}
+            <FavoriteHeart kind="shop" targetId={shop.id} initialFavorited={isFavorited} isLoggedIn={isLoggedIn} />
             <ShopShareButton />
             <ShopReportModal shopId={shop.id} shopName={shop.name} isLoggedIn={isLoggedIn} />
           </div>

@@ -37,6 +37,7 @@ export function FreelancerDetail({
   contactPhone,
   lang,
   isLoggedIn,
+  isFavorited,
 }: {
   freelancer: FreelancerDetailData
   services: ServiceListing[]
@@ -44,6 +45,7 @@ export function FreelancerDetail({
   contactPhone: string | null
   lang: Lang
   isLoggedIn: boolean
+  isFavorited: boolean
 }) {
   const yearsExperience = freelancer.yearsExperience ?? 0
   const hasAbout = Boolean(freelancer.bio?.trim())
@@ -138,6 +140,8 @@ export function FreelancerDetail({
           <SectionNav sections={sections} />
 
           <ActionsRow
+            freelancerId={freelancer.id}
+            isFavorited={isFavorited}
             freelancerProfileId={freelancer.profileId}
             freelancerName={freelancer.fullName}
             contactPhone={contactPhone}

@@ -4,6 +4,7 @@ import { AppShell } from '@/components/shell/AppShell'
 import { ShopDetail } from './_components/ShopDetail'
 import { getShopDetail, getShopProducts } from '@/lib/marche/shop-detail'
 import { getShellUser } from '@/lib/marche/shell-user'
+import { getFavoriteState } from '@/lib/marche/favorite-state'
 import { getLang } from '@/lib/i18n/server'
 
 // D3 — public shop storefront, rebuilt from Figma 540:32918/540:32920. Mirrors
@@ -27,15 +28,16 @@ export default async function BoutiquePage({ params }: { params: Promise<{ id: s
   const shop = await getShopDetail(id)
   if (!shop) notFound()
 
-  const [shell, lang, products] = await Promise.all([
+  const [shell, lang, products, isFavorited] = await Promise.all([
     getShellUser(),
     getLang(),
     getShopProducts(shop.id, shop.name, shop.city),
+    getFavoriteState('shop', shop.id),
   ])
 
   return (
     <AppShell user={shell?.topBarUser ?? null}>
-      <ShopDetail shop={shop} products={products} lang={lang} isLoggedIn={Boolean(shell)} />
+      <ShopDetail shop={shop} products={products} lang={lang} isLoggedIn={Boolean(shell)} isFavorited={isFavorited} />
     </AppShell>
   )
 }
