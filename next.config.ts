@@ -1,6 +1,6 @@
 import type { NextConfig } from "next";
 import { withSentryConfig } from "@sentry/nextjs";
-import { securityHeaders } from "./src/lib/security/headers";
+import { cspReportUrl, securityHeaders } from "./src/lib/security/headers";
 
 const nextConfig: NextConfig = {
   // Hide the Next.js dev-tools indicator — the floating circle with the Next "N"
@@ -15,7 +15,9 @@ const nextConfig: NextConfig = {
   // Browser security headers on every route: frame-ancestors / X-Frame-Options ENFORCED (clickjacking), the full
   // CSP as Report-Only for now. See src/lib/security/headers.ts.
   async headers() {
-    return [{ source: '/:path*', headers: securityHeaders(process.env.NODE_ENV !== 'production') }]
+    // Violation reports go to Sentry's security endpoint, derived from the DSN (null without one → no reporting).
+    const reportUrl = cspReportUrl(process.env.NEXT_PUBLIC_SENTRY_DSN, process.env.VERCEL_ENV ?? process.env.NODE_ENV)
+    return [{ source: '/:path*', headers: securityHeaders(process.env.NODE_ENV !== 'production', reportUrl) }]
   },
 
   // Server Actions default to a 1 MB request body. The avatar upload sends a real photo through an

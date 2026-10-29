@@ -3,6 +3,7 @@
 Ranked. From the PR's review and the preview gate.
 
 ## 1. MEDIUM — the report-only CSP has no reporting endpoint
+✅ CODE DONE — `feat/csp-sentry-reporting` (report-uri + report-to + Reporting-Endpoints from the DSN). LIVE only once `NEXT_PUBLIC_SENTRY_DSN` is set on Vercel (see csp-sentry-reporting.md).
 **What:** no `report-uri` / `report-to`, so a violation only reaches that visitor's console. The plan is to watch the
 policy in real use and then enforce it, but production traffic produces no data.
 **Why deferred:** the brief asked for console-level proof on the preview. An endpoint is new scope: a Sentry security
