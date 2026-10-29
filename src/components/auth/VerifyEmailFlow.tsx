@@ -7,6 +7,7 @@ import { createClient } from '@/lib/supabase/client'
 import { useLang } from '@/components/LangProvider'
 import { t } from '@/lib/i18n'
 import { isValidEmail } from '@/lib/signup-validation'
+import { verifyEmailRedirectUrl } from '@/lib/auth/email-redirect'
 import { SIGNUP_ROLE_KEY, asSignupRole } from '@/lib/signup-role'
 import { nextDestinationAfterVerify } from '@/lib/verify-email'
 import { resolveRole } from '@/lib/roles'
@@ -47,7 +48,12 @@ function useResend() {
     if (cooldown > 0) return
     setStatus('idle')
     setCooldown(RESEND_COOLDOWN_SECONDS)
-    const { error } = await supabase.auth.resend({ type: 'signup', email: email.trim().toLowerCase() })
+    const { error } = await supabase.auth.resend({
+      type: 'signup',
+      email: email.trim().toLowerCase(),
+      // Same target as the first email (SignupForm): /verifier-email of this origin.
+      options: { emailRedirectTo: verifyEmailRedirectUrl(window.location.origin) },
+    })
     if (error) {
       console.error('[VerifyEmail] resend error:', error.message, error.code, error.status)
       setStatus('error')
