@@ -35,7 +35,8 @@
 --      editor (auth.uid() is null) bypass, as every guard trigger does. A per-reporter advisory xact lock
 --      serialises the count + insert (check_job_response_limits' pattern), so parallel inserts cannot all read 9.
 --      A BEFORE trigger runs before the unique index is checked: an 11th report that is ALSO a duplicate answers
---      rate_limited, not 23505.
+--      rate_limited, not 23505. A row whose reporter_id is not the caller skips the count and is refused by RLS
+--      (42501), so the trigger never reveals another user's report volume (review finding).
 --   No existing row is rewritten.
 
 -- ─── 1. INSERT columns ──────────────────────────────────────────────────────────────────────────────
@@ -60,6 +61,13 @@ declare
 begin
   -- Service role, SQL editor, seeds.
   if (select auth.uid()) is null then
+    return new;
+  end if;
+
+  -- A row filed in someone else's name is refused by RLS (« Reporter creates own report », checked AFTER this
+  -- BEFORE trigger). Leave it to RLS: counting the claimed reporter's reports here would answer rate_limited for
+  -- a busy victim and so reveal how much they report (and take their lock).
+  if new.reporter_id is distinct from (select auth.uid()) then
     return new;
   end if;
 

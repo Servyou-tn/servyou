@@ -191,6 +191,12 @@ describe.skipIf(!hasCreds)('cap — 10 reports per reporter per rolling 24 h', (
     expect(error?.hint).toBe('rate_limited')
   })
 
+  it('a report filed in a capped user’s name is refused by RLS (42501), never rate_limited (no quota leak)', async () => {
+    const { error } = await file('cols', randomUUID(), { reporter_id: ids.cap })
+    expect(error?.code).toBe(DENIED)
+    expect(error?.hint).not.toBe('rate_limited')
+  })
+
   it('service role is not capped', async () => {
     const { error } = await admin.from('reports').insert(report('cap', randomUUID()))
     expect(error).toBeNull()
