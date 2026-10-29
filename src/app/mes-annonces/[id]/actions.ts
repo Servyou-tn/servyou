@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 import { isNoRowLike, reportQueryError } from '@/lib/supabase/query-error'
 import { JOB_POST_EXPIRY_DAYS } from '@/lib/job-constants'
+import { jobPostCapKey } from '@/lib/marche/cap-refusal'
 
 // Manage actions for a consumer's own mission. Each is author-scoped by the WHERE clause AND
 // re-guarded by RLS (job_posts UPDATE policy = consumer_id = auth.uid()). A status-only update
@@ -83,6 +84,12 @@ export async function reopenMissionAction(missionId: string): Promise<MissionAct
     .select('id')
 
   if (error) {
+    // Reopening counts as opening a post: 5 open already is refused (job_post_cap_open).
+    const cap = jobPostCapKey(error)
+    if (cap) {
+      console.warn('[reopenMissionAction] refused:', error.code, error.hint)
+      return { ok: false, errorKey: cap }
+    }
     console.error('[reopenMissionAction] update error:', error.message, error.code, error.details)
     return { ok: false, errorKey: 'common.error_generic' }
   }
