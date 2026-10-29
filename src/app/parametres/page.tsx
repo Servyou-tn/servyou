@@ -48,7 +48,7 @@ export default async function ParametresPage() {
         <h1 className="text-[32px] font-bold leading-[38px] text-text-primary">{t('parametres.title', lang)}</h1>
         <p className="text-sm text-text-secondary">
           {t('parametres.subline.text', lang)}
-          <Link href="/mon-compte" className={`font-medium text-brand-blue-600 hover:underline ${FOCUS_RING}`}>
+          <Link href="/mon-compte" className={`mt-3 block font-medium text-brand-blue-600 hover:underline lg:mt-0 lg:inline ${FOCUS_RING}`}>
             {t('parametres.subline.link', lang)}
           </Link>
         </p>

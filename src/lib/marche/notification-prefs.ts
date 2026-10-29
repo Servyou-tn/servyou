@@ -17,7 +17,7 @@ export const getNotificationPrefs = cache(async (userId: string): Promise<Notifi
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('notification_preferences')
-    .select('email_new_orders, email_proposals, email_reviews, email_low_stock, email_newsletter')
+    .select('email_new_orders, email_proposals, email_reviews, email_low_stock, email_missions_matching, email_newsletter')
     .eq('profile_id', userId)
     .maybeSingle()
   if (error) {

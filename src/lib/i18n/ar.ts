@@ -3698,6 +3698,8 @@ export const ar: Record<string, string> = {
   'parametres.notifications.email_reviews.freelancer.desc':      "استلم رسالة بريد إلكتروني عندما يترك عميل تقييمًا لملفك. تبقى التقييمات ظاهرة للجميع في كل الأحوال.",
   'parametres.notifications.security.label':                     "تنبيهات الأمان",
   'parametres.notifications.security.desc':                      "عمليات الدخول غير المعتادة وتغييرات كلمة المرور. مفعّلة دائمًا لحماية حسابك ولا يمكن تعطيلها.",
+  'parametres.notifications.email_missions_matching.label':      "المهام المطابقة لمهاراتي",
+  'parametres.notifications.email_missions_matching.desc':       "استلم اختيارًا أسبوعيًا من المهام الجديدة في صندوق بريدك الإلكتروني. لا يؤثر على نتائج البحث داخل المنصة.",
   'parametres.notifications.email_low_stock.label':              "تنبيه انخفاض المخزون",
   'parametres.notifications.email_low_stock.desc':               "استلم رسالة بريد إلكتروني عندما ينخفض مخزون منتج أو ينفد، حتى لا تبيع ما لا تملك.",
   'parametres.notifications.email_newsletter.shop_owner.label':  "النشرة الإخبارية وأخبار Servyou",

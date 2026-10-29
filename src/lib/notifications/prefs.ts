@@ -2,13 +2,15 @@ import { z } from 'zod'
 import type { Role } from '@/lib/roles'
 
 // Paramètres → Notifications (B5): the e-mail preference rows, per role, over the live `notification_preferences` table
-// (one row per profile; five boolean columns). Figma 424:17442 (freelancer) and 558:38878 (shop_owner).
+// (one row per profile; six boolean columns — `email_missions_matching` arrived with migration 103). Figma 424:17442 (freelancer)
+// and 558:38878 (shop_owner).
 
 export const NOTIF_KEYS = [
   'email_new_orders',
   'email_proposals',
   'email_reviews',
   'email_low_stock',
+  'email_missions_matching',
   'email_newsletter',
 ] as const
 
@@ -17,13 +19,14 @@ export type NotifPrefs = Record<NotifKey, boolean>
 
 /**
  * What a profile with NO row gets — it mirrors the table's own column defaults (new orders / proposals / reviews on,
- * low stock / newsletter off), so « no row yet » and « a row of defaults » look the same and the first save is a plain upsert.
+ * low stock / newsletter off, and — migration 103 — missions-matching ON), so « no row yet » and « a row of defaults » look the same and the first save is a plain upsert.
  */
 export const DEFAULT_NOTIF_PREFS: NotifPrefs = {
   email_new_orders: true,
   email_proposals: true,
   email_reviews: true,
   email_low_stock: false,
+  email_missions_matching: true,
   email_newsletter: false,
 }
 
@@ -39,7 +42,7 @@ export function notifVariant(role: Role): NotifVariant {
 /**
  * The rows each role sees, in the frame's order.
  *   shop_owner (558:38878): commandes · propositions · avis · sécurité · stock faible · newsletter
- *   freelancer (424:17442): commandes · propositions · avis · sécurité · [missions — no column] · newsletter
+ *   freelancer (424:17442): commandes · propositions · avis · sécurité · missions correspondant à mes compétences · newsletter
  *   consumer   (no frame — derived): propositions · sécurité · newsletter. A buyer receives no orders, reviews or stock alerts.
  */
 export function rowsForRole(role: Role): NotifRow[] {
@@ -49,7 +52,14 @@ export function rowsForRole(role: Role): NotifRow[] {
     case 'shop_owner':
       return [row('email_new_orders'), row('email_proposals'), row('email_reviews'), security, row('email_low_stock'), row('email_newsletter')]
     case 'freelancer':
-      return [row('email_new_orders'), row('email_proposals'), row('email_reviews'), security, row('email_newsletter')]
+      return [
+        row('email_new_orders'),
+        row('email_proposals'),
+        row('email_reviews'),
+        security,
+        row('email_missions_matching'),
+        row('email_newsletter'),
+      ]
     default:
       return [row('email_proposals'), security, row('email_newsletter')]
   }
@@ -65,13 +75,14 @@ export function changedKeys(role: Role, current: NotifPrefs, saved: NotifPrefs):
   return keysForRole(role).filter((k) => current[k] !== saved[k])
 }
 
-/** Server-side input: any subset of the five booleans, nothing else. */
+/** Server-side input: any subset of the six booleans, nothing else. */
 export const NotifPrefsInput = z
   .object({
     email_new_orders: z.boolean(),
     email_proposals: z.boolean(),
     email_reviews: z.boolean(),
     email_low_stock: z.boolean(),
+    email_missions_matching: z.boolean(),
     email_newsletter: z.boolean(),
   })
   .partial()

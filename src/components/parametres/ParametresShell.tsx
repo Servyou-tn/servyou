@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState, useTransition } from 'react'
+import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { Bell, Shield, Globe, Link2, CheckCircle2, type LucideIcon } from 'lucide-react'
@@ -69,50 +69,6 @@ export function ParametresShell({
   const notifChanged: NotifKey[] = notif && savedNotif ? changedKeys(role, notif, savedNotif) : []
   const isDirty = languageDirty || notifChanged.length > 0
 
-  // Rail-at-375 edge fade: below `lg` the rail is a horizontal `overflow-x-auto` scroller, not the
-  // vertical column, and 4 tabs don't fit in ~343px — the last tab was clipped with no affordance
-  // hinting more exist. Measured from real rendered rects (not scrollLeft, whose zero-point
-  // convention differs by direction) so it's correct for both dir without any RTL-specific branch:
-  // "is any button's edge past the nav's own edge" is the same question either way. Verified live
-  // (see PR body) that the browser's own initial scroll position already shows tab 1 in both FR and
-  // AR — this only ever reads that state, it never sets scrollLeft itself.
-  const railRef = useRef<HTMLElement>(null)
-  const [railMask, setRailMask] = useState({ hiddenStart: false, hiddenEnd: false })
-
-  useEffect(() => {
-    const nav = railRef.current
-    if (!nav) return
-    function update() {
-      if (!nav) return
-      const navRect = nav.getBoundingClientRect()
-      let hiddenStart = false
-      let hiddenEnd = false
-      nav.querySelectorAll('button').forEach((b) => {
-        const r = b.getBoundingClientRect()
-        if (r.left < navRect.left - 1) hiddenStart = true
-        if (r.right > navRect.right + 1) hiddenEnd = true
-      })
-      setRailMask({ hiddenStart, hiddenEnd })
-    }
-    update()
-    nav.addEventListener('scroll', update, { passive: true })
-    window.addEventListener('resize', update)
-    return () => {
-      nav.removeEventListener('scroll', update)
-      window.removeEventListener('resize', update)
-    }
-  }, [])
-
-  const RAIL_FADE = '28px'
-  const railMaskImage =
-    railMask.hiddenStart && railMask.hiddenEnd
-      ? `linear-gradient(to right, transparent, black ${RAIL_FADE}, black calc(100% - ${RAIL_FADE}), transparent)`
-      : railMask.hiddenStart
-        ? `linear-gradient(to right, transparent, black ${RAIL_FADE})`
-        : railMask.hiddenEnd
-          ? `linear-gradient(to right, black calc(100% - ${RAIL_FADE}), transparent)`
-          : undefined
-
   function handleCancel() {
     setLanguage(savedLanguage)
     setNotif(savedNotif)
@@ -162,12 +118,9 @@ export function ParametresShell({
   return (
     <div className="flex flex-col gap-5">
       <div className="flex w-full flex-col gap-8 lg:flex-row">
-        <nav
-          ref={railRef}
-          aria-label={t('parametres.title', lang)}
-          className="flex shrink-0 gap-1 overflow-x-auto lg:w-60 lg:flex-col lg:overflow-visible"
-          style={railMaskImage ? { maskImage: railMaskImage, WebkitMaskImage: railMaskImage } : undefined}
-        >
+        {/* Sub-tab rail. Desktop: a 240 column. Mobile (Figma 1488:59777): the four Sub-Tab Items STACK, each full width (311×40,
+            gap 4) — not a horizontal scroller, so the old edge-fade workaround for a clipped fourth tab is gone. */}
+        <nav aria-label={t('parametres.title', lang)} className="flex w-full shrink-0 flex-col gap-1 lg:w-60">
           {TABS.map(({ key, icon: Icon, labelKey }) => {
             const active = key === activeTab
             return (
@@ -177,7 +130,7 @@ export function ParametresShell({
                 onClick={() => setActiveTab(key)}
                 aria-current={active ? 'true' : undefined}
                 className={cn(
-                  'flex h-10 shrink-0 items-center overflow-hidden rounded-md',
+                  'flex h-10 w-full shrink-0 items-center overflow-hidden rounded-md',
                   active && 'bg-brand-blue-50',
                   FOCUS_RING,
                 )}
