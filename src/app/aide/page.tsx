@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { ChevronRight } from 'lucide-react'
+import { ChevronRight, MessageCircle } from 'lucide-react'
 import { redirect } from 'next/navigation'
 import { AppShell } from '@/components/shell/AppShell'
 import { AideCenter } from '@/components/aide/AideCenter'
@@ -50,7 +50,19 @@ export default async function AidePage() {
             <ChevronRight className="size-3.5 rtl:rotate-180" aria-hidden="true" />
             <span aria-current="page">{t('aide.title', lang)}</span>
           </nav>
-          <h1 className="text-[32px] font-bold leading-[38px] text-text-primary">{t('aide.title', lang)}</h1>
+          <div className="flex items-center justify-between gap-4">
+            <h1 className="text-[32px] font-bold leading-[38px] text-text-primary">{t('aide.title', lang)}</h1>
+            {/* Founder ruling 6 (PR #227): below `lg` the contact panel is the LAST thing on the page, so a user who
+                cannot find an answer scrolls the whole list to learn they can write to us. This jumps to it. Hidden
+                from `lg` up, where the panel already sits beside the list. */}
+            <a
+              href="#aide-contact"
+              className={`-my-3 inline-flex shrink-0 items-center gap-1.5 rounded py-3 text-body-sm font-medium text-brand-blue-600 hover:underline lg:hidden ${FOCUS_RING}`}
+            >
+              <MessageCircle className="size-4" aria-hidden="true" />
+              {t('aide.writeUs', lang)}
+            </a>
+          </div>
           <p className="text-sm text-text-secondary">{t('aide.subtitle', lang)}</p>
         </div>
 

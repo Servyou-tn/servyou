@@ -10,6 +10,7 @@ import { FOCUS_RING } from '@/components/layout/styles'
 import type { ServiceDetailData, DeliveryMode } from '@/lib/marche/service-detail'
 import { skillLabel } from '@/lib/freelance/service-draft'
 import { formatServicePrice, servicePriceLabel } from '@/lib/freelance/service-price'
+import { ReportListingModal } from '@/components/report/ReportListingModal'
 
 // D2 — service detail. Measured against Figma 666:55479 (1440) and 668:55920 (375).
 //
@@ -50,10 +51,12 @@ export function ServiceDetail({
   service,
   related,
   lang,
+  isLoggedIn,
 }: {
   service: ServiceDetailData
   related: ServiceListing[]
   lang: Lang
+  isLoggedIn: boolean
 }) {
   const price =
     service.startingPrice != null
@@ -237,7 +240,11 @@ export function ServiceDetail({
         </div>
       </Section>
 
-      <p className="text-body-sm text-text-muted">{t('serviceDetail.report', lang)}</p>
+      {/* « Signaler ce service » — the D1 report modal (563:39705) reused for services; logged-out visitors are
+          sent to sign in first. */}
+      <div>
+        <ReportListingModal kind="service" targetId={service.id} targetName={service.title} isLoggedIn={isLoggedIn} />
+      </div>
     </div>
   )
 }
