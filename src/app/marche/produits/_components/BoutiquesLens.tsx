@@ -7,7 +7,7 @@ import { StorefrontIcon } from '@/components/marche/icons'
 import { FOCUS_RING } from '@/components/layout/styles'
 import { getShopCities, getShopFilterCategories } from '@/lib/marche/shop-filters'
 import { getFavoritedIds } from '@/lib/marche/favorite-state'
-import { parseSearchParams } from '@/lib/search/search-params'
+import { ilikePattern, parseSearchParams } from '@/lib/search/search-params'
 import { parseShopSort, searchShops } from '@/lib/search/search-shops'
 import { settle } from '@/lib/supabase/query-error'
 import { t, type Lang } from '@/lib/i18n'
@@ -33,8 +33,11 @@ export async function BoutiquesLens({
   topBarUser: TopBarUser | null
 }) {
   const parsed = parseSearchParams(sp)
+  // A query made only of characters the search strips (`%`, `_`, `*`, brackets…) filters nothing, so it must not look like a filter
+  // either (no « %% » chip, no « Aucune boutique ne correspond »): normalise it away once, here.
+  const q = ilikePattern(parsed.q) ? parsed.q.trim() : ''
   const params = {
-    q: parsed.q,
+    q,
     categorie: parsed.categorie,
     ville: parsed.ville,
     tri: parseShopSort(sp.tri),
@@ -61,7 +64,10 @@ export async function BoutiquesLens({
 
           <ProduitsLensToggle lang={lang} active="boutiques" />
 
+          {/* key: the bar keeps the typed text in local state; when the q chip / « Tout effacer » clears `q` in the URL the input must
+              follow, so a new q remounts the bar. */}
           <BoutiquesFilterBar
+            key={params.q}
             categories={categories}
             cities={cities}
             selectedCategorie={params.categorie}

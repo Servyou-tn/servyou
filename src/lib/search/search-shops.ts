@@ -57,7 +57,8 @@ export async function searchShops(params: ShopSearchParams, perPage: number = SH
   function build(head: boolean) {
     let q = supabase
       .from('shops')
-      .select(select, head ? { count: 'exact', head: true } : { count: 'exact' })
+      // The page query needs no count of its own (the head query above supplies it): two count(*) per load, joins included, was waste.
+      .select(select, head ? { count: 'exact', head: true } : undefined)
       .is('admin_hidden_at', null)
     if (pattern) q = q.ilike('name', pattern)
     if (params.ville) q = q.eq('city', params.ville)

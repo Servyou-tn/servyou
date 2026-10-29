@@ -23,3 +23,11 @@
 ## Shops with no product yet are listed
 **What:** every public shop (`admin_hidden_at IS NULL`) appears, including one with zero active products (card shows « 0 produit », no thumbnails). Product-less storefronts add noise once there are many shops.
 **Trigger:** a count of empty shops that hurts discovery → add « at least one active product » to `searchShops`.
+
+## ShopCard's no-banner block changed on a shipped surface (/mes-favoris)
+**What:** `ShopCard` (built in B6) used D3's indigo→blue gradient when a shop has no banner; the B4 state frames (`banner=false`, 578:42216 / 42246) draw a flat `surface/sunken` block, so it now does too — and `/mes-favoris` › Boutiques shows the same card. D3's own hero still uses the gradient.
+**Trigger:** founder confirms the flat block for both surfaces (frame-driven); otherwise revert to a gradient prop on the Boutiques lens only.
+
+## Leftovers
+- `produits.lens.soon` (fr/ar) is no longer used by the products toggle (`services.lens.soon` still is) — delete it in the next i18n tidy.
+- The « Boutiques lens — DEFERRED with a Bientôt badge » entry in `docs/follow-ups.md` (stub file) is stale now that the lens is live.
