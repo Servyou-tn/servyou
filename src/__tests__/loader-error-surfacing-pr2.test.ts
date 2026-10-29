@@ -83,7 +83,7 @@ afterEach(() => log.mockRestore())
 describe('server actions: a failed read is the generic error, not « introuvable »', () => {
   it('createDispute → dispute.error_generic + one report; a junk id stays « not eligible », quietly', async () => {
     h.results.orders = fail(OUTAGE)
-    expect(await createDispute('o1', 'damaged', '')).toEqual({ success: false, error: 'dispute.error_generic' })
+    expect(await createDispute('00000000-0000-4000-8000-000000000001', 'damaged', '')).toEqual({ success: false, error: 'dispute.error_generic' })
     expect(h.captureException).toHaveBeenCalledTimes(1)
     expect(h.calls).not.toContain('disputes.insert')
 

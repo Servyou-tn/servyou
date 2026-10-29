@@ -26,6 +26,8 @@ const h = vi.hoisted(() => {
     user: null as { id: string } | null,
     ownedShopsResult: { data: [{ id: OWN_SHOP }] as { id: string }[], error: null as Err },
     collisionResult: { data: null as { id: string } | null, error: null as Err },
+    // The candidate's stored name; undefined = the same text as the submitted name.
+    collisionName: undefined as string | undefined,
     updateResult: { error: null as Err },
   }
   const calls = {
@@ -44,8 +46,11 @@ const h = vi.hoisted(() => {
       if (col === 'owner_id') calls.resolveOwnerFilter.push(v)
       return b
     })
+    // The name pre-check is the builder that saw .ilike(); it now ends in .limit() (exact match, audit pass 2).
+    let isNameCheck = false
     b.ilike = vi.fn((_c: string, v: string) => {
       calls.ilikeName.push(v)
+      isNameCheck = true
       return b
     })
     b.neq = vi.fn((_c: string, v: string) => {
@@ -53,7 +58,12 @@ const h = vi.hoisted(() => {
       return b
     })
     b.order = vi.fn(() => b)
-    b.limit = vi.fn(() => Promise.resolve(state.ownedShopsResult))
+    b.limit = vi.fn(() => {
+      if (!isNameCheck) return Promise.resolve(state.ownedShopsResult)
+      const { data, error } = state.collisionResult
+      // A candidate row the database returned for the pattern; the action keeps it only on an exact name match.
+      return Promise.resolve({ data: data ? [{ id: data.id, name: state.collisionName ?? calls.ilikeName.at(-1) }] : [], error })
+    })
     b.maybeSingle = vi.fn(() => Promise.resolve(state.collisionResult))
     b.update = vi.fn((payload: Record<string, unknown>) => {
       calls.updatePayloads.push(payload)
@@ -96,6 +106,7 @@ beforeEach(() => {
   h.state.user = { id: VALID_USER }
   h.state.ownedShopsResult = { data: [{ id: OWN_SHOP }], error: null }
   h.state.collisionResult = { data: null, error: null }
+  h.state.collisionName = undefined
   h.state.updateResult = { error: null }
   h.calls.ilikeName.length = 0
   h.calls.neqId.length = 0
@@ -122,6 +133,21 @@ describe('updateShopAction — self-collision (the case this PR exists to fix)',
     const res = await updateShopAction(okInput({ name: 'Nom Pris' }))
     expect(res).toEqual({ ok: false, error: 'shop.create.error.name_taken', field: 'name' })
     expect(h.calls.updatePayloads).toHaveLength(0)
+  })
+
+  it('a name with SQL wildcards is matched exactly: `_` is escaped, and a candidate with another name is not a collision', async () => {
+    h.state.collisionResult = { data: { id: OTHER_SHOP }, error: null }
+    h.state.collisionName = 'A' // what `_` would have matched as a pattern
+    const res = await updateShopAction(okInput({ name: '_' }))
+    expect(h.calls.ilikeName).toEqual(['\\_']) // the escaped pattern: backslash + underscore
+    expect(res).toEqual({ ok: true })
+  })
+
+  it('the exact match is case-insensitive', async () => {
+    h.state.collisionResult = { data: { id: OTHER_SHOP }, error: null }
+    h.state.collisionName = 'nom pris'
+    const res = await updateShopAction(okInput({ name: 'Nom Pris' }))
+    expect(res).toEqual({ ok: false, error: 'shop.create.error.name_taken', field: 'name' })
   })
 
   it('still handles a 23505 race (two concurrent saves to the same new name)', async () => {

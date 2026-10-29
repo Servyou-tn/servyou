@@ -1,6 +1,7 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
+import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
 import { isNoRowLike, reportQueryError } from '@/lib/supabase/query-error'
 import type { DisputeReason, DisputeCreatedByRole } from '@/lib/types/dispute'
@@ -20,18 +21,33 @@ const VALID_REASONS: DisputeReason[] = [
 // translates those DB outcomes into user-facing i18n error keys.
 //
 // Pure-validation returns happen BEFORE createClient() so a malformed request never
-// touches the database.
+// touches the database. The three arguments arrive from the client: Zod checks their TYPES too (a
+// non-string used to throw on .trim()), the order id's shape, and caps the description (pre-launch audit pass 2).
+const DISPUTE_DESCRIPTION_MAX = 2000
+
+const CreateDisputeInput = z.object({
+  orderId: z.string().uuid(),
+  reason: z.string(),
+  description: z.string().max(DISPUTE_DESCRIPTION_MAX),
+})
+
 export async function createDispute(
   orderId: string,
   reason: string,
   description: string,
 ): Promise<CreateDisputeResult> {
+  const parsed = CreateDisputeInput.safeParse({ orderId, reason, description })
+  if (!parsed.success) {
+    // A malformed id is « not eligible » (same answer as a non-party's order); a bad description is generic.
+    const field = parsed.error.issues[0]?.path[0]
+    return { success: false, error: field === 'orderId' ? 'dispute.error_order_not_eligible' : 'dispute.error_generic' }
+  }
   // 1. Validate reason + description (reason='other' needs a non-empty description so
   //    the admin has context; the DB CHECK disputes_other_requires_description backs it).
-  if (!VALID_REASONS.includes(reason as DisputeReason)) {
+  if (!VALID_REASONS.includes(parsed.data.reason as DisputeReason)) {
     return { success: false, error: 'dispute.error_reason_required' }
   }
-  const desc = description.trim()
+  const desc = parsed.data.description.trim()
   if (reason === 'other' && desc.length === 0) {
     return { success: false, error: 'dispute.error_description_required' }
   }

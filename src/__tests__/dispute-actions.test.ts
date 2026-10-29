@@ -57,9 +57,28 @@ beforeEach(() => {
   vi.clearAllMocks()
 })
 
+describe('createDispute — input shape (Zod, audit pass 2)', () => {
+  it('a non-uuid order id answers « not eligible » without touching the database', async () => {
+    expect(await createDispute('o1', 'damaged', '')).toEqual({ success: false, error: 'dispute.error_order_not_eligible' })
+    expect(h.from).not.toHaveBeenCalled()
+  })
+
+  it('a non-string description (direct call) answers the generic error instead of throwing on .trim()', async () => {
+    const res = await createDispute('00000000-0000-4000-8000-000000000001', 'other', 42 as unknown as string)
+    expect(res).toEqual({ success: false, error: 'dispute.error_generic' })
+    expect(h.from).not.toHaveBeenCalled()
+  })
+
+  it('a description over 2000 characters is refused before the database', async () => {
+    const res = await createDispute('00000000-0000-4000-8000-000000000001', 'other', 'x'.repeat(2001))
+    expect(res).toEqual({ success: false, error: 'dispute.error_generic' })
+    expect(h.from).not.toHaveBeenCalled()
+  })
+})
+
 describe('createDispute — reason validation', () => {
   it('rejects an unknown reason without touching the database', async () => {
-    const res = await createDispute('o1', 'banana', '')
+    const res = await createDispute('00000000-0000-4000-8000-000000000001', 'banana', '')
     expect(res).toEqual({ success: false, error: 'dispute.error_reason_required' })
     expect(h.from).not.toHaveBeenCalled()
   })
@@ -67,7 +86,7 @@ describe('createDispute — reason validation', () => {
   it('accepts every valid reason (description supplied for "other")', async () => {
     const reasons = ['not_delivered', 'wrong_item', 'damaged', 'payment_refused', 'buyer_unreachable', 'other']
     for (const reason of reasons) {
-      const res = await createDispute('o1', reason, reason === 'other' ? 'Détails du litige.' : '')
+      const res = await createDispute('00000000-0000-4000-8000-000000000001', reason, reason === 'other' ? 'Détails du litige.' : '')
       expect(res).toEqual({ success: true, disputeId: 'd_new' })
     }
   })
@@ -75,19 +94,19 @@ describe('createDispute — reason validation', () => {
 
 describe('createDispute — description required for "other"', () => {
   it('rejects an empty description without touching the database', async () => {
-    const res = await createDispute('o1', 'other', '')
+    const res = await createDispute('00000000-0000-4000-8000-000000000001', 'other', '')
     expect(res).toEqual({ success: false, error: 'dispute.error_description_required' })
     expect(h.from).not.toHaveBeenCalled()
   })
 
   it('rejects a whitespace-only description', async () => {
-    const res = await createDispute('o1', 'other', '   \n\t ')
+    const res = await createDispute('00000000-0000-4000-8000-000000000001', 'other', '   \n\t ')
     expect(res).toEqual({ success: false, error: 'dispute.error_description_required' })
     expect(h.from).not.toHaveBeenCalled()
   })
 
   it('accepts a non-empty description', async () => {
-    const res = await createDispute('o1', 'other', 'Le vendeur ne répond pas.')
+    const res = await createDispute('00000000-0000-4000-8000-000000000001', 'other', 'Le vendeur ne répond pas.')
     expect(res).toEqual({ success: true, disputeId: 'd_new' })
   })
 })
@@ -95,21 +114,21 @@ describe('createDispute — description required for "other"', () => {
 describe('createDispute — role inference', () => {
   it('infers buyer when auth.uid matches order.buyer_id', async () => {
     h.state.user = { id: 'u_buyer' }
-    const res = await createDispute('o1', 'not_delivered', '')
+    const res = await createDispute('00000000-0000-4000-8000-000000000001', 'not_delivered', '')
     expect(res).toEqual({ success: true, disputeId: 'd_new' })
-    expect(h.revalidatePath).toHaveBeenCalledWith('/demande/confirmation/o1')
+    expect(h.revalidatePath).toHaveBeenCalledWith('/demande/confirmation/00000000-0000-4000-8000-000000000001')
   })
 
   it('infers seller when auth.uid matches order.seller_id', async () => {
     h.state.user = { id: 'u_seller' }
-    const res = await createDispute('o1', 'buyer_unreachable', '')
+    const res = await createDispute('00000000-0000-4000-8000-000000000001', 'buyer_unreachable', '')
     expect(res).toEqual({ success: true, disputeId: 'd_new' })
     expect(h.revalidatePath).toHaveBeenCalledWith('/ma-boutique/commandes')
   })
 
   it('rejects a caller who is neither party, without inserting', async () => {
     h.state.user = { id: 'u_stranger' }
-    const res = await createDispute('o1', 'not_delivered', '')
+    const res = await createDispute('00000000-0000-4000-8000-000000000001', 'not_delivered', '')
     expect(res).toEqual({ success: false, error: 'dispute.error_not_authorized' })
     expect(insertFn).not.toHaveBeenCalled()
   })
@@ -118,14 +137,14 @@ describe('createDispute — role inference', () => {
 describe('createDispute — order eligibility', () => {
   it('rejects when the order is still pending, without inserting', async () => {
     h.state.order = { buyer_id: 'u_buyer', seller_id: 'u_seller', status: 'pending', order_type: 'product' }
-    const res = await createDispute('o1', 'not_delivered', '')
+    const res = await createDispute('00000000-0000-4000-8000-000000000001', 'not_delivered', '')
     expect(res).toEqual({ success: false, error: 'dispute.error_order_not_eligible' })
     expect(insertFn).not.toHaveBeenCalled()
   })
 
   it('rejects when the order is not found / not readable', async () => {
     h.state.order = null
-    const res = await createDispute('o1', 'not_delivered', '')
+    const res = await createDispute('00000000-0000-4000-8000-000000000001', 'not_delivered', '')
     expect(res).toEqual({ success: false, error: 'dispute.error_order_not_eligible' })
     expect(insertFn).not.toHaveBeenCalled()
   })
@@ -134,19 +153,19 @@ describe('createDispute — order eligibility', () => {
 describe('createDispute — insert outcomes', () => {
   it('maps a unique violation (23505) to already_active', async () => {
     h.state.insertResult = { data: null, error: { code: '23505', message: 'duplicate key' } }
-    const res = await createDispute('o1', 'damaged', '')
+    const res = await createDispute('00000000-0000-4000-8000-000000000001', 'damaged', '')
     expect(res).toEqual({ success: false, error: 'dispute.error_already_active' })
   })
 
   it('maps any other insert error to generic', async () => {
     h.state.insertResult = { data: null, error: { code: '42501', message: 'rls' } }
-    const res = await createDispute('o1', 'damaged', '')
+    const res = await createDispute('00000000-0000-4000-8000-000000000001', 'damaged', '')
     expect(res).toEqual({ success: false, error: 'dispute.error_generic' })
   })
 
   it('returns the new dispute id on success', async () => {
     h.state.insertResult = { data: [{ id: 'd_123' }], error: null }
-    const res = await createDispute('o1', 'wrong_item', '')
+    const res = await createDispute('00000000-0000-4000-8000-000000000001', 'wrong_item', '')
     expect(res).toEqual({ success: true, disputeId: 'd_123' })
   })
 })
