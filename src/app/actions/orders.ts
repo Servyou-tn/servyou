@@ -233,6 +233,12 @@ export async function cancelOrderAction(input: unknown): Promise<ActionResult> {
   const status = order.status as OrderStatus
   const orderType = order.order_type as OrderType
 
+  // Founder ruling (E4 / #233): a BUYER cannot cancel a SERVICE order — the freelancer is the only party who can decline it.
+  // The UI already hides the control; this closes the same gap server-side. The matching database rule is a separate DB PR.
+  if (role === 'buyer' && orderType === 'service') {
+    return { ok: false, error: t('buyerOrder.error_service_cancel', lang) }
+  }
+
   if (!isCancellable(status)) {
     return { ok: false, error: t('seller.orders.error_not_cancellable', lang) }
   }

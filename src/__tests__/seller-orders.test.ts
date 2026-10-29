@@ -147,6 +147,24 @@ describe('cancelOrderAction', () => {
     expect(state.updates[0]).toMatchObject({ cancelled_by: 'buyer' })
   })
 
+  it('REFUSES a buyer cancelling a SERVICE order, with a friendly error and no write (founder ruling, #233)', async () => {
+    state.user = { id: BUYER }
+    state.order = { ...state.order!, order_type: 'service' }
+    const { cancelOrderAction } = await import('@/app/actions/orders')
+    const res = await cancelOrderAction({ orderId: ID })
+    expect(res.ok).toBe(false)
+    expect(res).toMatchObject({ error: expect.stringContaining('service') })
+    expect(state.updates).toEqual([])
+  })
+
+  it('still lets the SELLER cancel a service order (H8)', async () => {
+    state.order = { ...state.order!, order_type: 'service' }
+    const { cancelOrderAction } = await import('@/app/actions/orders')
+    const res = await cancelOrderAction({ orderId: ID })
+    expect(res.ok).toBe(true)
+    expect(state.updates[0]).toMatchObject({ cancelled_by: 'seller' })
+  })
+
   it('REFUSES post-pivot cancellation with no reason, before touching the DB', async () => {
     state.order = { ...state.order!, status: 'dispatched' }
     const { cancelOrderAction } = await import('@/app/actions/orders')
