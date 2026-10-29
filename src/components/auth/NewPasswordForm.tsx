@@ -13,11 +13,25 @@ import { AuthShell } from '@/components/auth/AuthShell'
 import { display, primaryBtn } from '@/components/auth/field-styles'
 
 // Initial state is decided server-side (?error → invalid; else checking). The
-// client listener flips to the reset form once Supabase establishes a recovery
-// session (PASSWORD_RECOVERY event, or any session present). If no session arrives
-// within 2s, the link is treated as invalid/expired.
+// client listener flips to the reset form only for a RECOVERY session: the
+// PASSWORD_RECOVERY event the reset link's code exchange fires, or a reload of this
+// tab after it (RECOVERY_FLAG). An ordinary signed-in session no longer gets a
+// password form without re-authentication (pre-launch audit pass 3) — that path is
+// Mon compte › Sécurité (changePasswordAction re-checks the current password). If no
+// recovery session arrives within 2s, the link is treated as invalid/expired.
+// UI gate only: the server-side guard is GoTrue's « Secure password change » setting.
 export type NewPasswordInitialView = 'checking' | 'invalid'
 type View = NewPasswordInitialView | 'form'
+
+const RECOVERY_FLAG = 'servyou:password-recovery'
+
+function readRecoveryFlag(): string | null {
+  try {
+    return sessionStorage.getItem(RECOVERY_FLAG)
+  } catch {
+    return null
+  }
+}
 
 export function NewPasswordForm({ initialView }: { initialView: NewPasswordInitialView }) {
   const supabase = createClient()
@@ -35,7 +49,17 @@ export function NewPasswordForm({ initialView }: { initialView: NewPasswordIniti
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'PASSWORD_RECOVERY' || session) setView('form')
+      if (!session) return
+      if (event === 'PASSWORD_RECOVERY') {
+        try {
+          sessionStorage.setItem(RECOVERY_FLAG, session.user.id)
+        } catch {
+          // storage disabled — this tab just cannot survive a reload of the form
+        }
+        setView('form')
+      } else if (readRecoveryFlag() === session.user.id) {
+        setView('form')
+      }
     })
     // No recovery session within 2s → the link is invalid/expired (State B).
     const timer = setTimeout(() => setView((v) => (v === 'checking' ? 'invalid' : v)), 2000)
@@ -74,8 +98,16 @@ export function NewPasswordForm({ initialView }: { initialView: NewPasswordIniti
         setLoading(false)
         return
       }
-      // Drop the one-time recovery session, then send them to sign in fresh.
-      await supabase.auth.signOut()
+      try {
+        sessionStorage.removeItem(RECOVERY_FLAG)
+      } catch {
+        // storage disabled — nothing to clear
+      }
+      // Drop the one-time recovery session (global: other devices' refresh tokens too), then sign in fresh.
+      const { error: signOutError } = await supabase.auth.signOut()
+      if (signOutError) {
+        console.error('[NewPasswordForm] signOut after reset failed:', signOutError.message, signOutError.code, signOutError.status)
+      }
       router.push('/connexion?passwordReset=success')
     } catch (err) {
       console.error('[NewPasswordForm] unexpected error:', err instanceof Error ? err.message : String(err))
