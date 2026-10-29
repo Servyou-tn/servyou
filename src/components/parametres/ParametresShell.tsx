@@ -57,6 +57,13 @@ export function ParametresShell({
 
   const [notif, setNotif] = useState<NotifPrefs | null>(notifPrefs)
   const [savedNotif, setSavedNotif] = useState<NotifPrefs | null>(notifPrefs)
+  // « Réessayer » on a failed read is router.refresh(): the shell stays mounted, and useState ignores a later prop. When the
+  // server hands over prefs after we started with none, adopt them (state adjusted during render — no effect, no remount that
+  // would drop the active tab or an unsaved language edit).
+  if (notif === null && savedNotif === null && notifPrefs !== null) {
+    setNotif(notifPrefs)
+    setSavedNotif(notifPrefs)
+  }
 
   const languageDirty = language !== savedLanguage
   const notifChanged: NotifKey[] = notif && savedNotif ? changedKeys(role, notif, savedNotif) : []
