@@ -966,6 +966,26 @@ both on 2026-10-28.
       A row filed in someone else's name skips the count and RLS refuses it (no quota leak). No client EXECUTE.
     - The recorded statement (MD5 above) carries a shorter header comment than this file; the executable SQL
       is identical (comment-stripped diff, 2026-10-29). 1 existing row (resolved), nothing rewritten.
+100. **20261029201248_orders_rate_limit** (`befba692`) — orders: 5 pending per buyer per seller, 20 per buyer per
+    24 h. Pre-launch security audit pass 1 finding 2.
+    - `enforce_order_rate_limit` (`trg_limit_orders`, BEFORE INSERT, row) refuses 23514 with hint
+      `order_cap_seller` / `order_cap_daily` (checked in that order). It runs after
+      `trg_enforce_order_insert_integrity` (trigger name order), so it counts the item's real seller. A
+      client-supplied `seller_id` cannot dodge it.
+    - No grant change: migration 54's trigger already pins `status` / `created_at` / `seller_id`.
+    - Service role bypass; a spoofed `buyer_id` is not counted and is left to RLS; per-buyer advisory lock.
+    - App: `demander.error.cap_*` (FR + AR). 16 existing orders, nothing rewritten.
+101. **20261029201254_job_posts_cap** (`e33147c5`) — job_posts: 5 open per consumer, 10 created per 24 h.
+    Pre-launch security audit pass 1 finding 3.
+    - `enforce_job_post_cap` (`trg_limit_job_posts`, BEFORE INSERT OR UPDATE OF status, row) runs on an insert and
+      on a move to `open` (« Rouvrir »). It refuses 23514 with hint `job_post_cap_open`; an insert can also get
+      `job_post_cap_daily`.
+    - « Open » = status `open` within the 30-day life. Moderated posts count (decision 2, approved): the owner can
+      still soft-delete one.
+    - Service role bypass; a spoofed `consumer_id` is left to RLS; per-consumer advisory lock.
+    - App: `annonce.error.cap_*` (FR + AR). 8 existing posts, nothing rewritten.
+    - For both 100 and 101: the recorded statements (MD5 above) carry shorter header comments. The executable SQL
+      is identical (comment-stripped MD5 match, 2026-10-29).
 
 ## Rollback paths
 

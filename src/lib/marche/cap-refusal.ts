@@ -1,5 +1,5 @@
-// The anti-abuse caps on orders and job posts (db/migrations/PENDING_orders_rate_limit.sql, PENDING_job_posts_cap.sql)
-// raise 23514 with a stable hint. These map that hint to the i18n key the action returns; anything else stays the
+// The anti-abuse caps on orders and job posts (migrations 100 / 101: db/migrations/20261029201248_orders_rate_limit.sql,
+// 20261029201254_job_posts_cap.sql) raise 23514 with a stable hint. These map that hint to the i18n key the action returns; anything else stays the
 // action's generic error. Matched on code AND hint, so a CHECK violation (23514, no hint) is never mistaken for a cap.
 
 type DbError = { code?: string | null; hint?: string | null }

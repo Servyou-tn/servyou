@@ -1,7 +1,7 @@
 /**
- * Live-DB proof for db/migrations/PENDING_orders_rate_limit.sql and PENDING_job_posts_cap.sql (architect brief
- * 2026-10-29 steps 2 + 3; pre-launch security audit pass 1 findings 2 + 3). Written while both were PENDING: red
- * before apply, all green after.
+ * Live-DB proof for db/migrations/20261029201248_orders_rate_limit.sql (migration 100) and 20261029201254_job_posts_cap.sql (migration 101) (architect brief
+ * 2026-10-29 steps 2 + 3; pre-launch security audit pass 1 findings 2 + 3). Written while both were PENDING: 8 red /
+ * 9 green before apply, all green after.
  *
  *   orders    — 5 PENDING orders per buyer per seller (23514 order_cap_seller; another seller is a different key;
  *               an order leaving 'pending' frees the slot); 20 orders per buyer per rolling 24 h, every status

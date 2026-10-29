@@ -1,7 +1,7 @@
 -- job_posts: at most 5 OPEN posts per consumer at once, and at most 10 posts created per consumer per rolling 24 h.
 -- Architect brief (2026-10-29) step 3, from the pre-launch security audit pass 1 finding 3
 -- (docs/audits/prelaunch-security-audit-2026-10-29.md: « no per-user cap on job posts »). Same pattern as
--- migration 99 and PENDING_orders_rate_limit.sql. Standards-reference Section 3 A06:2025.
+-- migration 99 and 20261029201248_orders_rate_limit.sql (migration 100). Standards-reference Section 3 A06:2025.
 --
 -- Column check (verified live 2026-10-29):
 --   * INSERT is column-granted (migration 67, M-A): budget_max, budget_min, category_id, city, consumer_id, deadline,
