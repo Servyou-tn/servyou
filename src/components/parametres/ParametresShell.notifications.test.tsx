@@ -22,10 +22,10 @@ afterEach(cleanup)
 
 const profile = { id: 'u1', full_name: 'Test', email: 't@example.com', phone: null, city: null, language: 'fr' } as unknown as CurrentProfile
 
-function shell(notifPrefs: typeof DEFAULT_NOTIF_PREFS | null) {
+function shell(notifPrefs: typeof DEFAULT_NOTIF_PREFS | null, role: 'shop_owner' | 'freelancer' | null = 'shop_owner') {
   return (
     <LangProvider lang="fr">
-      <ParametresShell profile={profile} role="shop_owner" notifPrefs={notifPrefs} />
+      <ParametresShell profile={profile} role={role} notifPrefs={notifPrefs} />
     </LangProvider>
   )
 }
@@ -50,5 +50,16 @@ describe('ParametresShell — Notifications tab', () => {
     render(shell(DEFAULT_NOTIF_PREFS))
     expect(screen.getByRole('switch', { name: t('parametres.notifications.email_low_stock.label', 'fr') })).toHaveAttribute('aria-checked', 'false')
     expect(screen.getByRole('switch', { name: t('parametres.notifications.email_new_orders.shop_owner.label', 'fr') })).toHaveAttribute('aria-checked', 'true')
+  })
+  it('a freelancer sees the missions-matching row (ON by default); a shop owner and a buyer do not', () => {
+    const name = t('parametres.notifications.email_missions_matching.label', 'fr')
+    render(shell(DEFAULT_NOTIF_PREFS, 'freelancer'))
+    expect(screen.getByRole('switch', { name })).toHaveAttribute('aria-checked', 'true')
+    cleanup()
+    render(shell(DEFAULT_NOTIF_PREFS, 'shop_owner'))
+    expect(screen.queryByRole('switch', { name })).toBeNull()
+    cleanup()
+    render(shell(DEFAULT_NOTIF_PREFS, null))
+    expect(screen.queryByRole('switch', { name })).toBeNull()
   })
 })

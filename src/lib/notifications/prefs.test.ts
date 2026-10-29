@@ -23,9 +23,21 @@ describe('rowsForRole — which e-mail rows each role sees (Figma 558:38878 / 42
     ])
   })
 
-  it('freelancer has no low-stock row (nothing to restock)', () => {
-    expect(names('freelancer')).toEqual(['email_new_orders', 'email_proposals', 'email_reviews', 'security', 'email_newsletter'])
+  it('freelancer: no low-stock row (nothing to restock) but the missions-matching row, between security and the newsletter', () => {
+    expect(names('freelancer')).toEqual([
+      'email_new_orders',
+      'email_proposals',
+      'email_reviews',
+      'security',
+      'email_missions_matching',
+      'email_newsletter',
+    ])
     expect(keysForRole('freelancer')).not.toContain('email_low_stock')
+  })
+
+  it('missions-matching is a FREELANCER row only (a shop or a buyer receives no mission digest)', () => {
+    expect(keysForRole('shop_owner')).not.toContain('email_missions_matching')
+    expect(keysForRole(null)).not.toContain('email_missions_matching')
   })
 
   it('a consumer only sees what can reach a buyer: proposals, security, newsletter', () => {
@@ -44,7 +56,13 @@ describe('withDefaults — no row (or a partial one) reads as the column default
   it('null / undefined → the table defaults (low stock and newsletter OFF)', () => {
     expect(withDefaults(null)).toEqual(DEFAULT_NOTIF_PREFS)
     expect(withDefaults(undefined)).toEqual(DEFAULT_NOTIF_PREFS)
-    expect(DEFAULT_NOTIF_PREFS).toMatchObject({ email_low_stock: false, email_newsletter: false, email_new_orders: true })
+    // migration 103: the missions digest is ON by default (the frame drew it off; the column default wins).
+    expect(DEFAULT_NOTIF_PREFS).toMatchObject({
+      email_low_stock: false,
+      email_newsletter: false,
+      email_new_orders: true,
+      email_missions_matching: true,
+    })
   })
 
   it('keeps stored booleans and ignores anything that is not one', () => {
@@ -75,8 +93,9 @@ describe('changedKeys — only the role’s visible rows count towards « unsave
 })
 
 describe('NotifPrefsInput — the server-side shape', () => {
-  it('accepts any subset of the five booleans', () => {
+  it('accepts any subset of the six booleans', () => {
     expect(NotifPrefsInput.safeParse({ email_newsletter: true }).success).toBe(true)
+    expect(NotifPrefsInput.safeParse({ email_missions_matching: false }).success).toBe(true)
     expect(NotifPrefsInput.safeParse({}).success).toBe(true)
   })
   it('rejects unknown keys (no profile_id smuggling) and non-booleans', () => {

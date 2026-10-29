@@ -3816,6 +3816,8 @@ export const fr: Record<string, string> = {
   'parametres.notifications.email_reviews.freelancer.desc':      "Recevez un e-mail quand un client laisse un avis sur votre profil. Les avis restent visibles publiquement dans tous les cas.",
   'parametres.notifications.security.label':                     "Alertes de sécurité",
   'parametres.notifications.security.desc':                      "Connexions inhabituelles et modifications de mot de passe. Toujours activé pour la sécurité de votre compte, ne peut être désactivé.",
+  'parametres.notifications.email_missions_matching.label':      "Missions correspondant à mes compétences",
+  'parametres.notifications.email_missions_matching.desc':       "Recevez une sélection hebdomadaire de nouvelles missions dans votre boîte e-mail. N’affecte pas les résultats de recherche sur la plateforme.",
   'parametres.notifications.email_low_stock.label':              "Alerte stock faible",
   'parametres.notifications.email_low_stock.desc':               "Recevez un e-mail quand le stock d’un produit devient faible ou en rupture, pour ne jamais vendre à découvert.",
   'parametres.notifications.email_newsletter.shop_owner.label':  "Newsletter et actualités Servyou",
