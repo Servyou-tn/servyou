@@ -92,10 +92,16 @@ describe('confirmReceiptAction', () => {
   })
 
   it('refuses an order that has not arrived yet (or is already terminal) — nothing written', async () => {
-    for (const status of ['pending', 'accepted', 'in_delivery', 'received', 'cancelled']) {
+    for (const status of ['pending', 'accepted', 'in_delivery', 'cancelled']) {
       h.order = { id: ID, buyer_id: 'buyer-1', status }
       expect(await confirmReceiptAction({ orderId: ID }), status).toEqual(GENERIC)
     }
+    expect(h.updates).toEqual([])
+  })
+
+  it('an order already received (double submit / stale tab) answers ok and writes nothing', async () => {
+    h.order = { id: ID, buyer_id: 'buyer-1', status: 'received' }
+    expect(await confirmReceiptAction({ orderId: ID })).toEqual({ ok: true })
     expect(h.updates).toEqual([])
   })
 

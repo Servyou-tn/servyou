@@ -311,6 +311,8 @@ export async function confirmReceiptAction(input: unknown): Promise<ActionResult
   }
   // Not found and not-yours collapse to one answer, as everywhere else in this file.
   if (!order || order.buyer_id !== user.id) return generic
+  // Already received (a double submit, a stale tab): the goal state holds — answer ok, write nothing.
+  if (order.status === 'received') return { ok: true }
   // The trigger refuses anything but 'arrived' too; answering here saves the round trip.
   if (order.status !== 'arrived') return generic
 

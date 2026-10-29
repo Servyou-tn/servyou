@@ -20,6 +20,7 @@ import type { MyServiceOrder } from '@/lib/marche/my-orders'
 const h = vi.hoisted(() => ({
   calls: [] as unknown[],
   result: { ok: true } as { ok: true } | { ok: false; error: string },
+  reject: false,
 }))
 
 vi.mock('next/navigation', () => ({ useRouter: () => ({ refresh: vi.fn(), push: vi.fn() }) }))
@@ -27,6 +28,7 @@ vi.mock('sonner', () => ({ toast: { error: vi.fn(), success: vi.fn() } }))
 vi.mock('@/app/actions/orders', () => ({
   confirmReceiptAction: async (input: unknown) => {
     h.calls.push(input)
+    if (h.reject) throw new Error('network')
     return h.result
   },
 }))
@@ -42,6 +44,7 @@ afterEach(() => {
   cleanup()
   h.calls = []
   h.result = { ok: true }
+  h.reject = false
 })
 
 const ORDER_ID = '11111111-1111-4111-8111-111111111111'
@@ -86,6 +89,21 @@ describe('ReceiptConfirmButton', () => {
     await user.click(screen.getByRole('button', { name: CONFIRM }))
     expect(await screen.findByText(t('common.receipt_confirm_error', 'fr'))).toBeInTheDocument()
     expect(h.calls).toEqual([{ orderId: ORDER_ID }])
+  })
+})
+
+describe('ReceiptConfirmButton — a rejected call', () => {
+  it('shows the error and stops the spinner (network drop / stale action id)', async () => {
+    const user = userEvent.setup()
+    h.reject = true
+    render(
+      <LangProvider lang="fr">
+        <ReceiptConfirmButton orderId={ORDER_ID} />
+      </LangProvider>,
+    )
+    await user.click(screen.getByRole('button', { name: CONFIRM }))
+    expect(await screen.findByText(t('common.receipt_confirm_error', 'fr'))).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: CONFIRM })).not.toBeDisabled()
   })
 })
 

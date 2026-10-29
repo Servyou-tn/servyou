@@ -35,7 +35,8 @@ export function ReceiptConfirmButton({ orderId, panel = false }: Props) {
   async function confirmReceipt() {
     setIsSubmitting(true)
     setError(null)
-    const result = await confirmReceiptAction({ orderId })
+    // A rejected call (network drop, a stale action id after a deploy) is a failure too — never a spinner forever.
+    const result = await confirmReceiptAction({ orderId }).catch(() => ({ ok: false as const }))
     if (!result.ok) {
       setError(t('common.receipt_confirm_error', lang))
       setIsSubmitting(false)

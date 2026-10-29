@@ -48,17 +48,26 @@ const SENSITIVE_FIELDS = [
 
 const REDACTED = '[REDACTED]'
 
-const VALUE_PATTERNS: RegExp[] = [
-  // Emails, including the %40-encoded form a URL carries.
-  /[\w.+-]+(?:@|%40)[\w-]+(?:\.[\w-]+)+/gi,
+// Every pattern is BOUNDED (no unbounded `+` before a literal): beforeSend runs synchronously on every error and
+// transaction, and an unbounded email pattern was quadratic — a 50k-character token / base64 run took ~7 s (review of
+// #242). No lookbehind either: Safari < 16.4 cannot parse it, and this module ships in the client entry chunk.
+// [pattern, replacement] — a `$1` keeps the boundary character a standalone-number pattern had to consume.
+const VALUE_PATTERNS: [RegExp, string][] = [
+  // Emails, including the %40-encoded form a URL carries. The last label must be letters, so `next@16.4.3` is kept.
+  [/[\w.+-]{1,64}(?:@|%40)(?:[\w-]{1,63}\.){1,8}[a-z]{2,24}\b/gi, REDACTED],
   // JWTs (header.payload.signature, base64url) and bearer tokens.
-  /\beyJ[\w-]{8,}\.[\w-]{8,}\.[\w-]{8,}/g,
-  /\bbearer\s+[\w.~+/=-]{16,}/gi,
-  // Tunisian phones: +216 / 00216 prefixes (any grouping), or a standalone 8-digit number starting 2-9 — not when
-  // glued to letters, digits or a hyphen, so uuid segments and ids are left alone.
-  /(?:\+|00)216[\s.-]?\d{2}[\s.-]?\d{3}[\s.-]?\d{3}/g,
-  /(?<![\w-])[2-9]\d{7}(?![\w-])/g,
+  [/\beyJ[\w-]{8,4096}\.[\w-]{8,4096}\.[\w-]{8,4096}/g, REDACTED],
+  [/\bbearer\s+[\w.~+/=-]{16,4096}/gi, REDACTED],
+  // Tunisian phones: +216 / 00216 prefixes (any grouping).
+  [/(?:\+|00)216[\s.-]?\d{2}[\s.-]?\d{3}[\s.-]?\d{3}/g, REDACTED],
+  // A standalone 8-digit number starting 2-9, bare or grouped « 98 765 432 » / « 98-765-432 » / « 98.765.432 » — not
+  // glued to letters, digits, a hyphen or a dot, so uuid segments, ids and decimals are left alone.
+  [/(^|[^\w.-])([2-9]\d(?:[\s.-]?\d{3}){2})(?![\w-]|\.\d)/g, `$1${REDACTED}`],
 ]
+
+// Strings longer than this are cut before any pattern runs: an error report never needs more, and it bounds the
+// work beforeSend can do on one field.
+export const MAX_SCRUBBED_STRING = 20_000
 
 const normaliseKey = (k: string) => k.toLowerCase().replace(/[_-]/g, '')
 const isSensitiveKey = (k: string) => {
@@ -67,7 +76,23 @@ const isSensitiveKey = (k: string) => {
 }
 
 export function redactString(value: string): string {
-  return VALUE_PATTERNS.reduce((s, pattern) => s.replace(pattern, REDACTED), value)
+  const bounded = value.length > MAX_SCRUBBED_STRING ? `${value.slice(0, MAX_SCRUBBED_STRING)}…[TRUNCATED]` : value
+  return VALUE_PATTERNS.reduce((s, [pattern, replacement]) => s.replace(pattern, replacement), bounded)
+}
+
+// A raw string body that is JSON (a server-action payload) is parsed so its KEYS are redacted too, not just patterns.
+function redactBody(value: unknown): unknown {
+  if (typeof value === 'string') {
+    const trimmed = value.trimStart()
+    if ((trimmed.startsWith('{') || trimmed.startsWith('[')) && value.length <= MAX_SCRUBBED_STRING) {
+      try {
+        return JSON.stringify(redact(JSON.parse(value)))
+      } catch {
+        // not JSON after all — patterns only
+      }
+    }
+  }
+  return redact(value)
 }
 
 function redact(value: unknown): unknown {
@@ -94,9 +119,11 @@ function scrubHeaders(headers: Record<string, string>): Record<string, string> {
 
 function scrubBreadcrumb(crumb: Breadcrumb): Breadcrumb {
   if (crumb.category === 'console') {
+    // Only a string first argument is a label. Anything else (console.error(errObj)) is dropped, never the joined
+    // message: that would carry the same row values.
     const args = (crumb.data as { arguments?: unknown[] } | undefined)?.arguments
-    const label = Array.isArray(args) && typeof args[0] === 'string' ? args[0] : crumb.message
-    return { ...crumb, message: typeof label === 'string' ? redactString(label) : undefined, data: undefined }
+    const label = Array.isArray(args) && typeof args[0] === 'string' ? args[0] : undefined
+    return { ...crumb, message: label === undefined ? undefined : redactString(label), data: undefined }
   }
   return {
     ...crumb,
@@ -110,7 +137,8 @@ function scrubBreadcrumb(crumb: Breadcrumb): Breadcrumb {
 export function scrubPII<T extends Event>(event: T): T {
   const request = event.request
   if (request) {
-    if (request.data !== undefined) request.data = redact(request.data)
+    if (request.data !== undefined) request.data = redactBody(request.data)
+    if (request.env) delete request.env
     // Sentry v10 types cookies as Record<string,string>: delete rather than assign a marker string.
     if (request.cookies) delete request.cookies
     if (request.headers) request.headers = scrubHeaders(request.headers)
@@ -127,5 +155,12 @@ export function scrubPII<T extends Event>(event: T): T {
   if (event.extra) event.extra = redact(event.extra) as Record<string, unknown>
   if (event.contexts) event.contexts = redact(event.contexts) as typeof event.contexts
   if (event.tags) event.tags = redact(event.tags) as typeof event.tags
+  // Transactions: span descriptions / data carry URLs and query strings (outgoing Supabase REST calls, search text).
+  for (const span of event.spans ?? []) {
+    if (typeof span.description === 'string') span.description = redactString(span.description)
+    if (span.data) span.data = redact(span.data) as typeof span.data
+  }
+  // No setUser anywhere today; if one is ever added, its email / ip / username must not travel.
+  if (event.user) event.user = redact(event.user) as typeof event.user
   return event
 }

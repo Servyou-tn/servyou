@@ -50,6 +50,24 @@ Read-only code sweep with file:line evidence, then fixes. No SQL in this PR; the
 - Now: escape `%` and `_`, fetch ≤ 20 candidates, keep only a case-insensitive equality (`lib/supabase/like.ts`).
   The lower(name) unique index stays the authority.
 
+### 6. Review of this PR (folded in, commit 3)
+- **HIGH — the email pattern was quadratic:** a 50k-character run took ~7 s inside beforeSend, synchronous on every
+  event. Every pattern is now bounded, and strings are cut at 20 000 characters before any pattern runs. A test
+  scrubs a 100k run in well under 500 ms.
+- **The lookbehind is gone:** Safari < 16.4 cannot parse one, and the scrubber ships in the client entry chunk. A
+  test asserts no lookbehind remains.
+- **The scrubber now also covers:**
+  - span descriptions and data,  and ;
+  - JSON string bodies (keys redacted);
+  - grouped phones (« 98 765 432 »).
+- **Fewer false positives:** version strings (), decimals and timestamps are kept.
+- **Console breadcrumbs:** one whose first argument is not a string is dropped, not sent as the joined message.
+- **Receipt buttons:**
+  - a rejected action call (network drop, a stale action id after a deploy) shows the error instead of spinning
+    forever;
+  - an already-received order answers ok (idempotent).
+
+\
 ## SQL — proposal, STOP for review (not written)
 
 **S1. LOW — `verifications` bucket still allows a direct client INSERT** (policy « verifications: owner uploads own

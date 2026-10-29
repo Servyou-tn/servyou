@@ -202,7 +202,8 @@ export function ConfirmReceipt({ orderId }: { orderId: string }) {
 
   async function confirm() {
     setSaving(true)
-    const result = await confirmReceiptAction({ orderId })
+    // A rejected call (network drop, a stale action id after a deploy) is a failure too — never a spinner forever.
+    const result = await confirmReceiptAction({ orderId }).catch(() => ({ ok: false as const }))
     if (!result.ok) {
       toast.error(t('mesCommandes.confirmError', lang))
       setSaving(false)
