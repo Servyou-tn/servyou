@@ -9,6 +9,7 @@ import { CANCEL_REASON_OTHER, SHOP_CANCEL_REASONS } from '@/lib/orders/cancel-re
 import type { SellerOrderPath } from '@/lib/orders/seller-paths'
 import { t, type Lang } from '@/lib/i18n'
 import { FOCUS_RING } from '@/components/layout/styles'
+import { ModalDialog, MODAL_FIELD_CLASS } from '@/components/shared/ModalDialog'
 
 // Seller cancellation — Figma G8 modal specimen 490:26058 (480×660).
 //
@@ -37,6 +38,12 @@ type DialogProps = {
   revalidate?: SellerOrderPath
   /** i18n key of the explanatory line; defaults to the seller's (« L'acheteur en sera informé »). A buyer passes their own. */
   bodyKey?: string
+  /**
+   * `radios` (default) is the seller's G8 modal and E3's buyer modal — unchanged. `select` is E4's buyer modal (Figma 1475:25765):
+   * a « Motif » SELECT (required once the rule demands it) + an optional « Précisions » textarea, on the native-<dialog> shell.
+   * The stored reason is the chosen preset's label, followed by the buyer's own words.
+   */
+  layout?: 'radios' | 'select'
   onClose: () => void
 }
 
@@ -48,10 +55,12 @@ export function CancelOrderDialog({
   reasons = SHOP_CANCEL_REASONS,
   revalidate = '/commandes-recues',
   bodyKey = 'seller.orders.cancel_body',
+  layout = 'radios',
   onClose,
 }: DialogProps) {
   const [selected, setSelected] = useState<string>('')
   const [custom, setCustom] = useState('')
+  const [details, setDetails] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [pending, startTransition] = useTransition()
   const router = useRouter()
@@ -60,8 +69,13 @@ export function CancelOrderDialog({
   // here keeps the write from bouncing off the database for something the UI already knew.
   const reasonRequired = requiresCancellationReason(status, orderType)
   const isOther = selected === CANCEL_REASON_OTHER
-  const resolved = isOther ? custom.trim() : selected ? t(selected, lang) : ''
-  const blocked = reasonRequired && resolved === ''
+  // `select` layout: the preset's label + the buyer's own words; « Autre » alone carries no information, so with details it is dropped.
+  const selectResolved =
+    isOther && details.trim() !== ''
+      ? details.trim()
+      : [selected ? t(selected, lang) : '', details.trim()].filter(Boolean).join(' — ')
+  const resolved = layout === 'select' ? selectResolved : isOther ? custom.trim() : selected ? t(selected, lang) : ''
+  const blocked = reasonRequired && (layout === 'select' ? selected === '' : resolved === '')
 
   const submit = () => {
     setError(null)
@@ -78,6 +92,79 @@ export function CancelOrderDialog({
         setError(result.error)
       }
     })
+  }
+
+  if (layout === 'select') {
+    return (
+      <ModalDialog
+        open
+        onClose={onClose}
+        busy={pending}
+        title={t('seller.orders.cancel_title', lang)}
+        closeLabel={t('buyerOrder.dialog.close', lang)}
+        onSubmit={(e) => {
+          e.preventDefault()
+          if (!blocked && !pending) submit()
+        }}
+        footer={
+          <>
+            <Button type="button" variant="ghost" size="md" onClick={onClose} disabled={pending}>
+              {t('buyerOrder.cancel.back', lang)}
+            </Button>
+            <Button type="submit" variant="danger" size="md" loading={pending} disabled={blocked}>
+              {t('common.cancel_confirm_action', lang)}
+            </Button>
+          </>
+        }
+      >
+        {reasonRequired ? (
+          <p className="text-body-sm text-text-secondary">{t('seller.orders.cancel_reason_required', lang)}</p>
+        ) : null}
+        <div className="flex flex-col gap-2">
+          <label htmlFor={`cancel-reason-${orderId}`} className="flex items-center gap-0.5 text-body-sm font-medium text-text-secondary">
+            {t('buyerOrder.cancel.reason_label', lang)}
+            {reasonRequired ? (
+              <span className="text-danger-500" aria-hidden="true">
+                *
+              </span>
+            ) : null}
+          </label>
+          <select
+            id={`cancel-reason-${orderId}`}
+            value={selected}
+            onChange={(e) => setSelected(e.target.value)}
+            required={reasonRequired}
+            className={`h-11 px-4 ${MODAL_FIELD_CLASS}`}
+          >
+            <option value="">{t('buyerOrder.cancel.reason_placeholder', lang)}</option>
+            {reasons.map((key) => (
+              <option key={key} value={key}>
+                {t(key, lang)}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className="flex flex-col gap-2">
+          <label htmlFor={`cancel-details-${orderId}`} className="text-body-sm font-medium text-text-secondary">
+            {t('buyerOrder.cancel.details_label', lang)}
+          </label>
+          <textarea
+            id={`cancel-details-${orderId}`}
+            value={details}
+            onChange={(e) => setDetails(e.target.value)}
+            placeholder={t('buyerOrder.cancel.details_placeholder', lang)}
+            rows={4}
+            maxLength={400}
+            className={`px-4 py-3 ${MODAL_FIELD_CLASS}`}
+          />
+        </div>
+        {error ? (
+          <p role="alert" className="text-body-sm text-danger-500">
+            {error}
+          </p>
+        ) : null}
+      </ModalDialog>
+    )
   }
 
   return (

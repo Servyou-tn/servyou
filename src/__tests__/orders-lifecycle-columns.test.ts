@@ -220,14 +220,16 @@ beforeAll(async () => {
   buyerClient = await signIn('buyer')
   adminClient = await signIn('admin')
 
+  // R1 / R2 leave 'pending' before the next orders: the orders rate-limit migration caps a buyer at 5 PENDING orders
+  // per seller, and this file places 6 with one seller.
   orderR1 = await placeOrder()
+  await advanceToArrived(orderR1)
   orderR2 = await placeOrder()
+  await advanceToArrived(orderR2)
   orderN1 = await placeOrder()
   orderC1 = await placeOrder()
   orderC2 = await placeOrder()
   orderC3 = await placeOrder()
-  await advanceToArrived(orderR1)
-  await advanceToArrived(orderR2)
 }, 180000)
 
 afterAll(async () => {

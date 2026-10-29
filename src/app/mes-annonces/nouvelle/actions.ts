@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 import { validateJobPost, type JobPostInput } from '@/lib/marche/job-post-validation'
+import { jobPostCapKey } from '@/lib/marche/cap-refusal'
 
 // On success this redirects to /mes-annonces (never returns); only failures return.
 export type CreateAnnonceResult = { ok: false; errorKey: string }
@@ -38,6 +39,12 @@ export async function createAnnonce(input: JobPostInput): Promise<CreateAnnonceR
     .select('id')
 
   if (error) {
+    // 5 open posts / 10 in 24 h (job_posts cap migration): the consumer's own doing, so say which.
+    const cap = jobPostCapKey(error)
+    if (cap) {
+      console.warn('[createAnnonce] refused:', error.code, error.hint)
+      return { ok: false, errorKey: cap }
+    }
     console.error('[createAnnonce] insert error:', error.message, error.code, error.details)
     return { ok: false, errorKey: 'common.error_generic' }
   }

@@ -33,9 +33,11 @@ export function displayableEvents(
   orderType: OrderType,
   createdLabel: string,
   lang: Lang,
+  /** Overrides the wording — E4 (the buyer's page) says « Acceptée par la boutique », not the seller's « Statut : Acceptée ». */
+  labelOf?: (event: OrderEvent) => string | null,
 ): { event: OrderEvent; label: string }[] {
   return events.flatMap((event) => {
-    const label = labelFor(event, orderType, createdLabel, lang)
+    const label = labelOf ? labelOf(event) : labelFor(event, orderType, createdLabel, lang)
     return label ? [{ event, label }] : []
   })
 }
@@ -46,6 +48,8 @@ export function OrderTimeline({
   heading,
   createdLabel,
   lang,
+  labelOf,
+  showNotes = true,
 }: {
   events: readonly OrderEvent[]
   orderType: OrderType
@@ -53,8 +57,12 @@ export function OrderTimeline({
   /** The `created` entry's wording — « Demande reçue » for a service, « Commande créée » for a product. */
   createdLabel: string
   lang: Lang
+  /** See `displayableEvents`. Default: the seller's wording (G9, H8 — unchanged). */
+  labelOf?: (event: OrderEvent) => string | null
+  /** Default true. E4 turns it off: its cancellation label already carries the reason inline (« … · motif : « … » »). */
+  showNotes?: boolean
 }) {
-  const rows = displayableEvents(events, orderType, createdLabel, lang)
+  const rows = displayableEvents(events, orderType, createdLabel, lang, labelOf)
   if (rows.length === 0) return null
 
   return (
@@ -76,7 +84,7 @@ export function OrderTimeline({
                 <span className="text-body-sm text-text-muted">· {shortDateTime(event.createdAt, lang)}</span>
               </span>
             </div>
-            {event.note ? (
+            {showNotes && event.note ? (
               <p className="ms-4 ps-0.5 text-body-sm text-text-muted">
                 {t('seller.orders.cancelled_reason', lang, { reason: event.note })}
               </p>

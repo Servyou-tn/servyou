@@ -1,5 +1,6 @@
 import type { NextConfig } from "next";
 import { withSentryConfig } from "@sentry/nextjs";
+import { securityHeaders } from "./src/lib/security/headers";
 
 const nextConfig: NextConfig = {
   // Hide the Next.js dev-tools indicator — the floating circle with the Next "N"
@@ -7,6 +8,15 @@ const nextConfig: NextConfig = {
   // present in a production build) and was overlapping the public landing page in
   // localhost review. Disabling it makes localhost match production.
   devIndicators: false,
+
+  // No `X-Powered-By: Next.js` (pre-launch security audit pass 1, finding 1).
+  poweredByHeader: false,
+
+  // Browser security headers on every route: frame-ancestors / X-Frame-Options ENFORCED (clickjacking), the full
+  // CSP as Report-Only for now. See src/lib/security/headers.ts.
+  async headers() {
+    return [{ source: '/:path*', headers: securityHeaders(process.env.NODE_ENV !== 'production') }]
+  },
 
   // Server Actions default to a 1 MB request body. The avatar upload sends a real photo through an
   // action, so at the default ANY ordinary phone photo exceeded it and Next threw
