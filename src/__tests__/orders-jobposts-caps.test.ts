@@ -169,6 +169,13 @@ describe.skipIf(!hasCreds)('orders — 5 pending per buyer per seller', () => {
     expect(orderCapKey(error)).toBe('demander.error.cap_seller')
   })
 
+  it('a client-supplied seller_id cannot dodge it: the cap counts the item’s real seller', async () => {
+    // enforce_order_insert_integrity rewrites seller_id BEFORE trg_limit_orders runs (trigger name order). If a rename
+    // ever flipped that, this order would be counted against seller B and filed.
+    const { error } = await fileOrder('buyer-seller', productA, { seller_id: ids['seller-b'] })
+    expect(error?.hint).toBe('order_cap_seller')
+  })
+
   it('another seller is a different key', async () => {
     expect((await fileOrder('buyer-seller', productB)).error).toBeNull()
   })
@@ -177,7 +184,9 @@ describe.skipIf(!hasCreds)('orders — 5 pending per buyer per seller', () => {
     const { data: one } = await admin
       .from('orders').select('id').eq('buyer_id', ids['buyer-seller']).eq('product_id', productA).eq('status', 'pending').limit(1).single()
     // The seller accepts it, as advanceOrderAction does (check_order_status_transition only lets a party move it).
-    expect((await clients['seller-a'].from('orders').update({ status: 'accepted' }).eq('id', one!.id)).error).toBeNull()
+    const accepted = await clients['seller-a'].from('orders').update({ status: 'accepted' }).eq('id', one!.id).select('id')
+    expect(accepted.error).toBeNull()
+    expect(accepted.data).toHaveLength(1) // a silent 0-row update would otherwise blame the cap below
     expect((await fileOrder('buyer-seller', productA)).error).toBeNull()
   })
 
@@ -238,11 +247,17 @@ describe.skipIf(!hasCreds)('job_posts — 5 open per consumer', () => {
     expect(jobPostCapKey(error)).toBe('annonce.error.cap_open')
   })
 
-  it('an edit of an open post is never capped', async () => {
+  it('an edit of an open post is never capped, even one that re-sends status open (fires UPDATE OF status)', async () => {
     const { data: one } = await admin
       .from('job_posts').select('id').eq('consumer_id', ids['consumer-open']).eq('status', 'open').limit(1).single()
-    const { error } = await clients['consumer-open'].from('job_posts').update({ title: `Caps edited ${RUN}` }).eq('id', one!.id).select('id')
-    expect(error).toBeNull()
+    const titleOnly = await clients['consumer-open'].from('job_posts').update({ title: `Caps edited ${RUN}` }).eq('id', one!.id).select('id')
+    expect(titleOnly.error).toBeNull()
+    expect(titleOnly.data).toHaveLength(1)
+    // At 5 open: open -> open with another column must return early on old.status, not count itself as a 6th.
+    const withStatus = await clients['consumer-open']
+      .from('job_posts').update({ status: 'open', title: `Caps edited again ${RUN}` }).eq('id', one!.id).select('id')
+    expect(withStatus.error).toBeNull()
+    expect(withStatus.data).toHaveLength(1)
   })
 
   it('open posts past the 30-day life do not count', async () => {

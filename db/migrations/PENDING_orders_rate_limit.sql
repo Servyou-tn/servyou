@@ -57,7 +57,7 @@ begin
      and status = 'pending';
 
   if v_pending >= 5 then
-    raise exception 'Vous avez déjà 5 commandes en attente chez ce vendeur. Attendez qu''il en traite une avant d''en passer une autre.'
+    raise exception 'Vous avez déjà 5 commandes en attente chez ce vendeur. Attendez qu''il en traite une, ou annulez-en une, avant d''en passer une autre.'
       using errcode = '23514', hint = 'order_cap_seller';
   end if;
 

@@ -1085,7 +1085,7 @@ export const ar: Record<string, string> = {
   'demander.error.descriptionTags': "يرجى حذف الأقواس المعقوفة [ ] من الوصف.",
   'demander.error.timeframeChars': "يرجى حذف القوس المعقوف ] من هذا الحقل.",
   // Order anti-abuse caps (orders rate-limit migration).
-  'demander.error.cap_seller':     "لديك بالفعل 5 طلبات قيد الانتظار لدى هذا البائع. انتظر حتى يعالج أحدها قبل تقديم طلب آخر.",
+  'demander.error.cap_seller':     "لديك بالفعل 5 طلبات قيد الانتظار لدى هذا البائع. انتظر حتى يعالج أحدها، أو ألغِ أحدها، قبل تقديم طلب آخر.",
   'demander.error.cap_daily':      "لقد بلغت الحد الأقصى وهو 20 طلبًا خلال 24 ساعة. حاول مرة أخرى لاحقًا.",
   'demander.submit.product':       "تأكيد الطلب",
   'demander.submit.service':       "إرسال الطلب",

@@ -1098,7 +1098,7 @@ export const fr: Record<string, string> = {
   'demander.error.descriptionTags': "Retirez les crochets [ ] de la description.",
   'demander.error.timeframeChars': "Retirez le crochet ] de ce champ.",
   // Order anti-abuse caps (orders rate-limit migration).
-  'demander.error.cap_seller':     "Vous avez déjà 5 commandes en attente chez ce vendeur. Attendez qu'il en traite une avant d'en passer une autre.",
+  'demander.error.cap_seller':     "Vous avez déjà 5 commandes en attente chez ce vendeur. Attendez qu'il en traite une, ou annulez-en une, avant d'en passer une autre.",
   'demander.error.cap_daily':      "Vous avez atteint la limite de 20 commandes par 24 heures. Réessayez plus tard.",
   'demander.submit.product':       "Confirmer la demande",
   'demander.submit.service':       "Envoyer la demande",
