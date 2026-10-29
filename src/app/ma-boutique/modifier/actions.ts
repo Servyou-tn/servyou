@@ -4,6 +4,7 @@ import { randomUUID } from 'node:crypto'
 import { z } from 'zod'
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
+import { escapeLike, sameNameIgnoringCase, LIKE_CANDIDATE_LIMIT } from '@/lib/supabase/like'
 import { getLang } from '@/lib/i18n/server'
 import { t } from '@/lib/i18n'
 import { GOVERNORATES } from '@/lib/tunisia-governorates'
@@ -86,12 +87,13 @@ export async function updateShopAction(input: unknown): Promise<UpdateShopResult
   // name never reads as taken. Matches the DB: the lower(name) unique index (migration
   // 20260811055734) never fires against the row being updated either, so this pre-check and the
   // index agree on the same case.
-  const { data: collision, error: collisionErr } = await supabase
+  // Exact match, not a pattern: lib/supabase/like.ts (a name like `_` used to « collide » with other shops).
+  const { data: candidates, error: collisionErr } = await supabase
     .from('shops')
-    .select('id')
-    .ilike('name', name)
+    .select('id, name')
+    .ilike('name', escapeLike(name))
     .neq('id', shopId)
-    .maybeSingle()
+    .limit(LIKE_CANDIDATE_LIMIT)
   if (collisionErr) {
     console.error(
       '[updateShop] name pre-check failed:',
@@ -101,7 +103,7 @@ export async function updateShopAction(input: unknown): Promise<UpdateShopResult
     )
     return { ok: false, error: t('common.error_generic', lang) }
   }
-  if (collision) {
+  if ((candidates ?? []).some((shop) => sameNameIgnoringCase(shop.name, name))) {
     return { ok: false, error: t('shop.create.error.name_taken', lang), field: 'name' }
   }
 

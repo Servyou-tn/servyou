@@ -82,3 +82,161 @@ describe('scrubPII — edge cases', () => {
     expect(data.keep).toBe('v')
   })
 })
+
+// ── Pre-launch audit pass 2: headers, value patterns, camelCase keys, breadcrumbs, the rest of the event ─────────────
+
+type FullEvent = Event & { request?: Event['request'] & { headers?: Record<string, string> } }
+const scrub = (e: Record<string, unknown>) => scrubPII(e as unknown as Event) as unknown as FullEvent
+
+describe('scrubPII — auth material in request headers', () => {
+  it('deletes the Cookie (sb-* access + refresh token), Authorization and x-supabase headers; keeps the rest', () => {
+    const out = scrub({
+      request: {
+        headers: {
+          cookie: 'sb-xggo-auth-token=eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ4In0.c2lnbmF0dXJlLXZhbHVl; servyou_lang=ar',
+          Authorization: 'Bearer abcdefghijklmnopqrstuvwxyz',
+          'x-supabase-api-version': '2024-01-01',
+          'user-agent': 'Mozilla/5.0',
+          'accept-language': 'fr',
+        },
+      },
+    })
+    expect(out.request?.headers).toEqual({ 'user-agent': 'Mozilla/5.0', 'accept-language': 'fr' })
+  })
+})
+
+describe('scrubPII — value patterns in strings', () => {
+  it.each([
+    ['an email', 'contact: zina.ben-ali+test@gmail.com', 'contact: [REDACTED]'],
+    ['a %40-encoded email in a URL', '/verifier-email?email=zina%40gmail.com', '/verifier-email?email=[REDACTED]'],
+    ['a +216 phone', 'tél +216 20 123 456', 'tél [REDACTED]'],
+    ['a 00216 phone', 'tél 0021698765432', 'tél [REDACTED]'],
+    ['a bare 8-digit phone', 'Key (delivery_phone)=(98765432) invalid', 'Key (delivery_phone)=([REDACTED]) invalid'],
+    ['a JWT', 'token eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ4In0.c2lnbmF0dXJlLXZhbHVl end', 'token [REDACTED] end'],
+  ])('redacts %s', (_label, input, expected) => {
+    expect(scrub({ message: input }).message).toBe(expected)
+  })
+
+  it('leaves uuids, prices, years and ids alone', () => {
+    const msg = 'order 11111111-1111-4111-8111-111111111111 · 173.500 TND · 2026 · id 12345'
+    expect(scrub({ message: msg }).message).toBe(msg)
+  })
+
+  it('applies to the request url, query string, exception values, contexts and tags', () => {
+    const out = scrub({
+      request: { url: 'https://servyou.vercel.app/verifier-email?email=a%40b.tn', query_string: 'email=a%40b.tn' },
+      exception: { values: [{ type: 'Error', value: 'duplicate key: (email)=(a@b.tn)' }] },
+      contexts: { nextjs: { request_path: '/verifier-email?email=a%40b.tn' } },
+      tags: { where: 'signup', who: 'a@b.tn' },
+    })
+    expect(out.request?.url).toBe('https://servyou.vercel.app/verifier-email?email=[REDACTED]')
+    expect(out.request?.query_string).toBe('email=[REDACTED]')
+    expect(out.exception?.values?.[0].value).toBe('duplicate key: (email)=([REDACTED])')
+    expect((out.contexts as Record<string, Record<string, unknown>>).nextjs.request_path).toBe('/verifier-email?email=[REDACTED]')
+    expect(out.tags).toEqual({ where: 'signup', who: '[REDACTED]' })
+  })
+
+  it('a raw string request body (a server-action payload) is pattern-redacted too', () => {
+    const out = scrub({ request: { data: '["Zina","zina@gmail.com","20123456"]' } })
+    expect(out.request?.data).toBe('["Zina","[REDACTED]","[REDACTED]"]')
+  })
+})
+
+describe('scrubPII — camelCase action fields', () => {
+  it('matches keys without their underscores (deliveryName, deliveryStreet, fullName, buyerNote, dateOfBirth)', () => {
+    const out = scrub({ request: { data: { deliveryName: 'Zina', deliveryStreet: 'Rue 1', quartier: 'Ennasr', fullName: 'Z', buyerNote: 'n', dateOfBirth: '1990-01-01', ville: 'Ariana', quantity: 2 } } })
+    expect(out.request?.data).toEqual({
+      deliveryName: '[REDACTED]', deliveryStreet: '[REDACTED]', quartier: '[REDACTED]', fullName: '[REDACTED]',
+      buyerNote: '[REDACTED]', dateOfBirth: '[REDACTED]', ville: 'Ariana', quantity: 2,
+    })
+  })
+})
+
+describe('scrubPII — breadcrumbs', () => {
+  it('a console breadcrumb keeps only its [scope] label — error.details (row values) never travels', () => {
+    const out = scrub({
+      breadcrumbs: [{
+        category: 'console',
+        level: 'error',
+        message: '[submitProductRequest] insert error: violates ... Failing row contains (Zina, Rue des Oliviers 12, 20123456)',
+        data: { arguments: ['[submitProductRequest] insert error:', 'violates ...', 'Failing row contains (Zina, Rue des Oliviers 12, 20123456)'] },
+      }],
+    })
+    expect(out.breadcrumbs).toEqual([{ category: 'console', level: 'error', message: '[submitProductRequest] insert error:', data: undefined }])
+  })
+
+  it('other breadcrumbs (navigation, fetch) are pattern- and key-redacted', () => {
+    const out = scrub({
+      breadcrumbs: [
+        { category: 'navigation', data: { from: '/inscription', to: '/verifier-email?email=a%40b.tn' } },
+        { category: 'fetch', data: { url: '/api/x', email: 'a@b.tn', status_code: 200 } },
+      ],
+    })
+    expect(out.breadcrumbs?.[0].data).toEqual({ from: '/inscription', to: '/verifier-email?email=[REDACTED]' })
+    expect(out.breadcrumbs?.[1].data).toEqual({ url: '/api/x', email: '[REDACTED]', status_code: 200 })
+  })
+})
+
+// ── Review of #242: bounded patterns, no lookbehind, spans / user / env, JSON bodies, grouped phones ────────────────
+
+describe('scrubPII — bounded work (ReDoS) and browser-safe regexes', () => {
+  it('a 100k-character token-like run (with and without @) scrubs fast and is truncated', () => {
+    for (const s of ['a'.repeat(100_000), 'a'.repeat(100_000) + '@', ('ab.' as string).repeat(40_000)]) {
+      const started = performance.now()
+      const out = scrub({ extra: { blob: s } })
+      expect(performance.now() - started).toBeLessThan(500)
+      expect(String((out.extra as Record<string, unknown>).blob)).toMatch(/…\[TRUNCATED\]$/)
+    }
+  })
+
+  it('uses no lookbehind (Safari < 16.4 cannot parse it; the scrubber ships in the client entry chunk)', async () => {
+    const { readFileSync } = await import('node:fs')
+    const source = readFileSync(new URL('../lib/sentry/scrubber.ts', import.meta.url), 'utf8')
+    expect(source).not.toMatch(/\(\?<[=!]/)
+  })
+})
+
+describe('scrubPII — value patterns after review', () => {
+  it.each([
+    ['a grouped phone with spaces', 'tél 98 765 432 ok', 'tél [REDACTED] ok'],
+    ['a grouped phone with hyphens', 'tél: 98-765-432', 'tél: [REDACTED]'],
+  ])('redacts %s', (_label, input, expected) => {
+    expect(scrub({ message: input }).message).toBe(expected)
+  })
+
+  it.each([
+    ['a package version', 'next@16.4.3 and @supabase/ssr@0.10.3'],
+    ['a decimal', 'ratio 0.98765432'],
+    ['a timestamp', '2026-10-29T23:21:37.123Z'],
+  ])('keeps %s', (_label, input) => {
+    expect(scrub({ message: input }).message).toBe(input)
+  })
+})
+
+describe('scrubPII — spans, user, env, JSON bodies, console objects', () => {
+  it('redacts span descriptions and data (transactions)', () => {
+    const out = scrub({
+      spans: [{ description: 'GET /rest/v1/profiles?email=eq.a%40b.tn', data: { 'url.full': '/x?email=a%40b.tn', phone: '20123456', 'http.method': 'GET' } }],
+    }) as unknown as { spans: Array<{ description: string; data: Record<string, unknown> }> }
+    // The local part may contain dots, so PostgREST's `eq.` prefix is swallowed too — over-redaction, harmless.
+    expect(out.spans[0].description).toBe('GET /rest/v1/profiles?email=[REDACTED]')
+    expect(out.spans[0].data).toEqual({ 'url.full': '/x?email=[REDACTED]', phone: '[REDACTED]', 'http.method': 'GET' })
+  })
+
+  it('redacts event.user and drops request.env', () => {
+    const out = scrub({ user: { id: 'u1', email: 'a@b.tn', ip_address: '1.2.3.4' }, request: { env: { REMOTE_ADDR: '1.2.3.4' } } })
+    expect(out.user).toEqual({ id: 'u1', email: '[REDACTED]', ip_address: '[REDACTED]' })
+    expect((out.request as Record<string, unknown>).env).toBeUndefined()
+  })
+
+  it('a JSON string body gets its KEYS redacted, not just patterns', () => {
+    const out = scrub({ request: { data: '{"deliveryAddress":"Rue des Oliviers 12","quantity":2}' } })
+    expect(out.request?.data).toBe('{"deliveryAddress":"[REDACTED]","quantity":2}')
+  })
+
+  it('a console breadcrumb whose first argument is not a string is dropped to no message', () => {
+    const out = scrub({ breadcrumbs: [{ category: 'console', message: 'Error: Failing row contains (Zina, Rue 12)', data: { arguments: [{ message: 'x' }] } }] })
+    expect(out.breadcrumbs?.[0].message).toBeUndefined()
+    expect(out.breadcrumbs?.[0].data).toBeUndefined()
+  })
+})

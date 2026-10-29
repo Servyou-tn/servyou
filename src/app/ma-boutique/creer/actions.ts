@@ -4,6 +4,7 @@ import { randomUUID } from 'node:crypto'
 import { z } from 'zod'
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
+import { escapeLike, sameNameIgnoringCase, LIKE_CANDIDATE_LIMIT } from '@/lib/supabase/like'
 import { getLang } from '@/lib/i18n/server'
 import { t } from '@/lib/i18n'
 import { GOVERNORATES } from '@/lib/tunisia-governorates'
@@ -109,16 +110,17 @@ export async function createShopAction(input: unknown): Promise<CreateShopResult
   // Founder-directed case-insensitive pre-check, matching the DB's lower(name) unique index
   // (migration 20260811055734) — an eq() pre-check here would pass a name that only differs by
   // case and then hit 23505 at insert, disagreeing with the friendly error this is meant to give.
-  const { data: collision, error: collisionErr } = await supabase
+  // Exact match, not a pattern: lib/supabase/like.ts (a name like `_` used to « collide » with other shops).
+  const { data: candidates, error: collisionErr } = await supabase
     .from('shops')
-    .select('id')
-    .ilike('name', name)
-    .maybeSingle()
+    .select('id, name')
+    .ilike('name', escapeLike(name))
+    .limit(LIKE_CANDIDATE_LIMIT)
   if (collisionErr) {
     console.error('[createShop] name pre-check failed:', collisionErr.message, collisionErr.code, collisionErr.details)
     return { ok: false, error: t('common.error_generic', lang) }
   }
-  if (collision) {
+  if ((candidates ?? []).some((shop) => sameNameIgnoringCase(shop.name, name))) {
     return { ok: false, error: t('shop.create.error.name_taken', lang), field: 'name' }
   }
 

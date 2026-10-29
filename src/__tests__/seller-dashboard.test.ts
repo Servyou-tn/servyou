@@ -186,12 +186,15 @@ describe('advanceOrderAction', () => {
     expect(state.updates).toEqual([{ status: 'arrived' }])
   })
 
-  it("surfaces the trigger's own message when the DB rejects the transition", async () => {
-    state.updateError = { message: 'Transition invalide pour une commande produit: pending → prepared.' }
+  // Audit pass 2 (architect brief 2026-10-29): the trigger's French text is no longer returned verbatim — a stale
+  // transition answers the FR / AR « n'attend plus d'action » key, never the raw message.
+  it('maps a stale transition refused by the DB to its key, never the raw trigger text', async () => {
+    state.updateError = { message: 'Transition invalide pour une commande produit: pending → prepared.', code: 'P0001' }
     const { advanceOrderAction } = await import('@/app/actions/orders')
+    const { t } = await import('@/lib/i18n')
     const res = await advanceOrderAction({ orderId: ORDER.id })
-    expect(res.ok).toBe(false)
-    if (!res.ok) expect(res.error).toContain('Transition invalide')
+    expect(res).toEqual({ ok: false, error: t('seller.dashboard.error_no_transition', 'fr') })
+    expect(JSON.stringify(res)).not.toContain('Transition invalide')
   })
 
   it('does not write when the order read fails', async () => {
