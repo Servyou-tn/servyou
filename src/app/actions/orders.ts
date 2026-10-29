@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/server'
 import { getLang } from '@/lib/i18n/server'
 import { SELLER_ORDER_PATHS } from '@/lib/orders/seller-paths'
 import { t } from '@/lib/i18n'
+import { cancelErrorKey } from '@/lib/orders/cancel-error'
 import {
   nextSellerStatus,
   isCancellable,
@@ -19,7 +20,7 @@ import {
 // checked server-side, no client-side .update() on a table.
 //
 // (The three buyer-side transitions still call supabase.update() straight from a client component
-// — OrdersList.tsx, ReceiptConfirmButton.tsx, CancelOrderModal.tsx. They are correct-but-unmigrated
+// — OrdersList.tsx, ReceiptConfirmButton.tsx. (CancelOrderModal.tsx, the third, was mounted nowhere and is deleted.) They are correct-but-unmigrated
 // and logged in docs/follow-ups.md; deliberately NOT touched here, per the one-PR-one-focus rule.)
 //
 // THREE layers guard this, and the DB is the authority in all of them:
@@ -263,8 +264,9 @@ export async function cancelOrderAction(input: unknown): Promise<ActionResult> {
     .eq('id', order.id)
 
   if (updateError) {
-    console.error('[cancelOrder] update error:', updateError.message, updateError.code)
-    return { ok: false, error: updateError.message || t('common.error_generic', lang) }
+    console.error('[cancelOrder] update error:', updateError.message, updateError.code, updateError.hint)
+    // Mapped by hint / known trigger wording to FR + AR text, never the raw DB message (lib/orders/cancel-error.ts).
+    return { ok: false, error: t(cancelErrorKey(updateError), lang) }
   }
 
   // The buyer's own list is a fixed route derived from the caller's role (never from the client); the seller

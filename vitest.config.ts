@@ -35,6 +35,8 @@ export const INTEGRATION_GLOBS = [
   '**/profiles-email-sync.test.ts',
   '**/security-followups-batch.test.ts',
   '**/security-followups-batch-2.test.ts',
+  '**/order-cancel-buyer-service.test.ts',
+  '**/notification-prefs-missions.test.ts',
   '**/notification-prefs-favorites.test.ts',
   '**/reports-anti-abuse.test.ts',
   '**/orders-jobposts-caps.test.ts',

@@ -986,6 +986,23 @@ both on 2026-10-28.
     - App: `annonce.error.cap_*` (FR + AR). 8 existing posts, nothing rewritten.
     - For both 100 and 101: the recorded statements (MD5 above) carry shorter header comments. The executable SQL
       is identical (comment-stripped MD5 match, 2026-10-29).
+102. **20261029204433_orders_buyer_cancel_product_only** (`9e21a06d`) — a BUYER cannot cancel a SERVICE order. Founder
+    ruling E4 (#233), whose `cancelOrderAction` already refused it in the app.
+    - `enforce_buyer_cancel_product_only` (`trg_enforce_buyer_cancel_product_only`, BEFORE UPDATE OF status, row)
+      refuses the buyer moving a service order to `cancelled`: 42501, hint `buyer_cancel_service`, the action's
+      wording. This closes the direct PATCH and the browser-side `CancelOrderModal` write.
+    - It fires after `trg_check_order_status_transition`, so the existing errors keep precedence. A forged
+      `cancelled_by` or a missing reason after acceptance is still refused by that trigger first.
+    - Unchanged: the seller's cancel, the buyer's cancel of a product order, the other transitions, service role.
+      No `is_admin()` exception. `check_order_status_transition` itself is untouched.
+    - 2 service orders already cancelled by their buyer are terminal and not rewritten.
+103. **20261029204435_notification_prefs_missions_column** (`e07ec202`) — `notification_preferences` gains
+    `email_missions_matching boolean not null default true` (B5 decision D2).
+    - SELECT / INSERT / UPDATE are column-granted to authenticated, like its five siblings. Without the grant, the
+      app's upsert naming it would fail 42501 (migration 68).
+    - RLS and the table ACL are unchanged. 0 rows at apply.
+    - For both 102 and 103: shorter header comments in the recorded statements, identical executable SQL
+      (comment-stripped MD5 match, 2026-10-29).
 
 ## Rollback paths
 
