@@ -6,7 +6,6 @@
 import '@testing-library/jest-dom/vitest'
 import { describe, it, expect, vi, afterEach } from 'vitest'
 import { render, screen, cleanup } from '@testing-library/react'
-import { createElement } from 'react'
 import { LangProvider } from '@/components/LangProvider'
 import { t } from '@/lib/i18n'
 import { DEFAULT_NOTIF_PREFS } from '@/lib/notifications/prefs'
@@ -24,7 +23,11 @@ afterEach(cleanup)
 const profile = { id: 'u1', full_name: 'Test', email: 't@example.com', phone: null, city: null, language: 'fr' } as unknown as CurrentProfile
 
 function shell(notifPrefs: typeof DEFAULT_NOTIF_PREFS | null) {
-  return createElement(LangProvider, { lang: 'fr' }, createElement(ParametresShell, { profile, role: 'shop_owner', notifPrefs }))
+  return (
+    <LangProvider lang="fr">
+      <ParametresShell profile={profile} role="shop_owner" notifPrefs={notifPrefs} />
+    </LangProvider>
+  )
 }
 
 describe('ParametresShell — Notifications tab', () => {
