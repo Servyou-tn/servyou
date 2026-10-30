@@ -1,8 +1,6 @@
 /**
- * Live proof for db/migrations/PENDING_freelancer_url_scheme_checks.sql — the five freelancer link columns hold
+ * Live proof for db/migrations/20261030221121_freelancer_url_scheme_checks.sql (#106) — the five freelancer link columns hold
  * http(s) URLs only (`^https?://`, case-insensitive; NULL allowed), whoever writes them.
- *
- * ⚠ Red until that migration is applied: before it, the owner's REST write of `javascript:` is accepted.
  *
  *   * the owner's direct REST write (the path HTTP_URL does not cover) of `javascript:`, `data:` or '' is refused
  *     with 23514 naming the constraint, on each column;
