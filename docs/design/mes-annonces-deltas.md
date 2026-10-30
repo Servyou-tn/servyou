@@ -68,7 +68,7 @@ Also fixed on the way: form/error state now holds i18n keys (re-translates on a 
 
 ## 7. PR-2 — F4 detail (`/mes-annonces/[id]`) — branch `feat/mes-annonces-f4-detail` (from origin/main 8593877)
 
-Measurements: `docs/design/mes-annonces-measurements.md` §F4 (1440, READ 3). **375 frame `1488:65602` is NOT measured** — the Figma MCP hit its Starter-plan call limit; the founder reads it through the figma-cli bridge into `docs/design/f4-375-dump.json` + `f4-375.png`. Until those are applied, 375 is a single column in the F2/F3 mobile order and **mobile is not called done**.
+Measurements: `docs/design/mes-annonces-measurements.md` §F4 (1440, READ 3). The 375 frame `1488:65602` could not be read through the MCP (Starter-plan call limit); the founder measured it through the figma-cli bridge (`docs/design/f4-375-dump.json` + `f4-375.png`, kept local) and it is applied — see measurements §F4 mobile.
 
 ### Diff (F4 vs the current page)
 | # | Class | Frame | Current build |
@@ -83,7 +83,7 @@ Measurements: `docs/design/mes-annonces-measurements.md` §F4 (1440, READ 3). **
 | 21 | DATA | `Expire dans 12 jours` only means something while open | filled → no expiry item; expired → « Expirée » |
 
 ### Decisions (D14+) — founder rulings in italics where given
-- **D14 Mobile.** *Build 1440 now; 375 as one column in the F2/F3 mobile order (header → description → proposals → decision card); the founder supplies the 375 dump; mobile not done until applied.*
+- **D14 Mobile.** *Build 1440 now, 375 one column; the founder supplies the 375 dump.* Applied: panel / card / decision-card px 16, left column gap 24, WhatsApp 252 wide with « Voir le profil » wrapping beneath, meta-row icons, 16 gap between the three buttons, « + N autres » in `text/primary`. The price / délai row WRAPS (the frame overflows). Body text keeps the `text-body` token line-height (26) where the frame measures 27.
 - **D15 « Voir le profil ».** *Approved.* `job_responses.freelancer_id` is a `profiles.id`, but `/freelance/[id]` resolves `freelancer_profiles.id` (`getFreelancerDetail .eq('id')`). `getAnnonceDetail` now also returns `freelancerProfileId` (from the existing `freelancer_profiles` lookup by `profile_id`); the link is hidden when there is no row (moderated / not live). WhatsApp keeps using `freelancerId` (profiles.id → `get_contact_phone`).
 - **D16 « Modifier l'annonce ».** *Rendered DISABLED with a « Bientôt disponible » hint; PR-3 (`/mes-annonces/[id]/modifier`, reusing the F2 form + `validateJobPost(..., original)`) follows immediately.*
 - **D17 « + N autres propositions ».** *A button that expands the list inline (aria-expanded), « Afficher moins » to collapse; no new page.* Same recipe on a long message (see D19).

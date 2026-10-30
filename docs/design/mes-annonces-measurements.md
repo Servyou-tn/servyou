@@ -131,3 +131,18 @@ F3 mobile `1488:64945` · F4 mobile `1488:65602` · F2 mobile `1488:65880`. Mobi
 | Stats | flex-wrap gap 12, tiles **165 wide → 2 × 2** (375 − 32 = 343 = 165 + 12 + 165), tile px 16 py 20 gap 8, circle 44 |
 | Filter bar | col: Tabs full width (same 3 tabs) → search input full width h44 → « Trier par » select full width h44 (gap 12) |
 | Table | no header row; card `surface/base`, border 1, radius `xl`; each row becomes a **stacked card-row**: px 16 py 20, gap 16, border-b: mission (icon tile + title/category) → « N propositions » + sub → budget block → « Annonce » + pill → date block (14 / 13) → actions row end-aligned: « Voir les propositions » (sm secondary h32) + kebab 36 |
+
+### F4 mobile · `1488:65602` · read by the founder through the figma-cli bridge (0 MCP reads) — `docs/design/f4-375-dump.json` + `f4-375.png` (kept local, not committed)
+Frame 375 × 3169, `surface/base`, **px 16, pt 20, pb 32**; content col gap 20. Order: back link → post-header (gap 12) → description panel → proposals panel → « + N autres propositions » → decision card. **Same content as 1440, one column.**
+
+| Part | Value |
+|---|---|
+| Post header | `top` row gap 8: category chip + status chip (29 high each) · H1 32 Bold, 2 lines (80) · meta row gap 16, **wraps** to 2 lines (icons 16, gap 6, 14 Medium muted) |
+| Left col | col gap **24** (columns block col gap 20 between left and right) |
+| Panels (description / proposals) | border 1, radius `xl`, gap 12, **px 16 py 24** (desktop p 24); title 14 Semi Bold `text/secondary` |
+| Proposal card | radius `xl`, border 1, **px 16 py 20** (desktop p 20), gap 12; received-ago 12 Medium · client-row gap 12 (Avatar 40 + name 16 Semi Bold + type row gap 4, icon 16) info gap 2 · meta row gap 16 (**overflows in the frame — the build wraps**) · message 16 Regular · actions row gap 8, **wraps**: WhatsApp **252 wide** (radius `lg`, label 16 Semi Bold) then « Voir le profil » hug (125 × 40) on the next line, left-aligned |
+| « + N autres propositions » | 16 Regular `text/primary`, full width line (27) |
+| Decision card | border 1, radius `xl`, **px 16 py 24**, col gap 16: budget (label 12 Medium + value 32 Bold, gap 2) · divider · competition (pill `success/100`, px 10 py 4, gap 6 to « 5 / 10 · encore 5 places » 12 Medium) · divider · skills (label 12 Medium, chips wrap gap 8) · divider · meta rows (gap 12; label with icon 16 gap 6 `text/secondary` Medium · value Semi Bold `text/primary`) « Localisation » + « Expire dans » · 3 full-width h40 buttons directly in the card gap 16: secondary / ghost / danger |
+
+DOM check against the dump at 375 (FR + AR): panel padding 24/16, proposal-card padding 20/16, aside 24/16, WhatsApp 252 wide with « Voir le profil » wrapped below, H1 80 high, buttons 40 high at a 16 gap, meta-row icons present.
+

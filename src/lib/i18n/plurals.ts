@@ -88,7 +88,7 @@ const frPlurals: Record<string, PluralVariants> = {
   // F4 detail (Figma 1477:29190): « Expire dans 12 jours », the competition pill and the « + N autres propositions » link.
   'annonces.detail.days':                  { one: '{count} jour', other: '{count} jours' },
   'annonces.detail.competition':           { one: '{count} proposition reçue', other: '{count} propositions reçues' },
-  'annonces.detail.slots_left':            { one: '{n} / {max} · encore {count} place', other: '{n} / {max} · encore {count} places' },
+  'annonces.detail.slots_left':            { one: 'encore {count} place', other: 'encore {count} places' },
   'annonces.detail.proposals_more':        { one: '+ {count} autre proposition', other: '+ {count} autres propositions' },
 
   'consumer.dashboard.orders.count':       { one: '{count} commande en cours', other: '{count} commandes en cours' },
@@ -178,7 +178,7 @@ const arPlurals: Record<string, PluralVariants> = {
   // Preceded by « تنتهي خلال » → the dual takes the oblique form (يومين). REVIEW_AR_TRANSLATION.
   'annonces.detail.days':                  { one: '{count} يوم', two: '{count} يومين', other: '{count} أيام' },
   'annonces.detail.competition':           { one: 'عرض واحد مستلم', two: 'عرضان مستلمان', other: '{count} عروض مستلمة' },
-  'annonces.detail.slots_left':            { one: '{n} / {max} · بقي مكان واحد', two: '{n} / {max} · بقي مكانان', other: '{n} / {max} · بقيت {count} أماكن' },
+  'annonces.detail.slots_left':            { one: 'بقي مكان واحد', two: 'بقي مكانان', other: 'بقيت {count} أماكن' },
   'annonces.detail.proposals_more':        { one: '+ عرض آخر', two: '+ عرضان آخران', other: '+ {count} عروض أخرى' },
 
   // "قيد التنفيذ" (in progress) is an invariant prepositional phrase — it doesn't take number

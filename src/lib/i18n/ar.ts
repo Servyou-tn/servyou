@@ -1854,7 +1854,7 @@ export const ar: Record<string, string> = {
   'annonces.detail.expires_label':        "تنتهي خلال",
   'annonces.detail.expires_today':        "تنتهي اليوم",
   'annonces.detail.competition_none':     "لا توجد عروض",
-  'annonces.detail.slots_full':           "{n} / {max} · مكتمل",
+  'annonces.detail.slots_full':           "مكتمل",
   'annonces.detail.edit':                 "تعديل الإعلان",
   'annonces.detail.edit_soon':            "قريبا",
   'annonces.detail.freelance_unnamed':    "مستقل",

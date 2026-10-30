@@ -48,14 +48,14 @@ export function AnnonceResponseCard({
   const identity = [headline, city].filter(Boolean).join(' · ')
 
   return (
-    <div className="flex flex-col gap-3 rounded-xl border border-border-subtle bg-surface-base p-5">
+    <div className="flex flex-col gap-3 rounded-xl border border-border-subtle bg-surface-base px-4 py-5 sm:p-5">
       <p className="text-caption font-medium text-text-muted">
-        {t('annonces.detail.received_ago', lang, { when: relativeTimeLabel(response.createdAt, lang, now) })}
+        {t('annonces.detail.received_ago', lang, { when: midSentence(relativeTimeLabel(response.createdAt, lang, now), lang) })}
       </p>
 
       <div className="flex items-center gap-3">
         <Avatar size="md" initials={getInitials(response.fullName)} className="shrink-0" />
-        <div className="min-w-0 flex-1">
+        <div className="flex min-w-0 flex-1 flex-col gap-0.5">
           <p className="wrap-anywhere text-body font-semibold text-text-primary">
             {response.fullName || t('annonces.detail.freelance_unnamed', lang)}
           </p>
@@ -115,7 +115,7 @@ export function AnnonceResponseCard({
       <ProposalExtras response={response} lang={lang} />
 
       <div className="flex flex-wrap items-center gap-2">
-        <div className="w-full sm:w-63">
+        <div className="w-63">
           <WhatsAppContactButton
             targetId={response.freelancerId}
             message={message}
@@ -129,7 +129,7 @@ export function AnnonceResponseCard({
         {response.freelancerProfileId && (
           <Link
             href={`/freelance/${response.freelancerProfileId}`}
-            className={cn(BUTTON_BASE, BUTTON_SIZE.md, VARIANT_BASE.secondary, VARIANT_STATE.secondary, 'w-full sm:w-fit')}
+            className={cn(BUTTON_BASE, BUTTON_SIZE.md, VARIANT_BASE.secondary, VARIANT_STATE.secondary, 'w-fit')}
           >
             {t('annonces.detail.view_profile', lang)}
           </Link>
@@ -137,6 +137,11 @@ export function AnnonceResponseCard({
       </div>
     </div>
   )
+}
+
+// relativeTimeLabel's « Hier » / « À l'instant » are standalone capitalised strings; after « Proposition reçue » they read mid-sentence.
+function midSentence(s: string, lang: Lang): string {
+  return lang === 'fr' ? s.charAt(0).toLowerCase() + s.slice(1) : s
 }
 
 function hostOf(url: string): string {

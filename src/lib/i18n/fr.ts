@@ -1900,7 +1900,7 @@ export const fr: Record<string, string> = {
   'annonces.detail.expires_label':        "Expire dans",
   'annonces.detail.expires_today':        "Expire aujourd'hui",
   'annonces.detail.competition_none':     "Aucune proposition",
-  'annonces.detail.slots_full':           "{n} / {max} · complet",
+  'annonces.detail.slots_full':           "complet",
   'annonces.detail.edit':                 "Modifier l'annonce",
   'annonces.detail.edit_soon':            "Bientôt disponible",
   'annonces.detail.freelance_unnamed':    "Freelance",

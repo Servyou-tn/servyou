@@ -4,7 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
-import { ArrowLeft, Calendar, Clock, Inbox, MapPin, Wifi } from 'lucide-react'
+import { ArrowLeft, Calendar, Clock, Inbox, MapPin, Wifi, type LucideIcon } from 'lucide-react'
 import { useLang } from '@/components/LangProvider'
 import { t, tn, type Lang } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
@@ -29,8 +29,8 @@ import {
 /** F4 draws the first three proposals, then « + N autres propositions ». */
 const PROPOSALS_SHOWN = 3
 
-// Panel recipe shared by the two left cards (Figma 1477:29190): surface/base, 1px border, radius xl, p 24, gap 12.
-const PANEL = 'flex flex-col gap-3 rounded-xl border border-border-subtle bg-surface-base p-6'
+// Panel recipe shared by the two left cards (Figma 1477:29190 / 375 frame 1488:65602): surface/base, 1px border, radius xl, gap 12, p 24 — px 16 at 375.
+const PANEL = 'flex flex-col gap-3 rounded-xl border border-border-subtle bg-surface-base px-4 py-6 sm:p-6'
 
 // F4 « Détail de mon annonce » (Figma 1477:29190, 1440). Left: description panel, then the proposals received. Right (376 from `xl`): the
 // decision card. Below `xl` everything is ONE column in that order — the 375 frame (1488:65602) is applied separately.
@@ -145,7 +145,7 @@ export function AnnonceDetail({ annonce }: { annonce: AnnonceDetailData }) {
           <StatusPill status={pillStatus}>{t(statusLabelKey, lang)}</StatusPill>
         </div>
         <h1 className="wrap-anywhere text-h1 text-text-primary">{annonce.title}</h1>
-        <ul className="flex flex-wrap items-center gap-x-4 gap-y-1 text-body-sm font-medium text-text-muted">
+        <ul className="flex flex-wrap items-center gap-x-4 gap-y-2 text-body-sm font-medium text-text-muted">
           <li className="inline-flex items-center gap-1.5">
             <Clock className="size-4 shrink-0" aria-hidden="true" />
             {t('annonces.detail.posted_on', lang, { date: formatTunisDate(annonce.createdAt, lang, 'long') })}
@@ -173,10 +173,10 @@ export function AnnonceDetail({ annonce }: { annonce: AnnonceDetailData }) {
 
       <div className="flex flex-col gap-5 sm:gap-6 xl:flex-row xl:items-start">
         {/* LEFT — description, then the proposals received */}
-        <div className="flex min-w-0 flex-col gap-5 sm:gap-6 xl:flex-1">
+        <div className="flex min-w-0 flex-col gap-6 xl:flex-1">
           <section className={PANEL}>
             <h2 className="text-body-sm font-semibold text-text-secondary">{t('annonces.detail.desc_title', lang)}</h2>
-            <p className="whitespace-pre-line wrap-anywhere text-body leading-7 text-text-primary">{annonce.description}</p>
+            <p className="whitespace-pre-line wrap-anywhere text-body text-text-primary">{annonce.description}</p>
           </section>
 
           <section className={PANEL} aria-labelledby="proposals-title">
@@ -207,7 +207,7 @@ export function AnnonceDetail({ annonce }: { annonce: AnnonceDetailData }) {
                     onClick={() => setShowAll((v) => !v)}
                     aria-expanded={showAll}
                     className={cn(
-                      'w-fit cursor-pointer rounded text-body text-text-secondary hover:text-text-primary hover:underline',
+                      'w-fit cursor-pointer rounded text-body text-text-primary hover:underline',
                       FOCUS_RING,
                     )}
                   >
@@ -220,29 +220,31 @@ export function AnnonceDetail({ annonce }: { annonce: AnnonceDetailData }) {
         </div>
 
         {/* RIGHT — decision card (376 from `xl`) */}
-        <aside className="flex flex-col gap-4 rounded-xl border border-border-subtle bg-surface-base p-6 xl:sticky xl:top-24 xl:w-94 xl:shrink-0">
+        <aside className="flex flex-col gap-4 rounded-xl border border-border-subtle bg-surface-base px-4 py-6 sm:p-6 xl:sticky xl:top-24 xl:w-94 xl:shrink-0">
           <div>
             <p className="text-caption font-medium text-text-muted">{t('annonces.detail.budget_label', lang)}</p>
             {/* <bdi dir="ltr">: « 200 – 400 TND » reorders in an RTL block otherwise; only the figure branch is isolated — « Selon budget »
                 is real translated text and keeps the ambient direction. */}
-            <p className="mt-1 text-h1 text-text-primary">{hasBudget ? <bdi dir="ltr">{budgetLabel}</bdi> : budgetLabel}</p>
+            <p className="mt-0.5 text-h1 text-text-primary">{hasBudget ? <bdi dir="ltr">{budgetLabel}</bdi> : budgetLabel}</p>
           </div>
 
           <hr className="border-border-subtle" />
 
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-1.5">
             <CompetitionPill count={count} cap={annonce.isAtCap} lang={lang} />
+            {/* The « 5 / 10 » pair is its own LTR run: in an RTL line the spaced slash is a neutral and the numbers swap (« 10 / 5 »). */}
             <p className="text-caption font-medium text-text-muted">
-              {annonce.isAtCap
-                ? t('annonces.detail.slots_full', lang, { n: count, max: MAX_RESPONSES_PER_POST })
-                : tn('annonces.detail.slots_left', lang, places, { n: count, max: MAX_RESPONSES_PER_POST })}
+              <bdi dir="ltr">
+                {count} / {MAX_RESPONSES_PER_POST}
+              </bdi>{' '}
+              · {annonce.isAtCap ? t('annonces.detail.slots_full', lang) : tn('annonces.detail.slots_left', lang, places)}
             </p>
           </div>
 
           {annonce.skills.length > 0 && (
             <>
               <hr className="border-border-subtle" />
-              <div className="flex flex-col gap-2">
+              <div className="flex flex-col gap-1.5">
                 <p className="text-caption font-medium text-text-muted">{t('annonces.detail.skills_label', lang)}</p>
                 <div className="flex flex-wrap gap-2">
                   {annonce.skills.map((s) => (
@@ -255,20 +257,18 @@ export function AnnonceDetail({ annonce }: { annonce: AnnonceDetailData }) {
 
           <hr className="border-border-subtle" />
 
-          <dl className="flex flex-col gap-2 text-body-sm">
-            {where && <MetaRow label={t('annonces.detail.location_label', lang)} value={where} />}
+          <dl className="flex flex-col gap-3 text-body-sm">
+            {where && <MetaRow icon={MapPin} label={t('annonces.detail.location_label', lang)} value={where} />}
             {annonce.deadline && (
-              <MetaRow label={t('annonces.detail.deadline_label', lang)} value={formatTunisDate(annonce.deadline, lang, 'long')} />
+              <MetaRow icon={Calendar} label={t('annonces.detail.deadline_label', lang)} value={formatTunisDate(annonce.deadline, lang, 'long')} />
             )}
-            {expiresIn != null &&
-              (expiresIn === 0 ? (
-                <MetaRow label={t('annonces.detail.expires_today', lang)} value="" />
-              ) : (
-                <MetaRow label={t('annonces.detail.expires_label', lang)} value={tn('annonces.detail.days', lang, expiresIn)} />
-              ))}
+            {/* Day 0 (the last day) is said once, in the header; the row needs a number to sit beside its label. */}
+            {expiresIn != null && expiresIn > 0 && (
+              <MetaRow icon={Clock} label={t('annonces.detail.expires_label', lang)} value={tn('annonces.detail.days', lang, expiresIn)} />
+            )}
           </dl>
 
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-4">
             {canManageOpen && (
               <Button variant="secondary" className="w-full" onClick={() => setCloseOpen(true)}>
                 {t('annonces.detail.close', lang)}
@@ -331,11 +331,14 @@ export function AnnonceDetail({ annonce }: { annonce: AnnonceDetailData }) {
 }
 
 // Space-between row: label Medium text/secondary, value Semi Bold text/primary (Figma 14 px). Plain strings — size + colour together.
-function MetaRow({ label, value }: { label: string; value: string }) {
+function MetaRow({ icon: Icon, label, value }: { icon: LucideIcon; label: string; value: string }) {
   return (
-    <div className="flex items-start justify-between gap-3">
-      <dt className="font-medium text-text-secondary">{label}</dt>
-      {value && <dd className="text-end font-semibold text-text-primary wrap-anywhere">{value}</dd>}
+    <div className="flex items-start justify-between gap-2">
+      <dt className="flex items-center gap-1.5 font-medium text-text-secondary">
+        <Icon className="size-4 shrink-0" aria-hidden="true" />
+        {label}
+      </dt>
+      <dd className="text-end font-semibold text-text-primary wrap-anywhere">{value}</dd>
     </div>
   )
 }

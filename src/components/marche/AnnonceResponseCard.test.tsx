@@ -43,8 +43,10 @@ function view(over: Partial<AnnonceResponse> = {}, lang: 'fr' | 'ar' = 'fr') {
 
 describe('AnnonceResponseCard — the proposal terms (missions PR-4)', () => {
   it('a message-only proposal renders exactly as before: no terms block at all', () => {
-    view()
-    for (const key of ['annonces.detail.proposed_price', 'annonces.detail.proposed_timeframe', 'annonces.detail.proposal_links', 'annonces.detail.proposal_skills']) {
+    const { container } = view()
+    // The price / délai labels render as « Prix proposé : » — query the <dl> itself, a bare-label query would pass vacuously.
+    expect(container.querySelector('dl')).toBeNull()
+    for (const key of ['annonces.detail.proposal_links', 'annonces.detail.proposal_skills']) {
       expect(screen.queryByText(t(key, 'fr'))).not.toBeInTheDocument()
     }
   })
@@ -90,6 +92,14 @@ describe('AnnonceResponseCard — F4 anatomy (PR-2)', () => {
   it('the received-ago line is measured against the SERVER clock passed in, not Date.now()', () => {
     view()
     expect(screen.getByText('Proposition reçue il y a 3h')).toBeInTheDocument()
+  })
+
+  it("FR reads mid-sentence: « reçue hier » / « reçue à l'instant », not « reçue Hier »", () => {
+    view({ createdAt: new Date(NOW - 30 * 3_600_000).toISOString() })
+    expect(screen.getByText('Proposition reçue hier')).toBeInTheDocument()
+    cleanup()
+    view({ createdAt: new Date(NOW - 60_000).toISOString() })
+    expect(screen.getByText("Proposition reçue à l'instant")).toBeInTheDocument()
   })
 
   it('« Voir le profil » goes to /freelance/<freelancer_profiles.id> — never the profiles.id the response stores', () => {
