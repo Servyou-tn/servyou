@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { X } from 'lucide-react'
 import { toast } from 'sonner'
@@ -9,6 +9,7 @@ import { FOCUS_RING } from '@/components/layout/styles'
 import { useLang } from '@/components/LangProvider'
 import { t } from '@/lib/i18n'
 import { createShopReportAction } from '../actions'
+import { Turnstile, type TurnstileHandle } from '@/components/security/Turnstile'
 import { SHOP_REPORT_REASONS, type ShopReportReason } from '../report-reasons'
 
 // D3's « Signaler cette boutique » modal — 543:33895. Structural shape (controlled open state,
@@ -29,6 +30,7 @@ export function ShopReportModal({ shopId, shopName, isLoggedIn }: { shopId: stri
   const [reason, setReason] = useState<ShopReportReason | ''>('')
   const [description, setDescription] = useState('')
   const [submitting, setSubmitting] = useState(false)
+  const turnstile = useRef<TurnstileHandle>(null)
 
   const canSubmit = !submitting && reason !== ''
 
@@ -51,7 +53,8 @@ export function ShopReportModal({ shopId, shopName, isLoggedIn }: { shopId: stri
     e.preventDefault()
     if (!canSubmit) return
     setSubmitting(true)
-    const res = await createShopReportAction({ shopId, reason, description })
+    const turnstileToken = await turnstile.current?.getToken()
+    const res = await createShopReportAction({ shopId, reason, description }, turnstileToken)
     if (!res.ok) {
       toast.error(res.error)
       setSubmitting(false)
@@ -137,6 +140,7 @@ export function ShopReportModal({ shopId, shopName, isLoggedIn }: { shopId: stri
               <Button type="button" variant="ghost" onClick={close} disabled={submitting}>
                 {t('report.shop.cancel', lang)}
               </Button>
+              <Turnstile ref={turnstile} action="report_shop" />
               <Button type="submit" variant="danger" loading={submitting} disabled={reason === ''}>
                 {t('report.shop.submit', lang)}
               </Button>

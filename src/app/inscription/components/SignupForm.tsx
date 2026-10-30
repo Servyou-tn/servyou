@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState, type FormEvent, type ReactNode } from 'react'
+import { useMemo, useRef, useState, type FormEvent, type ReactNode } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
@@ -14,6 +14,7 @@ import { CheckIcon, SpinnerIcon, GoogleIcon } from '@/components/auth/Icons'
 import { PasswordField } from '@/components/auth/PasswordField'
 import { display, labelClass, helpClass, errorClass, inputBase, primaryBtn } from '@/components/auth/field-styles'
 import { FOCUS_RING } from '@/components/layout/styles'
+import { Turnstile, type TurnstileHandle } from '@/components/security/Turnstile'
 
 // ── Google OAuth: built but DISABLED this sprint ──────────────────────────────
 // The handle_new_user trigger casts raw_user_meta_data.date_of_birth into the
@@ -69,6 +70,7 @@ export function SignupForm({ role }: { role: SignupRole }) {
   const isRtl = lang === 'ar'
   const config = roleConfig(role)
 
+  const turnstile = useRef<TurnstileHandle>(null)
   const [fullName, setFullName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -139,10 +141,14 @@ export function SignupForm({ role }: { role: SignupRole }) {
     try {
       // Exactly mirrors the legacy /signup metadata contract: the 4 keys the
       // handle_new_user trigger reads. Dropping any of them breaks the trigger.
+      // Turnstile token for Supabase Auth's own CAPTCHA check (verified by Supabase once CAPTCHA protection is
+      // enabled in its dashboard; ignored until then). No site key → no token.
+      const captchaToken = await turnstile.current?.getToken()
       const { error } = await supabase.auth.signUp({
         email: email.trim().toLowerCase(),
         password,
         options: {
+          ...(captchaToken ? { captchaToken } : {}),
           // The confirmation link lands on /verifier-email of THIS origin (must be on the Redirect URLs allow list).
           emailRedirectTo: verifyEmailRedirectUrl(window.location.origin),
           data: {
@@ -156,7 +162,9 @@ export function SignupForm({ role }: { role: SignupRole }) {
 
       if (error) {
         const msg = error.message.toLowerCase()
-        if (msg.includes('already registered') || msg.includes('already been registered') || msg.includes('already exists') || msg.includes('user already')) {
+        if (error.code === 'captcha_failed') {
+          setFormError(t('common.error_bot_check', lang))
+        } else if (msg.includes('already registered') || msg.includes('already been registered') || msg.includes('already exists') || msg.includes('user already')) {
           setFormError(t('signup.form.errors.emailExists', lang))
         } else if (msg.includes('password')) {
           setFormError(t('signup.form.errors.passwordWeak', lang))
@@ -343,6 +351,7 @@ export function SignupForm({ role }: { role: SignupRole }) {
           </p>
         ) : null}
 
+        <Turnstile ref={turnstile} action="signup" />
         <button type="submit" disabled={loading || success} className={primaryBtn}>
           {success ? (
             <CheckIcon className="h-5 w-5" />

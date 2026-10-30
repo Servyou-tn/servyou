@@ -8,7 +8,7 @@
  */
 
 import { describe, it, expect } from 'vitest'
-import { contentSecurityPolicy, cspReportUrl, securityHeaders, CSP_REPORT_GROUP, SUPABASE_ORIGIN } from '@/lib/security/headers'
+import { contentSecurityPolicy, cspReportUrl, securityHeaders, CSP_REPORT_GROUP, SUPABASE_ORIGIN, TURNSTILE_ORIGIN } from '@/lib/security/headers'
 import nextConfig from '../../next.config'
 
 const byKey = (isDev: boolean) => Object.fromEntries(securityHeaders(isDev).map((h) => [h.key, h.value]))
@@ -49,7 +49,14 @@ describe('report-only CSP', () => {
   it('allows Sentry ingest and the Vercel preview toolbar', () => {
     expect(directive(prod, 'connect-src')).toEqual(expect.arrayContaining(['https://*.ingest.sentry.io', 'https://vercel.live']))
     expect(directive(prod, 'script-src')).toContain('https://vercel.live')
-    expect(directive(prod, 'frame-src')).toEqual(['https://vercel.live'])
+    expect(directive(prod, 'frame-src')).toContain('https://vercel.live')
+  })
+
+  it('allows the Cloudflare Turnstile script and challenge iframe, and nothing else from Cloudflare', () => {
+    expect(TURNSTILE_ORIGIN).toBe('https://challenges.cloudflare.com')
+    expect(directive(prod, 'script-src')).toContain(TURNSTILE_ORIGIN)
+    expect(directive(prod, 'frame-src')).toEqual(['https://vercel.live', TURNSTILE_ORIGIN])
+    expect(directive(prod, 'connect-src')).not.toContain(TURNSTILE_ORIGIN)
   })
 
   it('locks the dangerous directives', () => {

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { X } from 'lucide-react'
 import { toast } from 'sonner'
@@ -9,6 +9,7 @@ import { FOCUS_RING } from '@/components/layout/styles'
 import { useLang } from '@/components/LangProvider'
 import { t } from '@/lib/i18n'
 import { createFreelancerReportAction } from '../actions'
+import { Turnstile, type TurnstileHandle } from '@/components/security/Turnstile'
 import { FREELANCER_REPORT_REASONS, type FreelancerReportReason } from '../report-reasons'
 
 // D4's report trigger — the measured hero's kebab (icon-more-vertical) beside Partager. Mirrors
@@ -31,6 +32,7 @@ export function FreelancerReportModal({
   const [reason, setReason] = useState<FreelancerReportReason | ''>('')
   const [description, setDescription] = useState('')
   const [submitting, setSubmitting] = useState(false)
+  const turnstile = useRef<TurnstileHandle>(null)
 
   const canSubmit = !submitting && reason !== ''
 
@@ -53,7 +55,8 @@ export function FreelancerReportModal({
     e.preventDefault()
     if (!canSubmit) return
     setSubmitting(true)
-    const res = await createFreelancerReportAction({ freelancerProfileId, reason, description })
+    const turnstileToken = await turnstile.current?.getToken()
+    const res = await createFreelancerReportAction({ freelancerProfileId, reason, description }, turnstileToken)
     if (!res.ok) {
       toast.error(res.error)
       setSubmitting(false)
@@ -135,6 +138,7 @@ export function FreelancerReportModal({
               <Button type="button" variant="ghost" onClick={close} disabled={submitting}>
                 {t('report.freelancer.cancel', lang)}
               </Button>
+              <Turnstile ref={turnstile} action="report_freelancer" />
               <Button type="submit" variant="danger" loading={submitting} disabled={reason === ''}>
                 {t('report.freelancer.submit', lang)}
               </Button>

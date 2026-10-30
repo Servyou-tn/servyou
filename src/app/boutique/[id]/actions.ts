@@ -4,6 +4,7 @@ import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
 import { getLang } from '@/lib/i18n/server'
 import { t } from '@/lib/i18n'
+import { verifyTurnstile } from '@/lib/security/turnstile'
 import { reportInsertRefusalKey } from '@/lib/reports/insert-refusal'
 import { SHOP_REPORT_REASONS } from './report-reasons'
 
@@ -33,7 +34,7 @@ const CreateShopReportInput = z.object({
 
 export type CreateShopReportResult = { ok: true } | { ok: false; error: string }
 
-export async function createShopReportAction(input: unknown): Promise<CreateShopReportResult> {
+export async function createShopReportAction(input: unknown, turnstileToken?: unknown): Promise<CreateShopReportResult> {
   const lang = await getLang()
   const parsed = CreateShopReportInput.safeParse(input)
   if (!parsed.success) {
@@ -44,6 +45,8 @@ export async function createShopReportAction(input: unknown): Promise<CreateShop
     return { ok: false, error: t('common.error_generic', lang) }
   }
   const { shopId, reason, description } = parsed.data
+  // Bot check (Turnstile) before any database work: skipped without TURNSTILE_SECRET_KEY, fails closed with it.
+  if (!(await verifyTurnstile(turnstileToken)).ok) return { ok: false, error: t('common.error_bot_check', lang) }
 
   const supabase = await createClient()
   const {

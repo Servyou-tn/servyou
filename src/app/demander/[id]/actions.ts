@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/server'
 import { isNoRowLike, reportQueryError } from '@/lib/supabase/query-error'
 import { getLang } from '@/lib/i18n/server'
 import { t } from '@/lib/i18n'
+import { verifyTurnstile } from '@/lib/security/turnstile'
 import { normalizePhone } from '@/lib/phone'
 import { encodeDeliveryAddress } from '@/lib/marche/order-detail'
 import { asOrderInsert } from '@/lib/supabase/insert-drafts'
@@ -41,7 +42,7 @@ export type ProductRequestInput = {
   note: string
 }
 
-export async function submitProductRequest(input: ProductRequestInput): Promise<RequestResult> {
+export async function submitProductRequest(input: ProductRequestInput, turnstileToken?: string): Promise<RequestResult> {
   const lang = await getLang()
 
   // Server-side guard (client validates inline for UX; this is the real gate).
@@ -55,6 +56,8 @@ export async function submitProductRequest(input: ProductRequestInput): Promise<
     return { ok: false, error: t('demander.toast.error', lang) }
   }
   const p = parsed.data
+  // Bot check (Turnstile) before any database work: skipped without TURNSTILE_SECRET_KEY, fails closed with it.
+  if (!(await verifyTurnstile(turnstileToken)).ok) return { ok: false, error: t('common.error_bot_check', lang) }
 
   const supabase = await createClient()
   const {
@@ -135,7 +138,7 @@ export type ServiceRequestInput = {
   phone: string
 }
 
-export async function submitServiceRequest(input: ServiceRequestInput): Promise<RequestResult> {
+export async function submitServiceRequest(input: ServiceRequestInput, turnstileToken?: string): Promise<RequestResult> {
   const lang = await getLang()
 
   const parsed = ServiceRequestSchema.safeParse(input)
@@ -152,6 +155,8 @@ export async function submitServiceRequest(input: ServiceRequestInput): Promise<
     return { ok: false, error: t('demander.toast.error', lang) }
   }
   const s = parsed.data
+  // Bot check (Turnstile) before any database work: skipped without TURNSTILE_SECRET_KEY, fails closed with it.
+  if (!(await verifyTurnstile(turnstileToken)).ok) return { ok: false, error: t('common.error_bot_check', lang) }
 
   const supabase = await createClient()
   const {

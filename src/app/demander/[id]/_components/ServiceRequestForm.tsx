@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input'
 import { FOCUS_RING } from '@/components/layout/styles'
 import { isValidPhone } from '@/lib/phone'
 import { submitServiceRequest } from '../actions'
+import { Turnstile, type TurnstileHandle } from '@/components/security/Turnstile'
 import { Textarea } from '@/components/ui/textarea'
 import {
   SERVICE_DESCRIPTION_MAX as MAX_DESCRIPTION,
@@ -59,6 +60,7 @@ export function ServiceRequestForm({
   lang: Lang
 }) {
   const router = useRouter()
+  const turnstile = React.useRef<TurnstileHandle>(null)
   const [description, setDescription] = React.useState('')
   const [timeframe, setTimeframe] = React.useState('')
   const [budget, setBudget] = React.useState('')
@@ -102,7 +104,8 @@ export function ServiceRequestForm({
 
     setPending(true)
     setFormError(null)
-    const res = await submitServiceRequest({ serviceId, description, timeframe, budget, phone })
+    const turnstileToken = await turnstile.current?.getToken()
+    const res = await submitServiceRequest({ serviceId, description, timeframe, budget, phone }, turnstileToken)
     if (!res.ok) {
       setPending(false)
       setFormError({ text: res.error })
@@ -239,6 +242,7 @@ export function ServiceRequestForm({
         >
           {t('demander.cancel', lang)}
         </Link>
+        <Turnstile ref={turnstile} action="order_service" />
         <Button type="submit" size="lg" loading={pending}>
           {pending ? t('demander.submit.loading', lang) : t('demander.submit.service', lang)}
         </Button>

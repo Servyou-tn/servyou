@@ -9,6 +9,7 @@ import { FOCUS_RING } from '@/components/layout/styles'
 import { useLang } from '@/components/LangProvider'
 import { t } from '@/lib/i18n'
 import { createListingReportAction } from '@/app/actions/listing-reports'
+import { Turnstile, type TurnstileHandle } from '@/components/security/Turnstile'
 import {
   LISTING_REPORT_DESCRIPTION_MAX,
   LISTING_REPORT_REASONS,
@@ -52,6 +53,7 @@ export function ReportListingModal({
   const uid = useId()
   const dialogRef = useRef<HTMLDialogElement>(null)
   const selectRef = useRef<HTMLSelectElement>(null)
+  const turnstile = useRef<TurnstileHandle>(null)
   // True only when the press STARTED on the backdrop — see the dialog's onMouseDown / onClick.
   const pressStartedOnBackdrop = useRef(false)
   const [reason, setReason] = useState<ListingReportReason | ''>('')
@@ -96,7 +98,8 @@ export function ReportListingModal({
     if (!canSubmit) return
     setSubmitting(true)
     setError(null)
-    const res = await createListingReportAction({ kind, targetId, reason, description })
+    const turnstileToken = await turnstile.current?.getToken()
+    const res = await createListingReportAction({ kind, targetId, reason, description }, turnstileToken)
     if (!res.ok) {
       setError(res.error)
       setSubmitting(false)
@@ -222,6 +225,7 @@ export function ReportListingModal({
             <Button type="button" variant="ghost" onClick={() => dialogRef.current?.close()} disabled={submitting}>
               {t('report.listing.cancel', lang)}
             </Button>
+            <Turnstile ref={turnstile} action="report_listing" />
             <Button type="submit" variant="danger" loading={submitting} disabled={reason === ''}>
               {t(`report.${kind}.submit`, lang)}
             </Button>
