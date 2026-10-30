@@ -4,7 +4,8 @@
 //      build removes the dev-server's on-demand compile, the source of capture-timing flake;
 //   2. serves storybook-static/ deterministically on a local port;
 //   3. drives capture.mjs over every story's iframe URL at 1440 + 380;
-//   4. in `check` mode, drives diff.mjs and OWNS pass/fail (diff.mjs only prints `max %`).
+//   4. in `check` mode, drives diff.mjs and OWNS pass/fail (diff.mjs only prints `max %` / `errors:`;
+//      the rule lives in gate.mjs).
 //
 // Usage:
 //   node scripts/vrt/stories.mjs baseline   → capture → scripts/vrt/__baselines__/  (commit this dir)
@@ -18,6 +19,7 @@ import http from 'node:http'
 import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { parseDiffSummary, gateVerdict } from './gate.mjs'
 
 const REPO = process.cwd()
 const MODE = process.argv[2]
@@ -128,18 +130,22 @@ if (missing.length) {
 }
 
 let maxPct = 0
+let errors = 0
 if (compared.length) {
   const dif = await run('diff.mjs', [rel(BASELINE), rel(CURRENT)], { THRESH, CDP_PORT: '9353' })
+  // Non-zero also when EVERY comparison errored (diff.mjs exit 2, its FATAL line says so).
   if (dif.code !== 0) { console.error(`diff.mjs crashed (exit ${dif.code}) — see the FATAL above`); process.exit(1) }
-  const m = dif.out.match(/max\s+([\d.]+)%/)
-  if (!m) { console.error('could not parse `max %` from diff.mjs output'); process.exit(1) }
-  maxPct = Number(m[1])
+  const summary = parseDiffSummary(dif.out)
+  if (!summary) { console.error('could not parse `max %` / `errors:` from diff.mjs output'); process.exit(1) }
+  // diff.mjs pairs the same two dirs; a different count means it did not look at every pair.
+  if (summary.compared !== compared.length) { console.error(`diff.mjs compared ${summary.compared} pair(s), expected ${compared.length}`); process.exit(1) }
+  ;({ maxPct, errors } = summary)
 }
 
 console.log(`\nsets: ${compared.length} compared / ${missing.length} missing / ${orphan.length} orphan`)
 if (missing.length) console.log(`MISSING BASELINE (${missing.length}) — download the vrt-baselines-to-commit artifact and commit these to ${rel(BASELINE)}:\n  ${missing.join('\n  ')}`)
 if (orphan.length) console.log(`ORPHAN BASELINE (${orphan.length}) — a story was deleted/renamed; remove these from ${rel(BASELINE)}:\n  ${orphan.join('\n  ')}`)
 
-const pass = missing.length === 0 && orphan.length === 0 && maxPct <= GATE_PCT
-console.log(`\nVRT gate (THRESH=${THRESH}px): max ${maxPct}% vs ${GATE_PCT}% · ${missing.length} missing · ${orphan.length} orphan  →  ${pass ? 'PASS ✓' : 'FAIL ✗'}`)
+const { pass, reasons } = gateVerdict({ missing: missing.length, orphan: orphan.length, maxPct, gatePct: GATE_PCT, errors })
+console.log(`\nVRT gate (THRESH=${THRESH}px): max ${maxPct}% vs ${GATE_PCT}% · ${errors} errored · ${missing.length} missing · ${orphan.length} orphan  →  ${pass ? 'PASS ✓' : `FAIL ✗ (${reasons.join('; ')})`}`)
 process.exit(pass ? 0 : 1)

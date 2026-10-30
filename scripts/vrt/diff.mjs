@@ -10,6 +10,7 @@
 //
 // Usage: node scripts/vrt/diff.mjs <dirA> <dirB>   env: CHROME_PATH · CDP_PORT · THRESH
 import { launchChrome } from './launch-chrome.mjs'
+import { diffSummaryLines, allComparisonsErrored } from './gate.mjs'
 import fs from 'node:fs'
 import path from 'node:path'
 
@@ -57,18 +58,27 @@ async function main() {
   await cdp.send('Runtime.enable', {}, sessionId)
   console.log(`THRESH=${TH}`, 'image'.padEnd(28), 'base_h', 'after_h', 'pct%', ' 16-band vertical profile')
   let maxPct = 0
+  const errors = []
   for (const f of PAIRS) {
     const ba = fs.readFileSync(path.join(dirA, f)).toString('base64'), bb = fs.readFileSync(path.join(dirB, f)).toString('base64')
     try {
       const { result } = await cdp.send('Runtime.evaluate', { expression: DIFF_FN(ba, bb, TH), awaitPromise: true, returnByValue: true }, sessionId)
       const r = JSON.parse(result.value); maxPct = Math.max(maxPct, r.pct)
       console.log('  ', f.replace('.png', '').padEnd(28), String(r.ah).padStart(6), String(r.bh).padStart(7), String(r.pct).padStart(6), ' [' + r.bands.join(',') + ']', r.ah !== r.bh ? '  <-- HEIGHT CHANGED (reflow!)' : '')
-    } catch (e) { console.log('  ', f.padEnd(28), 'ERR', String((e && e.message) || e)) }
+    } catch (e) {
+      // Counted, never skipped: an errored pair is a gate FAIL (gate.mjs), not 0 %.
+      errors.push(f)
+      console.log('  ', f.padEnd(28), 'ERR', String((e && e.message) || e))
+    }
   }
-  console.log(`max ${maxPct}%`)
+  for (const line of diffSummaryLines({ maxPct, compared: PAIRS.length, errors })) console.log(line)
   console.log(`sets: ${PAIRS.length} compared / ${MISSING.length} missing / ${ORPHAN.length} orphan`)
   if (MISSING.length) console.log(`MISSING baseline:\n  ${MISSING.join('\n  ')}`)
   if (ORPHAN.length) console.log(`ORPHAN baseline:\n  ${ORPHAN.join('\n  ')}`)
   ws.close(); child.kill()
+  if (allComparisonsErrored({ compared: PAIRS.length, errors })) {
+    console.error(`FATAL: every comparison errored (${errors.length}/${PAIRS.length}) — not one pixel was compared`)
+    process.exit(2)
+  }
 }
 main().catch((e) => { console.error('FATAL', e); process.exit(1) })
