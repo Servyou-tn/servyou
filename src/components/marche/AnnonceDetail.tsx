@@ -4,15 +4,16 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
-import { ArrowLeft, Briefcase, CheckCircle, Inbox, Loader2, MapPin, MessageSquare, RotateCcw, Trash2, Wifi } from 'lucide-react'
+import { ArrowLeft, Calendar, Clock, Inbox, MapPin, Wifi, type LucideIcon } from 'lucide-react'
 import { useLang } from '@/components/LangProvider'
-import { t } from '@/lib/i18n'
+import { t, tn, type Lang } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
 import { FOCUS_RING } from '@/components/layout/styles'
 import { MAX_RESPONSES_PER_POST } from '@/lib/job-constants'
 import { ModerationBanner } from '@/components/ModerationBanner'
+import { Button } from '@/components/ui/button'
 import { StatusPill } from '@/components/ui/status-pill'
-import { EmptyState } from '@/components/marche/EmptyState'
+import { CategoryChip, SkillChip } from '@/components/missions/MissionChips'
 import { ConfirmModal } from '@/components/marche/ConfirmModal'
 import { formatJobBudget, hasJobBudget } from '@/lib/marche/format-job-budget'
 import { AnnonceResponseCard } from '@/components/marche/AnnonceResponseCard'
@@ -25,6 +26,14 @@ import {
   deleteMissionAction,
 } from '@/app/mes-annonces/[id]/actions'
 
+/** F4 draws the first three proposals, then « + N autres propositions ». */
+const PROPOSALS_SHOWN = 3
+
+// Panel recipe shared by the two left cards (Figma 1477:29190 / 375 frame 1488:65602): surface/base, 1px border, radius xl, gap 12, p 24 — px 16 at 375.
+const PANEL = 'flex flex-col gap-3 rounded-xl border border-border-subtle bg-surface-base px-4 py-6 sm:p-6'
+
+// F4 « Détail de mon annonce » (Figma 1477:29190, 1440). Left: description panel, then the proposals received. Right (376 from `xl`): the
+// decision card. Below `xl` everything is ONE column in that order — the 375 frame (1488:65602) is applied separately.
 export function AnnonceDetail({ annonce }: { annonce: AnnonceDetailData }) {
   const lang = useLang()
   const router = useRouter()
@@ -34,16 +43,17 @@ export function AnnonceDetail({ annonce }: { annonce: AnnonceDetailData }) {
   const [reopening, setReopening] = useState(false)
   const [deleteOpen, setDeleteOpen] = useState(false)
   const [deleting, setDeleting] = useState(false)
+  const [showAll, setShowAll] = useState(false)
 
-  // Resolved server-side (lib/marche/annonce-status.ts, shared with AnnonceCard) and passed down
+  // Resolved server-side (lib/marche/annonce-status.ts, shared with the list row) and passed down
   // as `displayStatus` — NOT recomputed here. A resolver reading `Date.now()` inside this
   // 'use client' component's render body would run once during SSR and again on hydration with
-  // two different clocks; for a post near the 30-day boundary that is a hydration mismatch.
+  // two different clocks; for a post near the 30-day boundary that is a hydration mismatch. The same goes for « Expire dans N jours »
+  // (`expiresInDays`) and the proposals' « il y a 3 h » (`fetchedAt`): both come from the server's single clock.
   const display = annonce.displayStatus
 
-  // Action gating: an expired-but-open post offers no Close (it would be a no-op); a filled
-  // post can be reopened only while still inside the 30-day window. Modify returns in PR-D
-  // with the edit route behind it — canManageOpen still gates Close below, unrelated to Modify.
+  // Action gating: an expired-but-open post offers no « pourvue » (it would be a no-op); a filled post can be reopened only while
+  // still inside the 30-day window.
   const canManageOpen = display === 'open'
   const canReopen = annonce.status === 'filled' && !annonce.isExpired
 
@@ -89,249 +99,204 @@ export function AnnonceDetail({ annonce }: { annonce: AnnonceDetailData }) {
     router.refresh()
   }
 
-  // Budget label: a single value when min === max, a range when both differ, a one-sided bound
-  // when only one is set, "À discuter" when neither is.
-  const hasBudget = annonce.budgetMin != null || annonce.budgetMax != null
-  // Same sentence as the list and the mission pages (formatJobBudget): the single « Budget approximatif » is saved as
-  // budget_max, and a max-only budget reads as a figure, not as a ceiling.
-  const budgetLabel = hasJobBudget(annonce.budgetMin, annonce.budgetMax)
+  // Same sentence as the list and the mission pages (formatJobBudget): the single « Budget approximatif » is saved as budget_max, a
+  // max-only budget reads as a figure, an old min–max post still reads as a range. No budget at all → « Selon budget » (as the list).
+  const hasBudget = hasJobBudget(annonce.budgetMin, annonce.budgetMax)
+  const budgetLabel = hasBudget
     ? formatJobBudget(annonce.budgetMin, annonce.budgetMax, lang)
-    : t('annonces.detail.budget_tbd', lang)
+    : t('mesannonces.row.budget_none', lang)
 
-  // Status badge — shares AnnonceCard's own ANNONCE_STATUS_PILL (lib/marche/annonce-status.ts)
-  // rather than a second local copy. Before PR-E this page kept its own map with a different hue
-  // (green, not StatusPill's indigo for 'pourvue') AND a different label ("Fermée", not "Pourvue")
-  // for the identical displayStatus value — the same post read as two different things depending
-  // which page you were on.
+  // One status map for every surface (list row + this page): the same post reads as the same word in the same colour.
   const { status: pillStatus, labelKey: statusLabelKey } = ANNONCE_STATUS_PILL[display]
 
-  const responseBadgeCls = annonce.isAtCap ? 'bg-warning-100 text-warning-500' : 'bg-surface-sunken text-text-muted'
-  const responseBadgeLabel = t(
-    annonce.isAtCap ? 'annonces.detail.responses_cap' : 'annonces.detail.responses',
-    lang,
-    { n: annonce.responseCount, max: MAX_RESPONSES_PER_POST },
-  )
+  const count = annonce.responseCount
+  const places = MAX_RESPONSES_PER_POST - count
+  const visibleResponses = showAll ? annonce.responses : annonce.responses.slice(0, PROPOSALS_SHOWN)
+  const hiddenCount = annonce.responses.length - PROPOSALS_SHOWN
+
+  // « Expire dans N jours » only means something while the post is open.
+  const expiresIn = display === 'open' ? annonce.expiresInDays : null
+  const expiresText =
+    expiresIn == null
+      ? null
+      : expiresIn === 0
+        ? t('annonces.detail.expires_today', lang)
+        : `${t('annonces.detail.expires_label', lang)} ${tn('annonces.detail.days', lang, expiresIn)}`
+
+  const where = annonce.isRemote ? t('annonce.form.remote_label', lang) : annonce.city
 
   return (
-    <div className="lg:grid lg:grid-cols-5 lg:gap-8">
-      {/* LEFT — annonce summary + responses */}
-      <div className="lg:col-span-3">
-        {/* Back */}
-        <Link
-          href="/mes-annonces"
-          className={cn(
-            'mb-6 inline-flex items-center gap-1.5 rounded text-sm text-text-muted transition-colors hover:text-text-primary',
-            FOCUS_RING,
-          )}
-        >
-          <ArrowLeft className="h-4 w-4 rtl:-scale-x-100" aria-hidden="true" />
-          {t('annonces.detail.back', lang)}
-        </Link>
+    <div className="flex flex-col gap-5 sm:gap-6">
+      <Link
+        href="/mes-annonces"
+        className={cn(
+          'inline-flex w-fit items-center gap-1.5 rounded text-body-sm font-semibold text-brand-blue-600 hover:underline',
+          FOCUS_RING,
+        )}
+      >
+        <ArrowLeft className="size-5 rtl:-scale-x-100" aria-hidden="true" />
+        {t('annonces.detail.back', lang)}
+      </Link>
 
-        {/* Header */}
-        <div className="mb-6">
-          <p className="text-caption uppercase tracking-wide text-text-muted">{t('annonces.detail.label', lang)}</p>
-          <h1 className="mt-1 wrap-anywhere text-h2 text-text-primary">{annonce.title}</h1>
-          <div className="mt-2 flex flex-wrap items-center gap-2 text-body-sm text-text-muted">
-            <StatusPill status={pillStatus}>{t(statusLabelKey, lang)}</StatusPill>
-            <span aria-hidden="true">·</span>
-            <span>{t('annonces.detail.posted_on', lang, { date: formatTunisDate(annonce.createdAt, lang, 'long') })}</span>
-            <span aria-hidden="true">·</span>
-            <span className={cn('rounded-full px-3 py-1 text-xs font-medium', responseBadgeCls)}>
-              {responseBadgeLabel}
-            </span>
-          </div>
+      {/* Post header: category chip + status pill, H1, meta row. */}
+      <header className="flex flex-col gap-3">
+        <div className="flex flex-wrap items-center gap-2">
+          <CategoryChip slug={annonce.categorySlug} nameFr={annonce.category} nameAr={annonce.categoryAr} lang={lang} />
+          <StatusPill status={pillStatus}>{t(statusLabelKey, lang)}</StatusPill>
+        </div>
+        <h1 className="wrap-anywhere text-h1 text-text-primary">{annonce.title}</h1>
+        <ul className="flex flex-wrap items-center gap-x-4 gap-y-2 text-body-sm font-medium text-text-muted">
+          <li className="inline-flex items-center gap-1.5">
+            <Clock className="size-4 shrink-0" aria-hidden="true" />
+            {t('annonces.detail.posted_on', lang, { date: formatTunisDate(annonce.createdAt, lang, 'long') })}
+          </li>
+          {where && (
+            <li className="inline-flex items-center gap-1.5">
+              {annonce.isRemote ? (
+                <Wifi className="size-4 shrink-0" aria-hidden="true" />
+              ) : (
+                <MapPin className="size-4 shrink-0" aria-hidden="true" />
+              )}
+              {where}
+            </li>
+          )}
+          {expiresText && (
+            <li className="inline-flex items-center gap-1.5">
+              <Calendar className="size-4 shrink-0" aria-hidden="true" />
+              {expiresText}
+            </li>
+          )}
+        </ul>
+      </header>
+
+      {annonce.adminHiddenAt && <ModerationBanner variant="job_post" />}
+
+      <div className="flex flex-col gap-5 sm:gap-6 xl:flex-row xl:items-start">
+        {/* LEFT — description, then the proposals received */}
+        <div className="flex min-w-0 flex-col gap-6 xl:flex-1">
+          <section className={PANEL}>
+            <h2 className="text-body-sm font-semibold text-text-secondary">{t('annonces.detail.desc_title', lang)}</h2>
+            <p className="whitespace-pre-line wrap-anywhere text-body text-text-primary">{annonce.description}</p>
+          </section>
+
+          <section className={PANEL} aria-labelledby="proposals-title">
+            <h2 id="proposals-title" className="text-body-sm font-semibold text-text-secondary">
+              {t('annonces.detail.proposals_title', lang, { n: count })}
+            </h2>
+
+            {count === 0 ? (
+              <div className="flex flex-col items-center gap-2 px-4 py-10 text-center">
+                <Inbox className="size-12 text-text-muted" aria-hidden="true" />
+                <p className="text-body font-semibold text-text-primary">{t('annonces.detail.empty_title', lang)}</p>
+                <p className="max-w-md text-body-sm text-text-muted">{t('annonces.detail.empty_desc', lang)}</p>
+              </div>
+            ) : (
+              <div className="flex flex-col gap-3">
+                {visibleResponses.map((resp) => (
+                  <AnnonceResponseCard
+                    key={resp.id}
+                    response={resp}
+                    annonceTitle={annonce.title}
+                    lang={lang}
+                    now={annonce.fetchedAt}
+                  />
+                ))}
+                {hiddenCount > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => setShowAll((v) => !v)}
+                    aria-expanded={showAll}
+                    className={cn(
+                      'w-fit cursor-pointer rounded text-body text-text-primary hover:underline',
+                      FOCUS_RING,
+                    )}
+                  >
+                    {showAll ? t('annonces.detail.proposals_less', lang) : tn('annonces.detail.proposals_more', lang, hiddenCount)}
+                  </button>
+                )}
+              </div>
+            )}
+          </section>
         </div>
 
-        {annonce.adminHiddenAt && <ModerationBanner variant="job_post" />}
-
-        {/* Section A — annonce summary */}
-        <div className="card-premium outline-brand mb-6 rounded-2xl bg-white p-6">
-          <div className="mb-4 flex items-center gap-2">
-            <Briefcase className="h-5 w-5 text-brand-blue-600" aria-hidden="true" />
-            <h2 className="text-lg font-semibold text-text-primary">{t('annonces.detail.section_details', lang)}</h2>
+        {/* RIGHT — decision card (376 from `xl`) */}
+        <aside className="flex flex-col gap-4 rounded-xl border border-border-subtle bg-surface-base px-4 py-6 sm:p-6 xl:sticky xl:top-24 xl:w-94 xl:shrink-0">
+          <div>
+            <p className="text-caption font-medium text-text-muted">{t('annonces.detail.budget_label', lang)}</p>
+            {/* <bdi dir="ltr">: « 200 – 400 TND » reorders in an RTL block otherwise; only the figure branch is isolated — « Selon budget »
+                is real translated text and keeps the ambient direction. */}
+            <p className="mt-0.5 text-h1 text-text-primary">{hasBudget ? <bdi dir="ltr">{budgetLabel}</bdi> : budgetLabel}</p>
           </div>
 
-          <div className="flex flex-col gap-4">
-            <div>
-              <p className="text-sm font-medium text-text-muted">{t('annonces.detail.description_label', lang)}</p>
-              <p className="mt-1 whitespace-pre-line wrap-anywhere text-base leading-relaxed text-text-primary">
-                {annonce.description}
-              </p>
-            </div>
+          <hr className="border-border-subtle" />
 
-            {/* xl:grid-cols-2, not sm: — measured at 1024 (this card is ~410px wide inside the
-                page's lg:col-span-3 of 5), a 5-figure budget range wraps to 2 lines at the sm-2up
-                172px column width. xl defers the 2-up split until the column is wide enough for
-                the widest realistic value on one line — same fix class as PR #153's
-                lg:grid-cols-3 -> xl:grid-cols-3 on the list grid, applied here to the dl's own
-                2-column split rather than the outer page grid (that fix doesn't reach this one). */}
-            <dl className="grid grid-cols-1 gap-4 xl:grid-cols-2">
-              <div>
-                <dt className="text-sm font-medium text-text-muted">{t('annonces.detail.budget_label', lang)}</dt>
-                {/* dir="ltr" only on the numeric branches — the "À discuter" fallback (hasBudget
-                    false) is real translated text and must stay in the ambient RTL flow. */}
-                <dd dir={hasBudget ? 'ltr' : undefined} className="mt-1 text-base font-semibold text-text-primary">
-                  {budgetLabel}
-                </dd>
-              </div>
-              <div>
-                <dt className="text-sm font-medium text-text-muted">{t('annonces.detail.category_label', lang)}</dt>
-                <dd className="mt-1">
-                  {annonce.category ? (
-                    <span className="inline-block rounded-full bg-surface-sunken px-3 py-1 text-xs font-medium text-text-primary">
-                      {annonce.category}
-                    </span>
-                  ) : (
-                    <span className="text-base text-text-muted">—</span>
-                  )}
-                </dd>
-              </div>
-              <div>
-                <dt className="text-sm font-medium text-text-muted">{t('annonces.detail.location_label', lang)}</dt>
-                <dd className="mt-1 inline-flex items-center gap-1.5 text-base text-text-primary">
-                  {annonce.isRemote ? (
-                    <>
-                      <Wifi className="h-4 w-4 text-text-muted" aria-hidden="true" />
-                      {t('annonce.form.remote_label', lang)}
-                    </>
-                  ) : annonce.city ? (
-                    <>
-                      <MapPin className="h-4 w-4 text-text-muted" aria-hidden="true" />
-                      {annonce.city}
-                    </>
-                  ) : (
-                    <span className="text-text-muted">—</span>
-                  )}
-                </dd>
-              </div>
-              <div>
-                <dt className="text-sm font-medium text-text-muted">{t('annonces.detail.deadline_label', lang)}</dt>
-                {/* The date is formatted in the active language and Africa/Tunis (it used to be hard-coded fr-TN,
-                    which is why it was pinned dir="ltr"); an Arabic month name now flows with the RTL text. */}
-                <dd className="mt-1 text-base text-text-primary">
-                  {annonce.deadline ? (
-                    <span>{formatTunisDate(annonce.deadline, lang, 'long')}</span>
-                  ) : (
-                    t('annonces.detail.deadline_none', lang)
-                  )}
-                </dd>
-              </div>
-            </dl>
+          <div className="flex flex-col gap-1.5">
+            <CompetitionPill count={count} cap={annonce.isAtCap} lang={lang} />
+            {/* The « 5 / 10 » pair is its own LTR run: in an RTL line the spaced slash is a neutral and the numbers swap (« 10 / 5 »). */}
+            <p className="text-caption font-medium text-text-muted">
+              <bdi dir="ltr">
+                {count} / {MAX_RESPONSES_PER_POST}
+              </bdi>{' '}
+              · {annonce.isAtCap ? t('annonces.detail.slots_full', lang) : tn('annonces.detail.slots_left', lang, places)}
+            </p>
+          </div>
 
-            {annonce.skills.length > 0 && (
-              <div>
-                <p className="text-sm font-medium text-text-muted">{t('annonces.detail.skills_label', lang)}</p>
-                {/* Same chip recipe as AnnonceCard's skills chips — the same job_post_skills data
-                    was rendered two different ways on two pages of one feature (this page used
-                    surface-sunken grey; the list card used this brand-blue treatment). */}
-                <div className="mt-2 flex flex-wrap gap-2">
+          {annonce.skills.length > 0 && (
+            <>
+              <hr className="border-border-subtle" />
+              <div className="flex flex-col gap-1.5">
+                <p className="text-caption font-medium text-text-muted">{t('annonces.detail.skills_label', lang)}</p>
+                <div className="flex flex-wrap gap-2">
                   {annonce.skills.map((s) => (
-                    <span
-                      key={s}
-                      className="rounded-full bg-brand-blue-50 px-3 py-1 text-xs wrap-anywhere text-brand-blue-600"
-                    >
-                      {s}
-                    </span>
+                    <SkillChip key={s}>{s}</SkillChip>
                   ))}
                 </div>
               </div>
+            </>
+          )}
+
+          <hr className="border-border-subtle" />
+
+          <dl className="flex flex-col gap-3 text-body-sm">
+            {where && <MetaRow icon={MapPin} label={t('annonces.detail.location_label', lang)} value={where} />}
+            {annonce.deadline && (
+              <MetaRow icon={Calendar} label={t('annonces.detail.deadline_label', lang)} value={formatTunisDate(annonce.deadline, lang, 'long')} />
             )}
-          </div>
-        </div>
+            {/* Day 0 (the last day) is said once, in the header; the row needs a number to sit beside its label. */}
+            {expiresIn != null && expiresIn > 0 && (
+              <MetaRow icon={Clock} label={t('annonces.detail.expires_label', lang)} value={tn('annonces.detail.days', lang, expiresIn)} />
+            )}
+          </dl>
 
-        {/* Section B — responses */}
-        <div className="mb-4 flex items-center gap-2 lg:mb-0">
-          <MessageSquare className="h-5 w-5 text-brand-blue-600" aria-hidden="true" />
-          <h2 className="text-lg font-semibold text-text-primary">{t('annonces.detail.responses_title', lang)}</h2>
-          <span className="rounded-full bg-surface-sunken px-2.5 py-0.5 text-xs font-medium text-text-muted">
-            {annonce.responseCount}
-          </span>
-        </div>
-
-        {annonce.responses.length === 0 ? (
-          <div className="mt-4">
-            <EmptyState
-              icon={<Inbox className="mx-auto h-12 w-12" />}
-              message={t('annonces.detail.empty_title', lang)}
-              subtitle={t('annonces.detail.empty_desc', lang)}
-            />
-          </div>
-        ) : (
-          <div className="mt-4 flex flex-col gap-4">
-            {annonce.responses.map((resp) => (
-              <AnnonceResponseCard key={resp.id} response={resp} annonceTitle={annonce.title} lang={lang} />
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* RIGHT — sticky action panel */}
-      <div className="mt-6 lg:col-span-2 lg:mt-0">
-        <div className="card-premium outline-brand rounded-2xl bg-white p-6 lg:sticky lg:top-24">
-          <p className="mb-4 text-xs uppercase tracking-wide text-text-muted">{t('annonces.detail.actions', lang)}</p>
-
-          <div className="flex flex-col gap-3">
-            {/* Close — only while open, now a real modal (see below) sharing Delete's a11y wiring. */}
+          <div className="flex flex-col gap-4">
             {canManageOpen && (
-              <button
-                type="button"
-                onClick={() => setCloseOpen(true)}
-                className={cn(
-                  'inline-flex h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-full bg-brand-blue-600 text-base font-semibold text-white shadow-md transition-colors hover:bg-brand-blue-500',
-                  FOCUS_RING,
-                )}
-              >
-                <CheckCircle className="h-5 w-5" aria-hidden="true" />
+              <Button variant="secondary" className="w-full" onClick={() => setCloseOpen(true)}>
                 {t('annonces.detail.close', lang)}
-              </button>
+              </Button>
             )}
-
-            {canManageOpen && (
-              <p className="text-xs text-text-muted">{t('annonces.detail.close_helper', lang)}</p>
-            )}
-
-            {/* Reopen — only a filled, not-expired post */}
             {canReopen && (
-              <button
-                type="button"
-                onClick={doReopen}
-                disabled={reopening}
-                className={cn(
-                  'inline-flex h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-full border border-border-subtle bg-white text-sm font-medium text-text-primary transition-colors hover:bg-surface-subtle disabled:cursor-not-allowed disabled:opacity-60',
-                  FOCUS_RING,
-                )}
-              >
-                {reopening ? (
-                  <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
-                ) : (
-                  <RotateCcw className="h-4 w-4" aria-hidden="true" />
-                )}
+              <Button variant="secondary" className="w-full" loading={reopening} onClick={doReopen}>
                 {t('annonces.detail.reopen', lang)}
-              </button>
+              </Button>
             )}
-
-            {/* Delete — always available (destructive) */}
-            <button
-              type="button"
-              onClick={() => setDeleteOpen(true)}
-              className={cn(
-                'inline-flex h-10 w-full cursor-pointer items-center justify-center gap-2 rounded-full border border-danger-500 bg-white text-sm font-medium text-danger-500 transition-colors hover:bg-danger-50',
-                FOCUS_RING,
-              )}
-            >
-              <Trash2 className="h-4 w-4" aria-hidden="true" />
-              {t('annonces.detail.delete', lang)}
-            </button>
-
-            <div className="mt-2 border-t border-border-subtle pt-3">
-              <p className="text-xs leading-relaxed text-text-muted">{t('annonces.detail.expiry_note', lang)}</p>
+            {/* « Modifier l'annonce »: the edit route does not exist yet (next PR). A disabled button cannot take focus and its title
+                is unreliable, so the reason is visible text, tied to the button for assistive tech. */}
+            <div className="flex flex-col gap-1">
+              <Button variant="ghost" className="w-full" disabled aria-describedby="edit-soon">
+                {t('annonces.detail.edit', lang)}
+              </Button>
+              <p id="edit-soon" className="text-center text-caption text-text-muted">
+                {t('annonces.detail.edit_soon', lang)}
+              </p>
             </div>
+            <Button variant="danger" className="w-full" onClick={() => setDeleteOpen(true)}>
+              {t('annonces.detail.delete', lang)}
+            </Button>
           </div>
-        </div>
+        </aside>
       </div>
 
-      {/* Close confirmation — reversible via Reopen, so no typed keyword (see ConfirmModal). */}
+      {/* « Marquer comme pourvue » confirmation — reversible via Reopen, so no typed keyword (see ConfirmModal). */}
       {closeOpen && (
         <ConfirmModal
           titleId="close-annonce-title"
@@ -362,5 +327,30 @@ export function AnnonceDetail({ annonce }: { annonce: AnnonceDetailData }) {
         />
       )}
     </div>
+  )
+}
+
+// Space-between row: label Medium text/secondary, value Semi Bold text/primary (Figma 14 px). Plain strings — size + colour together.
+function MetaRow({ icon: Icon, label, value }: { icon: LucideIcon; label: string; value: string }) {
+  return (
+    <div className="flex items-start justify-between gap-2">
+      <dt className="flex items-center gap-1.5 font-medium text-text-secondary">
+        <Icon className="size-4 shrink-0" aria-hidden="true" />
+        {label}
+      </dt>
+      <dd className="text-end font-semibold text-text-primary wrap-anywhere">{value}</dd>
+    </div>
+  )
+}
+
+// Competition pill (F4): green while proposals come in, amber at the cap, neutral with none — the text carries the state, never colour alone.
+function CompetitionPill({ count, cap, lang }: { count: number; cap: boolean; lang: Lang }) {
+  const tone = count === 0 ? 'bg-surface-sunken text-text-secondary' : cap ? 'bg-warning-100 text-warning-700' : 'bg-success-100 text-success-700'
+  const dot = count === 0 ? 'bg-text-muted' : cap ? 'bg-warning-500' : 'bg-success-500'
+  return (
+    <span className={`inline-flex w-fit items-center gap-2 rounded-full px-2.5 py-1 text-caption font-semibold ${tone}`}>
+      <span className={`size-2 rounded-full ${dot}`} aria-hidden="true" />
+      {count === 0 ? t('annonces.detail.competition_none', lang) : tn('annonces.detail.competition', lang, count)}
+    </span>
   )
 }
