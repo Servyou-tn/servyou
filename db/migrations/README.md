@@ -1012,6 +1012,17 @@ both on 2026-10-28.
     - The RESTRICTIVE « Suspended accounts cannot upload » stays (approved) but is unobservable while no permissive
       client INSERT exists; `suspension-enforcement.test.ts` pins the active control as refused until then.
     - The recorded statement carries a shorter header comment. The executable SQL is identical.
+105. **20261030202059_image_count_caps** (`080411fd`) — upload COUNT caps in the database (architect's final ruling,
+    2026-10-30): at most 8 `product_images` per product (`trg_limit_product_images`, BEFORE INSERT) and 6
+    `freelancer_portfolio_items` per freelancer profile (`trg_limit_portfolio_items`, BEFORE INSERT or UPDATE OF
+    `freelancer_profile_id`).
+    - Same shape as 101: SECURITY DEFINER, empty search_path, a per-parent advisory lock, 23514 + hint
+      (`product_images_cap` / `portfolio_items_cap`) that the app maps to its FR / AR « limite atteinte » message.
+      The service role is not capped.
+    - At apply: fullest product 5 images, 0 portfolio items; nothing existing rejected or rewritten.
+    - Portfolio uploads are not count-refused (the editor removes then adds before saving); the cap holds at save
+      and in the UI. Approved deviation, recorded in `docs/follow-ups/upload-hardening.md`.
+    - The recorded statement carries no comments. The executable SQL is identical.
 
 ## Rollback paths
 

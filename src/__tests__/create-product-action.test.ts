@@ -25,7 +25,7 @@ const PRODUCT_ID = '22222222-2222-4222-8222-222222222222'
 const CATEGORY_ID = '33333333-3333-4333-8333-333333333333'
 
 const h = vi.hoisted(() => {
-  type Err = { message: string; code?: string; details?: string } | null
+  type Err = { message: string; code?: string; details?: string; hint?: string } | null
   const state = {
     user: null as { id: string } | null,
     shopsResult: { data: [] as { id: string }[], error: null as Err },
@@ -295,6 +295,17 @@ describe('createProductAction — compensation when the gallery insert fails', (
     expect(res.ok).toBe(false)
     const logged = err.mock.calls.flat().join(' ')
     expect(logged).toContain('possible tampering')
+    err.mockRestore()
+  })
+})
+
+// The 8-image cap in the database (trg_limit_product_images, hint product_images_cap) reads as the cap message.
+describe('createProductAction — the database image cap', () => {
+  it('a product_images_cap refusal is « limite atteinte », not a generic failure', async () => {
+    h.state.imagesInsertError = { message: 'Ce produit a déjà 8 photos, le maximum.', code: '23514', hint: 'product_images_cap' }
+    const err = vi.spyOn(console, 'error').mockImplementation(() => {})
+    const res = await createProductAction(okInput())
+    expect(res).toEqual({ ok: false, error: 'product.image.error.max' })
     err.mockRestore()
   })
 })
