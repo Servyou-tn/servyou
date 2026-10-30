@@ -32,6 +32,7 @@ export const INTEGRATION_GLOBS = [
   '**/storage-uploads-service-role.test.ts',
   '**/storage-verifications-no-client-insert.test.ts',
   '**/image-count-caps.test.ts',
+  '**/freelancer-url-scheme-checks.test.ts',
   '**/moderated-freelancer-read-rls.test.ts',
   '**/job-posts-write-guards.test.ts',
   '**/profiles-email-sync.test.ts',
