@@ -1,0 +1,37 @@
+-- S1 -- close the last client PUT into storage: drop the owner INSERT policy on the private `verifications`
+-- bucket. Identity verification is not built: no app code writes there (src/lib/images/provenance.ts:
+-- « verifications has no writer yet »), yet any signed-in, active account can store up to 10 MB per object,
+-- unbounded in count, under its own uid folder -- private, unreviewed, never read by the app.
+--
+-- ⚑ RE-ADD THE CLIENT INSERT PATH WHEN IDENTITY VERIFICATION IS BUILT -- and decide then whether it should be
+--   a client policy at all: since S-3 (migration 20261026222408) every other upload goes through the service
+--   role after normalize.ts + ownership + isCallerActive() (src/lib/images/upload-guard.ts). The exact policy
+--   dropped here is in the rollback block below. While it is gone, the RESTRICTIVE « Suspended accounts cannot
+--   upload » policy has no permissive INSERT to narrow, so it is unobservable (kept on purpose: it covers the
+--   next client INSERT policy anyone adds).
+--
+-- Live on 2026-10-30 (pg_policy on storage.objects):
+--   * INSERT: « verifications: owner uploads own document » (PERMISSIVE, authenticated) -- the ONLY permissive
+--     INSERT policy left -- and the RESTRICTIVE « Suspended accounts cannot upload » (kept).
+--   * verifications SELECT « verifications: owner or admin reads » (kept); no client UPDATE / DELETE policy on
+--     the bucket. Bucket private, 10 MB, webp/jpeg/png/pdf (kept).
+--   * storage.objects in verifications: 0 rows. Nothing to migrate or delete.
+--
+-- After it: a signed-in PUT into any bucket is refused by RLS (« new row violates row-level security
+-- policy »). The four public image buckets are unchanged (service-role uploads only, since S-3); the owner /
+-- admin read policy on verifications stays, so a future service-role writer's documents remain readable.
+
+drop policy "verifications: owner uploads own document" on storage.objects;
+
+-- Post-apply verification:
+--   1. select polname, polpermissive from pg_policy where polrelid = 'storage.objects'::regclass and polcmd = 'a';
+--      -> « Suspended accounts cannot upload » (restrictive) only.
+--   2. src/__tests__/storage-verifications-no-client-insert.test.ts (live): a signed-in owner's PUT into their
+--      own verifications folder is refused and stores nothing; the service role still writes to all five
+--      buckets (the app's upload path); the owner still reads their own verifications object.
+--   3. src/__tests__/storage-uploads-service-role.test.ts + suspension-enforcement.test.ts (storage block):
+--      updated in the same PR for the flipped verifications assertions.
+--
+-- Rollback (the exact live definition of 2026-10-30):
+--   create policy "verifications: owner uploads own document" on storage.objects for insert to authenticated
+--     with check ((bucket_id = 'verifications') and ((storage.foldername(name))[1] = (select (auth.uid())::text as uid)));
