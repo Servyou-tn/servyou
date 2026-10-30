@@ -50,6 +50,13 @@ export function FreelancesFilterBar({ categories, cities, selectedCategorie, vil
   const sp = useSearchParams()
   const lang = useLang()
   const [query, setQuery] = useState(q)
+  // The box follows `q` when the URL changes it (a chip / « Tout effacer » clears it) — adjusted during render, not by remounting the bar,
+  // so submitting a search does not drop the focus or close an open menu.
+  const [seenQ, setSeenQ] = useState(q)
+  if (q !== seenQ) {
+    setSeenQ(q)
+    setQuery(q)
+  }
 
   function push(patch: Parameters<typeof buildSearchQuery>[1]) {
     const qs = buildSearchQuery(sp, patch, { resetPage: true })

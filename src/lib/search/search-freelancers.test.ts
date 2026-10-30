@@ -1,9 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
-// searchFreelancers — mocked Supabase: only PUBLISHED, non-moderated profiles are asked for; the sector / city / query / sort filters do what
-// they say; a failed lookup throws instead of reading as « no freelance ».
+// searchFreelancers — mocked Supabase. The mock answers per TABLE and applies `.in('id', …)` to the profile rows, so a profile only comes back
+// when the service set asked for it; it records the calls so the visibility filters can be asserted. It cannot prove RLS.
 type Call = [string, ...unknown[]]
-type Result = { data?: unknown; error?: { message: string } | null }
+type Result = { data?: Record<string, unknown>[]; error?: { message: string } | null }
 const state = {
   calls: {} as Record<string, Call[]>,
   results: {} as Record<string, Result>,
@@ -11,14 +11,26 @@ const state = {
 
 function builder(table: string) {
   const calls = (state.calls[table] ??= [])
+  const mine: Call[] = []
   const b: Record<string, unknown> = {}
-  for (const m of ['select', 'eq', 'is', 'in', 'or', 'order', 'limit']) {
+  for (const m of ['select', 'eq', 'is', 'in', 'or', 'order', 'range', 'limit']) {
     b[m] = (...args: unknown[]) => {
-      calls.push([m, ...args])
+      const call: Call = [m, ...args]
+      calls.push(call)
+      mine.push(call)
       return b
     }
   }
-  b.then = (resolve: (v: unknown) => unknown) => resolve({ data: [], error: null, ...state.results[table] })
+  b.then = (resolve: (v: unknown) => unknown) => {
+    const res = state.results[table] ?? {}
+    let data = res.data ?? []
+    // `.in('id', …)` on the profiles table narrows to the asked ids, like the database would.
+    const inId = mine.find((c) => c[0] === 'in' && c[1] === 'id')
+    if (table === 'freelancer_profiles' && inId) data = data.filter((r) => (inId[2] as string[]).includes(r.id as string))
+    const range = mine.find((c) => c[0] === 'range')
+    if (range) data = data.slice(range[1] as number, (range[2] as number) + 1)
+    resolve({ data, error: res.error ?? null })
+  }
   return b
 }
 
@@ -30,6 +42,7 @@ import {
   chunk,
   FREELANCER_PER_PAGE,
   matchesFreelancerQuery,
+  pageAll,
   parseFreelancerSort,
   searchFreelancers,
   sortCandidates,
@@ -41,9 +54,14 @@ const profile = (n: number, extra: Record<string, unknown> = {}) => ({
   id: `f${n}`,
   profile_id: `p${n}`,
   headline: null,
+  city: null,
   created_at: `2026-10-${String(10 + n).padStart(2, '0')}T00:00:00Z`,
   ...extra,
 })
+/** The services the database returns: one row per active visible service. */
+const withServices = (...ns: number[]) => {
+  state.results.service_listings = { data: ns.map((n) => ({ freelancer_profile_id: `f${n}` })) }
+}
 const has = (table: string, ...call: unknown[]) =>
   (state.calls[table] ?? []).some((c) => c.length === call.length && c.every((v, i) => v === call[i]))
 
@@ -80,7 +98,7 @@ describe('matchesFreelancerQuery', () => {
   })
 })
 
-describe('sortCandidates / chunk', () => {
+describe('sortCandidates / chunk / pageAll', () => {
   const rows = [profile(1), profile(3), profile(2)]
   it('newest first by default, without mutating the input', () => {
     expect(sortCandidates(rows, 'recent', () => '').map((r) => r.id)).toEqual(['f3', 'f2', 'f1'])
@@ -94,24 +112,49 @@ describe('sortCandidates / chunk', () => {
     expect(chunk([1, 2, 3, 4, 5], 2)).toEqual([[1, 2], [3, 4], [5]])
     expect(chunk([], 3)).toEqual([])
   })
+  it('pageAll keeps reading while a page is full — PostgREST answers 1000 rows with no error — and stops at a short page', async () => {
+    const all = Array.from({ length: 2300 }, (_, i) => i)
+    const reads: [number, number][] = []
+    const out = await pageAll<number>(async (from, to) => {
+      reads.push([from, to])
+      return { data: all.slice(from, to + 1), error: null }
+    }, 'test')
+    expect(out).toHaveLength(2300)
+    expect(reads).toEqual([[0, 999], [1000, 1999], [2000, 2999]])
+  })
+  it('pageAll throws on an error instead of returning what it had', async () => {
+    await expect(pageAll(async () => ({ data: null, error: { message: 'boom' } }), 'test')).rejects.toThrow()
+  })
 })
 
 describe('searchFreelancers', () => {
-  it('asks only for published, non-moderated profiles — never the owner / buyer rows RLS would also let through', async () => {
+  it('asks only for published, non-moderated profiles, and only for services that are active and not hidden', async () => {
+    withServices(1)
     state.results.freelancer_profiles = { data: [profile(1)] }
     await searchFreelancers(base)
     expect(has('freelancer_profiles', 'eq', 'is_published', true)).toBe(true)
     expect(has('freelancer_profiles', 'is', 'admin_hidden_at', null)).toBe(true)
+    expect(has('service_listings', 'eq', 'status', 'active')).toBe(true)
+    expect(has('service_listings', 'is', 'admin_hidden_at', null)).toBe(true)
   })
 
-  it('returns an empty first page when nobody is published, without decorating anything', async () => {
+  it('a published profile whose only services are hidden (no visible active service) is not listed', async () => {
+    withServices(1) // f2 has no visible active service
+    state.results.freelancer_profiles = { data: [profile(1), profile(2)] }
+    const r = await searchFreelancers(base)
+    expect(r.freelancers.map((f) => f.id)).toEqual(['f1'])
+  })
+
+  it('returns an empty first page when nobody has a visible service, without decorating anything', async () => {
     const r = await searchFreelancers(base)
     expect(r).toMatchObject({ freelancers: [], totalCount: 0, page: 1, totalPages: 1, perPage: FREELANCER_PER_PAGE })
     expect(getFreelancerCards).not.toHaveBeenCalled()
   })
 
   it('cuts pages of 8 in newest-first order and clamps an out-of-range page', async () => {
-    state.results.freelancer_profiles = { data: Array.from({ length: 11 }, (_, i) => profile(i + 1)) }
+    const ns = Array.from({ length: 11 }, (_, i) => i + 1)
+    withServices(...ns)
+    state.results.freelancer_profiles = { data: ns.map((n) => profile(n)) }
     const first = await searchFreelancers(base)
     expect(first).toMatchObject({ totalCount: 11, page: 1, totalPages: 2 })
     expect(first.freelancers.map((f) => f.id)).toEqual(['f11', 'f10', 'f9', 'f8', 'f7', 'f6', 'f5', 'f4'])
@@ -120,24 +163,35 @@ describe('searchFreelancers', () => {
     expect(last.freelancers.map((f) => f.id)).toEqual(['f3', 'f2', 'f1'])
   })
 
-  it('filters by city in the query', async () => {
-    state.results.freelancer_profiles = { data: [profile(1)] }
-    await searchFreelancers({ ...base, ville: 'Sfax' })
-    expect(has('freelancer_profiles', 'eq', 'city', 'Sfax')).toBe(true)
+  it('looks profiles up in short id chunks, so a long list never overflows the URL — and loses nobody', async () => {
+    const ns = Array.from({ length: 200 }, (_, i) => i + 1)
+    withServices(...ns)
+    state.results.freelancer_profiles = { data: ns.map((n) => profile(n)) }
+    const r = await searchFreelancers(base)
+    expect(r.totalCount).toBe(200)
+    const sizes = (state.calls.freelancer_profiles ?? []).filter((c) => c[0] === 'in' && c[1] === 'id').map((c) => (c[2] as string[]).length)
+    expect(sizes).toEqual([80, 80, 40])
   })
 
-  it('a sector keeps only the freelancers with an ACTIVE, visible service filed under it', async () => {
+  it('filters by city on the TRIMMED value, so a listed city never returns nothing because of a stray space', async () => {
+    withServices(1, 2, 3)
+    state.results.freelancer_profiles = { data: [profile(1, { city: 'Sfax ' }), profile(2, { city: 'Tunis' }), profile(3, { city: null })] }
+    const r = await searchFreelancers({ ...base, ville: 'Sfax' })
+    expect(r.freelancers.map((f) => f.id)).toEqual(['f1'])
+  })
+
+  it('a sector narrows the service set to its category or sub-category, active and visible only', async () => {
     state.results.categories = { data: [{ id: uuid(7) }] }
-    state.results.service_listings = { data: [{ freelancer_profile_id: 'f2' }] }
+    withServices(2)
     state.results.freelancer_profiles = { data: [profile(1), profile(2), profile(3)] }
     const r = await searchFreelancers({ ...base, categorie: ['design-graphique-logo'] })
     expect(r.freelancers.map((f) => f.id)).toEqual(['f2'])
-    expect(has('service_listings', 'eq', 'status', 'active')).toBe(true)
-    expect(has('service_listings', 'is', 'admin_hidden_at', null)).toBe(true)
     expect(has('service_listings', 'or', `category_id.in.(${uuid(7)}),subcategory_id.in.(${uuid(7)})`)).toBe(true)
+    expect(has('service_listings', 'eq', 'status', 'active')).toBe(true)
   })
 
   it('a malformed, unknown or unserved sector matches nothing — it never reads as « no filter »', async () => {
+    withServices(1)
     state.results.freelancer_profiles = { data: [profile(1)] }
     expect((await searchFreelancers({ ...base, categorie: ['BAD slug!'] })).totalCount).toBe(0)
     state.results.categories = { data: [] }
@@ -148,9 +202,8 @@ describe('searchFreelancers', () => {
   })
 
   it('a query matches the name, the headline or a skill', async () => {
-    state.results.freelancer_profiles = {
-      data: [profile(1, { headline: 'Designer' }), profile(2), profile(3)],
-    }
+    withServices(1, 2, 3)
+    state.results.freelancer_profiles = { data: [profile(1, { headline: 'Designer' }), profile(2), profile(3)] }
     state.results.public_profiles = { data: [{ id: 'p1', full_name: 'Aya' }, { id: 'p2', full_name: 'Sami Trabelsi' }, { id: 'p3', full_name: 'Nour' }] }
     state.results.freelancer_skills = { data: [{ freelancer_profile_id: 'f3', skill: 'Trabelsi-script' }] }
     const r = await searchFreelancers({ ...base, q: 'trabelsi' })
@@ -160,6 +213,7 @@ describe('searchFreelancers', () => {
   })
 
   it('a query of only stripped characters filters nothing and fetches no names', async () => {
+    withServices(1, 2)
     state.results.freelancer_profiles = { data: [profile(1), profile(2)] }
     const r = await searchFreelancers({ ...base, q: '%%_*' })
     expect(r.totalCount).toBe(2)
@@ -167,18 +221,25 @@ describe('searchFreelancers', () => {
   })
 
   it('A→Z fetches the names and sorts by them', async () => {
+    withServices(1, 2)
     state.results.freelancer_profiles = { data: [profile(1), profile(2)] }
     state.results.public_profiles = { data: [{ id: 'p1', full_name: 'Zied' }, { id: 'p2', full_name: 'Adam' }] }
     const r = await searchFreelancers({ ...base, tri: 'nom' })
     expect(r.freelancers.map((f) => f.id)).toEqual(['f2', 'f1'])
   })
 
-  it('throws when a lookup fails — a failed query is not « no freelance »', async () => {
-    state.results.freelancer_profiles = { error: { message: 'boom' } }
+  it('throws when ANY lookup fails — a failed query is not « no freelance »', async () => {
+    const ok = { service_listings: { data: [{ freelancer_profile_id: 'f1' }] }, freelancer_profiles: { data: [profile(1)] } }
+    const boom = { error: { message: 'boom' } }
+    state.results = { ...ok, service_listings: boom }
     await expect(searchFreelancers(base)).rejects.toThrow()
-    state.results = { freelancer_profiles: { data: [profile(1)] }, public_profiles: { error: { message: 'boom' } } }
+    state.results = { ...ok, freelancer_profiles: boom }
+    await expect(searchFreelancers(base)).rejects.toThrow()
+    state.results = { ...ok, public_profiles: boom }
     await expect(searchFreelancers({ ...base, q: 'x' })).rejects.toThrow()
-    state.results = { categories: { error: { message: 'boom' } } }
+    state.results = { ...ok, freelancer_skills: boom, public_profiles: { data: [{ id: 'p1', full_name: 'x' }] } }
+    await expect(searchFreelancers({ ...base, q: 'x' })).rejects.toThrow()
+    state.results = { categories: boom }
     await expect(searchFreelancers({ ...base, categorie: ['design-graphique-logo'] })).rejects.toThrow()
   })
 })

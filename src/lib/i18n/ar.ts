@@ -3905,6 +3905,13 @@ export const ar: Record<string, string> = {
   'mesfavoris.empty.freelances.cta':                       "استكشف الخدمات",
 
   // B4 /marche/produits › Boutiques lens — REVIEW_AR_TRANSLATION (draft Arabic)
+  'boutiques.filters.searchPlaceholder':                   "ابحث عن متجر…",
+  'boutiques.sort.recent':                                 "الأحدث",
+  'boutiques.sort.nom':                                    "الاسم (أ–ي)",
+  'boutiques.empty.title':                                 "لا توجد متاجر حاليًا",
+  'boutiques.empty.subtitle':                              "المتاجر الأولى في الطريق. عد قريبًا.",
+  'boutiques.empty.filtered':                              "لا يوجد متجر مطابق لبحثك",
+  'boutiques.empty.filteredSubtitle':                      "جرّب توسيع المرشحات أو تغيير الفئة.",
   // REVIEW_AR_TRANSLATION — « Freelances » lens of /marche/services (Figma 662:53894).
   'freelances.filters.searchPlaceholder':                  "ابحث عن مستقل…",
   'freelances.sort.recent':                                "الأحدث",
@@ -3913,12 +3920,5 @@ export const ar: Record<string, string> = {
   'freelances.empty.subtitle':                             "الملفات الأولى في الطريق. عد قريبًا.",
   'freelances.empty.filtered':                             "لا يوجد مستقل مطابق لبحثك",
   'freelances.empty.filteredSubtitle':                     "جرّب توسيع المرشحات أو تغيير الفئة.",
-  'boutiques.filters.searchPlaceholder':                   "ابحث عن متجر…",
-  'boutiques.sort.recent':                                 "الأحدث",
-  'boutiques.sort.nom':                                    "الاسم (أ–ي)",
-  'boutiques.empty.title':                                 "لا توجد متاجر حاليًا",
-  'boutiques.empty.subtitle':                              "المتاجر الأولى في الطريق. عد قريبًا.",
-  'boutiques.empty.filtered':                              "لا يوجد متجر مطابق لبحثك",
-  'boutiques.empty.filteredSubtitle':                      "جرّب توسيع المرشحات أو تغيير الفئة.",
 
 }

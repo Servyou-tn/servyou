@@ -6,20 +6,21 @@ import { ilikePattern, paginate, serviceCategoryOrClause, stripAccents, validCat
 // The « Freelances » lens of /marche/services (Figma 662:53894 / 663:55017): published freelancers, searched by name / headline / skills,
 // filtered by sector (the sector of their ACTIVE services) and city, newest first or A→Z. Page size 8 = the frame's 2-up × 4-row grid.
 //
-// WHICH FREELANCERS: `is_published = true` (derived: at least one active service) AND `admin_hidden_at IS NULL`, both stated explicitly. RLS
-// agrees (and also hides a suspended freelancer), but its policy additionally lets the OWNER, a buyer and a seller through — so a freelancer
-// browsing the marketplace would otherwise see their own unpublished profile in the grid. This lens shows only what a stranger sees.
+// WHICH FREELANCERS: those with at least one ACTIVE, NON-moderated service (the same visibility `getFreelancerCards` counts, so a card never
+// says « 0 services »), who are `is_published = true` AND `admin_hidden_at IS NULL`. `is_published` is derived from `status = 'active'`
+// alone — it does not see a service an admin hid — which is why the service set is the base and the profile flags are checked on top.
+// RLS agrees and also hides a suspended freelancer from a visitor, but its policy lets the OWNER, a buyer and a seller through (and an
+// admin sees everything), so the explicit filters keep a freelancer's own unpublished profile out of the grid. They do not catch a
+// suspended freelancer seen by an admin or a past buyer: RLS is the only gate for that, as on /freelance/[id].
 //
-// SHAPE: the candidate profiles (capped, the same pre-launch small-data posture as searchMarketplace) → name / skill / sector filters and the
-// sort in JS → `paginate` → `getFreelancerCards` decorates one page. A name lives in `public_profiles` (a view — no embed from
-// freelancer_profiles), so a name search or an A→Z sort fetches the candidates' names; the default (newest first, no query) fetches none.
+// SHAPE: base set = freelancer ids of visible active services (optionally within a sector) → their profiles, fetched by id in short chunks
+// → city / name / skill filters and the sort in memory → `paginate` → `getFreelancerCards` decorates one page. A name lives in
+// `public_profiles` (a view — no embed from freelancer_profiles), so a name search or an A→Z sort fetches the candidates' names; the
+// default (newest first, no query) fetches none. Every lookup pages past PostgREST's 1000-row response limit.
 //
-// The MAIN query (the candidate profiles) throws on failure — never « aucun freelance ». The name / skill / sector lookups are what the
-// filters stand on, so they throw too: a failed lookup must not read as « nothing matches ».
+// Every failure here throws (never « aucun freelance »): the page settle()s it into an inline ErrorState.
 
 export const FREELANCER_PER_PAGE = 8
-/** Pre-launch fetch cap on published profiles; revisit (DB-side search + range pagination) when the catalogue outgrows it. */
-export const FREELANCER_FETCH_CAP = 500
 
 export type FreelancerSort = 'recent' | 'nom'
 
@@ -45,7 +46,7 @@ export type FreelancerSearchResult = {
   perPage: number
 }
 
-export type Candidate = { id: string; profile_id: string; headline: string | null; created_at: string }
+export type Candidate = { id: string; profile_id: string; headline: string | null; city: string | null; created_at: string }
 
 const norm = (s: string) => stripAccents(s.toLowerCase())
 
@@ -74,6 +75,24 @@ export function chunk<T>(items: readonly T[], size: number): T[][] {
 }
 const IN_CHUNK = 80
 
+/** PostgREST answers at most 1000 rows with no error: read page after page until a short page (bounded, so a bug cannot loop forever). */
+export const PAGE_ROWS = 1000
+const MAX_PAGES = 20
+export async function pageAll<T>(
+  read: (from: number, to: number) => PromiseLike<{ data: T[] | null; error: Parameters<typeof failQuery>[1] | null }>,
+  label: string,
+): Promise<T[]> {
+  const out: T[] = []
+  for (let page = 0; page < MAX_PAGES; page++) {
+    const { data, error } = await read(page * PAGE_ROWS, page * PAGE_ROWS + PAGE_ROWS - 1)
+    if (error) failQuery(label, error)
+    const rows = data ?? []
+    out.push(...rows)
+    if (rows.length < PAGE_ROWS) return out
+  }
+  return out
+}
+
 export async function searchFreelancers(
   params: FreelancerSearchParams,
   perPage: number = FREELANCER_PER_PAGE,
@@ -81,59 +100,77 @@ export async function searchFreelancers(
   const supabase = await createClient()
   const empty: FreelancerSearchResult = { freelancers: [], totalCount: 0, page: 1, totalPages: 1, perPage }
 
-  // Sector → the freelancers that have an ACTIVE, visible service filed under it (category or sub-category). A slug that resolves to no
-  // category, or a sector nobody serves, is « filter given, matched nothing » — never « no filter ».
-  let sectorFreelancerIds: Set<string> | null = null
-  const slugs = validCategorySlugs(params.categorie)
+  // Sector → only the services filed under it (category or sub-category). A slug that resolves to no category is « filter given, matched
+  // nothing » — never « no filter ».
+  let orClause: string | null = null
   if (params.categorie.length > 0) {
+    const slugs = validCategorySlugs(params.categorie)
     if (slugs.length === 0) return empty
     const { data: cats, error: catErr } = await supabase.from('categories').select('id').in('slug', slugs)
     if (catErr) failQuery('search-freelancers categories', catErr)
-    const orClause = serviceCategoryOrClause((cats ?? []).map((c) => c.id))
+    orClause = serviceCategoryOrClause((cats ?? []).map((c) => c.id))
     if (!orClause) return empty
-    const { data: svc, error: svcErr } = await supabase
-      .from('service_listings')
-      .select('freelancer_profile_id')
-      .eq('status', 'active')
-      .is('admin_hidden_at', null)
-      .or(orClause)
-    if (svcErr) failQuery('search-freelancers sector services', svcErr)
-    sectorFreelancerIds = new Set((svc ?? []).map((r) => r.freelancer_profile_id))
-    if (sectorFreelancerIds.size === 0) return empty
   }
 
-  let query = supabase
-    .from('freelancer_profiles')
-    .select('id, profile_id, headline, created_at')
-    .eq('is_published', true)
-    .is('admin_hidden_at', null)
-  if (params.ville) query = query.eq('city', params.ville)
-  const { data: rows, error } = await query.order('created_at', { ascending: false }).order('id', { ascending: true }).limit(FREELANCER_FETCH_CAP)
-  if (error) failQuery('search-freelancers profiles', error)
-  let candidates: Candidate[] = (rows ?? []).filter((r) => sectorFreelancerIds === null || sectorFreelancerIds.has(r.id))
+  // The base set: freelancers with a visible active service (within the sector, when one is chosen).
+  const services = await pageAll<{ freelancer_profile_id: string }>(
+    (from, to) => {
+      let q = supabase.from('service_listings').select('freelancer_profile_id').eq('status', 'active').is('admin_hidden_at', null)
+      if (orClause) q = q.or(orClause)
+      return q.range(from, to)
+    },
+    'search-freelancers services',
+  )
+  const baseIds = [...new Set(services.map((s) => s.freelancer_profile_id))]
+  if (baseIds.length === 0) return empty
+
+  // Their profiles — published and not moderated, by id in short chunks.
+  const byId = new Map<string, Candidate>()
+  const profileChunks = await Promise.all(
+    chunk(baseIds, IN_CHUNK).map((ids) =>
+      pageAll<Candidate>(
+        (from, to) =>
+          supabase
+            .from('freelancer_profiles')
+            .select('id, profile_id, headline, city, created_at')
+            .eq('is_published', true)
+            .is('admin_hidden_at', null)
+            .in('id', ids)
+            .range(from, to),
+        'search-freelancers profiles',
+      ),
+    ),
+  )
+  for (const rows of profileChunks) for (const r of rows) byId.set(r.id, r)
+  // City: the option list is trimmed free text, so compare trimmed — a stray space in the column must not make a listed city return nothing.
+  let candidates = [...byId.values()].filter((c) => !params.ville || (c.city ?? '').trim() === params.ville)
 
   const term = params.q.trim() && ilikePattern(params.q) ? params.q.trim() : ''
   const needNames = term !== '' || params.tri === 'nom'
   const names = new Map<string, string>()
   if (needNames && candidates.length > 0) {
     const results = await Promise.all(
-      chunk(candidates.map((c) => c.profile_id), IN_CHUNK).map((ids) => supabase.from('public_profiles').select('id, full_name').in('id', ids)),
+      chunk(candidates.map((c) => c.profile_id), IN_CHUNK).map((ids) =>
+        pageAll<{ id: string | null; full_name: string | null }>(
+          (from, to) => supabase.from('public_profiles').select('id, full_name').in('id', ids).range(from, to),
+          'search-freelancers names',
+        ),
+      ),
     )
-    for (const res of results) {
-      if (res.error) failQuery('search-freelancers names', res.error)
-      for (const p of res.data ?? []) if (p.id) names.set(p.id, p.full_name ?? '')
-    }
+    for (const rows of results) for (const p of rows) if (p.id) names.set(p.id, p.full_name ?? '')
   }
 
   if (term !== '' && candidates.length > 0) {
     const skillsBy = new Map<string, string[]>()
     const results = await Promise.all(
-      chunk(candidates.map((c) => c.id), IN_CHUNK).map((ids) => supabase.from('freelancer_skills').select('freelancer_profile_id, skill').in('freelancer_profile_id', ids)),
+      chunk(candidates.map((c) => c.id), IN_CHUNK).map((ids) =>
+        pageAll<{ freelancer_profile_id: string; skill: string }>(
+          (from, to) => supabase.from('freelancer_skills').select('freelancer_profile_id, skill').in('freelancer_profile_id', ids).range(from, to),
+          'search-freelancers skills',
+        ),
+      ),
     )
-    for (const res of results) {
-      if (res.error) failQuery('search-freelancers skills', res.error)
-      for (const s of res.data ?? []) skillsBy.set(s.freelancer_profile_id, [...(skillsBy.get(s.freelancer_profile_id) ?? []), s.skill])
-    }
+    for (const rows of results) for (const s of rows) skillsBy.set(s.freelancer_profile_id, [...(skillsBy.get(s.freelancer_profile_id) ?? []), s.skill])
     candidates = candidates.filter((c) =>
       matchesFreelancerQuery(term, { name: names.get(c.profile_id) ?? '', headline: c.headline, skills: skillsBy.get(c.id) ?? [] }),
     )

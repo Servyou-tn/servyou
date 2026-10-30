@@ -58,9 +58,7 @@ export async function FreelancesLens({ searchParams }: { searchParams: Promise<R
 
           <ServicesLensToggle lang={lang} active="freelances" />
 
-          {/* key: the bar keeps the typed text in local state; when a chip / « Tout effacer » clears `q` in the URL the input must follow. */}
           <FreelancesFilterBar
-            key={params.q}
             categories={categories}
             cities={cities}
             selectedCategorie={params.categorie}

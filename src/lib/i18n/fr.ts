@@ -4021,6 +4021,13 @@ export const fr: Record<string, string> = {
   'mesfavoris.empty.freelances.cta':                       "Explorer les services",
 
   // B4 /marche/produits › Boutiques lens (Figma 578:42528).
+  'boutiques.filters.searchPlaceholder':                   "Rechercher une boutique…",
+  'boutiques.sort.recent':                                 "Plus récentes",
+  'boutiques.sort.nom':                                    "Nom (A–Z)",
+  'boutiques.empty.title':                                 "Aucune boutique pour le moment",
+  'boutiques.empty.subtitle':                              "Les premières boutiques arrivent. Revenez bientôt.",
+  'boutiques.empty.filtered':                              "Aucune boutique ne correspond à votre recherche",
+  'boutiques.empty.filteredSubtitle':                      "Essayez d'élargir vos filtres ou de changer de catégorie.",
   // « Freelances » lens of /marche/services (Figma 662:53894).
   'freelances.filters.searchPlaceholder':                  "Rechercher un freelance…",
   'freelances.sort.recent':                                "Plus récents",
@@ -4029,12 +4036,5 @@ export const fr: Record<string, string> = {
   'freelances.empty.subtitle':                             "Les premiers profils arrivent. Revenez bientôt.",
   'freelances.empty.filtered':                             "Aucun freelance ne correspond à votre recherche",
   'freelances.empty.filteredSubtitle':                     "Essayez d'élargir vos filtres ou de changer de catégorie.",
-  'boutiques.filters.searchPlaceholder':                   "Rechercher une boutique…",
-  'boutiques.sort.recent':                                 "Plus récentes",
-  'boutiques.sort.nom':                                    "Nom (A–Z)",
-  'boutiques.empty.title':                                 "Aucune boutique pour le moment",
-  'boutiques.empty.subtitle':                              "Les premières boutiques arrivent. Revenez bientôt.",
-  'boutiques.empty.filtered':                              "Aucune boutique ne correspond à votre recherche",
-  'boutiques.empty.filteredSubtitle':                      "Essayez d'élargir vos filtres ou de changer de catégorie.",
 
 }
