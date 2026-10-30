@@ -1534,7 +1534,6 @@ export const ar: Record<string, string> = {
   'services.lens.ariaLabel':         "التبديل بين الخدمات والمستقلين",
   'services.lens.services':          "الخدمات",
   'services.lens.freelances':        "المستقلون",
-  'services.lens.soon':              "قريبا",
   'services.filters.searchPlaceholder': "ابحث عن خدمة…",
   'services.filters.categoryAll':    "كل الفئات",
   'services.filters.ville':          "المدينة",
@@ -3906,6 +3905,14 @@ export const ar: Record<string, string> = {
   'mesfavoris.empty.freelances.cta':                       "استكشف الخدمات",
 
   // B4 /marche/produits › Boutiques lens — REVIEW_AR_TRANSLATION (draft Arabic)
+  // REVIEW_AR_TRANSLATION — « Freelances » lens of /marche/services (Figma 662:53894).
+  'freelances.filters.searchPlaceholder':                  "ابحث عن مستقل…",
+  'freelances.sort.recent':                                "الأحدث",
+  'freelances.sort.nom':                                   "الاسم (أ–ي)",
+  'freelances.empty.title':                                "لا يوجد مستقلون حاليًا",
+  'freelances.empty.subtitle':                             "الملفات الأولى في الطريق. عد قريبًا.",
+  'freelances.empty.filtered':                             "لا يوجد مستقل مطابق لبحثك",
+  'freelances.empty.filteredSubtitle':                     "جرّب توسيع المرشحات أو تغيير الفئة.",
   'boutiques.filters.searchPlaceholder':                   "ابحث عن متجر…",
   'boutiques.sort.recent':                                 "الأحدث",
   'boutiques.sort.nom':                                    "الاسم (أ–ي)",

@@ -15,8 +15,8 @@ import { FOCUS_RING } from '@/components/layout/styles'
 // The earlier « Bientôt » badge and disabled segment (founder-approved while the shop grid did not
 // exist) are gone with the grid.
 //
-// ⚑ NO ICONS, DELIBERATELY. The services twin (ServicesLensToggle) carries Briefcase/Users glyphs;
-// 578:42513 draws text only. That is a measured difference between the two frames, not drift.
+// ⚑ NO ICONS, DELIBERATELY: 578:42513 draws text only. (The services twin, ServicesLensToggle, is text-only too since the Freelances
+// lens landed — 662:53894 draws the same sunken track.)
 //
 // Static markup, no client interaction — stays a server component.
 export type ProduitsLens = 'produits' | 'boutiques'
