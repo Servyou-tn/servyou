@@ -21,13 +21,14 @@ import { unstable_doesMiddlewareMatch } from 'next/experimental/testing/server'
 
 const h = vi.hoisted(() => ({
   getUser: vi.fn(),
+  getSession: vi.fn(async () => ({ data: { session: null }, error: null })),
   maybeSingle: vi.fn(),
   eq: vi.fn(),
 }))
 
 vi.mock('@supabase/ssr', () => ({
   createServerClient: vi.fn(() => ({
-    auth: { getUser: h.getUser },
+    auth: { getUser: h.getUser, getSession: h.getSession },
     from: vi.fn(() => ({
       select: vi.fn(() => ({
         eq: (...args: unknown[]) => {
@@ -137,7 +138,9 @@ beforeEach(() => {
 
 describe('handler', () => {
   // Every Next prefetch (segment cache) sends next-router-prefetch '1' or '2'; navigations never do.
-  it.each(['1', '2'])('lets a GET <Link> prefetch (next-router-prefetch: %s) through without any Auth call', async (value) => {
+  // getSession() only (the session-refresh persistence, middleware-session-refresh.test.ts): local unless the token
+  // is about to expire, never the getUser() Auth round-trip or the suspension check.
+  it.each(['1', '2'])('lets a GET <Link> prefetch (next-router-prefetch: %s) through without the getUser check', async (value) => {
     h.getUser.mockResolvedValue({ data: { user: null }, error: { code: 'user_banned', status: 403, message: 'User is banned' } })
     const res = await middleware(request('/mes-commandes', { headers: { 'next-router-prefetch': value } }))
     expect(passedThrough(res)).toBe(true)

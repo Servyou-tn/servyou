@@ -1,5 +1,5 @@
-// Session-cookie options for the two Supabase clients that write the sb-* cookies (browser: sign-in / sign-up / sign-out;
-// server: session refresh and the /mon-compte re-auth). src/middleware.ts never writes them (its setAll is a no-op).
+// Session-cookie options for the three Supabase clients that write the sb-* cookies (browser: sign-in / sign-up /
+// sign-out; server: the /mon-compte re-auth and actions; src/middleware.ts: the persisted session refresh).
 //
 // Audit pass 3 « Logged » (docs/audits/prelaunch-security-audit-pass-3-auth.md): @supabase/ssr sets the sb-* session
 // cookies WITHOUT the Secure attribute. In production (https only: Vercel, HSTS preload) they now carry Secure, so a
