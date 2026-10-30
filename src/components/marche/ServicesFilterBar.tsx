@@ -166,6 +166,13 @@ export function ServicesFilterBar({
               <DropdownMenuRadioItem value="" className={MENU_ITEM}>
                 {t('services.filters.categoryAll', lang)}
               </DropdownMenuRadioItem>
+              {/* The list only offers sectors that have an active listing: a sub-category page (or an empty sector) is not in it, so it gets its
+                  own checked item — the open menu always shows where you are. */}
+              {scopedCategory && !categories.some((c) => c.slug === scopedCategory.slug) ? (
+                <DropdownMenuRadioItem value={scopedCategory.slug} className={MENU_ITEM}>
+                  {label(scopedCategory)}
+                </DropdownMenuRadioItem>
+              ) : null}
               {categories.map((c) => (
                 <DropdownMenuRadioItem key={c.slug} value={c.slug} className={MENU_ITEM}>
                   {label(c)}

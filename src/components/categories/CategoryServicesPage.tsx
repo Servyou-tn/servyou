@@ -11,6 +11,7 @@ import type { FilterCategory } from '@/components/recherche/SearchFilters'
 import { buildSearchQuery } from '@/components/recherche/search-url'
 import { Pagination } from '@/components/shared/Pagination'
 import { CategoryChips, type CategoryChip } from '@/components/categories/CategoryChips'
+import { isServiceCategorySlug } from '@/lib/categories/service-category-slugs'
 import { FOCUS_RING } from '@/components/layout/styles'
 import type { Category } from '@/lib/categories/category-data'
 import type { SearchOutcome } from '@/lib/search/search-marketplace'
@@ -71,10 +72,14 @@ export function CategoryServicesPage({
 
   const hasFilters = carry !== ''
   const clearQs = buildSearchQuery(current, { q: null, ville: null, prix_min: null, prix_max: null, tri: null })
-  const clearFiltersHref = clearQs ? `${base}?${clearQs}` : base
+  // A slug outside the service taxonomy only gets here through an explicit `?type=service`: the reset link keeps it, or it would land on the product page.
+  const clearQsTyped = isServiceCategorySlug(category.slug) ? clearQs : buildSearchQuery(clearQs, { type: 'service' })
+  const clearFiltersHref = clearQsTyped ? `${base}?${clearQsTyped}` : base
 
   const crumbLink = `rounded hover:underline ${FOCUS_RING}`
   const chevron = <ChevronRight className="size-3.5 shrink-0 text-text-muted rtl:rotate-180" aria-hidden="true" />
+  // The separator lives inside its step's <li> (an aria-hidden icon), so a screen reader counts the steps, not the chevrons.
+  const step = 'inline-flex items-center gap-1.5'
 
   return (
     <AppShell user={user}>
@@ -83,30 +88,30 @@ export function CategoryServicesPage({
         <header className="flex flex-col gap-4">
           <nav aria-label={t('category.breadcrumb.aria', lang)}>
             <ol className="flex flex-wrap items-center gap-x-1.5 gap-y-1 text-body-sm text-text-muted">
-              <li>
+              <li className={step}>
                 <Link href="/marche" className={crumbLink}>
                   {t('shell.sidebar.marketplace', lang)}
                 </Link>
+                {chevron}
               </li>
-              <li aria-hidden="true">{chevron}</li>
-              <li>
+              <li className={step}>
                 <Link href="/marche/services" className={crumbLink}>
                   {t('nav.services', lang)}
                 </Link>
+                {chevron}
               </li>
               {parent && parentName ? (
-                <>
-                  <li aria-hidden="true">{chevron}</li>
-                  <li>
-                    <Link href={`/categories/${parent.slug}`} className={crumbLink}>
-                      {parentName}
-                    </Link>
-                  </li>
-                </>
+                <li className={step}>
+                  <Link href={`/categories/${parent.slug}`} className={crumbLink}>
+                    {parentName}
+                  </Link>
+                  {chevron}
+                </li>
               ) : null}
-              <li aria-hidden="true">{chevron}</li>
-              <li aria-current="page" className="font-medium text-text-primary">
-                {name}
+              <li>
+                <span aria-current="page" className="font-medium text-text-primary">
+                  {name}
+                </span>
               </li>
             </ol>
           </nav>
@@ -133,6 +138,7 @@ export function CategoryServicesPage({
         {/* browseHead — the FilterBar from `lg`, the shared sheet trigger below it. */}
         <div className="hidden lg:block">
           <ServicesFilterBar
+            key={carry}
             categories={filterCategories}
             cities={cities}
             selectedCategorie={[]}

@@ -10,6 +10,7 @@ export type CategoryChip = { slug: string; name_fr: string; name_ar: string }
 // body-sm Medium, fully round. Each chip is a real link to that category's page and carries the active q / ville / prix / tri along.
 // Below `sm` the row scrolls sideways on ONE line instead of wrapping: the 375 frame wraps ten chips into a clipped block (« Bar », « Car… »), and a
 // wrapped block would push the first card a full screen down (D7).
+// The scrolling row is padded (and pulled back with a negative margin) so the 44 px hit area and the focus ring are not clipped by the overflow.
 // Plain class strings next to the text-size token (twMerge footgun). The ::before widens the hit area to 44 px without moving the 35 px pill.
 const CHIP =
   'relative inline-flex items-center whitespace-nowrap rounded-full px-3.5 py-1.5 text-body-sm font-medium before:absolute before:inset-x-0 before:-inset-y-1.5 before:content-[""]'
@@ -35,14 +36,14 @@ export function CategoryChips({
 
   return (
     <nav aria-label={t('category.subcategories.label', lang)}>
-      <ul className="flex flex-wrap gap-2 max-sm:flex-nowrap max-sm:overflow-x-auto max-sm:pb-1">
+      <ul className="flex flex-wrap gap-2 max-sm:-mx-1 max-sm:-my-1.5 max-sm:flex-nowrap max-sm:overflow-x-auto max-sm:px-1 max-sm:py-1.5">
         <li className="shrink-0">
           <Link
             href={withCarry(allHref)}
             aria-current={activeSlug === null ? 'page' : undefined}
             className={`${CHIP} ${
               activeSlug === null
-                ? 'bg-brand-blue-600 text-text-inverse'
+                ? 'border border-transparent bg-brand-blue-600 text-text-inverse'
                 : 'border border-border-subtle bg-surface-base text-text-secondary hover:bg-surface-subtle'
             } ${FOCUS_RING}`}
           >
@@ -58,7 +59,7 @@ export function CategoryChips({
                 aria-current={active ? 'page' : undefined}
                 className={`${CHIP} ${
                   active
-                    ? 'bg-brand-blue-600 text-text-inverse'
+                    ? 'border border-transparent bg-brand-blue-600 text-text-inverse'
                     : 'border border-border-subtle bg-surface-base text-text-secondary hover:bg-surface-subtle'
                 } ${FOCUS_RING}`}
               >

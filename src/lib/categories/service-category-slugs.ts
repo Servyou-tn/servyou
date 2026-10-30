@@ -13,6 +13,16 @@ export function isServiceCategorySlug(slug: string): boolean {
 }
 
 /**
+ * Which catalogue /categories/[slug] shows. `?type=` wins when it is present and non-empty (an array takes its first value; anything other than
+ * « service » is the product catalogue, as parseSearchParams reads it); without it the slug decides — a service-taxonomy slug opens on its services.
+ */
+export function categoryCatalogue(rawType: string | string[] | undefined, slug: string): 'service' | 'product' {
+  const explicit = Array.isArray(rawType) ? rawType[0] : rawType
+  if (explicit) return explicit === 'service' ? 'service' : 'product'
+  return isServiceCategorySlug(slug) ? 'service' : 'product'
+}
+
+/**
  * Sub-category chips in the TAXONOMY's order (docs/design/taxonomy-services.md, locked), not the alphabetical order the query returns — and not the
  * order the C2 frame happens to draw its mock chips in (D4).
  * A slug the taxonomy does not know sorts after the known ones, alphabetically — a DB row ahead of the TS file never disappears.

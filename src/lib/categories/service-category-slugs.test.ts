@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { serviceCategories } from '@/lib/taxonomy/service-categories'
-import { isServiceCategorySlug, orderByTaxonomy } from './service-category-slugs'
+import { categoryCatalogue, isServiceCategorySlug, orderByTaxonomy } from './service-category-slugs'
 
 describe('isServiceCategorySlug', () => {
   it('recognises every sector and every subcategory of the service taxonomy', () => {
@@ -38,5 +38,24 @@ describe('orderByTaxonomy', () => {
     const input = rows(['b', 'a'])
     expect(orderByTaxonomy(input, 'no-such-sector').map((r) => r.slug)).toEqual(['a', 'b'])
     expect(input.map((r) => r.slug)).toEqual(['b', 'a'])
+  })
+})
+
+describe('categoryCatalogue', () => {
+  it('a service slug opens on its services, any other slug on its products, when ?type= is absent or empty', () => {
+    expect(categoryCatalogue(undefined, 'design-graphique-logo')).toBe('service')
+    expect(categoryCatalogue('', 'design-graphique-logo')).toBe('service')
+    expect(categoryCatalogue(undefined, 'vetements')).toBe('product')
+  })
+
+  it('?type= wins over the slug, both ways', () => {
+    expect(categoryCatalogue('product', 'design-graphique-logo')).toBe('product')
+    expect(categoryCatalogue('service', 'vetements')).toBe('service')
+  })
+
+  it('takes the first value of a repeated ?type=, and reads garbage as products (as parseSearchParams does)', () => {
+    expect(categoryCatalogue(['service', 'product'], 'vetements')).toBe('service')
+    expect(categoryCatalogue(['product', 'service'], 'design-graphique-logo')).toBe('product')
+    expect(categoryCatalogue('banane', 'design-graphique-logo')).toBe('product')
   })
 })

@@ -17,7 +17,7 @@ import { SearchQueryInput } from '@/components/recherche/SearchQueryInput'
 import { Pagination } from '@/components/shared/Pagination'
 import { PageHeader } from '@/components/shared/PageHeader'
 import { getCategoryBySlug, getParentCategory, getSubcategories } from '@/lib/categories/category-data'
-import { isServiceCategorySlug, orderByTaxonomy } from '@/lib/categories/service-category-slugs'
+import { categoryCatalogue, orderByTaxonomy } from '@/lib/categories/service-category-slugs'
 import { getFilterCategoriesForType } from '@/lib/marche/filter-categories'
 import { getServiceCities } from '@/lib/marche/filter-cities'
 import { CategoryServicesPage, CATEGORY_SERVICES_PER_PAGE } from '@/components/categories/CategoryServicesPage'
@@ -49,12 +49,12 @@ export default async function CategoryPage({
   const category = await getCategoryBySlug(slug)
   if (!category) notFound()
 
-  const explicitType = Array.isArray(sp.type) ? sp.type[0] : sp.type
-  if (explicitType ? explicitType === 'service' : isServiceCategorySlug(category.slug)) {
+  if (categoryCatalogue(sp.type, category.slug) === 'service') {
     const params = { ...sParams, type: 'service' as const }
-    const [parent, children, shell, filterCategories, cities, searched] = await Promise.all([
+    // The chips list the sector's children — its own on a sector page, its siblings on a sub-category page — so one query keyed on the sector serves both.
+    const [parent, siblings, shell, filterCategories, cities, searched] = await Promise.all([
       category.parent_id ? getParentCategory(category.parent_id) : Promise.resolve(null),
-      getSubcategories(category.id),
+      getSubcategories(category.parent_id ?? category.id),
       getShellUser(),
       getFilterCategoriesForType('service'),
       getServiceCities(),
@@ -63,8 +63,7 @@ export default async function CategoryPage({
         searchMarketplace(params, { categoryId: category.id, perPage: CATEGORY_SERVICES_PER_PAGE }),
       ),
     ])
-    // The chips list the sector's children: its own on a sector page, its siblings (via the parent) on a subcategory page.
-    const chips = orderByTaxonomy(parent ? await getSubcategories(parent.id) : children, (parent ?? category).slug)
+    const chips = orderByTaxonomy(siblings, (parent ?? category).slug)
     const descriptionKey = `category.description.${category.slug}`
     const description = t(descriptionKey, lang) === descriptionKey ? null : t(descriptionKey, lang)
     return (
