@@ -1,5 +1,5 @@
 import sharp from 'sharp'
-import { AVATAR_MAX_EDGE, PRODUCT_MAX_EDGE, SHOP_LOGO_MAX_EDGE, SHOP_BANNER_MAX_EDGE, PORTFOLIO_MAX_EDGE, MAX_INPUT_BYTES } from './limits'
+import { AVATAR_MAX_EDGE, PRODUCT_MAX_EDGE, SHOP_LOGO_MAX_EDGE, SHOP_BANNER_MAX_EDGE, PORTFOLIO_MAX_EDGE, MAX_INPUT_BYTES, MAX_INPUT_PIXELS } from './limits'
 
 // Normalizes an arbitrary user upload into ONE canonical WebP original.
 //
@@ -119,7 +119,9 @@ export async function normalizeAvatar(input: Buffer, maxEdge = AVATAR_MAX_EDGE):
   if (format === 'unknown') return { ok: false, reason: 'not_an_image' }
 
   try {
-    const { data, info } = await sharp(input)
+    // limitInputPixels: a tiny file can declare a huge canvas (a decompression bomb) -- see MAX_INPUT_PIXELS.
+    // Over the cap, sharp throws before decoding and the catch below reports decode_failed.
+    const { data, info } = await sharp(input, { limitInputPixels: MAX_INPUT_PIXELS })
       // No-arg rotate() applies the EXIF orientation tag and then drops it. Without this, portrait
       // phone photos re-encode sideways, because stripping metadata (below) would otherwise remove
       // the orientation the renderer was relying on.
