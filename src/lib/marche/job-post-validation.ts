@@ -10,17 +10,25 @@ import { uniqueSkills } from './skills-match'
 export const ANNONCE_SKILLS_MAX = 8
 const SKILL_MAX_LEN = 60
 
+// Length limits (F2 « 60 caractères maximum » / « 0/500 », founder ruling 2026-10-30). App-level only — NO DB constraint, so rows
+// written before this rule may exceed them: an EDIT checks a field only when its text changed (`original`).
+export const ANNONCE_TITLE_MAX = 60
+export const ANNONCE_DESCRIPTION_MAX = 500
+
 export type JobPostInput = {
   title: string
   description: string
   categoryId: string
   city: string
-  budgetMin: string
-  budgetMax: string
+  /** The single « Budget approximatif » field (TND) — saved as budget_max, budget_min stays null. '' = no budget. */
+  budget: string
   isRemote: boolean
   deadline: string // YYYY-MM-DD or ''
   skills: string[]
 }
+
+/** What an edit started from: a field is length-checked only when it differs from it. */
+export type JobPostOriginal = { title: string; description: string }
 
 export type JobPostValues = {
   title: string
@@ -54,24 +62,28 @@ function parseBudget(raw: string): number | null | 'invalid' {
   return n
 }
 
-export function validateJobPost(input: JobPostInput, now: Date = new Date()): JobPostValidation {
+export function validateJobPost(
+  input: JobPostInput,
+  now: Date = new Date(),
+  original?: JobPostOriginal,
+): JobPostValidation {
   const title = input.title.trim()
   if (!title) return { ok: false, errorKey: 'annonce.error.title_required' }
+  if (title.length > ANNONCE_TITLE_MAX && title !== original?.title.trim()) {
+    return { ok: false, errorKey: 'annonce.error.title_max' }
+  }
 
   const description = input.description.trim()
   if (!description) return { ok: false, errorKey: 'annonce.error.description_required' }
+  if (description.length > ANNONCE_DESCRIPTION_MAX && description !== original?.description.trim()) {
+    return { ok: false, errorKey: 'annonce.error.description_max' }
+  }
 
   if (!input.categoryId) return { ok: false, errorKey: 'annonce.error.category_required' }
   if (!input.city) return { ok: false, errorKey: 'annonce.error.city_required' }
 
-  const budget_min = parseBudget(input.budgetMin)
-  const budget_max = parseBudget(input.budgetMax)
-  if (budget_min === 'invalid' || budget_max === 'invalid') {
-    return { ok: false, errorKey: 'annonce.error.budget_invalid' }
-  }
-  if (budget_min != null && budget_max != null && budget_min > budget_max) {
-    return { ok: false, errorKey: 'annonce.error.budget_order' }
-  }
+  const budget_max = parseBudget(input.budget)
+  if (budget_max === 'invalid') return { ok: false, errorKey: 'annonce.error.budget_invalid' }
 
   let deadline: string | null = null
   if (input.deadline.trim()) {
@@ -100,7 +112,8 @@ export function validateJobPost(input: JobPostInput, now: Date = new Date()): Jo
       description,
       category_id: input.categoryId,
       city: input.city,
-      budget_min,
+      // Older annonces may carry a min/max range; a NEW post never does (D3) — display handles both (format-job-budget.ts).
+      budget_min: null,
       budget_max,
       is_remote: input.isRemote,
       deadline,

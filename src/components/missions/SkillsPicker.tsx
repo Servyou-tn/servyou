@@ -114,6 +114,16 @@ export function SkillsPicker({
     setQuery('')
   }
 
+  // Text typed in the search box but never confirmed with Enter is committed when the popover closes (custom mode only): the query
+  // lives inside the popover, so a click on a form's submit button would otherwise close it — and drop the text — before the submit
+  // runs. Same rules as the add row: split on the separators, trimmed, de-duplicated, pool spelling, never past `max`. (Escape also
+  // closes, so it also commits — the text is a visible chip the user can remove.)
+  function commitTypedOnClose() {
+    if (custom == null || typedParts.length === 0 || atMax) return
+    const room = max != null ? max - value.length : typedParts.length
+    onChange([...value, ...typedParts.slice(0, room)])
+  }
+
   return (
     <div className="flex flex-col gap-2">
       <label id={labelId} htmlFor={triggerId} className="text-sm font-medium text-text-secondary">
@@ -126,6 +136,7 @@ export function SkillsPicker({
       ) : null}
 
       <Popover open={open} onOpenChange={(o) => {
+          if (!o) commitTypedOnClose()
           setOpen(o)
           if (!o) setQuery('')
         }}>

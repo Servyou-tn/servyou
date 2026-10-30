@@ -90,17 +90,22 @@ describe('getCategories — the annonce picker is service-side', () => {
     expect(values).not.toContain('product')
   })
 
+  it('loads name_ar — the Arabic page must not render the French category name', async () => {
+    await getCategories()
+    expect(h.calls.select[0]).toContain('name_ar')
+  })
+
   it('passes rows through unchanged when the query succeeds', async () => {
     h.state.result = {
       data: [
-        { id: 'c1', name_fr: 'Développement' },
-        { id: 'c2', name_fr: 'Maison' },
+        { id: 'c1', name_fr: 'Développement', name_ar: 'التطوير' },
+        { id: 'c2', name_fr: 'Maison', name_ar: null },
       ],
       error: null,
     }
     await expect(getCategories()).resolves.toEqual([
-      { id: 'c1', name_fr: 'Développement' },
-      { id: 'c2', name_fr: 'Maison' },
+      { id: 'c1', name_fr: 'Développement', name_ar: 'التطوير' },
+      { id: 'c2', name_fr: 'Maison', name_ar: null },
     ])
   })
 
