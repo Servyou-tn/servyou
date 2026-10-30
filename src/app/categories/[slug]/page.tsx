@@ -16,14 +16,21 @@ import { SearchFiltersSheet } from '@/components/recherche/SearchFiltersSheet'
 import { SearchQueryInput } from '@/components/recherche/SearchQueryInput'
 import { Pagination } from '@/components/shared/Pagination'
 import { PageHeader } from '@/components/shared/PageHeader'
-import { getCategoryBySlug, getSubcategories } from '@/lib/categories/category-data'
+import { getCategoryBySlug, getParentCategory, getSubcategories } from '@/lib/categories/category-data'
+import { isServiceCategorySlug, orderByTaxonomy } from '@/lib/categories/service-category-slugs'
+import { getFilterCategoriesForType } from '@/lib/marche/filter-categories'
+import { getServiceCities } from '@/lib/marche/filter-cities'
+import { CategoryServicesPage, CATEGORY_SERVICES_PER_PAGE } from '@/components/categories/CategoryServicesPage'
 import { SubcategoryStrip } from '@/components/categories/SubcategoryStrip'
 import { CategoryEmptyState } from '@/components/categories/CategoryEmptyState'
 
 // /categories/[slug] — the category-scoped browse surface (public). The slug locks the
 // category; the page browses-by-default (full grid immediately), refinable by city/price.
 // Reuses /recherche's data layer (searchMarketplace with a categoryId) + filter components
-// (with the Catégorie section hidden and the base path pointed at this slug). Search input is
+//
+// A SERVICE category (a sector or subcategory of the service taxonomy, or any slug with ?type=service) renders the C2 page — components/categories/
+// CategoryServicesPage (Figma 1486:24359 / 1488:66061). `?type=` still wins when present; without it a service slug opens on its services. Any other
+// category keeps the product layout below, unchanged. Search input is
 // SearchQueryInput (page-local) — this page never had its own search UI before the shell
 // migration; the old top-bar search always targeted /recherche, never this route, so this is a
 // genuinely new affordance, not a like-for-like replacement.
@@ -41,6 +48,41 @@ export default async function CategoryPage({
 
   const category = await getCategoryBySlug(slug)
   if (!category) notFound()
+
+  const explicitType = Array.isArray(sp.type) ? sp.type[0] : sp.type
+  if (explicitType ? explicitType === 'service' : isServiceCategorySlug(category.slug)) {
+    const params = { ...sParams, type: 'service' as const }
+    const [parent, children, shell, filterCategories, cities, searched] = await Promise.all([
+      category.parent_id ? getParentCategory(category.parent_id) : Promise.resolve(null),
+      getSubcategories(category.id),
+      getShellUser(),
+      getFilterCategoriesForType('service'),
+      getServiceCities(),
+      settle(
+        'categories services search',
+        searchMarketplace(params, { categoryId: category.id, perPage: CATEGORY_SERVICES_PER_PAGE }),
+      ),
+    ])
+    // The chips list the sector's children: its own on a sector page, its siblings (via the parent) on a subcategory page.
+    const chips = orderByTaxonomy(parent ? await getSubcategories(parent.id) : children, (parent ?? category).slug)
+    const descriptionKey = `category.description.${category.slug}`
+    const description = t(descriptionKey, lang) === descriptionKey ? null : t(descriptionKey, lang)
+    return (
+      <CategoryServicesPage
+        lang={lang}
+        user={shell?.topBarUser ?? null}
+        category={category}
+        parent={parent}
+        chips={chips}
+        chipsAllHref={parent ? `/categories/${parent.slug}` : `/categories/${category.slug}`}
+        description={description}
+        params={params}
+        result={searched.ok ? searched.data : null}
+        filterCategories={filterCategories}
+        cities={cities}
+      />
+    )
+  }
 
   const [subcategories, shell] = await Promise.all([
     getSubcategories(category.id),

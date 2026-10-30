@@ -2638,6 +2638,12 @@ export const ar: Record<string, string> = {
   'category.empty.switchType.toProducts': "عرض المنتجات",
   'category.empty.switchType.toServices': "عرض الخدمات",
   'category.empty.browseAll':            "تصفح الكل",
+  // REVIEW_AR_TRANSLATION — C2 service category page (Figma 1486:24359).
+  'category.breadcrumb.aria':            "مسار التنقل",
+  'category.chips.all':                  "الكل",
+  'category.empty.services':             "لا توجد خدمات في هذه الفئة حاليا",
+  'category.empty.services_subtitle':    "عُد قريبا، أو تصفح جميع الخدمات.",
+  'category.description.design-graphique-logo': "شعارات، هويات بصرية، فلايرات، تغليف: اعثر على مصمم تونسي لمشروعك.",
 
   // ─── Logged-in consumer homepage (/) ─────────────────────────────────────────
   'home.greeting.hello':           "مرحبا {name}",
