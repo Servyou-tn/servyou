@@ -86,8 +86,11 @@ gstack-investigate (root cause) · gstack-review (before every report).
   · **Windows: TaskStop does not kill a background script's children** — a stopped batch runner kept running
     and burned the budget (2026-10-30). Stop runners with `taskkill /PID <pid> /T /F`, and before any live run
     confirm no `vitest` / runner process is alive (`Get-CimInstance Win32_Process` on the command line).
-  · Who is spending the budget: `query_logs` on `edge_logs`, `request.path like '%/auth/v1/verify%'`, grouped by
-    minute — the per-minute counts show whether calls come from outside your own batches.
+  · Run a batch: `npx vitest run --config vitest.integration.config.ts --no-file-parallelism <files>`.
+  · Who is spending the budget (Supabase `query_logs`, times in UTC): `select toStartOfMinute(timestamp) as m,
+    log_attributes['response.status_code'] as status, count() as n from logs where source = 'edge_logs' and
+    log_attributes['request.path'] like '%/auth/v1/verify%' group by m, status order by m` — calls in minutes
+    outside your own batches come from someone else (or a runner that did not die).
 
 ## Fast loop (speed rules — the dev PC has 2 cores / 8–16 GB)
 CI runs the full gate (tsc, lint, the whole mock vitest run, `next build`, VRT) on every push in

@@ -1,4 +1,6 @@
 # Pre-existing integration-test fixture collision — `buyer-cancellation-history.test.ts` / `order-delivery-fee-snapshot.test.ts` (found 2026-09-03)
+✅ CLOSED — `docs/live-signin-budget` (#252), 2026-10-30: both suites name each fixture shop with its seller id; no
+orphaned « BCH Shop » / « DFee Shop » rows remain (read-only check). buyer-cancellation-history green under CAPTCHA.
 
 - **What:** both files' `beforeAll` call a `make*WithProduct(sellerId)` helper multiple times
   (2–3 sellers) that hardcodes a single literal shop name (`'BCH Shop'`, `'DFee Shop'`) with no
