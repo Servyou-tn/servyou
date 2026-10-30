@@ -50,3 +50,19 @@ export async function getSubcategories(parentId: string): Promise<Subcategory[]>
   }
   return (data ?? []) as Subcategory[]
 }
+
+/** The parent row of a subcategory (null for a sector, or if it cannot be read — the page then shows the breadcrumb without that step). */
+export async function getParentCategory(parentId: string): Promise<Category | null> {
+  const supabase = await createClient()
+  const { data, error } = await supabase
+    .from('categories')
+    .select('id, slug, name_fr, name_ar, parent_id')
+    .eq('id', parentId)
+    .maybeSingle()
+  // Secondary (one breadcrumb step): report and show the page without it.
+  if (error && !isNoRowLike(error)) {
+    reportQueryError('categories parent', error)
+    return null
+  }
+  return (data as Category | null) ?? null
+}

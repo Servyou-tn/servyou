@@ -2709,6 +2709,13 @@ export const fr: Record<string, string> = {
   'category.empty.switchType.toProducts': "Voir les produits",
   'category.empty.switchType.toServices': "Voir les services",
   'category.empty.browseAll':            "Parcourir tout",
+  // C2 service category page (Figma 1486:24359).
+  'category.breadcrumb.aria':            "Fil d'Ariane",
+  'category.chips.all':                  "Tout",
+  'category.empty.services':             "Aucun service dans cette catégorie pour le moment",
+  'category.empty.services_subtitle':    "Revenez bientôt, ou parcourez tous les services.",
+  // One line per sector, shown under the title when it exists. Only the framed sector has one so far (docs/design/category-c2-deltas.md D3).
+  'category.description.design-graphique-logo': "Logos, identités visuelles, flyers, packaging : trouvez un designer tunisien pour votre projet.",
 
   // ─── Logged-in consumer homepage (/) ─────────────────────────────────────────
   'home.greeting.hello':           "Bonjour {name}",

@@ -10,7 +10,8 @@ import { ServiceListingCard, type ServiceListing } from './ServiceListingCard'
 // stay pure presenters).
 type Props =
   | { type: 'product'; items: ProductListing[] }
-  | { type: 'service'; items: ServiceListing[] }
+  // `gap="tight"`: 16 at every width — the C2 category frame (1486:24359) draws its 3-up grid at 16, where the /marche/services frame draws 24.
+  | { type: 'service'; items: ServiceListing[]; gap?: 'default' | 'tight' }
 
 export function ListingResults(props: Props) {
   const reduce = useReducedMotion()
@@ -23,7 +24,7 @@ export function ListingResults(props: Props) {
       // gap-4 below sm: the 375 frame (621:49740) stacks its cards at 16, while the desktop grid
       // (611:45637) is 24 — one responsive gap serves both (delta P11). Shared with /recherche,
       // /categories/[slug] and the consumer homepage, which all gain the tighter mobile stack.
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
+      <div className={`grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 ${props.gap === 'tight' ? '' : 'sm:gap-6'}`}>
         {props.items.map((s, i) => (
           <BlurFade key={s.id} delay={i * 0.05} duration={0.2} {...fade} inView>
             <ServiceListingCard service={s} />

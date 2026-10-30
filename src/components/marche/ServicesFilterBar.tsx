@@ -43,6 +43,12 @@ type Props = {
   tri: SearchSort
   q: string
   basePath: string
+  /**
+   * Set on /categories/[slug] (C2): the page IS that category, so the Catégorie dropdown shows it and picking another one navigates to that
+   * category's page (« Toutes les catégories » → the marketplace), carrying q / ville / prix / tri. The category is the page's identity, not
+   * a removable filter, so it gets no chip.
+   */
+  scopedCategory?: FilterCategory
 }
 
 // The three sorts offered on the browse surface (pertinence is a typed-search concept — it
@@ -69,6 +75,7 @@ export function ServicesFilterBar({
   tri,
   q,
   basePath,
+  scopedCategory,
 }: Props) {
   const router = useRouter()
   const sp = useSearchParams()
@@ -84,13 +91,20 @@ export function ServicesFilterBar({
     router.push(qs ? `${basePath}?${qs}` : basePath)
   }
 
+  function pickCategory(slug: string) {
+    if (!scopedCategory) return push({ categorie: slug ? [slug] : null })
+    const qs = buildSearchQuery(sp, { categorie: null }, { resetPage: true })
+    const path = slug ? `/categories/${slug}` : '/marche/services'
+    router.push(qs ? `${path}?${qs}` : path)
+  }
+
   const label = (c: FilterCategory) => (lang === 'ar' ? c.name_ar : c.name_fr)
   const catName = (slug: string) => {
-    const c = categories.find((x) => x.slug === slug)
+    const c = scopedCategory?.slug === slug ? scopedCategory : categories.find((x) => x.slug === slug)
     return c ? label(c) : slug
   }
 
-  const activeCategory = selectedCategorie[0] ?? ''
+  const activeCategory = scopedCategory?.slug ?? selectedCategorie[0] ?? ''
   const sortValue: SearchSort = tri === 'prix_asc' || tri === 'prix_desc' ? tri : 'recent'
   const priceActive = prixMin != null || prixMax != null
 
@@ -102,7 +116,7 @@ export function ServicesFilterBar({
   }
 
   const hasActive =
-    selectedCategorie.length > 0 || Boolean(ville) || priceActive || q.trim() !== ''
+    (!scopedCategory && selectedCategorie.length > 0) || Boolean(ville) || priceActive || q.trim() !== ''
 
   return (
     <div className="flex flex-col gap-3">
@@ -147,11 +161,18 @@ export function ServicesFilterBar({
           >
             <DropdownMenuRadioGroup
               value={activeCategory}
-              onValueChange={(v) => push({ categorie: v ? [v] : null })}
+              onValueChange={pickCategory}
             >
               <DropdownMenuRadioItem value="" className={MENU_ITEM}>
                 {t('services.filters.categoryAll', lang)}
               </DropdownMenuRadioItem>
+              {/* The list only offers sectors that have an active listing: a sub-category page (or an empty sector) is not in it, so it gets its
+                  own checked item — the open menu always shows where you are. */}
+              {scopedCategory && !categories.some((c) => c.slug === scopedCategory.slug) ? (
+                <DropdownMenuRadioItem value={scopedCategory.slug} className={MENU_ITEM}>
+                  {label(scopedCategory)}
+                </DropdownMenuRadioItem>
+              ) : null}
               {categories.map((c) => (
                 <DropdownMenuRadioItem key={c.slug} value={c.slug} className={MENU_ITEM}>
                   {label(c)}
@@ -273,7 +294,7 @@ export function ServicesFilterBar({
           {q.trim() !== '' && (
             <FilterChip label={`« ${q} »`} onRemove={() => push({ q: null })} lang={lang} />
           )}
-          {selectedCategorie.map((slug) => (
+          {(scopedCategory ? [] : selectedCategorie).map((slug) => (
             <FilterChip
               key={slug}
               label={catName(slug)}
@@ -294,7 +315,7 @@ export function ServicesFilterBar({
           <button
             type="button"
             onClick={() =>
-              push({ categorie: null, ville: null, prix_min: null, prix_max: null, q: null })
+              push({ ...(scopedCategory ? {} : { categorie: null }), ville: null, prix_min: null, prix_max: null, q: null })
             }
             className={`rounded-full px-3 py-1 text-body-sm font-semibold text-brand-blue-600 underline-offset-2 hover:underline ${FOCUS_RING}`}
           >
