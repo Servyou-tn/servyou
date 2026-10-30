@@ -16,6 +16,7 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest'
 import { createClient, SupabaseClient } from '@supabase/supabase-js'
 import { refuseTeardownOnForeignOrders } from './live-teardown-guard'
+import { fixtureSignIn } from './fixture-session'
 
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -39,7 +40,7 @@ const PASSWORD = 'H5-Del-Gate-Test-8w1!'
 
 async function signIn(email: string): Promise<SupabaseClient> {
   const client = createClient(url, anonKey, { auth: { autoRefreshToken: false, persistSession: false } })
-  const { error } = await client.auth.signInWithPassword({ email, password: PASSWORD })
+  const { error } = await fixtureSignIn(client, email)
   if (error) throw new Error(`signIn failed for ${email}: ${error.message}`)
   return client
 }

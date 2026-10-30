@@ -55,6 +55,7 @@ import { randomUUID } from 'node:crypto'
 import { createClient, SupabaseClient } from '@supabase/supabase-js'
 import { setAuthBan, syncAuthBan, isSuspensionAlreadyApplied } from '@/lib/auth/auth-ban'
 import { refuseTeardownOnForeignOrders } from './live-teardown-guard'
+import { fixtureSignIn } from './fixture-session'
 
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -149,10 +150,15 @@ const admin: SupabaseClient = hasCreds
   : (undefined as unknown as SupabaseClient)
 
 const freshClient = () => createClient(url, anonKey, { auth: { autoRefreshToken: false, persistSession: false } })
+// GoTrue PASSWORD-GRANT probes only (the ban block): Supabase Auth's CAPTCHA protection guards the password grant
+// but skips a request carrying admin credentials, so these keep reaching GoTrue's ban check once CAPTCHA is on.
+// The sessions they return are never used for a data assertion — every RLS / trigger assertion runs on a
+// fixtureSignIn session (an anon client signed in as the user).
+const passwordProbe = () => createClient(url, serviceKey, { auth: { autoRefreshToken: false, persistSession: false } })
 
 async function signIn(local: string): Promise<SupabaseClient> {
   const client = freshClient()
-  const { error } = await client.auth.signInWithPassword({ email: email(local), password: PASSWORD })
+  const { error } = await fixtureSignIn(client, email(local))
   if (error) throw new Error(`signIn failed for ${local}: ${error.message}`)
   return client
 }
@@ -679,7 +685,9 @@ describe.skipIf(!hasCreds)('the auth ban — setAuthBan against GoTrue', () => {
 
   beforeAll(async () => {
     if (!hasCreds) return
-    const { data, error } = await freshClient().auth.signInWithPassword({ email: email('ban'), password: PASSWORD })
+    const client = freshClient()
+    const { error } = await fixtureSignIn(client, email('ban'))
+    const { data } = await client.auth.getSession()
     if (error || !data.session) throw new Error(`ban account signIn failed: ${error?.message}`)
     session = data.session
   })
@@ -695,11 +703,11 @@ describe.skipIf(!hasCreds)('the auth ban — setAuthBan against GoTrue', () => {
 
   it('a banned account cannot sign in — user_banned even with a wrong password (GoTrue checks the ban first)', async () => {
     for (const password of [PASSWORD, `Wrong-${PASSWORD}`]) {
-      const { error } = await freshClient().auth.signInWithPassword({ email: email('ban'), password })
+      const { error } = await passwordProbe().auth.signInWithPassword({ email: email('ban'), password })
       expect(error?.code).toBe('user_banned')
     }
     // Contrast: an unknown email stays the generic failure.
-    const { error } = await freshClient().auth.signInWithPassword({ email: email(`nobody-${RUN}`), password: PASSWORD })
+    const { error } = await passwordProbe().auth.signInWithPassword({ email: email(`nobody-${RUN}`), password: PASSWORD })
     expect(error?.code).toBe('invalid_credentials')
   })
 
@@ -721,7 +729,7 @@ describe.skipIf(!hasCreds)('the auth ban — setAuthBan against GoTrue', () => {
   })
 
   it('once lifted, the account signs in again', async () => {
-    const { error } = await freshClient().auth.signInWithPassword({ email: email('ban'), password: PASSWORD })
+    const { error } = await passwordProbe().auth.signInWithPassword({ email: email('ban'), password: PASSWORD })
     expect(error).toBeNull()
   })
 
@@ -735,11 +743,11 @@ describe.skipIf(!hasCreds)('the auth ban — setAuthBan against GoTrue', () => {
   it('syncAuthBan bans a suspended account and lifts the ban once suspended_at is cleared', async () => {
     await suspend(banId)
     expect(await syncAuthBan(banId)).toEqual({ ok: true, suspended: true })
-    expect((await freshClient().auth.signInWithPassword({ email: email('ban'), password: PASSWORD })).error?.code).toBe('user_banned')
+    expect((await passwordProbe().auth.signInWithPassword({ email: email('ban'), password: PASSWORD })).error?.code).toBe('user_banned')
 
     await serviceUpdate('profiles', { suspended_at: null, suspended_reason: null }, banId)
     expect(await syncAuthBan(banId)).toEqual({ ok: true, suspended: false })
-    expect((await freshClient().auth.signInWithPassword({ email: email('ban'), password: PASSWORD })).error).toBeNull()
+    expect((await passwordProbe().auth.signInWithPassword({ email: email('ban'), password: PASSWORD })).error).toBeNull()
   })
 
   it('syncAuthBan reports an id with no profile as not_found', async () => {

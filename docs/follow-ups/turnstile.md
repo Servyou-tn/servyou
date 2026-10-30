@@ -1,6 +1,7 @@
 # Cloudflare Turnstile (`feat/turnstile`, 2026-10-30)
 
 ## 1. Supabase Auth CAPTCHA toggle — what breaks the day it is switched on (founder decision)
+✅ CLOSED (code side) — `feat/captcha-ready`, 2026-10-30: all four flows CAPTCHA-ready; the dashboard toggle is the founder's step.
 - **What:** sign-in / sign-up send the Turnstile token to Supabase Auth as `captchaToken`; Supabase verifies it only
   once Authentication → Bot and Abuse Protection → « Enable CAPTCHA protection » (provider Turnstile, the same
   secret) is ON. Until then the token is ignored (probed live 2026-10-30: `invalid_credentials` with or without it).
@@ -21,6 +22,7 @@
 - **Trigger:** if abuse appears despite the caps — move the inserts behind a service-role action and revoke the client INSERT.
 
 ## 3. Disputes (« Signaler un problème » on an order) are not behind Turnstile
+✅ CLOSED — `feat/captcha-ready`, 2026-10-30 (founder: yes).
 - **What:** `ReportProblemDialog` → `createDispute` writes `disputes`, not `reports`; out of the brief's « report forms ».
 - **Trigger:** founder call; same two-line gate if wanted.
 

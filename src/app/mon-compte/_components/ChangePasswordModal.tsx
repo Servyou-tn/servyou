@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useTransition, type FormEvent } from 'react'
+import { useRef, useState, useTransition, type FormEvent } from 'react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -8,6 +8,7 @@ import { changePasswordAction } from '@/app/mon-compte/actions'
 import { isValidPassword } from '@/lib/signup-validation'
 import { t, type Lang } from '@/lib/i18n'
 import { ModalShell } from './ModalShell'
+import { Turnstile, type TurnstileHandle } from '@/components/security/Turnstile'
 
 // Errors are held as i18n KEYS and resolved at render, so switching language with the modal open
 // re-translates them. Server messages (already in the caller's language) are the one exception and
@@ -23,6 +24,7 @@ export function ChangePasswordModal({ lang, onClose }: { lang: Lang; onClose: ()
   const [confirmError, setConfirmError] = useState<FieldError | null>(null)
   const [formError, setFormError] = useState<FieldError | null>(null)
   const [pending, startTransition] = useTransition()
+  const turnstile = useRef<TurnstileHandle>(null)
 
   const say = (e: FieldError | null) => (e ? ('key' in e ? t(e.key, lang) : e.text) : undefined)
 
@@ -49,7 +51,8 @@ export function ChangePasswordModal({ lang, onClose }: { lang: Lang; onClose: ()
     if (bad) return
 
     startTransition(async () => {
-      const res = await changePasswordAction({ currentPassword: current, newPassword: next })
+      const turnstileToken = await turnstile.current?.getToken()
+      const res = await changePasswordAction({ currentPassword: current, newPassword: next }, turnstileToken)
       if (res.ok) {
         toast.success(t('monCompte.toast.passwordUpdated', lang))
         onClose()
@@ -100,6 +103,7 @@ export function ChangePasswordModal({ lang, onClose }: { lang: Lang; onClose: ()
           </p>
         )}
 
+        <Turnstile ref={turnstile} action="password_change" />
         <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
           <Button type="button" variant="secondary" size="md" onClick={onClose} disabled={pending}>
             {t('monCompte.password.cancel', lang)}

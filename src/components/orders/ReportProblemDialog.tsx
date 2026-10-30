@@ -1,12 +1,13 @@
 'use client'
 
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { ModalDialog, MODAL_FIELD_CLASS } from '@/components/shared/ModalDialog'
 import { useLang } from '@/components/LangProvider'
 import { createDispute } from '@/app/actions/disputes'
+import { Turnstile, type TurnstileHandle } from '@/components/security/Turnstile'
 import { t } from '@/lib/i18n'
 import type { OrderType } from '@/lib/types/order-status'
 import type { DisputeReason } from '@/lib/types/dispute'
@@ -42,6 +43,7 @@ export function ReportProblemDialog({
   // An i18n KEY (the action answers with keys), resolved at render so a language switch re-translates it.
   const [errorKey, setErrorKey] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
+  const turnstile = useRef<TurnstileHandle>(null)
 
   const canSubmit = !submitting && reason !== '' && description.trim() !== ''
 
@@ -51,7 +53,7 @@ export function ReportProblemDialog({
     setErrorKey(null)
     let res: Awaited<ReturnType<typeof createDispute>>
     try {
-      res = await createDispute(orderId, reason, description)
+      res = await createDispute(orderId, reason, description, await turnstile.current?.getToken())
     } catch (e) {
       // Offline / 5xx / expired session: the action itself rejected. Without this the dialog stays busy and every exit is frozen.
       console.error('[ReportProblemDialog] createDispute rejected:', e instanceof Error ? e.message : 'unknown')
@@ -82,6 +84,7 @@ export function ReportProblemDialog({
       }}
       footer={
         <>
+          <Turnstile ref={turnstile} action="dispute" />
           <Button type="button" variant="ghost" size="md" onClick={onClose} disabled={submitting}>
             {t('buyerOrder.dispute.cancel', lang)}
           </Button>

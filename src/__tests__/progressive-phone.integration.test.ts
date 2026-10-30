@@ -14,6 +14,7 @@
 
 import { describe, it, expect, beforeAll, afterAll } from 'vitest'
 import { createClient, SupabaseClient } from '@supabase/supabase-js'
+import { fixtureSignIn } from './fixture-session'
 
 const url        = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -36,9 +37,9 @@ function freshAnonClient() {
   return createClient(url, anonKey, { auth: { autoRefreshToken: false, persistSession: false } })
 }
 
-async function signIn(email: string, password: string): Promise<SupabaseClient> {
+async function signIn(email: string): Promise<SupabaseClient> {
   const client = freshAnonClient()
-  const { error } = await client.auth.signInWithPassword({ email, password })
+  const { error } = await fixtureSignIn(client, email)
   if (error) throw new Error(`signIn failed: ${error.message}`)
   return client
 }
@@ -72,8 +73,8 @@ beforeAll(async () => {
   if (!hasCreds) return
   consumer  = await createUser()           // no phone
   freelancer = await createUser()          // no phone
-  clientConsumer  = await signIn(consumer.email, consumer.password)
-  clientFreelancer = await signIn(freelancer.email, freelancer.password)
+  clientConsumer  = await signIn(consumer.email)
+  clientFreelancer = await signIn(freelancer.email)
 }, 60000)
 
 afterAll(async () => {

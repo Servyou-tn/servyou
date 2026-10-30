@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
 import { isNoRowLike, reportQueryError } from '@/lib/supabase/query-error'
+import { verifyTurnstile } from '@/lib/security/turnstile'
 import type { DisputeReason, DisputeCreatedByRole } from '@/lib/types/dispute'
 
 export type CreateDisputeResult =
@@ -35,6 +36,7 @@ export async function createDispute(
   orderId: string,
   reason: string,
   description: string,
+  turnstileToken?: string,
 ): Promise<CreateDisputeResult> {
   const parsed = CreateDisputeInput.safeParse({ orderId, reason, description })
   if (!parsed.success) {
@@ -51,6 +53,8 @@ export async function createDispute(
   if (reason === 'other' && desc.length === 0) {
     return { success: false, error: 'dispute.error_description_required' }
   }
+  // Bot check (Turnstile) before any database work: skipped without TURNSTILE_SECRET_KEY, fails closed with it.
+  if (!(await verifyTurnstile(turnstileToken)).ok) return { success: false, error: 'common.error_bot_check' }
 
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()

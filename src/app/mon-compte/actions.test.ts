@@ -46,6 +46,7 @@ vi.mock('@/lib/images/provenance', () => ({ recordUploadProvenance: vi.fn(), del
 vi.mock('@/lib/images/upload-guard', () => ({ callerActivity: vi.fn(), uploadBucket: vi.fn() }))
 
 import { updateProfileAction, requestAccountDeletionAction, changePasswordAction } from './actions'
+import { t } from '@/lib/i18n'
 
 const USER = { id: 'u1', email: 'me@example.com' }
 
@@ -184,5 +185,22 @@ describe('changePasswordAction', () => {
     h.getUser.mockResolvedValue({ data: { user: null } })
     expect(await changePasswordAction(input)).toMatchObject({ ok: false })
     expect(h.signInWithPassword).not.toHaveBeenCalled()
+  })
+
+  // Supabase Auth's CAPTCHA guards the password grant even from this server-side client: the browser's
+  // Turnstile token must reach the re-auth, and a failed bot check must not read as a wrong password.
+  it("forwards the browser's Turnstile token to the re-auth as captchaToken", async () => {
+    expect(await changePasswordAction(input, 'XXXX.DUMMY.TOKEN.XXXX')).toEqual({ ok: true })
+    expect(h.signInWithPassword).toHaveBeenCalledWith({
+      email: 'me@example.com',
+      password: 'OldPass123',
+      options: { captchaToken: 'XXXX.DUMMY.TOKEN.XXXX' },
+    })
+  })
+
+  it('a failed bot check is the bot-check message, not « wrong current password », and changes nothing', async () => {
+    h.signInWithPassword.mockResolvedValue({ error: { code: 'captcha_failed', message: 'x', status: 400 } })
+    expect(await changePasswordAction(input, 'bad')).toEqual({ ok: false, error: t('common.error_bot_check', 'fr') })
+    expect(h.updateUser).not.toHaveBeenCalled()
   })
 })

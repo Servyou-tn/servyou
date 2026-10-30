@@ -26,6 +26,7 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest'
 import { randomUUID } from 'node:crypto'
 import { createClient, SupabaseClient } from '@supabase/supabase-js'
+import { fixtureSignIn } from './fixture-session'
 
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -67,7 +68,7 @@ async function createUser(local: string): Promise<string> {
 
 async function signIn(local: string): Promise<SupabaseClient> {
   const client = createClient(url, anonKey, { auth: { autoRefreshToken: false, persistSession: false } })
-  const { error } = await client.auth.signInWithPassword({ email: email(local), password: PASSWORD })
+  const { error } = await fixtureSignIn(client, email(local))
   if (error) throw new Error(`signIn failed for ${local}: ${error.message}`)
   return client
 }

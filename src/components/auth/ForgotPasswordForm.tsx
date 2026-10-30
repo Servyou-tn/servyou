@@ -8,6 +8,7 @@ import { t } from '@/lib/i18n'
 import { isValidEmail } from '@/lib/signup-validation'
 import { CheckCircleIcon, SpinnerIcon } from '@/components/auth/Icons'
 import { labelClass, errorClass, inputBase, primaryBtn } from '@/components/auth/field-styles'
+import { Turnstile, type TurnstileHandle } from '@/components/security/Turnstile'
 
 // Box content for /mot-de-passe-oublie. One email field → resetPasswordForEmail.
 // ALWAYS shows the same generic success regardless of whether the email exists
@@ -20,6 +21,7 @@ export function ForgotPasswordForm() {
   const [loading, setLoading] = useState(false)
   const [submitted, setSubmitted] = useState(false)
   const backLinkRef = useRef<HTMLAnchorElement>(null)
+  const turnstile = useRef<TurnstileHandle>(null)
 
   // On success, move focus to the back-to-sign-in link (the only action left).
   useEffect(() => {
@@ -35,9 +37,19 @@ export function ForgotPasswordForm() {
       return
     }
     setLoading(true)
+    // Turnstile token for Supabase Auth's CAPTCHA check (/recover is CAPTCHA-guarded once it is enabled).
+    const captchaToken = await turnstile.current?.getToken()
     const { error } = await supabase.auth.resetPasswordForEmail(email.trim().toLowerCase(), {
       redirectTo: `${window.location.origin}/nouveau-mot-de-passe`,
+      ...(captchaToken ? { captchaToken } : {}),
     })
+    // A failed bot check says nothing about the account, so it is the one error shown (anti-enumeration
+    // holds): swallowing it would promise an email that was never sent.
+    if (error?.code === 'captcha_failed') {
+      setEmailError(t('common.error_bot_check', lang))
+      setLoading(false)
+      return
+    }
     if (error) console.error('[ForgotPasswordForm] reset error:', error.message, error.code, error.status)
     setLoading(false)
     setSubmitted(true) // same success state whether or not the email exists
@@ -81,6 +93,7 @@ export function ForgotPasswordForm() {
           </p>
         ) : null}
       </div>
+      <Turnstile ref={turnstile} action="password_reset" />
       <button type="submit" disabled={loading} className={primaryBtn}>
         {loading ? (
           <>
