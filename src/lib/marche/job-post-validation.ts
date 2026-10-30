@@ -126,9 +126,9 @@ export function validateJobPost(
       category_id: input.categoryId,
       city: input.city,
       // Older annonces may carry a min/max range; a NEW post never does (D3) — display handles both (format-job-budget.ts). An EDIT that leaves
-      // the single field at the stored max keeps the stored min (the old range is not rewritten); changing the amount makes it a single budget.
-      budget_min:
-        original?.budgetMin != null && budget_max != null && budget_max === original.budgetMax ? original.budgetMin : null,
+      // the single field at the stored max keeps the stored min (the old range is not rewritten) — also an old « à partir de » post (a min, no
+      // max: the field stays empty and the min stays); changing the amount makes it a single budget.
+      budget_min: original?.budgetMin != null && budget_max === (original.budgetMax ?? null) ? original.budgetMin : null,
       budget_max,
       is_remote: input.isRemote,
       deadline,

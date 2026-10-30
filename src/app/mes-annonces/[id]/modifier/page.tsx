@@ -57,9 +57,9 @@ export default async function ModifierAnnoncePage({ params }: Props) {
   }
 
   const categories = await getCategories()
-  // An old post saved with a min–max budget: the single field shows the max, the range is named under it and kept unless the amount changes.
-  const legacyRange =
-    annonce.budgetMin != null && annonce.budgetMax != null ? formatJobBudget(annonce.budgetMin, annonce.budgetMax, lang) : null
+  // An old post saved with a min (a min–max range, or « à partir de » with no max): the single field shows the max (empty for the latter), the
+  // old budget is named under it and kept unless the amount changes.
+  const legacyRange = annonce.budgetMin != null ? formatJobBudget(annonce.budgetMin, annonce.budgetMax, lang) : null
 
   return (
     <AppShell user={shell.topBarUser}>

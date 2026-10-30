@@ -39,7 +39,7 @@ import { cn } from '@/lib/utils'
 // title / description limits apply to an edit only where the text changed (validateJobPost's `original`), which the form cannot know, so
 // its own counter check is skipped for a field left at its stored value.
 
-/** Edit mode: the post's id, its stored values, and — for an old post saved with a min–max budget — the range text to show (kept unless the amount changes). */
+/** Edit mode: the post's id, its stored values, and — for an old post saved with a min (a range, or « à partir de ») — the budget text to show (kept unless the amount changes). */
 export type AnnonceFormEdit = { id: string; initial: JobPostInput; legacyRange: string | null }
 
 type Field = 'title' | 'description' | 'category' | 'city' | 'budget' | 'deadline'
@@ -181,7 +181,7 @@ export function AnnonceForm({ categories, edit }: { categories: AnnonceCategoryO
           label={t('annonce.form.budget_label', lang)}
           helper={
             edit?.legacyRange && budget === initial?.budget
-              ? t('annonce.form.budget_legacy', lang, { range: edit.legacyRange })
+              ? t('annonce.form.budget_legacy', lang, { range: `\u2066${edit.legacyRange}\u2069` })
               : t('annonce.form.budget_helper', lang)
           }
           currency={t('annonce.form.budget_currency', lang)}

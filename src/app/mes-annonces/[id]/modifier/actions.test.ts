@@ -56,7 +56,7 @@ const stored = (over: Record<string, unknown> = {}) => ({
   created_at: new Date(Date.now() - 2 * DAY).toISOString(),
   response_count: 0,
   admin_hidden_at: null,
-  job_post_skills: [{ skill: 'Figma' }, { skill: 'Adobe' }],
+  job_post_skills: [{ id: 's-figma', skill: 'Figma' }, { id: 's-adobe', skill: 'Adobe' }],
   ...over,
 })
 
@@ -174,7 +174,9 @@ describe('updateAnnonce — the write', () => {
     expect(ins).toEqual([{ job_post_id: ID, skill: 'Canva' }])
     const del = callsOf('job_post_skills', 'delete')
     expect(del).toContainEqual(['eq', 'job_post_id', ID])
-    expect(del).toContainEqual(['in', 'skill', ['Adobe']])
+    // By row id, not by text: a skill with a quote or a comma in it would need escaping in a text filter.
+    expect(del).toContainEqual(['in', 'id', ['s-adobe']])
+    expect(del).not.toContainEqual(['in', 'skill', expect.anything()])
   })
 
   it('unchanged skills write nothing to job_post_skills', async () => {
@@ -220,14 +222,31 @@ describe('updateAnnonce — failures from the database', () => {
     expect(console.error).toHaveBeenCalledWith('[updateAnnonce] update error:', 'boom', 'XX000', 'd')
   })
 
-  it('a failed skills insert is reported (the post row is already saved) and the delete is not attempted', async () => {
+  it('a failed skills insert says « enregistré, mais pas les compétences » (the post row is already saved) and the delete is not attempted', async () => {
     setup({ insert: { error: { message: 'nope', code: 'XX000' } } })
-    expect(await updateAnnonce(ID, input)).toEqual({ ok: false, errorKey: 'common.error_generic' })
+    expect(await updateAnnonce(ID, input)).toEqual({ ok: false, errorKey: 'annonce.error.skills_partial' })
     expect(on('job_post_skills', 'delete')).toHaveLength(0)
   })
 
-  it('a skills write refused by the content lock is mapped too', async () => {
+  it('a proposal arriving between the post update and the skills write (the content lock) is also « partly saved », not « nothing saved »', async () => {
     setup({ remove: { error: { message: 'locked', code: '42501', hint: 'content_locked' } } })
-    expect(await updateAnnonce(ID, input)).toEqual({ ok: false, errorKey: 'annonce.error.content_locked' })
+    expect(await updateAnnonce(ID, input)).toEqual({ ok: false, errorKey: 'annonce.error.skills_partial' })
+  })
+})
+
+describe('updateAnnonce — the input is parsed, not trusted', () => {
+  it('a hand-crafted call with a non-string field answers a clean failure, not a TypeError, and reads nothing', async () => {
+    setup()
+    for (const bad of [{ ...input, title: 42 }, { ...input, deadline: null }, { ...input, skills: undefined }, { ...input, isRemote: 'yes' }]) {
+      expect(await updateAnnonce(ID, bad as unknown as typeof input)).toEqual({ ok: false, errorKey: 'common.error_generic' })
+    }
+    expect(h.recs).toHaveLength(0)
+  })
+
+  it('an old « à partir de » budget (a min, no max) is kept while the field stays empty', async () => {
+    setup({ post: stored({ budget_min: 300, budget_max: null }) })
+    await updateAnnonce(ID, { ...input, budget: '' })
+    const payload = callsOf('job_posts', 'update').find(([n]) => n === 'update')![1] as Record<string, unknown>
+    expect(payload).toMatchObject({ budget_min: 300, budget_max: null })
   })
 })

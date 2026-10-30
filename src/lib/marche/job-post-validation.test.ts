@@ -185,6 +185,14 @@ describe('validateJobPost — an EDIT (original = the stored row)', () => {
     expect(cleared.ok && cleared.value).toMatchObject({ budget_min: null, budget_max: null })
   })
 
+  it('an old « à partir de » budget (a min, no max) keeps its min while the field stays empty, and becomes a single budget once an amount is typed', () => {
+    const fromOnly = { ...original, budgetMin: 300, budgetMax: null }
+    const kept = validateJobPost({ ...base, budget: '' }, NOW, fromOnly)
+    expect(kept.ok && kept.value).toMatchObject({ budget_min: 300, budget_max: null })
+    const typed = validateJobPost({ ...base, budget: '500' }, NOW, fromOnly)
+    expect(typed.ok && typed.value).toMatchObject({ budget_min: null, budget_max: 500 })
+  })
+
   it('never invents a min: a create (no original) and a single-budget original both give budget_min null', () => {
     const create = validateJobPost({ ...base, budget: '400' }, NOW)
     expect(create.ok && create.value.budget_min).toBeNull()

@@ -25,3 +25,12 @@
 ## AR copy is a draft
 **What:** the new `annonce.form.edit_*`, `annonce.error.content_locked` / `edit_unavailable`, `annonces.edit.*` and `annonces.detail.edit_locked` strings are marked `REVIEW_AR_TRANSLATION`.
 **Trigger:** the founder's Arabic review pass.
+
+## An old « à partir de » / min–max budget cannot be removed, only replaced
+**What:** a post saved with a min keeps it while the single budget field is left at its stored value (empty for a min-only post). Typing an amount makes it a single budget; clearing it back to the stored value restores the old one. There is no way to drop the min and have no budget at all.
+**Why deferred:** the old shapes are legacy (new posts are single-budget); a « remove the budget » control is new UI.
+**Trigger:** an owner asks for it, or a `budget_kind` is added.
+
+## Duplicate skills differing only in case stay duplicated in the DB
+**What:** the form and `updateAnnonce` compare skills accent- and case-insensitively, so two stored rows « Figma » / « figma » show as one chip and are left untouched by an edit.
+**Trigger:** a data cleanup; no user-visible effect.
