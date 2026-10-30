@@ -1,10 +1,7 @@
 /**
- * Live proof for db/migrations/PENDING_storage_verifications_drop_client_insert.sql — S1: the private
- * verifications bucket loses its owner INSERT policy (identity verification is not built; nothing writes
- * there), so no client can PUT into any bucket any more.
- *
- * ⚠ Red until that migration is applied: before it, the owner's PUT into their own verifications folder
- * still succeeds.
+ * Live proof for db/migrations/20261030100604_storage_verifications_drop_client_insert.sql (README 104) — S1:
+ * the private verifications bucket lost its owner INSERT policy (identity verification is not built; nothing
+ * writes there), so no client can PUT into any bucket any more.
  *
  *   * a signed-in user's PUT into their OWN verifications folder is refused by RLS and stores nothing;
  *   * the other buckets still accept their normal uploads — the service role's PUT (the app's path since
@@ -141,7 +138,7 @@ describe.skipIf(!hasCreds)('S1 — no client PUT into the verifications bucket',
     expect(await listNames('verifications', userId)).toEqual([])
   })
 
-  it('the other buckets still accept their normal uploads (service role, the upload actions’ path)', async () => {
+  it('the service role (the upload actions’ path) still writes to the four public buckets', async () => {
     const cases: [Bucket, string][] = [
       ['avatars', userId],
       ['portfolio-media', userId],

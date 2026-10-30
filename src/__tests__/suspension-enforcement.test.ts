@@ -581,8 +581,8 @@ describe.skipIf(!hasCreds)('storage — restrictive policies on storage.objects'
     expect(data ?? []).toEqual([])
   })
 
-  // storage.objects has no permissive UPDATE policy, so an overwrite (upsert = INSERT … ON CONFLICT
-  // DO UPDATE) is refused for EVERY account today — the active control proves it. This pins that
+  // storage.objects has no permissive UPDATE policy (and, since S1, no permissive INSERT either), so an
+  // overwrite (upsert = INSERT … ON CONFLICT DO UPDATE) is refused for EVERY account today. This pins that
   // state; it is not evidence for the restrictive UPDATE policy, which stays unobservable until a
   // permissive UPDATE policy exists (then this control flips and the suspended case starts to matter).
   it('an overwrite (upsert) is refused for every account today — active control and suspended alike', async () => {
