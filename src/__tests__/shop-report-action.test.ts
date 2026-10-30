@@ -13,10 +13,13 @@ const h = vi.hoisted(() => {
     user: { id: string } | null
     insertResult: { error: unknown }
     lastInsert: Record<string, unknown> | null
+    // The target lookup (shops by id, the reporter's session): found by default.
+    target: { data: { id: string } | null; error: unknown }
   } = {
     user: { id: 'u_buyer' },
     insertResult: { error: null },
     lastInsert: null,
+    target: { data: { id: 'shop' }, error: null },
   }
 
   const reportsChain: Record<string, unknown> = {}
@@ -25,7 +28,12 @@ const h = vi.hoisted(() => {
     return Promise.resolve(state.insertResult)
   })
 
-  const from = vi.fn(() => reportsChain)
+  const shopsChain: Record<string, unknown> = {}
+  shopsChain.select = vi.fn(() => shopsChain)
+  shopsChain.eq = vi.fn(() => shopsChain)
+  shopsChain.maybeSingle = vi.fn(() => Promise.resolve(state.target))
+
+  const from = vi.fn((table: string) => (table === 'shops' ? shopsChain : reportsChain))
   const getUser = vi.fn(() => Promise.resolve({ data: { user: state.user }, error: null }))
   return { state, from, getUser, reportsChain }
 })
@@ -50,6 +58,7 @@ beforeEach(() => {
   h.state.user = { id: 'u_buyer' }
   h.state.insertResult = { error: null }
   h.state.lastInsert = null
+  h.state.target = { data: { id: 'shop' }, error: null }
   vi.clearAllMocks()
 })
 
@@ -120,5 +129,26 @@ describe('createShopReportAction — anti-abuse refusals (reports anti-abuse mig
     h.state.insertResult = { error: { code: '23514', message: 'Vous avez atteint…', hint: 'rate_limited' } }
     const res = await createShopReportAction({ shopId: SHOP_ID, reason: 'other' })
     expect(res).toEqual({ ok: false, error: t('report.rate_limited', 'fr') })
+  })
+})
+
+// Audit pass 2 « Logged »: a made-up shop id must not fill the admin queue with « cible introuvable » rows.
+describe('createShopReportAction — the target must exist and be visible to the reporter', () => {
+  it('refuses an unknown (or hidden) shop without inserting a report', async () => {
+    h.state.target = { data: null, error: null }
+    expect(await createShopReportAction({ shopId: SHOP_ID, reason: 'other' })).toEqual({ ok: false, error: GENERIC_ERROR })
+    expect(h.from).toHaveBeenCalledWith('shops')
+    expect(insertFn).not.toHaveBeenCalled()
+  })
+
+  it('a failed lookup is the generic error, never an insert', async () => {
+    h.state.target = { data: null, error: { message: 'boom', code: 'XX000' } }
+    expect(await createShopReportAction({ shopId: SHOP_ID, reason: 'other' })).toEqual({ ok: false, error: GENERIC_ERROR })
+    expect(insertFn).not.toHaveBeenCalled()
+  })
+
+  it('looks the shop up by the validated id before inserting', async () => {
+    expect(await createShopReportAction({ shopId: SHOP_ID, reason: 'other' })).toEqual({ ok: true })
+    expect(h.from.mock.calls.map((c) => c[0])).toEqual(['shops', 'reports'])
   })
 })

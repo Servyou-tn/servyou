@@ -54,55 +54,55 @@ beforeEach(() => {
 
 describe('hideContent', () => {
   it('rejects an empty reason without calling the database', async () => {
-    const res = await hideContent('product', 'p1', '', 'r1')
+    const res = await hideContent('product', 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbb01', '', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaa01')
     expect(res).toEqual({ success: false, error: 'admin.moderation.hide_reason_required' })
     expect(h.rpc).not.toHaveBeenCalled()
   })
 
   it('rejects a whitespace-only reason', async () => {
-    const res = await hideContent('product', 'p1', '   \n\t ', 'r1')
+    const res = await hideContent('product', 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbb01', '   \n\t ', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaa01')
     expect(res).toEqual({ success: false, error: 'admin.moderation.hide_reason_required' })
     expect(h.rpc).not.toHaveBeenCalled()
   })
 
   it('surfaces the already-moderated error from the function RAISE', async () => {
     h.state.result = { data: null, error: { message: 'Product not found or already moderated' } }
-    const res = await hideContent('product', 'p1', 'Contrefaçon manifeste.', 'r1')
+    const res = await hideContent('product', 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbb01', 'Contrefaçon manifeste.', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaa01')
     expect(res).toEqual({ success: false, error: 'admin.moderation.error_already_moderated' })
   })
 
   it('surfaces the unsupported-type error from the function RAISE', async () => {
     h.state.result = { data: null, error: { message: 'Unsupported target_type for moderation: shop' } }
-    const res = await hideContent('product', 'p1', 'Raison.', 'r1')
+    const res = await hideContent('product', 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbb01', 'Raison.', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaa01')
     expect(res).toEqual({ success: false, error: 'admin.moderation.error_unsupported_type' })
   })
 
   it('passes a trimmed reason, succeeds, and revalidates', async () => {
     h.state.result = { data: null, error: null }
-    const res = await hideContent('service', 's1', '  Service frauduleux.  ', 'r1')
+    const res = await hideContent('service', 'cccccccc-cccc-4ccc-8ccc-cccccccccc01', '  Service frauduleux.  ', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaa01')
     expect(res).toEqual({ success: true })
     expect(h.rpc).toHaveBeenCalledWith('admin_hide_content', {
       target_type: 'service',
-      target_id: 's1',
+      target_id: 'cccccccc-cccc-4ccc-8ccc-cccccccccc01',
       reason: 'Service frauduleux.',
     })
-    expect(h.revalidatePath).toHaveBeenCalledWith('/admin/signalements/r1')
+    expect(h.revalidatePath).toHaveBeenCalledWith('/admin/signalements/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaa01')
   })
 })
 
 describe('unhideContent', () => {
   it('surfaces the not-moderated error from the function RAISE', async () => {
     h.state.result = { data: null, error: { message: 'Product not found or not currently moderated' } }
-    const res = await unhideContent('product', 'p1', 'r1')
+    const res = await unhideContent('product', 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbb01', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaa01')
     expect(res).toEqual({ success: false, error: 'admin.moderation.error_not_moderated' })
   })
 
   it('succeeds and revalidates', async () => {
     h.state.result = { data: null, error: null }
-    const res = await unhideContent('product', 'p1', 'r1')
+    const res = await unhideContent('product', 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbb01', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaa01')
     expect(res).toEqual({ success: true })
-    expect(h.rpc).toHaveBeenCalledWith('admin_unhide_content', { target_type: 'product', target_id: 'p1' })
-    expect(h.revalidatePath).toHaveBeenCalledWith('/admin/signalements/r1')
+    expect(h.rpc).toHaveBeenCalledWith('admin_unhide_content', { target_type: 'product', target_id: 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbb01' })
+    expect(h.revalidatePath).toHaveBeenCalledWith('/admin/signalements/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaa01')
   })
 })
 
@@ -119,27 +119,27 @@ describe('moderation of shops, freelancer profiles, and job posts (PR-N)', () =>
   for (const c of cases) {
     it(`hideContent(${c.type}) succeeds and calls admin_hide_content with the target_type`, async () => {
       h.state.result = { data: null, error: null }
-      const res = await hideContent(c.type, 'tid', 'Raison valide.', 'r1')
+      const res = await hideContent(c.type, 'eeeeeeee-eeee-4eee-8eee-eeeeeeeeee01', 'Raison valide.', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaa01')
       expect(res).toEqual({ success: true })
-      expect(h.rpc).toHaveBeenCalledWith('admin_hide_content', { target_type: c.type, target_id: 'tid', reason: 'Raison valide.' })
+      expect(h.rpc).toHaveBeenCalledWith('admin_hide_content', { target_type: c.type, target_id: 'eeeeeeee-eeee-4eee-8eee-eeeeeeeeee01', reason: 'Raison valide.' })
     })
 
     it(`unhideContent(${c.type}) succeeds and calls admin_unhide_content with the target_type`, async () => {
       h.state.result = { data: null, error: null }
-      const res = await unhideContent(c.type, 'tid', 'r1')
+      const res = await unhideContent(c.type, 'eeeeeeee-eeee-4eee-8eee-eeeeeeeeee01', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaa01')
       expect(res).toEqual({ success: true })
-      expect(h.rpc).toHaveBeenCalledWith('admin_unhide_content', { target_type: c.type, target_id: 'tid' })
+      expect(h.rpc).toHaveBeenCalledWith('admin_unhide_content', { target_type: c.type, target_id: 'eeeeeeee-eeee-4eee-8eee-eeeeeeeeee01' })
     })
 
     it(`hideContent(${c.type}) maps its already-moderated RAISE to error_already_moderated`, async () => {
       h.state.result = { data: null, error: { message: c.alreadyMsg } }
-      const res = await hideContent(c.type, 'tid', 'Raison.', 'r1')
+      const res = await hideContent(c.type, 'eeeeeeee-eeee-4eee-8eee-eeeeeeeeee01', 'Raison.', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaa01')
       expect(res).toEqual({ success: false, error: 'admin.moderation.error_already_moderated' })
     })
 
     it(`unhideContent(${c.type}) maps its not-moderated RAISE to error_not_moderated`, async () => {
       h.state.result = { data: null, error: { message: c.notMsg } }
-      const res = await unhideContent(c.type, 'tid', 'r1')
+      const res = await unhideContent(c.type, 'eeeeeeee-eeee-4eee-8eee-eeeeeeeeee01', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaa01')
       expect(res).toEqual({ success: false, error: 'admin.moderation.error_not_moderated' })
     })
   }
@@ -148,7 +148,7 @@ describe('moderation of shops, freelancer profiles, and job posts (PR-N)', () =>
 describe('admin gate (checkAdmin runs first)', () => {
   it('hideContent rejects a non-admin before touching the database', async () => {
     guard.checkAdmin.mockResolvedValue({ ok: false, reason: 'forbidden' })
-    const res = await hideContent('product', 'p1', 'Contenu interdit.', 'r1')
+    const res = await hideContent('product', 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbb01', 'Contenu interdit.', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaa01')
     expect(res).toEqual({ success: false, error: 'admin.moderation.error_forbidden' })
     expect(h.rpc).not.toHaveBeenCalled()
     expect(h.revalidatePath).not.toHaveBeenCalled()
@@ -156,7 +156,7 @@ describe('admin gate (checkAdmin runs first)', () => {
 
   it('unhideContent rejects a non-admin before touching the database', async () => {
     guard.checkAdmin.mockResolvedValue({ ok: false, reason: 'forbidden' })
-    const res = await unhideContent('product', 'p1', 'r1')
+    const res = await unhideContent('product', 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbb01', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaa01')
     expect(res).toEqual({ success: false, error: 'admin.moderation.error_forbidden' })
     expect(h.rpc).not.toHaveBeenCalled()
     expect(h.revalidatePath).not.toHaveBeenCalled()
@@ -171,7 +171,7 @@ describe('admin gate (checkAdmin runs first)', () => {
     'hideContent also fails closed when the check returns %s (→ %s)',
     async (reason, error) => {
       guard.checkAdmin.mockResolvedValue({ ok: false, reason })
-      const res = await hideContent('product', 'p1', 'Contenu interdit.', 'r1')
+      const res = await hideContent('product', 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbb01', 'Contenu interdit.', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaa01')
       expect(res).toEqual({ success: false, error })
       expect(h.rpc).not.toHaveBeenCalled()
       expect(h.revalidatePath).not.toHaveBeenCalled()

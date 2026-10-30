@@ -14,6 +14,8 @@ const h = vi.hoisted(() => ({
   insertResult: { error: null } as { error: unknown },
   inserted: [] as unknown[],
   from: vi.fn(),
+  // The target lookup (freelancer_profiles by id, the reporter's session): found by default.
+  target: { data: { id: 'profile' }, error: null } as { data: { id: string } | null; error: unknown },
 }))
 
 vi.mock('@/lib/supabase/server', () => ({
@@ -21,6 +23,10 @@ vi.mock('@/lib/supabase/server', () => ({
     auth: { getUser: async () => ({ data: { user: h.user }, error: null }) },
     from: (table: string) => {
       h.from(table)
+      if (table === 'freelancer_profiles') {
+        const chain = { select: () => chain, eq: () => chain, maybeSingle: async () => h.target }
+        return chain
+      }
       return {
         insert: async (row: unknown) => {
           h.inserted.push(row)
@@ -44,6 +50,7 @@ beforeEach(() => {
   h.user = { id: 'u_buyer' }
   h.insertResult = { error: null }
   h.inserted = []
+  h.target = { data: { id: 'profile' }, error: null }
   h.from.mockReset()
   log = vi.spyOn(console, 'error').mockImplementation(() => {})
   warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
@@ -105,5 +112,21 @@ describe('createFreelancerReportAction', () => {
     h.insertResult = { error: { code: '42501', message: 'Ce compte est suspendu.' } }
     const res = await createFreelancerReportAction({ freelancerProfileId: PROFILE_ID, reason: 'other' })
     expect(res).toEqual(GENERIC)
+  })
+})
+
+// Audit pass 2 « Logged »: a made-up profile id must not fill the admin queue with « cible introuvable » rows.
+describe('createFreelancerReportAction — the target must exist and be visible to the reporter', () => {
+  it('refuses an unknown (or unpublished) profile without inserting a report', async () => {
+    h.target = { data: null, error: null }
+    expect(await createFreelancerReportAction({ freelancerProfileId: PROFILE_ID, reason: 'other' })).toEqual(GENERIC)
+    expect(h.from).toHaveBeenCalledWith('freelancer_profiles')
+    expect(h.inserted).toEqual([])
+  })
+
+  it('a failed lookup is the generic error, never an insert', async () => {
+    h.target = { data: null, error: { message: 'boom', code: 'XX000' } }
+    expect(await createFreelancerReportAction({ freelancerProfileId: PROFILE_ID, reason: 'other' })).toEqual(GENERIC)
+    expect(h.inserted).toEqual([])
   })
 })

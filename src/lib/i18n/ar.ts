@@ -37,6 +37,7 @@ export const ar: Record<string, string> = {
   'common.back_home':              "العودة إلى الصفحة الرئيسية",
   'common.error_generic':          "حدث خطأ. يرجى المحاولة مرة أخرى.",
   'common.error_bot_check':        "تعذّر التحقق الأمني. يرجى المحاولة مرة أخرى.",
+  'admin.note_too_long':           "النص طويل جدًا (2000 حرف كحد أقصى).",
   'common.loading':                "جار التحميل…",
   'common.rate_limit':             "محاولات كثيرة جدا. يرجى الانتظار بضع دقائق قبل المحاولة مرة أخرى.",
   // Actions

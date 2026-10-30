@@ -4,6 +4,7 @@ import { useState, useTransition } from 'react'
 import { useLang } from '@/components/LangProvider'
 import { t } from '@/lib/i18n'
 import { hideContent, type ModerationTargetType } from '../actions'
+import { ADMIN_TEXT_MAX } from '@/lib/admin/action-input'
 
 // Hide = moderate a product/service via admin_hide_content(target_type, id, reason).
 // The reason is required in three places: the textarea `required`, the disabled submit
@@ -36,6 +37,7 @@ export function HideForm({ targetType, targetId, reportId }: {
         {tr('admin.moderation.hide_reason_label')}
       </label>
       <textarea
+        maxLength={ADMIN_TEXT_MAX}
         id="hide_reason"
         value={reason}
         onChange={e => setReason(e.target.value)}

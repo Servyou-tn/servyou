@@ -4,6 +4,7 @@ export const fr: Record<string, string> = {
   'common.back_home':              "Retour à l'accueil",
   'common.error_generic':          "Une erreur est survenue. Veuillez réessayer.",
   'common.error_bot_check':        "La vérification de sécurité a échoué. Veuillez réessayer.",
+  'admin.note_too_long':           "Texte trop long (2000 caractères maximum).",
   'common.loading':                "Chargement…",
   'common.rate_limit':             "Trop de tentatives. Veuillez patienter quelques minutes avant de réessayer.",
   // Actions

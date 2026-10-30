@@ -32,7 +32,7 @@ import {
   CERTIFICATIONS_CAP,
   TOOLS_CAP,
 } from '@/app/mon-profil-freelance/creer/details/schema'
-import { applyFreelancerDetailsSave } from '@/app/mon-profil-freelance/creer/details/actions'
+import { applyFreelancerDetailsSave } from '@/app/mon-profil-freelance/creer/details/apply-save'
 
 // ─── 1. Schema — pure, no DB, no creds required ────────────────────────────────────────────
 
