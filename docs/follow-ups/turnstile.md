@@ -9,9 +9,10 @@
   1. `src/components/auth/ForgotPasswordForm.tsx` (`resetPasswordForEmail`) — no widget yet;
   2. `src/app/mon-compte/actions.ts:336` — the server-side re-auth (`signInWithPassword`) before a password change;
   3. every live suite that signs fixtures in with `signInWithPassword` + the anon key (dozens) — they would all fail
-     against production (the dummy token is refused by a real secret).
+     against production (the dummy token is refused by a real secret);
+  4. `VerifyEmailFlow.tsx:51` (`auth.resend` of the confirmation email) — no widget yet.
 - **Where it lives:** Supabase dashboard (founder); code for 1–3.
-- **Trigger:** before launch, in one PR: widget on the reset form, a re-auth path for 2, a fixture sign-in that does
+- **Trigger:** before launch, in one PR: widgets on the reset form and the resend (1, 4), a re-auth path for 2, a fixture sign-in that does
   not go through the password grant for 3 (e.g. admin `generateLink` + `verifyOtp`), then flip the toggle.
 
 ## 2. Orders / reports: the action gate is bypassable by a direct PostgREST insert

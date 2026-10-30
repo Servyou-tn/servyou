@@ -13,7 +13,8 @@ import { useEffect, useImperativeHandle, useRef, type Ref } from 'react'
 // CSP: challenges.cloudflare.com in script-src + frame-src (src/lib/security/headers.ts).
 
 const SCRIPT_SRC = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit'
-const TOKEN_WAIT_MS = 15000
+// Long enough for a user to solve an interactive challenge when Cloudflare demands one.
+const TOKEN_WAIT_MS = 60000
 
 type TurnstileApi = {
   render: (el: HTMLElement, options: Record<string, unknown>) => string | undefined
@@ -92,14 +93,18 @@ export function Turnstile({ action, ref }: { action: string; ref: Ref<TurnstileH
     },
   }))
 
-  useEffect(
-    () => () => {
+  // Render on mount when the script is already there (a remount, StrictMode's re-mount), and on the script's
+  // onLoad otherwise. next/script's onReady is NOT enough: an instance that mounts while the script is still
+  // loading never gets it. renderWidget is idempotent (widgetId guard).
+  useEffect(() => {
+    renderWidget()
+    return () => {
       if (widgetId.current) window.turnstile?.remove(widgetId.current)
       widgetId.current = null
       settle(undefined)
-    },
-    [],
-  )
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- mount / unmount only; the helpers read refs
+  }, [])
 
   if (!siteKey) return null
   return (
@@ -107,6 +112,7 @@ export function Turnstile({ action, ref }: { action: string; ref: Ref<TurnstileH
       <Script
         src={SCRIPT_SRC}
         strategy="afterInteractive"
+        onLoad={renderWidget}
         onReady={renderWidget}
         onError={() => {
           failed.current = true
