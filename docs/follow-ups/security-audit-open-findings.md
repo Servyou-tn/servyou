@@ -191,6 +191,35 @@ orders INSERT gap (migration 54). Ranked most severe first; each is its own PR u
 - **Options:** a SECURITY DEFINER RPC or service-role action that archives (hides) role content
   instead of deleting it; or exempt the FK-cascade `SET NULL` in `enforce_order_identity_lock` when
   the referenced item is gone.
+- **⏸ PARKED until after the real-user review (Nov 6–10)** — architect, 2026-10-30. Options written up, no code.
+  Live on 2026-10-30: 1 shop owner, 10 freelancers, 2 sellers with any order, 16 orders in all.
+  What already holds: an order keeps its own snapshot (`item_title`, `unit_price_tnd`, `delivery_fee_tnd`), and
+  `orders.seller_id` points at the seller's PROFILE, not the shop. A deleted product / service only nulls
+  `orders.product_id` / `service_listing_id`, so the order's history survives a real delete.
+  - **A. Archive instead of delete.** A SECURITY DEFINER RPC `switch_seller_type(new_type)` hides the old role's
+    content (shop + products, or freelancer profile + services) instead of deleting it, then flips `seller_type`.
+    + Nothing is lost, and a switch back is possible.
+    − It needs an « archived » state that every read path and the one-capability rule (migration 55) treat as « no
+      capability ». That touches a lot of RLS and many queries, and leaves rows that are never shown.
+  - **B. Real delete, with the cascade allowed.** `enforce_order_identity_lock` lets the FK-cascade `SET NULL`
+    through when the referenced product / service no longer exists, i.e. the delete itself caused it. The referential
+    action runs after the parent row is deleted, so the trigger should see it gone — to be proven live in B's discovery. The seller deletes their shop or
+    profile, then switches through the existing age-gated UPDATE.
+    + This matches CLAUDE.md as written (« switching deletes own role content but preserves completed
+      transactions »), with one small trigger change and no new state.
+    − The delete is irreversible. Open orders (pending / accepted) need a rule: refuse the switch while any is open.
+  - **C. Switch only with no orders; otherwise ask support.** Self-serve only when the seller has never had an
+    order (no trigger change: today's delete path already works then). Otherwise the founder / admin does it through a
+    service-role admin action.
+    + No migration. Covers the common early case.
+    − Manual work for every seller with history.
+  - **D. No switch at all.** One account per role; a seller who changes trade opens a new account.
+    + Zero work. − Splits a person across two accounts and phones; poor fit for Tunisia's WhatsApp-first contact.
+- **Recommendation:** **C now, B when it is built.** At this scale (2 sellers with orders), C costs nothing and keeps
+  the MVP honest. If the real-user review shows people actually switch, build B: one guarded change to
+  `enforce_order_identity_lock`, plus a « switch » action that refuses while any order is open and deletes the old role
+  content before the age-gated `seller_type` UPDATE. Avoid A: an archived state leaks into every read path for a flow
+  few users will use.
 
 ## ✅ RESOLVED (migrations 71 / 73 / 74 + PR #208, 2026-10-26) — storage provenance missing for avatars and shop assets
 
