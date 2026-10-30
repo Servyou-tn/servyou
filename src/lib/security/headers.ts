@@ -18,7 +18,8 @@
 //     @vercel/analytics or speed-insights is installed;
 //   • Next.js App Router inline scripts (`self.__next_f.push`) and React inline styles → 'unsafe-inline' until a
 //     nonce-based policy; `next dev` also needs 'unsafe-eval' (React refresh), never in a production build.
-// Turnstile is not loaded anywhere in the app, so challenges.cloudflare.com is not allowed.
+//   • Cloudflare Turnstile (src/components/security/Turnstile.tsx) — its script and challenge iframe come from
+//     challenges.cloudflare.com (script-src + frame-src, per Cloudflare's CSP reference); siteverify is server-side.
 //
 // VIOLATION REPORTING (follow-up 1 of docs/follow-ups/security-headers.md): the Report-Only policy carries `report-uri` (every
 // browser) and `report-to` + a `Reporting-Endpoints` header (Reporting API browsers) pointing at Sentry's SECURITY endpoint, so
@@ -28,6 +29,7 @@
 // left untouched: only the watched policy reports.
 
 export const SUPABASE_ORIGIN = 'https://xggomcitqrkaylqezjjz.supabase.co'
+export const TURNSTILE_ORIGIN = 'https://challenges.cloudflare.com'
 
 /** Name of the Reporting API endpoint group (`report-to` directive ↔ `Reporting-Endpoints` header). */
 export const CSP_REPORT_GROUP = 'csp-endpoint'
@@ -63,7 +65,7 @@ export function cspReportUrl(dsn: string | null | undefined, environment?: strin
 export function contentSecurityPolicy(isDev: boolean, reportUrl: string | null = null): string {
   const directives: Record<string, string[]> = {
     'default-src': ["'self'"],
-    'script-src': ["'self'", "'unsafe-inline'", ...(isDev ? ["'unsafe-eval'"] : []), 'https://vercel.live'],
+    'script-src': ["'self'", "'unsafe-inline'", ...(isDev ? ["'unsafe-eval'"] : []), 'https://vercel.live', TURNSTILE_ORIGIN],
     'style-src': ["'self'", "'unsafe-inline'", 'https://vercel.live'],
     'img-src': ["'self'", 'data:', 'blob:', SUPABASE_ORIGIN, 'https://vercel.live', 'https://vercel.com'],
     'font-src': ["'self'", 'data:', 'https://vercel.live', 'https://assets.vercel.com'],
@@ -77,7 +79,7 @@ export function contentSecurityPolicy(isDev: boolean, reportUrl: string | null =
       'https://vercel.live',
       'wss://ws-us3.pusher.com',
     ],
-    'frame-src': ['https://vercel.live'],
+    'frame-src': ['https://vercel.live', TURNSTILE_ORIGIN],
     'worker-src': ["'self'", 'blob:'],
     'media-src': ["'self'", 'blob:', SUPABASE_ORIGIN],
     'object-src': ["'none'"],

@@ -3,6 +3,7 @@ export const fr: Record<string, string> = {
   // ─── Common ─────────────────────────────────────────────────────────────────
   'common.back_home':              "Retour à l'accueil",
   'common.error_generic':          "Une erreur est survenue. Veuillez réessayer.",
+  'common.error_bot_check':        "La vérification de sécurité a échoué. Veuillez réessayer.",
   'common.loading':                "Chargement…",
   'common.rate_limit':             "Trop de tentatives. Veuillez patienter quelques minutes avant de réessayer.",
   // Actions

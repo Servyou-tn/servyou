@@ -11,6 +11,7 @@ import { GOVERNORATES } from '@/lib/tunisia-governorates'
 import { tndPrice } from '@/components/listings/listing-utils'
 import { ProductCoverImage } from '@/components/produits/ProductCoverImage'
 import { submitProductRequest } from '../actions'
+import { Turnstile, type TurnstileHandle } from '@/components/security/Turnstile'
 import { Textarea } from '@/components/ui/textarea'
 import { NumberStepper } from '@/components/ui/number-stepper'
 import {
@@ -88,6 +89,7 @@ export function ProductRequestForm({
   lang: Lang
 }) {
   const router = useRouter()
+  const turnstile = React.useRef<TurnstileHandle>(null)
   const [fullName, setFullName] = React.useState('')
   const [street, setStreet] = React.useState('')
   const [quartier, setQuartier] = React.useState('')
@@ -133,6 +135,7 @@ export function ProductRequestForm({
 
     setPending(true)
     setFormError(null)
+    const turnstileToken = await turnstile.current?.getToken()
     const res = await submitProductRequest({
       productId,
       deliveryName: fullName,
@@ -143,7 +146,7 @@ export function ProductRequestForm({
       deliveryPhone: phone,
       quantity,
       note,
-    })
+    }, turnstileToken)
     if (!res.ok) {
       setPending(false)
       setFormError(res.error)
@@ -219,6 +222,7 @@ export function ProductRequestForm({
           {t('demander.subtitle.product', lang)}
         </p>
 
+        <Turnstile ref={turnstile} action="order_product" />
         <Button type="submit" size="lg" loading={pending} className="w-full">
           {pending ? t('demander.submit.loading', lang) : t('demander.submit.product', lang)}
         </Button>

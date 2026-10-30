@@ -1,6 +1,6 @@
 'use client'
 
-import { Suspense, useEffect, useState, type FormEvent } from 'react'
+import { Suspense, useEffect, useRef, useState, type FormEvent } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
@@ -13,6 +13,7 @@ import { PasswordField } from '@/components/auth/PasswordField'
 import { display, labelClass, errorClass, inputBase, primaryBtn } from '@/components/auth/field-styles'
 import { FOCUS_RING } from '@/components/layout/styles'
 import { SuspendedBanner } from './SuspendedBanner'
+import { Turnstile, type TurnstileHandle } from '@/components/security/Turnstile'
 
 // Google OAuth built but DISABLED this sprint — same gate + rationale as the
 // signup form. OAuth sign-in would also need the handle_new_user trigger migration
@@ -31,6 +32,7 @@ export function SigninForm({ showResetSuccess = false }: { showResetSuccess?: bo
   const [formError, setFormError] = useState('')
   const [suspended, setSuspended] = useState(false)
   const [loading, setLoading] = useState(false)
+  const turnstile = useRef<TurnstileHandle>(null)
 
   // Success banner after a password reset (redirected here from /nouveau-mot-de-passe
   // with ?passwordReset=success — read server-side and passed as a prop, so it's
@@ -59,9 +61,13 @@ export function SigninForm({ showResetSuccess = false }: { showResetSuccess?: bo
 
     setLoading(true)
     try {
+      // Turnstile token for Supabase Auth's own CAPTCHA check (verified by Supabase once CAPTCHA protection is
+      // enabled in its dashboard; ignored until then). No site key → no token.
+      const captchaToken = await turnstile.current?.getToken()
       const { data, error } = await supabase.auth.signInWithPassword({
         email: email.trim().toLowerCase(),
         password,
+        ...(captchaToken ? { options: { captchaToken } } : {}),
       })
 
       if (error) {
@@ -71,6 +77,12 @@ export function SigninForm({ showResetSuccess = false }: { showResetSuccess?: bo
         // not already tell anyone who asks.
         if (error.code === 'user_banned') {
           setSuspended(true)
+          setLoading(false)
+          return
+        }
+        // The bot check failed: says nothing about the account, so it can be specific.
+        if (error.code === 'captcha_failed') {
+          setFormError(t('common.error_bot_check', lang))
           setLoading(false)
           return
         }
@@ -195,6 +207,7 @@ export function SigninForm({ showResetSuccess = false }: { showResetSuccess?: bo
           </p>
         ) : null}
 
+        <Turnstile ref={turnstile} action="signin" />
         <button type="submit" disabled={loading} className={primaryBtn}>
           {loading ? (
             <>
