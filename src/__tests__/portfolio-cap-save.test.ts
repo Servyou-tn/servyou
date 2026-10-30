@@ -29,6 +29,7 @@ vi.mock('@/app/mon-profil-freelance/modifier/apply-save', async (importOriginal)
 import { saveProfileAction, publishProfileAction } from '@/app/mon-profil-freelance/modifier/actions'
 import { PORTFOLIO_CAP_REACHED } from '@/app/mon-profil-freelance/modifier/apply-save'
 import { t } from '@/lib/i18n'
+import { PORTFOLIO_CAP } from '@/lib/marche/freelancer-profile-edit'
 
 const PROFILE = {
   headline: '',
@@ -45,7 +46,7 @@ const PROFILE = {
   education: [],
   certifications: [],
 }
-const CAP = t('freelance.edit.portfolio_cap_reached', 'fr')
+const CAP = t('freelance.edit.portfolio_cap_reached', 'fr', { max: PORTFOLIO_CAP })
 const GENERIC = t('common.error_generic', 'fr')
 
 beforeEach(() => {
@@ -67,9 +68,13 @@ describe('the portfolio cap refusal reads as « limite atteinte »', () => {
     expect(await saveProfileAction(PROFILE)).toEqual({ ok: false, error: GENERIC })
   })
 
-  it('the FR and AR messages exist and differ from the generic one', () => {
-    expect(CAP).toContain('6')
-    expect(t('freelance.edit.portfolio_cap_reached', 'ar')).toContain('6')
+  it('the FR and AR messages carry the cap constant, not a hard-coded number', () => {
+    for (const lang of ['fr', 'ar'] as const) {
+      const message = t('freelance.edit.portfolio_cap_reached', lang, { max: 99 })
+      expect(message).toContain('99')
+      expect(message).not.toMatch(/\{max\}|6/)
+    }
+    expect(CAP).toContain(String(PORTFOLIO_CAP))
     expect(CAP).not.toBe(GENERIC)
   })
 })

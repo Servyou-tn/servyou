@@ -118,7 +118,7 @@ export function PortfolioRepeater({
       <div className="flex items-center justify-between">
         {rows.length >= PORTFOLIO_CAP ? (
           // At the cap the « add » button is gone, not just greyed: the database refuses a 7th project anyway.
-          <p className="text-sm font-medium text-text-muted">{t('freelance.edit.portfolio_cap_reached', lang)}</p>
+          <p className="text-sm font-medium text-text-muted">{t('freelance.edit.portfolio_cap_reached', lang, { max: PORTFOLIO_CAP })}</p>
         ) : (
           <button
             type="button"

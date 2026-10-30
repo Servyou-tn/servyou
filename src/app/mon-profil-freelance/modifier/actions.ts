@@ -15,9 +15,17 @@ import {
   urlErrorSummary,
   URL_FIELD_SECTION_KEYS,
   type UrlField,
+  PORTFOLIO_CAP,
 } from '@/lib/marche/freelancer-profile-edit'
 import { SaveProfileInput } from './schema'
 import { applyProfileSave, PORTFOLIO_CAP_REACHED } from './apply-save'
+
+/** A failed applyProfileSave as the freelancer reads it: the portfolio cap by name, anything else generic. */
+function saveErrorMessage(error: string, lang: Lang): string {
+  return error === PORTFOLIO_CAP_REACHED
+    ? t('freelance.edit.portfolio_cap_reached', lang, { max: PORTFOLIO_CAP })
+    : t('common.error_generic', lang)
+}
 
 // Publish model — option A (founder ruling, H3 discovery pass).
 //
@@ -97,7 +105,7 @@ export async function saveProfileAction(input: unknown): Promise<SaveProfileResu
   }
 
   const result = await applyProfileSave(supabase, owned.freelancerProfileId, parsed.data)
-  if (!result.ok) return { ok: false, error: t(result.error === PORTFOLIO_CAP_REACHED ? 'freelance.edit.portfolio_cap_reached' : 'common.error_generic', lang) }
+  if (!result.ok) return { ok: false, error: saveErrorMessage(result.error, lang) }
 
   revalidateProfileEditSurfaces()
   return { ok: true }
@@ -128,7 +136,7 @@ export async function publishProfileAction(input: unknown): Promise<PublishProfi
 
   const saveResult = await applyProfileSave(supabase, owned.freelancerProfileId, parsed.data)
   if (!saveResult.ok) {
-    return { ok: false, status: 'error', error: t(saveResult.error === PORTFOLIO_CAP_REACHED ? 'freelance.edit.portfolio_cap_reached' : 'common.error_generic', lang) }
+    return { ok: false, status: 'error', error: saveErrorMessage(saveResult.error, lang) }
   }
 
   const validation = validateForPublish({

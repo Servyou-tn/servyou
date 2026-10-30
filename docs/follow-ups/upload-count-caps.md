@@ -4,6 +4,9 @@ From the PR's one Sonnet review. No critical / high finding; the fixed ones (hin
 filter asserted, a `console.warn` on a cap refusal, re-indent) shipped in the PR. These are logged, ranked.
 
 ## 1. LOW — portfolio save is delete-all then insert, outside a transaction
+⏳ SCHEDULED — after the Nov 13 beta (architect's ruling, 2026-10-30). Shape: one SECURITY DEFINER function that
+replaces the set in a single transaction, owner check inside, keeps the 23514 `portfolio_items_cap` hint; SQL goes to
+the architect, who applies it.
 - **What:** `applyProfileSave` (`src/app/mon-profil-freelance/modifier/apply-save.ts`) deletes every
   `freelancer_portfolio_items` row of the profile, then inserts the submitted set. If the insert fails, the old
   portfolio is already gone. With the 6-item cap (migration 105) the insert can now also fail with
@@ -16,6 +19,7 @@ filter asserted, a `console.warn` on a cap refusal, re-indent) shipped in the PR
   RPC (`replace_portfolio_items(profile, items jsonb)`) so a refusal leaves the old rows in place.
 
 ## 2. LOW — the upload-time count does not check the product belongs to the caller's shop
+✅ CLOSED — accepted as is (architect's ruling, 2026-10-30): count only, already public, nothing written. Do not fix.
 - **What:** `uploadProductImageAction` (`src/app/actions/products.ts`) counts `product_images` for the submitted
   `productId` after resolving the caller's shop, but before checking that the product is in that shop. A seller can
   learn another product's image count via « limite atteinte » — a count already readable from public
@@ -27,6 +31,7 @@ filter asserted, a `console.warn` on a cap refusal, re-indent) shipped in the PR
   count (and the upload) to `products.shop_id = <caller's shop>`.
 
 ## 3. LOW (cosmetic) — « 6 » is written into the FR / AR cap message
+✅ CLOSED — `fix/portfolio-cap-message`, 2026-10-30: the message interpolates `{max}` = `PORTFOLIO_CAP`.
 - **What:** `freelance.edit.portfolio_cap_reached` hard-codes 6 instead of interpolating `PORTFOLIO_CAP`.
 - **Why deferred:** both languages exist and match the cap; changing the cap already needs a migration.
 - **Where it lives:** `src/lib/i18n/fr.ts`, `src/lib/i18n/ar.ts`, `PortfolioRepeater.tsx`.
