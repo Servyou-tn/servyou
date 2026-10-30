@@ -137,6 +137,8 @@ if (compared.length) {
   if (dif.code !== 0) { console.error(`diff.mjs crashed (exit ${dif.code}) — see the FATAL above`); process.exit(1) }
   const summary = parseDiffSummary(dif.out)
   if (!summary) { console.error('could not parse `max %` / `errors:` from diff.mjs output'); process.exit(1) }
+  // diff.mjs pairs the same two dirs; a different count means it did not look at every pair.
+  if (summary.compared !== compared.length) { console.error(`diff.mjs compared ${summary.compared} pair(s), expected ${compared.length}`); process.exit(1) }
   ;({ maxPct, errors } = summary)
 }
 

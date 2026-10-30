@@ -31,7 +31,7 @@ describe('gateVerdict', () => {
 describe('diff.mjs summary → stories.mjs parse (round trip)', () => {
   it('a run with errored pairs parses back to its error count', () => {
     const out = ['   button--primary  ERR boom', ...diffSummaryLines({ maxPct: 0, compared: 3, errors: ['a.png', 'b.png'] })].join('\n')
-    expect(parseDiffSummary(out)).toEqual({ maxPct: 0, errors: 2 })
+    expect(parseDiffSummary(out)).toEqual({ maxPct: 0, errors: 2, compared: 3 })
     expect(out).toContain('ERRORED comparisons')
   })
 
@@ -39,6 +39,7 @@ describe('diff.mjs summary → stories.mjs parse (round trip)', () => {
     expect(parseDiffSummary(diffSummaryLines({ maxPct: 0.013, compared: 4, errors: [] }).join('\n'))).toEqual({
       maxPct: 0.013,
       errors: 0,
+      compared: 4,
     })
   })
 

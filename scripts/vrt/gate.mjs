@@ -24,13 +24,13 @@ export function allComparisonsErrored({ compared, errors }) {
  * Parses diff.mjs output. `null` when either summary line is missing — the caller fails on that,
  * because an output without an `errors:` line comes from a diff.mjs that does not count errors.
  * @param {string} out
- * @returns {{ maxPct: number, errors: number } | null}
+ * @returns {{ maxPct: number, errors: number, compared: number } | null}
  */
 export function parseDiffSummary(out) {
   const max = out.match(/^max\s+([\d.]+)%$/m)
-  const err = out.match(/^errors:\s+(\d+)\s+of\s+\d+$/m)
+  const err = out.match(/^errors:\s+(\d+)\s+of\s+(\d+)$/m)
   if (!max || !err) return null
-  return { maxPct: Number(max[1]), errors: Number(err[1]) }
+  return { maxPct: Number(max[1]), errors: Number(err[1]), compared: Number(err[2]) }
 }
 
 /**
