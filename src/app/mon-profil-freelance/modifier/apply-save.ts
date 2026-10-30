@@ -9,6 +9,9 @@ import { reconcile } from '@/lib/shops/reconcile'
 import { diffLanguages } from '@/lib/freelancer/diff-languages'
 import type { SaveProfileInputType } from './schema'
 
+/** applyProfileSave's error when the database refused a 7th portfolio item (hint portfolio_items_cap). */
+export const PORTFOLIO_CAP_REACHED = 'portfolio_items_cap'
+
 /**
  * Core write, factored out so it's exercisable directly against a real Supabase client in tests
  * (same split every other route in this codebase uses for the identical reason — createClient()
@@ -151,6 +154,9 @@ export async function applyProfileSave(
       })),
     )
     if (error) {
+      // The 6-item cap (trg_limit_portfolio_items) is past the schema's .max() only on a concurrent save: a code the
+      // actions translate (PORTFOLIO_CAP_REACHED), not the generic failure.
+      if (error.hint === 'portfolio_items_cap') return { ok: false, error: PORTFOLIO_CAP_REACHED }
       console.error('[saveProfile] freelancer_portfolio_items insert failed:', error.message, error.code, error.details)
       return { ok: false, error: 'freelancer_portfolio_items insert failed' }
     }

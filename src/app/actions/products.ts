@@ -154,6 +154,22 @@ export async function uploadProductImageAction(formData: FormData): Promise<Uplo
     }
   }
 
+  // The 8-image cap (MAX_PRODUCT_IMAGES, enforced in the database by trg_limit_product_images): an upload for a
+  // product that already holds 8 images is refused before the decode. Counts ATTACHED images — while a product is
+  // being created its row does not exist yet, so this is 0 and the grid's own cap applies.
+  const { count: attached, error: countError } = await supabase
+    .from('product_images')
+    .select('id', { count: 'exact', head: true })
+    .eq('product_id', productId.data)
+  if (countError) {
+    console.error('[uploadProductImage] image count failed:', countError.message, countError.code, countError.details)
+    return { ok: false, error: t('common.error_generic', lang) }
+  }
+  if ((attached ?? 0) >= MAX_PRODUCT_IMAGES) {
+    console.warn(`[uploadProductImage] refused: product ${productId.data} already has ${attached} images (user ${user.id})`)
+    return { ok: false, error: t('product.image.error.max', lang, { max: MAX_PRODUCT_IMAGES }) }
+  }
+
   const normalized = await normalizeProductImage(Buffer.from(await parsed.data.arrayBuffer()))
   if (!normalized.ok) {
     // `reason` distinguishes HEIC from a non-image from a decode failure — the three are one
@@ -397,6 +413,11 @@ export async function createProductAction(input: unknown): Promise<ProductAction
             `(status=${p.publish ? 'active' : 'hidden'}, shop=${shop.shopId}). ` +
             `rollback: ${rollbackError.message} ${rollbackError.code ?? ''} ${rollbackError.details ?? ''}`,
         )
+      }
+      // The DB cap (trg_limit_product_images, hint product_images_cap) can only fire past Zod's .max() on a
+      // concurrent insert; say which limit, the compensating delete above has already run.
+      if (imagesError.hint === 'product_images_cap') {
+        return { ok: false, error: t('product.image.error.max', lang, { max: MAX_PRODUCT_IMAGES }) }
       }
       return { ok: false, error: t('product.error_add', lang) }
     }
@@ -958,6 +979,10 @@ export async function addProductImageAction(input: unknown): Promise<AddProductI
     // The storage object is now an orphan (row insert failed, nothing references it) — same
     // residue class uploadProductImageAction's own header documents, owned by the reconciliation
     // sweep (image-storage-discovery.md §6c), not swept here.
+    // Two concurrent adds can both pass the count check above; the DB cap (hint product_images_cap) refuses the second.
+    if (insertError?.hint === 'product_images_cap') {
+      return { ok: false, error: t('product.image.error.max', lang, { max: MAX_PRODUCT_IMAGES }) }
+    }
     return { ok: false, error: t('product.image.error.upload', lang) }
   }
 
