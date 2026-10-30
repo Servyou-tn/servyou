@@ -160,7 +160,7 @@ orders INSERT gap (migration 54). Ranked most severe first; each is its own PR u
   `shop_categories` and `job_post_skills` are also `using (true)` (confirmed live 2026-10-23).
 - **Fix:** fold into the products/shops security PR with the same embed audit.
 
-## MEDIUM — `freelancer_profiles.is_published` is owner-settable (publish-gate bypass)
+## ✅ CLOSED — MEDIUM — `freelancer_profiles.is_published` is owner-settable (publish-gate bypass)
 
 - ✅ **CLOSED by migration 81** `20261028194715_freelancer_profiles_column_grants` (`fix/security-followups-batch`, 2026-10-28; proof: `security-followups-batch.test.ts`).
 
@@ -278,7 +278,9 @@ orders INSERT gap (migration 54). Ranked most severe first; each is its own PR u
   marker is meant to be admin-written.
 - **Fix:** revoke column INSERT on both from `anon`/`authenticated`, or extend the lock to INSERT.
 
-## LOW — two live-DB suites reuse a fixed shop name and fail on `shops_name_lower_key`
+## ✅ CLOSED — LOW — two live-DB suites reuse a fixed shop name and fail on `shops_name_lower_key`
+
+- ✅ **CLOSED by #252** (`docs/live-signin-budget`, 2026-10-30): each fixture shop name carries its seller id; both suites green live.
 
 - **Found by:** `fix/seller-capability-insert`, full integration run, 2026-10-23 — pre-existing,
   not caused by migration 55 (the failing insert is service-role, which the new trigger bypasses).
