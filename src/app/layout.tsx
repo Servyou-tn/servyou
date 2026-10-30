@@ -4,6 +4,8 @@ import "./globals.css"
 import { Toaster } from "sonner"
 import { getLang } from "@/lib/i18n/server"
 import { LangProvider } from "@/components/LangProvider"
+import { CookieConsentProvider } from "@/components/consent/CookieConsent"
+import { getConsent } from "@/lib/consent/server"
 
 // Self-hosted (src/fonts/README.md): the exact files next/font/google used to download, so the
 // build never touches the network. Each call mirrors the @font-face set Google returned (same
@@ -56,6 +58,8 @@ export default async function RootLayout({
   children: React.ReactNode
 }>) {
   const lang = await getLang()
+  // Read on the server so the cookie banner is in the first HTML when the visitor has no valid choice (no flash) — A7.
+  const consent = await getConsent()
 
   // `[scrollbar-gutter:stable]` reserves the scrollbar gutter so a page that grows past the
   // viewport does not reflow the whole layout sideways. Measured on /mes-commandes: expanding
@@ -77,13 +81,15 @@ export default async function RootLayout({
     >
       <body className="min-h-full flex flex-col">
         <LangProvider lang={lang}>
-          {/* The marketing navbar (Header) is no longer mounted here. It only ever
-              renders on the landing page, so it now lives inside the landing branch of
-              `/` (src/app/page.tsx) — this keeps it OFF the logged-in consumer homepage,
-              which renders the /marche shell (its own top bar) on the same `/` route. */}
-          {children}
-          {/* App-wide toast portal — single source for success/error feedback. */}
-          <Toaster position="top-center" richColors />
+          <CookieConsentProvider initial={consent}>
+            {/* The marketing navbar (Header) is no longer mounted here. It only ever
+                renders on the landing page, so it now lives inside the landing branch of
+                `/` (src/app/page.tsx) — this keeps it OFF the logged-in consumer homepage,
+                which renders the /marche shell (its own top bar) on the same `/` route. */}
+            {children}
+            {/* App-wide toast portal — single source for success/error feedback. */}
+            <Toaster position="top-center" richColors />
+          </CookieConsentProvider>
         </LangProvider>
       </body>
     </html>

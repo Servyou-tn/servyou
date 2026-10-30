@@ -1,8 +1,10 @@
+import type { ReactNode } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { t, type Lang } from '@/lib/i18n'
 import { FOCUS_RING } from '@/components/layout/styles'
 import { LanguageToggle } from '@/components/layout/LanguageToggle'
+import { ManageCookiesButton } from '@/components/consent/ManageCookiesButton'
 
 // The navy site footer — shared by the landing page (via FinalCtaFooter) and every
 // (marketing) content page (via MarketingShell). Link targets are the real routes/
@@ -34,10 +36,13 @@ function FooterColumn({
   titleKey,
   links,
   lang,
+  extra,
 }: {
   titleKey: string
   links: readonly { key: string; href: string }[]
   lang: Lang
+  /** One more list item after the links (the legal column's « Gérer les cookies » button). */
+  extra?: ReactNode
 }) {
   return (
     <div>
@@ -53,6 +58,7 @@ function FooterColumn({
             </Link>
           </li>
         ))}
+        {extra ? <li>{extra}</li> : null}
       </ul>
     </div>
   )
@@ -84,7 +90,7 @@ export function Footer({ lang }: { lang: Lang }) {
 
           <FooterColumn titleKey="landing.footer.col_discover" links={discoverLinks} lang={lang} />
           <FooterColumn titleKey="landing.footer.col_servyou" links={servyouLinks} lang={lang} />
-          <FooterColumn titleKey="landing.footer.col_legal" links={legalLinks} lang={lang} />
+          <FooterColumn titleKey="landing.footer.col_legal" links={legalLinks} lang={lang} extra={<ManageCookiesButton />} />
         </div>
 
         {/* Bottom bar */}

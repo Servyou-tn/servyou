@@ -8,8 +8,11 @@ import { t, type Lang } from '@/lib/i18n'
 // K1–K4 — Figma 731:64370 … 731:64476: a shell-less centred card (no sidebar, no topbar: the visitor
 // is signed out or has no access). Viewport = surface/subtle, card 480 (FILL on mobile) with pad 32 /
 // gap 24 / radius 12, Lockup → 112 icon circle (64 glyph) → H1 22 → body 15 → CTA lg FILL → optional
-// link. K3 draws the card in a 2px danger outline. Server component; the optional link slot takes a
-// node so K3 can put its sign-out POST form there.
+// link. K3 draws the card in a 2px danger outline. The optional link slot takes a node so K3 can put its
+// sign-out POST form there. A9 / A10 (404 / 500, Figma 1478:35813 / 1478:35837) reuse it as-is, adding an
+// optional `eyebrow` line (« Erreur 404 », « Erreur 500 · réf. … ») above the title, and a CTA that is a
+// BUTTON (`onClick`, « Réessayer ») instead of a link. No hooks: a server page renders it with an `href`
+// CTA; the client error boundary passes `onClick`.
 export type SystemTone = 'info' | 'warning' | 'danger' | 'accent'
 
 const TONE: Record<SystemTone, { circle: string; icon: string }> = {
@@ -24,6 +27,7 @@ export const SYSTEM_LINK_CLASS = cn(BASE, SIZE.md, VARIANT_BASE.link, VARIANT_ST
 export function SystemStateScreen({
   tone,
   icon,
+  eyebrow,
   title,
   body,
   cta,
@@ -33,9 +37,12 @@ export function SystemStateScreen({
 }: {
   tone: SystemTone
   icon: ReactNode
+  /** A9 / A10: a muted line above the title (« Erreur 404 »). */
+  eyebrow?: string
   title: string
   body: string
-  cta: { href: string; label: string }
+  /** A link (`href`) or, for « Réessayer », a button (`onClick`). */
+  cta: { href: string; label: string } | { onClick: () => void; label: string }
   /** K4: the CTA is a secondary button, not the primary one. */
   secondaryCta?: boolean
   link?: ReactNode
@@ -66,15 +73,20 @@ export function SystemStateScreen({
           {icon}
         </div>
 
-        <h1 className="text-center text-[22px] font-semibold text-text-primary">{title}</h1>
+        {eyebrow ? <p className="text-center text-[15px] leading-[22px] text-text-muted">{eyebrow}</p> : null}
+        {/* 22 Semi Bold on a 27 line (Figma 1478:35813: h27, two lines = 54) — without it the title inherits the body's 1.5 and every card grows. */}
+        <h1 className="text-center text-[22px] leading-[27px] font-semibold text-text-primary">{title}</h1>
         <p className="text-center text-[15px] leading-[22px] text-text-muted">{body}</p>
 
-        <Link
-          href={cta.href}
-          className={cn(BASE, SIZE.lg, VARIANT_BASE[variant], VARIANT_STATE[variant], 'w-full')}
-        >
-          {cta.label}
-        </Link>
+        {'href' in cta ? (
+          <Link href={cta.href} className={cn(BASE, SIZE.lg, VARIANT_BASE[variant], VARIANT_STATE[variant], 'w-full')}>
+            {cta.label}
+          </Link>
+        ) : (
+          <button type="button" onClick={cta.onClick} className={cn(BASE, SIZE.lg, VARIANT_BASE[variant], VARIANT_STATE[variant], 'w-full cursor-pointer')}>
+            {cta.label}
+          </button>
+        )}
 
         {link}
       </div>

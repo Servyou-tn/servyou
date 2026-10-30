@@ -44,6 +44,12 @@ export type ToggleLockedRowProps = BaseProps & {
   checked?: boolean
 }
 
+/** A fixed state with nothing to toggle — « Toujours actif » on the cookie settings' necessary categories (a disabled switch would be a dead control). */
+export type StatusRowProps = BaseProps & {
+  variant: 'status'
+  statusLabel: string
+}
+
 export type LinkRowProps = BaseProps & {
   variant: 'link'
   actionLabel: string
@@ -60,7 +66,7 @@ export type SelectRowProps = BaseProps & {
   'aria-label'?: string
 }
 
-export type SettingRowProps = ToggleRowProps | ToggleLockedRowProps | LinkRowProps | SelectRowProps
+export type SettingRowProps = ToggleRowProps | ToggleLockedRowProps | StatusRowProps | LinkRowProps | SelectRowProps
 
 // Measured shell: min-height 72 (min-h-18 on the --spacing token scale), py 16, flex
 // items-center justify-between, full width. Left block flex-1 flex-col gap-2, padding-END 40
@@ -109,6 +115,9 @@ function SettingRowControl(props: SettingRowProps) {
           />
         </div>
       )
+
+    case 'status':
+      return <span className="shrink-0 text-sm font-medium text-text-muted">{props.statusLabel}</span>
 
     case 'link':
       return (
