@@ -16,8 +16,16 @@ export const EXPIRY_COUNTDOWN_THRESHOLD_DAYS = 7
 // takes over the messaging — this function never needs to know about 'filled'/'expired' itself,
 // since a caller only asks it for a post it already knows is displayStatus 'open'.
 export function getExpiryCountdownDays(createdAt: string, now: Date = new Date()): number | null {
+  const daysLeft = getExpiryDaysLeft(createdAt, now)
+  return daysLeft != null && daysLeft > 0 && daysLeft <= EXPIRY_COUNTDOWN_THRESHOLD_DAYS ? daysLeft : null
+}
+
+/** Whole days left before the post auto-expires, rounded UP (a post with 12.4 days left reads « 12 jours » only once
+ *  it is under 12; until then it still has 13 calendar days to run), or null once past the window. The detail page
+ *  (F4) shows this for every open post; the list only inside the last week (above). Boundary identical to
+ *  annonce-status.ts: expired is strictly MORE than 30 days, so exactly 30 days old is « 0 » (still open), not null. */
+export function getExpiryDaysLeft(createdAt: string, now: Date = new Date()): number | null {
   const msRemaining = EXPIRY_MS - (now.getTime() - new Date(createdAt).getTime())
-  if (msRemaining <= 0) return null
-  const daysLeft = Math.ceil(msRemaining / DAY_MS)
-  return daysLeft <= EXPIRY_COUNTDOWN_THRESHOLD_DAYS ? daysLeft : null
+  if (msRemaining < 0) return null
+  return Math.ceil(msRemaining / DAY_MS)
 }

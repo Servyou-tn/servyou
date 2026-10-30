@@ -50,7 +50,7 @@ const post = {
   created_at: new Date().toISOString(),
   updated_at: new Date().toISOString(),
   admin_hidden_at: null,
-  categories: { name_fr: 'Design' },
+  categories: { name_fr: 'Design', name_ar: 'تصميم', slug: 'design' },
   job_post_skills: [],
 }
 const response = (over: Record<string, unknown> = {}) => ({
@@ -65,13 +65,14 @@ const response = (over: Record<string, unknown> = {}) => ({
   ...over,
 })
 
-function respond(map: { job_responses?: unknown; responsesError?: boolean }) {
+function respond(map: { job_responses?: unknown; responsesError?: boolean; freelancer_profiles?: unknown }) {
   h.respond = (table) => {
     if (table === 'job_posts') return { data: post, error: null }
     if (table === 'job_responses') {
       return map.responsesError ? { data: null, error: { message: 'boom', code: 'XX000' } } : { data: map.job_responses ?? [], error: null }
     }
     if (table === 'public_profiles') return { data: [{ id: 'f1', full_name: 'Moatez Sahbeni', city: 'Tunis' }], error: null }
+    if (table === 'freelancer_profiles') return { data: map.freelancer_profiles ?? [], error: null }
     return { data: [], error: null }
   }
 }
@@ -114,5 +115,28 @@ describe('getAnnonceDetail — the proposal reaches the post owner', () => {
     respond({ job_responses: [response()] })
     expect(await getAnnonceDetail('p3', 'someone-else')).toBeNull()
     expect(h.ops.some((o) => o.table === 'job_responses')).toBe(false)
+  })
+})
+
+describe('getAnnonceDetail — « Voir le profil » and the F4 header (PR-2)', () => {
+  it('maps the responder to freelancer_profiles.id — the id /freelance/[id] resolves, NOT profiles.id (D15)', async () => {
+    respond({ job_responses: [response()], freelancer_profiles: [{ id: 'fp-77', profile_id: 'f1', headline: 'Designer', city: 'Sfax' }] })
+    const detail = await getAnnonceDetail('p4', OWNER)
+    const q = h.ops.find((o) => o.table === 'freelancer_profiles')!
+    expect(String(q.ops.find(([n]) => n === 'select')?.[1])).toContain('id, profile_id')
+    expect(detail?.responses[0]).toMatchObject({ freelancerId: 'f1', freelancerProfileId: 'fp-77', headline: 'Designer' })
+  })
+
+  it('a responder with no readable freelancer_profiles row (moderated) has freelancerProfileId null — the link is hidden', async () => {
+    respond({ job_responses: [response()], freelancer_profiles: [] })
+    const detail = await getAnnonceDetail('p5', OWNER)
+    expect(detail?.responses[0]).toMatchObject({ freelancerId: 'f1', freelancerProfileId: null })
+  })
+
+  it('returns the Arabic category name and one server clock for the relative times', async () => {
+    respond({ job_responses: [] })
+    const detail = await getAnnonceDetail('p6', OWNER)
+    expect(detail).toMatchObject({ category: 'Design', categoryAr: 'تصميم', categorySlug: 'design', expiresInDays: 30 })
+    expect(typeof detail?.fetchedAt).toBe('number')
   })
 })

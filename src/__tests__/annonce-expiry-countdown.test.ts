@@ -8,7 +8,7 @@
  */
 
 import { describe, it, expect } from 'vitest'
-import { getExpiryCountdownDays, EXPIRY_COUNTDOWN_THRESHOLD_DAYS } from '@/lib/marche/annonce-expiry-countdown'
+import { getExpiryCountdownDays, getExpiryDaysLeft, EXPIRY_COUNTDOWN_THRESHOLD_DAYS } from '@/lib/marche/annonce-expiry-countdown'
 
 const DAY_MS = 24 * 60 * 60 * 1000
 const NOW = new Date('2026-08-22T12:00:00.000Z')
@@ -41,5 +41,21 @@ describe('getExpiryCountdownDays', () => {
   it('never returns 0 or negative — the last instant before expiry still reads as 1 day left', () => {
     const almostThirty = new Date(NOW.getTime() - (30 * DAY_MS - 1000))
     expect(getExpiryCountdownDays(almostThirty.toISOString(), NOW)).toBe(1)
+  })
+})
+
+describe('getExpiryDaysLeft (F4 « Expire dans N jours »)', () => {
+  it('counts the whole window for any open post, not just the last week', () => {
+    expect(getExpiryDaysLeft(createdDaysAgo(0), NOW)).toBe(30)
+    expect(getExpiryDaysLeft(createdDaysAgo(18), NOW)).toBe(12)
+  })
+
+  it('rounds a part-day UP: 17.5 days old has 12.5 days left → 13', () => {
+    expect(getExpiryDaysLeft(createdDaysAgo(17.5), NOW)).toBe(13)
+  })
+
+  it('exactly 30 days old is still open (strict `>` boundary) → 0 days left; one second more is expired → null', () => {
+    expect(getExpiryDaysLeft(createdDaysAgo(30), NOW)).toBe(0)
+    expect(getExpiryDaysLeft(new Date(NOW.getTime() - 30 * DAY_MS - 1000).toISOString(), NOW)).toBeNull()
   })
 })

@@ -65,3 +65,40 @@ Figma reads this task: 7 of ~20/month (3 desktop frames, 2 mobile frames, 2 get_
 5. F2: breadcrumb + card H2, no H1. 6–8: as recommended (deadline sub-line, kebab = existing close / reopen / delete, sort Plus récentes / Plus anciennes / Plus de propositions in `?tri=`).
 9. « Voir le profil » → `/freelance/[freelancer_id]` in PR-2 (the public profile route exists).
 Also fixed on the way: form/error state now holds i18n keys (re-translates on a language switch).
+
+## 7. PR-2 — F4 detail (`/mes-annonces/[id]`) — branch `feat/mes-annonces-f4-detail` (from origin/main 8593877)
+
+Measurements: `docs/design/mes-annonces-measurements.md` §F4 (1440, READ 3). **375 frame `1488:65602` is NOT measured** — the Figma MCP hit its Starter-plan call limit; the founder reads it through the figma-cli bridge into `docs/design/f4-375-dump.json` + `f4-375.png`. Until those are applied, 375 is a single column in the F2/F3 mobile order and **mobile is not called done**.
+
+### Diff (F4 vs the current page)
+| # | Class | Frame | Current build |
+|---|---|---|---|
+| 14 | DIFFERENT | back link (arrow + « Retour à mes annonces », 14 Semi Bold `blue/600`) then header: category chip + status pill, H1 32/40, meta row (Publiée le · ville · Expire dans N jours) | 3/5 grid, uppercase « Annonce » eyebrow, H1, pill · date · « N/10 réponses » badge |
+| 15 | DIFFERENT | columns: left flex-1, right **376 fixed** (`xl`), stacked below | `lg:grid-cols-5` 3/2 |
+| 16 | DIFFERENT | left = « Description du projet » panel, then « Propositions reçues (N) » panel (first 3 cards, « + N autres propositions ») | « Détails de l'annonce » card (description + budget/category/location/deadline/skills grid), then all responses |
+| 17 | DIFFERENT | proposal card: received-ago · avatar+name · headline · city · price + délai · excerpt · WhatsApp + « Voir le profil » | name · city · headline · full message · terms · links · skills · « Répondu il y a N j » · small Contacter button |
+| 18 | MISSING | decision card (right): budget 32 Bold · competition pill « N proposition(s) reçue(s) » + « N / 10 · encore K places » · skills chips · Localisation · Expire dans · 3 actions | « Actions » card: Fermer / Rouvrir / Supprimer + two helper notes |
+| 19 | MISSING | « Modifier l'annonce » (ghost) | removed in PR-D (no edit route) |
+| 20 | EXTRA (kept) | not drawn: moderation banner (`admin_hidden_at`), deadline (« Échéance »), proposal links + skills (M-C), « Rouvrir l'annonce » | on the current page |
+| 21 | DATA | `Expire dans 12 jours` only means something while open | filled → no expiry item; expired → « Expirée » |
+
+### Decisions (D14+) — founder rulings in italics where given
+- **D14 Mobile.** *Build 1440 now; 375 as one column in the F2/F3 mobile order (header → description → proposals → decision card); the founder supplies the 375 dump; mobile not done until applied.*
+- **D15 « Voir le profil ».** *Approved.* `job_responses.freelancer_id` is a `profiles.id`, but `/freelance/[id]` resolves `freelancer_profiles.id` (`getFreelancerDetail .eq('id')`). `getAnnonceDetail` now also returns `freelancerProfileId` (from the existing `freelancer_profiles` lookup by `profile_id`); the link is hidden when there is no row (moderated / not live). WhatsApp keeps using `freelancerId` (profiles.id → `get_contact_phone`).
+- **D16 « Modifier l'annonce ».** *Rendered DISABLED with a « Bientôt disponible » hint; PR-3 (`/mes-annonces/[id]/modifier`, reusing the F2 form + `validateJobPost(..., original)`) follows immediately.*
+- **D17 « + N autres propositions ».** *A button that expands the list inline (aria-expanded), « Afficher moins » to collapse; no new page.* Same recipe on a long message (see D19).
+- **D18 Status pill.** The frame draws a bespoke blue/50 « nouveau » chip for « Ouverte »; the list (F3) uses the shared `StatusPill` (`ouverte` = blue/100 · blue/700, Pourvue indigo, Expirée grey). Using the shared pill so one status reads one way on both pages (the PR-E rule in `annonce-status.ts`); only the open pill differs from the frame by one tint step.
+- **D19 Message excerpt.** The frame clamps the message to an excerpt with an ellipsis; the owner must still be able to read the whole proposal. Clamp at 3 lines and show « Lire la suite / Réduire » only when the text is long (> 240 characters).
+- **D20 Kept from the old page** (not drawn): moderation banner; deadline as a third meta row « Échéance » in the decision card when set; each proposal's portfolio links + skills under the message; Rouvrir (filled, not expired). **Dropped:** the two helper paragraphs (`close_helper`, `expiry_note`) — the confirm modal explains Close and « Expire dans N jours » + the `N / 10` line carry the 30-day / 10-proposal facts. Their keys are removed.
+- **D21 Competition pill states.** 0 proposals → neutral « Aucune proposition » · 1…9 → green « N proposition(s) reçue(s) » + « N / 10 · encore K place(s) » · 10 → amber + « 10 / 10 · complet ».
+- **D22 Time.** « Expire dans N jours » and « il y a 3 h » come from ONE server clock (`fetchedAt` on the detail data) — the client component never reads `Date.now()` during render (SSR/hydration mismatch, per the header of `AnnonceDetail`).
+- **D23 Category.** `name_ar` is loaded for the chip (vocabulary lock), same as PR-1.
+- **D24 WhatsApp label** is the frame's « Contacter sur WhatsApp » (new key; the old « Contacter » key goes). Width 252 from `sm`.
+
+- **D25 One label for one action.** F4 says « Marquer comme pourvue » for `closeMissionAction` (status → Pourvue); the list kebab and the confirm modal said « Fermer ». One key (`annonces.detail.close`) now reads « Marquer comme pourvue » on the page, the kebab and the modal title / success toast — the same word as the resulting status.
+- **D26 Proposal price currency.** « Prix proposé » read a hard-coded « TND » in Arabic; it now uses `annonce.form.budget_currency` (TND / د.ت) inside `<bdi dir="ltr">`.
+- **D27 Frame oddities not copied.** The frame draws a clock icon on the price and a map-pin on the délai; the build uses a wallet and a clock. « Voir le profil » is h40 beside a WhatsApp button at the shared `md` size (h44) — centred, not stretched.
+- **D28 Empty proposals** renders inline inside the panel (no card inside the card) and now says « Aucune proposition pour l'instant ».
+- **D29 « Modifier l'annonce »** disabled: the « Bientôt disponible » reason is visible text tied with `aria-describedby` (a disabled button can't take focus and its title is unreliable).
+
+Figma reads this task: 0 (the cap was hit on the first call of this PR).

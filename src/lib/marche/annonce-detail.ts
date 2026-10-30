@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { failQuery, isNoRowLike, reportQueryError } from '@/lib/supabase/query-error'
 import { MAX_RESPONSES_PER_POST } from '@/lib/job-constants'
 import { isAnnoncePastExpiry, resolveAnnonceStatus, type AnnonceDisplayStatus } from '@/lib/marche/annonce-status'
+import { getExpiryDaysLeft } from '@/lib/marche/annonce-expiry-countdown'
 import { parseSentLinks, type SentLink } from '@/lib/marche/sent-proposal-query'
 
 // Single-annonce detail fetch for /mes-annonces/[id] — the consumer's view of one job post
@@ -52,6 +53,9 @@ export type AnnonceResponse = {
   id: string
   /** = profiles.id of the responding freelancer; the get_contact_phone(target) value. */
   freelancerId: string
+  /** = freelancer_profiles.id — the id `/freelance/[id]` resolves (NOT profiles.id). null when the profile is not
+   *  readable (moderated / not live, migration 75): the « Voir le profil » link is then hidden. */
+  freelancerProfileId: string | null
   fullName: string | null
   headline: string | null
   city: string | null
@@ -80,6 +84,9 @@ export type AnnonceDetailData = {
   createdAt: string
   updatedAt: string
   category: string | null
+  categoryAr: string | null
+  /** categories.slug — picks the category chip's icon (CATEGORY_ICONS). */
+  categorySlug: string | null
   skills: string[]
   responses: AnnonceResponse[]
   responseCount: number
@@ -88,6 +95,11 @@ export type AnnonceDetailData = {
    *  NOT the same thing as `displayStatus === 'expired'` (a filled post has isExpired possibly
    *  true but displayStatus 'filled' — precedence, not equivalence). */
   isExpired: boolean
+  /** Whole days left in the 30-day window (rounded up), null once expired. ONE server clock: the client renders
+   *  this and `fetchedAt` instead of reading Date.now() itself (SSR vs hydration mismatch). */
+  expiresInDays: number | null
+  /** The server's `now` (ms) the relative times on the page are measured against. */
+  fetchedAt: number
   /** Set by admin moderation. Never expose admin_hidden_reason — that stays admin-internal. */
   adminHiddenAt: string | null
 }
@@ -105,7 +117,7 @@ type AnnonceRow = {
   status: 'open' | 'filled' | 'expired' | 'deleted'
   created_at: string
   updated_at: string
-  categories: { name_fr: string } | { name_fr: string }[] | null
+  categories: { name_fr: string; name_ar: string | null; slug: string } | { name_fr: string; name_ar: string | null; slug: string }[] | null
   job_post_skills: { skill: string }[] | null
   admin_hidden_at: string | null
 }
@@ -121,7 +133,7 @@ export const getAnnonceDetail = cache(
         // has no client SELECT grant once moderation_reason_owner_admin_only applies (founder ruling 9).
         `id, consumer_id, title, description, budget_min, budget_max, city, is_remote,
          deadline, status, created_at, updated_at, admin_hidden_at,
-         categories ( name_fr ),
+         categories ( name_fr, name_ar, slug ),
          job_post_skills ( skill )`,
       )
       .eq('id', annonceId)
@@ -166,7 +178,7 @@ export const getAnnonceDetail = cache(
     // one — the card renders both conditionally. Two small IN() lookups, same pattern as lib/marche/data.
     const freelancerIds = [...new Set(respRows.map((r) => r.freelancer_id))]
     const nameCity = new Map<string, { full_name: string | null; city: string | null }>()
-    const headlineCity = new Map<string, { headline: string | null; city: string | null }>()
+    const headlineCity = new Map<string, { id: string; headline: string | null; city: string | null }>()
     if (freelancerIds.length > 0) {
       const { data: profs, error: pErr } = await supabase
         .from('public_profiles')
@@ -179,17 +191,18 @@ export const getAnnonceDetail = cache(
 
       const { data: fps, error: fErr } = await supabase
         .from('freelancer_profiles')
-        .select('profile_id, headline, city')
+        .select('id, profile_id, headline, city')
         .in('profile_id', freelancerIds)
       if (fErr) reportQueryError('annonce-detail freelancer_profiles', fErr)
-      for (const f of (fps ?? []) as { profile_id: string; headline: string | null; city: string | null }[]) {
-        headlineCity.set(f.profile_id, { headline: f.headline, city: f.city })
+      for (const f of (fps ?? []) as { id: string; profile_id: string; headline: string | null; city: string | null }[]) {
+        headlineCity.set(f.profile_id, { id: f.id, headline: f.headline, city: f.city })
       }
     }
 
     const responses: AnnonceResponse[] = respRows.map((r) => ({
       id: r.id,
       freelancerId: r.freelancer_id,
+      freelancerProfileId: headlineCity.get(r.freelancer_id)?.id ?? null,
       fullName: nameCity.get(r.freelancer_id)?.full_name ?? null,
       headline: headlineCity.get(r.freelancer_id)?.headline ?? null,
       // Prefer the freelancer-profile city; fall back to the profile-level city.
@@ -202,7 +215,8 @@ export const getAnnonceDetail = cache(
       skills: (r.job_response_skills ?? []).map((s) => s.skill),
     }))
 
-    const isExpired = isAnnoncePastExpiry(row.created_at)
+    const now = new Date()
+    const isExpired = isAnnoncePastExpiry(row.created_at, now)
 
     return {
       id: row.id,
@@ -214,16 +228,20 @@ export const getAnnonceDetail = cache(
       isRemote: Boolean(row.is_remote),
       deadline: row.deadline ?? null,
       status: row.status,
-      displayStatus: resolveAnnonceStatus(row.status, row.created_at),
+      displayStatus: resolveAnnonceStatus(row.status, row.created_at, now),
       createdAt: row.created_at,
       updatedAt: row.updated_at,
       category: one(row.categories)?.name_fr ?? null,
+      categoryAr: one(row.categories)?.name_ar ?? null,
+      categorySlug: one(row.categories)?.slug ?? null,
       skills: (row.job_post_skills ?? []).map((s) => s.skill),
       adminHiddenAt: row.admin_hidden_at ?? null,
       responses,
       responseCount: responses.length,
       isAtCap: responses.length >= MAX_RESPONSES_PER_POST,
       isExpired,
+      expiresInDays: getExpiryDaysLeft(row.created_at, now),
+      fetchedAt: now.getTime(),
     }
   },
 )
