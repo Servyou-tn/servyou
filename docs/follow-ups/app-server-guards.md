@@ -59,6 +59,7 @@ database change, so everything needing one lands here.
   exposure.
 
 ## MEDIUM — client forms store translated error TEXT in state, so errors stay in the old language after FR ⇄ AR
+⏳ ASSIGNED — Agent B, after mobile batch 1 (architect, 2026-10-30).
 
 - **What:** the founder-gate bug fixed on PR #178, still present everywhere else. `LanguageToggle`
   sets the cookie and calls `router.refresh()`, which re-renders client components with the new

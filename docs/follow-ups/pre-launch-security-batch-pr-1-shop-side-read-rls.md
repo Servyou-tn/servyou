@@ -5,6 +5,9 @@ Found during migration 65's discovery (`docs/design/prelaunch-security-batch-dis
 cancel-metadata lock) are the same batch, not follow-ups.
 
 ## MEDIUM — the freelancer side has the gap migration 65 closed on the shop side (inferred, not live-tested)
+✅ CLOSED — migration 75 (`20261027195820_moderated_freelancer_read_rls`), extended by 95. Live 2026-10-30: the
+`freelancer_profiles` public branch requires `admin_hidden_at is null`, and the `service_listings` public branch
+requires the parent profile's `admin_hidden_at is null`.
 
 - **What:** `service_listings`' public branch (migration 52) is `status = 'active' and admin_hidden_at is null`
   with no `freelancer_profiles.admin_hidden_at` cascade, and "Freelancer profiles viewable by everyone" is

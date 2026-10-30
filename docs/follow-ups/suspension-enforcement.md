@@ -4,6 +4,9 @@ Found during migration 61's discovery (decisions D1–D8). TRUNCATE grants are t
 "LOW — Supabase advisor hygiene" above (re-confirmed there).
 
 ## MEDIUM — `disputes`, `data_exports` and `deletion_requests` accept admin fields on INSERT
+✅ CLOSED — migration 68 (`20261026190353_prelaunch_acl_hardening`, item C) and 83 (`20261028194719_disputes_insert_columns`).
+Live 2026-10-30: no table-level INSERT for authenticated on the three tables; column INSERT only on
+`disputes(order_id, reason, description, created_by_role)`, `data_exports(user_id)`, `deletion_requests(user_id, reason)`.
 
 - ✅ **CLOSED**: `data_exports` / `deletion_requests` by migration 68 C; `disputes` by migration 83 `20261028194719_disputes_insert_columns` (`fix/security-followups-batch`, 2026-10-28; proof: `security-followups-batch.test.ts`). `disputes.created_by` was not added.
 
@@ -21,6 +24,11 @@ Found during migration 61's discovery (decisions D1–D8). TRUNCATE grants are t
   `disputes`.
 
 ## MEDIUM — active users can still transact with a suspended account, and its content stays public
+✅ CLOSED — founder ruling 2026-10-30 (« a suspended seller / freelancer: listings hidden from public and NOT
+orderable; existing orders continue ») is already live: migrations 89 (orders refused, « Cet article n'est plus
+disponible. »), 90 + 94 (job responses to a suspended poster refused), 88 (`get_contact_phone`), 95 (the public branch
+of the shops / products / freelancer_profiles / service_listings / job_posts SELECT policies requires an active
+account). Existing orders are untouched. Live-verified 2026-10-30.
 
 - **What:** migration 61 checks the actor only (D6). Nothing reads the counterparty's
   `suspended_at`: an active buyer can still order from a suspended seller's shop or listing
@@ -41,6 +49,9 @@ Found during migration 61's discovery (decisions D1–D8). TRUNCATE grants are t
 - **Fix:** log `error.message`, `error.code`, `error.details`.
 
 ## MEDIUM — D3 is unreachable in the app: a suspended account cannot get to its export / deletion request
+⏳ RULED, for the Nov 6–10 review (founder, 2026-10-30): a suspended user CAN reach their own data export and
+deletion request (legal right). The DB already allows it (migration 61 keeps both INSERT policies open); the missing
+part is the path in (middleware signs a suspended session out). No code yet.
 
 - **What:** migration 61 keeps `data_exports` / `deletion_requests` INSERT open to a suspended
   account (D3, GDPR rights), but the same PR bans it in Supabase Auth and middleware signs it out
@@ -142,6 +153,9 @@ Found during migration 61's discovery (decisions D1–D8). TRUNCATE grants are t
   trigger; new view → revoke writes".
 
 ## MEDIUM (investigate) — no integrity sweep for writes that may have gone through the `public_profiles` hole
+✅ CLOSED — `docs/audits/public-profiles-integrity-check-2026-10-30.md`: no sign of a write through the hole
+(14/14 profiles, avatars all with provenance, `seller_type` consistent, no under-18 seller, clean names / cities).
+One 2026-08-07 update of a real account is not attributable but consistent — founder to confirm it.
 
 - **What:** migration 60 notes "earlier writes cannot be ruled out from the logs". DELETE is ruled
   out (22 users = 22 profiles); a PATCH (name / city / avatar / `seller_type`) is not.
