@@ -13,7 +13,7 @@ const h = vi.hoisted(() => {
   const USER_ID = 'user-1'
   const FREELANCER_PROFILE_ID = '33333333-3333-4333-8333-333333333333'
   type Err = { message: string; code?: string } | null
-  const state = { user: null as { id: string } | null, uploadError: null as Err }
+  const state = { user: null as { id: string } | null, uploadError: null as Err, storedSize: 4 as number | null }
   const calls = { uploaded: [] as string[] }
   const storage = {
     from: () => ({
@@ -22,6 +22,10 @@ const h = vi.hoisted(() => {
         return Promise.resolve({ error: state.uploadError })
       }),
       getPublicUrl: (p: string) => ({ data: { publicUrl: `https://cdn.test/portfolio-media/${p}` } }),
+      // The stored-size read-back; the mocked normalizer's blob is 4 bytes ('test').
+      info: vi.fn(async () =>
+        state.storedSize === null ? { data: null, error: { message: 'not found' } } : { data: { size: state.storedSize }, error: null },
+      ),
     }),
   }
   return { state, calls, storage, USER_ID, FREELANCER_PROFILE_ID }
@@ -81,6 +85,7 @@ beforeEach(() => {
   h.state.user = { id: USER_ID }
   guard.active = true
   h.state.uploadError = null
+  h.state.storedSize = 4
   h.calls.uploaded.length = 0
   provenanceCalls.length = 0
   provenanceInsertShouldFail = false
@@ -132,5 +137,34 @@ describe('S-3 — a suspended caller is refused before any byte is stored or rec
     expect(res).toMatchObject({ ok: false, error: 'auth.suspended_banner' })
     expect(h.calls.uploaded).toEqual([])
     expect(provenanceCalls).toEqual([])
+  })
+})
+
+// Audit pass 2 « Logged »: the portfolio path now has the same two checks as the other four upload paths.
+describe('uploadPortfolioImageAction — size pre-check and stored-size integrity check', () => {
+  it('refuses a file over MAX_INPUT_BYTES with the « too large » message, before anything is stored', async () => {
+    const fd = new FormData()
+    fd.set('image', new File([new Uint8Array(5 * 1024 * 1024 + 1)], 'big.jpg', { type: 'image/jpeg' }))
+    const res = await uploadPortfolioImageAction(fd)
+    expect(res).toEqual({ ok: false, error: 'product.image.error.tooLarge' })
+    expect(h.calls.uploaded).toEqual([])
+    expect(provenanceCalls).toEqual([])
+  })
+
+  it('fails without returning a path when the stored size differs from what was sent', async () => {
+    h.state.storedSize = 7
+    const res = await uploadPortfolioImageAction(imageFormData())
+    expect(res).toEqual({ ok: false, error: 'common.error_generic' })
+  })
+
+  it('fails without returning a path when the stored object cannot be read back', async () => {
+    h.state.storedSize = null
+    const res = await uploadPortfolioImageAction(imageFormData())
+    expect(res.ok).toBe(false)
+  })
+
+  it('returns the path when the stored size matches', async () => {
+    const res = await uploadPortfolioImageAction(imageFormData())
+    expect(res.ok).toBe(true)
   })
 })

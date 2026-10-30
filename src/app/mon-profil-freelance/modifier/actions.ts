@@ -10,7 +10,7 @@ import { t, type Lang } from '@/lib/i18n'
 import { resolveOwnedFreelancerProfileId } from '@/lib/freelancer/owner-profile'
 import { reconcile } from '@/lib/shops/reconcile'
 import { diffLanguages } from '@/lib/freelancer/diff-languages'
-import { normalizePortfolioImage, MAX_INPUT_MB } from '@/lib/images/normalize'
+import { normalizePortfolioImage, MAX_INPUT_BYTES, MAX_INPUT_MB } from '@/lib/images/normalize'
 import { recordUploadProvenance } from '@/lib/images/provenance'
 import { isCallerActive, uploadBucket } from '@/lib/images/upload-guard'
 import {
@@ -357,9 +357,12 @@ export async function publishProfileAction(input: unknown): Promise<PublishProfi
 const PORTFOLIO_BUCKET = 'portfolio-media'
 const PORTFOLIO_CACHE_CONTROL = '31536000' // one year — a path is never overwritten, fresh uuid every upload.
 
+// Same shape gate as the other four upload paths (products.ts productImageFileSchema): the size cap refuses an
+// oversized body before the (expensive) decode, with the honest « too large » message.
 const portfolioImageFileSchema = z
   .instanceof(File, { message: 'no_file' })
   .refine((f) => f.size > 0, 'no_file')
+  .refine((f) => f.size <= MAX_INPUT_BYTES, 'too_large')
 
 export type UploadPortfolioImageResult = { ok: true; path: string; url: string } | { ok: false; error: string }
 
@@ -380,11 +383,13 @@ export async function uploadPortfolioImageAction(formData: FormData): Promise<Up
   const rawFile = formData.get('image')
   const parsed = portfolioImageFileSchema.safeParse(rawFile)
   if (!parsed.success) {
+    const code = parsed.error.issues[0]?.message
     console.error(
-      `[uploadPortfolioImage] rejected: file failed schema — ` +
+      `[uploadPortfolioImage] rejected: file failed schema (${code}) — ` +
         (rawFile instanceof File ? `name=${rawFile.name} size=${rawFile.size} type=${rawFile.type}` : `not a File (${typeof rawFile})`) +
         ` for user ${user.id}`,
     )
+    if (code === 'too_large') return { ok: false, error: t('product.image.error.tooLarge', lang, { max: MAX_INPUT_MB }) }
     return { ok: false, error: t('common.error_generic', lang) }
   }
 
@@ -425,6 +430,19 @@ export async function uploadPortfolioImageAction(formData: FormData): Promise<Up
   const provenance = await recordUploadProvenance('portfolio-media', path, user.id)
   if (!provenance.ok) {
     console.error(`[uploadPortfolioImage] provenance insert failed for ${path}, user ${user.id} — object left for reconciliation`)
+    return { ok: false, error: t('common.error_generic', lang) }
+  }
+
+  // Read the stored size back and compare, like the other four upload paths (products.ts explains why: a
+  // body-encoding fault changes the object's LENGTH while upload() still returns ok). Left in place on a
+  // mismatch, for the reconciliation sweep -- never returned to the caller as a usable path.
+  const { data: stored, error: infoError } = await uploadBucket(PORTFOLIO_BUCKET).info(path)
+  if (infoError || !stored || stored.size !== normalized.blob.size) {
+    console.error(
+      `[uploadPortfolioImage] INTEGRITY CHECK FAILED — sent ${normalized.blob.size} bytes, ` +
+        `stored ${stored?.size ?? 'unknown'} at ${path}` +
+        (infoError ? ` (info error: ${infoError.message})` : ''),
+    )
     return { ok: false, error: t('common.error_generic', lang) }
   }
 

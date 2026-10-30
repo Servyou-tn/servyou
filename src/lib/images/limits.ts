@@ -88,3 +88,12 @@ export const PORTFOLIO_MAX_EDGE = 1280
  * limit moved 15 MB -> 4 MB and the French string kept saying "15 Mo maximum".
  */
 export const MAX_INPUT_MB = Math.floor(MAX_INPUT_BYTES / (1024 * 1024))
+
+/**
+ * Decoded-pixel ceiling handed to sharp as `limitInputPixels`. A few hundred bytes of PNG can DECLARE a
+ * 30 000 x 30 000 image, and sharp's default ceiling (~268 MP) lets one such request spend about a gigabyte of
+ * memory and seconds of CPU before the edge resize ever runs. 100 MP is about twice the largest phone sensor
+ * (50 MP), so no real photo reaches it; a file over it fails as `decode_failed`, like any crafted file.
+ * Pre-launch security audit pass 2 (docs/audits/prelaunch-security-audit-pass-2-actions.md, « Logged »).
+ */
+export const MAX_INPUT_PIXELS = 100_000_000
