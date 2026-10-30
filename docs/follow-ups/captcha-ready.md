@@ -14,7 +14,7 @@
   or accept that Preview and local sign-in stop working.
 - **Trigger:** before switching the toggle on.
 
-## 2. The full live set has not been re-run in one go on the magic-link sign-in
+## 2. The full live set has not been re-run in one go on the recovery-link sign-in
 - **What:** the 37 converted suites share one helper (`src/__tests__/fixture-session.ts`). Proven live on
   suspension-enforcement (incl. the ban probes), profiles-rls, progressive-phone, storage-uploads-service-role and
   storage-verifications-no-client-insert (241 tests). The other 32 are the same type-checked one-line swap.
@@ -24,4 +24,4 @@
 ## 3. `scripts/rls-smoke.mjs` still uses the password grant
 - **What:** it will fail with `captcha_failed` once CAPTCHA is on.
 - **Why deferred:** it must never be run anyway (it deletes every test-domain user on production — CLAUDE.md).
-- **Trigger:** if it is ever revived — switch it to `fixtureSignIn`'s magic-link path.
+- **Trigger:** if it is ever revived — switch it to `fixtureSignIn`'s recovery-link path.

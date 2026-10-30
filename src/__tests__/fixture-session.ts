@@ -3,9 +3,9 @@
  * CAPTCHA protection is on (it guards /token?grant_type=password, /signup, /recover, /resend, /otp — every one
  * of them would need a real Turnstile token, which a test cannot produce against the production secret).
  *
- * The path: the service role mints a magic-link token for the fixture (POST /admin/generate_link — admin, never
- * CAPTCHA-checked, sends no email), then the fixture's OWN anon client redeems it (POST /verify — not
- * CAPTCHA-checked). The client ends up with an ordinary authenticated session for that user, exactly what
+ * The path: the service role mints a recovery-link token for the fixture (POST /admin/generate_link — admin, never
+ * CAPTCHA-checked, sends no email; `recovery`, not `magiclink`, because a magic link silently CREATES an account for
+ * an unknown email), then the fixture's OWN anon client redeems it (POST /verify — not CAPTCHA-checked). The client ends up with an ordinary authenticated session for that user, exactly what
  * signInWithPassword gave it: every RLS assertion still runs as the user, never as the service role.
  *
  * Drop-in for `client.auth.signInWithPassword({ email, password })`: same client in, same `{ error }` out.
@@ -27,10 +27,10 @@ export async function fixtureSignIn(
   client: Pick<SupabaseClient, 'auth'>,
   email: string,
 ): Promise<{ error: { message: string } | null }> {
-  const { data, error } = await serviceClient().auth.admin.generateLink({ type: 'magiclink', email })
+  const { data, error } = await serviceClient().auth.admin.generateLink({ type: 'recovery', email })
   const tokenHash = data?.properties?.hashed_token
   if (error || !tokenHash) return { error: { message: `generateLink: ${error?.message ?? 'no hashed_token'}` } }
-  const { data: verified, error: verifyError } = await client.auth.verifyOtp({ type: 'email', token_hash: tokenHash })
+  const { data: verified, error: verifyError } = await client.auth.verifyOtp({ type: 'recovery', token_hash: tokenHash })
   if (verifyError || !verified.session) return { error: { message: `verifyOtp: ${verifyError?.message ?? 'no session'}` } }
   return { error: null }
 }

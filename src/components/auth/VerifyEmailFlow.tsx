@@ -32,6 +32,8 @@ function useResend(getCaptchaToken: () => Promise<string | undefined>) {
   const supabase = createClient()
   const [cooldown, setCooldown] = useState(0)
   const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle')
+  // The token wait can outlast the cooldown (an interactive challenge): one resend in flight at a time.
+  const inFlight = useRef(false)
 
   useEffect(() => {
     if (cooldown <= 0) return
@@ -46,7 +48,8 @@ function useResend(getCaptchaToken: () => Promise<string | undefined>) {
   }, [status])
 
   async function resend(email: string) {
-    if (cooldown > 0) return
+    if (cooldown > 0 || inFlight.current) return
+    inFlight.current = true
     setStatus('idle')
     setCooldown(RESEND_COOLDOWN_SECONDS)
     // Turnstile token for Supabase Auth's CAPTCHA check (/resend is CAPTCHA-guarded once it is enabled).
@@ -57,6 +60,7 @@ function useResend(getCaptchaToken: () => Promise<string | undefined>) {
       // Same target as the first email (SignupForm): /verifier-email of this origin.
       options: { emailRedirectTo: verifyEmailRedirectUrl(window.location.origin), ...(captchaToken ? { captchaToken } : {}) },
     })
+    inFlight.current = false
     if (error) {
       console.error('[VerifyEmail] resend error:', error.message, error.code, error.status)
       setStatus('error')
