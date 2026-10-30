@@ -1003,6 +1003,15 @@ both on 2026-10-28.
     - RLS and the table ACL are unchanged. 0 rows at apply.
     - For both 102 and 103: shorter header comments in the recorded statements, identical executable SQL
       (comment-stripped MD5 match, 2026-10-29).
+104. **20261030100604_storage_verifications_drop_client_insert** (`ea5bc8ee`) — S1: drops « verifications: owner
+    uploads own document », the last permissive client INSERT policy on `storage.objects`.
+    - Identity verification is not built and nothing writes to the private bucket (0 objects at apply). Re-add a
+      writer when it ships; the file's rollback block holds the exact policy.
+    - Every bucket is now service-role write only (the four public ones since 74). The owner / admin read policy on
+      verifications stays.
+    - The RESTRICTIVE « Suspended accounts cannot upload » stays (approved) but is unobservable while no permissive
+      client INSERT exists; `suspension-enforcement.test.ts` pins the active control as refused until then.
+    - The recorded statement carries a shorter header comment. The executable SQL is identical.
 
 ## Rollback paths
 
