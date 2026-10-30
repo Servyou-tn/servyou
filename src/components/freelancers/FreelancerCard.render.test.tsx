@@ -26,13 +26,14 @@ import type { FreelancerCardData } from '@/lib/marche/freelancer-cards'
 
 afterEach(cleanup)
 
+const sk = (...names: string[]) => names.map((n) => ({ fr: n, ar: `${n}-ar` }))
 const data = (over: Partial<FreelancerCardData> = {}): FreelancerCardData => ({
   id: 'abc',
   name: 'Yassine Ben Ali',
   headline: 'Développeur Full Stack | React & Next.js',
   city: 'Tunis',
   avatarUrl: null,
-  skills: ['React', 'Next.js', 'Node.js', 'TypeScript', 'GraphQL', 'Docker'],
+  skills: sk('React', 'Next.js', 'Node.js', 'TypeScript', 'GraphQL', 'Docker'),
   serviceCount: 8,
   ...over,
 })
@@ -80,7 +81,7 @@ describe('FreelancerCard', () => {
   })
 
   it('has no « +N » for 2 skills or fewer, and no chip row at all without skills', () => {
-    const { container, rerender } = mount(data({ skills: ['React', 'Node.js'] }))
+    const { container, rerender } = mount(data({ skills: sk('React', 'Node.js') }))
     expect(Array.from(container.querySelectorAll('ul li')).map((c) => c.textContent)).toEqual(['React', 'Node.js'])
     rerender(
       <LangProvider lang="fr">
@@ -91,7 +92,7 @@ describe('FreelancerCard', () => {
   })
 
   it('3 or 4 skills: all shown wide, « +1 » / « +2 » only narrow', () => {
-    const { container } = mount(data({ skills: ['A', 'B', 'C'] }))
+    const { container } = mount(data({ skills: sk('A', 'B', 'C') }))
     const chips = Array.from(container.querySelectorAll('ul li'))
     expect(chips.map((c) => c.textContent)).toEqual(['A', 'B', 'C', '+1'])
     expect(chips[3].className).toMatch(/sm:hidden/)
@@ -117,8 +118,9 @@ describe('FreelancerCard', () => {
     expect(screen.getByRole('link', { name: 'Voir le profil' })).toBeInTheDocument()
   })
 
-  it('reads in Arabic', () => {
-    mount(data(), undefined, 'ar')
+  it('reads in Arabic: the chips take the Arabic label', () => {
+    mount(data({ skills: sk('React') }), undefined, 'ar')
     expect(document.body.textContent).not.toMatch(/freelancerCard\./)
+    expect(screen.getByText('React-ar')).toBeInTheDocument()
   })
 })

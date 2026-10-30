@@ -82,8 +82,8 @@ export function FreelancerCard({
         {skills.length > 0 ? (
           <ul className="flex gap-2 overflow-hidden">
             {wide.map((skill, i) => (
-              <li key={skill} className={cn(CHIP, i >= SKILLS_NARROW && 'max-sm:hidden')}>
-                {skill}
+              <li key={skill.fr} className={cn(CHIP, i >= SKILLS_NARROW && 'max-sm:hidden')}>
+                {lang === 'ar' ? skill.ar : skill.fr}
               </li>
             ))}
             {moreWide > 0 ? <li className={cn(CHIP, 'max-sm:hidden')}>+{moreWide}</li> : null}

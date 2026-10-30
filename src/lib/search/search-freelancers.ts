@@ -128,11 +128,11 @@ export async function searchFreelancers(
   }
 
   // The base set: freelancers with a visible active service (within the sector, when one is chosen).
-  const services = await pageAll<{ freelancer_profile_id: string; starting_price_tnd: number | string | null }>(
+  const services = await pageAll<{ freelancer_profile_id: string; starting_price_tnd: number | string | null; tags: string[] | null }>(
     (from, to) => {
       let q = supabase
         .from('service_listings')
-        .select('freelancer_profile_id, starting_price_tnd')
+        .select('freelancer_profile_id, starting_price_tnd, tags')
         .eq('status', 'active')
         .is('admin_hidden_at', null)
       if (orClause) q = q.or(orClause)
@@ -143,7 +143,9 @@ export async function searchFreelancers(
     'search-freelancers services',
   )
   const minPrice = new Map<string, number>()
+  const tagsBy = new Map<string, string[]>()
   for (const s of services) {
+    tagsBy.set(s.freelancer_profile_id, [...(tagsBy.get(s.freelancer_profile_id) ?? []), ...(s.tags ?? [])])
     if (s.starting_price_tnd == null) continue
     const price = Number(s.starting_price_tnd)
     const known = minPrice.get(s.freelancer_profile_id)
@@ -200,7 +202,12 @@ export async function searchFreelancers(
     )
     for (const rows of results) for (const s of rows) skillsBy.set(s.freelancer_profile_id, [...(skillsBy.get(s.freelancer_profile_id) ?? []), s.skill])
     candidates = candidates.filter((c) =>
-      matchesFreelancerQuery(term, { name: names.get(c.profile_id) ?? '', headline: c.headline, skills: skillsBy.get(c.id) ?? [] }),
+      matchesFreelancerQuery(term, {
+        name: names.get(c.profile_id) ?? '',
+        headline: c.headline,
+        // the profile's skills AND the tags of their matching services — the chips the card shows
+        skills: [...(skillsBy.get(c.id) ?? []), ...(tagsBy.get(c.id) ?? [])],
+      }),
     )
   }
 
