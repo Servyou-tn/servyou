@@ -1,8 +1,6 @@
 /**
- * Live proof for db/migrations/PENDING_image_count_caps.sql — the upload COUNT caps in the database:
+ * Live proof for db/migrations/20261030202059_image_count_caps.sql (#105) — the upload COUNT caps in the database:
  * at most 8 product_images per product and 6 freelancer_portfolio_items per freelancer profile.
- *
- * ⚠ Red until that migration is applied: before it, the 9th image / 7th item is accepted.
  *
  *   * an owner's 8 images in one multi-row insert pass; the 9th is refused (23514, hint product_images_cap);
  *   * a single insert of 9 at once is refused whole (the statement is atomic, so nothing is stored);
