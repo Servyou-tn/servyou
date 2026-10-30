@@ -73,7 +73,7 @@ export function WizardFooter({
   return (
     // One wrapping row. From `sm`: [brouillon][caption] ……… [précédent][suivant], as drawn. Below it the
     // caption takes its own line on top so the buttons share one row instead of stacking three deep.
-    <div className="sticky bottom-0 z-10 -mx-4 -mb-6 mt-2 flex flex-wrap items-center gap-x-3 gap-y-2 border-t border-border-subtle bg-surface-base px-4 py-4 md:-mx-8 md:-mb-8 md:px-8 md:py-5">
+    <div className="sticky bottom-[var(--cookie-banner-h,0px)] z-10 -mx-4 -mb-6 mt-2 flex flex-wrap items-center gap-x-3 gap-y-2 border-t border-border-subtle bg-surface-base px-4 py-4 md:-mx-8 md:-mb-8 md:px-8 md:py-5">
       {!editing && (
         <Button variant="secondary" onClick={onSaveDraft} disabled={publishing} className="order-2 sm:order-1">
           {t('service.wizard.footer.save_draft', lang)}

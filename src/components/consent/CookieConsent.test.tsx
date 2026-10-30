@@ -21,6 +21,8 @@ vi.mock('next/link', () => ({
 
 import { CookieConsentProvider, useConsent } from './CookieConsent'
 import { ManageCookiesButton } from './ManageCookiesButton'
+import { ConfidentialiteTab } from '@/components/parametres/ConfidentialiteTab'
+import type { CurrentProfile } from '@/lib/marche/mon-compte'
 
 afterEach(() => {
   cleanup()
@@ -102,6 +104,63 @@ describe('the banner', () => {
   it('the hook answers « not granted » for a null consent and outside any provider (silence is not consent)', () => {
     render(<Probe />)
     expect(screen.getByTestId('probe')).toHaveTextContent('not-granted')
+  })
+})
+
+describe('the banner keeps the page usable (sticky action bars)', () => {
+  const root = () => document.documentElement.style.getPropertyValue('--cookie-banner-h')
+
+  function withBannerHeight(px: number, run: () => Promise<void>) {
+    const original = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'offsetHeight')
+    Object.defineProperty(HTMLElement.prototype, 'offsetHeight', { configurable: true, get: () => px })
+    return run().finally(() => {
+      if (original) Object.defineProperty(HTMLElement.prototype, 'offsetHeight', original)
+      else delete (HTMLElement.prototype as unknown as Record<string, unknown>).offsetHeight
+    })
+  }
+
+  it('publishes its height for the sticky bars and pads the page while it shows, then gives both back when answered', () =>
+    withBannerHeight(268, async () => {
+      const user = userEvent.setup()
+      mount(null)
+      expect(root()).toBe('268px')
+      expect(document.body.style.paddingBottom).toBe('268px')
+      await user.click(screen.getByRole('button', { name: labelOf('cookies.action.refuse_all') }))
+      expect(root()).toBe('')
+      expect(document.body.style.paddingBottom).toBe('')
+    }))
+
+  it('gives the space back while the modal covers it, and when a choice already exists nothing is ever reserved', () =>
+    withBannerHeight(268, async () => {
+      const user = userEvent.setup()
+      mount(null)
+      await user.click(screen.getByRole('button', { name: labelOf('cookies.action.customize') }))
+      expect(root()).toBe('')
+      await user.keyboard('{Escape}')
+      expect(root()).toBe('268px')
+      cleanup()
+      mount(makeConsent(false))
+      expect(root()).toBe('')
+      expect(document.body.style.paddingBottom).toBe('')
+    }))
+})
+
+describe('Paramètres › Confidentialité — withdrawing without the footer', () => {
+  it('« Gérer les cookies » in the privacy tab opens the same modal and saves the choice', async () => {
+    const user = userEvent.setup()
+    render(
+      <LangProvider lang="fr">
+        <CookieConsentProvider initial={makeConsent(true)}>
+          <ConfidentialiteTab profile={{ email: 'a@b.c' } as CurrentProfile} role={null} />
+        </CookieConsentProvider>
+      </LangProvider>,
+    )
+    await user.click(screen.getByRole('button', { name: labelOf('cookies.action.manage') }))
+    const sw = within(dialog()!).getByRole('switch')
+    expect(sw).toHaveAttribute('aria-checked', 'true')
+    await user.click(sw)
+    await user.click(within(dialog()!).getByRole('button', { name: labelOf('cookies.action.save') }))
+    expect(stored()).toMatchObject({ audience: false })
   })
 })
 

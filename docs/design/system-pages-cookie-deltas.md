@@ -29,12 +29,18 @@ Frames A9 / A10 / A7 (measurements: `docs/design/system-pages-cookie-measurement
 - **D10 Modal mechanics** are the same wiring as `ConfirmModal` / `mon-compte/ModalShell` (scrim, scroll lock, Escape, Tab trap, focus restored) — a third copy, so logged as a follow-up (promote at the next consumer) rather than refactored here. Closing the modal without saving changes nothing; the banner stays if there is still no valid consent.
 - **D11 « Enregistrer mes choix » saves the audience toggle** (and the two fixed categories are implied). « Refuser tout » in the modal footer saves audience = false.
 
-## Legal copy — PROPOSED, not edited (R3)
-`legal.cookies.*` is the founder's text; I did not touch it. It no longer matches reality in four places:
-1. **s2** lists « Cookies de mesure d'audience anonymisée » as if used. Proposed: « Cookies de mesure d'audience anonymisée — uniquement si vous l'activez dans « Gérer les cookies ». Aucun cookie de ce type n'est déposé aujourd'hui. »
-2. **s2** does not list the consent cookie nor the anti-bot check. Proposed additions: « Cookie de consentement (servyou_consent) — rôle : mémoriser votre choix ; durée : 6 mois ; statut : strictement nécessaire » and « Protection anti-robots (Cloudflare Turnstile) — rôle : sécuriser la connexion et les formulaires ; statut : strictement nécessaire ».
-3. **s2** « Cookie de préférence linguistique » is accurate — add « déposé uniquement quand vous choisissez une langue ».
-4. **s5** promises « mémorisé pour les visites suivantes »; proposed: « Votre choix est mémorisé pendant 6 mois, puis nous vous le redemandons. Vous pouvez le modifier ou le retirer à tout moment avec « Gérer les cookies », en bas de chaque page. »
+## Legal copy — APPLIED (architect review 2026-10-30, founder approved the four corrections)
+`legal.cookies.*` was edited in `fr.ts` / `ar.ts`; the only wording the founder changed is the end of #4.
+1. **s2** audience cookie: « uniquement si vous l'activez dans « Gérer les cookies ». Aucun cookie de ce type n'est déposé aujourd'hui. »
+2. **s2** adds the consent cookie (servyou_consent, 6 mois, strictement nécessaire) and the anti-bot check (Cloudflare Turnstile, strictement nécessaire).
+3. **s2** language cookie: « déposé uniquement quand vous choisissez une langue ».
+4. **s5**: « Votre choix est mémorisé pendant 6 mois, puis nous vous le redemandons. Vous pouvez le modifier ou le retirer à tout moment avec « Gérer les cookies », en bas des pages du site ou dans Paramètres › Confidentialité. »
+- **Also changed, not in the four (flagged):** the s2 opener « Trois cookies. C'est tout. » became « Quatre cookies nécessaires, un seul facultatif. C'est tout. » — with the additions the old count was false.
+- **Arabic = DRAFT, for the founder's Arabic review.** The AR versions of 1–4 and of the opener are mine, not reviewed. AR uses the modal's own label « إدارة ملفات تعريف الارتباط » for « Gérer les cookies », and « الإعدادات › الخصوصية » for Paramètres › Confidentialité. (The legal AR strings had no REVIEW_AR_TRANSLATION marker; none added inside the founder's legal block, this note carries the flag.)
+
+## Architect review round (2026-10-30)
+- **D14 Sticky action bars stay usable under the banner.** While the card shows it publishes its height as `--cookie-banner-h` on `<html>` (ResizeObserver, so a language switch or a wrap at 375 follows) and pads `<body>` by the same amount; the four sticky bars (`WizardFooter`, freelance profile `StickyFooter`, `ProductForm`, `EditProductForm`) use `bottom-[var(--cookie-banner-h,0px)]`. Answering the banner, opening the modal (the banner is hidden behind it) or unmounting removes both — with no banner the bars are exactly where they were (`0px`). Measured in the browser on the real `WizardFooter`: the bar's bottom edge = the banner's top edge (1440: 644 / 644; 375: 410 / 410), the page end scrolls clear (« fin de page » fully visible above the bar), and after « Refuser tout » the bar returns to the viewport bottom. Cost: at 375 the banner is 402 px of an 812 px screen with the bar above it (~260 px of content left) until answered.
+- **D15 « Gérer les cookies » in Paramètres › Confidentialité.** A « Cookies » card (same anatomy as « Données personnelles ») with one link row that opens the same modal (`useConsent().openSettings`), so a signed-in visitor can withdraw without the marketing footer.
 
 ## Other notes
 - The banner and modal copy promise « une mesure d’audience anonyme » (as drawn) while nothing is measured today; the toggle is off by default and wired to nothing (R2).
@@ -42,7 +48,7 @@ Frames A9 / A10 / A7 (measurements: `docs/design/system-pages-cookie-measurement
 - Figma MCP reads: 0 (bridge dumps).
 
 ## Added after the browser gate
-- **D12 The banner can sit over the bottom of a short, centred page** (404 / 500 / K1–K4) until the visitor answers it — it is a non-blocking card by ruling, and answering is one click. The card's primary action stays visible at 1440; at 375 the banner covers most of the lower half until answered.
+- **D12 The banner can sit over the bottom of a short, centred page** (the sticky-bar half of this is closed by D14) (404 / 500 / K1–K4) until the visitor answers it — it is a non-blocking card by ruling, and answering is one click. The card's primary action stays visible at 1440; at 375 the banner covers most of the lower half until answered.
 - **D13 The card title is 22 on a 27 line** (the frame measures h27 / two lines = 54): without the explicit line-height the title inherits 1.5 and every card grew by 6 px. Applied in `SystemStateScreen` (so K1–K4 share it — the same Figma text style) and `global-error`.
 
 ## Verification (browser, own isolated sessions, URL asserted before each capture; 0 production writes — the only writes are the first-party cookie in the test browser)
