@@ -388,11 +388,17 @@ export type MyAnnonce = {
   display_status: AnnonceDisplayStatus
   created_at: string
   category: string | null
+  /** categories.name_ar — the Arabic page renders this, never the French name. */
+  category_ar: string | null
+  /** categories.slug — keys the row's icon tile. */
+  category_slug: string | null
   response_count: number
   skills: string[]
   /** Set by admin moderation. Never expose admin_hidden_reason — that stays admin-internal. */
   admin_hidden_at: string | null
 }
+
+type AnnonceCategory = { name_fr: string; name_ar: string | null; slug: string }
 
 type AnnonceRow = {
   id: string
@@ -405,7 +411,7 @@ type AnnonceRow = {
   deadline: string | null
   status: 'open' | 'filled' | 'expired' | 'deleted'
   created_at: string
-  categories: { name_fr: string } | { name_fr: string }[] | null
+  categories: AnnonceCategory | AnnonceCategory[] | null
   job_responses: { count: number }[] | null
   // Readable exactly when its post is (its SELECT policy delegates to job_posts', migration
   // 20261025213214) — no admin_hidden_at/status of its own. Scoping comes from the parent job_posts
@@ -421,7 +427,7 @@ export async function getMyAnnonces(userId: string): Promise<MyAnnonce[]> {
     .from('job_posts')
     .select(
       `id, title, description, budget_min, budget_max, city, is_remote, deadline, status, created_at,
-       categories ( name_fr ), job_responses ( count ), job_post_skills ( skill ), admin_hidden_at`,
+       categories ( name_fr, name_ar, slug ), job_responses ( count ), job_post_skills ( skill ), admin_hidden_at`,
     )
     .eq('consumer_id', userId)
     .neq('status', 'deleted')
@@ -443,6 +449,8 @@ export async function getMyAnnonces(userId: string): Promise<MyAnnonce[]> {
     display_status: resolveAnnonceStatus(row.status, row.created_at),
     created_at: row.created_at,
     category: one(row.categories)?.name_fr ?? null,
+    category_ar: one(row.categories)?.name_ar ?? null,
+    category_slug: one(row.categories)?.slug ?? null,
     response_count: row.job_responses?.[0]?.count ?? 0,
     skills: (row.job_post_skills ?? []).map((s) => s.skill),
     admin_hidden_at: row.admin_hidden_at ?? null,
@@ -467,15 +475,17 @@ export async function getMyAnnonces(userId: string): Promise<MyAnnonce[]> {
 // subcategories interleaved alphabetically by name_fr. A job post files at SECTOR granularity only
 // (job_posts.category_id has no UI path to a leaf category today) — the picker offering leaves
 // would be a second, separate feature decision, not a side effect of this filter.
-export async function getCategories(): Promise<{ id: string; slug: string; name_fr: string }[]> {
+export type AnnonceCategoryOption = { id: string; slug: string; name_fr: string; name_ar: string | null }
+
+export async function getCategories(): Promise<AnnonceCategoryOption[]> {
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('categories')
-    .select('id, slug, name_fr')
+    .select('id, slug, name_fr, name_ar')
     .in('kind', ['service', 'both'])
     .is('parent_id', null)
     .order('name_fr')
   // Throws (it used to return []): an empty category select makes the form impossible to submit with no explanation.
   if (error) failQuery('my-data categories', error)
-  return (data ?? []) as { id: string; slug: string; name_fr: string }[]
+  return (data ?? []) as AnnonceCategoryOption[]
 }

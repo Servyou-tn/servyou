@@ -45,6 +45,8 @@ function pickVariant(variants: PluralVariants, lang: Lang, count: number): strin
 
 const frPlurals: Record<string, PluralVariants> = {
   'mesannonces.count':                     { one: '{count} annonce',  other: '{count} annonces' },
+  // F3 row (Figma 1476:27949): « 0 proposition » is its own key (mesannonces.row.proposals_zero) — French zero is forced to `other` above.
+  'mesannonces.row.proposals':             { one: '{count} proposition', other: '{count} propositions' },
   'mesfavoris.count':                      { one: '{count} favori',   other: '{count} favoris' },
 
   'page_header.recherche.subtitle':        { one: '{count} résultat pour « {query} »', other: '{count} résultats pour « {query} »' },
@@ -106,6 +108,8 @@ const frPlurals: Record<string, PluralVariants> = {
 
 const arPlurals: Record<string, PluralVariants> = {
   'mesannonces.count':                     { one: '{count} إعلان', two: '{count} إعلانان', other: '{count} إعلانات' },
+  // REVIEW_AR_TRANSLATION
+  'mesannonces.row.proposals':             { one: 'عرض واحد', two: 'عرضان', other: '{count} عروض' },
   'mesfavoris.count':                      { one: '{count} مفضلة', two: '{count} مفضلتان', other: '{count} مفضلات' },
 
   'page_header.recherche.subtitle':        {

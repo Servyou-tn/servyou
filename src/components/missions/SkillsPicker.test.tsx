@@ -129,6 +129,52 @@ describe('SkillsPicker', () => {
     expect(seen.at(-1)).toEqual(['تصميم', 'تسويق', 'محاسبة'])
   })
 
+  it('custom mode: text typed but never confirmed with Enter becomes tags when the popover closes (a submit must not lose it)', async () => {
+    const seen: string[][] = []
+    render(<Harness custom sections={[]} onValue={(v) => seen.push(v)} />)
+    const user = await open()
+    await user.type(screen.getByRole('searchbox', { name: 'Rechercher' }), ' Cobol, node ')
+    await user.click(document.body) // outside click, like a click on a form's submit button
+    expect(seen.at(-1)).toEqual(['Cobol', 'node'])
+  })
+
+  it('custom mode: Escape CANCELS — typed text is dropped, not committed', async () => {
+    const seen: string[][] = []
+    render(<Harness custom sections={[]} onValue={(v) => seen.push(v)} />)
+    const user = await open()
+    await user.type(screen.getByRole('searchbox', { name: 'Rechercher' }), 'Cobol')
+    await user.keyboard('{Escape}')
+    expect(seen).toEqual([])
+  })
+
+  it('custom mode: text that still matches a pool option was a FILTER, not a new skill (« fig » + tick « Figma » leaves only Figma)', async () => {
+    const seen: string[][] = []
+    render(<Harness custom onValue={(v) => seen.push(v)} />)
+    const user = await open()
+    await user.type(screen.getByRole('searchbox', { name: 'Rechercher' }), 'fig')
+    await user.click(screen.getByRole('checkbox', { name: 'Figma' }))
+    await user.click(document.body)
+    expect(seen.at(-1)).toEqual(['Figma'])
+  })
+
+  it('custom mode: closing with typed text never goes past `max`', async () => {
+    const seen: string[][] = []
+    render(<Harness custom sections={[]} max={2} onValue={(v) => seen.push(v)} />)
+    const user = await open()
+    await user.type(screen.getByRole('searchbox', { name: 'Rechercher' }), 'a, b, c')
+    await user.click(document.body)
+    expect(seen.at(-1)).toEqual(['a', 'b'])
+  })
+
+  it('a closed pool (no custom entry) commits nothing when it closes with typed text', async () => {
+    const seen: string[][] = []
+    render(<Harness onValue={(v) => seen.push(v)} />)
+    const user = await open()
+    await user.type(screen.getByRole('searchbox', { name: 'Rechercher' }), 'zzz')
+    await user.click(document.body)
+    expect(seen).toEqual([])
+  })
+
   it('custom mode: typing exactly a pool option offers no add row (the option itself is listed)', async () => {
     render(<Harness custom />)
     const user = await open()

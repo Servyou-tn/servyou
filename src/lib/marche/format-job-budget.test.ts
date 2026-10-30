@@ -6,7 +6,8 @@ describe('formatJobBudget (D-H10-2)', () => {
     expect(formatJobBudget(200, 400, 'fr')).toBe('200 – 400 TND')
     expect(formatJobBudget(800, 800, 'fr')).toBe('800 TND')
     expect(formatJobBudget(200, null, 'fr')).toBe('Dès 200 TND')
-    expect(formatJobBudget(null, 400, 'fr')).toBe("Jusqu'à 400 TND")
+    // max only = the single « Budget approximatif » field (budget_min stays null): shown as a figure, not as a ceiling.
+    expect(formatJobBudget(null, 400, 'fr')).toBe('400 TND')
     expect(formatJobBudget(null, null, 'fr')).toBe('Budget à discuter')
   })
 
