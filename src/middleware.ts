@@ -53,11 +53,18 @@ const SESSION_GONE_CODES = new Set([
 // sb-<project-ref>-auth-token, optionally chunked as .0 / .1 …; NOT -code-verifier.
 const AUTH_COOKIE = /^sb-.+-auth-token(\.\d+)?$/
 
+// Set for 60 s when a prefetch's refresh fails; prefetches skip the refresh while present (see the prefetch branch).
+// Not `sb-` prefixed: it is not a Supabase cookie, and K2 / K3 clearing it is not needed (it expires on its own).
+const REFRESH_BACKOFF = 'sv-refresh-backoff'
+
 // The Supabase client of one middleware run, and the pass-through response it writes a refresh onto.
 // `pass()` is read AFTER the auth call: setAll() replaces the response so it carries the forwarded
 // request cookies (NextResponse.next({ request })) as well as the Set-Cookie headers.
 function sessionClient(request: NextRequest) {
   let response = NextResponse.next({ request })
+  // Everything written so far in this run, re-applied on each rebuild: a second setAll must not drop the first's.
+  const written = new Map<string, { value: string; options: Parameters<typeof response.cookies.set>[2] }>()
+  const cacheHeaders: Record<string, string> = {}
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -73,11 +80,15 @@ function sessionClient(request: NextRequest) {
           // failed refresh: ignored, as before this change — K2 below owns clearing a gone session, gated
           // so an outage or a refresh race never logs anyone out.
           if (!cookiesToSet.some(({ value }) => value)) return
-          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
-          response = NextResponse.next({ request })
-          cookiesToSet.forEach(({ name, value, options }) => response.cookies.set(name, value, options))
+          cookiesToSet.forEach(({ name, value, options }) => {
+            request.cookies.set(name, value)
+            written.set(name, { value, options })
+          })
           // @supabase/ssr's no-store cache headers: a response carrying a session must never be cached.
-          Object.entries(headers ?? {}).forEach(([key, value]) => response.headers.set(key, value))
+          Object.assign(cacheHeaders, headers ?? {})
+          response = NextResponse.next({ request })
+          written.forEach(({ value, options }, name) => response.cookies.set(name, value, options))
+          Object.entries(cacheHeaders).forEach(([key, value]) => response.headers.set(key, value))
         },
       },
     },
@@ -94,11 +105,21 @@ export async function middleware(request: NextRequest) {
   // the access token is about to expire. Without it, a prefetch after expiry renders its Server
   // Components with the expired session, they refresh and cannot persist it, and the browser keeps a
   // refresh token GoTrue has already rotated.
+  //
+  // A refresh that FAILS on a prefetch (a dead refresh token — e.g. after a global sign-out elsewhere — or an outage)
+  // leaves the cookies as they are: prefetches never clear a session, K2 on the next navigation does. So that a page
+  // full of <Link>s does not fire one failing /token call per prefetch, the failure sets REFRESH_BACKOFF for 60 s and
+  // prefetches skip the refresh while it is present.
   if (request.method === 'GET' && request.headers.has('next-router-prefetch')) {
     if (!request.cookies.getAll().some((c) => AUTH_COOKIE.test(c.name))) return NextResponse.next()
+    if (request.cookies.has(REFRESH_BACKOFF)) return NextResponse.next()
     const { supabase, pass } = sessionClient(request)
-    await supabase.auth.getSession()
-    return pass()
+    const { error } = await supabase.auth.getSession()
+    const response = pass()
+    if (error) {
+      response.cookies.set(REFRESH_BACKOFF, '1', { ...AUTH_COOKIE_OPTIONS, path: '/', maxAge: 60, httpOnly: true, sameSite: 'lax' })
+    }
+    return response
   }
 
   if (process.env.MAINTENANCE_MODE === '1') {

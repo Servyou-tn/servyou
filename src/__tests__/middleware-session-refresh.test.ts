@@ -101,6 +101,19 @@ describe('navigation: getUser() refreshes → the rotated session is persisted',
     const forwarded = res.headers.get('x-middleware-request-cookie') ?? ''
     expect(forwarded).toContain('sb-xggo-auth-token.0=base64-new0')
     expect(forwarded).toContain('lang=ar')
+    // The stale single cookie is emptied on the request too, so the chunks are what the page reads.
+    expect(forwarded).not.toContain('base64-old')
+  })
+
+  it("a second setAll in the same run keeps the first one's cookies", async () => {
+    h.getUser.mockImplementation(async () => {
+      refresh()
+      ;(h.opts.cookies.setAll as SetAll)([{ name: 'sb-xggo-auth-token-extra', value: 'x', options: COOKIE_OPTS }], NO_STORE)
+      return { data: { user: { id: 'u1' } }, error: null }
+    })
+    const sc = setCookie(await middleware(request('/mes-commandes')))
+    expect(sc).toContain('sb-xggo-auth-token.0=base64-new0')
+    expect(sc).toContain('sb-xggo-auth-token-extra=x')
   })
 
   it('persists a refresh even when the user lookup then fails (an outage after the rotation)', async () => {
@@ -129,7 +142,11 @@ describe('navigation: getUser() refreshes → the rotated session is persisted',
     h.maybeSingle.mockResolvedValue({ data: { suspended_at: '2026-10-30T10:00:00Z' }, error: null })
     const res = await middleware(request('/mes-commandes'))
     expect(res.headers.get('location')).toBe('http://localhost/compte-suspendu')
-    expect(setCookie(res)).not.toContain('base64-new0')
+    const sc = setCookie(res)
+    expect(sc).not.toContain('base64-new0')
+    // The rotated chunk names are deleted too, not only the old cookie: no session survives the sign-out.
+    expect(sc).toContain('sb-xggo-auth-token.0=;')
+    expect(sc).toContain('sb-xggo-auth-token.1=;')
   })
 })
 
@@ -180,5 +197,31 @@ describe('prefetch: refreshed by getSession(), never the getUser() check', () =>
     const res = await middleware(prefetch('lang=ar'))
     expect(h.created).toBe(0)
     expect(passedThrough(res)).toBe(true)
+  })
+
+  it('a failed refresh leaves the session cookies alone and sets the 60 s backoff', async () => {
+    h.getSession.mockImplementation(async () => {
+      removeOnly()
+      return { data: { session: null }, error: { code: 'refresh_token_not_found', status: 400, message: 'gone' } }
+    })
+    const res = await middleware(prefetch())
+    expect(passedThrough(res)).toBe(true)
+    const sc = setCookie(res)
+    expect(sc).not.toContain('sb-xggo-auth-token')
+    expect(sc).toMatch(/sv-refresh-backoff=1;.*Max-Age=60/)
+    expect(sc).toMatch(/sv-refresh-backoff=1;.*HttpOnly/)
+  })
+
+  it('while the backoff is set, a prefetch makes no refresh attempt at all', async () => {
+    const res = await middleware(prefetch(`${OLD}; sv-refresh-backoff=1`))
+    expect(h.created).toBe(0)
+    expect(h.getSession).not.toHaveBeenCalled()
+    expect(passedThrough(res)).toBe(true)
+  })
+
+  it('a navigation ignores the backoff (K2 and the refresh still run there)', async () => {
+    h.getUser.mockResolvedValue({ data: { user: { id: 'u1' } }, error: null })
+    await middleware(request('/mes-commandes', { cookie: `${OLD}; sv-refresh-backoff=1` }))
+    expect(h.getUser).toHaveBeenCalledTimes(1)
   })
 })
