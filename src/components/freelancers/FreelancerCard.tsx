@@ -1,25 +1,31 @@
-import Image from 'next/image'
 import Link from 'next/link'
-import { MapPin, User } from 'lucide-react'
-import { getInitials } from '@/components/ui/initials'
-import { FOCUS_RING } from '@/components/layout/styles'
+import { MapPin } from 'lucide-react'
+import { Avatar } from '@/components/ui/avatar'
+import { BASE as BUTTON_BASE, SIZE as BUTTON_SIZE, VARIANT_BASE, VARIANT_STATE } from '@/components/ui/button'
 import { FavoriteHeart } from '@/components/favorites/FavoriteHeart'
+import { FOCUS_RING } from '@/components/layout/styles'
+import { cn } from '@/lib/utils'
 import type { FreelancerCardData } from '@/lib/marche/freelancer-cards'
 import { t, tn, type Lang } from '@/lib/i18n'
 
-// Freelancer Card — Figma « Freelancer Card » on 720:62688 (F1 Freelances): a horizontal card, surface/base · r12 · pad 20 · gap 16:
-// a 72 round avatar, then a column (gap 12) with the name (16 Semi Bold), the headline (14 muted, two lines), « 📍 ville » (12 muted),
-// up to four skill chips + « +N » (12 Medium, blue/50 · blue/700, r6) and a footer — « N services offerts » (12 muted) and a small
-// primary « Voir le profil » (32 high). The frame's 20 heart sits at the end of the header row.
+// « Freelancer Card » — the Figma component as instanced on 662:53894 (1440) / 663:55017 (375); measurements in
+// docs/design/freelances-lens-measurements.md. A horizontal card, FIXED 203 high: surface/base · r12 · a 2 px blue/600 stroke on EVERY card (not a
+// hover state) · pad 20 · gap 16.
+//   avatar   72 round, fill border/strong, holding an Avatar lg (56): the picture when there is one, else the person glyph in text/muted on
+//            border/strong — NO initials. The « verified » dot is hidden in the component (no data).
+//   content  vertical, gap 12:
+//     header   name 16 Semi Bold blue/800 · title 14 Regular text/muted, 2 lines · city row (map-pin 14 + 12 Regular text/muted, gap 4);
+//              the heart is a PLAIN 20 outline icon (text/muted; filled when favourited) at the top end — no circle.
+//     chips    gap 8 · pad 4 8 · r6 · blue/50 · 12 Medium blue/700: up to 4 skills + « +N » for the rest — 2 + « +N » below `sm`, as the 375 frame draws.
+//     footer   space-between: « N services offerts » 13 Regular text/muted · primary sm Button, 120 × 32, r10, « Voir le profil ».
 //
-// The frame's border is blue/600 on the specimens; that reads as a hover/selected state leaking into the default, so the resting
-// border is border/subtle and blue/600 appears on hover (decision logged in the PR). Name colour: text-primary (the frame's blue/800
-// is not a token this app's text uses elsewhere).
-//
-// Hook-free like ShopCard: a server page or a client list renders it with `lang`. The whole card opens the profile through the name
-// link (stretched ::after); the heart and the CTA sit above that layer.
-// Lives here, NOT in the loader: this card is imported by client components, and the loader pulls in next/headers.
-const FREELANCER_CARD_SKILLS = 4
+// Hook-free like ShopCard: a server page or a client list renders it with `lang`. The whole card opens the profile through the name link
+// (stretched ::after); the heart and the CTA sit above that layer. Lives here, NOT in the loader: this card is imported by client components, and
+// the loader pulls in next/headers.
+const SKILLS_WIDE = 4
+const SKILLS_NARROW = 2
+
+const CHIP = 'inline-flex h-[23px] shrink-0 items-center rounded-[6px] bg-brand-blue-50 px-2 text-xs font-medium text-brand-blue-700'
 
 export function FreelancerCard({
   freelancer,
@@ -31,32 +37,29 @@ export function FreelancerCard({
   heart?: { initialFavorited: boolean; isLoggedIn: boolean; onChange?: (favorited: boolean) => void }
 }) {
   const href = `/freelance/${freelancer.id}`
-  const shown = freelancer.skills.slice(0, FREELANCER_CARD_SKILLS)
-  const extra = freelancer.skills.length - shown.length
+  const skills = freelancer.skills
+  const wide = skills.slice(0, SKILLS_WIDE)
+  const moreWide = skills.length - wide.length
+  const moreNarrow = skills.length - SKILLS_NARROW
 
   return (
-    <article className="relative flex gap-4 rounded-xl border border-border-subtle bg-surface-base p-5 transition-colors hover:border-brand-blue-600">
-      <span className="relative flex size-[72px] shrink-0 items-center justify-center overflow-hidden rounded-full bg-brand-blue-100 text-xl font-semibold text-brand-blue-600">
-        {freelancer.avatarUrl ? (
-          <Image src={freelancer.avatarUrl} alt="" fill sizes="72px" className="object-cover" />
-        ) : freelancer.name ? (
-          <span aria-hidden="true">{getInitials(freelancer.name)}</span>
-        ) : (
-          <User className="size-8 text-text-muted" aria-hidden="true" />
-        )}
+    <article className="relative flex h-[203px] gap-4 rounded-xl border-2 border-brand-blue-600 bg-surface-base p-4.5">
+      <span className="flex size-[72px] shrink-0 items-center justify-center rounded-full bg-border-strong">
+        <Avatar size="lg" src={freelancer.avatarUrl} name={freelancer.name} />
       </span>
 
       <div className="flex min-w-0 flex-1 flex-col gap-3">
-        <div className="flex items-start gap-3">
+        <div className="flex items-start justify-between">
           <div className="flex min-w-0 flex-1 flex-col gap-1">
-            <h3 className="truncate text-base font-semibold text-text-primary">
+            <h3 className="truncate text-base font-semibold leading-[19px] text-brand-blue-800">
               <Link href={href} className={`rounded after:absolute after:inset-0 after:rounded-xl ${FOCUS_RING}`}>
                 {freelancer.name}
               </Link>
             </h3>
-            {freelancer.headline ? <p className="line-clamp-2 text-body-sm text-text-muted">{freelancer.headline}</p> : null}
+            {/* The title box is FIXED 42 in the component (two 21 lines): it keeps its height when the title is short or missing. */}
+            <p className="line-clamp-2 min-h-[42px] text-sm text-text-muted">{freelancer.headline}</p>
             {freelancer.city ? (
-              <p className="inline-flex items-center gap-1 text-caption text-text-muted">
+              <p className="inline-flex items-center gap-1 text-xs leading-[15px] text-text-muted">
                 <MapPin className="size-3.5 shrink-0" aria-hidden="true" />
                 {freelancer.city}
               </p>
@@ -64,39 +67,42 @@ export function FreelancerCard({
           </div>
           {heart ? (
             <FavoriteHeart
+              variant="plain"
               kind="freelancer"
               targetId={freelancer.id}
               name={freelancer.name}
               initialFavorited={heart.initialFavorited}
               isLoggedIn={heart.isLoggedIn}
               onChange={heart.onChange}
-              className="relative z-10 -mt-2 -me-2"
+              className="relative z-10"
             />
           ) : null}
         </div>
 
-        {shown.length > 0 ? (
-          <ul className="flex flex-wrap gap-2">
-            {shown.map((skill) => (
-              <li key={skill} className="rounded-md bg-brand-blue-50 px-2 py-1 text-caption font-medium text-brand-blue-700">
+        {skills.length > 0 ? (
+          <ul className="flex gap-2 overflow-hidden">
+            {wide.map((skill, i) => (
+              <li key={skill} className={cn(CHIP, i >= SKILLS_NARROW && 'max-sm:hidden')}>
                 {skill}
               </li>
             ))}
-            {extra > 0 ? (
-              <li className="rounded-md bg-brand-blue-50 px-2 py-1 text-caption font-medium text-brand-blue-700">+{extra}</li>
-            ) : null}
+            {moreWide > 0 ? <li className={cn(CHIP, 'max-sm:hidden')}>+{moreWide}</li> : null}
+            {moreNarrow > 0 ? <li className={cn(CHIP, 'sm:hidden')}>+{moreNarrow}</li> : null}
           </ul>
         ) : null}
 
-        <div className="mt-auto flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
+        <div className="mt-auto flex items-center justify-between">
           {freelancer.serviceCount !== null ? (
-            <span className="text-caption text-text-muted">{tn('freelancerCard.services', lang, freelancer.serviceCount)}</span>
+            <span className="whitespace-nowrap text-[13px] leading-4 text-text-muted">
+              <span className="sm:hidden">{tn('freelancerCard.services_short', lang, freelancer.serviceCount)}</span>
+              <span className="max-sm:hidden">{tn('freelancerCard.services', lang, freelancer.serviceCount)}</span>
+            </span>
           ) : (
             <span />
           )}
           <Link
             href={href}
-            className={`relative z-10 ms-auto inline-flex h-8 shrink-0 items-center whitespace-nowrap rounded-[10px] bg-brand-blue-600 px-3 text-body-sm font-semibold text-text-inverse transition-colors hover:bg-brand-blue-700 ${FOCUS_RING}`}
+            className={cn(BUTTON_BASE, BUTTON_SIZE.sm, VARIANT_BASE.primary, VARIANT_STATE.primary, 'relative z-10 w-30 shrink-0 rounded-[10px]')}
           >
             {t('freelancerCard.view', lang)}
           </Link>

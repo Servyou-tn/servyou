@@ -15,7 +15,7 @@ import { settle } from '@/lib/supabase/query-error'
 import { getLang } from '@/lib/i18n/server'
 import { t } from '@/lib/i18n'
 import { ServicesLensToggle } from './ServicesLensToggle'
-import { FreelancesFilterBar } from './FreelancesFilterBar'
+import { ServicesFilterBar } from './ServicesFilterBar'
 
 const BASE = '/marche/services'
 const LENS_HREF = `${BASE}?vue=freelances`
@@ -37,7 +37,15 @@ export async function FreelancesLens({ searchParams }: { searchParams: Promise<R
   const parsed = parseSearchParams(sp)
   // A query made only of characters the search strips filters nothing, so it must not look like a filter either.
   const q = ilikePattern(parsed.q) ? parsed.q.trim() : ''
-  const params = { q, categorie: parsed.categorie, ville: parsed.ville, tri: parseFreelancerSort(sp.tri), page: parsed.page }
+  const params = {
+    q,
+    categorie: parsed.categorie,
+    ville: parsed.ville,
+    prixMin: parsed.prixMin,
+    prixMax: parsed.prixMax,
+    tri: parseFreelancerSort(sp.tri),
+    page: parsed.page,
+  }
 
   const [categories, cities, searched] = await Promise.all([
     getFilterCategoriesForType('service'),
@@ -47,7 +55,7 @@ export async function FreelancesLens({ searchParams }: { searchParams: Promise<R
   const result = searched.ok ? searched.data : null
   const favorited = result ? await getFavoritedIds('freelancer', result.freelancers.map((f) => f.id)) : new Set<string>()
 
-  const hasFilters = params.q !== '' || params.categorie.length > 0 || params.ville != null
+  const hasFilters = params.q !== '' || params.categorie.length > 0 || params.ville != null || params.prixMin != null || params.prixMax != null
 
   return (
     <AppShell user={topBarUser}>
@@ -58,15 +66,23 @@ export async function FreelancesLens({ searchParams }: { searchParams: Promise<R
 
           <ServicesLensToggle lang={lang} active="freelances" />
 
-          <FreelancesFilterBar
-            categories={categories}
-            cities={cities}
-            selectedCategorie={params.categorie}
-            ville={params.ville}
-            tri={params.tri}
-            q={params.q}
-            basePath={BASE}
-          />
+          {/* The SAME Filter Bar as the Services lens (Figma 662:53894 « Filter Bar / viewport=desktop »): search · Catégorie · Ville · Prix · Trier.
+              The 375 frame (663:55017) draws NO in-page filter — only the toggle and the cards — so below `lg` there is none (open question D9). */}
+          <div className="hidden lg:block">
+            <ServicesFilterBar
+              categories={categories}
+              cities={cities}
+              selectedCategorie={params.categorie}
+              ville={params.ville}
+              prixMin={params.prixMin}
+              prixMax={params.prixMax}
+              tri={params.tri}
+              q={params.q}
+              basePath={BASE}
+              searchPlaceholderKey="freelances.filters.searchPlaceholder"
+            />
+          </div>
+
         </div>
 
         {result === null ? (

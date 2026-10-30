@@ -23,15 +23,16 @@ Frames: **662:53894** « Marketplace services — Freelances (1440) » and **663
 | cards | vertical, pad 16 16 24, gap 16, Freelancer Card 343 × 203 (`FILL`), then pagination |
 | filters | **none drawn** — only the header search |
 
-## Built vs measured (browser, 2026-10-30, 10 real published freelancers)
+## Built vs measured (browser, 2026-10-30, at the frame sizes; fixture = the frame's own mock data)
 | Check | Frame | Built |
 |---|---|---|
-| Toggle track / segments | 44 · 82 / 98 | 44 · 82 / 97 |
-| Cards per page / columns / gap | 8 · 2 · 24 | 8 · 2 · 24 |
-| Card width | 556 (content 1136) | 549 (content 1121: scrollbar) |
-| Card width at 375 | 343 | 328 (content 328: scrollbar) |
-| Card height at 375 | 203 | 202 (FR) |
-| Controls | h 40, radius 10 | h 40, radius 10 |
-| Caption | « Affichage 1 à 12 sur 1 248 » (mock) | « Affichage 1 à 8 sur 10 » (real) |
-| 375 horizontal overflow | none | none, FR + AR |
-| AR | — | mirrored (dir=rtl), « المستقلون », no raw key |
+| Card | 556 × 203, stroke 2 `blue/600`, r12 | 549 × 203 (content 1121: scrollbar), 2 px `rgb(31,95,224)`, 12 |
+| Card at 375 | 343 × 203 | 328 × 203 (content 328: scrollbar) |
+| Avatar | 72 ring, Avatar lg 56 inside | 72 at (20, 20), 56 at (28, 28) |
+| Content column / name cluster | 428 / 408 (= 428 − the 20 heart, no gap) at a 556 card | 421 / 401 at a 549 card (7 px scrollbar) — same arithmetic |
+| Name / title / city | 19 · 42 FIXED · 15, city at y 89 | 19 · 42 · 15, city y 89 |
+| Chips (y 116) | 49 · 56 · 60 · 79 · 31 / 375: 49 · 56 · 32 | 49 · 56 · 60 · 78 · 31 / 49 · 56 · 32, radius 6, `blue/50` · `blue/700` |
+| Heart | 20 × 20 icon, header end | 20 × 20 at the header end |
+| Footer | count 13 · CTA 120 × 32 r10 | 13 · 120 × 32 r10; « N services » below `sm` |
+| Grid | 2 columns, gap 24; 375 gap 16 | 2 columns gap 24; gap 16 |
+| Caption | « Affichage 1 à 12 sur 1 248 » | real total, thousands grouped in French |

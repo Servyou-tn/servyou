@@ -4030,8 +4030,6 @@ export const fr: Record<string, string> = {
   'boutiques.empty.filteredSubtitle':                      "Essayez d'élargir vos filtres ou de changer de catégorie.",
   // « Freelances » lens of /marche/services (Figma 662:53894).
   'freelances.filters.searchPlaceholder':                  "Rechercher un freelance…",
-  'freelances.sort.recent':                                "Plus récents",
-  'freelances.sort.nom':                                   "Nom (A–Z)",
   'freelances.empty.title':                                "Aucun freelance pour le moment",
   'freelances.empty.subtitle':                             "Les premiers profils arrivent. Revenez bientôt.",
   'freelances.empty.filtered':                             "Aucun freelance ne correspond à votre recherche",

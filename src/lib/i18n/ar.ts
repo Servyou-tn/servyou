@@ -3914,8 +3914,6 @@ export const ar: Record<string, string> = {
   'boutiques.empty.filteredSubtitle':                      "جرّب توسيع المرشحات أو تغيير الفئة.",
   // REVIEW_AR_TRANSLATION — « Freelances » lens of /marche/services (Figma 662:53894).
   'freelances.filters.searchPlaceholder':                  "ابحث عن مستقل…",
-  'freelances.sort.recent':                                "الأحدث",
-  'freelances.sort.nom':                                   "الاسم (أ–ي)",
   'freelances.empty.title':                                "لا يوجد مستقلون حاليًا",
   'freelances.empty.subtitle':                             "الملفات الأولى في الطريق. عد قريبًا.",
   'freelances.empty.filtered':                             "لا يوجد مستقل مطابق لبحثك",

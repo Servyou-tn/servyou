@@ -4,7 +4,11 @@ import { getFreelancerCards, type FreelancerCardData } from '@/lib/marche/freela
 import { ilikePattern, paginate, serviceCategoryOrClause, stripAccents, validCategorySlugs } from '@/lib/search/search-params'
 
 // The « Freelances » lens of /marche/services (Figma 662:53894 / 663:55017): published freelancers, searched by name / headline / skills,
-// filtered by sector (the sector of their ACTIVE services) and city, newest first or A→Z. Page size 8 = the frame's 2-up × 4-row grid.
+// filtered by sector, city and PRICE, newest first or by price. Page size 8 = the frame's 2-up × 4-row grid.
+//
+// PRICE is the freelancer's real service prices: a service counts when it is active, visible, in the chosen sector (if any) AND its
+// `starting_price_tnd` is inside [prixMin, prixMax] — so the sector and the price describe the SAME service. A freelancer's price, for the sort
+// and the range, is the LOWEST starting price among those matching services (« à partir de »); services without a price are ignored.
 //
 // WHICH FREELANCERS: those with at least one ACTIVE, NON-moderated service (the same visibility `getFreelancerCards` counts, so a card never
 // says « 0 services »), who are `is_published = true` AND `admin_hidden_at IS NULL`. `is_published` is derived from `status = 'active'`
@@ -15,25 +19,26 @@ import { ilikePattern, paginate, serviceCategoryOrClause, stripAccents, validCat
 //
 // SHAPE: base set = freelancer ids of visible active services (optionally within a sector) → their profiles, fetched by id in short chunks
 // → city / name / skill filters and the sort in memory → `paginate` → `getFreelancerCards` decorates one page. A name lives in
-// `public_profiles` (a view — no embed from freelancer_profiles), so a name search or an A→Z sort fetches the candidates' names; the
-// default (newest first, no query) fetches none. Every lookup pages past PostgREST's 1000-row response limit.
+// `public_profiles` (a view — no embed from freelancer_profiles), so a name search fetches the candidates' names; no query fetches none. Every lookup pages past PostgREST's 1000-row response limit.
 //
 // Every failure here throws (never « aucun freelance »): the page settle()s it into an inline ErrorState.
 
 export const FREELANCER_PER_PAGE = 8
 
-export type FreelancerSort = 'recent' | 'nom'
+export type FreelancerSort = 'recent' | 'prix_asc' | 'prix_desc'
 
-/** `?tri=` for the lens. Anything but `nom` (including the services lens's `prix_*`) is the default, newest first. */
+/** `?tri=` for the lens — the services lens's three sorts. Anything else (including `pertinence`) is the default, newest first. */
 export function parseFreelancerSort(raw: string | string[] | undefined): FreelancerSort {
   const v = Array.isArray(raw) ? raw[0] : raw
-  return v === 'nom' ? 'nom' : 'recent'
+  return v === 'prix_asc' || v === 'prix_desc' ? v : 'recent'
 }
 
 export type FreelancerSearchParams = {
   q: string
   categorie: string[]
   ville: string | null
+  prixMin: number | null
+  prixMax: number | null
   tri: FreelancerSort
   page: number
 }
@@ -58,13 +63,23 @@ export function matchesFreelancerQuery(term: string, hay: { name: string; headli
   return words.every((w) => text.includes(w))
 }
 
-/** Newest first (id as the stable tiebreak), or A→Z by name (French collation, then id). Does not mutate. */
-export function sortCandidates(rows: readonly Candidate[], tri: FreelancerSort, nameOf: (profileId: string) => string): Candidate[] {
+/**
+ * Newest first (id as the stable tiebreak), or by the freelancer's lowest starting price, ascending / descending — a freelancer with no price
+ * goes last either way. Ties fall back to newest first. Does not mutate.
+ */
+export function sortCandidates(rows: readonly Candidate[], tri: FreelancerSort, priceOf: (id: string) => number | null): Candidate[] {
+  const newest = (a: Candidate, b: Candidate) => b.created_at.localeCompare(a.created_at) || a.id.localeCompare(b.id)
   const out = [...rows]
-  if (tri === 'nom') {
-    return out.sort((a, b) => nameOf(a.profile_id).localeCompare(nameOf(b.profile_id), 'fr') || a.id.localeCompare(b.id))
-  }
-  return out.sort((a, b) => b.created_at.localeCompare(a.created_at) || a.id.localeCompare(b.id))
+  if (tri === 'recent') return out.sort(newest)
+  const dir = tri === 'prix_asc' ? 1 : -1
+  return out.sort((a, b) => {
+    const pa = priceOf(a.id)
+    const pb = priceOf(b.id)
+    if (pa === null && pb === null) return newest(a, b)
+    if (pa === null) return 1
+    if (pb === null) return -1
+    return (pa - pb) * dir || newest(a, b)
+  })
 }
 
 /** `.in()` filters travel in the URL: keep each call's id list short. */
@@ -113,14 +128,27 @@ export async function searchFreelancers(
   }
 
   // The base set: freelancers with a visible active service (within the sector, when one is chosen).
-  const services = await pageAll<{ freelancer_profile_id: string }>(
+  const services = await pageAll<{ freelancer_profile_id: string; starting_price_tnd: number | string | null }>(
     (from, to) => {
-      let q = supabase.from('service_listings').select('freelancer_profile_id').eq('status', 'active').is('admin_hidden_at', null)
+      let q = supabase
+        .from('service_listings')
+        .select('freelancer_profile_id, starting_price_tnd')
+        .eq('status', 'active')
+        .is('admin_hidden_at', null)
       if (orClause) q = q.or(orClause)
+      if (params.prixMin != null) q = q.gte('starting_price_tnd', params.prixMin)
+      if (params.prixMax != null) q = q.lte('starting_price_tnd', params.prixMax)
       return q.range(from, to)
     },
     'search-freelancers services',
   )
+  const minPrice = new Map<string, number>()
+  for (const s of services) {
+    if (s.starting_price_tnd == null) continue
+    const price = Number(s.starting_price_tnd)
+    const known = minPrice.get(s.freelancer_profile_id)
+    if (Number.isFinite(price) && (known === undefined || price < known)) minPrice.set(s.freelancer_profile_id, price)
+  }
   const baseIds = [...new Set(services.map((s) => s.freelancer_profile_id))]
   if (baseIds.length === 0) return empty
 
@@ -146,7 +174,7 @@ export async function searchFreelancers(
   let candidates = [...byId.values()].filter((c) => !params.ville || (c.city ?? '').trim() === params.ville)
 
   const term = params.q.trim() && ilikePattern(params.q) ? params.q.trim() : ''
-  const needNames = term !== '' || params.tri === 'nom'
+  const needNames = term !== ''
   const names = new Map<string, string>()
   if (needNames && candidates.length > 0) {
     const results = await Promise.all(
@@ -176,7 +204,7 @@ export async function searchFreelancers(
     )
   }
 
-  const sorted = sortCandidates(candidates, params.tri, (pid) => names.get(pid) ?? '')
+  const sorted = sortCandidates(candidates, params.tri, (id) => minPrice.get(id) ?? null)
   const totalCount = sorted.length
   if (totalCount === 0) return empty
   const { totalPages, safePage, start, end } = paginate(totalCount, params.page, perPage)

@@ -13,7 +13,7 @@ function builder(table: string) {
   const calls = (state.calls[table] ??= [])
   const mine: Call[] = []
   const b: Record<string, unknown> = {}
-  for (const m of ['select', 'eq', 'is', 'in', 'or', 'order', 'range', 'limit']) {
+  for (const m of ['select', 'eq', 'is', 'in', 'or', 'gte', 'lte', 'order', 'range', 'limit']) {
     b[m] = (...args: unknown[]) => {
       const call: Call = [m, ...args]
       calls.push(call)
@@ -48,7 +48,15 @@ import {
   sortCandidates,
 } from './search-freelancers'
 
-const base = { q: '', categorie: [] as string[], ville: null as string | null, tri: 'recent' as const, page: 1 }
+const base = {
+  q: '',
+  categorie: [] as string[],
+  ville: null as string | null,
+  prixMin: null as number | null,
+  prixMax: null as number | null,
+  tri: 'recent' as 'recent' | 'prix_asc' | 'prix_desc',
+  page: 1,
+}
 const uuid = (n: number) => `00000000-0000-4000-8000-${String(n).padStart(12, '0')}`
 const profile = (n: number, extra: Record<string, unknown> = {}) => ({
   id: `f${n}`,
@@ -60,7 +68,11 @@ const profile = (n: number, extra: Record<string, unknown> = {}) => ({
 })
 /** The services the database returns: one row per active visible service. */
 const withServices = (...ns: number[]) => {
-  state.results.service_listings = { data: ns.map((n) => ({ freelancer_profile_id: `f${n}` })) }
+  state.results.service_listings = { data: ns.map((n) => ({ freelancer_profile_id: `f${n}`, starting_price_tnd: null })) }
+}
+/** [freelancer n, starting price] pairs — one row per service. */
+const withPricedServices = (...rows: [number, number | string | null][]) => {
+  state.results.service_listings = { data: rows.map(([n, price]) => ({ freelancer_profile_id: `f${n}`, starting_price_tnd: price })) }
 }
 const has = (table: string, ...call: unknown[]) =>
   (state.calls[table] ?? []).some((c) => c.length === call.length && c.every((v, i) => v === call[i]))
@@ -72,10 +84,12 @@ beforeEach(() => {
 })
 
 describe('parseFreelancerSort', () => {
-  it('only « nom » is not the default', () => {
-    expect(parseFreelancerSort('nom')).toBe('nom')
-    expect(parseFreelancerSort(['nom', 'x'])).toBe('nom')
-    expect(parseFreelancerSort('prix_asc')).toBe('recent')
+  it('knows the three services sorts and reads anything else as newest first', () => {
+    expect(parseFreelancerSort('prix_asc')).toBe('prix_asc')
+    expect(parseFreelancerSort(['prix_desc', 'x'])).toBe('prix_desc')
+    expect(parseFreelancerSort('recent')).toBe('recent')
+    expect(parseFreelancerSort('pertinence')).toBe('recent')
+    expect(parseFreelancerSort('nom')).toBe('recent')
     expect(parseFreelancerSort(undefined)).toBe('recent')
   })
 })
@@ -101,12 +115,16 @@ describe('matchesFreelancerQuery', () => {
 describe('sortCandidates / chunk / pageAll', () => {
   const rows = [profile(1), profile(3), profile(2)]
   it('newest first by default, without mutating the input', () => {
-    expect(sortCandidates(rows, 'recent', () => '').map((r) => r.id)).toEqual(['f3', 'f2', 'f1'])
+    expect(sortCandidates(rows, 'recent', () => null).map((r) => r.id)).toEqual(['f3', 'f2', 'f1'])
     expect(rows.map((r) => r.id)).toEqual(['f1', 'f3', 'f2'])
   })
-  it('A→Z by name in French collation, ties broken by id', () => {
-    const names: Record<string, string> = { p1: 'Zied', p2: 'Élodie', p3: 'Adam' }
-    expect(sortCandidates(rows, 'nom', (p) => names[p]).map((r) => r.id)).toEqual(['f3', 'f2', 'f1'])
+  it('by lowest starting price, ascending or descending; a freelancer with no price goes last either way; ties fall back to newest', () => {
+    const price: Record<string, number | null> = { f1: 80, f2: null, f3: 80 }
+    expect(sortCandidates(rows, 'prix_asc', (id) => price[id]).map((r) => r.id)).toEqual(['f3', 'f1', 'f2'])
+    expect(sortCandidates(rows, 'prix_desc', (id) => price[id]).map((r) => r.id)).toEqual(['f3', 'f1', 'f2'])
+    price.f1 = 50
+    expect(sortCandidates(rows, 'prix_asc', (id) => price[id]).map((r) => r.id)).toEqual(['f1', 'f3', 'f2'])
+    expect(sortCandidates(rows, 'prix_desc', (id) => price[id]).map((r) => r.id)).toEqual(['f3', 'f1', 'f2'])
   })
   it('chunk keeps every item, in order, in lists no longer than the size', () => {
     expect(chunk([1, 2, 3, 4, 5], 2)).toEqual([[1, 2], [3, 4], [5]])
@@ -220,12 +238,38 @@ describe('searchFreelancers', () => {
     expect(state.calls.public_profiles).toBeUndefined()
   })
 
-  it('A→Z fetches the names and sorts by them', async () => {
-    withServices(1, 2)
+  it('the price range is applied to the SAME services as the sector: active, visible, starting price inside [min, max]', async () => {
+    state.results.categories = { data: [{ id: uuid(7) }] }
+    withPricedServices([1, 50])
+    state.results.freelancer_profiles = { data: [profile(1)] }
+    await searchFreelancers({ ...base, categorie: ['design-graphique-logo'], prixMin: 40, prixMax: 90 })
+    expect(has('service_listings', 'gte', 'starting_price_tnd', 40)).toBe(true)
+    expect(has('service_listings', 'lte', 'starting_price_tnd', 90)).toBe(true)
+    expect(has('service_listings', 'or', `category_id.in.(${uuid(7)}),subcategory_id.in.(${uuid(7)})`)).toBe(true)
+    expect(has('service_listings', 'eq', 'status', 'active')).toBe(true)
+  })
+
+  it('no price range adds no price filter', async () => {
+    withPricedServices([1, 50])
+    state.results.freelancer_profiles = { data: [profile(1)] }
+    await searchFreelancers(base)
+    expect((state.calls.service_listings ?? []).some((c) => c[0] === 'gte' || c[0] === 'lte')).toBe(false)
+  })
+
+  it('sorts by each freelancer\'s LOWEST starting price (numeric strings included), unpriced last', async () => {
+    withPricedServices([1, 120], [1, '45.50'], [2, 60], [3, null])
+    state.results.freelancer_profiles = { data: [profile(1), profile(2), profile(3)] }
+    const asc = await searchFreelancers({ ...base, tri: 'prix_asc' })
+    expect(asc.freelancers.map((f) => f.id)).toEqual(['f1', 'f2', 'f3'])
+    const desc = await searchFreelancers({ ...base, tri: 'prix_desc' })
+    expect(desc.freelancers.map((f) => f.id)).toEqual(['f2', 'f1', 'f3'])
+  })
+
+  it('a sort by price fetches no names', async () => {
+    withPricedServices([1, 10], [2, 20])
     state.results.freelancer_profiles = { data: [profile(1), profile(2)] }
-    state.results.public_profiles = { data: [{ id: 'p1', full_name: 'Zied' }, { id: 'p2', full_name: 'Adam' }] }
-    const r = await searchFreelancers({ ...base, tri: 'nom' })
-    expect(r.freelancers.map((f) => f.id)).toEqual(['f2', 'f1'])
+    await searchFreelancers({ ...base, tri: 'prix_asc' })
+    expect(state.calls.public_profiles).toBeUndefined()
   })
 
   it('throws when ANY lookup fails — a failed query is not « no freelance »', async () => {
