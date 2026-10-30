@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useLang } from '@/components/LangProvider'
 import { t } from '@/lib/i18n'
 import { SettingRow, SETTING_ROW_LIST } from '@/components/ui/setting-row'
+import { useConsent } from '@/components/consent/CookieConsent'
 import { ExportDataModal } from './ExportDataModal'
 import type { CurrentProfile } from '@/lib/marche/mon-compte'
 import type { Role } from '@/lib/roles'
@@ -34,6 +35,7 @@ import type { Role } from '@/lib/roles'
 export function ConfidentialiteTab({ profile, role }: { profile: CurrentProfile; role: Role }) {
   const lang = useLang()
   const [exportOpen, setExportOpen] = useState(false)
+  const { openSettings: openCookieSettings } = useConsent()
 
   return (
     <div className="flex flex-col gap-6">
@@ -77,6 +79,22 @@ export function ConfidentialiteTab({ profile, role }: { profile: CurrentProfile;
             description={t('parametres.privacy.exportHelp', lang)}
             actionLabel={t('parametres.confidentialite.exportAction', lang)}
             onAction={() => setExportOpen(true)}
+          />
+        </div>
+      </div>
+
+      <div className="flex flex-col gap-2 rounded-xl border border-border-subtle bg-surface-base p-6 shadow-[0px_1px_1px_rgba(0,0,0,0.04)]">
+        <h2 className="text-xl font-semibold text-text-primary">
+          {t('parametres.confidentialite.cookiesSectionTitle', lang)}
+        </h2>
+        <p className="text-sm text-text-secondary">{t('parametres.confidentialite.cookiesSectionSubtitle', lang)}</p>
+        <div className="pt-4">
+          <SettingRow
+            variant="link"
+            label={t('parametres.privacy.cookiesTitle', lang)}
+            description={t('parametres.privacy.cookiesHelp', lang)}
+            actionLabel={t('cookies.action.manage', lang)}
+            onAction={openCookieSettings}
           />
         </div>
       </div>

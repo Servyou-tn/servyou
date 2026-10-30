@@ -316,7 +316,7 @@ export function ProductForm({
           and Figma has no third control here.
           ⚑ Publish ships DISABLED (gated on ≥1 image) and Button's Figma matrix is sparse —
           `primary/lg/disabled` does not exist — so it stays at the default size `md`. */}
-      <div className={`sticky bottom-0 flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-white p-5 ${CARD_SHADOW}`}>
+      <div className={`sticky bottom-[var(--cookie-banner-h,0px)] flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-white p-5 ${CARD_SHADOW}`}>
         <Button type="button" variant="secondary" onClick={() => submit(false)} disabled={pending}>
           {t('product.form.save_draft', lang)}
         </Button>

@@ -32,7 +32,7 @@ export function StickyFooter({
   onPublish: () => void
 }) {
   return (
-    <div className="sticky bottom-0 z-10 flex flex-col gap-3 border-t border-border-subtle bg-surface-base px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+    <div className="sticky bottom-[var(--cookie-banner-h,0px)] z-10 flex flex-col gap-3 border-t border-border-subtle bg-surface-base px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
       <div className="flex items-center gap-2 text-sm">
         <span
           aria-hidden="true"

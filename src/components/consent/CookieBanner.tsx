@@ -1,5 +1,6 @@
 'use client'
 
+import { useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { useLang } from '@/components/LangProvider'
 import { t } from '@/lib/i18n'
@@ -27,8 +28,32 @@ export function CookieBanner({
   onCustomize: () => void
 }) {
   const lang = useLang()
+  const ref = useRef<HTMLDivElement>(null)
+
+  // While the card is showing, the page gives its bottom edge back: `--cookie-banner-h` (the card's height) is published on <html> for the sticky
+  // action bars (`bottom-[var(--cookie-banner-h,0px)]` — wizard footer, profile / product forms), and <body> gets the same bottom padding so the end
+  // of the page scrolls clear of the card. Both are removed when the banner is answered, hidden behind the modal, or unmounted.
+  useEffect(() => {
+    const el = ref.current
+    if (!el || hidden) return
+    const root = document.documentElement
+    const apply = () => {
+      const h = `${el.offsetHeight}px`
+      root.style.setProperty('--cookie-banner-h', h)
+      document.body.style.paddingBottom = h
+    }
+    apply()
+    const observer = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(apply)
+    observer?.observe(el)
+    return () => {
+      observer?.disconnect()
+      root.style.removeProperty('--cookie-banner-h')
+      document.body.style.paddingBottom = ''
+    }
+  }, [hidden])
+
   return (
-    <div hidden={hidden} className="pointer-events-none fixed inset-x-0 bottom-0 z-40 px-4 pb-4">
+    <div ref={ref} hidden={hidden} className="pointer-events-none fixed inset-x-0 bottom-0 z-40 px-4 pb-4">
       <section
         aria-labelledby="cookie-banner-title"
         className="pointer-events-auto mx-auto w-full max-w-180 overflow-hidden rounded-2xl border border-border-subtle bg-surface-base shadow-lg"
