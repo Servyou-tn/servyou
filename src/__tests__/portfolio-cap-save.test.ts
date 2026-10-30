@@ -3,7 +3,8 @@
  * (trg_limit_portfolio_items, hint portfolio_items_cap → applyProfileSave's PORTFOLIO_CAP_REACHED), both
  * saveProfileAction and publishProfileAction answer « Limite atteinte : 6 projets au maximum », not the generic
  * error. The schema's .max(PORTFOLIO_CAP) stops a 7th item first in normal use; this is the concurrent-save path.
- * Supabase, the owner lookup and the core write are mocked.
+ * Supabase, the owner lookup and the core write are mocked; the last block runs the REAL applyProfileSave against a
+ * fake client, to pin the hint → PORTFOLIO_CAP_REACHED mapping itself.
  */
 
 import { describe, it, expect, beforeEach, vi } from 'vitest'
@@ -70,5 +71,51 @@ describe('the portfolio cap refusal reads as « limite atteinte »', () => {
     expect(CAP).toContain('6')
     expect(t('freelance.edit.portfolio_cap_reached', 'ar')).toContain('6')
     expect(CAP).not.toBe(GENERIC)
+  })
+})
+
+// The real core write, against a chainable fake client: every call resolves { data: [], error: null } except the
+// freelancer_portfolio_items insert, which returns `portfolioInsertError`.
+function fakeClient(portfolioInsertError: { message: string; code: string; hint?: string }) {
+  return {
+    from(table: string) {
+      let op = 'select'
+      const chain = {
+        select: () => chain,
+        insert: () => ((op = 'insert'), chain),
+        update: () => ((op = 'update'), chain),
+        delete: () => ((op = 'delete'), chain),
+        eq: () => chain,
+        in: () => chain,
+        then: (resolve: (v: unknown) => unknown, reject?: (e: unknown) => unknown) =>
+          Promise.resolve(
+            table === 'freelancer_portfolio_items' && op === 'insert'
+              ? { data: null, error: portfolioInsertError }
+              : { data: [], error: null },
+          ).then(resolve, reject),
+      }
+      return chain
+    },
+  }
+}
+
+describe('applyProfileSave maps the database cap refusal', () => {
+  const INPUT = { ...PROFILE, portfolio: [{ imageUrl: 'https://cdn.test/portfolio-media/a.webp', title: 'Projet', url: '', description: '' }] }
+
+  it('hint portfolio_items_cap → PORTFOLIO_CAP_REACHED', async () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => {})
+    const { applyProfileSave } = await vi.importActual<typeof import('@/app/mon-profil-freelance/modifier/apply-save')>(
+      '@/app/mon-profil-freelance/modifier/apply-save',
+    )
+    const client = fakeClient({ message: 'Votre portfolio compte déjà 6 projets, le maximum.', code: '23514', hint: 'portfolio_items_cap' })
+    expect(await applyProfileSave(client as never, 'fp-1', INPUT)).toEqual({ ok: false, error: PORTFOLIO_CAP_REACHED })
+  })
+
+  it('any other insert failure stays the generic core error', async () => {
+    const { applyProfileSave } = await vi.importActual<typeof import('@/app/mon-profil-freelance/modifier/apply-save')>(
+      '@/app/mon-profil-freelance/modifier/apply-save',
+    )
+    const client = fakeClient({ message: 'boom', code: 'XX000' })
+    expect(await applyProfileSave(client as never, 'fp-1', INPUT)).toEqual({ ok: false, error: 'freelancer_portfolio_items insert failed' })
   })
 })

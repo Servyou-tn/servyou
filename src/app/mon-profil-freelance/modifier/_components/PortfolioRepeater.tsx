@@ -120,18 +120,18 @@ export function PortfolioRepeater({
           // At the cap the « add » button is gone, not just greyed: the database refuses a 7th project anyway.
           <p className="text-sm font-medium text-text-muted">{t('freelance.edit.portfolio_cap_reached', lang)}</p>
         ) : (
-        <button
-          type="button"
-          onClick={() => inputRef.current?.click()}
-          disabled={uploading}
-          className={cn(
-            'flex items-center gap-2 self-start rounded text-sm font-medium text-brand-blue-600 hover:underline disabled:cursor-not-allowed disabled:text-text-muted disabled:no-underline',
-            FOCUS_RING,
-          )}
-        >
-          {uploading ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> : <ImageIcon className="h-4 w-4" aria-hidden="true" />}
-          {t('freelance.edit.add_portfolio_item', lang)}
-        </button>
+          <button
+            type="button"
+            onClick={() => inputRef.current?.click()}
+            disabled={uploading}
+            className={cn(
+              'flex items-center gap-2 self-start rounded text-sm font-medium text-brand-blue-600 hover:underline disabled:cursor-not-allowed disabled:text-text-muted disabled:no-underline',
+              FOCUS_RING,
+            )}
+          >
+            {uploading ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> : <ImageIcon className="h-4 w-4" aria-hidden="true" />}
+            {t('freelance.edit.add_portfolio_item', lang)}
+          </button>
         )}
         <span className="text-sm tabular-nums text-text-muted">{rows.length}/{PORTFOLIO_CAP}</span>
       </div>

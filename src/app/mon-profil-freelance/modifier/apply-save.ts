@@ -156,7 +156,10 @@ export async function applyProfileSave(
     if (error) {
       // The 6-item cap (trg_limit_portfolio_items) is past the schema's .max() only on a concurrent save: a code the
       // actions translate (PORTFOLIO_CAP_REACHED), not the generic failure.
-      if (error.hint === 'portfolio_items_cap') return { ok: false, error: PORTFOLIO_CAP_REACHED }
+      if (error.hint === 'portfolio_items_cap') {
+        console.warn('[saveProfile] portfolio cap refused the insert:', error.message, error.code)
+        return { ok: false, error: PORTFOLIO_CAP_REACHED }
+      }
       console.error('[saveProfile] freelancer_portfolio_items insert failed:', error.message, error.code, error.details)
       return { ok: false, error: 'freelancer_portfolio_items insert failed' }
     }

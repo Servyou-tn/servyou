@@ -27,7 +27,7 @@ const h = vi.hoisted(() => {
     // The 8-image cap: the action's one table read, a head count of the product's attached images.
     attached: { count: 0 as number | null, error: null as Err },
   }
-  const calls = { uploaded: [] as string[] }
+  const calls = { uploaded: [] as string[], countFilters: [] as [string, string][] }
   const storage = {
     from: () => ({
       upload: vi.fn((path: string) => {
@@ -55,7 +55,12 @@ vi.mock('@/lib/supabase/server', () => ({
       return {
         select: (_cols: string, o?: { count?: string; head?: boolean }) => {
           if (o?.count !== 'exact' || !o.head) throw new Error('product_images: only a head count is allowed')
-          return { eq: async () => h.state.attached }
+          return {
+            eq: async (column: string, value: string) => {
+              h.calls.countFilters.push([column, value])
+              return h.state.attached
+            },
+          }
         },
       }
     },
@@ -111,6 +116,7 @@ beforeEach(() => {
   h.state.infoResult = { data: { size: 4 }, error: null }
   h.state.attached = { count: 0, error: null }
   h.calls.uploaded.length = 0
+  h.calls.countFilters.length = 0
   provenanceCalls.length = 0
   provenanceInsertShouldFail = false
   provenanceCallOrder = null
@@ -180,6 +186,8 @@ describe('uploadProductImageAction — refuses once the product already holds 8 
     h.state.attached = { count: 8, error: null }
     const res = await uploadProductImageAction(imageFormData())
     expect(res).toEqual({ ok: false, error: 'product.image.error.max' })
+    // Counted for THIS product, not some other filter.
+    expect(h.calls.countFilters).toEqual([['product_id', PRODUCT_ID]])
     expect(h.calls.uploaded).toEqual([])
     expect(provenanceCalls).toEqual([])
   })
