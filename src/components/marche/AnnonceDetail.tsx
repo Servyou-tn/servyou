@@ -11,13 +11,14 @@ import { cn } from '@/lib/utils'
 import { FOCUS_RING } from '@/components/layout/styles'
 import { MAX_RESPONSES_PER_POST } from '@/lib/job-constants'
 import { ModerationBanner } from '@/components/ModerationBanner'
-import { Button } from '@/components/ui/button'
+import { BASE as BUTTON_BASE, Button, SIZE as BUTTON_SIZE, VARIANT_BASE, VARIANT_STATE } from '@/components/ui/button'
 import { StatusPill } from '@/components/ui/status-pill'
 import { CategoryChip, SkillChip } from '@/components/missions/MissionChips'
 import { ConfirmModal } from '@/components/marche/ConfirmModal'
 import { formatJobBudget, hasJobBudget } from '@/lib/marche/format-job-budget'
 import { AnnonceResponseCard } from '@/components/marche/AnnonceResponseCard'
 import { ANNONCE_STATUS_PILL } from '@/lib/marche/annonce-status'
+import { annonceEditBlock } from '@/lib/marche/annonce-edit-rules'
 import { formatTunisDate } from '@/lib/datetime'
 import type { AnnonceDetailData } from '@/lib/marche/annonce-detail'
 import {
@@ -56,6 +57,9 @@ export function AnnonceDetail({ annonce }: { annonce: AnnonceDetailData }) {
   // still inside the 30-day window.
   const canManageOpen = display === 'open'
   const canReopen = annonce.status === 'filled' && !annonce.isExpired
+  // « Modifier » (PR-3): a link while the post can still be edited; once a proposal has arrived the DB freezes the content, so the button stays
+  // visible but disabled with the reason in plain text; a closed / expired / moderated post simply has no Modifier.
+  const editBlock = annonceEditBlock({ displayStatus: display, responseCount: annonce.responseCount, adminHiddenAt: annonce.adminHiddenAt })
 
   async function doClose() {
     setClosing(true)
@@ -279,16 +283,25 @@ export function AnnonceDetail({ annonce }: { annonce: AnnonceDetailData }) {
                 {t('annonces.detail.reopen', lang)}
               </Button>
             )}
-            {/* « Modifier l'annonce »: the edit route does not exist yet (next PR). A disabled button cannot take focus and its title
-                is unreliable, so the reason is visible text, tied to the button for assistive tech. */}
-            <div className="flex flex-col gap-1">
-              <Button variant="ghost" className="w-full" disabled aria-describedby="edit-soon">
+            {editBlock === null && (
+              <Link
+                href={`/mes-annonces/${annonce.id}/modifier`}
+                className={cn(BUTTON_BASE, BUTTON_SIZE.md, VARIANT_BASE.ghost, VARIANT_STATE.ghost, 'w-full')}
+              >
                 {t('annonces.detail.edit', lang)}
-              </Button>
-              <p id="edit-soon" className="text-center text-caption text-text-muted">
-                {t('annonces.detail.edit_soon', lang)}
-              </p>
-            </div>
+              </Link>
+            )}
+            {/* A disabled button cannot take focus and its title is unreliable, so the reason is visible text, tied to the button for assistive tech. */}
+            {editBlock === 'has_responses' && (
+              <div className="flex flex-col gap-1">
+                <Button variant="ghost" className="w-full" disabled aria-describedby="edit-locked">
+                  {t('annonces.detail.edit', lang)}
+                </Button>
+                <p id="edit-locked" className="text-center text-caption text-text-muted">
+                  {t('annonces.detail.edit_locked', lang)}
+                </p>
+              </div>
+            )}
             <Button variant="danger" className="w-full" onClick={() => setDeleteOpen(true)}>
               {t('annonces.detail.delete', lang)}
             </Button>

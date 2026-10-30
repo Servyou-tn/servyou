@@ -30,9 +30,16 @@ export type JobPostInput = {
   skills: string[]
 }
 
-/** What an edit started from: a field is length-checked only when it differs from it. The caller MUST read it from the stored row
- *  (server-side), never from client input — otherwise a client could send its own over-long text as the « original ». */
-export type JobPostOriginal = { title: string; description: string }
+/** What an edit started from: a field is checked only when it differs from it (length of title / description, a deadline already in the past)
+ *  and an old min–max budget is kept while the single budget field is left alone. The caller MUST read it from the stored row (server-side),
+ *  never from client input — otherwise a client could send its own over-long text as the « original ». */
+export type JobPostOriginal = {
+  title: string
+  description: string
+  deadline?: string | null
+  budgetMin?: number | null
+  budgetMax?: number | null
+}
 
 export type JobPostValues = {
   title: string
@@ -95,7 +102,8 @@ export function validateJobPost(
     const d = parseLocalDate(input.deadline.trim())
     if (Number.isNaN(d.getTime())) return { ok: false, errorKey: 'annonce.error.deadline_past' }
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
-    if (d < today) return { ok: false, errorKey: 'annonce.error.deadline_past' }
+    // An edit that leaves the stored deadline alone must not be refused because that date has since gone by.
+    if (d < today && input.deadline.trim() !== original?.deadline) return { ok: false, errorKey: 'annonce.error.deadline_past' }
     deadline = input.deadline.trim()
   }
 
@@ -117,8 +125,10 @@ export function validateJobPost(
       description,
       category_id: input.categoryId,
       city: input.city,
-      // Older annonces may carry a min/max range; a NEW post never does (D3) — display handles both (format-job-budget.ts).
-      budget_min: null,
+      // Older annonces may carry a min/max range; a NEW post never does (D3) — display handles both (format-job-budget.ts). An EDIT that leaves
+      // the single field at the stored max keeps the stored min (the old range is not rewritten) — also an old « à partir de » post (a min, no
+      // max: the field stays empty and the min stays); changing the amount makes it a single budget.
+      budget_min: original?.budgetMin != null && budget_max === (original.budgetMax ?? null) ? original.budgetMin : null,
       budget_max,
       is_remote: input.isRemote,
       deadline,

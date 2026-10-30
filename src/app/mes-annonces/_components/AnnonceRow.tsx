@@ -10,6 +10,7 @@ import { formatJobBudget, hasJobBudget } from '@/lib/marche/format-job-budget'
 import type { MyAnnonce } from '@/lib/marche/my-data'
 import { shortDate } from '@/lib/orders/order-status'
 import { relativeTimeLabel } from '@/lib/relative-time'
+import { annonceEditBlock } from '@/lib/marche/annonce-edit-rules'
 import { AnnonceRowActions } from './AnnonceRowActions'
 import { COL } from './annonce-columns'
 
@@ -37,6 +38,8 @@ export function AnnonceRow({ annonce: a, lang }: { annonce: MyAnnonce; lang: Lan
   const canClose = a.display_status === 'open'
   // Mirrors reopenMissionAction: only a filled post still inside its 30 days (the server action re-checks).
   const canReopen = a.status === 'filled' && !isAnnoncePastExpiry(a.created_at)
+  const canEdit =
+    annonceEditBlock({ displayStatus: a.display_status, responseCount: a.response_count, adminHiddenAt: a.admin_hidden_at }) === null
 
   return (
     <li className={`flex flex-col gap-4 border-b border-border-subtle bg-surface-base px-4 py-5 last:border-b-0 ${COL.line}`}>
@@ -106,7 +109,7 @@ export function AnnonceRow({ annonce: a, lang }: { annonce: MyAnnonce; lang: Lan
       </div>
 
       <div className={COL.actions}>
-        <AnnonceRowActions id={a.id} title={a.title} canClose={canClose} canReopen={canReopen} lang={lang} />
+        <AnnonceRowActions id={a.id} title={a.title} canClose={canClose} canReopen={canReopen} canEdit={canEdit} lang={lang} />
       </div>
     </li>
   )

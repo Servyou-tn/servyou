@@ -173,6 +173,40 @@ describe('validateJobPost', () => {
   })
 })
 
+describe('validateJobPost — an EDIT (original = the stored row)', () => {
+  const original = { title: base.title, description: base.description, deadline: '2026-06-01', budgetMin: 200, budgetMax: 400 }
+
+  it('keeps an old min–max budget while the single field stays at the stored max; changing it makes a single budget', () => {
+    const same = validateJobPost({ ...base, budget: '400' }, NOW, original)
+    expect(same.ok && same.value).toMatchObject({ budget_min: 200, budget_max: 400 })
+    const changed = validateJobPost({ ...base, budget: '350' }, NOW, original)
+    expect(changed.ok && changed.value).toMatchObject({ budget_min: null, budget_max: 350 })
+    const cleared = validateJobPost({ ...base, budget: '' }, NOW, original)
+    expect(cleared.ok && cleared.value).toMatchObject({ budget_min: null, budget_max: null })
+  })
+
+  it('an old « à partir de » budget (a min, no max) keeps its min while the field stays empty, and becomes a single budget once an amount is typed', () => {
+    const fromOnly = { ...original, budgetMin: 300, budgetMax: null }
+    const kept = validateJobPost({ ...base, budget: '' }, NOW, fromOnly)
+    expect(kept.ok && kept.value).toMatchObject({ budget_min: 300, budget_max: null })
+    const typed = validateJobPost({ ...base, budget: '500' }, NOW, fromOnly)
+    expect(typed.ok && typed.value).toMatchObject({ budget_min: null, budget_max: 500 })
+  })
+
+  it('never invents a min: a create (no original) and a single-budget original both give budget_min null', () => {
+    const create = validateJobPost({ ...base, budget: '400' }, NOW)
+    expect(create.ok && create.value.budget_min).toBeNull()
+    const single = validateJobPost({ ...base, budget: '400' }, NOW, { ...original, budgetMin: null })
+    expect(single.ok && single.value.budget_min).toBeNull()
+  })
+
+  it('a deadline left at its stored value is fine even once past; a NEW past deadline is still refused', () => {
+    expect(validateJobPost({ ...base, deadline: '2026-06-01' }, NOW, original).ok).toBe(true)
+    expect(validateJobPost({ ...base, deadline: '2026-06-02' }, NOW, original)).toEqual({ ok: false, errorKey: 'annonce.error.deadline_past' })
+    expect(validateJobPost({ ...base, deadline: '2026-06-01' }, NOW)).toEqual({ ok: false, errorKey: 'annonce.error.deadline_past' })
+  })
+})
+
 describe('skills — de-duplicated, accent- and case-insensitively (missions PR-4)', () => {
   it('keeps the first spelling and drops repeats', () => {
     const r = validateJobPost({ ...base, skills: ['Figma', 'figma', ' Rédaction ', 'redaction', ''] }, NOW)

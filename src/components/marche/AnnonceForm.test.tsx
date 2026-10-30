@@ -13,15 +13,18 @@ import { createElement } from 'react'
 import { LangProvider } from '@/components/LangProvider'
 import { t } from '@/lib/i18n'
 
-const h = vi.hoisted(() => ({ create: vi.fn() }))
+const h = vi.hoisted(() => ({ create: vi.fn(), update: vi.fn(), push: vi.fn(), refresh: vi.fn(), toastOk: vi.fn() }))
 
 vi.mock('@/app/mes-annonces/nouvelle/actions', () => ({ createAnnonce: (input: unknown) => h.create(input) }))
+vi.mock('@/app/mes-annonces/[id]/modifier/actions', () => ({ updateAnnonce: (id: string, input: unknown) => h.update(id, input) }))
+vi.mock('next/navigation', () => ({ useRouter: () => ({ push: h.push, refresh: h.refresh }) }))
+vi.mock('sonner', () => ({ toast: { success: h.toastOk, error: vi.fn() } }))
 vi.mock('next/link', () => ({
   default: ({ href, children, ...rest }: { href: unknown; children?: unknown; [k: string]: unknown }) =>
     createElement('a', { href: typeof href === 'string' ? href : '#', ...rest }, children as never),
 }))
 
-import { AnnonceForm } from './AnnonceForm'
+import { AnnonceForm, type AnnonceFormEdit } from './AnnonceForm'
 
 beforeAll(() => {
   globalThis.ResizeObserver ??= class {
@@ -33,6 +36,10 @@ beforeAll(() => {
 afterEach(() => {
   cleanup()
   h.create.mockReset()
+  h.update.mockReset()
+  h.push.mockReset()
+  h.refresh.mockReset()
+  h.toastOk.mockReset()
 })
 
 const CATEGORIES = [
@@ -182,5 +189,85 @@ describe('AnnonceForm — F2 behaviour', () => {
     form('ar')
     expect(screen.getByRole('option', { name: 'التصميم الغرافيكي والشعارات' })).toBeInTheDocument()
     expect(screen.getByRole('option', { name: 'Développement web & mobile' })).toBeInTheDocument()
+  })
+})
+
+// ── PR-3: edit mode (/mes-annonces/[id]/modifier) ──────────────────────────────────────────────────────────────────────────────────────────
+const EDIT: AnnonceFormEdit = {
+  id: 'post-1',
+  legacyRange: null,
+  initial: {
+    title: 'Logo pour boutique bio',
+    description: 'Un logo moderne.',
+    categoryId: 'c-design',
+    city: 'Tunis',
+    budget: '400',
+    isRemote: true,
+    deadline: '2099-12-20',
+    skills: ['Figma', 'Adobe'],
+  },
+}
+
+function editForm(edit: AnnonceFormEdit = EDIT, lang: 'fr' | 'ar' = 'fr') {
+  return render(
+    <LangProvider lang={lang}>
+      <AnnonceForm categories={CATEGORIES} edit={edit} />
+    </LangProvider>,
+  )
+}
+
+describe('AnnonceForm — edit mode (PR-3)', () => {
+  it('starts from the stored post and says « Modifier » / « Enregistrer », with Annuler going back to the annonce', () => {
+    editForm()
+    expect(screen.getByRole('heading', { name: t('annonce.form.edit_title', 'fr') })).toBeInTheDocument()
+    expect(field('annonce.form.title_label')).toHaveValue('Logo pour boutique bio')
+    expect(field('annonce.form.category_label')).toHaveValue('c-design')
+    expect(field('annonce.form.city_label')).toHaveValue('Tunis')
+    expect(screen.getByRole('button', { name: t('annonce.form.edit_submit', 'fr') })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: t('annonce.form.submit', 'fr') })).not.toBeInTheDocument()
+    expect(screen.getByRole('link', { name: t('annonce.form.cancel', 'fr') })).toHaveAttribute('href', '/mes-annonces/post-1')
+  })
+
+  it('saves through updateAnnonce(id, values) — never createAnnonce — then toasts and goes back to the annonce', async () => {
+    h.update.mockResolvedValue({ ok: true })
+    const user = userEvent.setup()
+    editForm()
+    await user.clear(field('annonce.form.title_label'))
+    await user.type(field('annonce.form.title_label'), 'Logo bio v2')
+    await user.click(screen.getByRole('button', { name: t('annonce.form.edit_submit', 'fr') }))
+    expect(h.create).not.toHaveBeenCalled()
+    expect(h.update).toHaveBeenCalledWith(
+      'post-1',
+      expect.objectContaining({ title: 'Logo bio v2', categoryId: 'c-design', budget: '400', skills: ['Figma', 'Adobe'] }),
+    )
+    expect(h.toastOk).toHaveBeenCalledWith(t('annonce.form.edit_saved', 'fr'))
+    expect(h.push).toHaveBeenCalledWith('/mes-annonces/post-1')
+  })
+
+  it('a refusal from the server (a proposal arrived meanwhile) shows its message and does not navigate', async () => {
+    h.update.mockResolvedValue({ ok: false, errorKey: 'annonce.error.content_locked' })
+    const user = userEvent.setup()
+    editForm()
+    await user.click(screen.getByRole('button', { name: t('annonce.form.edit_submit', 'fr') }))
+    expect(await screen.findByRole('alert')).toHaveTextContent(t('annonce.error.content_locked', 'fr'))
+    expect(h.push).not.toHaveBeenCalled()
+  })
+
+  it('an old over-long title / description left alone is NOT refused client-side (the limits apply to what changed)', async () => {
+    h.update.mockResolvedValue({ ok: true })
+    const user = userEvent.setup()
+    editForm({ ...EDIT, initial: { ...EDIT.initial, title: 'x'.repeat(75), description: 'd'.repeat(650) } })
+    await user.click(screen.getByRole('button', { name: t('annonce.form.edit_submit', 'fr') }))
+    expect(h.update).toHaveBeenCalledTimes(1)
+    expect(screen.queryByText(t('annonce.error.title_max', 'fr'))).not.toBeInTheDocument()
+  })
+
+  it('an old min–max budget is named under the field, and the note goes once the amount is changed', async () => {
+    const user = userEvent.setup()
+    editForm({ ...EDIT, legacyRange: '200 – 400 TND' })
+    expect(screen.getByText(/200 – 400 TND/)).toBeInTheDocument()
+    await user.clear(screen.getByRole('spinbutton'))
+    await user.type(screen.getByRole('spinbutton'), '350')
+    expect(screen.queryByText(/200 – 400 TND/)).not.toBeInTheDocument()
   })
 })
