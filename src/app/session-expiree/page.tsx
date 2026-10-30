@@ -3,16 +3,17 @@ import { Clock } from 'lucide-react'
 import { HomeLink, SystemStateScreen } from '@/components/system/SystemStateScreen'
 import { getLang } from '@/lib/i18n/server'
 import { t } from '@/lib/i18n'
+import { isValidInternalPath } from '@/lib/internal-path'
 
 export const metadata: Metadata = { title: 'Session expirée — Servyou', robots: { index: false } }
 
 // K2 — Figma 731:64405 / 734:64510. The middleware sends a visitor here (clearing the stale auth
 // cookies) when their session can no longer be refreshed. `?next=` is the page they were on; it is
-// forwarded to /connexion only as a same-site absolute path — never a scheme or `//host`.
+// forwarded to /connexion only if it passes the app's one open-redirect guard, isValidInternalPath (no scheme, no
+// `//host`, no backslash anywhere, no control character) — audit pass 2 replaced a weaker local copy here.
 function safeNext(raw: string | string[] | undefined): string | null {
   const value = Array.isArray(raw) ? raw[0] : raw
-  if (!value || !value.startsWith('/') || value.startsWith('//') || value.startsWith('/\\')) return null
-  return value
+  return value !== undefined && isValidInternalPath(value) ? value : null
 }
 
 export default async function SessionExpireePage({

@@ -73,7 +73,7 @@ describe('suspendReportedUser', () => {
   beforeEach(() => ban.syncAuthBan.mockResolvedValue({ ok: true, suspended: true }))
 
   it('refuses a malformed id before touching the guard, the database or the ban', async () => {
-    const res = await suspendReportedUser('x User not found or already suspended', 'Spam répété.', 'r1')
+    const res = await suspendReportedUser('x User not found or already suspended', 'Spam répété.', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaa01')
     expect(res).toEqual({ success: false, error: 'common.error_generic' })
     expect(guard.checkAdmin).not.toHaveBeenCalled()
     expect(h.rpc).not.toHaveBeenCalled()
@@ -81,27 +81,27 @@ describe('suspendReportedUser', () => {
   })
 
   it('rejects an empty reason without calling the database', async () => {
-    const res = await suspendReportedUser(U1, '   \n\t ', 'r1')
+    const res = await suspendReportedUser(U1, '   \n\t ', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaa01')
     expect(res).toEqual({ success: false, error: 'admin.users.suspend_reason_required' })
     expect(h.rpc).not.toHaveBeenCalled()
   })
 
   it('surfaces the self-suspend error from the function RAISE — and never bans the admin', async () => {
     h.state.result = { data: null, error: { code: 'P0001', message: 'Admins cannot suspend themselves' } }
-    const res = await suspendReportedUser(ME, 'Comportement abusif.', 'r1')
+    const res = await suspendReportedUser(ME, 'Comportement abusif.', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaa01')
     expect(res).toEqual({ success: false, error: 'admin.users.error_self_suspend' })
     expect(ban.syncAuthBan).not.toHaveBeenCalled()
   })
 
   it('surfaces the forbidden error from the function RAISE, without a ban', async () => {
     h.state.result = { data: null, error: { code: 'P0001', message: 'Forbidden: admin access required' } }
-    const res = await suspendReportedUser(U1, 'Spam répété.', 'r1')
+    const res = await suspendReportedUser(U1, 'Spam répété.', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaa01')
     expect(res).toEqual({ success: false, error: 'admin.users.error_forbidden' })
     expect(ban.syncAuthBan).not.toHaveBeenCalled()
   })
 
   it('passes a trimmed reason, syncs the ban AFTER the database write, and revalidates the report + user pages', async () => {
-    const res = await suspendReportedUser(U1, '  Abus signalé.  ', 'r1')
+    const res = await suspendReportedUser(U1, '  Abus signalé.  ', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaa01')
     expect(res).toEqual({ success: true })
     expect(h.rpc).toHaveBeenCalledWith('admin_suspend_user', {
       target_user_id: U1,
@@ -109,20 +109,20 @@ describe('suspendReportedUser', () => {
     })
     expect(ban.syncAuthBan).toHaveBeenCalledWith(U1)
     expect(h.rpc.mock.invocationCallOrder[0]).toBeLessThan(ban.syncAuthBan.mock.invocationCallOrder[0])
-    expect(h.revalidatePath).toHaveBeenCalledWith('/admin/signalements/r1')
+    expect(h.revalidatePath).toHaveBeenCalledWith('/admin/signalements/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaa01')
     expect(h.revalidatePath).toHaveBeenCalledWith('/admin/utilisateurs/' + U1)
   })
 
   it('reports a failed ban without revalidating, so the form stays up for a retry', async () => {
     ban.syncAuthBan.mockResolvedValue({ ok: false, reason: 'failed' })
-    const res = await suspendReportedUser(U1, 'Spam répété.', 'r1')
+    const res = await suspendReportedUser(U1, 'Spam répété.', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaa01')
     expect(res).toEqual({ success: false, error: 'admin.users.error_ban_failed' })
     expect(h.revalidatePath).not.toHaveBeenCalled()
   })
 
   it('retry: "already suspended" syncs the ban again and succeeds', async () => {
     h.state.result = { data: null, error: ALREADY_SUSPENDED }
-    const res = await suspendReportedUser(U1, 'Spam répété.', 'r1')
+    const res = await suspendReportedUser(U1, 'Spam répété.', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaa01')
     expect(res).toEqual({ success: true })
     expect(ban.syncAuthBan).toHaveBeenCalledWith(U1)
   })
@@ -130,15 +130,15 @@ describe('suspendReportedUser', () => {
   it('an unknown id reports not found', async () => {
     h.state.result = { data: null, error: ALREADY_SUSPENDED }
     ban.syncAuthBan.mockResolvedValue({ ok: false, reason: 'not_found' })
-    const res = await suspendReportedUser(GHOST, 'Spam répété.', 'r1')
+    const res = await suspendReportedUser(GHOST, 'Spam répété.', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaa01')
     expect(res).toEqual({ success: false, error: 'admin.users.error_not_found' })
   })
 
   it('a concurrent unsuspend that won: the admin is told the account is not suspended', async () => {
     ban.syncAuthBan.mockResolvedValue({ ok: true, suspended: false })
-    const res = await suspendReportedUser(U1, 'Spam répété.', 'r1')
+    const res = await suspendReportedUser(U1, 'Spam répété.', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaa01')
     expect(res).toEqual({ success: false, error: 'admin.users.error_not_suspended' })
-    expect(h.revalidatePath).toHaveBeenCalledWith('/admin/signalements/r1')
+    expect(h.revalidatePath).toHaveBeenCalledWith('/admin/signalements/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaa01')
   })
 })
 
@@ -146,25 +146,25 @@ describe('unsuspendReportedUser', () => {
   beforeEach(() => ban.syncAuthBan.mockResolvedValue({ ok: true, suspended: false }))
 
   it('refuses a malformed id before anything runs', async () => {
-    const res = await unsuspendReportedUser('u1', 'r1')
+    const res = await unsuspendReportedUser('u1', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaa01')
     expect(res).toEqual({ success: false, error: 'common.error_generic' })
     expect(h.rpc).not.toHaveBeenCalled()
     expect(ban.syncAuthBan).not.toHaveBeenCalled()
   })
 
   it('syncs the ban AFTER the database write and revalidates the report + user pages', async () => {
-    const res = await unsuspendReportedUser(U1, 'r1')
+    const res = await unsuspendReportedUser(U1, 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaa01')
     expect(res).toEqual({ success: true })
     expect(h.rpc).toHaveBeenCalledWith('admin_unsuspend_user', { target_user_id: U1 })
     expect(ban.syncAuthBan).toHaveBeenCalledWith(U1)
     expect(h.rpc.mock.invocationCallOrder[0]).toBeLessThan(ban.syncAuthBan.mock.invocationCallOrder[0])
-    expect(h.revalidatePath).toHaveBeenCalledWith('/admin/signalements/r1')
+    expect(h.revalidatePath).toHaveBeenCalledWith('/admin/signalements/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaa01')
     expect(h.revalidatePath).toHaveBeenCalledWith('/admin/utilisateurs/' + U1)
   })
 
   it('retry: "not currently suspended" syncs the ban again and succeeds', async () => {
     h.state.result = { data: null, error: NOT_SUSPENDED }
-    const res = await unsuspendReportedUser(U1, 'r1')
+    const res = await unsuspendReportedUser(U1, 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaa01')
     expect(res).toEqual({ success: true })
     expect(ban.syncAuthBan).toHaveBeenCalledWith(U1)
   })
@@ -172,20 +172,20 @@ describe('unsuspendReportedUser', () => {
   it('an unknown id reports not found', async () => {
     h.state.result = { data: null, error: NOT_SUSPENDED }
     ban.syncAuthBan.mockResolvedValue({ ok: false, reason: 'not_found' })
-    const res = await unsuspendReportedUser(GHOST, 'r1')
+    const res = await unsuspendReportedUser(GHOST, 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaa01')
     expect(res).toEqual({ success: false, error: 'admin.users.error_not_found' })
   })
 
   it('reports a failed unban without revalidating', async () => {
     ban.syncAuthBan.mockResolvedValue({ ok: false, reason: 'failed' })
-    const res = await unsuspendReportedUser(U1, 'r1')
+    const res = await unsuspendReportedUser(U1, 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaa01')
     expect(res).toEqual({ success: false, error: 'admin.users.error_unban_failed' })
     expect(h.revalidatePath).not.toHaveBeenCalled()
   })
 
   it('a concurrent suspend that won: the admin is told the account is suspended', async () => {
     ban.syncAuthBan.mockResolvedValue({ ok: true, suspended: true })
-    const res = await unsuspendReportedUser(U1, 'r1')
+    const res = await unsuspendReportedUser(U1, 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaa01')
     expect(res).toEqual({ success: false, error: 'admin.users.error_already_suspended' })
   })
 })
@@ -193,7 +193,7 @@ describe('unsuspendReportedUser', () => {
 describe('admin gate (checkAdmin runs first)', () => {
   it('suspendReportedUser rejects a non-admin before touching the database', async () => {
     guard.checkAdmin.mockResolvedValue({ ok: false, reason: 'forbidden' })
-    const res = await suspendReportedUser(U1, 'Spam répété.', 'r1')
+    const res = await suspendReportedUser(U1, 'Spam répété.', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaa01')
     expect(res).toEqual({ success: false, error: 'admin.users.error_forbidden' })
     expect(h.rpc).not.toHaveBeenCalled()
     expect(ban.syncAuthBan).not.toHaveBeenCalled()
@@ -202,7 +202,7 @@ describe('admin gate (checkAdmin runs first)', () => {
 
   it('unsuspendReportedUser rejects a non-admin before touching the database', async () => {
     guard.checkAdmin.mockResolvedValue({ ok: false, reason: 'forbidden' })
-    const res = await unsuspendReportedUser(U1, 'r1')
+    const res = await unsuspendReportedUser(U1, 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaa01')
     expect(res).toEqual({ success: false, error: 'admin.users.error_forbidden' })
     expect(h.rpc).not.toHaveBeenCalled()
     expect(ban.syncAuthBan).not.toHaveBeenCalled()
@@ -218,7 +218,7 @@ describe('admin gate (checkAdmin runs first)', () => {
     'suspendReportedUser also fails closed when the check returns %s (→ %s)',
     async (reason, error) => {
       guard.checkAdmin.mockResolvedValue({ ok: false, reason })
-      const res = await suspendReportedUser(U1, 'Spam répété.', 'r1')
+      const res = await suspendReportedUser(U1, 'Spam répété.', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaa01')
       expect(res).toEqual({ success: false, error })
       expect(h.rpc).not.toHaveBeenCalled()
       expect(h.revalidatePath).not.toHaveBeenCalled()

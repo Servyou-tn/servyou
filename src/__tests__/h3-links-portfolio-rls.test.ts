@@ -27,7 +27,7 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest'
 import { createClient, SupabaseClient } from '@supabase/supabase-js'
 import { randomUUID } from 'node:crypto'
-import { applyProfileSave } from '@/app/mon-profil-freelance/modifier/actions'
+import { applyProfileSave } from '@/app/mon-profil-freelance/modifier/apply-save'
 import { validateForPublish, BIO_MIN_FOR_PUBLISH } from '@/lib/marche/freelancer-profile-edit'
 import { refuseTeardownOnForeignOrders } from './live-teardown-guard'
 import { fixtureSignIn } from './fixture-session'

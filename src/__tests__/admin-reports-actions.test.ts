@@ -19,7 +19,7 @@ const h = vi.hoisted(() => {
     result: { data: unknown; error: unknown }
     rpcResult: { data: unknown; error: unknown }
   } = {
-    result: { data: [{ id: 'r1' }], error: null },
+    result: { data: [{ id: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaa01' }], error: null },
     rpcResult: { data: 'audit-id', error: null },
   }
   // The action chains .from().update().eq().eq()/.in().select(); only .select()
@@ -62,7 +62,7 @@ beforeEach(() => {
 })
 
 beforeEach(() => {
-  h.state.result = { data: [{ id: 'r1' }], error: null }
+  h.state.result = { data: [{ id: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaa01' }], error: null }
   h.state.rpcResult = { data: 'audit-id', error: null }
   h.revalidatePath.mockClear()
   h.from.mockClear()
@@ -71,38 +71,38 @@ beforeEach(() => {
 
 describe('resolveReport', () => {
   it('rejects an empty admin_note without touching the database', async () => {
-    const res = await resolveReport('r1', '')
+    const res = await resolveReport('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaa01', '')
     expect(res).toEqual({ success: false, error: 'admin.reports.admin_note_required' })
     expect(h.from).not.toHaveBeenCalled()
   })
 
   it('rejects a whitespace-only admin_note', async () => {
-    const res = await resolveReport('r1', '   \n\t  ')
+    const res = await resolveReport('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaa01', '   \n\t  ')
     expect(res).toEqual({ success: false, error: 'admin.reports.admin_note_required' })
     expect(h.from).not.toHaveBeenCalled()
   })
 
   it('returns not-actionable when the update matches zero rows (RLS-blocked / already resolved)', async () => {
     h.state.result = { data: [], error: null }
-    const res = await resolveReport('r1', 'Spam confirmé, contenu retiré.')
+    const res = await resolveReport('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaa01', 'Spam confirmé, contenu retiré.')
     expect(res).toEqual({ success: false, error: 'admin.reports.error_not_actionable' })
   })
 
   it('succeeds and revalidates when a row is updated', async () => {
-    h.state.result = { data: [{ id: 'r1' }], error: null }
-    const res = await resolveReport('r1', 'Spam confirmé.')
+    h.state.result = { data: [{ id: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaa01' }], error: null }
+    const res = await resolveReport('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaa01', 'Spam confirmé.')
     expect(res).toEqual({ success: true })
     expect(h.revalidatePath).toHaveBeenCalledWith('/admin/signalements')
-    expect(h.revalidatePath).toHaveBeenCalledWith('/admin/signalements/r1')
+    expect(h.revalidatePath).toHaveBeenCalledWith('/admin/signalements/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaa01')
   })
 
   it('writes a resolve_report audit log entry with the note on success', async () => {
-    h.state.result = { data: [{ id: 'r1' }], error: null }
-    await resolveReport('r1', 'Spam confirmé.')
+    h.state.result = { data: [{ id: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaa01' }], error: null }
+    await resolveReport('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaa01', 'Spam confirmé.')
     expect(h.rpc).toHaveBeenCalledWith('log_admin_action', {
       p_action: 'resolve_report',
       p_target_type: 'report',
-      p_target_id: 'r1',
+      p_target_id: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaa01',
       p_after_state: { status: 'resolved' },
       p_note: 'Spam confirmé.',
     })
@@ -113,9 +113,9 @@ describe('resolveReport', () => {
   // failed audit write must NOT downgrade a succeeded action to a failure. This
   // is the assertion the happy-path mocks can't make for us.
   it('still returns success when the audit log RPC fails (best-effort logging)', async () => {
-    h.state.result = { data: [{ id: 'r1' }], error: null }
+    h.state.result = { data: [{ id: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaa01' }], error: null }
     h.state.rpcResult = { data: null, error: { message: 'audit insert failed' } }
-    const res = await resolveReport('r1', 'Spam confirmé.')
+    const res = await resolveReport('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaa01', 'Spam confirmé.')
     expect(res).toEqual({ success: true })
   })
 
@@ -125,10 +125,10 @@ describe('resolveReport', () => {
   // already-committed action to a thrown failure. One action proves the wrapper;
   // the try/catch is the same shape across all six.
   it('still returns success when the audit log RPC throws at the transport level', async () => {
-    h.state.result = { data: [{ id: 'r1' }], error: null }
+    h.state.result = { data: [{ id: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaa01' }], error: null }
     h.rpc.mockRejectedValueOnce(new Error('network down'))
     const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
-    const res = await resolveReport('r1', 'Spam confirmé.')
+    const res = await resolveReport('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaa01', 'Spam confirmé.')
     expect(res).toEqual({ success: true })
     expect(errorSpy).toHaveBeenCalled()
     errorSpy.mockRestore()
@@ -138,25 +138,25 @@ describe('resolveReport', () => {
 describe('claimReport', () => {
   it('returns already-claimed when the update matches zero rows', async () => {
     h.state.result = { data: [], error: null }
-    const res = await claimReport('r1')
+    const res = await claimReport('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaa01')
     expect(res).toEqual({ success: false, error: 'admin.reports.error_already_claimed' })
   })
 
   it('succeeds and revalidates when a row is updated', async () => {
-    h.state.result = { data: [{ id: 'r1' }], error: null }
-    const res = await claimReport('r1')
+    h.state.result = { data: [{ id: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaa01' }], error: null }
+    const res = await claimReport('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaa01')
     expect(res).toEqual({ success: true })
     expect(h.revalidatePath).toHaveBeenCalledWith('/admin/signalements')
-    expect(h.revalidatePath).toHaveBeenCalledWith('/admin/signalements/r1')
+    expect(h.revalidatePath).toHaveBeenCalledWith('/admin/signalements/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaa01')
   })
 
   it('writes a claim_report audit log entry on success', async () => {
-    h.state.result = { data: [{ id: 'r1' }], error: null }
-    await claimReport('r1')
+    h.state.result = { data: [{ id: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaa01' }], error: null }
+    await claimReport('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaa01')
     expect(h.rpc).toHaveBeenCalledWith('log_admin_action', {
       p_action: 'claim_report',
       p_target_type: 'report',
-      p_target_id: 'r1',
+      p_target_id: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaa01',
       p_before_state: { status: 'open' },
       p_after_state: { status: 'under_review' },
     })
@@ -165,38 +165,38 @@ describe('claimReport', () => {
 
 describe('dismissReport', () => {
   it('rejects an empty admin_note without touching the database', async () => {
-    const res = await dismissReport('r1', '')
+    const res = await dismissReport('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaa01', '')
     expect(res).toEqual({ success: false, error: 'admin.reports.dismiss_note_required' })
     expect(h.from).not.toHaveBeenCalled()
   })
 
   it('rejects a whitespace-only admin_note', async () => {
-    const res = await dismissReport('r1', '   \n\t  ')
+    const res = await dismissReport('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaa01', '   \n\t  ')
     expect(res).toEqual({ success: false, error: 'admin.reports.dismiss_note_required' })
     expect(h.from).not.toHaveBeenCalled()
   })
 
   it('returns the no-row error when the report is already terminal (resolved/dismissed)', async () => {
     h.state.result = { data: [], error: null }
-    const res = await dismissReport('r1', 'Signalement infondé.')
+    const res = await dismissReport('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaa01', 'Signalement infondé.')
     expect(res).toEqual({ success: false, error: 'admin.reports.error_dismiss_no_row' })
   })
 
   it('succeeds and revalidates when a row is updated', async () => {
-    h.state.result = { data: [{ id: 'r1' }], error: null }
-    const res = await dismissReport('r1', 'Signalement infondé, aucune action.')
+    h.state.result = { data: [{ id: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaa01' }], error: null }
+    const res = await dismissReport('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaa01', 'Signalement infondé, aucune action.')
     expect(res).toEqual({ success: true })
     expect(h.revalidatePath).toHaveBeenCalledWith('/admin/signalements')
-    expect(h.revalidatePath).toHaveBeenCalledWith('/admin/signalements/r1')
+    expect(h.revalidatePath).toHaveBeenCalledWith('/admin/signalements/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaa01')
   })
 
   it('writes a dismiss_report audit log entry with the note on success', async () => {
-    h.state.result = { data: [{ id: 'r1' }], error: null }
-    await dismissReport('r1', 'Signalement infondé, aucune action.')
+    h.state.result = { data: [{ id: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaa01' }], error: null }
+    await dismissReport('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaa01', 'Signalement infondé, aucune action.')
     expect(h.rpc).toHaveBeenCalledWith('log_admin_action', {
       p_action: 'dismiss_report',
       p_target_type: 'report',
-      p_target_id: 'r1',
+      p_target_id: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaa01',
       p_after_state: { status: 'dismissed' },
       p_note: 'Signalement infondé, aucune action.',
     })
@@ -206,7 +206,7 @@ describe('dismissReport', () => {
 describe('admin gate (checkAdmin runs first)', () => {
   it('claimReport rejects a non-admin before touching the database', async () => {
     guard.checkAdmin.mockResolvedValue({ ok: false, reason: 'forbidden' })
-    const res = await claimReport('r1')
+    const res = await claimReport('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaa01')
     expect(res).toEqual({ success: false, error: 'admin.users.error_forbidden' })
     expect(h.from).not.toHaveBeenCalled()
     expect(h.rpc).not.toHaveBeenCalled()
@@ -215,7 +215,7 @@ describe('admin gate (checkAdmin runs first)', () => {
 
   it('resolveReport rejects a non-admin before touching the database', async () => {
     guard.checkAdmin.mockResolvedValue({ ok: false, reason: 'forbidden' })
-    const res = await resolveReport('r1', 'Note.')
+    const res = await resolveReport('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaa01', 'Note.')
     expect(res).toEqual({ success: false, error: 'admin.users.error_forbidden' })
     expect(h.from).not.toHaveBeenCalled()
     expect(h.rpc).not.toHaveBeenCalled()
@@ -224,7 +224,7 @@ describe('admin gate (checkAdmin runs first)', () => {
 
   it('dismissReport rejects a non-admin before touching the database', async () => {
     guard.checkAdmin.mockResolvedValue({ ok: false, reason: 'forbidden' })
-    const res = await dismissReport('r1', 'Note.')
+    const res = await dismissReport('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaa01', 'Note.')
     expect(res).toEqual({ success: false, error: 'admin.users.error_forbidden' })
     expect(h.from).not.toHaveBeenCalled()
     expect(h.rpc).not.toHaveBeenCalled()
@@ -240,7 +240,7 @@ describe('admin gate (checkAdmin runs first)', () => {
     'claimReport also fails closed when the check returns %s (→ %s)',
     async (reason, error) => {
       guard.checkAdmin.mockResolvedValue({ ok: false, reason })
-      const res = await claimReport('r1')
+      const res = await claimReport('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaa01')
       expect(res).toEqual({ success: false, error })
       expect(h.from).not.toHaveBeenCalled()
       expect(h.rpc).not.toHaveBeenCalled()

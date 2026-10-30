@@ -5,6 +5,7 @@ import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
 import { checkAdmin, adminRejectionError } from '@/lib/auth/require-admin'
 import { syncAuthBan, isSuspensionAlreadyApplied } from '@/lib/auth/auth-ban'
+import { ADMIN_TEXT_MAX, isModerationTargetType, isUuid } from '@/lib/admin/action-input'
 
 export type ReportActionResult = { success: boolean; error?: string }
 
@@ -43,6 +44,8 @@ function thrownMessage(e: unknown): string {
 }
 
 export async function claimReport(reportId: string): Promise<ReportActionResult> {
+  if (!isUuid(reportId)) return { success: false, error: 'common.error_generic' }
+
   const supabase = await createClient()
   const admin = await checkAdmin(supabase)
   if (!admin.ok) {
@@ -110,6 +113,8 @@ export async function hideContent(
   reason: string,
   reportId: string,
 ): Promise<ReportActionResult> {
+  if (!isModerationTargetType(targetType) || !isUuid(targetId) || !isUuid(reportId)) return { success: false, error: 'common.error_generic' }
+
   const supabase = await createClient()
   const admin = await checkAdmin(supabase)
   if (!admin.ok) {
@@ -121,6 +126,7 @@ export async function hideContent(
   if (trimmed.length === 0) {
     return { success: false, error: 'admin.moderation.hide_reason_required' }
   }
+  if (trimmed.length > ADMIN_TEXT_MAX) return { success: false, error: 'admin.note_too_long' }
 
   const { error } = await supabase.rpc('admin_hide_content', {
     target_type: targetType,
@@ -142,6 +148,8 @@ export async function unhideContent(
   targetId: string,
   reportId: string,
 ): Promise<ReportActionResult> {
+  if (!isModerationTargetType(targetType) || !isUuid(targetId) || !isUuid(reportId)) return { success: false, error: 'common.error_generic' }
+
   const supabase = await createClient()
   const admin = await checkAdmin(supabase)
   if (!admin.ok) {
@@ -164,6 +172,8 @@ export async function unhideContent(
 }
 
 export async function resolveReport(reportId: string, adminNote: string): Promise<ReportActionResult> {
+  if (!isUuid(reportId)) return { success: false, error: 'common.error_generic' }
+
   const supabase = await createClient()
   const admin = await checkAdmin(supabase)
   if (!admin.ok) {
@@ -175,6 +185,7 @@ export async function resolveReport(reportId: string, adminNote: string): Promis
   if (note.length === 0) {
     return { success: false, error: 'admin.reports.admin_note_required' }
   }
+  if (note.length > ADMIN_TEXT_MAX) return { success: false, error: 'admin.note_too_long' }
 
   const { data, error } = await supabase
     .from('reports')
@@ -221,6 +232,8 @@ export async function resolveReport(reportId: string, adminNote: string): Promis
 // (is_admin UPDATE policy) + rowcount-honest guard. updated_at is bumped by
 // reports_set_updated_at; there is no resolved_at column.
 export async function dismissReport(reportId: string, adminNote: string): Promise<ReportActionResult> {
+  if (!isUuid(reportId)) return { success: false, error: 'common.error_generic' }
+
   const supabase = await createClient()
   const admin = await checkAdmin(supabase)
   if (!admin.ok) {
@@ -232,6 +245,7 @@ export async function dismissReport(reportId: string, adminNote: string): Promis
   if (note.length === 0) {
     return { success: false, error: 'admin.reports.dismiss_note_required' }
   }
+  if (note.length > ADMIN_TEXT_MAX) return { success: false, error: 'admin.note_too_long' }
 
   const { data, error } = await supabase
     .from('reports')
@@ -298,7 +312,7 @@ export async function suspendReportedUser(
   reason: string,
   reportId: string,
 ): Promise<ReportActionResult> {
-  if (!TargetUserId.safeParse(targetUserId).success) return { success: false, error: 'common.error_generic' }
+  if (!TargetUserId.safeParse(targetUserId).success || !isUuid(reportId)) return { success: false, error: 'common.error_generic' }
 
   const supabase = await createClient()
   const admin = await checkAdmin(supabase)
@@ -311,6 +325,7 @@ export async function suspendReportedUser(
   if (trimmed.length === 0) {
     return { success: false, error: 'admin.users.suspend_reason_required' }
   }
+  if (trimmed.length > ADMIN_TEXT_MAX) return { success: false, error: 'admin.note_too_long' }
 
   const { error } = await supabase.rpc('admin_suspend_user', {
     target_user_id: targetUserId,
@@ -348,7 +363,7 @@ export async function unsuspendReportedUser(
   targetUserId: string,
   reportId: string,
 ): Promise<ReportActionResult> {
-  if (!TargetUserId.safeParse(targetUserId).success) return { success: false, error: 'common.error_generic' }
+  if (!TargetUserId.safeParse(targetUserId).success || !isUuid(reportId)) return { success: false, error: 'common.error_generic' }
 
   const supabase = await createClient()
   const admin = await checkAdmin(supabase)

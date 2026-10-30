@@ -4,6 +4,7 @@ import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
 import { getLang } from '@/lib/i18n/server'
 import { t } from '@/lib/i18n'
+import { reportQueryError } from '@/lib/supabase/query-error'
 import { verifyTurnstile } from '@/lib/security/turnstile'
 import { reportInsertRefusalKey } from '@/lib/reports/insert-refusal'
 import { FREELANCER_REPORT_REASONS } from './report-reasons'
@@ -48,6 +49,20 @@ export async function createFreelancerReportAction(input: unknown, turnstileToke
   // Defensive backstop only — the modal trigger already redirects a logged-out visitor to
   // /connexion?next= before this action can be called (FreelancerReportModal.tsx).
   if (!user) return { ok: false, error: t('common.error_generic', lang) }
+
+  // The target must exist and be visible to this reporter (audit pass 2 « Logged »; same check as listing-reports.ts),
+  // so a made-up uuid cannot fill the admin queue with « cible introuvable » rows. RLS decides visibility: a hidden or
+  // unpublished target is « not found » here too.
+  const target = await supabase.from('freelancer_profiles').select('id').eq('id', freelancerProfileId).maybeSingle()
+  if (target.error) {
+    reportQueryError('createFreelancerReport target lookup', target.error)
+    return { ok: false, error: t('common.error_generic', lang) }
+  }
+  if (!target.data) {
+    // warn, not error: an expected refusal a caller can trigger at will.
+    console.warn(`[createFreelancerReport] rejected: freelancer profile ${freelancerProfileId} not found or not visible to the reporter`)
+    return { ok: false, error: t('common.error_generic', lang) }
+  }
 
   const { error } = await supabase.from('reports').insert({
     reporter_id: user.id,

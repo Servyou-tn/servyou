@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 import { checkAdmin, adminRejectionError } from '@/lib/auth/require-admin'
 import type { DisputeOutcome } from '@/lib/types/dispute'
+import { ADMIN_TEXT_MAX, isUuid } from '@/lib/admin/action-input'
 
 export type DisputeActionResult = { success: boolean; error?: string }
 
@@ -34,6 +35,8 @@ function thrownMessage(e: unknown): string {
 }
 
 export async function claimDispute(disputeId: string): Promise<DisputeActionResult> {
+  if (!isUuid(disputeId)) return { success: false, error: 'common.error_generic' }
+
   const supabase = await createClient()
   const admin = await checkAdmin(supabase)
   if (!admin.ok) {
@@ -87,6 +90,8 @@ export async function resolveDispute(
   outcome: string,
   adminNote: string,
 ): Promise<DisputeActionResult> {
+  if (!isUuid(disputeId)) return { success: false, error: 'common.error_generic' }
+
   const supabase = await createClient()
   const admin = await checkAdmin(supabase)
   if (!admin.ok) {
@@ -98,6 +103,7 @@ export async function resolveDispute(
   if (note.length === 0) {
     return { success: false, error: 'admin.disputes.note_required' }
   }
+  if (note.length > ADMIN_TEXT_MAX) return { success: false, error: 'admin.note_too_long' }
   if (!VALID_OUTCOMES.includes(outcome as DisputeOutcome)) {
     return { success: false, error: 'admin.disputes.outcome_required' }
   }
@@ -143,6 +149,8 @@ export async function resolveDispute(
 // backs it), same RLS + rowcount-honest guard. outcome stays null
 // (disputes_outcome_only_when_resolved requires null outcome for any non-resolved status).
 export async function dismissDispute(disputeId: string, adminNote: string): Promise<DisputeActionResult> {
+  if (!isUuid(disputeId)) return { success: false, error: 'common.error_generic' }
+
   const supabase = await createClient()
   const admin = await checkAdmin(supabase)
   if (!admin.ok) {
@@ -154,6 +162,7 @@ export async function dismissDispute(disputeId: string, adminNote: string): Prom
   if (note.length === 0) {
     return { success: false, error: 'admin.disputes.dismiss_note_required' }
   }
+  if (note.length > ADMIN_TEXT_MAX) return { success: false, error: 'admin.note_too_long' }
 
   const { data, error } = await supabase
     .from('disputes')
