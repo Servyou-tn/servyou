@@ -59,6 +59,8 @@ const frPlurals: Record<string, PluralVariants> = {
   'boutique.public.products_count':        { one: '{count} produit', other: '{count} produits' },
   'freelance.public.services_count':       { one: '{count} service', other: '{count} services' },
   'freelancerCard.services':               { one: '{count} service offert', other: '{count} services offerts' },
+  // The 375 frame (663:55017) draws the short form under the card's narrow footer.
+  'freelancerCard.services_short':         { one: '{count} service', other: '{count} services' },
   'freelance.public.portfolio_count':      { one: '{count} réalisation', other: '{count} réalisations' },
 
   'seller.orders.count':                   { one: '{count} commande', other: '{count} commandes' },
@@ -139,6 +141,8 @@ const arPlurals: Record<string, PluralVariants> = {
   'boutique.public.products_count':       { one: '{count} منتج', two: '{count} منتجان', other: '{count} منتجات' },
   'freelance.public.services_count':       { one: '{count} خدمة', two: '{count} خدمتان', other: '{count} خدمات' },
   'freelancerCard.services':               { one: '{count} خدمة مقدّمة', two: '{count} خدمتان مقدّمتان', other: '{count} خدمات مقدّمة' },
+  // REVIEW_AR_TRANSLATION — the short form of the 375 frame.
+  'freelancerCard.services_short':         { one: '{count} خدمة', two: '{count} خدمتان', other: '{count} خدمات' },
   'freelance.public.portfolio_count':      { one: '{count} إنجاز', two: '{count} إنجازان', other: '{count} إنجازات' },
 
   'seller.orders.count':                   { one: '{count} طلب', two: '{count} طلبان', other: '{count} طلبات' },

@@ -49,6 +49,8 @@ type Props = {
    * a removable filter, so it gets no chip.
    */
   scopedCategory?: FilterCategory
+  /** i18n key of the search placeholder; the Freelances lens (same bar, same controls) says « freelance ». Defaults to the services text. */
+  searchPlaceholderKey?: string
 }
 
 // The three sorts offered on the browse surface (pertinence is a typed-search concept — it
@@ -76,6 +78,7 @@ export function ServicesFilterBar({
   q,
   basePath,
   scopedCategory,
+  searchPlaceholderKey = 'services.filters.searchPlaceholder',
 }: Props) {
   const router = useRouter()
   const sp = useSearchParams()
@@ -85,6 +88,15 @@ export function ServicesFilterBar({
   const [priceOpen, setPriceOpen] = useState(false)
   const [min, setMin] = useState(prixMin != null ? String(prixMin) : '')
   const [max, setMax] = useState(prixMax != null ? String(prixMax) : '')
+  // The typed text and the price fields follow the URL when IT changes them (a chip, « Tout effacer », « Réinitialiser », Back) — adjusted during
+  // render, not by remounting the bar, so submitting a search keeps the focus and an open menu.
+  const [seen, setSeen] = useState({ q, prixMin, prixMax })
+  if (seen.q !== q || seen.prixMin !== prixMin || seen.prixMax !== prixMax) {
+    setSeen({ q, prixMin, prixMax })
+    setQuery(q)
+    setMin(prixMin != null ? String(prixMin) : '')
+    setMax(prixMax != null ? String(prixMax) : '')
+  }
 
   function push(patch: Parameters<typeof buildSearchQuery>[1]) {
     const qs = buildSearchQuery(sp, patch, { resetPage: true })
@@ -138,8 +150,8 @@ export function ServicesFilterBar({
               type="search"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder={t('services.filters.searchPlaceholder', lang)}
-              aria-label={t('services.filters.searchPlaceholder', lang)}
+              placeholder={t(searchPlaceholderKey, lang)}
+              aria-label={t(searchPlaceholderKey, lang)}
               className="min-w-0 flex-1 bg-transparent text-body-sm text-text-primary outline-none placeholder:text-text-muted"
             />
           </div>

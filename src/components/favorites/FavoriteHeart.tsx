@@ -19,6 +19,7 @@ import { t } from '@/lib/i18n'
 // The action is IDEMPOTENT (it is told the state to reach, not « toggle »), so a double tap or a retry cannot invert the user's
 // last intent. A GUEST is sent to /connexion?next=<the target's public page> — nothing is written, nothing optimistic happens.
 export function FavoriteHeart({
+  variant = 'circle',
   kind,
   targetId,
   name,
@@ -28,6 +29,11 @@ export function FavoriteHeart({
   onChange,
   className = '',
 }: {
+  /**
+   * `circle` (default): the 44 round button of D3 / D4. `plain`: the bare 20 outline icon of the Freelancer Card (Figma 662:53894 — no circle,
+   * text/muted, filled when favourited); the 44 px touch target is an invisible hit area around it.
+   */
+  variant?: 'circle' | 'plain'
   kind: FavoriteKind
   targetId: string
   /** The shop / freelancer's name — in the accessible label, so the hearts on a list are told apart. */
@@ -85,12 +91,17 @@ export function FavoriteHeart({
       aria-pressed={favorited}
       aria-label={label}
       title={action}
-      className={`inline-flex size-11 shrink-0 items-center justify-center rounded-full border border-border-subtle bg-surface-base transition-colors hover:bg-surface-subtle ${FOCUS_RING} ${className}`}
+      className={
+        variant === 'plain'
+          ? `relative inline-flex size-5 shrink-0 items-center justify-center rounded-full ${FOCUS_RING} ${className}`
+          : `inline-flex size-11 shrink-0 items-center justify-center rounded-full border border-border-subtle bg-surface-base transition-colors hover:bg-surface-subtle ${FOCUS_RING} ${className}`
+      }
     >
       <Heart
-        className={`size-6 ${favorited ? 'fill-danger-500 text-danger-500' : 'text-text-muted'}`}
+        className={`${variant === 'plain' ? 'size-5' : 'size-6'} ${favorited ? 'fill-danger-500 text-danger-500' : 'text-text-muted'}`}
         aria-hidden="true"
       />
+      {variant === 'plain' ? <span aria-hidden="true" className="absolute -inset-3" /> : null}
     </button>
   )
 }
