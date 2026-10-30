@@ -123,7 +123,7 @@ describe('normalizeAvatar — rejections (the actual gate)', () => {
   // MAX_INPUT_PIXELS (100 MP) but below sharp's own default ceiling (~268 MP), so without limitInputPixels it would
   // decode -- slowly, allocating the full canvas -- and come back ok: this test fails if the cap is removed.
   // With the cap, sharp refuses from the header. Built by hand (signature + IHDR + IDAT + IEND, real CRCs).
-  it('refuses a tiny file that declares a huge canvas (decompression bomb), without decoding it', async () => {
+  it('refuses an image over MAX_INPUT_PIXELS (decompression bomb) instead of decoding it', async () => {
     const chunk = (type: string, data: Buffer) => {
       const len = Buffer.alloc(4)
       len.writeUInt32BE(data.length)
@@ -149,10 +149,9 @@ describe('normalizeAvatar — rejections (the actual gate)', () => {
     expect(bomb.length).toBeLessThan(MAX_INPUT_BYTES)
     expect(side * side).toBeGreaterThan(100_000_000) // over MAX_INPUT_PIXELS
     expect(side * side).toBeLessThan(268_402_689) // under sharp's default, so the cap is what refuses it
-    const started = Date.now()
+    // The discriminator is the result: without the cap this 1-bit image decodes (cheaply) and comes back ok.
     const result = await normalizeAvatar(bomb)
     expect(result).toEqual({ ok: false, reason: 'decode_failed' })
-    expect(Date.now() - started).toBeLessThan(2000)
   })
 })
 
