@@ -4,6 +4,7 @@ import { useState, useTransition } from 'react'
 import { useLang } from '@/components/LangProvider'
 import { t } from '@/lib/i18n'
 import { dismissDispute } from '../actions'
+import { ADMIN_TEXT_MAX } from '@/lib/admin/action-input'
 
 // Dismiss = terminal close with NO side taken (dispute judged invalid). Mirrors
 // DismissForm from reports: required note (textarea `required` + disabled submit when
@@ -32,6 +33,7 @@ export function DismissDisputeForm({ disputeId }: { disputeId: string }) {
         {tr('admin.disputes.dismiss_note_label')}
       </label>
       <textarea
+        maxLength={ADMIN_TEXT_MAX}
         id="dispute_dismiss_note"
         value={note}
         onChange={e => setNote(e.target.value)}

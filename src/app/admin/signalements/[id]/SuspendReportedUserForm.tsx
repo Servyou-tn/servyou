@@ -4,6 +4,7 @@ import { useState, useTransition } from 'react'
 import { useLang } from '@/components/LangProvider'
 import { t } from '@/lib/i18n'
 import { suspendReportedUser } from '../actions'
+import { ADMIN_TEXT_MAX } from '@/lib/admin/action-input'
 
 // Mirrors utilisateurs/[id]/SuspendForm, but calls the report-local
 // suspendReportedUser (which revalidates the report detail page too). The reason is
@@ -35,6 +36,7 @@ export function SuspendReportedUserForm({ targetUserId, reportId }: {
         {tr('admin.users.suspend_reason_label')}
       </label>
       <textarea
+        maxLength={ADMIN_TEXT_MAX}
         id="suspend_reason"
         value={reason}
         onChange={e => setReason(e.target.value)}

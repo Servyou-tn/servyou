@@ -4,6 +4,7 @@ import { useState, useTransition } from 'react'
 import { useLang } from '@/components/LangProvider'
 import { t } from '@/lib/i18n'
 import { dismissReport } from '../actions'
+import { ADMIN_TEXT_MAX } from '@/lib/admin/action-input'
 
 // Dismiss = terminal close with NO action against the target (report judged invalid).
 // Mirrors ResolveForm: required admin_note (textarea `required` + disabled submit when
@@ -32,6 +33,7 @@ export function DismissForm({ reportId }: { reportId: string }) {
         {tr('admin.reports.dismiss_note_label')}
       </label>
       <textarea
+        maxLength={ADMIN_TEXT_MAX}
         id="dismiss_note"
         value={note}
         onChange={e => setNote(e.target.value)}

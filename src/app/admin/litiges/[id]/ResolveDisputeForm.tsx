@@ -5,6 +5,7 @@ import { useLang } from '@/components/LangProvider'
 import { t } from '@/lib/i18n'
 import { resolveDispute } from '../actions'
 import type { DisputeOutcome } from '@/lib/types/dispute'
+import { ADMIN_TEXT_MAX } from '@/lib/admin/action-input'
 
 const OUTCOMES: DisputeOutcome[] = ['sided_buyer', 'sided_seller', 'compromise']
 
@@ -56,6 +57,7 @@ export function ResolveDisputeForm({ disputeId }: { disputeId: string }) {
           {tr('admin.disputes.note_label')}
         </label>
         <textarea
+          maxLength={ADMIN_TEXT_MAX}
           id="dispute_resolve_note"
           value={note}
           onChange={e => setNote(e.target.value)}

@@ -4,6 +4,7 @@ import { useState, useTransition } from 'react'
 import { useLang } from '@/components/LangProvider'
 import { t } from '@/lib/i18n'
 import { resolveReport } from '../actions'
+import { ADMIN_TEXT_MAX } from '@/lib/admin/action-input'
 
 // Resolve = set status 'resolved' + a required admin_note the reporter sees as the
 // outcome. The note is required in three places: the textarea `required` attribute,
@@ -32,6 +33,7 @@ export function ResolveForm({ reportId }: { reportId: string }) {
         {tr('admin.reports.field_admin_note')}
       </label>
       <textarea
+        maxLength={ADMIN_TEXT_MAX}
         id="admin_note"
         value={note}
         onChange={e => setNote(e.target.value)}
