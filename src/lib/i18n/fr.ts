@@ -2151,9 +2151,9 @@ export const fr: Record<string, string> = {
   'freelance.edit.portfolio_url_field': "Lien externe (optionnel)",
   'freelance.edit.portfolio_description_field': "Description du projet",
   'freelance.edit.add_portfolio_item':  "Ajouter un projet",
-  'freelance.edit.portfolio_cap_reached': "Limite atteinte : 6 projets au maximum.",
+  'freelance.edit.portfolio_cap_reached': "Limite atteinte : {max} projets au maximum.",
   'freelance.edit.remove_portfolio_item': "Supprimer le projet {index}",
-  'freelance.edit.portfolio_helper':    "Jusqu'à 6 projets. La couverture est la vitrine — choisissez la meilleure image.",
+  'freelance.edit.portfolio_helper':    "Jusqu'à {max} projets. La couverture est la vitrine — choisissez la meilleure image.",
   'freelance.edit.portfolio_link_label': "Portfolio externe (optionnel)",
 
   'freelance.edit.services_title':      "Services",
