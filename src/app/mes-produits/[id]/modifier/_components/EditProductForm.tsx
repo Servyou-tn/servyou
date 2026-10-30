@@ -417,7 +417,7 @@ export function EditProductForm({
 
         {/* ─── Footer: dirty-state indicator + Voir le produit + Enregistrer les modifications.
             No publish gate — the product already exists with a status, managed above in §5. ─── */}
-        <div className={`sticky bottom-0 flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-white p-5 ${CARD_SHADOW}`}>
+        <div className={`sticky bottom-[var(--cookie-banner-h,0px)] flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-white p-5 ${CARD_SHADOW}`}>
           <p className="flex items-center gap-2 text-sm text-text-muted">
             {isDirty ? (
               <>
