@@ -16,14 +16,16 @@ import { closeMissionAction, deleteMissionAction, reopenMissionAction } from '..
 type Confirm = 'close' | 'delete' | null
 
 // The row's `actions` cell — Figma 1476:27949 PropositionRow: [« Voir les propositions » secondary/sm · kebab 36], gap 8, end-aligned.
-// The kebab is not drawn (D7): it only wires the three manage actions the detail page already has, with the same server actions,
-// toasts and confirmations — Fermer (open only) · Rouvrir (a filled post still inside its 30 days) · Supprimer (always).
-// `canReopen` is computed on the server (a client clock would disagree with SSR near the 30-day edge).
+// The kebab is not drawn (D7): it only wires the manage actions the detail page already has, with the same server actions,
+// toasts and confirmations — Marquer comme pourvue (open only) · Rouvrir (a filled post still inside its 30 days) · Modifier (open, no proposal
+// yet — annonceEditBlock) · Supprimer (always). `canReopen` / `canEdit` are computed on the server (a client clock would disagree with SSR
+// near the 30-day edge).
 export function AnnonceRowActions({
   id,
   title,
   canClose,
   canReopen,
+  canEdit,
   lang,
 }: {
   id: string
@@ -31,6 +33,7 @@ export function AnnonceRowActions({
   title: string
   canClose: boolean
   canReopen: boolean
+  canEdit: boolean
   lang: Lang
 }) {
   const router = useRouter()
@@ -71,6 +74,9 @@ export function AnnonceRowActions({
           </button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-60 rounded-xl border border-border-subtle bg-white p-1 shadow-lg">
+          {canEdit ? (
+            <DropdownMenuItem onSelect={() => router.push(`/mes-annonces/${id}/modifier`)}>{t('annonces.detail.edit', lang)}</DropdownMenuItem>
+          ) : null}
           {canClose ? (
             <DropdownMenuItem onSelect={() => setConfirm('close')}>{t('annonces.detail.close', lang)}</DropdownMenuItem>
           ) : null}
@@ -79,7 +85,7 @@ export function AnnonceRowActions({
               {t('annonces.detail.reopen', lang)}
             </DropdownMenuItem>
           ) : null}
-          {canClose || canReopen ? <DropdownMenuSeparator /> : null}
+          {canEdit || canClose || canReopen ? <DropdownMenuSeparator /> : null}
           <DropdownMenuItem variant="destructive" onSelect={() => setConfirm('delete')}>
             {t('annonces.detail.delete', lang)}
           </DropdownMenuItem>

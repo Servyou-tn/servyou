@@ -2,6 +2,8 @@
 
 import { useState, useTransition, useId } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
 import { useLang } from '@/components/LangProvider'
 import { t, tn } from '@/lib/i18n'
 import { GOVERNORATES } from '@/lib/tunisia-governorates'
@@ -12,7 +14,8 @@ import { SettingRow } from '@/components/ui/setting-row'
 import { SkillsPicker } from '@/components/missions/SkillsPicker'
 import { BASE as BUTTON_BASE, Button, SIZE as BUTTON_SIZE, VARIANT_BASE, VARIANT_STATE } from '@/components/ui/button'
 import { createAnnonce } from '@/app/mes-annonces/nouvelle/actions'
-import { ANNONCE_DESCRIPTION_MAX, ANNONCE_SKILLS_MAX, ANNONCE_TITLE_MAX, BUDGET_MAX } from '@/lib/marche/job-post-validation'
+import { updateAnnonce } from '@/app/mes-annonces/[id]/modifier/actions'
+import { ANNONCE_DESCRIPTION_MAX, ANNONCE_SKILLS_MAX, ANNONCE_TITLE_MAX, BUDGET_MAX, type JobPostInput } from '@/lib/marche/job-post-validation'
 import { JOB_POST_EXPIRY_DAYS, MAX_RESPONSES_PER_POST } from '@/lib/job-constants'
 import type { AnnonceCategoryOption } from '@/lib/marche/my-data'
 import { getSkillPool } from '@/lib/taxonomy/service-categories'
@@ -30,24 +33,34 @@ import { cn } from '@/lib/utils'
 // becomes a tag when the picker closes, so a submit never loses it · D5 no page H1 (breadcrumb + the card's H2).
 //
 // Form and error state hold i18n KEYS, never resolved text — a language switch re-renders the same state in the new language.
+//
+// EDIT MODE (PR-3, /mes-annonces/[id]/modifier): the same card, started from the stored post (`edit.initial`), saved through updateAnnonce.
+// The server re-reads the post and decides (owner, still open, no proposal yet — the DB freezes the content once one arrives); the
+// title / description limits apply to an edit only where the text changed (validateJobPost's `original`), which the form cannot know, so
+// its own counter check is skipped for a field left at its stored value.
+
+/** Edit mode: the post's id, its stored values, and — for an old post saved with a min–max budget — the range text to show (kept unless the amount changes). */
+export type AnnonceFormEdit = { id: string; initial: JobPostInput; legacyRange: string | null }
 
 type Field = 'title' | 'description' | 'category' | 'city' | 'budget' | 'deadline'
 type Errors = Partial<Record<Field, string>>
 
-export function AnnonceForm({ categories }: { categories: AnnonceCategoryOption[] }) {
+export function AnnonceForm({ categories, edit }: { categories: AnnonceCategoryOption[]; edit?: AnnonceFormEdit }) {
   const lang = useLang()
+  const router = useRouter()
+  const initial = edit?.initial
   const [pending, startTransition] = useTransition()
   const [errors, setErrors] = useState<Errors>({})
   const [formErrorKey, setFormErrorKey] = useState<string | null>(null)
 
-  const [title, setTitle] = useState('')
-  const [description, setDescription] = useState('')
-  const [categoryId, setCategoryId] = useState('')
-  const [city, setCity] = useState('')
-  const [budget, setBudget] = useState('')
-  const [isRemote, setIsRemote] = useState(false)
-  const [deadline, setDeadline] = useState('')
-  const [skills, setSkills] = useState<string[]>([])
+  const [title, setTitle] = useState(initial?.title ?? '')
+  const [description, setDescription] = useState(initial?.description ?? '')
+  const [categoryId, setCategoryId] = useState(initial?.categoryId ?? '')
+  const [city, setCity] = useState(initial?.city ?? '')
+  const [budget, setBudget] = useState(initial?.budget ?? '')
+  const [isRemote, setIsRemote] = useState(initial?.isRemote ?? false)
+  const [deadline, setDeadline] = useState(initial?.deadline ?? '')
+  const [skills, setSkills] = useState<string[]>(initial?.skills ?? [])
 
   // Suggestions for the CHOSEN category only (taxonomy sector = categories.slug). Stored as the French label so a freelancer's
   // profile skill and a post skill compare as the same text whichever language the poster browses in.
@@ -62,9 +75,11 @@ export function AnnonceForm({ categories }: { categories: AnnonceCategoryOption[
   function validate(): Errors {
     const next: Errors = {}
     if (!title.trim()) next.title = 'annonce.error.title_required'
-    else if (title.trim().length > ANNONCE_TITLE_MAX) next.title = 'annonce.error.title_max'
+    else if (title.trim().length > ANNONCE_TITLE_MAX && title.trim() !== initial?.title.trim()) next.title = 'annonce.error.title_max'
     if (!description.trim()) next.description = 'annonce.error.description_required'
-    else if (description.trim().length > ANNONCE_DESCRIPTION_MAX) next.description = 'annonce.error.description_max'
+    else if (description.trim().length > ANNONCE_DESCRIPTION_MAX && description.trim() !== initial?.description.trim()) {
+      next.description = 'annonce.error.description_max'
+    }
     if (!categoryId) next.category = 'annonce.error.category_required'
     if (!city) next.city = 'annonce.error.city_required'
 
@@ -79,7 +94,8 @@ export function AnnonceForm({ categories }: { categories: AnnonceCategoryOption[
       const chosen = new Date(y, (m ?? 1) - 1, d ?? 1)
       const today = new Date()
       today.setHours(0, 0, 0, 0)
-      if (Number.isNaN(chosen.getTime()) || chosen < today) next.deadline = 'annonce.error.deadline_past'
+      // A deadline left at its stored value is not an error just because that day has since passed (an edit).
+      if (Number.isNaN(chosen.getTime()) || (chosen < today && deadline.trim() !== initial?.deadline)) next.deadline = 'annonce.error.deadline_past'
     }
 
     return next
@@ -94,8 +110,21 @@ export function AnnonceForm({ categories }: { categories: AnnonceCategoryOption[
       return
     }
     setFormErrorKey(null)
+    const values = { title, description, categoryId, city, budget, isRemote, deadline, skills }
     startTransition(async () => {
-      const res = await createAnnonce({ title, description, categoryId, city, budget, isRemote, deadline, skills })
+      if (edit) {
+        const res = await updateAnnonce(edit.id, values)
+        if (!res.ok) {
+          setFormErrorKey(res.errorKey)
+          return
+        }
+        // A client navigation, not a server redirect, so the toast survives (the Sonner toaster lives in the root layout).
+        toast.success(t('annonce.form.edit_saved', lang))
+        router.push(`/mes-annonces/${edit.id}`)
+        router.refresh()
+        return
+      }
+      const res = await createAnnonce(values)
       // Success redirects server-side (never returns here); only failures resolve — the two cap refusals (5 open / 10 per 24 h)
       // arrive here as their own keys.
       if (res && !res.ok) setFormErrorKey(res.errorKey)
@@ -111,7 +140,7 @@ export function AnnonceForm({ categories }: { categories: AnnonceCategoryOption[
       className="flex min-w-0 flex-col gap-6 rounded-xl border border-border-subtle bg-surface-base px-4 py-5 shadow-xs sm:p-8"
     >
       <div className="flex flex-col gap-5">
-        <h2 className="text-h3 text-text-primary">{t('annonce.form.section_title', lang)}</h2>
+        <h2 className="text-h3 text-text-primary">{t(edit ? 'annonce.form.edit_title' : 'annonce.form.section_title', lang)}</h2>
 
         <Input
           id="annonce-title"
@@ -150,7 +179,11 @@ export function AnnonceForm({ categories }: { categories: AnnonceCategoryOption[
 
         <PriceField
           label={t('annonce.form.budget_label', lang)}
-          helper={t('annonce.form.budget_helper', lang)}
+          helper={
+            edit?.legacyRange && budget === initial?.budget
+              ? t('annonce.form.budget_legacy', lang, { range: edit.legacyRange })
+              : t('annonce.form.budget_helper', lang)
+          }
           currency={t('annonce.form.budget_currency', lang)}
           value={budget}
           onChange={setBudget}
@@ -226,15 +259,17 @@ export function AnnonceForm({ categories }: { categories: AnnonceCategoryOption[
       )}
 
       {/* actions (1478:29834): space-between — Annuler secondary md · Publier l’annonce primary lg (48). One row at 375. */}
-      <div className="flex items-center justify-between gap-3">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <Link
-          href="/mes-annonces"
+          href={edit ? `/mes-annonces/${edit.id}` : '/mes-annonces'}
           className={cn(BUTTON_BASE, BUTTON_SIZE.md, VARIANT_BASE.secondary, VARIANT_STATE.secondary)}
         >
           {t('annonce.form.cancel', lang)}
         </Link>
         <Button type="submit" size="lg" loading={pending}>
-          {pending ? t('annonce.form.submitting', lang) : t('annonce.form.submit', lang)}
+          {pending
+            ? t(edit ? 'annonce.form.edit_submitting' : 'annonce.form.submitting', lang)
+            : t(edit ? 'annonce.form.edit_submit' : 'annonce.form.submit', lang)}
         </Button>
       </div>
     </form>
