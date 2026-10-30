@@ -68,11 +68,13 @@ describe('the portfolio cap refusal reads as « limite atteinte »', () => {
     expect(await saveProfileAction(PROFILE)).toEqual({ ok: false, error: GENERIC })
   })
 
-  it('the FR and AR messages carry the cap constant, not a hard-coded number', () => {
-    for (const lang of ['fr', 'ar'] as const) {
-      const message = t('freelance.edit.portfolio_cap_reached', lang, { max: 99 })
-      expect(message).toContain('99')
-      expect(message).not.toMatch(/\{max\}|6/)
+  it('the FR and AR cap message and helper carry the cap constant, not a hard-coded number', () => {
+    for (const key of ['freelance.edit.portfolio_cap_reached', 'freelance.edit.portfolio_helper'] as const) {
+      for (const lang of ['fr', 'ar'] as const) {
+        const message = t(key, lang, { max: 99 })
+        expect(message).toContain('99')
+        expect(message).not.toMatch(/\{max\}|6/)
+      }
     }
     expect(CAP).toContain(String(PORTFOLIO_CAP))
     expect(CAP).not.toBe(GENERIC)

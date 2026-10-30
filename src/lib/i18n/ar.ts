@@ -2096,7 +2096,7 @@ export const ar: Record<string, string> = {
   'freelance.edit.add_portfolio_item':  "إضافة مشروع",
   'freelance.edit.portfolio_cap_reached': "تم بلوغ الحد: {max} مشاريع كحد أقصى.",
   'freelance.edit.remove_portfolio_item': "حذف المشروع {index}",
-  'freelance.edit.portfolio_helper':    "حتى 6 مشاريع. صورة الغلاف هي الواجهة — اختر أفضل صورة.",
+  'freelance.edit.portfolio_helper':    "حتى {max} مشاريع. صورة الغلاف هي الواجهة — اختر أفضل صورة.",
   'freelance.edit.portfolio_link_label': "بورتفوليو خارجي (اختياري)",
 
   'freelance.edit.services_title':      "الخدمات",

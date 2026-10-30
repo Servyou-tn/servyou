@@ -135,7 +135,7 @@ export function PortfolioRepeater({
         )}
         <span className="text-sm tabular-nums text-text-muted">{rows.length}/{PORTFOLIO_CAP}</span>
       </div>
-      <p className="text-sm text-text-muted">{t('freelance.edit.portfolio_helper', lang)}</p>
+      <p className="text-sm text-text-muted">{t('freelance.edit.portfolio_helper', lang, { max: PORTFOLIO_CAP })}</p>
       {uploadError ? (
         <p role="alert" className="text-sm text-danger-500">
           {uploadError}

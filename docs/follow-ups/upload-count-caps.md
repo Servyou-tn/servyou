@@ -31,7 +31,8 @@ the architect, who applies it.
   count (and the upload) to `products.shop_id = <caller's shop>`.
 
 ## 3. LOW (cosmetic) — « 6 » is written into the FR / AR cap message
-✅ CLOSED — `fix/portfolio-cap-message`, 2026-10-30: the message interpolates `{max}` = `PORTFOLIO_CAP`.
+✅ CLOSED — `fix/portfolio-cap-message`, 2026-10-30: the message and the editor's helper line (`freelance.edit.portfolio_helper`)
+interpolate `{max}` = `PORTFOLIO_CAP`. The Arabic plural « مشاريع » fits caps 3–10; a cap outside that range needs `tn()`.
 - **What:** `freelance.edit.portfolio_cap_reached` hard-codes 6 instead of interpolating `PORTFOLIO_CAP`.
 - **Why deferred:** both languages exist and match the cap; changing the cap already needs a migration.
 - **Where it lives:** `src/lib/i18n/fr.ts`, `src/lib/i18n/ar.ts`, `PortfolioRepeater.tsx`.
