@@ -24,11 +24,17 @@ Live 2026-10-30: no table-level INSERT for authenticated on the three tables; co
   `disputes`.
 
 ## MEDIUM — active users can still transact with a suspended account, and its content stays public
-✅ CLOSED — founder ruling 2026-10-30 (« a suspended seller / freelancer: listings hidden from public and NOT
-orderable; existing orders continue ») is already live: migrations 89 (orders refused, « Cet article n'est plus
-disponible. »), 90 + 94 (job responses to a suspended poster refused), 88 (`get_contact_phone`), 95 (the public branch
-of the shops / products / freelancer_profiles / service_listings / job_posts SELECT policies requires an active
-account). Existing orders are untouched. Live-verified 2026-10-30.
+✅ CLOSED — ruling 7 (2026-10-28), re-confirmed by the founder 2026-10-30 (« a suspended seller / freelancer:
+listings hidden from public and NOT orderable; existing orders continue »), is already live:
+- 89: a new order from a suspended seller is refused (« Cet article n'est plus disponible. »);
+- 90: a job response to a suspended poster's post is refused (`job_unavailable`); 94: that post no longer counts
+  toward the poster's 5-active cap;
+- 88: `get_contact_phone` returns NULL when either party is suspended, on every branch — including unlocks granted
+  earlier, so the phone / WhatsApp contact on an EXISTING order is withdrawn while the account is suspended;
+- 95: the public branch of the shops / products / freelancer_profiles / service_listings / job_posts SELECT policies
+  requires an active account.
+Existing orders keep their rows and lifecycle; only the contact reveal is withdrawn (88). If the founder wants contact
+kept on existing orders, that is a change to 88 for the Nov 6–10 review. Live-verified 2026-10-30.
 
 - **What:** migration 61 checks the actor only (D6). Nothing reads the counterparty's
   `suspended_at`: an active buyer can still order from a suspended seller's shop or listing
