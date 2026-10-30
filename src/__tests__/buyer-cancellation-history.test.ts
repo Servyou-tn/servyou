@@ -67,12 +67,13 @@ async function createUser(local: string): Promise<string> {
   return data.user.id
 }
 
-// Make a user a shop owner with one product; returns the product id for orders.
+// Make a user a shop owner with one product; returns the product id for orders. The shop name carries the seller
+// id: shop names are unique (migration 20260811055734) and this suite makes three sellers.
 async function makeSellerWithProduct(sellerId: string): Promise<string> {
   const { error: upErr } = await admin.from('profiles').update({ seller_type: 'shop_owner' }).eq('id', sellerId)
   if (upErr) throw new Error(`seller upgrade failed: ${upErr.message}`)
   const { data: shop, error: shopErr } = await admin
-    .from('shops').insert({ owner_id: sellerId, name: 'BCH Shop' }).select('id').single()
+    .from('shops').insert({ owner_id: sellerId, name: `BCH Shop ${sellerId.slice(0, 8)}` }).select('id').single()
   if (shopErr || !shop) throw new Error(`shop insert failed: ${shopErr?.message}`)
   const { data: product, error: prodErr } = await admin
     .from('products').insert({ shop_id: shop.id, title: 'BCH Product', price_tnd: 10, status: 'active' }).select('id').single()

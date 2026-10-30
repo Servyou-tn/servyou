@@ -16,6 +16,7 @@
 
 import { describe, it, expect } from 'vitest'
 import sharp from 'sharp'
+import { crc32, deflateSync } from 'node:zlib'
 import {
   normalizeAvatar,
   normalizeProductImage,
@@ -116,6 +117,41 @@ describe('normalizeAvatar — rejections (the actual gate)', () => {
     const huge = Buffer.alloc(MAX_INPUT_BYTES + 1)
     const result = await normalizeAvatar(huge)
     expect(result).toEqual({ ok: false, reason: 'too_large' })
+  })
+
+  // A decompression bomb: a VALID ~15 KB PNG of 11 000 x 11 000 (121 MP, 1-bit grey, all zeros). It is above
+  // MAX_INPUT_PIXELS (100 MP) but below sharp's own default ceiling (~268 MP), so without limitInputPixels it would
+  // decode -- slowly, allocating the full canvas -- and come back ok: this test fails if the cap is removed.
+  // With the cap, sharp refuses from the header. Built by hand (signature + IHDR + IDAT + IEND, real CRCs).
+  it('refuses an image over MAX_INPUT_PIXELS (decompression bomb) instead of decoding it', async () => {
+    const chunk = (type: string, data: Buffer) => {
+      const len = Buffer.alloc(4)
+      len.writeUInt32BE(data.length)
+      const body = Buffer.concat([Buffer.from(type, 'ascii'), data])
+      const crc = Buffer.alloc(4)
+      crc.writeUInt32BE(crc32(body))
+      return Buffer.concat([len, body, crc])
+    }
+    const ihdr = Buffer.alloc(13)
+    const side = 11_000
+    ihdr.writeUInt32BE(side, 0) // width
+    ihdr.writeUInt32BE(side, 4) // height
+    ihdr.writeUInt8(1, 8) // bit depth 1
+    ihdr.writeUInt8(0, 9) // colour type 0: greyscale
+    // Each scanline: one filter byte (0) + ceil(side / 8) bytes of pixels, all zero.
+    const idat = deflateSync(Buffer.alloc((1 + Math.ceil(side / 8)) * side), { level: 9 })
+    const bomb = Buffer.concat([
+      Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
+      chunk('IHDR', ihdr),
+      chunk('IDAT', idat),
+      chunk('IEND', Buffer.alloc(0)),
+    ])
+    expect(bomb.length).toBeLessThan(MAX_INPUT_BYTES)
+    expect(side * side).toBeGreaterThan(100_000_000) // over MAX_INPUT_PIXELS
+    expect(side * side).toBeLessThan(268_402_689) // under sharp's default, so the cap is what refuses it
+    // The discriminator is the result: without the cap this 1-bit image decodes (cheaply) and comes back ok.
+    const result = await normalizeAvatar(bomb)
+    expect(result).toEqual({ ok: false, reason: 'decode_failed' })
   })
 })
 
