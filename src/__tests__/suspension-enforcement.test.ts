@@ -22,8 +22,8 @@
  *   * orders — D6 both directions: the suspended side is refused, the active counterparty still acts;
  *   * D3 / D4 — a suspended buyer can still open a dispute on their own order and file an export /
  *     deletion request, but not change or delete them;
- *   * storage — upload refused (an active account still uploads), delete a silent no-op; an
- *     overwrite is refused for every account today (no permissive UPDATE policy), pinned as such;
+ *   * storage — upload and overwrite refused for every account today (no permissive INSERT policy left
+ *     since S1, no permissive UPDATE policy), pinned as such; delete a silent no-op;
  *   * admins — no bypass (D2): a suspended admin's table writes meet the trigger, and since migration
  *     20261024215559 (is_admin() requires an active admin) its admin RPCs — admin_unsuspend_user on
  *     itself included — are Forbidden and its admin READS are gone; an active admin still reads and
@@ -80,8 +80,9 @@ const DENIED = '42501'
 const UPLOAD_REFUSED = 'new row violates row-level security policy'
 const FORBIDDEN_RPC = 'Forbidden: admin access required' // the admin RPCs' is_admin() gate
 const AVATAR = () => new Blob([new Uint8Array([82, 73, 70, 70, 0, 0, 0, 0, 87, 69, 66, 80])], { type: 'image/webp' })
-// The private verifications bucket keeps its permissive owner INSERT policy after S-3 (the four public image
-// buckets lost theirs), so it is where the RESTRICTIVE suspension policy is still observable.
+// Since S1 (db/migrations/*_storage_verifications_drop_client_insert.sql) no bucket has a permissive client INSERT
+// policy -- S-3 dropped the four public ones, S1 the verifications one -- so the RESTRICTIVE « Suspended accounts
+// cannot upload » policy is unobservable until identity verification re-adds one (then the control below flips back).
 const DOCUMENT = () => new Blob([new Uint8Array([37, 80, 68, 70, 45, 49, 46, 52])], { type: 'application/pdf' })
 
 type Verb = 'insert' | 'update' | 'delete'
@@ -556,7 +557,7 @@ describe.skipIf(!hasCreds)('D3 / D4 — what a suspended account can still file'
 })
 
 describe.skipIf(!hasCreds)('storage — restrictive policies on storage.objects', () => {
-  it('a suspended account cannot upload, even under its own folder (verifications keeps a permissive owner INSERT)', async () => {
+  it('a suspended account cannot upload, even under its own folder', async () => {
     const { error } = await sellerClient.storage.from('verifications').upload(`${sellerId}/after-${RUN}.pdf`, DOCUMENT(), { contentType: 'application/pdf' })
     expect(error?.message).toBe(UPLOAD_REFUSED)
     const { data: docs } = await admin.storage.from('verifications').list(sellerId)
@@ -571,11 +572,13 @@ describe.skipIf(!hasCreds)('storage — restrictive policies on storage.objects'
     expect(await avatarNames(sellerId)).toEqual([BEFORE_AVATAR])
   })
 
-  it('an active account still uploads (same bucket: the control)', async () => {
+  // The control: since S1 an ACTIVE account is refused too, so the refusal above is not yet evidence for the
+  // restrictive INSERT policy. When a permissive client INSERT policy comes back, this flips to a success.
+  it('an active account is refused too today (same bucket: the control — no permissive INSERT since S1)', async () => {
     const { error } = await seller2Client.storage.from('verifications').upload(`${seller2Id}/active-${RUN}.pdf`, DOCUMENT(), { contentType: 'application/pdf' })
-    expect(error).toBeNull()
+    expect(error?.message).toBe(UPLOAD_REFUSED)
     const { data } = await admin.storage.from('verifications').list(seller2Id)
-    expect((data ?? []).map((o) => o.name)).toEqual([`active-${RUN}.pdf`])
+    expect(data ?? []).toEqual([])
   })
 
   // storage.objects has no permissive UPDATE policy, so an overwrite (upsert = INSERT … ON CONFLICT

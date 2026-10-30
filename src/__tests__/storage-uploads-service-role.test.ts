@@ -10,7 +10,8 @@
  *     product-images is refused by RLS;
  *   * the service role's PUT into the same folder works (the app's path), and the owner can still list and
  *     delete their own object (the owner read / delete policies stay);
- *   * the private verifications bucket keeps its owner upload policy.
+ *   * (the private verifications bucket lost its owner upload policy too, in S1 — proven in
+ *     storage-verifications-no-client-insert.test.ts.)
  *
  * Fixtures (all `st-s3-`, password random per run): a consumer, a shop owner with a shop, a freelancer.
  * Every object written here is removed by the service role in teardown.
@@ -44,7 +45,6 @@ const PASSWORD = `S3-${randomUUID()}-Aa1!`
 const TITLE = `Storage S-3 test ${RUN}`
 const RLS_REFUSED = 'new row violates row-level security policy'
 const WEBP = () => new Blob([new Uint8Array([82, 73, 70, 70, 0, 0, 0, 0, 87, 69, 66, 80])], { type: 'image/webp' })
-const PDF = () => new Blob([new Uint8Array([37, 80, 68, 70, 45, 49, 46, 52])], { type: 'application/pdf' })
 
 const opts = { auth: { autoRefreshToken: false, persistSession: false } }
 const admin: Client = hasCreds ? createClient<Database>(url, serviceKey, opts) : (undefined as unknown as Client)
@@ -158,10 +158,5 @@ describe.skipIf(!hasCreds)('S-3 — no client PUT into the public image buckets'
     const { data: removed, error: rmErr } = await userClient.storage.from('avatars').remove([path])
     expect(rmErr).toBeNull()
     expect(removed).toHaveLength(1)
-  })
-
-  it('the private verifications bucket keeps its owner upload policy', async () => {
-    const { error } = await userClient.storage.from('verifications').upload(`${userId}/${randomUUID()}.pdf`, PDF(), { contentType: 'application/pdf' })
-    expect(error).toBeNull()
   })
 })
