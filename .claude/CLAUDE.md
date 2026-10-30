@@ -39,6 +39,7 @@
 - **Commit body cites the spec section** it implements ("Per design system Section 4.6, ..." or "Per standards-reference Section 3 A09, ...").
 - **Once built, stays built.** Do not undo, revert, replace, or re-implement an element from a previous PR within a subsequent PR — UNLESS the founder (Moatez) explicitly directs the change, OR the element was demonstrably broken (regression bug, not architectural preference). ADD to existing work. Extend, don't replace.
 - **No `Co-Authored-By` trailers** — already stated, repeating because it keeps slipping.
+- Never add AI attribution (Generated with…, Co-Authored-By, Claude-Session, 'AI generated') to commits, PRs, code, docs or UI.
 
 ## Vocabulary lock — Servyou-specific terms
 

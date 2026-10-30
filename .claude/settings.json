@@ -12,5 +12,10 @@
       "mcp__supabase__apply_migration",
       "mcp__Supabase__apply_migration"
     ]
-  }
+  },
+  "attribution": {
+    "commit": "",
+    "pr": ""
+  },
+  "includeCoAuthoredBy": false
 }
