@@ -4,6 +4,9 @@ Found during migration 59's discovery, `/gstack-review` (core + adversarial pass
 advisors. Migration 59 itself closed the `job_responses` HIGH above.
 
 ## MEDIUM — moderation is shed by deleting and re-creating the freelancer profile (decision D4)
+✅ CLOSED — migrations 87 (`20261028201727_moderated_seller_no_delete`) and 93 (`…_moderated_item_no_delete`): a
+moderated row cannot be deleted by its owner. Live 2026-10-30: `trg_enforce_moderated_row_no_delete` on
+`freelancer_profiles`.
 
 - **What:** "Owner deletes own freelancer profile" checks only `profile_id = auth.uid()`, and
   `enforce_admin_marker_lock` is BEFORE UPDATE only. A moderated freelancer with no orders can
@@ -16,6 +19,9 @@ advisors. Migration 59 itself closed the `job_responses` HIGH above.
   move moderation to the account (`profiles`) so a re-created row inherits it.
 
 ## MEDIUM — admin-moderated job posts stay readable and accept responses (READ half ✅ closed)
+✅ CLOSED (both halves) — response guard: migration 69 (`20261026195409_job_responses_proposal_fields`,
+`check_job_response_limits` reads `admin_hidden_at`); phone: migration 88 (`20261028201733_get_contact_phone_state_gate`).
+Live 2026-10-30: both function bodies read `admin_hidden_at`.
 
 - **Read half closed by** migration 65 (`20261025213214_prelaunch_shop_read_rls`, 2026-10-25): the public
   branch of "Open posts or own posts readable" now requires `admin_hidden_at is null`. **Still open:** a

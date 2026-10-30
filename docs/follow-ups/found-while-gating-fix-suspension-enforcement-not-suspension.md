@@ -1,6 +1,8 @@
 # Found while gating `fix/suspension-enforcement` (2026-10-24) — not suspension
 
 ## HIGH — every `service_listings → categories` embed fails with PGRST201 (public service pages 404, `/mes-commandes` 500)
+✅ CLOSED — PR #185 (merge `cea40e7`, 2026-10-24 23:24 UTC): FK-qualified embeds
+(`categories!service_listings_category_id_fkey`) plus the CI hint-guard.
 
 - **What:** `service_listings` now has two foreign keys to `categories` (`category_id` and
   `subcategory_id`, migration `20260909203226_service_listings_subcategory_id`), so PostgREST can

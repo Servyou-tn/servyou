@@ -12,6 +12,8 @@ Mounted nowhere: `grep -rn "CancelOrderModal" src .storybook` finds only comment
 live cancel UI is `components/orders/CancelOrderButton.tsx`, which calls `cancelOrderAction`.
 
 ## 3. MEDIUM — the same raw-message pattern is still in two other order actions
+✅ CLOSED — PR #242 (`9c99153`, 2026-10-29): `advanceOrderAction` / `setOrderTracking` map known refusals
+(`advanceErrorKey`, `trackingErrorKey`), otherwise the generic error; the raw text is only logged.
 **What:** `advanceOrderAction` and `setOrderTracking` (`src/app/actions/orders.ts`) still return
 `updateError.message || t('common.error_generic')`. The file header calls this deliberate (« surfaced verbatim »),
 but it shows French trigger text on the AR site. `check_order_status_transition` messages can also name the expected
