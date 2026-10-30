@@ -1825,7 +1825,6 @@ export const fr: Record<string, string> = {
   'annonce.form.description_ph':    "Expliquez ce que vous attendez, le contexte et le résultat souhaité…",
   'annonce.form.description_helper': "Plus vous êtes précis, mieux le freelance peut répondre",
   'annonce.form.skills_label':      "Compétences recherchées",
-  'annonce.form.skills_ph':         "Tapez pour ajouter une compétence…",
   'annonce.form.skills_helper':     "3 à 5 compétences suffisent — tapez puis Entrée, ou séparez-les par une virgule (8 maximum).",
   'annonce.form.skills_remove':     "Supprimer {name}",
   // missions PR-4: the skills field is the SkillsPicker (separate tags), no longer free text in one box
@@ -1846,6 +1845,7 @@ export const fr: Record<string, string> = {
   'annonce.form.remote_title':      "Mission réalisable à distance",
   'annonce.form.remote_helper':     "Les freelances de toute la Tunisie pourront vous répondre.",
   'annonce.form.budget_label':      "Budget approximatif",
+  'annonce.form.budget_currency':   "TND",
   'annonce.form.budget_helper':     "Optionnel — un budget indicatif attire des propositions plus précises.",
   'annonce.form.deadline_label':    "Date limite (optionnel)",
   'annonce.form.deadline_helper':   "Les freelances voient la date sur votre annonce",

@@ -1779,7 +1779,6 @@ export const ar: Record<string, string> = {
   'annonce.form.description_ph':    "اشرح ما تنتظره والسياق والنتيجة المرجوة…",
   'annonce.form.description_helper': "كلما كنت أدق، كان ردّ المستقل أفضل",
   'annonce.form.skills_label':      "المهارات المطلوبة",
-  'annonce.form.skills_ph':         "اكتب لإضافة مهارة…",
   'annonce.form.skills_helper':     "3 إلى 5 مهارات تكفي — اكتب ثم اضغط Enter، أو افصل بينها بفاصلة (8 كحد أقصى).",
   'annonce.form.skills_remove':     "حذف {name}",
   // REVIEW_AR_TRANSLATION (missions PR-4, drafts)
@@ -1800,6 +1799,7 @@ export const ar: Record<string, string> = {
   'annonce.form.remote_title':      "مهمة يمكن إنجازها عن بعد",
   'annonce.form.remote_helper':     "يمكن لمستقلين من كامل تونس الرد عليك.",
   'annonce.form.budget_label':      "الميزانية التقريبية",
+  'annonce.form.budget_currency':   "د.ت",
   'annonce.form.budget_helper':     "اختياري — ميزانية إرشادية تجلب عروضًا أدق.",
   'annonce.form.deadline_label':    "آخر أجل (اختياري)",
   'annonce.form.deadline_helper':   "يرى المستقلون هذا التاريخ على إعلانك",

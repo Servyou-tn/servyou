@@ -13,6 +13,9 @@ const SKILL_MAX_LEN = 60
 // Length limits (F2 « 60 caractères maximum » / « 0/500 », founder ruling 2026-10-30). App-level only — NO DB constraint, so rows
 // written before this rule may exceed them: an EDIT checks a field only when its text changed (`original`).
 export const ANNONCE_TITLE_MAX = 60
+
+// budget_max is numeric(10,2): anything above 99 999 999.99 overflows the column (an opaque generic error), so it is refused here.
+export const BUDGET_MAX = 99_999_999.99
 export const ANNONCE_DESCRIPTION_MAX = 500
 
 export type JobPostInput = {
@@ -27,7 +30,8 @@ export type JobPostInput = {
   skills: string[]
 }
 
-/** What an edit started from: a field is length-checked only when it differs from it. */
+/** What an edit started from: a field is length-checked only when it differs from it. The caller MUST read it from the stored row
+ *  (server-side), never from client input — otherwise a client could send its own over-long text as the « original ». */
 export type JobPostOriginal = { title: string; description: string }
 
 export type JobPostValues = {
@@ -53,12 +57,13 @@ function parseLocalDate(value: string): Date {
 }
 
 // '' â†’ null (optional); a non-negative finite number â†’ that number; anything else â†’
-// 'invalid'.
-function parseBudget(raw: string): number | null | 'invalid' {
-  const s = raw.trim()
+// 'invalid'. `raw` comes from a server action: TS types are erased at runtime, so a stale tab that still sends the old
+// budgetMin / budgetMax shape (no `budget`) is read as « no budget » instead of throwing on `.trim()`.
+function parseBudget(raw: unknown): number | null | 'invalid' {
+  const s = typeof raw === 'string' ? raw.trim() : ''
   if (!s) return null
   const n = Number(s)
-  if (!Number.isFinite(n) || n < 0) return 'invalid'
+  if (!Number.isFinite(n) || n < 0 || n > BUDGET_MAX) return 'invalid'
   return n
 }
 

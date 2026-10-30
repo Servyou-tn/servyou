@@ -23,7 +23,8 @@ import type { MissionMatch } from '@/lib/marche/freelancer-dashboard'
 function budgetValue(min: number | null, max: number | null): string | null {
   if (min != null && max != null) return `${tndAmount(min)} – ${tndAmount(max)} TND`
   if (min != null) return `≥ ${tndAmount(min)} TND`
-  if (max != null) return `≤ ${tndAmount(max)} TND`
+  // The annonce form's single « Budget approximatif » is saved as budget_max: a figure, not a ceiling (formatJobBudget).
+  if (max != null) return `${tndAmount(max)} TND`
   return null
 }
 

@@ -14,6 +14,7 @@ import { ModerationBanner } from '@/components/ModerationBanner'
 import { StatusPill } from '@/components/ui/status-pill'
 import { EmptyState } from '@/components/marche/EmptyState'
 import { ConfirmModal } from '@/components/marche/ConfirmModal'
+import { formatJobBudget, hasJobBudget } from '@/lib/marche/format-job-budget'
 import { AnnonceResponseCard } from '@/components/marche/AnnonceResponseCard'
 import { ANNONCE_STATUS_PILL } from '@/lib/marche/annonce-status'
 import { formatTunisDate } from '@/lib/datetime'
@@ -23,10 +24,6 @@ import {
   reopenMissionAction,
   deleteMissionAction,
 } from '@/app/mes-annonces/[id]/actions'
-
-function formatPrice(n: number): string {
-  return `${new Intl.NumberFormat('fr-TN').format(n)} TND`
-}
 
 export function AnnonceDetail({ annonce }: { annonce: AnnonceDetailData }) {
   const lang = useLang()
@@ -95,19 +92,11 @@ export function AnnonceDetail({ annonce }: { annonce: AnnonceDetailData }) {
   // Budget label: a single value when min === max, a range when both differ, a one-sided bound
   // when only one is set, "À discuter" when neither is.
   const hasBudget = annonce.budgetMin != null || annonce.budgetMax != null
-  let budgetLabel: string
-  if (annonce.budgetMin != null && annonce.budgetMax != null) {
-    budgetLabel =
-      annonce.budgetMin === annonce.budgetMax
-        ? formatPrice(annonce.budgetMin)
-        : `${formatPrice(annonce.budgetMin)} – ${formatPrice(annonce.budgetMax)}`
-  } else if (annonce.budgetMin != null) {
-    budgetLabel = `≥ ${formatPrice(annonce.budgetMin)}`
-  } else if (annonce.budgetMax != null) {
-    budgetLabel = `≤ ${formatPrice(annonce.budgetMax)}`
-  } else {
-    budgetLabel = t('annonces.detail.budget_tbd', lang)
-  }
+  // Same sentence as the list and the mission pages (formatJobBudget): the single « Budget approximatif » is saved as
+  // budget_max, and a max-only budget reads as a figure, not as a ceiling.
+  const budgetLabel = hasJobBudget(annonce.budgetMin, annonce.budgetMax)
+    ? formatJobBudget(annonce.budgetMin, annonce.budgetMax, lang)
+    : t('annonces.detail.budget_tbd', lang)
 
   // Status badge — shares AnnonceCard's own ANNONCE_STATUS_PILL (lib/marche/annonce-status.ts)
   // rather than a second local copy. Before PR-E this page kept its own map with a different hue

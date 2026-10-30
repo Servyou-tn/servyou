@@ -1,6 +1,6 @@
 'use client'
 
-import { useId, useMemo, useState } from 'react'
+import { useId, useMemo, useRef, useState } from 'react'
 import { ChevronDown, Plus, Search, X } from 'lucide-react'
 import { FilterControl } from '@/components/ui/filter-control'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
@@ -67,6 +67,8 @@ export function SkillsPicker({
 }) {
   const [open, setOpen] = useState(false)
   const [query, setQuery] = useState('')
+  // Escape = « cancel »: the text typed in the box is dropped, not committed (set by the content's onEscapeKeyDown).
+  const escaped = useRef(false)
   const reactId = useId()
   const triggerId = `${reactId}-trigger`
   const labelId = `${reactId}-label`
@@ -116,10 +118,13 @@ export function SkillsPicker({
 
   // Text typed in the search box but never confirmed with Enter is committed when the popover closes (custom mode only): the query
   // lives inside the popover, so a click on a form's submit button would otherwise close it — and drop the text — before the submit
-  // runs. Same rules as the add row: split on the separators, trimmed, de-duplicated, pool spelling, never past `max`. (Escape also
-  // closes, so it also commits — the text is a visible chip the user can remove.)
+  // runs. Same rules as the add row: split on the separators, trimmed, de-duplicated, pool spelling, never past `max`.
+  // NOT committed when the text still matches a pool option (`visible` non-empty): then it was a FILTER (« fig » → tick « Figma »),
+  // not a new skill — the add row is only offered when nothing matches. Nor on Escape, which cancels.
   function commitTypedOnClose() {
-    if (custom == null || typedParts.length === 0 || atMax) return
+    const cancelled = escaped.current
+    escaped.current = false
+    if (cancelled || custom == null || typedParts.length === 0 || visible.length > 0 || atMax) return
     const room = max != null ? max - value.length : typedParts.length
     onChange([...value, ...typedParts.slice(0, room)])
   }
@@ -158,7 +163,13 @@ export function SkillsPicker({
           </span>
           <ChevronDown className="size-[18px] shrink-0 text-text-muted" aria-hidden="true" />
         </PopoverTrigger>
-        <PopoverContent align="start" className={`w-[var(--radix-popover-trigger-width)] max-w-[320px] min-w-[240px] p-2 ${POPOVER_CONTENT}`}>
+        <PopoverContent
+          align="start"
+          onEscapeKeyDown={() => {
+            escaped.current = true
+          }}
+          className={`w-[var(--radix-popover-trigger-width)] max-w-[320px] min-w-[240px] p-2 ${POPOVER_CONTENT}`}
+        >
           <div className="flex h-9 items-center gap-2 rounded-lg border border-border-subtle bg-surface-subtle px-3">
             <Search className="size-4 shrink-0 text-text-muted" aria-hidden="true" />
             <input

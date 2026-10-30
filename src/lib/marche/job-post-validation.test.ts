@@ -72,6 +72,25 @@ describe('validateJobPost', () => {
     }
   })
 
+  it('refuses a budget the numeric(10,2) column cannot hold, accepts the largest it can', () => {
+    expect(validateJobPost({ ...base, budget: '100000000' }, NOW)).toEqual({
+      ok: false,
+      errorKey: 'annonce.error.budget_invalid',
+    })
+    expect(validateJobPost({ ...base, budget: '1e10' }, NOW)).toEqual({ ok: false, errorKey: 'annonce.error.budget_invalid' })
+    expect(validateJobPost({ ...base, budget: '99999999.99' }, NOW).ok).toBe(true)
+  })
+
+  it('a stale client still sending budgetMin / budgetMax (no `budget`) is read as no budget, never a throw', () => {
+    const stale = { ...base, budgetMin: '100', budgetMax: '500' } as unknown as JobPostInput
+    delete (stale as Partial<JobPostInput>).budget
+    const r = validateJobPost(stale, NOW)
+    expect(r.ok).toBe(true)
+    if (r.ok) expect(r.value).toMatchObject({ budget_min: null, budget_max: null })
+    const numeric = { ...base, budget: 500 } as unknown as JobPostInput
+    expect(validateJobPost(numeric, NOW).ok).toBe(true)
+  })
+
   it('a budget of 0 is a real value, an empty one is no budget', () => {
     const zero = validateJobPost({ ...base, budget: '0' }, NOW)
     expect(zero.ok && zero.value.budget_max).toBe(0)

@@ -75,9 +75,10 @@ export function AnnonceRow({ annonce: a, lang }: { annonce: MyAnnonce; lang: Lan
       {/* budget */}
       <div className={`flex min-w-0 flex-col gap-0.5 ${COL.budget}`}>
         {hasBudget ? (
-          // dir="ltr": « 200 – 400 TND » reorders in an RTL row otherwise (format-job-budget.ts).
-          <p dir="ltr" className="whitespace-nowrap text-start text-body font-bold leading-6 text-text-primary">
-            {formatJobBudget(a.budget_min, a.budget_max, lang)}
+          // <bdi dir="ltr">: « 200 – 400 TND » reorders in an RTL row otherwise (format-job-budget.ts) — the LTR run is isolated
+          // inside the paragraph, which keeps the row's direction so the figure aligns with the cells around it.
+          <p className="whitespace-nowrap text-body font-bold leading-6 text-text-primary">
+            <bdi dir="ltr">{formatJobBudget(a.budget_min, a.budget_max, lang)}</bdi>
           </p>
         ) : (
           <p className="text-body-sm leading-6 text-text-muted">{t('mesannonces.row.budget_none', lang)}</p>

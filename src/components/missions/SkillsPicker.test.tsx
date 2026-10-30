@@ -134,8 +134,27 @@ describe('SkillsPicker', () => {
     render(<Harness custom sections={[]} onValue={(v) => seen.push(v)} />)
     const user = await open()
     await user.type(screen.getByRole('searchbox', { name: 'Rechercher' }), ' Cobol, node ')
-    await user.keyboard('{Escape}')
+    await user.click(document.body) // outside click, like a click on a form's submit button
     expect(seen.at(-1)).toEqual(['Cobol', 'node'])
+  })
+
+  it('custom mode: Escape CANCELS — typed text is dropped, not committed', async () => {
+    const seen: string[][] = []
+    render(<Harness custom sections={[]} onValue={(v) => seen.push(v)} />)
+    const user = await open()
+    await user.type(screen.getByRole('searchbox', { name: 'Rechercher' }), 'Cobol')
+    await user.keyboard('{Escape}')
+    expect(seen).toEqual([])
+  })
+
+  it('custom mode: text that still matches a pool option was a FILTER, not a new skill (« fig » + tick « Figma » leaves only Figma)', async () => {
+    const seen: string[][] = []
+    render(<Harness custom onValue={(v) => seen.push(v)} />)
+    const user = await open()
+    await user.type(screen.getByRole('searchbox', { name: 'Rechercher' }), 'fig')
+    await user.click(screen.getByRole('checkbox', { name: 'Figma' }))
+    await user.click(document.body)
+    expect(seen.at(-1)).toEqual(['Figma'])
   })
 
   it('custom mode: closing with typed text never goes past `max`', async () => {
@@ -143,7 +162,7 @@ describe('SkillsPicker', () => {
     render(<Harness custom sections={[]} max={2} onValue={(v) => seen.push(v)} />)
     const user = await open()
     await user.type(screen.getByRole('searchbox', { name: 'Rechercher' }), 'a, b, c')
-    await user.keyboard('{Escape}')
+    await user.click(document.body)
     expect(seen.at(-1)).toEqual(['a', 'b'])
   })
 
@@ -152,7 +171,7 @@ describe('SkillsPicker', () => {
     render(<Harness onValue={(v) => seen.push(v)} />)
     const user = await open()
     await user.type(screen.getByRole('searchbox', { name: 'Rechercher' }), 'zzz')
-    await user.keyboard('{Escape}')
+    await user.click(document.body)
     expect(seen).toEqual([])
   })
 

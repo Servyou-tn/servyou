@@ -12,7 +12,7 @@ import { SettingRow } from '@/components/ui/setting-row'
 import { SkillsPicker } from '@/components/missions/SkillsPicker'
 import { BASE as BUTTON_BASE, Button, SIZE as BUTTON_SIZE, VARIANT_BASE, VARIANT_STATE } from '@/components/ui/button'
 import { createAnnonce } from '@/app/mes-annonces/nouvelle/actions'
-import { ANNONCE_DESCRIPTION_MAX, ANNONCE_SKILLS_MAX, ANNONCE_TITLE_MAX } from '@/lib/marche/job-post-validation'
+import { ANNONCE_DESCRIPTION_MAX, ANNONCE_SKILLS_MAX, ANNONCE_TITLE_MAX, BUDGET_MAX } from '@/lib/marche/job-post-validation'
 import { JOB_POST_EXPIRY_DAYS, MAX_RESPONSES_PER_POST } from '@/lib/job-constants'
 import type { AnnonceCategoryOption } from '@/lib/marche/my-data'
 import { getSkillPool } from '@/lib/taxonomy/service-categories'
@@ -71,7 +71,7 @@ export function AnnonceForm({ categories }: { categories: AnnonceCategoryOption[
     const budgetRaw = budget.trim()
     if (budgetRaw !== '') {
       const n = Number(budgetRaw)
-      if (!Number.isFinite(n) || n < 0) next.budget = 'annonce.error.budget_invalid'
+      if (!Number.isFinite(n) || n < 0 || n > BUDGET_MAX) next.budget = 'annonce.error.budget_invalid'
     }
 
     if (deadline.trim()) {
@@ -151,6 +151,7 @@ export function AnnonceForm({ categories }: { categories: AnnonceCategoryOption[
         <PriceField
           label={t('annonce.form.budget_label', lang)}
           helper={t('annonce.form.budget_helper', lang)}
+          currency={t('annonce.form.budget_currency', lang)}
           value={budget}
           onChange={setBudget}
           error={err('budget')}
@@ -296,12 +297,15 @@ function SelectField({
 function PriceField({
   label,
   helper,
+  currency,
   value,
   onChange,
   error,
 }: {
   label: string
   helper: string
+  /** « TND » / « د.ت » */
+  currency: string
   value: string
   onChange: (value: string) => void
   error?: string
@@ -336,10 +340,11 @@ function PriceField({
           aria-hidden="true"
           className="flex h-full shrink-0 items-center border-s border-border-subtle bg-surface-sunken pe-3.5 ps-3 text-sm font-medium text-text-muted"
         >
-          TND
+          {currency}
         </span>
       </div>
-      <p id={noteId} className={cn('text-caption', error ? 'text-danger-500' : 'text-text-muted')}>
+      {/* Plain template string, NOT cn(): tailwind-merge would evict `text-caption` next to a text colour (reference_twmerge_text_size_color_footgun). */}
+      <p id={noteId} className={`text-caption ${error ? 'text-danger-500' : 'text-text-muted'}`}>
         {error ?? helper}
       </p>
     </div>
