@@ -148,6 +148,17 @@ describe('the settings modal', () => {
     expect(stored()).toMatchObject({ audience: false })
   })
 
+  it('closing it hands focus back to the « Personnaliser » button that opened it (keyboard users do not restart at the top of the page)', async () => {
+    const user = userEvent.setup()
+    mount(null)
+    const opener = screen.getByRole('button', { name: labelOf('cookies.action.customize') })
+    await user.click(opener)
+    expect(banner()).not.toBeInTheDocument() // hidden while the modal is open…
+    await user.keyboard('{Escape}')
+    expect(banner()).toBeInTheDocument()
+    expect(opener).toHaveFocus() // …but the same element comes back and takes the focus
+  })
+
   it('Escape and ✕ close it WITHOUT saving, and the banner comes back while there is still no choice', async () => {
     const user = userEvent.setup()
     mount(null)

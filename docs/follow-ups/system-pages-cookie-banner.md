@@ -30,3 +30,12 @@
 ## AR copy is a draft
 **What:** every new `cookies.*` and `system.notFound.*` / `system.error.*` Arabic string is marked `REVIEW_AR_TRANSLATION`.
 **Trigger:** the founder's Arabic review pass.
+
+## The banner covers sticky save bars until it is answered
+**What:** the banner is `fixed bottom-0 z-40`, above the app's `sticky bottom-0 z-10` bars (`WizardFooter`, the freelancer profile `StickyFooter`, `EditProductForm`, `ProductForm`). A signed-in visitor with no consent cookie who opens a wizard sees the banner over « Suivant » / « Enregistrer » until they answer; at 375 the three buttons wrap and the card is ~250–300 px tall.
+**Why deferred:** the ruling says the banner must not block the page; padding the page while it shows (or lowering it) is a product call, and every affected page is its own surface.
+**Trigger:** the founder's visual check of a form page with the banner showing — if it reads as blocking, add `padding-bottom` to the shell while the banner is mounted (the provider already knows).
+
+## The banner is the last tab stop, and the choice is not re-read across tabs
+**What:** it renders after `{children}`, so keyboard / screen-reader users reach it after the whole footer; and `useState(initial)` keeps the first server value — a choice made or withdrawn in another tab, or an expiry during a very long session, shows only after a navigation / reload.
+**Trigger:** accessibility pass (`docs/design/accessibility.md`) — a skip link or `visibilitychange` re-parse would cover both.

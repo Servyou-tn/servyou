@@ -54,7 +54,10 @@ export function CookieConsentProvider({ initial, children }: { initial: Consent 
   return (
     <ConsentContext.Provider value={value}>
       {children}
-      {consent === null && !settingsOpen ? <CookieBanner onAcceptAll={() => save(true)} onRefuseAll={() => save(false)} onCustomize={openSettings} /> : null}
+      {/* Kept MOUNTED (just hidden) while the modal is open, so the modal's focus restore lands on the very « Personnaliser » button that opened it. */}
+      {consent === null ? (
+        <CookieBanner hidden={settingsOpen} onAcceptAll={() => save(true)} onRefuseAll={() => save(false)} onCustomize={openSettings} />
+      ) : null}
       {settingsOpen ? (
         <CookieSettingsModal initialAudience={consent?.audience ?? false} onSave={save} onClose={closeSettings} />
       ) : null}

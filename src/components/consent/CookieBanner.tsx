@@ -15,17 +15,20 @@ import { cn } from '@/lib/utils'
 // fills « Accepter tout »). « Personnaliser » is the ghost button beside them.
 // Plain class strings next to text-size tokens (twMerge footgun): sizes here are literal px, colours are separate elements.
 export function CookieBanner({
+  hidden = false,
   onAcceptAll,
   onRefuseAll,
   onCustomize,
 }: {
+  /** The settings modal is open: the banner stays in the DOM (focus restore) but is not shown. */
+  hidden?: boolean
   onAcceptAll: () => void
   onRefuseAll: () => void
   onCustomize: () => void
 }) {
   const lang = useLang()
   return (
-    <div className="pointer-events-none fixed inset-x-0 bottom-0 z-40 px-4 pb-4">
+    <div hidden={hidden} className="pointer-events-none fixed inset-x-0 bottom-0 z-40 px-4 pb-4">
       <section
         aria-labelledby="cookie-banner-title"
         className="pointer-events-auto mx-auto w-full max-w-180 overflow-hidden rounded-2xl border border-border-subtle bg-surface-base shadow-lg"

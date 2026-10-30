@@ -31,10 +31,11 @@ export function CookieSettingsModal({
 
   useEffect(() => {
     const opener = document.activeElement as HTMLElement | null
+    const previousOverflow = document.body.style.overflow
     document.body.style.overflow = 'hidden'
     dialogRef.current?.focus()
     return () => {
-      document.body.style.overflow = ''
+      document.body.style.overflow = previousOverflow
       opener?.focus?.()
     }
   }, [])
