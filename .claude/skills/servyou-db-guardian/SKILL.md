@@ -74,6 +74,23 @@ gstack-investigate (root cause) · gstack-review (before every report).
   a read-only count afterwards. NEVER run rls-smoke (it deletes every test-domain user on prod).
 - PostgREST behaviour (embeds, RLS) can only be proven against the real API — mocks can't catch
   PGRST201 or a missing policy.
+- **Fixture sign-in = `fixtureSignIn()`** (`src/__tests__/fixture-session.ts`: admin recovery link +
+  `verifyOtp`). Supabase Auth CAPTCHA is ON since 2026-10-30: an anon `signInWithPassword` /
+  `signUp` / `resetPasswordForEmail` from a test gets `captcha_failed`. Never disable CAPTCHA for tests.
+- **Live sign-in budget** (founder rule, 2026-10-30): every fixture sign-in is a `/auth/v1/verify`
+  call, limited to 360/hour per IP with bursts of 30 — the whole machine shares it. So:
+  · at most ~12 live sign-ins per batch, suites run one at a time (`--no-file-parallelism`);
+  · 6-minute gaps between batches; after a `Request rate limit reached`, wait 6 minutes before retrying;
+  · only ONE agent runs live suites at a time — check with the other agents before starting.
+  Count a suite's sign-ins with `grep -cE "await signIn\(|fixtureSignIn\(" <file>` (minus the helper line).
+  · **Windows: TaskStop does not kill a background script's children** — a stopped batch runner kept running
+    and burned the budget (2026-10-30). Stop runners with `taskkill /PID <pid> /T /F`, and before any live run
+    confirm no `vitest` / runner process is alive (`Get-CimInstance Win32_Process` on the command line).
+  · Run a batch: `npx vitest run --config vitest.integration.config.ts --no-file-parallelism <files>`.
+  · Who is spending the budget (Supabase `query_logs`, times in UTC): `select toStartOfMinute(timestamp) as m,
+    log_attributes['response.status_code'] as status, count() as n from logs where source = 'edge_logs' and
+    log_attributes['request.path'] like '%/auth/v1/verify%' group by m, status order by m` — calls in minutes
+    outside your own batches come from someone else (or a runner that did not die).
 
 ## Fast loop (speed rules — the dev PC has 2 cores / 8–16 GB)
 CI runs the full gate (tsc, lint, the whole mock vitest run, `next build`, VRT) on every push in

@@ -15,11 +15,19 @@
 - **Trigger:** before switching the toggle on.
 
 ## 2. The full live set has not been re-run in one go on the recovery-link sign-in
+✅ CLOSED — 2026-10-30, with CAPTCHA ON: all 32 remaining suites green in 10 batches (491/491 tests, ≤12 sign-ins per
+batch, serial, 6-minute gaps); fixture cleanup count 0. `buyer-cancellation-history` needed a fixture fix (three shops
+named « BCH Shop » since shop names became unique, migration 20260811055734) — `docs/live-signin-budget`.
 - **What:** the 37 converted suites share one helper (`src/__tests__/fixture-session.ts`). Proven live on
   suspension-enforcement (incl. the ban probes), profiles-rls, progressive-phone, storage-uploads-service-role and
   storage-verifications-no-client-insert (241 tests). The other 32 are the same type-checked one-line swap.
 - **Why deferred:** ~130 fixture sign-ins in one run exceed Supabase's per-IP token-verification rate limit.
-- **Trigger:** the next PR that touches those suites runs them; or a batched run (≤ ~25 sign-ins per 5 min).
+- **Trigger:** the next PR that touches those suites runs them; or a batched run.
+- **Standing rule — the live sign-in budget** (founder, 2026-10-30; also in the db-guardian skill): every
+  `fixtureSignIn` is one `/auth/v1/verify` call, limited to **360 per hour per IP, bursts of 30**, shared by every
+  agent on the machine. A 22-sign-in parallel batch hit `Request rate limit reached` on 2026-10-30. So: at most
+  ~12 live sign-ins per batch, suites one at a time (`--no-file-parallelism`), 6-minute gaps, and only ONE agent
+  runs live suites at a time.
 
 ## 3. `scripts/rls-smoke.mjs` still uses the password grant
 - **What:** it will fail with `captcha_failed` once CAPTCHA is on.

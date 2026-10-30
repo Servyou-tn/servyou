@@ -62,12 +62,13 @@ async function createUser(local: string): Promise<string> {
   return data.user.id
 }
 
-/** Shop owner + one product carrying an explicit fee. Returns the product id. */
+/** Shop owner + one product carrying an explicit fee. Returns the product id. The shop name carries the seller id:
+ *  shop names are unique (migration 20260811055734) and this suite makes several sellers. */
 async function makeShopWithProduct(sellerId: string, feeTnd: number | null): Promise<string> {
   const { error: upErr } = await admin.from('profiles').update({ seller_type: 'shop_owner' }).eq('id', sellerId)
   if (upErr) throw new Error(`seller upgrade failed: ${upErr.message}`)
   const { data: shop, error: shopErr } = await admin
-    .from('shops').insert({ owner_id: sellerId, name: 'DFee Shop' }).select('id').single()
+    .from('shops').insert({ owner_id: sellerId, name: `DFee Shop ${sellerId.slice(0, 8)}` }).select('id').single()
   if (shopErr || !shop) throw new Error(`shop insert failed: ${shopErr?.message}`)
 
   // feeTnd === null ⇒ omit the column entirely so the DEFAULT applies. Passing an explicit
