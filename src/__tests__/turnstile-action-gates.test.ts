@@ -1,5 +1,5 @@
 /**
- * The Turnstile gate in the five protected server actions — submitProductRequest, submitServiceRequest,
+ * The Turnstile gate in the six protected server actions — submitProductRequest, submitServiceRequest, createDispute,
  * createListingReportAction, createShopReportAction, createFreelancerReportAction. With TURNSTILE_SECRET_KEY set,
  * a refused (or missing) token returns the bot-check message BEFORE the action creates a Supabase client, so no
  * database call happens; a verified token lets it through to the normal path. Without the secret the gate is
@@ -24,6 +24,7 @@ import { submitProductRequest, submitServiceRequest } from '@/app/demander/[id]/
 import { createListingReportAction } from '@/app/actions/listing-reports'
 import { createShopReportAction } from '@/app/boutique/[id]/actions'
 import { createFreelancerReportAction } from '@/app/freelance/[id]/actions'
+import { createDispute } from '@/app/actions/disputes'
 import { t } from '@/lib/i18n'
 
 const BOT_CHECK = { ok: false, error: t('common.error_bot_check', 'fr') }
@@ -96,6 +97,31 @@ describe.each(ACTIONS)('%s — Turnstile gate', (_name, call) => {
   it('lets a verified token through to the normal path', async () => {
     fetchMock.mockResolvedValue(new Response(JSON.stringify({ success: true })))
     expect(await call(TOKEN)).not.toEqual(BOT_CHECK)
+    expect(h.createClient).toHaveBeenCalledTimes(1)
+  })
+})
+
+// createDispute (« Signaler un problème » on an order) answers with i18n KEYS, so its refusal is the key itself.
+describe('createDispute — Turnstile gate', () => {
+  const call = (token?: string) => createDispute(ID, 'not_delivered', 'Commande jamais reçue.', token)
+  const REFUSED = { success: false, error: 'common.error_bot_check' }
+
+  it('refuses a missing token before any database work', async () => {
+    expect(await call(undefined)).toEqual(REFUSED)
+    expect(h.createClient).not.toHaveBeenCalled()
+  })
+
+  it('refuses a token Cloudflare rejects, and an unreachable siteverify (fail closed)', async () => {
+    fetchMock.mockResolvedValueOnce(new Response(JSON.stringify({ success: false })))
+    expect(await call(TOKEN)).toEqual(REFUSED)
+    fetchMock.mockRejectedValueOnce(new TypeError('fetch failed'))
+    expect(await call(TOKEN)).toEqual(REFUSED)
+    expect(h.createClient).not.toHaveBeenCalled()
+  })
+
+  it('lets a verified token through to the normal path', async () => {
+    fetchMock.mockResolvedValue(new Response(JSON.stringify({ success: true })))
+    expect(await call(TOKEN)).not.toEqual(REFUSED)
     expect(h.createClient).toHaveBeenCalledTimes(1)
   })
 })

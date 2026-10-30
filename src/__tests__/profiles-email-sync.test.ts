@@ -18,6 +18,7 @@ import { describe, it, expect, beforeAll, afterAll } from 'vitest'
 import { createClient, SupabaseClient } from '@supabase/supabase-js'
 import { randomUUID } from 'crypto'
 import type { Database } from '@/lib/supabase/database.types'
+import { fixtureSignIn } from './fixture-session'
 
 type Client = SupabaseClient<Database>
 
@@ -100,7 +101,7 @@ describe.skipIf(!hasCreds)('profiles.email follows auth.users.email', () => {
   it('a sign-in (auth.users rewritten, email unchanged) leaves profiles unchanged', async () => {
     const { data: before } = await admin.from('profiles').select('updated_at').eq('id', userId).single()
     const client = createClient<Database>(url, anonKey, opts)
-    const { error } = await client.auth.signInWithPassword({ email: RENAMED, password: PASSWORD })
+    const { error } = await fixtureSignIn(client, RENAMED)
     expect(error).toBeNull()
     const { data: after } = await admin.from('profiles').select('updated_at').eq('id', userId).single()
     expect(after?.updated_at).toBe(before?.updated_at)

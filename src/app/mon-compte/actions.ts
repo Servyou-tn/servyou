@@ -310,10 +310,13 @@ const passwordInputSchema = z.object({
 // Inline password change. The email used to re-authenticate is the SESSION user's, never a client
 // value. signInWithPassword proves the current password (and gives the session the "secure password
 // change" setting asks for, whether or not it is on); updateUser then writes the new one.
-export async function changePasswordAction(input: {
-  currentPassword: string
-  newPassword: string
-}): Promise<AccountActionResult> {
+export async function changePasswordAction(
+  input: {
+    currentPassword: string
+    newPassword: string
+  },
+  turnstileToken?: string,
+): Promise<AccountActionResult> {
   const lang = await getLang()
   const supabase = await createClient()
   const {
@@ -333,8 +336,15 @@ export async function changePasswordAction(input: {
     return { ok: false, error: t('monCompte.password.same', lang), field: 'newPassword' }
   }
 
-  const { error: reauthError } = await supabase.auth.signInWithPassword({ email: user.email, password: currentPassword })
+  // The browser's Turnstile token rides along for Supabase Auth's CAPTCHA check: the password grant is
+  // CAPTCHA-guarded once it is enabled, even from this server-side client.
+  const { error: reauthError } = await supabase.auth.signInWithPassword({
+    email: user.email,
+    password: currentPassword,
+    ...(turnstileToken ? { options: { captchaToken: turnstileToken } } : {}),
+  })
   if (reauthError) {
+    if (reauthError.code === 'captcha_failed') return { ok: false, error: t('common.error_bot_check', lang) }
     if (reauthError.code === 'invalid_credentials') {
       return { ok: false, error: t('monCompte.password.wrongCurrent', lang), field: 'currentPassword' }
     }

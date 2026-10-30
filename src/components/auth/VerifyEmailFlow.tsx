@@ -15,6 +15,7 @@ import type { SellerType } from '@/lib/layout/select-variant'
 import { AuthShell } from '@/components/auth/AuthShell'
 import { MailIcon, CheckCircleIcon, AlertCircleIcon, SpinnerIcon } from '@/components/auth/Icons'
 import { display, labelClass, inputBase, primaryBtn } from '@/components/auth/field-styles'
+import { Turnstile, type TurnstileHandle } from '@/components/security/Turnstile'
 
 // Initial state is decided server-side from the URL (?error / ?code / ?email) so
 // the first paint is correct; the client listener then flips to 'verified' once a
@@ -27,10 +28,12 @@ const RESEND_COOLDOWN_SECONDS = 30
 
 // Resend-with-cooldown: shared by State 1 and State 3. Starts the 30s cooldown on
 // every attempt (spam-resistant even on error) and auto-hides success after 5s.
-function useResend() {
+function useResend(getCaptchaToken: () => Promise<string | undefined>) {
   const supabase = createClient()
   const [cooldown, setCooldown] = useState(0)
   const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle')
+  // The token wait can outlast the cooldown (an interactive challenge): one resend in flight at a time.
+  const inFlight = useRef(false)
 
   useEffect(() => {
     if (cooldown <= 0) return
@@ -45,15 +48,19 @@ function useResend() {
   }, [status])
 
   async function resend(email: string) {
-    if (cooldown > 0) return
+    if (cooldown > 0 || inFlight.current) return
+    inFlight.current = true
     setStatus('idle')
     setCooldown(RESEND_COOLDOWN_SECONDS)
+    // Turnstile token for Supabase Auth's CAPTCHA check (/resend is CAPTCHA-guarded once it is enabled).
+    const captchaToken = await getCaptchaToken()
     const { error } = await supabase.auth.resend({
       type: 'signup',
       email: email.trim().toLowerCase(),
       // Same target as the first email (SignupForm): /verifier-email of this origin.
-      options: { emailRedirectTo: verifyEmailRedirectUrl(window.location.origin) },
+      options: { emailRedirectTo: verifyEmailRedirectUrl(window.location.origin), ...(captchaToken ? { captchaToken } : {}) },
     })
+    inFlight.current = false
     if (error) {
       console.error('[VerifyEmail] resend error:', error.message, error.code, error.status)
       setStatus('error')
@@ -86,7 +93,8 @@ export function VerifyEmailFlow({
   // State 3 resend input (prefilled from ?email when Supabase preserves it).
   const [resendEmail, setResendEmail] = useState(initialEmail)
   const [resendEmailError, setResendEmailError] = useState('')
-  const resend = useResend()
+  const turnstile = useRef<TurnstileHandle>(null)
+  const resend = useResend(async () => turnstile.current?.getToken())
 
   const emailDisplay = initialEmail || t('verifyEmail.state1.emailFallback', lang)
 
@@ -283,6 +291,8 @@ export function VerifyEmailFlow({
           )}
         </AuthShell>
       </div>
+      {/* One widget for both resend buttons (State 1 and State 3); renders nothing visible. */}
+      <Turnstile ref={turnstile} action="resend" />
     </>
   )
 }

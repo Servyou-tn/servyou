@@ -33,6 +33,7 @@ import { describe, it, expect, beforeAll, afterAll } from 'vitest'
 import { createClient, SupabaseClient } from '@supabase/supabase-js'
 import { randomUUID } from 'crypto'
 import type { Database } from '@/lib/supabase/database.types'
+import { fixtureSignIn } from './fixture-session'
 
 type Client = SupabaseClient<Database>
 type OrderInsert = Database['public']['Tables']['orders']['Insert']
@@ -68,7 +69,7 @@ const admin: Client = hasCreds
 
 async function signIn(local: string): Promise<Client> {
   const client = createClient<Database>(url, anonKey, noSession)
-  const { error } = await client.auth.signInWithPassword({ email: email(local), password: PASSWORD })
+  const { error } = await fixtureSignIn(client, email(local))
   if (error) throw new Error(`signIn failed for ${local}: ${error.message}`)
   return client
 }
