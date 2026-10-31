@@ -64,10 +64,8 @@ export async function BoutiquesLens({
 
           <ProduitsLensToggle lang={lang} active="boutiques" />
 
-          {/* key: the bar keeps the typed text in local state; when the q chip / « Tout effacer » clears `q` in the URL the input must
-              follow, so a new q remounts the bar. */}
+          {/* The bar follows `q` from the URL by itself (render-time sync) — no remount, so a submitted search keeps the focus. */}
           <BoutiquesFilterBar
-            key={params.q}
             categories={categories}
             cities={cities}
             selectedCategorie={params.categorie}

@@ -37,7 +37,9 @@ export function ProductBrowseCard({ product }: { product: ProductListing }) {
   const initials = getInitials(product.shop.name)
 
   return (
-    <div className="relative overflow-hidden rounded-xl border border-border-subtle bg-white">
+    <div className="relative overflow-hidden rounded-xl bg-surface-base">
+      {/* The 1 px stroke is an overlay: Figma draws it INSIDE the 373 × 165 frame (cover 276 + body 97 = 373), so it must not add 2 px to the box. */}
+      <span aria-hidden="true" className="pointer-events-none absolute inset-0 z-20 rounded-xl border border-border-subtle" />
       <Link href={`/produits/${product.id}`} className={`block ${FOCUS_RING}`}>
         {/* Cover — FIXED 276px, not an aspect ratio. The frame pins the height so every card in a
             row ends its cover on the same line regardless of the column width the grid resolves to. */}
@@ -47,7 +49,7 @@ export function ProductBrowseCard({ product }: { product: ProductListing }) {
           <ProductCoverImage
             src={product.image_url}
             alt={product.title}
-            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+            sizes="(max-width: 1024px) 50vw, 25vw"
           />
 
           {/* Shop badge — top-END in the frame, which is the side the heart does NOT take. */}
@@ -99,7 +101,8 @@ export function ProductBrowseCard({ product }: { product: ProductListing }) {
       {/* Heart — top-START here, the mirror of the shared card. Sibling of the Link so it never
           navigates. Logical property, so RTL puts it on the right without a second rule. */}
       <div className="absolute start-2 top-2 z-10 flex h-8 w-8 items-center justify-center rounded-2xl border border-border-subtle bg-white">
-        <FavoriteButton item_type="product" item_id={product.id} />
+        {/* The 375 frame draws the icon-heart: 18, blue/300 stroke, centred in the 32 circle (the text glyph it replaces was ♡ in text/muted). */}
+        <FavoriteButton item_type="product" item_id={product.id} variant="icon" iconClassName="size-[18px] text-brand-blue-300" />
       </div>
     </div>
   )

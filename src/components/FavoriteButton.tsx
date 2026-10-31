@@ -15,9 +15,11 @@ type Props = {
    * danger/500 when favourited, no padding (the 44 px touch target is an invisible hit area around it). Service Card: 1486:24359 / 1488:66061.
    */
   variant?: 'glyph' | 'icon'
+  /** `icon` only: size + colour of the heart (default `size-5 text-text-muted`, the Service Card's). The favourited fill is always danger/500. */
+  iconClassName?: string
 }
 
-export function FavoriteButton({ item_type, item_id, variant = 'glyph' }: Props) {
+export function FavoriteButton({ item_type, item_id, variant = 'glyph', iconClassName = 'size-5 text-text-muted' }: Props) {
   const [supabase] = useState(() => createClient())
   const router = useRouter()
   const lang = useLang()
@@ -89,7 +91,7 @@ export function FavoriteButton({ item_type, item_id, variant = 'glyph' }: Props)
     if (variant === 'icon') {
       return (
         <button disabled aria-label={t('common.loading', lang)} className={`${iconClass} text-text-muted`}>
-          <Heart className="size-5" aria-hidden="true" />
+          <Heart className={iconClassName} aria-hidden="true" />
         </button>
       )
     }
@@ -112,7 +114,7 @@ export function FavoriteButton({ item_type, item_id, variant = 'glyph' }: Props)
         aria-label={label}
         className={iconClass}
       >
-        <Heart className={`size-5 ${favorited ? 'fill-danger-500 text-danger-500' : 'text-text-muted'}`} aria-hidden="true" />
+        <Heart className={`${iconClassName} ${favorited ? 'fill-danger-500 text-danger-500' : ''}`} aria-hidden="true" />
         <span aria-hidden="true" className="absolute -inset-3" />
       </button>
     )

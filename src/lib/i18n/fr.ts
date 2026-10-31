@@ -907,6 +907,8 @@ export const fr: Record<string, string> = {
   'produits.lens.soon':             "Bientôt",
   // Filter bar (570:40225)
   'produits.filters.searchPlaceholder': "Rechercher un produit…",
+  // The mobile header search of /marche/produits — the frame's text (m375-c1-produits).
+  'produits.filters.searchPlaceholderMobile': "Rechercher un produit, une boutique…",
   'produits.filters.category':      "Catégorie",
   'produits.filters.categoryAll':   "Toutes les catégories",
   'produits.filters.ville':         "Ville",
