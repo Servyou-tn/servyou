@@ -1,5 +1,5 @@
 /**
- * Live proof for db/migrations/PENDING_listing_upload_caps.sql (pre-beta review M2 / M3) — the shop and upload halves:
+ * Live proof for db/migrations/20261031201742_listing_upload_caps.sql (#109) (pre-beta review M2 / M3) — the shop and upload halves:
  *   * at most 100 products per shop: the owner's 101st insert is refused (23514, hint products_per_shop_cap); the
  *     service role is not capped (seeds, admin tooling);
  *   * at most 100 image uploads per account per rolling 24 h: the 101st `uploaded_objects` row for one owner is
@@ -7,8 +7,6 @@
  *     so this cap deliberately has no service-role bypass; a backfilled row and a shop-assets row are not counted.
  * The services half (20 per freelancer) is services-cap-live.test.ts (it needs a freelancer: one seller capability
  * per account).
- *
- * ⚠ Red until that migration is applied.
  *
  * Fixtures (`lim-cap-`, password random per run): one shop owner and a shop, written by the service role; 99 products
  * and 99 provenance rows (made-up paths, no stored file — the trigger counts rows) pre-filled by the service role.

@@ -1,10 +1,8 @@
 /**
- * Live proof for db/migrations/PENDING_listing_upload_caps.sql (pre-beta review M2) — the services half: at most 20
+ * Live proof for db/migrations/20261031201742_listing_upload_caps.sql (#109) (pre-beta review M2) — the services half: at most 20
  * service listings per freelancer profile, drafts included. The freelancer's 21st insert is refused (23514, hint
  * services_per_freelancer_cap); the service role is not capped. The shop and upload halves are
  * listing-caps-live.test.ts.
- *
- * ⚠ Red until that migration is applied.
  *
  * Fixtures (`svc-cap-`, password random per run): one freelancer and a profile, written by the service role; 19 draft
  * listings pre-filled by the service role (drafts skip the publish-requirements trigger). Deleting the user cascades
