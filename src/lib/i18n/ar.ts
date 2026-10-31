@@ -3323,6 +3323,8 @@ export const ar: Record<string, string> = {
   'forceProfil.item_bio':     "النبذة الشخصية مكتملة",
   'forceProfil.item_skills':  "المهارات مدرجة",
   'forceProfil.item_portfolio': "أضف عملين من أعمالك",
+  // REVIEW_AR_TRANSLATION
+  'forceProfil.item_links':   "أضف روابطك",
   'forceProfil.complete_link': "أكمل ملفك الشخصي ←",
 
   'activite.title':            "النشاط الأخير",

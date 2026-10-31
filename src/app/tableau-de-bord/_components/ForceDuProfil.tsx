@@ -6,14 +6,16 @@ import { Panel } from './Panel'
 // Checklist copy is 📐 MEASURED (167:12377, docs/design/h4-discovery.md §2) — exact strings, do
 // not reword. The ring's own pixel spec (size/stroke/colour) was never part of that measured
 // call; this is a plain stroke-dasharray SVG using locked tokens (brand-blue-600 progress /
-// surface-sunken track), not a pixel match to a Figma ring component. Denominator is 4 — item 4
-// ("Ajoutez 2 réalisations") always reads NOT DONE per Ruling 2, so 3-of-4 renders 75%, never
-// 100%, until H3 ships freelancer_portfolio_items.
+// surface-sunken track), not a pixel match to a Figma ring component. Denominator is 5 — the measured 4 plus
+// « Ajoutez vos liens » (links kit, founder-approved; done when ≥ 1 link). The portfolio item ("Ajoutez 2
+// réalisations") always reads NOT DONE per Ruling 2, so the ring never reaches 100% until H3's
+// freelancer_portfolio_items is counted.
 const ITEMS: { key: keyof FreelancerChecklist; labelKey: string }[] = [
   { key: 'avatar', labelKey: 'forceProfil.item_avatar' },
   { key: 'bio', labelKey: 'forceProfil.item_bio' },
   { key: 'skills', labelKey: 'forceProfil.item_skills' },
   { key: 'portfolio', labelKey: 'forceProfil.item_portfolio' },
+  { key: 'links', labelKey: 'forceProfil.item_links' },
 ]
 
 function ProgressRing({ percent }: { percent: number }) {

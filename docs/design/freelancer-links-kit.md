@@ -83,3 +83,28 @@ Measured against `m375-d4-profil` `c4-liens`: segment 43 tall ✓ · « Liens »
 - i18n keys added in `fr.ts`/`ar.ts`: `social.*`, `links.editor.*`, `freelance.edit.links_cap_reached`, `freelance.public.links_label` (inserted next to existing
   `freelance.edit.links_title` / `freelance.public.link_copied`). Dead keys left in place: `freelance.edit.link_label_field`, `link_url_field`, `add_link`, `links_helper`
   (cleanup is a follow-up, to keep the shared-file diff small).
+
+---
+
+# PR-2 — H2, H12, the application cards, « Ajoutez vos liens » (stacked on #278)
+
+Founder answers to PR-1's questions (Oct 31): **(1)** each icon's tap target is **34 × 34** (20 px glyph + 7 px each side) at every width — glyphs sit 14 apart like the
+frame, 34 passes WCAG 2.2 AA (≥ 24); **(2)** links on their own line in « Nouveau » at 375: OK; **(3)** H3 spacing/type stays consistent with the other accordions,
+founder compares to 404:11909 in the Nov 6–10 review; **(4)** AR field: icon at the start side, the address LTR — correct; renaming saved links to their platform: approved.
+
+| Page | Change |
+|---|---|
+| `SocialLinks` (D4 hero, anywhere) | tap target 44/36 → **34 × 34**, no gap; D4's negative margins now −7 px so the « Liens » segment is still 43 tall and flush with its caption |
+| H2 `/mon-profil-freelance/creer/competences` | « Portfolio externe » is a `PlatformLinkInput` (glyph of what is typed); `behance.net/aya` is accepted and stored `https://behance.net/aya` |
+| H12 `/missions/[id]/proposer` | each row's address is a `PlatformLinkInput`; the row keeps its own **label field and its cap of 3**; the form sends `normalizeUrl(url)` (client check and DB trigger need a scheme) |
+| `AnnonceResponseCard` (« Voir les propositions ») + `SentRecap` (H13) | a 16 px `PlatformIcon` in front of each proposal link — the platform of the address, the globe for any other site; the link text / `nofollow` are unchanged |
+| Dashboard « Force du profil » | 5th item « Ajoutez vos liens » / « أضف روابطك », done when ≥ 1 saved link (`freelancer_links` head count). Denominator 4 → 5: a freelancer with the 3 real items done now reads 60 % (was 75 %); the portfolio item still never counts (Ruling 2) |
+
+Notes
+- Verified in the browser (gate account, own session, no writes): dashboard FR/AR × 375/1440 shows the 5th item, no horizontal scroll. `SocialLinks` / `LinksField` /
+  `PlatformLinkInput` on a temporary client fixture (deleted): 34 × 34 targets at pitch 34, FR/AR, glyphs follow the typed address.
+- **Not browser-verified:** H12 and H2 as pages. The gate account is redirected from `/proposer` (it cannot answer these missions) and already has a profile (H2). Both
+  are covered by the jsdom tests (`ProposalForm.test.tsx`: a bare address is sent as `https://…`; link-row behaviour unchanged).
+- The DB cap (agent A, migration `20261031211305_freelancer_links_cap`, hint `freelancer_links_cap`, 23514) is now on `main`; the H3 save maps that hint (#278).
+- Question: the Force du profil ring changes from /4 to /5 for every freelancer — confirm that is the intended effect of « a new item ».
+

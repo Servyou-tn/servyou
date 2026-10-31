@@ -5,7 +5,7 @@ import { t, type Lang } from '@/lib/i18n'
 
 // A row of clickable platform icons — the freelancer's links on the public profile (D4 hero) and anywhere else a profile's links are shown compactly.
 // Each is a real link: opens in a new tab with `noopener noreferrer`, named « Profil {Platform} de {name} » (« Site web de {name} » for any other site),
-// a visible focus ring, and a 44 px tap target on a phone (36 from `sm`). Brand glyphs are not mirrored in RTL; the row itself follows the direction.
+// a visible focus ring, and a 34 × 34 tap target at every width (20 px glyph + 7 px each side: the glyphs sit 14 apart as in Figma, and 34 passes WCAG 2.2 AA ≥ 24 — founder ruling, #278). Brand glyphs are not mirrored in RTL; the row itself follows the direction.
 export function SocialLinks({
   links,
   name,
@@ -20,7 +20,7 @@ export function SocialLinks({
 }) {
   if (links.length === 0) return null
   return (
-    <ul className={`flex flex-wrap items-center gap-1 ${className}`}>
+    <ul className={`flex flex-wrap items-center ${className}`}>
       {links.map((link) => {
         const platform = detectPlatform(link.url) ?? 'website'
         const label =
@@ -35,7 +35,7 @@ export function SocialLinks({
               rel="noopener noreferrer"
               aria-label={label}
               title={label}
-              className={`inline-flex size-11 items-center justify-center rounded-lg text-text-secondary transition-colors hover:bg-surface-subtle hover:text-brand-blue-600 sm:size-9 ${FOCUS_RING}`}
+              className={`inline-flex size-8.5 items-center justify-center rounded-lg text-text-secondary transition-colors hover:bg-surface-subtle hover:text-brand-blue-600 ${FOCUS_RING}`}
             >
               <PlatformIcon platform={platform} />
             </a>

@@ -3420,6 +3420,7 @@ export const fr: Record<string, string> = {
   'forceProfil.item_bio':     "Bio complétée",
   'forceProfil.item_skills':  "Compétences renseignées",
   'forceProfil.item_portfolio': "Ajoutez 2 réalisations",
+  'forceProfil.item_links':   "Ajoutez vos liens",
   // Footer link, added Pass 3 (h4-discovery.md never drew it — 167:12377's read stopped at the
   // checklist). Destination is H3 (/mon-profil-freelance/modifier), which has no route yet —
   // renders inert, same "Créer un service" treatment as the header CTA.

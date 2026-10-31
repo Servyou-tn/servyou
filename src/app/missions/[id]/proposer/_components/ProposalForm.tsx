@@ -15,6 +15,7 @@ import { t, tn } from '@/lib/i18n'
 import { MAX_ACTIVE_RESPONSES_PER_FREELANCER, MAX_RESPONSES_PER_POST, PROPOSAL_MESSAGE_MAX, PROPOSAL_MESSAGE_MIN, PROPOSAL_SKILLS_MAX, PROPOSAL_TIMEFRAME_MAX } from '@/lib/job-constants'
 import { formatJobBudget, hasJobBudget } from '@/lib/marche/format-job-budget'
 import { FIELD_FAILURES, TERMINAL_FAILURES, type ProposalFailure } from '@/lib/marche/proposal-errors'
+import { normalizeUrl } from '@/lib/social/platforms'
 import { validateProposal, type ProposalErrors, type ProposalLinkInput } from '@/lib/marche/proposal-validation'
 import { splitSkills } from '@/lib/marche/skills-match'
 import { LinksField } from './LinksField'
@@ -70,7 +71,9 @@ export function ProposalForm({ jobPostId, clientFirstName, budgetMin, budgetMax,
   }
 
   function submit() {
-    const v = validateProposal({ message, links, price, timeframe, skills })
+    // « behance.net/aya » is sent as https://behance.net/aya — the DB wants a scheme, a person typing an address does not.
+    const sendLinks = links.map((l) => ({ ...l, url: normalizeUrl(l.url) }))
+    const v = validateProposal({ message, links: sendLinks, price, timeframe, skills })
     if (!v.ok) {
       setErrors(v.errors)
       setFailure(null)
@@ -81,7 +84,7 @@ export function ProposalForm({ jobPostId, clientFirstName, budgetMin, budgetMax,
     startTransition(async () => {
       let res: Awaited<ReturnType<typeof submitProposalAction>> | undefined
       try {
-        res = await submitProposalAction({ jobPostId, message, links, price, timeframe, skills })
+        res = await submitProposalAction({ jobPostId, message, links: sendLinks, price, timeframe, skills })
       } catch (e) {
         // A rejected call (network down, a 5xx) would otherwise reach the error boundary and unmount the form with everything
         // typed. NEXT_REDIRECT never lands here: Next handles the success redirect itself.

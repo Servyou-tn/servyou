@@ -122,11 +122,11 @@ export function FreelancerDetail({
             {freelancer.links.length > 0 && (
               <>
                 <div className="h-8 w-px bg-border-subtle" />
-                {/* c4-liens (m375-d4-profil): « Liens » caption 12 Medium muted over the 20 px text-secondary icons, gap 6. The icons keep their 44 px
-                    phone tap target (kit rule) — the negative margins hand the padding back so the segment is as tall and as flush as the frame's. */}
+                {/* c4-liens (m375-d4-profil): « Liens » caption 12 Medium muted over the 20 px text-secondary icons, gap 6. The icons keep their 34 px
+                    tap target (20 + 7 each side) — the negative margins hand the padding back so the segment is as tall and as flush as the frame's. */}
                 <div className="flex flex-col gap-1.5">
                   <span className="text-caption font-medium text-text-muted">{t('freelance.public.links_label', lang)}</span>
-                  <SocialLinks links={freelancer.links} name={freelancer.fullName} lang={lang} className="-my-3 -ms-3 sm:-my-2 sm:-ms-2" />
+                  <SocialLinks links={freelancer.links} name={freelancer.fullName} lang={lang} className="-my-1.75 -ms-1.75" />
                 </div>
               </>
             )}

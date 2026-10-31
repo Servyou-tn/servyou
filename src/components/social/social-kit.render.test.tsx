@@ -52,10 +52,11 @@ describe('SocialLinks', () => {
     expect(screen.getByRole('link', { name: 'الموقع الإلكتروني لـ آية' })).toBeTruthy()
   })
 
-  it('has a 44px phone tap target and a focus ring', () => {
+  it('has a 34px tap target (20 + 7 each side, glyphs 14 apart as in Figma) and a focus ring', () => {
     render(<SocialLinks links={links} name="Aya" lang="fr" />)
     const cls = screen.getAllByRole('link')[0].className
-    expect(cls).toContain('size-11')
+    expect(cls).toContain('size-8.5')
+    expect(cls).not.toMatch(/gap-/)
     expect(cls).toMatch(/focus-visible/)
   })
 })
