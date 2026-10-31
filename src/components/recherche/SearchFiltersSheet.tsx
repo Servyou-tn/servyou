@@ -5,7 +5,7 @@ import { SlidersHorizontal, X } from 'lucide-react'
 import { useLang } from '@/components/LangProvider'
 import { t } from '@/lib/i18n'
 import { FOCUS_RING } from '@/components/layout/styles'
-import { SearchFilters, type FilterCategory } from './SearchFilters'
+import { SearchFilters, type FilterCategory, type SheetExtras } from './SearchFilters'
 
 type Props = {
   categories: FilterCategory[]
@@ -14,6 +14,8 @@ type Props = {
   prixMax: number | null
   basePath?: string
   showCategory?: boolean
+  /** Ville + Trier par fieldsets (the Freelances lens). */
+  extras?: SheetExtras
 }
 
 // Mobile-only entry to the filter form: a "Filtres" button (with an active-count badge)
@@ -28,11 +30,15 @@ export function SearchFiltersSheet({
   prixMax,
   basePath = '/recherche',
   showCategory = true,
+  extras,
 }: Props) {
   const [open, setOpen] = useState(false)
   const lang = useLang()
 
-  const activeCount = selectedCategorie.length + (prixMin != null || prixMax != null ? 1 : 0)
+  const activeCount =
+    selectedCategorie.length +
+    (prixMin != null || prixMax != null ? 1 : 0) +
+    (extras ? (extras.ville ? 1 : 0) + (extras.tri !== extras.triDefault ? 1 : 0) : 0)
 
   return (
     <>
@@ -83,6 +89,7 @@ export function SearchFiltersSheet({
               mode="sheet"
               basePath={basePath}
               showCategory={showCategory}
+              extras={extras}
               onApplied={() => setOpen(false)}
             />
           </div>

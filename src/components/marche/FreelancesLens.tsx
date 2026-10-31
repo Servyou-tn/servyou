@@ -16,6 +16,7 @@ import { getLang } from '@/lib/i18n/server'
 import { t } from '@/lib/i18n'
 import { ServicesLensToggle } from './ServicesLensToggle'
 import { MarketplaceMobileHeader } from './MarketplaceMobileHeader'
+import { SearchFiltersSheet } from '@/components/recherche/SearchFiltersSheet'
 import { ServicesFilterBar } from './ServicesFilterBar'
 
 const BASE = '/marche/services'
@@ -80,7 +81,8 @@ export async function FreelancesLens({ searchParams }: { searchParams: Promise<R
           <ServicesLensToggle lang={lang} active="freelances" />
 
           {/* The SAME Filter Bar as the Services lens (Figma 662:53894 « Filter Bar / viewport=desktop »): search · Catégorie · Ville · Prix · Trier.
-              The 375 frame (663:55017) draws NO in-page filter — only the toggle and the cards — so below `lg` there is none (open question D9). */}
+              The 375 frame (663:55017) draws no in-page filter; the FOUNDER approved the Services lens's « Filtres » button + sheet here (Oct 31, #271),
+              with Ville and Trier par added to the sheet. */}
           <div className="hidden lg:block">
             <ServicesFilterBar
               categories={categories}
@@ -95,7 +97,26 @@ export async function FreelancesLens({ searchParams }: { searchParams: Promise<R
               searchPlaceholderKey="freelances.filters.searchPlaceholder"
             />
           </div>
-
+          <div className="lg:hidden max-lg:mt-4">
+            <SearchFiltersSheet
+              categories={categories}
+              selectedCategorie={params.categorie}
+              prixMin={params.prixMin}
+              prixMax={params.prixMax}
+              basePath={BASE}
+              extras={{
+                cities,
+                ville: params.ville,
+                tri: params.tri,
+                triDefault: 'recent',
+                sortOptions: [
+                  { value: 'recent', labelKey: 'services.sort.recent' },
+                  { value: 'prix_asc', labelKey: 'services.sort.prix_asc' },
+                  { value: 'prix_desc', labelKey: 'services.sort.prix_desc' },
+                ],
+              }}
+            />
+          </div>
         </div>
 
         <div className="flex flex-col gap-6 max-lg:mt-5">

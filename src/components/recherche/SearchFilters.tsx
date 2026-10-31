@@ -11,6 +11,18 @@ import { buildSearchQuery } from './search-url'
 
 export type FilterCategory = { slug: string; name_fr: string; name_ar: string }
 
+/**
+ * The sheet's two EXTRA fieldsets — Ville and Trier par — for the lenses whose bar has them (the Freelances lens). Absent = the sheet is exactly the
+ * category + price form every other surface uses. `tri` is the URL value of the active sort and `triDefault` the one that is NOT written to the URL.
+ */
+export type SheetExtras = {
+  cities: string[]
+  ville: string | null
+  tri: string
+  triDefault: string
+  sortOptions: { value: string; labelKey: string }[]
+}
+
 type Props = {
   categories: FilterCategory[]
   selectedCategorie: string[]
@@ -25,6 +37,8 @@ type Props = {
   basePath?: string
   // /categories/[slug] hides the Catégorie section (the slug already locks the category).
   showCategory?: boolean
+  // Sheet only: Ville + Trier par fieldsets (see SheetExtras).
+  extras?: SheetExtras
 }
 
 // A single collapsible filter group for the inline (desktop) filter: an Upwork-style row
@@ -107,6 +121,7 @@ export function SearchFilters({
   onApplied,
   basePath = '/recherche',
   showCategory = true,
+  extras,
 }: Props) {
   const router = useRouter()
   const sp = useSearchParams()
@@ -117,6 +132,8 @@ export function SearchFilters({
   const [cat, setCat] = useState<string[]>(selectedCategorie)
   const [min, setMin] = useState(prixMin != null ? String(prixMin) : '')
   const [max, setMax] = useState(prixMax != null ? String(prixMax) : '')
+  const [vil, setVil] = useState(extras?.ville ?? '')
+  const [sort, setSort] = useState(extras?.tri ?? '')
 
   // Each inline group collapses independently; all closed by default. No persistence — a
   // route change (engine switch on /marche, or moving between filter surfaces) resets them to
@@ -132,7 +149,8 @@ export function SearchFilters({
     setPrixOpen(false)
   }
 
-  const hasActive = cat.length > 0 || min.trim() !== '' || max.trim() !== ''
+  const hasActive =
+    cat.length > 0 || min.trim() !== '' || max.trim() !== '' || (extras != null && (vil !== '' || sort !== extras.triDefault))
 
   function apply(next: { cat?: string[]; min?: string; max?: string }) {
     const c = next.cat ?? cat
@@ -140,7 +158,12 @@ export function SearchFilters({
     const hi = (next.max ?? max).trim()
     const qs = buildSearchQuery(
       sp,
-      { categorie: c, prix_min: lo === '' ? null : lo, prix_max: hi === '' ? null : hi },
+      {
+        categorie: c,
+        prix_min: lo === '' ? null : lo,
+        prix_max: hi === '' ? null : hi,
+        ...(extras ? { ville: vil || null, tri: sort === extras.triDefault ? null : sort } : {}),
+      },
       { resetPage: true },
     )
     router.push(qs ? `${basePath}?${qs}` : basePath)
@@ -157,6 +180,8 @@ export function SearchFilters({
     setCat([])
     setMin('')
     setMax('')
+    setVil('')
+    if (extras) setSort(extras.triDefault)
     if (mode === 'inline') {
       const qs = buildSearchQuery(
         sp,
@@ -249,10 +274,36 @@ export function SearchFilters({
             {categoryList}
           </fieldset>
         )}
+        {extras && extras.cities.length > 0 && (
+          <fieldset className="space-y-2">
+            <legend className={heading}>{t('services.filters.ville', lang)}</legend>
+            <div className="max-h-44 space-y-0.5 overflow-y-auto pe-1">
+              {[{ value: '', label: t('produits.filters.cityAll', lang) }, ...extras.cities.map((c) => ({ value: c, label: c }))].map((o) => (
+                <label key={o.value || 'all'} className="flex cursor-pointer items-center gap-2.5 py-1.5 text-sm text-text-primary">
+                  <FilterControl type="radio" name="sheet-ville" checked={vil === o.value} onChange={() => setVil(o.value)} />
+                  <span className="line-clamp-1">{o.label}</span>
+                </label>
+              ))}
+            </div>
+          </fieldset>
+        )}
         <fieldset className="space-y-2">
           <legend className={heading}>{t('search.filters.price', lang)}</legend>
           {prixInputs}
         </fieldset>
+        {extras && (
+          <fieldset className="space-y-2">
+            <legend className={heading}>{t('services.sort.label', lang)}</legend>
+            <div className="space-y-0.5">
+              {extras.sortOptions.map((o) => (
+                <label key={o.value} className="flex cursor-pointer items-center gap-2.5 py-1.5 text-sm text-text-primary">
+                  <FilterControl type="radio" name="sheet-tri" checked={sort === o.value} onChange={() => setSort(o.value)} />
+                  <span>{t(o.labelKey, lang)}</span>
+                </label>
+              ))}
+            </div>
+          </fieldset>
+        )}
 
         <button
           type="button"

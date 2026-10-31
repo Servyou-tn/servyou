@@ -55,3 +55,15 @@ Frame: header block + toggle bar (**Freelances selected**) + Freelancer Cards 34
 2. **No filter at 375** (still Q2 of #264, architect recommends adding the Services lens's « Filtres » sheet here too): built as drawn, so below `lg` only the page search filters this lens (no Catégorie / Ville / Prix / sort on a phone).
 3. **Avatar glyph.** The frame's person glyph inside the Avatar lg is 31 px; the shared `Avatar` draws 28. It is the design-system component, so I left it — say if it should change.
 4. The frame's mock names / skills (« TypeScript » repeated, « +1 » vs « +2 ») are data; live cards show real skills / service tags and real counts (« 2 services », « 1 service »).
+
+---
+
+# Founder rulings (Oct 31)
+Answers to the questions above, all approved by the founder; each approved deviation from the frames is recorded here.
+1. **« Filtres » on the Services lens (375): KEEP** where it is (below the toggle) — approved deviation from m375-marche-services.
+2. **« Filtres » on the Freelances lens (375): ADD** the same button and sheet, same position and style (below the toggle, 16 under it) — approved deviation from m375-marche-freelances. The sheet offers **Catégorie · Ville · Prix · Trier par**: the shared sheet gained two optional fieldsets (`extras`): Ville (« Toutes les villes » + the cities of listed freelancers) and Trier par (Plus récents / Prix croissant / Prix décroissant). Applying writes `categorie`, `prix_min/max`, `ville`, `tri` and keeps `vue` and `q`, drops `page`; the default sort is never written; the badge counts an active ville and a non-default sort; « Effacer les filtres » resets them. The Services lens's sheet is unchanged (Catégorie + Prix, as shipped).
+3. **Two search fields (shell + page block): KEEP BOTH** for the beta, no shell change; to be judged in the Nov 6–10 review.
+4. **Freelances placeholder: keep « Rechercher un freelance… »** — approved deviation from the frame's « Rechercher un service… ».
+5. **Pagination: keep the shipped one** (the frames draw none). **Avatar glyph 28:** the design-system component stays as it is (frame 31). **Shell chrome** (freelancer demo account vs the frame's client shell): noted, no action.
+
+Before / after at 375 (FR + AR, plus the open sheet): `docs/design/compare/m375-marche-freelances-filtres-fr.png`, `-ar.png`. Measured: the button sits at the same offset as on the Services lens (44 high, 16 under the toggle), the first card at y 237 (it was 177), no horizontal overflow, FR + AR sheets show Catégorie / Ville / Prix / Trier par.
