@@ -11,6 +11,7 @@ import { isValidPassword } from '@/lib/signup-validation'
 import { GOVERNORATES } from '@/lib/tunisia-governorates'
 import { normalizeAvatar, MAX_INPUT_BYTES, MAX_INPUT_MB, type NormalizeFailure } from '@/lib/images/normalize'
 import { recordUploadProvenance, deleteUploadProvenance } from '@/lib/images/provenance'
+import { reservePasswordAttempt, releasePasswordAttempt } from '@/lib/auth/password-attempts'
 import { callerActivity, uploadBucket } from '@/lib/images/upload-guard'
 
 // `field` lets the form attach the message to the input it belongs to; callers that only toast
@@ -317,9 +318,10 @@ const passwordInputSchema = z.object({
 // change" setting asks for, whether or not it is on); updateUser then writes the new one.
 //
 // Guessing the current password from a stolen session (pre-beta review M1): every attempt needs a fresh Turnstile
-// token (Supabase Auth's CAPTCHA on the password grant — refused here first when the token is missing). That is
-// friction, not a per-account limit: this sign-in runs from the server, so Supabase Auth's per-IP limit sees the
-// server's egress IP — a coarse global backstop (its 429 reads as « trop de tentatives »), not a per-attacker cap.
+// token (Supabase Auth's CAPTCHA on the password grant — refused here first when the token is missing), and an
+// account gets at most 5 wrong current passwords per 15 minutes (reservePasswordAttempt, a service-role table). This
+// sign-in runs from the server, so Supabase Auth's own per-IP limit sees the server's egress IP — only a coarse
+// global backstop (its 429 reads as « trop de tentatives »).
 export async function changePasswordAction(
   input: {
     currentPassword: string
@@ -350,11 +352,19 @@ export async function changePasswordAction(
   // CAPTCHA-guarded, even from this server-side client. Without a token the attempt would only fail there, so it is
   // refused here, before any Auth call.
   if (!turnstileToken) return { ok: false, error: t('common.error_bot_check', lang) }
+
+  // The per-account limit, checked before the guess reaches Auth. Fails closed: no record, no attempt.
+  const attempt = await reservePasswordAttempt(user.id)
+  if (!attempt.ok) return { ok: false, error: t('monCompte.password.error', lang) }
+  if (attempt.blocked) return { ok: false, error: t('monCompte.password.tooManyAttempts', lang) }
+
   const { error: reauthError } = await supabase.auth.signInWithPassword({
     email: user.email,
     password: currentPassword,
     options: { captchaToken: turnstileToken },
   })
+  // Only a wrong current password keeps its attempt row; every other outcome releases it.
+  if (reauthError?.code !== 'invalid_credentials') await releasePasswordAttempt(attempt.id)
   if (reauthError) {
     if (reauthError.code === 'captcha_failed') return { ok: false, error: t('common.error_bot_check', lang) }
     if (isAuthRateLimit(reauthError)) return { ok: false, error: t('common.rate_limit', lang) }

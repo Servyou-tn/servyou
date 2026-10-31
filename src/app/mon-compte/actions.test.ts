@@ -44,6 +44,9 @@ vi.mock('next/cache', () => ({ revalidatePath: vi.fn() }))
 vi.mock('@/lib/images/normalize', () => ({ normalizeAvatar: vi.fn(), MAX_INPUT_BYTES: 1, MAX_INPUT_MB: 1 }))
 vi.mock('@/lib/images/provenance', () => ({ recordUploadProvenance: vi.fn(), deleteUploadProvenance: vi.fn() }))
 vi.mock('@/lib/images/upload-guard', () => ({ callerActivity: vi.fn(), uploadBucket: vi.fn() }))
+// The wrong-password limit (src/lib/auth/password-attempts.ts) — a service-role table, mocked.
+const attempts = vi.hoisted(() => ({ reserve: vi.fn(), release: vi.fn() }))
+vi.mock('@/lib/auth/password-attempts', () => ({ reservePasswordAttempt: attempts.reserve, releasePasswordAttempt: attempts.release }))
 
 import { updateProfileAction, requestAccountDeletionAction, changePasswordAction } from './actions'
 import { t } from '@/lib/i18n'
@@ -59,6 +62,8 @@ beforeEach(() => {
   h.signInWithPassword.mockResolvedValue({ error: null })
   h.updateUser.mockResolvedValue({ error: null })
   h.insert.mockResolvedValue({ error: null })
+  attempts.reserve.mockReset().mockResolvedValue({ ok: true, id: 'att-1', blocked: false })
+  attempts.release.mockReset().mockResolvedValue(undefined)
 })
 
 describe('updateProfileAction', () => {
@@ -214,6 +219,40 @@ describe('changePasswordAction', () => {
     h.signInWithPassword.mockResolvedValue({ error: err })
     expect(await changePasswordAction(input, TOKEN)).toEqual({ ok: false, error: t('common.rate_limit', 'fr') })
     expect(h.updateUser).not.toHaveBeenCalled()
+  })
+
+  // The per-account limit: 5 wrong current passwords per 15 min (reserve-then-count, service-role table).
+  it('an account over the limit gets « trop de tentatives… 15 minutes » and the guess never reaches Auth', async () => {
+    attempts.reserve.mockResolvedValue({ ok: true, id: 'att-6', blocked: true })
+    expect(await changePasswordAction(input, TOKEN)).toEqual({ ok: false, error: t('monCompte.password.tooManyAttempts', 'fr') })
+    expect(h.signInWithPassword).not.toHaveBeenCalled()
+    expect(h.updateUser).not.toHaveBeenCalled()
+  })
+
+  it('fails closed when the attempt cannot be recorded', async () => {
+    attempts.reserve.mockResolvedValue({ ok: false })
+    expect(await changePasswordAction(input, TOKEN)).toMatchObject({ ok: false })
+    expect(h.signInWithPassword).not.toHaveBeenCalled()
+  })
+
+  it('a wrong current password keeps its attempt (it counts toward the limit)', async () => {
+    h.signInWithPassword.mockResolvedValue({ error: { code: 'invalid_credentials', message: 'x', status: 400 } })
+    await changePasswordAction(input, TOKEN)
+    expect(attempts.reserve).toHaveBeenCalledWith('u1')
+    expect(attempts.release).not.toHaveBeenCalled()
+  })
+
+  it.each([
+    ['success', null],
+    ['a failed bot check', { code: 'captcha_failed', message: 'x', status: 400 }],
+    ['a rate-limited Auth', { code: 'over_request_rate_limit', message: 'x', status: 429 }],
+    ['an Auth outage', { code: 'unexpected_failure', message: 'x', status: 500 }],
+  ])('%s releases the attempt (only wrong passwords count)', async (_label, err) => {
+    const log = vi.spyOn(console, 'error').mockImplementation(() => {})
+    h.signInWithPassword.mockResolvedValue({ error: err })
+    await changePasswordAction(input, TOKEN)
+    expect(attempts.release).toHaveBeenCalledWith('att-1')
+    log.mockRestore()
   })
 
   it('a failed bot check is the bot-check message, not « wrong current password », and changes nothing', async () => {
