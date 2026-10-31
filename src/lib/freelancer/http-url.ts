@@ -7,8 +7,8 @@
 // Deliberately NOT `z.httpUrl()`: that also demands a dotted domain, which rejects
 // `http://localhost:54321/…` — the local Supabase storage URL a portfolio imageUrl carries in dev.
 //
-// This guards the server actions only. A direct REST write by the row's owner bypasses it; the
-// DB-side CHECK is logged in docs/follow-ups.md.
+// This guards the server actions. A direct REST write by the row's owner is refused by the DB-side
+// `^https?://` CHECKs on the same five columns (migration 106, 20261030221121_freelancer_url_scheme_checks).
 //
 // Keep this regex's source exactly `^https?$`: zod 4 only adds its "must contain ://" check when
 // the protocol pattern's source equals its own httpProtocol regex (v4/core/schemas.js, $ZodURL).
