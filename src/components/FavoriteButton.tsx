@@ -110,7 +110,6 @@ export function FavoriteButton({ item_type, item_id, variant = 'glyph' }: Props)
         disabled={toggling}
         title={label}
         aria-label={label}
-        aria-pressed={favorited}
         className={iconClass}
       >
         <Heart className={`size-5 ${favorited ? 'fill-danger-500 text-danger-500' : 'text-text-muted'}`} aria-hidden="true" />

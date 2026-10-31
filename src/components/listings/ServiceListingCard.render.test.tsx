@@ -81,6 +81,19 @@ describe('ServiceListingCard', () => {
     expect(container.textContent).not.toMatch(/[♡♥]/)
   })
 
+  it('keeps the chip row on one line (a wrapped row would overflow the fixed boxes) and shows a keyboard focus ring on the overlay', () => {
+    const { container } = mount()
+    expect(container.querySelector('article span.flex-nowrap, article div.flex-nowrap')).not.toBeNull()
+    const overlay = container.querySelector('article span[aria-hidden="true"].border-2')!
+    expect(overlay.className).toMatch(/group-has-\[a:focus-visible\]\/card:ring/)
+  })
+
+  it('the icon heart has a stable pressed-free name that says what a press does', async () => {
+    mount()
+    const heart = await screen.findByRole('button', { name: /favoris/i })
+    expect(heart).not.toHaveAttribute('aria-pressed')
+  })
+
   it('shows the Arabic chip labels in Arabic', () => {
     mount('ar')
     expect(screen.getByText('ووردبريس')).toBeInTheDocument()

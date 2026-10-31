@@ -25,11 +25,14 @@ export function MarketplaceMobileHeader({
     <div className="-mx-4 -mt-6 flex flex-col gap-3 border-b border-border-subtle bg-surface-base p-4 pb-[15px] md:-mx-8 md:-mt-8 lg:hidden">
       <h1 className="text-[20px] font-semibold leading-6 text-text-primary">{t('shell.sidebar.marketplace', lang)}</h1>
       <form action={action} method="get" role="search">
-        {Object.entries(keep).map(([name, value]) => (
-          <input key={name} type="hidden" name={name} value={value} />
-        ))}
+        {Object.entries(keep)
+          .filter(([name]) => name !== 'q' && name !== 'page')
+          .map(([name, value]) => (
+            <input key={name} type="hidden" name={name} value={value} />
+          ))}
         <input
           type="search"
+          enterKeyHint="search"
           name="q"
           defaultValue={q}
           placeholder={placeholder}

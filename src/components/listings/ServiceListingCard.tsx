@@ -73,9 +73,9 @@ export function ServiceListingCard({ service }: { service: ServiceListing }) {
 
   return (
     <article
-      className={`relative flex h-[279px] flex-col overflow-hidden rounded-xl bg-surface-base transition-[transform,box-shadow] duration-200 ease-out hover:-translate-y-0.5 motion-reduce:transition-none motion-reduce:hover:translate-y-0 ${HOVER_SHADOW}`}
+      className={`group/card relative flex h-[279px] flex-col overflow-hidden rounded-xl bg-surface-base transition-[transform,box-shadow] duration-200 ease-out hover:-translate-y-0.5 motion-reduce:transition-none motion-reduce:hover:translate-y-0 ${HOVER_SHADOW}`}
     >
-      <span aria-hidden="true" className="pointer-events-none absolute inset-0 z-20 rounded-xl border-2 border-brand-blue-600" />
+      <span aria-hidden="true" className="pointer-events-none absolute inset-0 z-20 rounded-xl border-2 border-brand-blue-600 group-has-[a:focus-visible]/card:ring-4 group-has-[a:focus-visible]/card:ring-inset group-has-[a:focus-visible]/card:ring-brand-blue-600/40" />
       <Link
         href={`/services/${service.id}`}
         aria-label={service.title}
@@ -92,7 +92,7 @@ export function ServiceListingCard({ service }: { service: ServiceListing }) {
           {/* skillChips — up to 3 skill tags (v3.7 frame 611:45637), category label as the
               fallback. Pinned to the bottom of colorBlock by SPACE_BETWEEN. */}
           {chips.length > 0 && (
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-nowrap gap-2 overflow-hidden">
               {chips.map((chip) => (
                 <span
                   key={chip}

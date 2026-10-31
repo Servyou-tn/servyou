@@ -39,8 +39,16 @@ describe('MarketplaceMobileHeader', () => {
     expect(hidden).toEqual([['vue', 'freelances'], ['ville', 'Sfax'], ['prix_min', '40']])
   })
 
+  it('never carries `page` or a stale `q` even if the caller passes them (a new search starts on page 1)', () => {
+    const { container } = render(
+      <MarketplaceMobileHeader lang="fr" action="/marche/services" q="a" placeholderKey="services.filters.searchPlaceholder" keep={{ page: '3', q: 'old', ville: 'Tunis' }} />,
+    )
+    expect(Array.from(container.querySelectorAll('input[type=hidden]')).map((i) => i.getAttribute('name'))).toEqual(['ville'])
+  })
+
   it('reads in Arabic', () => {
     render(<MarketplaceMobileHeader lang="ar" action="/marche/services" q="" placeholderKey="services.filters.searchPlaceholder" keep={{}} />)
-    expect(screen.getByRole('heading', { level: 1 }).textContent).not.toMatch(/shell\./)
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('السوق')
+    expect(screen.getByRole('searchbox', { name: 'ابحث عن خدمة…' })).toBeInTheDocument()
   })
 })
