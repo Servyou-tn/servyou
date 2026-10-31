@@ -1053,6 +1053,20 @@ both on 2026-10-28.
     - `client-write-grants-live.test.ts` compares it with the allow-list both ways; the static half
       (`client-write-grants-static.test.ts`) runs in CI on every PR.
     - The recorded statement carries no comments. The executable SQL is identical.
+
+109. **20261031201742_listing_upload_caps** (`cc2d54fc`) — listing and upload limits (pre-beta review M2 / M3,
+    founder + architect decision 2026-10-31): at most 100 products per shop (`trg_limit_products_per_shop`, hint
+    `products_per_shop_cap`), 20 service listings per freelancer profile, drafts included
+    (`trg_limit_services_per_freelancer`, `services_per_freelancer_cap`), and 100 image uploads per account per
+    rolling 24 h (`trg_limit_daily_uploads` on `uploaded_objects`, `daily_upload_cap`).
+    - Same shape as 105 (BEFORE INSERT, SECURITY DEFINER, empty search_path, per-parent advisory lock, 23514 + hint).
+      The product and service caps bypass the service role (`auth.uid()` null).
+    - Approved deviation: the upload cap has NO service-role bypass. Every `uploaded_objects` row is a service-role
+      write (`recordUploadProvenance`), so it counts by `owner_id` for any writer; only `backfilled` rows and
+      `shop-assets` are exempt. The upload actions refuse before storing anything (`dailyUploadQuota`).
+    - At apply: fullest shop 26 products, fullest freelancer 10 listings, busiest owner-day 33 uploads; nothing
+      existing rejected or rewritten.
+    - The recorded statement carries no top-level comments. The executable SQL is identical.
 110. **20261031211305_freelancer_links_cap** (`43f4cc3b`) — at most 5 `freelancer_links` per freelancer profile
     (founder decision 2026-11-01; the app cap was 3 with no DB guard). `trg_limit_freelancer_links`, BEFORE INSERT,
     migration-105 shape (SECURITY DEFINER, empty search_path, per-profile advisory lock, 23514 + hint

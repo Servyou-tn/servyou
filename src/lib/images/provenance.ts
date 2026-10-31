@@ -7,7 +7,9 @@ import { createAdminClient } from '@/lib/supabase/admin'
 // stays excluded until one ships.
 export type ProvenanceBucket = 'avatars' | 'product-images' | 'shop-assets' | 'portfolio-media'
 
-export type RecordProvenanceResult = { ok: true } | { ok: false; error: string }
+// `capReached`: the daily upload cap (trg_limit_daily_uploads, hint daily_upload_cap) refused the row — the bytes are
+// already stored, so the caller answers « limite atteinte » rather than a generic failure.
+export type RecordProvenanceResult = { ok: true } | { ok: false; error: string; capReached?: boolean }
 
 // Records that `ownerId` uploaded `path` in `bucket` through this app's own normalize + upload
 // pipeline. This is the ONLY thing that lets `enforce_product_image_provenance()` (the DB trigger
@@ -32,7 +34,7 @@ export async function recordUploadProvenance(
   const { error } = await admin.from('uploaded_objects').insert({ bucket, path, owner_id: ownerId })
   if (error) {
     console.error(`[recordUploadProvenance] insert failed for ${bucket}/${path}:`, error.message, error.code, error.details)
-    return { ok: false, error: error.message }
+    return { ok: false, error: error.message, capReached: error.hint === 'daily_upload_cap' }
   }
   return { ok: true }
 }
