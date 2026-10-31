@@ -5,17 +5,16 @@ import { toast } from 'sonner'
 import { useLang } from '@/components/LangProvider'
 import { t } from '@/lib/i18n'
 import { FOCUS_RING } from '@/components/layout/styles'
-import { validateContactForm, NAME_MAX, EMAIL_MAX, MESSAGE_MAX, type ContactErrors } from '@/lib/contact/contact-validation'
+import {
+  validateContactForm,
+  CONTACT_SUBJECTS,
+  NAME_MAX,
+  EMAIL_MAX,
+  MESSAGE_MAX,
+  type ContactErrors,
+} from '@/lib/contact/contact-validation'
 import { Turnstile, type TurnstileHandle } from '@/components/security/Turnstile'
 import { submitContactMessage } from './actions'
-
-const SUBJECTS = [
-  'contact.form.subject.general',
-  'contact.form.subject.technical',
-  'contact.form.subject.suggestion',
-  'contact.form.subject.abuse',
-  'contact.form.subject.other',
-] as const
 
 const fieldClass = (invalid: boolean) =>
   `w-full rounded-xl border bg-white px-4 py-3 text-sm text-text-primary placeholder:text-text-muted ${FOCUS_RING} ${
@@ -52,6 +51,9 @@ export function ContactForm() {
         setErrors({})
       } else if (result.botCheck) {
         toast.error(t('common.error_bot_check', lang))
+      } else if (result.field === 'subject') {
+        // Only a tampered payload: the select offers the accepted subjects alone.
+        toast.error(t('contact.form.error.generic', lang))
       } else if (result.field) {
         setErrors({ [result.field]: true })
       }
@@ -117,7 +119,7 @@ export function ContactForm() {
           className={fieldClass(false)}
         >
           <option value="">{t('contact.form.subject.placeholder', lang)}</option>
-          {SUBJECTS.map((key) => (
+          {CONTACT_SUBJECTS.map((key) => (
             <option key={key} value={key}>
               {t(key, lang)}
             </option>

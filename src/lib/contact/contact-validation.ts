@@ -19,6 +19,15 @@ export type ContactErrors = {
 export const NAME_MAX = 100
 export const EMAIL_MAX = 254 // RFC 5321 path limit
 export const SUBJECT_MAX = 100 // the select sends an i18n key (~40 characters)
+
+// The select's options. The server accepts only these (or none), so the logged subject is never attacker text.
+export const CONTACT_SUBJECTS = [
+  'contact.form.subject.general',
+  'contact.form.subject.technical',
+  'contact.form.subject.suggestion',
+  'contact.form.subject.abuse',
+  'contact.form.subject.other',
+] as const
 export const MESSAGE_MAX = 2000
 
 // Deliberately simple email shape check (a non-empty local part, an @, a dotted domain).
@@ -34,7 +43,10 @@ export function validateContactForm(input: ContactInput): { ok: boolean; errors:
   const name = input.name.trim()
   if (!name || name.length > NAME_MAX) errors.name = true
   if (!isValidEmail(input.email) || input.email.trim().length > EMAIL_MAX) errors.email = true
-  if ((input.subject ?? '').length > SUBJECT_MAX) errors.subject = true
+  const subject = input.subject ?? ''
+  if (subject.length > SUBJECT_MAX || (subject !== '' && !(CONTACT_SUBJECTS as readonly string[]).includes(subject))) {
+    errors.subject = true
+  }
   const msg = input.message.trim()
   if (!msg || msg.length > MESSAGE_MAX) errors.message = true
   return { ok: Object.keys(errors).length === 0, errors }

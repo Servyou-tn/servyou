@@ -35,6 +35,16 @@ describe('submitContactMessage', () => {
     expect(logged).toContain('contact.form.subject.general')
   })
 
+  it('the bot check runs before validation (an invalid payload with a failed check is « bot check »)', async () => {
+    bot.verify.mockResolvedValue({ ok: false, reason: 'rejected' })
+    expect(await submitContactMessage({ ...VALID, email: 'nope' }, 'bad')).toEqual({ ok: false, botCheck: true })
+  })
+
+  it("a subject outside the form's options is refused, so attacker text is never logged", async () => {
+    expect(await submitContactMessage({ ...VALID, subject: 'x FAKE LOG LINE' }, TOKEN)).toEqual({ ok: false, field: 'subject' })
+    expect(logs).toEqual([])
+  })
+
   it('a failed bot check is refused before anything is logged', async () => {
     bot.verify.mockResolvedValue({ ok: false, reason: 'rejected' })
     expect(await submitContactMessage(VALID, 'bad')).toEqual({ ok: false, botCheck: true })
@@ -67,7 +77,7 @@ describe('validateContactForm — a limit on every field', () => {
       validateContactForm({
         name: 'n'.repeat(NAME_MAX),
         email: `${'a'.repeat(EMAIL_MAX - 12)}@example.com`,
-        subject: 's'.repeat(SUBJECT_MAX),
+        subject: 'contact.form.subject.other',
         message: 'm'.repeat(MESSAGE_MAX),
       }).ok,
     ).toBe(true)
