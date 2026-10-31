@@ -11,6 +11,7 @@ import { isPathWithinProduct, nextDisplayOrder } from '@/lib/products/gallery'
 import { PRODUCTS_PER_PAGE } from '@/lib/marche/seller-products'
 import {
   MAX_PRODUCT_IMAGES,
+  MAX_PRODUCTS_PER_SHOP,
   type ProductActionResult,
   type UploadImageResult,
   type BulkProductActionResult,
@@ -24,6 +25,7 @@ import {
   type NormalizeFailure,
 } from '@/lib/images/normalize'
 import { recordUploadProvenance } from '@/lib/images/provenance'
+import { dailyUploadQuota, DAILY_UPLOAD_CAP } from '@/lib/images/upload-quota'
 import { isCallerActive, uploadBucket } from '@/lib/images/upload-guard'
 
 // G6 « Ajouter un produit » — the FIRST write path to `products` anywhere in the app. The seller
@@ -170,6 +172,16 @@ export async function uploadProductImageAction(formData: FormData): Promise<Uplo
     return { ok: false, error: t('product.image.error.max', lang, { max: MAX_PRODUCT_IMAGES }) }
   }
 
+  // The daily upload cap (DAILY_UPLOAD_CAP per rolling 24 h, enforced in the database by trg_limit_daily_uploads):
+  // refused before the decode, so nothing is stored. A failed count refuses too (generic error, never an
+  // unchecked upload).
+  const quota = await dailyUploadQuota(user.id)
+  if (!quota.ok) return { ok: false, error: t('common.error_generic', lang) }
+  if (quota.reached) {
+    console.warn(`[uploadProductImage] refused: daily upload cap reached for user ${user.id}`)
+    return { ok: false, error: t('upload.error.daily_cap', lang, { max: DAILY_UPLOAD_CAP }) }
+  }
+
   const normalized = await normalizeProductImage(Buffer.from(await parsed.data.arrayBuffer()))
   if (!normalized.ok) {
     // `reason` distinguishes HEIC from a non-image from a decode failure — the three are one
@@ -217,6 +229,7 @@ export async function uploadProductImageAction(formData: FormData): Promise<Uplo
   const provenance = await recordUploadProvenance('product-images', path, user.id)
   if (!provenance.ok) {
     console.error(`[uploadProductImage] provenance insert failed for ${path}, user ${user.id} — object left for reconciliation`)
+    if (provenance.capReached) return { ok: false, error: t('upload.error.daily_cap', lang, { max: DAILY_UPLOAD_CAP }) }
     return { ok: false, error: t('product.image.error.upload', lang) }
   }
 
@@ -357,6 +370,8 @@ export async function createProductAction(input: unknown): Promise<ProductAction
 
   if (insertError) {
     console.error('[createProduct] insert failed:', insertError.message, insertError.code, insertError.details)
+    // The 100-products-per-shop cap (trg_limit_products_per_shop, hint products_per_shop_cap).
+    if (insertError.hint === 'products_per_shop_cap') return { ok: false, error: t('product.error_cap', lang, { max: MAX_PRODUCTS_PER_SHOP }) }
     return { ok: false, error: t('product.error_add', lang) }
   }
 

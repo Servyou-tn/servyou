@@ -767,6 +767,7 @@ export const ar: Record<string, string> = {
   'product.error_stock_required': "يرجى تحديد الكمية المتوفرة في المخزون.",
   'product.error_update':   "حدث خطأ أثناء التحديث. يرجى المحاولة مرة أخرى.",
   'product.error_add':      "حدث خطأ أثناء الإضافة. يرجى المحاولة مرة أخرى.",
+  'product.error_cap':      "تم بلوغ الحد: {max} منتج كحد أقصى لكل متجر. احذف منتجًا لإضافة منتج جديد.",
 
   // G5 « Mes produits » (Figma 522:29106) — docs/design/g5-discovery.md
   'product.list_subtitle':          "أدر كتالوجك: الحالة والمخزون والمبيعات.",
@@ -955,6 +956,7 @@ export const ar: Record<string, string> = {
   'product.image.error.decode':     "تعذرت معالجة هذه الصورة. جرب صورة أخرى.",
   'product.image.error.upload':     "فشل إرسال الصورة. يرجى المحاولة من جديد.",
   'product.image.error.max':        "لقد بلغت الحد الأقصى وهو {max} صور.",
+  'upload.error.daily_cap':        "لقد بلغت الحد الأقصى وهو {max} صورة مرسلة خلال 24 ساعة. حاول مرة أخرى لاحقًا.",
   'product.field_note':             "ملاحظة للبائع",
   'product.error_delivery_name':    "اسم التوصيل إلزامي.",
   'product.error_delivery_address': "عنوان التوصيل إلزامي.",
@@ -3579,6 +3581,7 @@ export const ar: Record<string, string> = {
   'service.wizard.error.session':       "انتهت جلستك. سجل الدخول مجددا للحفظ.",
   'service.wizard.error.category_unavailable': "هذه الفئة لم تعد متاحة. اختر فئة أخرى.",
   'service.wizard.error.draft_gone':    "هذه المسودة لم تعد موجودة. أعد تحميل الصفحة للبدء من جديد.",
+  'service.wizard.error.cap_reached': "تم بلوغ الحد: لديك بالفعل العدد الأقصى من الخدمات. احذف خدمة لإنشاء خدمة جديدة.",
   // H6 PR-3 — steps 3 « Tarif » / 4 « Prestation » (docs/design/h6-pr3-deltas.md §7).
   // « عن بُعد » reuses
   // serviceDetail.mode.remote and « طريقة تقديم الخدمة » serviceDetail.mode.title.

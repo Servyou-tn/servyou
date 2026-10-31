@@ -737,6 +737,7 @@ export const fr: Record<string, string> = {
   'product.error_stock_required': "Veuillez indiquer la quantité en stock.",
   'product.error_update':   "Une erreur est survenue lors de la mise à jour. Veuillez réessayer.",
   'product.error_add':      "Une erreur est survenue lors de l'ajout. Veuillez réessayer.",
+  'product.error_cap':      "Limite atteinte : {max} produits par boutique au maximum. Supprimez un produit pour en ajouter un.",
 
   // G5 « Mes produits » (Figma 522:29106) — docs/design/g5-discovery.md
   'product.list_subtitle':          "Gérez votre catalogue : statut, stock et ventes.",
@@ -938,6 +939,7 @@ export const fr: Record<string, string> = {
   'product.image.error.decode':     "Cette image n'a pas pu être traitée. Essayez une autre photo.",
   'product.image.error.upload':     "L'envoi de la photo a échoué. Veuillez réessayer.",
   'product.image.error.max':        "Vous avez atteint la limite de {max} photos.",
+  'upload.error.daily_cap':        "Vous avez atteint la limite de {max} photos envoyées en 24 heures. Réessayez plus tard.",
   'product.field_note':             "Note pour le vendeur",
   'product.error_delivery_name':    "Le nom de livraison est requis.",
   'product.error_delivery_address': "L'adresse de livraison est requise.",
@@ -3694,6 +3696,7 @@ export const fr: Record<string, string> = {
   'service.wizard.error.session':       "Votre session a expiré. Reconnectez-vous pour enregistrer.",
   'service.wizard.error.category_unavailable': "Cette catégorie n'est plus disponible. Choisissez-en une autre.",
   'service.wizard.error.draft_gone':    "Ce brouillon n'existe plus. Rechargez la page pour recommencer.",
+  'service.wizard.error.cap_reached': "Limite atteinte : vous avez déjà le nombre maximum de services. Supprimez-en un pour en créer un nouveau.",
   // H6 PR-3 — steps 3 « Tarif » (Figma 459:18966) and 4 « Prestation » (459:19023); labels and helpers
   // verbatim from the frames, except « Par mois » (founder ruling D13 — replaces the frame's « Par projet »).
   // Error strings are not in any frame (docs/design/h6-pr3-deltas.md §7).

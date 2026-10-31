@@ -237,3 +237,11 @@ describe('saveServiceDraftAction — refusals', () => {
     expect(res).toEqual({ ok: false, errorKey: 'service.wizard.error.category_unavailable' })
   })
 })
+
+describe('saveServiceDraftAction — the 20-services-per-freelancer cap', () => {
+  it('the database refusal (hint services_per_freelancer_cap) is « limite atteinte », not « catégorie indisponible »', async () => {
+    h.state.write = { data: null, error: { message: 'Ce profil a déjà 20 services, le maximum.', code: '23514', details: null, hint: 'services_per_freelancer_cap' } }
+    const res = await saveServiceDraftAction(INPUT)
+    expect(res).toEqual({ ok: false, errorKey: 'service.wizard.error.cap_reached' })
+  })
+})

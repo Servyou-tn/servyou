@@ -57,6 +57,11 @@ export const INTEGRATION_GLOBS = [
   '**/session-refresh-live.test.ts',
   // Compares the live catalog's client write grants with db/client-write-allowlist.json (1 sign-in).
   '**/client-write-grants-live.test.ts',
+  // The listing / upload caps (pre-beta review M2 / M3): 1 sign-in each.
+  '**/listing-caps-live.test.ts',
+  '**/services-cap-live.test.ts',
+  // The freelancer links cap (5 per profile): 1 sign-in.
+  '**/freelancer-links-cap-live.test.ts',
   // The password-reset flow with « Secure password change » (pre-beta review M1): 1 sign-in.
   '**/password-reset-live.test.ts',
   // The wrong-password attempt limit (5 per 15 min): 1 sign-in.
