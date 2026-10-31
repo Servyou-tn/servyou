@@ -165,6 +165,9 @@ Preview click-through: `docs/operations/session-refresh-preview-check.md`.
   token with getUser(jwt) and never refreshes. Correct the server.ts comment either way.
 
 ## MEDIUM — Supabase default privileges re-grant writes on any new or re-created view
+✅ CLOSED (views / tables half) — migration 107 (`20261030231152_fail_closed_default_privileges`, 2026-10-30): new
+tables and views get client SELECT only. The client-write allow-list CI check + live catalog test follow in their own
+PR. The `trg_enforce_active_user` per-table half and supabase_admin's defaults: `fail-closed-default-privileges.md`.
 
 - **What:** migration 60 revoked writes on the two existing views only. A new view, or a
   drop-and-recreate of `public_profiles`, gets INSERT / UPDATE / DELETE for anon and authenticated

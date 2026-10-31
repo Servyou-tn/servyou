@@ -36,9 +36,10 @@ gstack-investigate (root cause) · gstack-review (before every report).
     another account;
   · never rewrite existing rows unless the founder approves; new writes only.
 - **Grants are explicit since migration 68** (`20261026190353`, default privileges closed):
-  · a new table in `public` gets anon SELECT and authenticated SELECT / INSERT / UPDATE / DELETE —
-    nothing else. Decide every grant on purpose; a table with system-owned columns uses column-level
-    INSERT / UPDATE grants (the `orders`, `job_posts`, `data_exports` pattern);
+  · **fail-closed since migration 107** (`20261030231152`): a new table or view in `public` gets anon
+    SELECT and authenticated SELECT — nothing else. Every client write is an explicit GRANT in the
+    migration (table-level, or column-level for system-owned columns — the `orders`, `job_posts`,
+    `data_exports` pattern);
   · a new function gets NO EXECUTE for anyone but service_role. An RPC the app calls needs
     `grant execute … to authenticated` (and anon only if an anonymous page calls it); a trigger
     function needs none (EXECUTE is not checked when a trigger fires);

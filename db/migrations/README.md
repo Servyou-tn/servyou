@@ -1032,6 +1032,16 @@ both on 2026-10-28.
     - `image_url`: the provenance trigger (BEFORE) already refuses anything but this project's portfolio-media URLs
       with an upload record, so its CHECK is an unreachable backstop, kept as ruled.
     - The recorded statement carries no comments. The executable SQL is identical.
+107. **20261030231152_fail_closed_default_privileges** (`c79fcc37`) — fail-closed defaults (architect's ruling,
+    2026-10-30): `alter default privileges for role postgres in schema public revoke insert, update, delete on tables
+    from anon, authenticated`. A table or view postgres creates from now on gets SELECT only for clients; a write
+    privilege exists only where a migration GRANTs it. Closes the « new or re-created view is writable » class
+    (migration 60).
+    - Existing grants untouched: fingerprint `9a02c52fe952050942c6b53e53b2a3cc` / 151 entries before and after.
+    - Verified at apply: default ACL `postgres=arwdDxtm anon=r authenticated=r service_role=arwdDxtm`; a probe table
+      and view (rolled back) got anon / authenticated SELECT only.
+    - Residual: supabase_admin's own defaults in public (platform-created objects), logged in
+      `docs/follow-ups/fail-closed-default-privileges.md`.
 
 ## Rollback paths
 

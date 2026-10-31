@@ -13,4 +13,4 @@
   `uploaded_objects` (RLS on, no policy, no client grant — by design).
 - `supabase_admin`'s own default privileges in `public` still grant everything to anon / authenticated; they
   cannot be altered as `postgres`. Only a table or function created by `supabase_admin` (platform tooling)
-  would inherit them.
+  would inherit them. Tracked as the known residual in `fail-closed-default-privileges.md` (after migration 107).
