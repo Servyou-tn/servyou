@@ -2644,6 +2644,19 @@ export const ar: Record<string, string> = {
   'category.empty.services':             "لا توجد خدمات في هذه الفئة حاليا",
   'category.empty.services_subtitle':    "عُد قريبا، أو تصفح جميع الخدمات.",
   'category.description.design-graphique-logo': "شعارات، هويات بصرية، فلايرات، تغليف: اعثر على مصمم تونسي لمشروعك.",
+  // REVIEW_AR_TRANSLATION — the other 12 sectors' one-line descriptions (drafts for the founder's Arabic review).
+  'category.description.developpement-web-mobile': "مواقع تعريفية، متاجر إلكترونية، تطبيقات: اعثر على مطوّر تونسي لمشروعك.",
+  'category.description.design-ui-ux': "نماذج، مسارات المستخدم، نماذج أولية: اعثر على مصمم UI/UX تونسي لمنتجك.",
+  'category.description.marketing-digital': "إعلانات، تحسين محركات البحث، استراتيجية إطلاق: اعثر على خبير تسويق تونسي لتطوير نشاطك.",
+  'category.description.community-management': "منشورات، رزنامة محتوى، تنشيط صفحاتك: اعثر على مدير مجتمعات تونسي.",
+  'category.description.redaction-contenu': "نصوص المواقع، أوصاف المنتجات، مقالات: اعثر على كاتب تونسي لمحتواك.",
+  'category.description.traduction': "الفرنسية، العربية، الإنجليزية: اعثر على مترجم تونسي لوثائقك وموقعك.",
+  'category.description.montage-video-motion': "ريلز، إعلانات، فيديوهات توضيحية: اعثر على مونتير أو مصمم موشن تونسي.",
+  'category.description.voix-off-doublage': "تعليق صوتي بالفرنسية أو العربية أو الدارجة: اعثر على الصوت التونسي لعلامتك.",
+  'category.description.consulting-assistanat': "استشارة، تنظيم، مساعدة إدارية: اعثر على مستشار أو مساعد تونسي.",
+  'category.description.personal-branding': "حساب LinkedIn، الصورة، الحضور: اعثر على خبير تونسي لبناء علامتك الشخصية.",
+  'category.description.coaching-meta-ads': "حملات فيسبوك وإنستغرام، الاستهداف، الميزانية: تعلّم مع مدرّب إعلانات Meta تونسي.",
+  'category.description.coaching-ecommerce': "إطلاق متجرك، إيجاد زبائنك، زيادة مبيعاتك: احصل على مرافقة من مدرّب تجارة إلكترونية تونسي.",
 
   // ─── Logged-in consumer homepage (/) ─────────────────────────────────────────
   'home.greeting.hello':           "مرحبا {name}",
