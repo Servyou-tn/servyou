@@ -45,6 +45,7 @@ const ERR = {
   session: 'service.wizard.error.session',
   category: 'service.wizard.error.category_unavailable',
   gone: 'service.wizard.error.draft_gone',
+  cap: 'service.wizard.error.cap_reached',
 } as const
 
 export async function saveServiceDraftAction(input: unknown): Promise<SaveDraftResult> {
@@ -124,6 +125,9 @@ export async function saveServiceDraftAction(input: unknown): Promise<SaveDraftR
     .single()
   if (error || !data) {
     console.error('[saveServiceDraft] insert failed:', error?.message, error?.code, error?.details)
+    // The 20-services-per-freelancer cap (trg_limit_services_per_freelancer) shares 23514 with the category check:
+    // its hint decides, first.
+    if (error?.hint === 'services_per_freelancer_cap') return { ok: false, errorKey: ERR.cap }
     return { ok: false, errorKey: error?.code === '23514' ? ERR.category : ERR.generic }
   }
   return { ok: true, draftId: data.id as string }

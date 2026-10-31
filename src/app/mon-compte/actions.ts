@@ -11,6 +11,7 @@ import { isValidPassword } from '@/lib/signup-validation'
 import { GOVERNORATES } from '@/lib/tunisia-governorates'
 import { normalizeAvatar, MAX_INPUT_BYTES, MAX_INPUT_MB, type NormalizeFailure } from '@/lib/images/normalize'
 import { recordUploadProvenance, deleteUploadProvenance } from '@/lib/images/provenance'
+import { dailyUploadQuota, DAILY_UPLOAD_CAP } from '@/lib/images/upload-quota'
 import { callerActivity, uploadBucket } from '@/lib/images/upload-guard'
 
 // `field` lets the form attach the message to the input it belongs to; callers that only toast
@@ -140,6 +141,16 @@ export async function uploadAvatarAction(formData: FormData): Promise<AccountAct
     }
   }
 
+  // The daily upload cap (DAILY_UPLOAD_CAP per rolling 24 h, enforced in the database by trg_limit_daily_uploads):
+  // refused before the decode, so nothing is stored. A failed count refuses too (generic error, never an
+  // unchecked upload).
+  const quota = await dailyUploadQuota(user.id)
+  if (!quota.ok) return { ok: false, error: t('common.error_generic', lang) }
+  if (quota.reached) {
+    console.warn(`[uploadAvatarAction] refused: daily upload cap reached for user ${user.id}`)
+    return { ok: false, error: t('upload.error.daily_cap', lang, { max: DAILY_UPLOAD_CAP }) }
+  }
+
   const normalized = await normalizeAvatar(Buffer.from(await parsed.data.arrayBuffer()))
   if (!normalized.ok) {
     return { ok: false, error: t(FAILURE_KEY[normalized.reason], lang, { max: MAX_INPUT_MB }) }
@@ -174,6 +185,7 @@ export async function uploadAvatarAction(formData: FormData): Promise<AccountAct
   if (!provenance.ok) {
     console.error(`[uploadAvatarAction] provenance insert failed, removing orphaned object at ${path}`)
     await uploadBucket(AVATAR_BUCKET).remove([path])
+    if (provenance.capReached) return { ok: false, error: t('upload.error.daily_cap', lang, { max: DAILY_UPLOAD_CAP }) }
     return { ok: false, error: t('monCompte.avatar.error.upload', lang) }
   }
 

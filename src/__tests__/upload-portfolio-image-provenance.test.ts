@@ -9,6 +9,10 @@
  */
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 
+// The daily upload cap's pre-check (src/lib/images/upload-quota.ts) — a service-role count, mocked.
+const quota = vi.hoisted(() => ({ value: { ok: true, reached: false } as { ok: true; reached: boolean } | { ok: false } }))
+vi.mock('@/lib/images/upload-quota', () => ({ dailyUploadQuota: vi.fn(async () => quota.value), DAILY_UPLOAD_CAP: 100 }))
+
 const h = vi.hoisted(() => {
   const USER_ID = 'user-1'
   const FREELANCER_PROFILE_ID = '33333333-3333-4333-8333-333333333333'
@@ -35,6 +39,7 @@ const { USER_ID } = h
 
 const provenanceCalls: { bucket: string; path: string; owner: string }[] = []
 let provenanceInsertShouldFail = false
+let provenanceCapReached = false
 let provenanceCallOrder: 'before-return' | null = null
 
 vi.mock('@/lib/supabase/server', () => ({
@@ -66,7 +71,7 @@ vi.mock('@/lib/images/provenance', () => ({
   recordUploadProvenance: vi.fn(async (bucket: string, path: string, owner: string) => {
     provenanceCalls.push({ bucket, path, owner })
     provenanceCallOrder = 'before-return'
-    return provenanceInsertShouldFail ? { ok: false, error: 'boom' } : { ok: true }
+    return provenanceInsertShouldFail ? { ok: false, error: 'boom', capReached: provenanceCapReached } : { ok: true }
   }),
 }))
 vi.mock('next/cache', () => ({ revalidatePath: vi.fn() }))
@@ -166,5 +171,40 @@ describe('uploadPortfolioImageAction — size pre-check and stored-size integrit
   it('returns the path when the stored size matches', async () => {
     const res = await uploadPortfolioImageAction(imageFormData())
     expect(res.ok).toBe(true)
+  })
+})
+
+describe('uploadPortfolioImageAction — the daily upload cap (100 per rolling 24 h)', () => {
+  beforeEach(() => {
+    quota.value = { ok: true, reached: false }
+    provenanceCapReached = false
+  })
+
+  it('cap reached: « limite atteinte », nothing decoded, stored or recorded', async () => {
+    quota.value = { ok: true, reached: true }
+    const res = await uploadPortfolioImageAction(imageFormData())
+    expect(res).toEqual({ ok: false, error: 'upload.error.daily_cap' })
+    expect(h.calls.uploaded).toEqual([])
+    expect(provenanceCalls).toEqual([])
+  })
+
+  it('a failed count is the generic error, never an unchecked upload', async () => {
+    quota.value = { ok: false }
+    const res = await uploadPortfolioImageAction(imageFormData())
+    expect(res).toMatchObject({ ok: false, error: 'common.error_generic' })
+    expect(h.calls.uploaded).toEqual([])
+  })
+
+  it('the database backstop (provenance refused with daily_upload_cap) reads as « limite atteinte »', async () => {
+    provenanceInsertShouldFail = true
+    provenanceCapReached = true
+    const res = await uploadPortfolioImageAction(imageFormData())
+    expect(res).toEqual({ ok: false, error: 'upload.error.daily_cap' })
+  })
+
+  it('any other provenance failure keeps its own error', async () => {
+    provenanceInsertShouldFail = true
+    const res = await uploadPortfolioImageAction(imageFormData())
+    expect(res).toMatchObject({ ok: false, error: 'common.error_generic' })
   })
 })
