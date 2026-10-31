@@ -43,10 +43,36 @@ afterEach(() => {
 })
 
 describe('verifyTurnstile — no secret', () => {
-  it('skips verification entirely (no request) when TURNSTILE_SECRET_KEY is absent', async () => {
+  it('skips verification entirely (no request) when TURNSTILE_SECRET_KEY is absent outside production', async () => {
     vi.stubEnv('TURNSTILE_SECRET_KEY', '')
+    vi.stubEnv('VERCEL_ENV', '')
+    vi.stubEnv('NODE_ENV', 'test')
     expect(await verifyTurnstile(undefined)).toEqual({ ok: true })
     expect(fetchMock).not.toHaveBeenCalled()
+  })
+
+  // Pre-beta review M4: a lost secret in production must not silently switch bot protection off.
+  it('FAILS CLOSED in production (VERCEL_ENV=production) and logs the misconfiguration', async () => {
+    vi.stubEnv('TURNSTILE_SECRET_KEY', '')
+    vi.stubEnv('VERCEL_ENV', 'production')
+    vi.stubEnv('NODE_ENV', 'production')
+    expect(await verifyTurnstile(TOKEN)).toEqual({ ok: false, reason: 'misconfigured' })
+    expect(fetchMock).not.toHaveBeenCalled()
+    expect(logs.some((l) => l.includes('TURNSTILE_SECRET_KEY is missing in production'))).toBe(true)
+  })
+
+  it.each(['preview', 'development'])('still skips on a %s deployment (the secret is Production-only)', async (env) => {
+    vi.stubEnv('TURNSTILE_SECRET_KEY', '')
+    vi.stubEnv('VERCEL_ENV', env)
+    vi.stubEnv('NODE_ENV', 'production')
+    expect(await verifyTurnstile(undefined)).toEqual({ ok: true })
+  })
+
+  it('a production build with VERCEL_ENV missing fails closed too (the safe default)', async () => {
+    vi.stubEnv('TURNSTILE_SECRET_KEY', '')
+    vi.stubEnv('VERCEL_ENV', '')
+    vi.stubEnv('NODE_ENV', 'production')
+    expect(await verifyTurnstile(TOKEN)).toEqual({ ok: false, reason: 'misconfigured' })
   })
 })
 
