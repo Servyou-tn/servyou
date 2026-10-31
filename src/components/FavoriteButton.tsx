@@ -86,6 +86,8 @@ export function FavoriteButton({ item_type, item_id, variant = 'glyph', iconClas
   }
 
   const iconClass = 'relative inline-flex size-5 shrink-0 items-center justify-center rounded-full disabled:opacity-50'
+  // Favourited: the same size, but the colour is danger/500 ONLY — two text-* colours on one element would let the stylesheet order pick the winner.
+  const iconSizeOnly = iconClassName.split(/\s+/).filter((c) => !c.startsWith('text-')).join(' ')
 
   if (loading) {
     if (variant === 'icon') {
@@ -114,7 +116,7 @@ export function FavoriteButton({ item_type, item_id, variant = 'glyph', iconClas
         aria-label={label}
         className={iconClass}
       >
-        <Heart className={`${iconClassName} ${favorited ? 'fill-danger-500 text-danger-500' : ''}`} aria-hidden="true" />
+        <Heart className={favorited ? `${iconSizeOnly} fill-danger-500 text-danger-500` : iconClassName} aria-hidden="true" />
         <span aria-hidden="true" className="absolute -inset-3" />
       </button>
     )

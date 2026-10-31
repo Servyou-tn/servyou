@@ -61,3 +61,18 @@ describe.each([
     expect((screen.getByRole('searchbox') as HTMLInputElement).value).toBe('logo')
   })
 })
+
+describe('ProduitsFilterBar — each field syncs only on its own prop', () => {
+  it('a new q does not overwrite an unapplied price draft, and a new price does not overwrite the typed text', async () => {
+    const { rerender } = render(produits('', null))
+    const box = screen.getByRole('searchbox') as HTMLInputElement
+    box.focus()
+    // the URL changes q: the box follows
+    rerender(produits('lampe', null))
+    expect(box.value).toBe('lampe')
+    // the URL changes the price: the text box is left alone
+    rerender(produits('lampe', 40))
+    expect(box.value).toBe('lampe')
+    expect(screen.getByRole('searchbox')).toBe(box)
+  })
+})

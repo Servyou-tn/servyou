@@ -88,12 +88,15 @@ export function ServicesFilterBar({
   const [priceOpen, setPriceOpen] = useState(false)
   const [min, setMin] = useState(prixMin != null ? String(prixMin) : '')
   const [max, setMax] = useState(prixMax != null ? String(prixMax) : '')
-  // The typed text and the price fields follow the URL when IT changes them (a chip, « Tout effacer », « Réinitialiser », Back) — adjusted during
-  // render, not by remounting the bar, so submitting a search keeps the focus and an open menu.
+  // The text and price fields follow the URL when IT changes them (a chip, « Tout effacer », « Réinitialiser », Back) — adjusted during render, no remount, and each field
+  // only when ITS OWN prop changed, so an unapplied price draft survives a change of `q` (and the other way round).
   const [seen, setSeen] = useState({ q, prixMin, prixMax })
-  if (seen.q !== q || seen.prixMin !== prixMin || seen.prixMax !== prixMax) {
-    setSeen({ q, prixMin, prixMax })
+  if (seen.q !== q) {
+    setSeen((s) => ({ ...s, q }))
     setQuery(q)
+  }
+  if (seen.prixMin !== prixMin || seen.prixMax !== prixMax) {
+    setSeen((s) => ({ ...s, prixMin, prixMax }))
     setMin(prixMin != null ? String(prixMin) : '')
     setMax(prixMax != null ? String(prixMax) : '')
   }

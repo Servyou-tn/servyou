@@ -29,7 +29,7 @@ export function ProductBrowseGrid({ items }: { items: ProductListing[] }) {
     <div className="grid grid-cols-2 gap-x-[13px] gap-y-3 sm:gap-4 lg:grid-cols-4">
       {items.map((p, i) => (
         <BlurFade key={p.id} delay={i * 0.05} duration={0.2} {...fade} inView>
-          <ProductBrowseCard product={p} />
+          <ProductBrowseCard product={p} sizes="(max-width: 1024px) 50vw, 25vw" />
         </BlurFade>
       ))}
     </div>
