@@ -1,14 +1,13 @@
 /**
  * The live half of the client-write allow-list check (architect's ruling, 2026-10-30): the REAL catalog's client write
- * privileges, read through the service-role-only RPC client_write_grants() (db/migrations/PENDING_client_write_grants_rpc.sql),
+ * privileges, read through the service-role-only RPC client_write_grants() (migration 108,
+ * db/migrations/20261031173228_client_write_grants_rpc.sql),
  * must equal db/client-write-allowlist.json in both directions —
  *   * a privilege the catalog has and the file does not: a grant made outside a reviewed migration (dashboard, a
  *     platform-created object — supabase_admin's defaults are not fail-closed) or a migration whose allow-list entry
  *     was forgotten;
  *   * an entry the file has and the catalog does not: the file is stale (a revoke without its allow-list edit).
  * And the RPC itself is not callable by anon or a signed-in user (it maps the attack surface).
- *
- * ⚠ Red until that migration is applied: before it, the RPC does not exist.
  *
  * 1 fixture sign-in (`cwg-`, the live sign-in budget). Run after every applied migration that touches grants:
  *   npx vitest run --config vitest.integration.config.ts src/__tests__/client-write-grants-live.test.ts

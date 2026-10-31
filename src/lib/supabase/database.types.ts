@@ -1,7 +1,7 @@
 // Generated from the live Supabase schema (project xggomcitqrkaylqezjjz) — DO NOT EDIT BY HAND.
 // Regenerate after every applied migration: Supabase MCP generate_typescript_types (or
 // `npx supabase gen types typescript --project-id xggomcitqrkaylqezjjz`), then commit.
-// Generated 2026-10-30 after migration 20261030231152 fail_closed_default_privileges.
+// Generated 2026-10-31 after migration 20261031173228 client_write_grants_rpc.
 
 export type Json =
   | string
@@ -1586,6 +1586,15 @@ export type Database = {
       admin_unsuspend_user: {
         Args: { target_user_id: string }
         Returns: undefined
+      }
+      client_write_grants: {
+        Args: never
+        Returns: {
+          column_name: string
+          grantee: string
+          privilege: string
+          relation: string
+        }[]
       }
       f_unaccent: { Args: { "": string }; Returns: string }
       freelancer_has_active_listing: {
