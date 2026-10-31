@@ -309,3 +309,20 @@ describe('createProductAction — the database image cap', () => {
     err.mockRestore()
   })
 })
+
+describe('createProductAction — the 100-products-per-shop cap', () => {
+  it('the database refusal (hint products_per_shop_cap) reads as « limite atteinte », and no image row is written', async () => {
+    const err = vi.spyOn(console, 'error').mockImplementation(() => {})
+    h.state.productsInsertError = { message: 'Cette boutique a déjà 100 produits, le maximum.', code: '23514', hint: 'products_per_shop_cap' }
+    const res = await createProductAction(okInput())
+    expect(res).toEqual({ ok: false, error: 'product.error_cap' })
+    err.mockRestore()
+  })
+
+  it('any other insert failure stays the generic « ajout » error', async () => {
+    const err = vi.spyOn(console, 'error').mockImplementation(() => {})
+    h.state.productsInsertError = { message: 'boom', code: 'XX000' }
+    expect(await createProductAction(okInput())).toEqual({ ok: false, error: 'product.error_add' })
+    err.mockRestore()
+  })
+})
