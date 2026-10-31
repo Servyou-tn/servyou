@@ -57,6 +57,8 @@ export const INTEGRATION_GLOBS = [
   '**/session-refresh-live.test.ts',
   // Compares the live catalog's client write grants with db/client-write-allowlist.json (1 sign-in).
   '**/client-write-grants-live.test.ts',
+  // The freelancer links cap (5 per profile): 1 sign-in.
+  '**/freelancer-links-cap-live.test.ts',
 ]
 
 // Tooling artifacts that must never be scanned for tests: the headless-Chrome VRT profiles (a
