@@ -1,13 +1,18 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
+import { AUTH_COOKIE_OPTIONS } from '@/lib/supabase/cookie-options'
 
-// Platform-wide session layer: maintenance mode (K4), suspension (K3) and an expired session (K2),
-// and nothing else. This middleware never persists a session refresh, does not duplicate the
-// per-page login checks, and does no other auth work. On the happy path it reads cookies and passes
-// through WITHOUT mutating them (no updateSession boilerplate — that would change session-refresh
-// behavior platform-wide). Only the bounce branches write to the response. Note getUser() itself
-// refreshes a session within ~90 s of expiry; the no-op setAll() discards the rotated tokens (logged
-// in docs/follow-ups.md).
+// Platform-wide session layer: session-refresh persistence, maintenance mode (K4), suspension (K3) and
+// an expired session (K2), and nothing else. It does not duplicate the per-page login checks.
+//
+// Session refresh (the @supabase/ssr pattern): getUser() / getSession() refresh a session within ~90 s
+// of expiry, and refresh tokens ROTATE. setAll() writes the rotated tokens twice: onto the REQUEST, so
+// the Server Components and actions of this same request read the new session instead of refreshing
+// again (their own setAll cannot write cookies), and onto the RESPONSE, so the browser keeps them.
+// Before this, the rotation was thrown away: every later request re-refreshed the same, already-used
+// refresh token — extra /token calls from Vercel's shared egress IPs, and, past GoTrue's reuse
+// interval, reuse detection that revokes the whole session (a random logout). On the happy path (no
+// refresh) nothing is written and the response is a plain pass-through.
 //
 // K4 — MAINTENANCE_MODE=1 (env var, so it works while the database is the thing under maintenance
 // and costs no query): every matched GET is redirected to /maintenance and every other method gets
@@ -23,9 +28,9 @@ import { createServerClient } from '@supabase/ssr'
 // and the auth ban (src/lib/auth/auth-ban.ts) stops it signing in or refreshing.
 //
 // K2 — a visitor who still carries a Supabase auth cookie whose session can no longer be validated
-// or refreshed is sent to /session-expiree?next=<page> with the cookies cleared. Because setAll()
-// is a no-op, an expired ACCESS token with a valid refresh token still succeeds in memory — this
-// only fires once the refresh itself fails. Strictly gated so it can never hit a plain anonymous
+// or refreshed is sent to /session-expiree?next=<page> with the cookies cleared. An expired ACCESS
+// token with a valid refresh token is refreshed (and persisted) — this only fires once the refresh
+// itself fails. Strictly gated so it can never hit a plain anonymous
 // visitor or an auth outage: an auth cookie must be present (not just the PKCE code-verifier), the
 // error code must be one of SESSION_GONE_CODES (a network error / 5xx carries none of them and
 // passes through), and only GETs are redirected (a server action's POST fails its own auth check).
@@ -34,8 +39,9 @@ import { createServerClient } from '@supabase/ssr'
 // read-only against the live project with forged cookies: an expired token with an unknown refresh
 // token → refresh_token_not_found; an unexpired token with a bad signature → bad_jwt (403); no cookie
 // or an unparsable one → AuthSessionMissingError with NO code (passes through). Deliberately absent:
-// refresh_token_already_used — this middleware discards the rotated tokens (no-op setAll), so a valid
-// session can legitimately hit it a few seconds after a refresh; a redirect there would log it out.
+// refresh_token_already_used — parallel requests (an RSC navigation plus its prefetches) can carry the
+// same refresh token just as one of them rotates it, so a valid session can legitimately hit it; a
+// redirect there would log it out.
 const SESSION_GONE_CODES = new Set([
   'session_expired',
   'session_not_found',
@@ -47,12 +53,74 @@ const SESSION_GONE_CODES = new Set([
 // sb-<project-ref>-auth-token, optionally chunked as .0 / .1 …; NOT -code-verifier.
 const AUTH_COOKIE = /^sb-.+-auth-token(\.\d+)?$/
 
+// Set for 60 s when a prefetch's refresh fails; prefetches skip the refresh while present (see the prefetch branch).
+// Not `sb-` prefixed: it is not a Supabase cookie, and K2 / K3 clearing it is not needed (it expires on its own).
+const REFRESH_BACKOFF = 'sv-refresh-backoff'
+
+// The Supabase client of one middleware run, and the pass-through response it writes a refresh onto.
+// `pass()` is read AFTER the auth call: setAll() replaces the response so it carries the forwarded
+// request cookies (NextResponse.next({ request })) as well as the Set-Cookie headers.
+function sessionClient(request: NextRequest) {
+  let response = NextResponse.next({ request })
+  // Everything written so far in this run, re-applied on each rebuild: a second setAll must not drop the first's.
+  const written = new Map<string, { value: string; options: Parameters<typeof response.cookies.set>[2] }>()
+  const cacheHeaders: Record<string, string> = {}
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      // #257's Secure flag in production — the refreshed cookies get the same options as sign-in's.
+      cookieOptions: AUTH_COOKIE_OPTIONS,
+      cookies: {
+        getAll() {
+          return request.cookies.getAll()
+        },
+        setAll(cookiesToSet, headers) {
+          // Persist a NEW session only. A removal-only write is supabase-js dropping the session after a
+          // failed refresh: ignored, as before this change — K2 below owns clearing a gone session, gated
+          // so an outage or a refresh race never logs anyone out.
+          if (!cookiesToSet.some(({ value }) => value)) return
+          cookiesToSet.forEach(({ name, value, options }) => {
+            request.cookies.set(name, value)
+            written.set(name, { value, options })
+          })
+          // @supabase/ssr's no-store cache headers: a response carrying a session must never be cached.
+          Object.assign(cacheHeaders, headers ?? {})
+          response = NextResponse.next({ request })
+          written.forEach(({ value, options }, name) => response.cookies.set(name, value, options))
+          Object.entries(cacheHeaders).forEach(([key, value]) => response.headers.set(key, value))
+        },
+      },
+    },
+  )
+  return { supabase, pass: () => response }
+}
+
 export async function middleware(request: NextRequest) {
-  // Link prefetches skip the check: every Next prefetch sends next-router-prefetch and no
-  // navigation does, there is one per visible <Link>, they only read, and the navigation that
-  // follows is checked. The header is client-set, so GET only — a server-action POST never
-  // skips — and a forged header on a GET buys a read the API would serve that token anyway.
-  if (request.method === 'GET' && request.headers.has('next-router-prefetch')) return NextResponse.next()
+  // Link prefetches skip the suspension / K2 checks (founder ruling 2026-10-24): every Next prefetch
+  // sends next-router-prefetch and no navigation does, there is one per visible <Link>, they only
+  // read, and the navigation that follows is checked. The header is client-set, so GET only — a
+  // server-action POST never skips — and a forged header on a GET buys a read the API would serve that
+  // token anyway. They still get the session refresh, via getSession(): local (no Auth call) unless
+  // the access token is about to expire. Without it, a prefetch after expiry renders its Server
+  // Components with the expired session, they refresh and cannot persist it, and the browser keeps a
+  // refresh token GoTrue has already rotated.
+  //
+  // A refresh that FAILS on a prefetch (a dead refresh token — e.g. after a global sign-out elsewhere — or an outage)
+  // leaves the cookies as they are: prefetches never clear a session, K2 on the next navigation does. So that a page
+  // full of <Link>s does not fire one failing /token call per prefetch, the failure sets REFRESH_BACKOFF for 60 s and
+  // prefetches skip the refresh while it is present.
+  if (request.method === 'GET' && request.headers.has('next-router-prefetch')) {
+    if (!request.cookies.getAll().some((c) => AUTH_COOKIE.test(c.name))) return NextResponse.next()
+    if (request.cookies.has(REFRESH_BACKOFF)) return NextResponse.next()
+    const { supabase, pass } = sessionClient(request)
+    const { error } = await supabase.auth.getSession()
+    const response = pass()
+    if (error) {
+      response.cookies.set(REFRESH_BACKOFF, '1', { ...AUTH_COOKIE_OPTIONS, path: '/', maxAge: 60, httpOnly: true, sameSite: 'lax' })
+    }
+    return response
+  }
 
   if (process.env.MAINTENANCE_MODE === '1') {
     if (request.method !== 'GET') {
@@ -61,19 +129,7 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL('/maintenance', request.url))
   }
 
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return request.cookies.getAll()
-        },
-        // Read-only: a refresh getUser() performs is never written back. Intentional no-op.
-        setAll() {},
-      },
-    },
-  )
+  const { supabase, pass } = sessionClient(request)
 
   // getUser() validates the JWT with the auth server (never trust getSession() for a
   // security gate). Expired/absent session → no user → pass through as anonymous. A
@@ -89,7 +145,7 @@ export async function middleware(request: NextRequest) {
     if (hasAuthCookie && request.method === 'GET' && isNavigation && userError?.code && SESSION_GONE_CODES.has(userError.code)) {
       return sessionExpired(request)
     }
-    return NextResponse.next()
+    return pass()
   }
 
   // One indexed PK lookup. Owner-read RLS lets the user read their own row's
@@ -104,7 +160,7 @@ export async function middleware(request: NextRequest) {
     console.error('[middleware] suspended_at lookup error:', profileError.message, profileError.code, profileError.details)
   }
 
-  if (!profile || !profile.suspended_at) return NextResponse.next()
+  if (!profile || !profile.suspended_at) return pass()
   return signOutSuspended(request)
 }
 

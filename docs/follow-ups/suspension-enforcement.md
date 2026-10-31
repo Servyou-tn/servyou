@@ -149,6 +149,9 @@ part is the path in (middleware signs a suspended session out). No code yet.
 
 
 ## MEDIUM — server-side getUser() refreshes near expiry and throws the rotated tokens away
+✅ CLOSED — `fix/session-refresh-persistence`, 2026-10-30: `src/middleware.ts` writes a refresh onto the response and
+the forwarded request (the @supabase/ssr pattern, #257's cookie options); prefetches refresh via `getSession()`.
+Preview click-through: `docs/operations/session-refresh-preview-check.md`.
 
 - **What:** auth-js refreshes inside getUser() once the cookie session is within ~90 s of expiry,
   but neither `src/middleware.ts` (no-op `setAll`) nor Server Components (`src/lib/supabase/server.ts`
