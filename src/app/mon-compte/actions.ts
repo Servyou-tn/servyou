@@ -302,6 +302,11 @@ export async function requestAccountDeletionAction(reason: string): Promise<Acco
   return { ok: true }
 }
 
+// Supabase Auth's rate limits answer 429 with an over_…_rate_limit code (over_request_rate_limit for sign-ins).
+function isAuthRateLimit(error: { status?: number; code?: string }): boolean {
+  return error.status === 429 || /^over_.*_rate_limit$/.test(error.code ?? '')
+}
+
 const passwordInputSchema = z.object({
   currentPassword: z.string().min(1, 'monCompte.password.required').max(200),
   newPassword: z.string().max(200).refine(isValidPassword, 'monCompte.password.invalid'),
@@ -310,6 +315,10 @@ const passwordInputSchema = z.object({
 // Inline password change. The email used to re-authenticate is the SESSION user's, never a client
 // value. signInWithPassword proves the current password (and gives the session the "secure password
 // change" setting asks for, whether or not it is on); updateUser then writes the new one.
+//
+// Brute-forcing the current password from a stolen session is rate-limited twice (pre-beta review M1): every
+// attempt needs a fresh Turnstile token (Supabase Auth's CAPTCHA on the password grant — refused here first when
+// the token is missing), and Supabase Auth's own per-IP sign-in limit answers 429, shown as « trop de tentatives ».
 export async function changePasswordAction(
   input: {
     currentPassword: string
@@ -337,14 +346,17 @@ export async function changePasswordAction(
   }
 
   // The browser's Turnstile token rides along for Supabase Auth's CAPTCHA check: the password grant is
-  // CAPTCHA-guarded once it is enabled, even from this server-side client.
+  // CAPTCHA-guarded, even from this server-side client. Without a token the attempt would only fail there, so it is
+  // refused here, before any Auth call.
+  if (!turnstileToken) return { ok: false, error: t('common.error_bot_check', lang) }
   const { error: reauthError } = await supabase.auth.signInWithPassword({
     email: user.email,
     password: currentPassword,
-    ...(turnstileToken ? { options: { captchaToken: turnstileToken } } : {}),
+    options: { captchaToken: turnstileToken },
   })
   if (reauthError) {
     if (reauthError.code === 'captcha_failed') return { ok: false, error: t('common.error_bot_check', lang) }
+    if (isAuthRateLimit(reauthError)) return { ok: false, error: t('common.rate_limit', lang) }
     if (reauthError.code === 'invalid_credentials') {
       return { ok: false, error: t('monCompte.password.wrongCurrent', lang), field: 'currentPassword' }
     }

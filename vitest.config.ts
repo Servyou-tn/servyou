@@ -57,6 +57,8 @@ export const INTEGRATION_GLOBS = [
   '**/session-refresh-live.test.ts',
   // Compares the live catalog's client write grants with db/client-write-allowlist.json (1 sign-in).
   '**/client-write-grants-live.test.ts',
+  // The password-reset flow with « Secure password change » (pre-beta review M1): 1 sign-in.
+  '**/password-reset-live.test.ts',
 ]
 
 // Tooling artifacts that must never be scanned for tests: the headless-Chrome VRT profiles (a

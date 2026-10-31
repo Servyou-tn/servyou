@@ -134,10 +134,11 @@ describe('requestAccountDeletionAction', () => {
 
 describe('changePasswordAction', () => {
   const input = { currentPassword: 'OldPass123', newPassword: 'NewPass456' }
+  const TOKEN = 'XXXX.DUMMY.TOKEN.XXXX'
 
   it("re-authenticates with the SESSION user's email, updates, then ends the OTHER sessions — in that order", async () => {
-    expect(await changePasswordAction(input)).toEqual({ ok: true })
-    expect(h.signInWithPassword).toHaveBeenCalledWith({ email: 'me@example.com', password: 'OldPass123' })
+    expect(await changePasswordAction(input, TOKEN)).toEqual({ ok: true })
+    expect(h.signInWithPassword).toHaveBeenCalledWith({ email: 'me@example.com', password: 'OldPass123', options: { captchaToken: TOKEN } })
     expect(h.updateUser).toHaveBeenCalledWith({ password: 'NewPass456' })
     expect(h.signOut).toHaveBeenCalledWith({ scope: 'others' })
     expect(h.calls).toEqual(['signIn', 'updateUser', 'signOut'])
@@ -146,20 +147,20 @@ describe('changePasswordAction', () => {
   it('still succeeds, and logs the fields, when ending the other sessions fails', async () => {
     const log = vi.spyOn(console, 'error').mockImplementation(() => {})
     h.signOut.mockResolvedValue({ error: { message: 'down', code: 'x', status: 500 } })
-    expect(await changePasswordAction(input)).toEqual({ ok: true })
+    expect(await changePasswordAction(input, TOKEN)).toEqual({ ok: true })
     expect(log).toHaveBeenCalledWith('[changePasswordAction] sign-out of other sessions failed:', 'down', 'x', 500)
     log.mockRestore()
   })
 
   it('does not end other sessions when the update failed', async () => {
     h.updateUser.mockResolvedValue({ error: { code: 'same_password', message: 'x', status: 422 } })
-    await changePasswordAction(input)
+    await changePasswordAction(input, TOKEN)
     expect(h.signOut).not.toHaveBeenCalled()
   })
 
   it('names currentPassword on invalid_credentials and never updates', async () => {
     h.signInWithPassword.mockResolvedValue({ error: { code: 'invalid_credentials', message: 'x', status: 400 } })
-    expect(await changePasswordAction(input)).toMatchObject({ ok: false, field: 'currentPassword' })
+    expect(await changePasswordAction(input, TOKEN)).toMatchObject({ ok: false, field: 'currentPassword' })
     expect(h.updateUser).not.toHaveBeenCalled()
   })
 
@@ -169,7 +170,7 @@ describe('changePasswordAction', () => {
     [{ currentPassword: '' }, 'currentPassword'],
     [{ newPassword: 'OldPass123' }, 'newPassword'],
   ])('refuses %j before any Auth call', async (patch, field) => {
-    expect(await changePasswordAction({ ...input, ...patch })).toMatchObject({ ok: false, field })
+    expect(await changePasswordAction({ ...input, ...patch }, TOKEN)).toMatchObject({ ok: false, field })
     expect(h.signInWithPassword).not.toHaveBeenCalled()
   })
 
@@ -178,24 +179,41 @@ describe('changePasswordAction', () => {
     ['weak_password', 'newPassword'],
   ])('maps Auth %s to the new-password field', async (code, field) => {
     h.updateUser.mockResolvedValue({ error: { code, message: code, status: 422 } })
-    expect(await changePasswordAction(input)).toMatchObject({ ok: false, field })
+    expect(await changePasswordAction(input, TOKEN)).toMatchObject({ ok: false, field })
   })
 
   it('refuses a visitor without a session', async () => {
     h.getUser.mockResolvedValue({ data: { user: null } })
-    expect(await changePasswordAction(input)).toMatchObject({ ok: false })
+    expect(await changePasswordAction(input, TOKEN)).toMatchObject({ ok: false })
     expect(h.signInWithPassword).not.toHaveBeenCalled()
   })
 
   // Supabase Auth's CAPTCHA guards the password grant even from this server-side client: the browser's
   // Turnstile token must reach the re-auth, and a failed bot check must not read as a wrong password.
   it("forwards the browser's Turnstile token to the re-auth as captchaToken", async () => {
-    expect(await changePasswordAction(input, 'XXXX.DUMMY.TOKEN.XXXX')).toEqual({ ok: true })
+    expect(await changePasswordAction(input, TOKEN)).toEqual({ ok: true })
     expect(h.signInWithPassword).toHaveBeenCalledWith({
       email: 'me@example.com',
       password: 'OldPass123',
       options: { captchaToken: 'XXXX.DUMMY.TOKEN.XXXX' },
     })
+  })
+
+  // Pre-beta review M1: every attempt costs a bot check, and Auth's own rate limit reads as « trop de tentatives ».
+  it('refuses an attempt with no Turnstile token before any Auth call', async () => {
+    expect(await changePasswordAction(input)).toEqual({ ok: false, error: t('common.error_bot_check', 'fr') })
+    expect(await changePasswordAction(input, '')).toEqual({ ok: false, error: t('common.error_bot_check', 'fr') })
+    expect(h.signInWithPassword).not.toHaveBeenCalled()
+    expect(h.updateUser).not.toHaveBeenCalled()
+  })
+
+  it.each([
+    [{ code: 'over_request_rate_limit', message: 'x', status: 429 }],
+    [{ code: undefined, message: 'Too many requests', status: 429 }],
+  ])('a rate-limited re-auth (%j) is « trop de tentatives » and changes nothing', async (err) => {
+    h.signInWithPassword.mockResolvedValue({ error: err })
+    expect(await changePasswordAction(input, TOKEN)).toEqual({ ok: false, error: t('common.rate_limit', 'fr') })
+    expect(h.updateUser).not.toHaveBeenCalled()
   })
 
   it('a failed bot check is the bot-check message, not « wrong current password », and changes nothing', async () => {
