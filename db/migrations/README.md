@@ -1075,6 +1075,15 @@ both on 2026-10-28.
     - At apply: 0 links in the table (no profile over 5). UPDATE is not capped (owner-scoped, one profile per account).
     - The app's `LINKS_CAP` (3) is raised to 5 separately (Agent B, with the UI message).
     - The recorded statement carries no top-level comments. The executable SQL is identical.
+111. **20261031211307_password_change_attempts** (`891e699e`) — `public.password_change_attempts`, the per-account
+    limit on wrong current passwords in Mon compte's password change: at most 5 per 15 minutes (pre-beta review M1,
+    founder + architect decision 2026-11-01).
+    - Service-role only: RLS on with no policy, every client privilege revoked (including the default SELECT new
+      tables get since 107); the client-write allow-list is untouched.
+    - The app (`src/lib/auth/password-attempts.ts`) inserts the attempt first, then counts the window, so concurrent
+      attempts see each other; over the limit its row is removed again. Only a wrong current password keeps its row.
+      Rows older than a day are pruned on each insert (indexed on `attempted_at`).
+    - The recorded statement carries no top-level comments. The executable SQL is identical.
 
 ## Rollback paths
 

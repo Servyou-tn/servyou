@@ -1233,6 +1233,7 @@ export const fr: Record<string, string> = {
   'monCompte.password.modalTitle':   "Changer le mot de passe",
   'monCompte.password.cancel':       "Annuler",
   'monCompte.password.wrongCurrent': "Le mot de passe actuel est incorrect.",
+  'monCompte.password.tooManyAttempts': "Trop de tentatives, réessayez dans 15 minutes.",
   'monCompte.password.same':         "Le nouveau mot de passe doit être différent de l'actuel.",
   'monCompte.delete.reasonTooLong':  "Le motif est trop long (500 caractères maximum).",
   'monCompte.delete.openOrders':     "Vous avez {count} commande(s) en cours. Elles doivent être terminées ou annulées avant que votre compte puisse être supprimé.",

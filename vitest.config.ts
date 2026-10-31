@@ -62,6 +62,10 @@ export const INTEGRATION_GLOBS = [
   '**/services-cap-live.test.ts',
   // The freelancer links cap (5 per profile): 1 sign-in.
   '**/freelancer-links-cap-live.test.ts',
+  // The password-reset flow with « Secure password change » (pre-beta review M1): 1 sign-in.
+  '**/password-reset-live.test.ts',
+  // The wrong-password attempt limit (5 per 15 min): 1 sign-in.
+  '**/password-change-attempts-live.test.ts',
 ]
 
 // Tooling artifacts that must never be scanned for tests: the headless-Chrome VRT profiles (a

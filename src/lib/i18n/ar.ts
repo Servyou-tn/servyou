@@ -1218,6 +1218,7 @@ export const ar: Record<string, string> = {
   'monCompte.password.modalTitle':   "تغيير كلمة المرور",
   'monCompte.password.cancel':       "إلغاء",
   'monCompte.password.wrongCurrent': "كلمة المرور الحالية غير صحيحة.",
+  'monCompte.password.tooManyAttempts': "محاولات كثيرة جدًا، أعد المحاولة بعد 15 دقيقة.",
   'monCompte.password.same':         "يجب أن تختلف كلمة المرور الجديدة عن الحالية.",
   'monCompte.delete.reasonTooLong':  "السبب طويل جدا (500 حرف كحد أقصى).",
   'monCompte.delete.openOrders':     "لديك {count} طلب(ات) قيد التنفيذ. يجب إنهاؤها أو إلغاؤها قبل أن يمكن حذف حسابك.",

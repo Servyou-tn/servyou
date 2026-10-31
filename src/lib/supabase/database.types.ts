@@ -1,7 +1,7 @@
 // Generated from the live Supabase schema (project xggomcitqrkaylqezjjz) — DO NOT EDIT BY HAND.
 // Regenerate after every applied migration: Supabase MCP generate_typescript_types (or
 // `npx supabase gen types typescript --project-id xggomcitqrkaylqezjjz`), then commit.
-// Generated 2026-10-31 after migration 20261031201742 listing_upload_caps.
+// Generated 2026-10-31 after migration 20261031211307 password_change_attempts.
 
 export type Json =
   | string
@@ -1032,6 +1032,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      password_change_attempts: {
+        Row: {
+          attempted_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          attempted_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          attempted_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       product_images: {
         Row: {
