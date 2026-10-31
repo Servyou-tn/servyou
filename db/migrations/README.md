@@ -1067,6 +1067,14 @@ both on 2026-10-28.
     - At apply: fullest shop 26 products, fullest freelancer 10 listings, busiest owner-day 33 uploads; nothing
       existing rejected or rewritten.
     - The recorded statement carries no top-level comments. The executable SQL is identical.
+110. **20261031211305_freelancer_links_cap** (`43f4cc3b`) — at most 5 `freelancer_links` per freelancer profile
+    (founder decision 2026-11-01; the app cap was 3 with no DB guard). `trg_limit_freelancer_links`, BEFORE INSERT,
+    migration-105 shape (SECURITY DEFINER, empty search_path, per-profile advisory lock, 23514 + hint
+    `freelancer_links_cap`, service role bypassed).
+    - Works with H3's save (delete, then one multi-row insert): a set of 5 passes, a set of 6 is refused whole.
+    - At apply: 0 links in the table (no profile over 5). UPDATE is not capped (owner-scoped, one profile per account).
+    - The app's `LINKS_CAP` (3) is raised to 5 separately (Agent B, with the UI message).
+    - The recorded statement carries no top-level comments. The executable SQL is identical.
 
 ## Rollback paths
 

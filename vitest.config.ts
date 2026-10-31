@@ -60,6 +60,8 @@ export const INTEGRATION_GLOBS = [
   // The listing / upload caps (pre-beta review M2 / M3): 1 sign-in each.
   '**/listing-caps-live.test.ts',
   '**/services-cap-live.test.ts',
+  // The freelancer links cap (5 per profile): 1 sign-in.
+  '**/freelancer-links-cap-live.test.ts',
 ]
 
 // Tooling artifacts that must never be scanned for tests: the headless-Chrome VRT profiles (a
