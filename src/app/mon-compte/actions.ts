@@ -316,9 +316,10 @@ const passwordInputSchema = z.object({
 // value. signInWithPassword proves the current password (and gives the session the "secure password
 // change" setting asks for, whether or not it is on); updateUser then writes the new one.
 //
-// Brute-forcing the current password from a stolen session is rate-limited twice (pre-beta review M1): every
-// attempt needs a fresh Turnstile token (Supabase Auth's CAPTCHA on the password grant — refused here first when
-// the token is missing), and Supabase Auth's own per-IP sign-in limit answers 429, shown as « trop de tentatives ».
+// Guessing the current password from a stolen session (pre-beta review M1): every attempt needs a fresh Turnstile
+// token (Supabase Auth's CAPTCHA on the password grant — refused here first when the token is missing). That is
+// friction, not a per-account limit: this sign-in runs from the server, so Supabase Auth's per-IP limit sees the
+// server's egress IP — a coarse global backstop (its 429 reads as « trop de tentatives »), not a per-attacker cap.
 export async function changePasswordAction(
   input: {
     currentPassword: string
