@@ -4,6 +4,8 @@ Logged-not-fixed by the app-layer PR that closed four of the audit findings abov
 database change, so everything needing one lands here.
 
 ## MEDIUM — no DB CHECK on freelancer URL schemes
+✅ CLOSED — migration 106 (`20261030221121_freelancer_url_scheme_checks`, 2026-10-30): `^https?://` CHECKs, NULL
+allowed, on all five columns; live suite `freelancer-url-scheme-checks.test.ts`.
 
 - **What:** `freelancer_profiles.portfolio_link`, `freelancer_links.url`,
   `freelancer_portfolio_items.url` / `image_url` and `freelancer_certifications.credential_url` are

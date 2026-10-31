@@ -1,7 +1,7 @@
 // Generated from the live Supabase schema (project xggomcitqrkaylqezjjz) — DO NOT EDIT BY HAND.
 // Regenerate after every applied migration: Supabase MCP generate_typescript_types (or
 // `npx supabase gen types typescript --project-id xggomcitqrkaylqezjjz`), then commit.
-// Generated 2026-10-30 after migration 20261030202059 image_count_caps.
+// Generated 2026-10-30 after migration 20261030221121 freelancer_url_scheme_checks.
 
 export type Json =
   | string

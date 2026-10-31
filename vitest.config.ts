@@ -32,6 +32,7 @@ export const INTEGRATION_GLOBS = [
   '**/storage-uploads-service-role.test.ts',
   '**/storage-verifications-no-client-insert.test.ts',
   '**/image-count-caps.test.ts',
+  '**/freelancer-url-scheme-checks.test.ts',
   '**/moderated-freelancer-read-rls.test.ts',
   '**/job-posts-write-guards.test.ts',
   '**/profiles-email-sync.test.ts',
@@ -52,6 +53,8 @@ export const INTEGRATION_GLOBS = [
   '**/h5-service-monthly-stats.test.ts',
   '**/h5-service-status-cascade.test.ts',
   '**/h6-service-listings-hardening-rls.test.ts',
+  // Calls src/middleware.ts against the live Auth server (1 sign-in + 1 refresh).
+  '**/session-refresh-live.test.ts',
 ]
 
 // Tooling artifacts that must never be scanned for tests: the headless-Chrome VRT profiles (a

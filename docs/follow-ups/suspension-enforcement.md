@@ -36,6 +36,21 @@ listings hidden from public and NOT orderable; existing orders continue »), is 
 Existing orders keep their rows and lifecycle; only the contact reveal is withdrawn (88). If the founder wants contact
 kept on existing orders, that is a change to 88 for the Nov 6–10 review. Live-verified 2026-10-30.
 
+## MEDIUM — `get_contact_phone` withdraws contact on EXISTING orders while a party is suspended (migration 88)
+⏳ RULED, for the Nov 6–10 build (architect / founder, 2026-10-30): the phone / WhatsApp contact must STAY visible on
+EXISTING orders while either party is suspended — existing orders continue, and they need contact. Hide it only for
+new interactions. No code before then.
+- **What:** migration 88 (`20261028201733_get_contact_phone_state_gate`) returns NULL when either party is suspended,
+  on every branch, including unlocks granted before the suspension. So an order placed before a suspension loses its
+  WhatsApp / phone contact, though the order itself continues (rows and lifecycle untouched).
+- **Fix shape:** in `get_contact_phone`, keep the suspension gate on the branches that unlock contact for a NEW
+  interaction (a job response, a not-yet-placed order) and drop it on the branch backed by an existing order between
+  the two parties (placed before the suspension, still in a non-terminal or recent status — exact window to confirm).
+  SQL to the architect, who applies it; a live test pins both sides (existing order keeps contact, new interaction
+  gets NULL).
+- **Where it lives:** `get_contact_phone` (migration 88); the WhatsApp buttons on G9 / E3 read it.
+- **Trigger:** the Nov 6–10 suspension build.
+
 - **What:** migration 61 checks the actor only (D6). Nothing reads the counterparty's
   `suspended_at`: an active buyer can still order from a suspended seller's shop or listing
   (`enforce_order_insert_integrity` does not check it); an active freelancer can still respond to a
@@ -134,6 +149,9 @@ part is the path in (middleware signs a suspended session out). No code yet.
 
 
 ## MEDIUM — server-side getUser() refreshes near expiry and throws the rotated tokens away
+✅ CLOSED — `fix/session-refresh-persistence`, 2026-10-30: `src/middleware.ts` writes a refresh onto the response and
+the forwarded request (the @supabase/ssr pattern, #257's cookie options); prefetches refresh via `getSession()`.
+Preview click-through: `docs/operations/session-refresh-preview-check.md`.
 
 - **What:** auth-js refreshes inside getUser() once the cookie session is within ~90 s of expiry,
   but neither `src/middleware.ts` (no-op `setAll`) nor Server Components (`src/lib/supabase/server.ts`

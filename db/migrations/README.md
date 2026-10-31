@@ -1023,6 +1023,15 @@ both on 2026-10-28.
     - Portfolio uploads are not count-refused (the editor removes then adds before saving); the cap holds at save
       and in the UI. Approved deviation, recorded in `docs/follow-ups/upload-hardening.md`.
     - The recorded statement carries no comments. The executable SQL is identical.
+106. **20261030221121_freelancer_url_scheme_checks** (`cab01e96`) — http(s)-only CHECKs (architect's ruling,
+    2026-10-30) on the five freelancer link columns rendered as `href` on D4: `freelancer_profiles.portfolio_link`,
+    `freelancer_links.url`, `freelancer_portfolio_items.url` / `image_url`, `freelancer_certifications.credential_url`.
+    - `^https?://` case-insensitive, NULL allowed, '' refused (the app writes NULL for an empty URL). Binds every
+      writer, the service role included; closes the owner's direct REST write that HTTP_URL did not cover.
+    - 0 rows in all five at apply; all five constraints validated.
+    - `image_url`: the provenance trigger (BEFORE) already refuses anything but this project's portfolio-media URLs
+      with an upload record, so its CHECK is an unreachable backstop, kept as ruled.
+    - The recorded statement carries no comments. The executable SQL is identical.
 
 ## Rollback paths
 
