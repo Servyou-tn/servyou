@@ -926,8 +926,6 @@ export const ar: Record<string, string> = {
   'produits.lens.boutiques':        "المتاجر",
   'produits.lens.soon':             "قريبا",
   'produits.filters.searchPlaceholder': "ابحث عن منتج…",
-  // REVIEW_AR_TRANSLATION — the mobile header search of /marche/produits (m375-c1-produits).
-  'produits.filters.searchPlaceholderMobile': "ابحث عن منتج أو متجر…",
   'produits.filters.category':      "الفئة",
   'produits.filters.categoryAll':   "كل الفئات",
   'produits.filters.ville':         "المدينة",

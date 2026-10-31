@@ -100,7 +100,7 @@ export default async function ProduitsPage({
           lang={lang}
           action={BASE}
           q={params.q}
-          placeholderKey="produits.filters.searchPlaceholderMobile"
+          placeholderKey="produits.filters.searchPlaceholder"
           keep={{
             ...(params.categorie.length ? { categorie: params.categorie.join(',') } : {}),
             ...(params.ville ? { ville: params.ville } : {}),

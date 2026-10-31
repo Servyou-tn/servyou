@@ -41,3 +41,11 @@ Frame: `C1 — Marketplace produits (375 mobile)` (dump `m375-c1-produits-dump.j
 Fixed: a favourited icon-heart had two `text-*` colours at once (the stylesheet order would decide) — it is now danger/500 only, with a test that mounts a favourited heart; the product card shows a keyboard focus ring (the link's own ring was clipped by `overflow-hidden`); the cover `sizes` hint is a prop (single column by default for the shop page / favourites / related products, two across for C1); the price stays on one line with the frame's 8 gap at 320 px; the header search box follows `q` after a soft navigation; the filter bars sync each field only when ITS OWN prop changed (an unapplied price draft survives a change of `q`).
 
 **Added question 8:** the header placeholder says « Rechercher un produit, une boutique… » (the frame's text) but the form searches the Produits lens only — a shop name matches product titles only. Keep the text, or point the header at both lenses?
+
+## Founder rulings (page 3)
+1. **« Filtres » on Produits: KEEP**, same ruling as Services.
+2. **Heart at 1440 — read from Figma (1 MCP read, node `569:39818` = the 1440 C1 Product Card):** the 1440 card draws the **same icon-heart** as the 375 frame — an 18 icon in the 32 circle, blue stroke — so the change is right at every width on C1: `m375-c1-produits-1440-card-before-after.png` (Figma · before · after). **D3 (`540:32918`) and /mes-favoris (F1 `718:60584`) were NOT read: the Figma MCP hit its Starter call limit on the second read** (rule: no building from memory). The registry notes say both reuse the same Product Card master with its 1440 heart unchanged, so they now show the icon heart through the shared component, but this is unverified — **please supply the 1440 dumps of D3 and F1 Produits** (or confirm) and I will check; if either draws the glyph I keep the glyph at `lg`+ there.
+3. **Boutiques lens at 375: leave as is** (no frame = no invention) — logged.
+4. **Header placeholder:** the Produits lens header says « Rechercher un produit… » (the existing key; the frame's « produit, boutique » text is dropped), each lens searching its own results; the Boutiques lens keeps its own « Rechercher une boutique… » bar.
+5. **« Nouveau » ribbon / rating variants: left out** (no data).
+
