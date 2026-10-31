@@ -37,3 +37,21 @@ Frame: `Marketplace services — 375 (mobile)` (dump `m375-marche-services-dump.
 
 ## Review round (one read-only pass, no critical / high)
 Fixed: a visible keyboard focus ring on the card (the link's own ring was clipped by `overflow-hidden`; the stroke overlay now thickens on `a:focus-visible`), the icon heart no longer says « pressed » next to a flipping label, the chip row stays on one line (a wrapped row overflowed the fixed boxes), the header drops `page` / `q` defensively and has `enterKeyHint="search"`, and the tests assert the Arabic strings and the page-leak guard. Not fixed here: **the Freelances lens still has its old header and no search block** — that is page 2 of this batch (the header would otherwise jump between lenses until then); the shared card's footer is tight at 1024–1100 px when a long price meets the 120 CTA (pre-existing).
+
+---
+
+# Page 2 (same PR): Marketplace · Freelances (`m375-marche-freelances`)
+
+Frame: header block + toggle bar (**Freelances selected**) + Freelancer Cards 343 × 203, gap 16, no filter, no pagination drawn. The card itself was rebuilt to the component in #264 (merged); this page only adds the page-level content.
+
+## Built as drawn
+- The **same header block** as the Services lens (« Marketplace » + the sunken search), so the lenses no longer jump between each other; spacing is the frame's (toggle 4 under the block, cards 20 under the toggle). The old `lg:hidden` title is gone (one `h1`).
+- The search block submits to `?vue=freelances&q=…` and keeps categorie / ville / prix / tri.
+- Measured at 375 (block-relative y): block 375 × 109 · search (16, 52, 343 × 41) · toggle y113, 44 high, segments 82 / 97 · first card at y177, pitch 219 (203 + 16) · card inner: avatar ring (20, 20, 72), name cluster 195 wide, chips y116, CTA (203, 151, 120 × 32) — all equal to the frame.
+- Figma vs preview: `docs/design/compare/m375-marche-freelances-fr.png`, `-ar.png`.
+
+## QUESTIONS for the founder
+1. **Search placeholder.** The frame says « Rechercher un service… » on the Freelances page; I keep « Rechercher un freelance… » (the frame text describes the wrong thing). Literal frame?
+2. **No filter at 375** (still Q2 of #264, architect recommends adding the Services lens's « Filtres » sheet here too): built as drawn, so below `lg` only the page search filters this lens (no Catégorie / Ville / Prix / sort on a phone).
+3. **Avatar glyph.** The frame's person glyph inside the Avatar lg is 31 px; the shared `Avatar` draws 28. It is the design-system component, so I left it — say if it should change.
+4. The frame's mock names / skills (« TypeScript » repeated, « +1 » vs « +2 ») are data; live cards show real skills / service tags and real counts (« 2 services », « 1 service »).
