@@ -1,0 +1,101 @@
+{
+  "$comment": "Every INSERT / UPDATE / DELETE privilege anon, authenticated or PUBLIC holds on a relation in schema public. \"*\" = table-level; a list = those columns only (column-level grant). Recorded from the live catalog on 2026-10-31 (159 entries, after migration 107). Read by src/lib/db/client-write-grants.ts: the static CI check (client-write-grants-static.test.ts) fails a new migration that GRANTs a client write not listed here, and the live test (client-write-grants-live.test.ts) fails when the real catalog differs from this file in either direction. A new client write = a GRANT in the migration AND an entry here, in the same PR.",
+  "tables": {
+    "admin_audit_log": { "authenticated": { "INSERT": "*" } },
+    "categories": { "authenticated": { "DELETE": "*", "INSERT": "*", "UPDATE": "*" } },
+    "data_exports": {
+      "authenticated": {
+        "INSERT": ["user_id"],
+        "UPDATE": ["export_url", "processed_at", "processed_by", "status"]
+      }
+    },
+    "deletion_requests": {
+      "authenticated": {
+        "INSERT": ["reason", "user_id"],
+        "UPDATE": ["processed_at", "processed_by", "status"]
+      }
+    },
+    "disputes": {
+      "authenticated": {
+        "INSERT": ["created_by_role", "description", "order_id", "reason"],
+        "UPDATE": "*"
+      }
+    },
+    "favorites": { "authenticated": { "DELETE": "*", "INSERT": "*" } },
+    "freelancer_certifications": { "authenticated": { "DELETE": "*", "INSERT": "*", "UPDATE": "*" } },
+    "freelancer_education": { "authenticated": { "DELETE": "*", "INSERT": "*", "UPDATE": "*" } },
+    "freelancer_languages": { "authenticated": { "DELETE": "*", "INSERT": "*", "UPDATE": "*" } },
+    "freelancer_links": { "authenticated": { "DELETE": "*", "INSERT": "*", "UPDATE": "*" } },
+    "freelancer_portfolio_items": { "authenticated": { "DELETE": "*", "INSERT": "*", "UPDATE": "*" } },
+    "freelancer_profiles": {
+      "authenticated": {
+        "DELETE": "*",
+        "INSERT": [
+          "bio", "city", "created_at", "current_workplace", "headline", "id", "languages", "portfolio_link",
+          "preferred_payment_method", "profile_id", "updated_at", "working_hours", "workplace_location", "years_experience"
+        ],
+        "UPDATE": [
+          "admin_hidden_at", "admin_hidden_reason", "bio", "city", "created_at", "current_workplace", "headline", "id",
+          "languages", "portfolio_link", "preferred_payment_method", "profile_id", "updated_at", "working_hours",
+          "workplace_location", "years_experience"
+        ]
+      }
+    },
+    "freelancer_skills": { "authenticated": { "DELETE": "*", "INSERT": "*" } },
+    "freelancer_tools": { "authenticated": { "DELETE": "*", "INSERT": "*", "UPDATE": "*" } },
+    "job_post_skills": { "authenticated": { "DELETE": "*", "INSERT": "*" } },
+    "job_posts": {
+      "authenticated": {
+        "INSERT": [
+          "budget_max", "budget_min", "category_id", "city", "consumer_id", "deadline", "description", "is_remote",
+          "status", "title"
+        ],
+        "UPDATE": ["budget_max", "budget_min", "category_id", "city", "deadline", "description", "is_remote", "status", "title"]
+      }
+    },
+    "job_response_skills": { "authenticated": { "DELETE": "*", "INSERT": "*" } },
+    "job_responses": { "authenticated": { "DELETE": "*", "INSERT": "*" } },
+    "notification_preferences": {
+      "authenticated": {
+        "INSERT": [
+          "email_low_stock", "email_missions_matching", "email_new_orders", "email_newsletter", "email_proposals",
+          "email_reviews", "profile_id"
+        ],
+        "UPDATE": [
+          "email_low_stock", "email_missions_matching", "email_new_orders", "email_newsletter", "email_proposals",
+          "email_reviews", "profile_id"
+        ]
+      }
+    },
+    "orders": {
+      "authenticated": {
+        "INSERT": "*",
+        "UPDATE": ["cancellation_reason", "cancelled_by", "carrier", "status", "tracking_number"]
+      }
+    },
+    "product_images": { "authenticated": { "DELETE": "*", "INSERT": "*" } },
+    "products": { "authenticated": { "DELETE": "*", "INSERT": "*", "UPDATE": "*" } },
+    "profiles": {
+      "authenticated": { "UPDATE": ["avatar_url", "city", "full_name", "language", "phone", "seller_type"] }
+    },
+    "reports": {
+      "authenticated": {
+        "INSERT": ["description", "reason", "reporter_id", "target_id", "target_type"],
+        "UPDATE": "*"
+      }
+    },
+    "service_listings": { "authenticated": { "DELETE": "*", "INSERT": "*", "UPDATE": "*" } },
+    "shop_categories": { "authenticated": { "DELETE": "*", "INSERT": "*", "UPDATE": "*" } },
+    "shop_payment_methods": { "authenticated": { "DELETE": "*", "INSERT": "*", "UPDATE": "*" } },
+    "shops": {
+      "authenticated": {
+        "DELETE": "*",
+        "INSERT": [
+          "banner_url", "city", "created_at", "delivery_setup", "description", "id", "location_detail", "logo_url", "name",
+          "owner_id", "preferred_carriers", "shop_type", "updated_at", "working_hours"
+        ],
+        "UPDATE": "*"
+      }
+    }
+  }
+}

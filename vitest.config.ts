@@ -55,6 +55,8 @@ export const INTEGRATION_GLOBS = [
   '**/h6-service-listings-hardening-rls.test.ts',
   // Calls src/middleware.ts against the live Auth server (1 sign-in + 1 refresh).
   '**/session-refresh-live.test.ts',
+  // Compares the live catalog's client write grants with db/client-write-allowlist.json (1 sign-in).
+  '**/client-write-grants-live.test.ts',
 ]
 
 // Tooling artifacts that must never be scanned for tests: the headless-Chrome VRT profiles (a
