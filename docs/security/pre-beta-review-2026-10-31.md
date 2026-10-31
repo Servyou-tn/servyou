@@ -6,12 +6,15 @@ advisors and one GET of the public home page for its headers. No writes, no sign
 
 ## Summary
 
-1. **No critical or high finding.** No secret anywhere in git history; RLS on every table, with owner-, party- or
+1. **No critical or high finding** (F3 is the closest: MEDIUM, because it needs an already-stolen session). No secret
+   anywhere in git history; RLS on every table, with owner-, party- or
    admin-scoped policies; no client upload or overwrite in any bucket; the ID-document bucket is private and empty.
 2. **The weakest area is abuse, not access.** No cap on products or service listings per seller, and no cap or rate
    limit on image uploads per account: one signed-in seller can flood the catalogue or the storage buckets.
-3. **Auth hardening depends on two unverified dashboard settings.** « Secure password change » and « Secure email
-   change » are not visible from code or SQL, and leaked-password protection (HaveIBeenPwned) is off.
+3. **A stolen session can still become a permanent takeover.** « Secure password change » is OFF (founder,
+   2026-10-27), so anyone holding a live session can set a new password straight against Supabase Auth, skipping the
+   app's current-password check. Leaked-password protection (HaveIBeenPwned) is also off. Both were logged before
+   (audit pass 3, A2 / A3) and are still open.
 4. **XSS has no browser backstop.** No XSS sink was found, but the full CSP is still Report-Only with
    `'unsafe-inline'`, and the session cookie is JS-readable by design (@supabase/ssr), so any future XSS = session theft.
 5. **Phone numbers are revealed to any counterparty of a real order or mission proposal**, within the existing caps.
@@ -19,16 +22,17 @@ advisors and one GET of the public home page for its headers. No writes, no sign
 
 ### Must fix before Nov 13 (proposed — the founder and architect pick)
 
-| # | Finding | Effort |
-|---|---|---|
-| M1 | Confirm « Secure password change » + « Secure email change » are ON in Supabase Auth (or move password change fully server-side) | S |
-| M2 | Per-seller cap on products and service listings (DB trigger, `enforce_job_post_cap` pattern) | S |
-| M3 | Per-account cap / rate limit on image uploads (`uploaded_objects` per owner per day) | M |
-| M4 | Turnstile verification fails CLOSED in production when the secret is missing | S |
-| M5 | Contact form: Turnstile + length caps, or keep it off the beta until it is real | S |
+| # | What a bad actor could do today → what we change | Finding | Effort |
+|---|---|---|---|
+| M1 | Someone with a stolen session sets a new password and locks the owner out → turn ON « Secure password change » (narrows it to sessions under ~24 h) **and decide** whether password changes go only through the app's re-check (closes it) | F3 | S + decision |
+| M2 | One seller account floods the catalogue with thousands of products / services → a database limit per shop and per freelancer | F1 | S |
+| M3 | One signed-in account uploads images in a loop and fills the storage → a database limit on uploads per account per day | F2 | M |
+| M4 | If one setting goes missing on Vercel, bot protection on orders / reports switches off silently → make it fail closed | F7 | S |
+| M5 | Anyone can spam the contact form, and the messages go into our logs → bot check + length limits, **or decide** to hide the form for the beta | F8 | S + decision |
 
-Recommended before beta, the founder's call: enforce the CSP (F5), decide the phone-reveal rule (F4), enable
-leaked-password protection (F6).
+M4 and M5 are LOW findings but take minutes and close a silent failure / an open endpoint, so they are cheap to include.
+Recommended before beta, the founder's call: enforce the CSP (F5, MEDIUM), decide the phone-reveal rule (F4, MEDIUM),
+enable leaked-password protection (F6).
 
 ## Findings
 
@@ -58,16 +62,21 @@ response) or **UNCONFIRMED** (stated why).
   the upload by an in-action count; plus the orphan sweep. **Effort:** M. **Status:** VERIFIED (code path, live
   triggers).
 
-### F3. MEDIUM — password / email change protection depends on dashboard settings not verified here
-- **Area:** 7 auth. **Where:** `src/components/auth/NewPasswordForm.tsx:94` (comment `:22` « UI gate only: the
-  server-side guard is GoTrue's « Secure password change » setting »), `src/app/mon-compte/actions.ts:355`.
+### F3. MEDIUM — a live session can change the password without the current one (setting known OFF)
+- **Area:** 7 auth. **Where:** Supabase Auth › Providers › Email: « Secure password change » = OFF and « Require
+  current password when updating » = OFF (founder, 2026-10-27, `docs/follow-ups/live-suite-teardown-guard.md`);
+  `src/components/auth/NewPasswordForm.tsx:94` (comment `:22`: « UI gate only: the server-side guard is GoTrue's
+  « Secure password change » setting »); `src/app/mon-compte/actions.ts:355`.
 - **Exploit:** the anon key is public and the session cookie is JS-readable. Whoever holds a live session (a shared
-  phone, a stolen cookie, any future XSS) can call `supabase.auth.updateUser({ password })` straight against Auth,
-  skipping the app's current-password check — an account takeover unless « Secure password change » requires recent
-  re-authentication. The same holds for `updateUser({ email })` and « Secure email change ».
-- **Fix:** confirm both settings ON in Supabase › Authentication › Providers › Email and record it in
-  `docs/operations`; optionally route both changes only through server actions. **Effort:** S. **Status:**
-  UNCONFIRMED (Auth settings are not readable through SQL or the advisors).
+  phone, a stolen cookie, any future XSS) calls `supabase.auth.updateUser({ password })` directly against Auth and
+  sets a new password with no current-password check — a temporary session theft becomes a permanent takeover.
+- **Why MEDIUM, not HIGH:** it needs an already-stolen live session (no XSS sink found, Secure + SameSite cookies,
+  HSTS); the step it enables is the escalation. Email change is protected: « Secure email change » is ON (README,
+  migration 78), so the address cannot be swapped silently.
+- **Fix:** turn ON « Secure password change » (GoTrue then requires a sign-in within ~24 h or a reauthentication
+  nonce — narrows, does not close); to close it, route every password change through `auth.reauthenticate()` or the
+  server action only (a product call). **Effort:** S (setting) + decision. **Status:** VERIFIED (recorded setting,
+  code path). Previously logged: audit pass 3, A2.
 
 ### F4. MEDIUM (design) — phone reveal on any order or proposal, including pending ones
 - **Area:** 3 SECURITY DEFINER / 4 PII. **Where:** `public.get_contact_phone(uuid)` (live body): returns the target's
@@ -78,8 +87,9 @@ response) or **UNCONFIRMED** (stated why).
   keeps it. Account creation is CAPTCHA-gated, so this is a slow harvest, not a dump. `seller_id` cannot be spoofed:
   `enforce_order_insert_integrity` discards any client value (live body).
 - **Fix (product decision):** reveal a seller's phone to a buyer only once the order is accepted / not pending, and
-  stop revealing after a buyer-side cancellation; or a daily reveal budget. Pairs with the ruled migration-88 change
-  (contact kept on existing orders). **Effort:** M. **Status:** VERIFIED (live function bodies).
+  stop revealing after a buyer-side cancellation; or a daily reveal budget. Decide it together with the change already
+  ruled for `get_contact_phone` (contact stays visible on existing orders during a suspension —
+  `docs/follow-ups/suspension-enforcement.md`, Nov 6–10). **Effort:** M. **Status:** VERIFIED (live function bodies).
 
 ### F5. MEDIUM — the Content-Security-Policy is not enforced
 - **Area:** 9 headers / 8 XSS. **Where:** `src/lib/security/headers.ts` (`:68` `'unsafe-inline'` in `script-src`,
@@ -96,19 +106,22 @@ response) or **UNCONFIRMED** (stated why).
 - **Exploit:** a user can sign up with a password known from public breaches; credential stuffing then needs no
   guessing (CAPTCHA still slows it).
 - **Fix:** enable it in Auth settings, if the plan includes it. **Effort:** S. **Status:** VERIFIED (advisor).
+  Previously logged: audit pass 1 (#4), pass 3 (A3).
 
 ### F7. LOW — Turnstile verification fails open when the secret is missing
 - **Area:** 6. **Where:** `src/lib/security/turnstile.ts:34` `if (!secret) return { ok: true }`.
 - **Exploit:** if `TURNSTILE_SECRET_KEY` ever goes missing in the production environment, order requests, disputes
   and reports silently lose bot protection. It was set for Production on 2026-10-30.
 - **Fix:** fail closed when `VERCEL_ENV === 'production'`; log loudly. **Effort:** S. **Status:** VERIFIED (code);
-  the current env value not checked (read-only rule).
+  the current env value not checked (read-only rule). Background: « skip only when the key is absent » was the ruled
+  rollout behaviour (#247), meant for local and preview.
 
 ### F8. LOW — contact form: unauthenticated, unthrottled, logs PII
 - **Area:** 6. **Where:** `src/app/(marketing)/contact/actions.ts:13` (`submitContactMessage`), `:19`
   `console.log('[contact] message received', { … })`.
-- **Exploit:** anyone can post unlimited messages; name / email / subject land in the Vercel logs (no length cap on
-  subject, newlines allow log-line injection). It is a stub — nothing is stored or sent.
+- **Exploit:** anyone can post unlimited messages; name, email and subject land in the Vercel logs, and only the
+  message is length-capped (2000, `src/lib/contact/contact-validation.ts`) — name, email and subject are not. It is a
+  stub — nothing is stored or sent.
 - **Fix:** Turnstile + length caps + drop the email from the log, or hide the form until it is real. **Effort:** S.
   **Status:** VERIFIED.
 
@@ -120,10 +133,10 @@ response) or **UNCONFIRMED** (stated why).
 - **Fix:** decide whether the note is public to parties; if not, column-revoke it and read it through an admin RPC.
   **Effort:** S. **Status:** VERIFIED (live policy and grants; intent UNCONFIRMED).
 
-### F10. LOW — job-post actions skip Zod; no length CHECKs on job_posts
-- **Area:** 6. **Where:** `src/app/mes-annonces/nouvelle/actions.ts:10`, `src/app/mes-annonces/[id]/actions.ts`
-  (bare `missionId`), `src/app/mes-annonces/[id]/modifier/actions.ts`; live `job_posts` CHECKs cover budget, status
-  and moderation only.
+### F10. LOW — two job-post actions skip Zod; no length CHECKs on job_posts
+- **Area:** 6. **Where:** `src/app/mes-annonces/nouvelle/actions.ts:15` (`createAnnonce`, no Zod) and
+  `src/app/mes-annonces/[id]/actions.ts` (bare `missionId`); `[id]/modifier/actions.ts` does use Zod. Live `job_posts`
+  CHECKs cover budget, status and moderation only.
 - **Exploit:** a non-string title throws (500); `city` / `categoryId` / `deadline` are unvalidated and uncapped, and a
   direct REST insert bypasses the app's 60 / 500-character limits. Ownership holds (`.eq('consumer_id', user.id)` +
   RLS). Already parked: the `missionId` validation waits for Agent B's PRs.
@@ -138,7 +151,7 @@ response) or **UNCONFIRMED** (stated why).
   **Status:** VERIFIED (catalog).
 
 ### F12. LOW — `?next=` guard does not normalise dot segments
-- **Area:** 7. **Where:** `src/lib/internal-path.ts:12-24`.
+- **Area:** 7. **Where:** `src/lib/internal-path.ts:9-21`.
 - **Exploit:** `/..//evil.com` passes; it resolves to `https://servyou.vercel.app//evil.com`, a same-origin path, so
   no open redirect was shown. Defence in depth.
 - **Fix:** resolve with `new URL(path, origin)` and require the same origin and a pathname not starting with `//`.
@@ -148,7 +161,8 @@ response) or **UNCONFIRMED** (stated why).
 - `src/lib/supabase/admin.ts`: no `server-only` guard; today only 3 server modules import it, no client file.
   (S, VERIFIED.)
 - `src/lib/marche/data.ts:57` and `:136` log raw error objects (repo rule: log `message` / `code` / `details`);
-  `.ilike('title', `%${term}%`)` at `:53` does not escape `%` / `_` (wildcards only, parameter-bound). (S, VERIFIED.)
+  `.ilike('title', `%${term}%`)` at `:53` (products) and `:112` (services) does not escape `%` / `_` (wildcards only,
+  parameter-bound — not injection). (S, VERIFIED.)
 - Sign-in shows a distinct « compte suspendu » banner before the password check (an email probe learns that an
   account is suspended). Accepted earlier (audit pass 3). (S, VERIFIED.)
 - Dead OAuth wiring: sign-in / sign-up build `/auth/callback?next=…` but no such route exists and Google OAuth is off;
@@ -161,7 +175,7 @@ response) or **UNCONFIRMED** (stated why).
 ## Checked and fine
 
 - **1. Secrets.** Full history of every branch (970 commits) scanned for JWTs, `sb_secret_`, Turnstile / Resend /
-  Stripe / AWS / GitHub key shapes, private keys and DB URLs with passwords: two hits, neither live (a
+  Stripe / AWS / GitHub key shapes, private keys and DB URLs with passwords: three hits, none live (a
   `[YOUR_PASSWORD]` placeholder in `docs/operations.md`, commit `aeeaea9`; a localhost restore container password in
   the same file; Cloudflare's public test secret in `.env.example`, commit `0bf4654`). Only `.env.example` was ever
   committed. The service-role key is read only in `src/lib/supabase/admin.ts`, imported by three server-only modules;
@@ -191,8 +205,8 @@ response) or **UNCONFIRMED** (stated why).
   @supabase/ssr design.
 - **8. XSS / injection.** No `dangerouslySetInnerHTML`, `innerHTML`, `eval`, markdown or JSON-LD in `src`. User URLs
   are http(s)-only in the actions and in the DB (migration 106; job-response links by trigger). WhatsApp links are
-  built from digits only. Every `.or()` interpolates UUIDs or constants; search text is escaped; no raw SQL in app
-  code.
+  built from digits only. Every `.or()` interpolates UUIDs or constants and search text going into `.or()` is
+  escaped (the two `.ilike` wildcard spots are F13); no raw SQL in app code.
 - **9. Headers (production).** HSTS 2 years + preload, `X-Frame-Options: DENY` + `frame-ancestors 'none'`
   (enforced), `nosniff`, `Referrer-Policy: strict-origin-when-cross-origin`, a Permissions-Policy, no `X-Powered-By`.
 - **11. Advisors.** Beyond F6: `public_profiles` SECURITY DEFINER view (intended — its column list is the protection),
