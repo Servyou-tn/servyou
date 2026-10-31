@@ -11,6 +11,8 @@ import type { SaveProfileInputType } from './schema'
 
 /** applyProfileSave's error when the database refused a 7th portfolio item (hint portfolio_items_cap). */
 export const PORTFOLIO_CAP_REACHED = 'portfolio_items_cap'
+/** …and when it refused a 6th link (hint freelancer_links_cap). */
+export const LINKS_CAP_REACHED = 'freelancer_links_cap'
 
 /**
  * Core write, factored out so it's exercisable directly against a real Supabase client in tests
@@ -132,7 +134,12 @@ export async function applyProfileSave(
       input.links.map((row, i) => ({ freelancer_profile_id: freelancerProfileId, label: row.label, url: row.url, display_order: i })),
     )
     if (error) {
-      console.error('[saveProfile] freelancer_links insert failed:', error.message, error.code)
+      // The 5-link cap (DB trigger) is past the schema's .max() only on a concurrent save: a code the actions translate.
+      if (error.hint === 'freelancer_links_cap') {
+        console.warn('[saveProfile] links cap refused the insert:', error.message, error.code)
+        return { ok: false, error: LINKS_CAP_REACHED }
+      }
+      console.error('[saveProfile] freelancer_links insert failed:', error.message, error.code, error.details)
       return { ok: false, error: 'freelancer_links insert failed' }
     }
   }

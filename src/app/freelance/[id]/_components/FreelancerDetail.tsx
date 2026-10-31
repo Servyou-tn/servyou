@@ -1,8 +1,11 @@
 import Image from 'next/image'
-import { MapPin, Calendar, Link2, GraduationCap, Award, Briefcase } from 'lucide-react'
+import { MapPin, Calendar, GraduationCap, Award, Briefcase } from 'lucide-react'
 import { Avatar } from '@/components/ui/avatar'
 import { EmptyState } from '@/components/marche/EmptyState'
 import { ServiceListingCard } from '@/components/listings/ServiceListingCard'
+import { SocialLinks } from '@/components/social/SocialLinks'
+import { PlatformIcon } from '@/components/social/PlatformIcon'
+import { detectPlatform } from '@/lib/social/platforms'
 import type { ServiceListing } from '@/components/listings/ServiceListingCard'
 import type { FreelancerDetailData } from '@/lib/marche/freelancer-detail'
 import { LANGUAGES, PROFICIENCY_LEVELS } from '@/lib/freelancer/language-options'
@@ -28,8 +31,8 @@ import { SectionNav, type NavSection } from './SectionNav'
 // (390:10694) is a 4-segment card — the 4th being freelancer_links (github/linkedin/site). Dropping
 // links entirely would violate the locked D-H mirror (H3's "Confiance & liens" accordion edits
 // them; D4 must show them somewhere) — so they're appended here as a 4th segment, carried over from
-// the original hero measurement, not invented. No platform icons: freelancer_links has no
-// type/platform column (H3's own migration comment), so every link renders the same generic icon.
+// the original hero measurement, not invented. Each link is its platform's icon (SocialLinks, the links kit:
+// the platform is read from the address — freelancer_links has no platform column — and anything unknown is the globe).
 export function FreelancerDetail({
   freelancer,
   services,
@@ -119,19 +122,11 @@ export function FreelancerDetail({
             {freelancer.links.length > 0 && (
               <>
                 <div className="h-8 w-px bg-border-subtle" />
-                <div className="flex flex-wrap items-center gap-3">
-                  {freelancer.links.map((link) => (
-                    <a
-                      key={link.id}
-                      href={link.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-1.5 text-body-sm font-medium text-brand-blue-600 hover:underline"
-                    >
-                      <Link2 className="size-4" aria-hidden="true" />
-                      {link.label}
-                    </a>
-                  ))}
+                {/* c4-liens (m375-d4-profil): « Liens » caption 12 Medium muted over the 20 px text-secondary icons, gap 6. The icons keep their 44 px
+                    phone tap target (kit rule) — the negative margins hand the padding back so the segment is as tall and as flush as the frame's. */}
+                <div className="flex flex-col gap-1.5">
+                  <span className="text-caption font-medium text-text-muted">{t('freelance.public.links_label', lang)}</span>
+                  <SocialLinks links={freelancer.links} name={freelancer.fullName} lang={lang} className="-my-3 -ms-3 sm:-my-2 sm:-ms-2" />
                 </div>
               </>
             )}
@@ -259,7 +254,13 @@ export function FreelancerDetail({
           {freelancer.portfolioLink && (
             <div className="flex items-center gap-2 border-t border-border-subtle pt-4 text-body-sm">
               <span className="text-text-secondary">{t('freelance.public.external_portfolio_label', lang)}</span>
-              <a href={freelancer.portfolioLink} target="_blank" rel="noopener noreferrer" className="font-medium text-brand-blue-600 hover:underline">
+              <a
+                href={freelancer.portfolioLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1.5 font-medium text-brand-blue-600 hover:underline"
+              >
+                <PlatformIcon platform={detectPlatform(freelancer.portfolioLink) ?? 'website'} className="size-4 shrink-0" />
                 {displayUrl(freelancer.portfolioLink)}
               </a>
             </div>
