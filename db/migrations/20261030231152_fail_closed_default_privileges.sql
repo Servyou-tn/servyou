@@ -1,0 +1,52 @@
+-- Fail-closed default privileges: a table or view that `postgres` creates in `public` from now on gets NO client
+-- write privilege (architect's ruling, 2026-10-30, option « fail-closed defaults »; docs/follow-ups/suspension-
+-- enforcement.md « MEDIUM — Supabase default privileges re-grant writes on any new or re-created view »).
+--
+-- Why: today `postgres`'s default ACL for tables in public is `anon=r, authenticated=arwd` (set by migration 68,
+-- which already removed anon's writes and TRUNCATE / REFERENCES / TRIGGER / MAINTAIN). So a NEW table — and a new or
+-- re-created VIEW, which Postgres makes auto-updatable and runs as its owner — is born writable by every signed-in
+-- user. That is how public_profiles became the write hole migration 60 closed. After this, a client write privilege
+-- exists only where a migration GRANTs it explicitly.
+--
+-- Live on 2026-10-30:
+--   * every relation in public (30 tables, 2 views, 0 sequences) is owned by postgres — the role migrations run as;
+--   * default ACL, postgres / tables: postgres=arwdDxtm anon=r authenticated=arwd service_role=arwdDxtm;
+--   * existing grants fingerprint (md5 over relacl of every public relation + every column attacl): 9a02c52f…
+--     (9a02c52fe952050942c6b53e53b2a3cc, 151 entries). ALTER DEFAULT PRIVILEGES never touches existing objects, so
+--     it must be identical after apply (verification 2 below).
+--
+-- Existing tables that rely on the DEFAULT grant for some or all of authenticated's table-level writes (no migration
+-- grants them explicitly; they keep them — this changes nothing for them): categories, favorites,
+-- freelancer_certifications, freelancer_education, freelancer_languages, freelancer_links,
+-- freelancer_portfolio_items, freelancer_skills, freelancer_tools, job_post_skills, orders (INSERT), product_images,
+-- products, service_listings, shop_categories, shop_payment_methods (+ partly freelancer_profiles / shops DELETE,
+-- disputes / reports UPDATE, job_responses). The CI allow-list records them as they are today.
+--
+-- Not covered (noted for the architect): supabase_admin's own default ACL in public still grants anon /
+-- authenticated everything on tables it creates (platform-created objects only; postgres cannot alter another
+-- role's defaults). Sequences: postgres's default is anon / authenticated `rwU`; public has 0 sequences (uuid keys).
+
+alter default privileges for role postgres in schema public
+  revoke insert, update, delete on tables from anon, authenticated;
+
+-- Post-apply verification:
+--   1. select array_to_string(defaclacl, ' ') from pg_default_acl
+--       where defaclrole = 'postgres'::regrole and defaclnamespace = 'public'::regnamespace and defaclobjtype = 'r';
+--      → postgres=arwdDxtm/postgres anon=r/postgres authenticated=r/postgres service_role=arwdDxtm/postgres
+--   2. Existing grants unchanged — must return 9a02c52fe952050942c6b53e53b2a3cc / 151:
+--      select md5(coalesce(string_agg(x, '|' order by x), '')), count(*) from (
+--        select c.relname || ':' || coalesce(c.relacl::text, '-') as x from pg_class c
+--         where c.relnamespace = 'public'::regnamespace and c.relkind in ('r','v','m','p','S')
+--        union all
+--        select c.relname || '.' || a.attname || ':' || a.attacl::text from pg_attribute a join pg_class c on c.oid = a.attrelid
+--         where c.relnamespace = 'public'::regnamespace and c.relkind in ('r','v','m','p') and a.attacl is not null
+--           and a.attnum > 0 and not a.attisdropped) s;
+--   3. In a transaction, rolled back: create table public.zz_default_acl_probe (id int); create view
+--      public.zz_default_acl_probe_v as select * from public.zz_default_acl_probe; then
+--      select grantee, privilege_type from information_schema.role_table_grants
+--       where table_name like 'zz_default_acl_probe%' and grantee in ('anon','authenticated');
+--      → SELECT only, for both; rollback.
+--
+-- Rollback:
+--   alter default privileges for role postgres in schema public
+--     grant insert, update, delete on tables to authenticated;
