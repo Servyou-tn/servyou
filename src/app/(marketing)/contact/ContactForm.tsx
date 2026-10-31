@@ -1,11 +1,12 @@
 'use client'
 
-import { useState, type FormEvent } from 'react'
+import { useRef, useState, type FormEvent } from 'react'
 import { toast } from 'sonner'
 import { useLang } from '@/components/LangProvider'
 import { t } from '@/lib/i18n'
 import { FOCUS_RING } from '@/components/layout/styles'
-import { validateContactForm, MESSAGE_MAX, type ContactErrors } from '@/lib/contact/contact-validation'
+import { validateContactForm, NAME_MAX, EMAIL_MAX, MESSAGE_MAX, type ContactErrors } from '@/lib/contact/contact-validation'
+import { Turnstile, type TurnstileHandle } from '@/components/security/Turnstile'
 import { submitContactMessage } from './actions'
 
 const SUBJECTS = [
@@ -30,6 +31,7 @@ export function ContactForm() {
   const [message, setMessage] = useState('')
   const [errors, setErrors] = useState<ContactErrors>({})
   const [submitting, setSubmitting] = useState(false)
+  const turnstile = useRef<TurnstileHandle>(null)
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault()
@@ -39,7 +41,8 @@ export function ContactForm() {
 
     setSubmitting(true)
     try {
-      const result = await submitContactMessage({ name, email, subject, message })
+      const turnstileToken = await turnstile.current?.getToken()
+      const result = await submitContactMessage({ name, email, subject, message }, turnstileToken)
       if (result.ok) {
         toast.success(t('contact.form.success', lang))
         setName('')
@@ -47,6 +50,8 @@ export function ContactForm() {
         setSubject('')
         setMessage('')
         setErrors({})
+      } else if (result.botCheck) {
+        toast.error(t('common.error_bot_check', lang))
       } else if (result.field) {
         setErrors({ [result.field]: true })
       }
@@ -74,6 +79,7 @@ export function ContactForm() {
         <input
           id="contact-name"
           type="text"
+          maxLength={NAME_MAX}
           value={name}
           onChange={(e) => setName(e.target.value)}
           aria-invalid={!!errors.name}
@@ -90,6 +96,7 @@ export function ContactForm() {
         <input
           id="contact-email"
           type="email"
+          maxLength={EMAIL_MAX}
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           aria-invalid={!!errors.email}
@@ -139,6 +146,8 @@ export function ContactForm() {
           </span>
         </div>
       </div>
+
+      <Turnstile ref={turnstile} action="contact" />
 
       <button
         type="submit"

@@ -48,6 +48,28 @@ describe('verifyTurnstile — no secret', () => {
     expect(await verifyTurnstile(undefined)).toEqual({ ok: true })
     expect(fetchMock).not.toHaveBeenCalled()
   })
+
+  // Pre-beta review M4: a lost secret in production must not silently switch bot protection off.
+  it('FAILS CLOSED in production (VERCEL_ENV=production) and logs the misconfiguration', async () => {
+    vi.stubEnv('TURNSTILE_SECRET_KEY', '')
+    vi.stubEnv('VERCEL_ENV', 'production')
+    expect(await verifyTurnstile(TOKEN)).toEqual({ ok: false, reason: 'misconfigured' })
+    expect(fetchMock).not.toHaveBeenCalled()
+    expect(logs.some((l) => l.includes('TURNSTILE_SECRET_KEY is missing in production'))).toBe(true)
+  })
+
+  it.each(['preview', 'development'])('still skips on a %s deployment (the secret is Production-only)', async (env) => {
+    vi.stubEnv('TURNSTILE_SECRET_KEY', '')
+    vi.stubEnv('VERCEL_ENV', env)
+    expect(await verifyTurnstile(undefined)).toEqual({ ok: true })
+  })
+
+  it('keys on VERCEL_ENV, not NODE_ENV (a local `next start` is NODE_ENV=production)', async () => {
+    vi.stubEnv('TURNSTILE_SECRET_KEY', '')
+    vi.stubEnv('VERCEL_ENV', '')
+    vi.stubEnv('NODE_ENV', 'production')
+    expect(await verifyTurnstile(undefined)).toEqual({ ok: true })
+  })
 })
 
 describe('verifyTurnstile — secret set (fail closed)', () => {

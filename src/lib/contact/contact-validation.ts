@@ -11,9 +11,14 @@ export type ContactInput = {
 export type ContactErrors = {
   name?: boolean
   email?: boolean
+  subject?: boolean
   message?: boolean
 }
 
+// A limit on every field (pre-beta review M5): the action is public, so nothing unbounded reaches the server.
+export const NAME_MAX = 100
+export const EMAIL_MAX = 254 // RFC 5321 path limit
+export const SUBJECT_MAX = 100 // the select sends an i18n key (~40 characters)
 export const MESSAGE_MAX = 2000
 
 // Deliberately simple email shape check (a non-empty local part, an @, a dotted domain).
@@ -26,8 +31,10 @@ export function isValidEmail(email: string): boolean {
 
 export function validateContactForm(input: ContactInput): { ok: boolean; errors: ContactErrors } {
   const errors: ContactErrors = {}
-  if (!input.name.trim()) errors.name = true
-  if (!isValidEmail(input.email)) errors.email = true
+  const name = input.name.trim()
+  if (!name || name.length > NAME_MAX) errors.name = true
+  if (!isValidEmail(input.email) || input.email.trim().length > EMAIL_MAX) errors.email = true
+  if ((input.subject ?? '').length > SUBJECT_MAX) errors.subject = true
   const msg = input.message.trim()
   if (!msg || msg.length > MESSAGE_MAX) errors.message = true
   return { ok: Object.keys(errors).length === 0, errors }
