@@ -18,6 +18,7 @@ export async function getFreelancerTopSector(supabase: SupabaseClient, freelance
     .select('created_at, categories!service_listings_category_id_fkey ( slug )')
     .eq('freelancer_profile_id', freelancerProfileId)
     .neq('status', 'draft')
+    .is('admin_hidden_at', null) // a moderated listing does not steer the suggestions (and the moderation read-path guard wants the filter)
   if (error) {
     console.error('[getFreelancerTopSector] service_listings fetch failed:', error.message, error.code, error.details)
     return null
