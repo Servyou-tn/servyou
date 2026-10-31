@@ -1,12 +1,10 @@
 /**
- * Live proof for db/migrations/PENDING_freelancer_links_cap.sql — at most 5 freelancer_links per freelancer profile
+ * Live proof for db/migrations/20261031211305_freelancer_links_cap.sql (#110) — at most 5 freelancer_links per freelancer profile
  * (founder decision 2026-11-01):
  *   * 5 links in ONE multi-row insert pass (H3's save: delete, then insert the set in one statement);
  *   * the 6th is refused (23514, hint freelancer_links_cap) and nothing is added;
  *   * 6 in one insert are refused whole (the statement is atomic);
  *   * the service role is not capped (seeds, admin tooling).
- *
- * ⚠ Red until that migration is applied.
  *
  * Fixture (`lnk-cap-`, password random per run): one freelancer and a profile, written by the service role. Deleting
  * the user cascades everything. 1 fixture sign-in (the live sign-in budget).
