@@ -1574,7 +1574,6 @@ export const fr: Record<string, string> = {
   'services.lens.ariaLabel':         "Basculer entre services et freelances",
   'services.lens.services':          "Services",
   'services.lens.freelances':        "Freelances",
-  'services.lens.soon':              "Bientôt",
   'services.filters.searchPlaceholder': "Rechercher un service…",
   'services.filters.categoryAll':    "Toutes les catégories",
   'services.filters.ville':          "Ville",
@@ -4029,5 +4028,11 @@ export const fr: Record<string, string> = {
   'boutiques.empty.subtitle':                              "Les premières boutiques arrivent. Revenez bientôt.",
   'boutiques.empty.filtered':                              "Aucune boutique ne correspond à votre recherche",
   'boutiques.empty.filteredSubtitle':                      "Essayez d'élargir vos filtres ou de changer de catégorie.",
+  // « Freelances » lens of /marche/services (Figma 662:53894).
+  'freelances.filters.searchPlaceholder':                  "Rechercher un freelance…",
+  'freelances.empty.title':                                "Aucun freelance pour le moment",
+  'freelances.empty.subtitle':                             "Les premiers profils arrivent. Revenez bientôt.",
+  'freelances.empty.filtered':                             "Aucun freelance ne correspond à votre recherche",
+  'freelances.empty.filteredSubtitle':                     "Essayez d'élargir vos filtres ou de changer de catégorie.",
 
 }
