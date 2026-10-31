@@ -1,11 +1,9 @@
 /**
- * Live proof for db/migrations/PENDING_password_change_attempts.sql and src/lib/auth/password-attempts.ts — at most 5
+ * Live proof for db/migrations/20261031211307_password_change_attempts.sql (#111) and src/lib/auth/password-attempts.ts — at most 5
  * wrong current-password attempts per account per 15 minutes on Mon compte's password change (pre-beta review M1):
  *   * the real reservePasswordAttempt (service role): 5 attempts pass, the 6th is blocked and leaves no row behind
  *     (a refused attempt does not extend the lockout); releasing one frees a slot;
  *   * the table is service-role only: a signed-in user can neither read nor write it (42501).
- *
- * ⚠ Red until that migration is applied: before it, the table does not exist.
  *
  * Fixture (`pw-att-`, password random per run): one user. Its attempt rows cascade with it. 1 fixture sign-in.
  *

@@ -1,4 +1,3 @@
-import type { SupabaseClient } from '@supabase/supabase-js'
 import { createAdminClient } from '@/lib/supabase/admin'
 
 // Wrong current-password attempts on Mon compte's password change: at most PASSWORD_ATTEMPT_LIMIT per account per
@@ -14,8 +13,7 @@ export const PASSWORD_ATTEMPT_WINDOW_MINUTES = 15
 
 export type PasswordAttempt = { ok: true; id: string; blocked: boolean } | { ok: false }
 
-// The table is newer than the generated types until they are regenerated after its migration is applied.
-const attempts = () => (createAdminClient() as unknown as SupabaseClient).from('password_change_attempts')
+const attempts = () => createAdminClient().from('password_change_attempts')
 
 export async function reservePasswordAttempt(userId: string): Promise<PasswordAttempt> {
   const dayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
@@ -28,7 +26,7 @@ export async function reservePasswordAttempt(userId: string): Promise<PasswordAt
     console.error('[reservePasswordAttempt] insert failed:', error?.message, error?.code, error?.details)
     return { ok: false }
   }
-  const id = (data as { id: string }).id
+  const id = data.id
 
   const since = new Date(Date.now() - PASSWORD_ATTEMPT_WINDOW_MINUTES * 60 * 1000).toISOString()
   const { count, error: countError } = await attempts()
