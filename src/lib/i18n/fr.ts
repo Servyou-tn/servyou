@@ -2715,6 +2715,19 @@ export const fr: Record<string, string> = {
   'category.empty.services_subtitle':    "Revenez bientôt, ou parcourez tous les services.",
   // One line per sector, shown under the title when it exists. Only the framed sector has one so far (docs/design/category-c2-deltas.md D3).
   'category.description.design-graphique-logo': "Logos, identités visuelles, flyers, packaging : trouvez un designer tunisien pour votre projet.",
+  // The other 12 sectors' one-line descriptions (founder text, 2026-10-31) — design-graphique-logo is above.
+  'category.description.developpement-web-mobile': "Sites vitrines, boutiques en ligne, applications : trouvez un développeur tunisien pour votre projet.",
+  'category.description.design-ui-ux': "Maquettes, parcours utilisateur, prototypes : trouvez un designer UI/UX tunisien pour votre produit.",
+  'category.description.marketing-digital': "Publicité, SEO, stratégie de lancement : trouvez un expert marketing tunisien pour faire grandir votre activité.",
+  'category.description.community-management': "Publications, calendrier éditorial, animation de vos pages : trouvez un community manager tunisien.",
+  'category.description.redaction-contenu': "Textes de site, fiches produit, articles : trouvez un rédacteur tunisien pour vos contenus.",
+  'category.description.traduction': "Français, arabe, anglais : trouvez un traducteur tunisien pour vos documents et votre site.",
+  'category.description.montage-video-motion': "Reels, publicités, vidéos explicatives : trouvez un monteur ou un motion designer tunisien.",
+  'category.description.voix-off-doublage': "Voix off en français, en arabe ou en derja : trouvez la voix tunisienne de votre marque.",
+  'category.description.consulting-assistanat': "Conseil, organisation, assistance administrative : trouvez un consultant ou un assistant tunisien.",
+  'category.description.personal-branding': "Profil LinkedIn, image, prise de parole : trouvez un expert tunisien pour construire votre marque personnelle.",
+  'category.description.coaching-meta-ads': "Campagnes Facebook et Instagram, ciblage, budget : apprenez avec un coach Meta Ads tunisien.",
+  'category.description.coaching-ecommerce': "Lancer votre boutique, trouver vos clients, vendre plus : faites-vous accompagner par un coach e-commerce tunisien.",
 
   // ─── Logged-in consumer homepage (/) ─────────────────────────────────────────
   'home.greeting.hello':           "Bonjour {name}",
