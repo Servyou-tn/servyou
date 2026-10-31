@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { Heart } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useLang } from './LangProvider'
 import { t } from '@/lib/i18n'
@@ -9,9 +10,14 @@ import { t } from '@/lib/i18n'
 type Props = {
   item_type: 'product' | 'service'
   item_id: string
+  /**
+   * `glyph` (default): the text ♡ / ♥ the product pages still use. `icon`: the Figma « icon-heart » — a plain 20 outline icon, text/muted, filled
+   * danger/500 when favourited, no padding (the 44 px touch target is an invisible hit area around it). Service Card: 1486:24359 / 1488:66061.
+   */
+  variant?: 'glyph' | 'icon'
 }
 
-export function FavoriteButton({ item_type, item_id }: Props) {
+export function FavoriteButton({ item_type, item_id, variant = 'glyph' }: Props) {
   const [supabase] = useState(() => createClient())
   const router = useRouter()
   const lang = useLang()
@@ -77,7 +83,16 @@ export function FavoriteButton({ item_type, item_id }: Props) {
     setToggling(false)
   }
 
+  const iconClass = 'relative inline-flex size-5 shrink-0 items-center justify-center rounded-full disabled:opacity-50'
+
   if (loading) {
+    if (variant === 'icon') {
+      return (
+        <button disabled aria-label={t('common.loading', lang)} className={`${iconClass} text-text-muted`}>
+          <Heart className="size-5" aria-hidden="true" />
+        </button>
+      )
+    }
     return (
       <button disabled aria-label={t('common.loading', lang)}
         className="p-2 rounded-full text-gray-300">
@@ -87,6 +102,21 @@ export function FavoriteButton({ item_type, item_id }: Props) {
   }
 
   const label = favorited ? t('favorites.remove', lang) : t('favorites.add', lang)
+
+  if (variant === 'icon') {
+    return (
+      <button
+        onClick={handleToggle}
+        disabled={toggling}
+        title={label}
+        aria-label={label}
+        className={iconClass}
+      >
+        <Heart className={`size-5 ${favorited ? 'fill-danger-500 text-danger-500' : 'text-text-muted'}`} aria-hidden="true" />
+        <span aria-hidden="true" className="absolute -inset-3" />
+      </button>
+    )
+  }
 
   return (
     <button

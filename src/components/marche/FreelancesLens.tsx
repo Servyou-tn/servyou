@@ -15,6 +15,8 @@ import { settle } from '@/lib/supabase/query-error'
 import { getLang } from '@/lib/i18n/server'
 import { t } from '@/lib/i18n'
 import { ServicesLensToggle } from './ServicesLensToggle'
+import { MarketplaceMobileHeader } from './MarketplaceMobileHeader'
+import { SearchFiltersSheet } from '@/components/recherche/SearchFiltersSheet'
 import { ServicesFilterBar } from './ServicesFilterBar'
 
 const BASE = '/marche/services'
@@ -59,15 +61,28 @@ export async function FreelancesLens({ searchParams }: { searchParams: Promise<R
 
   return (
     <AppShell user={topBarUser}>
-      <div className="flex flex-col gap-6">
-        <div className="flex flex-col gap-4">
-          {/* Mobile page title — desktop takes its identity from the sidebar's active item. */}
-          <h1 className="text-xl font-semibold text-text-primary lg:hidden">{t('shell.sidebar.marketplace', lang)}</h1>
-
+      {/* Below `lg` the frame (m375-marche-freelances) opens with the same « Marketplace » + search block as the Services lens; spacing is the frame's. */}
+      <div className="flex flex-col gap-6 max-lg:gap-0">
+        <MarketplaceMobileHeader
+          lang={lang}
+          action={BASE}
+          q={params.q}
+          placeholderKey="freelances.filters.searchPlaceholder"
+          keep={{
+            vue: 'freelances',
+            ...(params.categorie.length ? { categorie: params.categorie.join(',') } : {}),
+            ...(params.ville ? { ville: params.ville } : {}),
+            ...(params.prixMin != null ? { prix_min: String(params.prixMin) } : {}),
+            ...(params.prixMax != null ? { prix_max: String(params.prixMax) } : {}),
+            ...(params.tri !== 'recent' ? { tri: params.tri } : {}),
+          }}
+        />
+        <div className="flex flex-col gap-4 max-lg:gap-0 max-lg:pt-1">
           <ServicesLensToggle lang={lang} active="freelances" />
 
           {/* The SAME Filter Bar as the Services lens (Figma 662:53894 « Filter Bar / viewport=desktop »): search · Catégorie · Ville · Prix · Trier.
-              The 375 frame (663:55017) draws NO in-page filter — only the toggle and the cards — so below `lg` there is none (open question D9). */}
+              The 375 frame (663:55017) draws no in-page filter; the FOUNDER approved the Services lens's « Filtres » button + sheet here (Oct 31, #271),
+              with Ville and Trier par added to the sheet. */}
           <div className="hidden lg:block">
             <ServicesFilterBar
               categories={categories}
@@ -82,56 +97,77 @@ export async function FreelancesLens({ searchParams }: { searchParams: Promise<R
               searchPlaceholderKey="freelances.filters.searchPlaceholder"
             />
           </div>
-
+          <div className="lg:hidden max-lg:mt-4">
+            <SearchFiltersSheet
+              categories={categories}
+              selectedCategorie={params.categorie}
+              prixMin={params.prixMin}
+              prixMax={params.prixMax}
+              basePath={BASE}
+              extras={{
+                cities,
+                ville: params.ville,
+                tri: params.tri,
+                triDefault: 'recent',
+                sortOptions: [
+                  { value: 'recent', labelKey: 'services.sort.recent' },
+                  { value: 'prix_asc', labelKey: 'services.sort.prix_asc' },
+                  { value: 'prix_desc', labelKey: 'services.sort.prix_desc' },
+                ],
+              }}
+            />
+          </div>
         </div>
 
-        {result === null ? (
-          <ErrorState lang={lang} />
-        ) : result.totalCount === 0 ? (
-          <div className="flex flex-col items-center gap-5 rounded-2xl border border-border-subtle bg-white px-10 py-12 text-center">
-            <span className="flex h-28 w-28 items-center justify-center rounded-full bg-surface-pill">
-              <Users className="h-16 w-16 text-icon-muted" aria-hidden="true" />
-            </span>
-            <div className="flex max-w-md flex-col gap-2">
-              <p className="text-xl font-semibold text-text-primary">
-                {t(hasFilters ? 'freelances.empty.filtered' : 'freelances.empty.title', lang)}
-              </p>
-              <p className="text-base text-text-muted">
-                {t(hasFilters ? 'freelances.empty.filteredSubtitle' : 'freelances.empty.subtitle', lang)}
-              </p>
+        <div className="flex flex-col gap-6 max-lg:mt-5">
+          {result === null ? (
+            <ErrorState lang={lang} />
+          ) : result.totalCount === 0 ? (
+            <div className="flex flex-col items-center gap-5 rounded-2xl border border-border-subtle bg-white px-10 py-12 text-center">
+              <span className="flex h-28 w-28 items-center justify-center rounded-full bg-surface-pill">
+                <Users className="h-16 w-16 text-icon-muted" aria-hidden="true" />
+              </span>
+              <div className="flex max-w-md flex-col gap-2">
+                <p className="text-xl font-semibold text-text-primary">
+                  {t(hasFilters ? 'freelances.empty.filtered' : 'freelances.empty.title', lang)}
+                </p>
+                <p className="text-base text-text-muted">
+                  {t(hasFilters ? 'freelances.empty.filteredSubtitle' : 'freelances.empty.subtitle', lang)}
+                </p>
+              </div>
+              {hasFilters && (
+                <Link
+                  href={LENS_HREF}
+                  className={`inline-flex h-10 items-center gap-2 rounded-[10px] bg-brand-blue-600 px-4 text-base font-semibold text-white transition-colors hover:bg-brand-blue-600/90 ${FOCUS_RING}`}
+                >
+                  {t('produits.empty.resetFilters', lang)}
+                </Link>
+              )}
             </div>
-            {hasFilters && (
-              <Link
-                href={LENS_HREF}
-                className={`inline-flex h-10 items-center gap-2 rounded-[10px] bg-brand-blue-600 px-4 text-base font-semibold text-white transition-colors hover:bg-brand-blue-600/90 ${FOCUS_RING}`}
-              >
-                {t('produits.empty.resetFilters', lang)}
-              </Link>
-            )}
-          </div>
-        ) : (
-          <>
-            <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-6">
-              {result.freelancers.map((freelancer) => (
-                <FreelancerCard
-                  key={freelancer.id}
-                  freelancer={freelancer}
-                  lang={lang}
-                  heart={{ initialFavorited: favorited.has(freelancer.id), isLoggedIn: topBarUser !== null }}
+          ) : (
+            <>
+              <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-6">
+                {result.freelancers.map((freelancer) => (
+                  <FreelancerCard
+                    key={freelancer.id}
+                    freelancer={freelancer}
+                    lang={lang}
+                    heart={{ initialFavorited: favorited.has(freelancer.id), isLoggedIn: topBarUser !== null }}
+                  />
+                ))}
+              </div>
+              <div className="mt-2">
+                <Pagination
+                  page={result.page}
+                  totalPages={result.totalPages}
+                  basePath={BASE}
+                  totalItems={result.totalCount}
+                  perPage={result.perPage}
                 />
-              ))}
-            </div>
-            <div className="mt-2">
-              <Pagination
-                page={result.page}
-                totalPages={result.totalPages}
-                basePath={BASE}
-                totalItems={result.totalCount}
-                perPage={result.perPage}
-              />
-            </div>
-          </>
-        )}
+              </div>
+            </>
+          )}
+        </div>
       </div>
     </AppShell>
   )
