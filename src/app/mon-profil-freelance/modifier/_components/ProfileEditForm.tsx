@@ -18,7 +18,7 @@ import {
   type UrlField,
 } from '@/lib/marche/freelancer-profile-edit'
 import { isHttpUrl } from '@/lib/freelancer/http-url'
-import { normalizeUrl, type PlatformId } from '@/lib/social/platforms'
+import { isLinkUrl, type PlatformId } from '@/lib/social/platforms'
 import { LinksEditor, linkRowsToPayload, type LinkRow } from '@/components/social/LinksEditor'
 import { saveProfileAction, publishProfileAction } from '../actions'
 import { AccordionSection } from './AccordionSection'
@@ -175,11 +175,11 @@ export function ProfileEditForm({
   // imageUrl comes from the upload, never typed. Recomputed on every attempt, so a fixed field
   // loses its error on the next save. Returns the failing fields ([] when every URL passes).
   function checkUrls(): UrlField[] {
-    const invalid = (url: string) => url.trim() !== '' && !isHttpUrl(normalizeUrl(url))
+    const invalid = (url: string) => url.trim() !== '' && !isHttpUrl(url)
     const next: UrlInvalid = { links: [], portfolio: [], certifications: [], portfolioLink: false }
     const fields: UrlField[] = []
     for (const r of linkRows) {
-      if (invalid(r.url)) {
+      if (r.url.trim() !== '' && !isLinkUrl(r.url)) {
         next.links.push(r.id)
         fields.push('links')
       }
@@ -296,7 +296,7 @@ export function ProfileEditForm({
       </div>
 
       <div className="flex flex-col gap-4">
-        <AccordionSection title={t('freelance.edit.trust_title', lang)} complete={linkRows.length > 0 || Number(yearsExperience) > 0} defaultOpen>
+        <AccordionSection title={t('freelance.edit.trust_title', lang)} complete={linkRows.some((r) => r.url.trim() !== '') || Number(yearsExperience) > 0} defaultOpen>
           <div>
             <label className="text-sm font-medium text-text-secondary">{t('freelance.edit.years_experience_label', lang)}</label>
             <div className="mt-2 flex items-center gap-2">

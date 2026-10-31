@@ -24,6 +24,9 @@ PR-2 (H2 step 2, H12 proposal rows, AnnonceResponseCard + SentRecap, dashboard �
 - **Detected from the address, by exact host or subdomain — never by substring.** `github.com`, `www.github.com`, `gist.github.com` are GitHub;
   `evilgithub.com`, `github.com.evil.io`, `https://github.com@evil.io` are not (tested, 12 look-alike shapes). A bare `linkedin.com/in/x` is stored with `https://`
   (`normalizeUrl`); anything that is not an http(s) address is left as typed and refused by the existing http(s) check (`javascript:`, `mailto:` still rejected).
+- **What is a saveable link** (`isLinkUrl`, client check AND server schema): http(s), a dotted host, **no `user:password@`** (`https://github.com@evil.io` opens evil.io
+  but reads as GitHub; a pasted email is not turned into a link), ≤ 500 characters once `https://` is added. `host:port` (`linkedin.com:443/in/x`) is a host, not a scheme;
+  `//example.com` loses its slashes; `https:github.com` (no `//`) is refused. A « + LinkedIn » hint only speaks for an EMPTY row — a typed address is what it is.
 - **No free label field.** A link's name is its platform, derived at save (`linkRowsToPayload`): a saved link that had a custom label (« Mon Behance ») becomes
   « Behance » on the next save — the approved change to H3. Save stays delete-then-reinsert (unchanged).
 - **Suggestions** = the sector table in `RECOMMENDED_BY_SECTOR` (13 sectors, founder lists) for the sector that holds most of the freelancer's non-draft listings
@@ -57,6 +60,8 @@ Measured against `m375-d4-profil` `c4-liens`: segment 43 tall ✓ · « Liens »
    (36 from `sm`: pitch 36). Same glyphs, wider gaps. Keep the 44 rule, or shrink the targets to match the frame?
 2. **Row wrapping.** In the « nouveau » trust state (no rating — founder ruling) the hero row has 3 segments + links; at 375 the links segment wraps to its own
    line. The frame shows the 4.8★ state, which is cut. No change made.
+4. **RTL address field.** The address is LTR (`dir="ltr"` on the input), the field box follows the page: in AR the platform glyph sits at the right edge, the text
+   starts at the left. Same as the other LTR fields in the DS; confirm against the Figma AR frame when available.
 3. **H3 accordion.** `404:11909` (1440) was not re-read (MCP cap). The editor replaces the two free inputs per row by one address field + chips — the approved
    change; layout otherwise unchanged. Please check it against the frame when the quota allows.
 

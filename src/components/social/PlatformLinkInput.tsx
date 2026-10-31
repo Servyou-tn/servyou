@@ -10,7 +10,7 @@ import { detectPlatform, type PlatformId } from '@/lib/social/platforms'
 export function PlatformLinkInput({ hint = null, value, ...props }: Omit<InputProps, 'iconStart'> & { hint?: PlatformId | null }) {
   const text = typeof value === 'string' ? value : ''
   const detected = detectPlatform(text)
-  const shown = text.trim() === '' ? hint : (detected ?? hint)
+  const shown = text.trim() === '' ? hint : detected // the hint only speaks for an EMPTY field — a typed address is what it is
   const known = shown !== null && shown !== 'website'
   return (
     <Input

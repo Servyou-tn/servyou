@@ -131,6 +131,11 @@ describe('linkRowsToPayload / takenPlatforms', () => {
     expect(normalizeUrl('mailto:a@b.tn')).toBe('mailto:a@b.tn')
   })
 
+  it('a pre-set hint never names an address that is not that platform', () => {
+    expect(linkRowsToPayload([row('https://aya.tn', 'linkedin')])).toEqual([{ label: 'Site web', url: 'https://aya.tn' }])
+    expect([...takenPlatforms([row('https://aya.tn', 'linkedin')])]).toEqual(['website'])
+  })
+
   it('counts typed addresses by what they are and empty pre-set rows by their hint', () => {
     const taken = takenPlatforms([row('https://github.com/aya'), row('', 'linkedin'), row('https://aya.tn')])
     expect([...taken].sort()).toEqual(['github', 'linkedin', 'website'])
@@ -173,5 +178,18 @@ describe('LinksEditor', () => {
     expect(screen.queryByRole('button', { name: 'Autre plateforme' })).toBeNull()
     expect(within(container).queryAllByRole('button', { name: /Ajouter un lien/ })).toHaveLength(0)
     expect(within(container).getAllByRole('textbox')).toHaveLength(LINKS_MAX) // one address per row, nothing else
+  })
+
+  it('adding a row moves focus to its address field; removing one keeps focus inside the editor', () => {
+    render(<Harness initial={[row('https://aya.tn', null, 'a'), row('https://github.com/aya', null, 'b')]} />)
+    fireEvent.click(screen.getByRole('button', { name: 'Autre plateforme' }))
+    expect(document.activeElement).toBe(screen.getByRole('textbox', { name: /Adresse du lien 3/ }))
+    fireEvent.click(screen.getByRole('button', { name: 'Supprimer le lien 1' }))
+    expect(document.activeElement?.tagName).toBe('INPUT')
+  })
+
+  it('the count is a polite status', () => {
+    render(<Harness initial={[]} />)
+    expect(screen.getByRole('status').textContent).toBe('0/5')
   })
 })

@@ -50,18 +50,34 @@ export const PLATFORMS: Record<PlatformId, PlatformInfo> = {
 
 export const platformName = (id: PlatformId, lang: 'fr' | 'ar'): string => (lang === 'ar' ? PLATFORMS[id].labelAr : PLATFORMS[id].labelFr)
 
+// « scheme:// » or one of the schemes people paste by mistake. NOT any « word: »: « linkedin.com:443/in/x » and « localhost:3000 » are hosts with a port,
+// and « https:github.com » (no //) is not a web address — it gets prefixed, finds no dotted host and is refused.
+const HAS_SCHEME = /^(?:[a-z][a-z0-9+.-]*:\/\/|(?:javascript|data|vbscript|mailto|tel|file|blob|about):)/i
+
+/** Text typed without a scheme, minus leading slashes / backslashes (« //example.com »). */
+const bare = (text: string): string => text.replace(/^[\\/]+/, '')
+
 /** An address as it is stored: trimmed, and « linkedin.com/in/x » (no scheme) gets `https://`. Anything that is not a web address is returned trimmed, untouched — the http(s) check then refuses it. */
 export function normalizeUrl(raw: string): string {
   const text = raw.trim()
-  if (text === '' || /^[a-z][a-z0-9+.-]*:/i.test(text)) return text
-  return hostOf(text) === null ? text : `https://${text}`
+  if (text === '' || HAS_SCHEME.test(text)) return text
+  return hostOf(text) === null ? text : `https://${bare(text)}`
+}
+
+/**
+ * A link a freelancer may save: http(s), a dotted host, NO user:password@ (« https://github.com@evil.io » opens evil.io but reads as GitHub), at most 500
+ * characters once normalised. Client check and server schema both use it.
+ */
+export function isLinkUrl(raw: string): boolean {
+  const url = normalizeUrl(raw)
+  return url.length <= 500 && /^https?:\/\//i.test(url) && hostOf(url) !== null
 }
 
 /** The lower-cased host of a web address, or null. Tolerates a missing scheme (« github.com/x »); refuses anything that is not http(s). */
 export function hostOf(raw: string): string | null {
   const text = raw.trim()
   if (!text) return null
-  const withScheme = /^[a-z][a-z0-9+.-]*:/i.test(text) ? text : `https://${text}`
+  const withScheme = HAS_SCHEME.test(text) ? text : `https://${bare(text)}`
   let url: URL
   try {
     url = new URL(withScheme)
@@ -69,6 +85,7 @@ export function hostOf(raw: string): string | null {
     return null
   }
   if (url.protocol !== 'http:' && url.protocol !== 'https:') return null
+  if (url.username || url.password) return null
   const host = url.hostname.toLowerCase().replace(/\.$/, '')
   // A real host has a dot (« localhost », a bare word typed halfway, are not addresses yet).
   return host.includes('.') ? host : null

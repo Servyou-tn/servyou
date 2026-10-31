@@ -41,6 +41,13 @@ describe('freelancer links cap — app side', () => {
     expect(SaveProfileInput.safeParse({ ...PROFILE, links: Array.from({ length: 6 }, (_, i) => link(i)) }).success).toBe(false)
   })
 
+  it('the server refuses a link with user:password@ or a dotless host, and accepts a plain one', () => {
+    const parse = (url: string) => SaveProfileInput.safeParse({ ...PROFILE, links: [{ label: 'Site web', url }] }).success
+    expect(parse('https://github.com@evil.io')).toBe(false)
+    expect(parse('https://localhost')).toBe(false)
+    expect(parse('https://aya.tn')).toBe(true)
+  })
+
   it('hint freelancer_links_cap → LINKS_CAP_REACHED', async () => {
     vi.spyOn(console, 'warn').mockImplementation(() => {})
     const client = fakeClient({ message: 'Vous ne pouvez pas avoir plus de 5 liens.', code: '23514', hint: 'freelancer_links_cap' })

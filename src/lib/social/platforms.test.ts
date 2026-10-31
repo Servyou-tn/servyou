@@ -7,6 +7,8 @@ import {
   PLATFORMS,
   RECOMMENDED_BY_SECTOR,
   detectPlatform,
+  isLinkUrl,
+  normalizeUrl,
   hostOf,
   pickTopSector,
   platformName,
@@ -42,8 +44,6 @@ describe('detectPlatform — look-alike tricks are NOT the platform', () => {
     'https://github.com.evil.io/x',
     'https://notlinkedin.com',
     'https://linkedin.com.evil.io',
-    'https://github.com@evil.io/x', // the host is evil.io
-    'https://user:pass@evil.io/github.com',
     'https://evil.io/?u=https://github.com',
     'https://evil.io/github.com',
     'https://github-com.evil.io',
@@ -52,6 +52,10 @@ describe('detectPlatform — look-alike tricks are NOT the platform', () => {
     'https://xfb.me',
   ])('%s is a plain website', (url) => {
     expect(detectPlatform(url)).toBe('website')
+  })
+
+  it.each(['https://github.com@evil.io/x', 'https://user:pass@evil.io/github.com'])('%s has user:password@ — not an address at all', (url) => {
+    expect(detectPlatform(url)).toBeNull()
   })
 
   it('a dotted trailing host is still the platform, a lookalike with a trailing dot is not', () => {
@@ -138,5 +142,42 @@ describe('pickTopSector', () => {
     expect(pickTopSector([row(null, '2026-01-01'), row('a', '2026-01-01')])).toBe('a')
     expect(pickTopSector([row(null, '2026-01-01')])).toBeNull()
     expect(pickTopSector([])).toBeNull()
+  })
+})
+
+describe('review fixes — userinfo, ports, slashes, isLinkUrl', () => {
+  it('an address with user:password@ is not an address (it opens the host after the @)', () => {
+    expect(hostOf('https://github.com@evil.io')).toBeNull()
+    expect(detectPlatform('https://user:pw@github.com/x')).toBeNull()
+    expect(normalizeUrl('name@example.com')).toBe('name@example.com') // an email is not prefixed into a link
+    expect(isLinkUrl('https://github.com@evil.io')).toBe(false)
+    expect(isLinkUrl('name@example.com')).toBe(false)
+  })
+
+  it('a host with a port is a host, not a scheme', () => {
+    expect(normalizeUrl('linkedin.com:443/in/aya')).toBe('https://linkedin.com:443/in/aya')
+    expect(detectPlatform('linkedin.com:443/in/aya')).toBe('linkedin')
+    expect(normalizeUrl('my-site.tn:8080')).toBe('https://my-site.tn:8080')
+    expect(isLinkUrl('my-site.tn:8080')).toBe(true)
+  })
+
+  it('https:github.com (no //) is not an address — preview and validity agree', () => {
+    expect(detectPlatform('https:github.com')).toBeNull()
+    expect(isLinkUrl('https:github.com')).toBe(false)
+  })
+
+  it('leading slashes are dropped, not stored', () => {
+    expect(normalizeUrl('//example.com')).toBe('https://example.com')
+    expect(normalizeUrl('\example.com')).toBe('https://example.com')
+  })
+
+  it('isLinkUrl: http(s), dotted host, ≤ 500 characters once normalised', () => {
+    expect(isLinkUrl('linkedin.com/in/aya')).toBe(true)
+    expect(isLinkUrl('https://aya.tn')).toBe(true)
+    for (const bad of ['javascript:alert(1)', 'mailto:a@b.tn', 'data:text/html,x', 'ftp://aya.tn', 'https://localhost', 'intranet', '']) {
+      expect(isLinkUrl(bad), bad).toBe(false)
+    }
+    expect(isLinkUrl(`aya.tn/${'a'.repeat(493)}`)).toBe(false) // 8 + 6 + 493 > 500 once https:// is added
+    expect(isLinkUrl(`aya.tn/${'a'.repeat(400)}`)).toBe(true)
   })
 })
