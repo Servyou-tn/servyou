@@ -1042,6 +1042,17 @@ both on 2026-10-28.
       and view (rolled back) got anon / authenticated SELECT only.
     - Residual: supabase_admin's own defaults in public (platform-created objects), logged in
       `docs/follow-ups/fail-closed-default-privileges.md`.
+108. **20261031173228_client_write_grants_rpc** (`84839e6c`) — `public.client_write_grants()`, the live half of
+    the client-write allow-list check (architect's CI decision, 2026-10-30). Returns every INSERT / UPDATE /
+    DELETE privilege anon, authenticated or PUBLIC holds on a relation in public, table-level (`column_name` NULL)
+    and column-level.
+    - Read-only (`stable`, catalog only), SECURITY DEFINER, `search_path = ''`, every object schema-qualified.
+      EXECUTE revoked from public / anon / authenticated, granted to service_role only: the grant map describes
+      the attack surface.
+    - At apply: 159 rows, all for authenticated, equal to `db/client-write-allowlist.json`.
+    - `client-write-grants-live.test.ts` compares it with the allow-list both ways; the static half
+      (`client-write-grants-static.test.ts`) runs in CI on every PR.
+    - The recorded statement carries no comments. The executable SQL is identical.
 
 ## Rollback paths
 

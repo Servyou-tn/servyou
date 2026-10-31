@@ -70,6 +70,10 @@ gstack-investigate (root cause) · gstack-review (before every report).
   be regenerated (Supabase MCP generate_typescript_types) in the same PR.
 
 ## Tests
+- **Client-write allow-list** (`db/client-write-allowlist.json`): a migration that GRANTs INSERT / UPDATE / DELETE
+  to anon / authenticated / PUBLIC must add the same entry to the file in the same PR — CI's static check
+  (`client-write-grants-static.test.ts`) fails otherwise. After the architect applies it, run
+  `client-write-grants-live.test.ts` (live catalog vs the file, both directions; 1 sign-in).
 - You are the ONLY agent that runs live-DB / integration suites in a session. Unique fixture
   prefix per suite, random passwords (never constants — the repo is public), verified cleanup with
   a read-only count afterwards. NEVER run rls-smoke (it deletes every test-domain user on prod).
