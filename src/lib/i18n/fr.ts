@@ -1613,6 +1613,7 @@ export const fr: Record<string, string> = {
   // a newest-active fallback, so the set is mixed and a freelancer-scoped heading would be wrong
   // for most rows. Neutral heading instead — see the PR body.
   'serviceDetail.related':           "Services similaires",
+  'serviceDetail.relatedOwn':        "Autres services de {name}",
   'serviceDetail.reviews':           "Avis",
   'serviceDetail.reviewsEmpty':      "Les avis seront bientôt disponibles",
   'serviceDetail.report':            "Signaler ce service",

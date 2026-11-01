@@ -31,6 +31,8 @@ function asMode(v: string | null | undefined): DeliveryMode | null {
   return v != null && MODES.includes(v) ? (v as DeliveryMode) : null
 }
 
+export type CategoryName = { fr: string; ar: string | null }
+
 export type ServiceDetailData = {
   id: string
   title: string
@@ -39,7 +41,10 @@ export type ServiceDetailData = {
   /** service_listings.price_unit — « 450 TND / mois » in the buy box (H6 PR-4 ruling D32). */
   priceUnit: string | null
   deliveryTime: string | null
-  category: string | null
+  /** The sector (service_listings.category_id), both languages — `ServiceDetail` picks by lang. */
+  category: CategoryName | null
+  /** The sub-category (subcategory_id, nullable): the 375 breadcrumb's tail (m375-d2-service). */
+  subcategory: CategoryName | null
   categoryId: string | null
   freelancerProfileId: string | null
   /** `avatarUrl`: public_profiles.avatar_url — the 375 frame's freelancer row draws a picture (the person glyph when there is none). */
@@ -58,6 +63,12 @@ export type ServiceDetailData = {
   tags: string[]
 }
 
+type CategoryRow = { name_fr: string; name_ar: string | null }
+const categoryName = (embed: CategoryRow | CategoryRow[] | null | undefined): CategoryName | null => {
+  const c = one(embed)
+  return c ? { fr: c.name_fr, ar: c.name_ar ?? null } : null
+}
+
 type DetailRow = {
   id: string
   title: string
@@ -71,7 +82,8 @@ type DetailRow = {
   delivery_mode: string | null
   revisions_count: number | null
   tags: string[] | null
-  categories: { name_fr: string } | { name_fr: string }[] | null
+  categories: CategoryRow | CategoryRow[] | null
+  subcategory: CategoryRow | CategoryRow[] | null
   freelancer_profiles:
     | { id: string; profile_id: string | null; city: string | null; headline: string | null }
     | { id: string; profile_id: string | null; city: string | null; headline: string | null }[]
@@ -85,7 +97,8 @@ export const getServiceDetail = cache(async (id: string): Promise<ServiceDetailD
     .select(
       `id, title, description, starting_price_tnd, price_unit, delivery_time, status, category_id, freelancer_profile_id,
        deliverables, delivery_mode, revisions_count, tags,
-       categories!service_listings_category_id_fkey ( name_fr ),
+       categories!service_listings_category_id_fkey ( name_fr, name_ar ),
+       subcategory:categories!service_listings_subcategory_id_fkey ( name_fr, name_ar ),
        freelancer_profiles!inner ( id, profile_id, city, headline, admin_hidden_at )`,
     )
     .eq('id', id)
@@ -121,7 +134,8 @@ export const getServiceDetail = cache(async (id: string): Promise<ServiceDetailD
     startingPrice: row.starting_price_tnd != null ? Number(row.starting_price_tnd) : null,
     priceUnit: row.price_unit ?? null,
     deliveryTime: row.delivery_time ?? null,
-    category: one(row.categories)?.name_fr ?? null,
+    category: categoryName(row.categories),
+    subcategory: categoryName(row.subcategory),
     categoryId: row.category_id,
     freelancerProfileId: row.freelancer_profile_id,
     freelancer: fp ? { name, city: fp.city ?? null, headline: fp.headline ?? null, avatarUrl } : null,
@@ -146,22 +160,21 @@ type RelatedRow = {
 
 export const RELATED_LIMIT = 3
 
-// Related services — THREE TIERS, deduped, capped at RELATED_LIMIT:
-//   1. same category   2. same freelancer   3. newest active
-// (This replaces the original flat "same freelancer OR same category, cap 8" rule by founder
-// direction, because that rule could return nothing.) Never-empty is the durable requirement:
-// on today's catalog a category-only rule leaves 1 of 21 listings with an empty section and a
-// freelancer-only rule leaves 6 of 21, since 6 of 10 freelancers have exactly one service. Those
-// ratios will move at real volume — tier 3 is what makes the section safe regardless of shape.
-// Tiers run in order and stop as soon as the cap is filled, so the common case is one query.
-// Moderation is preserved from the original: admin-hidden services AND admin-hidden freelancers
-// are excluded via the !inner cascade. Shaped into ServiceListing so ServiceListingCard renders
-// them unchanged (which also means no rating row — the C1 phase-aware decision).
+// Related services (founder, Nov 1 — follow the 375 frame, « Autres services de {name} »):
+//   1. THIS FREELANCER'S OTHER SERVICES — when there are any, they are the whole list (kind 'freelancer'), and the heading says whose they are;
+//   2. otherwise (kind 'similar', « Services similaires »): same category, then the newest active — the original never-empty guarantee: on today's
+//      catalog 6 of 10 freelancers have exactly one service, so tier 1 is often empty and the section must still never be.
+// Tiers run in order and stop as soon as the cap is filled, so the common case is one query. A freelancer's own list is NOT topped up with other
+// people's services: the heading would then be false for the fillers.
+// Moderation is preserved from the original: admin-hidden services AND admin-hidden freelancers are excluded via the !inner cascade. Shaped into
+// ServiceListing so ServiceListingCard renders them unchanged (which also means no rating row — the C1 phase-aware decision).
+export type RelatedServices = { items: ServiceListing[]; kind: 'freelancer' | 'similar' }
+
 export async function getRelatedServices(opts: {
   serviceId: string
   freelancerProfileId: string | null
   categoryId: string | null
-}): Promise<ServiceListing[]> {
+}): Promise<RelatedServices> {
   const supabase = await createClient()
 
   const tier = async (
@@ -201,15 +214,22 @@ export async function getRelatedServices(opts: {
     }
   }
 
-  // Tier 1 — same category. category_id is NOT NULL on every active row today, so this cannot
-  // degenerate into "every uncategorised row matches every other".
-  if (opts.categoryId) take(await tier((q) => q.eq('category_id', opts.categoryId!)))
-  // Tier 2 — same freelancer.
-  if (rows.length < RELATED_LIMIT && opts.freelancerProfileId) {
-    take(await tier((q) => q.eq('freelancer_profile_id', opts.freelancerProfileId!)))
+  let kind: RelatedServices['kind'] = 'similar'
+  // Tier 1 — this freelancer's other services.
+  if (opts.freelancerProfileId) {
+    const own = await tier((q) => q.eq('freelancer_profile_id', opts.freelancerProfileId!))
+    if (own.length > 0) {
+      kind = 'freelancer'
+      take(own)
+    }
   }
-  // Tier 3 — newest active, excluding self. The guarantee that the section is never empty.
-  if (rows.length < RELATED_LIMIT) take(await tier((q) => q))
+  if (kind === 'similar') {
+    // Tier 2 — same category. category_id is NOT NULL on every active row today, so this cannot degenerate into
+    // "every uncategorised row matches every other".
+    if (opts.categoryId) take(await tier((q) => q.eq('category_id', opts.categoryId!)))
+    // Tier 3 — newest active, excluding self. The guarantee that the section is never empty.
+    if (rows.length < RELATED_LIMIT) take(await tier((q) => q))
+  }
 
   const profileIds = [
     ...new Set(
@@ -230,7 +250,7 @@ export async function getRelatedServices(opts: {
     }
   }
 
-  return rows.map((row) => {
+  const items = rows.map((row) => {
     const fp = one(row.freelancer_profiles)
     return {
       id: row.id,
@@ -247,4 +267,5 @@ export async function getRelatedServices(opts: {
       },
     }
   })
+  return { items, kind }
 }
