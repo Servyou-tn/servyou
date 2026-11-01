@@ -127,8 +127,9 @@ export function FreelancerDetail({
                 </div>
               </>
             )}
-            {/* at 375 the card wraps 2 × 2 (frame: c1 | c2 over c3 | c4) — this divider would open the second row, so it is dropped there */}
-            <div className={`h-8 w-px bg-border-subtle max-lg:h-10 ${completedProjectCount !== null ? 'max-lg:hidden' : ''}`} />
+            {/* at 375 the card wraps 2 × 2 (frame: c1 | c2 over c3 | c4) — this divider would open the second row, so it is dropped below sm
+                (from sm the four segments fit on one row and keep every divider) */}
+            <div className={`h-8 w-px bg-border-subtle max-lg:h-10 ${completedProjectCount !== null ? 'max-sm:hidden' : ''}`} />
             <div className="flex flex-col max-lg:gap-1">
               <span className="text-xl font-bold text-text-primary max-lg:text-h2 max-lg:leading-[30px]">{t('freelance.public.years_value', lang, { years: yearsExperience })}</span>
               <span className="text-caption text-text-muted max-lg:font-medium max-lg:lowercase">{t('freelance.public.years_experience', lang)}</span>
@@ -179,10 +180,11 @@ export function FreelancerDetail({
       {hasAbout && (
         <section id="a-propos" className="flex flex-col gap-4 rounded-card border border-border-subtle bg-surface-base p-6 max-lg:-mx-4 max-lg:px-3.75 max-lg:py-4.75 md:max-lg:-mx-8">
           <h2 className="text-xl font-semibold leading-[26px] text-text-primary">{t('freelance.public.about_title', lang)}</h2>
-          {/* paragraphs (a blank line is a paragraph break): 14 apart at 375 (line 27), a blank line's worth (26) from lg, so the desktop text is unchanged */}
+          {/* paragraphs: 14 apart at 375 (line 27), a blank line's worth (26) from lg. Split on EXACTLY one blank line, untrimmed: a second
+              blank line stays as a leading newline of the next paragraph and pre-line still draws it, so the desktop text is unchanged. */}
           <div className="flex max-w-[760px] flex-col gap-3.5 lg:gap-[26px]">
-            {(freelancer.bio ?? '').split(/\n\s*\n/).map((paragraph, i) => (
-              <p key={i} className="whitespace-pre-line text-base leading-[26px] text-text-secondary max-lg:leading-[27px]">{paragraph.trim()}</p>
+            {(freelancer.bio ?? '').replace(/\r\n?/g, '\n').split('\n\n').map((paragraph, i) => (
+              <p key={i} className="whitespace-pre-line text-base leading-[26px] text-text-secondary max-lg:leading-[27px]">{paragraph}</p>
             ))}
           </div>
         </section>

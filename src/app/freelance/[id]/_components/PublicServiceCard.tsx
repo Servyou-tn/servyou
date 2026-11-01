@@ -9,7 +9,8 @@ import { t, type Lang } from '@/lib/i18n'
 
 // D4 « Ses services » below lg — the frame's « ServiceCard / context=public » (m375-d4-profil, 343 × 247), NOT the v3.7 grid card the
 // marketplace uses (that one stays from lg). surface/base + border/subtle, radius 12:
-//   thumbnail — 44 tall blue-50 band, the 44 briefcase centred, the 44 « Favorite Heart » (24 icon, state off) at the end.
+//   thumbnail — 44 tall blue-50 band, the briefcase centred (36 glyph in the frame's 44 icon box), the 44 « Favorite Heart » (24 icon, state off) at the end.
+// No overflow-hidden on the card: it would clip the link's focus ring (ring + offset draw outside the link), so the band rounds its own top.
 //   body      — pad 16, gap 10: title 18 Semi Bold · description 14 muted on ONE line · category badge (surface/sunken, 14 Medium) ·
 //               « À partir de » 12 over the price 18 Bold (centred in its row, as drawn) · the freelancer's 24 avatar + name 13 Medium.
 // No « Voir le service » button (the whole card is the link). The badge's placeholder icon (icon-banknote on every chip) and the avatar's
@@ -31,9 +32,10 @@ export function PublicServiceCard({
   const category = service.category ? (lang === 'ar' && service.category.name_ar ? service.category.name_ar : service.category.name_fr) : null
 
   return (
-    <article className="relative overflow-hidden rounded-card border border-border-subtle bg-surface-base">
+    <article className="relative rounded-card border border-border-subtle bg-surface-base">
       <Link href={`/services/${service.id}`} className={`flex flex-col rounded-card ${FOCUS_RING}`}>
-        <div className="flex h-11 items-center justify-center bg-brand-blue-50">
+        {/* 11 = the card's 12 radius inside its 1 px border */}
+        <div className="flex h-11 items-center justify-center rounded-t-[11px] bg-brand-blue-50">
           <Briefcase className="size-9 text-brand-blue-300" strokeWidth={1.5} aria-hidden="true" />
         </div>
         <div className="flex flex-col gap-2.5 p-3.75">

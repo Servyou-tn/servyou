@@ -23,3 +23,16 @@ promote-at-the-third-consumer rule it belongs in a shared icons place.
 **Where it lives** `src/components/aide/WhatsAppGlyph.tsx`.
 
 **Trigger** The next PR that touches it.
+
+## StickyBar bleeds less than the hero between md and lg
+
+**What** `StickyBar` pulls out of the page padding with `-mx-4 sm:-mx-6`, but the shell's `<main>` pads `px-4 md:px-8`. Between 768 and
+1023 the bar is 16 px short of the edges on each side, while the hero above it (this PR) now bleeds fully. This predates the PR but is
+more visible next to a full-bleed hero (review of #289).
+
+**Why deferred** Pre-existing and outside the 375 frame. The fix is one class (`md:-mx-8 md:px-8`) but it touches the founder-kept bar.
+
+**Where it lives** `src/app/freelance/[id]/_components/StickyBar.tsx`.
+
+**Trigger** The next D4 PR, or a tablet pass.
+

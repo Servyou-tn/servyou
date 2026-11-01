@@ -2,16 +2,19 @@
 
 Mobile batch 1, page 5. Frame: `docs/design/m375-d4-profil-dump.json` (+ `.png`, untracked), 375 × 3713. Route `/freelance/[id]`, component
 `src/app/freelance/[id]/_components/FreelancerDetail.tsx`. Rule: the mobile shell stays (header, search, page background); this PR matches the
-page CONTENT, as `max-lg:` overrides. **From `lg` the page is unchanged**: 1440 was captured before/after on a real profile, FR + AR. The only
-pixels that differ are hearts caught while loading and a sub-pixel shift in the top bar.
+page CONTENT, as `max-lg:` overrides. **From `lg` the page is unchanged**, pixel-compared with `main` at 1440 in FR + AR on two pages:
+- a fixture with every section filled (portfolio, formation, certifications, contexte, external portfolio, plus a bio with a CRLF break, two
+  blank lines in a row and a single line break): **identical**;
+- a real profile: only hearts caught while loading differ.
 
 ## Founder rulings for this page
 
-- **Approved change 1 — the sticky contact bar stays on mobile** (not in the frame). It is the existing `StickyBar`: avatar, name and the
+- **Approved change — the sticky contact bar stays on mobile** (not in the frame). It is the existing `StickyBar`: avatar, name and the
   primary CTA, docked under the top bar once the hero scrolls away. Unchanged.
-- **Approved change 2 — the « Verified » badge: not built, needs a decision (Q1).** There is nothing to keep. The badge was cut from D4 at
-  every width by an earlier ruling, because no verification data exists (no column, no `VerifiedBadge` component; `Avatar` omits it on
-  purpose). The frame draws it, but clipped, so it doesn't even show in the frame's render.
+- **« Verified » badge — ruling received, not applied: it needs a rule (Q1).** My earlier note said the frame has no Verified badge. That was
+  wrong: the frame draws one (clipped by the avatar, so it doesn't show in its render). The live page never had one: an earlier ruling cut
+  it at every width because no verification data exists (no column, no `VerifiedBadge` component; `Avatar` omits it on purpose). So there is
+  nothing to keep.
 - **Everything else follows the 375 frame**, so the section nav under the hero is gone below `lg` and « Ses services » uses the frame's own card.
 
 ## What changed, measured against the frame
@@ -25,7 +28,7 @@ profile has portfolio items, formation or contexte. The fixture was deleted befo
 | `identity` | p 64 / 16 / 0, gap 16; `name-grp` gap 6: name 32 Bold line 38, headline 18 | name 30 → 32 (`text-h1`, line 38), name + headline grouped (gap 6), meta 16 below |
 | `meta` | 14 Regular **text/muted**, icons 16, gap 20 / 6 | text-secondary → muted |
 | `trust-row` | 343 × 146, p 16 / 24, r 10; values 24 Bold line 30; captions 12 Medium; dividers 1 × 40; 2 × 2 | ✓ 343 × 146. Values 20 → 24, captions Medium, dividers 32 → 40, rows 12 apart. The frame's captions are lowercase (« projets livrés », « d'expérience »): `lowercase` below `lg`, the strings are unchanged. The divider that would open the second row is dropped there |
-| `actions` | WhatsApp 44 (glyph 20 + label 16 Semi Bold), Partager secondary md 40, ⋮ 20 × 40; rows 8 apart, p 8 / 0 | WhatsApp 48 → **44 with the glyph** (from `lg`: 48, no glyph, as before). « Signaler » text → **⋮ icon** in a 44 target (same report modal, same accessible name « Signaler »). Partager 101 wide: the frame's 120 includes the « 3 » badge cut by an earlier ruling |
+| `actions` | WhatsApp 44 (glyph 20 + label 16 Semi Bold), Partager secondary md 40, ⋮ 20 × 40; rows 8 apart, p 8 / 0 | WhatsApp 48 → **44 with the glyph** (from `lg`: 48, no glyph, as before). « Signaler » text → **⋮ icon** in a 44 target (same report modal, same accessible name « Signaler »). Partager 101 wide: the frame's 120 includes the « 3 » badge cut by an earlier ruling, and its placeholder « + » icon isn't drawn either. No phone (most visitors): « Demander un service » is 44 too, with the same rows |
 | section nav under the hero | — | hidden below `lg` (the sticky bar keeps its own, desktop-only) |
 | every box | full width 375, r 12, 1 px stroke, p 20 / 16, gap 16 (Portfolio + Services gap 20) | was inside the 16 gutter with p 24. Now it bleeds, r 12, and pads 19 / 15 (Figma strokes sit inside the frame, CSS borders take 1 px), so the content box is the frame's 343 at x 16 ✓ |
 | `bio` | paragraphs 16 / 27, **14 apart** | was one pre-line block. Now one `<p>` per paragraph (a blank line = a paragraph break): 14 apart at 375, 26 from `lg` (exactly the blank line it replaced) |
@@ -55,5 +58,14 @@ profile has portfolio items, formation or contexte. The fixture was deleted befo
 ## Verified
 
 tsc · eslint on every changed file · vitest by path (`PublicServiceCard.test.tsx` new, `phone-reveal-ui.test.tsx`). Browser: FR + AR at 375 on
-the fixture (box heights 146 / 635 / 600 / 247 / 96 match the frame). AR mirrors, and digits stay LTR (« 1500 د.ت »). FR + AR at 1440 on a real
-profile, compared pixel by pixel with `main`.
+the fixture (box heights 146 / 635 / 600 / 247 / 96 match the frame), in both CTA states (WhatsApp; « Demander un service »), and on a real
+profile. AR mirrors, and digits stay LTR (« 1500 د.ت »). FR + AR at 1440: see the top of this doc.
+
+## Review round (#289)
+
+- Bio split on exactly one blank line, after normalising CRLF, untrimmed. The first split (`\n\s*\n` + trim) merged a run of blank lines
+  into one gap at 1440.
+- `PublicServiceCard`: no `overflow-hidden` (it clipped the link's focus ring); the band rounds its own top.
+- The trust-row divider is hidden below `sm` only (from `sm` the four segments fit on one row).
+- No phone: « Demander un service » is 44 below `lg`, like the WhatsApp state.
+- Logged, not fixed: the double card render (double heart reads), `WhatsAppGlyph`'s third consumer, StickyBar bleed between md and lg.
