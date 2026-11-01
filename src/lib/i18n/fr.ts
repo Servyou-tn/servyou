@@ -620,6 +620,7 @@ export const fr: Record<string, string> = {
   // products_count migrated to tn() — see src/lib/i18n/plurals.ts.
   'boutique.public.empty_products':     "Cette boutique n'a pas encore de produits",
   'boutique.public.payment_caption':    "Paiement",
+  'boutique.public.social_caption': "Réseaux sociaux",
   'boutique.public.categories_caption': "Catégories",
   'boutique.public.share':              "Partager",
   'boutique.public.link_copied':        "Lien copié !",
@@ -799,6 +800,7 @@ export const fr: Record<string, string> = {
   'product.detail.save':            "Enregistrer",
   'product.detail.view_shop':       "Voir la boutique",
   'product.detail.view_all_products': "Voir tous les produits de cette boutique",
+  'product.detail.follow_shop': "Suivez la boutique",
   'product.detail.reviews':         "Avis",
   'product.detail.reviews_empty':   "Les avis seront bientôt disponibles.",
   'product.detail.report':          "Signaler ce produit",
@@ -1451,6 +1453,15 @@ export const fr: Record<string, string> = {
   'shop.edit.social.invalid_facebook':  "Ce lien Facebook n'est pas valide (ex. facebook.com/maboutique).",
   'shop.edit.social.invalid_instagram': "Ce lien Instagram n'est pas valide (ex. instagram.com/maboutique).",
   'shop.edit.social.invalid_tiktok':    "Ce lien TikTok n'est pas valide (ex. tiktok.com/@maboutique).",
+  'shop.edit.social.title': "Réseaux sociaux (optionnel)",
+  'shop.edit.social.intro': "Ajoutez vos pages : vos clients verront ces icônes sur votre boutique et sur vos produits — c'est là qu'ils regardent vos vidéos.",
+  'shop.edit.social.facebook_label': "Page Facebook",
+  'shop.edit.social.instagram_label': "Compte Instagram",
+  'shop.edit.social.tiktok_label': "Compte TikTok",
+  'shop.edit.social.facebook_ph': "facebook.com/votreboutique",
+  'shop.edit.social.instagram_ph': "instagram.com/votreboutique",
+  'shop.edit.social.tiktok_ph': "tiktok.com/@votreboutique",
+  'shop.edit.social.badge_complete': "Complété",
 
   // ─── /devenir-vendeur/freelance (role-upgrade marketing) ─────────────────────
   // Shared between both /devenir-vendeur pitch pages (TermsLine.tsx) — same copy, same target

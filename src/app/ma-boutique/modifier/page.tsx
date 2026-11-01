@@ -23,7 +23,7 @@ export default async function ModifierBoutiquePage() {
   const supabase = await createClient()
   const { data: fullShop, error } = await supabase
     .from('shops')
-    .select('name, city, description, logo_url, banner_url')
+    .select('name, city, description, logo_url, banner_url, facebook_url, instagram_url, tiktok_url')
     .eq('id', shop.id)
     .single()
 
@@ -42,6 +42,11 @@ export default async function ModifierBoutiquePage() {
           description: fullShop.description ?? '',
           logoUrl: fullShop.logo_url,
           bannerUrl: fullShop.banner_url,
+          social: {
+            facebook: fullShop.facebook_url ?? '',
+            instagram: fullShop.instagram_url ?? '',
+            tiktok: fullShop.tiktok_url ?? '',
+          },
         }}
       />
     </AppShell>
