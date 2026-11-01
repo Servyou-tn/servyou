@@ -212,20 +212,22 @@ export function SignupForm({ role }: { role: SignupRole }) {
 
   // Legal sentence with two inline links. Split on the {terms}/{privacy} tokens so
   // each locale places the links per its own grammar (the i18n parity test keeps
-  // both tokens present in the AR string). Target pages are Phase-10 placeholders.
+  // both tokens present in the AR string). Targets are the live legal pages the footer links to
+  // ((marketing)/conditions and /confidentialite) — the old /conditions-utilisation and
+  // /politique-confidentialite never existed and 404'd.
   function renderLegal(): ReactNode[] {
     return t('signup.form.legal', lang)
       .split(/(\{terms\}|\{privacy\})/g)
       .map((part, i) => {
         if (part === '{terms}')
           return (
-            <Link key={i} href="/conditions-utilisation" target="_blank" rel="noopener noreferrer" className="font-semibold text-brand-blue-300 hover:underline">
+            <Link key={i} href="/conditions" target="_blank" rel="noopener noreferrer" className="font-semibold text-brand-blue-300 hover:underline">
               {t('signup.form.legalTerms', lang)}
             </Link>
           )
         if (part === '{privacy}')
           return (
-            <Link key={i} href="/politique-confidentialite" target="_blank" rel="noopener noreferrer" className="font-semibold text-brand-blue-300 hover:underline">
+            <Link key={i} href="/confidentialite" target="_blank" rel="noopener noreferrer" className="font-semibold text-brand-blue-300 hover:underline">
               {t('signup.form.legalPrivacy', lang)}
             </Link>
           )
