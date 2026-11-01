@@ -1,12 +1,10 @@
 /**
- * Phone reveal rule (db/migrations/PENDING_phone_reveal_rule.sql), as the BUYER / mission owner — signed in once:
+ * Phone reveal rule (db/migrations/20261101181237_phone_reveal_rule.sql, #113), as the BUYER / mission owner — signed in once:
  *   * buyer → seller: hidden while pending; visible from « accepted » on; kept after a cancellation that followed an
  *     acceptance; hidden after a cancellation while pending (and for a pre-events cancelled order, no history);
  *   * mission owner → a freelancer who sent a proposal: visible;
  *   * own phone: visible; anonymous caller: NULL.
  * Fixtures: phone-reveal-fixtures.ts (`ph-buy-`). 1 fixture sign-in.
- *
- * ⚠ Red until that migration is applied.
  *
  * Run: npx vitest run --config vitest.integration.config.ts src/__tests__/phone-reveal-buyer-live.test.ts
  */

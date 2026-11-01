@@ -1,5 +1,5 @@
 /**
- * Shared fixtures for the phone-reveal live suites (db/migrations/PENDING_phone_reveal_rule.sql — get_contact_phone):
+ * Shared fixtures for the phone-reveal live suites (db/migrations/20261101181237_phone_reveal_rule.sql — get_contact_phone):
  * a buyer / mission owner (X), a shop owner (S) with one product, a freelancer (F) who sent a proposal on X's open
  * mission. Every row is written by the service role; each suite signs in ONCE, as the side it tests.
  *

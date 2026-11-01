@@ -1095,6 +1095,19 @@ both on 2026-10-28.
       checks; read in the Supabase table view (`docs/operations/contact-messages.md`).
     - Retention 12 months (manual query documented; scheduled job is a follow-up).
     - The recorded statement carries no top-level comments. The executable SQL is identical.
+113. **20261101181237_phone_reveal_rule** (`feaa58cb`) — `get_contact_phone` rewritten to the founder + architect
+    rule of 2026-11-01 (pre-beta review F4): whoever reaches out shares their number; the other side's is revealed
+    when they accept. It is the only function that returns a phone.
+    - Orders: seller → buyer from « pending » on (hidden if cancelled while pending); buyer → seller from « accepted »
+      on, kept after a cancellation that followed an acceptance — read from `order_events` (an event into
+      'accepted', or a status_change into 'cancelled' from a non-pending status). The 14 pre-events orders (before
+      2026-08-10) have no history: their 2 cancelled ones count as cancelled while pending.
+    - Missions: the post owner → each freelancer who proposed (visible); freelancer → owner never through a mission.
+    - Unchanged: anonymous NULL, own phone, either party suspended → NULL (ruling 6). search_path '' with qualified
+      names; same signature, so the EXECUTE grants are kept (PUBLIC revoked separately, see the next entry).
+    - Live suites `phone-reveal-{buyer,seller,mission}-live.test.ts` (1 sign-in each, 30 cases). UI changes for
+      Agent B: `docs/follow-ups/phone-reveal-ui.md`.
+    - The recorded statement carries no top-level comments. The executable SQL is identical.
 
 ## Rollback paths
 

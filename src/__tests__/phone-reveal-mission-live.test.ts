@@ -1,10 +1,8 @@
 /**
- * Phone reveal rule (db/migrations/PENDING_phone_reveal_rule.sql), as the FREELANCER — signed in once:
+ * Phone reveal rule (db/migrations/20261101181237_phone_reveal_rule.sql, #113), as the FREELANCER — signed in once:
  *   * freelancer → mission owner: NEVER through the mission path (the client WhatsApps the freelancer they choose);
  *   * the seller of an unrelated order is not reachable either.
  * Fixtures: phone-reveal-fixtures.ts (`ph-mis-`). 1 fixture sign-in.
- *
- * ⚠ Red until that migration is applied: today a proposal unlocks the client's phone.
  *
  * Run: npx vitest run --config vitest.integration.config.ts src/__tests__/phone-reveal-mission-live.test.ts
  */

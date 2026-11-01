@@ -1,12 +1,10 @@
 /**
- * Phone reveal rule (db/migrations/PENDING_phone_reveal_rule.sql), as the SELLER — signed in once:
+ * Phone reveal rule (db/migrations/20261101181237_phone_reveal_rule.sql, #113), as the SELLER — signed in once:
  *   * seller → buyer: visible from « pending » on (the WhatsApp confirmation before accepting); hidden after a
  *     cancellation while pending (and for a pre-events cancelled order); kept after a cancellation that followed an
  *     acceptance;
  *   * no order at all → NULL; either party suspended → NULL (ruling 6, unchanged).
  * Fixtures: phone-reveal-fixtures.ts (`ph-sel-`). 1 fixture sign-in.
- *
- * ⚠ Red until that migration is applied.
  *
  * Run: npx vitest run --config vitest.integration.config.ts src/__tests__/phone-reveal-seller-live.test.ts
  */
