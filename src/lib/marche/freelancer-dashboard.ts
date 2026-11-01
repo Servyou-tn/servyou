@@ -1,6 +1,7 @@
 import { cache } from 'react'
 import { createClient } from '@/lib/supabase/server'
 import { reportQueryError } from '@/lib/supabase/query-error'
+import { isPortfolioComplete } from '@/lib/freelancer/profile-sections'
 
 // H4 « Tableau de bord freelance » data layer (Figma 166:12086). Every field below traces to
 // docs/design/h4-discovery.md — read that file before changing a mapping here, it carries the
@@ -15,8 +16,8 @@ export type FreelancerChecklist = {
   skills: boolean
   /** At least one saved link (freelancer_links) — « Ajoutez vos liens » (links kit, founder-approved). */
   links: boolean
-  /** Always false — Ruling 2. Goes live with H3's freelancer_portfolio_items; do not flip this
-   *  true off `portfolio_link`, that column is not the same thing as a portfolio item. */
+  /** At least 2 portfolio items (freelancer_portfolio_items, H3) — « Ajoutez 2 réalisations ». Was hard-coded false (Ruling 2) until H3 shipped that table.
+   *  Still NOT derived from `portfolio_link`: that column is an external link, not a portfolio item. */
   portfolio: boolean
 }
 
@@ -162,19 +163,20 @@ export function activePurchaseCount(orders: readonly { status: string }[]): numb
   return orders.filter((o) => !TERMINAL_ORDER_STATUSES.includes(o.status)).length
 }
 
-/** Force du profil checklist — Ruling 2: `portfolio` is always false, never derived. */
+/** Force du profil checklist. */
 export function checklistFrom(input: {
   avatarUrl: string | null
   bioNonEmpty: boolean
   skillsCount: number
   linksCount: number
+  portfolioCount: number
 }): FreelancerChecklist {
   return {
     avatar: input.avatarUrl != null,
     bio: input.bioNonEmpty,
     skills: input.skillsCount > 0,
     links: input.linksCount > 0,
-    portfolio: false,
+    portfolio: isPortfolioComplete(input.portfolioCount),
   }
 }
 
@@ -312,6 +314,7 @@ export const getFreelancerDashboard = cache(
     let bioNonEmpty = false
     let skillsCount = 0
     let linksCount = 0
+    let portfolioCount = 0
     let missions: MissionMatch[] = []
 
     if (freelancerProfileId) {
@@ -360,6 +363,16 @@ export const getFreelancerDashboard = cache(
         throw new Error(`links count failed: ${linksError.message}`)
       }
       linksCount = linksRows ?? 0
+
+      const { count: portfolioRows, error: portfolioError } = await supabase
+        .from('freelancer_portfolio_items')
+        .select('id', { count: 'exact', head: true })
+        .eq('freelancer_profile_id', freelancerProfileId)
+      if (portfolioError) {
+        console.error('[freelancer-dashboard] portfolio count error:', portfolioError.message, portfolioError.code, portfolioError.details)
+        throw new Error(`portfolio count failed: ${portfolioError.message}`)
+      }
+      portfolioCount = portfolioRows ?? 0
 
       if (skills.length > 0) {
         // Two round trips: skill -> matching post ids, then the posts themselves. Both `skill`
@@ -411,7 +424,7 @@ export const getFreelancerDashboard = cache(
       servicesActifs,
       engagementsActifs,
       demandesEnAttente,
-      checklist: checklistFrom({ avatarUrl, bioNonEmpty, skillsCount, linksCount }),
+      checklist: checklistFrom({ avatarUrl, bioNonEmpty, skillsCount, linksCount, portfolioCount }),
       ecosystem: {
         consumers: consumersCount ?? 0,
         shops: shopsCount ?? 0,

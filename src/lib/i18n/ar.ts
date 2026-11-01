@@ -3339,7 +3339,6 @@ export const ar: Record<string, string> = {
   'forceProfil.complete_link': "أكمل ملفك الشخصي ←",
 
   'activite.title':            "النشاط الأخير",
-  'activite.view_all':         "عرض الكل ←",
   'activite.empty_title':      "لا يوجد نشاط بعد",
   'activite.empty_body':       "ستظهر هنا طلباتك ومهامك الجارية وعروضك المرسلة.",
   'activite.request_title':    "طلب خدمة جديد",

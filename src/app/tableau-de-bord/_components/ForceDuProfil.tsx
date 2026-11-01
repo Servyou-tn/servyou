@@ -1,21 +1,26 @@
-import { Check } from 'lucide-react'
+import Link from 'next/link'
+import { Check, ChevronRight } from 'lucide-react'
 import { t, type Lang } from '@/lib/i18n'
 import type { FreelancerChecklist } from '@/lib/marche/freelancer-dashboard'
+import { EDIT_PROFILE_PATH, profileSectionHref, type ProfileSection } from '@/lib/freelancer/profile-sections'
+import { FOCUS_RING } from '@/components/layout/styles'
 import { Panel } from './Panel'
 
 // Checklist copy is 📐 MEASURED (167:12377, docs/design/h4-discovery.md §2) — exact strings, do
 // not reword. The ring's own pixel spec (size/stroke/colour) was never part of that measured
 // call; this is a plain stroke-dasharray SVG using locked tokens (brand-blue-600 progress /
 // surface-sunken track), not a pixel match to a Figma ring component. Denominator is 5 — the measured 4 plus
-// « Ajoutez vos liens » (links kit, founder-approved; done when ≥ 1 link). The portfolio item ("Ajoutez 2
-// réalisations") always reads NOT DONE per Ruling 2, so the ring never reaches 100% until H3's
-// freelancer_portfolio_items is counted.
-const ITEMS: { key: keyof FreelancerChecklist; labelKey: string }[] = [
-  { key: 'avatar', labelKey: 'forceProfil.item_avatar' },
-  { key: 'bio', labelKey: 'forceProfil.item_bio' },
-  { key: 'skills', labelKey: 'forceProfil.item_skills' },
-  { key: 'portfolio', labelKey: 'forceProfil.item_portfolio' },
-  { key: 'links', labelKey: 'forceProfil.item_links' },
+// « Ajoutez vos liens » (links kit, founder-approved; done when ≥ 1 link). « Ajoutez 2 réalisations » is done at
+// ≥ 2 portfolio items (it read NOT DONE for ever before H3 shipped freelancer_portfolio_items — old Ruling 2), so the ring now reaches 100%.
+//
+// Every item NOT done is a link to H3 opened on the section that fixes it (`?section=`, lib/freelancer/profile-sections);
+// done items are plain text. The footer « Compléter mon profil » opens H3 itself.
+const ITEMS: { key: keyof FreelancerChecklist; labelKey: string; section: ProfileSection }[] = [
+  { key: 'avatar', labelKey: 'forceProfil.item_avatar', section: 'photo' },
+  { key: 'bio', labelKey: 'forceProfil.item_bio', section: 'bio' },
+  { key: 'skills', labelKey: 'forceProfil.item_skills', section: 'competences' },
+  { key: 'portfolio', labelKey: 'forceProfil.item_portfolio', section: 'realisations' },
+  { key: 'links', labelKey: 'forceProfil.item_links', section: 'liens' },
 ]
 
 function ProgressRing({ percent }: { percent: number }) {
@@ -82,21 +87,29 @@ export function ForceDuProfil({ checklist, lang }: { checklist: FreelancerCheckl
                       circle with no border, wrong). */}
                   {done ? <Check className="h-3.5 w-3.5" aria-hidden="true" /> : null}
                 </span>
-                <span className={`text-body-sm ${done ? 'text-text-primary' : 'text-text-muted'}`}>
-                  {t(item.labelKey, lang)}
-                </span>
+                {done ? (
+                  <span className="text-body-sm text-text-primary">{t(item.labelKey, lang)}</span>
+                ) : (
+                  <Link
+                    href={profileSectionHref(item.section)}
+                    className={`group/item relative flex min-w-0 flex-1 items-center justify-between gap-2 rounded text-body-sm text-text-muted transition-colors hover:text-brand-blue-600 ${FOCUS_RING}`}
+                  >
+                    <span className="group-hover/item:underline">{t(item.labelKey, lang)}</span>
+                    <ChevronRight className="size-4 shrink-0 rtl:rotate-180" aria-hidden="true" />
+                    {/* Touch target: the row stays as drawn (24 px); the hit area reaches 44 (touch-target rule). */}
+                    <span aria-hidden="true" className="absolute inset-x-0 -inset-y-3" />
+                  </Link>
+                )}
               </li>
             )
           })}
         </ul>
-        {/* Footer link, added Pass 3 — 167:12377's read (h4-discovery.md §2) stopped at the
-            checklist, so this was never Figma-measured, only ruled by the founder off the
-            frame's visible copy. Destination is H3 (/mon-profil-freelance/modifier), which has
-            no route yet — same inert treatment as the header's "Créer un service" CTA, not a
-            Link to a 404. */}
-        <span aria-disabled="true" className="cursor-not-allowed text-body-sm font-semibold text-text-muted">
+        {/* Footer link, added Pass 3 — 167:12377's read (h4-discovery.md §2) stopped at the checklist, so this was never Figma-measured, only ruled by
+            the founder off the frame's visible copy. It was an inert span while H3 had no route; H3 (/mon-profil-freelance/modifier) exists now. */}
+        <Link href={EDIT_PROFILE_PATH} className={`relative rounded text-body-sm font-semibold text-text-muted transition-colors hover:text-brand-blue-600 hover:underline ${FOCUS_RING}`}>
           {t('forceProfil.complete_link', lang)}
-        </span>
+          <span aria-hidden="true" className="absolute -inset-x-2 -inset-y-3" />
+        </Link>
       </div>
     </Panel>
   )

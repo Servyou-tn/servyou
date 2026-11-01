@@ -114,3 +114,92 @@ describe('H3 profile edit — URL errors re-translate on a language switch', () 
     expect(h.saveProfileAction).not.toHaveBeenCalled()
   })
 })
+
+describe('H3 profile edit — the dashboard link opens the section it names', () => {
+  const base: FreelancerProfileEditData = {
+    freelancerProfileId: 'fp-1',
+    headline: '',
+    bio: '',
+    yearsExperience: 0,
+    workingHours: '',
+    workplaceLocation: '',
+    portfolioLink: '',
+    isPublished: false,
+    skills: [],
+    languages: [],
+    tools: [],
+    links: [],
+    portfolioItems: [],
+    education: [],
+    certifications: [],
+    identity: { fullName: 'Test Freelance', city: 'Tunis', avatarUrl: null },
+  }
+  const form = (openSection: 'photo' | 'bio' | 'competences' | 'realisations' | 'liens' | null) => (
+    <LangProvider lang="fr">
+      <ProfileEditForm initial={base} lang="fr" recommendedPlatforms={[]} openSection={openSection} />
+    </LangProvider>
+  )
+  const isOpen = (id: string) => (document.getElementById(id) as HTMLDetailsElement).open
+
+  it('without a section: the measured defaults — « Portfolio » collapsed', () => {
+    render(form(null))
+    expect(isOpen('realisations')).toBe(false)
+    expect(isOpen('liens') && isOpen('bio') && isOpen('competences')).toBe(true)
+  })
+
+  it('?section=realisations opens « Portfolio » (collapsed by default) and keeps the others as they were', () => {
+    render(form('realisations'))
+    expect(isOpen('realisations')).toBe(true)
+    expect(isOpen('liens') && isOpen('bio') && isOpen('competences')).toBe(true)
+  })
+
+  it('?section=photo points at the identity panel (no accordion to open)', () => {
+    render(form('photo'))
+    expect(document.getElementById('photo')).not.toBeNull()
+    expect(isOpen('realisations')).toBe(false)
+  })
+
+  it('every section id the dashboard can send exists on the page', () => {
+    render(form(null))
+    for (const id of ['photo', 'bio', 'competences', 'realisations', 'liens']) expect(document.getElementById(id), id).not.toBeNull()
+  })
+})
+
+describe('H3 profile edit — « Portfolio » pill follows the dashboard goal', () => {
+  const item = (n: number) => ({ id: `p${n}`, imageUrl: null, title: `Projet ${n}`, url: null, description: null })
+  const base = {
+    freelancerProfileId: 'fp-1',
+    headline: '',
+    bio: '',
+    yearsExperience: 0,
+    workingHours: '',
+    workplaceLocation: '',
+    portfolioLink: '',
+    isPublished: false,
+    skills: [],
+    languages: [],
+    tools: [],
+    links: [],
+    education: [],
+    certifications: [],
+    identity: { fullName: 'Test Freelance', city: 'Tunis', avatarUrl: null },
+  }
+  const pill = (count: number) => {
+    const initial = { ...base, portfolioItems: Array.from({ length: count }, (_, i) => item(i + 1)) } as unknown as FreelancerProfileEditData
+    render(
+      <LangProvider lang="fr">
+        <ProfileEditForm initial={initial} lang="fr" recommendedPlatforms={[]} openSection={null} />
+      </LangProvider>,
+    )
+    return (document.getElementById('realisations') as HTMLDetailsElement).querySelector('summary')!.textContent
+  }
+
+  it('one réalisation: not « Complet » yet (the dashboard still asks for 2)', () => {
+    expect(pill(1)).toContain('Vide')
+  })
+
+  it('two réalisations: « Complet », like the dashboard checklist', () => {
+    expect(pill(2)).toContain('Complet')
+  })
+})
+

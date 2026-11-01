@@ -3442,7 +3442,6 @@ export const fr: Record<string, string> = {
   // publish-transition timestamp; see docs/follow-ups.md. `engagement_status` stays the OLD ruled
   // template, used for every `status` value `engagement_termine` doesn't cover.
   'activite.title':            "Activité récente",
-  'activite.view_all':         "Voir tout →",
   'activite.empty_title':      "Aucune activité pour l'instant",
   'activite.empty_body':       "Vos demandes, engagements et propositions apparaîtront ici.",
   'activite.request_title':    "Nouvelle demande de service",
