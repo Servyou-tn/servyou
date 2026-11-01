@@ -711,6 +711,8 @@ export const ar: Record<string, string> = {
   'freelance.public.no_phone':          "لا يوجد رقم متاح حاليا.",
   'freelance.public.request_service_cta': "اطلب خدمة",
   'freelance.public.share':             "مشاركة",
+  // REVIEW_AR_TRANSLATION
+  'freelance.public.links_label':       "الروابط",
   'freelance.public.link_copied':       "تم نسخ الرابط!",
   'freelance.public.report_trigger':    "الإبلاغ عن هذا الملف",
   'freelance.public.about_title':       "نبذة",
@@ -2058,6 +2060,15 @@ export const ar: Record<string, string> = {
   'freelance.edit.trust_title':         "الثقة والروابط",
   'freelance.edit.years_experience_label': "سنوات الخبرة",
   'freelance.edit.years_suffix':        "سنوات",
+  // REVIEW_AR_TRANSLATION — Links kit (docs/design/freelancer-links-kit.md).
+  'social.profile_of':                  "ملف {platform} الخاص بـ {name}",
+  'social.website_of':                  "الموقع الإلكتروني لـ {name}",
+  'links.editor.helper':                "حساباتك العامة — حتى {max} روابط. اسم الرابط هو اسم المنصة.",
+  'links.editor.suggested':             "اقتراحات حسب مهنتك",
+  'links.editor.add_named':             "إضافة رابط {platform}",
+  'links.editor.other':                 "منصة أخرى",
+  'links.editor.url_aria':              "عنوان الرابط {index} ({platform})",
+  'freelance.edit.links_cap_reached':   "{max} روابط كحد أقصى.",
   'freelance.edit.links_title':         "روابط خارجية",
   'freelance.edit.links_helper':        "ملفاتك الشخصية العامة — GitHub وLinkedIn والموقع الإلكتروني. حتى 3 روابط.",
   'freelance.edit.link_label_field':    "اسم الرابط",
@@ -3316,6 +3327,8 @@ export const ar: Record<string, string> = {
   'forceProfil.item_bio':     "النبذة الشخصية مكتملة",
   'forceProfil.item_skills':  "المهارات مدرجة",
   'forceProfil.item_portfolio': "أضف عملين من أعمالك",
+  // REVIEW_AR_TRANSLATION
+  'forceProfil.item_links':   "أضف روابطك",
   'forceProfil.complete_link': "أكمل ملفك الشخصي ←",
 
   'activite.title':            "النشاط الأخير",

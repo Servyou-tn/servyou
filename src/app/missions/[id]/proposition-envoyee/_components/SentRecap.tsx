@@ -2,6 +2,8 @@ import { CategoryChip, SkillChip } from '@/components/missions/MissionChips'
 import { t, type Lang } from '@/lib/i18n'
 import { formatTunisDate, formatTunisTime } from '@/lib/datetime'
 import { tndAmount } from '@/components/listings/listing-utils'
+import { PlatformIcon } from '@/components/social/PlatformIcon'
+import { detectPlatform } from '@/lib/social/platforms'
 import type { SentProposal } from '@/lib/marche/sent-proposal-query'
 
 // recap-panel — Figma 377:10742: surface/base, 1 px border/subtle, radius 12, pad 24, gap 16. Rows with no value are
@@ -49,8 +51,9 @@ export function SentRecap({ sent, lang }: { sent: SentProposal; lang: Lang }) {
           <ul className="flex flex-col gap-1">
             {sent.links.map((l) => (
               <li key={l.url} className="text-body-sm [overflow-wrap:anywhere]">
-                <a href={l.url} target="_blank" rel="noopener noreferrer nofollow" className="text-brand-blue-600 hover:underline">
-                  {l.label ? `${l.label} — ${hostOf(l.url)}` : hostOf(l.url)}
+                <a href={l.url} target="_blank" rel="noopener noreferrer nofollow" className="inline-flex items-start gap-1.5 text-brand-blue-600 hover:underline">
+                  <PlatformIcon platform={detectPlatform(l.url) ?? 'website'} className="mt-0.5 size-4 shrink-0" />
+                  <span>{l.label ? `${l.label} — ${hostOf(l.url)}` : hostOf(l.url)}</span>
                 </a>
               </li>
             ))}

@@ -18,10 +18,11 @@ import {
   type UrlField,
 } from '@/lib/marche/freelancer-profile-edit'
 import { isHttpUrl } from '@/lib/freelancer/http-url'
+import { isLinkUrl, type PlatformId } from '@/lib/social/platforms'
+import { LinksEditor, linkRowsToPayload, type LinkRow } from '@/components/social/LinksEditor'
 import { saveProfileAction, publishProfileAction } from '../actions'
 import { AccordionSection } from './AccordionSection'
 import { AvatarField } from './AvatarField'
-import { LinksRepeater, type LinkRow } from './LinksRepeater'
 import { PortfolioRepeater, type PortfolioRow } from './PortfolioRepeater'
 import { LanguageRepeater, type LanguageRow } from './LanguageRepeater'
 import { EducationRepeater, type EducationRow } from './EducationRepeater'
@@ -51,7 +52,16 @@ const NO_INVALID_URLS: UrlInvalid = { links: [], portfolio: [], certifications: 
 // re-translates); a server error arrives as already-translated text.
 type FormError = { urlFields: UrlField[] } | { text: string }
 
-export function ProfileEditForm({ initial, lang }: { initial: FreelancerProfileEditData; lang: Lang }) {
+export function ProfileEditForm({
+  initial,
+  lang,
+  recommendedPlatforms,
+}: {
+  initial: FreelancerProfileEditData
+  lang: Lang
+  /** The platforms suggested for this freelancer's trade (their top sector — lib/social/platforms `recommendedFor`). */
+  recommendedPlatforms: readonly PlatformId[]
+}) {
   const [headline, setHeadline] = React.useState(initial.headline)
   const [bio, setBio] = React.useState(initial.bio)
   const [yearsExperience, setYearsExperience] = React.useState(String(initial.yearsExperience))
@@ -63,7 +73,7 @@ export function ProfileEditForm({ initial, lang }: { initial: FreelancerProfileE
   const [languageRows, setLanguageRows] = React.useState<LanguageRow[]>(() =>
     initial.languages.map((l) => ({ id: crypto.randomUUID(), ...l })),
   )
-  const [linkRows, setLinkRows] = React.useState<LinkRow[]>(() => initial.links.map((l) => ({ id: l.id, label: l.label, url: l.url })))
+  const [linkRows, setLinkRows] = React.useState<LinkRow[]>(() => initial.links.map((l) => ({ id: l.id, url: l.url, hint: null })))
   const [portfolioRows, setPortfolioRows] = React.useState<PortfolioRow[]>(() =>
     initial.portfolioItems.map((p) => ({ id: p.id, imageUrl: p.imageUrl, title: p.title ?? '', url: p.url ?? '', description: p.description ?? '' })),
   )
@@ -129,7 +139,7 @@ export function ProfileEditForm({ initial, lang }: { initial: FreelancerProfileE
       skills,
       tools,
       languages: languageRows.filter((r) => r.language && r.proficiency).map((r) => ({ language: r.language, proficiency: r.proficiency })),
-      links: linkRows.filter((r) => r.label.trim() && r.url.trim()).map((r) => ({ label: r.label.trim(), url: r.url.trim() })),
+      links: linkRowsToPayload(linkRows),
       portfolio: portfolioRows.map((r) => ({
         imageUrl: r.imageUrl,
         title: r.title.trim(),
@@ -161,7 +171,7 @@ export function ProfileEditForm({ initial, lang }: { initial: FreelancerProfileE
   // The server accepts http(s) URLs only (HTTP_URL) and one bad URL rejects the whole save, so the
   // same rule runs here first — isHttpUrl is HTTP_URL's zod-free twin — giving a per-field error
   // plus a summary naming the section (Portfolio is collapsed by default). Checks only what
-  // buildPayload actually sends: a link row needs a label AND a URL, a certification row a name;
+  // buildPayload actually sends: a link row needs a URL (its name is its platform), a certification row a name;
   // imageUrl comes from the upload, never typed. Recomputed on every attempt, so a fixed field
   // loses its error on the next save. Returns the failing fields ([] when every URL passes).
   function checkUrls(): UrlField[] {
@@ -169,7 +179,7 @@ export function ProfileEditForm({ initial, lang }: { initial: FreelancerProfileE
     const next: UrlInvalid = { links: [], portfolio: [], certifications: [], portfolioLink: false }
     const fields: UrlField[] = []
     for (const r of linkRows) {
-      if (r.label.trim() && invalid(r.url)) {
+      if (r.url.trim() !== '' && !isLinkUrl(r.url)) {
         next.links.push(r.id)
         fields.push('links')
       }
@@ -286,7 +296,7 @@ export function ProfileEditForm({ initial, lang }: { initial: FreelancerProfileE
       </div>
 
       <div className="flex flex-col gap-4">
-        <AccordionSection title={t('freelance.edit.trust_title', lang)} complete={linkRows.length > 0 || Number(yearsExperience) > 0} defaultOpen>
+        <AccordionSection title={t('freelance.edit.trust_title', lang)} complete={linkRows.some((r) => r.url.trim() !== '') || Number(yearsExperience) > 0} defaultOpen>
           <div>
             <label className="text-sm font-medium text-text-secondary">{t('freelance.edit.years_experience_label', lang)}</label>
             <div className="mt-2 flex items-center gap-2">
@@ -305,7 +315,7 @@ export function ProfileEditForm({ initial, lang }: { initial: FreelancerProfileE
 
           <div>
             <p className="text-sm font-medium text-text-secondary">{t('freelance.edit.links_title', lang)}</p>
-            <LinksRepeater rows={linkRows} onChange={setLinksT} lang={lang} errors={urlErrorsFor(urlInvalid.links)} />
+            <LinksEditor rows={linkRows} onChange={setLinksT} recommended={recommendedPlatforms} lang={lang} errors={urlErrorsFor(urlInvalid.links)} />
           </div>
         </AccordionSection>
 

@@ -156,19 +156,24 @@ describe('buildActivityFeed', () => {
 
 describe('checklistFrom', () => {
   it('portfolio is always false regardless of input — Ruling 2, never derived', () => {
-    const c = checklistFrom({ avatarUrl: 'x.webp', bioNonEmpty: true, skillsCount: 5 })
+    const c = checklistFrom({ avatarUrl: 'x.webp', bioNonEmpty: true, skillsCount: 5, linksCount: 5 })
     expect(c.portfolio).toBe(false)
   })
 
-  it('all-three-real-items-done still leaves portfolio unmet — the ring never reaches 100%', () => {
-    const c = checklistFrom({ avatarUrl: 'x.webp', bioNonEmpty: true, skillsCount: 1 })
+  it('every real item done still leaves portfolio unmet — the ring never reaches 100%', () => {
+    const c = checklistFrom({ avatarUrl: 'x.webp', bioNonEmpty: true, skillsCount: 1, linksCount: 1 })
     const doneCount = Object.values(c).filter(Boolean).length
-    expect(doneCount).toBe(3)
-    expect(c).toEqual({ avatar: true, bio: true, skills: true, portfolio: false })
+    expect(doneCount).toBe(4)
+    expect(c).toEqual({ avatar: true, bio: true, skills: true, links: true, portfolio: false })
+  })
+
+  it('« Ajoutez vos liens » is done from the first saved link, not before', () => {
+    expect(checklistFrom({ avatarUrl: null, bioNonEmpty: false, skillsCount: 0, linksCount: 0 }).links).toBe(false)
+    expect(checklistFrom({ avatarUrl: null, bioNonEmpty: false, skillsCount: 0, linksCount: 1 }).links).toBe(true)
   })
 
   it('a brand-new freelancer (no avatar, empty bio, no skills) is all-unmet', () => {
-    const c = checklistFrom({ avatarUrl: null, bioNonEmpty: false, skillsCount: 0 })
-    expect(c).toEqual({ avatar: false, bio: false, skills: false, portfolio: false })
+    const c = checklistFrom({ avatarUrl: null, bioNonEmpty: false, skillsCount: 0, linksCount: 0 })
+    expect(c).toEqual({ avatar: false, bio: false, skills: false, links: false, portfolio: false })
   })
 })
