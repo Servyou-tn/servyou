@@ -1,6 +1,6 @@
 # Follow-ups — journey links + old dashboard files (`fix/journey-links`, 2026-11-01)
 
-## More of the old consumer dashboard is now unused
+## More of the old consumer dashboard is now unused — RESOLVED (`chore/dashboard-orphans`, founder go 2026-11-01: all deleted)
 
 **What** This PR deletes the five files the brief named (`QuickActions`, `ActiveOrdersSnapshot`, `CategoriesWidget`, `DashboardSidebar`,
 `DashboardShellClient`). With them gone, these have no importer left in `src/` (checked by grep on the module names):
