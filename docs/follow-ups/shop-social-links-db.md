@@ -1,9 +1,8 @@
 # Shop social links — database part (`feat/shop-social-links-db`, 2026-11-01)
 
-## After the architect applies the migration (this PR, commit 4 — needs the architect's OK)
-- Rename `PENDING_shop_social_links.sql` to the recorded version and add its README entry.
-- Regenerate `src/lib/supabase/database.types.ts`; the columns don't exist live yet.
-- Run `shop-social-links-live.test.ts` and `client-write-grants-live.test.ts`.
+## Applied
+- Migration 116 (`20261101212613_shop_social_links`) was applied by the architect on 2026-11-01. It is recorded,
+  the types are regenerated, and the live suites are green (this PR, commit 4, architect's OK).
 
 ## For the UI PR (not this one)
 - **Edit page** (`/ma-boutique/modifier`, `updateShopAction`): validate with `ShopSocialLinksSchema`

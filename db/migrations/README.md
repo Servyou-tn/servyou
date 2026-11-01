@@ -1120,6 +1120,16 @@ both on 2026-10-28.
       « pending » reveals both numbers), and the deleted-post rule.
     - Live: `phone-reveal-buyer-live.test.ts` gains filled / expired (visible) and deleted (NULL).
     - The recorded statement is this whole file, comments included.
+116. **20261101212613_shop_social_links** (`7387b200`) — `shops.facebook_url`, `instagram_url`, `tiktok_url`
+    (nullable text, founder task relayed by the architect), each with a CHECK `shops_<column>_valid` in migration
+    106's style: https only; the host is one of the platform's, exactly (Facebook: (www. / m. / web.)facebook.com,
+    (www.)fb.com, fb.me; Instagram: (www.)instagram.com, instagr.am; TikTok: (www. / vm. / m.)tiktok.com); no userinfo,
+    port or trailing dot; no ASCII control character, space or backslash after the host; at most 300 characters.
+    - `grant select (…)` to anon and authenticated (shops SELECT is column-level since #96). No UPDATE grant: the
+      table-level UPDATE covers the columns, and the client-write allow-list is unchanged. No INSERT grant.
+    - `src/lib/shops/social-links.ts` holds the same patterns plus the zod schemas; `social-links.test.ts` fails if
+      the two drift. Live: `shop-social-links-live.test.ts`.
+    - The recorded statement is this whole file, comments included.
 
 ## Rollback paths
 

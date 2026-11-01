@@ -30,7 +30,7 @@ const EMAIL_SUFFIX = '@rls-smoke.servyou.invalid'
 const EMAIL = `${PREFIX}owner${EMAIL_SUFFIX}`
 
 const opts = { auth: { autoRefreshToken: false, persistSession: false } }
-// Untyped until the generated types carry the new columns (regenerated after the apply).
+// Untyped: the tests write `{ [column]: value }` with a computed column name, which the Database-typed builder rejects.
 const admin: SupabaseClient = hasCreds ? createClient(url, serviceKey, opts) : (undefined as unknown as SupabaseClient)
 
 const GOOD: Record<ShopSocialPlatform, string[]> = {
