@@ -19,10 +19,12 @@ need to say WHY. The rule: whoever reaches out shares their number; the other si
   pending is it gone — the existing NULL handling covers it.
 
 ## 3. Freelancer — missions: the client's WhatsApp is gone
-- **`/missions/[id]`** and the proposal recap **`/missions/[id]/proposer`** (`src/components/missions/ClientCard.tsx`,
-  `src/lib/marche/proposals.ts`): a sent proposal no longer reveals the client's number. Remove the client WhatsApp
-  button from the freelancer side, and reword anything promising contact (e.g. H13 « Proposition envoyée » WhatsApp
-  CTA) to « Le client vous contactera sur WhatsApp s'il retient votre proposition ».
+- **`/missions/[id]/proposition-envoyee`** (H13, `src/app/missions/[id]/proposition-envoyee/page.tsx:79-85`): the
+  `WhatsAppContactButton` to the client (keys `proposal.sent.whatsapp`, `…whatsapp_message`, `…whatsapp_error`,
+  `…whatsapp_none`) will now ALWAYS land on « pas de numéro ». Remove it and reword the screen to « Le client vous
+  contactera sur WhatsApp s'il retient votre proposition » (FR / AR).
+- `/missions/[id]` and the proposal recap show the client through `src/components/missions/ClientCard.tsx`, which has
+  no WhatsApp button — only its comment (« contact … once a proposal exists ») is now wrong; update it.
 - **`/mes-engagements/[id]`** (freelancer's order detail): an ORDER follows the order rule (the freelancer is the
   seller → the buyer's number is visible from pending). No change.
 
@@ -34,3 +36,9 @@ need to say WHY. The rule: whoever reaches out shares their number; the other si
   WhatsApp CTA only once their service order is ACCEPTED — on a pending request they see « Demander un service »
   again, which reads oddly. Suggest: on a pending request, the hint « Disponible après acceptation par le
   freelance ». A client whose mission received this freelancer's proposal still gets the WhatsApp CTA (unchanged).
+  Its header comment (`PrimaryCta.tsx:8-14`, « returns a phone once a request exists ») is no longer true for a
+  pending request — update it with the UI change.
+
+## Note — the rule is per PAIR of accounts
+get_contact_phone answers for two accounts, not for one order: once ANY order between them is past « pending », both
+numbers are visible, even if a newer order between the same two is pending or was cancelled while pending.
