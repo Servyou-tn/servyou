@@ -53,6 +53,9 @@ export function PrimaryCta({
         message={t('freelance.public.whatsapp_message', lang, { name: freelancerName })}
         label={t('freelance.public.whatsapp_cta', lang)}
         size={size}
+        // 375 frame (m375-d4-profil): the hero's button is 44 tall with the glyph before the label; from lg it stays as measured on 390:10676.
+        buttonClassName={size === 'lg' ? 'max-lg:h-11' : undefined}
+        glyphClassName={size === 'lg' ? 'lg:hidden' : undefined}
         errorMessageKey="freelance.public.phone_reveal_error"
         noPhoneMessageKey="freelance.public.no_phone"
       />
@@ -62,7 +65,11 @@ export function PrimaryCta({
   if (pendingRequest) return <PhoneAfterAcceptance who="freelancer" lang={lang} />
   if (firstServiceId) {
     return (
-      <Link href={`/demander/${firstServiceId}`} className={cn(BUTTON_BASE, BUTTON_SIZE[size], VARIANT_BASE.primary, VARIANT_STATE.primary)}>
+      // Same 44 as the WhatsApp state below lg (the 375 frame draws the hero CTA 44 tall); 48 from lg as before.
+      <Link
+        href={`/demander/${firstServiceId}`}
+        className={cn(BUTTON_BASE, BUTTON_SIZE[size], VARIANT_BASE.primary, VARIANT_STATE.primary, size === 'lg' && 'max-lg:h-11')}
+      >
         {t('freelance.public.request_service_cta', lang)}
         <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-white/25 px-1.5 text-caption font-semibold">
           {serviceCount}

@@ -33,7 +33,8 @@ export function ActionsRow({
   pendingRequest?: boolean
 }) {
   return (
-    <div className="flex flex-wrap items-center gap-3">
+    // 375 frame: rows 8 apart when it wraps (CTA, then Partager + the ⋮), 8 above and below.
+    <div className="flex flex-wrap items-center gap-3 max-lg:gap-y-2 max-lg:py-2">
       <PrimaryCta
         freelancerProfileId={freelancerProfileId}
         freelancerName={freelancerName}
