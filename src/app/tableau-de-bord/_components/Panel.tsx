@@ -19,11 +19,9 @@ export function Panel({
   title: string
   icon?: LucideIcon
   iconClassName?: string
-  /** `href: null` renders the label inert (muted, `aria-disabled`, no navigation) — for a link
-   *  the frame draws but whose destination route doesn't exist yet, same as the header's
-   *  "Créer un service" CTA. Not a loading/error state, a real permanent option until the route
-   *  ships. */
-  link?: { href: string | null; label: string }
+  /** A header link is always a real route — a link the frame draws whose page doesn't exist yet is
+   *  left out, never rendered inert. */
+  link?: { href: string; label: string }
   children: ReactNode
 }) {
   return (
@@ -34,18 +32,12 @@ export function Panel({
         ) : null}
         <h2 className="text-h3 text-text-primary">{title}</h2>
         {link ? (
-          link.href ? (
-            <Link
-              href={link.href}
-              className={`ms-auto rounded text-body-sm text-brand-blue-600 hover:underline ${FOCUS_RING}`}
-            >
-              {link.label}
-            </Link>
-          ) : (
-            <span aria-disabled="true" className="ms-auto cursor-not-allowed text-body-sm text-text-muted">
-              {link.label}
-            </span>
-          )
+          <Link
+            href={link.href}
+            className={`ms-auto rounded text-body-sm text-brand-blue-600 hover:underline ${FOCUS_RING}`}
+          >
+            {link.label}
+          </Link>
         ) : null}
       </div>
       {children}

@@ -13,15 +13,13 @@ Founder brief item 4: every link on `/tableau-de-bord` (freelancer) and `/tablea
 | Freelancer | tiles / « Missions récentes pour vous » link | real routes (`/mes-engagements`, `/mes-services`, `/marche/produits`, `/trouver-des-missions`) | — |
 | Shop | every link (`/mes-produits/ajouter`, `/commandes-recues`, `/ma-boutique/modifier`, `/boutique/{id}`, `/devenir-vendeur`) | all real routes, nothing inert | — |
 
-## « Voir tout » on Activité récente has no destination
+## « Voir tout » on Activité récente — hidden until a page lists the feed
 
-**What** The freelancer dashboard's « Activité récente » panel draws a « Voir tout → » header link (Figma 167:12377). It stays an inert muted label (`href: null`): there is no route that lists the whole feed. The feed merges seller-order requests, status changes and mission proposals (`buildActivityFeed`), which no existing page shows together (`/mes-engagements` = orders only, `/mes-propositions` = proposals only).
+**What** The freelancer dashboard's « Activité récente » panel (Figma 167:12377) draws a « Voir tout → » header link. No route lists the whole feed (it merges seller-order requests, status changes and mission proposals via `buildActivityFeed`; `/mes-engagements` = orders only, `/mes-propositions` = proposals only). Architect ruling 2026-11-01: no inert links — the link is **not rendered**, and the dead `activite.view_all` keys are removed. `Panel`'s header `link` now only accepts a real `href`.
 
-**Why deferred** Needs a product decision (a dedicated « Activité » page, or point it at `/mes-engagements`) — not a wiring fix.
+**Where it lives** `src/app/tableau-de-bord/_components/ActiviteRecente.tsx` (comment where the link was), `Panel.tsx`.
 
-**Where it lives** `src/app/tableau-de-bord/_components/ActiviteRecente.tsx` (`link={{ href: null, … }}`), `Panel.tsx` (inert branch).
-
-**Trigger** The founder decides what « Voir tout » should open.
+**Trigger** A page that lists the merged feed exists (or the founder points it at an existing page). Then restore the `link` prop and re-add `activite.view_all` (FR « Voir tout → », AR « عرض الكل ← ») in fr.ts and ar.ts.
 
 ## H3's « Portfolio » pill says « Complet » at 1 item, the dashboard asks for 2
 
