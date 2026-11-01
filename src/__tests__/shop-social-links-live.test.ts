@@ -34,14 +34,14 @@ const opts = { auth: { autoRefreshToken: false, persistSession: false } }
 const admin: SupabaseClient = hasCreds ? createClient(url, serviceKey, opts) : (undefined as unknown as SupabaseClient)
 
 const GOOD: Record<ShopSocialPlatform, string[]> = {
-  facebook: ['https://facebook.com/servyou', 'https://m.facebook.com/profile.php?id=1', 'HTTPS://WWW.FB.COM/x'],
-  instagram: ['https://instagram.com/servyou', 'https://www.instagram.com/servyou/'],
-  tiktok: ['https://tiktok.com/@servyou', 'https://www.tiktok.com/@servyou/video/1'],
+  facebook: ['https://facebook.com/servyou', 'https://m.facebook.com/profile.php?id=1', 'HTTPS://WWW.FB.COM/x', 'https://web.facebook.com/x', 'https://fb.me/x'],
+  instagram: ['https://instagram.com/servyou', 'https://www.instagram.com/servyou/', 'https://instagr.am/x'],
+  tiktok: ['https://tiktok.com/@servyou', 'https://www.tiktok.com/@servyou/video/1', 'https://vm.tiktok.com/ZM1/', 'https://m.tiktok.com/@servyou'],
 }
 const BAD: Record<ShopSocialPlatform, string[]> = {
   facebook: ['http://facebook.com/x', 'https://facebook.com@evil.io', 'https://facebook.com.evil.io/x', 'javascript:alert(1)', ''],
-  instagram: ['https://instagr.am/x', 'https://user@instagram.com/x', 'https://instagram.com:443/x', 'https://instagram.com/x y'],
-  tiktok: ['https://vm.tiktok.com/ZM1/', 'https://tiktok.com\\@evil.io', `https://tiktok.com/${'a'.repeat(300)}`],
+  instagram: ['https://www.instagr.am/x', 'https://user@instagram.com/x', 'https://instagram.com:443/x', 'https://instagram.com/x y'],
+  tiktok: ['https://vt.tiktok.com/ZM1/', 'https://tiktok.com\\@evil.io', `https://tiktok.com/${'a'.repeat(300)}`],
 }
 
 let shopId: string

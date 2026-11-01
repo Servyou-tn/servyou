@@ -5,9 +5,11 @@
 --
 -- Rule per column (as ruled):
 --   * https only (`~*`: the scheme and host are case-insensitive, like a browser);
---   * the host is the platform's, exactly — Facebook: facebook.com, www.facebook.com, m.facebook.com, fb.com,
---     www.fb.com; Instagram: instagram.com, www.instagram.com; TikTok: tiktok.com, www.tiktok.com. No other subdomain,
---     no port, no trailing dot;
+--   * the host is the platform's, exactly — Facebook: facebook.com, www.facebook.com, m.facebook.com,
+--     web.facebook.com, fb.com, www.fb.com, fb.me; Instagram: instagram.com, www.instagram.com, instagr.am; TikTok:
+--     tiktok.com, www.tiktok.com, vm.tiktok.com (the mobile « Partager » link), m.tiktok.com. The short / mobile hosts
+--     were added at the architect's request (2026-11-01, « same as freelancer links »). No other subdomain, no port,
+--     no trailing dot;
 --   * no userinfo: the host must come straight after `https://` and be followed by `/`, `?`, `#` or the end, so
 --     `https://facebook.com@evil.io` (opens evil.io) and `https://user@facebook.com` are refused;
 --   * after the host: no ASCII control character, no space, no backslash (a browser reads `\` as `/`);
@@ -39,21 +41,21 @@ alter table public.shops
   add constraint shops_facebook_url_valid
   check (facebook_url is null or (
     char_length(facebook_url) <= 300
-    and facebook_url ~* '^https://((www\.|m\.)?facebook\.com|(www\.)?fb\.com)([/?#][^\x01-\x20\x7f\\]*)?$'
+    and facebook_url ~* '^https://((www\.|m\.|web\.)?facebook\.com|(www\.)?fb\.com|fb\.me)([/?#][^\x01-\x20\x7f\\]*)?$'
   ));
 
 alter table public.shops
   add constraint shops_instagram_url_valid
   check (instagram_url is null or (
     char_length(instagram_url) <= 300
-    and instagram_url ~* '^https://(www\.)?instagram\.com([/?#][^\x01-\x20\x7f\\]*)?$'
+    and instagram_url ~* '^https://((www\.)?instagram\.com|instagr\.am)([/?#][^\x01-\x20\x7f\\]*)?$'
   ));
 
 alter table public.shops
   add constraint shops_tiktok_url_valid
   check (tiktok_url is null or (
     char_length(tiktok_url) <= 300
-    and tiktok_url ~* '^https://(www\.)?tiktok\.com([/?#][^\x01-\x20\x7f\\]*)?$'
+    and tiktok_url ~* '^https://(www\.|vm\.|m\.)?tiktok\.com([/?#][^\x01-\x20\x7f\\]*)?$'
   ));
 
 grant select (facebook_url, instagram_url, tiktok_url) on public.shops to anon, authenticated;
