@@ -1554,6 +1554,9 @@ export const ar: Record<string, string> = {
   'serviceDetail.breadcrumb.home':   "الرئيسية",
   'serviceDetail.breadcrumb.services': "الخدمات",
   'serviceDetail.showMore':          "عرض المزيد",
+  // REVIEW_AR_TRANSLATION
+  'serviceDetail.showLess':          "عرض أقل",
+  'serviceDetail.favorite':          "المفضلة",
   'serviceDetail.included':          "ما يشمله العرض",
   'serviceDetail.mode.title':        "طريقة تقديم الخدمة",
   'serviceDetail.mode.remote':       "عن بعد",
@@ -1990,6 +1993,8 @@ export const ar: Record<string, string> = {
   'freelance.create.step2.error.languages_min':       "أضف لغة واحدة على الأقل.",
   'freelance.create.step2.error.languages_duplicate': "تمت إضافة هذه اللغة بالفعل.",
   'freelance.create.step2.error.portfolio_url':       "يرجى إدخال رابط صالح (https://…).",
+  // REVIEW_AR_TRANSLATION
+  'freelance.create.step2.error.portfolio_url_long':  "هذا الرابط طويل جدا (500 حرف كحد أقصى).",
   'freelance.create.step2.error.years_invalid':       "يرجى إدخال رقم صالح.",
 
   // ─── H2 step 3 "التفاصيل" — mirrors fr.ts's H2 step 3 block exactly, same founder-ruled field

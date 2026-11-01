@@ -7,6 +7,7 @@ import {
   PLATFORMS,
   RECOMMENDED_BY_SECTOR,
   detectPlatform,
+  hasUserinfo,
   isLinkUrl,
   normalizeUrl,
   hostOf,
@@ -142,6 +143,15 @@ describe('pickTopSector', () => {
     expect(pickTopSector([row(null, '2026-01-01'), row('a', '2026-01-01')])).toBe('a')
     expect(pickTopSector([row(null, '2026-01-01')])).toBeNull()
     expect(pickTopSector([])).toBeNull()
+  })
+})
+
+describe('hasUserinfo', () => {
+  it.each(['https://github.com@evil.io', 'https://user:pass@exemple.tn/x', 'http://name@exemple.tn', 'name@example.com', '//user@exemple.tn'])('%s carries userinfo', (v) => {
+    expect(hasUserinfo(v)).toBe(true)
+  })
+  it.each(['https://github.com/aya', 'github.com/aya', 'https://exemple.tn/a@b', 'https://exemple.tn/?e=a@b.tn', 'https://exemple.tn:8080/x', '', 'pas une adresse'])('%s does not', (v) => {
+    expect(hasUserinfo(v)).toBe(false)
   })
 })
 
