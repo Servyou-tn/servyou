@@ -72,11 +72,15 @@ describe.skipIf(!hasCreds)('missions, self, anonymous', () => {
     ['expired', true],
     ['deleted', false],
   ])('post %s → freelancer phone visible: %s', async (status, visible) => {
-    const { error } = await admin.from('job_posts').update({ status }).eq('id', fx.postId)
-    expect(error).toBeNull()
-    expect(await phoneOf(buyer, fx.freelancerId)).toBe(visible ? PHONES.freelancer : null)
-    const { error: back } = await admin.from('job_posts').update({ status: 'open' }).eq('id', fx.postId)
-    expect(back).toBeNull()
+    try {
+      const { error } = await admin.from('job_posts').update({ status }).eq('id', fx.postId)
+      expect(error).toBeNull()
+      expect(await phoneOf(buyer, fx.freelancerId)).toBe(visible ? PHONES.freelancer : null)
+    } finally {
+      // Back to open even when an assertion fails, so a later mission case starts from the fixture's state.
+      const { error: back } = await admin.from('job_posts').update({ status: 'open' }).eq('id', fx.postId)
+      expect(back).toBeNull()
+    }
   })
 
   it('own phone is visible', async () => {
