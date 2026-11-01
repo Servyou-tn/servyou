@@ -681,6 +681,7 @@ export const fr: Record<string, string> = {
   'freelance.public.no_phone':          "Aucun numéro disponible pour le moment.",
   'freelance.public.request_service_cta': "Demander un service",
   'freelance.public.share':             "Partager",
+  'freelance.public.links_label':       "Liens",
   'freelance.public.link_copied':       "Lien copié !",
   'freelance.public.report_trigger':    "Signaler ce profil",
   'freelance.public.about_title':       "À propos",
@@ -737,6 +738,7 @@ export const fr: Record<string, string> = {
   'product.error_stock_required': "Veuillez indiquer la quantité en stock.",
   'product.error_update':   "Une erreur est survenue lors de la mise à jour. Veuillez réessayer.",
   'product.error_add':      "Une erreur est survenue lors de l'ajout. Veuillez réessayer.",
+  'product.error_cap':      "Limite atteinte : {max} produits par boutique au maximum. Supprimez un produit pour en ajouter un.",
 
   // G5 « Mes produits » (Figma 522:29106) — docs/design/g5-discovery.md
   'product.list_subtitle':          "Gérez votre catalogue : statut, stock et ventes.",
@@ -938,6 +940,7 @@ export const fr: Record<string, string> = {
   'product.image.error.decode':     "Cette image n'a pas pu être traitée. Essayez une autre photo.",
   'product.image.error.upload':     "L'envoi de la photo a échoué. Veuillez réessayer.",
   'product.image.error.max':        "Vous avez atteint la limite de {max} photos.",
+  'upload.error.daily_cap':        "Vous avez atteint la limite de {max} photos envoyées en 24 heures. Réessayez plus tard.",
   'product.field_note':             "Note pour le vendeur",
   'product.error_delivery_name':    "Le nom de livraison est requis.",
   'product.error_delivery_address': "L'adresse de livraison est requise.",
@@ -1231,6 +1234,7 @@ export const fr: Record<string, string> = {
   'monCompte.password.modalTitle':   "Changer le mot de passe",
   'monCompte.password.cancel':       "Annuler",
   'monCompte.password.wrongCurrent': "Le mot de passe actuel est incorrect.",
+  'monCompte.password.tooManyAttempts': "Trop de tentatives, réessayez dans 15 minutes.",
   'monCompte.password.same':         "Le nouveau mot de passe doit être différent de l'actuel.",
   'monCompte.delete.reasonTooLong':  "Le motif est trop long (500 caractères maximum).",
   'monCompte.delete.openOrders':     "Vous avez {count} commande(s) en cours. Elles doivent être terminées ou annulées avant que votre compte puisse être supprimé.",
@@ -1592,6 +1596,8 @@ export const fr: Record<string, string> = {
   'serviceDetail.breadcrumb.home':   "Accueil",
   'serviceDetail.breadcrumb.services': "Services",
   'serviceDetail.showMore':          "Voir plus",
+  'serviceDetail.showLess':          "Voir moins",
+  'serviceDetail.favorite':          "Favori",
   'serviceDetail.included':          "Ce qui est inclus",
   'serviceDetail.mode.title':        "Mode de prestation",
   'serviceDetail.mode.remote':       "À distance",
@@ -1607,6 +1613,7 @@ export const fr: Record<string, string> = {
   // a newest-active fallback, so the set is mixed and a freelancer-scoped heading would be wrong
   // for most rows. Neutral heading instead — see the PR body.
   'serviceDetail.related':           "Services similaires",
+  'serviceDetail.relatedOwn':        "Autres services de {name}",
   'serviceDetail.reviews':           "Avis",
   'serviceDetail.reviewsEmpty':      "Les avis seront bientôt disponibles",
   'serviceDetail.report':            "Signaler ce service",
@@ -2035,6 +2042,7 @@ export const fr: Record<string, string> = {
   'freelance.create.step2.error.languages_min':       "Ajoutez au moins une langue.",
   'freelance.create.step2.error.languages_duplicate': "Cette langue est déjà ajoutée.",
   'freelance.create.step2.error.portfolio_url':       "Veuillez saisir une URL valide (https://…).",
+  'freelance.create.step2.error.portfolio_url_long':  "Cette adresse est trop longue (500 caractères au maximum).",
   'freelance.create.step2.error.years_invalid':       "Veuillez saisir un nombre valide.",
 
   // ─── H2 step 3 "Détails" (/mon-profil-freelance/creer/details) — Figma 468:20502 measured the
@@ -2111,6 +2119,15 @@ export const fr: Record<string, string> = {
   'freelance.edit.trust_title':         "Confiance & liens",
   'freelance.edit.years_experience_label': "Années d'expérience",
   'freelance.edit.years_suffix':        "ans",
+  // Links kit (docs/design/freelancer-links-kit.md) — platform icons, links editor, public row.
+  'social.profile_of':                  "Profil {platform} de {name}",
+  'social.website_of':                  "Site web de {name}",
+  'links.editor.helper':                "Vos profils publics — jusqu'à {max} liens. Le nom du lien est celui de la plateforme.",
+  'links.editor.suggested':             "Suggestions pour votre métier",
+  'links.editor.add_named':             "Ajouter un lien {platform}",
+  'links.editor.other':                 "Autre plateforme",
+  'links.editor.url_aria':              "Adresse du lien {index} ({platform})",
+  'freelance.edit.links_cap_reached':   "{max} liens maximum.",
   'freelance.edit.links_title':         "Liens externes",
   'freelance.edit.links_helper':        "Vos profils publics — GitHub, LinkedIn, site web. Jusqu'à 3 liens.",
   // 🔨 founder-ruled from content shape — the file never named these two inputs (unedited
@@ -2787,6 +2804,7 @@ export const fr: Record<string, string> = {
   'contact.form.error.email':   "Veuillez entrer une adresse email valide.",
   'contact.form.error.message': "Veuillez entrer votre message.",
   'contact.form.error.generic': "Une erreur est survenue. Réessayez.",
+  'contact.form.error.send':    "Le message n'a pas pu être envoyé, réessayez.",
 
   // ─── FAQ page (/faq) ─────────────────────────────────────────────────────────
   'faq.headline':          "Questions fréquentes",
@@ -3410,6 +3428,7 @@ export const fr: Record<string, string> = {
   'forceProfil.item_bio':     "Bio complétée",
   'forceProfil.item_skills':  "Compétences renseignées",
   'forceProfil.item_portfolio': "Ajoutez 2 réalisations",
+  'forceProfil.item_links':   "Ajoutez vos liens",
   // Footer link, added Pass 3 (h4-discovery.md never drew it — 167:12377's read stopped at the
   // checklist). Destination is H3 (/mon-profil-freelance/modifier), which has no route yet —
   // renders inert, same "Créer un service" treatment as the header CTA.
@@ -3693,6 +3712,7 @@ export const fr: Record<string, string> = {
   'service.wizard.error.session':       "Votre session a expiré. Reconnectez-vous pour enregistrer.",
   'service.wizard.error.category_unavailable': "Cette catégorie n'est plus disponible. Choisissez-en une autre.",
   'service.wizard.error.draft_gone':    "Ce brouillon n'existe plus. Rechargez la page pour recommencer.",
+  'service.wizard.error.cap_reached': "Limite atteinte : vous avez déjà le nombre maximum de services. Supprimez-en un pour en créer un nouveau.",
   // H6 PR-3 — steps 3 « Tarif » (Figma 459:18966) and 4 « Prestation » (459:19023); labels and helpers
   // verbatim from the frames, except « Par mois » (founder ruling D13 — replaces the frame's « Par projet »).
   // Error strings are not in any frame (docs/design/h6-pr3-deltas.md §7).

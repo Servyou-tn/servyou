@@ -12,6 +12,9 @@
  */
 export const MAX_PRODUCT_IMAGES = 8
 
+/** Products per shop — enforced in the database (trg_limit_products_per_shop, hint products_per_shop_cap). */
+export const MAX_PRODUCTS_PER_SHOP = 100
+
 export type ProductActionResult = { ok: true } | { ok: false; error: string }
 
 /** G7: field attribution for inline errors, mirroring UpdateShopResult's shape. */

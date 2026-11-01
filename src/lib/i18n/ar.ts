@@ -711,6 +711,8 @@ export const ar: Record<string, string> = {
   'freelance.public.no_phone':          "لا يوجد رقم متاح حاليا.",
   'freelance.public.request_service_cta': "اطلب خدمة",
   'freelance.public.share':             "مشاركة",
+  // REVIEW_AR_TRANSLATION
+  'freelance.public.links_label':       "الروابط",
   'freelance.public.link_copied':       "تم نسخ الرابط!",
   'freelance.public.report_trigger':    "الإبلاغ عن هذا الملف",
   'freelance.public.about_title':       "نبذة",
@@ -767,6 +769,7 @@ export const ar: Record<string, string> = {
   'product.error_stock_required': "يرجى تحديد الكمية المتوفرة في المخزون.",
   'product.error_update':   "حدث خطأ أثناء التحديث. يرجى المحاولة مرة أخرى.",
   'product.error_add':      "حدث خطأ أثناء الإضافة. يرجى المحاولة مرة أخرى.",
+  'product.error_cap':      "تم بلوغ الحد: {max} منتج كحد أقصى لكل متجر. احذف منتجًا لإضافة منتج جديد.",
 
   // G5 « Mes produits » (Figma 522:29106) — docs/design/g5-discovery.md
   'product.list_subtitle':          "أدر كتالوجك: الحالة والمخزون والمبيعات.",
@@ -955,6 +958,7 @@ export const ar: Record<string, string> = {
   'product.image.error.decode':     "تعذرت معالجة هذه الصورة. جرب صورة أخرى.",
   'product.image.error.upload':     "فشل إرسال الصورة. يرجى المحاولة من جديد.",
   'product.image.error.max':        "لقد بلغت الحد الأقصى وهو {max} صور.",
+  'upload.error.daily_cap':        "لقد بلغت الحد الأقصى وهو {max} صورة مرسلة خلال 24 ساعة. حاول مرة أخرى لاحقًا.",
   'product.field_note':             "ملاحظة للبائع",
   'product.error_delivery_name':    "اسم التوصيل إلزامي.",
   'product.error_delivery_address': "عنوان التوصيل إلزامي.",
@@ -1216,6 +1220,7 @@ export const ar: Record<string, string> = {
   'monCompte.password.modalTitle':   "تغيير كلمة المرور",
   'monCompte.password.cancel':       "إلغاء",
   'monCompte.password.wrongCurrent': "كلمة المرور الحالية غير صحيحة.",
+  'monCompte.password.tooManyAttempts': "محاولات كثيرة جدًا، أعد المحاولة بعد 15 دقيقة.",
   'monCompte.password.same':         "يجب أن تختلف كلمة المرور الجديدة عن الحالية.",
   'monCompte.delete.reasonTooLong':  "السبب طويل جدا (500 حرف كحد أقصى).",
   'monCompte.delete.openOrders':     "لديك {count} طلب(ات) قيد التنفيذ. يجب إنهاؤها أو إلغاؤها قبل أن يمكن حذف حسابك.",
@@ -1549,6 +1554,9 @@ export const ar: Record<string, string> = {
   'serviceDetail.breadcrumb.home':   "الرئيسية",
   'serviceDetail.breadcrumb.services': "الخدمات",
   'serviceDetail.showMore':          "عرض المزيد",
+  // REVIEW_AR_TRANSLATION
+  'serviceDetail.showLess':          "عرض أقل",
+  'serviceDetail.favorite':          "المفضلة",
   'serviceDetail.included':          "ما يشمله العرض",
   'serviceDetail.mode.title':        "طريقة تقديم الخدمة",
   'serviceDetail.mode.remote':       "عن بعد",
@@ -1561,6 +1569,8 @@ export const ar: Record<string, string> = {
   'serviceDetail.share':             "نسخ الرابط",
   'serviceDetail.codNote':           "💬 الدفع عند التسليم — يُتفق عليه مباشرة مع المستقل.",
   'serviceDetail.related':           "خدمات مشابهة",
+  // REVIEW_AR_TRANSLATION
+  'serviceDetail.relatedOwn':        "خدمات أخرى لـ {name}",
   'serviceDetail.reviews':           "التقييمات",
   'serviceDetail.reviewsEmpty':      "ستتوفر التقييمات قريبا",
   'serviceDetail.report':            "الإبلاغ عن هذه الخدمة",
@@ -1985,6 +1995,8 @@ export const ar: Record<string, string> = {
   'freelance.create.step2.error.languages_min':       "أضف لغة واحدة على الأقل.",
   'freelance.create.step2.error.languages_duplicate': "تمت إضافة هذه اللغة بالفعل.",
   'freelance.create.step2.error.portfolio_url':       "يرجى إدخال رابط صالح (https://…).",
+  // REVIEW_AR_TRANSLATION
+  'freelance.create.step2.error.portfolio_url_long':  "هذا الرابط طويل جدا (500 حرف كحد أقصى).",
   'freelance.create.step2.error.years_invalid':       "يرجى إدخال رقم صالح.",
 
   // ─── H2 step 3 "التفاصيل" — mirrors fr.ts's H2 step 3 block exactly, same founder-ruled field
@@ -2055,6 +2067,15 @@ export const ar: Record<string, string> = {
   'freelance.edit.trust_title':         "الثقة والروابط",
   'freelance.edit.years_experience_label': "سنوات الخبرة",
   'freelance.edit.years_suffix':        "سنوات",
+  // REVIEW_AR_TRANSLATION — Links kit (docs/design/freelancer-links-kit.md).
+  'social.profile_of':                  "ملف {platform} الخاص بـ {name}",
+  'social.website_of':                  "الموقع الإلكتروني لـ {name}",
+  'links.editor.helper':                "حساباتك العامة — حتى {max} روابط. اسم الرابط هو اسم المنصة.",
+  'links.editor.suggested':             "اقتراحات حسب مهنتك",
+  'links.editor.add_named':             "إضافة رابط {platform}",
+  'links.editor.other':                 "منصة أخرى",
+  'links.editor.url_aria':              "عنوان الرابط {index} ({platform})",
+  'freelance.edit.links_cap_reached':   "{max} روابط كحد أقصى.",
   'freelance.edit.links_title':         "روابط خارجية",
   'freelance.edit.links_helper':        "ملفاتك الشخصية العامة — GitHub وLinkedIn والموقع الإلكتروني. حتى 3 روابط.",
   'freelance.edit.link_label_field':    "اسم الرابط",
@@ -2716,6 +2737,7 @@ export const ar: Record<string, string> = {
   'contact.form.error.email':   "يرجى إدخال عنوان بريد إلكتروني صالح.",
   'contact.form.error.message': "يرجى إدخال رسالتك.",
   'contact.form.error.generic': "حدث خطأ. حاول مرة أخرى.",
+  'contact.form.error.send':    "تعذّر إرسال الرسالة، حاول مرة أخرى.",
 
   // ─── FAQ page (/faq) ─────────────────────────────────────────────────────────
   'faq.headline':          "الأسئلة الشائعة",
@@ -3312,6 +3334,8 @@ export const ar: Record<string, string> = {
   'forceProfil.item_bio':     "النبذة الشخصية مكتملة",
   'forceProfil.item_skills':  "المهارات مدرجة",
   'forceProfil.item_portfolio': "أضف عملين من أعمالك",
+  // REVIEW_AR_TRANSLATION
+  'forceProfil.item_links':   "أضف روابطك",
   'forceProfil.complete_link': "أكمل ملفك الشخصي ←",
 
   'activite.title':            "النشاط الأخير",
@@ -3578,6 +3602,7 @@ export const ar: Record<string, string> = {
   'service.wizard.error.session':       "انتهت جلستك. سجل الدخول مجددا للحفظ.",
   'service.wizard.error.category_unavailable': "هذه الفئة لم تعد متاحة. اختر فئة أخرى.",
   'service.wizard.error.draft_gone':    "هذه المسودة لم تعد موجودة. أعد تحميل الصفحة للبدء من جديد.",
+  'service.wizard.error.cap_reached': "تم بلوغ الحد: لديك بالفعل العدد الأقصى من الخدمات. احذف خدمة لإنشاء خدمة جديدة.",
   // H6 PR-3 — steps 3 « Tarif » / 4 « Prestation » (docs/design/h6-pr3-deltas.md §7).
   // « عن بُعد » reuses
   // serviceDetail.mode.remote and « طريقة تقديم الخدمة » serviceDetail.mode.title.

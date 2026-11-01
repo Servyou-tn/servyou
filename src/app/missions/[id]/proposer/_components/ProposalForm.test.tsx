@@ -121,6 +121,17 @@ describe('ProposalForm — client side', () => {
     expect(h.action).not.toHaveBeenCalled()
   })
 
+  it('a bare address is sent with https:// (the DB wants a scheme, the freelancer does not type one)', async () => {
+    const user = userEvent.setup()
+    h.action.mockResolvedValue(undefined)
+    renderForm()
+    await fillMessage(user)
+    await user.type(screen.getByRole('textbox', { name: 'Adresse du lien 1' }), 'behance.net/aya')
+    await user.click(screen.getByRole('button', { name: SEND }))
+    await waitFor(() => expect(h.action).toHaveBeenCalledTimes(1))
+    expect(h.action.mock.calls[0][0].links).toEqual([{ label: '', url: 'https://behance.net/aya' }])
+  })
+
   it('sends exactly what was typed, the pre-selected skill included', async () => {
     const user = userEvent.setup()
     h.action.mockResolvedValue(undefined)

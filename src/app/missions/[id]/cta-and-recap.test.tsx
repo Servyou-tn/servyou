@@ -113,6 +113,15 @@ describe('H13 SentRecap', () => {
     expect(screen.getByText(/Envoyée le 26 octobre 2026 à 14h32/)).toBeInTheDocument()
   })
 
+  it('each sent link carries its platform glyph (Behance ≠ the globe)', () => {
+    view(sent({ links: [{ url: 'https://www.behance.net/me', label: null }, { url: 'https://a.tn/x', label: null }] }))
+    const behance = screen.getByRole('link', { name: 'behance.net' }).querySelector('svg')
+    const site = screen.getByRole('link', { name: 'a.tn' }).querySelector('svg')
+    expect(behance).not.toBeNull()
+    expect(site).not.toBeNull()
+    expect(behance?.innerHTML).not.toBe(site?.innerHTML)
+  })
+
   it('survives the post being gone (deleted / moderated): the recap still shows what was sent', () => {
     view(sent({ mission: null }))
     expect(screen.getByText(/voici ma proposition détaillée/)).toBeInTheDocument()

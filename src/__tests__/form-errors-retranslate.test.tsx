@@ -93,7 +93,7 @@ describe('H3 profile edit — URL errors re-translate on a language switch', () 
   }
   const ui = (lang: Lang) => (
     <LangProvider lang={lang}>
-      <ProfileEditForm initial={initial} lang={lang} />
+      <ProfileEditForm initial={initial} lang={lang} recommendedPlatforms={[]} />
     </LangProvider>
   )
   const summary = (lang: Lang) => t('freelance.edit.error_urls', lang, { sections: t('freelance.edit.trust_title', lang) })

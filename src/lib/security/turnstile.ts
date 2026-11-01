@@ -4,7 +4,12 @@ import { headers } from 'next/headers'
 // protection). The browser widget (src/components/security/Turnstile.tsx) sends a single-use token with the
 // submit; this verifies it against Cloudflare's siteverify BEFORE the action touches the database.
 //
-//   • TURNSTILE_SECRET_KEY absent (local dev without keys, CI, unit tests) → verification is SKIPPED.
+//   • TURNSTILE_SECRET_KEY absent in a PRODUCTION build (NODE_ENV=production) → FAIL CLOSED: every protected
+//     submit is refused and the misconfiguration is logged loudly (pre-beta review M4 — a lost env var must not
+//     silently switch bot protection off). Only Vercel previews are exempt (VERCEL_ENV 'preview' / 'development':
+//     they build with NODE_ENV=production, and the secret is Production-only by design). Keyed so that a MISSING
+//     VERCEL_ENV fails closed too. A local `next start` needs a secret: Cloudflare's dummy one is in .env.example.
+//   • TURNSTILE_SECRET_KEY absent in `next dev`, CI and unit tests (NODE_ENV development / test) → SKIPPED.
 //   • TURNSTILE_SECRET_KEY set → FAIL CLOSED: a missing / malformed token, a Cloudflare refusal, a network
 //     error or a timeout all refuse the submit. A deployment with the secret but no
 //     NEXT_PUBLIC_TURNSTILE_SITE_KEY therefore refuses every protected submit — set both.
@@ -19,7 +24,9 @@ export const SITEVERIFY_URL = 'https://challenges.cloudflare.com/turnstile/v0/si
 const TOKEN_MAX = 2048 // Cloudflare's documented maximum token length
 const TIMEOUT_MS = 5000
 
-export type TurnstileResult = { ok: true } | { ok: false; reason: 'missing-token' | 'rejected' | 'unavailable' }
+export type TurnstileResult =
+  | { ok: true }
+  | { ok: false; reason: 'missing-token' | 'rejected' | 'unavailable' | 'misconfigured' }
 
 async function clientIp(): Promise<string | null> {
   try {
@@ -31,7 +38,14 @@ async function clientIp(): Promise<string | null> {
 
 export async function verifyTurnstile(token: unknown): Promise<TurnstileResult> {
   const secret = process.env.TURNSTILE_SECRET_KEY
-  if (!secret) return { ok: true }
+  if (!secret) {
+    const previewDeployment = process.env.VERCEL_ENV === 'preview' || process.env.VERCEL_ENV === 'development'
+    if (process.env.NODE_ENV === 'production' && !previewDeployment) {
+      console.error('[turnstile] TURNSTILE_SECRET_KEY is missing in production — refusing (fail closed)')
+      return { ok: false, reason: 'misconfigured' }
+    }
+    return { ok: true }
+  }
 
   if (typeof token !== 'string' || token.length === 0 || token.length > TOKEN_MAX) {
     console.warn('[turnstile] refused: missing or malformed token')

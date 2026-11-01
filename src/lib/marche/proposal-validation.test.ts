@@ -42,6 +42,9 @@ describe('links (≤ 3, http(s) only, de-duplicated)', () => {
   it.each(['javascript:alert(1)', 'data:text/html,x', 'ftp://x.tn', 'example.com', 'https://', '//x.tn'])('refuses %s', (url) => {
     expect(errors({ links: [{ label: '', url }] }).links?.[0]).toBe('proposal.error.link_url')
   })
+  it.each(['https://github.com@evil.io', 'https://user:pass@x.tn/a', 'http://name@x.tn'])('refuses %s (user:password@ opens the host after the @)', (url) => {
+    expect(errors({ links: [{ label: '', url }] }).links?.[0]).toBe('proposal.error.link_url')
+  })
   it('a label with no URL is an error on that row', () => {
     expect(errors({ links: [{ label: 'Mon site', url: '' }] }).links?.[0]).toBe('proposal.error.link_url')
   })

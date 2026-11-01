@@ -14,6 +14,7 @@ import {
   WORKPLACE_LOCATION_MAX,
 } from '@/lib/marche/freelancer-profile-edit'
 import { HTTP_URL } from '@/lib/freelancer/http-url'
+import { hasUserinfo, isLinkUrl } from '@/lib/social/platforms'
 
 // H3 "Modifier mon profil" save — Enregistrer is deliberately UNGATED (same posture as G6's
 // "Enregistrer le brouillon", docs/design/g6-write-path.md §6): no field here has a Zod `.min()`
@@ -24,11 +25,15 @@ import { HTTP_URL } from '@/lib/freelancer/http-url'
 
 const optionalText = (max: number) => z.string().trim().max(max).transform((v) => v || null)
 // Every URL here is http(s)-only (HTTP_URL) — they render as `href` on the public D4 profile.
-const optionalUrl = z.union([z.string().trim().max(500).url(HTTP_URL), z.literal('')]).transform((v) => v || null)
+// …and no user:password@ (hasUserinfo): `https://github.com@evil.io` opens evil.io.
+const optionalUrl = z
+  .union([z.string().trim().max(500).url(HTTP_URL).refine((v) => !hasUserinfo(v)), z.literal('')])
+  .transform((v) => v || null)
 
 const LinkRowInput = z.object({
   label: z.string().trim().min(1).max(100),
-  url: z.string().trim().min(1).max(500).url(HTTP_URL),
+  // isLinkUrl on top of the scheme check: a dotted host and no user:password@ (« https://github.com@evil.io » opens evil.io but reads as GitHub).
+  url: z.string().trim().min(1).max(500).url(HTTP_URL).refine(isLinkUrl),
 })
 
 const PortfolioRowInput = z.object({

@@ -1054,6 +1054,48 @@ both on 2026-10-28.
       (`client-write-grants-static.test.ts`) runs in CI on every PR.
     - The recorded statement carries no comments. The executable SQL is identical.
 
+109. **20261031201742_listing_upload_caps** (`cc2d54fc`) — listing and upload limits (pre-beta review M2 / M3,
+    founder + architect decision 2026-10-31): at most 100 products per shop (`trg_limit_products_per_shop`, hint
+    `products_per_shop_cap`), 20 service listings per freelancer profile, drafts included
+    (`trg_limit_services_per_freelancer`, `services_per_freelancer_cap`), and 100 image uploads per account per
+    rolling 24 h (`trg_limit_daily_uploads` on `uploaded_objects`, `daily_upload_cap`).
+    - Same shape as 105 (BEFORE INSERT, SECURITY DEFINER, empty search_path, per-parent advisory lock, 23514 + hint).
+      The product and service caps bypass the service role (`auth.uid()` null).
+    - Approved deviation: the upload cap has NO service-role bypass. Every `uploaded_objects` row is a service-role
+      write (`recordUploadProvenance`), so it counts by `owner_id` for any writer; only `backfilled` rows and
+      `shop-assets` are exempt. The upload actions refuse before storing anything (`dailyUploadQuota`).
+    - At apply: fullest shop 26 products, fullest freelancer 10 listings, busiest owner-day 33 uploads; nothing
+      existing rejected or rewritten.
+    - The recorded statement carries no top-level comments. The executable SQL is identical.
+110. **20261031211305_freelancer_links_cap** (`43f4cc3b`) — at most 5 `freelancer_links` per freelancer profile
+    (founder decision 2026-11-01; the app cap was 3 with no DB guard). `trg_limit_freelancer_links`, BEFORE INSERT,
+    migration-105 shape (SECURITY DEFINER, empty search_path, per-profile advisory lock, 23514 + hint
+    `freelancer_links_cap`, service role bypassed).
+    - Works with H3's save (delete, then one multi-row insert): a set of 5 passes, a set of 6 is refused whole.
+    - At apply: 0 links in the table (no profile over 5). UPDATE is not capped (owner-scoped, one profile per account).
+    - The app's `LINKS_CAP` (3) is raised to 5 separately (Agent B, with the UI message).
+    - The recorded statement carries no top-level comments. The executable SQL is identical.
+111. **20261031211307_password_change_attempts** (`891e699e`) — `public.password_change_attempts`, the per-account
+    limit on wrong current passwords in Mon compte's password change: at most 5 per 15 minutes (pre-beta review M1,
+    founder + architect decision 2026-11-01).
+    - Service-role only: RLS on with no policy, every client privilege revoked (including the default SELECT new
+      tables get since 107); the client-write allow-list is untouched.
+    - The app (`src/lib/auth/password-attempts.ts`) inserts the attempt first, then counts the window, so concurrent
+      attempts see each other; over the limit its row is removed again. Only a wrong current password keeps its row.
+      Rows older than a day are pruned on each insert (indexed on `attempted_at`).
+    - The recorded statement carries no top-level comments. The executable SQL is identical.
+112. **20261101164444_contact_messages** (`6527a48f`) — `public.contact_messages`: /contact messages are stored
+    instead of dropped (founder + architect decision 2026-11-01; the form answered « Message reçu » but only logged
+    the subject and length).
+    - Columns: name, email, subject (the form's key), message, `user_id` (sender when signed in, set null on account
+      deletion), `status` new / handled. CHECKs mirror the form limits (name 100, email 254, subject 100, message
+      1–2000) — approved defence in depth.
+    - Service-role only: RLS on with no policy, every client privilege revoked (incl. the post-107 default SELECT);
+      the client-write allow-list is untouched. Written by `submitContactMessage` after the Turnstile and length
+      checks; read in the Supabase table view (`docs/operations/contact-messages.md`).
+    - Retention 12 months (manual query documented; scheduled job is a follow-up).
+    - The recorded statement carries no top-level comments. The executable SQL is identical.
+
 ## Rollback paths
 
 Each migration in this folder represents work that has already been applied to production. Rollback is therefore reverse migration work, not file deletion. If a rollback is ever needed, write a new dated migration that reverses the relevant changes — never delete history from this folder.

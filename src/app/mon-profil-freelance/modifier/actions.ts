@@ -9,6 +9,7 @@ import { t, type Lang } from '@/lib/i18n'
 import { resolveOwnedFreelancerProfileId } from '@/lib/freelancer/owner-profile'
 import { normalizePortfolioImage, MAX_INPUT_BYTES, MAX_INPUT_MB } from '@/lib/images/normalize'
 import { recordUploadProvenance } from '@/lib/images/provenance'
+import { dailyUploadQuota, DAILY_UPLOAD_CAP } from '@/lib/images/upload-quota'
 import { isCallerActive, uploadBucket } from '@/lib/images/upload-guard'
 import {
   validateForPublish,
@@ -16,15 +17,16 @@ import {
   URL_FIELD_SECTION_KEYS,
   type UrlField,
   PORTFOLIO_CAP,
+  LINKS_CAP,
 } from '@/lib/marche/freelancer-profile-edit'
 import { SaveProfileInput } from './schema'
-import { applyProfileSave, PORTFOLIO_CAP_REACHED } from './apply-save'
+import { applyProfileSave, PORTFOLIO_CAP_REACHED, LINKS_CAP_REACHED } from './apply-save'
 
-/** A failed applyProfileSave as the freelancer reads it: the portfolio cap by name, anything else generic. */
+/** A failed applyProfileSave as the freelancer reads it: the portfolio / links cap by name, anything else generic. */
 function saveErrorMessage(error: string, lang: Lang): string {
-  return error === PORTFOLIO_CAP_REACHED
-    ? t('freelance.edit.portfolio_cap_reached', lang, { max: PORTFOLIO_CAP })
-    : t('common.error_generic', lang)
+  if (error === PORTFOLIO_CAP_REACHED) return t('freelance.edit.portfolio_cap_reached', lang, { max: PORTFOLIO_CAP })
+  if (error === LINKS_CAP_REACHED) return t('freelance.edit.links_cap_reached', lang, { max: LINKS_CAP })
+  return t('common.error_generic', lang)
 }
 
 // Publish model — option A (founder ruling, H3 discovery pass).
@@ -214,6 +216,16 @@ export async function uploadPortfolioImageAction(formData: FormData): Promise<Up
     return { ok: false, error: t('common.error_generic', lang) }
   }
 
+  // The daily upload cap (DAILY_UPLOAD_CAP per rolling 24 h, enforced in the database by trg_limit_daily_uploads):
+  // refused before the decode, so nothing is stored. A failed count refuses too (generic error, never an
+  // unchecked upload).
+  const quota = await dailyUploadQuota(user.id)
+  if (!quota.ok) return { ok: false, error: t('common.error_generic', lang) }
+  if (quota.reached) {
+    console.warn(`[uploadPortfolioImage] refused: daily upload cap reached for user ${user.id}`)
+    return { ok: false, error: t('upload.error.daily_cap', lang, { max: DAILY_UPLOAD_CAP }) }
+  }
+
   const normalized = await normalizePortfolioImage(Buffer.from(await parsed.data.arrayBuffer()))
   if (!normalized.ok) {
     console.error(
@@ -245,6 +257,7 @@ export async function uploadPortfolioImageAction(formData: FormData): Promise<Up
   const provenance = await recordUploadProvenance('portfolio-media', path, user.id)
   if (!provenance.ok) {
     console.error(`[uploadPortfolioImage] provenance insert failed for ${path}, user ${user.id} — object left for reconciliation`)
+    if (provenance.capReached) return { ok: false, error: t('upload.error.daily_cap', lang, { max: DAILY_UPLOAD_CAP }) }
     return { ok: false, error: t('common.error_generic', lang) }
   }
 

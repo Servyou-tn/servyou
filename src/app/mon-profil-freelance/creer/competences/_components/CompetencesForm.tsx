@@ -6,7 +6,8 @@ import { useRouter } from 'next/navigation'
 import { ChevronRight } from 'lucide-react'
 import { useLang } from '@/components/LangProvider'
 import { t } from '@/lib/i18n'
-import { Input } from '@/components/ui/input'
+import { PlatformLinkInput } from '@/components/social/PlatformLinkInput'
+import { hasUserinfo, normalizeUrl } from '@/lib/social/platforms'
 import { Button } from '@/components/ui/button'
 import { TagInput } from '@/components/ui/tag-input'
 import { FOCUS_RING } from '@/components/layout/styles'
@@ -74,8 +75,13 @@ export function CompetencesForm({ initial }: { initial: CompetencesInitial }) {
     if (languageRows.filter((r) => r.language && r.proficiency).length === 0) {
       next.languages = t('freelance.create.step2.error.languages_min', lang)
     }
-    if (portfolioLink.trim() && !/^https?:\/\//i.test(portfolioLink.trim())) {
+    // « behance.net/aya » is fine: the address is stored with https:// (normalizeUrl), THEN measured (500 max); anything still not http(s), or carrying
+    // user:password@, is refused.
+    const link = normalizeUrl(portfolioLink)
+    if (link && (!/^https?:\/\//i.test(link) || hasUserinfo(link))) {
       next.portfolioLink = t('freelance.create.step2.error.portfolio_url', lang)
+    } else if (link.length > 500) {
+      next.portfolioLink = t('freelance.create.step2.error.portfolio_url_long', lang)
     }
     return next
   }
@@ -97,7 +103,7 @@ export function CompetencesForm({ initial }: { initial: CompetencesInitial }) {
         .filter((r) => r.language && r.proficiency)
         .map((r) => ({ language: r.language, proficiency: r.proficiency })),
       yearsExperience,
-      portfolioLink: portfolioLink.trim(),
+      portfolioLink: normalizeUrl(portfolioLink),
     })
     if (!res.ok) {
       setPending(false)
@@ -177,7 +183,7 @@ export function CompetencesForm({ initial }: { initial: CompetencesInitial }) {
           <p className="text-sm text-text-muted">{t('freelance.create.step2.years_helper', lang)}</p>
         </div>
 
-        <Input
+        <PlatformLinkInput
           id="freelancer-portfolio-link"
           label={t('freelance.create.step2.portfolio_label', lang)}
           placeholder={t('freelance.create.step2.portfolio_ph', lang)}
@@ -185,11 +191,8 @@ export function CompetencesForm({ initial }: { initial: CompetencesInitial }) {
           error={errors.portfolioLink}
           value={portfolioLink}
           onChange={(e) => setPortfolioLink(e.target.value)}
-          // A URL is inherently LTR content — undpinned inside an RTL page, "https://" bidi-
-          // reverses to "//:https" (confirmed via AR screenshot, same class of issue as the
-          // "3/15" counter's reference_rtl_numeric_run_reversal). dir is a plain HTML attribute
-          // Input forwards via ...props, so this is a route-local pin, not a shared-primitive edit.
-          dir="ltr"
+          // The field pins dir="ltr" itself (a web address is LTR: undpinned in an RTL page "https://" reverses to "//:https") and
+          // shows the platform glyph of what is typed.
         />
       </div>
 

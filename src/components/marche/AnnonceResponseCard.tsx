@@ -11,6 +11,8 @@ import { BASE as BUTTON_BASE, SIZE as BUTTON_SIZE, VARIANT_BASE, VARIANT_STATE }
 import { WhatsAppContactButton } from '@/components/orders/WhatsAppContactButton'
 import { getInitials } from '@/components/ui/initials'
 import { SkillChip } from '@/components/missions/MissionChips'
+import { PlatformIcon } from '@/components/social/PlatformIcon'
+import { detectPlatform } from '@/lib/social/platforms'
 import { tndAmount } from '@/components/listings/listing-utils'
 import { relativeTimeLabel } from '@/lib/relative-time'
 import type { AnnonceResponse } from '@/lib/marche/annonce-detail'
@@ -164,8 +166,9 @@ function ProposalExtras({ response, lang }: { response: AnnonceResponse; lang: L
           <ul className="flex flex-col gap-1">
             {links.map((l) => (
               <li key={l.url} className="text-body-sm wrap-anywhere">
-                <a href={l.url} target="_blank" rel="noopener noreferrer nofollow" className="text-brand-blue-600 hover:underline">
-                  {l.label ? `${l.label} — ${hostOf(l.url)}` : hostOf(l.url)}
+                <a href={l.url} target="_blank" rel="noopener noreferrer nofollow" className="inline-flex items-start gap-1.5 text-brand-blue-600 hover:underline">
+                  <PlatformIcon platform={detectPlatform(l.url) ?? 'website'} className="mt-0.5 size-4 shrink-0" />
+                  <span>{l.label ? `${l.label} — ${hostOf(l.url)}` : hostOf(l.url)}</span>
                 </a>
               </li>
             ))}

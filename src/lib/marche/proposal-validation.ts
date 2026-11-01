@@ -1,4 +1,5 @@
 import { isHttpUrl } from '@/lib/freelancer/http-url'
+import { hasUserinfo } from '@/lib/social/platforms'
 import {
   PROPOSAL_LINKS_MAX,
   PROPOSAL_LINK_LABEL_MAX,
@@ -79,7 +80,8 @@ export function validateProposal(input: Pick<ProposalInput, 'message' | 'links' 
     usedRows += 1
     let err: string | undefined
     // The DB trigger requires ^https?://[^[:space:]]+$ — a URL with any whitespace inside is refused there, so refuse it here.
-    if (url === '' || !isHttpUrl(url) || /\s/.test(url)) err = 'proposal.error.link_url'
+    // user:password@ is refused like any non-address: `https://github.com@evil.io` opens evil.io (links kit, founder Oct 31).
+    if (url === '' || !isHttpUrl(url) || /\s/.test(url) || hasUserinfo(url)) err = 'proposal.error.link_url'
     else if (len(url) > PROPOSAL_LINK_URL_MAX) err = 'proposal.error.link_url_long'
     else if (len(label) > PROPOSAL_LINK_LABEL_MAX) err = 'proposal.error.link_label_long'
     else if (seen.has(url.toLowerCase())) err = 'proposal.error.link_duplicate'
