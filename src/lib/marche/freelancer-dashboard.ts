@@ -13,6 +13,8 @@ export type FreelancerChecklist = {
   avatar: boolean
   bio: boolean
   skills: boolean
+  /** At least one saved link (freelancer_links) — « Ajoutez vos liens » (links kit, founder-approved). */
+  links: boolean
   /** Always false — Ruling 2. Goes live with H3's freelancer_portfolio_items; do not flip this
    *  true off `portfolio_link`, that column is not the same thing as a portfolio item. */
   portfolio: boolean
@@ -165,11 +167,13 @@ export function checklistFrom(input: {
   avatarUrl: string | null
   bioNonEmpty: boolean
   skillsCount: number
+  linksCount: number
 }): FreelancerChecklist {
   return {
     avatar: input.avatarUrl != null,
     bio: input.bioNonEmpty,
     skills: input.skillsCount > 0,
+    links: input.linksCount > 0,
     portfolio: false,
   }
 }
@@ -307,6 +311,7 @@ export const getFreelancerDashboard = cache(
     let servicesActifs = 0
     let bioNonEmpty = false
     let skillsCount = 0
+    let linksCount = 0
     let missions: MissionMatch[] = []
 
     if (freelancerProfileId) {
@@ -345,6 +350,16 @@ export const getFreelancerDashboard = cache(
       }
       const skills = (skillRows ?? []).map((r) => r.skill).filter(Boolean)
       skillsCount = skills.length
+
+      const { count: linksRows, error: linksError } = await supabase
+        .from('freelancer_links')
+        .select('id', { count: 'exact', head: true })
+        .eq('freelancer_profile_id', freelancerProfileId)
+      if (linksError) {
+        console.error('[freelancer-dashboard] links count error:', linksError.message, linksError.code, linksError.details)
+        throw new Error(`links count failed: ${linksError.message}`)
+      }
+      linksCount = linksRows ?? 0
 
       if (skills.length > 0) {
         // Two round trips: skill -> matching post ids, then the posts themselves. Both `skill`
@@ -396,7 +411,7 @@ export const getFreelancerDashboard = cache(
       servicesActifs,
       engagementsActifs,
       demandesEnAttente,
-      checklist: checklistFrom({ avatarUrl, bioNonEmpty, skillsCount }),
+      checklist: checklistFrom({ avatarUrl, bioNonEmpty, skillsCount, linksCount }),
       ecosystem: {
         consumers: consumersCount ?? 0,
         shops: shopsCount ?? 0,

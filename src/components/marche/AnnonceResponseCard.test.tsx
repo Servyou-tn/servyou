@@ -69,6 +69,16 @@ describe('AnnonceResponseCard — the proposal terms (missions PR-4)', () => {
     expect(screen.getByRole('link', { name: 'a.tn' })).toBeInTheDocument()
   })
 
+  it('each proposal link carries its platform glyph (Behance ≠ the globe), decorative', () => {
+    view({ links: [{ url: 'https://www.behance.net/me', label: null }, { url: 'https://a.tn/x', label: null }] })
+    const behance = screen.getByRole('link', { name: 'behance.net' }).querySelector('svg')
+    const site = screen.getByRole('link', { name: 'a.tn' }).querySelector('svg')
+    expect(behance).not.toBeNull()
+    expect(site).not.toBeNull()
+    expect(behance?.getAttribute('aria-hidden')).toBe('true')
+    expect(behance?.innerHTML).not.toBe(site?.innerHTML)
+  })
+
   it('a zero price is a real figure, not « none »', () => {
     view({ proposedPrice: 0 })
     expect(screen.getByText('0 TND')).toBeInTheDocument()
