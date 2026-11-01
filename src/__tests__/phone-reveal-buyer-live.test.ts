@@ -3,7 +3,7 @@
  *   * buyer → seller: hidden while pending; visible from « accepted » on; kept after a cancellation that followed an
  *     acceptance; hidden after a cancellation while pending (and for a pre-events cancelled order, no history);
  *   * mission owner → a freelancer who sent a proposal: visible, also once the post is closed / expired; hidden once
- *     it is deleted (decision 2026-11-01, PENDING_phone_reveal_deleted_post.sql);
+ *     it is deleted (decision 2026-11-01, 20261101201344_phone_reveal_deleted_post.sql, #115);
  *   * own phone: visible; anonymous caller: NULL.
  * Fixtures: phone-reveal-fixtures.ts (`ph-buy-`). 1 fixture sign-in.
  *

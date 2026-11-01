@@ -1112,6 +1112,14 @@ both on 2026-10-28.
     public.get_contact_phone(uuid) from public` (architect's hygiene note on #113): the function predated migration
     68's global PUBLIC revoke. EXECUTE stays with postgres, anon, authenticated and service_role (verified).
     - The recorded statement carries no top-level comments. The executable SQL is identical.
+115. **20261101201344_phone_reveal_deleted_post** (`f6d4355d`) — `get_contact_phone`: a DELETED mission post no longer
+    reveals its responders' numbers (architect + founder decision on #113's open question); a post that is only
+    closed ('filled') or 'expired' still does. The mission branch gains `and jp.status <> 'deleted'`; nothing else
+    changes, and the EXECUTE grants are kept (same signature).
+    - `COMMENT ON FUNCTION` records both rulings: the order rule is per PAIR of accounts (any order between them past
+      « pending » reveals both numbers), and the deleted-post rule.
+    - Live: `phone-reveal-buyer-live.test.ts` gains filled / expired (visible) and deleted (NULL).
+    - The recorded statement is this whole file, comments included.
 
 ## Rollback paths
 
