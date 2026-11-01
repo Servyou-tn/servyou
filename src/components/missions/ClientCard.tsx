@@ -7,8 +7,8 @@ import { localizeCity } from '@/lib/marche/missions'
 // radius xl, pad 20, gap 12. « Publié par », a 40 px avatar (initial on blue/100), first name Semi Bold 16,
 // then icon-user + « Ville · Consommateur » Medium 14 muted.
 //
-// Name and city only — public_profiles never carries a phone/email, and contact opens through
-// get_contact_phone once a proposal exists (PR-2/3). Shared by H10 and the H12 recap.
+// Name and city only — public_profiles never carries a phone/email. Phone reveal rule (2026-11-01): a freelancer NEVER gets the client's number through a
+// proposal (the client contacts them if they retain it), so there is no contact control here or in the recap. Shared by H10 and the H12 recap.
 export function ClientCard({
   firstName,
   city,
