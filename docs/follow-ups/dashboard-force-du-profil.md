@@ -22,3 +22,13 @@ Founder brief item 4: every link on `/tableau-de-bord` (freelancer) and `/tablea
 **Where it lives** `src/app/tableau-de-bord/_components/ActiviteRecente.tsx` (`link={{ href: null, … }}`), `Panel.tsx` (inert branch).
 
 **Trigger** The founder decides what « Voir tout » should open.
+
+## H3's « Portfolio » pill says « Complet » at 1 item, the dashboard asks for 2
+
+**What** « Ajoutez 2 réalisations » on the dashboard is done at ≥ 2 portfolio items, but H3's « Portfolio » accordion shows « Complet » as soon as there is 1 (`complete={portfolioRows.length > 0}`, like every H3 section). A freelancer with one item follows the dashboard's to-do link to a section that reads « Complet ».
+
+**Why deferred** The H3 pill is a measured, founder-ruled element (« Vide » / « Complet », no per-section thresholds); changing it is a design decision.
+
+**Where it lives** `src/app/mon-profil-freelance/modifier/_components/ProfileEditForm.tsx` (Portfolio `AccordionSection`), `src/lib/marche/freelancer-dashboard.ts` (`PORTFOLIO_ITEMS_GOAL`).
+
+**Trigger** The founder decides whether the goal is 1 or 2, or whether H3 should show « 1 / 2 ».

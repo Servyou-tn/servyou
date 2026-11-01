@@ -92,10 +92,12 @@ export function ForceDuProfil({ checklist, lang }: { checklist: FreelancerCheckl
                 ) : (
                   <Link
                     href={profileSectionHref(item.section)}
-                    className={`group/item -my-1 flex min-w-0 flex-1 items-center justify-between gap-2 rounded py-1 text-body-sm text-text-muted transition-colors hover:text-brand-blue-600 ${FOCUS_RING}`}
+                    className={`group/item relative flex min-w-0 flex-1 items-center justify-between gap-2 rounded text-body-sm text-text-muted transition-colors hover:text-brand-blue-600 ${FOCUS_RING}`}
                   >
                     <span className="group-hover/item:underline">{t(item.labelKey, lang)}</span>
                     <ChevronRight className="size-4 shrink-0 rtl:rotate-180" aria-hidden="true" />
+                    {/* Touch target: the row stays as drawn (24 px); the hit area reaches 44 (touch-target rule). */}
+                    <span aria-hidden="true" className="absolute inset-x-0 -inset-y-3" />
                   </Link>
                 )}
               </li>
@@ -104,8 +106,9 @@ export function ForceDuProfil({ checklist, lang }: { checklist: FreelancerCheckl
         </ul>
         {/* Footer link, added Pass 3 — 167:12377's read (h4-discovery.md §2) stopped at the checklist, so this was never Figma-measured, only ruled by
             the founder off the frame's visible copy. It was an inert span while H3 had no route; H3 (/mon-profil-freelance/modifier) exists now. */}
-        <Link href={EDIT_PROFILE_PATH} className={`rounded text-body-sm font-semibold text-text-muted transition-colors hover:text-brand-blue-600 hover:underline ${FOCUS_RING}`}>
+        <Link href={EDIT_PROFILE_PATH} className={`relative rounded text-body-sm font-semibold text-text-muted transition-colors hover:text-brand-blue-600 hover:underline ${FOCUS_RING}`}>
           {t('forceProfil.complete_link', lang)}
+          <span aria-hidden="true" className="absolute -inset-x-2 -inset-y-3" />
         </Link>
       </div>
     </Panel>
