@@ -1,4 +1,3 @@
-import type { SupabaseClient } from '@supabase/supabase-js'
 import { createAdminClient } from '@/lib/supabase/admin'
 
 // Stores a /contact message in public.contact_messages — service role only (RLS on, no policy, no client privilege;
@@ -13,9 +12,7 @@ export type ContactMessageRow = {
 }
 
 export async function saveContactMessage(row: ContactMessageRow): Promise<{ ok: boolean }> {
-  // The table is newer than the generated types until they are regenerated after its migration is applied.
-  const admin = createAdminClient() as unknown as SupabaseClient
-  const { error } = await admin.from('contact_messages').insert({
+  const { error } = await createAdminClient().from('contact_messages').insert({
     name: row.name,
     email: row.email,
     subject: row.subject,

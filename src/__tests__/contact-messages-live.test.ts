@@ -1,11 +1,9 @@
 /**
- * Live proof for db/migrations/PENDING_contact_messages.sql and src/lib/contact/save-message.ts — /contact messages
+ * Live proof for db/migrations/20261101164444_contact_messages.sql (#112) and src/lib/contact/save-message.ts — /contact messages
  * are stored, server-side only:
  *   * the real saveContactMessage (service role) stores a message;
  *   * the CHECKs refuse an over-long message and an unknown status, whoever writes;
  *   * anon and a signed-in user can neither read nor write the table (42501).
- *
- * ⚠ Red until that migration is applied: before it, the table does not exist.
  *
  * Fixtures: one user (`ct-msg-`, password random per run) and messages tagged with a per-run marker in `name`,
  * deleted by the service role in afterAll (cleanup checked). 1 fixture sign-in.
