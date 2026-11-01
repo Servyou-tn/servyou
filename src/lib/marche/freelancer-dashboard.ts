@@ -1,6 +1,7 @@
 import { cache } from 'react'
 import { createClient } from '@/lib/supabase/server'
 import { reportQueryError } from '@/lib/supabase/query-error'
+import { isPortfolioComplete } from '@/lib/freelancer/profile-sections'
 
 // H4 « Tableau de bord freelance » data layer (Figma 166:12086). Every field below traces to
 // docs/design/h4-discovery.md — read that file before changing a mapping here, it carries the
@@ -162,9 +163,6 @@ export function activePurchaseCount(orders: readonly { status: string }[]): numb
   return orders.filter((o) => !TERMINAL_ORDER_STATUSES.includes(o.status)).length
 }
 
-/** The number of portfolio items « Ajoutez 2 réalisations » asks for. */
-export const PORTFOLIO_ITEMS_GOAL = 2
-
 /** Force du profil checklist. */
 export function checklistFrom(input: {
   avatarUrl: string | null
@@ -178,7 +176,7 @@ export function checklistFrom(input: {
     bio: input.bioNonEmpty,
     skills: input.skillsCount > 0,
     links: input.linksCount > 0,
-    portfolio: input.portfolioCount >= PORTFOLIO_ITEMS_GOAL,
+    portfolio: isPortfolioComplete(input.portfolioCount),
   }
 }
 

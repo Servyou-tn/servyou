@@ -13,3 +13,8 @@ export function parseProfileSection(raw: string | string[] | undefined | null): 
   const value = Array.isArray(raw) ? raw[0] : raw
   return (PROFILE_SECTIONS as readonly string[]).includes(value ?? '') ? (value as ProfileSection) : null
 }
+
+/** The number of portfolio items « Ajoutez 2 réalisations » asks for — the dashboard checklist and H3's « Portfolio » pill read this ONE constant. */
+export const PORTFOLIO_ITEMS_GOAL = 2
+
+export const isPortfolioComplete = (itemCount: number): boolean => itemCount >= PORTFOLIO_ITEMS_GOAL

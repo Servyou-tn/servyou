@@ -165,3 +165,41 @@ describe('H3 profile edit — the dashboard link opens the section it names', ()
   })
 })
 
+describe('H3 profile edit — « Portfolio » pill follows the dashboard goal', () => {
+  const item = (n: number) => ({ id: `p${n}`, imageUrl: null, title: `Projet ${n}`, url: null, description: null })
+  const base = {
+    freelancerProfileId: 'fp-1',
+    headline: '',
+    bio: '',
+    yearsExperience: 0,
+    workingHours: '',
+    workplaceLocation: '',
+    portfolioLink: '',
+    isPublished: false,
+    skills: [],
+    languages: [],
+    tools: [],
+    links: [],
+    education: [],
+    certifications: [],
+    identity: { fullName: 'Test Freelance', city: 'Tunis', avatarUrl: null },
+  }
+  const pill = (count: number) => {
+    const initial = { ...base, portfolioItems: Array.from({ length: count }, (_, i) => item(i + 1)) } as unknown as FreelancerProfileEditData
+    render(
+      <LangProvider lang="fr">
+        <ProfileEditForm initial={initial} lang="fr" recommendedPlatforms={[]} openSection={null} />
+      </LangProvider>,
+    )
+    return (document.getElementById('realisations') as HTMLDetailsElement).querySelector('summary')!.textContent
+  }
+
+  it('one réalisation: not « Complet » yet (the dashboard still asks for 2)', () => {
+    expect(pill(1)).toContain('Vide')
+  })
+
+  it('two réalisations: « Complet », like the dashboard checklist', () => {
+    expect(pill(2)).toContain('Complet')
+  })
+})
+

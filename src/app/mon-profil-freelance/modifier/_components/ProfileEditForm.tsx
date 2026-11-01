@@ -29,7 +29,7 @@ import { EducationRepeater, type EducationRow } from './EducationRepeater'
 import { CertificationRepeater, type CertificationRow } from './CertificationRepeater'
 import { StickyFooter } from './StickyFooter'
 import { ScrollToSection } from './ScrollToSection'
-import type { ProfileSection } from '@/lib/freelancer/profile-sections'
+import { isPortfolioComplete, type ProfileSection } from '@/lib/freelancer/profile-sections'
 import { ValidationBanner, FieldError } from './ValidationBanner'
 
 // H3 "Modifier mon profil" — 404:11909, 7 accordions + identity panel + sticky footer. Everything
@@ -375,7 +375,7 @@ export function ProfileEditForm({
           </div>
         </AccordionSection>
 
-        <AccordionSection id="realisations" forceOpen={openSection === 'realisations'} title={t('freelance.edit.portfolio_title', lang)} complete={portfolioRows.length > 0}>
+        <AccordionSection id="realisations" forceOpen={openSection === 'realisations'} title={t('freelance.edit.portfolio_title', lang)} complete={isPortfolioComplete(portfolioRows.length)}>
           <PortfolioRepeater rows={portfolioRows} onChange={setPortfolioT} lang={lang} errors={urlErrorsFor(urlInvalid.portfolio)} />
           <div className="border-t border-border-subtle pt-4">
             <Input

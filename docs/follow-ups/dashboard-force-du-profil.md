@@ -21,12 +21,10 @@ Founder brief item 4: every link on `/tableau-de-bord` (freelancer) and `/tablea
 
 **Trigger** A page that lists the merged feed exists (or the founder points it at an existing page). Then restore the `link` prop and re-add `activite.view_all` (FR « Voir tout → », AR « عرض الكل ← ») in fr.ts and ar.ts.
 
-## H3's « Portfolio » pill says « Complet » at 1 item, the dashboard asks for 2
+## H3 « Portfolio » pill now follows the dashboard goal (resolved)
 
-**What** « Ajoutez 2 réalisations » on the dashboard is done at ≥ 2 portfolio items, but H3's « Portfolio » accordion shows « Complet » as soon as there is 1 (`complete={portfolioRows.length > 0}`, like every H3 section). A freelancer with one item follows the dashboard's to-do link to a section that reads « Complet ».
+**What** Architect ruling 2026-11-01: the H3 « Portfolio » pill reads « Complet » at ≥ 2 réalisations, like « Ajoutez 2 réalisations » on the dashboard. Both read ONE constant, `PORTFOLIO_ITEMS_GOAL` / `isPortfolioComplete` in `src/lib/freelancer/profile-sections.ts` (unit-tested, plus a render test of the pill at 1 and 2 items).
 
-**Why deferred** The H3 pill is a measured, founder-ruled element (« Vide » / « Complet », no per-section thresholds); changing it is a design decision.
+**Side effect to know** With exactly 1 item the pill reads « Vide » (H3 has only « Vide » / « Complet », no « 1 / 2 » state — measured 408:14559), although the section has content. The dashboard link to that section is therefore consistent, but the word « Vide » at 1 item is slightly off.
 
-**Where it lives** `src/app/mon-profil-freelance/modifier/_components/ProfileEditForm.tsx` (Portfolio `AccordionSection`), `src/lib/marche/freelancer-dashboard.ts` (`PORTFOLIO_ITEMS_GOAL`).
-
-**Trigger** The founder decides whether the goal is 1 or 2, or whether H3 should show « 1 / 2 ».
+**Trigger** The founder wants a third state (e.g. « 1 / 2 ») — a design addition.
