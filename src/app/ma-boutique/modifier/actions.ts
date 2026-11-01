@@ -9,6 +9,7 @@ import { getLang } from '@/lib/i18n/server'
 import { t } from '@/lib/i18n'
 import { GOVERNORATES } from '@/lib/tunisia-governorates'
 import { resolveOwnedShopId } from '@/lib/shops/owner-shop'
+import { ShopSocialLinksSchema, SHOP_SOCIAL_COLUMNS, SHOP_SOCIAL_PLATFORMS, type ShopSocialPlatform } from '@/lib/shops/social-links'
 import {
   normalizeShopLogo,
   normalizeShopBanner,
@@ -38,15 +39,27 @@ const NAME_MAX = 100
 const DESC_MIN = 50
 const DESC_MAX = 2000
 
+type SocialColumn = (typeof SHOP_SOCIAL_COLUMNS)[ShopSocialPlatform]
+
 export type UpdateShopResult =
   | { ok: true }
-  | { ok: false; error: string; field?: 'name' | 'city' | 'description' }
+  | { ok: false; error: string; field?: 'name' | 'city' | 'description' | SocialColumn }
 
-const UpdateShopInput = z.object({
-  name: z.string().trim().min(1).max(NAME_MAX),
-  city: z.string().trim().min(1),
-  description: z.string().trim().min(DESC_MIN).max(DESC_MAX),
-})
+// The three social links (migration 116) are OPTIONAL keys: absent = leave the stored value alone, '' = clear it. Each is
+// validated by the shared module (lib/shops/social-links.ts) — the same rule as the database CHECKs, so a value the form
+// accepts is never refused by the database, and a refused one names its field.
+const UpdateShopInput = z
+  .object({
+    name: z.string().trim().min(1).max(NAME_MAX),
+    city: z.string().trim().min(1),
+    description: z.string().trim().min(DESC_MIN).max(DESC_MAX),
+  })
+  .extend(ShopSocialLinksSchema.partial().shape)
+
+const SOCIAL_COLUMN_PLATFORM = Object.fromEntries(SHOP_SOCIAL_PLATFORMS.map((p) => [SHOP_SOCIAL_COLUMNS[p], p])) as Record<
+  SocialColumn,
+  ShopSocialPlatform
+>
 
 export async function updateShopAction(input: unknown): Promise<UpdateShopResult> {
   const lang = await getLang()
@@ -62,9 +75,19 @@ export async function updateShopAction(input: unknown): Promise<UpdateShopResult
     if (field === 'description') {
       return { ok: false, error: t('shop.create.error.desc_min', lang, { min: DESC_MIN }), field: 'description' }
     }
+    if (typeof field === 'string' && Object.hasOwn(SOCIAL_COLUMN_PLATFORM, field)) {
+      const column = field as SocialColumn
+      return { ok: false, error: t(`shop.edit.social.invalid_${SOCIAL_COLUMN_PLATFORM[column]}`, lang), field: column }
+    }
     return { ok: false, error: t('common.error_generic', lang) }
   }
   const { name, city, description } = parsed.data
+  // Only the social keys the form sent (null = cleared); an absent key is not written.
+  const social = Object.fromEntries(
+    SHOP_SOCIAL_PLATFORMS.map((p) => SHOP_SOCIAL_COLUMNS[p]).flatMap((column) =>
+      parsed.data[column] === undefined ? [] : [[column, parsed.data[column]]],
+    ),
+  ) as Partial<Record<SocialColumn, string | null>>
 
   const supabase = await createClient()
   const {
@@ -107,13 +130,21 @@ export async function updateShopAction(input: unknown): Promise<UpdateShopResult
     return { ok: false, error: t('shop.create.error.name_taken', lang), field: 'name' }
   }
 
-  const { error: updErr } = await supabase.from('shops').update({ name, city, description }).eq('id', shopId)
+  const { error: updErr } = await supabase.from('shops').update({ name, city, description, ...social }).eq('id', shopId)
   if (updErr) {
     console.error('[updateShop] update failed:', updErr.message, updErr.code, updErr.details)
     // 23505 — the lower(name) index caught a race the pre-check missed (two concurrent saves to
     // the same new name). Never possible against the shop's own unchanged name: see the .neq above.
     if (updErr.code === '23505') {
       return { ok: false, error: t('shop.create.error.name_taken', lang), field: 'name' }
+    }
+    // 23514 — a shops_<platform>_url_valid CHECK refused a link. Cannot happen for a value the schema above accepted (same
+    // rule, drift-tested); kept so a future drift reads as « invalid link », not a generic failure.
+    if (updErr.code === '23514') {
+      const platform = SHOP_SOCIAL_PLATFORMS.find((p) => updErr.message.includes(`shops_${p}_url_valid`))
+      if (platform) {
+        return { ok: false, error: t(`shop.edit.social.invalid_${platform}`, lang), field: SHOP_SOCIAL_COLUMNS[platform] }
+      }
     }
     return { ok: false, error: t('common.error_generic', lang) }
   }

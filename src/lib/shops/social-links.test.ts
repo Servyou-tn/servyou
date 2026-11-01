@@ -8,6 +8,7 @@ import {
   SHOP_SOCIAL_URL_PATTERNS,
   ShopSocialLinksSchema,
   shopSocialUrlSchema,
+  toShopSocialLinks,
   type ShopSocialPlatform,
 } from './social-links'
 
@@ -166,5 +167,25 @@ describe('the migration and this module do not drift', () => {
     expect(sql).toContain(`constraint shops_${column}_valid`)
     expect(sql).toContain(`char_length(${column}) <= 300`)
     expect(sql).toContain(`${column} ~* '${SHOP_SOCIAL_URL_PATTERNS[platform]}'`)
+  })
+})
+
+describe('toShopSocialLinks — what a public page shows', () => {
+  it('fixed order Facebook · Instagram · TikTok, only the columns that are set', () => {
+    expect(
+      toShopSocialLinks({ tiktok_url: 'https://www.tiktok.com/@amira', facebook_url: 'https://facebook.com/amira', instagram_url: null }),
+    ).toEqual([
+      { platform: 'facebook', url: 'https://facebook.com/amira' },
+      { platform: 'tiktok', url: 'https://www.tiktok.com/@amira' },
+    ])
+  })
+
+  it('nothing set (or the columns not selected): an empty list', () => {
+    expect(toShopSocialLinks({ facebook_url: null, instagram_url: '', tiktok_url: undefined })).toEqual([])
+    expect(toShopSocialLinks({})).toEqual([])
+  })
+
+  it('never renders an address the database rule would refuse', () => {
+    expect(toShopSocialLinks({ facebook_url: 'https://facebook.com@evil.io', instagram_url: 'javascript:alert(1)', tiktok_url: 'https://instagram.com/x' })).toEqual([])
   })
 })

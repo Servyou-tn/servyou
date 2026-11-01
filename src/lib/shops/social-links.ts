@@ -87,3 +87,22 @@ export const ShopSocialLinksSchema = z.object({
 })
 
 export type ShopSocialLinks = z.output<typeof ShopSocialLinksSchema>
+
+/** One link a public page shows: the platform (its icon) and the stored address. */
+export type ShopSocialLink = { platform: ShopSocialPlatform; url: string }
+
+/**
+ * The links a public page shows, from a `shops` row's three columns, in the fixed order Facebook · Instagram · TikTok.
+ * A null or empty column is skipped; so is a value the database rule would refuse (it cannot be stored today — the
+ * CHECKs — but a reader never renders an address it did not validate).
+ */
+export function toShopSocialLinks(row: {
+  facebook_url?: string | null
+  instagram_url?: string | null
+  tiktok_url?: string | null
+}): ShopSocialLink[] {
+  return SHOP_SOCIAL_PLATFORMS.flatMap((platform) => {
+    const url = row[SHOP_SOCIAL_COLUMNS[platform]]
+    return url && isShopSocialUrl(platform, url) ? [{ platform, url }] : []
+  })
+}
