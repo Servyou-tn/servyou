@@ -36,9 +36,27 @@ const REGEX: Record<ShopSocialPlatform, RegExp> = {
   tiktok: new RegExp(SHOP_SOCIAL_URL_PATTERNS.tiktok, 'i'),
 }
 
+/**
+ * False for what a Postgres text value cannot hold at all — NUL, or a lone UTF-16 surrogate — which the patterns'
+ * `\x01` lower bound lets through: the database would refuse it with an encoding error, not the CHECK's 23514.
+ * A loop, not String#isWellFormed, which older mobile browsers lack.
+ */
+function isStorableText(value: string): boolean {
+  for (let i = 0; i < value.length; i++) {
+    const code = value.charCodeAt(i)
+    if (code === 0 || (code >= 0xdc00 && code <= 0xdfff)) return false
+    if (code >= 0xd800 && code <= 0xdbff) {
+      const next = value.charCodeAt(i + 1)
+      if (!(next >= 0xdc00 && next <= 0xdfff)) return false
+      i++
+    }
+  }
+  return true
+}
+
 /** True when the database would accept this exact value in the platform's column. No trimming, no normalising. */
 export function isShopSocialUrl(platform: ShopSocialPlatform, value: string): boolean {
-  return [...value].length <= SHOP_SOCIAL_URL_MAX && REGEX[platform].test(value)
+  return isStorableText(value) && [...value].length <= SHOP_SOCIAL_URL_MAX && REGEX[platform].test(value)
 }
 
 /**

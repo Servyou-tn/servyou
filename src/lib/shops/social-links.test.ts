@@ -76,6 +76,23 @@ describe('isShopSocialUrl — same answers as the database CHECKs', () => {
   })
 })
 
+describe('isShopSocialUrl — text Postgres cannot store', () => {
+  // Not in the database table above: a NUL or a lone surrogate never reaches the CHECK (encoding error instead).
+  it.each([
+    ['NUL', 'https://tiktok.com/a\u0000b'],
+    ['lone high surrogate', 'https://tiktok.com/a\ud83db'],
+    ['lone low surrogate', 'https://tiktok.com/a\ude00b'],
+    ['high surrogate at the end', 'https://tiktok.com/a\ud83d'],
+  ])('refuses a %s', (_label, value) => {
+    expect(isShopSocialUrl('tiktok', value)).toBe(false)
+    expect(shopSocialUrlSchema('tiktok').safeParse(value).success).toBe(false)
+  })
+
+  it('a well-formed surrogate pair (emoji) still passes', () => {
+    expect(isShopSocialUrl('tiktok', 'https://tiktok.com/@s😀')).toBe(true)
+  })
+})
+
 describe('shopSocialUrlSchema', () => {
   it("'' and whitespace become null (a cleared field)", () => {
     expect(shopSocialUrlSchema('facebook').parse('')).toBeNull()
