@@ -9,6 +9,7 @@ import { t } from '@/lib/i18n'
 import { buildWhatsAppUrl } from '@/lib/orders/whatsapp'
 import { cn } from '@/lib/utils'
 import { FOCUS_RING } from '@/components/layout/styles'
+import { WhatsAppGlyph } from '@/components/aide/WhatsAppGlyph'
 
 // Seller → buyer WhatsApp contact, shared by G8's row and G9's detail panels.
 //
@@ -33,6 +34,8 @@ export function WhatsAppContactButton({
   noPhoneMessageKey = 'seller.orders.whatsapp_none',
   iconOnly = false,
   disabled = false,
+  buttonClassName,
+  glyphClassName,
 }: {
   /** get_contact_phone's `target` — the other party's profile id (buyer, seller, or annonce responder). */
   targetId: string
@@ -55,6 +58,10 @@ export function WhatsAppContactButton({
    * choice (follow up live pitches only), not a data limit: get_contact_phone keeps working for any responder.
    */
   disabled?: boolean
+  /** Labelled button only — extra classes for a per-breakpoint size (D4's hero is 44 tall at 375, 48 from lg). Never a text colour (see the label note). */
+  buttonClassName?: string
+  /** Labelled button only — when set, the 20 brand glyph is drawn before the label with these classes (D4 375 frame: glyph + label, gap 8). */
+  glyphClassName?: string
 }) {
   const supabase = createClient()
   const lang = useLang()
@@ -132,8 +139,11 @@ export function WhatsAppContactButton({
           'disabled:cursor-not-allowed disabled:opacity-60 motion-reduce:transition-none',
           size === 'lg' ? 'h-12 w-full px-4 text-body' : size === 'md' ? 'h-11 w-full px-4 text-body' : 'h-9 px-4 text-body-sm',
           FOCUS_RING,
+          buttonClassName,
         )}
       >
+        {/* text/primary on the green, like the label (the brand SVG is green-on-white and would vanish here) */}
+        {glyphClassName !== undefined && <WhatsAppGlyph className={cn('size-5 text-text-primary', glyphClassName)} />}
         {/* ⚑ THE LABEL COLOUR LIVES HERE, ON ITS OWN ELEMENT, AND MUST STAY HERE.
             tailwind-merge treats every `text-*` utility as ONE group, so a colour and a size in
             the same merged string collide and the LATER one wins. When `text-text-primary` sat

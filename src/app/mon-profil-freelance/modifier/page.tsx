@@ -5,6 +5,7 @@ import { requireFreelancer } from '@/lib/auth/require-seller'
 import { createClient } from '@/lib/supabase/server'
 import { getFreelancerProfileForEdit } from '@/lib/marche/freelancer-profile-edit'
 import { getFreelancerTopSector } from '@/lib/marche/freelancer-top-sector'
+import { parseProfileSection } from '@/lib/freelancer/profile-sections'
 import { recommendedFor } from '@/lib/social/platforms'
 import { getLang } from '@/lib/i18n/server'
 import { t } from '@/lib/i18n'
@@ -17,8 +18,9 @@ const ROUTE = '/mon-profil-freelance/modifier'
 
 // H3 « Modifier mon profil » — Figma 404:11909, full field-by-field provenance in the PR
 // description (measured/founder-ruled per field, mirroring h4-discovery.md's own convention).
-export default async function ModifierProfilPage() {
+export default async function ModifierProfilPage({ searchParams }: { searchParams: Promise<{ section?: string | string[] }> }) {
   const lang = await getLang()
+  const openSection = parseProfileSection((await searchParams).section)
   const { topBarUser, freelancerProfile } = await requireFreelancer(ROUTE)
 
   if (!freelancerProfile) {
@@ -67,7 +69,7 @@ export default async function ModifierProfilPage() {
       </div>
 
       <div className="mt-6">
-        <ProfileEditForm initial={data} lang={lang} recommendedPlatforms={recommendedFor(topSector)} />
+        <ProfileEditForm initial={data} lang={lang} recommendedPlatforms={recommendedFor(topSector)} openSection={openSection} />
       </div>
     </AppShell>
   )

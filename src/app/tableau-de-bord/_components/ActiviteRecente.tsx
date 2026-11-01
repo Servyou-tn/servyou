@@ -100,12 +100,10 @@ function ActivityRow({ item, lang }: { item: ActivityEvent; lang: Lang }) {
 
 export function ActiviteRecente({ items, lang }: { items: ActivityEvent[]; lang: Lang }) {
   return (
-    <Panel
-      title={t('activite.title', lang)}
-      // Pass 3: the frame does draw this header link. Activité récente still has no dedicated
-      // full-list route, so `href: null` renders it inert rather than a 404 Link.
-      link={{ href: null, label: t('activite.view_all', lang) }}
-    >
+    // The frame draws a « Voir tout → » header link (167:12377), but no page lists this merged feed
+    // (founder ruling, 2026-11-01: no inert links) — it comes back when such a page exists, see
+    // docs/follow-ups/dashboard-force-du-profil.md.
+    <Panel title={t('activite.title', lang)}>
       {items.length === 0 ? (
         <PanelEmpty
           icon={History}
