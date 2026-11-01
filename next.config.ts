@@ -12,8 +12,8 @@ const nextConfig: NextConfig = {
   // No `X-Powered-By: Next.js` (pre-launch security audit pass 1, finding 1).
   poweredByHeader: false,
 
-  // Browser security headers on every route: frame-ancestors / X-Frame-Options ENFORCED (clickjacking), the full
-  // CSP as Report-Only for now. See src/lib/security/headers.ts.
+  // Browser security headers on every route: the full CSP ENFORCED (frame-ancestors 'none' included) + X-Frame-Options.
+  // See src/lib/security/headers.ts.
   async headers() {
     // Violation reports go to Sentry's security endpoint, derived from the DSN (null without one → no reporting).
     const reportUrl = cspReportUrl(process.env.NEXT_PUBLIC_SENTRY_DSN, process.env.VERCEL_ENV ?? process.env.NODE_ENV)

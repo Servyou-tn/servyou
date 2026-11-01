@@ -1,8 +1,9 @@
 /**
  * Browser security headers (src/lib/security/headers.ts, served by next.config.ts) — pre-launch security audit pass 1,
  * finding 1. Security-sensitive config, so a dropped header fails here, not in production:
- *   • framing is refused by an ENFORCED header pair (X-Frame-Options DENY + CSP frame-ancestors 'none');
- *   • the full CSP is Report-Only, allows what the app really loads, and never 'unsafe-eval' in production;
+ *   • framing is refused twice (X-Frame-Options DENY + CSP frame-ancestors 'none');
+ *   • the full CSP is ENFORCED (pre-beta check 2026-11-01), allows what the app really loads, and never 'unsafe-eval' in
+ *     production; no Report-Only header is left;
  *   • next.config.ts serves the set on every route and drops X-Powered-By.
  * Run by path.
  */
@@ -19,10 +20,9 @@ const directive = (csp: string, name: string) =>
 describe('enforced headers', () => {
   const h = byKey(false)
 
-  it('refuses framing twice: X-Frame-Options DENY and an enforced CSP that is ONLY frame-ancestors', () => {
+  it('refuses framing twice: X-Frame-Options DENY and the enforced CSP frame-ancestors', () => {
     expect(h['X-Frame-Options']).toBe('DENY')
-    // Nothing else in the enforced CSP: anything more would block real traffic before it has been watched.
-    expect(h['Content-Security-Policy']).toBe("frame-ancestors 'none'")
+    expect(directive(h['Content-Security-Policy'], 'frame-ancestors')).toEqual(["'none'"])
   })
 
   it('nosniff, referrer and permissions policies', () => {
@@ -32,11 +32,13 @@ describe('enforced headers', () => {
   })
 })
 
-describe('report-only CSP', () => {
+describe('enforced CSP', () => {
   const prod = contentSecurityPolicy(false)
 
-  it('is served as Report-Only', () => {
-    expect(byKey(false)['Content-Security-Policy-Report-Only']).toBe(prod)
+  it('is served ENFORCED — the full policy — and no Report-Only header is left', () => {
+    expect(byKey(false)['Content-Security-Policy']).toBe(prod)
+    expect(byKey(true)['Content-Security-Policy']).toBe(contentSecurityPolicy(true))
+    expect(byKey(false)['Content-Security-Policy-Report-Only']).toBeUndefined()
   })
 
   it('allows Supabase REST / auth / storage and the realtime websocket', () => {
@@ -71,9 +73,6 @@ describe('report-only CSP', () => {
     expect(directive(contentSecurityPolicy(true), 'script-src')).toContain("'unsafe-eval'")
   })
 
-  it('has no upgrade-insecure-requests (ignored and warned about in a report-only policy)', () => {
-    expect(prod).not.toContain('upgrade-insecure-requests')
-  })
 })
 
 describe('violation reporting (Sentry security endpoint, derived from the DSN)', () => {
@@ -98,13 +97,13 @@ describe('violation reporting (Sentry security endpoint, derived from the DSN)',
     }
   })
 
-  it('the Report-Only policy carries report-uri AND report-to, and a Reporting-Endpoints header names the same URL', () => {
+  it('the enforced policy carries report-uri AND report-to, and a Reporting-Endpoints header names the same URL', () => {
     const url = cspReportUrl(DSN, 'production')!
     const csp = contentSecurityPolicy(false, url)
     expect(csp).toContain(`report-uri ${url}`)
     expect(csp).toContain(`report-to ${CSP_REPORT_GROUP}`)
     const h = byKeyWith(url)
-    expect(h['Content-Security-Policy-Report-Only']).toBe(csp)
+    expect(h['Content-Security-Policy']).toBe(csp)
     expect(h['Reporting-Endpoints']).toBe(`${CSP_REPORT_GROUP}="${url}"`)
   })
 
@@ -113,8 +112,9 @@ describe('violation reporting (Sentry security endpoint, derived from the DSN)',
     expect(byKey(false)['Reporting-Endpoints']).toBeUndefined()
   })
 
-  it('the ENFORCED header stays frame-ancestors-only — reporting never widens what is enforced', () => {
-    expect(byKeyWith(cspReportUrl(DSN)!)['Content-Security-Policy']).toBe("frame-ancestors 'none'")
+  it('reporting only adds the report directives — the sources stay exactly the same', () => {
+    const withReport = contentSecurityPolicy(false, cspReportUrl(DSN)!)
+    expect(withReport.startsWith(`${contentSecurityPolicy(false)}; report-uri `)).toBe(true)
   })
 
   it('the report URL is not a CSP source of its own: report-uri is a reporting target, not a connect-src entry', () => {
