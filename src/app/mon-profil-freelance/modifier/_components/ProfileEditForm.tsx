@@ -28,6 +28,8 @@ import { LanguageRepeater, type LanguageRow } from './LanguageRepeater'
 import { EducationRepeater, type EducationRow } from './EducationRepeater'
 import { CertificationRepeater, type CertificationRow } from './CertificationRepeater'
 import { StickyFooter } from './StickyFooter'
+import { ScrollToSection } from './ScrollToSection'
+import type { ProfileSection } from '@/lib/freelancer/profile-sections'
 import { ValidationBanner, FieldError } from './ValidationBanner'
 
 // H3 "Modifier mon profil" — 404:11909, 7 accordions + identity panel + sticky footer. Everything
@@ -56,9 +58,12 @@ export function ProfileEditForm({
   initial,
   lang,
   recommendedPlatforms,
+  openSection = null,
 }: {
   initial: FreelancerProfileEditData
   lang: Lang
+  /** `?section=` from the dashboard's « Force du profil »: that accordion opens and the page scrolls to it. */
+  openSection?: ProfileSection | null
   /** The platforms suggested for this freelancer's trade (their top sector — lib/social/platforms `recommendedFor`). */
   recommendedPlatforms: readonly PlatformId[]
 }) {
@@ -261,7 +266,8 @@ export function ProfileEditForm({
 
   return (
     <div className="flex flex-col gap-6 pb-6">
-      <div className="flex flex-col gap-6 rounded-xl border border-border-subtle bg-surface-base p-5 sm:p-6">
+      {openSection ? <ScrollToSection id={openSection} /> : null}
+      <div id="photo" className="flex scroll-mt-36 flex-col gap-6 rounded-xl border border-border-subtle bg-surface-base p-5 sm:p-6">
         <AvatarField avatarUrl={initial.identity.avatarUrl} fullName={initial.identity.fullName} lang={lang} />
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -296,7 +302,7 @@ export function ProfileEditForm({
       </div>
 
       <div className="flex flex-col gap-4">
-        <AccordionSection title={t('freelance.edit.trust_title', lang)} complete={linkRows.some((r) => r.url.trim() !== '') || Number(yearsExperience) > 0} defaultOpen>
+        <AccordionSection id="liens" forceOpen={openSection === 'liens'} title={t('freelance.edit.trust_title', lang)} complete={linkRows.some((r) => r.url.trim() !== '') || Number(yearsExperience) > 0} defaultOpen>
           <div>
             <label className="text-sm font-medium text-text-secondary">{t('freelance.edit.years_experience_label', lang)}</label>
             <div className="mt-2 flex items-center gap-2">
@@ -319,7 +325,7 @@ export function ProfileEditForm({
           </div>
         </AccordionSection>
 
-        <AccordionSection title={t('freelance.edit.about_title', lang)} complete={bio.trim().length > 0} defaultOpen>
+        <AccordionSection id="bio" forceOpen={openSection === 'bio'} title={t('freelance.edit.about_title', lang)} complete={bio.trim().length > 0} defaultOpen>
           <Textarea
             label={t('freelance.edit.bio_label', lang)}
             required
@@ -333,6 +339,8 @@ export function ProfileEditForm({
         </AccordionSection>
 
         <AccordionSection
+          id="competences"
+          forceOpen={openSection === 'competences'}
           title={t('freelance.edit.skills_languages_title', lang)}
           complete={skills.length > 0 || languageRows.length > 0 || tools.length > 0}
           defaultOpen
@@ -367,7 +375,7 @@ export function ProfileEditForm({
           </div>
         </AccordionSection>
 
-        <AccordionSection title={t('freelance.edit.portfolio_title', lang)} complete={portfolioRows.length > 0}>
+        <AccordionSection id="realisations" forceOpen={openSection === 'realisations'} title={t('freelance.edit.portfolio_title', lang)} complete={portfolioRows.length > 0}>
           <PortfolioRepeater rows={portfolioRows} onChange={setPortfolioT} lang={lang} errors={urlErrorsFor(urlInvalid.portfolio)} />
           <div className="border-t border-border-subtle pt-4">
             <Input

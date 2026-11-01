@@ -21,23 +21,31 @@ import { cn } from '@/lib/utils'
 // propos, Compétences & langues and Formation & certifications open; Portfolio, Services and
 // Contexte collapsed. Native <details>, uncontrolled — matches every other accordion in the
 // codebase (no shared ui/accordion exists).
+//
+// `id` + `forceOpen`: the dashboard's « Force du profil » links here with `?section=` (lib/freelancer/profile-sections) — the page opens that accordion
+// (`forceOpen`, on top of its measured default) and scrolls to its `id`.
 export function AccordionSection({
+  id,
   title,
   complete,
   defaultOpen,
+  forceOpen,
   children,
 }: {
+  id?: string
   title: string
   complete: boolean
   defaultOpen?: boolean
+  forceOpen?: boolean
   children: ReactNode
 }) {
   const lang = useLang()
 
   return (
     <details
-      open={defaultOpen}
-      className="group rounded-card border border-border-subtle bg-surface-base [&_summary::-webkit-details-marker]:hidden"
+      id={id}
+      open={defaultOpen || forceOpen}
+      className="group scroll-mt-36 rounded-card border border-border-subtle bg-surface-base [&_summary::-webkit-details-marker]:hidden"
     >
       <summary className={cn('flex cursor-pointer items-center justify-between gap-3 rounded-card px-4 py-5 sm:px-6', FOCUS_RING)}>
         <span className="text-base font-semibold text-text-primary">{title}</span>
