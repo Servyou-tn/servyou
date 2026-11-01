@@ -1569,6 +1569,8 @@ export const ar: Record<string, string> = {
   'serviceDetail.share':             "نسخ الرابط",
   'serviceDetail.codNote':           "💬 الدفع عند التسليم — يُتفق عليه مباشرة مع المستقل.",
   'serviceDetail.related':           "خدمات مشابهة",
+  // REVIEW_AR_TRANSLATION
+  'serviceDetail.relatedOwn':        "خدمات أخرى لـ {name}",
   'serviceDetail.reviews':           "التقييمات",
   'serviceDetail.reviewsEmpty':      "ستتوفر التقييمات قريبا",
   'serviceDetail.report':            "الإبلاغ عن هذه الخدمة",

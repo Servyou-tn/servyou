@@ -34,7 +34,8 @@ const base: ServiceDetailData = {
   startingPrice: 900,
   priceUnit: null,
   deliveryTime: '20-30 j',
-  category: 'Application mobile',
+  category: { fr: 'Développement web & mobile', ar: 'تطوير الويب والموبايل' },
+  subcategory: { fr: 'Application mobile', ar: 'تطبيقات الموبايل' },
   categoryId: 'cat-1',
   freelancerProfileId: 'fp-1',
   freelancer: { name: 'Yassine Ben Ali', city: 'Tunis', headline: 'Développeur Full Stack', avatarUrl: null },
@@ -114,6 +115,45 @@ describe('ServiceDetail — the rest of the frame', () => {
     expect(screen.getByRole('link', { name: 'Accueil' }).className).toContain('hidden')
     expect(nav.textContent).toContain('Application mobile')
     expect(nav.querySelector('span.hidden.lg\\:inline')?.textContent).toBe(base.title)
+  })
+
+  it('375 shows the SUB-category (the category when there is none); desktop shows both', () => {
+    const { unmount } = view()
+    const nav = screen.getByRole('navigation', { name: /Ariane/ })
+    const crumb = (text: string) => Array.from(nav.querySelectorAll('span')).find((s) => s.textContent === text) as HTMLElement
+    expect(crumb('Application mobile').className).not.toContain('max-lg:hidden')
+    expect(crumb('Développement web & mobile').className).toContain('max-lg:hidden') // desktop only
+    unmount()
+
+    view({ subcategory: null })
+    const nav2 = screen.getByRole('navigation', { name: /Ariane/ })
+    const cat = Array.from(nav2.querySelectorAll('span')).find((s) => s.textContent === 'Développement web & mobile') as HTMLElement
+    expect(cat.className).not.toContain('max-lg:hidden') // no sub-category → the category is the tail
+  })
+
+  it('the related heading names the freelancer only when the list is theirs', () => {
+    const { unmount } = view()
+    expect(screen.getByRole('heading', { name: 'Services similaires' })).toBeInTheDocument()
+    unmount()
+    render(<ServiceDetail service={base} related={[{ id: 'r1' }] as never} relatedKind="freelancer" lang="fr" isLoggedIn={false} />)
+    expect(screen.getByRole('heading', { name: 'Autres services de Yassine Ben Ali' })).toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: 'Services similaires' })).toBeNull()
+  })
+
+  it('desktop « Voir profil » opens the freelancer’s real profile, and is absent without one', () => {
+    const { unmount } = view()
+    expect(screen.getByRole('link', { name: 'Voir profil' }).getAttribute('href')).toBe('/freelance/fp-1')
+    unmount()
+    view({ freelancerProfileId: null })
+    expect(screen.queryByRole('link', { name: 'Voir profil' })).toBeNull()
+  })
+
+  it('the « Avis » box is a white bordered card', () => {
+    view()
+    const box = screen.getByText('Les avis seront bientôt disponibles').parentElement as HTMLElement
+    expect(box.className).toContain('bg-surface-base')
+    expect(box.className).toContain('border')
+    expect(box.className).not.toContain('bg-surface-subtle')
   })
 
   it('related services sit in the horizontal rail', () => {

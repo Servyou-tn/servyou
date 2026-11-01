@@ -61,3 +61,20 @@ tsc · eslint on every changed file · vitest by path (ServiceDetail render, Ser
 Browser (gate account, own session, no writes), FR + AR × 375, FR + AR × 1440: no horizontal scroll; blocks measured as above; « Voir plus » clamps at 192, expands to 216 and
 back; the second related card peeks at x = 328 and the grid is 3-up at 1440. `docs/design/compare/m375-d2-service-figma-vs-preview.png`: frame · FR long text · FR 5 bullets +
 mode · AR.
+
+---
+
+## Follow-up PR (`feat/d2-followups`) — founder answers to Q1–Q5 (Nov 1)
+
+| # | Ruling | Now |
+|---|---|---|
+| Q1 | Follow the frame: freelancer-first list; « Autres services de {name} » when the freelancer has other services, otherwise « Services similaires » (category) | `getRelatedServices` returns `{ items, kind }`. Tier 1 = the freelancer's OTHER services: when there are any they ARE the list (cap 3, as before) and the heading says whose they are; **not topped up with other people's services** (the heading would be false for the fillers). Otherwise `kind: 'similar'`: same category, then the newest — the never-empty guarantee is unchanged. New key `serviceDetail.relatedOwn` (AR draft, REVIEW_AR_TRANSLATION) |
+| Q2 | Follow the frame: show the sub-category | `getServiceDetail` embeds `subcategory:categories!service_listings_subcategory_id_fkey ( name_fr, name_ar )` (FK hint, replayed select in `category-embed-cases.ts` synced; verified 200 against PostgREST, anon). 375: `‹ Services › {sub-category}` (the category when there is none — 1 of 21 listings has one today); desktop: Accueil › Services › category › sub-category › title. Names follow the page language (they were French-only before) |
+| Q3 | Real picture at 1440 too | desktop avatar = `public_profiles.avatar_url`, initials only when there is none |
+| Q4 | AR « المفضلة » / « عرض أقل » correct | kept |
+| Q5 | « Avis » box: white card + border — **founder-approved deviation from the frame's subtle fill**, all widths | `bg-surface-base border border-border-subtle` (1 px `#e2e8f0` on white, measured) |
+| bug | « Voir profil » → the real profile | `/freelance/{freelancerProfileId}` (was `/marche/services`); the button is absent without a profile id |
+
+Not touched: Agent A's phone rule / `get_contact_phone` (A will send the list of WhatsApp buttons and texts it changes).
+Verified: tsc · eslint · vitest by path (ServiceDetail render incl. breadcrumb / heading / Voir profil / Avis, `service-detail.related.test.ts` — 5 cases on the tiering, hint guard,
+moderation guard, i18n parity) · browser FR + AR × 375 and FR × 1440 on three data shapes (sub-category + 9 own services · 1 own service · none → fallback).

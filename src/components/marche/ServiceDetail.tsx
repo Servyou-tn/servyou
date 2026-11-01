@@ -52,11 +52,14 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 export function ServiceDetail({
   service,
   related,
+  relatedKind = 'similar',
   lang,
   isLoggedIn,
 }: {
   service: ServiceDetailData
   related: ServiceListing[]
+  /** `freelancer`: every card is this freelancer's other service → « Autres services de {name} »; `similar`: category / newest → « Services similaires ». */
+  relatedKind?: 'freelancer' | 'similar'
   lang: Lang
   isLoggedIn: boolean
 }) {
@@ -72,6 +75,9 @@ export function ServiceDetail({
   // every block 20 apart.
   // The DOM is the MOBILE order, so the tab order follows what is seen (WCAG 2.4.3); the desktop order (price · CTA · favori / partager · freelancer · COD)
   // is `lg:order-N`, dividers included. Only the freelancer row renders twice (below).
+  const pick = (n: { fr: string; ar: string | null } | null) => (n ? (lang === 'ar' && n.ar ? n.ar : n.fr) : null)
+  const category = pick(service.category)
+  const subcategory = pick(service.subcategory)
   const profileHref = service.freelancerProfileId ? `/freelance/${service.freelancerProfileId}` : null
   const buyBox = (
     <aside className="order-2 flex flex-col gap-5 lg:order-none lg:col-start-2 lg:row-start-1 lg:row-span-2 lg:gap-4 lg:rounded-card lg:border-2 lg:border-brand-blue-600 lg:bg-white lg:p-6">
@@ -138,11 +144,11 @@ export function ServiceDetail({
 
       <div className="hidden h-px bg-border-subtle lg:order-4 lg:block" aria-hidden="true" />
 
-      {/* freelancerBlock (desktop). Avatar is initials-only here, as built before the 375 pass; a tinted row only below lg is the block above. */}
+      {/* freelancerBlock (desktop): the real picture (initials only when there is none — founder, Nov 1); a tinted row only below lg is the block above. */}
       {service.freelancer && (
         <div className="hidden flex-col gap-3 lg:order-5 lg:flex">
           <div className="flex items-center gap-3">
-            <Avatar size="md" initials={getInitials(service.freelancer.name)} className="lg:size-14" />
+            <Avatar size="md" src={service.freelancer.avatarUrl} name={service.freelancer.name} initials={getInitials(service.freelancer.name)} className="lg:size-14" />
             <div className="flex min-w-0 flex-col gap-0.5">
               <p className="truncate text-body-sm font-semibold text-brand-blue-800 lg:text-[15px]">
                 {service.freelancer.name}
@@ -158,12 +164,14 @@ export function ServiceDetail({
               )}
             </div>
           </div>
-          <Link
-            href="/marche/services"
-            className={`inline-flex h-8 items-center justify-center gap-2 rounded-[10px] border border-border-strong bg-white text-body-sm font-semibold text-text-primary transition-colors hover:bg-surface-subtle ${FOCUS_RING}`}
-          >
-            {t('serviceDetail.viewProfile', lang)}
-          </Link>
+          {profileHref && (
+            <Link
+              href={profileHref}
+              className={`inline-flex h-8 items-center justify-center gap-2 rounded-[10px] border border-border-strong bg-white text-body-sm font-semibold text-text-primary transition-colors hover:bg-surface-subtle ${FOCUS_RING}`}
+            >
+              {t('serviceDetail.viewProfile', lang)}
+            </Link>
+          )}
         </div>
       )}
 
@@ -174,7 +182,8 @@ export function ServiceDetail({
 
   return (
     <div className="flex flex-col gap-5 lg:gap-6">
-      {/* breadcrumb — 13px. 375 (m375-d2-service): « ‹ Services › {category} », gap 6, chevrons 16 / 12; desktop: Accueil › Services › category › title, gap 8. */}
+      {/* breadcrumb — 13px. 375 (m375-d2-service): « ‹ Services › {sub-category} » (the category when there is no sub-category), gap 6, chevrons 16 / 12;
+          desktop: Accueil › Services › category › sub-category › title, gap 8. */}
       <nav aria-label="Fil d'Ariane" className="flex flex-wrap items-center gap-1.5 text-[13px] leading-4 text-text-muted lg:gap-2">
         <Link href="/" className="hidden hover:text-text-secondary lg:inline">{t('serviceDetail.breadcrumb.home', lang)}</Link>
         <ChevronRight className="hidden h-3.5 w-3.5 shrink-0 rtl:rotate-180 lg:block" aria-hidden="true" />
@@ -182,10 +191,16 @@ export function ServiceDetail({
           <ChevronLeft className="size-4 shrink-0 rtl:rotate-180 lg:hidden" aria-hidden="true" />
           {t('serviceDetail.breadcrumb.services', lang)}
         </Link>
-        {service.category && (
+        {category && (
+          <>
+            <ChevronRight className={`size-3 shrink-0 rtl:rotate-180 lg:h-3.5 lg:w-3.5 ${subcategory ? 'max-lg:hidden' : ''}`} aria-hidden="true" />
+            <span className={`text-text-secondary lg:text-text-muted ${subcategory ? 'max-lg:hidden' : ''}`}>{category}</span>
+          </>
+        )}
+        {subcategory && (
           <>
             <ChevronRight className="size-3 shrink-0 rtl:rotate-180 lg:h-3.5 lg:w-3.5" aria-hidden="true" />
-            <span className="text-text-secondary lg:text-text-muted">{service.category}</span>
+            <span className="text-text-secondary lg:text-text-muted">{subcategory}</span>
           </>
         )}
         <ChevronRight className="hidden h-3.5 w-3.5 shrink-0 rtl:rotate-180 lg:block" aria-hidden="true" />
@@ -252,14 +267,21 @@ export function ServiceDetail({
       </div>
 
       {related.length > 0 && (
-        <Section title={t('serviceDetail.related', lang)}>
+        <Section
+          title={
+            relatedKind === 'freelancer' && service.freelancer?.name
+              ? t('serviceDetail.relatedOwn', lang, { name: service.freelancer.name })
+              : t('serviceDetail.related', lang)
+          }
+        >
           <ListingResults type="service" items={related} layout="rail" />
         </Section>
       )}
 
       <Section title={t('serviceDetail.reviews', lang)}>
         {/* Shell + empty state only: ratings are post-MVP and there is no reviews table. */}
-        <div className="flex items-center justify-center rounded-[10px] bg-surface-subtle px-6 py-8 text-center lg:h-30 lg:py-0">
+        {/* White card + border, like the other boxes on the grey shell (founder-approved deviation from the frame's subtle fill, Nov 1). */}
+        <div className="flex items-center justify-center rounded-[10px] border border-border-subtle bg-surface-base px-6 py-8 text-center lg:h-30 lg:py-0">
           <p className="text-sm text-text-muted max-lg:leading-[17px] lg:text-[15px]">{t('serviceDetail.reviewsEmpty', lang)}</p>
         </div>
       </Section>
