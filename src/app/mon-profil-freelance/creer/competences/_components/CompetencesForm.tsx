@@ -7,7 +7,7 @@ import { ChevronRight } from 'lucide-react'
 import { useLang } from '@/components/LangProvider'
 import { t } from '@/lib/i18n'
 import { PlatformLinkInput } from '@/components/social/PlatformLinkInput'
-import { normalizeUrl } from '@/lib/social/platforms'
+import { hasUserinfo, normalizeUrl } from '@/lib/social/platforms'
 import { Button } from '@/components/ui/button'
 import { TagInput } from '@/components/ui/tag-input'
 import { FOCUS_RING } from '@/components/layout/styles'
@@ -75,9 +75,13 @@ export function CompetencesForm({ initial }: { initial: CompetencesInitial }) {
     if (languageRows.filter((r) => r.language && r.proficiency).length === 0) {
       next.languages = t('freelance.create.step2.error.languages_min', lang)
     }
-    // « behance.net/aya » is fine: the address is stored with https:// (normalizeUrl); anything that is still not http(s) is refused.
-    if (portfolioLink.trim() && !/^https?:\/\//i.test(normalizeUrl(portfolioLink))) {
+    // « behance.net/aya » is fine: the address is stored with https:// (normalizeUrl), THEN measured (500 max); anything still not http(s), or carrying
+    // user:password@, is refused.
+    const link = normalizeUrl(portfolioLink)
+    if (link && (!/^https?:\/\//i.test(link) || hasUserinfo(link))) {
       next.portfolioLink = t('freelance.create.step2.error.portfolio_url', lang)
+    } else if (link.length > 500) {
+      next.portfolioLink = t('freelance.create.step2.error.portfolio_url_long', lang)
     }
     return next
   }

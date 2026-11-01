@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { toast } from 'sonner'
+import { Link2 } from 'lucide-react'
 import { FOCUS_RING } from '@/components/layout/styles'
 import { useLang } from '@/components/LangProvider'
 import { t } from '@/lib/i18n'
@@ -22,7 +23,11 @@ import { t } from '@/lib/i18n'
 //
 // Text-only, no glyph, matching the frame: the row is « ♡ Enregistrer » then « Partager » at gap 24.
 
-export function ShareLinkButton() {
+/**
+ * `bordered`: D2's `icon-link-btn` (m375-d2-service) — a 44 px bordered r10 button filling its cell, icon-link 20 + « Partager » (13 Medium, text/secondary);
+ * `labelClassName` lets D2 hide the label from `lg` up. It copies the link like the text variant; the old D2 control was an inert <Link> to the page itself.
+ */
+export function ShareLinkButton({ variant = 'text', labelClassName = '' }: { variant?: 'text' | 'bordered'; labelClassName?: string } = {}) {
   const lang = useLang()
   const [busy, setBusy] = useState(false)
 
@@ -44,6 +49,21 @@ export function ShareLinkButton() {
     } finally {
       setBusy(false)
     }
+  }
+
+  if (variant === 'bordered') {
+    return (
+      <button
+        type="button"
+        onClick={copy}
+        disabled={busy}
+        aria-label={t('product.detail.share', lang)}
+        className={`flex h-11 w-full items-center justify-center gap-2 rounded-[10px] border border-border-strong bg-surface-base transition-colors hover:bg-surface-subtle disabled:opacity-60 motion-reduce:transition-none ${FOCUS_RING}`}
+      >
+        <Link2 className="size-5 text-text-muted" aria-hidden="true" />
+        <span className={`text-[13px] font-medium leading-4 text-text-secondary ${labelClassName}`}>{t('product.detail.share', lang)}</span>
+      </button>
+    )
   }
 
   return (

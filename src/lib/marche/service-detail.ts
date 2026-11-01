@@ -42,7 +42,8 @@ export type ServiceDetailData = {
   category: string | null
   categoryId: string | null
   freelancerProfileId: string | null
-  freelancer: { name: string; city: string | null; headline: string | null } | null
+  /** `avatarUrl`: public_profiles.avatar_url — the 375 frame's freelancer row draws a picture (the person glyph when there is none). */
+  freelancer: { name: string; city: string | null; headline: string | null; avatarUrl: string | null } | null
   /** D2 "Ce qui est inclus" — section hides when empty. 20 of 21 seeded rows are empty today. */
   deliverables: string[]
   /** D2 "Mode de prestation" — null = freelancer has not said; section hides. */
@@ -101,14 +102,16 @@ export const getServiceDetail = cache(async (id: string): Promise<ServiceDetailD
   const fp = one(row.freelancer_profiles)
 
   let name = ''
+  let avatarUrl: string | null = null
   if (fp?.profile_id) {
     const { data: prof, error: pErr } = await supabase
       .from('public_profiles')
-      .select('full_name')
+      .select('full_name, avatar_url')
       .eq('id', fp.profile_id)
       .maybeSingle()
     if (pErr) reportQueryError('service-detail public_profiles', pErr)
     name = prof?.full_name ?? ''
+    avatarUrl = prof?.avatar_url ?? null
   }
 
   return {
@@ -121,7 +124,7 @@ export const getServiceDetail = cache(async (id: string): Promise<ServiceDetailD
     category: one(row.categories)?.name_fr ?? null,
     categoryId: row.category_id,
     freelancerProfileId: row.freelancer_profile_id,
-    freelancer: fp ? { name, city: fp.city ?? null, headline: fp.headline ?? null } : null,
+    freelancer: fp ? { name, city: fp.city ?? null, headline: fp.headline ?? null, avatarUrl } : null,
     deliverables: row.deliverables ?? [],
     deliveryMode: asMode(row.delivery_mode),
     revisionsCount: row.revisions_count ?? 0,

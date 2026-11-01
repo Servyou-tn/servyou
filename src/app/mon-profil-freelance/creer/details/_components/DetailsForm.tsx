@@ -14,6 +14,7 @@ import { Stepper } from '@/components/ui/stepper'
 import { AccordionSection } from './AccordionSection'
 import { EducationRepeater, type EducationRow } from './EducationRepeater'
 import { CertificationRepeater, type CertificationRow } from './CertificationRepeater'
+import { hasUserinfo } from '@/lib/social/platforms'
 import { saveDetailsAction } from '../actions'
 
 // H2 step 3 "Détails" — lede + four accordions measured (headers only, see actions.ts's header
@@ -73,7 +74,8 @@ export function DetailsForm({ initial }: { initial: DetailsInitial }) {
     const urlErrors: Record<string, string> = {}
     for (const row of certRowsWithAnchor) {
       const url = row.credentialUrl.trim()
-      if (url && !URL_PATTERN.test(url)) {
+      // user:password@ is refused like the server does (hasUserinfo) — otherwise the form passes it and the action rejects the whole step.
+      if (url && (!URL_PATTERN.test(url) || hasUserinfo(url))) {
         urlErrors[row.id] = t('freelance.create.step3.error.credential_url', lang)
       }
     }

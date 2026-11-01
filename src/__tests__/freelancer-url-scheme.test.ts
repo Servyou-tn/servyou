@@ -145,6 +145,34 @@ describe('H2 step 2 — saveCompetencesAction portfolioLink', () => {
   })
 })
 
+// user:password@ is refused in EVERY freelancer URL field, client and server (links kit, founder Oct 31): `https://github.com@evil.io` reads as GitHub and
+// opens evil.io, and a pasted email is not a web address. Kept apart from REJECTED: a bare zod `.url(HTTP_URL)` accepts these, so they are not part of
+// the isHttpUrl ≡ zod parity below — the refusal is hasUserinfo, on top.
+const USERINFO = ['https://github.com@evil.io', 'https://user:pass@exemple.tn/x', 'http://name@exemple.tn']
+
+describe('user:password@ is refused on every URL field', () => {
+  it.each(USERINFO)('H3 modifier refuses %j on portfolioLink, a link, a portfolio url and a credential url', (url) => {
+    for (const make of [profileWith.portfolioLink, profileWith.linkUrl, profileWith.portfolioUrl, profileWith.credentialUrl]) {
+      expect(SaveProfileInput.safeParse(make(url)).success).toBe(false)
+    }
+  })
+
+  it.each(USERINFO)('H2 step 3 refuses %j as a credential url', (url) => {
+    expect(SaveDetailsInput.safeParse(detailsWithCredential(url)).success).toBe(false)
+  })
+
+  it.each(USERINFO)('H2 step 2 refuses %j on portfolioLink, before any DB call', async (url) => {
+    const res = await saveCompetencesAction({
+      skills: ['Figma', 'Illustrator', 'Photoshop'],
+      languages: [{ language: LANGUAGE_CODES[0], proficiency: PROFICIENCY_CODES[0] }],
+      yearsExperience: 2,
+      portfolioLink: url,
+    })
+    expect(res).toMatchObject({ ok: false, field: 'portfolioLink' })
+    expect(h.createClient).not.toHaveBeenCalled()
+  })
+})
+
 // The H3 form runs isHttpUrl (zod-free) in the browser so a bad URL gets a field-level error
 // before the save; the server runs .url(HTTP_URL). If the two ever disagreed, the browser would
 // pass a URL the server then rejects — the exact "server-only reject" this pairing exists to stop.

@@ -11,7 +11,9 @@ import { ServiceListingCard, type ServiceListing } from './ServiceListingCard'
 type Props =
   | { type: 'product'; items: ProductListing[] }
   // `gap="tight"`: 16 at every width — the C2 category frame (1486:24359) draws its 3-up grid at 16, where the /marche/services frame draws 24.
-  | { type: 'service'; items: ServiceListing[]; gap?: 'default' | 'tight' }
+  // `layout="rail"`: below `sm` the cards sit in ONE horizontally scrolling row of 300-wide cards at gap 12, bleeding to the screen's right edge (D2's « Autres services » —
+  // m375-d2-service `cardsRow`); from `sm` it is the same grid as the default.
+  | { type: 'service'; items: ServiceListing[]; gap?: 'default' | 'tight'; layout?: 'grid' | 'rail' }
 
 export function ListingResults(props: Props) {
   const reduce = useReducedMotion()
@@ -19,6 +21,21 @@ export function ListingResults(props: Props) {
 
   // Products browse as a responsive 1/2/4-per-row image grid; services as a 1/2/3-per-row
   // grid of vertical v3.7 cards (Figma 611:45637 — three columns on desktop).
+  if (props.type === 'service' && props.layout === 'rail') {
+    return (
+      // -mx-4 px-4: the row runs to the screen edge while the first card still starts at the page margin. py-1.5 / -my-1.5: room for the cards' 4 px focus ring (overflow clips it).
+      <div className="-mx-4 -my-1.5 flex snap-x gap-3 overflow-x-auto px-4 py-1.5 sm:mx-0 sm:my-0 sm:grid sm:snap-none sm:grid-cols-2 sm:gap-6 sm:overflow-visible sm:p-0 lg:grid-cols-3">
+        {props.items.map((s, i) => (
+          // No `inView`: the fade runs on mount. The in-view trigger needs 50 px of the card on screen, and the card that PEEKS at the right edge (the
+          // scroll hint of the frame) shows only ~47 — it would stay invisible until scrolled to.
+          <BlurFade key={s.id} delay={i * 0.05} duration={0.2} {...fade} className="w-[300px] shrink-0 snap-start scroll-ms-4 sm:w-auto">
+            <ServiceListingCard service={s} />
+          </BlurFade>
+        ))}
+      </div>
+    )
+  }
+
   if (props.type === 'service') {
     return (
       // gap-4 below sm: the 375 frame (621:49740) stacks its cards at 16, while the desktop grid
