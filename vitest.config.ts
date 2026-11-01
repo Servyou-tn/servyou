@@ -64,6 +64,10 @@ export const INTEGRATION_GLOBS = [
   '**/freelancer-links-cap-live.test.ts',
   // Contact messages are stored, service role only: 1 sign-in.
   '**/contact-messages-live.test.ts',
+  // The phone reveal rule (get_contact_phone): 1 sign-in per side.
+  '**/phone-reveal-buyer-live.test.ts',
+  '**/phone-reveal-seller-live.test.ts',
+  '**/phone-reveal-mission-live.test.ts',
   // The password-reset flow with « Secure password change » (pre-beta review M1): 1 sign-in.
   '**/password-reset-live.test.ts',
   // The wrong-password attempt limit (5 per 15 min): 1 sign-in.
