@@ -1084,6 +1084,17 @@ both on 2026-10-28.
       attempts see each other; over the limit its row is removed again. Only a wrong current password keeps its row.
       Rows older than a day are pruned on each insert (indexed on `attempted_at`).
     - The recorded statement carries no top-level comments. The executable SQL is identical.
+112. **20261101164444_contact_messages** (`6527a48f`) — `public.contact_messages`: /contact messages are stored
+    instead of dropped (founder + architect decision 2026-11-01; the form answered « Message reçu » but only logged
+    the subject and length).
+    - Columns: name, email, subject (the form's key), message, `user_id` (sender when signed in, set null on account
+      deletion), `status` new / handled. CHECKs mirror the form limits (name 100, email 254, subject 100, message
+      1–2000) — approved defence in depth.
+    - Service-role only: RLS on with no policy, every client privilege revoked (incl. the post-107 default SELECT);
+      the client-write allow-list is untouched. Written by `submitContactMessage` after the Turnstile and length
+      checks; read in the Supabase table view (`docs/operations/contact-messages.md`).
+    - Retention 12 months (manual query documented; scheduled job is a follow-up).
+    - The recorded statement carries no top-level comments. The executable SQL is identical.
 
 ## Rollback paths
 
