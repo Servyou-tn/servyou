@@ -8,6 +8,8 @@ import { OrderRail } from '@/components/orders/OrderRail'
 import { FOCUS_RING } from '@/components/layout/styles'
 import { CancelOrderButton } from '@/components/orders/CancelOrderButton'
 import { WhatsAppContactButton } from '@/components/orders/WhatsAppContactButton'
+import { PhoneAfterAcceptance } from '@/components/orders/PhoneAfterAcceptance'
+import { buyerContactState } from '@/lib/orders/phone-visibility'
 import { useLang } from '@/components/LangProvider'
 import { t } from '@/lib/i18n'
 import type { MyProductOrder } from '@/lib/marche/my-orders'
@@ -51,6 +53,7 @@ export function ProductOrdersList({ orders }: { orders: MyProductOrder[] }) {
 function ProductOrderRow({ order, open, onToggle }: { order: MyProductOrder; open: boolean; onToggle: () => void }) {
   const lang = useLang()
   const status = order.status as OrderStatus
+  const contact = buyerContactState(order.status)
   const pill = statusPillFor(order.status, 'product') ?? statusPillFor('pending', 'product')!
   const title = order.title ?? t('mesCommandes.untitled.product', lang)
   const price = order.total != null ? `${order.total.toLocaleString('fr-FR')} TND` : null
@@ -84,16 +87,22 @@ function ProductOrderRow({ order, open, onToggle }: { order: MyProductOrder; ope
         </div>
       )}
 
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-        <WhatsAppContactButton
-          targetId={order.sellerId}
-          label={t('mesCommandes.whatsapp', lang)}
-          message={t('mesCommandes.whatsapp.message_product', lang, { ref: shortRef(order.id), product: title })}
-          errorMessageKey="mesCommandes.whatsapp.error"
-          noPhoneMessageKey="mesCommandes.whatsapp.none_shop"
-        />
-        {canConfirmReceipt(status) && <ConfirmReceipt orderId={order.id} />}
-      </div>
+      {/* Phone reveal rule: the shop's number exists only once the seller accepts — a pending order shows the hint, not a button that can only fail. */}
+      {(contact !== 'hidden' || canConfirmReceipt(status)) && (
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+          {contact === 'button' && (
+            <WhatsAppContactButton
+              targetId={order.sellerId}
+              label={t('mesCommandes.whatsapp', lang)}
+              message={t('mesCommandes.whatsapp.message_product', lang, { ref: shortRef(order.id), product: title })}
+              errorMessageKey="mesCommandes.whatsapp.error"
+              noPhoneMessageKey="mesCommandes.whatsapp.none_shop"
+            />
+          )}
+          {contact === 'hint' && <PhoneAfterAcceptance who="seller" lang={lang} />}
+          {canConfirmReceipt(status) && <ConfirmReceipt orderId={order.id} />}
+        </div>
+      )}
 
       {isCancellable(status) && (
         <div className="self-start">

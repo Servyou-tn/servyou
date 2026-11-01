@@ -5,6 +5,8 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { OrderRail } from '@/components/orders/OrderRail'
+import { PhoneAfterAcceptance } from '@/components/orders/PhoneAfterAcceptance'
+import { buyerContactState } from '@/lib/orders/phone-visibility'
 import { OrderAccordionRow } from './OrderAccordionRow'
 import { useLang } from '@/components/LangProvider'
 import { t } from '@/lib/i18n'
@@ -71,6 +73,7 @@ function OrderRow({
 }) {
   const lang = useLang()
   const pill = STATUS_PILL[order.status] ?? STATUS_PILL.pending
+  const contact = buyerContactState(order.status)
   const title = order.title ?? t('mesCommandes.untitled', lang)
   const price =
     order.startingPrice != null ? `${order.startingPrice.toLocaleString('fr-FR')} TND` : null
@@ -91,10 +94,14 @@ function OrderRow({
     >
       {!isCancelled(order.status) && <Rail status={order.status} />}
 
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-        <WhatsAppButton sellerId={order.sellerId} serviceTitle={title} />
-        {canConfirmReceipt(order.status) && <ConfirmReceipt orderId={order.id} />}
-      </div>
+      {/* Phone reveal rule: the freelancer's number exists only once they accept — a pending request shows the hint, not a button that can only fail. */}
+      {(contact !== 'hidden' || canConfirmReceipt(order.status)) && (
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+          {contact === 'button' && <WhatsAppButton sellerId={order.sellerId} serviceTitle={title} />}
+          {contact === 'hint' && <PhoneAfterAcceptance who="freelancer" lang={lang} />}
+          {canConfirmReceipt(order.status) && <ConfirmReceipt orderId={order.id} />}
+        </div>
+      )}
 
       <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
         <p className="text-caption leading-[17px] text-text-muted">

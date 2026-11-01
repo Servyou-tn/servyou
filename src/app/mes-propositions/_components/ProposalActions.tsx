@@ -11,35 +11,30 @@ import { FOCUS_RING } from '@/components/layout/styles'
 import { BASE as BUTTON_BASE, SIZE as BUTTON_SIZE, VARIANT_BASE, VARIANT_STATE } from '@/components/ui/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { ConfirmModal } from '@/components/marche/ConfirmModal'
-import { WhatsAppContactButton } from '@/components/orders/WhatsAppContactButton'
 import { isProposalActive, type ProposalState } from '@/lib/marche/proposals'
 import { withdrawProposalAction } from '../actions'
 
-// The row's `actions` cell — Figma 296:9022: [« Voir la mission » secondary/sm · WhatsApp icon 36 · kebab 36], gap 8, end-aligned.
-// Client because the WhatsApp reveal reads the phone on click and the kebab opens the withdraw confirmation.
+// The row's `actions` cell — Figma 296:9022: [« Voir la mission » secondary/sm · kebab 36], gap 8, end-aligned. The frame's WhatsApp icon (client contact) is GONE:
+// phone reveal rule (2026-11-01) — a freelancer never gets the client's number through a proposal; the client contacts them if they retain it.
+// Client because the kebab opens the withdraw confirmation.
 //
-//   open                → « Voir la mission » (/missions/[id], which shows its answered state) · live WhatsApp · kebab: Voir ma
-//                         proposition (H13) + Retirer ma proposition (D-H11-2)
-//   filled / expired    → same link; WhatsApp is the disabled sunken circle (follow up live pitches only); kebab: Voir ma proposition
+//   open                → « Voir la mission » (/missions/[id], which shows its answered state) · kebab: Voir ma proposition (H13) + Retirer ma proposition (D-H11-2)
+//   filled / expired    → same link; kebab: Voir ma proposition
 //   unavailable         → the post is gone, so « Voir la mission » would 404: the primary link is « Voir ma proposition » (H13 renders
-//                         the recap without the mission); no WhatsApp target; no kebab (nothing left to do)
+//                         the recap without the mission); no kebab (nothing left to do)
 export function ProposalActions({
   responseId,
   jobPostId,
   state,
-  clientId,
   title,
   lang,
-  whatsappMessage,
 }: {
   responseId: string
   jobPostId: string
   state: ProposalState
-  clientId: string | null
   /** Names the kebab for assistive tech and the confirmation. */
   title: string
   lang: Lang
-  whatsappMessage: string
 }) {
   const router = useRouter()
   const [confirmOpen, setConfirmOpen] = useState(false)
@@ -71,18 +66,6 @@ export function ProposalActions({
       >
         {t(gone ? 'propositions.view_mine' : 'propositions.view_mission', lang)}
       </Link>
-
-      {clientId ? (
-        <WhatsAppContactButton
-          iconOnly
-          disabled={!active}
-          targetId={clientId}
-          label={t(active ? 'propositions.whatsapp_aria' : 'propositions.whatsapp_closed_aria', lang)}
-          message={whatsappMessage}
-          errorMessageKey="proposal.sent.whatsapp_error"
-          noPhoneMessageKey="proposal.sent.whatsapp_none"
-        />
-      ) : null}
 
       {gone ? null : (
         <DropdownMenu>

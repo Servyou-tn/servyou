@@ -3542,11 +3542,11 @@ export const ar: Record<string, string> = {
   'proposal.sent.at':                "أُرسل في {date} الساعة {time}",
   'proposal.sent.next':              "وماذا بعد؟",
   'proposal.sent.step1':             "يطلع {name} على عرضك ضمن إعلاناته.",
-  'proposal.sent.step2':             "يمكنك التواصل معه مباشرة عبر واتساب.",
-  'proposal.sent.whatsapp':          "التواصل مع {name} عبر واتساب",
-  'proposal.sent.whatsapp_message':  "مرحبا {name}، أرسلتُ للتو عرضي لمهمتك « {title} » على Servyou.",
-  'proposal.sent.whatsapp_error':    "تعذر جلب الرقم. حاول مرة أخرى.",
-  'proposal.sent.whatsapp_none':     "لم يضف هذا العميل رقم واتساب بعد.",
+  // REVIEW_AR_TRANSLATION
+  'proposal.sent.step2':             "سيتواصل معك العميل عبر واتساب إذا اختار عرضك.",
+  // REVIEW_AR_TRANSLATION — phone reveal rule (2026-11-01)
+  'phone.after_acceptance.seller':       "متاح بعد قبول البائع",
+  'phone.after_acceptance.freelancer':   "متاح بعد قبول المستقل",
   'proposal.sent.mine':              "عرض عروضي ←",
 
   // ─── H6 « Créer un service » wizard (/mes-services/creer) ─────────────────────
@@ -3756,8 +3756,6 @@ export const ar: Record<string, string> = {
   'propositions.status.unavailable':    "غير متاحة",
   'propositions.view_mission':          "عرض المهمة",
   'propositions.view_mine':             "عرض عرضي",
-  'propositions.whatsapp_aria':         "تواصل مع العميل عبر واتساب",
-  'propositions.whatsapp_closed_aria':  "واتساب غير متاح: هذه المهمة مغلقة",
   'propositions.row_actions_aria':      "إجراءات {title}",
   'propositions.withdraw.action':       "سحب عرضي",
   'propositions.withdraw.title':        "سحب هذا العرض؟",

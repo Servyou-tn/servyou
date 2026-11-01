@@ -213,6 +213,74 @@ describe('reference line — one « # » on BOTH lists', () => {
   })
 })
 
+describe('phone reveal rule (2026-11-01) — the buyer gets the seller’s number only after acceptance', () => {
+  const service = (status: string) => ({
+    id: ID,
+    status,
+    createdAt: '2026-10-20T10:00:00Z',
+    receivedAt: null,
+    cancelledBy: null,
+    cancellationReason: null,
+    title: 'Logo professionnel',
+    category: null,
+    startingPrice: 300,
+    sellerId: 's',
+    sellerName: 'Zina',
+    sellerCity: null,
+  })
+  async function openProduct(o: MyProductOrder, lang: 'fr' | 'ar' = 'fr') {
+    const user = userEvent.setup()
+    renderList([o], lang)
+    await user.click(screen.getByRole('button', { name: /Casque Bluetooth Sony/ }))
+  }
+  async function openService(status: string, lang: 'fr' | 'ar' = 'fr') {
+    const user = userEvent.setup()
+    render(
+      <LangProvider lang={lang}>
+        <OrdersList orders={[service(status)]} />
+      </LangProvider>,
+    )
+    await user.click(screen.getByRole('button', { name: /Logo professionnel/ }))
+  }
+  const wa = (lang: 'fr' | 'ar' = 'fr') => screen.queryByRole('button', { name: t('mesCommandes.whatsapp', lang) })
+
+  it('PRODUCT order, pending: the hint « …par le vendeur » replaces the button', async () => {
+    await openProduct(order({ status: 'pending' }))
+    expect(wa()).toBeNull()
+    expect(screen.getByText('Disponible après acceptation par le vendeur')).toBeInTheDocument()
+  })
+
+  it('SERVICE order, pending: the hint « …par le freelance » replaces the button', async () => {
+    await openService('pending')
+    expect(wa()).toBeNull()
+    expect(screen.getByText('Disponible après acceptation par le freelance')).toBeInTheDocument()
+  })
+
+  it.each(['accepted', 'prepared', 'dispatched', 'in_delivery', 'arrived', 'received'])('PRODUCT order %s: the WhatsApp button, no hint', async (status) => {
+    await openProduct(order({ status }))
+    expect(wa()).toBeInTheDocument()
+    expect(screen.queryByText(/Disponible après acceptation/)).toBeNull()
+  })
+
+  it.each(['accepted', 'arrived', 'received'])('SERVICE order %s: the WhatsApp button, no hint', async (status) => {
+    await openService(status)
+    expect(wa()).toBeInTheDocument()
+    expect(screen.queryByText(/Disponible après acceptation/)).toBeNull()
+  })
+
+  it('a cancelled order shows neither a button nor the hint (a cancelled-while-pending order has no number for anyone)', async () => {
+    await openProduct(order({ status: 'cancelled', cancelledBy: 'buyer' }))
+    expect(wa()).toBeNull()
+    expect(screen.queryByText(/Disponible après acceptation/)).toBeNull()
+  })
+
+  it('AR: the hint is translated and there is no raw key', async () => {
+    await openProduct(order({ status: 'pending' }), 'ar')
+    expect(screen.getByText('متاح بعد قبول البائع')).toBeInTheDocument()
+    expect(document.body.textContent).not.toMatch(/phone\.after_acceptance/)
+  })
+})
+
 describe('OrdersTabs', () => {
   it('both tabs are links to ?tab=, Produits first, the active one marked as the current page', () => {
     render(<OrdersTabs lang="fr" tab="services" />)

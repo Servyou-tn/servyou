@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { WhatsAppContactButton } from '@/components/orders/WhatsAppContactButton'
 import { BASE as BUTTON_BASE, SIZE as BUTTON_SIZE, VARIANT_BASE, VARIANT_STATE } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
+import { PhoneAfterAcceptance } from '@/components/orders/PhoneAfterAcceptance'
 import { t, type Lang } from '@/lib/i18n'
 
 // D4's primary conversion CTA — reversed founder ruling: BOTH states, branching on
@@ -32,6 +33,7 @@ export function PrimaryCta({
   serviceCount,
   lang,
   size = 'lg',
+  pendingRequest = false,
 }: {
   freelancerProfileId: string
   freelancerName: string
@@ -40,6 +42,8 @@ export function PrimaryCta({
   serviceCount: number
   lang: Lang
   size?: 'sm' | 'lg'
+  /** The viewer already asked and the freelancer has not accepted yet: the number is not revealed until they do (phone reveal rule). */
+  pendingRequest?: boolean
 }) {
   if (contactPhone) {
     return (
@@ -53,6 +57,8 @@ export function PrimaryCta({
       />
     )
   }
+  // Phone reveal rule: a pending request has no number yet — say so instead of offering to ask again.
+  if (pendingRequest) return <PhoneAfterAcceptance who="freelancer" lang={lang} />
   if (firstServiceId) {
     return (
       <Link href={`/demander/${firstServiceId}`} className={cn(BUTTON_BASE, BUTTON_SIZE[size], VARIANT_BASE.primary, VARIANT_STATE.primary)}>
