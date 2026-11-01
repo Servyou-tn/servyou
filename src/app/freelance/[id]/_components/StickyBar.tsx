@@ -24,6 +24,7 @@ export function StickyBar({
   firstServiceId,
   serviceCount,
   lang,
+  pendingRequest = false,
 }: {
   freelancerProfileId: string
   freelancerName: string
@@ -33,6 +34,7 @@ export function StickyBar({
   firstServiceId: string | null
   serviceCount: number
   lang: Lang
+  pendingRequest?: boolean
 }) {
   return (
     <div className="sticky top-[117px] z-20 -mx-4 border-b border-border-subtle bg-surface-base px-4 py-3 shadow-[0_2px_8px_rgba(0,0,0,0.04)] sm:-mx-6 sm:px-6 md:top-16">
@@ -50,6 +52,7 @@ export function StickyBar({
           serviceCount={serviceCount}
           lang={lang}
           size="sm"
+          pendingRequest={pendingRequest}
         />
       </div>
     </div>

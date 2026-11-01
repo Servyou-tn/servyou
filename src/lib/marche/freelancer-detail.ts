@@ -214,6 +214,29 @@ export async function getCompletedProjectCount(profileId: string): Promise<numbe
 // Server-side so the page can decide WHICH cta to render (WhatsApp vs "Demander un service")
 // before paint; the actual digits are re-revealed client-side on click by WhatsAppContactButton,
 // never serialised into this page's HTML.
+//
+// Phone reveal rule (2026-11-01): a BUYER with a still-pending request gets NO number (it is revealed when the freelancer accepts), so the CTA would read
+// « Demander un service » again — wrong, they already asked. This answers that question: does the viewer have a pending order with this freelancer?
+// The page shows « Disponible après acceptation par le freelance » instead. Anonymous viewers and failed reads: false (the normal CTA).
+export async function getViewerPendingRequest(profileId: string): Promise<boolean> {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return false
+  const { count, error } = await supabase
+    .from('orders')
+    .select('id', { count: 'exact', head: true })
+    .eq('buyer_id', user.id)
+    .eq('seller_id', profileId)
+    .eq('status', 'pending')
+  if (error) {
+    reportQueryError('freelancer-detail pending request', error)
+    return false
+  }
+  return (count ?? 0) > 0
+}
+
 export async function getViewerContactPhone(profileId: string): Promise<string | null> {
   const supabase = await createClient()
   const { data, error } = await supabase.rpc('get_contact_phone', { target: profileId })

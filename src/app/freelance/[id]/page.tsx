@@ -7,6 +7,7 @@ import {
   getFreelancerServices,
   getCompletedProjectCount,
   getViewerContactPhone,
+  getViewerPendingRequest,
 } from '@/lib/marche/freelancer-detail'
 import { getShellUser } from '@/lib/marche/shell-user'
 import { getFavoriteState } from '@/lib/marche/favorite-state'
@@ -41,6 +42,10 @@ export default async function FreelancePage({ params }: { params: Promise<{ id: 
     getFavoriteState('freelancer', freelancer.id),
   ])
 
+  // Only asked when there is no number to show: the viewer's pending request is what explains its absence (phone reveal rule).
+  // An anonymous visitor has no request to wait on, so no extra auth round trip for them.
+  const pendingRequest = contactPhone || !shell ? false : await getViewerPendingRequest(freelancer.profileId)
+
   return (
     <AppShell user={shell?.topBarUser ?? null}>
       <FreelancerDetail
@@ -51,6 +56,7 @@ export default async function FreelancePage({ params }: { params: Promise<{ id: 
         lang={lang}
         isLoggedIn={Boolean(shell)}
         isFavorited={isFavorited}
+        pendingRequest={pendingRequest}
       />
     </AppShell>
   )

@@ -2,15 +2,17 @@ import Link from 'next/link'
 import { WhatsAppContactButton } from '@/components/orders/WhatsAppContactButton'
 import { BASE as BUTTON_BASE, SIZE as BUTTON_SIZE, VARIANT_BASE, VARIANT_STATE } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
+import { PhoneAfterAcceptance } from '@/components/orders/PhoneAfterAcceptance'
 import { t, type Lang } from '@/lib/i18n'
 
 // D4's primary conversion CTA — reversed founder ruling: BOTH states, branching on
 // get_contact_phone (resolved server-side, page.tsx). Returns null for every first-time visitor
 // by design (get_contact_phone's own relationship gate: owner, shared order, or shared
 // job_response) — that is the common case this page serves, so "Demander un service" is the
-// primary, not a fallback. Returns a phone once a request exists, at which point WhatsApp
-// coordination is correct. Neither branch is a new relationship concept: get_contact_phone already
-// encodes this distinction.
+// primary, not a fallback. Phone reveal rule (2026-11-01): the freelancer's number is revealed to a buyer only once the freelancer ACCEPTS
+// the request (or when a mission proposal of theirs reached this viewer), so a phone means WhatsApp coordination is correct; a request that is
+// still pending has no phone yet and reads « Disponible après acceptation par le freelance » (`pendingRequest`, page.tsx) instead of offering
+// to ask again. Neither branch is a new relationship concept: get_contact_phone already encodes this distinction.
 //
 // Shared by the hero's ActionsRow and StickyBar (390:10694 / 390:11097 both draw the same CTA) so
 // the branch and its copy cannot drift between the two mount points.
@@ -32,6 +34,7 @@ export function PrimaryCta({
   serviceCount,
   lang,
   size = 'lg',
+  pendingRequest = false,
 }: {
   freelancerProfileId: string
   freelancerName: string
@@ -40,6 +43,8 @@ export function PrimaryCta({
   serviceCount: number
   lang: Lang
   size?: 'sm' | 'lg'
+  /** The viewer already asked and the freelancer has not accepted yet: the number is not revealed until they do (phone reveal rule). */
+  pendingRequest?: boolean
 }) {
   if (contactPhone) {
     return (
@@ -53,6 +58,8 @@ export function PrimaryCta({
       />
     )
   }
+  // Phone reveal rule: a pending request has no number yet — say so instead of offering to ask again.
+  if (pendingRequest) return <PhoneAfterAcceptance who="freelancer" lang={lang} />
   if (firstServiceId) {
     return (
       <Link href={`/demander/${firstServiceId}`} className={cn(BUTTON_BASE, BUTTON_SIZE[size], VARIANT_BASE.primary, VARIANT_STATE.primary)}>

@@ -41,6 +41,7 @@ export function FreelancerDetail({
   lang,
   isLoggedIn,
   isFavorited,
+  pendingRequest = false,
 }: {
   freelancer: FreelancerDetailData
   services: ServiceListing[]
@@ -49,6 +50,7 @@ export function FreelancerDetail({
   lang: Lang
   isLoggedIn: boolean
   isFavorited: boolean
+  pendingRequest?: boolean
 }) {
   const yearsExperience = freelancer.yearsExperience ?? 0
   const hasAbout = Boolean(freelancer.bio?.trim())
@@ -144,6 +146,7 @@ export function FreelancerDetail({
             serviceCount={services.length}
             lang={lang}
             isLoggedIn={isLoggedIn}
+            pendingRequest={pendingRequest}
           />
         </div>
       </div>
@@ -157,6 +160,7 @@ export function FreelancerDetail({
         firstServiceId={firstServiceId}
         serviceCount={services.length}
         lang={lang}
+        pendingRequest={pendingRequest}
       />
 
       {hasAbout && (

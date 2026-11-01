@@ -18,6 +18,7 @@ export function ActionsRow({
   serviceCount,
   lang,
   isLoggedIn,
+  pendingRequest = false,
 }: {
   /** freelancer_profiles.id — the route id and the favorites target (NOT `freelancerProfileId`, which is profiles.id). */
   freelancerId: string
@@ -29,6 +30,7 @@ export function ActionsRow({
   serviceCount: number
   lang: Lang
   isLoggedIn: boolean
+  pendingRequest?: boolean
 }) {
   return (
     <div className="flex flex-wrap items-center gap-3">
@@ -40,6 +42,7 @@ export function ActionsRow({
         serviceCount={serviceCount}
         lang={lang}
         size="lg"
+        pendingRequest={pendingRequest}
       />
       {/* Added at the founder's request (B6): 390:10676 draws hearts only on the service thumbnails. */}
       <FavoriteHeart kind="freelancer" targetId={freelancerId} name={freelancerName} initialFavorited={isFavorited} isLoggedIn={isLoggedIn} />

@@ -3,7 +3,6 @@ import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { CheckCircle, Inbox, MessageCircle, Users } from 'lucide-react'
 import { AppShell } from '@/components/shell/AppShell'
-import { WhatsAppContactButton } from '@/components/orders/WhatsAppContactButton'
 import { FOCUS_RING } from '@/components/layout/styles'
 import { getSentProposal } from '@/lib/marche/sent-proposal-query'
 import { getShellUser } from '@/lib/marche/shell-user'
@@ -75,16 +74,6 @@ export default async function PropositionEnvoyeePage({ params }: { params: Promi
         </section>
 
         <div className="flex w-full flex-col items-center gap-4">
-          {sent.mission ? (
-            <WhatsAppContactButton
-              targetId={sent.mission.consumerId}
-              size="md"
-              label={t('proposal.sent.whatsapp', lang, { name })}
-              message={t('proposal.sent.whatsapp_message', lang, { name, title: sent.mission.title })}
-              errorMessageKey="proposal.sent.whatsapp_error"
-              noPhoneMessageKey="proposal.sent.whatsapp_none"
-            />
-          ) : null}
           <Link href="/mes-propositions" className={`rounded-sm text-body-sm font-medium text-brand-blue-600 hover:underline ${FOCUS_RING}`}>
             {t('proposal.sent.mine', lang)}
           </Link>

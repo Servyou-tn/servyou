@@ -3653,11 +3653,10 @@ export const fr: Record<string, string> = {
   'proposal.sent.at':                "Envoyée le {date} à {time}",
   'proposal.sent.next':              "Et maintenant ?",
   'proposal.sent.step1':             "{name} voit votre proposition dans ses annonces.",
-  'proposal.sent.step2':             "Vous pouvez le contacter directement sur WhatsApp.",
-  'proposal.sent.whatsapp':          "Contacter {name} via WhatsApp",
-  'proposal.sent.whatsapp_message':  "Bonjour {name}, je viens d'envoyer ma proposition pour votre mission « {title} » sur Servyou.",
-  'proposal.sent.whatsapp_error':    "Impossible de récupérer le numéro. Réessayez.",
-  'proposal.sent.whatsapp_none':     "Ce client n'a pas encore ajouté de numéro WhatsApp.",
+  'proposal.sent.step2':             "Le client vous contactera sur WhatsApp s'il retient votre proposition.",
+  // Phone reveal rule (2026-11-01): the buyer sees this instead of a WhatsApp button while the order / request is pending.
+  'phone.after_acceptance.seller':       "Disponible après acceptation par le vendeur",
+  'phone.after_acceptance.freelancer':   "Disponible après acceptation par le freelance",
   'proposal.sent.mine':              "Voir mes propositions →",
 
   // ─── H6 « Créer un service » wizard (/mes-services/creer) ─────────────────────
@@ -3866,8 +3865,6 @@ export const fr: Record<string, string> = {
   'propositions.status.unavailable':    "Indisponible",
   'propositions.view_mission':          "Voir la mission",
   'propositions.view_mine':             "Voir ma proposition",
-  'propositions.whatsapp_aria':         "Contacter le client sur WhatsApp",
-  'propositions.whatsapp_closed_aria':  "WhatsApp indisponible : cette mission est clôturée",
   'propositions.row_actions_aria':      "Actions pour {title}",
   'propositions.withdraw.action':       "Retirer ma proposition",
   'propositions.withdraw.title':        "Retirer cette proposition ?",

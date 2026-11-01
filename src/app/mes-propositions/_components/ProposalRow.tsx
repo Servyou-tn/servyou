@@ -129,10 +129,8 @@ export function ProposalRow({ proposal: p, lang }: { proposal: Proposal; lang: L
           responseId={p.id}
           jobPostId={p.jobPostId}
           state={p.state}
-          clientId={p.clientId}
           title={title}
           lang={lang}
-          whatsappMessage={t('proposal.sent.whatsapp_message', lang, { name: clientName, title })}
         />
       </div>
     </li>

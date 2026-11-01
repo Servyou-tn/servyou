@@ -2,6 +2,8 @@ import type { ReactNode } from 'react'
 import Image from 'next/image'
 import { Package } from 'lucide-react'
 import { WhatsAppContactButton } from '@/components/orders/WhatsAppContactButton'
+import { PhoneAfterAcceptance } from '@/components/orders/PhoneAfterAcceptance'
+import { buyerContactState } from '@/lib/orders/phone-visibility'
 import type { OrderDetail } from '@/lib/marche/order-detail'
 import { priceBreakdownFor } from '@/lib/orders/price-breakdown'
 import { shortRef } from '@/lib/orders/order-status'
@@ -142,6 +144,7 @@ export function SellerPanel({ order, phone, lang }: { order: OrderDetail; phone:
     .join(' · ')
   const ref = shortRef(order.id)
   const title = order.item.title ?? ''
+  const contact = buyerContactState(order.status)
 
   return (
     <Panel title={t(isProduct ? 'buyerOrder.panel.seller_shop' : 'buyerOrder.panel.seller_freelancer', lang)}>
@@ -164,18 +167,22 @@ export function SellerPanel({ order, phone, lang }: { order: OrderDetail; phone:
         </div>
       ) : null}
 
-      <WhatsAppContactButton
-        targetId={seller.id}
-        size="lg"
-        label={t(isProduct ? 'buyerOrder.contact_shop' : 'buyerOrder.contact_freelancer', lang)}
-        message={
-          isProduct
-            ? t('mesCommandes.whatsapp.message_product', lang, { ref, product: title })
-            : t('mesCommandes.whatsapp.message', lang, { service: title })
-        }
-        errorMessageKey="mesCommandes.whatsapp.error"
-        noPhoneMessageKey={isProduct ? 'mesCommandes.whatsapp.none_shop' : 'mesCommandes.whatsapp.none'}
-      />
+      {/* Phone reveal rule (lib/orders/phone-visibility): pending → the hint, never a button that can only fail; cancelled → nothing. */}
+      {contact === 'button' && (
+        <WhatsAppContactButton
+          targetId={seller.id}
+          size="lg"
+          label={t(isProduct ? 'buyerOrder.contact_shop' : 'buyerOrder.contact_freelancer', lang)}
+          message={
+            isProduct
+              ? t('mesCommandes.whatsapp.message_product', lang, { ref, product: title })
+              : t('mesCommandes.whatsapp.message', lang, { service: title })
+          }
+          errorMessageKey="mesCommandes.whatsapp.error"
+          noPhoneMessageKey={isProduct ? 'mesCommandes.whatsapp.none_shop' : 'mesCommandes.whatsapp.none'}
+        />
+      )}
+      {contact === 'hint' && <PhoneAfterAcceptance who={isProduct ? 'seller' : 'freelancer'} lang={lang} />}
     </Panel>
   )
 }
