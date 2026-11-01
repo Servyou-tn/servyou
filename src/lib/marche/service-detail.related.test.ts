@@ -11,11 +11,12 @@ vi.mock('@/lib/supabase/server', () => ({
     from(table: string) {
       const q = { filters: [] as Filter[] }
       const chain: Record<string, unknown> = {}
-      for (const m of ['select', 'is', 'neq', 'order', 'limit', 'in']) chain[m] = () => chain
+      for (const m of ['select', 'neq', 'order', 'limit', 'in']) chain[m] = () => chain
+      chain.is = (col: string, val: unknown) => (q.filters.push([`is:${col}`, val]), chain)
       chain.eq = (col: string, val: unknown) => (q.filters.push([col, val]), chain)
       chain.then = (resolve: (v: unknown) => unknown) => {
         if (table === 'service_listings') h.queries.push(q)
-        const key = table === 'public_profiles' ? 'public_profiles' : (q.filters.find(([c]) => c !== 'status')?.[0] ?? 'newest')
+        const key = table === 'public_profiles' ? 'public_profiles' : (q.filters.find(([c]) => c === 'freelancer_profile_id' || c === 'category_id')?.[0] ?? 'newest')
         return Promise.resolve({ data: h.rows.get(key as string) ?? [], error: null }).then(resolve)
       }
       return chain
@@ -64,10 +65,24 @@ describe('getRelatedServices', () => {
     expect(ids(r)).toEqual(['n1'])
   })
 
-  it('every query is active-only (the moderation / draft guard)', async () => {
+  it('EVERY tier — the freelancer’s own included — is active-only and hides moderated rows and moderated freelancers', async () => {
     h.rows.set('newest', [row('n1')])
+    await getRelatedServices(opts) // own (empty) → category (empty) → newest: all three tiers run
+    expect(h.queries).toHaveLength(3)
+    for (const q of h.queries) {
+      expect(q.filters).toContainEqual(['status', 'active'])
+      expect(q.filters).toContainEqual(['is:admin_hidden_at', null])
+      expect(q.filters).toContainEqual(['is:freelancer_profiles.admin_hidden_at', null])
+    }
+  })
+
+  it('the own-services tier hides moderated rows too (a hidden own service never turns the heading on)', async () => {
+    h.rows.set('freelancer_profile_id', [row('o1')])
     await getRelatedServices(opts)
-    for (const q of h.queries) expect(q.filters).toContainEqual(['status', 'active'])
+    expect(h.queries).toHaveLength(1)
+    expect(h.queries[0].filters).toContainEqual(['freelancer_profile_id', 'fp-1'])
+    expect(h.queries[0].filters).toContainEqual(['is:admin_hidden_at', null])
+    expect(h.queries[0].filters).toContainEqual(['is:freelancer_profiles.admin_hidden_at', null])
   })
 
   it('names the cards’ freelancer from public_profiles', async () => {
