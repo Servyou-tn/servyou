@@ -75,7 +75,7 @@ export async function updateShopAction(input: unknown): Promise<UpdateShopResult
     if (field === 'description') {
       return { ok: false, error: t('shop.create.error.desc_min', lang, { min: DESC_MIN }), field: 'description' }
     }
-    if (typeof field === 'string' && field in SOCIAL_COLUMN_PLATFORM) {
+    if (typeof field === 'string' && Object.hasOwn(SOCIAL_COLUMN_PLATFORM, field)) {
       const column = field as SocialColumn
       return { ok: false, error: t(`shop.edit.social.invalid_${SOCIAL_COLUMN_PLATFORM[column]}`, lang), field: column }
     }

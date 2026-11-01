@@ -45,11 +45,13 @@ export function SocialLinksSection({
   const lang = useLang()
   const complete = SHOP_SOCIAL_PLATFORMS.some((p) => values[p].trim() !== '')
   const hasError = SHOP_SOCIAL_PLATFORMS.some((p) => errors[p])
-  // Opened imperatively when an error appears, never closed by code: an `open` prop would also CLOSE the section the moment the error clears.
+  // Opened imperatively on every submit that leaves an error (a new `errors` object), never closed by code: an `open` prop would also CLOSE
+  // the section the moment the error clears. No maxLength on the inputs: a browser cuts a longer paste silently into a different, valid-looking
+  // link — the 300 limit is the shared rule's (refused with a message).
   const ref = React.useRef<HTMLDetailsElement>(null)
   React.useEffect(() => {
     if (hasError && ref.current) ref.current.open = true
-  }, [hasError])
+  }, [errors, hasError])
 
   return (
     <details
@@ -89,7 +91,6 @@ export function SocialLinksSection({
                 autoComplete="off"
                 autoCapitalize="off"
                 spellCheck={false}
-                maxLength={300}
                 placeholder={t(PLACEHOLDER_KEY[platform], lang)}
                 value={values[platform]}
                 error={errors[platform]}
