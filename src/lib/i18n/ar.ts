@@ -1411,6 +1411,10 @@ export const ar: Record<string, string> = {
   'shop.edit.save':          "حفظ التعديلات",
   'shop.edit.view_public':   "عرض متجري",
   'shop.edit.config_link':   "إدارة أوقات العمل والتوصيل والدفع والفئات",
+  // REVIEW_AR_TRANSLATION
+  'shop.edit.social.invalid_facebook':  "رابط فيسبوك غير صالح (مثال: facebook.com/maboutique).",
+  'shop.edit.social.invalid_instagram': "رابط إنستغرام غير صالح (مثال: instagram.com/maboutique).",
+  'shop.edit.social.invalid_tiktok':    "رابط تيك توك غير صالح (مثال: tiktok.com/@maboutique).",
 
   // ─── /devenir-vendeur/freelance (role-upgrade marketing) ─────────────────────
   // Shared between both /devenir-vendeur pitch pages (TermsLine.tsx) — same copy, same target.

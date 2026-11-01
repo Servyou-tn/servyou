@@ -194,3 +194,39 @@ describe('updateShopAction — validation', () => {
     expect(h.calls.updatePayloads).toHaveLength(0)
   })
 })
+
+describe('updateShopAction — social links (migration 116)', () => {
+  it('no social key sent: nothing about the links is written (the stored values stay)', async () => {
+    const res = await updateShopAction(okInput())
+    expect(res).toEqual({ ok: true })
+    const payload = h.calls.updatePayloads[0]
+    expect(payload).not.toHaveProperty('facebook_url')
+    expect(payload).not.toHaveProperty('instagram_url')
+    expect(payload).not.toHaveProperty('tiktok_url')
+  })
+
+  it('normalises an address typed without https:// and writes only the keys sent; an empty field clears its column', async () => {
+    const res = await updateShopAction(okInput({ facebook_url: '  facebook.com/boutique.amira ', tiktok_url: '' }))
+    expect(res).toEqual({ ok: true })
+    expect(h.calls.updatePayloads[0]).toMatchObject({ facebook_url: 'https://facebook.com/boutique.amira', tiktok_url: null })
+    expect(h.calls.updatePayloads[0]).not.toHaveProperty('instagram_url')
+  })
+
+  it.each([
+    ['facebook_url', 'https://facebook.com@evil.io/x'], // userinfo: the browser would open evil.io
+    ['instagram_url', 'https://instagram.com.evil.io/x'], // look-alike host
+    ['tiktok_url', 'http://tiktok.com/@amira'], // http only
+    ['instagram_url', 'https://facebook.com/amira'], // another platform's host in this field
+  ])('%s = %s is refused, names its field, and writes nothing', async (column, value) => {
+    const res = await updateShopAction(okInput({ [column]: value }))
+    const platform = column.replace('_url', '')
+    expect(res).toEqual({ ok: false, error: `shop.edit.social.invalid_${platform}`, field: column })
+    expect(h.calls.updatePayloads).toHaveLength(0)
+  })
+
+  it('a CHECK refusal from the database (23514) is reported as that link, not a generic failure', async () => {
+    h.state.updateResult = { error: { message: 'new row for relation "shops" violates check constraint "shops_tiktok_url_valid"', code: '23514' } }
+    const res = await updateShopAction(okInput({ tiktok_url: 'tiktok.com/@amira' }))
+    expect(res).toEqual({ ok: false, error: 'shop.edit.social.invalid_tiktok', field: 'tiktok_url' })
+  })
+})
