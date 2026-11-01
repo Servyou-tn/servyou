@@ -2,7 +2,8 @@
  * Phone reveal rule (db/migrations/20261101181237_phone_reveal_rule.sql, #113), as the BUYER / mission owner — signed in once:
  *   * buyer → seller: hidden while pending; visible from « accepted » on; kept after a cancellation that followed an
  *     acceptance; hidden after a cancellation while pending (and for a pre-events cancelled order, no history);
- *   * mission owner → a freelancer who sent a proposal: visible;
+ *   * mission owner → a freelancer who sent a proposal: visible, also once the post is closed / expired; hidden once
+ *     it is deleted (decision 2026-11-01, PENDING_phone_reveal_deleted_post.sql);
  *   * own phone: visible; anonymous caller: NULL.
  * Fixtures: phone-reveal-fixtures.ts (`ph-buy-`). 1 fixture sign-in.
  *
@@ -12,7 +13,7 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest'
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 import { fixtureSignIn } from './fixture-session'
-import { anonKey, email, hasCreds, opts, PHONES, remaining, SCENARIOS, setup, stage, teardown, url, type Fixture } from './phone-reveal-fixtures'
+import { admin, anonKey, email, hasCreds, opts, PHONES, remaining, SCENARIOS, setup, stage, teardown, url, type Fixture } from './phone-reveal-fixtures'
 
 const PREFIX = 'ph-buy-'
 let fx: Fixture
@@ -63,6 +64,19 @@ describe.skipIf(!hasCreds)("buyer → seller's phone", () => {
 describe.skipIf(!hasCreds)('missions, self, anonymous', () => {
   it("the mission owner sees the phone of a freelancer who sent a proposal", async () => {
     expect(await phoneOf(buyer, fx.freelancerId)).toBe(PHONES.freelancer)
+  })
+
+  // Decision 2026-11-01: a closed post keeps the reveal; a deleted one does not (nothing links them any more).
+  it.each([
+    ['filled', true],
+    ['expired', true],
+    ['deleted', false],
+  ])('post %s → freelancer phone visible: %s', async (status, visible) => {
+    const { error } = await admin.from('job_posts').update({ status }).eq('id', fx.postId)
+    expect(error).toBeNull()
+    expect(await phoneOf(buyer, fx.freelancerId)).toBe(visible ? PHONES.freelancer : null)
+    const { error: back } = await admin.from('job_posts').update({ status: 'open' }).eq('id', fx.postId)
+    expect(back).toBeNull()
   })
 
   it('own phone is visible', async () => {
