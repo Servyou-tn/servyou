@@ -1,5 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { t, type Lang } from '@/lib/i18n'
+import { LINKS_MAX } from '@/lib/social/platforms'
 
 // H3 "Modifier mon profil" (Figma 404:11909) data layer. Read-only fetch + pure validation logic;
 // writes live in the route's own actions.ts (a 'use server' module may only export async
@@ -10,7 +11,7 @@ export const BIO_MAX = 2000
 export const BIO_MIN_FOR_PUBLISH = 100
 export const SKILLS_MIN_FOR_PUBLISH = 3
 export const SKILLS_MAX = 15
-export const LINKS_CAP = 3
+export const LINKS_CAP = LINKS_MAX
 export const PORTFOLIO_CAP = 6
 export const EDUCATION_CAP = 5
 export const CERTIFICATIONS_CAP = 5

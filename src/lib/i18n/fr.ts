@@ -681,6 +681,7 @@ export const fr: Record<string, string> = {
   'freelance.public.no_phone':          "Aucun numéro disponible pour le moment.",
   'freelance.public.request_service_cta': "Demander un service",
   'freelance.public.share':             "Partager",
+  'freelance.public.links_label':       "Liens",
   'freelance.public.link_copied':       "Lien copié !",
   'freelance.public.report_trigger':    "Signaler ce profil",
   'freelance.public.about_title':       "À propos",
@@ -2114,6 +2115,15 @@ export const fr: Record<string, string> = {
   'freelance.edit.trust_title':         "Confiance & liens",
   'freelance.edit.years_experience_label': "Années d'expérience",
   'freelance.edit.years_suffix':        "ans",
+  // Links kit (docs/design/freelancer-links-kit.md) — platform icons, links editor, public row.
+  'social.profile_of':                  "Profil {platform} de {name}",
+  'social.website_of':                  "Site web de {name}",
+  'links.editor.helper':                "Vos profils publics — jusqu'à {max} liens. Le nom du lien est celui de la plateforme.",
+  'links.editor.suggested':             "Suggestions pour votre métier",
+  'links.editor.add_named':             "Ajouter un lien {platform}",
+  'links.editor.other':                 "Autre plateforme",
+  'links.editor.url_aria':              "Adresse du lien {index} ({platform})",
+  'freelance.edit.links_cap_reached':   "{max} liens maximum.",
   'freelance.edit.links_title':         "Liens externes",
   'freelance.edit.links_helper':        "Vos profils publics — GitHub, LinkedIn, site web. Jusqu'à 3 liens.",
   // 🔨 founder-ruled from content shape — the file never named these two inputs (unedited

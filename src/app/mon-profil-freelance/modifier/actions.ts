@@ -17,15 +17,16 @@ import {
   URL_FIELD_SECTION_KEYS,
   type UrlField,
   PORTFOLIO_CAP,
+  LINKS_CAP,
 } from '@/lib/marche/freelancer-profile-edit'
 import { SaveProfileInput } from './schema'
-import { applyProfileSave, PORTFOLIO_CAP_REACHED } from './apply-save'
+import { applyProfileSave, PORTFOLIO_CAP_REACHED, LINKS_CAP_REACHED } from './apply-save'
 
-/** A failed applyProfileSave as the freelancer reads it: the portfolio cap by name, anything else generic. */
+/** A failed applyProfileSave as the freelancer reads it: the portfolio / links cap by name, anything else generic. */
 function saveErrorMessage(error: string, lang: Lang): string {
-  return error === PORTFOLIO_CAP_REACHED
-    ? t('freelance.edit.portfolio_cap_reached', lang, { max: PORTFOLIO_CAP })
-    : t('common.error_generic', lang)
+  if (error === PORTFOLIO_CAP_REACHED) return t('freelance.edit.portfolio_cap_reached', lang, { max: PORTFOLIO_CAP })
+  if (error === LINKS_CAP_REACHED) return t('freelance.edit.links_cap_reached', lang, { max: LINKS_CAP })
+  return t('common.error_generic', lang)
 }
 
 // Publish model — option A (founder ruling, H3 discovery pass).

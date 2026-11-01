@@ -4,6 +4,8 @@ import { AppShell } from '@/components/shell/AppShell'
 import { requireFreelancer } from '@/lib/auth/require-seller'
 import { createClient } from '@/lib/supabase/server'
 import { getFreelancerProfileForEdit } from '@/lib/marche/freelancer-profile-edit'
+import { getFreelancerTopSector } from '@/lib/marche/freelancer-top-sector'
+import { recommendedFor } from '@/lib/social/platforms'
 import { getLang } from '@/lib/i18n/server'
 import { t } from '@/lib/i18n'
 import { FOCUS_RING } from '@/components/layout/styles'
@@ -37,7 +39,10 @@ export default async function ModifierProfilPage() {
   }
 
   const supabase = await createClient()
-  const data = await getFreelancerProfileForEdit(supabase, freelancerProfile.id, topBarUser.id)
+  const [data, topSector] = await Promise.all([
+    getFreelancerProfileForEdit(supabase, freelancerProfile.id, topBarUser.id),
+    getFreelancerTopSector(supabase, freelancerProfile.id),
+  ])
   if (!data) {
     // freelancer_profiles row existed a moment ago (requireFreelancer just resolved it) but is
     // gone by the time this read runs — a genuine TOCTOU, not expected in practice. Same
@@ -62,7 +67,7 @@ export default async function ModifierProfilPage() {
       </div>
 
       <div className="mt-6">
-        <ProfileEditForm initial={data} lang={lang} />
+        <ProfileEditForm initial={data} lang={lang} recommendedPlatforms={recommendedFor(topSector)} />
       </div>
     </AppShell>
   )
