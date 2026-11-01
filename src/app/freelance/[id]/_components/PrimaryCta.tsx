@@ -53,6 +53,9 @@ export function PrimaryCta({
         message={t('freelance.public.whatsapp_message', lang, { name: freelancerName })}
         label={t('freelance.public.whatsapp_cta', lang)}
         size={size}
+        // 375 frame (m375-d4-profil): the hero's button is 44 tall with the glyph before the label; from lg it stays as measured on 390:10676.
+        buttonClassName={size === 'lg' ? 'max-lg:h-11' : undefined}
+        glyphClassName={size === 'lg' ? 'lg:hidden' : undefined}
         errorMessageKey="freelance.public.phone_reveal_error"
         noPhoneMessageKey="freelance.public.no_phone"
       />

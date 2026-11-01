@@ -2,7 +2,7 @@
 
 import { useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { X } from 'lucide-react'
+import { MoreVertical, X } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { FOCUS_RING } from '@/components/layout/styles'
@@ -72,9 +72,11 @@ export function FreelancerReportModal({
         type="button"
         onClick={open}
         aria-label={t('freelance.public.report_trigger', lang)}
-        className={`rounded-md text-body-sm text-text-muted transition-colors hover:text-text-secondary ${FOCUS_RING}`}
+        className={`rounded-md text-body-sm text-text-muted transition-colors hover:text-text-secondary max-lg:flex max-lg:size-11 max-lg:items-center max-lg:justify-center ${FOCUS_RING}`}
       >
-        {t('freelance.public.report_trigger', lang)}
+        {/* below lg the 375 frame's ⋮ (icon-more-vertical 20, text/muted) in a 44 touch target; from lg the « Signaler » text, as before */}
+        <span className="max-lg:hidden">{t('freelance.public.report_trigger', lang)}</span>
+        <MoreVertical className="size-5 lg:hidden" aria-hidden="true" />
       </button>
 
       {isOpen && (
