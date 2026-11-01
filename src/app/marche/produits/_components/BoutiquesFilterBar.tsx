@@ -49,6 +49,13 @@ export function BoutiquesFilterBar({ categories, cities, selectedCategorie, vill
   const sp = useSearchParams()
   const lang = useLang()
   const [query, setQuery] = useState(q)
+  // The typed text follows `q` when the URL changes it (a chip, « Tout effacer », Back) — adjusted during render, not by remounting the bar, so a
+  // submitted search keeps the focus and an open menu.
+  const [seenQ, setSeenQ] = useState(q)
+  if (q !== seenQ) {
+    setSeenQ(q)
+    setQuery(q)
+  }
 
   function push(patch: Parameters<typeof buildSearchQuery>[1]) {
     const qs = buildSearchQuery(sp, patch, { resetPage: true })

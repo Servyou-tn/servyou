@@ -25,10 +25,11 @@ export function ProductBrowseGrid({ items }: { items: ProductListing[] }) {
   const fade = { offset: reduce ? 0 : 6, blur: reduce ? '0px' : '6px' }
 
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    // Below `sm` the 375 frame (m375-c1-produits) lays the cards 2 per row: 165 wide, 13 across, 12 down (a measured quirk — 3 rows + 2 gaps = 1143).
+    <div className="grid grid-cols-2 gap-x-[13px] gap-y-3 sm:gap-4 lg:grid-cols-4">
       {items.map((p, i) => (
         <BlurFade key={p.id} delay={i * 0.05} duration={0.2} {...fade} inView>
-          <ProductBrowseCard product={p} />
+          <ProductBrowseCard product={p} sizes="(max-width: 1024px) 50vw, 25vw" />
         </BlurFade>
       ))}
     </div>

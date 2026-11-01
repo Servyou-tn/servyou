@@ -31,6 +31,7 @@ export function MarketplaceMobileHeader({
             <input key={name} type="hidden" name={name} value={value} />
           ))}
         <input
+          key={q}
           type="search"
           enterKeyHint="search"
           name="q"

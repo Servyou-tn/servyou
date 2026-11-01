@@ -46,6 +46,15 @@ describe('MarketplaceMobileHeader', () => {
     expect(Array.from(container.querySelectorAll('input[type=hidden]')).map((i) => i.getAttribute('name'))).toEqual(['ville'])
   })
 
+  it('the box follows a new q after a soft navigation (« Réinitialiser » clears it)', () => {
+    const { rerender } = render(
+      <MarketplaceMobileHeader lang="fr" action="/marche/services" q="zzz" placeholderKey="services.filters.searchPlaceholder" keep={{}} />,
+    )
+    expect(screen.getByRole('searchbox')).toHaveValue('zzz')
+    rerender(<MarketplaceMobileHeader lang="fr" action="/marche/services" q="" placeholderKey="services.filters.searchPlaceholder" keep={{}} />)
+    expect(screen.getByRole('searchbox')).toHaveValue('')
+  })
+
   it('reads in Arabic', () => {
     render(<MarketplaceMobileHeader lang="ar" action="/marche/services" q="" placeholderKey="services.filters.searchPlaceholder" keep={{}} />)
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('السوق')

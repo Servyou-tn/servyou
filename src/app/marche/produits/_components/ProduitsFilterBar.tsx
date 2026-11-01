@@ -76,6 +76,18 @@ export function ProduitsFilterBar({
   const [priceOpen, setPriceOpen] = useState(false)
   const [min, setMin] = useState(prixMin != null ? String(prixMin) : '')
   const [max, setMax] = useState(prixMax != null ? String(prixMax) : '')
+  // The text and price fields follow the URL when IT changes them (« Réinitialiser », a chip, Back) — adjusted during render, no remount, and each field
+  // only when ITS OWN prop changed, so an unapplied price draft survives a change of `q` (and the other way round).
+  const [seen, setSeen] = useState({ q, prixMin, prixMax })
+  if (seen.q !== q) {
+    setSeen((s) => ({ ...s, q }))
+    setQuery(q)
+  }
+  if (seen.prixMin !== prixMin || seen.prixMax !== prixMax) {
+    setSeen((s) => ({ ...s, prixMin, prixMax }))
+    setMin(prixMin != null ? String(prixMin) : '')
+    setMax(prixMax != null ? String(prixMax) : '')
+  }
 
   function push(patch: Parameters<typeof buildSearchQuery>[1]) {
     const qs = buildSearchQuery(sp, patch, { resetPage: true })

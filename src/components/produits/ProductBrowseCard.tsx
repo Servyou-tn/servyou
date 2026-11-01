@@ -23,7 +23,11 @@ import { ProductCoverImage } from './ProductCoverImage'
 // Geometry, and it closes exactly: cover 276 + body (12 + 22 title + 10 gap + 41 bottom-row + 12)
 // = 373.
 
-export function ProductBrowseCard({ product }: { product: ProductListing }) {
+// `sizes` is the cover's responsive hint: the default is a SINGLE column below `sm` (shop page, favourites, related products); /marche/produits lays
+// two across from 375 and says so.
+const DEFAULT_SIZES = '(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw'
+
+export function ProductBrowseCard({ product, sizes = DEFAULT_SIZES }: { product: ProductListing; sizes?: string }) {
   const lang = useLang()
   const city = product.shop.city?.trim() || null
   const category = product.category
@@ -37,7 +41,13 @@ export function ProductBrowseCard({ product }: { product: ProductListing }) {
   const initials = getInitials(product.shop.name)
 
   return (
-    <div className="relative overflow-hidden rounded-xl border border-border-subtle bg-white">
+    <div className="group/card relative overflow-hidden rounded-xl bg-surface-base">
+      {/* The 1 px stroke is an overlay: Figma draws it INSIDE the 373 × 165 frame (cover 276 + body 97 = 373), so it must not add 2 px to the box. */}
+      {/* On keyboard focus the overlay thickens inward: the link's own ring falls outside the card and `overflow-hidden` clips it. */}
+      <span
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 z-20 rounded-xl border border-border-subtle group-has-[a:focus-visible]/card:ring-4 group-has-[a:focus-visible]/card:ring-inset group-has-[a:focus-visible]/card:ring-brand-blue-600/40"
+      />
       <Link href={`/produits/${product.id}`} className={`block ${FOCUS_RING}`}>
         {/* Cover — FIXED 276px, not an aspect ratio. The frame pins the height so every card in a
             row ends its cover on the same line regardless of the column width the grid resolves to. */}
@@ -47,7 +57,7 @@ export function ProductBrowseCard({ product }: { product: ProductListing }) {
           <ProductCoverImage
             src={product.image_url}
             alt={product.title}
-            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+            sizes={sizes}
           />
 
           {/* Shop badge — top-END in the frame, which is the side the heart does NOT take. */}
@@ -71,9 +81,9 @@ export function ProductBrowseCard({ product }: { product: ProductListing }) {
             {product.title}
           </p>
 
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between gap-2">
             <div className="flex min-w-0 flex-col gap-0.5">
-              <p className="text-[17px] font-semibold leading-[22px] text-text-primary">
+              <p className="truncate whitespace-nowrap text-[17px] font-semibold leading-[22px] text-text-primary">
                 {tndPrice(product.price_tnd)}
               </p>
               {city && (
@@ -99,7 +109,8 @@ export function ProductBrowseCard({ product }: { product: ProductListing }) {
       {/* Heart — top-START here, the mirror of the shared card. Sibling of the Link so it never
           navigates. Logical property, so RTL puts it on the right without a second rule. */}
       <div className="absolute start-2 top-2 z-10 flex h-8 w-8 items-center justify-center rounded-2xl border border-border-subtle bg-white">
-        <FavoriteButton item_type="product" item_id={product.id} />
+        {/* The 375 frame draws the icon-heart: 18, blue/300 stroke, centred in the 32 circle (the text glyph it replaces was ♡ in text/muted). */}
+        <FavoriteButton item_type="product" item_id={product.id} variant="icon" iconClassName="size-[18px] text-brand-blue-300" />
       </div>
     </div>
   )
