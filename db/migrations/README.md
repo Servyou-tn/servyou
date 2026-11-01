@@ -1108,6 +1108,10 @@ both on 2026-10-28.
     - Live suites `phone-reveal-{buyer,seller,mission}-live.test.ts` (1 sign-in each, 30 cases). UI changes for
       Agent B: `docs/follow-ups/phone-reveal-ui.md`.
     - The recorded statement carries no top-level comments. The executable SQL is identical.
+114. **20261101183509_get_contact_phone_revoke_public** (`99319d6c`) — `revoke execute on function
+    public.get_contact_phone(uuid) from public` (architect's hygiene note on #113): the function predated migration
+    68's global PUBLIC revoke. EXECUTE stays with postgres, anon, authenticated and service_role (verified).
+    - The recorded statement carries no top-level comments. The executable SQL is identical.
 
 ## Rollback paths
 
