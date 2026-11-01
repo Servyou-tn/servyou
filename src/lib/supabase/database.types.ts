@@ -1,7 +1,7 @@
 // Generated from the live Supabase schema (project xggomcitqrkaylqezjjz) — DO NOT EDIT BY HAND.
 // Regenerate after every applied migration: Supabase MCP generate_typescript_types (or
 // `npx supabase gen types typescript --project-id xggomcitqrkaylqezjjz`), then commit.
-// Generated 2026-11-01 after migration 20261101164444 contact_messages.
+// Generated 2026-11-01 after migration 20261101212613 shop_social_links.
 
 export type Json =
   | string
@@ -1461,13 +1461,16 @@ export type Database = {
           created_at: string
           delivery_setup: string | null
           description: string | null
+          facebook_url: string | null
           id: string
+          instagram_url: string | null
           location_detail: string | null
           logo_url: string | null
           name: string
           owner_id: string
           preferred_carriers: string | null
           shop_type: string | null
+          tiktok_url: string | null
           updated_at: string
           working_hours: string | null
         }
@@ -1479,13 +1482,16 @@ export type Database = {
           created_at?: string
           delivery_setup?: string | null
           description?: string | null
+          facebook_url?: string | null
           id?: string
+          instagram_url?: string | null
           location_detail?: string | null
           logo_url?: string | null
           name: string
           owner_id: string
           preferred_carriers?: string | null
           shop_type?: string | null
+          tiktok_url?: string | null
           updated_at?: string
           working_hours?: string | null
         }
@@ -1497,13 +1503,16 @@ export type Database = {
           created_at?: string
           delivery_setup?: string | null
           description?: string | null
+          facebook_url?: string | null
           id?: string
+          instagram_url?: string | null
           location_detail?: string | null
           logo_url?: string | null
           name?: string
           owner_id?: string
           preferred_carriers?: string | null
           shop_type?: string | null
+          tiktok_url?: string | null
           updated_at?: string
           working_hours?: string | null
         }
