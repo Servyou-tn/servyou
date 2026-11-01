@@ -69,12 +69,13 @@ export function ServiceDetail({
   // Buy box — the SIDEBAR on desktop (354, pad 24, gap 16, r=12, 2px brand-blue-600 outline:
   // the same treatment as the v3.7 card). On mobile it is an unboxed stack directly under the
   // title (m375-d2-service): price + délai · CTA · freelancer row · COD note · favori / partager,
-  // every block 20 apart. The desktop order (price · CTA · favori / partager · freelancer · COD) is the
-  // DOM order; the mobile one is flex `order`, so nothing renders twice except the freelancer row (below).
+  // every block 20 apart.
+  // The DOM is the MOBILE order, so the tab order follows what is seen (WCAG 2.4.3); the desktop order (price · CTA · favori / partager · freelancer · COD)
+  // is `lg:order-N`, dividers included. Only the freelancer row renders twice (below).
   const profileHref = service.freelancerProfileId ? `/freelance/${service.freelancerProfileId}` : null
   const buyBox = (
     <aside className="order-2 flex flex-col gap-5 lg:order-none lg:col-start-2 lg:row-start-1 lg:row-span-2 lg:gap-4 lg:rounded-card lg:border-2 lg:border-brand-blue-600 lg:bg-white lg:p-6">
-      <div className="order-1 flex items-center justify-between gap-4 lg:order-none lg:flex-col lg:items-stretch lg:gap-4">
+      <div className="flex items-center justify-between gap-4 lg:order-1 lg:flex-col lg:items-stretch lg:gap-4">
         <div className="flex flex-col gap-0.5 lg:gap-1">
           <p className="text-xs leading-[15px] text-text-muted lg:text-[13px] lg:leading-4">{t('serviceDetail.priceFrom', lang)}</p>
           {price && (
@@ -93,19 +94,11 @@ export function ServiceDetail({
 
       <Link
         href={`/demander/${service.id}`}
-        className={`order-2 inline-flex h-12 items-center justify-center gap-2 rounded-[10px] bg-brand-blue-600 px-5 text-base font-semibold text-white transition-colors hover:bg-brand-blue-600/90 lg:order-none ${FOCUS_RING}`}
+        className={`inline-flex h-12 items-center justify-center gap-2 rounded-[10px] bg-brand-blue-600 px-5 text-base font-semibold text-white transition-colors hover:bg-brand-blue-600/90 lg:order-2 ${FOCUS_RING}`}
       >
         <Plus className="h-5 w-5" aria-hidden="true" />
         {t('serviceDetail.cta', lang)}
       </Link>
-
-      {/* heartShareRow — two equal 44 px bordered buttons, gap 12: icon + « Favori » / « Partager » at 375, icon only from lg. */}
-      <div className="order-5 grid grid-cols-2 gap-3 lg:order-none">
-        <FavoriteButton item_type="service" item_id={service.id} variant="box" label={t('serviceDetail.favorite', lang)} labelClassName="lg:hidden" />
-        <ShareLinkButton variant="bordered" labelClassName="lg:hidden" />
-      </div>
-
-      <div className="hidden h-px bg-border-subtle lg:block" aria-hidden="true" />
 
       {/* freelancerRow (375): a link to the profile — avatar 40 (the picture, else the person glyph), name 14 Semi Bold, headline 12 muted on ONE line, chevron 18;
           pad 12, gap 12, r12, surface/subtle. The frame's « Verified » badge is not drawn: there is no verification concept (D4 ruling). City is not in the frame. */}
@@ -113,7 +106,7 @@ export function ServiceDetail({
         (profileHref ? (
           <Link
             href={profileHref}
-            className={`order-3 flex items-center gap-3 rounded-xl bg-surface-subtle p-3 lg:hidden ${FOCUS_RING}`}
+            className={`flex items-center gap-3 rounded-xl bg-surface-subtle p-3 lg:hidden ${FOCUS_RING}`}
           >
             <Avatar size="md" src={service.freelancer.avatarUrl} name={service.freelancer.name} />
             <div className="flex min-w-0 flex-1 flex-col gap-0.5">
@@ -125,7 +118,7 @@ export function ServiceDetail({
             <ChevronRight className="size-[18px] shrink-0 text-text-muted rtl:rotate-180" aria-hidden="true" />
           </Link>
         ) : (
-          <div className="order-3 flex items-center gap-3 rounded-xl bg-surface-subtle p-3 lg:hidden">
+          <div className="flex items-center gap-3 rounded-xl bg-surface-subtle p-3 lg:hidden">
             <Avatar size="md" src={service.freelancer.avatarUrl} name={service.freelancer.name} />
             <div className="flex min-w-0 flex-1 flex-col gap-0.5">
               <p className="truncate text-sm font-semibold leading-[17px] text-brand-blue-800">{service.freelancer.name}</p>
@@ -136,9 +129,18 @@ export function ServiceDetail({
           </div>
         ))}
 
+      <p className="text-caption leading-[18px] text-text-muted lg:order-7">{t('serviceDetail.codNote', lang)}</p>
+      {/* heartShareRow — two equal 44 px bordered buttons, gap 12: icon + « Favori » / « Partager » at 375, icon only from lg. */}
+      <div className="grid grid-cols-2 gap-3 lg:order-3">
+        <FavoriteButton item_type="service" item_id={service.id} variant="box" label={t('serviceDetail.favorite', lang)} labelClassName="lg:hidden" />
+        <ShareLinkButton variant="bordered" labelClassName="lg:hidden" />
+      </div>
+
+      <div className="hidden h-px bg-border-subtle lg:order-4 lg:block" aria-hidden="true" />
+
       {/* freelancerBlock (desktop). Avatar is initials-only here, as built before the 375 pass; a tinted row only below lg is the block above. */}
       {service.freelancer && (
-        <div className="hidden flex-col gap-3 lg:flex">
+        <div className="hidden flex-col gap-3 lg:order-5 lg:flex">
           <div className="flex items-center gap-3">
             <Avatar size="md" initials={getInitials(service.freelancer.name)} className="lg:size-14" />
             <div className="flex min-w-0 flex-col gap-0.5">
@@ -165,9 +167,8 @@ export function ServiceDetail({
         </div>
       )}
 
-      <div className="hidden h-px bg-border-subtle lg:block" aria-hidden="true" />
+      <div className="hidden h-px bg-border-subtle lg:order-6 lg:block" aria-hidden="true" />
 
-      <p className="order-4 text-caption leading-[18px] text-text-muted lg:order-none">{t('serviceDetail.codNote', lang)}</p>
     </aside>
   )
 

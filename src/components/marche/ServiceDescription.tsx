@@ -20,14 +20,21 @@ export function ServiceDescription({ text }: { text: string }) {
   useEffect(() => {
     const el = ref.current
     if (!el) return
-    const observer = new ResizeObserver(() => {
+    let live = true
+    const measure = () => {
       // Measured only while clamped: once expanded, scrollHeight equals clientHeight and would hide the « Voir moins ».
-      if (!el.classList.contains('line-clamp-8')) return
+      if (!live || !el.classList.contains('line-clamp-8')) return
       // A real overflow is at least one more 24 px line; Arabic / mixed-script line boxes can read a couple of px over the clamp on their own.
       setOverflows(el.scrollHeight - el.clientHeight > 8)
-    })
+    }
+    const observer = new ResizeObserver(measure)
     observer.observe(el)
-    return () => observer.disconnect()
+    // A web font that arrives after the first measure re-wraps the text WITHOUT resizing the clamped box, so the observer alone would miss it.
+    void document.fonts?.ready.then(measure)
+    return () => {
+      live = false
+      observer.disconnect()
+    }
   }, [text])
 
   return (

@@ -64,7 +64,7 @@ beforeEach(() => {
 afterEach(cleanup)
 
 describe('ServiceDetail — the 375 buy box', () => {
-  it('stacks price · CTA · freelancer · COD note · favori/partager by `order`, and restores DOM order from lg', () => {
+  it('the DOM is the 375 order (tab order = visual order, WCAG 2.4.3); the desktop order is lg:order-N', () => {
     view()
     const cta = screen.getByRole('link', { name: 'Demander ce service' })
     const profile = screen.getByRole('link', { name: /Yassine Ben Ali/ })
@@ -72,12 +72,15 @@ describe('ServiceDetail — the 375 buy box', () => {
     const row = screen.getByTestId('fav').parentElement as HTMLElement
     const price = screen.getByText('À partir de').closest('div')?.parentElement as HTMLElement
 
-    expect(price.className).toMatch(/\border-1\b/)
-    expect(cta.className).toMatch(/\border-2\b/)
-    expect(profile.className).toMatch(/\border-3\b/)
-    expect(cod.className).toMatch(/\border-4\b/)
-    expect(row.className).toMatch(/\border-5\b/)
-    for (const el of [price, cta, cod, row]) expect(el.className).toContain('lg:order-none')
+    // price · CTA · freelancer row · COD note · favori / partager — in the DOM
+    const inDomOrder = [price, cta, profile, cod, row]
+    for (let i = 0; i < inDomOrder.length - 1; i++) {
+      expect(inDomOrder[i].compareDocumentPosition(inDomOrder[i + 1]) & Node.DOCUMENT_POSITION_FOLLOWING, `step ${i}`).toBeTruthy()
+    }
+    // …and from lg: price · CTA · favori / partager · freelancer block · COD (the dividers are 4 and 6)
+    expect([price, cta, row, cod].map((el) => el.className.match(/lg:order-(\d)/)?.[1])).toEqual(['1', '2', '3', '7'])
+    const desktopBlock = screen.getByRole('link', { name: 'Voir profil' }).parentElement as HTMLElement
+    expect(desktopBlock.className).toContain('lg:order-5')
   })
 
   it('the freelancer row is a link to their profile: name, headline, no city, hidden from lg (the desktop block takes over)', () => {

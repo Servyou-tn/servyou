@@ -97,7 +97,8 @@ export function FavoriteButton({ item_type, item_id, variant = 'glyph', label: b
   if (loading) {
     if (variant === 'box') {
       return (
-        <button disabled aria-label={t('common.loading', lang)} className={boxClass}>
+        // The visible « Favori » must be part of the name (WCAG 2.5.3), so the loading state keeps it and says it is busy instead of renaming the button.
+        <button type="button" disabled aria-busy="true" aria-label={boxLabel ?? t('common.loading', lang)} className={boxClass}>
           <Heart className="size-5 text-text-muted" aria-hidden="true" />
           {boxText}
         </button>
@@ -122,7 +123,7 @@ export function FavoriteButton({ item_type, item_id, variant = 'glyph', label: b
 
   if (variant === 'box') {
     return (
-      <button onClick={handleToggle} disabled={toggling} title={label} aria-label={label} className={boxClass}>
+      <button type="button" onClick={handleToggle} disabled={toggling} title={label} aria-label={label} className={boxClass}>
         <Heart className={`size-5 ${favorited ? 'fill-danger-500 text-danger-500' : 'text-text-muted'}`} aria-hidden="true" />
         {boxText}
       </button>
