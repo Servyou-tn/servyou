@@ -2790,6 +2790,7 @@ export const fr: Record<string, string> = {
   'contact.form.error.email':   "Veuillez entrer une adresse email valide.",
   'contact.form.error.message': "Veuillez entrer votre message.",
   'contact.form.error.generic': "Une erreur est survenue. Réessayez.",
+  'contact.form.error.send':    "Le message n'a pas pu être envoyé, réessayez.",
 
   // ─── FAQ page (/faq) ─────────────────────────────────────────────────────────
   'faq.headline':          "Questions fréquentes",

@@ -2719,6 +2719,7 @@ export const ar: Record<string, string> = {
   'contact.form.error.email':   "يرجى إدخال عنوان بريد إلكتروني صالح.",
   'contact.form.error.message': "يرجى إدخال رسالتك.",
   'contact.form.error.generic': "حدث خطأ. حاول مرة أخرى.",
+  'contact.form.error.send':    "تعذّر إرسال الرسالة، حاول مرة أخرى.",
 
   // ─── FAQ page (/faq) ─────────────────────────────────────────────────────────
   'faq.headline':          "الأسئلة الشائعة",
