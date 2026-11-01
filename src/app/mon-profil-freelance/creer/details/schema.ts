@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { HTTP_URL } from '@/lib/freelancer/http-url'
+import { hasUserinfo } from '@/lib/social/platforms'
 
 // H2 step 3 "Détails" input schema — split out of actions.ts because a 'use server' file may only
 // export async functions (Next.js constraint); this schema is also imported directly by tests
@@ -31,7 +32,10 @@ const optionalText = (max: number) => z.string().trim().max(max).transform((v) =
 const optionalYear = z.number().int().min(YEAR_MIN).max(YEAR_MAX).nullable()
 // Same union-with-empty-literal shape as competences/actions.ts's portfolioLink — a bare URL
 // input, not a required field. http(s)-only (HTTP_URL) — it renders as `href` on the D4 profile.
-const optionalUrl = z.union([z.string().trim().max(CREDENTIAL_URL_MAX).url(HTTP_URL), z.literal('')]).transform((v) => v || null)
+// No user:password@ either (hasUserinfo): `https://github.com@evil.io` opens evil.io.
+const optionalUrl = z
+  .union([z.string().trim().max(CREDENTIAL_URL_MAX).url(HTTP_URL).refine((v) => !hasUserinfo(v)), z.literal('')])
+  .transform((v) => v || null)
 
 // "Required within a row" (institution / name) — a row only reaches the server once its own
 // anchor field is non-empty; the client filters anchor-less rows out before submitting (mirrors

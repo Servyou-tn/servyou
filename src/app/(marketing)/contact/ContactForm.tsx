@@ -51,6 +51,9 @@ export function ContactForm() {
         setErrors({})
       } else if (result.botCheck) {
         toast.error(t('common.error_bot_check', lang))
+      } else if (result.saveFailed) {
+        // Never a fake success: the message was not stored, so the form keeps it for a retry.
+        toast.error(t('contact.form.error.send', lang))
       } else if (result.field === 'subject') {
         // Only a tampered payload: the select offers the accepted subjects alone.
         toast.error(t('contact.form.error.generic', lang))

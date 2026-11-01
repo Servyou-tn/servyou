@@ -1596,6 +1596,8 @@ export const fr: Record<string, string> = {
   'serviceDetail.breadcrumb.home':   "Accueil",
   'serviceDetail.breadcrumb.services': "Services",
   'serviceDetail.showMore':          "Voir plus",
+  'serviceDetail.showLess':          "Voir moins",
+  'serviceDetail.favorite':          "Favori",
   'serviceDetail.included':          "Ce qui est inclus",
   'serviceDetail.mode.title':        "Mode de prestation",
   'serviceDetail.mode.remote':       "À distance",
@@ -2039,6 +2041,7 @@ export const fr: Record<string, string> = {
   'freelance.create.step2.error.languages_min':       "Ajoutez au moins une langue.",
   'freelance.create.step2.error.languages_duplicate': "Cette langue est déjà ajoutée.",
   'freelance.create.step2.error.portfolio_url':       "Veuillez saisir une URL valide (https://…).",
+  'freelance.create.step2.error.portfolio_url_long':  "Cette adresse est trop longue (500 caractères au maximum).",
   'freelance.create.step2.error.years_invalid':       "Veuillez saisir un nombre valide.",
 
   // ─── H2 step 3 "Détails" (/mon-profil-freelance/creer/details) — Figma 468:20502 measured the
@@ -2800,6 +2803,7 @@ export const fr: Record<string, string> = {
   'contact.form.error.email':   "Veuillez entrer une adresse email valide.",
   'contact.form.error.message': "Veuillez entrer votre message.",
   'contact.form.error.generic': "Une erreur est survenue. Réessayez.",
+  'contact.form.error.send':    "Le message n'a pas pu être envoyé, réessayez.",
 
   // ─── FAQ page (/faq) ─────────────────────────────────────────────────────────
   'faq.headline':          "Questions fréquentes",

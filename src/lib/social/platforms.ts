@@ -65,6 +65,21 @@ export function normalizeUrl(raw: string): string {
 }
 
 /**
+ * True when an address carries `user:password@` / `user@` before its host — it opens the host AFTER the « @ » whatever the text before it reads as
+ * (`https://github.com@evil.io`), and a pasted email (`name@example.com`) is not a web address. Every URL field of the freelancer / proposal forms
+ * refuses it, client and server (founder, Oct 31). Tolerates a missing scheme like `normalizeUrl`; text that does not parse is not « userinfo ».
+ */
+export function hasUserinfo(raw: string): boolean {
+  const text = raw.trim()
+  try {
+    const url = new URL(HAS_SCHEME.test(text) ? text : `https://${bare(text)}`)
+    return url.username !== '' || url.password !== ''
+  } catch {
+    return false
+  }
+}
+
+/**
  * A link a freelancer may save: http(s), a dotted host, NO user:password@ (« https://github.com@evil.io » opens evil.io but reads as GitHub), at most 500
  * characters once normalised. Client check and server schema both use it.
  */

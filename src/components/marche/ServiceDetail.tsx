@@ -1,9 +1,11 @@
 import Link from 'next/link'
-import { Check, ChevronRight, Clock, Globe, Link2, MapPin, Plus, Users } from 'lucide-react'
+import { Check, ChevronLeft, ChevronRight, CircleCheck, Clock, Globe, MapPin, Plus, Users } from 'lucide-react'
 import { t, type Lang } from '@/lib/i18n'
 import { Avatar } from '@/components/ui/avatar'
 import { getInitials } from '@/components/ui/initials'
 import { FavoriteButton } from '@/components/FavoriteButton'
+import { ShareLinkButton } from '@/components/produits/ShareLinkButton'
+import { ServiceDescription } from '@/components/marche/ServiceDescription'
 import { ListingResults } from '@/components/listings/ListingResults'
 import type { ServiceListing } from '@/components/listings/ServiceListingCard'
 import { FOCUS_RING } from '@/components/layout/styles'
@@ -40,8 +42,8 @@ const MODE_ICON: Record<DeliveryMode, typeof Globe> = {
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section className="flex flex-col gap-3">
-      {/* 20/Semi Bold #0f172a in both frames. */}
-      <h2 className="text-xl font-semibold text-text-primary">{title}</h2>
+      {/* 18/22 Semi Bold at 375 (m375-d2-service), 20 Semi Bold from lg (666:55479). */}
+      <h2 className="text-lg font-semibold leading-[22px] text-text-primary lg:text-xl lg:leading-7">{title}</h2>
       {children}
     </section>
   )
@@ -66,20 +68,24 @@ export function ServiceDetail({
 
   // Buy box — the SIDEBAR on desktop (354, pad 24, gap 16, r=12, 2px brand-blue-600 outline:
   // the same treatment as the v3.7 card). On mobile it is an unboxed stack directly under the
-  // title, matching 668:55920, where price/CTA/freelancer are separate top-level blocks.
+  // title (m375-d2-service): price + délai · CTA · freelancer row · COD note · favori / partager,
+  // every block 20 apart.
+  // The DOM is the MOBILE order, so the tab order follows what is seen (WCAG 2.4.3); the desktop order (price · CTA · favori / partager · freelancer · COD)
+  // is `lg:order-N`, dividers included. Only the freelancer row renders twice (below).
+  const profileHref = service.freelancerProfileId ? `/freelance/${service.freelancerProfileId}` : null
   const buyBox = (
-    <aside className="order-2 flex flex-col gap-4 lg:order-none lg:col-start-2 lg:row-start-1 lg:row-span-2 lg:rounded-card lg:border-2 lg:border-brand-blue-600 lg:bg-white lg:p-6">
-      <div className="flex items-center justify-between gap-4 lg:flex-col lg:items-stretch lg:gap-4">
+    <aside className="order-2 flex flex-col gap-5 lg:order-none lg:col-start-2 lg:row-start-1 lg:row-span-2 lg:gap-4 lg:rounded-card lg:border-2 lg:border-brand-blue-600 lg:bg-white lg:p-6">
+      <div className="flex items-center justify-between gap-4 lg:order-1 lg:flex-col lg:items-stretch lg:gap-4">
         <div className="flex flex-col gap-0.5 lg:gap-1">
-          <p className="text-[13px] leading-4 text-text-muted">{t('serviceDetail.priceFrom', lang)}</p>
+          <p className="text-xs leading-[15px] text-text-muted lg:text-[13px] lg:leading-4">{t('serviceDetail.priceFrom', lang)}</p>
           {price && (
-            <p className="text-2xl font-semibold text-brand-blue-800 lg:text-[28px] lg:leading-9">
+            <p className="text-2xl font-semibold leading-[29px] text-brand-blue-800 lg:text-[28px] lg:leading-9">
               {price}
             </p>
           )}
         </div>
         {service.deliveryTime && (
-          <p className="flex items-center gap-2 text-body-sm text-text-muted lg:self-start">
+          <p className="flex items-center gap-1.5 text-[13px] leading-4 text-text-muted lg:gap-2 lg:self-start lg:text-body-sm">
             <Clock className="h-4 w-4 shrink-0 lg:h-[18px] lg:w-[18px]" aria-hidden="true" />
             {t('serviceDetail.deliveredIn', lang, { time: service.deliveryTime })}
           </p>
@@ -88,33 +94,53 @@ export function ServiceDetail({
 
       <Link
         href={`/demander/${service.id}`}
-        className={`inline-flex h-12 items-center justify-center gap-2 rounded-[10px] bg-brand-blue-600 px-5 text-base font-semibold text-white transition-colors hover:bg-brand-blue-600/90 ${FOCUS_RING}`}
+        className={`inline-flex h-12 items-center justify-center gap-2 rounded-[10px] bg-brand-blue-600 px-5 text-base font-semibold text-white transition-colors hover:bg-brand-blue-600/90 lg:order-2 ${FOCUS_RING}`}
       >
         <Plus className="h-5 w-5" aria-hidden="true" />
         {t('serviceDetail.cta', lang)}
       </Link>
 
-      {/* heartShareRow — two equal 44px bordered buttons, gap 12. */}
-      <div className="flex items-stretch gap-3">
-        <div className="flex flex-1 items-center justify-center rounded-[10px] border border-border-strong bg-white">
-          <FavoriteButton item_type="service" item_id={service.id} />
-        </div>
-        <Link
-          href={`/services/${service.id}`}
-          aria-label={t('serviceDetail.share', lang)}
-          className={`flex h-11 flex-1 items-center justify-center rounded-[10px] border border-border-strong bg-white text-text-secondary transition-colors hover:bg-surface-subtle ${FOCUS_RING}`}
-        >
-          <Link2 className="h-5 w-5" aria-hidden="true" />
-        </Link>
+      {/* freelancerRow (375): a link to the profile — avatar 40 (the picture, else the person glyph), name 14 Semi Bold, headline 12 muted on ONE line, chevron 18;
+          pad 12, gap 12, r12, surface/subtle. The frame's « Verified » badge is not drawn: there is no verification concept (D4 ruling). City is not in the frame. */}
+      {service.freelancer &&
+        (profileHref ? (
+          <Link
+            href={profileHref}
+            className={`flex items-center gap-3 rounded-xl bg-surface-subtle p-3 lg:hidden ${FOCUS_RING}`}
+          >
+            <Avatar size="md" src={service.freelancer.avatarUrl} name={service.freelancer.name} />
+            <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+              <p className="truncate text-sm font-semibold leading-[17px] text-brand-blue-800">{service.freelancer.name}</p>
+              {service.freelancer.headline && (
+                <p className="truncate text-xs leading-4 text-text-muted">{service.freelancer.headline}</p>
+              )}
+            </div>
+            <ChevronRight className="size-[18px] shrink-0 text-text-muted rtl:rotate-180" aria-hidden="true" />
+          </Link>
+        ) : (
+          <div className="flex items-center gap-3 rounded-xl bg-surface-subtle p-3 lg:hidden">
+            <Avatar size="md" src={service.freelancer.avatarUrl} name={service.freelancer.name} />
+            <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+              <p className="truncate text-sm font-semibold leading-[17px] text-brand-blue-800">{service.freelancer.name}</p>
+              {service.freelancer.headline && (
+                <p className="truncate text-xs leading-4 text-text-muted">{service.freelancer.headline}</p>
+              )}
+            </div>
+          </div>
+        ))}
+
+      <p className="text-caption leading-[18px] text-text-muted lg:order-7">{t('serviceDetail.codNote', lang)}</p>
+      {/* heartShareRow — two equal 44 px bordered buttons, gap 12: icon + « Favori » / « Partager » at 375, icon only from lg. */}
+      <div className="grid grid-cols-2 gap-3 lg:order-3">
+        <FavoriteButton item_type="service" item_id={service.id} variant="box" label={t('serviceDetail.favorite', lang)} labelClassName="lg:hidden" />
+        <ShareLinkButton variant="bordered" labelClassName="lg:hidden" />
       </div>
 
-      <div className="hidden h-px bg-border-subtle lg:block" aria-hidden="true" />
+      <div className="hidden h-px bg-border-subtle lg:order-4 lg:block" aria-hidden="true" />
 
-      {/* freelancerBlock. Avatar is initials-only: there is no avatar_url column on any profile
-          table and no storage bucket, so the Figma photo cannot render (logged as a schema +
-          storage follow-up). On mobile this is a tinted 12-radius row per 668:55920. */}
+      {/* freelancerBlock (desktop). Avatar is initials-only here, as built before the 375 pass; a tinted row only below lg is the block above. */}
       {service.freelancer && (
-        <div className="flex flex-col gap-3 rounded-card bg-surface-subtle p-3 lg:rounded-none lg:bg-transparent lg:p-0">
+        <div className="hidden flex-col gap-3 lg:order-5 lg:flex">
           <div className="flex items-center gap-3">
             <Avatar size="md" initials={getInitials(service.freelancer.name)} className="lg:size-14" />
             <div className="flex min-w-0 flex-col gap-0.5">
@@ -134,36 +160,36 @@ export function ServiceDetail({
           </div>
           <Link
             href="/marche/services"
-            className={`hidden h-8 items-center justify-center gap-2 rounded-[10px] border border-border-strong bg-white text-body-sm font-semibold text-text-primary transition-colors hover:bg-surface-subtle lg:inline-flex ${FOCUS_RING}`}
+            className={`inline-flex h-8 items-center justify-center gap-2 rounded-[10px] border border-border-strong bg-white text-body-sm font-semibold text-text-primary transition-colors hover:bg-surface-subtle ${FOCUS_RING}`}
           >
             {t('serviceDetail.viewProfile', lang)}
           </Link>
         </div>
       )}
 
-      <div className="hidden h-px bg-border-subtle lg:block" aria-hidden="true" />
+      <div className="hidden h-px bg-border-subtle lg:order-6 lg:block" aria-hidden="true" />
 
-      <p className="text-caption leading-[18px] text-text-muted">{t('serviceDetail.codNote', lang)}</p>
     </aside>
   )
 
   return (
     <div className="flex flex-col gap-5 lg:gap-6">
-      {/* breadcrumb — 13px, gap 8, chevron separators. */}
-      <nav aria-label="Fil d'Ariane" className="flex flex-wrap items-center gap-2 text-[13px] text-text-muted">
-        <Link href="/" className="hover:text-text-secondary">{t('serviceDetail.breadcrumb.home', lang)}</Link>
-        <ChevronRight className="h-3.5 w-3.5 shrink-0 rtl:rotate-180" aria-hidden="true" />
-        <Link href="/marche/services" className="hover:text-text-secondary">
+      {/* breadcrumb — 13px. 375 (m375-d2-service): « ‹ Services › {category} », gap 6, chevrons 16 / 12; desktop: Accueil › Services › category › title, gap 8. */}
+      <nav aria-label="Fil d'Ariane" className="flex flex-wrap items-center gap-1.5 text-[13px] leading-4 text-text-muted lg:gap-2">
+        <Link href="/" className="hidden hover:text-text-secondary lg:inline">{t('serviceDetail.breadcrumb.home', lang)}</Link>
+        <ChevronRight className="hidden h-3.5 w-3.5 shrink-0 rtl:rotate-180 lg:block" aria-hidden="true" />
+        <Link href="/marche/services" className="inline-flex items-center gap-1.5 hover:text-text-secondary lg:gap-0">
+          <ChevronLeft className="size-4 shrink-0 rtl:rotate-180 lg:hidden" aria-hidden="true" />
           {t('serviceDetail.breadcrumb.services', lang)}
         </Link>
         {service.category && (
           <>
-            <ChevronRight className="h-3.5 w-3.5 shrink-0 rtl:rotate-180" aria-hidden="true" />
-            <span>{service.category}</span>
+            <ChevronRight className="size-3 shrink-0 rtl:rotate-180 lg:h-3.5 lg:w-3.5" aria-hidden="true" />
+            <span className="text-text-secondary lg:text-text-muted">{service.category}</span>
           </>
         )}
-        <ChevronRight className="h-3.5 w-3.5 shrink-0 rtl:rotate-180" aria-hidden="true" />
-        <span className="text-text-secondary">{service.title}</span>
+        <ChevronRight className="hidden h-3.5 w-3.5 shrink-0 rtl:rotate-180 lg:block" aria-hidden="true" />
+        <span className="hidden text-text-secondary lg:inline">{service.title}</span>
       </nav>
 
       {/* Columns are minmax(0,750px) + a FIXED 354, not a fixed 750 + 1fr. Figma 666:55479 splits
@@ -183,7 +209,7 @@ export function ServiceDetail({
               {service.tags.map((tag) => (
                 <li
                   key={tag}
-                  className="rounded-md bg-brand-blue-50 px-2 py-1 text-caption font-medium text-brand-blue-700"
+                  className="rounded-md bg-brand-blue-50 px-2 py-1 text-caption font-medium text-brand-blue-700 max-lg:leading-[15px]"
                 >
                   {skillLabel(tag, lang)}
                 </li>
@@ -194,20 +220,18 @@ export function ServiceDetail({
 
         {buyBox}
 
-        <div className="order-3 flex flex-col gap-8 lg:order-none lg:col-start-1 lg:row-start-2">
-          {service.description && (
-            <p className="whitespace-pre-line text-[15px] leading-6 text-text-secondary">
-              {service.description}
-            </p>
-          )}
+        <div className="order-3 flex flex-col gap-5 lg:order-none lg:col-start-1 lg:row-start-2 lg:gap-8">
+          {service.description && <ServiceDescription text={service.description} />}
 
           {/* Hidden when the array is empty — true for 20 of 21 rows today. */}
           {service.deliverables.length > 0 && (
             <Section title={t('serviceDetail.included', lang)}>
               <ul className="flex flex-col gap-2">
                 {service.deliverables.map((item) => (
-                  <li key={item} className="flex items-start gap-2 text-[15px] leading-6 text-text-secondary">
-                    <Check className="mt-1 h-[18px] w-[18px] shrink-0 text-brand-blue-600" aria-hidden="true" />
+                  <li key={item} className="flex items-start gap-2 text-sm leading-[17px] text-text-secondary lg:text-[15px] lg:leading-6">
+                    {/* 375: icon-check-circle 18 blue-600, text 14/17 (m375-d2-service); desktop keeps the bare check. */}
+                    <CircleCheck className="h-[18px] w-[18px] shrink-0 text-brand-blue-600 lg:hidden" aria-hidden="true" />
+                    <Check className="mt-1 hidden h-[18px] w-[18px] shrink-0 text-brand-blue-600 lg:block" aria-hidden="true" />
                     {item}
                   </li>
                 ))}
@@ -218,7 +242,7 @@ export function ServiceDetail({
           {/* Hidden when delivery_mode is null — the freelancer has not said. */}
           {service.deliveryMode && ModeIcon && (
             <Section title={t('serviceDetail.mode.title', lang)}>
-              <p className="inline-flex w-fit items-center gap-2 rounded-full bg-brand-blue-50 py-2 pe-4 ps-3 text-body-sm font-medium text-brand-blue-700">
+              <p className="inline-flex w-fit items-center gap-2 rounded-full bg-brand-blue-50 py-2 pe-4 ps-3 text-body-sm font-medium text-brand-blue-700 max-lg:leading-[17px]">
                 <ModeIcon className="h-[18px] w-[18px] shrink-0" aria-hidden="true" />
                 {t(`serviceDetail.mode.${service.deliveryMode}`, lang)}
               </p>
@@ -229,14 +253,14 @@ export function ServiceDetail({
 
       {related.length > 0 && (
         <Section title={t('serviceDetail.related', lang)}>
-          <ListingResults type="service" items={related} />
+          <ListingResults type="service" items={related} layout="rail" />
         </Section>
       )}
 
       <Section title={t('serviceDetail.reviews', lang)}>
         {/* Shell + empty state only: ratings are post-MVP and there is no reviews table. */}
-        <div className="flex h-30 items-center justify-center rounded-[10px] bg-surface-subtle px-6 text-center">
-          <p className="text-[15px] text-text-muted">{t('serviceDetail.reviewsEmpty', lang)}</p>
+        <div className="flex items-center justify-center rounded-[10px] bg-surface-subtle px-6 py-8 text-center lg:h-30 lg:py-0">
+          <p className="text-sm text-text-muted max-lg:leading-[17px] lg:text-[15px]">{t('serviceDetail.reviewsEmpty', lang)}</p>
         </div>
       </Section>
 

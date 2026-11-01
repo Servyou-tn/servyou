@@ -18,7 +18,7 @@ import {
   type UrlField,
 } from '@/lib/marche/freelancer-profile-edit'
 import { isHttpUrl } from '@/lib/freelancer/http-url'
-import { isLinkUrl, type PlatformId } from '@/lib/social/platforms'
+import { hasUserinfo, isLinkUrl, type PlatformId } from '@/lib/social/platforms'
 import { LinksEditor, linkRowsToPayload, type LinkRow } from '@/components/social/LinksEditor'
 import { saveProfileAction, publishProfileAction } from '../actions'
 import { AccordionSection } from './AccordionSection'
@@ -175,7 +175,7 @@ export function ProfileEditForm({
   // imageUrl comes from the upload, never typed. Recomputed on every attempt, so a fixed field
   // loses its error on the next save. Returns the failing fields ([] when every URL passes).
   function checkUrls(): UrlField[] {
-    const invalid = (url: string) => url.trim() !== '' && !isHttpUrl(url)
+    const invalid = (url: string) => url.trim() !== '' && (!isHttpUrl(url) || hasUserinfo(url))
     const next: UrlInvalid = { links: [], portfolio: [], certifications: [], portfolioLink: false }
     const fields: UrlField[] = []
     for (const r of linkRows) {

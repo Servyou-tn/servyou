@@ -5,14 +5,15 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { PlatformLinkInput } from '@/components/social/PlatformLinkInput'
 import { FOCUS_RING } from '@/components/layout/styles'
-import { PROPOSAL_LINKS_MAX, PROPOSAL_LINK_LABEL_MAX, PROPOSAL_LINK_URL_MAX } from '@/lib/job-constants'
+import { PROPOSAL_LINKS_MAX, PROPOSAL_LINK_LABEL_MAX } from '@/lib/job-constants'
 import type { ProposalLinkInput } from '@/lib/marche/proposal-validation'
 
 // « Liens vers vos réalisations (optionnel) » — Figma 356:12341 (+ specimens 356:12458 / 356:12519, read from the design notes):
 // up to 3 rows of [label input (272) · URL input (fill)], each h 44; a secondary/sm « + Ajouter un lien » (h 32) with a
 // « 1 / 3 » counter, disabled at 3.
 //
-// The address field is the kit's PlatformLinkInput (links kit PR-2): LTR, and the glyph of the platform typed. The row keeps its own label
+// The address field has NO maxLength: a pasted address longer than the limit would be cut silently into a different link — the form measures the
+// NORMALISED address (« https:// » added) and says « trop longue » instead. It is the kit's PlatformLinkInput (links kit PR-2): LTR, and the glyph of the platform typed. The row keeps its own label
 // field and its cap of 3 — a proposal link is a work sample, not a profile link.
 //
 // D-H12-8: row 1 carries a transparent spacer where the delete button sits on rows 2-3, so the right edge is not ragged;
@@ -70,7 +71,6 @@ export function LinksField({
                 <PlatformLinkInput
                   aria-label={texts.urlAria(i + 1)}
                   placeholder={texts.urlPlaceholder}
-                  maxLength={PROPOSAL_LINK_URL_MAX}
                   value={row.url}
                   error={errors?.[i] ? texts.error(errors[i] as string) : undefined}
                   onChange={(e) => update(i, { url: e.target.value })}
