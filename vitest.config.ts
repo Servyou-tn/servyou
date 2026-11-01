@@ -72,6 +72,8 @@ export const INTEGRATION_GLOBS = [
   '**/password-reset-live.test.ts',
   // The wrong-password attempt limit (5 per 15 min): 1 sign-in.
   '**/password-change-attempts-live.test.ts',
+  // Shop social links: the three URL CHECKs + column grants (runs after the architect applies the migration): 1 sign-in.
+  '**/shop-social-links-live.test.ts',
 ]
 
 // Tooling artifacts that must never be scanned for tests: the headless-Chrome VRT profiles (a
