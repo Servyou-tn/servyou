@@ -65,7 +65,7 @@ describe('ProductDetail — the 375 column', () => {
   it('the DOM is the 375 order: CTA · shop row · socials · Favori / Partager boxes, then the desktop-only row and shop snippet', () => {
     view()
     const cta = screen.getByRole('link', { name: 'Demander ce produit' })
-    const shopRow = screen.getAllByRole('link').find((a) => a.textContent?.startsWith('Atelier Sahbeni'))!
+    const shopRow = screen.getAllByRole('link').find((a) => a.textContent?.startsWith('ASAtelier Sahbeni'))!
     const favBox = screen.getByTestId('fav-box')
     const shareBox = screen.getByTestId('share-bordered')
     const favText = screen.getByTestId('fav-glyph')
@@ -81,14 +81,21 @@ describe('ProductDetail — the 375 column', () => {
 
   it('the shop row is one link to the shop: « Boutique · Tunis · Voir la boutique »', () => {
     view()
-    const row = screen.getAllByRole('link').find((a) => a.textContent?.startsWith('Atelier Sahbeni'))!
+    const row = screen.getAllByRole('link').find((a) => a.textContent?.startsWith('ASAtelier Sahbeni'))!
     expect(row).toHaveAttribute('href', '/boutique/shop-1')
     expect(row.textContent).toContain('Boutique · Tunis · Voir la boutique')
   })
 
+  it('without a logo the shop row shows the shop initials, like desktop (founder, Q3)', () => {
+    view()
+    const row = screen.getAllByRole('link').find((a) => a.textContent?.startsWith('ASAtelier Sahbeni'))!
+    expect(row).toHaveAttribute('href', '/boutique/shop-1')
+    expect(row.textContent).toContain('Atelier Sahbeni')
+  })
+
   it('without a shop id the row is plain text, not a dead link', () => {
     view({ shopId: null })
-    expect(screen.getAllByRole('link').some((a) => a.textContent?.startsWith('Atelier Sahbeni'))).toBe(false)
+    expect(screen.getAllByRole('link').some((a) => a.textContent?.startsWith('ASAtelier Sahbeni'))).toBe(false)
     const name = screen.getAllByText('Atelier Sahbeni')[0]
     expect(name.nextElementSibling?.textContent).toBe('Boutique · Tunis')
   })

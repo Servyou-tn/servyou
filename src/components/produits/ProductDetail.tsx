@@ -383,13 +383,13 @@ export function ProductDetail({
   )
 }
 
-// 375 `shopRow`: 343 × 64, pad 12, gap 12, r12, surface/subtle; Avatar md (the logo, else its image placeholder, as drawn — Q3); name 14 Semi Bold
+// 375 `shopRow`: 343 × 64, pad 12, gap 12, r12, surface/subtle; Avatar md (the logo, else the shop's initials like desktop — founder, Q3); name 14 Semi Bold
 // blue-800 (17) + « Boutique · {ville} · Voir la boutique » 12 muted (16), one line each; chevron-right 18 muted. The whole row is the link to the
 // shop (no chevron and no « Voir la boutique » when there is no shop id to link to). The city is seller-typed, so it is <bdi>-isolated.
 function ShopRow({ name, city, logoUrl, href, lang }: { name: string; city: string | null; logoUrl: string | null; href: string | null; lang: Lang }) {
   const body = (
     <>
-      <Avatar size="md" src={logoUrl} name={name} />
+      <Avatar size="md" src={logoUrl} name={name} initials={getInitials(name)} />
       <div className="flex min-w-0 flex-1 flex-col gap-0.5">
         <p className="truncate text-sm font-semibold leading-[17px] text-brand-blue-800">{name}</p>
         <p className="truncate text-xs leading-4 text-text-muted">

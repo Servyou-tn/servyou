@@ -27,7 +27,7 @@ links, low stock or a long description today.
 | `priceDelaiRow` | 343 × 29, space-between: price 24 Semi Bold (29) · icon-clock 16 + « + 7 TND de livraison » 13 muted (147 wide) | ✓ 29, delivery 147 wide. The « Total … à la livraison » line is not drawn → hidden (Q6) |
 | stock | « Plus que 3 en stock » 14 Medium **warning/700** | ✓ 21 (was warning/500) |
 | `Button` lg | 343 × 48, r10 | ✓ (was r8) |
-| `shopRow` | 343 × 64, pad 12, gap 12, r12, surface/subtle; Avatar 40; name 14 Semi Bold blue-800; « Boutique · Tunis · Voir la boutique » 12 muted; chevron 18 | ✓ 64, **one link to `/boutique/{id}`** (plain, without chevron or « Voir la boutique », when there is no shop id). City `<bdi>`-isolated. Q3 |
+| `shopRow` | 343 × 64, pad 12, gap 12, r12, surface/subtle; Avatar 40; name 14 Semi Bold blue-800; « Boutique · Tunis · Voir la boutique » 12 muted; chevron 18 | ✓ 64, **one link to `/boutique/{id}`** (plain, without chevron or « Voir la boutique », when there is no shop id). City `<bdi>`-isolated. The logo, else the shop initials (founder, Q3) |
 | `socials` | « Suivez la boutique » + 3 glyphs 20, start pad 12 | ✓ (shipped in #293, now placed after the shop row) |
 | COD note | « 💬 Paiement à la livraison. Aucune carte requise. » 12 muted (18) | ✓ 18, the 💬 decorative (`aria-hidden`) |
 | `heartShareRow` | two 166 × 44 bordered r10 buttons, gap 12, icon 20 + « Favori » / « Partager » 13 Medium | ✓ D2's two controls (`FavoriteButton variant="box"`, `ShareLinkButton variant="bordered"` — copies the link) |
@@ -60,7 +60,22 @@ No horizontal overflow at 375 (FR + AR, `scrollWidth` 375). Tab order = visual o
   with no way back. It now uses the existing `signInHref()` (`/connexion?next=<current page>`), the pattern the shop / freelancer hearts
   (`FavoriteHeart`) and « Signaler » already use. Two lines + the test updated.
 
-## Questions for the founder (not decided by me)
+## Founder answers (Nov 2, page-7 brief)
+
+| Q | Answer | Done |
+|---|---|---|
+| 1 Breadcrumb | ✅ « ‹ Produits › {catégorie} » | as built |
+| 2 Chip | ✅ the category | as built |
+| 3 Shop avatar | **initials when there is no logo, like desktop** | `ShopRow` passes the shop initials to `Avatar` (its initials variant, blue-100 / blue-600, as D3's avatar); the logo still wins when set |
+| 4 Shop panel hidden at 375 | ✅ | as built |
+| 5 Tinted shop row on the grey page | keep as drawn | unchanged |
+| 6 Total line | ✅ no total at 375 | as built |
+| 7 Clamp | ✅ 5 lines | as built |
+| 8 AR `shop_kind` | ✅ « متجر » | review marker removed (approved) |
+
+Also approved: guest hearts return to the page (D1 above) and the white « Avis » box (Q5).
+
+## Questions for the founder (answered above)
 
 1. **Breadcrumb.** The frame shows « ‹ {secteur} › {sous-catégorie} ». Product categories are ONE level in the database (6 rows, `parent_id` null
    on all of them; the 11 / 57 product taxonomy exists only in a TS file). I used D2's mobile shape « ‹ Produits › {catégorie} ». The frame's
