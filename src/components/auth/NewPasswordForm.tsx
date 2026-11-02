@@ -12,7 +12,12 @@ import { PasswordField } from '@/components/auth/PasswordField'
 import { AuthShell } from '@/components/auth/AuthShell'
 import { display, primaryBtn } from '@/components/auth/field-styles'
 
-// Initial state is decided server-side (?error → invalid; else checking). The
+// Initial state is decided server-side (?error_code=otp_expired → expired; other
+// ?error → invalid; a ?token_hash recovery link → confirm; else checking). Expired
+// is the invalid state headed « Lien expiré, demandez-en un nouveau »
+// (lib/auth/expired-link.ts). Confirm spends the token_hash with verifyOtp only on
+// the « Continuer » click (lib/auth/recovery-link.ts): no code verifier needed, so
+// the link works cross-device, and a mail scanner's GET cannot use it up. The
 // client listener flips to the reset form only for a RECOVERY session: the
 // PASSWORD_RECOVERY event the reset link's code exchange fires, or a reload of this
 // tab after it (RECOVERY_FLAG). An ordinary signed-in session no longer gets a
@@ -20,7 +25,7 @@ import { display, primaryBtn } from '@/components/auth/field-styles'
 // Mon compte › Sécurité (changePasswordAction re-checks the current password). If no
 // recovery session arrives within 2s, the link is treated as invalid/expired.
 // UI gate only: the server-side guard is GoTrue's « Secure password change » setting.
-export type NewPasswordInitialView = 'checking' | 'invalid'
+export type NewPasswordInitialView = 'checking' | 'invalid' | 'expired' | 'confirm'
 type View = NewPasswordInitialView | 'form'
 
 const RECOVERY_FLAG = 'servyou:password-recovery'
@@ -33,7 +38,13 @@ function readRecoveryFlag(): string | null {
   }
 }
 
-export function NewPasswordForm({ initialView }: { initialView: NewPasswordInitialView }) {
+export function NewPasswordForm({
+  initialView,
+  tokenHash,
+}: {
+  initialView: NewPasswordInitialView
+  tokenHash?: string
+}) {
   const supabase = createClient()
   const router = useRouter()
   const lang = useLang()
@@ -45,9 +56,12 @@ export function NewPasswordForm({ initialView }: { initialView: NewPasswordIniti
   const [confirmError, setConfirmError] = useState('')
   const [formError, setFormError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [verifying, setVerifying] = useState(false)
   const requestNewRef = useRef<HTMLAnchorElement>(null)
 
   useEffect(() => {
+    // A new link (token_hash or expired) supersedes an unfinished recovery remembered in this tab.
+    const resumesRecovery = initialView !== 'confirm' && initialView !== 'expired'
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (!session) return
       if (event === 'PASSWORD_RECOVERY') {
@@ -57,7 +71,7 @@ export function NewPasswordForm({ initialView }: { initialView: NewPasswordIniti
           // storage disabled — this tab just cannot survive a reload of the form
         }
         setView('form')
-      } else if (readRecoveryFlag() === session.user.id) {
+      } else if (resumesRecovery && readRecoveryFlag() === session.user.id) {
         setView('form')
       }
     })
@@ -67,11 +81,49 @@ export function NewPasswordForm({ initialView }: { initialView: NewPasswordIniti
       subscription.unsubscribe()
       clearTimeout(timer)
     }
-  }, [supabase])
+  }, [supabase, initialView])
+
+  const isInvalid = view === 'invalid' || view === 'expired'
 
   useEffect(() => {
-    if (view === 'invalid') requestNewRef.current?.focus()
-  }, [view])
+    if (isInvalid) requestNewRef.current?.focus()
+  }, [isInvalid])
+
+  // The token is single-use: the button stays disabled while verifying, so a double click cannot spend it twice.
+  // otp_expired = used or expired → the expired state; any other failure (network, rate limit) did not consume the
+  // token, so the button stays for a retry. On success the PASSWORD_RECOVERY listener remembers the recovery for
+  // this tab, and the hash leaves the address bar so a reload resumes the form instead of re-spending it.
+  async function handleConfirm() {
+    if (!tokenHash || verifying) return
+    setVerifying(true)
+    setFormError('')
+    try {
+      const { data, error } = await supabase.auth.verifyOtp({ token_hash: tokenHash, type: 'recovery' })
+      if (error) {
+        console.error('[NewPasswordForm] verifyOtp error:', error.message, error.code, error.status)
+        setVerifying(false)
+        if (error.code === 'otp_expired') {
+          window.history.replaceState(null, '', '/nouveau-mot-de-passe?error=access_denied&error_code=otp_expired')
+          setView((v) => (v === 'form' ? v : 'expired'))
+        } else {
+          setFormError(t('newPassword.errors.verifyFailed', lang))
+        }
+        return
+      }
+      if (!data.session) {
+        console.error('[NewPasswordForm] verifyOtp returned no session')
+        setFormError(t('newPassword.errors.verifyFailed', lang))
+        setVerifying(false)
+        return
+      }
+      window.history.replaceState(null, '', '/nouveau-mot-de-passe')
+      setView('form')
+    } catch (err) {
+      console.error('[NewPasswordForm] unexpected verify error:', err instanceof Error ? err.message : String(err))
+      setFormError(t('newPassword.errors.verifyFailed', lang))
+      setVerifying(false)
+    }
+  }
 
   async function handleSubmit(ev: FormEvent) {
     ev.preventDefault()
@@ -119,9 +171,11 @@ export function NewPasswordForm({ initialView }: { initialView: NewPasswordIniti
   const header =
     view === 'form'
       ? { title: t('newPassword.title', lang), subtitle: t('newPassword.subtitle', lang) }
-      : view === 'invalid'
-        ? { title: t('newPassword.invalid.title', lang), subtitle: t('newPassword.invalid.subtitle', lang) }
-        : { title: t('newPassword.title', lang), subtitle: t('newPassword.subtitle', lang) }
+      : view === 'expired'
+        ? { title: t('newPassword.expired.title', lang), subtitle: t('newPassword.invalid.subtitle', lang) }
+        : view === 'invalid'
+          ? { title: t('newPassword.invalid.title', lang), subtitle: t('newPassword.invalid.subtitle', lang) }
+          : { title: t('newPassword.title', lang), subtitle: t('newPassword.subtitle', lang) }
 
   return (
     <>
@@ -142,7 +196,26 @@ export function NewPasswordForm({ initialView }: { initialView: NewPasswordIniti
               <SpinnerIcon className="h-10 w-10 animate-spin text-brand-blue-200" />
               <p className="mt-4 text-sm text-brand-blue-200">{t('common.loading', lang)}</p>
             </div>
-          ) : view === 'invalid' ? (
+          ) : view === 'confirm' ? (
+            <div className="flex flex-col items-center text-center">
+              <p className="text-body leading-relaxed text-white">{t('newPassword.confirm.body', lang)}</p>
+              {formError ? (
+                <p role="alert" className="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                  {formError}
+                </p>
+              ) : null}
+              <button type="button" onClick={handleConfirm} disabled={verifying} className={`mt-6 ${primaryBtn}`}>
+                {verifying ? (
+                  <>
+                    <SpinnerIcon className="h-5 w-5 animate-spin" />
+                    {t('newPassword.confirm.verifying', lang)}
+                  </>
+                ) : (
+                  t('newPassword.confirm.cta', lang)
+                )}
+              </button>
+            </div>
+          ) : isInvalid ? (
             <div className="flex flex-col items-center text-center">
               <AlertCircleIcon className="mb-6 h-16 w-16 text-amber-400" />
               <p className="text-body leading-relaxed text-white">{t('newPassword.invalid.body', lang)}</p>

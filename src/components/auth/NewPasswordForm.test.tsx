@@ -12,11 +12,20 @@
 
 import '@testing-library/jest-dom/vitest'
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { render, screen, cleanup, act } from '@testing-library/react'
+import { render, screen, cleanup, act, fireEvent } from '@testing-library/react'
 import { t } from '@/lib/i18n'
 
 type Listener = (event: string, session: { user: { id: string } } | null) => void
-const h = vi.hoisted(() => ({ listener: null as Listener | null }))
+type VerifyResult = {
+  data: { session: { user: { id: string } } | null }
+  error: { message: string; code?: string; status?: number } | null
+}
+const OK: VerifyResult = { data: { session: { user: { id: 'user-1' } } }, error: null }
+const fail = (code: string, status: number): VerifyResult => ({ data: { session: null }, error: { message: code, code, status } })
+const h = vi.hoisted(() => ({
+  listener: null as Listener | null,
+  verifyOtp: null as unknown as import('vitest').Mock<(params: { token_hash: string; type: string }) => Promise<VerifyResult>>,
+}))
 
 vi.mock('next/navigation', () => ({ useRouter: () => ({ push: vi.fn() }) }))
 vi.mock('@/lib/supabase/client', () => ({
@@ -26,6 +35,7 @@ vi.mock('@/lib/supabase/client', () => ({
         h.listener = cb
         return { data: { subscription: { unsubscribe: vi.fn() } } }
       },
+      verifyOtp: (params: { token_hash: string; type: string }) => h.verifyOtp(params),
       updateUser: vi.fn(async () => ({ error: null })),
       signOut: vi.fn(async () => ({ error: null })),
     },
@@ -47,10 +57,12 @@ beforeEach(() => {
   vi.useFakeTimers()
   sessionStorage.clear()
   h.listener = null
+  h.verifyOtp = vi.fn(async () => OK)
 })
 afterEach(() => {
   cleanup()
   vi.useRealTimers()
+  vi.restoreAllMocks()
 })
 
 describe('NewPasswordForm — recovery sessions only', () => {
@@ -92,5 +104,105 @@ describe('NewPasswordForm — recovery sessions only', () => {
     emit('INITIAL_SESSION', null)
     act(() => vi.advanceTimersByTime(2100))
     expect(invalidBody()).toBeInTheDocument()
+  })
+})
+
+describe('NewPasswordForm — expired link (?error_code=otp_expired)', () => {
+  it('shows « Lien expiré, demandez-en un nouveau » with the request-new link, no form', () => {
+    render(<NewPasswordForm initialView="expired" />)
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Lien expiré, demandez-en un nouveau')
+    expect(screen.getByRole('link', { name: t('newPassword.invalid.requestNew', 'fr') })).toHaveAttribute('href', '/mot-de-passe-oublie')
+    act(() => vi.advanceTimersByTime(2100))
+    expect(passwordField()).not.toBeInTheDocument()
+  })
+})
+
+describe('NewPasswordForm — cross-device token_hash link (verifyOtp on click only)', () => {
+  const HASH = `pkce_${'a'.repeat(56)}`
+  const continueBtn = () => screen.queryByRole('button', { name: t('newPassword.confirm.cta', 'fr') })
+  const click = async (el: HTMLElement) => {
+    await act(async () => {
+      fireEvent.click(el)
+    })
+  }
+
+  it('shows « Continuer », no form, and does NOT spend the token on load (scanner-safe)', () => {
+    render(<NewPasswordForm initialView="confirm" tokenHash={HASH} />)
+    expect(continueBtn()).toBeInTheDocument()
+    expect(passwordField()).not.toBeInTheDocument()
+    act(() => vi.advanceTimersByTime(2100))
+    expect(continueBtn()).toBeInTheDocument() // the 2 s « invalid » timer leaves confirm alone
+    expect(h.verifyOtp).not.toHaveBeenCalled()
+  })
+
+  it('the click verifies the recovery hash, then the form opens and the hash leaves the URL', async () => {
+    window.history.replaceState(null, '', `/nouveau-mot-de-passe?token_hash=${HASH}&type=recovery`)
+    h.verifyOtp.mockImplementation(async () => {
+      h.listener?.('PASSWORD_RECOVERY', { user: { id: 'user-1' } }) // supabase-js emits it inside verifyOtp
+      return OK
+    })
+    render(<NewPasswordForm initialView="confirm" tokenHash={HASH} />)
+    await click(continueBtn()!)
+    expect(h.verifyOtp).toHaveBeenCalledWith({ token_hash: HASH, type: 'recovery' })
+    expect(passwordField()).toBeInTheDocument()
+    expect(sessionStorage.getItem(FLAG)).toBe('user-1')
+    expect(window.location.search).toBe('')
+  })
+
+  it('a used / expired hash (otp_expired) shows « Lien expiré, demandez-en un nouveau »', async () => {
+    window.history.replaceState(null, '', `/nouveau-mot-de-passe?token_hash=${HASH}&type=recovery`)
+    h.verifyOtp.mockResolvedValue(fail('otp_expired', 403))
+    vi.spyOn(console, 'error').mockImplementation(() => {})
+    render(<NewPasswordForm initialView="confirm" tokenHash={HASH} />)
+    await click(continueBtn()!)
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(t('newPassword.expired.title', 'fr'))
+    expect(passwordField()).not.toBeInTheDocument()
+    expect(window.location.search).not.toContain('token_hash') // a reload shows « expiré », not « Continuer »
+  })
+
+  it('verifyOtp without a session does not open the form', async () => {
+    h.verifyOtp.mockResolvedValue({ data: { session: null }, error: null })
+    vi.spyOn(console, 'error').mockImplementation(() => {})
+    render(<NewPasswordForm initialView="confirm" tokenHash={HASH} />)
+    await click(continueBtn()!)
+    expect(screen.getByRole('alert')).toHaveTextContent(t('newPassword.errors.verifyFailed', 'fr'))
+    expect(passwordField()).not.toBeInTheDocument()
+  })
+
+  it('an unfinished recovery remembered in this tab does not skip a new link (confirm or expired)', () => {
+    sessionStorage.setItem(FLAG, 'user-1')
+    render(<NewPasswordForm initialView="confirm" tokenHash={HASH} />)
+    emit('INITIAL_SESSION', 'user-1')
+    expect(passwordField()).not.toBeInTheDocument()
+    expect(continueBtn()).toBeInTheDocument()
+    cleanup()
+    render(<NewPasswordForm initialView="expired" />)
+    emit('INITIAL_SESSION', 'user-1')
+    expect(passwordField()).not.toBeInTheDocument()
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(t('newPassword.expired.title', 'fr'))
+  })
+
+  it('any other failure keeps the button for a retry and says so', async () => {
+    h.verifyOtp.mockResolvedValue(fail('over_request_rate_limit', 429))
+    vi.spyOn(console, 'error').mockImplementation(() => {})
+    render(<NewPasswordForm initialView="confirm" tokenHash={HASH} />)
+    await click(continueBtn()!)
+    expect(screen.getByRole('alert')).toHaveTextContent(t('newPassword.errors.verifyFailed', 'fr'))
+    expect(continueBtn()).toBeEnabled()
+    expect(passwordField()).not.toBeInTheDocument()
+  })
+
+  it('the button is disabled while verifying, so a double click spends the token once', async () => {
+    let resolve: (r: VerifyResult) => void = () => {}
+    h.verifyOtp.mockImplementation(() => new Promise<VerifyResult>((r) => (resolve = r)))
+    render(<NewPasswordForm initialView="confirm" tokenHash={HASH} />)
+    const btn = continueBtn()!
+    await click(btn)
+    const verifying = screen.getByRole('button', { name: t('newPassword.confirm.verifying', 'fr') })
+    expect(verifying).toBeDisabled()
+    await click(verifying)
+    expect(h.verifyOtp).toHaveBeenCalledTimes(1)
+    await act(async () => resolve(OK))
+    expect(passwordField()).toBeInTheDocument()
   })
 })

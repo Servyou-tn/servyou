@@ -1,3 +1,4 @@
+import { redirect } from 'next/navigation'
 import { getLang } from '@/lib/i18n/server'
 import type { Lang } from '@/lib/i18n'
 import { createClient } from '@/lib/supabase/server'
@@ -14,6 +15,7 @@ import { HowItWorks } from '@/components/landing/HowItWorks'
 import { Faq } from '@/components/landing/Faq'
 import { FinalCtaFooter } from '@/components/landing/FinalCtaFooter'
 import { ConsumerHomepage } from '@/components/home/ConsumerHomepage'
+import { expiredLinkRedirect } from '@/lib/auth/expired-link'
 
 // / branches by viewer:
 //   • logged-out → marketing landing (unchanged)
@@ -21,7 +23,16 @@ import { ConsumerHomepage } from '@/components/home/ConsumerHomepage'
 //     marketplace (no longer a browse surface — see ConsumerHomepage.tsx)
 //   • logged-in shop owner / freelancer / admin → marketing landing, whose header shows THEM
 //     (avatar + name + a link to their space) instead of « Se connecter / S'inscrire »
-export default async function HomePage() {
+// An expired / used reset link that GoTrue dropped here (?error_code=otp_expired) goes on to
+// /nouveau-mot-de-passe first — see lib/auth/expired-link.ts.
+export default async function HomePage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>
+}) {
+  const expiredLink = expiredLinkRedirect(await searchParams)
+  if (expiredLink) redirect(expiredLink)
+
   const lang = await getLang()
 
   const supabase = await createClient()

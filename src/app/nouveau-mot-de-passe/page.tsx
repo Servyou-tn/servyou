@@ -1,5 +1,6 @@
 import localFont from 'next/font/local'
-import { NewPasswordForm, type NewPasswordInitialView } from '@/components/auth/NewPasswordForm'
+import { NewPasswordForm } from '@/components/auth/NewPasswordForm'
+import { newPasswordInitialView } from '@/lib/auth/new-password-view'
 
 // Manrope --font-display on the white <main> so the (client) per-state header and
 // the box children inherit it. Like /verifier-email, the header text changes with
@@ -25,11 +26,11 @@ export default async function NouveauMotDePassePage({
   searchParams: Promise<Record<string, string | string[] | undefined>>
 }) {
   const sp = await searchParams
-  const initialView: NewPasswordInitialView = sp.error ? 'invalid' : 'checking'
+  const { initialView, tokenHash } = newPasswordInitialView(sp)
 
   return (
     <main id="main-content" className={`${manrope.variable} flex min-h-screen flex-col bg-white`}>
-      <NewPasswordForm initialView={initialView} />
+      <NewPasswordForm initialView={initialView} tokenHash={tokenHash} />
     </main>
   )
 }
