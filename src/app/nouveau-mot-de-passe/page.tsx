@@ -1,5 +1,6 @@
 import localFont from 'next/font/local'
 import { NewPasswordForm, type NewPasswordInitialView } from '@/components/auth/NewPasswordForm'
+import { isExpiredLinkError } from '@/lib/auth/expired-link'
 
 // Manrope --font-display on the white <main> so the (client) per-state header and
 // the box children inherit it. Like /verifier-email, the header text changes with
@@ -25,7 +26,7 @@ export default async function NouveauMotDePassePage({
   searchParams: Promise<Record<string, string | string[] | undefined>>
 }) {
   const sp = await searchParams
-  const initialView: NewPasswordInitialView = sp.error ? 'invalid' : 'checking'
+  const initialView: NewPasswordInitialView = isExpiredLinkError(sp) ? 'expired' : sp.error ? 'invalid' : 'checking'
 
   return (
     <main id="main-content" className={`${manrope.variable} flex min-h-screen flex-col bg-white`}>

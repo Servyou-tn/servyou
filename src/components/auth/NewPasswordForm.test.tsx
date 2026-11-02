@@ -94,3 +94,13 @@ describe('NewPasswordForm — recovery sessions only', () => {
     expect(invalidBody()).toBeInTheDocument()
   })
 })
+
+describe('NewPasswordForm — expired link (?error_code=otp_expired)', () => {
+  it('shows « Lien expiré, demandez-en un nouveau » with the request-new link, no form', () => {
+    render(<NewPasswordForm initialView="expired" />)
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Lien expiré, demandez-en un nouveau')
+    expect(screen.getByRole('link', { name: t('newPassword.invalid.requestNew', 'fr') })).toHaveAttribute('href', '/mot-de-passe-oublie')
+    act(() => vi.advanceTimersByTime(2100))
+    expect(passwordField()).not.toBeInTheDocument()
+  })
+})

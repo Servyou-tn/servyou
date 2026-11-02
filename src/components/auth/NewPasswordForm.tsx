@@ -12,7 +12,9 @@ import { PasswordField } from '@/components/auth/PasswordField'
 import { AuthShell } from '@/components/auth/AuthShell'
 import { display, primaryBtn } from '@/components/auth/field-styles'
 
-// Initial state is decided server-side (?error → invalid; else checking). The
+// Initial state is decided server-side (?error_code=otp_expired → expired; other
+// ?error → invalid; else checking). Expired is the invalid state headed « Lien
+// expiré, demandez-en un nouveau » (lib/auth/expired-link.ts). The
 // client listener flips to the reset form only for a RECOVERY session: the
 // PASSWORD_RECOVERY event the reset link's code exchange fires, or a reload of this
 // tab after it (RECOVERY_FLAG). An ordinary signed-in session no longer gets a
@@ -20,7 +22,7 @@ import { display, primaryBtn } from '@/components/auth/field-styles'
 // Mon compte › Sécurité (changePasswordAction re-checks the current password). If no
 // recovery session arrives within 2s, the link is treated as invalid/expired.
 // UI gate only: the server-side guard is GoTrue's « Secure password change » setting.
-export type NewPasswordInitialView = 'checking' | 'invalid'
+export type NewPasswordInitialView = 'checking' | 'invalid' | 'expired'
 type View = NewPasswordInitialView | 'form'
 
 const RECOVERY_FLAG = 'servyou:password-recovery'
@@ -69,9 +71,11 @@ export function NewPasswordForm({ initialView }: { initialView: NewPasswordIniti
     }
   }, [supabase])
 
+  const isInvalid = view === 'invalid' || view === 'expired'
+
   useEffect(() => {
-    if (view === 'invalid') requestNewRef.current?.focus()
-  }, [view])
+    if (isInvalid) requestNewRef.current?.focus()
+  }, [isInvalid])
 
   async function handleSubmit(ev: FormEvent) {
     ev.preventDefault()
@@ -119,9 +123,11 @@ export function NewPasswordForm({ initialView }: { initialView: NewPasswordIniti
   const header =
     view === 'form'
       ? { title: t('newPassword.title', lang), subtitle: t('newPassword.subtitle', lang) }
-      : view === 'invalid'
-        ? { title: t('newPassword.invalid.title', lang), subtitle: t('newPassword.invalid.subtitle', lang) }
-        : { title: t('newPassword.title', lang), subtitle: t('newPassword.subtitle', lang) }
+      : view === 'expired'
+        ? { title: t('newPassword.expired.title', lang), subtitle: t('newPassword.invalid.subtitle', lang) }
+        : view === 'invalid'
+          ? { title: t('newPassword.invalid.title', lang), subtitle: t('newPassword.invalid.subtitle', lang) }
+          : { title: t('newPassword.title', lang), subtitle: t('newPassword.subtitle', lang) }
 
   return (
     <>
@@ -142,7 +148,7 @@ export function NewPasswordForm({ initialView }: { initialView: NewPasswordIniti
               <SpinnerIcon className="h-10 w-10 animate-spin text-brand-blue-200" />
               <p className="mt-4 text-sm text-brand-blue-200">{t('common.loading', lang)}</p>
             </div>
-          ) : view === 'invalid' ? (
+          ) : isInvalid ? (
             <div className="flex flex-col items-center text-center">
               <AlertCircleIcon className="mb-6 h-16 w-16 text-amber-400" />
               <p className="text-body leading-relaxed text-white">{t('newPassword.invalid.body', lang)}</p>

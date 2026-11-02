@@ -549,6 +549,7 @@ export const ar: Record<string, string> = {
   'newPassword.invalid.body':         "اطلبوا رابطا جديدا لإعادة تعيين كلمة المرور.",
   'newPassword.invalid.requestNew':   "طلب رابط جديد",
   'newPassword.invalid.backToSignin': "العودة إلى تسجيل الدخول",
+  'newPassword.expired.title':        "انتهت صلاحية الرابط، اطلبوا رابطا جديدا",
 
   // ─── Auth — forgot / reset password ─────────────────────────────────────────
   'auth.forgot_title':      "نسيت كلمة المرور",
