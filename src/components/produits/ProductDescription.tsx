@@ -65,7 +65,8 @@ export function ProductDescription({ description }: { description: string }) {
         onClick={() => setExpanded((v) => !v)}
         aria-expanded={expanded}
         aria-controls="product-description"
-        className={`w-fit rounded-md text-[15px] font-medium text-brand-blue-600 transition-colors hover:text-brand-blue-700 max-lg:text-sm max-lg:font-normal max-lg:leading-[17px] ${
+        // max-lg py / -my 3.5: a 45 px touch target around the 17 px line (≥ 44 on mobile) without moving the layout.
+        className={`w-fit rounded-md text-[15px] font-medium text-brand-blue-600 transition-colors hover:text-brand-blue-700 max-lg:-my-3.5 max-lg:py-3.5 max-lg:text-sm max-lg:font-normal max-lg:leading-[17px] ${
           overflows || expanded ? '' : 'max-lg:hidden'
         } ${FOCUS_RING}`}
       >

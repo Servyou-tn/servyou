@@ -136,12 +136,31 @@ describe('ProductDescription — 375 « Voir plus » only when the text overflow
   })
   const measure = () => act(() => h.observers.forEach((o) => o.cb()))
 
-  it('a short text: the button is hidden below lg (still shown from lg, as before)', () => {
+  it('a short text: the button is hidden below lg (still shown from lg, as before) — 8 px of mixed-script slack is not an overflow', () => {
     render(<ProductDescription description="Court." />)
-    scrollHeight = 122
+    scrollHeight = 168
     measure()
+    expect(screen.getByRole('button', { name: 'Voir plus' }).className).not.toContain('max-lg:hidden')
+    scrollHeight = 128 // the text got shorter (or the box wider): 8 px over the clamp
+    measure()
+    expect(screen.getByRole('button', { name: 'Voir plus' }).className).toContain('max-lg:hidden')
+  })
+
+  it('once expanded, a re-measure (resize, late font) does not hide « Voir moins »', () => {
+    render(<ProductDescription description={'Long. '.repeat(200)} />)
+    scrollHeight = 168
+    measure()
+    fireEvent.click(screen.getByRole('button', { name: 'Voir plus' }))
+    scrollHeight = 120 // unclamped: scrollHeight == clientHeight
+    measure()
+    expect(screen.getByRole('button', { name: 'Voir moins' }).className).not.toContain('max-lg:hidden')
+  })
+
+  it('the 375 link has a ≥ 44 px touch target that does not move the layout', () => {
+    render(<ProductDescription description="Court." />)
     const button = screen.getByRole('button', { name: 'Voir plus' })
-    expect(button.className).toContain('max-lg:hidden')
+    expect(button.className).toContain('max-lg:py-3.5')
+    expect(button.className).toContain('max-lg:-my-3.5')
   })
 
   it('an overflowing text shows « Voir plus » at 375, expands and collapses', () => {
