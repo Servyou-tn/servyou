@@ -3,7 +3,15 @@
 // what the SDK auto-loads; the older sentry.client.config.ts is no longer used. Inert
 // without a DSN.
 import * as Sentry from '@sentry/nextjs'
+import { config as zodConfig } from 'zod/v4/core'
 import { scrubPII } from '@/lib/sentry/scrubber'
+
+// zod 4 probes `Function("")` when it builds an object schema, to decide whether it may compile a faster parser. The
+// throw is caught, but the enforced CSP (no 'unsafe-eval', src/lib/security/headers.ts) still reports it as a blocked
+// eval on every page that ships a schema to the browser (FavoriteHeart → lib/favorites/targets.ts, the service wizard…).
+// `jitless` skips the probe — zod's documented switch for strict CSPs; parsing stays the same, only the compiled fast
+// path is dropped. This file runs before hydration, so before any client module builds a schema.
+zodConfig({ jitless: true })
 
 const dsn = process.env.NEXT_PUBLIC_SENTRY_DSN
 

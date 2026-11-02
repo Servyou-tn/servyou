@@ -2,11 +2,10 @@
 // Pre-launch security audit pass 1, finding 1 (docs/audits/prelaunch-security-audit-2026-10-29.md): production sent no
 // CSP, frame, nosniff, referrer or permissions header, so /connexion and every signed-in page could be framed.
 //
-// Two CSP headers on purpose:
-//   • ENFORCED `Content-Security-Policy: frame-ancestors 'none'` (+ X-Frame-Options: DENY for older browsers) — the
-//     clickjacking fix, live now;
-//   • `Content-Security-Policy-Report-Only` with the full policy — violations are only logged (browser console) until
-//     the policy has been watched in real use; then it is promoted to enforced (and later moved to nonces).
+// The full CSP is ENFORCED (`Content-Security-Policy`, with frame-ancestors 'none' + X-Frame-Options: DENY for older
+// browsers). It was served Report-Only from 2026-10-29 until the pre-beta check of 2026-11-01: the three journeys'
+// pages, browsed on a Vercel preview and a production build, produced one violation only — zod's caught eval probe,
+// switched off in src/instrumentation-client.ts. Moving to nonces (to drop 'unsafe-inline') is a later step.
 //
 // What the full policy must allow (verified from the code, 2026-10-29):
 //   • Supabase — the browser client (`@supabase/ssr` createBrowserClient: sign-in / sign-up / password reset / order
@@ -21,12 +20,11 @@
 //   • Cloudflare Turnstile (src/components/security/Turnstile.tsx) — its script and challenge iframe come from
 //     challenges.cloudflare.com (script-src + frame-src, per Cloudflare's CSP reference); siteverify is server-side.
 //
-// VIOLATION REPORTING (follow-up 1 of docs/follow-ups/security-headers.md): the Report-Only policy carries `report-uri` (every
-// browser) and `report-to` + a `Reporting-Endpoints` header (Reporting API browsers) pointing at Sentry's SECURITY endpoint, so
-// real traffic produces data before the policy is enforced. The URL is DERIVED from the Sentry DSN the app already ships to the
-// browser (NEXT_PUBLIC_SENTRY_DSN) — the DSN's key is a public ingest key, not a secret, and nothing new is added to the repo.
-// No DSN (dev, CI, an unconfigured preview) → no reporting, exactly like Sentry itself. The ENFORCED frame-ancestors header is
-// left untouched: only the watched policy reports.
+// VIOLATION REPORTING (follow-up 1 of docs/follow-ups/security-headers.md): the policy carries `report-uri` (every browser) and
+// `report-to` + a `Reporting-Endpoints` header (Reporting API browsers) pointing at Sentry's SECURITY endpoint, so a blocked
+// load in real traffic shows up in Sentry. The URL is DERIVED from the Sentry DSN the app already ships to the browser
+// (NEXT_PUBLIC_SENTRY_DSN) — the DSN's key is a public ingest key, not a secret, and nothing new is added to the repo.
+// No DSN (dev, CI, an unconfigured preview) → no reporting, exactly like Sentry itself.
 
 export const SUPABASE_ORIGIN = 'https://xggomcitqrkaylqezjjz.supabase.co'
 export const TURNSTILE_ORIGIN = 'https://challenges.cloudflare.com'
@@ -96,8 +94,7 @@ export function contentSecurityPolicy(isDev: boolean, reportUrl: string | null =
 export function securityHeaders(isDev: boolean, reportUrl: string | null = null): { key: string; value: string }[] {
   return [
     { key: 'X-Frame-Options', value: 'DENY' },
-    { key: 'Content-Security-Policy', value: "frame-ancestors 'none'" },
-    { key: 'Content-Security-Policy-Report-Only', value: contentSecurityPolicy(isDev, reportUrl) },
+    { key: 'Content-Security-Policy', value: contentSecurityPolicy(isDev, reportUrl) },
     ...(reportUrl ? [{ key: 'Reporting-Endpoints', value: `${CSP_REPORT_GROUP}="${reportUrl}"` }] : []),
     { key: 'X-Content-Type-Options', value: 'nosniff' },
     { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
