@@ -22,6 +22,10 @@ import { t } from '@/lib/i18n'
 // carries the 1440 frame and four desktop specimens only. The mobile ramp here follows D2's pattern
 // by decision, not by measurement: single column below lg, main to full-width aspect-square, strip
 // horizontally scrollable. Logged in docs/follow-ups.md beside C1's identical gap.
+//
+// 375 (m375-d1-produit, frame sl-d1-375 `gallery`), `max-lg:` only: 343 square, r10, surface/sunken, NO stroke; counter = blue/950 pill, pad 3 / 8,
+// 12 Medium text/inverse; arrows 40, solid surface/base, no stroke, chevron 20 text/primary; fav-circle 44 with a 1 px border/subtle and the
+// icon-heart 24 text/muted; NO thumbnail strip (the arrows and the counter are the whole navigation). From `lg` the gallery is unchanged.
 
 export function ProductGallery({
   images,
@@ -78,7 +82,8 @@ export function ProductGallery({
 
   const overlayBtn =
     `absolute top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full ` +
-    `border border-border-subtle bg-white/90 text-text-secondary transition-colors hover:bg-white ${FOCUS_RING}`
+    `border border-border-subtle bg-white/90 text-text-secondary transition-colors hover:bg-white ` +
+    `max-lg:border-0 max-lg:bg-surface-base max-lg:text-text-primary ${FOCUS_RING}`
 
   return (
     <div className="flex flex-col gap-3">
@@ -95,7 +100,7 @@ export function ProductGallery({
           shared with anything in that mode. `aspect-square` + `w-full` + `xl:max-w-[600px]` tracks
           the column's real rendered width once the grid engages, and never exceeds the measured
           600. */}
-      <div className="relative aspect-square w-full overflow-hidden rounded-xl border border-border-subtle bg-surface-sunken xl:max-w-[600px]">
+      <div className="relative aspect-square w-full overflow-hidden rounded-xl border border-border-subtle bg-surface-sunken max-lg:rounded-[10px] max-lg:border-0 xl:max-w-[600px]">
         {images.length > 0 ? (
           stack
         ) : (
@@ -108,7 +113,13 @@ export function ProductGallery({
         {/* Favourite — inset 12, top-END. Rendered outside the image stack so it is never covered
             by a layer, and it is a sibling of nothing clickable, so it cannot navigate. */}
         <div className="absolute end-3 top-3 z-10 flex h-11 w-11 items-center justify-center rounded-full border border-border-subtle bg-white">
-          <FavoriteButton item_type="product" item_id={productId} />
+          {/* 375 draws the icon-heart 24 (text/muted); desktop keeps the ♡ glyph. One of the two is display:none at any width. */}
+          <span className="contents lg:hidden">
+            <FavoriteButton item_type="product" item_id={productId} variant="icon" iconClassName="size-6 text-text-muted" />
+          </span>
+          <span className="contents max-lg:hidden">
+            <FavoriteButton item_type="product" item_id={productId} />
+          </span>
         </div>
 
         {many && (
@@ -125,7 +136,7 @@ export function ProductGallery({
                 ImageUploadGrid.tsx:358. The BADGE still mirrors, because `start-3` is untouched. */}
             <span
               dir="ltr"
-              className="absolute bottom-3 start-3 z-10 rounded-md bg-black/60 px-2 py-0.5 text-xs font-medium tabular-nums text-white"
+              className="absolute bottom-3 start-3 z-10 rounded-md bg-black/60 px-2 py-0.5 text-xs font-medium tabular-nums text-white max-lg:rounded-full max-lg:bg-brand-blue-950 max-lg:py-[3px] max-lg:leading-[15px] max-lg:text-text-inverse"
             >
               {t('product.detail.gallery_counter', lang, {
                 current: String(active + 1),
@@ -161,7 +172,7 @@ export function ProductGallery({
           than letting flex compress them to fill 600; `overflow-x-auto` is the INFERRED mobile
           behaviour (no 375 frame), and is inert at lg where 368 < 600 so nothing ever scrolls. */}
       {many && (
-        <ul className="flex gap-3 overflow-x-auto pb-1 lg:pb-0">
+        <ul className="flex gap-3 overflow-x-auto pb-1 max-lg:hidden lg:pb-0">
           {images.map((img, i) => (
             <li key={img.url} className="shrink-0">
               <button

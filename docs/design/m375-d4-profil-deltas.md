@@ -55,6 +55,16 @@ profile has portfolio items, formation or contexte. The fixture was deleted befo
 5. **Ratings.** The frame's trust row shows « ★ 4.8 / 12 avis ». We keep the « Nouveau sur Servyou / Pas encore d'avis » state (ratings are
    Phase 3+). This pill is wider than the rating, which is why the divider after « 12 projets livrés » is dropped when the row wraps.
 
+## Founder answers (Nov 1, after #289 merged — logged in the page-6 PR)
+
+| # | Answer | Effect |
+|---|---|---|
+| Q1 | **No « Verified » badge** — there is no verification until after the beta | nothing to build; the badge stays out at every width |
+| Q2 | **Keep the heart** in the hero on mobile | as shipped |
+| Q3 | **No chip icons** | as shipped |
+| Q4 | **Grey page background is OK** | shell ruling confirmed; the white frame root is not copied |
+| Q5 | **« Nouveau sur Servyou »** in place of the rating is OK | as shipped (ratings stay Phase 3+) |
+
 ## Verified
 
 tsc · eslint on every changed file · vitest by path (`PublicServiceCard.test.tsx` new, `phone-reveal-ui.test.tsx`). Browser: FR + AR at 375 on

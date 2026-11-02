@@ -30,10 +30,11 @@ describe('FavoriteButton variant="box"', () => {
     expect(button.getAttribute('aria-pressed')).toBeNull() // the name flips with the state, so it is not also a pressed-toggle
   })
 
-  it('signed out, it sends you to sign in', async () => {
+  it('signed out, it sends you to sign in and back to the page you were on', async () => {
+    window.history.replaceState(null, '', '/produits/p-1?x=1')
     render(<FavoriteButton item_type="service" item_id="svc-1" variant="box" label="Favori" />)
     fireEvent.click(await screen.findByRole('button', { name: 'Ajouter aux favoris' }))
-    expect(h.push).toHaveBeenCalledWith('/connexion')
+    expect(h.push).toHaveBeenCalledWith(`/connexion?next=${encodeURIComponent('/produits/p-1?x=1')}`)
   })
 
   it('without a label it is icon-only (desktop)', async () => {

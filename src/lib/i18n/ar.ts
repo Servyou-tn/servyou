@@ -845,6 +845,9 @@ export const ar: Record<string, string> = {
   'product.detail.view_all_products': "عرض كل منتجات هذا المتجر",
   // REVIEW_AR_TRANSLATION
   'product.detail.follow_shop': "تابعوا المتجر",
+  // m375-d1-produit: the 375 « Favori » box (same word as D2's) and the shop row's « Boutique · {ville} · Voir la boutique » kind label.
+  'product.detail.favorite':     "المفضلة",
+  'product.detail.shop_kind':    "متجر", // founder-approved 2026-11-02
   'product.detail.reviews':         "التقييمات",
   'product.detail.reviews_empty':   "ستتوفر التقييمات قريبا.",
   'product.detail.report':          "الإبلاغ عن هذا المنتج",
