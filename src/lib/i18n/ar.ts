@@ -2385,6 +2385,7 @@ export const ar: Record<string, string> = {
   'admin.users.filter_label':                     "التصفية حسب الدور",
   'admin.users.filter_all':                       "الكل",
   'admin.users.empty_filtered':                   "لا يوجد مستخدمون بهذا الدور.",
+  'admin.users.opens_new_tab':                    "(علامة تبويب جديدة)",
   'admin.users.field_admin':                      "مدير",
   'admin.users.field_created_at':                 "تاريخ التسجيل",
   'admin.users.field_status':                     "الحالة",

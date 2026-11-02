@@ -27,7 +27,7 @@ type ShopRow = { id: string; name: string; owner_id: string }
 const ROLE_BADGE: Record<AccountRole, string> = {
   admin: 'bg-brand-blue-50 text-brand-blue-700',
   shop_owner: 'bg-amber-50 text-amber-700',
-  freelancer: 'bg-green-50 text-green-700',
+  freelancer: 'bg-brand-indigo-100 text-brand-indigo-600', // not green: that is the « Actif » status badge
   consumer: 'bg-gray-100 text-gray-700',
 }
 
@@ -161,6 +161,7 @@ export default async function UsersListPage({
                         className="mt-1 inline-block text-xs font-medium text-brand-blue-600 hover:underline"
                       >
                         {u.shop.name}
+                        <span className="sr-only"> {tr('admin.users.opens_new_tab')}</span>
                       </Link>
                     ) : null}
                   </td>

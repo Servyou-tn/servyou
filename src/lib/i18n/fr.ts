@@ -2445,6 +2445,7 @@ export const fr: Record<string, string> = {
   'admin.users.filter_label':                     "Filtrer par rôle",
   'admin.users.filter_all':                       "Tous",
   'admin.users.empty_filtered':                   "Aucun utilisateur avec ce rôle.",
+  'admin.users.opens_new_tab':                    "(nouvel onglet)",
   'admin.users.field_admin':                      "Administrateur",
   'admin.users.field_created_at':                 "Inscrit le",
   'admin.users.field_status':                     "Statut",

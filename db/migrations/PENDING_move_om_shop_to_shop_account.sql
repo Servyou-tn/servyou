@@ -20,8 +20,10 @@
 --                                     enforce_shop_asset_provenance (logo/banner change) require
 --                                     uploaded_objects.owner_id = the shop's owner_id — otherwise the new owner's
 --                                     first product-image edit fails. The FK also cascades on auth user delete.
---   storage.objects owner/owner_id .. 35 rows, same files. Metadata only (storage RLS keys on shops.owner_id via the
---                                     first folder), moved so the uploader of record matches the owner.
+--   storage.objects owner/owner_id .. 35 rows, same files. Cosmetic: storage RLS keys on shops.owner_id via the
+--                                     first folder, so access follows the shop anyway; moved so the uploader of
+--                                     record matches the owner. postgres holds UPDATE on storage.objects (checked
+--                                     2026-11-02); if that ever changes, drop this one statement.
 -- FOLLOW the shop id, untouched (no owner column):
 --   products 26 · product_images 33 · shop_categories 3 · shop_payment_methods 1 · favorites (on the shop or its
 --   products) 1 · reports targeting the shop 1 · admin_audit_log rows targeting the shop 4.
@@ -61,6 +63,10 @@ declare
   n_uploads     int;
   n_objects     int;
 begin
+  -- An order placed while the move runs would read the old shops.owner_id and commit with seller_id = admin after
+  -- the orders update. Block order writes for the (short) duration of the block; reads are unaffected.
+  lock table public.orders in share row exclusive mode;
+
   -- ── Checks (no write before this section ends) ─────────────────────────────────────────────────────────────────
   select u.id into v_target
     from auth.users u
@@ -183,15 +189,18 @@ declare
   v_target      uuid;
   v_shop_owner  uuid;
 begin
+  lock table public.orders in share row exclusive mode;
   select id into v_target from auth.users where lower(email) = c_target_mail;
   select owner_id into v_shop_owner from public.shops where id = c_shop for update;
+  perform 1 from public.profiles where id in (c_admin, v_target) for update;
   if v_target is null
      or v_shop_owner is distinct from v_target
      or exists (select 1 from public.shops where owner_id = c_admin)
+     or not exists (select 1 from public.profiles where id = c_admin and is_admin and seller_type is null)
+     or exists (select 1 from public.freelancer_profiles where profile_id = c_admin)
      or exists (select 1 from public.orders where buyer_id = c_admin and seller_id = v_target) then
     raise exception 'Rollback impossible : état inattendu (voir les conditions).' using errcode = '23514';
   end if;
-  perform 1 from public.profiles where id in (c_admin, v_target) for update;
 
   update public.profiles set seller_type = 'shop_owner' where id = c_admin;
   update public.shops set owner_id = c_admin where id = c_shop and owner_id = v_target;
@@ -204,7 +213,9 @@ begin
   update public.profiles set seller_type = null where id = v_target;
 
   if not exists (select 1 from public.shops where id = c_shop and owner_id = c_admin)
-     or exists (select 1 from public.orders where seller_id = v_target) then
+     or exists (select 1 from public.orders where seller_id = v_target)
+     or not exists (select 1 from public.profiles where id = c_admin and is_admin and seller_type = 'shop_owner')
+     or not exists (select 1 from public.profiles where id = v_target and seller_type is null) then
     raise exception 'Vérification du rollback échouée : rien n''a été restauré.' using errcode = '23514';
   end if;
   raise notice 'OM shop remise sur le compte admin.';
