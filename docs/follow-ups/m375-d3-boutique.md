@@ -22,3 +22,27 @@ and a check on every consumer.
 **Where it lives** `src/components/produits/ProductBrowseCard.tsx` (title and price lines).
 
 **Trigger** The AR review pass, or a founder ruling on AR price formatting.
+
+## Tablet band (640–1023 px): hero content at 16 px, the rest of the page at 32 px
+
+**What** Below `lg` the full-bleed hero pads its content 16 px (the 375 frame). From `md` the shell's gutter is 32 px, so between 768 and 1023 px
+the shop name, meta and chips start 16 px from the edge while « Produits » and the cards start at 32. D4's 375 hero (`FreelancerDetail.tsx`,
+shipped in #289) has the same pattern. No frame covers this band.
+
+**Why deferred** Changing it on D3 alone would make the two heroes diverge; it is one `md:max-lg:px-8` / `md:max-lg:start-8` on both, checked together.
+
+**Where it lives** `src/app/boutique/[id]/_components/ShopDetail.tsx` and `src/app/freelance/[id]/_components/FreelancerDetail.tsx` (hero identity
+block and avatar ring).
+
+**Trigger** A tablet frame, or the founder's tablet pass.
+
+## « Signaler cette boutique » wraps at 320 px
+
+**What** At 320 px the actions row (heart · Partager · Signaler) does not wrap, so the Signaler label breaks onto two lines. This happened before
+this PR too; its new 45 px touch target is sized for one line.
+
+**Why deferred** Pre-existing, below the 375 frame; the fix (let the row wrap, or shorten the label on narrow screens) is a design call.
+
+**Where it lives** `src/app/boutique/[id]/_components/ShopDetail.tsx` (actions row), `ShopReportModal.tsx` (trigger).
+
+**Trigger** A 320 px pass.

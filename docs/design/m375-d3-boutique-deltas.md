@@ -33,7 +33,7 @@ The real shop has a logo, a banner photo and 25 products, and was checked too.
 | social block (#293) | caption 12 Medium uppercase 0.48 muted, 6 to the 20 glyphs, 14 apart; 16 from the meta and the description | ✓ unchanged from #293 and re-checked: glyph step 34, caption → glyph 6, 16 / 16. AR starts at the right edge |
 | `description` | 343 × 182, 16 / 26 text/secondary | ✓ 343 × 182 |
 | `chipsWrap` | groups 10 apart; caption Overline; chips 29 tall, pad 4 / 12, **r8**, 14 Medium | ✓ already matched (chips 29, r8; widths within 1 px) |
-| `actions` | pad 4 / 0, gap 12: Partager (Button secondary md 100 × 40, r10) + « Signaler cette boutique » 14 Regular muted | ✓ Partager 101 × 40 r10; Signaler 14 muted with a **45 px touch target** below `lg` (padding with negative margin, layout unchanged). The heart (44) opens the row, so the row is 52 tall instead of 48 |
+| `actions` | pad 4 / 0, gap 12: Partager (Button secondary md 100 × 40, r10) + « Signaler cette boutique » 14 Regular muted | ✓ Partager 101 × 40 r10; Signaler 14 muted with a **45 px touch target** below `lg` (padding with negative margin, layout unchanged). The heart (44) opens the row, so the row is 52 tall instead of 48. Partager is drawn 40 tall; the shared `Button` md already gives it a 44 hit area (`-inset-0.5` span) |
 | `sec-header` | « Produits » 20 Semi Bold (26) + count 14 **text/secondary**, baseline, gap 8 | ✓ count muted → secondary |
 | `products` | gap 20 | ✓ header → grid 20 (was 24) |
 | `grid` | Product Cards 165 × 373, **two across at 13**, rows 12 | ✓ 165 × 373, x 16 / 194, rows 12 (was one 343 column below `sm`). Image `sizes` 50vw below `lg` (desktop's 25vw unchanged) |
