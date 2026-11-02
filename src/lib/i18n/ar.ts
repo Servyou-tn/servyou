@@ -552,7 +552,7 @@ export const ar: Record<string, string> = {
   'newPassword.expired.title':        "انتهت صلاحية الرابط، اطلبوا رابطا جديدا",
   'newPassword.confirm.body':         "اضغطوا على « متابعة » لاختيار كلمة مرور جديدة.",
   'newPassword.confirm.cta':          "متابعة",
-  'newPassword.confirm.verifying':    "جار التحقق…",
+  'newPassword.confirm.verifying':    "جارٍ التحقق…",
   'newPassword.errors.verifyFailed':  "تعذر التحقق من الرابط. أعيدوا المحاولة.",
 
   // ─── Auth — forgot / reset password ─────────────────────────────────────────
@@ -2381,6 +2381,11 @@ export const ar: Record<string, string> = {
   'admin.users.field_city':                       "المدينة",
   'admin.users.field_language':                   "اللغة",
   'admin.users.field_role':                       "الدور",
+  'admin.users.field_roles':                      "الأدوار",
+  'admin.users.filter_label':                     "التصفية حسب الدور",
+  'admin.users.filter_all':                       "الكل",
+  'admin.users.empty_filtered':                   "لا يوجد مستخدمون بهذا الدور.",
+  'admin.users.opens_new_tab':                    "(علامة تبويب جديدة)",
   'admin.users.field_admin':                      "مدير",
   'admin.users.field_created_at':                 "تاريخ التسجيل",
   'admin.users.field_status':                     "الحالة",

@@ -50,6 +50,30 @@ export function roleI18nKey(role: Role, isAdmin: boolean): string {
   }
 }
 
+// Every role an account holds, as the admin users list shows them (badges + role filter). Unlike roleI18nKey,
+// is_admin does not hide the seller role: an admin who also owns a shop is « Administrateur » AND « Boutique ».
+// « Consommateur » is the account with no other role (seller_type NULL, not admin). Order: admin first, then the
+// seller role.
+export const ACCOUNT_ROLES = ['admin', 'shop_owner', 'freelancer', 'consumer'] as const
+export type AccountRole = (typeof ACCOUNT_ROLES)[number]
+
+export function accountRoles(profile: { seller_type?: string | null; is_admin?: boolean | null }): AccountRole[] {
+  const roles: AccountRole[] = []
+  if (profile.is_admin) roles.push('admin')
+  const role = resolveRole(profile)
+  if (role !== null) roles.push(role)
+  return roles.length > 0 ? roles : ['consumer']
+}
+
+export function accountRoleI18nKey(role: AccountRole): string {
+  return `admin.users.role_${role}`
+}
+
+// The ?role= filter of the admin users list: one of ACCOUNT_ROLES, anything else (absent, repeated, unknown) = all.
+export function parseAccountRole(value: unknown): AccountRole | null {
+  return typeof value === 'string' && (ACCOUNT_ROLES as readonly string[]).includes(value) ? (value as AccountRole) : null
+}
+
 // Role → the v2 shell IA role (consumer for logged-out / no seller_type). Exhaustive over Role.
 export function roleToShellRole(role: Role): ShellRole {
   switch (role) {
