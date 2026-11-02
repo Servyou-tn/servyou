@@ -76,15 +76,19 @@ export function ProductBrowseCard({ product, sizes = DEFAULT_SIZES }: { product:
 
         <div className="flex flex-col gap-2.5 p-3">
           {/* Single line + ellipsis, per the frame. NOT line-clamp-2: the card height is fixed and a
-              second title line would push the price row past the cover-plus-97 the grid assumes. */}
-          <p className="truncate text-base font-semibold leading-[22px] text-text-primary">
+              second title line would push the price row past the cover-plus-97 the grid assumes.
+              `dir="auto"`: a French title on the Arabic page runs LTR, so the ellipsis cuts its END (it cut the start). `self-start max-w-full`
+              keeps it on the page's start side: the box hugs the text in the column's direction (right in AR), up to the full width, so its own
+              LTR alignment never shows. (`text-align: match-parent` would do it, but Chrome resolves it against the title's own direction.) */}
+          <p dir="auto" className="max-w-full self-start truncate text-base font-semibold leading-[22px] text-text-primary">
             {product.title}
           </p>
 
           <div className="flex items-center justify-between gap-2">
             <div className="flex min-w-0 flex-col gap-0.5">
               <p className="truncate whitespace-nowrap text-[17px] font-semibold leading-[22px] text-text-primary">
-                {tndPrice(product.price_tnd)}
+                {/* LTR-isolated: in AR the digits and « TND » otherwise reorder to « TND 120 ». */}
+                <bdi dir="ltr">{tndPrice(product.price_tnd)}</bdi>
               </p>
               {city && (
                 <span className="flex items-center gap-1 text-xs font-medium leading-[17px] text-text-muted">

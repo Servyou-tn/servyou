@@ -87,7 +87,7 @@ describe('ProductBrowseCard (m375-c1-produits)', () => {
 
   it('the price stays on one line and the bottom row keeps the frame 8 gap', () => {
     mount()
-    const price = screen.getByText('45 TND')
+    const price = screen.getByText('45 TND').closest('p')!
     expect(price.className).toMatch(/whitespace-nowrap/)
     expect(price.className).toMatch(/\btruncate\b/)
     expect(price.parentElement!.parentElement!.className).toMatch(/\bgap-2\b/)
@@ -102,6 +102,25 @@ describe('ProductBrowseCard (m375-c1-produits)', () => {
       </LangProvider>,
     )
     expect(container.querySelector('img')).not.toBeNull()
+  })
+
+  it('in Arabic the price reads « 45 TND » (LTR-isolated) and a French title keeps its start (dir auto, hugs the page start side)', () => {
+    mount('ar')
+    const bdi = screen.getByText('45 TND')
+    expect(bdi.tagName).toBe('BDI')
+    expect(bdi).toHaveAttribute('dir', 'ltr')
+    const title = screen.getByText('Coussin brodé main — motif berbère')
+    expect(title).toHaveAttribute('dir', 'auto')
+    expect(title.className).toMatch(/\bself-start\b/)
+    expect(title.className).toMatch(/\bmax-w-full\b/)
+  })
+
+  it('the heart keeps a 44 px tap area at every width: the 20 px button carries a -inset-3 hit span, inside the 32 circle', async () => {
+    mount()
+    const heart = await screen.findByRole('button', { name: /favoris/i })
+    expect(heart.className).toMatch(/\brelative\b/)
+    expect(heart.className).toMatch(/\bsize-5\b/)
+    expect(heart.querySelector('span[aria-hidden="true"]')!.className).toMatch(/absolute -inset-3/)
   })
 
   it('reads in Arabic', () => {
