@@ -7,6 +7,10 @@ import { createClient } from '@/lib/supabase/client'
 import { FOCUS_RING } from '@/components/layout/styles'
 import { useLang } from './LangProvider'
 import { t } from '@/lib/i18n'
+import { signInHref } from '@/lib/favorites/targets'
+
+// A guest is sent to sign in and brought BACK to the page the heart is on (the card's page, not the item's): m375-d1-produit, no dead end.
+const signInHere = () => signInHref(window.location.pathname + window.location.search)
 
 type Props = {
   item_type: 'product' | 'service'
@@ -66,7 +70,7 @@ export function FavoriteButton({
   }, [item_id, item_type, supabase])
 
   async function handleToggle() {
-    if (!loggedIn) { router.push('/connexion'); return }
+    if (!loggedIn) { router.push(signInHere()); return }
     if (toggling) return
     setToggling(true)
 
@@ -76,7 +80,7 @@ export function FavoriteButton({
       setFavoriteId(null)
     } else {
       const { data: { user } } = await supabase.auth.getUser()
-      if (!user) { router.push('/connexion'); return }
+      if (!user) { router.push(signInHere()); return }
 
       const { data } = await supabase
         .from('favorites')

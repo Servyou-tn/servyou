@@ -801,6 +801,9 @@ export const fr: Record<string, string> = {
   'product.detail.view_shop':       "Voir la boutique",
   'product.detail.view_all_products': "Voir tous les produits de cette boutique",
   'product.detail.follow_shop': "Suivez la boutique",
+  // m375-d1-produit: the 375 « Favori » box (same word as D2's) and the shop row's « Boutique · {ville} · Voir la boutique » kind label.
+  'product.detail.favorite':     "Favori",
+  'product.detail.shop_kind':    "Boutique",
   'product.detail.reviews':         "Avis",
   'product.detail.reviews_empty':   "Les avis seront bientôt disponibles.",
   'product.detail.report':          "Signaler ce produit",
