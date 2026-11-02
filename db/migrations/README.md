@@ -1130,6 +1130,19 @@ both on 2026-10-28.
     - `src/lib/shops/social-links.ts` holds the same patterns plus the zod schemas; `social-links.test.ts` fails if
       the two drift. Live: `shop-social-links-live.test.ts`.
     - The recorded statement is this whole file, comments included.
+117. **20261102202911_move_om_shop_to_shop_account** (`2b4842c9`) — DATA ONLY (no schema, grant or type change):
+    « OM shop » moves from the admin account (`moatezsahbeni500@gmail.com`, keeps `is_admin`, `seller_type` → NULL)
+    to `moatezservyou@gmail.com` (`seller_type` → `shop_owner`). Founder task (#296), applied by the founder with the
+    target email changed at apply time.
+    - One guarded DO block: `orders` locked (share row exclusive); every check before the first write (target
+      confirmed, not admin, not suspended, no shop / freelance content, 18+, phone, no self-order) — the guard
+      triggers bypass themselves under `auth.uid() IS NULL`, so the block re-checks their rules; end-state checks.
+    - Moved: `shops.owner_id` 1, `orders.seller_id` 6, `uploaded_objects.owner_id` 35 (required by the image
+      provenance triggers), `storage.objects` owner 35. Follow the shop id untouched: products 26, product_images 33,
+      shop_categories 3, shop_payment_methods 1, favorites 1, reports 1. Stay with the admin: audit log 8, job_posts 1.
+    - Rollback: the guarded block comment at the end of the file (not applied).
+    - The recorded statement carries a shorter header and the DO block without its in-block comments; the executable
+      SQL is identical (comment-stripped md5 checked).
 
 ## Rollback paths
 

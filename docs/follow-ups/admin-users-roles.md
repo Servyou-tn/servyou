@@ -35,12 +35,14 @@
 - **No pagination:** PostgREST's 1000-row cap would truncate the profiles / shops reads and the filter counts.
   **Trigger:** ~800 accounts — add `.range()` paging and server-side counts.
 
-## After the OM shop move is applied
+## Click-through after the OM shop move
 
-- **What:** once `PENDING_move_om_shop_to_shop_account.sql` is applied, rename it to the recorded version (if applied
-  with `apply_migration`) and add its README entry; check as `+shop`: Modifier ma boutique « Enregistrer » with no
-  change, edit + save a product with an image, Commandes reçues shows the 6 orders; as admin: the list shows
+Applied 2026-11-02 as `20261102202911_move_om_shop_to_shop_account` (target `moatezservyou@gmail.com`); file renamed
+and README entry #117 added in #296; end state verified read-only.
+
+- **What:** a click-through the SQL cannot do: as `moatezservyou@gmail.com`, Modifier ma boutique « Enregistrer »
+  with no change, edit + save a product with an image, Commandes reçues shows the 6 orders; as admin, the list shows
   « Administrateur » only and « OM shop » under the new account.
-- **Why deferred:** the founder applies it after creating the account.
-- **Where it lives:** `db/migrations/`.
-- **Trigger:** the apply.
+- **Why deferred:** needs the founder's sessions on production.
+- **Where it lives:** `/ma-boutique/modifier`, `/mes-produits`, `/commandes-recues`, `/admin/utilisateurs`.
+- **Trigger:** next time the founder signs in to either account.

@@ -1,8 +1,13 @@
 -- Move « OM shop » from the admin account to its own shop account (founder task, 2026-11-02). DATA ONLY — no schema
--- change, no grant, no types to regenerate. Prepared by CC, NOT applied: the founder / architect applies it.
+-- change, no grant, no types to regenerate. Prepared by CC (PR #296); applied by the founder on 2026-11-02 as version
+-- 20261102202911 (move_om_shop_to_shop_account), with the target email changed at apply time.
+-- Recorded statement: a short header + the DO block below WITHOUT its in-block comments (md5 of the comment-stripped
+-- block = md5 of the recorded block, c1705ebade732603ba6717f83547b01c, checked 2026-11-02). This file keeps the
+-- documentation and the rollback.
 --
 -- From : 0f4c929b-05e4-474e-b2ce-a3c84443a0ad  moatezsahbeni500@gmail.com       (is_admin = true, seller_type = shop_owner)
--- To   : the account moatezsahbeni500+shop@gmail.com (created by the founder before this runs; looked up by email)
+-- To   : moatezservyou@gmail.com (« ahmed », an existing confirmed consumer account; phone + 18+ DOB checked; looked
+--        up by email)
 -- Shop : f4757d2d-705c-48c8-bd58-37a35c7bdab3  « OM shop »
 -- After: the admin account keeps is_admin and has seller_type = NULL (admin only); the new account is a normal
 --        shop_owner that owns the shop, its orders and its files.
@@ -42,19 +47,19 @@
 -- aborts — changing nothing — on the first failure. It is safe to run twice: the second run stops at
 -- « déjà déplacée ». It checks the END STATE, not today's counts, so products or orders added before it runs move too.
 --
--- Prerequisites for the founder (the block refuses otherwise):
---   1. Sign up moatezsahbeni500+shop@gmail.com as a normal account (Consommateur) and confirm the email.
---   2. On that account, fill the phone (Mon compte) — sign-up does not store it, and buyers reach the shop by
---      WhatsApp through it. The same number as the admin account is allowed (phone is not unique).
---      Date of birth comes from sign-up (18+ required).
---   3. Do NOT start « Devenir vendeur » on it: an account that already owns a shop is refused.
+-- Prerequisites the block enforced on the target: a confirmed email; a phone (sign-up does not store it, and buyers
+-- reach the shop by WhatsApp through it); an 18+ date of birth; no shop, freelance profile or job response.
+--
+-- After apply (read-only, 2026-11-02): OM shop owned by the target; target seller_type = shop_owner, not admin; admin
+-- is_admin with seller_type NULL; orders as seller: target 6, admin 0; uploaded_objects: admin 0, target 36 (the 35
+-- moved + 1 of its own); storage.objects owned by the target 35.
 
 do $$
 declare
   c_admin       constant uuid := '0f4c929b-05e4-474e-b2ce-a3c84443a0ad';
   c_admin_email constant text := 'moatezsahbeni500@gmail.com';
   c_shop        constant uuid := 'f4757d2d-705c-48c8-bd58-37a35c7bdab3';
-  c_target_mail constant text := 'moatezsahbeni500+shop@gmail.com';
+  c_target_mail constant text := 'moatezservyou@gmail.com';
   v_target      uuid;
   v_admin       public.profiles%rowtype;
   v_tgt         public.profiles%rowtype;
@@ -179,13 +184,14 @@ $$;
 /* ─── ROLLBACK — copy the block below into the SQL editor (do not run it with the move) ─────────────────────────────
    Puts OM shop back on the admin account. Guarded: it runs only while the target owns the shop and the admin owns none.
    Orders placed AFTER the move go back to the admin too (they belong to the shop, which goes back). The target's
-   seller_type returns to NULL (it was a fresh consumer account before the move).
+   seller_type returns to NULL (moatezservyou@gmail.com was a consumer account, seller_type NULL, before the move); its
+   own upload outside the shop folder stays with it.
 
 do $$
 declare
   c_admin       constant uuid := '0f4c929b-05e4-474e-b2ce-a3c84443a0ad';
   c_shop        constant uuid := 'f4757d2d-705c-48c8-bd58-37a35c7bdab3';
-  c_target_mail constant text := 'moatezsahbeni500+shop@gmail.com';
+  c_target_mail constant text := 'moatezservyou@gmail.com';
   v_target      uuid;
   v_shop_owner  uuid;
 begin
