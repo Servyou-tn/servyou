@@ -520,6 +520,10 @@ export const fr: Record<string, string> = {
   'newPassword.invalid.requestNew':   "Demander un nouveau lien",
   'newPassword.invalid.backToSignin': "Retour à la connexion",
   'newPassword.expired.title':        "Lien expiré, demandez-en un nouveau",
+  'newPassword.confirm.body':         "Cliquez sur « Continuer » pour choisir votre nouveau mot de passe.",
+  'newPassword.confirm.cta':          "Continuer",
+  'newPassword.confirm.verifying':    "Vérification…",
+  'newPassword.errors.verifyFailed':  "Impossible de vérifier le lien. Réessayez.",
 
   // ─── Auth — forgot / reset password ─────────────────────────────────────────
   'auth.forgot_title':      "Mot de passe oublié",
