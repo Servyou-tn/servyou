@@ -69,7 +69,8 @@ export function ShopReportModal({ shopId, shopName, isLoggedIn }: { shopId: stri
       <button
         type="button"
         onClick={open}
-        className={`rounded-md text-body-sm text-text-muted transition-colors hover:text-text-secondary ${FOCUS_RING}`}
+        // max-lg py / -my 3: a 45 px touch target around the 21 px line (≥ 44 on mobile) without moving the layout.
+        className={`rounded-md text-body-sm text-text-muted transition-colors hover:text-text-secondary max-lg:-my-3 max-lg:py-3 ${FOCUS_RING}`}
       >
         {t('boutique.public.report_trigger', lang)}
       </button>

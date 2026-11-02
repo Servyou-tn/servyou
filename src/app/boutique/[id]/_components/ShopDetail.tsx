@@ -36,6 +36,11 @@ import { SocialLinks } from '@/components/social/SocialLinks'
 // `delivery_setup` ∈ self_delivery/third_party/buyer_pickup). Rendered via the real
 // shopTypeLabelKey/deliverySetupLabelKey helpers already used by ConfigurationForm, not the
 // frame's literal copy.
+//
+// BELOW lg — the 375 frame (m375-d3-boutique 1549:40814, docs/design/m375-d3-boutique-deltas.md), as `max-lg:` overrides so 1440 is untouched,
+// same hero as D4's 375: full-bleed (no card), banner 120, ring 96 at 16 / 72 around the Avatar 80 (initials 32), identity p 64 / 16 / 24, name
+// 32 Bold (38), a wrapped meta row 6 under its first line; root gap 24; products header gap 20 with the count text/secondary; cards two across
+// at 13 (rows 12). Chips (r8) and Partager (r10) already matched.
 
 function formatMemberSince(iso: string, lang: Lang): string {
   const date = new Date(iso).toLocaleDateString(lang === 'ar' ? 'ar-TN' : 'fr-TN', {
@@ -62,10 +67,10 @@ export function ShopDetail({
   const hasMeta = Boolean(shop.shopType || shop.deliverySetup)
 
   return (
-    <div className="flex flex-col gap-8">
+    <div className="flex flex-col gap-8 max-lg:gap-6">
       {/* hero — banner + avatar-ring overlap + identity, single stacked column throughout */}
-      <div className="relative flex flex-col items-start rounded-card border border-border-subtle bg-surface-base">
-        <div className="relative h-[200px] w-full shrink-0 overflow-hidden rounded-t-xl">
+      <div className="relative flex flex-col items-start rounded-card border border-border-subtle bg-surface-base max-lg:-mx-4 max-lg:-mt-6 max-lg:rounded-none max-lg:border-0 md:max-lg:-mx-8 md:max-lg:-mt-8">
+        <div className="relative h-[200px] w-full shrink-0 overflow-hidden rounded-t-xl max-lg:h-[120px] max-lg:rounded-none">
           {shop.bannerUrl ? (
             <Image src={shop.bannerUrl} alt="" fill sizes="(max-width: 1279px) 100vw, 1120px" className="object-cover" />
           ) : (
@@ -73,16 +78,16 @@ export function ShopDetail({
           )}
         </div>
 
-        <div className="absolute start-6 top-[136px] size-32 rounded-full bg-surface-base p-1">
-          <Avatar size="2xl" src={shop.logoUrl} name={shop.name} initials={initials} className="size-full" decorative={false} />
+        <div className="absolute start-6 top-[136px] size-32 rounded-full bg-surface-base p-1 max-lg:start-4 max-lg:top-[72px] max-lg:size-24 max-lg:p-2">
+          <Avatar size="2xl" src={shop.logoUrl} name={shop.name} initials={initials} className="size-full max-lg:[&>span]:text-[32px]" decorative={false} />
         </div>
 
-        <div className="flex w-full flex-col gap-6 px-6 pb-6 pt-[76px]">
+        <div className="flex w-full flex-col gap-6 px-6 pb-6 pt-[76px] max-lg:px-4 max-lg:pt-16">
           <div className="flex flex-col gap-4">
             <div className="flex flex-col gap-2">
-              <h1 className="text-3xl font-bold leading-[38px] tracking-[-0.64px] text-text-primary">{shop.name}</h1>
+              <h1 className="text-3xl font-bold leading-[38px] tracking-[-0.64px] text-text-primary max-lg:text-h1 max-lg:leading-[38px]">{shop.name}</h1>
               <div className="flex flex-col gap-1.5">
-                <div className="flex flex-wrap gap-5">
+                <div className="flex flex-wrap gap-5 max-lg:gap-y-1.5">
                   {shop.city && (
                     <span className="flex items-center gap-1.5 text-body-sm text-text-secondary">
                       <MapPin className="size-4" aria-hidden="true" />
@@ -95,7 +100,7 @@ export function ShopDetail({
                   </span>
                 </div>
                 {hasMeta && (
-                  <div className="flex flex-wrap gap-5">
+                  <div className="flex flex-wrap gap-5 max-lg:gap-y-1.5">
                     {shop.shopType && (
                       <span className="flex items-center gap-1.5 text-body-sm text-text-secondary">
                         <Store className="size-4" aria-hidden="true" />
@@ -179,20 +184,20 @@ export function ShopDetail({
       </div>
 
       {/* products */}
-      <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-6 max-lg:gap-5">
         <div className="flex items-baseline gap-2">
           <h2 className="text-xl font-semibold leading-[26px] text-text-primary">
             {t('boutique.public.products_title', lang)}
           </h2>
-          <span className="text-body-sm text-text-muted">
+          <span className="text-body-sm text-text-muted max-lg:text-text-secondary">
             {tn('boutique.public.products_count', lang, products.length)}
           </span>
         </div>
 
         {products.length > 0 ? (
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid grid-cols-1 gap-4 max-sm:grid-cols-2 max-sm:gap-x-3.25 max-sm:gap-y-3 sm:grid-cols-2 lg:grid-cols-4">
             {products.map((product) => (
-              <ProductBrowseCard key={product.id} product={product} />
+              <ProductBrowseCard key={product.id} product={product} sizes="(max-width: 1024px) 50vw, 25vw" />
             ))}
           </div>
         ) : (
