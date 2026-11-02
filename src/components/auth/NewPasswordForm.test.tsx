@@ -16,7 +16,12 @@ import { render, screen, cleanup, act, fireEvent } from '@testing-library/react'
 import { t } from '@/lib/i18n'
 
 type Listener = (event: string, session: { user: { id: string } } | null) => void
-type VerifyResult = { error: { message: string; code?: string; status?: number } | null }
+type VerifyResult = {
+  data: { session: { user: { id: string } } | null }
+  error: { message: string; code?: string; status?: number } | null
+}
+const OK: VerifyResult = { data: { session: { user: { id: 'user-1' } } }, error: null }
+const fail = (code: string, status: number): VerifyResult => ({ data: { session: null }, error: { message: code, code, status } })
 const h = vi.hoisted(() => ({
   listener: null as Listener | null,
   verifyOtp: null as unknown as import('vitest').Mock<(params: { token_hash: string; type: string }) => Promise<VerifyResult>>,
@@ -52,7 +57,7 @@ beforeEach(() => {
   vi.useFakeTimers()
   sessionStorage.clear()
   h.listener = null
-  h.verifyOtp = vi.fn(async () => ({ error: null }))
+  h.verifyOtp = vi.fn(async () => OK)
 })
 afterEach(() => {
   cleanup()
@@ -134,7 +139,7 @@ describe('NewPasswordForm — cross-device token_hash link (verifyOtp on click o
     window.history.replaceState(null, '', `/nouveau-mot-de-passe?token_hash=${HASH}&type=recovery`)
     h.verifyOtp.mockImplementation(async () => {
       h.listener?.('PASSWORD_RECOVERY', { user: { id: 'user-1' } }) // supabase-js emits it inside verifyOtp
-      return { error: null }
+      return OK
     })
     render(<NewPasswordForm initialView="confirm" tokenHash={HASH} />)
     await click(continueBtn()!)
@@ -145,16 +150,40 @@ describe('NewPasswordForm — cross-device token_hash link (verifyOtp on click o
   })
 
   it('a used / expired hash (otp_expired) shows « Lien expiré, demandez-en un nouveau »', async () => {
-    h.verifyOtp.mockResolvedValue({ error: { message: 'Email link is invalid or has expired', code: 'otp_expired', status: 403 } })
+    window.history.replaceState(null, '', `/nouveau-mot-de-passe?token_hash=${HASH}&type=recovery`)
+    h.verifyOtp.mockResolvedValue(fail('otp_expired', 403))
     vi.spyOn(console, 'error').mockImplementation(() => {})
     render(<NewPasswordForm initialView="confirm" tokenHash={HASH} />)
     await click(continueBtn()!)
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(t('newPassword.expired.title', 'fr'))
     expect(passwordField()).not.toBeInTheDocument()
+    expect(window.location.search).not.toContain('token_hash') // a reload shows « expiré », not « Continuer »
+  })
+
+  it('verifyOtp without a session does not open the form', async () => {
+    h.verifyOtp.mockResolvedValue({ data: { session: null }, error: null })
+    vi.spyOn(console, 'error').mockImplementation(() => {})
+    render(<NewPasswordForm initialView="confirm" tokenHash={HASH} />)
+    await click(continueBtn()!)
+    expect(screen.getByRole('alert')).toHaveTextContent(t('newPassword.errors.verifyFailed', 'fr'))
+    expect(passwordField()).not.toBeInTheDocument()
+  })
+
+  it('an unfinished recovery remembered in this tab does not skip a new link (confirm or expired)', () => {
+    sessionStorage.setItem(FLAG, 'user-1')
+    render(<NewPasswordForm initialView="confirm" tokenHash={HASH} />)
+    emit('INITIAL_SESSION', 'user-1')
+    expect(passwordField()).not.toBeInTheDocument()
+    expect(continueBtn()).toBeInTheDocument()
+    cleanup()
+    render(<NewPasswordForm initialView="expired" />)
+    emit('INITIAL_SESSION', 'user-1')
+    expect(passwordField()).not.toBeInTheDocument()
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(t('newPassword.expired.title', 'fr'))
   })
 
   it('any other failure keeps the button for a retry and says so', async () => {
-    h.verifyOtp.mockResolvedValue({ error: { message: 'Request rate limit reached', code: 'over_request_rate_limit', status: 429 } })
+    h.verifyOtp.mockResolvedValue(fail('over_request_rate_limit', 429))
     vi.spyOn(console, 'error').mockImplementation(() => {})
     render(<NewPasswordForm initialView="confirm" tokenHash={HASH} />)
     await click(continueBtn()!)
@@ -173,7 +202,7 @@ describe('NewPasswordForm — cross-device token_hash link (verifyOtp on click o
     expect(verifying).toBeDisabled()
     await click(verifying)
     expect(h.verifyOtp).toHaveBeenCalledTimes(1)
-    await act(async () => resolve({ error: null }))
+    await act(async () => resolve(OK))
     expect(passwordField()).toBeInTheDocument()
   })
 })

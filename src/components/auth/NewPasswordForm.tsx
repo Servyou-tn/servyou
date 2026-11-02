@@ -60,6 +60,8 @@ export function NewPasswordForm({
   const requestNewRef = useRef<HTMLAnchorElement>(null)
 
   useEffect(() => {
+    // A new link (token_hash or expired) supersedes an unfinished recovery remembered in this tab.
+    const resumesRecovery = initialView !== 'confirm' && initialView !== 'expired'
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (!session) return
       if (event === 'PASSWORD_RECOVERY') {
@@ -69,7 +71,7 @@ export function NewPasswordForm({
           // storage disabled — this tab just cannot survive a reload of the form
         }
         setView('form')
-      } else if (readRecoveryFlag() === session.user.id) {
+      } else if (resumesRecovery && readRecoveryFlag() === session.user.id) {
         setView('form')
       }
     })
@@ -79,7 +81,7 @@ export function NewPasswordForm({
       subscription.unsubscribe()
       clearTimeout(timer)
     }
-  }, [supabase])
+  }, [supabase, initialView])
 
   const isInvalid = view === 'invalid' || view === 'expired'
 
@@ -96,12 +98,22 @@ export function NewPasswordForm({
     setVerifying(true)
     setFormError('')
     try {
-      const { error } = await supabase.auth.verifyOtp({ token_hash: tokenHash, type: 'recovery' })
+      const { data, error } = await supabase.auth.verifyOtp({ token_hash: tokenHash, type: 'recovery' })
       if (error) {
         console.error('[NewPasswordForm] verifyOtp error:', error.message, error.code, error.status)
         setVerifying(false)
-        if (error.code === 'otp_expired') setView((v) => (v === 'form' ? v : 'expired'))
-        else setFormError(t('newPassword.errors.verifyFailed', lang))
+        if (error.code === 'otp_expired') {
+          window.history.replaceState(null, '', '/nouveau-mot-de-passe?error=access_denied&error_code=otp_expired')
+          setView((v) => (v === 'form' ? v : 'expired'))
+        } else {
+          setFormError(t('newPassword.errors.verifyFailed', lang))
+        }
+        return
+      }
+      if (!data.session) {
+        console.error('[NewPasswordForm] verifyOtp returned no session')
+        setFormError(t('newPassword.errors.verifyFailed', lang))
+        setVerifying(false)
         return
       }
       window.history.replaceState(null, '', '/nouveau-mot-de-passe')
