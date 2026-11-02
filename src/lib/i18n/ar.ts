@@ -650,6 +650,8 @@ export const ar: Record<string, string> = {
   // products_count migrated to tn() — see src/lib/i18n/plurals.ts.
   'boutique.public.empty_products':     "لا يحتوي هذا المتجر على منتجات بعد",
   'boutique.public.payment_caption':    "الدفع",
+  // REVIEW_AR_TRANSLATION
+  'boutique.public.social_caption': "مواقع التواصل",
   'boutique.public.categories_caption': "الفئات",
   'boutique.public.share':              "مشاركة",
   'boutique.public.link_copied':        "تم نسخ الرابط!",
@@ -836,6 +838,8 @@ export const ar: Record<string, string> = {
   'product.detail.save':            "حفظ",
   'product.detail.view_shop':       "زيارة المتجر",
   'product.detail.view_all_products': "عرض كل منتجات هذا المتجر",
+  // REVIEW_AR_TRANSLATION
+  'product.detail.follow_shop': "تابعوا المتجر",
   'product.detail.reviews':         "التقييمات",
   'product.detail.reviews_empty':   "ستتوفر التقييمات قريبا.",
   'product.detail.report':          "الإبلاغ عن هذا المنتج",
@@ -1411,6 +1415,20 @@ export const ar: Record<string, string> = {
   'shop.edit.save':          "حفظ التعديلات",
   'shop.edit.view_public':   "عرض متجري",
   'shop.edit.config_link':   "إدارة أوقات العمل والتوصيل والدفع والفئات",
+  // REVIEW_AR_TRANSLATION
+  'shop.edit.social.invalid_facebook':  "رابط فيسبوك غير صالح (مثال: facebook.com/maboutique).",
+  'shop.edit.social.invalid_instagram': "رابط إنستغرام غير صالح (مثال: instagram.com/maboutique).",
+  'shop.edit.social.invalid_tiktok':    "رابط تيك توك غير صالح (مثال: tiktok.com/@maboutique).",
+  // REVIEW_AR_TRANSLATION
+  'shop.edit.social.title': "مواقع التواصل الاجتماعي (اختياري)",
+  'shop.edit.social.intro': "أضيفوا صفحاتكم: سيرى زبائنكم هذه الأيقونات في متجركم وعلى منتجاتكم — فهناك يشاهدون فيديوهاتكم.",
+  'shop.edit.social.facebook_label': "صفحة فيسبوك",
+  'shop.edit.social.instagram_label': "حساب إنستغرام",
+  'shop.edit.social.tiktok_label': "حساب تيك توك",
+  'shop.edit.social.facebook_ph': "facebook.com/votreboutique",
+  'shop.edit.social.instagram_ph': "instagram.com/votreboutique",
+  'shop.edit.social.tiktok_ph': "tiktok.com/@votreboutique",
+  'shop.edit.social.badge_complete': "مكتمل",
 
   // ─── /devenir-vendeur/freelance (role-upgrade marketing) ─────────────────────
   // Shared between both /devenir-vendeur pitch pages (TermsLine.tsx) — same copy, same target.

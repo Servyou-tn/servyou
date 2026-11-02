@@ -15,6 +15,7 @@ import { resolveStockState } from '@/lib/marche/product-stock'
 import { ProductGallery } from './ProductGallery'
 import { ProductDescription } from './ProductDescription'
 import { ShareLinkButton } from './ShareLinkButton'
+import { SocialLinks } from '@/components/social/SocialLinks'
 import { ReportListingModal } from '@/components/report/ReportListingModal'
 
 // D1 « Détail du produit » — rebuilt from Figma `562:39013`. Every desktop number below is measured
@@ -73,6 +74,7 @@ export function ProductDetail({
   const total = product.price_tnd + product.delivery_fee_tnd
   const shopName = product.shop?.name?.trim() || ''
   const shopHref = product.shopId ? `/boutique/${product.shopId}` : null
+  const shopSocialLinks = product.shop?.socialLinks ?? []
   // The frame draws a TEXT NODE — « AS » — in both logo slots, not an image. `shops.logo_url` is
   // null on every row and is settable nowhere until G3 exists, so the monogram is the design, not
   // a fallback for a missing asset.
@@ -243,6 +245,12 @@ export function ProductDetail({
                 )}
               </div>
             )}
+
+            {/* « Suivez la boutique » below lg (approved 2026-10-31, sl-d1-375): its own row right under the shop row, start pad 12. From lg it
+                lives in the shop panel below instead (sl-d1-1440 draws it only there), so it never shows twice. */}
+            {shopSocialLinks.length > 0 && (
+              <FollowShop links={shopSocialLinks} shopName={shopName} lang={lang} className="ps-3 lg:hidden" />
+            )}
           </div>
         </div>
       </div>
@@ -270,6 +278,10 @@ export function ProductDetail({
                 <p className="text-[15px] leading-[26px] text-text-secondary">
                   {product.shop.description}
                 </p>
+              )}
+              {/* « Suivez la boutique » (sl-d1-1440): in the panel's column, between the description and « Voir tous les produits ». */}
+              {shopSocialLinks.length > 0 && (
+                <FollowShop links={shopSocialLinks} shopName={shopName} lang={lang} className="max-lg:hidden" />
               )}
               {shopHref && (
                 <Link
@@ -314,6 +326,28 @@ export function ProductDetail({
           <ReportListingModal kind="product" targetId={product.id} targetName={product.title} isLoggedIn={isLoggedIn} />
         </div>
       </div>
+    </div>
+  )
+}
+
+// « Suivez la boutique » + the shop's social glyphs (approved 2026-10-31): one row, caption 12 Medium muted, 10 before the 20 glyphs, which sit 14
+// apart. The links kit's 34 targets give that step; the negative margins hand back their 7 px padding (so the gap is 10 to the glyph and the row
+// stays 20 tall).
+function FollowShop({
+  links,
+  shopName,
+  lang,
+  className = '',
+}: {
+  links: NonNullable<ProductDetailData['shop']>['socialLinks']
+  shopName: string
+  lang: Lang
+  className?: string
+}) {
+  return (
+    <div className={`flex items-center gap-2.5 ${className}`}>
+      <p className="text-caption font-medium text-text-muted">{t('product.detail.follow_shop', lang)}</p>
+      <SocialLinks links={links.map((l) => ({ id: l.platform, url: l.url }))} name={shopName} lang={lang} className="-my-1.75 -ms-1.75" />
     </div>
   )
 }

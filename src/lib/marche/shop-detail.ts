@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { failQuery, isNoRowLike } from '@/lib/supabase/query-error'
 import type { ProductListing } from '@/components/listings/ProductListingCard'
 import type { PaymentMethod, ShopType, DeliverySetup } from '@/lib/types/shop-config'
+import { toShopSocialLinks, type ShopSocialLink } from '@/lib/shops/social-links'
 
 // D3 « Boutique publique » — /boutique/[id]. Bare uuid, no slug column (docs/follow-ups.md,
 // "D3 URL shape — RESOLVED 2026-08-12"). Mirrors product-detail.ts's shape exactly: React
@@ -21,6 +22,8 @@ export type ShopDetailData = {
   createdAt: string
   paymentMethods: PaymentMethod[]
   categories: { name_fr: string; name_ar: string | null }[]
+  /** Facebook · Instagram · TikTok, only those set (shops.*_url, migration 116). */
+  socialLinks: ShopSocialLink[]
 }
 
 type ShopRow = {
@@ -33,6 +36,9 @@ type ShopRow = {
   shop_type: ShopType | null
   delivery_setup: DeliverySetup | null
   created_at: string
+  facebook_url: string | null
+  instagram_url: string | null
+  tiktok_url: string | null
   shop_payment_methods: { method: PaymentMethod }[] | null
   shop_categories: { categories: { name_fr: string; name_ar: string | null } | { name_fr: string; name_ar: string | null }[] | null }[] | null
 }
@@ -50,6 +56,7 @@ export const getShopDetail = cache(async (id: string): Promise<ShopDetailData | 
     .from('shops')
     .select(
       `id, name, description, city, logo_url, banner_url, shop_type, delivery_setup, created_at, admin_hidden_at,
+       facebook_url, instagram_url, tiktok_url,
        shop_payment_methods ( method ),
        shop_categories ( categories ( name_fr, name_ar ) )`,
     )
@@ -77,6 +84,7 @@ export const getShopDetail = cache(async (id: string): Promise<ShopDetailData | 
     categories: (row.shop_categories ?? [])
       .map((r) => one(r.categories))
       .filter((c): c is { name_fr: string; name_ar: string | null } => c !== null),
+    socialLinks: toShopSocialLinks(row),
   }
 })
 

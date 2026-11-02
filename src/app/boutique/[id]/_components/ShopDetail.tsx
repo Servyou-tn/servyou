@@ -11,6 +11,7 @@ import { t, tn, type Lang } from '@/lib/i18n'
 import { ShopShareButton } from './ShopShareButton'
 import { FavoriteHeart } from '@/components/favorites/FavoriteHeart'
 import { ShopReportModal } from './ShopReportModal'
+import { SocialLinks } from '@/components/social/SocialLinks'
 
 // D3 « Boutique publique » — rebuilt from Figma 540:32918/540:32920, measured in
 // docs/design/d3-discovery.md. Single stacked column throughout (confirmed by 540:32920's own
@@ -111,6 +112,23 @@ export function ShopDetail({
                 )}
               </div>
             </div>
+
+            {/* « Réseaux sociaux » (approved 2026-10-31, D3 375 1549:40814 measured + sl-d3-1440): under the meta, caption Overline (12 Medium,
+                uppercase, tracking 0.48, muted) 6 above the 20 glyphs, 14 apart. The links kit's 34 targets give that step (20 + 14); the negative
+                margins hand back their 7 px padding so the glyphs sit flush under the caption. Only the platforms the shop filled in. */}
+            {shop.socialLinks.length > 0 && (
+              <div className="flex flex-col gap-1.5">
+                <p className="text-caption font-medium uppercase tracking-[0.48px] text-text-muted">
+                  {t('boutique.public.social_caption', lang)}
+                </p>
+                <SocialLinks
+                  links={shop.socialLinks.map((l) => ({ id: l.platform, url: l.url }))}
+                  name={shop.name}
+                  lang={lang}
+                  className="-my-1.75 -ms-1.75"
+                />
+              </div>
+            )}
 
             {shop.description && (
               <p className="max-w-[760px] text-base leading-[26px] text-text-secondary">{shop.description}</p>

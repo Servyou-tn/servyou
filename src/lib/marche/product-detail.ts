@@ -2,6 +2,7 @@ import { cache } from 'react'
 import { createClient } from '@/lib/supabase/server'
 import { failQuery, isNoRowLike, reportQueryError } from '@/lib/supabase/query-error'
 import type { ProductListing } from '@/components/listings/ProductListingCard'
+import { toShopSocialLinks, type ShopSocialLink } from '@/lib/shops/social-links'
 
 // Single-product detail fetch for /produits/[id]. Resurrected from the pre-reset page
 // (commit 59cb952^) and extended with product_images + shop logo/description for the
@@ -42,7 +43,14 @@ export type ProductDetailData = {
   categoryId: string | null
   shopId: string | null
   images: { url: string }[]
-  shop: { name: string; city: string | null; logo_url: string | null; description: string | null } | null
+  shop: {
+    name: string
+    city: string | null
+    logo_url: string | null
+    description: string | null
+    /** The shop's Facebook · Instagram · TikTok, only those set (migration 116). */
+    socialLinks: ShopSocialLink[]
+  } | null
 }
 
 type DetailRow = {
@@ -57,11 +65,18 @@ type DetailRow = {
   category_id: string | null
   shop_id: string | null
   categories: { name_fr: string; name_ar: string | null } | { name_fr: string; name_ar: string | null }[] | null
-  shops:
-    | { name: string | null; city: string | null; logo_url: string | null; description: string | null }
-    | { name: string | null; city: string | null; logo_url: string | null; description: string | null }[]
-    | null
+  shops: DetailShopRow | DetailShopRow[] | null
   product_images: { image_url: string; display_order: number }[] | null
+}
+
+type DetailShopRow = {
+  name: string | null
+  city: string | null
+  logo_url: string | null
+  description: string | null
+  facebook_url: string | null
+  instagram_url: string | null
+  tiktok_url: string | null
 }
 
 // Wrapped in React cache() so generateMetadata + the page share a single fetch per request.
@@ -73,7 +88,7 @@ export const getProductDetail = cache(async (id: string): Promise<ProductDetailD
       `id, title, description, price_tnd, delivery_fee_tnd, tracks_stock, stock_count, status,
        category_id, shop_id,
        categories ( name_fr, name_ar ),
-       shops!inner ( name, city, logo_url, description, admin_hidden_at ),
+       shops!inner ( name, city, logo_url, description, facebook_url, instagram_url, tiktok_url, admin_hidden_at ),
        product_images ( image_url, display_order )`,
     )
     .eq('id', id)
@@ -112,6 +127,7 @@ export const getProductDetail = cache(async (id: string): Promise<ProductDetailD
           city: shop.city ?? null,
           logo_url: shop.logo_url ?? null,
           description: shop.description ?? null,
+          socialLinks: toShopSocialLinks(shop),
         }
       : null,
   }

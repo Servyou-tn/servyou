@@ -15,6 +15,8 @@ import { GOVERNORATES } from '@/lib/tunisia-governorates'
 import { LogoField } from '../../creer/_components/LogoField'
 import { BannerField } from '../../creer/_components/BannerField'
 import { updateShopAction, updateShopLogoAction, updateShopBannerAction, removeShopBannerAction } from '../actions'
+import { SocialLinksSection, type ShopSocialErrors, type ShopSocialValues } from './SocialLinksSection'
+import { SHOP_SOCIAL_COLUMNS, SHOP_SOCIAL_PLATFORMS, shopSocialUrlSchema, type ShopSocialPlatform } from '@/lib/shops/social-links'
 
 // G3 "Modifier ma boutique" — identity-field edit (name, city, description, logo, banner). A
 // SEPARATE component from CreateShopForm, not a mode-prop fork: chrome (breadcrumb target, no
@@ -43,6 +45,8 @@ export type EditShopInitial = {
   description: string
   logoUrl: string | null
   bannerUrl: string | null
+  /** The three social links as stored ('' when unset) — migration 116. */
+  social: ShopSocialValues
 }
 
 export function EditShopForm({ shopId, initial }: { shopId: string; initial: EditShopInitial }) {
@@ -64,6 +68,9 @@ export function EditShopForm({ shopId, initial }: { shopId: string; initial: Edi
   // True only when the owner removed an EXISTING stored banner with no replacement picked — the
   // signal that tells onSubmit to actually delete it server-side, not just clear local state.
   const [bannerRemoved, setBannerRemoved] = React.useState(false)
+
+  const [social, setSocial] = React.useState<ShopSocialValues>(initial.social)
+  const [socialErrors, setSocialErrors] = React.useState<ShopSocialErrors>({})
 
   const [errors, setErrors] = React.useState<Errors>({})
   const [formError, setFormError] = React.useState<string | null>(null)
@@ -131,13 +138,26 @@ export function EditShopForm({ shopId, initial }: { shopId: string; initial: Edi
     return next
   }
 
+  // Same rule as the server and the database (lib/shops/social-links.ts): trimmed, '' = cleared, « instagram.com/x » gets https://.
+  function validateSocial(): ShopSocialErrors {
+    const next: ShopSocialErrors = {}
+    for (const platform of SHOP_SOCIAL_PLATFORMS) {
+      if (!shopSocialUrlSchema(platform).safeParse(social[platform]).success) {
+        next[platform] = t(`shop.edit.social.invalid_${platform}`, lang)
+      }
+    }
+    return next
+  }
+
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     if (pending) return
 
     const found = validate()
+    const foundSocial = validateSocial()
     setErrors(found)
-    if (Object.keys(found).length > 0) {
+    setSocialErrors(foundSocial)
+    if (Object.keys(found).length > 0 || Object.keys(foundSocial).length > 0) {
       setFormError(t('shop.create.error.form', lang))
       return
     }
@@ -145,11 +165,20 @@ export function EditShopForm({ shopId, initial }: { shopId: string; initial: Edi
     setPending(true)
     setFormError(null)
 
-    const res = await updateShopAction({ name: name.trim(), city, description: description.trim() })
+    const res = await updateShopAction({
+      name: name.trim(),
+      city,
+      description: description.trim(),
+      facebook_url: social.facebook,
+      instagram_url: social.instagram,
+      tiktok_url: social.tiktok,
+    })
     if (!res.ok) {
       setPending(false)
       setFormError(res.error)
-      if (res.field) setErrors((prev) => ({ ...prev, [res.field as keyof Errors]: res.error }))
+      const socialPlatform = SHOP_SOCIAL_PLATFORMS.find((p) => SHOP_SOCIAL_COLUMNS[p] === res.field)
+      if (socialPlatform) setSocialErrors((prev) => ({ ...prev, [socialPlatform]: res.error }))
+      else if (res.field) setErrors((prev) => ({ ...prev, [res.field as keyof Errors]: res.error }))
       return
     }
 
@@ -262,6 +291,12 @@ export function EditShopForm({ shopId, initial }: { shopId: string; initial: Edi
           onChange={(e) => setDescription(e.target.value)}
         />
       </div>
+
+      <SocialLinksSection
+        values={social}
+        errors={socialErrors}
+        onChange={(platform: ShopSocialPlatform, value: string) => setSocial((prev) => ({ ...prev, [platform]: value }))}
+      />
 
       {/* Link to the other six accordions — INFERRED, no frame drew a two-page split (G3 was
           designed assuming all fields lived on one page). /ma-boutique/creer/configuration
