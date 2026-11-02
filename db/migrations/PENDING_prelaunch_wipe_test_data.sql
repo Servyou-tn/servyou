@@ -25,6 +25,11 @@
 -- Other: favorites 3 · reports 1 · contact_messages 1 (D3) · uploaded_objects 38 (the upload records of the files
 --   below) · notification_preferences 0 · password_change_attempts 0 · data_exports 0 · deletion_requests 0.
 -- Kept by decision: admin_audit_log 8 (D2).
+-- Not touched, and empty today: auth.audit_log_entries 0 (GoTrue's own log, no FK) · auth.flow_state rows with no
+--   user 0. The admin's 7 old flow_state rows stay (expired PKCE states; GoTrue reaps them).
+--
+-- Run it before launch, when nobody is signing up: a sign-up during the block makes the end-state check fail, which
+-- rolls everything back (safe, but it has to be run again).
 --
 -- ─── Files: delete them FIRST, through the Storage API (SQL cannot) ─────────────────────────────────────────────────
 -- storage.protect_delete() refuses DELETE on storage.objects from SQL, and forcing it would leave the files in the
@@ -61,6 +66,9 @@ declare
   v_posts uuid[];
   v_orders uuid[];
   n int;  -- rows removed by the last delete; each must equal the header's count, else the whole block rolls back
+  n_categories int;
+  n_audit      int;
+  n_sessions   int;
 begin
   -- ── Preconditions ──────────────────────────────────────────────────────────────────────────────────────────────────
   if not exists (select 1 from public.profiles where id = c_admin and is_admin
@@ -85,6 +93,11 @@ begin
    where consumer_id = any(v_users) or consumer_id = c_admin;
   select coalesce(array_agg(id), '{}') into v_orders from public.orders
    where buyer_id = any(v_users) or seller_id = any(v_users);
+
+  -- Kept tables, measured before: the end state must find them unchanged.
+  select count(*) into n_categories from public.categories;
+  select count(*) into n_audit from public.admin_audit_log;
+  select count(*) into n_sessions from auth.sessions where user_id = any(v_users);
 
   if cardinality(v_users) <> 13 then
     raise exception 'Comptes à supprimer : % au lieu de 13. Rien n''est supprimé (relancez l''aperçu).', cardinality(v_users)
@@ -171,20 +184,39 @@ begin
   delete from auth.users where id = any(v_users);
   get diagnostics n = row_count; if n <> 13 then raise exception 'auth.users: % au lieu de 13', n using errcode = '23514'; end if;
 
-  -- ── End state: only the admin and the reference data remain ────────────────────────────────────────────────────────
-  if (select count(*) from auth.users) <> 1 or (select count(*) from public.profiles) <> 1
-     or exists (select 1 from public.shops) or exists (select 1 from public.products)
-     or exists (select 1 from public.freelancer_profiles) or exists (select 1 from public.service_listings)
-     or exists (select 1 from public.job_posts) or exists (select 1 from public.orders)
-     or exists (select 1 from public.favorites) or exists (select 1 from public.reports)
-     or exists (select 1 from public.uploaded_objects) or exists (select 1 from auth.sessions where user_id <> c_admin)
-     or not exists (select 1 from public.profiles where id = c_admin and is_admin)
-     or (select count(*) from public.categories) <> 111
-     or (select count(*) from public.admin_audit_log) <> 8 then
-    raise exception 'Vérification finale échouée : rien n''est supprimé.' using errcode = '23514';
+  -- ── End state: only the admin and the reference data remain (one message per failure; any of them rolls back) ──────
+  if not exists (select 1 from auth.users where id = c_admin)
+     or not exists (select 1 from auth.identities where user_id = c_admin)
+     or not exists (select 1 from public.profiles where id = c_admin and is_admin) then
+    raise exception 'Fin : le compte admin a changé. Rien n''est supprimé.' using errcode = '23514';
+  end if;
+  if (select count(*) from auth.users) <> 1 or (select count(*) from public.profiles) <> 1 then
+    raise exception 'Fin : il reste d''autres comptes (inscription pendant le wipe ?). Rien n''est supprimé.'
+      using errcode = '23514';
+  end if;
+  if exists (select 1 from auth.sessions where user_id <> c_admin) then
+    raise exception 'Fin : il reste des sessions d''autres comptes. Rien n''est supprimé.' using errcode = '23514';
+  end if;
+  if exists (select 1 from public.shops) or exists (select 1 from public.products) then
+    raise exception 'Fin : il reste une boutique ou des produits. Rien n''est supprimé.' using errcode = '23514';
+  end if;
+  if exists (select 1 from public.freelancer_profiles) or exists (select 1 from public.service_listings) then
+    raise exception 'Fin : il reste un profil freelance ou des services. Rien n''est supprimé.' using errcode = '23514';
+  end if;
+  if exists (select 1 from public.job_posts) or exists (select 1 from public.orders) then
+    raise exception 'Fin : il reste des annonces ou des commandes. Rien n''est supprimé.' using errcode = '23514';
+  end if;
+  if exists (select 1 from public.favorites) or exists (select 1 from public.reports)
+     or exists (select 1 from public.uploaded_objects) then
+    raise exception 'Fin : il reste des favoris, signalements ou téléversements. Rien n''est supprimé.' using errcode = '23514';
+  end if;
+  if (select count(*) from public.categories) <> n_categories
+     or (select count(*) from public.admin_audit_log) <> n_audit then
+    raise exception 'Fin : catégories ou journal d''audit modifiés. Rien n''est supprimé.' using errcode = '23514';
   end if;
 
-  raise notice 'Wipe terminé : 13 comptes et leurs données supprimés ; restent le compte admin, 111 catégories, 8 lignes d''audit.';
+  raise notice 'Wipe terminé : 13 comptes et leurs données supprimés (% sessions par cascade) ; restent le compte admin, % catégories, % lignes d''audit.',
+    n_sessions, n_categories, n_audit;
 end
 $$;
 
@@ -206,7 +238,13 @@ union all select 'freelancer_profiles', (select count(*) from f)
 union all select 'service_listings', (select count(*) from public.service_listings where freelancer_profile_id in (select id from f))
 union all select 'job_posts', (select count(*) from p)
 union all select 'job_responses', (select count(*) from public.job_responses where freelancer_id in (select id from u) or job_post_id in (select id from p))
-union all select 'favorites', (select count(*) from public.favorites where user_id in (select id from u))
+union all select 'favorites', (select count(*) from public.favorites where user_id in (select id from u) or shop_id in (select id from s)
+    or freelancer_profile_id in (select id from f) or product_id in (select id from public.products where shop_id in (select id from s))
+    or service_listing_id in (select id from public.service_listings where freelancer_profile_id in (select id from f)))
+union all select 'reports', (select count(*) from public.reports where reporter_id in (select id from u))
+union all select 'job_post_skills', (select count(*) from public.job_post_skills where job_post_id in (select id from p))
+union all select 'auth.identities', (select count(*) from auth.identities where user_id in (select id from u))
+union all select 'auth.flow_state', (select count(*) from auth.flow_state where user_id in (select id from u))
 union all select 'uploaded_objects', (select count(*) from public.uploaded_objects where owner_id in (select id from u))
 union all select 'contact_messages', (select count(*) from public.contact_messages, a where user_id is distinct from aid);
 */
