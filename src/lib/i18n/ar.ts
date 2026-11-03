@@ -272,7 +272,7 @@ export const ar: Record<string, string> = {
   'landing.howItWorks.client.step1.title':   "سجل حسابك",
   'landing.howItWorks.client.step1.tagline': "حسابك، في ثوان.",
   'landing.howItWorks.client.step1.body':    "أنشئ ملفك مرة واحدة — Servyou يحفظ الأساسي لطلباتك القادمة، دون إعادة كتابة.",
-  'landing.howItWorks.client.step2.title':   "اعثروا",
+  'landing.howItWorks.client.step2.title':   "اعثر",
   'landing.howItWorks.client.step2.tagline': "كل تونس، في مكان واحد.",
   'landing.howItWorks.client.step2.body':    "ابحث بالمنتج، الخدمة، المدينة أو التصنيف. اسأل البائع التونسي مباشرة — لا روبوت، ولا خدمة عملاء في الطرف الآخر من العالم.",
   'landing.howItWorks.client.step3.title':   "استلم وادفع",
