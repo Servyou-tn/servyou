@@ -1,6 +1,7 @@
 -- Fix packet 1 (journey walk 2026-11-02, docs/journeys/walk-2026-11-02.md) — the DB side of #17 and #31. Prepared by
--- CC on fix/packet-1-phone-counts-product, NOT applied: the founder / architect applies it. The app side (actions,
--- forms, tests) ships in the same PR and already enforces both rules; this makes them hold for every JWT caller.
+-- CC on fix/packet-1-phone-counts-product (#303); applied by the founder on 2026-11-03 as version 20261103190052
+-- (seller_phone_and_product_checks). The app side (actions, forms, tests) ships in the same PR and enforces both rules
+-- too; this makes them hold for every JWT caller.
 --
 -- ─── 1. Products (#31): a title and a price > 0 on EVERY row ──────────────────────────────────────────────────────
 -- Live (read-only, service role, 2026-11-03): 26 products, 0 with price_tnd <= 0, 0 with a blank title — so both

@@ -74,6 +74,8 @@ export const INTEGRATION_GLOBS = [
   '**/password-change-attempts-live.test.ts',
   // Shop social links: the three URL CHECKs + column grants (runs after the architect applies the migration): 1 sign-in.
   '**/shop-social-links-live.test.ts',
+  // Seller contact phone triggers + product price/title CHECKs (migration 20261103190052): 4 sign-ins.
+  '**/seller-phone-gate-live.test.ts',
 ]
 
 // Tooling artifacts that must never be scanned for tests: the headless-Chrome VRT profiles (a
