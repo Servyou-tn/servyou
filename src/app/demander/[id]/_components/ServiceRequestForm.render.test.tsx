@@ -31,9 +31,9 @@ describe('E1 service form — action stack (m375-e1-demander)', () => {
     mount()
     const submit = screen.getByRole('button', { name: 'Envoyer la demande' })
     const stack = submit.parentElement!
-    const [desktopCancel, turnstile, button, mobileCancel] = Array.from(stack.children) as HTMLElement[]
+    const [desktopCancel, turnstileSlot, button, mobileCancel] = Array.from(stack.children) as HTMLElement[]
     expect(button).toBe(submit)
-    expect(turnstile).toHaveAttribute('data-testid', 'turnstile')
+    expect(turnstileSlot.firstElementChild).toHaveAttribute('data-testid', 'turnstile')
     for (const link of [desktopCancel, mobileCancel]) {
       expect(link.tagName).toBe('A')
       expect(link).toHaveTextContent('Annuler')
@@ -44,10 +44,11 @@ describe('E1 service form — action stack (m375-e1-demander)', () => {
     expect(stack.className).not.toMatch(/flex-col-reverse/)
   })
 
-  it('below lg the 12 between the buttons is the primary own margin, so the zero-height Turnstile node adds no gap', () => {
+  it('the Turnstile slot is a block pulled up by the stack gap below lg (so an invisible widget adds no space) and `contents` from lg', () => {
     mount()
-    const submit = screen.getByRole('button', { name: 'Envoyer la demande' })
-    expect(submit.className).toMatch(/\bmax-lg:mb-3\b/)
-    expect(submit.parentElement!.className).toMatch(/\bmax-lg:gap-0\b/)
+    const slot = screen.getByTestId('turnstile').parentElement!
+    const classes = (el: Element) => el.className.split(/\s+/)
+    expect(classes(slot)).toEqual(expect.arrayContaining(['max-lg:-mt-3', 'lg:contents']))
+    expect(classes(slot.parentElement!)).toContain('gap-3')
   })
 })

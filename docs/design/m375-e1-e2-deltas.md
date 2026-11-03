@@ -26,7 +26,7 @@ its auth + order read swapped for a fixture order. Both pages sit behind sign-in
 | description / timeframe / phone | labels 14 Medium, 44 fields, helpers 14 muted (21 line) | unchanged: the shared `Input` / `Textarea` primitives (helper line 20, textarea 120 tall where the frame's field hugs its 5-line specimen, 154) — see Q2 |
 | `F3-budget` | label 14 Semi Bold, **17** line; 44 field; TND box 56; helper 12 | ✓ label 17 (was 20) |
 | `codeNote` | 343 × 36, 12 / 18 muted | ✓ unchanged |
-| `actions` | Envoyer 343 × 48 r10, **12**, Annuler 343 × 40 r10 | ✓ 12 apart (was 24: the Turnstile's injected node is a zero-height flex item between them and took a second gap). **Tab order = visual order**: « Annuler » renders once per width instead of `flex-col-reverse`, so Envoyer comes first in the DOM below `lg` (D1) |
+| `actions` | Envoyer 343 × 48 r10, **12**, Annuler 343 × 40 r10 | ✓ 12 apart (was 24: the Turnstile's injected node is a zero-height flex item between them and took a second gap). **Tab order = visual order**: « Annuler » renders once per width instead of `flex-col-reverse`, so Envoyer comes first in the DOM below `lg` (D1). The Turnstile sits in a slot above Envoyer, pulled up by the stack's gap: 0 px while invisible; with Cloudflare's always-challenge test key the widget (71) shows 8 under the note and 12 above Envoyer |
 
 ## E2 — what changed, measured against the frame
 

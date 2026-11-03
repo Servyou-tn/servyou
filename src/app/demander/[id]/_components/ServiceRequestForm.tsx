@@ -246,12 +246,15 @@ export function ServiceRequestForm({
 
       {/* Desktop: secondary ⟷ primary, SPACE_BETWEEN. Mobile 682:56914 / m375-e1-demander: stacked full-width with the primary FIRST,
           12 apart. « Annuler » renders once per width (the other is display:none), so the DOM — and the tab order — is the visual order
-          at both, without a CSS reversal. Below lg the 12 is the primary's own margin, not the stack's gap: the Turnstile's injected node
-          is a zero-height flex item between the two and would add a second gap (it measured 24). */}
-      <div className="flex flex-col gap-3 max-lg:gap-0 lg:flex-row lg:items-center lg:justify-between">
+          at both, without a CSS reversal. The Turnstile's node is a flex item (zero-height while invisible: between the buttons it took a
+          second gap, 24). Below lg it sits in a block ABOVE the primary, pulled up by the stack's 12: invisible or absent it costs nothing,
+          and an interactive challenge shows 12 above « Envoyer ». From lg the wrapper is `contents`, so the row is exactly as before. */}
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
         <CancelLink serviceId={serviceId} lang={lang} className="max-lg:hidden" />
-        <Turnstile ref={turnstile} action="order_service" />
-        <Button type="submit" size="lg" loading={pending} className="max-lg:mb-3">
+        <div className="max-lg:-mt-3 lg:contents">
+          <Turnstile ref={turnstile} action="order_service" />
+        </div>
+        <Button type="submit" size="lg" loading={pending}>
           {pending ? t('demander.submit.loading', lang) : t('demander.submit.service', lang)}
         </Button>
         <CancelLink serviceId={serviceId} lang={lang} className="lg:hidden" />
