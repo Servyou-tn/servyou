@@ -25,9 +25,11 @@ describe('one currency notation per language (walk #25 / #30)', () => {
     expect(tndCurrency('fr')).toBe('TND')
   })
 
-  it('the grouped variant keeps FR grouping and never says TND in AR', () => {
-    expect(tndPriceGrouped(1250, 'fr')).toBe(`${(1250).toLocaleString('fr-FR')} TND`)
-    expect(tndPriceGrouped(1250, 'ar')).toBe(`${(1250).toLocaleString('ar-TN-u-nu-latn')} د.ت`)
+  it('the grouped variant groups the same way in both languages (« 1.250 » would read as millimes) and never says TND in AR', () => {
+    const NNBSP = '\u202f' // fr-FR's group separator
+    expect(tndPriceGrouped(1250, 'fr')).toBe(`1${NNBSP}250 TND`)
+    expect(tndPriceGrouped(1250, 'ar')).toBe(`1${NNBSP}250 د.ت`)
+    expect(tndPriceGrouped(1250.5, 'ar')).toBe(`1${NNBSP}250,5 د.ت`)
     expect(tndPriceGrouped(17, 'ar')).toBe('17 د.ت')
   })
 })

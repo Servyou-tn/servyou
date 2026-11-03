@@ -254,7 +254,11 @@ export function ProductRequestForm({
             dir="ltr"
             maxLength={PHONE_INPUT_MAX}
             value={phone}
-            onChange={(e) => setPhone(formatLocalPhoneInput(e.target.value))}
+            onChange={(e) => {
+              // Regroup only while typing at the end; a mid-number edit keeps the caret where it is (review of #304).
+              const v = e.target.value
+              setPhone(e.target.selectionStart === v.length ? formatLocalPhoneInput(v) : v)
+            }}
             iconStart={
               <span className="flex shrink-0 items-center gap-2 text-base text-text-secondary">
                 {/* LTR-isolated: in AR « +216 » read « 216+ ». */}

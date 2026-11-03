@@ -64,7 +64,7 @@ export function formatTunisDateTime(value: Instant, lang: Lang): string {
     timeZone: TUNIS_TZ,
   })
   // AR (walk #32): no French hour mark inside Arabic — « 18/07 09:12 », LTR-isolated so the date and time never swap.
-  return lang === 'ar' ? `⁦${date} ${time}⁩` : `${date} ${time.replace(':', 'h')}`
+  return lang === 'ar' ? `\u2066${date} ${time}\u2069` : `${date} ${time.replace(':', 'h')}`
 }
 
 /** The Tunis calendar day of an instant as `YYYY-MM-DD` — for same-day comparisons, never for display. */
@@ -81,5 +81,5 @@ export function formatTunisTime(value: Instant, lang: Lang): string {
     hourCycle: 'h23',
     timeZone: TUNIS_TZ,
   })
-  return lang === 'ar' ? `⁦${time}⁩` : time.replace(':', 'h')
+  return lang === 'ar' ? `\u2066${time}\u2069` : time.replace(':', 'h')
 }

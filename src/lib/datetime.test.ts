@@ -71,7 +71,7 @@ describe('formatTunisDateTime — « 18/07 09h12 », with a real 00h at midnight
   it('half past midnight Tunis is « 00h30 », never « 24h30 », and on the 6th', () => {
     expect(formatTunisDateTime(HALF_PAST_MIDNIGHT, 'fr')).toBe('06/07 00h30')
     // AR (walk #32): « 00:30 », no French hour mark, isolated LTR (LRI … PDI).
-    expect(formatTunisDateTime(HALF_PAST_MIDNIGHT, 'ar')).toMatch(/^⁦.*00:30⁩$/)
+    expect(formatTunisDateTime(HALF_PAST_MIDNIGHT, 'ar')).toMatch(/^\u2066.*00:30\u2069$/)
     expect(formatTunisDateTime(HALF_PAST_MIDNIGHT, 'ar')).not.toMatch(/24[:h]/)
     expect(formatTunisDateTime(HALF_PAST_MIDNIGHT, 'ar')).not.toContain('h')
   })

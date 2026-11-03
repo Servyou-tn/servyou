@@ -30,7 +30,10 @@ export function tndPrice(value: number | string | null, lang: Lang = 'fr'): stri
   return `${tndAmount(value)} ${tndCurrency(lang)}`
 }
 
-/** The grouped variant the order lists and the confirmation use (« 1 250 TND » / « 1.250 د.ت », the dashboard's grouping). */
+/**
+ * The grouped variant the order lists and the confirmation use: « 1 250 TND » / « 1 250 د.ت ». The SAME French grouping (a narrow space,
+ * a comma for decimals) in both languages: the Arabic locale's « 1.250 » reads as 1 dinar 250 millimes in Tunisia (review of #304).
+ */
 export function tndPriceGrouped(value: number, lang: Lang = 'fr'): string {
-  return `${value.toLocaleString(lang === 'ar' ? 'ar-TN-u-nu-latn' : 'fr-FR')} ${tndCurrency(lang)}`
+  return `${value.toLocaleString('fr-FR')} ${tndCurrency(lang)}`
 }

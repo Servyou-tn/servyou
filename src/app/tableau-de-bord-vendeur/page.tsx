@@ -153,7 +153,7 @@ export default async function TableauDeBordVendeurPage() {
               <StatTile
                 label={t('seller.dashboard.tile.profit', lang)}
                 value={t('seller.dashboard.tile.profit_value', lang, {
-                  amount: data.netProfit.value.toLocaleString(lang === 'ar' ? 'ar-TN-u-nu-latn' : 'fr-FR'),
+                  amount: data.netProfit.value.toLocaleString('fr-FR' /* both languages: the AR locale's « 1.250 » reads as millimes (#304) */),
                 })}
                 subtitle={
                   data.netProfit.measuredCount === data.netProfit.deliveredCount
