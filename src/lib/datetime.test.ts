@@ -83,6 +83,12 @@ describe('formatTunisDateTime — « 18/07 09h12 », with a real 00h at midnight
   it('the Figma example reads « 18/07 09h12 » (08:12Z = 09:12 Tunis)', () => {
     expect(formatTunisDateTime('2026-07-18T08:12:00Z', 'fr')).toBe('18/07 09h12')
   })
+
+  it('AR carries no direction mark inside the isolate (ICU puts an RLM after the day, which read « 1809:12 07/ »)', () => {
+    const ar = formatTunisDateTime('2026-07-18T08:12:00Z', 'ar')
+    expect(ar).toBe('\u206618/07 09:12\u2069')
+    expect(ar).not.toMatch(/[\u200E\u200F\u061C]/)
+  })
 })
 
 describe('tunisDayKey', () => {

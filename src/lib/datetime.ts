@@ -64,7 +64,14 @@ export function formatTunisDateTime(value: Instant, lang: Lang): string {
     timeZone: TUNIS_TZ,
   })
   // AR (walk #32): no French hour mark inside Arabic — « 18/07 09:12 », LTR-isolated so the date and time never swap.
-  return lang === 'ar' ? `\u2066${date} ${time}\u2069` : `${date} ${time.replace(':', 'h')}`
+  // ICU's Arabic date puts a RIGHT-TO-LEFT MARK after the day (« 18\u200F/07 »): a strong RTL character, so it re-orders
+  // the run even inside the isolate (« 1809:12 07/ » on E4 / G9 / H8, #306 Q10). The digits are Latin, so the marks go.
+  return lang === 'ar' ? `\u2066${stripBidiMarks(date)} ${stripBidiMarks(time)}\u2069` : `${date} ${time.replace(':', 'h')}`
+}
+
+// LRM, RLM and the Arabic letter mark — invisible direction hints ICU inserts in Arabic-locale dates.
+function stripBidiMarks(s: string): string {
+  return s.replace(/[\u200E\u200F\u061C]/g, '')
 }
 
 /** The Tunis calendar day of an instant as `YYYY-MM-DD` — for same-day comparisons, never for display. */
