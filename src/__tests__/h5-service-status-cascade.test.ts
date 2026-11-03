@@ -69,6 +69,10 @@ async function createUser(email: string): Promise<string> {
     user_metadata: { full_name: 'H5 Cascade Test', date_of_birth: '1990-01-01', city: 'Tunis', language: 'fr' },
   })
   if (error || !data.user) throw new Error(`createUser failed for ${email}: ${error?.message}`)
+  // A contact phone: since enforce_seller_contact_phone (walk #17, PENDING_seller_phone_and_product_checks.sql) a
+  // seller's own client cannot set a service active without one. Seeded as the service role, like every fixture field.
+  const { error: phoneErr } = await admin.from('profiles').update({ phone: '+21620000000' }).eq('id', data.user.id)
+  if (phoneErr) throw new Error(`phone seed failed for ${email}: ${phoneErr.message}`)
   return data.user.id
 }
 
