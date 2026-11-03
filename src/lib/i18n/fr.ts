@@ -1172,6 +1172,7 @@ export const fr: Record<string, string> = {
   'monCompte.field.phone':           "Téléphone",
   'monCompte.field.phone_ph':        "8 chiffres (ex: 12345678)",
   'monCompte.field.phoneHelp':       "Optionnel — utilisé pour les commandes et contacts.",
+  'monCompte.field.phoneHelpSeller': "Requis : les clients vous contactent sur WhatsApp à ce numéro.",
   'monCompte.field.dob':             "Date de naissance",
   'monCompte.field.dobHelp':         "Pour modifier votre date de naissance, contactez le support.",
   'monCompte.field.city':            "Ville",

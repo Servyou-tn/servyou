@@ -16,6 +16,7 @@ import { t, type Lang } from '@/lib/i18n'
 import { AvatarUploadCard } from './AvatarUploadCard'
 import { ChangePasswordModal } from './ChangePasswordModal'
 import { DeleteAccountModal } from './DeleteAccountModal'
+import { accountPhoneHelperKey } from '@/lib/seller/account-phone-helper'
 
 // I1 « Mon compte » — Figma 724:63872 (1440) / 728:64216 (375), docs/design/i1-k-measurements.md.
 // Three panels in a centred 720 column + a save bar. Editable: full_name, city, phone (+ the avatar,
@@ -168,7 +169,7 @@ export function MonCompteForm({
             placeholder={t('monCompte.field.phone_ph', lang)}
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
-            helper={t('monCompte.field.phoneHelp', lang)}
+            helper={t(accountPhoneHelperKey(profile), lang)}
             error={errorFor('phone')}
             iconStart={
               // dir="ltr" keeps « +216 | » reading in that order (RTL flipped it to « 216+ »), and

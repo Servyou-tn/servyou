@@ -76,6 +76,8 @@ export const INTEGRATION_GLOBS = [
   '**/shop-social-links-live.test.ts',
   // Seller contact phone triggers + product price/title CHECKs (migration 20261103190052): 4 sign-ins.
   '**/seller-phone-gate-live.test.ts',
+  // A seller who relies on the phone cannot clear it (migration 20261103201715): 4 sign-ins.
+  '**/seller-phone-kept-live.test.ts',
 ]
 
 // Tooling artifacts that must never be scanned for tests: the headless-Chrome VRT profiles (a

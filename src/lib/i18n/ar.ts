@@ -1159,6 +1159,7 @@ export const ar: Record<string, string> = {
   'monCompte.field.phone':           "الهاتف",
   'monCompte.field.phone_ph':        "8 أرقام (مثال: 12345678)",
   'monCompte.field.phoneHelp':       "اختياري — يُستخدم للطلبات والتواصل.",
+  'monCompte.field.phoneHelpSeller': "مطلوب: يتواصل معك العملاء عبر واتساب على هذا الرقم.",
   'monCompte.field.dob':             "تاريخ الميلاد",
   'monCompte.field.dobHelp':         "لتعديل تاريخ ميلادك، اتصل بالدعم.",
   'monCompte.field.city':            "المدينة",

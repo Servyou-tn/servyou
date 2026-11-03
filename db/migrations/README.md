@@ -1155,6 +1155,17 @@ both on 2026-10-28.
       creation actions. Live: `seller-phone-gate-live.test.ts`.
     - No column or type change, so `database.types.ts` is unchanged. The recorded statement was not compared with
       this file (no SQL access in the CC session); the live suite checks the behaviour.
+119. **20261103201715_seller_phone_not_cleared** — journey walk 2026-11-02 #17 follow-up (#303): a seller who relies on
+    the contact phone cannot clear it.
+    - `enforce_seller_phone_not_cleared()` (security definer, `search_path ''`, no EXECUTE grant) on
+      `trg_require_seller_phone_kept`, BEFORE UPDATE OF phone on `profiles`: a stored phone going NULL / blank is refused
+      for a shop owner, or a freelancer with at least one active service — 23514, hint `seller_phone_required` (the
+      same hint as #118). Setting or changing a number, consumers, freelancers with no active service, and accounts
+      that never had a phone are untouched; service role (`auth.uid()` null) and admins skip.
+    - App mirror: `sellerPhoneClearBlocked` (`src/lib/seller/contact-phone.ts`) in `updateProfileAction`, which also
+      maps the hint to the phone field error. Live: `seller-phone-kept-live.test.ts`.
+    - No column or type change (`database.types.ts` unchanged). The recorded statement was not compared with this
+      file (no SQL access in the CC session); the live suite checks the behaviour.
 
 ## Rollback paths
 

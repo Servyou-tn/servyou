@@ -1,5 +1,6 @@
 -- Walk 2026-11-02 #17 follow-up (fix packet 1, #303): a seller who relies on the contact phone cannot CLEAR it.
--- Prepared by CC, NOT applied: the founder / architect applies it. The app enforces the same rule first
+-- Prepared by CC; applied by the architect on 2026-11-03 at 21:20 as version 20261103201715 (seller_phone_not_cleared).
+-- The app enforces the same rule first
 -- (updateProfileAction → sellerPhoneClearBlocked, src/lib/seller/contact-phone.ts, field error « Le numéro de
 -- téléphone est requis… »); this makes it hold for every JWT caller (a direct PostgREST PATCH included).
 --
