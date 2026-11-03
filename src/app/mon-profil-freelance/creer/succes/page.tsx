@@ -3,7 +3,6 @@ import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { CircleCheckBig } from 'lucide-react'
 import { AppShell } from '@/components/shell/AppShell'
-import { Button } from '@/components/ui/button'
 import { FOCUS_RING } from '@/components/layout/styles'
 import { getShellUser } from '@/lib/marche/shell-user'
 import { resolveOwnedFreelancerProfileId } from '@/lib/freelancer/owner-profile'
@@ -21,11 +20,10 @@ const ROUTE = '/mon-profil-freelance/creer/succes'
 // BOOKMARK/REVISIT deliberately not prevented beyond that, same reasoning as G2's own page
 // (g2-discovery.md §23): nothing here is sensitive or goes stale.
 //
-// "Voir mon profil public" is DISABLED, not linked — D4 (/freelance/[slug]) does not exist as a
-// route at all (docs/design/h2-discovery.md §4a), and G2's own precedent for this exact situation
-// (a CTA whose target didn't exist yet) was a disabled control with an explanatory note, not a
-// link into a 404. `aria-describedby` ties the disabled button to the note for screen readers,
-// mirroring how Input/Textarea already link their own helper text.
+// "Voir mon profil public" opens the owner's own /freelance/[id] (walk 2026-11-02 #18: it was a disabled « bientôt disponible »
+// button although D4 exists and its owner can always open it). The copy is honest about visibility: freelancer_profiles.is_published
+// is trigger-derived (≥ 1 active service), so until a service is published the page answers 404 to visitors — the subline says when
+// it becomes visible, and the note that only the owner sees it for now. `aria-describedby` ties the link to that note.
 export default async function FreelancerProfileCreatedPage() {
   const shell = await getShellUser()
   if (!shell) redirect(`/connexion?next=${encodeURIComponent(ROUTE)}`)
@@ -41,6 +39,18 @@ export default async function FreelancerProfileCreatedPage() {
 
   const lang = await getLang()
 
+  // Visible to clients yet? A failed read keeps the « not yet » copy (the honest default for a profile created seconds ago).
+  const { data: published, error: publishedError } = await supabase
+    .from('freelancer_profiles')
+    .select('is_published')
+    .eq('id', owned.freelancerProfileId)
+    .maybeSingle()
+  if (publishedError) {
+    console.error('[freelance succes] is_published read failed:', publishedError.message, publishedError.code, publishedError.details)
+  }
+  const isVisible = published?.is_published === true
+
+  const secondaryLinkClasses = `inline-flex h-12 w-full items-center justify-center rounded-lg border border-border-strong bg-surface-base px-5 text-base font-semibold text-text-primary transition-colors hover:bg-surface-subtle sm:w-auto ${FOCUS_RING}`
   const primaryLinkClasses = `inline-flex h-10 w-full items-center justify-center rounded-lg bg-brand-blue-600 px-4 text-base font-semibold text-text-inverse transition-colors hover:bg-brand-blue-700 active:bg-brand-blue-800 sm:w-auto ${FOCUS_RING}`
 
   return (
@@ -56,26 +66,26 @@ export default async function FreelancerProfileCreatedPage() {
           </h1>
 
           <p className="max-w-[420px] text-[15px] leading-6 text-text-muted">
-            {t('freelance.create.succes.subline', lang)}
+            {t(isVisible ? 'freelance.create.succes.subline_visible' : 'freelance.create.succes.subline', lang)}
           </p>
 
           <div className="mt-2 flex w-full flex-col items-center gap-3 sm:w-auto sm:flex-row">
-            <Button
-              variant="secondary"
-              size="lg"
-              disabled
-              className="w-full sm:w-auto"
-              aria-describedby="public-profile-note"
+            <Link
+              href={`/freelance/${owned.freelancerProfileId}`}
+              className={secondaryLinkClasses}
+              aria-describedby={isVisible ? undefined : 'public-profile-note'}
             >
               {t('freelance.view_public', lang)}
-            </Button>
+            </Link>
             <Link href="/tableau-de-bord" className={primaryLinkClasses}>
               {t('freelance.create.succes.cta_dashboard', lang)}
             </Link>
           </div>
-          <p id="public-profile-note" className="text-sm text-text-muted">
-            {t('freelance.create.succes.public_profile_note', lang)}
-          </p>
+          {!isVisible && (
+            <p id="public-profile-note" className="text-sm text-text-muted">
+              {t('freelance.create.succes.public_profile_note', lang)}
+            </p>
+          )}
         </div>
       </div>
     </AppShell>

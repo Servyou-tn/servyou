@@ -35,10 +35,12 @@ function html(
 }
 
 describe('Header render smoke — marketing navbar, landing-only, same for every visitor', () => {
-  it('"/": brand + nav anchors + Missions + signup CTA, and NO account button', () => {
+  it('"/": brand + nav links (Boutiques / Freelances → the marketplace lenses) + Missions + signup CTA, and NO account button', () => {
     const out = html({ sellerType: null, fullName: null }, '/')
     expect(out).toContain('Navigation principale')
-    expect(out).toContain('href="/#boutiques"')
+    expect(out).toContain('href="/marche/produits?vue=boutiques"')
+    expect(out).toContain('href="/marche/services?vue=freelances"')
+    expect(out).not.toContain('href="/#boutiques"')
     expect(out).toContain('href="/missions"')
     expect(out).toContain('href="/inscription"')
     expect(out).not.toContain('aria-label="Mon compte"')

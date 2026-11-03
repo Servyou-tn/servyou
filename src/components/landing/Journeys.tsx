@@ -26,7 +26,7 @@ const journeys: Journey[] = [
     headlineKey: 'landing.journey.buyers_headline',
     bodyKey: 'landing.journey.buyers_body',
     ctaKey: 'landing.journey.buyers_cta',
-    href: '/',
+    href: '/marche/produits',
     accent: 'bg-brand-blue-600',
   },
   {

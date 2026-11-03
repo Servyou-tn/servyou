@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { OrderRail } from '@/components/orders/OrderRail'
 import { PhoneAfterAcceptance } from '@/components/orders/PhoneAfterAcceptance'
+import { ConfirmReceiptDialog } from '@/components/orders/ConfirmReceiptDialog'
 import { buyerContactState } from '@/lib/orders/phone-visibility'
 import { OrderAccordionRow } from './OrderAccordionRow'
 import { useLang } from '@/components/LangProvider'
@@ -205,6 +206,7 @@ export function ConfirmReceipt({ orderId }: { orderId: string }) {
   const lang = useLang()
   const router = useRouter()
   const [saving, setSaving] = useState(false)
+  const [asking, setAsking] = useState(false)
   const [, startTransition] = useTransition()
 
   async function confirm() {
@@ -221,9 +223,22 @@ export function ConfirmReceipt({ orderId }: { orderId: string }) {
     setSaving(false)
   }
 
+  // Final write — asks first (walk #16, ConfirmReceiptDialog).
   return (
-    <Button type="button" size="sm" onClick={confirm} loading={saving}>
-      {t('common.confirm_receipt_action', lang)}
-    </Button>
+    <>
+      <Button type="button" size="sm" onClick={() => setAsking(true)} loading={saving}>
+        {t('common.confirm_receipt_action', lang)}
+      </Button>
+      {asking ? (
+        <ConfirmReceiptDialog
+          lang={lang}
+          onClose={() => setAsking(false)}
+          onConfirm={() => {
+            setAsking(false)
+            void confirm()
+          }}
+        />
+      ) : null}
+    </>
   )
 }

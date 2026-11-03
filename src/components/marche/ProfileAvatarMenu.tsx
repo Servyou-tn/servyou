@@ -27,6 +27,11 @@ export type TopBarUser = {
    * TopbarUserMenu passes it to the Avatar primitive's `src`.
    */
   avatar_url?: string | null
+  /**
+   * freelancer_profiles.id for a freelancer — the public page /freelance/[id] the user menu's « Voir mon profil public » opens (walk
+   * #33). null / absent for everyone else (no public page) and when the read failed: the menu then hides the item.
+   */
+  freelancer_profile_id?: string | null
 }
 
 // The third button in the /marche icon cluster. Logged in → Radix dropdown

@@ -37,13 +37,13 @@ describe('selectVariant — marketing navbar renders only on the landing page', 
 
 describe('navLinks', () => {
   it('public links: Accueil + Boutiques/Freelances/Missions/À propos', () => {
-    // Missions points to /missions (the same target the page footer links to); the
-    // other entries are landing-page section anchors.
+    // Boutiques / Freelances open the marketplace lenses (walk 2026-11-02 #1); Missions points to /missions (the same target the page
+    // footer links to); À propos is a landing-page section anchor.
     const links = navLinks({ hidden: false, variant: 'public' })
     expect(links.map(l => l.href)).toEqual([
       '/',
-      '/#boutiques',
-      '/#freelances',
+      '/marche/produits?vue=boutiques',
+      '/marche/services?vue=freelances',
       '/missions',
       '/#a-propos',
     ])

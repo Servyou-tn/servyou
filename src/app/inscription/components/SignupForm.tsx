@@ -7,7 +7,7 @@ import { createClient } from '@/lib/supabase/client'
 import { useLang } from '@/components/LangProvider'
 import { t } from '@/lib/i18n'
 import { GOVERNORATES } from '@/lib/tunisia-governorates'
-import { SIGNUP_ROLE_KEY, roleConfig, type SignupRole } from '@/lib/signup-role'
+import { SIGNUP_NEXT_KEY, SIGNUP_ROLE_KEY, roleConfig, type SignupRole } from '@/lib/signup-role'
 import { computeAge, isValidEmail, isValidPassword } from '@/lib/signup-validation'
 import { verifyEmailRedirectUrl } from '@/lib/auth/email-redirect'
 import { CheckIcon, SpinnerIcon, GoogleIcon } from '@/components/auth/Icons'
@@ -63,7 +63,7 @@ function Field({
   )
 }
 
-export function SignupForm({ role }: { role: SignupRole }) {
+export function SignupForm({ role, next = null }: { role: SignupRole; /** The funnel's validated ?next= (page-side readNext). */ next?: string | null }) {
   const supabase = createClient()
   const router = useRouter()
   const lang = useLang()
@@ -178,10 +178,12 @@ export function SignupForm({ role }: { role: SignupRole }) {
         return
       }
 
-      // Remember the role intent for the post-verification redirect, then move to
-      // the "check your email" page. seller_type stays null — role is UI-only.
+      // Remember the role intent (and the funnel's ?next=, already validated by the page) for the post-verification redirect, then
+      // move to the "check your email" page. seller_type stays null — role is UI-only.
       try {
         sessionStorage.setItem(SIGNUP_ROLE_KEY, role)
+        if (next) sessionStorage.setItem(SIGNUP_NEXT_KEY, next)
+        else sessionStorage.removeItem(SIGNUP_NEXT_KEY)
       } catch {
         // Private mode / storage disabled — /verifier-email falls back to '/'.
       }
@@ -201,7 +203,7 @@ export function SignupForm({ role }: { role: SignupRole }) {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(config.destination)}`,
+        redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(next ?? config.destination)}`,
       },
     })
     if (error) {

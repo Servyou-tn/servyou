@@ -72,6 +72,13 @@ function renderList(orders: MyProductOrder[], lang: 'fr' | 'ar' = 'fr') {
   )
 }
 
+
+// jsdom has no showModal / close on <dialog>: the receipt confirm (ModalDialog) needs them. Toggling `open` is all these tests read.
+if (typeof HTMLDialogElement !== 'undefined') {
+  HTMLDialogElement.prototype.showModal ??= function (this: HTMLDialogElement) { this.setAttribute('open', '') }
+  HTMLDialogElement.prototype.close ??= function (this: HTMLDialogElement) { this.removeAttribute('open') }
+}
+
 describe('ProductOrdersList — header', () => {
   it('shows title, shop, total, status pill (product noun: « Arrivée ») and the shipped short reference', async () => {
     const user = userEvent.setup()
@@ -139,6 +146,8 @@ describe('ProductOrdersList — body', () => {
     const confirm = t('common.confirm_receipt_action', 'fr')
     const user = await open(order({ status: 'arrived' }))
     await user.click(await screen.findByRole('button', { name: confirm }))
+    expect(h.receipts).toHaveLength(0) // walk #16: the final write asks first
+    await user.click(await screen.findByRole('button', { name: t('receipt.confirm.yes', 'fr') }))
     await waitFor(() => expect(h.receipts).toHaveLength(1))
     expect(h.receipts[0]).toEqual({ orderId: ID })
 
@@ -244,39 +253,39 @@ describe('phone reveal rule (2026-11-01) — the buyer gets the seller’s numbe
   }
   const wa = (lang: 'fr' | 'ar' = 'fr') => screen.queryByRole('button', { name: t('mesCommandes.whatsapp', lang) })
 
-  it('PRODUCT order, pending: the hint « …par le vendeur » replaces the button', async () => {
+  it('PRODUCT order, pending: the hint « Le contact de la boutique… » replaces the button', async () => {
     await openProduct(order({ status: 'pending' }))
     expect(wa()).toBeNull()
-    expect(screen.getByText('Disponible après acceptation par le vendeur')).toBeInTheDocument()
+    expect(screen.getByText("Le contact de la boutique s'affiche après acceptation")).toBeInTheDocument()
   })
 
-  it('SERVICE order, pending: the hint « …par le freelance » replaces the button', async () => {
+  it('SERVICE order, pending: the hint « Le contact du freelance… » replaces the button', async () => {
     await openService('pending')
     expect(wa()).toBeNull()
-    expect(screen.getByText('Disponible après acceptation par le freelance')).toBeInTheDocument()
+    expect(screen.getByText("Le contact du freelance s'affiche après acceptation")).toBeInTheDocument()
   })
 
   it.each(['accepted', 'prepared', 'dispatched', 'in_delivery', 'arrived', 'received'])('PRODUCT order %s: the WhatsApp button, no hint', async (status) => {
     await openProduct(order({ status }))
     expect(wa()).toBeInTheDocument()
-    expect(screen.queryByText(/Disponible après acceptation/)).toBeNull()
+    expect(screen.queryByText(/s'affiche après acceptation/)).toBeNull()
   })
 
   it.each(['accepted', 'arrived', 'received'])('SERVICE order %s: the WhatsApp button, no hint', async (status) => {
     await openService(status)
     expect(wa()).toBeInTheDocument()
-    expect(screen.queryByText(/Disponible après acceptation/)).toBeNull()
+    expect(screen.queryByText(/s'affiche après acceptation/)).toBeNull()
   })
 
   it('a cancelled order shows neither a button nor the hint (a cancelled-while-pending order has no number for anyone)', async () => {
     await openProduct(order({ status: 'cancelled', cancelledBy: 'buyer' }))
     expect(wa()).toBeNull()
-    expect(screen.queryByText(/Disponible après acceptation/)).toBeNull()
+    expect(screen.queryByText(/s'affiche après acceptation/)).toBeNull()
   })
 
   it('AR: the hint is translated and there is no raw key', async () => {
     await openProduct(order({ status: 'pending' }), 'ar')
-    expect(screen.getByText('متاح بعد قبول البائع')).toBeInTheDocument()
+    expect(screen.getByText('تظهر بيانات التواصل مع المتجر بعد القبول')).toBeInTheDocument()
     expect(document.body.textContent).not.toMatch(/phone\.after_acceptance/)
   })
 })

@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import { useRef } from 'react'
 import { LogOut, Settings, User, ChevronDown } from 'lucide-react'
 import { useLang } from '@/components/LangProvider'
@@ -18,6 +19,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import type { TopBarUser } from '@/components/marche/ProfileAvatarMenu'
 import type { ShellRole } from './sidebar-items'
+import { signInHref } from '@/lib/favorites/targets'
 
 const ROLE_KEY: Record<ShellRole, string> = {
   consumer: 'shell.topbar.role.consumer',
@@ -30,15 +32,17 @@ const ROLE_KEY: Record<ShellRole, string> = {
 // and only the avatar shows. Logout reuses the existing /auth/signout route via a hidden form.
 export function TopbarUserMenu({ user, role }: { user: TopBarUser | null; role: ShellRole }) {
   const lang = useLang()
+  const pathname = usePathname()
   const signOutFormRef = useRef<HTMLFormElement>(null)
 
   // Public marketplace pages (e.g. /marche/services) render this shell logged-out: no menu,
   // just a "Se connecter" affordance — the person glyph linking to /connexion, mirroring the
   // legacy ProfileAvatarMenu. Authenticated workspace pages always pass a non-null user.
+  // The link brings the visitor back to THIS page after signing in (walk 2026-11-02: product → sign in → back to the product).
   if (!user) {
     return (
       <Link
-        href="/connexion"
+        href={pathname && pathname !== '/' ? signInHref(pathname) : '/connexion'}
         aria-label={t('nav.login', lang)}
         className={cn(
           // Matches the bell IconButton (Figma 40×40, radius 10) for a consistent icon cluster.
@@ -94,12 +98,15 @@ export function TopbarUserMenu({ user, role }: { user: TopBarUser | null; role: 
             <p className="truncate text-xs text-text-muted">{user.email}</p>
           </div>
 
-          <DropdownMenuItem asChild className={itemBase}>
-            <Link href="/profil">
-              <User className="me-2 h-4 w-4 text-text-muted" aria-hidden="true" />
-              {t('shell.topbar.menu.viewPublicProfile', lang)}
-            </Link>
-          </DropdownMenuItem>
+          {/* Only a freelancer has a public page (walk #33: « /profil » opened the private « Mon compte » for every role). */}
+          {user.seller_type === 'freelancer' && user.freelancer_profile_id ? (
+            <DropdownMenuItem asChild className={itemBase}>
+              <Link href={`/freelance/${user.freelancer_profile_id}`}>
+                <User className="me-2 h-4 w-4 text-text-muted" aria-hidden="true" />
+                {t('shell.topbar.menu.viewPublicProfile', lang)}
+              </Link>
+            </DropdownMenuItem>
+          ) : null}
 
           <DropdownMenuItem asChild className={itemBase}>
             <Link href="/parametres">
