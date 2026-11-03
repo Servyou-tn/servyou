@@ -2,6 +2,10 @@
 
 ## A seller can clear the contact phone after publishing
 
+✅ CLOSED — #303 (2026-11-03): `updateProfileAction` refuses it (`sellerPhoneClearBlocked`, field error « Le numéro de
+téléphone est requis… ») for a shop owner or a freelancer with an active service; DB side in
+`PENDING_seller_phone_not_cleared.sql` (awaits apply). The Mon compte helper text still reads « Optionnel ».
+
 - **What:** `updateProfileAction` (Mon compte) still accepts an empty phone for an account with `seller_type` set, so a
   freelancer or shop owner can publish with a phone and then remove it — the « contact sur WhatsApp » promise breaks
   again. Cheapest close: refuse an empty phone in `updateProfileAction` when `seller_type` is not null (and the same

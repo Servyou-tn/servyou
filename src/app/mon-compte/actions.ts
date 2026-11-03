@@ -7,6 +7,7 @@ import { createClient } from '@/lib/supabase/server'
 import { getLang } from '@/lib/i18n/server'
 import { t } from '@/lib/i18n'
 import { isValidPhone, normalizePhone } from '@/lib/phone'
+import { sellerPhoneClearBlocked, SELLER_PHONE_REQUIRED_HINT } from '@/lib/seller/contact-phone'
 import { isValidPassword } from '@/lib/signup-validation'
 import { GOVERNORATES } from '@/lib/tunisia-governorates'
 import { normalizeAvatar, MAX_INPUT_BYTES, MAX_INPUT_MB, type NormalizeFailure } from '@/lib/images/normalize'
@@ -63,6 +64,12 @@ export async function updateProfileAction(input: {
   if (phoneRaw) {
     if (!isValidPhone(phoneRaw)) return { ok: false, error: t('monCompte.error.phoneFormat', lang), field: 'phone' }
     phone = normalizePhone(phoneRaw)
+  } else {
+    // A seller who relies on the number (shop owner, or freelancer with an active service) cannot clear it — buyers
+    // reach them on WhatsApp through it (walk #17 follow-up). An account with no phone yet saves '' freely.
+    const clear = await sellerPhoneClearBlocked(supabase, user.id)
+    if (!clear.ok) return { ok: false, error: t('common.error_generic', lang) }
+    if (clear.blocked) return { ok: false, error: t('seller.phone.error.required', lang), field: 'phone' }
   }
 
   const city = parsed.data.city || null
@@ -81,6 +88,8 @@ export async function updateProfileAction(input: {
     .eq('id', user.id)
   if (error) {
     console.error('[updateProfileAction] update error:', error.message, error.code, error.details)
+    // The DB's own refusal (enforce_seller_phone_not_cleared, PENDING_seller_phone_not_cleared.sql) — same field error.
+    if (error.hint === SELLER_PHONE_REQUIRED_HINT) return { ok: false, error: t('seller.phone.error.required', lang), field: 'phone' }
     return { ok: false, error: t('common.error_generic', lang) }
   }
 

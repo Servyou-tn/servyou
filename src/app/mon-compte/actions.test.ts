@@ -47,6 +47,9 @@ vi.mock('@/lib/images/upload-guard', () => ({ callerActivity: vi.fn(), uploadBuc
 // The wrong-password limit (src/lib/auth/password-attempts.ts) — a service-role table, mocked.
 const attempts = vi.hoisted(() => ({ reserve: vi.fn(), release: vi.fn() }))
 vi.mock('@/lib/auth/password-attempts', () => ({ reservePasswordAttempt: attempts.reserve, releasePasswordAttempt: attempts.release }))
+// Whether this account may clear its phone (src/lib/seller/contact-phone.ts) — its own reads are tested in seller-phone-clear.
+const clear = vi.hoisted(() => ({ check: vi.fn() }))
+vi.mock('@/lib/seller/contact-phone', () => ({ sellerPhoneClearBlocked: clear.check, SELLER_PHONE_REQUIRED_HINT: 'seller_phone_required' }))
 
 import { updateProfileAction, requestAccountDeletionAction, changePasswordAction } from './actions'
 import { t } from '@/lib/i18n'
@@ -64,6 +67,7 @@ beforeEach(() => {
   h.insert.mockResolvedValue({ error: null })
   attempts.reserve.mockReset().mockResolvedValue({ ok: true, id: 'att-1', blocked: false })
   attempts.release.mockReset().mockResolvedValue(undefined)
+  clear.check.mockReset().mockResolvedValue({ ok: true, blocked: false })
 })
 
 describe('updateProfileAction', () => {
@@ -106,6 +110,32 @@ describe('updateProfileAction', () => {
     h.getUser.mockResolvedValue({ data: { user: null } })
     expect(await updateProfileAction(valid)).toMatchObject({ ok: false })
     expect(h.update).not.toHaveBeenCalled()
+  })
+
+  // Walk #17 follow-up — a seller who relies on the phone (shop owner, freelancer with an active service) cannot clear it.
+  it('a seller who relies on the phone cannot clear it: phone field error, same message, nothing written', async () => {
+    clear.check.mockResolvedValue({ ok: true, blocked: true })
+    const res = await updateProfileAction({ ...valid, phone: '' })
+    expect(res).toEqual({ ok: false, error: t('seller.phone.error.required', 'fr'), field: 'phone' })
+    expect(clear.check).toHaveBeenCalledWith(expect.anything(), 'u1')
+    expect(h.update).not.toHaveBeenCalled()
+  })
+
+  it('a failed check is a generic error, never a cleared phone', async () => {
+    clear.check.mockResolvedValue({ ok: false })
+    expect(await updateProfileAction({ ...valid, phone: '' })).toEqual({ ok: false, error: t('common.error_generic', 'fr') })
+    expect(h.update).not.toHaveBeenCalled()
+  })
+
+  it('the DB refusal (hint seller_phone_required) is the same phone field error', async () => {
+    h.eq.mockResolvedValue({ error: { message: 'Le numéro de téléphone est requis', code: '23514', hint: 'seller_phone_required' } })
+    const res = await updateProfileAction({ ...valid, phone: '' })
+    expect(res).toEqual({ ok: false, error: t('seller.phone.error.required', 'fr'), field: 'phone' })
+  })
+
+  it('a non-empty phone never needs the check', async () => {
+    await updateProfileAction(valid)
+    expect(clear.check).not.toHaveBeenCalled()
   })
 
   it('logs message / code / details — never the raw error object', async () => {
