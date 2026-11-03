@@ -104,6 +104,26 @@ describe('ProductBrowseCard (m375-c1-produits)', () => {
     expect(container.querySelector('img')).not.toBeNull()
   })
 
+  it('in Arabic the price reads « 45 TND » (LTR, start side, cut at the TND end) and a French title keeps its start (dir auto, hugs the page start side)', () => {
+    mount('ar')
+    const price = screen.getByText('45 TND')
+    expect(price.tagName).toBe('P')
+    expect(price).toHaveAttribute('dir', 'ltr')
+    expect(price.className).toMatch(/rtl:self-start/)
+    const title = screen.getByText('Coussin brodé main — motif berbère')
+    expect(title).toHaveAttribute('dir', 'auto')
+    expect(title.className).toMatch(/rtl:self-start/)
+    expect(title.className).toMatch(/rtl:max-w-full/)
+  })
+
+  it('the heart keeps a 44 px tap area at every width: the 20 px button carries a -inset-3 hit span', async () => {
+    mount()
+    const heart = await screen.findByRole('button', { name: /favoris/i })
+    expect(heart.className).toMatch(/\brelative\b/)
+    expect(heart.className).toMatch(/\bsize-5\b/)
+    expect(heart.querySelector('span[aria-hidden="true"]')!.className).toMatch(/absolute -inset-3/)
+  })
+
   it('reads in Arabic', () => {
     mount('ar')
     expect(screen.getByText('نسيج حرفي')).toBeInTheDocument()
