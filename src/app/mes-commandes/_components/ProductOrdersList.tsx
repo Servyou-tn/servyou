@@ -90,9 +90,12 @@ function ProductOrderRow({ order, open, onToggle }: { order: MyProductOrder; ope
 
       {/* Phone reveal rule: the shop's number exists only once the seller accepts — a pending order shows the hint, not a button that can only fail. */}
       {(contact !== 'hidden' || canConfirmReceipt(status)) && (
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+        // 375 (m375-e3-commandes): the two actions stack 8 apart, WhatsApp full width with its 18 glyph (desktop unchanged).
+        <div className="flex flex-col gap-3 max-lg:gap-2 sm:flex-row sm:items-center">
           {contact === 'button' && (
             <WhatsAppContactButton
+              buttonClassName="max-sm:w-full"
+              glyphClassName="size-[18px] lg:hidden"
               targetId={order.sellerId}
               label={t('mesCommandes.whatsapp', lang)}
               message={t('mesCommandes.whatsapp.message_product', lang, { ref: shortRef(order.id), product: title })}
@@ -136,7 +139,7 @@ function ProductOrderRow({ order, open, onToggle }: { order: MyProductOrder; ope
 
 function Thumb({ url }: { url: string | null }) {
   return (
-    <span className="relative flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-border-subtle bg-surface-subtle">
+    <span className="relative flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-lg border max-lg:rounded-md border-border-subtle bg-surface-subtle">
       {url ? (
         <Image src={url} alt="" fill sizes="48px" className="object-cover" />
       ) : (

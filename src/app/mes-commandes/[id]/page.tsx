@@ -33,6 +33,9 @@ const LIST = '/mes-commandes'
 // Ownership: getOrderDetail re-checks buyer_id === auth.uid() and answers null otherwise, so a stranger's order id is the same
 // not-found as a missing one. Layout: a 752 + 360 two-column on desktop; on mobile the action panel jumps up to sit right after
 // the stepper (the mobile frame), then product → seller → delivery → tracking → history.
+//
+// 375 re-measured against m375-e4-commande (docs/design/m375-e3-e4-deltas.md): no breadcrumb, H1 22 Semi Bold blue/800, the pill on its own
+// row, every block 16 apart; Figma's strokes sit INSIDE its panels, so below lg the borders come out of the padding (pad 24 / 16 → 23 / 15).
 
 export default async function BuyerOrderDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -74,10 +77,10 @@ export default async function BuyerOrderDetailPage({ params }: { params: Promise
 
   return (
     <AppShell user={shell.topBarUser}>
-      <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-6 max-lg:gap-4">
         {/* ── topGroup: breadcrumb · title + pill · date · stepper ── */}
         <div className="flex flex-col gap-4">
-          <nav aria-label={t('seller.orderDetail.breadcrumb_aria', lang)}>
+          <nav aria-label={t('seller.orderDetail.breadcrumb_aria', lang)} className="max-lg:hidden">
             <ol className="flex items-center gap-1 text-caption text-text-muted">
               <li>
                 <Link href={LIST} className={`rounded hover:underline ${FOCUS_RING}`}>
@@ -93,9 +96,9 @@ export default async function BuyerOrderDetailPage({ params }: { params: Promise
             </ol>
           </nav>
 
-          <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-            <div className="flex flex-wrap items-center gap-3">
-              <h1 className="text-h1 text-text-primary">{t('buyerOrder.title', lang, { ref: titleRef })}</h1>
+          <div className="flex flex-col gap-3 max-lg:gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div className="flex flex-wrap items-center gap-3 max-lg:flex-col max-lg:items-start max-lg:gap-4">
+              <h1 className="text-h1 text-text-primary max-lg:text-[22px] max-lg:font-semibold max-lg:leading-7 max-lg:text-brand-blue-800">{t('buyerOrder.title', lang, { ref: titleRef })}</h1>
               {pill ? <StatusPill status={pill.pill}>{t(pill.labelKey, lang)}</StatusPill> : null}
             </div>
             <p className="text-body-sm text-text-secondary">
@@ -103,7 +106,8 @@ export default async function BuyerOrderDetailPage({ params }: { params: Promise
             </p>
           </div>
 
-          <section className="rounded-xl border border-border-subtle bg-surface-base p-6">
+          {/* 375: the vertical stepper hugs its widest label and sits centred in the panel (Figma « Order Stepper », align CENTER). */}
+          <section className="rounded-xl border border-border-subtle bg-surface-base p-6 max-lg:flex max-lg:justify-center max-lg:p-[23px]">
             <OrderRail
               look="detail"
               ariaLabel={t('buyerOrder.stepper_aria', lang)}
@@ -159,7 +163,8 @@ export default async function BuyerOrderDetailPage({ params }: { params: Promise
                 <TrackingPanel order={order} lang={lang} />
               </div>
             ) : null}
-            <div className="order-6 lg:order-none">
+            {/* The shared OrderTimeline keeps its own panel classes (G9 / H8): the 375 pad and title line are set from here, below lg only. */}
+            <div className="order-6 max-lg:[&>section]:px-[15px] max-lg:[&>section]:py-[23px] max-lg:[&_h2]:leading-[26px] lg:order-none">
               <OrderTimeline
                 events={order.events}
                 orderType={order.orderType}

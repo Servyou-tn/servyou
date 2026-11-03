@@ -14,6 +14,8 @@ import { FOCUS_RING } from '@/components/layout/styles'
 // 13/18 muted + date 12/17 muted · price 15/22 SemiBold blue-800 + StatusPill + chevron. Mobile stacks price over the
 // pill and folds counterpart + date into one « Nom · 24 nov » line (710:59958).
 //
+// 375 (m375-e3-commandes, docs/design/m375-e3-e4-deltas.md): title line 20, « Nom · 24 nov » line 17, chevron blue/300.
+//
 // Client because the row expands in place. The caller owns `open` (one accordion open at a time) and renders the body
 // as `children`, which is only mounted while open.
 export function OrderAccordionRow({
@@ -63,11 +65,11 @@ export function OrderAccordionRow({
           <span className="flex min-w-0 flex-1 flex-col gap-0.5">
             {/* Seller-written title: its own direction, hugging the page's start side in AR, so a French title is cut at its END (walk #26 —
                 the product card's fix from #299). LTR pages keep the stretched box. */}
-            <span dir="auto" className="truncate text-body-sm font-semibold text-text-primary rtl:max-w-full rtl:self-start lg:text-[15px] lg:leading-[22px]">
+            <span dir="auto" className="truncate text-body-sm font-semibold text-text-primary rtl:max-w-full rtl:self-start max-lg:leading-5 lg:text-[15px] lg:leading-[22px]">
               {title}
             </span>
             {/* Desktop: counterpart and date on their own lines. Mobile: one "Nom · 24 nov" line. */}
-            <span className="truncate text-caption text-text-muted lg:hidden">
+            <span className="truncate text-caption leading-[17px] text-text-muted lg:hidden">
               {[counterpart, date].filter(Boolean).join(' · ')}
             </span>
             {counterpart ? (
@@ -87,7 +89,7 @@ export function OrderAccordionRow({
           </span>
 
           <ChevronDown
-            className={`h-5 w-5 shrink-0 text-text-muted transition-transform motion-reduce:transition-none ${open ? 'rotate-180' : ''}`}
+            className={`h-5 w-5 shrink-0 text-text-muted max-lg:text-brand-blue-300 transition-transform motion-reduce:transition-none ${open ? 'rotate-180' : ''}`}
             aria-hidden="true"
           />
           <span className="sr-only">{t(open ? 'mesCommandes.collapse' : 'mesCommandes.expand', lang)}</span>
