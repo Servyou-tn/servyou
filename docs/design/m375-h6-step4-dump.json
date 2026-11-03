@@ -1,0 +1,1082 @@
+{
+ "n": "Créer un service — étape 4 Prestation (375 mobile)",
+ "t": "FRAME",
+ "w": 375,
+ "h": 865,
+ "layout": "VERTICAL",
+ "gap": 16,
+ "pad": "20 16 32 16",
+ "align": "MIN/MIN",
+ "size": "FIXED/HUG",
+ "fill": [
+  "var:surface/base"
+ ],
+ "c": [
+  {
+   "n": "content",
+   "t": "FRAME",
+   "w": 343,
+   "h": 813,
+   "layout": "VERTICAL",
+   "gap": 20,
+   "pad": "0 0 0 0",
+   "align": "MIN/MIN",
+   "size": "FILL/HUG",
+   "c": [
+    {
+     "n": "top",
+     "t": "FRAME",
+     "w": 343,
+     "h": 206,
+     "layout": "VERTICAL",
+     "gap": 24,
+     "pad": "0 0 0 0",
+     "align": "MIN/MIN",
+     "size": "FILL/HUG",
+     "c": [
+      {
+       "n": "page-header",
+       "t": "FRAME",
+       "w": 343,
+       "h": 113,
+       "layout": "VERTICAL",
+       "gap": 8,
+       "pad": "0 0 0 0",
+       "align": "MIN/MIN",
+       "size": "FILL/HUG",
+       "c": [
+        {
+         "n": "Breadcrumb",
+         "t": "INSTANCE",
+         "w": 230,
+         "h": 17,
+         "layout": "HORIZONTAL",
+         "gap": 8,
+         "pad": "0 0 0 0",
+         "align": "MIN/CENTER",
+         "size": "HUG/HUG",
+         "comp": "Breadcrumb",
+         "c": [
+          {
+           "n": "Accueil",
+           "t": "TEXT",
+           "w": 89,
+           "h": 17,
+           "size": "HUG/HUG",
+           "fill": [
+            "var:text/muted"
+           ],
+           "text": "Mes services",
+           "fs": 14,
+           "font": "Medium"
+          },
+          {
+           "n": "icon-chevron-right",
+           "t": "INSTANCE",
+           "w": 14,
+           "h": 14,
+           "size": "FIXED/FIXED",
+           "comp": "icon-chevron-right",
+           "c": [
+            {
+             "n": "Vector",
+             "t": "VECTOR",
+             "w": 4,
+             "h": 7,
+             "size": "FIXED/FIXED",
+             "stroke": [
+              "var:text/muted"
+             ],
+             "sw": 2
+            }
+           ]
+          },
+          {
+           "n": "Artisanat",
+           "t": "TEXT",
+           "w": 111,
+           "h": 17,
+           "size": "HUG/HUG",
+           "fill": [
+            "var:text/muted"
+           ],
+           "text": "Créer un service",
+           "fs": 14,
+           "font": "Medium"
+          },
+          {
+           "n": "icon-chevron-right",
+           "t": "INSTANCE",
+           "w": 14,
+           "h": 14,
+           "hidden": true,
+           "size": "FIXED/FIXED",
+           "comp": "icon-chevron-right",
+           "c": [
+            {
+             "n": "Vector",
+             "t": "VECTOR",
+             "w": 4,
+             "h": 7,
+             "size": "FIXED/FIXED",
+             "stroke": [
+              "var:text/muted"
+             ],
+             "sw": 2
+            }
+           ]
+          },
+          {
+           "n": "Poterie de Nabeul",
+           "t": "TEXT",
+           "w": 121,
+           "h": 17,
+           "hidden": true,
+           "size": "FIXED/FIXED",
+           "fill": [
+            "var:text/primary"
+           ],
+           "text": "Poterie de Nabeul",
+           "fs": 14,
+           "font": "Semi Bold"
+          }
+         ]
+        },
+        {
+         "n": "Créer un service",
+         "t": "TEXT",
+         "w": 343,
+         "h": 38,
+         "size": "FILL/HUG",
+         "fill": [
+          "var:text/primary"
+         ],
+         "text": "Créer un service",
+         "fs": 32,
+         "font": "Bold",
+         "style": "H1"
+        },
+        {
+         "n": "Décrivez votre service en quelques étapes. Vous pouvez enregistrer et revenir à tout moment.",
+         "t": "TEXT",
+         "w": 343,
+         "h": 42,
+         "size": "FILL/HUG",
+         "fill": [
+          "var:text/secondary"
+         ],
+         "text": "Décrivez votre service en quelques étapes. Vous pouvez enregistrer et revenir à tout moment.",
+         "fs": 14,
+         "font": "Regular",
+         "style": "Body Small"
+        }
+       ]
+      },
+      {
+       "n": "stepper-wrap",
+       "t": "FRAME",
+       "w": 343,
+       "h": 69,
+       "layout": "VERTICAL",
+       "gap": 12,
+       "pad": "0 0 0 0",
+       "align": "MIN/MIN",
+       "size": "FILL/HUG",
+       "c": [
+        {
+         "n": "Stepper",
+         "t": "FRAME",
+         "w": 343,
+         "h": 36,
+         "layout": "HORIZONTAL",
+         "gap": 0,
+         "pad": "0 0 0 0",
+         "align": "MIN/MIN",
+         "size": "FILL/HUG",
+         "c": [
+          {
+           "n": "step",
+           "t": "FRAME",
+           "w": 36,
+           "h": 36,
+           "layout": "VERTICAL",
+           "gap": 8,
+           "pad": "0 0 0 0",
+           "align": "MIN/CENTER",
+           "size": "FIXED/HUG",
+           "c": [
+            {
+             "n": "circle",
+             "t": "FRAME",
+             "w": 36,
+             "h": 36,
+             "layout": "HORIZONTAL",
+             "gap": 0,
+             "pad": "0 0 0 0",
+             "align": "CENTER/CENTER",
+             "size": "FIXED/FIXED",
+             "r": 9999,
+             "fill": [
+              "var:blue/600"
+             ],
+             "c": [
+              {
+               "n": "icon-check",
+               "t": "INSTANCE",
+               "w": 18,
+               "h": 18,
+               "size": "FIXED/FIXED",
+               "comp": "icon-check",
+               "c": [
+                {
+                 "n": "Vector",
+                 "t": "VECTOR",
+                 "w": 12,
+                 "h": 8,
+                 "size": "FIXED/FIXED",
+                 "stroke": [
+                  "var:text/inverse"
+                 ],
+                 "sw": 2
+                }
+               ]
+              }
+             ]
+            },
+            {
+             "n": "Métier",
+             "t": "TEXT",
+             "w": 43,
+             "h": 21,
+             "hidden": true,
+             "size": "FIXED/FIXED",
+             "fill": [
+              "var:text/secondary"
+             ],
+             "text": "Métier",
+             "fs": 14,
+             "font": "Regular"
+            }
+           ]
+          },
+          {
+           "n": "conn",
+           "t": "FRAME",
+           "w": 41,
+           "h": 36,
+           "layout": "HORIZONTAL",
+           "gap": 0,
+           "pad": "0 0 0 0",
+           "align": "CENTER/CENTER",
+           "size": "FILL/FIXED",
+           "c": [
+            {
+             "n": "line",
+             "t": "RECTANGLE",
+             "w": 41,
+             "h": 2,
+             "size": "FILL/FIXED",
+             "fill": [
+              "var:blue/600"
+             ]
+            }
+           ]
+          },
+          {
+           "n": "step",
+           "t": "FRAME",
+           "w": 36,
+           "h": 36,
+           "layout": "VERTICAL",
+           "gap": 8,
+           "pad": "0 0 0 0",
+           "align": "MIN/CENTER",
+           "size": "FIXED/HUG",
+           "c": [
+            {
+             "n": "circle",
+             "t": "FRAME",
+             "w": 36,
+             "h": 36,
+             "layout": "HORIZONTAL",
+             "gap": 0,
+             "pad": "0 0 0 0",
+             "align": "CENTER/CENTER",
+             "size": "FIXED/FIXED",
+             "r": 9999,
+             "fill": [
+              "var:blue/600"
+             ],
+             "c": [
+              {
+               "n": "icon-check",
+               "t": "INSTANCE",
+               "w": 18,
+               "h": 18,
+               "size": "FIXED/FIXED",
+               "comp": "icon-check",
+               "c": [
+                {
+                 "n": "Vector",
+                 "t": "VECTOR",
+                 "w": 12,
+                 "h": 8,
+                 "size": "FIXED/FIXED",
+                 "stroke": [
+                  "var:text/inverse"
+                 ],
+                 "sw": 2
+                }
+               ]
+              }
+             ]
+            },
+            {
+             "n": "Description",
+             "t": "TEXT",
+             "w": 76,
+             "h": 21,
+             "hidden": true,
+             "size": "FIXED/FIXED",
+             "fill": [
+              "var:text/secondary"
+             ],
+             "text": "Description",
+             "fs": 14,
+             "font": "Regular"
+            }
+           ]
+          },
+          {
+           "n": "conn",
+           "t": "FRAME",
+           "w": 41,
+           "h": 36,
+           "layout": "HORIZONTAL",
+           "gap": 0,
+           "pad": "0 0 0 0",
+           "align": "CENTER/CENTER",
+           "size": "FILL/FIXED",
+           "c": [
+            {
+             "n": "line",
+             "t": "RECTANGLE",
+             "w": 41,
+             "h": 2,
+             "size": "FILL/FIXED",
+             "fill": [
+              "var:blue/600"
+             ]
+            }
+           ]
+          },
+          {
+           "n": "step",
+           "t": "FRAME",
+           "w": 36,
+           "h": 36,
+           "layout": "VERTICAL",
+           "gap": 8,
+           "pad": "0 0 0 0",
+           "align": "MIN/CENTER",
+           "size": "FIXED/HUG",
+           "c": [
+            {
+             "n": "circle",
+             "t": "FRAME",
+             "w": 36,
+             "h": 36,
+             "layout": "HORIZONTAL",
+             "gap": 0,
+             "pad": "0 0 0 0",
+             "align": "CENTER/CENTER",
+             "size": "FIXED/FIXED",
+             "r": 9999,
+             "fill": [
+              "var:blue/600"
+             ],
+             "c": [
+              {
+               "n": "icon-check",
+               "t": "INSTANCE",
+               "w": 18,
+               "h": 18,
+               "size": "FIXED/FIXED",
+               "comp": "icon-check",
+               "c": [
+                {
+                 "n": "Vector",
+                 "t": "VECTOR",
+                 "w": 12,
+                 "h": 8,
+                 "size": "FIXED/FIXED",
+                 "stroke": [
+                  "var:text/inverse"
+                 ],
+                 "sw": 2
+                }
+               ]
+              }
+             ]
+            },
+            {
+             "n": "Tarif",
+             "t": "TEXT",
+             "w": 30,
+             "h": 21,
+             "hidden": true,
+             "size": "FIXED/FIXED",
+             "fill": [
+              "var:text/secondary"
+             ],
+             "text": "Tarif",
+             "fs": 14,
+             "font": "Regular"
+            }
+           ]
+          },
+          {
+           "n": "conn",
+           "t": "FRAME",
+           "w": 41,
+           "h": 36,
+           "layout": "HORIZONTAL",
+           "gap": 0,
+           "pad": "0 0 0 0",
+           "align": "CENTER/CENTER",
+           "size": "FILL/FIXED",
+           "c": [
+            {
+             "n": "line",
+             "t": "RECTANGLE",
+             "w": 41,
+             "h": 2,
+             "size": "FILL/FIXED",
+             "fill": [
+              "var:blue/600"
+             ]
+            }
+           ]
+          },
+          {
+           "n": "step",
+           "t": "FRAME",
+           "w": 36,
+           "h": 36,
+           "layout": "VERTICAL",
+           "gap": 8,
+           "pad": "0 0 0 0",
+           "align": "MIN/CENTER",
+           "size": "FIXED/HUG",
+           "c": [
+            {
+             "n": "circle",
+             "t": "FRAME",
+             "w": 36,
+             "h": 36,
+             "layout": "HORIZONTAL",
+             "gap": 0,
+             "pad": "0 0 0 0",
+             "align": "CENTER/CENTER",
+             "size": "FIXED/FIXED",
+             "r": 9999,
+             "fill": [
+              "var:blue/600"
+             ],
+             "c": [
+              {
+               "n": "4",
+               "t": "TEXT",
+               "w": 11,
+               "h": 19,
+               "size": "HUG/HUG",
+               "fill": [
+                "var:text/inverse"
+               ],
+               "text": "4",
+               "fs": 16,
+               "font": "Semi Bold"
+              }
+             ]
+            },
+            {
+             "n": "Prestation",
+             "t": "TEXT",
+             "w": 70,
+             "h": 21,
+             "hidden": true,
+             "size": "FIXED/FIXED",
+             "fill": [
+              "var:text/primary"
+             ],
+             "text": "Prestation",
+             "fs": 14,
+             "font": "Semi Bold"
+            }
+           ]
+          },
+          {
+           "n": "conn",
+           "t": "FRAME",
+           "w": 41,
+           "h": 36,
+           "layout": "HORIZONTAL",
+           "gap": 0,
+           "pad": "0 0 0 0",
+           "align": "CENTER/CENTER",
+           "size": "FILL/FIXED",
+           "c": [
+            {
+             "n": "line",
+             "t": "RECTANGLE",
+             "w": 41,
+             "h": 2,
+             "size": "FILL/FIXED",
+             "fill": [
+              "var:border/subtle"
+             ]
+            }
+           ]
+          },
+          {
+           "n": "step",
+           "t": "FRAME",
+           "w": 36,
+           "h": 36,
+           "layout": "VERTICAL",
+           "gap": 8,
+           "pad": "0 0 0 0",
+           "align": "MIN/CENTER",
+           "size": "FIXED/HUG",
+           "c": [
+            {
+             "n": "circle",
+             "t": "FRAME",
+             "w": 36,
+             "h": 36,
+             "layout": "HORIZONTAL",
+             "gap": 0,
+             "pad": "0 0 0 0",
+             "align": "CENTER/CENTER",
+             "size": "FIXED/FIXED",
+             "r": 9999,
+             "fill": [
+              "var:surface/base"
+             ],
+             "stroke": [
+              "var:border/subtle"
+             ],
+             "sw": 2,
+             "c": [
+              {
+               "n": "5",
+               "t": "TEXT",
+               "w": 11,
+               "h": 19,
+               "size": "HUG/HUG",
+               "fill": [
+                "var:text/muted"
+               ],
+               "text": "5",
+               "fs": 16,
+               "font": "Semi Bold"
+              }
+             ]
+            },
+            {
+             "n": "Publication",
+             "t": "TEXT",
+             "w": 74,
+             "h": 21,
+             "hidden": true,
+             "size": "FIXED/FIXED",
+             "fill": [
+              "var:text/muted"
+             ],
+             "text": "Publication",
+             "fs": 14,
+             "font": "Regular"
+            }
+           ]
+          }
+         ]
+        },
+        {
+         "n": "summary",
+         "t": "TEXT",
+         "w": 170,
+         "h": 21,
+         "size": "HUG/HUG",
+         "fill": [
+          "var:text/primary"
+         ],
+         "text": "Étape 4 sur 5 · Prestation",
+         "fs": 14,
+         "font": "Semi Bold"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "n": "Box — étape 4 Prestation",
+     "t": "FRAME",
+     "w": 343,
+     "h": 587,
+     "layout": "VERTICAL",
+     "gap": 20,
+     "pad": "24 16 24 16",
+     "align": "MIN/MIN",
+     "size": "FILL/HUG",
+     "r": 12,
+     "fill": [
+      "var:surface/base"
+     ],
+     "stroke": [
+      "var:border/subtle"
+     ],
+     "sw": 1,
+     "c": [
+      {
+       "n": "Textarea",
+       "t": "INSTANCE",
+       "w": 311,
+       "h": 173,
+       "layout": "VERTICAL",
+       "gap": 8,
+       "pad": "0 0 0 0",
+       "align": "MIN/MIN",
+       "size": "FILL/HUG",
+       "comp": "Textarea / state=default",
+       "c": [
+        {
+         "n": "Frame",
+         "t": "FRAME",
+         "w": 121,
+         "h": 21,
+         "layout": "HORIZONTAL",
+         "gap": 2,
+         "pad": "0 0 0 0",
+         "align": "MIN/CENTER",
+         "size": "HUG/HUG",
+         "c": [
+          {
+           "n": "label",
+           "t": "TEXT",
+           "w": 111,
+           "h": 21,
+           "size": "HUG/HUG",
+           "fill": [
+            "var:text/secondary"
+           ],
+           "text": "Ce qui est inclus",
+           "fs": 14,
+           "font": "Medium"
+          },
+          {
+           "n": "asterisk",
+           "t": "TEXT",
+           "w": 8,
+           "h": 21,
+           "size": "HUG/HUG",
+           "fill": [
+            "var:danger/500"
+           ],
+           "text": "*",
+           "fs": 14,
+           "font": "Medium"
+          }
+         ]
+        },
+        {
+         "n": "field",
+         "t": "FRAME",
+         "w": 311,
+         "h": 120,
+         "layout": "HORIZONTAL",
+         "gap": 8,
+         "pad": "12 16 12 16",
+         "align": "MIN/MIN",
+         "size": "FILL/FIXED",
+         "r": 10,
+         "fill": [
+          "var:surface/base"
+         ],
+         "stroke": [
+          "var:border/strong"
+         ],
+         "sw": 1,
+         "c": [
+          {
+           "n": "value",
+           "t": "TEXT",
+           "w": 279,
+           "h": 52,
+           "size": "FILL/HUG",
+           "fill": [
+            "var:text/muted"
+           ],
+           "text": "Ex: Design UI iOS/Android · 3 écrans · 1 révision · Fichiers sources",
+           "fs": 16,
+           "font": "Regular",
+           "style": "Body"
+          },
+          {
+           "n": "resize-grip",
+           "t": "FRAME",
+           "w": 12,
+           "h": 12,
+           "size": "FIXED/FIXED",
+           "c": [
+            {
+             "n": "Vector",
+             "t": "VECTOR",
+             "w": 7,
+             "h": 7,
+             "size": "FIXED/FIXED",
+             "stroke": [
+              "var:border/strong"
+             ],
+             "sw": 1.25
+            },
+            {
+             "n": "Vector",
+             "t": "VECTOR",
+             "w": 3,
+             "h": 3,
+             "size": "FIXED/FIXED",
+             "stroke": [
+              "var:border/strong"
+             ],
+             "sw": 1.25
+            }
+           ]
+          }
+         ]
+        },
+        {
+         "n": "helperRow",
+         "t": "FRAME",
+         "w": 311,
+         "h": 16,
+         "layout": "HORIZONTAL",
+         "gap": 0,
+         "pad": "0 0 0 0",
+         "align": "MIN/CENTER",
+         "size": "FILL/FIXED",
+         "c": [
+          {
+           "n": "helper",
+           "t": "TEXT",
+           "w": 149,
+           "h": 21,
+           "size": "HUG/HUG",
+           "fill": [
+            "var:text/muted"
+           ],
+           "text": "Une ligne par élément.",
+           "fs": 14,
+           "font": "Regular",
+           "style": "Body Small"
+          },
+          {
+           "n": "counter",
+           "t": "TEXT",
+           "w": 38,
+           "h": 17,
+           "hidden": true,
+           "size": "FIXED/FIXED",
+           "fill": [
+            "var:text/muted"
+           ],
+           "text": "0/500",
+           "fs": 12,
+           "font": "Medium",
+           "style": "Overline"
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "n": "field-mode",
+       "t": "FRAME",
+       "w": 311,
+       "h": 153,
+       "layout": "VERTICAL",
+       "gap": 8,
+       "pad": "0 0 0 0",
+       "align": "MIN/MIN",
+       "size": "FILL/HUG",
+       "c": [
+        {
+         "n": "Mode de prestation *",
+         "t": "TEXT",
+         "w": 162,
+         "h": 26,
+         "size": "HUG/HUG",
+         "fill": [
+          "var:text/primary"
+         ],
+         "text": "Mode de prestation *",
+         "fs": 16,
+         "font": "Medium"
+        },
+        {
+         "n": "segmented",
+         "t": "FRAME",
+         "w": 311,
+         "h": 48,
+         "layout": "HORIZONTAL",
+         "gap": 4,
+         "pad": "4 4 4 4",
+         "align": "MIN/MIN",
+         "size": "FILL/HUG",
+         "r": 10,
+         "fill": [
+          "var:surface/sunken"
+         ],
+         "c": [
+          {
+           "n": "Frame",
+           "t": "FRAME",
+           "w": 149,
+           "h": 40,
+           "layout": "HORIZONTAL",
+           "gap": 0,
+           "pad": "0 16 0 16",
+           "align": "CENTER/CENTER",
+           "size": "FIXED/FIXED",
+           "r": 8,
+           "fill": [
+            "var:surface/base"
+           ],
+           "c": [
+            {
+             "n": "À distance",
+             "t": "TEXT",
+             "w": 71,
+             "h": 21,
+             "size": "HUG/HUG",
+             "fill": [
+              "var:text/primary"
+             ],
+             "text": "À distance",
+             "fs": 14,
+             "font": "Medium"
+            }
+           ]
+          },
+          {
+           "n": "Frame",
+           "t": "FRAME",
+           "w": 149,
+           "h": 40,
+           "layout": "HORIZONTAL",
+           "gap": 0,
+           "pad": "0 16 0 16",
+           "align": "CENTER/CENTER",
+           "size": "FIXED/FIXED",
+           "r": 8,
+           "c": [
+            {
+             "n": "Sur site possible",
+             "t": "TEXT",
+             "w": 109,
+             "h": 21,
+             "size": "HUG/HUG",
+             "fill": [
+              "var:text/secondary"
+             ],
+             "text": "Sur site possible",
+             "fs": 14,
+             "font": "Regular",
+             "style": "Body Small"
+            }
+           ]
+          }
+         ]
+        },
+        {
+         "n": "La plupart des services sont à distance. « Sur site possible » si vous pouvez vous déplacer chez le client.",
+         "t": "TEXT",
+         "w": 311,
+         "h": 63,
+         "size": "FILL/HUG",
+         "fill": [
+          "var:text/secondary"
+         ],
+         "text": "La plupart des services sont à distance. « Sur site possible » si vous pouvez vous déplacer chez le client.",
+         "fs": 14,
+         "font": "Regular",
+         "style": "Body Small"
+        }
+       ]
+      },
+      {
+       "n": "Textarea",
+       "t": "INSTANCE",
+       "w": 311,
+       "h": 173,
+       "layout": "VERTICAL",
+       "gap": 8,
+       "pad": "0 0 0 0",
+       "align": "MIN/MIN",
+       "size": "FILL/HUG",
+       "comp": "Textarea / state=default",
+       "c": [
+        {
+         "n": "Frame",
+         "t": "FRAME",
+         "w": 229,
+         "h": 21,
+         "layout": "HORIZONTAL",
+         "gap": 2,
+         "pad": "0 0 0 0",
+         "align": "MIN/CENTER",
+         "size": "HUG/HUG",
+         "c": [
+          {
+           "n": "label",
+           "t": "TEXT",
+           "w": 229,
+           "h": 21,
+           "size": "HUG/HUG",
+           "fill": [
+            "var:text/secondary"
+           ],
+           "text": "Ce qu'il faut me fournir (optionnel)",
+           "fs": 14,
+           "font": "Medium"
+          },
+          {
+           "n": "asterisk",
+           "t": "TEXT",
+           "w": 8,
+           "h": 21,
+           "hidden": true,
+           "size": "FIXED/FIXED",
+           "fill": [
+            "var:danger/500"
+           ],
+           "text": "*",
+           "fs": 14,
+           "font": "Medium"
+          }
+         ]
+        },
+        {
+         "n": "field",
+         "t": "FRAME",
+         "w": 311,
+         "h": 120,
+         "layout": "HORIZONTAL",
+         "gap": 8,
+         "pad": "12 16 12 16",
+         "align": "MIN/MIN",
+         "size": "FILL/FIXED",
+         "r": 10,
+         "fill": [
+          "var:surface/base"
+         ],
+         "stroke": [
+          "var:border/strong"
+         ],
+         "sw": 1,
+         "c": [
+          {
+           "n": "value",
+           "t": "TEXT",
+           "w": 279,
+           "h": 78,
+           "size": "FILL/HUG",
+           "fill": [
+            "var:text/muted"
+           ],
+           "text": "Ex: votre logo, vos textes, vos couleurs de marque, des exemples que vous aimez",
+           "fs": 16,
+           "font": "Regular",
+           "style": "Body"
+          },
+          {
+           "n": "resize-grip",
+           "t": "FRAME",
+           "w": 12,
+           "h": 12,
+           "size": "FIXED/FIXED",
+           "c": [
+            {
+             "n": "Vector",
+             "t": "VECTOR",
+             "w": 7,
+             "h": 7,
+             "size": "FIXED/FIXED",
+             "stroke": [
+              "var:border/strong"
+             ],
+             "sw": 1.25
+            },
+            {
+             "n": "Vector",
+             "t": "VECTOR",
+             "w": 3,
+             "h": 3,
+             "size": "FIXED/FIXED",
+             "stroke": [
+              "var:border/strong"
+             ],
+             "sw": 1.25
+            }
+           ]
+          }
+         ]
+        },
+        {
+         "n": "helperRow",
+         "t": "FRAME",
+         "w": 311,
+         "h": 16,
+         "layout": "HORIZONTAL",
+         "gap": 0,
+         "pad": "0 0 0 0",
+         "align": "SPACE_BETWEEN/CENTER",
+         "size": "FILL/FIXED",
+         "c": [
+          {
+           "n": "helper",
+           "t": "TEXT",
+           "w": 196,
+           "h": 21,
+           "size": "HUG/HUG",
+           "fill": [
+            "var:text/muted"
+           ],
+           "text": "Ce que le client doit préparer.",
+           "fs": 14,
+           "font": "Regular",
+           "style": "Body Small"
+          },
+          {
+           "n": "counter",
+           "t": "TEXT",
+           "w": 38,
+           "h": 17,
+           "size": "HUG/HUG",
+           "fill": [
+            "var:text/muted"
+           ],
+           "text": "0/500",
+           "fs": 12,
+           "font": "Medium",
+           "style": "Overline"
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}
