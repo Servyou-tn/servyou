@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { localizedMetadata } from '@/lib/i18n/metadata'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { CircleCheckBig } from 'lucide-react'
@@ -10,7 +11,9 @@ import { createClient } from '@/lib/supabase/server'
 import { getLang } from '@/lib/i18n/server'
 import { t } from '@/lib/i18n'
 
-export const metadata: Metadata = { title: 'Boutique créée — Servyou' }
+export async function generateMetadata(): Promise<Metadata> {
+  return localizedMetadata('meta.shop_created')
+}
 
 const ROUTE = '/ma-boutique/creer/succes'
 

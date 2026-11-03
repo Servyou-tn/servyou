@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { localizedMetadata } from '@/lib/i18n/metadata'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { Briefcase, ChevronRight } from 'lucide-react'
@@ -30,7 +31,9 @@ import { isCancellable, lifecycleFor, nextSellerStatus, statusLabelKey, type Ord
 import { getLang } from '@/lib/i18n/server'
 import { t } from '@/lib/i18n'
 
-export const metadata: Metadata = { title: 'Détail de l\'engagement — Servyou' }
+export async function generateMetadata(): Promise<Metadata> {
+  return localizedMetadata('meta.engagement_detail')
+}
 
 const LIST = '/mes-engagements'
 

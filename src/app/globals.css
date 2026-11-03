@@ -168,6 +168,14 @@ body {
   font-family: var(--font-cairo), ui-sans-serif, system-ui, sans-serif;
 }
 
+/* The landing and the auth funnel set Manrope (`font-[family-name:var(--font-display)]`), which has no Arabic glyphs: in RTL its
+   Arabic fell back to a system font (walk 2026-11-02 #34, « مر حبا بعودتك »). Cairo goes FIRST: after Manrope, next/font's
+   « manrope Fallback » face is a local Arial that carries Arabic glyphs, so a Cairo placed after it is never reached. Arabic pages then
+   read in Cairo throughout, as the app pages do. RTL only, so LTR pages are untouched. */
+[dir="rtl"] .font-\[family-name\:var\(--font-display\)\] {
+  font-family: var(--font-cairo), var(--font-display), ui-sans-serif, system-ui, sans-serif;
+}
+
 /* ── Premium card treatment ──
    One source of truth for every floating card across the marche shell (product,
    service, order, mission cards). Blue-tinted (brand/blue-600 #1F5FE0, bound via

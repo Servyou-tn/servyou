@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { localizedMetadata } from '@/lib/i18n/metadata'
 import Link from 'next/link'
 import { ChevronRight } from 'lucide-react'
 import { redirect } from 'next/navigation'
@@ -14,7 +15,9 @@ import { t, type Lang } from '@/lib/i18n'
 import { CARD_SHADOW, FOCUS_RING } from '@/components/layout/styles'
 import { cn } from '@/lib/utils'
 
-export const metadata: Metadata = { title: "Modifier l'annonce — Servyou" }
+export async function generateMetadata(): Promise<Metadata> {
+  return localizedMetadata('meta.annonce_edit')
+}
 
 type Props = { params: Promise<{ id: string }> }
 

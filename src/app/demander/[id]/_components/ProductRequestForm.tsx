@@ -6,7 +6,7 @@ import { t, type Lang } from '@/lib/i18n'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { FOCUS_RING } from '@/components/layout/styles'
-import { isValidPhone } from '@/lib/phone'
+import { formatLocalPhoneInput, isValidPhone } from '@/lib/phone'
 import { GOVERNORATES } from '@/lib/tunisia-governorates'
 import { tndPrice } from '@/components/listings/listing-utils'
 import { ProductCoverImage } from '@/components/produits/ProductCoverImage'
@@ -95,7 +95,8 @@ export function ProductRequestForm({
   const [quartier, setQuartier] = React.useState('')
   const [ville, setVille] = React.useState('')
   const [governorate, setGovernorate] = React.useState('')
-  const [phone, setPhone] = React.useState(initialPhone)
+  // Shown grouped « 55 123 456 » (display only); submitted as digits.
+  const [phone, setPhone] = React.useState(() => formatLocalPhoneInput(initialPhone))
   const [note, setNote] = React.useState('')
   const [quantity, setQuantity] = React.useState(1)
   const [errors, setErrors] = React.useState<Errors>({})
@@ -143,7 +144,7 @@ export function ProductRequestForm({
       quartier,
       ville,
       governorate,
-      deliveryPhone: phone,
+      deliveryPhone: phone.replace(/\s/g, ''),
       quantity,
       note,
     }, turnstileToken)
@@ -173,7 +174,7 @@ export function ProductRequestForm({
             <ProductCoverImage src={imageUrl} alt={title} sizes="64px" />
           </div>
           <div className="flex min-w-0 flex-col gap-0.5">
-            <p className="truncate text-[15px] font-semibold leading-[21px] text-brand-blue-800">
+            <p dir="auto" className="truncate text-[15px] font-semibold leading-[21px] text-brand-blue-800 rtl:max-w-full rtl:self-start">
               {title}
             </p>
             <p className="truncate text-body-sm leading-[21px] text-text-muted">{shopName}</p>
@@ -182,39 +183,27 @@ export function ProductRequestForm({
 
         <div className="h-px bg-border-subtle" aria-hidden="true" />
 
-        {/* ⚑ `dir="ltr"` on every value span — confirmed reversed in the AR verification pass:
-            "120 TND" rendered "TND 120" (a digit run followed by Latin letters swaps order under
-            RTL, UAX#9 W7/N-rules — the same bug class as D1's gallery counter, just between a
-            number and a currency code rather than two numbers). `tndPrice()` is locale-blind by
-            design (docs/follow-ups.md — this confirms that gap is an actual bidi defect, not only
-            a notation choice); not fixed at the source, which five other surfaces also call — a
-            cross-cutting change out of scope here. Fixed locally at every value this PR renders,
-            same treatment as ProductRecap in succes/page.tsx. */}
+        {/* Prices: tndPrice(value, lang) inside a <bdi> (walk #25) — « 120 TND » LTR in FR, « 120 د.ت » RTL in AR (the seller dashboard's
+            notation and reading order), isolated so the digits never swap with the label beside them. */}
         <div className="flex flex-col gap-2">
           <div className="flex items-baseline justify-between gap-2">
             <span className="text-body-sm text-text-secondary">
               {t('demander.summary.product', lang, { n: String(quantity) })}
             </span>
-            <span dir="ltr" className="text-body-sm font-medium text-text-primary">
-              {tndPrice(subtotal)}
-            </span>
+            <bdi className="text-body-sm font-medium text-text-primary">{tndPrice(subtotal, lang)}</bdi>
           </div>
           <div className="flex items-baseline justify-between gap-2">
             <span className="text-body-sm text-text-secondary">
               {t('demander.summary.delivery', lang)}
             </span>
-            <span dir="ltr" className="text-body-sm font-medium text-text-primary">
-              {tndPrice(deliveryFee)}
-            </span>
+            <bdi className="text-body-sm font-medium text-text-primary">{tndPrice(deliveryFee, lang)}</bdi>
           </div>
           <div className="h-px bg-border-subtle" aria-hidden="true" />
           <div className="flex items-baseline justify-between gap-2">
             <span className="text-base font-semibold text-text-primary">
               {t('demander.summary.total', lang)}
             </span>
-            <span dir="ltr" className="text-base font-semibold text-brand-blue-800">
-              {tndPrice(total)}
-            </span>
+            <bdi className="text-base font-semibold text-brand-blue-800">{tndPrice(total, lang)}</bdi>
           </div>
         </div>
 
@@ -265,10 +254,11 @@ export function ProductRequestForm({
             dir="ltr"
             maxLength={PHONE_INPUT_MAX}
             value={phone}
-            onChange={(e) => setPhone(e.target.value)}
+            onChange={(e) => setPhone(formatLocalPhoneInput(e.target.value))}
             iconStart={
               <span className="flex shrink-0 items-center gap-2 text-base text-text-secondary">
-                +216
+                {/* LTR-isolated: in AR « +216 » read « 216+ ». */}
+                <bdi dir="ltr">+216</bdi>
                 <span aria-hidden="true" className="h-5 w-px bg-border-subtle" />
               </span>
             }

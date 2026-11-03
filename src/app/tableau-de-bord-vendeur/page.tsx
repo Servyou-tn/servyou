@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { localizedMetadata } from '@/lib/i18n/metadata'
 import Link from 'next/link'
 import {
   Inbox,
@@ -30,7 +31,9 @@ import { StatTile } from './_components/StatTile'
 import { Panel, PanelEmpty } from './_components/Panel'
 import { AdvanceOrderButton } from './_components/AdvanceOrderButton'
 
-export const metadata: Metadata = { title: 'Tableau de bord — Servyou' }
+export async function generateMetadata(): Promise<Metadata> {
+  return localizedMetadata('meta.dashboard_seller')
+}
 
 const ROUTE = '/tableau-de-bord-vendeur'
 

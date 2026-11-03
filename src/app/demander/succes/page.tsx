@@ -11,7 +11,8 @@ import { getOrderDetail, type OrderDetail } from '@/lib/marche/order-detail'
 import { settle } from '@/lib/supabase/query-error'
 import { getLang } from '@/lib/i18n/server'
 import { t, type Lang } from '@/lib/i18n'
-import { tndPrice } from '@/components/listings/listing-utils'
+import { tndCurrency, tndPrice, tndPriceGrouped } from '@/components/listings/listing-utils'
+import { formatPhoneDisplay } from '@/lib/phone'
 
 // E2 — « Demande envoyée ». Measured against Figma 690:56989 (1440) and 691:57255 (375).
 //
@@ -45,12 +46,12 @@ function Card({ children, className }: { children: React.ReactNode; className?: 
   )
 }
 
-// Stored canonically (+216XXXXXXXX); 690:57165 reads it back as "+216 55 123 456". Anything that
-// is not the canonical shape is shown untouched rather than mangled.
-function formatPhone(raw: string): string {
-  const m = /^\+216(\d{2})(\d{3})(\d{3})$/.exec(raw)
-  return m ? `+216 ${m[1]} ${m[2]} ${m[3]}` : raw
-}
+// Arabic only: a value dropped into a translated sentence is isolated so it cannot reorder with the Arabic around it (walk #26 / E2 Q1:
+// the phone read « .456 123 55 216+ »). LRI…PDI forces a phone left-to-right; FSI…PDI lets a name take its own direction. FR text is
+// returned untouched.
+const isolateLtr = (value: string, lang: Lang) => (lang === 'ar' ? `\u2066${value}\u2069` : value)
+const isolateAuto = (value: string, lang: Lang) => (lang === 'ar' ? `\u2068${value}\u2069` : value)
+const categoryName = (order: OrderDetail, lang: Lang) => (lang === 'ar' && order.item.categoryAr ? order.item.categoryAr : order.item.category)
 
 // ⚑ `valueDir` is OPT-IN per call site, not a blanket rule on the component. A phone number or a
 // street address is digits/Latin content that must read as one coherent LTR unit regardless of
@@ -58,7 +59,7 @@ function formatPhone(raw: string): string {
 // "456 123 20 216+", the same class of bug as D1's gallery counter). A timeframe value like
 // "3 semaines"/"٣ أسابيع" is genuine Arabic-appropriate prose and must NOT be forced LTR — doing
 // that unconditionally inside MetaRow would fix one call site and break another.
-function MetaRow({ label, value, valueDir }: { label: string; value: string; valueDir?: 'ltr' }) {
+function MetaRow({ label, value, valueDir }: { label: string; value: string; valueDir?: 'ltr' | 'auto' }) {
   return (
     <p className="flex flex-wrap items-start gap-1 text-body-sm leading-[21px]">
       <span className="text-text-muted">{label}</span>
@@ -72,7 +73,7 @@ function MetaRow({ label, value, valueDir }: { label: string; value: string; val
 // The buyer's own recap — description plus whichever optional fields they filled. Both meta rows
 // are conditional: they are unfolded from buyer_note and are null when the buyer skipped them.
 function Recap({ order, lang }: { order: OrderDetail; lang: Lang }) {
-  const price = order.item.price != null ? `${order.item.price.toLocaleString('fr-FR')} TND` : null
+  const price = order.item.price != null ? tndPriceGrouped(order.item.price, lang) : null
 
   return (
     <Card>
@@ -84,13 +85,13 @@ function Recap({ order, lang }: { order: OrderDetail; lang: Lang }) {
         <div className="flex min-w-0 flex-col gap-2">
           {order.item.title && (
             <p className="text-[15px] font-semibold leading-[22px] text-brand-blue-800">
-              {order.item.title}
+              <bdi>{order.item.title}</bdi>
             </p>
           )}
           {order.item.category && (
             <ul className="flex flex-wrap gap-2">
               <li className="rounded-md bg-brand-blue-50 px-2 py-1 text-caption font-medium text-brand-blue-700">
-                {order.item.category}
+                {categoryName(order, lang)}
               </li>
             </ul>
           )}
@@ -98,7 +99,9 @@ function Recap({ order, lang }: { order: OrderDetail; lang: Lang }) {
         {price && (
           <div className="flex shrink-0 flex-col items-end gap-1">
             <p className="text-caption leading-4 text-text-muted">{t('serviceDetail.priceFrom', lang)}</p>
-            <p className="text-[15px] font-semibold leading-[22px] text-brand-blue-800">{price}</p>
+            <p className="text-[15px] font-semibold leading-[22px] text-brand-blue-800">
+              <bdi>{price}</bdi>
+            </p>
           </div>
         )}
       </div>
@@ -109,7 +112,7 @@ function Recap({ order, lang }: { order: OrderDetail; lang: Lang }) {
         <Avatar size="md" initials={getInitials(order.seller.name)} />
         <div className="flex min-w-0 flex-col gap-0.5">
           <p className="truncate text-body-sm font-semibold leading-5 text-text-primary">
-            {order.seller.name}
+            <bdi>{order.seller.name}</bdi>
           </p>
           {order.seller.city && (
             <p className="text-[13px] leading-[18px] text-text-muted">{order.seller.city}</p>
@@ -121,15 +124,15 @@ function Recap({ order, lang }: { order: OrderDetail; lang: Lang }) {
 
       <div className="flex flex-col gap-2">
         {order.serviceDescription && (
-          <p className="whitespace-pre-line text-body-sm leading-[21px] text-text-secondary">
+          <p dir="auto" className="whitespace-pre-line text-body-sm leading-[21px] text-text-secondary">
             {order.serviceDescription}
           </p>
         )}
         {order.serviceTimeframe && (
-          <MetaRow label={t('demander.recap.delai', lang)} value={order.serviceTimeframe} />
+          <MetaRow label={t('demander.recap.delai', lang)} value={order.serviceTimeframe} valueDir="auto" />
         )}
         {order.serviceBudget && (
-          <MetaRow label={t('demander.recap.budget', lang)} value={`${order.serviceBudget} TND`} />
+          <MetaRow label={t('demander.recap.budget', lang)} value={`${order.serviceBudget} ${tndCurrency(lang)}`} valueDir="auto" />
         )}
       </div>
     </Card>
@@ -168,13 +171,13 @@ function ProductRecap({ order, lang }: { order: OrderDetail; lang: Lang }) {
         <div className="flex min-w-0 flex-col gap-2">
           {order.item.title && (
             <p className="text-[15px] font-semibold leading-[22px] text-brand-blue-800">
-              {order.item.title}
+              <bdi>{order.item.title}</bdi>
             </p>
           )}
           {order.item.category && (
             <ul className="flex flex-wrap gap-2">
               <li className="rounded-md bg-brand-blue-50 px-2 py-1 text-caption font-medium text-brand-blue-700">
-                {order.item.category}
+                {categoryName(order, lang)}
               </li>
             </ul>
           )}
@@ -187,7 +190,7 @@ function ProductRecap({ order, lang }: { order: OrderDetail; lang: Lang }) {
         <Avatar size="md" initials={getInitials(order.seller.name)} />
         <div className="flex min-w-0 flex-col gap-0.5">
           <p className="truncate text-body-sm font-semibold leading-5 text-text-primary">
-            {order.seller.name}
+            <bdi>{order.seller.name}</bdi>
           </p>
           {order.seller.city && (
             <p className="text-[13px] leading-[18px] text-text-muted">{order.seller.city}</p>
@@ -197,33 +200,22 @@ function ProductRecap({ order, lang }: { order: OrderDetail; lang: Lang }) {
 
       <div className="h-px bg-border-subtle" aria-hidden="true" />
 
-      {/* ⚑ `dir="ltr"` on every value span below — found reversed in AR verification: "120 TND"
-          rendered "TND 120" (a digit run followed by a space then Latin letters swaps order under
-          RTL — UAX#9 W7/N-rules; the SAME class of bug as D1's gallery counter, just between a
-          number and a currency code instead of between two numbers). `tndPrice()` is locale-blind
-          by design (docs/follow-ups.md — "tndPrice is locale-blind, ar.ts carries two currency
-          notations") and this confirms that gap is a genuine bidi defect, not only a notation
-          choice; not fixed at the source here — that's a cross-cutting change to a function five
-          other surfaces call, out of scope for this PR. Fixed locally at every value THIS PR
-          renders, same as the counter fix. */}
+      {/* Prices: tndPrice(value, lang) inside a <bdi> (walk #25) — « 120 TND » LTR in FR, « 120 د.ت » RTL in AR (the seller dashboard's
+          notation and reading order), isolated so the digits never swap with the label beside them. */}
       {subtotal != null && (
         <div className="flex flex-col gap-2">
           <div className="flex items-baseline justify-between gap-2">
             <span className="text-body-sm text-text-secondary">
               {t('demander.summary.product', lang, { n: String(order.quantity) })}
             </span>
-            <span dir="ltr" className="text-body-sm font-medium text-text-primary">
-              {tndPrice(subtotal)}
-            </span>
+            <bdi className="text-body-sm font-medium text-text-primary">{tndPrice(subtotal, lang)}</bdi>
           </div>
           {deliveryFee != null && (
             <div className="flex items-baseline justify-between gap-2">
               <span className="text-body-sm text-text-secondary">
                 {t('demander.summary.delivery', lang)}
               </span>
-              <span dir="ltr" className="text-body-sm font-medium text-text-primary">
-                {tndPrice(deliveryFee)}
-              </span>
+              <bdi className="text-body-sm font-medium text-text-primary">{tndPrice(deliveryFee, lang)}</bdi>
             </div>
           )}
           {total != null && (
@@ -233,9 +225,7 @@ function ProductRecap({ order, lang }: { order: OrderDetail; lang: Lang }) {
                 <span className="text-base font-semibold text-text-primary">
                   {t('demander.summary.total', lang)}
                 </span>
-                <span dir="ltr" className="text-base font-semibold text-brand-blue-800">
-                  {tndPrice(total)}
-                </span>
+                <bdi className="text-base font-semibold text-brand-blue-800">{tndPrice(total, lang)}</bdi>
               </div>
             </>
           )}
@@ -245,7 +235,7 @@ function ProductRecap({ order, lang }: { order: OrderDetail; lang: Lang }) {
       <div className="h-px bg-border-subtle" aria-hidden="true" />
 
       <div className="flex flex-col gap-2">
-        {order.deliveryName && <MetaRow label={t('demander.field.fullName', lang)} value={order.deliveryName} />}
+        {order.deliveryName && <MetaRow label={t('demander.field.fullName', lang)} value={order.deliveryName} valueDir="auto" />}
         {/* Address AND phone: also found reversed in AR ("+216 20 123 456" → "456 123 20 216+",
             a leading house number migrating to the end of the joined address) — same fix. The
             governorate segment is always the canonical Latin value regardless of UI language
@@ -259,7 +249,7 @@ function ProductRecap({ order, lang }: { order: OrderDetail; lang: Lang }) {
         {order.deliveryPhone && (
           <MetaRow
             label={t('demander.field.phone', lang)}
-            value={formatPhone(order.deliveryPhone)}
+            value={formatPhoneDisplay(order.deliveryPhone)}
             valueDir="ltr"
           />
         )}
@@ -316,11 +306,11 @@ export default async function DemandeSuccesPage({ searchParams }: Props) {
               </h1>
               <p className="text-center text-[15px] leading-6 text-text-muted">
                 {product
-                  ? t('succes.subtext_product', lang, { shop: product.seller.name })
+                  ? t('succes.subtext_product', lang, { shop: isolateAuto(product.seller.name, lang) })
                   : service && service.deliveryPhone
                     ? t('succes.subtext', lang, {
-                        name: service.seller.name,
-                        phone: formatPhone(service.deliveryPhone),
+                        name: isolateAuto(service.seller.name, lang),
+                        phone: isolateLtr(formatPhoneDisplay(service.deliveryPhone), lang),
                       })
                     : t('succes.subtext_generic', lang)}
               </p>

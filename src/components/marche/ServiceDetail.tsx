@@ -204,7 +204,7 @@ export function ServiceDetail({
           </>
         )}
         <ChevronRight className="hidden h-3.5 w-3.5 shrink-0 rtl:rotate-180 lg:block" aria-hidden="true" />
-        <span className="hidden text-text-secondary lg:inline">{service.title}</span>
+        <span className="hidden text-text-secondary lg:inline"><bdi>{service.title}</bdi></span>
       </nav>
 
       {/* Columns are minmax(0,750px) + a FIXED 354, not a fixed 750 + 1fr. Figma 666:55479 splits
@@ -217,7 +217,7 @@ export function ServiceDetail({
         {/* titleBlock — 28/36 on desktop, 22/28 on mobile, brand-blue-800. */}
         <div className="order-1 flex flex-col gap-3 lg:order-none lg:col-start-1 lg:row-start-1">
           <h1 className="text-[22px] font-semibold leading-7 text-brand-blue-800 lg:text-[28px] lg:leading-9">
-            {service.title}
+            <bdi>{service.title}</bdi>
           </h1>
           {service.tags.length > 0 && (
             <ul className="flex flex-wrap gap-2">

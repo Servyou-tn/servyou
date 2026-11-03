@@ -1,12 +1,11 @@
 import type { Metadata } from 'next'
+import { localizedMetadata } from '@/lib/i18n/metadata'
 import { AppShell } from '@/components/shell/AppShell'
 import { DevenirFreelanceContent } from '@/components/devenir/DevenirFreelanceContent'
 import { getShellUser } from '@/lib/marche/shell-user'
 
-export const metadata: Metadata = {
-  title: 'Devenir freelance — Servyou',
-  description:
-    'Travaillez en freelance sur Servyou. Listez vos services, trouvez des missions, développez votre activité. Sans commission.',
+export async function generateMetadata(): Promise<Metadata> {
+  return localizedMetadata('meta.become_freelancer', {}, 'meta.desc.become_freelancer')
 }
 
 // Moved from /devenir-freelance (unchanged content) — the shared role-choice entry now

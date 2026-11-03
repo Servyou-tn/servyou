@@ -69,7 +69,7 @@ export function ItemPanel({ order, lang }: { order: OrderDetail; lang: Lang }) {
         </div>
         <div className="flex min-w-0 flex-1 flex-col gap-1">
           <p className="text-body font-semibold text-text-primary">
-            {order.item.title ?? t(isProduct ? 'mesCommandes.untitled.product' : 'mesCommandes.untitled', lang)}
+            <bdi>{order.item.title ?? t(isProduct ? 'mesCommandes.untitled.product' : 'mesCommandes.untitled', lang)}</bdi>
           </p>
           {isProduct ? (
             <>
@@ -196,7 +196,7 @@ export function DeliveryPanel({ order, lang }: { order: OrderDetail; lang: Lang 
     <Panel title={t('seller.orderDetail.delivery', lang)}>
       <dl className="flex flex-col gap-4">
         {order.deliveryName ? <Field label={t('buyerOrder.recipient', lang)}>{order.deliveryName}</Field> : null}
-        {address ? <Field label={t('buyerOrder.address', lang)}>{address}</Field> : null}
+        {address ? <Field label={t('buyerOrder.address', lang)}><bdi>{address}</bdi></Field> : null}
         {city ? <Field label={t('buyerOrder.city', lang)}>{city}</Field> : null}
       </dl>
       {order.buyerNote ? (

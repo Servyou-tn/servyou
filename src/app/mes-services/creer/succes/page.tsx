@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { localizedMetadata } from '@/lib/i18n/metadata'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { z } from 'zod'
@@ -11,7 +12,9 @@ import { getLang } from '@/lib/i18n/server'
 import { t } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
 
-export const metadata: Metadata = { title: 'Service publié — Servyou' }
+export async function generateMetadata(): Promise<Metadata> {
+  return localizedMetadata('meta.service_published')
+}
 
 const ROUTE = '/mes-services/creer/succes'
 

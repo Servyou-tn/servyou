@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { localizedMetadata } from '@/lib/i18n/metadata'
 import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
 import { ArrowLeft } from 'lucide-react'
@@ -17,7 +18,9 @@ import { getLang } from '@/lib/i18n/server'
 import { t } from '@/lib/i18n'
 import { ProposalForm } from './_components/ProposalForm'
 
-export const metadata: Metadata = { title: 'Envoyer ma proposition — Servyou' }
+export async function generateMetadata(): Promise<Metadata> {
+  return localizedMetadata('meta.proposal_send')
+}
 
 // H12 « Envoyer ma proposition » — Figma 350:12007 (docs/design/h9-h13-measurements.md §3). Same skeleton as H10:
 // back-link → full-width header → two columns, the form on the left and the sticky recap + client on the right.

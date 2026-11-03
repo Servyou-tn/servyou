@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { localizedMetadata } from '@/lib/i18n/metadata'
 import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
 import { ArrowLeft, Clock, Globe, MapPin, ShieldAlert } from 'lucide-react'
@@ -19,7 +20,9 @@ import { getMissionDetail, type MissionViewer } from '@/lib/marche/mission-detai
 import { relativeTimeLabel } from '@/lib/relative-time'
 import { MissionCta } from './_components/MissionCta'
 
-export const metadata: Metadata = { title: 'Mission — Servyou' }
+export async function generateMetadata(): Promise<Metadata> {
+  return localizedMetadata('meta.mission')
+}
 
 // H10 « Mission detail » — Figma 322:11550, measured in docs/design/h9-h13-measurements.md §2 (read side; the
 // proposal form H12 and its result H13 are PR-2). Layout: back-link → full-width header → two columns, left

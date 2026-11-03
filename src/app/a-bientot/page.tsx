@@ -1,10 +1,13 @@
 import type { Metadata } from 'next'
+import { localizedMetadata } from '@/lib/i18n/metadata'
 import { CheckCircle2 } from 'lucide-react'
 import { HomeLink, SystemStateScreen } from '@/components/system/SystemStateScreen'
 import { getLang } from '@/lib/i18n/server'
 import { t } from '@/lib/i18n'
 
-export const metadata: Metadata = { title: 'À bientôt — Servyou', robots: { index: false } }
+export async function generateMetadata(): Promise<Metadata> {
+  return localizedMetadata('meta.goodbye', { robots: { index: false } })
+}
 
 // K1 — where /auth/signout lands (Figma 731:64370 / 734:64501). Shell-less and anonymous: the session
 // is already gone, so it is excluded from the middleware matcher like the other signed-out pages.

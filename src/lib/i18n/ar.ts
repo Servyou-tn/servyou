@@ -26,7 +26,8 @@
  * - Modern Standard Arabic (الفصحى), not Tunisian dialect.
  * - Western numerals (1, 2, 3), the commercial norm in Tunisia.
  * - {placeholder} tokens are preserved exactly as in fr.ts.
- * - Currency code mirrors fr.ts: fr uses "TND", so ar keeps "TND".
+ * - Currency: « د.ت » in every Arabic string, the seller dashboard's notation (founder, 2026-11-03, walk #25 / #30) — fr keeps
+ *   « TND ». Prices built in code go through tndPrice(value, lang) / tndCurrency(lang) and render inside a <bdi>.
  * - signup.lang_fr / signup.lang_ar stay in their native script
  *   (a language label is written in its own language).
  */
@@ -172,7 +173,7 @@ export const ar: Record<string, string> = {
   // ─── Landing page (marketing) — MSA, FLAGGED for fluent review (PR-LP1) ──────
   'landing.hero.headline':      "بيت حقيقي للاقتصاد التونسي",
   'landing.hero.h1_chez':       "في ",
-  'landing.hero.h1_brand':      "سيرفيو",
+  'landing.hero.h1_brand':      "Servyou",
   'landing.hero.h1_middle':     "، نعمل من أجلك، ومن أجل عملائك، ومخزونك، ومدفوعاتك — ",
   'landing.hero.h1_accent':     "وكل احتياجاتك.",
   'landing.hero.subheadline':   "منصة واحدة لإدارة تجارتك في العصر الرقمي. متاجر، مستقلون، إدارة، عمليات — مجتمعة في مساحة موحدة.",
@@ -412,14 +413,14 @@ export const ar: Record<string, string> = {
   // ─── Signup — Step 2 form (Step 2: /inscription/[role]) ─────────────────────
   'signup.form.titles.consumer':   "أنشئ حسابك على Servyou.",
   'signup.form.titles.shopOwner':  "أنشئ حسابك التجاري.",
-  'signup.form.titles.freelancer': "أنشئ حسابك كعامل حر.",
+  'signup.form.titles.freelancer': "أنشئ حسابك كمستقل.",
   'signup.form.subtitle':          "مجانا. 30 ثانية. بدون بطاقة مصرفية.",
   'signup.form.googleButton':      "المتابعة باستخدام Google",
   'signup.form.divider':           "أو",
   'signup.form.fields.fullName.label':         "الاسم الكامل",
   'signup.form.fields.fullName.placeholder':   "أحمد بن علي",
   'signup.form.fields.email.label':            "البريد الإلكتروني",
-  'signup.form.fields.email.placeholder':      "vous@exemple.com",
+  'signup.form.fields.email.placeholder':      "name@example.com",
   'signup.form.fields.password.label':         "كلمة المرور",
   'signup.form.fields.password.helper':        "8 أحرف على الأقل، مع حرف واحد ورقم واحد على الأقل",
   'signup.form.fields.password.toggleShow':    "إظهار كلمة المرور",
@@ -462,7 +463,7 @@ export const ar: Record<string, string> = {
   'signin.title':    "مرحبا بعودتك.",
   'signin.subtitle': "سجل الدخول إلى حسابك على Servyou.",
   'signin.fields.email.label':           "البريد الإلكتروني",
-  'signin.fields.email.placeholder':     "vous@exemple.com",
+  'signin.fields.email.placeholder':     "name@example.com",
   'signin.fields.password.label':        "كلمة المرور",
   'signin.fields.password.showPassword': "إظهار كلمة المرور",
   'signin.fields.password.hidePassword': "إخفاء كلمة المرور",
@@ -521,7 +522,7 @@ export const ar: Record<string, string> = {
   'verifyEmail.state3.subtitle': "انتهت صلاحية رابط التحقق هذا أو تم استخدامه بالفعل.",
   'verifyEmail.state3.body':     "لا تقلقوا — يمكننا إرسال رابط جديد. أدخلوا بريدكم أدناه.",
   'verifyEmail.state3.emailLabel':       "البريد الإلكتروني",
-  'verifyEmail.state3.emailPlaceholder': "vous@exemple.com",
+  'verifyEmail.state3.emailPlaceholder': "name@example.com",
   'verifyEmail.state3.resend':       "إرسال رابط جديد",
   'verifyEmail.state3.backToSignin': "العودة إلى تسجيل الدخول",
 
@@ -533,7 +534,7 @@ export const ar: Record<string, string> = {
   'forgotPassword.title':    "نسيتم كلمة المرور ؟",
   'forgotPassword.subtitle': "أدخلوا بريدكم الإلكتروني وسنرسل لكم رابطا لإعادة تعيين كلمة المرور.",
   'forgotPassword.fields.email.label':       "البريد الإلكتروني",
-  'forgotPassword.fields.email.placeholder': "vous@exemple.com",
+  'forgotPassword.fields.email.placeholder': "name@example.com",
   'forgotPassword.submit':     "إرسال الرابط",
   'forgotPassword.submitting': "جار الإرسال…",
   'forgotPassword.errors.generic': "حدث خطأ ما. يرجى المحاولة مرة أخرى.",
@@ -712,7 +713,7 @@ export const ar: Record<string, string> = {
 
   // ─── D4 — Public freelancer profile (/freelance/[id]) ─────────────────────────
   'freelance.public.member_since':      "عضو منذ {date}",
-  'freelance.public.new_badge':         "جديد في سيرفيو",
+  'freelance.public.new_badge':         "جديد في Servyou",
   'freelance.public.no_reviews_yet':    "لا توجد تقييمات بعد",
   'freelance.public.projects_delivered':"مشاريع منجزة",
   'freelance.public.years_value':       "{years} سنوات",
@@ -724,7 +725,7 @@ export const ar: Record<string, string> = {
   'freelance.public.nav_formation':     "التكوين",
   'freelance.public.nav_context':       "بيئة العمل",
   'freelance.public.whatsapp_cta':      "تواصل عبر واتساب",
-  'freelance.public.whatsapp_message':  "مرحبا {name}، أتواصل معك من ملفك الشخصي على سيرفيو.",
+  'freelance.public.whatsapp_message':  "مرحبا {name}، أتواصل معك من ملفك الشخصي على Servyou.",
   'freelance.public.phone_reveal_error':"تعذر جلب الرقم. أعد المحاولة.",
   'freelance.public.no_phone':          "لا يوجد رقم متاح حاليا.",
   'freelance.public.request_service_cta': "اطلب خدمة",
@@ -774,7 +775,7 @@ export const ar: Record<string, string> = {
   'product.empty_cta':      "أضف منتجك الأول",
   'product.new_title':      "إضافة منتج",
   'product.edit_title':     "تعديل المنتج",
-  'product.field_price':    "السعر (TND)",
+  'product.field_price':    "السعر (د.ت)",
   'product.field_stock_manage': "إدارة المخزون",
   'product.field_stock_count':  "الكمية في المخزون",
   'product.stock_always_hint':  "متوفر دائما (المخزون غير مدار)",
@@ -840,14 +841,9 @@ export const ar: Record<string, string> = {
   // ⚑ The placeholders sit where Arabic wants them, which is NOT where French puts them — this is
   // exactly why these two strings are parameterised rather than assembled in the component.
   //
-  // ⚑ "TND", NOT "د.ت", per the convention stated at the top of this file: "Currency code mirrors
-  // fr.ts: fr uses 'TND', so ar keeps 'TND'." These two lines sit DIRECTLY under the 28px price,
-  // which renders through `tndPrice` — a locale-blind formatter that emits Latin "TND" in both
-  // languages. Writing د.ت here produced three adjacent lines in two notations on the Arabic page.
-  // (This file does carry د.ت in 22 other places, G6's own currency suffix among them — that
-  // inconsistency predates D1 and is logged in docs/follow-ups.md rather than half-fixed here.)
-  'product.detail.delivery_fee':    "+ {fee} TND للتوصيل",
-  'product.detail.total_cod':       "المجموع: {total} TND عند التسليم",
+  // « د.ت », as the 28px price above them now is (tndPrice(value, 'ar')) — one notation on the page (walk #25).
+  'product.detail.delivery_fee':    "+ {fee} د.ت للتوصيل",
+  'product.detail.total_cod':       "المجموع: {total} د.ت عند التسليم",
   'product.detail.cod_note':        "الدفع عند التسليم. لا حاجة لبطاقة بنكية.",
   'product.detail.out_of_stock':    "نفد المخزون",
   'product.detail.cta_sold_out':    "المنتج نفد",
@@ -1119,7 +1115,7 @@ export const ar: Record<string, string> = {
   'demander.submit.product':       "تأكيد الطلب",
   'demander.submit.service':       "إرسال الطلب",
   'demander.submit.loading':       "جار الإرسال…",
-  'demander.toast.success':        "تم إرسال طلبك بنجاح. يمكنك متابعته في طلباتي.",
+  'demander.toast.success':        "تم إرسال طلبك بنجاح. يمكنك متابعته في مشترياتي.",
   'demander.toast.viewOrder':      "عرض الطلب",
   'demander.toast.error':          "يرجى تصحيح أخطاء النموذج.",
   'demander.notFound':             "الطلب غير موجود",
@@ -1151,7 +1147,7 @@ export const ar: Record<string, string> = {
   'succes.steps.product.1':        "يقوم البائع بتجهيز طلبك.",
   'succes.steps.product.2':        "يتم تسليمها لعامل التوصيل للشحن.",
   'succes.steps.product.3':        "تدفع عند الاستلام، عند استلام الطرد.",
-  'succes.cta.orders':             "عرض طلباتي",
+  'succes.cta.orders':             "عرض مشترياتي",
   'succes.cta.marketplace':        "العودة إلى السوق",
 
   // /mon-compte — consumer account (profile edit + password change + delete request)
@@ -1624,7 +1620,7 @@ export const ar: Record<string, string> = {
 
   // ─── Orders — my orders + confirmation ───────────────────────────────────────
   // ─── E3 — /mes-commandes (Figma 709:59662 / 710:59945)، تبويب الخدمات ─────────
-  'mesCommandes.title':            "طلباتي",
+  'mesCommandes.title':            "مشترياتي",
   'mesCommandes.tab.produits':     "منتجات",
   'mesCommandes.tab.services':     "خدمات",
   'mesCommandes.tab.soon':         "قريبا",
@@ -1692,7 +1688,7 @@ export const ar: Record<string, string> = {
   'orders.seller_no_phone':    "لم يُضف البائع رقم واتساب بعد. تم إشعاره بطلبك وسيتواصل معك في أقرب وقت ممكن.",
   // Order detail page (/mes-commandes/[id])
   'orders.detail_not_found_desc':    "هذا الطلب غير موجود أو لا يخصك.",
-  'orders.detail_back':              "العودة إلى طلباتي",
+  'orders.detail_back':              "العودة إلى مشترياتي",
   'orders.detail_order_label':       "طلب",
   'orders.detail_quantity':          "الكمية",
   'orders.detail_tracking_title':    "تتبع طلبك",
@@ -2285,7 +2281,7 @@ export const ar: Record<string, string> = {
   // Service create / edit
   'freelance.service_new_title':  "إضافة خدمة",
   'freelance.service_edit_title': "تعديل الخدمة",
-  'freelance.field_price_from':   "السعر الابتدائي (TND)",
+  'freelance.field_price_from':   "السعر الابتدائي (د.ت)",
   'freelance.field_delivery_time':"مدة التسليم",
   'freelance.delivery_ph':        "مثال: 2 إلى 5 أيام",
   'freelance.service_add_btn':    "إضافة الخدمة",
@@ -2591,7 +2587,7 @@ export const ar: Record<string, string> = {
   'missions.post_btn':          "نشر مهمة",
   'missions.filter_all_cats':   "جميع الفئات",
   'missions.filter_city':       "المدينة",
-  'missions.filter_budget_max': "الميزانية القصوى (TND)",
+  'missions.filter_budget_max': "الميزانية القصوى (د.ت)",
   'missions.filter_skill':      "المهارة",
   'missions.filter_btn':        "تصفية",
   'missions.filter_reset':      "إعادة تعيين",
@@ -2611,7 +2607,7 @@ export const ar: Record<string, string> = {
   'poster.field_title_ph':     "مثال: تصميم شعار لمتجري",
   'poster.field_desc':         "الوصف",
   'poster.field_desc_ph':      "صِف حاجتك بالتفصيل…",
-  'poster.field_budget':       "الميزانية (TND)",
+  'poster.field_budget':       "الميزانية (د.ت)",
   'poster.field_budget_min':   "الأدنى",
   'poster.field_budget_max':   "الأقصى",
   'poster.field_budget_hint':  "اتركه فارغا إذا كانت الميزانية مرنة.",
@@ -3764,7 +3760,7 @@ export const ar: Record<string, string> = {
   'engagements.view_detail':            "عرض التفاصيل",
   'engagements.cancel':                 "إلغاء",
   'engagements.whatsapp_aria':          "تواصل مع العميل عبر واتساب",
-  'engagements.whatsapp_message':       "مرحبا {buyer}، بخصوص طلبك « {ref} — {service} » على سيرفيو.",
+  'engagements.whatsapp_message':       "مرحبا {buyer}، بخصوص طلبك « {ref} — {service} » على Servyou.",
   'engagements.row_actions_aria':       "إجراءات {title}",
   // H11 « Mes propositions » — REVIEW_AR_TRANSLATION (draft Arabic; Proposals → عروضي is the vocabulary lock)
   'propositions.title':                 "عروضي",
@@ -3997,4 +3993,59 @@ export const ar: Record<string, string> = {
   'freelances.empty.filtered':                             "لا يوجد مستقل مطابق لبحثك",
   'freelances.empty.filteredSubtitle':                     "جرّب توسيع المرشحات أو تغيير الفئة.",
 
+  // ─── Tab titles (walk 2026-11-02 #28) — « {title} — Servyou » via lib/i18n/metadata.ts. REVIEW_AR_TRANSLATION
+  'meta.about': "من نحن",
+  'meta.accessibility': "بيان إمكانية الوصول",
+  'meta.terms': "الشروط العامة للاستخدام",
+  'meta.privacy': "سياسة الخصوصية",
+  'meta.contact': "اتصل بنا",
+  'meta.cookies': "سياسة ملفات تعريف الارتباط",
+  'meta.faq': "الأسئلة الشائعة",
+  'meta.goodbye': "إلى اللقاء",
+  'meta.help': "المساعدة",
+  'meta.received_orders': "الطلبات الواردة",
+  'meta.received_order_detail': "تفاصيل الطلب",
+  'meta.account_suspended': "حساب موقوف",
+  'meta.shop_configuration': "إعداد المتجر",
+  'meta.shop_create': "إنشاء متجري",
+  'meta.shop_created': "تم إنشاء المتجر",
+  'meta.shop_edit': "تعديل متجري",
+  'meta.maintenance': "الصيانة",
+  'meta.products': "المنتجات",
+  'meta.annonce_new': "نشر إعلان",
+  'meta.annonces': "إعلاناتي",
+  'meta.annonce_edit': "تعديل الإعلان",
+  'meta.my_order_detail': "تفاصيل طلبي",
+  'meta.engagements': "المهام الجارية",
+  'meta.engagement_detail': "تفاصيل المهمة",
+  'meta.favorites': "المحفوظات",
+  'meta.product_add': "إضافة منتج",
+  'meta.products_mine': "منتجاتي",
+  'meta.product_edit': "تعديل المنتج",
+  'meta.proposals': "عروضي",
+  'meta.service_create': "إنشاء خدمة",
+  'meta.service_published': "تم نشر الخدمة",
+  'meta.services_mine': "خدماتي",
+  'meta.service_edit': "تعديل الخدمة",
+  'meta.mission': "مهمة",
+  'meta.proposal_send': "إرسال عرضي",
+  'meta.proposal_sent': "تم إرسال العرض",
+  'meta.account': "حسابي",
+  'meta.freelance_skills': "المهارات واللغات",
+  'meta.freelance_details': "تفاصيل ملفي",
+  'meta.freelance_create': "إنشاء ملفي كمستقل",
+  'meta.freelance_created': "تم إنشاء الملف",
+  'meta.freelance_edit': "تعديل ملفي الشخصي",
+  'meta.settings': "الإعدادات",
+  'meta.session_expired': "انتهت الجلسة",
+  'meta.statistics': "الإحصائيات",
+  'meta.dashboard': "لوحة التحكم",
+  'meta.dashboard_seller': "لوحة التحكم",
+  'meta.find_missions': "البحث عن مهام",
+  'meta.desc.become_seller': "أطلق نشاطك على Servyou، كمستقل أو بمتجر. بدون عمولة. للبيع في تونس.",
+  'meta.become_seller': "كن بائعا",
+  'meta.desc.become_seller_shop': "أطلق متجرك الإلكتروني على Servyou. بدون عمولة. الدفع عند الاستلام. للبيع في تونس.",
+  'meta.become_seller_shop': "كن بائعا",
+  'meta.desc.become_freelancer': "اعمل كمستقل على Servyou. اعرض خدماتك، وابحث عن مهام، وطور نشاطك. بدون عمولة.",
+  'meta.become_freelancer': "كن مستقلا",
 }

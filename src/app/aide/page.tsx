@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { localizedMetadata } from '@/lib/i18n/metadata'
 import Link from 'next/link'
 import { ChevronRight, MessageCircle } from 'lucide-react'
 import { redirect } from 'next/navigation'
@@ -14,7 +15,9 @@ import { resolveRole } from '@/lib/roles'
 import { AIDE_GROUP_ICON, AIDE_QUESTIONS_PER_GROUP, aideGroupIdsForRole } from '@/lib/aide/groups'
 import type { AideGroupView } from '@/lib/aide/search'
 
-export const metadata: Metadata = { title: 'Aide — Servyou' }
+export async function generateMetadata(): Promise<Metadata> {
+  return localizedMetadata('meta.help')
+}
 
 // I-Aide « Aide » — Figma 449:17900 (freelancer), 558:38359 (shop_owner), 449:18408 (buyer). ONE route, three
 // configurations by seller_type: the role picks WHICH groups render (lib/aide/groups.ts), the layout is the same.

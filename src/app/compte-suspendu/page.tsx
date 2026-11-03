@@ -1,10 +1,13 @@
 import type { Metadata } from 'next'
+import { localizedMetadata } from '@/lib/i18n/metadata'
 import { AlertTriangle } from 'lucide-react'
 import { SYSTEM_LINK_CLASS, SystemStateScreen } from '@/components/system/SystemStateScreen'
 import { getLang } from '@/lib/i18n/server'
 import { t } from '@/lib/i18n'
 
-export const metadata: Metadata = { title: 'Compte suspendu — Servyou', robots: { index: false } }
+export async function generateMetadata(): Promise<Metadata> {
+  return localizedMetadata('meta.account_suspended', { robots: { index: false } })
+}
 
 // K3 — Figma 731:64440 / 734:64519: where the middleware bounces a suspended account (after clearing
 // its cookies). Deliberately generic — the suspended_reason is the admin's internal note and is never

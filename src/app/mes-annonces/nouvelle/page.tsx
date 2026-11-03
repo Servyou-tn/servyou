@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { localizedMetadata } from '@/lib/i18n/metadata'
 import Link from 'next/link'
 import { ChevronRight } from 'lucide-react'
 import { redirect } from 'next/navigation'
@@ -11,7 +12,9 @@ import { t, type Lang } from '@/lib/i18n'
 import { FOCUS_RING } from '@/components/layout/styles'
 import { cn } from '@/lib/utils'
 
-export const metadata: Metadata = { title: 'Publier une annonce — Servyou' }
+export async function generateMetadata(): Promise<Metadata> {
+  return localizedMetadata('meta.annonce_new')
+}
 
 const TIPS = ['annonce.form.tip_1', 'annonce.form.tip_2', 'annonce.form.tip_3', 'annonce.form.tip_4', 'annonce.form.tip_5'] as const
 

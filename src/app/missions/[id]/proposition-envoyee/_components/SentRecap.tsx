@@ -1,7 +1,7 @@
 import { CategoryChip, SkillChip } from '@/components/missions/MissionChips'
 import { t, type Lang } from '@/lib/i18n'
 import { formatTunisDate, formatTunisTime } from '@/lib/datetime'
-import { tndAmount } from '@/components/listings/listing-utils'
+import { tndPrice } from '@/components/listings/listing-utils'
 import { PlatformIcon } from '@/components/social/PlatformIcon'
 import { detectPlatform } from '@/lib/social/platforms'
 import type { SentProposal } from '@/lib/marche/sent-proposal-query'
@@ -77,9 +77,7 @@ export function SentRecap({ sent, lang }: { sent: SentProposal; lang: Lang }) {
           {sent.price != null ? (
             <p className="flex gap-1">
               <span className="text-text-muted">{t('proposal.sent.price', lang)}</span>
-              <span dir="ltr" className="font-semibold text-text-primary">
-                {tndAmount(sent.price)} TND
-              </span>
+              <bdi className="font-semibold text-text-primary">{tndPrice(sent.price, lang)}</bdi>
             </p>
           ) : null}
           {sent.timeframe ? (

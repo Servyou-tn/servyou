@@ -7,6 +7,7 @@ import { FavoriteButton } from '@/components/FavoriteButton'
 import { PackageIcon } from '@/components/dashboard/consumer/icons'
 import { ArrowUpRightIcon } from './icons'
 import { tndPrice } from './listing-utils'
+import { useLang } from '@/components/LangProvider'
 
 export type ProductListing = {
   id: string
@@ -29,6 +30,7 @@ export type ProductListing = {
 // never navigates; the rest of the card — including the CTA — links to the detail page
 // (/produits/[id], which 404s until that route is rebuilt).
 export function ProductListingCard({ product }: { product: ProductListing }) {
+  const lang = useLang()
   const meta = [product.shop.name, product.shop.city].filter(Boolean).join(' · ')
 
   return (
@@ -60,7 +62,7 @@ export function ProductListingCard({ product }: { product: ProductListing }) {
           </p>
           {meta && <p className="line-clamp-1 text-xs font-medium text-text-muted">{meta}</p>}
           <div className="mt-2 flex items-center justify-between">
-            <p className="text-body font-bold text-text-primary">{tndPrice(product.price_tnd)}</p>
+            <p className="text-body font-bold text-text-primary"><bdi>{tndPrice(product.price_tnd, lang)}</bdi></p>
             <span
               aria-hidden="true"
               className="flex h-9 w-9 items-center justify-center rounded-full bg-text-primary text-white transition-all duration-200 hover:scale-105 hover:bg-text-primary"

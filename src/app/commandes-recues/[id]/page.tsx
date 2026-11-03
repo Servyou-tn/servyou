@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { localizedMetadata } from '@/lib/i18n/metadata'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { Package, ChevronRight } from 'lucide-react'
@@ -25,7 +26,9 @@ import { AdvanceOrderButton } from '@/components/orders/AdvanceOrderButton'
 import { CancelOrderButton } from '@/components/orders/CancelOrderButton'
 import { TrackingNumberForm } from '../_components/TrackingNumberForm'
 
-export const metadata: Metadata = { title: 'Détail de la commande — Servyou' }
+export async function generateMetadata(): Promise<Metadata> {
+  return localizedMetadata('meta.received_order_detail')
+}
 
 const LIST = '/commandes-recues'
 
@@ -129,7 +132,7 @@ export default async function OrderDetailPage({
                 <ChevronRight className="h-3 w-3 rtl:-scale-x-100" />
               </li>
               <li aria-current="page" className="text-text-secondary">
-                {ref}
+                <bdi dir="ltr">{ref}</bdi>
               </li>
             </ol>
           </nav>
@@ -138,7 +141,8 @@ export default async function OrderDetailPage({
           <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
             <div className="flex items-center gap-3">
               <h1 className="text-h1 text-text-primary">
-                {t('seller.orderDetail.title', lang, { ref })}
+                {/* AR: « #551768 » isolated LTR inside the sentence (walk #29: it read « 551768# الطلب »). */}
+                {t('seller.orderDetail.title', lang, { ref: lang === 'ar' ? `\u2066${ref}\u2069` : ref })}
               </h1>
               {pill ? (
                 <StatusPill status={pill.pill}>{t(pill.labelKey, lang)}</StatusPill>
@@ -199,7 +203,7 @@ export default async function OrderDetailPage({
               <div className="flex items-start gap-4">
                 <Package className="mt-1 h-7 w-7 shrink-0 text-icon-muted" aria-hidden="true" />
                 <div className="flex min-w-0 flex-col gap-1">
-                  <p className="text-body font-semibold text-text-primary">{order.itemTitle}</p>
+                  <p className="text-body font-semibold text-text-primary"><bdi>{order.itemTitle}</bdi></p>
                   <p className="text-body-sm text-text-secondary">
                     {t('seller.orderDetail.quantity', lang, { n: order.quantity })}
                   </p>
@@ -298,14 +302,14 @@ export default async function OrderDetailPage({
                     {t('seller.orderDetail.recipient', lang)}
                   </dt>
                   <dd className="text-body text-text-primary">
-                    {order.deliveryName || order.buyerName}
+                    <bdi>{order.deliveryName || order.buyerName}</bdi>
                   </dd>
                 </div>
                 <div className="flex flex-col gap-1">
                   <dt className="text-body-sm text-text-secondary">
                     {t('seller.orderDetail.address', lang)}
                   </dt>
-                  <dd className="text-body text-text-primary">{order.deliveryStreet || '—'}</dd>
+                  <dd className="text-body text-text-primary"><bdi>{order.deliveryStreet || '—'}</bdi></dd>
                 </div>
                 {/* Quartier/ville — null on the 4 seed rows that predate E1; a real order always
                     carries both. Deliberately its own row, not folded into the street line: this
@@ -316,7 +320,7 @@ export default async function OrderDetailPage({
                     <dt className="text-body-sm text-text-secondary">
                       {t('seller.orderDetail.quartier', lang)}
                     </dt>
-                    <dd className="text-body text-text-primary">{order.deliveryQuartier}</dd>
+                    <dd className="text-body text-text-primary"><bdi>{order.deliveryQuartier}</bdi></dd>
                   </div>
                 ) : null}
                 {order.deliveryVille ? (
@@ -324,7 +328,7 @@ export default async function OrderDetailPage({
                     <dt className="text-body-sm text-text-secondary">
                       {t('seller.orderDetail.ville', lang)}
                     </dt>
-                    <dd className="text-body text-text-primary">{order.deliveryVille}</dd>
+                    <dd className="text-body text-text-primary"><bdi>{order.deliveryVille}</bdi></dd>
                   </div>
                 ) : null}
                 {order.deliveryGovernorate ? (

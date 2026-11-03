@@ -1,11 +1,14 @@
 import type { Metadata } from 'next'
+import { localizedMetadata } from '@/lib/i18n/metadata'
 import { Mail, MessageCircle, Globe } from 'lucide-react'
 import { getLang } from '@/lib/i18n/server'
 import { t } from '@/lib/i18n'
 import { ContactForm } from './ContactForm'
 import { CopyableEmail } from './CopyableEmail'
 
-export const metadata: Metadata = { title: 'Contact — Servyou' }
+export async function generateMetadata(): Promise<Metadata> {
+  return localizedMetadata('meta.contact')
+}
 
 const cardClass = 'rounded-2xl border border-border-subtle bg-white p-6 text-center'
 const iconWrap =

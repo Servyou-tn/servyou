@@ -87,10 +87,10 @@ export function ProductBrowseCard({ product, sizes = DEFAULT_SIZES }: { product:
 
           <div className="flex items-center justify-between gap-2">
             <div className="flex min-w-0 flex-col gap-0.5">
-              {/* LTR, hugging the page's start side like the title: in AR the digits and « TND » otherwise reorder to « TND 120 », and a price too
-                  long for its slot is cut at the « TND » end, never at its leading digits. */}
-              <p dir="ltr" className="truncate rtl:max-w-full rtl:self-start whitespace-nowrap text-[17px] font-semibold leading-[22px] text-text-primary">
-                {tndPrice(product.price_tnd)}
+              {/* FR: LTR « 120 TND ». AR (walk #25): « 120 د.ت », the dashboard's notation, RTL so it reads number-then-currency; either way it
+                  hugs the page's start side and a price too long for its slot is cut at the currency end, never at its leading digits. */}
+              <p dir={lang === 'ar' ? 'rtl' : 'ltr'} className="truncate rtl:max-w-full rtl:self-start whitespace-nowrap text-[17px] font-semibold leading-[22px] text-text-primary">
+                {tndPrice(product.price_tnd, lang)}
               </p>
               {city && (
                 <span className="flex items-center gap-1 text-xs font-medium leading-[17px] text-text-muted">

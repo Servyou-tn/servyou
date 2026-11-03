@@ -191,7 +191,7 @@ export function ProposalForm({ jobPostId, clientFirstName, budgetMin, budgetMax,
           inputMode="decimal"
           dir="ltr"
           placeholder="0"
-          suffix="TND"
+          suffix={t('annonce.form.budget_currency', lang)}
           maxLength={12}
           value={price}
           disabled={locked}

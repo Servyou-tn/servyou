@@ -1,10 +1,13 @@
 import type { Metadata } from 'next'
+import { localizedMetadata } from '@/lib/i18n/metadata'
 import { Settings } from 'lucide-react'
 import { SystemStateScreen } from '@/components/system/SystemStateScreen'
 import { getLang } from '@/lib/i18n/server'
 import { t } from '@/lib/i18n'
 
-export const metadata: Metadata = { title: 'Maintenance — Servyou', robots: { index: false } }
+export async function generateMetadata(): Promise<Metadata> {
+  return localizedMetadata('meta.maintenance', { robots: { index: false } })
+}
 
 // K4 — Figma 731:64476 / 734:64528. Shown by the middleware for every page while MAINTENANCE_MODE=1.
 // The CTA is the secondary « Réessayer » (back to the home page, which the middleware sends straight

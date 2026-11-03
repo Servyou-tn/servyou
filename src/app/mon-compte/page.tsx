@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { localizedMetadata } from '@/lib/i18n/metadata'
 import Link from 'next/link'
 import { ChevronRight } from 'lucide-react'
 import { redirect } from 'next/navigation'
@@ -10,7 +11,9 @@ import { t } from '@/lib/i18n'
 import { FOCUS_RING } from '@/components/layout/styles'
 import { MonCompteForm } from './_components/MonCompteForm'
 
-export const metadata: Metadata = { title: 'Mon compte — Servyou' }
+export async function generateMetadata(): Promise<Metadata> {
+  return localizedMetadata('meta.account')
+}
 
 // I1 « Mon compte » — Figma 724:63872 (1440) / 728:64216 (375); measurements in
 // docs/design/i1-k-measurements.md. Identity + security + avatar + city; preferences live in I2

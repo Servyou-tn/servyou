@@ -102,7 +102,9 @@ describe('H13 SentRecap', () => {
         links: [{ url: 'https://www.behance.net/me', label: 'Mon portfolio' }, { url: 'https://a.tn/x', label: null }],
       }),
     )
-    expect(screen.getByText('80 TND')).toHaveAttribute('dir', 'ltr')
+    // walk #25: an auto-direction <bdi> — LTR « … TND » in FR, RTL « … د.ت » in AR (the seller dashboard's order), never a forced LTR run.
+    expect(screen.getByText('80 TND').tagName).toBe('BDI')
+    expect(screen.getByText('80 TND')).not.toHaveAttribute('dir')
     expect(screen.getByText('5 jours')).toBeInTheDocument()
     expect(screen.getByText('Figma')).toBeInTheDocument()
     const link = screen.getByRole('link', { name: 'Mon portfolio — behance.net' })

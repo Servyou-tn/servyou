@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { localizedMetadata } from '@/lib/i18n/metadata'
 import Link from 'next/link'
 import { Inbox } from 'lucide-react'
 import { AppShell } from '@/components/shell/AppShell'
@@ -19,7 +20,9 @@ import { cn } from '@/lib/utils'
 import { OrderActionRow } from './_components/OrderActionRow'
 import { SortSelect } from '@/components/orders/SortSelect'
 
-export const metadata: Metadata = { title: 'Commandes reçues — Servyou' }
+export async function generateMetadata(): Promise<Metadata> {
+  return localizedMetadata('meta.received_orders')
+}
 
 const ROUTE = '/commandes-recues'
 

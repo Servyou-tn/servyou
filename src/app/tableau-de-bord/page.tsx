@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { localizedMetadata } from '@/lib/i18n/metadata'
 import Link from 'next/link'
 import {
   Briefcase,
@@ -27,7 +28,9 @@ import { MissionRow } from './_components/MissionRow'
 import { ActiviteRecente } from './_components/ActiviteRecente'
 import { ForceDuProfil } from './_components/ForceDuProfil'
 
-export const metadata: Metadata = { title: 'Tableau de bord — Servyou' }
+export async function generateMetadata(): Promise<Metadata> {
+  return localizedMetadata('meta.dashboard')
+}
 
 const ROUTE = '/tableau-de-bord'
 

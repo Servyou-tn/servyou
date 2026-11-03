@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { localizedMetadata } from '@/lib/i18n/metadata'
 import Link from 'next/link'
 import { Briefcase, CheckCircle, Handshake, Inbox, LayoutGrid } from 'lucide-react'
 import { AppShell } from '@/components/shell/AppShell'
@@ -25,7 +26,9 @@ import { EngagementRow } from './_components/EngagementRow'
 import { EngagementSearch } from './_components/EngagementSearch'
 import { COL } from './_components/engagement-columns'
 
-export const metadata: Metadata = { title: 'Mes engagements — Servyou' }
+export async function generateMetadata(): Promise<Metadata> {
+  return localizedMetadata('meta.engagements')
+}
 
 const ROUTE = '/mes-engagements'
 
