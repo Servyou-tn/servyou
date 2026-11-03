@@ -39,6 +39,18 @@ WhatsApp glyph (the button's existing `glyphClassName` opt-in) · hint secondary
 
 Desktop now matches the frame within the type ramp's line heights (breadcrumb 20 vs 17, H1 40 vs 38).
 
+Checked in every status (pending · accepted · arrived · received · cancelled) at 1440 + 375, FR, and cancelled in AR.
+
+**Removed to match the frame — please confirm** (each shipped on purpose in H8 PR-2):
+
+- the client's **avatar** (the frame's client row is the name + city only);
+- the **Briefcase** icon, now the sunken **package** tile;
+- the **stage dates under the desktop stepper** (the frame hides that layer; « Historique » still lists every time).
+  Below lg the detail look still shows them under each label.
+
+The stepper's accessible name reuses `buyerOrder.stepper_aria` (« Avancement de la commande » / « تقدّم الطلب »), which
+E4 already uses for the same look, so no new string was added.
+
 ### Open — shared components / text (asked, not built)
 
 | # | Item | Frame | Now | Proposal |
@@ -46,10 +58,11 @@ Desktop now matches the frame within the type ramp's line heights (breadcrumb 20
 | D1 | Stepper below lg (`OrderRail`, shared with E3/E4/G9) | circle above label, centred, no connector, no date | E4's vertical rail: circle beside label, connectors, dates | add an opt-in `mobile="stacked"` to the detail look; other callers unchanged |
 | D2 | StatusPill at 375 | 343 wide, text at start | hugs its text | keep hugging (FILL sizing in the frame) |
 | D3 | « Historique » panel pad at 375 (`OrderTimeline`, shared) | 24/16 | 24 | add a `className` prop; other callers unchanged |
-| D4 | Price line | « 800 TND · Par projet » | « 800 TND » for a fixed price, « · Par mois » etc. by unit | keep the code (D13 replaced « Par projet » with « Par mois ») |
+| D4 | Price line | « 800 TND · Par projet » | « 800 TND » for a fixed price, « · Par mois » etc. by unit | keep the code (H6 D13 replaced « Par projet » with « Par mois ») |
 | D5 | Button / WhatsApp labels | label box fills the button (reads start-aligned) | centred | keep centred |
 | D6 | Page background at 375 | surface/base | shell's surface/subtle (AppShell, shared) | keep |
-| D7 | Stage dates on desktop | hidden layer | were shown under each stage; now hidden on desktop (detail look), shown below lg | as built (follows the frame); « Historique » still lists every time |
+| D7 | Cancelled engagement on the stepper | not drawn | every stage upcoming (unchanged from PR-2) | keep; or E4's red « Annulée » node after the last reached stage (`cancelledAfter`, a logic change) |
+| D8 | Title at 375 | « Engagement #A4F729 » on one line (341 in a 343 box) | wraps: our Inter sets it at 349.5 | keep the type ramp (a smaller mobile H1 would be a token change) |
 
 ## 2. H6 — /mes-services/creer at 375
 
@@ -70,31 +83,32 @@ The breadcrumb, H1, subtitle and stepper already match.
 
 - `ServiceWizard.tsx`: `max-lg:gap-5` (stepper → box 20), `max-lg:px-4` on the box (pad 24/16).
 - `StepPublication.tsx`: below sm, label + value wrap together (gap 12) with « Modifier » centred at the end. The value
-  claims at least 160 px, so it stays beside « Titre », « Prix », « Délai », « Mode » and drops under « Catégorie »,
-  « Compétences », as drawn. From sm the row is unchanged (label · value · Modifier, no wrap).
+  claims at least 144 px, so it stays beside « Titre », « Prix », « Délai », « Mode » and drops under « Catégorie »,
+  « Compétences », as drawn (measured at 375 in FR; in AR only « طريقة التقديم » drops under). From sm the row is unchanged (label · value · Modifier, no wrap).
 
-Both files are shared with the edit page (`/mes-services/[id]/modifier`), which gets the same mobile layout.
+Both files are shared with the edit page (`/mes-services/[id]/modifier`, H7), which gets the same 375 layout — including
+the read-only récap shown when moderation hides a service. Its desktop was checked the same way (1440 + 1100, FR + AR).
 
 Desktop proof: before/after captures at 1440 and 1100, FR and AR, steps 1–5 filled: 0 px.
 
-### Kept as built (earlier rulings)
+### Kept as built (earlier rulings — « H6 Dn » = h6-pr2/3/4-deltas.md)
 
 | Frame at 375 | Built | Ruling |
 |---|---|---|
-| unit « Par projet » | « Par mois » | D13 |
-| récap without « Description » | « Description » row | D23 |
-| no footer drawn | sticky footer (brouillon · Précédent · Suivant / Publier) | D8 / D21 / D27 |
-| « Unité * », « Mode de prestation * » as 16 Medium headings | F3 field labels | D20 |
+| unit « Par projet » | « Par mois » | H6 D13 |
+| récap without « Description » | « Description » row | H6 D23 |
+| no footer drawn | sticky footer (brouillon · Précédent · Suivant / Publier) | H6 D8 / D21 / D27 |
+| « Unité * », « Mode de prestation * » as 16 Medium headings | F3 field labels | H6 D20 |
 
 ### Open — text (asked, not built)
 
 | # | Frame (375) | Built (desktop + mobile) |
 |---|---|---|
-| D8 | summary « Étape 3 sur 5 · Tarif & délai » | step name « Tarif » |
-| D9 | short description placeholder « Ex: Boutique en ligne clé en main » / helper « Affiché dans les résultats de recherche. » | « Ex: Boutique en ligne complète avec paiement à la livraison, prête en 7 jours » / « Le résumé qui apparaît dans les résultats de recherche. » |
-| D10 | « Minimum 100 caractères. » | « Minimum 100 caractères. C'est votre argumentaire de vente. » |
-| D11 | délai « Ex: 5-7 jours » / « Optionnel. Ex: 5-7 jours, 2 semaines » | « ex : 7 jours » / « Optionnel — précisez le délai avec son unité (ex : 7 jours, 2 semaines, 1 mois) » |
-| D12 | inclus helper « Une ligne par élément. » | « Une ligne par élément. Ex: Design UI iOS/Android » |
-| D13b | « Ce que le client doit préparer. » | the longer helper |
+| D9 | summary « Étape 3 sur 5 · Tarif & délai » | step name « Tarif » |
+| D10 | short description placeholder « Ex: Boutique en ligne clé en main » / helper « Affiché dans les résultats de recherche. » | « Ex: Boutique en ligne complète avec paiement à la livraison, prête en 7 jours » / « Le résumé qui apparaît dans les résultats de recherche. » |
+| D11 | « Minimum 100 caractères. » | « Minimum 100 caractères. C'est votre argumentaire de vente. » |
+| D12 | délai « Ex: 5-7 jours » / « Optionnel. Ex: 5-7 jours, 2 semaines » | « ex : 7 jours » / « Optionnel — précisez le délai avec son unité (ex : 7 jours, 2 semaines, 1 mois) » |
+| D13 | inclus helper « Une ligne par élément. » | « Une ligne par élément. Ex: Design UI iOS/Android » |
+| D14 | « Ce que le client doit préparer. » | the longer helper |
 
 These strings are shared with desktop, so changing them changes desktop text too.

@@ -139,7 +139,7 @@ export function StepPublication({
           let value: React.ReactNode = t('service.wizard.recap.not_set', lang)
           if (row.value) value = row.userText ? <bdi>{row.value}</bdi> : row.value
           // 375 frame (1594:28113): label + value wrap together (gap 12) with « Modifier » centred at the end. The value claims
-          // at least 160 px, so it sits beside a short label (Titre, Prix, Délai, Mode) and drops under a long one (Catégorie,
+          // at least 144 px, so it sits beside a short label (Titre, Prix, Délai, Mode) and drops under a long one (Catégorie,
           // Compétences). From sm the group never wraps: label · value (flex-1) · « Modifier », as before.
           return (
             <li
@@ -155,7 +155,7 @@ export function StepPublication({
                   {flagged && <span className="sr-only">{t('service.wizard.recap.flagged', lang)}</span>}
                 </span>
                 <span
-                  className={`min-w-0 grow basis-40 break-words text-body-sm sm:flex-1 sm:basis-auto ${
+                  className={`min-w-0 grow basis-36 break-words text-body-sm sm:flex-1 sm:basis-auto ${
                     row.value ? 'font-medium text-text-primary' : 'text-text-muted'
                   }`}
                 >
