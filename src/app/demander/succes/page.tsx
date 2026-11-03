@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
-import { ChevronRight, CircleCheckBig } from 'lucide-react'
+import { ChevronLeft, ChevronRight, CircleCheckBig } from 'lucide-react'
 import { AppShell } from '@/components/shell/AppShell'
 import { Avatar } from '@/components/ui/avatar'
 import { getInitials } from '@/components/ui/initials'
@@ -24,6 +24,9 @@ import { tndPrice } from '@/components/listings/listing-utils'
 // renders the generic confirmation — never a stranger's brief, price and phone number.
 //
 // Layout: a centered 640 column (gap 24) under a full-width breadcrumb, content gap 48.
+//
+// 375 re-measured against m375-e2-envoyee (docs/design/m375-e1-e2-deltas.md): « ‹ Services › Confirmation » on a 16 line; Figma's
+// strokes sit INSIDE its boxes, so below lg the CSS border takes its width out of the padding (success card 30, cards 23).
 
 export async function generateMetadata(): Promise<Metadata> {
   const lang = await getLang()
@@ -35,7 +38,7 @@ type Props = { searchParams: Promise<{ order?: string }> }
 function Card({ children, className }: { children: React.ReactNode; className?: string }) {
   return (
     <section
-      className={`flex flex-col gap-4 rounded-card border border-border-subtle bg-surface-base p-6 ${className ?? ''}`}
+      className={`flex flex-col gap-4 rounded-card border border-border-subtle bg-surface-base p-6 max-lg:p-[23px] ${className ?? ''}`}
     >
       {children}
     </section>
@@ -289,12 +292,14 @@ export default async function DemandeSuccesPage({ searchParams }: Props) {
   return (
     <AppShell user={shell.topBarUser}>
       <div className="flex flex-col gap-6 lg:gap-12">
-        <nav aria-label="Fil d'Ariane" className="flex flex-wrap items-center gap-1.5 text-[13px] text-text-muted lg:gap-2">
+        <nav aria-label="Fil d'Ariane" className="flex flex-wrap items-center gap-1.5 text-[13px] text-text-muted max-lg:leading-4 lg:gap-2">
           <Link href="/" className="hidden hover:text-text-secondary lg:inline">
             {t('serviceDetail.breadcrumb.home', lang)}
           </Link>
           <ChevronRight className="hidden h-3.5 w-3.5 shrink-0 rtl:rotate-180 lg:block" aria-hidden="true" />
-          <Link href={marketplaceHref} className="hover:text-text-secondary">
+          {/* max-lg py / -my 3.5: a 44 px tap target around the 16 px crumb (≥ 44 on mobile) without moving the layout. */}
+          <Link href={marketplaceHref} className="inline-flex items-center gap-1.5 hover:text-text-secondary max-lg:-my-3.5 max-lg:py-3.5 lg:gap-0">
+            <ChevronLeft className="size-4 shrink-0 rtl:rotate-180 lg:hidden" aria-hidden="true" />
             {breadcrumbLabel}
           </Link>
           <ChevronRight className="h-3 w-3 shrink-0 rtl:rotate-180 lg:h-3.5 lg:w-3.5" aria-hidden="true" />
@@ -304,7 +309,7 @@ export default async function DemandeSuccesPage({ searchParams }: Props) {
         <div className="flex justify-center">
           <div className="flex w-full max-w-160 flex-col gap-6">
             {/* successCard — 2px success/500 outline, centered, 64 check. */}
-            <section className="flex flex-col items-center gap-6 rounded-card border-2 border-success-500 bg-surface-base p-8">
+            <section className="flex flex-col items-center gap-6 rounded-card border-2 border-success-500 bg-surface-base p-8 max-lg:p-[30px]">
               <CircleCheckBig className="h-16 w-16 shrink-0 text-success-500" aria-hidden="true" />
               <h1 className="text-center text-2xl font-semibold leading-[30px] text-brand-blue-800">
                 {t('succes.title', lang)}
