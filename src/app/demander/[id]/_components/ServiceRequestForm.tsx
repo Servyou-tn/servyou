@@ -46,6 +46,17 @@ type Errors = { description?: Message; timeframe?: Message; budget?: Message; ph
 // The client-side toast is a key; a server error arrives as already-translated text.
 type FormError = { key: string } | { text: string }
 
+function CancelLink({ serviceId, lang, className }: { serviceId: string; lang: Lang; className: string }) {
+  return (
+    <Link
+      href={`/services/${serviceId}`}
+      className={`inline-flex h-10 items-center justify-center rounded-lg border border-border-strong bg-surface-base px-4 text-base font-semibold text-text-primary transition-colors hover:bg-surface-subtle ${FOCUS_RING} ${className}`}
+    >
+      {t('demander.cancel', lang)}
+    </Link>
+  )
+}
+
 export function ServiceRequestForm({
   serviceId,
   briefing,
@@ -122,8 +133,8 @@ export function ServiceRequestForm({
       noValidate
       className="flex flex-col gap-5 lg:gap-6 lg:rounded-card lg:border lg:border-border-subtle lg:bg-surface-base lg:p-8"
     >
-      <div className="flex flex-col gap-5 rounded-card border border-border-subtle bg-surface-base p-4 lg:rounded-none lg:border-0 lg:bg-transparent lg:p-0">
-        <h2 className="text-xl font-semibold text-text-primary">{t('demander.service.heading', lang)}</h2>
+      <div className="flex flex-col gap-5 rounded-card border border-border-subtle bg-surface-base p-[15px] lg:rounded-none lg:border-0 lg:bg-transparent lg:p-0">
+        <h2 className="text-xl font-semibold text-text-primary max-lg:leading-[26px]">{t('demander.service.heading', lang)}</h2>
 
         {/* Seller's briefing template. Guidance, not an input — 20 of 21 listings have none,
             so the absent case is the default and the block simply does not render. */}
@@ -163,7 +174,7 @@ export function ServiceRequestForm({
             flush to the field's end. Not the Input primitive: that suffix is a full-height
             surface with its own border, which an inline iconEnd inside px-4 cannot reproduce. */}
         <div className="flex flex-col gap-1.5">
-          <label htmlFor="budget" className="text-sm font-semibold text-text-secondary">
+          <label htmlFor="budget" className="text-sm font-semibold text-text-secondary max-lg:leading-[17px]">
             {t('demander.field.budget', lang)}
           </label>
           <div
@@ -233,19 +244,20 @@ export function ServiceRequestForm({
         </p>
       )}
 
-      {/* Desktop: secondary ⟷ primary, SPACE_BETWEEN. Mobile 682:56914: stacked full-width with
-          the primary FIRST — the thumb-reachable order, not the desktop reading order. */}
-      <div className="flex flex-col-reverse gap-3 lg:flex-row lg:items-center lg:justify-between">
-        <Link
-          href={`/services/${serviceId}`}
-          className={`inline-flex h-10 items-center justify-center rounded-lg border border-border-strong bg-surface-base px-4 text-base font-semibold text-text-primary transition-colors hover:bg-surface-subtle ${FOCUS_RING}`}
-        >
-          {t('demander.cancel', lang)}
-        </Link>
-        <Turnstile ref={turnstile} action="order_service" />
+      {/* Desktop: secondary ⟷ primary, SPACE_BETWEEN. Mobile 682:56914 / m375-e1-demander: stacked full-width with the primary FIRST,
+          12 apart. « Annuler » renders once per width (the other is display:none), so the DOM — and the tab order — is the visual order
+          at both, without a CSS reversal. The Turnstile's node is a flex item (zero-height while invisible: between the buttons it took a
+          second gap, 24). Below lg it sits in a block ABOVE the primary, pulled up by the stack's 12: invisible or absent it costs nothing,
+          and an interactive challenge shows 12 above « Envoyer ». From lg the wrapper is `contents`, so the row is exactly as before. */}
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+        <CancelLink serviceId={serviceId} lang={lang} className="max-lg:hidden" />
+        <div className="max-lg:-mt-3 lg:contents">
+          <Turnstile ref={turnstile} action="order_service" />
+        </div>
         <Button type="submit" size="lg" loading={pending}>
           {pending ? t('demander.submit.loading', lang) : t('demander.submit.service', lang)}
         </Button>
+        <CancelLink serviceId={serviceId} lang={lang} className="lg:hidden" />
       </div>
     </form>
   )

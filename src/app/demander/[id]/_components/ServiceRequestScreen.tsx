@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { ChevronRight, Clock, MapPin } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Clock, MapPin } from 'lucide-react'
 import { t, type Lang } from '@/lib/i18n'
 import { Avatar } from '@/components/ui/avatar'
 import { getInitials } from '@/components/ui/initials'
@@ -19,6 +19,9 @@ import { ServiceRequestForm } from './ServiceRequestForm'
 // The mobile summary is a genuinely different composition, not a narrower copy: no chips, no
 // dividers, no délai row, a 32 avatar and an inline "· ville". Those blocks are hidden rather
 // than duplicated, and the two size deltas ride on responsive classes.
+//
+// 375 re-measured against m375-e1-demander (docs/design/m375-e1-e2-deltas.md): breadcrumb « ‹ Services › Demander » on a 16 line
+// (Accueil desktop-only); the summary's 2 px stroke sits INSIDE Figma's 158 box, so the CSS border takes 2 of the 16 padding (p-3.5).
 
 function Chips({ items }: { items: string[] }) {
   if (items.length === 0) return null
@@ -58,7 +61,7 @@ export function ServiceRequestScreen({
   )
 
   const summary = (
-    <aside className="flex flex-col gap-3 rounded-card border-2 border-brand-blue-600 bg-surface-base p-4 lg:col-start-2 lg:row-start-1 lg:gap-4 lg:p-6">
+    <aside className="flex flex-col gap-3 rounded-card border-2 border-brand-blue-600 bg-surface-base p-3.5 lg:col-start-2 lg:row-start-1 lg:gap-4 lg:p-6">
       <h2 className="hidden text-[15px] font-semibold leading-5 text-text-primary lg:block">
         {t('demander.recap.title', lang)}
       </h2>
@@ -115,10 +118,12 @@ export function ServiceRequestScreen({
     <div className="flex flex-col gap-5 lg:gap-6">
       {/* breadcrumb — 13px, gap 8 (6 on mobile), chevron separators. The desktop frame carries
           five crumbs; the middle two are the same category/title links D2 renders. */}
-      <nav aria-label="Fil d'Ariane" className="flex flex-wrap items-center gap-1.5 text-[13px] text-text-muted lg:gap-2">
-        <Link href="/" className="hover:text-text-secondary">{t('serviceDetail.breadcrumb.home', lang)}</Link>
-        <ChevronRight className="h-3.5 w-3.5 shrink-0 rtl:rotate-180" aria-hidden="true" />
-        <Link href="/marche/services" className="hover:text-text-secondary">
+      <nav aria-label="Fil d'Ariane" className="flex flex-wrap items-center gap-1.5 text-[13px] text-text-muted max-lg:leading-4 lg:gap-2">
+        <Link href="/" className="hover:text-text-secondary max-lg:hidden">{t('serviceDetail.breadcrumb.home', lang)}</Link>
+        <ChevronRight className="h-3.5 w-3.5 shrink-0 rtl:rotate-180 max-lg:hidden" aria-hidden="true" />
+        {/* max-lg py / -my 3.5: a 44 px tap target around the 16 px crumb (≥ 44 on mobile) without moving the layout. */}
+        <Link href="/marche/services" className="inline-flex items-center gap-1.5 hover:text-text-secondary max-lg:-my-3.5 max-lg:py-3.5 lg:gap-0">
+          <ChevronLeft className="size-4 shrink-0 rtl:rotate-180 lg:hidden" aria-hidden="true" />
           {t('serviceDetail.breadcrumb.services', lang)}
         </Link>
         {service.category && (
