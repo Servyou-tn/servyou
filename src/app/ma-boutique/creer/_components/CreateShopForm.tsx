@@ -16,6 +16,8 @@ import { createShopAction, uploadShopLogoAction, uploadShopBannerAction } from '
 import { Stepper } from '@/components/ui/stepper'
 import { LogoField } from './LogoField'
 import { BannerField } from './BannerField'
+import { TunisianPhoneInput } from '@/components/account/TunisianPhoneInput'
+import { isValidPhone } from '@/lib/phone'
 
 // G2 step 1 "Bases" — Figma 555:37234/555:37236, measured in docs/design/g2-discovery.md.
 //
@@ -29,15 +31,18 @@ const NAME_MAX = 100
 const DESC_MIN = 50
 const DESC_MAX = 2000
 
-type Errors = { name?: string; city?: string; description?: string }
+type Errors = { name?: string; city?: string; description?: string; phone?: string }
 
-export function CreateShopForm() {
+/** `askPhone`: the account has no contact phone yet (walk #17) — the shop needs one, so the field shows; an account
+ *  that already has one is never asked again here (Mon compte edits it). */
+export function CreateShopForm({ askPhone = false }: { askPhone?: boolean }) {
   const lang = useLang()
   const router = useRouter()
 
   const [name, setName] = React.useState('')
   const [city, setCity] = React.useState('')
   const [description, setDescription] = React.useState('')
+  const [phone, setPhone] = React.useState('')
 
   const [logoFile, setLogoFile] = React.useState<File | null>(null)
   const [logoPreview, setLogoPreview] = React.useState<string | null>(null)
@@ -82,6 +87,8 @@ export function CreateShopForm() {
     else if (trimmedName.length > NAME_MAX) next.name = t('shop.create.error.name_max', lang, { max: NAME_MAX })
 
     if (!city) next.city = t('shop.create.error.city_required', lang)
+    if (askPhone && !phone.trim()) next.phone = t('seller.phone.error.required', lang)
+    else if (askPhone && !isValidPhone(phone)) next.phone = t('monCompte.error.phoneFormat', lang)
 
     const trimmedDesc = description.trim()
     if (trimmedDesc.length < DESC_MIN) {
@@ -112,7 +119,12 @@ export function CreateShopForm() {
     setPending(true)
     setFormError(null)
 
-    const res = await createShopAction({ name: name.trim(), city, description: description.trim() })
+    const res = await createShopAction({
+      name: name.trim(),
+      city,
+      description: description.trim(),
+      ...(askPhone ? { phone: phone.trim() } : {}),
+    })
     if (!res.ok) {
       setPending(false)
       setFormError(res.error)
@@ -227,6 +239,18 @@ export function CreateShopForm() {
             </p>
           )}
         </div>
+
+        {askPhone ? (
+          <TunisianPhoneInput
+            id="shop-phone"
+            className="max-w-70"
+            lang={lang}
+            value={phone}
+            onChange={setPhone}
+            error={errors.phone}
+            helper={t('seller.phone.helper', lang)}
+          />
+        ) : null}
 
         <Textarea
           id="shop-description"

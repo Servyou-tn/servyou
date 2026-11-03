@@ -14,6 +14,8 @@ import { GOVERNORATES } from '@/lib/tunisia-governorates'
 import { createFreelancerProfileAction } from '../actions'
 import { Stepper } from '@/components/ui/stepper'
 import { AvatarField } from './AvatarField'
+import { TunisianPhoneInput } from '@/components/account/TunisianPhoneInput'
+import { isValidPhone } from '@/lib/phone'
 
 // H2 step 1 "Bases" — Figma 466:20244, measured in docs/design/h2-discovery.md.
 //
@@ -27,15 +29,19 @@ const HEADLINE_MAX = 100
 const BIO_MIN = 100
 const BIO_MAX = 2000
 
-type Errors = { fullName?: string; headline?: string; bio?: string; city?: string }
+type Errors = { fullName?: string; phone?: string; headline?: string; bio?: string; city?: string }
 
 export function CreateFreelancerProfileForm({
   fullName: initialFullName,
   avatarUrl,
+  phone: initialPhone,
   initial,
 }: {
   fullName: string | null
   avatarUrl: string | null
+  /** The account's phone as 8 local digits ('' when none) — required here since walk #17: buyers reach the
+   *  freelancer on WhatsApp through it, and every later success page promises that contact. */
+  phone: string
   /** Present only on a revisit (page.tsx's guard: profile exists, step 2 not yet finished) — the
    *  fields other than fullName started blank even for a prefill-capable form until this prop
    *  existed, since a fresh create never had anything to prefill them with. */
@@ -45,6 +51,7 @@ export function CreateFreelancerProfileForm({
   const router = useRouter()
 
   const [fullName, setFullName] = React.useState(initialFullName ?? '')
+  const [phone, setPhone] = React.useState(initialPhone)
   const [headline, setHeadline] = React.useState(initial?.headline ?? '')
   const [bio, setBio] = React.useState(initial?.bio ?? '')
   const [city, setCity] = React.useState(initial?.city ?? '')
@@ -56,6 +63,9 @@ export function CreateFreelancerProfileForm({
   function validate(): Errors {
     const next: Errors = {}
     if (!fullName.trim()) next.fullName = t('freelance.create.error.name_required', lang)
+
+    if (!phone.trim()) next.phone = t('seller.phone.error.required', lang)
+    else if (!isValidPhone(phone)) next.phone = t('monCompte.error.phoneFormat', lang)
 
     if (!headline.trim()) next.headline = t('freelance.create.error.headline_required', lang)
 
@@ -86,6 +96,7 @@ export function CreateFreelancerProfileForm({
 
     const res = await createFreelancerProfileAction({
       fullName: fullName.trim(),
+      phone: phone.trim(),
       headline: headline.trim(),
       bio: bio.trim(),
       city,
@@ -160,6 +171,16 @@ export function CreateFreelancerProfileForm({
           maxLength={100}
           value={fullName}
           onChange={(e) => setFullName(e.target.value)}
+        />
+
+        <TunisianPhoneInput
+          id="freelancer-phone"
+          className="max-w-70"
+          lang={lang}
+          value={phone}
+          onChange={setPhone}
+          error={errors.phone}
+          helper={t('seller.phone.helper', lang)}
         />
 
         <Input

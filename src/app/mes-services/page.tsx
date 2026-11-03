@@ -4,6 +4,7 @@ import { Wrench, LayoutGrid, Inbox, CheckCircle, TrendingUp } from 'lucide-react
 import { AppShell } from '@/components/shell/AppShell'
 import { Pagination } from '@/components/shared/Pagination'
 import { requireFreelancer } from '@/lib/auth/require-seller'
+import { SellerPhoneNotice } from '@/components/account/SellerPhoneNotice'
 import {
   SERVICE_TABS,
   SERVICES_PER_PAGE,
@@ -96,6 +97,7 @@ export default async function MesServicesPage({
     <AppShell user={topBarUser}>
       <div className="flex flex-col gap-6">
         <Header lang={lang} />
+        <SellerPhoneNotice userId={userId} lang={lang} />
 
         <div className="flex flex-wrap gap-4">
           <StatTile

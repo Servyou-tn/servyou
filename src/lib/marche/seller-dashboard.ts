@@ -80,6 +80,8 @@ export type NetProfit = {
 }
 
 export type SellerDashboard = {
+  /** « Commandes à traiter » — ALWAYS `actionable.length` (walk #5: it counted only « pending » while the
+   *  « À traiter maintenant » list it sits above counted every ACTIONABLE status, so the tile read 3 under a 4). */
   pendingCount: number
   ordersThisWeek: number
   activeProducts: number
@@ -226,28 +228,31 @@ export const getSellerDashboard = cache(
     const weekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000
     const buyer = (id: string) => names.get(id) ?? { name: '', city: null }
 
+    const actionable = orders
+      .filter((o) => ACTIONABLE.includes(o.status))
+      // Urgency: pending first, then oldest-first within a status — the order that has been
+      // waiting longest is the one at risk, so recency-DESC would be exactly backwards here.
+      .sort((a, b) => {
+        const rank = ACTIONABLE.indexOf(a.status) - ACTIONABLE.indexOf(b.status)
+        if (rank !== 0) return rank
+        return new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+      })
+      .map((o) => ({
+        id: o.id,
+        status: o.status,
+        orderType: o.order_type,
+        title: titleOf(o),
+        buyerName: buyer(o.buyer_id).name,
+        buyerCity: buyer(o.buyer_id).city,
+        createdAt: o.created_at,
+      }))
+
     return {
-      pendingCount: orders.filter((o) => o.status === 'pending').length,
+      // The tile and the « À traiter maintenant » badge are the same number by construction (walk #5).
+      pendingCount: actionable.length,
       ordersThisWeek: orders.filter((o) => new Date(o.created_at).getTime() >= weekAgo).length,
       activeProducts,
-      actionable: orders
-        .filter((o) => ACTIONABLE.includes(o.status))
-        // Urgency: pending first, then oldest-first within a status — the order that has been
-        // waiting longest is the one at risk, so recency-DESC would be exactly backwards here.
-        .sort((a, b) => {
-          const rank = ACTIONABLE.indexOf(a.status) - ACTIONABLE.indexOf(b.status)
-          if (rank !== 0) return rank
-          return new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
-        })
-        .map((o) => ({
-          id: o.id,
-          status: o.status,
-          orderType: o.order_type,
-          title: titleOf(o),
-          buyerName: buyer(o.buyer_id).name,
-          buyerCity: buyer(o.buyer_id).city,
-          createdAt: o.created_at,
-        })),
+      actionable,
       inFlight: orders
         .filter((o) => IN_FLIGHT.includes(o.status))
         .map((o) => ({

@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import { AppShell } from '@/components/shell/AppShell'
 import { AlreadyHaveRole } from '@/components/devenir/AlreadyHaveRole'
 import { CreateShopForm } from './_components/CreateShopForm'
+import { readOwnContactPhone } from '@/lib/seller/contact-phone'
 import { getShellUser } from '@/lib/marche/shell-user'
 import { resolveOwnedShopId } from '@/lib/shops/owner-shop'
 import { createClient } from '@/lib/supabase/server'
@@ -54,9 +55,13 @@ export default async function CreerBoutiquePage() {
     )
   }
 
+  // The contact phone (walk #17): asked here only when the account has none. A failed read is a page error.
+  const ownPhone = await readOwnContactPhone(supabase, shell.id)
+  if (!ownPhone.ok) throw new Error('profile phone fetch failed while rendering /ma-boutique/creer')
+
   return (
     <AppShell user={shell.topBarUser}>
-      <CreateShopForm />
+      <CreateShopForm askPhone={!ownPhone.phone} />
     </AppShell>
   )
 }

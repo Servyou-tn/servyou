@@ -9,6 +9,8 @@ import { getLang } from '@/lib/i18n/server'
 import { t } from '@/lib/i18n'
 import { GOVERNORATES } from '@/lib/tunisia-governorates'
 import { resolveOwnedShopId } from '@/lib/shops/owner-shop'
+import { isValidPhone, normalizePhone } from '@/lib/phone'
+import { SELLER_PHONE_REQUIRED_HINT } from '@/lib/seller/contact-phone'
 import {
   normalizeShopLogo,
   normalizeShopBanner,
@@ -36,6 +38,11 @@ import { isCallerActive, uploadBucket } from '@/lib/images/upload-guard'
 // Flipping first means the only way a shop-less flip can happen is the name pre-check racing a
 // concurrent insert, which lands on "shop_owner with no shop" — a state require-seller.ts already
 // names and handles (G4 renders its own "create your shop" state; only this route can fix it).
+//
+// ⚑ A CONTACT PHONE IS REQUIRED TO CREATE THE SHOP (walk 2026-11-02 #17): buyers reach the shop on WhatsApp through
+// profiles.phone. An account that already has one keeps it (never overwritten here); one that has none must send a
+// valid +216 number, written in the SAME UPDATE as seller_type — before the shops INSERT, so the DB trigger
+// enforce_seller_contact_phone (shops BEFORE INSERT) sees it, and a refusal never leaves a shop owner without a shop.
 
 const SHOP_BUCKET = 'shop-assets'
 const SHOP_ASSET_CACHE_CONTROL = '31536000' // matches every other bucket — see mon-compte/actions.ts:64
@@ -46,12 +53,14 @@ const DESC_MAX = 2000
 
 export type CreateShopResult =
   | { ok: true; shopId: string }
-  | { ok: false; error: string; field?: 'name' | 'city' | 'description' }
+  | { ok: false; error: string; field?: 'name' | 'city' | 'description' | 'phone' }
 
 const CreateShopInput = z.object({
   name: z.string().trim().min(1).max(NAME_MAX),
   city: z.string().trim().min(1),
   description: z.string().trim().min(DESC_MIN).max(DESC_MAX),
+  /** Only read when the account has no phone yet — the form shows the field in that case only. */
+  phone: z.string().trim().max(32).optional(),
 })
 
 export async function createShopAction(input: unknown): Promise<CreateShopResult> {
@@ -86,7 +95,7 @@ export async function createShopAction(input: unknown): Promise<CreateShopResult
   // freelancer out of this form, but a server action must re-derive rather than trust the render.
   const { data: profile, error: profileErr } = await supabase
     .from('profiles')
-    .select('seller_type')
+    .select('seller_type, phone')
     .eq('id', user.id)
     .single()
   if (profileErr) {
@@ -96,6 +105,15 @@ export async function createShopAction(input: unknown): Promise<CreateShopResult
   if (profile.seller_type === 'freelancer') {
     console.error(`[createShop] rejected: user ${user.id} is seller_type=freelancer — switch flow does not exist`)
     return { ok: false, error: t('common.error_generic', lang) }
+  }
+
+  const hasPhone = typeof profile.phone === 'string' && profile.phone.trim() !== ''
+  const phoneInput = parsed.data.phone ?? ''
+  if (!hasPhone && !phoneInput) {
+    return { ok: false, error: t('seller.phone.error.required', lang), field: 'phone' }
+  }
+  if (!hasPhone && !isValidPhone(phoneInput)) {
+    return { ok: false, error: t('monCompte.error.phoneFormat', lang), field: 'phone' }
   }
 
   const existing = await resolveOwnedShopId(supabase, user.id)
@@ -126,7 +144,7 @@ export async function createShopAction(input: unknown): Promise<CreateShopResult
 
   const { error: roleErr } = await supabase
     .from('profiles')
-    .update({ seller_type: 'shop_owner' })
+    .update(hasPhone ? { seller_type: 'shop_owner' } : { seller_type: 'shop_owner', phone: normalizePhone(phoneInput) })
     .eq('id', user.id)
   if (roleErr) {
     console.error('[createShop] seller_type update failed:', roleErr.message, roleErr.code, roleErr.details)
@@ -155,6 +173,9 @@ export async function createShopAction(input: unknown): Promise<CreateShopResult
     }
     if (insErr?.code === '23505') {
       return { ok: false, error: t('shop.create.error.name_taken', lang), field: 'name' }
+    }
+    if (insErr?.hint === SELLER_PHONE_REQUIRED_HINT) {
+      return { ok: false, error: t('seller.phone.error.required', lang), field: 'phone' }
     }
     return { ok: false, error: t('common.error_generic', lang) }
   }

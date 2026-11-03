@@ -20,7 +20,13 @@ export type ProductActionResult = { ok: true } | { ok: false; error: string }
 /** G7: field attribution for inline errors, mirroring UpdateShopResult's shape. */
 export type UpdateProductResult =
   | { ok: true }
-  | { ok: false; error: string; field?: 'title' | 'price' | 'deliveryFee' | 'stockCount' }
+  | { ok: false; error: string; field?: ProductFormField }
+
+/** The form fields a product write can attribute an error to (walk #31: the form shows it under the field). */
+export type ProductFormField = 'title' | 'price' | 'deliveryFee' | 'stockCount'
+
+/** G6 create: same field attribution as the edit (UpdateProductResult). */
+export type CreateProductResult = UpdateProductResult
 
 export type UploadImageResult =
   | { ok: true; path: string; url: string }

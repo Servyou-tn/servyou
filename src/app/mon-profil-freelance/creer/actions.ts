@@ -7,6 +7,7 @@ import { getLang } from '@/lib/i18n/server'
 import { t } from '@/lib/i18n'
 import { GOVERNORATES } from '@/lib/tunisia-governorates'
 import { resolveOwnedFreelancerProfileId } from '@/lib/freelancer/owner-profile'
+import { isValidPhone, normalizePhone } from '@/lib/phone'
 
 // H2 "Créer mon profil freelance" step 1. Full reasoning: docs/design/h2-discovery.md.
 //
@@ -24,6 +25,11 @@ import { resolveOwnedFreelancerProfileId } from '@/lib/freelancer/owner-profile'
 // only one, and it is the same column /mon-compte's updateProfileAction writes. Bundling it into
 // the seller_type UPDATE keeps this to one round trip and one place the age-gate trigger fires.
 //
+// ⚑ THE CONTACT PHONE RIDES ALONG TOO (walk 2026-11-02 #17). Buyers reach a freelancer on WhatsApp through
+// profiles.phone (get_contact_phone), and every later success page promises it — so step 1 asks for it, required,
+// with Mon compte's +216 rules (isValidPhone / normalizePhone), and it is written in the same UPDATE as seller_type.
+// The publish actions (mes-services) and the DB trigger enforce_seller_contact_phone check it again at publish.
+//
 // Avatar is NOT handled here. It targets profiles.avatar_url via the existing
 // uploadAvatarAction (mon-compte/actions.ts) — no shopId-style ordering dependency, so
 // AvatarField calls that action directly and independently of this one.
@@ -35,10 +41,11 @@ const NAME_MAX = 100
 
 export type CreateFreelancerProfileResult =
   | { ok: true }
-  | { ok: false; error: string; field?: 'fullName' | 'headline' | 'bio' | 'city' }
+  | { ok: false; error: string; field?: 'fullName' | 'phone' | 'headline' | 'bio' | 'city' }
 
 const CreateFreelancerProfileInput = z.object({
   fullName: z.string().trim().min(1).max(NAME_MAX),
+  phone: z.string().trim().min(1).max(32),
   headline: z.string().trim().min(1).max(HEADLINE_MAX),
   bio: z.string().trim().min(BIO_MIN).max(BIO_MAX),
   city: z.string().trim().min(1),
@@ -55,11 +62,16 @@ export async function createFreelancerProfileAction(input: unknown): Promise<Cre
     )
     const field = issue?.path[0]
     if (field === 'fullName') return { ok: false, error: t('freelance.create.error.name_required', lang), field: 'fullName' }
+    if (field === 'phone') return { ok: false, error: t('seller.phone.error.required', lang), field: 'phone' }
     if (field === 'headline') return { ok: false, error: t('freelance.create.error.headline_required', lang), field: 'headline' }
     if (field === 'bio') return { ok: false, error: t('freelance.create.error.bio_min', lang, { min: BIO_MIN }), field: 'bio' }
     return { ok: false, error: t('common.error_generic', lang) }
   }
   const { fullName, headline, bio, city } = parsed.data
+  if (!isValidPhone(parsed.data.phone)) {
+    return { ok: false, error: t('monCompte.error.phoneFormat', lang), field: 'phone' }
+  }
+  const phone = normalizePhone(parsed.data.phone)
 
   const supabase = await createClient()
   const {
@@ -101,7 +113,7 @@ export async function createFreelancerProfileAction(input: unknown): Promise<Cre
   // that trigger, not a second age check against a user who already passed it once.
   const { error: roleErr } = await supabase
     .from('profiles')
-    .update({ seller_type: 'freelancer', full_name: fullName })
+    .update({ seller_type: 'freelancer', full_name: fullName, phone })
     .eq('id', user.id)
   if (roleErr) {
     console.error('[createFreelancerProfile] seller_type update failed:', roleErr.message, roleErr.code, roleErr.details)

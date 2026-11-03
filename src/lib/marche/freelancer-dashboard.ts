@@ -181,6 +181,23 @@ export function checklistFrom(input: {
 }
 
 /**
+ * The Écosystème cards' two counts, from THIS freelancer's own service orders (walk 2026-11-02 #19: they used to be
+ * platform-wide — every consumer profile and every shop — so a brand-new freelancer read « 4 consommateurs qui ont
+ * utilisé vos services »). Distinct buyers of the freelancer's non-cancelled service orders: `shops` = those whose
+ * account is a shop owner (« 1 boutique avec qui vous avez travaillé »), `consumers` = every other buyer (consumers, and
+ * freelancers buying as consumers). A cancelled request is not « worked with ».
+ */
+export function ecosystemCounts(
+  orders: readonly { status: string; buyer_id: string }[],
+  sellerTypeById: ReadonlyMap<string, string | null>,
+): { consumers: number; shops: number } {
+  const buyers = new Set(orders.filter((o) => o.status !== 'cancelled' && o.buyer_id).map((o) => o.buyer_id))
+  let shops = 0
+  for (const id of buyers) if (sellerTypeById.get(id) === 'shop_owner') shops++
+  return { consumers: buyers.size - shops, shops }
+}
+
+/**
  * Everything H4 renders for one freelancer.
  *
  * `avatarUrl` is passed in rather than re-queried: the caller (requireFreelancer, via
@@ -225,21 +242,26 @@ export const getFreelancerDashboard = cache(
     // Buyer names for Activité récente's "Engagement terminé avec {name}" rows — exact G8 pattern
     // (seller-orders.ts:201-217), not a new one: public_profiles SELECT is owner-only, so an
     // embed on the orders query above would return null for every buyer; a second query on the
-    // collected ids is the proven fix. Logs and degrades (buyerName '') rather than throwing —
-    // same choice seller-orders.ts makes, a missing display name shouldn't break the feed.
+    // collected ids is the proven fix. The same read carries each buyer's seller_type, which the
+    // Écosystème counts split on (ecosystemCounts, walk #19) — so a failed read now THROWS, like the
+    // two platform-wide count queries it replaces did: a wrong count must never render as a real one.
     const buyerIds = [...new Set(orders.map((o) => o.buyer_id).filter(Boolean))]
     const buyerNames = new Map<string, string>()
+    const buyerSellerTypes = new Map<string, string | null>()
     if (buyerIds.length > 0) {
       const { data: buyerProfiles, error: buyerProfilesError } = await supabase
         .from('public_profiles')
-        .select('id, full_name')
+        .select('id, full_name, seller_type')
         .in('id', buyerIds)
       if (buyerProfilesError) {
         reportQueryError('freelancer-dashboard buyer public_profiles', buyerProfilesError)
-      } else {
-        for (const p of buyerProfiles ?? []) {
-          // public_profiles is a view: every column is nullable in the generated type (`id` never is at runtime).
-          if (p.id) buyerNames.set(p.id, p.full_name ?? '')
+        throw new Error(`freelancer buyer profiles fetch failed: ${buyerProfilesError.message}`)
+      }
+      for (const p of buyerProfiles ?? []) {
+        // public_profiles is a view: every column is nullable in the generated type (`id` never is at runtime).
+        if (p.id) {
+          buyerNames.set(p.id, p.full_name ?? '')
+          buyerSellerTypes.set(p.id, p.seller_type ?? null)
         }
       }
     }
@@ -286,27 +308,8 @@ export const getFreelancerDashboard = cache(
       job_posts: { title: string } | { title: string }[] | null
     }[]
 
-    // Ecosystem — consumers: public_profiles bypasses base-table RLS by design (security_invoker
-    // false), so this also counts suspended profiles; there is no flag on the view to exclude
-    // them. Shops: no admin_hidden_at filter in the query, but since 20261025213214 RLS drops
-    // moderated shops (except the viewer's own, or one they bought from), so the count is per-viewer
-    // — see docs/design/h4-discovery.md §3 for the original tension with 20260607160156.
-    const { count: consumersCount, error: consumersError } = await supabase
-      .from('public_profiles')
-      .select('id', { count: 'exact', head: true })
-      .is('seller_type', null)
-    if (consumersError) {
-      console.error('[freelancer-dashboard] consumers count error:', consumersError.message, consumersError.code)
-      throw new Error(`ecosystem consumers count failed: ${consumersError.message}`)
-    }
-
-    const { count: shopsCount, error: shopsError } = await supabase
-      .from('shops')
-      .select('id', { count: 'exact', head: true })
-    if (shopsError) {
-      console.error('[freelancer-dashboard] shops count error:', shopsError.message, shopsError.code)
-      throw new Error(`ecosystem shops count failed: ${shopsError.message}`)
-    }
+    // Ecosystem — this freelancer's own buyers, split by account type (ecosystemCounts above, walk #19).
+    const ecosystem = ecosystemCounts(orders, buyerSellerTypes)
 
     // Profile-dependent reads: nothing to query without a freelancer_profiles row (H2 step 1 not
     // finished yet) — checklist items 2-3 stay false, no services, no skill-matched missions.
@@ -426,8 +429,8 @@ export const getFreelancerDashboard = cache(
       demandesEnAttente,
       checklist: checklistFrom({ avatarUrl, bioNonEmpty, skillsCount, linksCount, portfolioCount }),
       ecosystem: {
-        consumers: consumersCount ?? 0,
-        shops: shopsCount ?? 0,
+        consumers: ecosystem.consumers,
+        shops: ecosystem.shops,
       },
       missions,
       activite,

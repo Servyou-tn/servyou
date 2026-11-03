@@ -18,6 +18,9 @@ const state = {
   orderCount: 0,
   orderCountError: null as { message: string; code?: string } | null,
   deleteResult: { data: null as { id: string } | null, error: null as { message: string; code?: string } | null },
+  // Walk #17: the contact phone readOwnContactPhone returns (mocked below), and how many service_listings UPDATEs ran.
+  ownPhone: { ok: true, phone: '+21620000000' } as { ok: true; phone: string | null } | { ok: false },
+  updateCalls: 0,
 }
 
 const revalidateCalls: string[] = []
@@ -48,7 +51,10 @@ vi.mock('@/lib/supabase/server', () => ({
           return c
         }
         return {
-          update: () => chain(() => state.updateResult),
+          update: () => {
+            state.updateCalls++
+            return chain(() => state.updateResult)
+          },
           delete: () => chain(() => state.deleteResult),
         }
       }
@@ -64,6 +70,11 @@ vi.mock('@/lib/supabase/server', () => ({
       throw new Error(`unexpected table in mock: ${table}`)
     },
   }),
+}))
+
+vi.mock('@/lib/seller/contact-phone', () => ({
+  readOwnContactPhone: async () => state.ownPhone,
+  SELLER_PHONE_REQUIRED_HINT: 'seller_phone_required',
 }))
 
 vi.mock('@/lib/freelancer/owner-profile', () => ({
@@ -86,6 +97,8 @@ beforeEach(() => {
   state.orderCount = 0
   state.orderCountError = null
   state.deleteResult = { data: { id: SERVICE_ID }, error: null }
+  state.ownPhone = { ok: true, phone: '+21620000000' }
+  state.updateCalls = 0
   revalidateCalls.length = 0
 })
 
@@ -132,6 +145,38 @@ describe('toggleServiceStatusAction', () => {
     const { toggleServiceStatusAction } = await import('@/app/actions/services')
     const res = await toggleServiceStatusAction({ serviceId: SERVICE_ID, nextStatus: 'active' })
     expect(res.ok).toBe(false)
+  })
+
+  // Walk #17 — reactivating is publishing again: no contact phone, no « Activer ».
+  it('« Activer » without a contact phone is refused BEFORE the write, with the add-your-number message', async () => {
+    state.ownPhone = { ok: true, phone: null }
+    const { toggleServiceStatusAction } = await import('@/app/actions/services')
+    const res = await toggleServiceStatusAction({ serviceId: SERVICE_ID, nextStatus: 'active' })
+    expect(res).toEqual({ ok: false, error: expect.stringContaining('numéro de téléphone') })
+    expect(state.updateCalls).toBe(0)
+  })
+
+  it('a failed phone read is a generic error, never a pass', async () => {
+    state.ownPhone = { ok: false }
+    const { toggleServiceStatusAction } = await import('@/app/actions/services')
+    const res = await toggleServiceStatusAction({ serviceId: SERVICE_ID, nextStatus: 'active' })
+    expect(res.ok).toBe(false)
+    expect(state.updateCalls).toBe(0)
+  })
+
+  it('pausing never needs a phone', async () => {
+    state.ownPhone = { ok: true, phone: null }
+    const { toggleServiceStatusAction } = await import('@/app/actions/services')
+    const res = await toggleServiceStatusAction({ serviceId: SERVICE_ID, nextStatus: 'hidden' })
+    expect(res.ok).toBe(true)
+    expect(state.updateCalls).toBe(1)
+  })
+
+  it('maps the DB trigger refusal (hint seller_phone_required) to the same message', async () => {
+    state.updateResult = { data: null, error: { message: 'Numéro de téléphone requis', code: '23514', hint: 'seller_phone_required' } as never }
+    const { toggleServiceStatusAction } = await import('@/app/actions/services')
+    const res = await toggleServiceStatusAction({ serviceId: SERVICE_ID, nextStatus: 'active' })
+    expect(res).toEqual({ ok: false, error: expect.stringContaining('numéro de téléphone') })
   })
 })
 
