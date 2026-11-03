@@ -98,7 +98,8 @@ function OrderRow({
 
       {/* Phone reveal rule: the freelancer's number exists only once they accept — a pending request shows the hint, not a button that can only fail. */}
       {(contact !== 'hidden' || canConfirmReceipt(order.status)) && (
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+        // 375: 8 between the two actions, as on the Produits tab (m375-e3-commandes, docs/design/m375-e3-e4-deltas.md).
+        <div className="flex flex-col gap-3 max-lg:gap-2 sm:flex-row sm:items-center">
           {contact === 'button' && <WhatsAppButton sellerId={order.sellerId} serviceTitle={title} />}
           {contact === 'hint' && <PhoneAfterAcceptance who="freelancer" lang={lang} />}
           {canConfirmReceipt(order.status) && <ConfirmReceipt orderId={order.id} />}

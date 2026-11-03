@@ -1,0 +1,1961 @@
+{
+ "n": "E4 — Détail de ma commande (375 mobile) · Arrivée",
+ "t": "FRAME",
+ "w": 375,
+ "h": 2425,
+ "layout": "VERTICAL",
+ "gap": 16,
+ "pad": "16 16 32 16",
+ "align": "MIN/MIN",
+ "size": "FIXED/HUG",
+ "fill": [
+  "var:surface/base"
+ ],
+ "c": [
+  {
+   "n": "H1",
+   "t": "TEXT",
+   "w": 343,
+   "h": 28,
+   "size": "FILL/HUG",
+   "fill": [
+    "var:blue/800"
+   ],
+   "text": "Commande #A4F729",
+   "fs": 22,
+   "font": "Semi Bold"
+  },
+  {
+   "n": "StatusPill",
+   "t": "INSTANCE",
+   "w": 67,
+   "h": 25,
+   "layout": "HORIZONTAL",
+   "gap": 0,
+   "pad": "4 12 4 12",
+   "align": "MIN/CENTER",
+   "size": "HUG/HUG",
+   "r": 9999,
+   "fill": [
+    "var:blue/100"
+   ],
+   "comp": "StatusPill / status=arrivee",
+   "c": [
+    {
+     "n": "Arrivée",
+     "t": "TEXT",
+     "w": 43,
+     "h": 17,
+     "size": "HUG/HUG",
+     "fill": [
+      "var:blue/600"
+     ],
+     "text": "Arrivée",
+     "fs": 12,
+     "font": "Semi Bold"
+    }
+   ]
+  },
+  {
+   "n": "Passée le 18 juillet 2026",
+   "t": "TEXT",
+   "w": 160,
+   "h": 21,
+   "size": "HUG/HUG",
+   "fill": [
+    "var:text/secondary"
+   ],
+   "text": "Passée le 18 juillet 2026",
+   "fs": 14,
+   "font": "Regular",
+   "style": "Body Small"
+  },
+  {
+   "n": "panel-stepper",
+   "t": "FRAME",
+   "w": 343,
+   "h": 428,
+   "layout": "VERTICAL",
+   "gap": 16,
+   "pad": "24 24 24 24",
+   "align": "MIN/CENTER",
+   "size": "FILL/HUG",
+   "r": 12,
+   "fill": [
+    "var:surface/base"
+   ],
+   "stroke": [
+    "var:border/subtle"
+   ],
+   "sw": 1,
+   "c": [
+    {
+     "n": "Order Stepper",
+     "t": "INSTANCE",
+     "w": 132,
+     "h": 380,
+     "size": "FIXED/FIXED",
+     "comp": "Order Stepper / type=product, orientation=vertical",
+     "c": [
+      {
+       "n": "connector",
+       "t": "FRAME",
+       "w": 2,
+       "h": 26,
+       "size": "FIXED/FIXED",
+       "fill": [
+        "var:blue/600"
+       ],
+       "c": []
+      },
+      {
+       "n": "circle",
+       "t": "INSTANCE",
+       "w": 32,
+       "h": 32,
+       "layout": "HORIZONTAL",
+       "gap": 0,
+       "pad": "0 0 0 0",
+       "align": "CENTER/CENTER",
+       "size": "FIXED/FIXED",
+       "r": 9999,
+       "fill": [
+        "var:blue/600"
+       ],
+       "comp": "Step Circle / state=completed",
+       "c": [
+        {
+         "n": "mark",
+         "t": "INSTANCE",
+         "w": 16,
+         "h": 16,
+         "size": "FIXED/FIXED",
+         "comp": "icon-check",
+         "c": [
+          {
+           "n": "Vector",
+           "t": "VECTOR",
+           "w": 11,
+           "h": 7,
+           "size": "FIXED/FIXED",
+           "stroke": [
+            "var:text/inverse"
+           ],
+           "sw": 2
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "n": "label",
+       "t": "TEXT",
+       "w": 69,
+       "h": 20,
+       "size": "FIXED/FIXED",
+       "fill": [
+        "var:text/primary"
+       ],
+       "text": "En attente",
+       "fs": 14,
+       "font": "Medium"
+      },
+      {
+       "n": "date",
+       "t": "TEXT",
+       "w": 36,
+       "h": 17,
+       "size": "FIXED/FIXED",
+       "fill": [
+        "var:text/muted"
+       ],
+       "text": "18 juil.",
+       "fs": 12,
+       "font": "Medium"
+      },
+      {
+       "n": "connector",
+       "t": "FRAME",
+       "w": 2,
+       "h": 26,
+       "size": "FIXED/FIXED",
+       "fill": [
+        "var:blue/600"
+       ],
+       "c": []
+      },
+      {
+       "n": "circle",
+       "t": "INSTANCE",
+       "w": 32,
+       "h": 32,
+       "layout": "HORIZONTAL",
+       "gap": 0,
+       "pad": "0 0 0 0",
+       "align": "CENTER/CENTER",
+       "size": "FIXED/FIXED",
+       "r": 9999,
+       "fill": [
+        "var:blue/600"
+       ],
+       "comp": "Step Circle / state=completed",
+       "c": [
+        {
+         "n": "mark",
+         "t": "INSTANCE",
+         "w": 16,
+         "h": 16,
+         "size": "FIXED/FIXED",
+         "comp": "icon-check",
+         "c": [
+          {
+           "n": "Vector",
+           "t": "VECTOR",
+           "w": 11,
+           "h": 7,
+           "size": "FIXED/FIXED",
+           "stroke": [
+            "var:text/inverse"
+           ],
+           "sw": 2
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "n": "label",
+       "t": "TEXT",
+       "w": 64,
+       "h": 20,
+       "size": "FIXED/FIXED",
+       "fill": [
+        "var:text/primary"
+       ],
+       "text": "Acceptée",
+       "fs": 14,
+       "font": "Medium"
+      },
+      {
+       "n": "date",
+       "t": "TEXT",
+       "w": 36,
+       "h": 17,
+       "size": "FIXED/FIXED",
+       "fill": [
+        "var:text/muted"
+       ],
+       "text": "18 juil.",
+       "fs": 12,
+       "font": "Medium"
+      },
+      {
+       "n": "connector",
+       "t": "FRAME",
+       "w": 2,
+       "h": 26,
+       "size": "FIXED/FIXED",
+       "fill": [
+        "var:blue/600"
+       ],
+       "c": []
+      },
+      {
+       "n": "circle",
+       "t": "INSTANCE",
+       "w": 32,
+       "h": 32,
+       "layout": "HORIZONTAL",
+       "gap": 0,
+       "pad": "0 0 0 0",
+       "align": "CENTER/CENTER",
+       "size": "FIXED/FIXED",
+       "r": 9999,
+       "fill": [
+        "var:blue/600"
+       ],
+       "comp": "Step Circle / state=completed",
+       "c": [
+        {
+         "n": "mark",
+         "t": "INSTANCE",
+         "w": 16,
+         "h": 16,
+         "size": "FIXED/FIXED",
+         "comp": "icon-check",
+         "c": [
+          {
+           "n": "Vector",
+           "t": "VECTOR",
+           "w": 11,
+           "h": 7,
+           "size": "FIXED/FIXED",
+           "stroke": [
+            "var:text/inverse"
+           ],
+           "sw": 2
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "n": "label",
+       "t": "TEXT",
+       "w": 61,
+       "h": 20,
+       "size": "FIXED/FIXED",
+       "fill": [
+        "var:text/primary"
+       ],
+       "text": "Préparée",
+       "fs": 14,
+       "font": "Medium"
+      },
+      {
+       "n": "date",
+       "t": "TEXT",
+       "w": 36,
+       "h": 17,
+       "size": "FIXED/FIXED",
+       "fill": [
+        "var:text/muted"
+       ],
+       "text": "18 juil.",
+       "fs": 12,
+       "font": "Medium"
+      },
+      {
+       "n": "connector",
+       "t": "FRAME",
+       "w": 2,
+       "h": 26,
+       "size": "FIXED/FIXED",
+       "fill": [
+        "var:blue/600"
+       ],
+       "c": []
+      },
+      {
+       "n": "circle",
+       "t": "INSTANCE",
+       "w": 32,
+       "h": 32,
+       "layout": "HORIZONTAL",
+       "gap": 0,
+       "pad": "0 0 0 0",
+       "align": "CENTER/CENTER",
+       "size": "FIXED/FIXED",
+       "r": 9999,
+       "fill": [
+        "var:blue/600"
+       ],
+       "comp": "Step Circle / state=completed",
+       "c": [
+        {
+         "n": "mark",
+         "t": "INSTANCE",
+         "w": 16,
+         "h": 16,
+         "size": "FIXED/FIXED",
+         "comp": "icon-check",
+         "c": [
+          {
+           "n": "Vector",
+           "t": "VECTOR",
+           "w": 11,
+           "h": 7,
+           "size": "FIXED/FIXED",
+           "stroke": [
+            "var:text/inverse"
+           ],
+           "sw": 2
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "n": "label",
+       "t": "TEXT",
+       "w": 62,
+       "h": 20,
+       "size": "FIXED/FIXED",
+       "fill": [
+        "var:text/primary"
+       ],
+       "text": "Expédiée",
+       "fs": 14,
+       "font": "Medium"
+      },
+      {
+       "n": "date",
+       "t": "TEXT",
+       "w": 36,
+       "h": 17,
+       "size": "FIXED/FIXED",
+       "fill": [
+        "var:text/muted"
+       ],
+       "text": "19 juil.",
+       "fs": 12,
+       "font": "Medium"
+      },
+      {
+       "n": "connector",
+       "t": "FRAME",
+       "w": 2,
+       "h": 26,
+       "size": "FIXED/FIXED",
+       "fill": [
+        "var:blue/600"
+       ],
+       "c": []
+      },
+      {
+       "n": "circle",
+       "t": "INSTANCE",
+       "w": 32,
+       "h": 32,
+       "layout": "HORIZONTAL",
+       "gap": 0,
+       "pad": "0 0 0 0",
+       "align": "CENTER/CENTER",
+       "size": "FIXED/FIXED",
+       "r": 9999,
+       "fill": [
+        "var:blue/600"
+       ],
+       "comp": "Step Circle / state=completed",
+       "c": [
+        {
+         "n": "mark",
+         "t": "INSTANCE",
+         "w": 16,
+         "h": 16,
+         "size": "FIXED/FIXED",
+         "comp": "icon-check",
+         "c": [
+          {
+           "n": "Vector",
+           "t": "VECTOR",
+           "w": 11,
+           "h": 7,
+           "size": "FIXED/FIXED",
+           "stroke": [
+            "var:text/inverse"
+           ],
+           "sw": 2
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "n": "label",
+       "t": "TEXT",
+       "w": 77,
+       "h": 20,
+       "size": "FIXED/FIXED",
+       "fill": [
+        "var:text/primary"
+       ],
+       "text": "En livraison",
+       "fs": 14,
+       "font": "Medium"
+      },
+      {
+       "n": "connector",
+       "t": "FRAME",
+       "w": 2,
+       "h": 26,
+       "size": "FIXED/FIXED",
+       "fill": [
+        "var:border/strong"
+       ],
+       "c": []
+      },
+      {
+       "n": "circle",
+       "t": "INSTANCE",
+       "w": 32,
+       "h": 32,
+       "layout": "HORIZONTAL",
+       "gap": 0,
+       "pad": "0 0 0 0",
+       "align": "CENTER/CENTER",
+       "size": "FIXED/FIXED",
+       "r": 9999,
+       "fill": [
+        "var:surface/base"
+       ],
+       "stroke": [
+        "var:blue/600"
+       ],
+       "sw": 2,
+       "comp": "Step Circle / state=current",
+       "c": [
+        {
+         "n": "dot",
+         "t": "FRAME",
+         "w": 10,
+         "h": 10,
+         "size": "FIXED/FIXED",
+         "r": 9999,
+         "fill": [
+          "var:blue/600"
+         ],
+         "c": []
+        }
+       ]
+      },
+      {
+       "n": "label",
+       "t": "TEXT",
+       "w": 50,
+       "h": 20,
+       "size": "FIXED/FIXED",
+       "fill": [
+        "var:blue/600"
+       ],
+       "text": "Arrivée",
+       "fs": 14,
+       "font": "Semi Bold"
+      },
+      {
+       "n": "circle",
+       "t": "INSTANCE",
+       "w": 32,
+       "h": 32,
+       "layout": "HORIZONTAL",
+       "gap": 0,
+       "pad": "0 0 0 0",
+       "align": "CENTER/CENTER",
+       "size": "FIXED/FIXED",
+       "r": 9999,
+       "fill": [
+        "var:surface/base"
+       ],
+       "stroke": [
+        "var:border/strong"
+       ],
+       "sw": 1.5,
+       "comp": "Step Circle / state=upcoming",
+       "c": []
+      },
+      {
+       "n": "label",
+       "t": "TEXT",
+       "w": 42,
+       "h": 20,
+       "size": "FIXED/FIXED",
+       "fill": [
+        "var:text/muted"
+       ],
+       "text": "Reçue",
+       "fs": 14,
+       "font": "Medium"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "n": "panel-action",
+   "t": "FRAME",
+   "w": 343,
+   "h": 281,
+   "layout": "VERTICAL",
+   "gap": 16,
+   "pad": "24 16 24 16",
+   "align": "MIN/MIN",
+   "size": "FILL/HUG",
+   "r": 12,
+   "fill": [
+    "var:surface/base"
+   ],
+   "stroke": [
+    "var:border/subtle"
+   ],
+   "sw": 1,
+   "c": [
+    {
+     "n": "Votre colis est arrivé ?",
+     "t": "TEXT",
+     "w": 311,
+     "h": 26,
+     "size": "FILL/HUG",
+     "fill": [
+      "var:text/primary"
+     ],
+     "text": "Votre colis est arrivé ?",
+     "fs": 20,
+     "font": "Semi Bold",
+     "style": "H3"
+    },
+    {
+     "n": "Button",
+     "t": "INSTANCE",
+     "w": 311,
+     "h": 48,
+     "layout": "HORIZONTAL",
+     "gap": 8,
+     "pad": "0 20 0 20",
+     "align": "CENTER/CENTER",
+     "size": "FILL/FIXED",
+     "r": 10,
+     "fill": [
+      "var:blue/600"
+     ],
+     "comp": "Button / variant=primary, size=lg, state=default",
+     "c": [
+      {
+       "n": "icon",
+       "t": "FRAME",
+       "w": 20,
+       "h": 20,
+       "hidden": true,
+       "size": "FIXED/FIXED",
+       "c": [
+        {
+         "n": "bar-h",
+         "t": "RECTANGLE",
+         "w": 13,
+         "h": 2,
+         "size": "FIXED/FIXED",
+         "r": 1,
+         "fill": [
+          "var:text/inverse"
+         ]
+        },
+        {
+         "n": "bar-v",
+         "t": "RECTANGLE",
+         "w": 2,
+         "h": 13,
+         "size": "FIXED/FIXED",
+         "r": 1,
+         "fill": [
+          "var:text/inverse"
+         ]
+        }
+       ]
+      },
+      {
+       "n": "label",
+       "t": "TEXT",
+       "w": 271,
+       "h": 26,
+       "size": "FILL/HUG",
+       "fill": [
+        "var:text/inverse"
+       ],
+       "text": "Confirmer la réception",
+       "fs": 16,
+       "font": "Semi Bold"
+      }
+     ]
+    },
+    {
+     "n": "Button",
+     "t": "INSTANCE",
+     "w": 311,
+     "h": 48,
+     "layout": "HORIZONTAL",
+     "gap": 8,
+     "pad": "0 20 0 20",
+     "align": "CENTER/CENTER",
+     "size": "FILL/FIXED",
+     "r": 10,
+     "fill": [
+      "var:surface/base"
+     ],
+     "stroke": [
+      "var:border/strong"
+     ],
+     "sw": 1,
+     "comp": "Button / variant=secondary, size=lg, state=default",
+     "c": [
+      {
+       "n": "icon",
+       "t": "FRAME",
+       "w": 20,
+       "h": 20,
+       "hidden": true,
+       "size": "FIXED/FIXED",
+       "c": [
+        {
+         "n": "bar-h",
+         "t": "RECTANGLE",
+         "w": 13,
+         "h": 2,
+         "size": "FIXED/FIXED",
+         "r": 1,
+         "fill": [
+          "var:text/primary"
+         ]
+        },
+        {
+         "n": "bar-v",
+         "t": "RECTANGLE",
+         "w": 2,
+         "h": 13,
+         "size": "FIXED/FIXED",
+         "r": 1,
+         "fill": [
+          "var:text/primary"
+         ]
+        }
+       ]
+      },
+      {
+       "n": "label",
+       "t": "TEXT",
+       "w": 165,
+       "h": 26,
+       "size": "HUG/HUG",
+       "fill": [
+        "var:text/primary"
+       ],
+       "text": "Signaler un problème",
+       "fs": 16,
+       "font": "Semi Bold"
+      }
+     ]
+    },
+    {
+     "n": "Confirmez seulement après avoir reçu et vérifié votre colis. La commande sera alors clôturée.",
+     "t": "TEXT",
+     "w": 311,
+     "h": 63,
+     "size": "FILL/HUG",
+     "fill": [
+      "var:text/secondary"
+     ],
+     "text": "Confirmez seulement après avoir reçu et vérifié votre colis. La commande sera alors clôturée.",
+     "fs": 14,
+     "font": "Regular",
+     "style": "Body Small"
+    },
+    {
+     "n": "Annuler la commande",
+     "t": "TEXT",
+     "w": 312,
+     "h": 21,
+     "hidden": true,
+     "size": "FIXED/FIXED",
+     "fill": [
+      "var:danger/500"
+     ],
+     "text": "Annuler la commande",
+     "fs": 14,
+     "font": "Regular",
+     "style": "Body Small"
+    }
+   ]
+  },
+  {
+   "n": "panel-produit",
+   "t": "FRAME",
+   "w": 343,
+   "h": 366,
+   "layout": "VERTICAL",
+   "gap": 16,
+   "pad": "24 16 24 16",
+   "align": "MIN/MIN",
+   "size": "FILL/HUG",
+   "r": 12,
+   "fill": [
+    "var:surface/base"
+   ],
+   "stroke": [
+    "var:border/subtle"
+   ],
+   "sw": 1,
+   "c": [
+    {
+     "n": "Le produit",
+     "t": "TEXT",
+     "w": 97,
+     "h": 26,
+     "size": "HUG/HUG",
+     "fill": [
+      "var:text/primary"
+     ],
+     "text": "Le produit",
+     "fs": 20,
+     "font": "Semi Bold",
+     "style": "H3"
+    },
+    {
+     "n": "prodRow",
+     "t": "FRAME",
+     "w": 311,
+     "h": 100,
+     "layout": "HORIZONTAL",
+     "gap": 16,
+     "pad": "0 0 0 0",
+     "align": "MIN/MIN",
+     "size": "FILL/HUG",
+     "c": [
+      {
+       "n": "thumb",
+       "t": "FRAME",
+       "w": 28,
+       "h": 80,
+       "layout": "HORIZONTAL",
+       "gap": 0,
+       "pad": "0 0 0 0",
+       "align": "CENTER/CENTER",
+       "size": "FIXED/FIXED",
+       "r": 8,
+       "fill": [
+        "var:surface/sunken"
+       ],
+       "stroke": [
+        "var:border/subtle"
+       ],
+       "sw": 1,
+       "c": [
+        {
+         "n": "icon-package",
+         "t": "INSTANCE",
+         "w": 28,
+         "h": 28,
+         "size": "FIXED/FIXED",
+         "comp": "icon-package",
+         "c": [
+          {
+           "n": "Vector",
+           "t": "VECTOR",
+           "w": 21,
+           "h": 23,
+           "size": "FIXED/FIXED",
+           "stroke": [
+            "var:blue/300"
+           ],
+           "sw": 2
+          },
+          {
+           "n": "Vector",
+           "t": "VECTOR",
+           "w": 0,
+           "h": 12,
+           "size": "FIXED/FIXED",
+           "stroke": [
+            "var:blue/300"
+           ],
+           "sw": 2
+          },
+          {
+           "n": "Vector",
+           "t": "VECTOR",
+           "w": 20,
+           "h": 6,
+           "size": "FIXED/FIXED",
+           "stroke": [
+            "var:blue/300"
+           ],
+           "sw": 2
+          },
+          {
+           "n": "Vector",
+           "t": "VECTOR",
+           "w": 11,
+           "h": 6,
+           "size": "FIXED/FIXED",
+           "stroke": [
+            "var:blue/300"
+           ],
+           "sw": 2
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "n": "info",
+       "t": "FRAME",
+       "w": 267,
+       "h": 100,
+       "layout": "VERTICAL",
+       "gap": 4,
+       "pad": "0 0 0 0",
+       "align": "MIN/MIN",
+       "size": "FILL/HUG",
+       "c": [
+        {
+         "n": "Coussin brodé main — motif berbère",
+         "t": "TEXT",
+         "w": 267,
+         "h": 50,
+         "size": "FILL/HUG",
+         "fill": [
+          "var:text/primary"
+         ],
+         "text": "Coussin brodé main — motif berbère",
+         "fs": 16,
+         "font": "Semi Bold"
+        },
+        {
+         "n": "Quantité : 1",
+         "t": "TEXT",
+         "w": 75,
+         "h": 21,
+         "size": "HUG/HUG",
+         "fill": [
+          "var:text/secondary"
+         ],
+         "text": "Quantité : 1",
+         "fs": 14,
+         "font": "Regular",
+         "style": "Body Small"
+        },
+        {
+         "n": "Prix unitaire : 160 TND",
+         "t": "TEXT",
+         "w": 148,
+         "h": 21,
+         "size": "HUG/HUG",
+         "fill": [
+          "var:text/muted"
+         ],
+         "text": "Prix unitaire : 160 TND",
+         "fs": 14,
+         "font": "Regular",
+         "style": "Body Small"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "n": "priceBreakdown",
+     "t": "FRAME",
+     "w": 311,
+     "h": 102,
+     "layout": "VERTICAL",
+     "gap": 8,
+     "pad": "0 0 0 0",
+     "align": "MIN/MIN",
+     "size": "FILL/HUG",
+     "c": [
+      {
+       "n": "priceRow",
+       "t": "FRAME",
+       "w": 311,
+       "h": 26,
+       "layout": "HORIZONTAL",
+       "gap": 8,
+       "pad": "0 0 0 0",
+       "align": "SPACE_BETWEEN/CENTER",
+       "size": "FILL/HUG",
+       "c": [
+        {
+         "n": "Produit (× 1)",
+         "t": "TEXT",
+         "w": 93,
+         "h": 26,
+         "size": "HUG/HUG",
+         "fill": [
+          "var:text/secondary"
+         ],
+         "text": "Produit (× 1)",
+         "fs": 16,
+         "font": "Regular",
+         "style": "Body"
+        },
+        {
+         "n": "160 TND",
+         "t": "TEXT",
+         "w": 66,
+         "h": 26,
+         "size": "HUG/HUG",
+         "fill": [
+          "var:text/primary"
+         ],
+         "text": "160 TND",
+         "fs": 16,
+         "font": "Regular",
+         "style": "Body"
+        }
+       ]
+      },
+      {
+       "n": "priceRow",
+       "t": "FRAME",
+       "w": 311,
+       "h": 26,
+       "layout": "HORIZONTAL",
+       "gap": 8,
+       "pad": "0 0 0 0",
+       "align": "SPACE_BETWEEN/CENTER",
+       "size": "FILL/HUG",
+       "c": [
+        {
+         "n": "Livraison",
+         "t": "TEXT",
+         "w": 68,
+         "h": 26,
+         "size": "HUG/HUG",
+         "fill": [
+          "var:text/secondary"
+         ],
+         "text": "Livraison",
+         "fs": 16,
+         "font": "Regular",
+         "style": "Body"
+        },
+        {
+         "n": "7 TND",
+         "t": "TEXT",
+         "w": 48,
+         "h": 26,
+         "size": "HUG/HUG",
+         "fill": [
+          "var:text/primary"
+         ],
+         "text": "7 TND",
+         "fs": 16,
+         "font": "Regular",
+         "style": "Body"
+        }
+       ]
+      },
+      {
+       "n": "Divider",
+       "t": "INSTANCE",
+       "w": 311,
+       "h": 1,
+       "layout": "HORIZONTAL",
+       "gap": 0,
+       "pad": "0 0 0 0",
+       "align": "MIN/MIN",
+       "size": "FILL/FIXED",
+       "comp": "Divider / variant=plain",
+       "c": [
+        {
+         "n": "line",
+         "t": "FRAME",
+         "w": 311,
+         "h": 1,
+         "size": "FILL/FILL",
+         "fill": [
+          "var:border/subtle"
+         ],
+         "c": []
+        }
+       ]
+      },
+      {
+       "n": "priceRow",
+       "t": "FRAME",
+       "w": 311,
+       "h": 25,
+       "layout": "HORIZONTAL",
+       "gap": 8,
+       "pad": "0 0 0 0",
+       "align": "SPACE_BETWEEN/CENTER",
+       "size": "FILL/HUG",
+       "c": [
+        {
+         "n": "Total",
+         "t": "TEXT",
+         "w": 40,
+         "h": 25,
+         "size": "HUG/HUG",
+         "fill": [
+          "var:text/primary"
+         ],
+         "text": "Total",
+         "fs": 16,
+         "font": "Bold"
+        },
+        {
+         "n": "167 TND",
+         "t": "TEXT",
+         "w": 66,
+         "h": 25,
+         "size": "HUG/HUG",
+         "fill": [
+          "var:text/primary"
+         ],
+         "text": "167 TND",
+         "fs": 16,
+         "font": "Bold"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "n": "Paiement à la livraison — vous payez à la réception du colis.",
+     "t": "TEXT",
+     "w": 311,
+     "h": 42,
+     "size": "FILL/HUG",
+     "fill": [
+      "var:text/muted"
+     ],
+     "text": "Paiement à la livraison — vous payez à la réception du colis.",
+     "fs": 14,
+     "font": "Regular",
+     "style": "Body Small"
+    }
+   ]
+  },
+  {
+   "n": "panel-client",
+   "t": "FRAME",
+   "w": 343,
+   "h": 309,
+   "layout": "VERTICAL",
+   "gap": 16,
+   "pad": "24 16 24 16",
+   "align": "MIN/MIN",
+   "size": "FILL/HUG",
+   "r": 12,
+   "fill": [
+    "var:surface/base"
+   ],
+   "stroke": [
+    "var:border/subtle"
+   ],
+   "sw": 1,
+   "c": [
+    {
+     "n": "Vendeur",
+     "t": "TEXT",
+     "w": 311,
+     "h": 26,
+     "size": "FILL/HUG",
+     "fill": [
+      "var:text/primary"
+     ],
+     "text": "Vendeur",
+     "fs": 20,
+     "font": "Semi Bold",
+     "style": "H3"
+    },
+    {
+     "n": "clientRow",
+     "t": "FRAME",
+     "w": 311,
+     "h": 50,
+     "layout": "HORIZONTAL",
+     "gap": 12,
+     "pad": "0 0 0 0",
+     "align": "MIN/CENTER",
+     "size": "FILL/HUG",
+     "c": [
+      {
+       "n": "nameCol",
+       "t": "FRAME",
+       "w": 311,
+       "h": 50,
+       "layout": "VERTICAL",
+       "gap": 4,
+       "pad": "0 0 0 0",
+       "align": "MIN/MIN",
+       "size": "FILL/HUG",
+       "c": [
+        {
+         "n": "Atelier Sahbeni",
+         "t": "TEXT",
+         "w": 311,
+         "h": 25,
+         "size": "FILL/HUG",
+         "fill": [
+          "var:text/primary"
+         ],
+         "text": "Atelier Sahbeni",
+         "fs": 16,
+         "font": "Semi Bold"
+        },
+        {
+         "n": "Boutique · Tunis",
+         "t": "TEXT",
+         "w": 311,
+         "h": 21,
+         "size": "FILL/HUG",
+         "fill": [
+          "var:text/muted"
+         ],
+         "text": "Boutique · Tunis",
+         "fs": 14,
+         "font": "Regular",
+         "style": "Body Small"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "n": "phone",
+     "t": "FRAME",
+     "w": 311,
+     "h": 89,
+     "layout": "VERTICAL",
+     "gap": 4,
+     "pad": "0 0 0 0",
+     "align": "MIN/MIN",
+     "size": "FILL/HUG",
+     "c": [
+      {
+       "n": "Téléphone",
+       "t": "TEXT",
+       "w": 311,
+       "h": 21,
+       "size": "FILL/HUG",
+       "fill": [
+        "var:text/muted"
+       ],
+       "text": "Téléphone",
+       "fs": 14,
+       "font": "Regular",
+       "style": "Body Small"
+      },
+      {
+       "n": "+216 71 555 210",
+       "t": "TEXT",
+       "w": 311,
+       "h": 26,
+       "size": "FILL/HUG",
+       "fill": [
+        "var:text/primary"
+       ],
+       "text": "+216 71 555 210",
+       "fs": 16,
+       "font": "Regular",
+       "style": "Body"
+      },
+      {
+       "n": "Coordonnées visibles car vous avez une commande avec cette boutique.",
+       "t": "TEXT",
+       "w": 311,
+       "h": 34,
+       "size": "FILL/HUG",
+       "fill": [
+        "var:text/muted"
+       ],
+       "text": "Coordonnées visibles car vous avez une commande avec cette boutique.",
+       "fs": 12,
+       "font": "Medium",
+       "style": "Caption"
+      }
+     ]
+    },
+    {
+     "n": "WhatsApp Button",
+     "t": "INSTANCE",
+     "w": 311,
+     "h": 48,
+     "layout": "HORIZONTAL",
+     "gap": 8,
+     "pad": "0 20 0 20",
+     "align": "CENTER/CENTER",
+     "size": "FILL/FIXED",
+     "r": 10,
+     "fill": [
+      "var:wa/brand"
+     ],
+     "comp": "WhatsApp Button / size=lg, state=default",
+     "c": [
+      {
+       "n": "glyph",
+       "t": "INSTANCE",
+       "w": 20,
+       "h": 20,
+       "size": "FIXED/FIXED",
+       "comp": "icon-whatsapp",
+       "c": [
+        {
+         "n": "Vector",
+         "t": "VECTOR",
+         "w": 20,
+         "h": 20,
+         "size": "FIXED/FIXED",
+         "fill": [
+          "var:text/primary"
+         ]
+        }
+       ]
+      },
+      {
+       "n": "label",
+       "t": "TEXT",
+       "w": 243,
+       "h": 24,
+       "size": "FILL/HUG",
+       "fill": [
+        "var:text/primary"
+       ],
+       "text": "Contacter la boutique",
+       "fs": 16,
+       "font": "Semi Bold"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "n": "panel-livraison",
+   "t": "FRAME",
+   "w": 343,
+   "h": 345,
+   "layout": "VERTICAL",
+   "gap": 16,
+   "pad": "24 16 24 16",
+   "align": "MIN/MIN",
+   "size": "FILL/HUG",
+   "r": 12,
+   "fill": [
+    "var:surface/base"
+   ],
+   "stroke": [
+    "var:border/subtle"
+   ],
+   "sw": 1,
+   "c": [
+    {
+     "n": "Livraison",
+     "t": "TEXT",
+     "w": 87,
+     "h": 26,
+     "size": "HUG/HUG",
+     "fill": [
+      "var:text/primary"
+     ],
+     "text": "Livraison",
+     "fs": 20,
+     "font": "Semi Bold",
+     "style": "H3"
+    },
+    {
+     "n": "fields",
+     "t": "FRAME",
+     "w": 311,
+     "h": 255,
+     "layout": "VERTICAL",
+     "gap": 12,
+     "pad": "0 0 0 0",
+     "align": "MIN/MIN",
+     "size": "FILL/HUG",
+     "c": [
+      {
+       "n": "lv",
+       "t": "FRAME",
+       "w": 311,
+       "h": 51,
+       "layout": "VERTICAL",
+       "gap": 4,
+       "pad": "0 0 0 0",
+       "align": "MIN/MIN",
+       "size": "FILL/HUG",
+       "c": [
+        {
+         "n": "Destinataire",
+         "t": "TEXT",
+         "w": 80,
+         "h": 21,
+         "size": "HUG/HUG",
+         "fill": [
+          "var:text/muted"
+         ],
+         "text": "Destinataire",
+         "fs": 14,
+         "font": "Regular",
+         "style": "Body Small"
+        },
+        {
+         "n": "Yassine Ben Ali",
+         "t": "TEXT",
+         "w": 115,
+         "h": 26,
+         "size": "HUG/HUG",
+         "fill": [
+          "var:text/primary"
+         ],
+         "text": "Yassine Ben Ali",
+         "fs": 16,
+         "font": "Regular",
+         "style": "Body"
+        }
+       ]
+      },
+      {
+       "n": "lv",
+       "t": "FRAME",
+       "w": 311,
+       "h": 51,
+       "layout": "VERTICAL",
+       "gap": 4,
+       "pad": "0 0 0 0",
+       "align": "MIN/MIN",
+       "size": "FILL/HUG",
+       "c": [
+        {
+         "n": "Adresse",
+         "t": "TEXT",
+         "w": 55,
+         "h": 21,
+         "size": "HUG/HUG",
+         "fill": [
+          "var:text/muted"
+         ],
+         "text": "Adresse",
+         "fs": 14,
+         "font": "Regular",
+         "style": "Body Small"
+        },
+        {
+         "n": "12 rue de la République, Sfax 3000",
+         "t": "TEXT",
+         "w": 311,
+         "h": 26,
+         "size": "FILL/HUG",
+         "fill": [
+          "var:text/primary"
+         ],
+         "text": "12 rue de la République, Sfax 3000",
+         "fs": 16,
+         "font": "Regular",
+         "style": "Body"
+        }
+       ]
+      },
+      {
+       "n": "lv",
+       "t": "FRAME",
+       "w": 311,
+       "h": 51,
+       "layout": "VERTICAL",
+       "gap": 4,
+       "pad": "0 0 0 0",
+       "align": "MIN/MIN",
+       "size": "FILL/HUG",
+       "c": [
+        {
+         "n": "Ville",
+         "t": "TEXT",
+         "w": 28,
+         "h": 21,
+         "size": "HUG/HUG",
+         "fill": [
+          "var:text/muted"
+         ],
+         "text": "Ville",
+         "fs": 14,
+         "font": "Regular",
+         "style": "Body Small"
+        },
+        {
+         "n": "Sfax",
+         "t": "TEXT",
+         "w": 34,
+         "h": 26,
+         "size": "HUG/HUG",
+         "fill": [
+          "var:text/primary"
+         ],
+         "text": "Sfax",
+         "fs": 16,
+         "font": "Regular",
+         "style": "Body"
+        }
+       ]
+      },
+      {
+       "n": "noteQuote",
+       "t": "FRAME",
+       "w": 311,
+       "h": 66,
+       "layout": "VERTICAL",
+       "gap": 4,
+       "pad": "12 12 12 16",
+       "align": "MIN/MIN",
+       "size": "FILL/HUG",
+       "r": 8,
+       "fill": [
+        "var:surface/subtle"
+       ],
+       "stroke": [
+        "var:blue/200"
+       ],
+       "c": [
+        {
+         "n": "VOTRE NOTE",
+         "t": "TEXT",
+         "w": 76,
+         "h": 17,
+         "size": "HUG/HUG",
+         "fill": [
+          "var:text/muted"
+         ],
+         "text": "VOTRE NOTE",
+         "fs": 12,
+         "font": "Medium",
+         "style": "Caption"
+        },
+        {
+         "n": "« Livrer l’après-midi si possible »",
+         "t": "TEXT",
+         "w": 214,
+         "h": 21,
+         "size": "HUG/HUG",
+         "fill": [
+          "var:text/secondary"
+         ],
+         "text": "« Livrer l’après-midi si possible »",
+         "fs": 14,
+         "font": "Regular",
+         "style": "Body Small"
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "n": "panel-suivi",
+   "t": "FRAME",
+   "w": 343,
+   "h": 208,
+   "layout": "VERTICAL",
+   "gap": 16,
+   "pad": "24 16 24 16",
+   "align": "MIN/MIN",
+   "size": "FILL/HUG",
+   "r": 12,
+   "fill": [
+    "var:surface/base"
+   ],
+   "stroke": [
+    "var:border/subtle"
+   ],
+   "sw": 1,
+   "c": [
+    {
+     "n": "Suivi de livraison",
+     "t": "TEXT",
+     "w": 160,
+     "h": 26,
+     "size": "HUG/HUG",
+     "fill": [
+      "var:text/primary"
+     ],
+     "text": "Suivi de livraison",
+     "fs": 20,
+     "font": "Semi Bold",
+     "style": "H3"
+    },
+    {
+     "n": "lv",
+     "t": "FRAME",
+     "w": 311,
+     "h": 51,
+     "layout": "VERTICAL",
+     "gap": 4,
+     "pad": "0 0 0 0",
+     "align": "MIN/MIN",
+     "size": "FILL/HUG",
+     "c": [
+      {
+       "n": "Société de livraison",
+       "t": "TEXT",
+       "w": 130,
+       "h": 21,
+       "size": "HUG/HUG",
+       "fill": [
+        "var:text/muted"
+       ],
+       "text": "Société de livraison",
+       "fs": 14,
+       "font": "Regular",
+       "style": "Body Small"
+      },
+      {
+       "n": "First Delivery",
+       "t": "TEXT",
+       "w": 100,
+       "h": 26,
+       "size": "HUG/HUG",
+       "fill": [
+        "var:text/primary"
+       ],
+       "text": "First Delivery",
+       "fs": 16,
+       "font": "Regular",
+       "style": "Body"
+      }
+     ]
+    },
+    {
+     "n": "lv",
+     "t": "FRAME",
+     "w": 311,
+     "h": 51,
+     "layout": "VERTICAL",
+     "gap": 4,
+     "pad": "0 0 0 0",
+     "align": "MIN/MIN",
+     "size": "FILL/HUG",
+     "c": [
+      {
+       "n": "Numéro de suivi",
+       "t": "TEXT",
+       "w": 107,
+       "h": 21,
+       "size": "HUG/HUG",
+       "fill": [
+        "var:text/muted"
+       ],
+       "text": "Numéro de suivi",
+       "fs": 14,
+       "font": "Regular",
+       "style": "Body Small"
+      },
+      {
+       "n": "FD-2026-48213",
+       "t": "TEXT",
+       "w": 122,
+       "h": 26,
+       "size": "HUG/HUG",
+       "fill": [
+        "var:text/primary"
+       ],
+       "text": "FD-2026-48213",
+       "fs": 16,
+       "font": "Regular",
+       "style": "Body"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "n": "panel-historique",
+   "t": "FRAME",
+   "w": 343,
+   "h": 222,
+   "layout": "VERTICAL",
+   "gap": 16,
+   "pad": "24 16 24 16",
+   "align": "MIN/MIN",
+   "size": "FILL/HUG",
+   "r": 12,
+   "fill": [
+    "var:surface/base"
+   ],
+   "stroke": [
+    "var:border/subtle"
+   ],
+   "sw": 1,
+   "c": [
+    {
+     "n": "Historique de la commande",
+     "t": "TEXT",
+     "w": 311,
+     "h": 26,
+     "size": "FILL/HUG",
+     "fill": [
+      "var:text/primary"
+     ],
+     "text": "Historique de la commande",
+     "fs": 20,
+     "font": "Semi Bold",
+     "style": "H3"
+    },
+    {
+     "n": "timeline",
+     "t": "FRAME",
+     "w": 311,
+     "h": 132,
+     "layout": "VERTICAL",
+     "gap": 16,
+     "pad": "0 0 0 0",
+     "align": "MIN/MIN",
+     "size": "FILL/HUG",
+     "c": [
+      {
+       "n": "timelineLine",
+       "t": "FRAME",
+       "w": 2,
+       "h": 148,
+       "size": "FIXED/FIXED",
+       "fill": [
+        "var:border/strong"
+       ],
+       "c": []
+      },
+      {
+       "n": "entry",
+       "t": "FRAME",
+       "w": 311,
+       "h": 21,
+       "layout": "HORIZONTAL",
+       "gap": 8,
+       "pad": "0 0 0 0",
+       "align": "MIN/CENTER",
+       "size": "FILL/HUG",
+       "c": [
+        {
+         "n": "dot",
+         "t": "FRAME",
+         "w": 10,
+         "h": 10,
+         "size": "FIXED/FIXED",
+         "r": 9999,
+         "fill": [
+          "var:blue/600"
+         ],
+         "c": []
+        },
+        {
+         "n": "cr",
+         "t": "FRAME",
+         "w": 293,
+         "h": 21,
+         "layout": "HORIZONTAL",
+         "gap": 6,
+         "pad": "0 0 0 0",
+         "align": "MIN/CENTER",
+         "size": "FILL/HUG",
+         "c": [
+          {
+           "n": "Commande passée",
+           "t": "TEXT",
+           "w": 128,
+           "h": 21,
+           "size": "HUG/HUG",
+           "fill": [
+            "var:text/primary"
+           ],
+           "text": "Commande passée",
+           "fs": 14,
+           "font": "Regular",
+           "style": "Body Small"
+          },
+          {
+           "n": "· 18/07 09h12",
+           "t": "TEXT",
+           "w": 89,
+           "h": 21,
+           "size": "HUG/HUG",
+           "fill": [
+            "var:text/muted"
+           ],
+           "text": "· 18/07 09h12",
+           "fs": 14,
+           "font": "Regular",
+           "style": "Body Small"
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "n": "entry",
+       "t": "FRAME",
+       "w": 311,
+       "h": 21,
+       "layout": "HORIZONTAL",
+       "gap": 8,
+       "pad": "0 0 0 0",
+       "align": "MIN/CENTER",
+       "size": "FILL/HUG",
+       "c": [
+        {
+         "n": "dot",
+         "t": "FRAME",
+         "w": 10,
+         "h": 10,
+         "size": "FIXED/FIXED",
+         "r": 9999,
+         "fill": [
+          "var:blue/600"
+         ],
+         "c": []
+        },
+        {
+         "n": "cr",
+         "t": "FRAME",
+         "w": 293,
+         "h": 21,
+         "layout": "HORIZONTAL",
+         "gap": 6,
+         "pad": "0 0 0 0",
+         "align": "MIN/CENTER",
+         "size": "FILL/HUG",
+         "c": [
+          {
+           "n": "Acceptée par la boutique",
+           "t": "TEXT",
+           "w": 167,
+           "h": 21,
+           "size": "HUG/HUG",
+           "fill": [
+            "var:text/primary"
+           ],
+           "text": "Acceptée par la boutique",
+           "fs": 14,
+           "font": "Regular",
+           "style": "Body Small"
+          },
+          {
+           "n": "· 18/07 10h45",
+           "t": "TEXT",
+           "w": 90,
+           "h": 21,
+           "size": "HUG/HUG",
+           "fill": [
+            "var:text/muted"
+           ],
+           "text": "· 18/07 10h45",
+           "fs": 14,
+           "font": "Regular",
+           "style": "Body Small"
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "n": "entry",
+       "t": "FRAME",
+       "w": 311,
+       "h": 21,
+       "layout": "HORIZONTAL",
+       "gap": 8,
+       "pad": "0 0 0 0",
+       "align": "MIN/CENTER",
+       "size": "FILL/HUG",
+       "c": [
+        {
+         "n": "dot",
+         "t": "FRAME",
+         "w": 10,
+         "h": 10,
+         "size": "FIXED/FIXED",
+         "r": 9999,
+         "fill": [
+          "var:blue/600"
+         ],
+         "c": []
+        },
+        {
+         "n": "cr",
+         "t": "FRAME",
+         "w": 293,
+         "h": 21,
+         "layout": "HORIZONTAL",
+         "gap": 6,
+         "pad": "0 0 0 0",
+         "align": "MIN/CENTER",
+         "size": "FILL/HUG",
+         "c": [
+          {
+           "n": "Expédiée avec First Delivery",
+           "t": "TEXT",
+           "w": 187,
+           "h": 21,
+           "size": "HUG/HUG",
+           "fill": [
+            "var:text/primary"
+           ],
+           "text": "Expédiée avec First Delivery",
+           "fs": 14,
+           "font": "Regular",
+           "style": "Body Small"
+          },
+          {
+           "n": "· 19/07 11h20",
+           "t": "TEXT",
+           "w": 87,
+           "h": 21,
+           "size": "HUG/HUG",
+           "fill": [
+            "var:text/muted"
+           ],
+           "text": "· 19/07 11h20",
+           "fs": 14,
+           "font": "Regular",
+           "style": "Body Small"
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "n": "entry",
+       "t": "FRAME",
+       "w": 311,
+       "h": 21,
+       "layout": "HORIZONTAL",
+       "gap": 8,
+       "pad": "0 0 0 0",
+       "align": "MIN/CENTER",
+       "size": "FILL/HUG",
+       "c": [
+        {
+         "n": "dot",
+         "t": "FRAME",
+         "w": 10,
+         "h": 10,
+         "size": "FIXED/FIXED",
+         "r": 9999,
+         "fill": [
+          "var:blue/600"
+         ],
+         "c": []
+        },
+        {
+         "n": "cr",
+         "t": "FRAME",
+         "w": 293,
+         "h": 21,
+         "layout": "HORIZONTAL",
+         "gap": 6,
+         "pad": "0 0 0 0",
+         "align": "MIN/CENTER",
+         "size": "FILL/HUG",
+         "c": [
+          {
+           "n": "Arrivée à destination",
+           "t": "TEXT",
+           "w": 137,
+           "h": 21,
+           "size": "HUG/HUG",
+           "fill": [
+            "var:text/primary"
+           ],
+           "text": "Arrivée à destination",
+           "fs": 14,
+           "font": "Regular",
+           "style": "Body Small"
+          },
+          {
+           "n": "· 21/07 16h05",
+           "t": "TEXT",
+           "w": 89,
+           "h": 21,
+           "size": "HUG/HUG",
+           "fill": [
+            "var:text/muted"
+           ],
+           "text": "· 21/07 16h05",
+           "fs": 14,
+           "font": "Regular",
+           "style": "Body Small"
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

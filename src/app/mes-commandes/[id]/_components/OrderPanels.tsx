@@ -14,14 +14,15 @@ import { t, type Lang } from '@/lib/i18n'
 // is interactive except the WhatsApp reveal, which is its own client leaf. Measured values are in
 // docs/design/e4-order-detail-measurements.md.
 //
-// Every panel is surface/base + border/subtle + r12 + pad 24 + gap 16 with a 20/Semi Bold title (`text-h3`).
+// Every panel is surface/base + border/subtle + r12 + pad 24 + gap 16 with a 20/Semi Bold title (`text-h3`). At 375 (m375-e4-commande,
+// docs/design/m375-e3-e4-deltas.md) the pad is 24 / 16 with the stroke inside it (23 / 15 + the border) and the title line 26.
 
-const PANEL = 'flex flex-col gap-4 rounded-xl border border-border-subtle bg-surface-base p-6'
+const PANEL = 'flex flex-col gap-4 rounded-xl border border-border-subtle bg-surface-base p-6 max-lg:px-[15px] max-lg:py-[23px]'
 
 function Panel({ title, children }: { title: string; children: ReactNode }) {
   return (
     <section className={PANEL}>
-      <h2 className="text-h3 text-text-primary">{title}</h2>
+      <h2 className="text-h3 text-text-primary max-lg:leading-[26px]">{title}</h2>
       {children}
     </section>
   )
@@ -68,7 +69,7 @@ export function ItemPanel({ order, lang }: { order: OrderDetail; lang: Lang }) {
           )}
         </div>
         <div className="flex min-w-0 flex-1 flex-col gap-1">
-          <p className="text-body font-semibold text-text-primary">
+          <p className="text-body font-semibold text-text-primary max-lg:leading-[25px]">
             <bdi>{order.item.title ?? t(isProduct ? 'mesCommandes.untitled.product' : 'mesCommandes.untitled', lang)}</bdi>
           </p>
           {isProduct ? (
@@ -104,8 +105,8 @@ export function ItemPanel({ order, lang }: { order: OrderDetail; lang: Lang }) {
           </div>
           <hr className="border-border-subtle" />
           <div className="flex items-center justify-between gap-2">
-            <dt className="text-body font-bold text-text-primary">{t('seller.orderDetail.price_total', lang)}</dt>
-            <dd className="text-body font-bold text-text-primary">
+            <dt className="text-body font-bold text-text-primary max-lg:leading-[25px]">{t('seller.orderDetail.price_total', lang)}</dt>
+            <dd className="text-body font-bold text-text-primary max-lg:leading-[25px]">
               <Amount value={breakdown.total} lang={lang} />
             </dd>
           </div>
@@ -149,7 +150,7 @@ export function SellerPanel({ order, phone, lang }: { order: OrderDetail; phone:
   return (
     <Panel title={t(isProduct ? 'buyerOrder.panel.seller_shop' : 'buyerOrder.panel.seller_freelancer', lang)}>
       <div className="flex flex-col gap-1">
-        <p className="text-body font-semibold text-text-primary">{seller.name}</p>
+        <p className="text-body font-semibold text-text-primary max-lg:leading-[25px]">{seller.name}</p>
         {subline ? <p className="text-body-sm text-text-muted">{subline}</p> : null}
       </div>
 
@@ -161,7 +162,7 @@ export function SellerPanel({ order, phone, lang }: { order: OrderDetail; phone:
           <p dir="ltr" className="text-body text-text-primary text-start rtl:text-end">
             {formatPhoneDisplay(phone)}
           </p>
-          <p className="text-caption font-medium text-text-muted">
+          <p className="text-caption font-medium text-text-muted max-lg:leading-[17px]">
             {t(isProduct ? 'buyerOrder.phone_disclosure_shop' : 'buyerOrder.phone_disclosure_freelancer', lang)}
           </p>
         </div>
@@ -172,6 +173,7 @@ export function SellerPanel({ order, phone, lang }: { order: OrderDetail; phone:
         <WhatsAppContactButton
           targetId={seller.id}
           size="lg"
+          glyphClassName="lg:hidden"
           label={t(isProduct ? 'buyerOrder.contact_shop' : 'buyerOrder.contact_freelancer', lang)}
           message={
             isProduct
@@ -194,15 +196,16 @@ export function DeliveryPanel({ order, lang }: { order: OrderDetail; lang: Lang 
 
   return (
     <Panel title={t('seller.orderDetail.delivery', lang)}>
-      <dl className="flex flex-col gap-4">
+      <dl className="flex flex-col gap-4 max-lg:gap-3">
         {order.deliveryName ? <Field label={t('buyerOrder.recipient', lang)}>{order.deliveryName}</Field> : null}
         {address ? <Field label={t('buyerOrder.address', lang)}><bdi>{address}</bdi></Field> : null}
         {city ? <Field label={t('buyerOrder.city', lang)}>{city}</Field> : null}
       </dl>
       {order.buyerNote ? (
-        <div className="flex flex-col gap-1 rounded-lg border-s-4 border-brand-blue-300 bg-surface-subtle p-3">
-          <p className="text-caption font-medium uppercase text-text-muted">{t('buyerOrder.your_note', lang)}</p>
-          <p className="text-body-sm text-text-primary">
+        // 375: 12 under the last field (the frame keeps the note inside the fields stack), r8, blue/200 bar, the text secondary.
+        <div className="flex flex-col gap-1 rounded-lg border-s-4 border-brand-blue-300 bg-surface-subtle p-3 max-lg:-mt-1 max-lg:rounded-md max-lg:border-brand-blue-200">
+          <p className="text-caption font-medium uppercase text-text-muted max-lg:leading-[17px]">{t('buyerOrder.your_note', lang)}</p>
+          <p className="text-body-sm text-text-primary max-lg:text-text-secondary">
             « <bdi>{order.buyerNote}</bdi> »
           </p>
         </div>

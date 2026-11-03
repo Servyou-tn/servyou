@@ -15,6 +15,8 @@ import type { OrdersTab } from '@/lib/marche/my-orders-params'
 // navigation, so there is no tabpanel / arrow-key model to promise (same call as H8's tab strip).
 const BASE = '/mes-commandes'
 
+//
+// 375 (m375-e3-commandes, docs/design/m375-e3-e4-deltas.md): the track fills the row (343) and the segments carry no icon (80 / 82 wide).
 export function OrdersTabs({ lang, tab }: { lang: Lang; tab: OrdersTab }) {
   const items: { key: OrdersTab; Icon: typeof Package }[] = [
     { key: 'produits', Icon: Package },
@@ -23,7 +25,7 @@ export function OrdersTabs({ lang, tab }: { lang: Lang; tab: OrdersTab }) {
   return (
     <nav
       aria-label={t('mesCommandes.tabsAria', lang)}
-      className="inline-flex items-center self-start rounded-[10px] bg-surface-pill p-1"
+      className="inline-flex items-center self-start rounded-[10px] bg-surface-pill p-1 max-lg:self-stretch"
     >
       {items.map(({ key, Icon }) => {
         const active = key === tab
@@ -36,7 +38,7 @@ export function OrdersTabs({ lang, tab }: { lang: Lang; tab: OrdersTab }) {
               active ? 'bg-white text-text-primary shadow-sm' : 'text-text-secondary hover:text-text-primary'
             }`}
           >
-            <Icon className="h-4 w-4" aria-hidden="true" />
+            <Icon className="h-4 w-4 max-lg:hidden" aria-hidden="true" />
             {t(`mesCommandes.tab.${key}`, lang)}
           </Link>
         )

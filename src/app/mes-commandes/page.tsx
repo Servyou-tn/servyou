@@ -58,8 +58,8 @@ export default async function MesCommandesPage({ searchParams }: Props) {
   return (
     <AppShell user={shell.topBarUser}>
       <div className="flex flex-col gap-4 lg:gap-6">
-        {/* 22/28 on mobile (710:59946), 28/36 on desktop (709:59667). */}
-        <h1 className="text-[22px] font-semibold leading-7 text-text-primary lg:text-[28px] lg:leading-9">
+        {/* 22/28 on mobile (710:59946), 28/36 on desktop (709:59667). blue/800 at 375 (m375-e3-commandes, docs/design/m375-e3-e4-deltas.md). */}
+        <h1 className="text-[22px] font-semibold leading-7 text-text-primary max-lg:text-brand-blue-800 lg:text-[28px] lg:leading-9">
           {t('mesCommandes.title', lang)}
         </h1>
 

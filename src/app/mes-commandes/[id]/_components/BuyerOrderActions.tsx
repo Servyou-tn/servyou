@@ -24,7 +24,9 @@ import type { OrderStatus, OrderType } from '@/lib/types/order-status'
 //
 // ⚑ Text-size + colour are plain template strings, never cn() (the twMerge eviction recorded on OrderRail).
 
-const PANEL = 'flex flex-col gap-4 rounded-xl border border-border-subtle bg-surface-base p-6'
+// 375 (m375-e4-commande, docs/design/m375-e3-e4-deltas.md): pad 24 / 16 with the stroke inside, title line 26, and the helper copy UNDER the
+// buttons (`max-lg:order-*` — the helper is not focusable, so the tab order is untouched).
+const PANEL = 'flex flex-col gap-4 rounded-xl border border-border-subtle bg-surface-base p-6 max-lg:px-[15px] max-lg:py-[23px]'
 
 export function BuyerOrderActions({
   orderId,
@@ -92,12 +94,12 @@ export function BuyerOrderActions({
 
   return (
     <section className={PANEL}>
-      <h2 className="text-h3 text-text-primary">{title}</h2>
+      <h2 className="text-h3 text-text-primary max-lg:leading-[26px]">{title}</h2>
 
-      <p className="text-body-sm text-text-secondary">{body}</p>
+      <p className="text-body-sm text-text-secondary max-lg:order-1">{body}</p>
 
       {state === 'cancelled' && cancellationReason ? (
-        <p className="text-body-sm text-text-muted">{t('seller.orders.cancelled_reason', lang, { reason: cancellationReason })}</p>
+        <p className="text-body-sm text-text-muted max-lg:order-1">{t('seller.orders.cancelled_reason', lang, { reason: cancellationReason })}</p>
       ) : null}
 
       {state === 'confirm' ? <ReceiptConfirmButton orderId={orderId} panel /> : null}
@@ -125,7 +127,7 @@ export function BuyerOrderActions({
         <button
           type="button"
           onClick={() => setDialog('cancel')}
-          className={`w-full rounded text-center text-body-sm text-danger-500 hover:underline ${FOCUS_RING}`}
+          className={`w-full rounded text-center text-body-sm text-danger-500 hover:underline max-lg:order-2 ${FOCUS_RING}`}
         >
           {t('seller.orderDetail.cancel_link', lang)}
         </button>
