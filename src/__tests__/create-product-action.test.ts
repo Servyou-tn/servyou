@@ -326,3 +326,36 @@ describe('createProductAction — the 100-products-per-shop cap', () => {
     err.mockRestore()
   })
 })
+
+// Walk 2026-11-02 #31 — price > 0 and a title, on EVERY save (draft too), with the error attributed to its field so the
+// form shows it under the field (the form used to compute « -3 + 7 = 4 » and say nothing). The DB backs it with
+// products_price_positive / products_title_not_blank (PENDING_seller_phone_and_product_checks.sql).
+describe('product writes — price > 0, title required, field errors (walk #31)', () => {
+  it.each([
+    ['price 0', { priceTnd: 0 }, 'price', 'product.error_price_positive'],
+    ['price -3', { priceTnd: -3 }, 'price', 'product.error_price_positive'],
+    ['blank title', { title: '   ' }, 'title', 'product.error_title'],
+    ['negative delivery fee', { deliveryFeeTnd: -1 }, 'deliveryFee', 'product.error_price'],
+    ['price 12.345 (positive, 3 decimals)', { priceTnd: 12.345 }, 'price', 'product.error_price_decimals'],
+  ])('create: %s → field %s with its own message, nothing inserted', async (_label, over, field, error) => {
+    const res = await createProductAction(okInput(over))
+    expect(res).toEqual({ ok: false, field, error })
+    expect(h.calls.productsInsert).toHaveLength(0)
+  })
+
+  it('a DRAFT with price 0 is refused too — no product row may have a price <= 0', async () => {
+    const res = await createProductAction(okInput({ priceTnd: 0, publish: false }))
+    expect(res).toEqual({ ok: false, field: 'price', error: 'product.error_price_positive' })
+    expect(h.calls.productsInsert).toHaveLength(0)
+  })
+
+  it.each([
+    ['price 0', { priceTnd: 0 }, 'price', 'product.error_price_positive'],
+    ['blank title', { title: '' }, 'title', 'product.error_title'],
+  ])('update: %s → field %s with its own message', async (_label, over, field, error) => {
+    const { updateProductAction } = await import('@/app/actions/products')
+    const base = { productId: PRODUCT_ID, title: 'Sac en cuir', categoryId: CATEGORY_ID, priceTnd: 45, deliveryFeeTnd: 7, tracksStock: false }
+    const res = await updateProductAction({ ...base, ...over })
+    expect(res).toEqual({ ok: false, field, error })
+  })
+})

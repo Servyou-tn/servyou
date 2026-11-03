@@ -6,6 +6,7 @@ import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 import { getLang } from '@/lib/i18n/server'
 import { t } from '@/lib/i18n'
+import type { Lang } from '@/lib/i18n'
 import { resolveOwnedShopId } from '@/lib/shops/owner-shop'
 import { isPathWithinProduct, nextDisplayOrder } from '@/lib/products/gallery'
 import { PRODUCTS_PER_PAGE } from '@/lib/marche/seller-products'
@@ -17,6 +18,8 @@ import {
   type BulkProductActionResult,
   type AddProductImageResult,
   type UpdateProductResult,
+  type CreateProductResult,
+  type ProductFormField,
 } from '@/lib/products/constants'
 import {
   normalizeProductImage,
@@ -261,17 +264,18 @@ export async function uploadProductImageAction(formData: FormData): Promise<Uplo
   return { ok: true, path, url: publicUrl }
 }
 
-// Numeric bounds mirror the live CHECK constraints (`price_tnd >= 0`, `delivery_fee_tnd >= 0`,
-// `stock_count >= 0`) so a clear message beats a raised constraint — the same reasoning as
-// setOrderTrackingAction:153. multipleOf(0.01) matches numeric(10,2): a price of 12.345 would
-// otherwise be silently rounded by Postgres rather than rejected here.
+// Numeric bounds mirror the CHECK constraints (`delivery_fee_tnd >= 0`, `stock_count >= 0`, and since walk #31
+// `products_price_positive` — price_tnd > 0 — plus `products_title_not_blank`) so a clear message beats a raised
+// constraint — the same reasoning as setOrderTrackingAction:153. multipleOf(0.01) matches numeric(10,2): a price of
+// 12.345 would otherwise be silently rounded by Postgres rather than rejected here. The price > 0 and title rules hold
+// for « Enregistrer le brouillon » too: no product row, draft or not, may have no title or a price <= 0.
 const CreateProductInput = z
   .object({
     productId: z.string().uuid(),
     title: z.string().trim().min(1).max(100),
     categoryId: z.string().uuid(),
     description: z.string().trim().max(2000).optional(),
-    priceTnd: z.number().nonnegative().multipleOf(0.01),
+    priceTnd: z.number().positive().multipleOf(0.01),
     deliveryFeeTnd: z.number().nonnegative().multipleOf(0.01),
     tracksStock: z.boolean(),
     stockCount: z.number().int().nonnegative().optional(),
@@ -290,6 +294,29 @@ const CreateProductInput = z
     }
   })
 
+// Zod path -> the form field and ITS message (walk #31: the form shows the error under the field, not one generic
+// sentence). Shared by create and update. categoryId / tracksStock / description have no free-text failure mode.
+const FIELD_ERROR: Record<string, { field: ProductFormField; key: string }> = {
+  title: { field: 'title', key: 'product.error_title' },
+  priceTnd: { field: 'price', key: 'product.error_price_positive' },
+  deliveryFeeTnd: { field: 'deliveryFee', key: 'product.error_price' },
+  stockCount: { field: 'stockCount', key: 'product.error_stock_required' },
+}
+
+function productFieldError(
+  issue: { code: string; path: PropertyKey[] } | undefined,
+  lang: Lang,
+): { error: string; field: ProductFormField } | null {
+  const path = issue?.path[0]
+  const hit = typeof path === 'string' ? FIELD_ERROR[path] : undefined
+  if (!hit) return null
+  // A positive amount with 3+ decimals (multipleOf(0.01)) is not « <= 0 » — it gets its own message.
+  if ((path === 'priceTnd' || path === 'deliveryFeeTnd') && issue?.code === 'not_multiple_of') {
+    return { error: t('product.error_price_decimals', lang), field: hit.field }
+  }
+  return { error: t(hit.key, lang), field: hit.field }
+}
+
 /**
  * Create the product and its gallery rows.
  *
@@ -298,7 +325,7 @@ const CreateProductInput = z
  * gallery, and both `products` and `product_images` are publicly SELECTable, so a half-written
  * product is visible immediately.
  */
-export async function createProductAction(input: unknown): Promise<ProductActionResult> {
+export async function createProductAction(input: unknown): Promise<CreateProductResult> {
   const lang = await getLang()
   const parsed = CreateProductInput.safeParse(input)
   if (!parsed.success) {
@@ -313,6 +340,8 @@ export async function createProductAction(input: unknown): Promise<ProductAction
     if (issue?.message === 'image_required') {
       return { ok: false, error: t('product.error.image_required', lang) }
     }
+    const fieldError = productFieldError(issue, lang)
+    if (fieldError) return { ok: false, ...fieldError }
     return { ok: false, error: t('product.error_add', lang) }
   }
   const p = parsed.data
@@ -790,21 +819,11 @@ const UpdateProductInput = z.object({
   title: z.string().trim().min(1).max(100),
   categoryId: z.string().uuid(),
   description: z.string().trim().max(2000).optional(),
-  priceTnd: z.number().nonnegative().multipleOf(0.01),
+  priceTnd: z.number().positive().multipleOf(0.01),
   deliveryFeeTnd: z.number().nonnegative().multipleOf(0.01),
   tracksStock: z.boolean(),
   stockCount: z.number().int().nonnegative().optional(),
 })
-
-// Zod path -> the field the client-side Errors record keys on. Only the fields the form can
-// actually get wrong on its own (a blank/negative number, a blank title) are mapped; categoryId
-// and tracksStock/description have no free-text failure mode worth attributing.
-const FIELD_FOR_PATH: Record<string, 'title' | 'price' | 'deliveryFee' | 'stockCount'> = {
-  title: 'title',
-  priceTnd: 'price',
-  deliveryFeeTnd: 'deliveryFee',
-  stockCount: 'stockCount',
-}
 
 /**
  * Identity/pricing/stock fields only — status is `toggleProductStatusAction`'s job (§5's
@@ -824,8 +843,8 @@ export async function updateProductAction(input: unknown): Promise<UpdateProduct
       `[updateProduct] rejected: input failed validation — ` +
         parsed.error.issues.map((i) => `${i.path.join('.') || '(root)'}:${i.message}`).join(', '),
     )
-    const field = issue ? FIELD_FOR_PATH[issue.path[0] as string] : undefined
-    return { ok: false, error: t('product.error_update', lang), field }
+    const fieldError = productFieldError(issue, lang)
+    return fieldError ? { ok: false, ...fieldError } : { ok: false, error: t('product.error_update', lang) }
   }
   const p = parsed.data
 

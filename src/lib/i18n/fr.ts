@@ -752,6 +752,8 @@ export const fr: Record<string, string> = {
   'product.back':           "Retour aux produits",
   'product.error_title':    "Le titre est requis.",
   'product.error_price':    "Veuillez entrer un prix valide (>= 0).",
+  'product.error_price_positive': "Le prix doit être supérieur à 0.",
+  'product.error_price_decimals': "Le prix a deux décimales au maximum (ex : 12.50).",
   'product.error_stock_required': "Veuillez indiquer la quantité en stock.",
   'product.error_update':   "Une erreur est survenue lors de la mise à jour. Veuillez réessayer.",
   'product.error_add':      "Une erreur est survenue lors de l'ajout. Veuillez réessayer.",
@@ -1181,6 +1183,7 @@ export const fr: Record<string, string> = {
   'monCompte.field.phone':           "Téléphone",
   'monCompte.field.phone_ph':        "8 chiffres (ex: 12345678)",
   'monCompte.field.phoneHelp':       "Optionnel — utilisé pour les commandes et contacts.",
+  'monCompte.field.phoneHelpSeller': "Requis : les clients vous contactent sur WhatsApp à ce numéro.",
   'monCompte.field.dob':             "Date de naissance",
   'monCompte.field.dobHelp':         "Pour modifier votre date de naissance, contactez le support.",
   'monCompte.field.city':            "Ville",
@@ -1237,6 +1240,14 @@ export const fr: Record<string, string> = {
   'monCompte.error.notAuth':         "Vous devez être connecté.",
   'monCompte.error.nameRequired':    "Le nom complet est obligatoire.",
   'monCompte.error.phoneFormat':     "Le numéro doit avoir 8 chiffres (avec ou sans +216).",
+
+  // ─── Seller contact phone (walk 2026-11-02 #17) — wizard step 1, Créer ma boutique, publish gate ─────────────
+  'seller.phone.helper':                "Les clients vous contactent sur WhatsApp à ce numéro.",
+  'seller.phone.error.required':        "Le numéro de téléphone est requis : les clients vous contactent sur WhatsApp.",
+  'seller.phone.error.publish_service': "Ajoutez votre numéro de téléphone dans Mon compte pour publier : les clients vous contactent sur WhatsApp.",
+  'seller.phone.notice.title':          "Ajoutez votre numéro de téléphone pour publier",
+  'seller.phone.notice.body':           "Les clients vous contactent sur WhatsApp. Sans numéro, vous ne pouvez ni publier ni réactiver un service.",
+  'seller.phone.notice.cta':            "Ajouter mon numéro dans Mon compte",
 
   // I1 « Mon compte » — Figma 724:63872 / 728:64216 (docs/design/i1-k-measurements.md).
   'monCompte.breadcrumb.home':       "Accueil",

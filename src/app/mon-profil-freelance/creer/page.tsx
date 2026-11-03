@@ -4,6 +4,8 @@ import { redirect } from 'next/navigation'
 import { AppShell } from '@/components/shell/AppShell'
 import { AlreadyHaveRole } from '@/components/devenir/AlreadyHaveRole'
 import { CreateFreelancerProfileForm } from './_components/CreateFreelancerProfileForm'
+import { readOwnContactPhone } from '@/lib/seller/contact-phone'
+import { toLocalPhone } from '@/lib/phone'
 import { getShellUser } from '@/lib/marche/shell-user'
 import { resolveOwnedFreelancerProfileId } from '@/lib/freelancer/owner-profile'
 import { createClient } from '@/lib/supabase/server'
@@ -70,6 +72,12 @@ export default async function CreerProfilFreelancePage() {
   const lang = await getLang()
   const supabase = await createClient()
 
+  // The contact phone (walk #17): asked on this step, pre-filled from the account. A failed read is a page error, never
+  // a blank field that would look like « no phone ».
+  const ownPhone = await readOwnContactPhone(supabase, shell.id)
+  if (!ownPhone.ok) throw new Error('profile phone fetch failed while rendering /mon-profil-freelance/creer')
+  const phone = toLocalPhone(ownPhone.phone)
+
   const existing = await resolveOwnedFreelancerProfileId(supabase, shell.id)
   if (!existing.ok && existing.reason === 'query_failed') {
     throw new Error('freelancer profile fetch failed while guarding /mon-profil-freelance/creer')
@@ -120,6 +128,7 @@ export default async function CreerProfilFreelancePage() {
         <CreateFreelancerProfileForm
           fullName={shell.topBarUser.full_name}
           avatarUrl={shell.topBarUser.avatar_url ?? null}
+          phone={phone}
           initial={{
             headline: profileRow.headline ?? '',
             bio: profileRow.bio ?? '',
@@ -148,6 +157,7 @@ export default async function CreerProfilFreelancePage() {
       <CreateFreelancerProfileForm
         fullName={shell.topBarUser.full_name}
         avatarUrl={shell.topBarUser.avatar_url ?? null}
+        phone={phone}
       />
     </AppShell>
   )

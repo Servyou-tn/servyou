@@ -29,6 +29,11 @@ export function normalizePhone(raw: string): string {
   return '+216' + s
 }
 
+/** A stored canonical phone (+216XXXXXXXX) as the 8 local digits a « +216 | … » field shows; null → ''. */
+export function toLocalPhone(stored: string | null): string {
+  return (stored ?? '').replace(/^\+216/, '')
+}
+
 /**
  * A stored phone for DISPLAY: « +21671555210 » → « +216 71 555 210 » (Figma E4 1469:23519, the seller's number in the
  * Vendeur panel). Anything that is not a +216 number (the `+` or `00` may be missing on legacy rows) is returned as it came — never mangled, never dropped.

@@ -12,6 +12,7 @@ import { createClient } from '@/lib/supabase/server'
 import { cn } from '@/lib/utils'
 import { WizardPageIntro } from '../_components/WizardPageIntro'
 import { ServiceWizard } from './_components/ServiceWizard'
+import { SellerPhoneNotice } from '@/components/account/SellerPhoneNotice'
 
 export async function generateMetadata(): Promise<Metadata> {
   return localizedMetadata('meta.service_create')
@@ -30,7 +31,7 @@ const ROUTE = '/mes-services/creer'
 // pass yet — see getResumableDraft.
 
 export default async function CreerServicePage() {
-  const [lang, { topBarUser, freelancerProfile }] = await Promise.all([getLang(), requireFreelancer(ROUTE)])
+  const [lang, { topBarUser, userId, freelancerProfile }] = await Promise.all([getLang(), requireFreelancer(ROUTE)])
 
   if (!freelancerProfile) {
     // A freelancer (seller_type='freelancer') who never finished H2 step 1 — same state and strings as
@@ -64,6 +65,7 @@ export default async function CreerServicePage() {
     <AppShell user={topBarUser}>
       <div className="flex flex-col gap-6">
         <WizardPageIntro lang={lang} titleKey="service.wizard.page_title" subtitleKey="service.wizard.page_subtitle" />
+        <SellerPhoneNotice userId={userId} lang={lang} />
         <ServiceWizard
           initialDraftId={draft?.id ?? null}
           initialForm={draft?.form ?? EMPTY_DRAFT}

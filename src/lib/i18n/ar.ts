@@ -785,6 +785,8 @@ export const ar: Record<string, string> = {
   'product.back':           "العودة إلى المنتجات",
   'product.error_title':    "العنوان إلزامي.",
   'product.error_price':    "يرجى إدخال سعر صالح (>= 0).",
+  'product.error_price_positive': "يجب أن يكون السعر أكبر من 0.",
+  'product.error_price_decimals': "يجب ألا يتجاوز السعر رقمين بعد الفاصلة (مثال: 12.50).",
   'product.error_stock_required': "يرجى تحديد الكمية المتوفرة في المخزون.",
   'product.error_update':   "حدث خطأ أثناء التحديث. يرجى المحاولة مرة أخرى.",
   'product.error_add':      "حدث خطأ أثناء الإضافة. يرجى المحاولة مرة أخرى.",
@@ -1164,6 +1166,7 @@ export const ar: Record<string, string> = {
   'monCompte.field.phone':           "الهاتف",
   'monCompte.field.phone_ph':        "8 أرقام (مثال: 12345678)",
   'monCompte.field.phoneHelp':       "اختياري — يُستخدم للطلبات والتواصل.",
+  'monCompte.field.phoneHelpSeller': "مطلوب: يتواصل معك العملاء عبر واتساب على هذا الرقم.",
   'monCompte.field.dob':             "تاريخ الميلاد",
   'monCompte.field.dobHelp':         "لتعديل تاريخ ميلادك، اتصل بالدعم.",
   'monCompte.field.city':            "المدينة",
@@ -1219,6 +1222,14 @@ export const ar: Record<string, string> = {
   'monCompte.error.notAuth':         "يجب أن تكون متصلا.",
   'monCompte.error.nameRequired':    "الاسم الكامل إجباري.",
   'monCompte.error.phoneFormat':     "يجب أن يحتوي الرقم على 8 أرقام (مع أو دون +216).",
+
+  // ─── Seller contact phone (walk 2026-11-02 #17) — wizard step 1, Créer ma boutique, publish gate ─────────────
+  'seller.phone.helper':                "يتواصل معك العملاء عبر واتساب على هذا الرقم.",
+  'seller.phone.error.required':        "رقم الهاتف إلزامي: يتواصل معك العملاء عبر واتساب.",
+  'seller.phone.error.publish_service': "أضف رقم هاتفك في حسابي للنشر: يتواصل معك العملاء عبر واتساب.",
+  'seller.phone.notice.title':          "أضف رقم هاتفك للنشر",
+  'seller.phone.notice.body':           "يتواصل معك العملاء عبر واتساب. بدون رقم، لا يمكنك نشر خدمة أو إعادة تفعيلها.",
+  'seller.phone.notice.cta':            "أضف رقمي في حسابي",
 
   // REVIEW_AR_TRANSLATION — I1 « Mon compte » (Figma 724:63872 / 728:64216).
   'monCompte.breadcrumb.home':       "الرئيسية",

@@ -6,6 +6,7 @@ import { getLang } from '@/lib/i18n/server'
 import { t } from '@/lib/i18n'
 import { resolveOwnedFreelancerProfileId } from '@/lib/freelancer/owner-profile'
 import { revalidateServiceSurfaces } from '@/lib/freelance/service-revalidate'
+import { readOwnContactPhone, SELLER_PHONE_REQUIRED_HINT } from '@/lib/seller/contact-phone'
 
 // Local, not exported — a 'use server' module may export only async functions (see
 // src/lib/products/constants.ts's own header for why the equivalent product type lives in a
@@ -63,6 +64,17 @@ export async function toggleServiceStatusAction(input: unknown): Promise<Service
     return { ok: false, error: t('common.error_generic', lang) }
   }
 
+  // Reactivating is publishing again: no contact phone, no « Activer » (walk #17). Pausing never needs one. The DB
+  // re-checks the hidden → active transition (enforce_seller_contact_phone).
+  if (parsed.data.nextStatus === 'active') {
+    const ownPhone = await readOwnContactPhone(supabase, user.id)
+    if (!ownPhone.ok) return { ok: false, error: t('common.error_generic', lang) }
+    if (!ownPhone.phone) {
+      console.error(`[toggleServiceStatus] user ${user.id} has no contact phone — activation refused`)
+      return { ok: false, error: t('seller.phone.error.publish_service', lang) }
+    }
+  }
+
   const { data, error } = await supabase
     .from('service_listings')
     .update({ status: parsed.data.nextStatus })
@@ -76,6 +88,7 @@ export async function toggleServiceStatusAction(input: unknown): Promise<Service
     if (error.message.includes('admin-moderated')) {
       return { ok: false, error: t('owner.moderation_banner.service', lang) }
     }
+    if (error.hint === SELLER_PHONE_REQUIRED_HINT) return { ok: false, error: t('seller.phone.error.publish_service', lang) }
     return { ok: false, error: t('service.error_update', lang) }
   }
   if (!data) {

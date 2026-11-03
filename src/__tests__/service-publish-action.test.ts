@@ -48,12 +48,19 @@ const h = vi.hoisted(() => {
   }))
   const resolveOwned = vi.fn(async () => state.owned)
   const revalidate = vi.fn()
-  return { state, createClient, resolveOwned, revalidate }
+  // Walk #17: the publisher's contact phone (readOwnContactPhone), present by default.
+  const phone = { current: { ok: true, phone: '+21620000000' } as { ok: true; phone: string | null } | { ok: false } }
+  const readPhone = vi.fn(async () => phone.current)
+  return { state, createClient, resolveOwned, revalidate, phone, readPhone }
 })
 
 vi.mock('@/lib/supabase/server', () => ({ createClient: h.createClient }))
 vi.mock('@/lib/freelancer/owner-profile', () => ({ resolveOwnedFreelancerProfileId: h.resolveOwned }))
 vi.mock('@/lib/freelance/service-revalidate', () => ({ revalidateServiceSurfaces: h.revalidate }))
+vi.mock('@/lib/seller/contact-phone', () => ({
+  readOwnContactPhone: h.readPhone,
+  SELLER_PHONE_REQUIRED_HINT: 'seller_phone_required',
+}))
 
 import { publishServiceDraftAction } from '@/app/mes-services/creer/actions'
 
@@ -85,6 +92,7 @@ beforeEach(() => {
   h.state.user = { id: 'user-1' }
   h.state.owned = { ok: true, freelancerProfileId: 'fp-1' }
   h.state.results = []
+  h.phone.current = { ok: true, phone: '+21620000000' }
   h.state.calls = []
   h.revalidate.mockClear()
 })
@@ -232,5 +240,37 @@ describe('publishServiceDraftAction — the publish', () => {
     ]
     const res = await publishServiceDraftAction({ draftId: DRAFT_ID })
     expect(res).toEqual({ ok: false, errorKey: 'service.wizard.error.publish_failed', fields: [] })
+  })
+})
+
+// Walk 2026-11-02 #17 — no contact phone, no publish: buyers reach the freelancer on WhatsApp through it.
+describe('publishServiceDraftAction — contact phone gate', () => {
+  const updates = () => h.state.calls.filter((c) => c.table === 'service_listings' && c.op === 'update')
+
+  it('a complete draft is refused when the account has no phone, BEFORE any write', async () => {
+    h.phone.current = { ok: true, phone: null }
+    h.state.results = [{ data: ROW, error: null }, { data: { id: DRAFT_ID }, error: null }]
+    const res = await publishServiceDraftAction({ draftId: DRAFT_ID })
+    expect(res).toEqual({ ok: false, errorKey: 'seller.phone.error.publish_service', fields: [] })
+    expect(updates()).toEqual([])
+    expect(h.readPhone).toHaveBeenCalledWith(expect.anything(), 'user-1')
+    expect(h.revalidate).not.toHaveBeenCalled()
+  })
+
+  it('a failed phone read is a generic failure, never a publish', async () => {
+    h.phone.current = { ok: false }
+    h.state.results = [{ data: ROW, error: null }, { data: { id: DRAFT_ID }, error: null }]
+    const res = await publishServiceDraftAction({ draftId: DRAFT_ID })
+    expect(res).toEqual({ ok: false, errorKey: 'service.wizard.error.publish_failed', fields: [] })
+    expect(updates()).toEqual([])
+  })
+
+  it('the DB trigger refusal (hint seller_phone_required) maps to the same message', async () => {
+    h.state.results = [
+      { data: ROW, error: null },
+      { data: null, error: { message: 'Numéro de téléphone requis', code: '23514', details: null, hint: 'seller_phone_required' } },
+    ]
+    const res = await publishServiceDraftAction({ draftId: DRAFT_ID })
+    expect(res).toEqual({ ok: false, errorKey: 'seller.phone.error.publish_service', fields: [] })
   })
 })

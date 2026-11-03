@@ -1143,6 +1143,29 @@ both on 2026-10-28.
     - Rollback: the guarded block comment at the end of the file (not applied).
     - The recorded statement carries a shorter header and the DO block without its in-block comments; the executable
       SQL is identical (comment-stripped md5 checked).
+118. **20261103190052_seller_phone_and_product_checks** — journey walk 2026-11-02 #17 + #31 (fix packet 1, #303).
+    - `products_price_positive` (`price_tnd > 0`) and `products_title_not_blank` (`btrim(title) <> ''`), next to the
+      original `price_tnd >= 0`; 0 rows violated them at apply.
+    - `enforce_seller_contact_phone()` (security definer, `search_path ''`, no EXECUTE grant) on two BEFORE triggers:
+      `trg_require_seller_phone_listings` (INSERT or UPDATE OF status on `service_listings`, only when the row BECOMES
+      `active`) and `trg_require_seller_phone_shops` (INSERT on `shops`). A JWT caller whose profile has no phone gets
+      23514, hint `seller_phone_required`; service role (`auth.uid()` null) and admins skip. Existing rows untouched
+      (9 phone-less freelancers kept their 12 active services).
+    - App mirror: `src/lib/seller/contact-phone.ts` (`SELLER_PHONE_REQUIRED_HINT`), the publish / « Activer » / shop
+      creation actions. Live: `seller-phone-gate-live.test.ts`.
+    - No column or type change, so `database.types.ts` is unchanged. The recorded statement was not compared with
+      this file (no SQL access in the CC session); the live suite checks the behaviour.
+119. **20261103201715_seller_phone_not_cleared** — journey walk 2026-11-02 #17 follow-up (#303): a seller who relies on
+    the contact phone cannot clear it.
+    - `enforce_seller_phone_not_cleared()` (security definer, `search_path ''`, no EXECUTE grant) on
+      `trg_require_seller_phone_kept`, BEFORE UPDATE OF phone on `profiles`: a stored phone going NULL / blank is refused
+      for a shop owner, or a freelancer with at least one active service — 23514, hint `seller_phone_required` (the
+      same hint as #118). Setting or changing a number, consumers, freelancers with no active service, and accounts
+      that never had a phone are untouched; service role (`auth.uid()` null) and admins skip.
+    - App mirror: `sellerPhoneClearBlocked` (`src/lib/seller/contact-phone.ts`) in `updateProfileAction`, which also
+      maps the hint to the phone field error. Live: `seller-phone-kept-live.test.ts`.
+    - No column or type change (`database.types.ts` unchanged). The recorded statement was not compared with this
+      file (no SQL access in the CC session); the live suite checks the behaviour.
 
 ## Rollback paths
 

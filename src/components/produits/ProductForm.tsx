@@ -10,6 +10,8 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Toggle } from '@/components/ui/toggle'
 import { createProductAction } from '@/app/actions/products'
+import type { ProductFormField } from '@/lib/products/constants'
+import { hasAtMostTwoDecimals } from '@/lib/products/price'
 import type { ProductCategory } from '@/lib/marche/product-categories'
 import { ImageUploadGrid, type UploadedImage } from './ImageUploadGrid'
 
@@ -51,6 +53,8 @@ export function ProductForm({
   const router = useRouter()
   const [pending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
+  // Per-field errors (walk #31) — from the submit check below or from the server's `field`, shown under the field.
+  const [fieldErrors, setFieldErrors] = useState<Partial<Record<ProductFormField, string>>>({})
 
   const [title, setTitle] = useState('')
   const [categoryId, setCategoryId] = useState('')
@@ -68,7 +72,17 @@ export function ProductForm({
   // preview degrades to "0 + 7 = 7" instead of "NaN".
   const priceNum = Number.parseFloat(price)
   const feeNum = Number.parseFloat(deliveryFee)
-  const safePrice = Number.isFinite(priceNum) ? priceNum : 0
+  // A price <= 0 is refused (walk #31), so the preview never adds it: « -3 + 7 = 4 » read as a valid total.
+  const safePrice = Number.isFinite(priceNum) && priceNum > 0 ? priceNum : 0
+  const priceInvalid = price.trim() !== '' && !(Number.isFinite(priceNum) && priceNum > 0)
+  // Typing into a field clears the error shown under it (a server-attributed one included).
+  const clearFieldError = (field: ProductFormField) =>
+    setFieldErrors((prev) => {
+      if (!(field in prev)) return prev
+      const next = { ...prev }
+      delete next[field]
+      return next
+    })
   const safeFee = Number.isFinite(feeNum) ? feeNum : 0
   const fmt = (n: number) => n.toFixed(2).replace(/\.00$/, '')
 
@@ -79,14 +93,29 @@ export function ProductForm({
     categoryId !== '' &&
     price.trim() !== '' &&
     Number.isFinite(priceNum) &&
-    priceNum >= 0 &&
+    priceNum > 0 &&
     Number.isFinite(feeNum) &&
     feeNum >= 0 &&
     (!tracksStock || stockCount.trim() !== '') &&
     images.length > 0
 
+  // Both CTAs: no product row — draft or not — may be saved without a title or with a price <= 0 (the server and the
+  // products_title_not_blank / products_price_positive CHECKs refuse it too); the photo gate stays publish-only.
+  function validateFields(): Partial<Record<ProductFormField, string>> {
+    const next: Partial<Record<ProductFormField, string>> = {}
+    if (!title.trim()) next.title = t('product.error_title', lang)
+    if (!(Number.isFinite(priceNum) && priceNum > 0)) next.price = t('product.error_price_positive', lang)
+    else if (!hasAtMostTwoDecimals(price)) next.price = t('product.error_price_decimals', lang)
+    if (!(Number.isFinite(feeNum) && feeNum >= 0)) next.deliveryFee = t('product.error_price', lang)
+    if (tracksStock && stockCount.trim() === '') next.stockCount = t('product.error_stock_required', lang)
+    return next
+  }
+
   function submit(publish: boolean) {
     setError(null)
+    const found = validateFields()
+    setFieldErrors(found)
+    if (Object.keys(found).length > 0) return
     startTransition(async () => {
       const res = await createProductAction({
         productId,
@@ -101,7 +130,9 @@ export function ProductForm({
         publish,
       })
       if (!res.ok) {
-        setError(res.error)
+        // A field error shows under its field only; the banner is for errors that belong to no field.
+        if (res.field) setFieldErrors((prev) => ({ ...prev, [res.field as ProductFormField]: res.error }))
+        else setError(res.error)
         return
       }
       // ⚑ TWO MESSAGES, BECAUSE THERE ARE TWO CTAs. `publish` maps to status active|hidden
@@ -157,7 +188,11 @@ export function ProductForm({
             counter
             maxLength={100}
             value={title}
-            onChange={(e) => setTitle(e.target.value)}
+            error={fieldErrors.title}
+            onChange={(e) => {
+              setTitle(e.target.value)
+              clearFieldError('title')
+            }}
           />
 
           {/* ⚑ HALF-WIDTH, deliberately. Sous-catégorie is the one approved divergence (no second
@@ -236,7 +271,11 @@ export function ProductForm({
               iconEnd={suffix}
               placeholder="0"
               value={price}
-              onChange={(e) => setPrice(e.target.value)}
+              error={fieldErrors.price ?? (priceInvalid ? t('product.error_price_positive', lang) : undefined)}
+              onChange={(e) => {
+                setPrice(e.target.value)
+                clearFieldError('price')
+              }}
             />
             <Input
               id="product-delivery"
@@ -249,7 +288,11 @@ export function ProductForm({
               required
               iconEnd={suffix}
               value={deliveryFee}
-              onChange={(e) => setDeliveryFee(e.target.value)}
+              error={fieldErrors.deliveryFee}
+              onChange={(e) => {
+                setDeliveryFee(e.target.value)
+                clearFieldError('deliveryFee')
+              }}
             />
           </div>
 
@@ -292,7 +335,11 @@ export function ProductForm({
               required
               placeholder="0"
               value={stockCount}
-              onChange={(e) => setStockCount(e.target.value)}
+              error={fieldErrors.stockCount}
+              onChange={(e) => {
+                setStockCount(e.target.value)
+                clearFieldError('stockCount')
+              }}
             />
           </div>
         )}

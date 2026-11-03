@@ -15,6 +15,7 @@ import {
 import { validateServiceInput, type ServiceField, type ServiceInput } from '@/lib/freelance/service-validation'
 import { VALIDATOR_FIELD, gateRefusalFields, resolveCategoryIds } from '@/lib/freelance/service-write'
 import { revalidateServiceSurfaces } from '@/lib/freelance/service-revalidate'
+import { readOwnContactPhone, SELLER_PHONE_REQUIRED_HINT } from '@/lib/seller/contact-phone'
 import { getSector, getSubcategory } from '@/lib/taxonomy/service-categories'
 
 // H6 « Créer un service » autosave. Returns i18n KEYS, not text: the wizard keeps the key in state
@@ -156,6 +157,7 @@ type PublishRow = DraftRow & { revisions_count: number | null }
 const PUBLISH_ERR = {
   incomplete: 'service.wizard.error.publish_incomplete',
   failed: 'service.wizard.error.publish_failed',
+  phone: 'seller.phone.error.publish_service',
 } as const
 
 function rowToServiceInput(row: PublishRow): ServiceInput {
@@ -217,6 +219,15 @@ export async function publishServiceDraftAction(input: unknown): Promise<Publish
     return { ok: false, errorKey: ERR.gone, fields: [] }
   }
 
+  // No contact phone, no publish (walk #17): buyers reach the freelancer on WhatsApp through it. The DB re-checks it
+  // on the same transition (enforce_seller_contact_phone, hint 'seller_phone_required').
+  const ownPhone = await readOwnContactPhone(supabase, user.id)
+  if (!ownPhone.ok) return { ok: false, errorKey: PUBLISH_ERR.failed, fields: [] }
+  if (!ownPhone.phone) {
+    console.error(`[publishServiceDraft] user ${user.id} has no contact phone — publish refused`)
+    return { ok: false, errorKey: PUBLISH_ERR.phone, fields: [] }
+  }
+
   const validation = validateServiceInput(rowToServiceInput(row as unknown as PublishRow))
   if (!validation.ok) {
     const failing = Object.keys(validation.errors) as ServiceField[]
@@ -238,6 +249,7 @@ export async function publishServiceDraftAction(input: unknown): Promise<Publish
     if (error.hint === 'service_publish_requirements') {
       return { ok: false, errorKey: PUBLISH_ERR.incomplete, fields: gateRefusalFields(error.details) }
     }
+    if (error.hint === SELLER_PHONE_REQUIRED_HINT) return { ok: false, errorKey: PUBLISH_ERR.phone, fields: [] }
     return { ok: false, errorKey: PUBLISH_ERR.failed, fields: [] }
   }
   // Published (or deleted) from another tab between the read and this write.

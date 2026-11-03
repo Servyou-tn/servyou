@@ -191,6 +191,12 @@ beforeAll(async () => {
   rowlessShopOwnerId = await createUser('rowless-shop')
   switcherId = await createUser('switcher')
   g2Id = await createUser('g2')
+  // The G2 control creates a shop through its own client: since enforce_seller_contact_phone (walk #17) the account
+  // needs a contact phone, which « Créer ma boutique » now asks for. Seeded as the service role.
+  {
+    const { error: phoneErr } = await admin.from('profiles').update({ phone: '+21620000000' }).eq('id', g2Id)
+    if (phoneErr) throw new Error(`g2 phone seed failed: ${phoneErr.message}`)
+  }
   h2Id = await createUser('h2')
   bypassId = await createUser('bypass')
   adminId = await createUser('admin')
