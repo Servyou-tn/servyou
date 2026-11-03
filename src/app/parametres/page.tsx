@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { localizedMetadata } from '@/lib/i18n/metadata'
 import Link from 'next/link'
 import { ChevronRight } from 'lucide-react'
 import { redirect } from 'next/navigation'
@@ -12,7 +13,9 @@ import { t } from '@/lib/i18n'
 import { FOCUS_RING } from '@/components/layout/styles'
 import { resolveRole } from '@/lib/roles'
 
-export const metadata: Metadata = { title: 'Paramètres — Servyou' }
+export async function generateMetadata(): Promise<Metadata> {
+  return localizedMetadata('meta.settings')
+}
 
 // I2 "Paramètres" — Figma 423:16615, measured (part 1 of the rebuild, feat/parametres-shell):
 // two-column shell (sub-nav rail + content) replacing the old four-stacked-cards page. Only the

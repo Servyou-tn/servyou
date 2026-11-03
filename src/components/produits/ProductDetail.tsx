@@ -123,7 +123,7 @@ export function ProductDetail({
             </>
           )}
           <ChevronRight className="h-3.5 w-3.5 shrink-0 rtl:rotate-180 max-lg:hidden" aria-hidden="true" />
-          <span className="text-text-secondary max-lg:hidden">{product.title}</span>
+          <span className="text-text-secondary max-lg:hidden"><bdi>{product.title}</bdi></span>
         </nav>
 
         {/* aboveFold — 600 / 32 / 504, top-aligned. Single column below xl (INFERRED, no 375 frame).
@@ -163,7 +163,8 @@ export function ProductDetail({
                   chip is a sub-category; products have only the category (Q2). */}
               <div className="flex flex-col gap-3">
                 <h1 className="text-[28px] font-semibold leading-[38px] text-brand-blue-800 max-lg:text-[22px] max-lg:leading-7">
-                  {product.title}
+                  {/* Seller-written: isolated so a French title keeps its word order on the Arabic page (walk #26). */}
+                  <bdi>{product.title}</bdi>
                 </h1>
                 {category && (
                   <span className="w-fit rounded-md bg-brand-blue-50 px-2 py-1 text-caption font-medium leading-[15px] text-brand-blue-700 lg:hidden">
@@ -177,7 +178,7 @@ export function ProductDetail({
                   gap 6. The total line is not drawn at 375 (Q6). */}
               <div className="flex flex-col gap-1 max-lg:flex-row max-lg:items-center max-lg:justify-between max-lg:gap-4">
                 <p className="text-[28px] font-semibold leading-[34px] text-brand-blue-800 max-lg:text-2xl max-lg:leading-[29px]">
-                  {tndPrice(product.price_tnd)}
+                  <bdi>{tndPrice(product.price_tnd, lang)}</bdi>
                 </p>
                 {/* ⚑ tndAmount, NOT String(). These two lines carry the unit inside a translated
                     template, so they cannot go through tndPrice — and String() formats them by a
@@ -315,7 +316,7 @@ export function ProductDetail({
                 <p className="text-body-sm leading-[21px] text-text-muted">{product.shop.city}</p>
               )}
               {product.shop?.description && (
-                <p className="text-[15px] leading-[26px] text-text-secondary">
+                <p dir="auto" className="text-[15px] leading-[26px] text-text-secondary">
                   {product.shop.description}
                 </p>
               )}

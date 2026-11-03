@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { localizedMetadata } from '@/lib/i18n/metadata'
 import Link from 'next/link'
 import { CheckCircle, Inbox, Send, TrendingUp } from 'lucide-react'
 import { AppShell } from '@/components/shell/AppShell'
@@ -25,7 +26,9 @@ import { ProposalRow } from './_components/ProposalRow'
 import { ProposalSearch } from './_components/ProposalSearch'
 import { COL } from './_components/proposal-columns'
 
-export const metadata: Metadata = { title: 'Mes propositions — Servyou' }
+export async function generateMetadata(): Promise<Metadata> {
+  return localizedMetadata('meta.proposals')
+}
 
 const ROUTE = '/mes-propositions'
 

@@ -58,7 +58,9 @@ describe('AnnonceResponseCard — the proposal terms (missions PR-4)', () => {
       skills: ['Figma', 'Adobe'],
       links: [{ url: 'https://www.behance.net/me', label: 'Mon portfolio' }, { url: 'https://a.tn/x', label: null }],
     })
-    expect(screen.getByText('80 TND')).toHaveAttribute('dir', 'ltr')
+    // walk #25: an auto-direction <bdi> — LTR « … TND » in FR, RTL « … د.ت » in AR (the seller dashboard's order), never a forced LTR run.
+    expect(screen.getByText('80 TND').tagName).toBe('BDI')
+    expect(screen.getByText('80 TND')).not.toHaveAttribute('dir')
     expect(screen.getByText('5 jours')).toBeInTheDocument()
     expect(screen.getByText('Figma')).toBeInTheDocument()
     expect(screen.getByText('Adobe')).toBeInTheDocument()
@@ -90,11 +92,11 @@ describe('AnnonceResponseCard — the proposal terms (missions PR-4)', () => {
     expect(screen.getByText(`${t('annonces.detail.proposed_price', 'ar')} :`)).toBeInTheDocument()
   })
 
-  it('AR prices read د.ت, not TND, inside an isolated LTR run', () => {
+  it('AR prices read د.ت, not TND, inside an auto-direction isolate (RTL: number then currency)', () => {
     view({ proposedPrice: 80 }, 'ar')
     const price = screen.getByText('80 د.ت')
     expect(price.tagName).toBe('BDI')
-    expect(price).toHaveAttribute('dir', 'ltr')
+    expect(price).not.toHaveAttribute('dir')
   })
 })
 

@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { localizedMetadata } from '@/lib/i18n/metadata'
 import Link from 'next/link'
 import { Package } from 'lucide-react'
 import { AppShell } from '@/components/shell/AppShell'
@@ -17,7 +18,9 @@ import { FOCUS_RING } from '@/components/layout/styles'
 import { cn } from '@/lib/utils'
 import { ProductsList } from './_components/ProductsList'
 
-export const metadata: Metadata = { title: 'Mes produits — Servyou' }
+export async function generateMetadata(): Promise<Metadata> {
+  return localizedMetadata('meta.products_mine')
+}
 
 const ROUTE = '/mes-produits'
 

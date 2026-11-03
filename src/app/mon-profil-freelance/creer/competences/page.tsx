@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { localizedMetadata } from '@/lib/i18n/metadata'
 import { redirect } from 'next/navigation'
 import { AppShell } from '@/components/shell/AppShell'
 import { CompetencesForm } from './_components/CompetencesForm'
@@ -6,7 +7,9 @@ import { getShellUser } from '@/lib/marche/shell-user'
 import { resolveOwnedFreelancerProfileId } from '@/lib/freelancer/owner-profile'
 import { createClient } from '@/lib/supabase/server'
 
-export const metadata: Metadata = { title: 'Compétences et langues — Servyou' }
+export async function generateMetadata(): Promise<Metadata> {
+  return localizedMetadata('meta.freelance_skills')
+}
 
 const ROUTE = '/mon-profil-freelance/creer/competences'
 

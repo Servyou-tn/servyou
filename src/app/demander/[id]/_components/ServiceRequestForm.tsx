@@ -8,7 +8,7 @@ import { t, type Lang } from '@/lib/i18n'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { FOCUS_RING } from '@/components/layout/styles'
-import { isValidPhone } from '@/lib/phone'
+import { formatLocalPhoneInput, isValidPhone } from '@/lib/phone'
 import { submitServiceRequest } from '../actions'
 import { Turnstile, type TurnstileHandle } from '@/components/security/Turnstile'
 import { Textarea } from '@/components/ui/textarea'
@@ -75,7 +75,8 @@ export function ServiceRequestForm({
   const [description, setDescription] = React.useState('')
   const [timeframe, setTimeframe] = React.useState('')
   const [budget, setBudget] = React.useState('')
-  const [phone, setPhone] = React.useState(initialPhone)
+  // Shown grouped « 55 123 456 » (display only); submitted as digits.
+  const [phone, setPhone] = React.useState(() => formatLocalPhoneInput(initialPhone))
   const [errors, setErrors] = React.useState<Errors>({})
   const [formError, setFormError] = React.useState<FormError | null>(null)
   // Translated here, at render, in the CURRENT lang — see the Message type above.
@@ -116,7 +117,7 @@ export function ServiceRequestForm({
     setPending(true)
     setFormError(null)
     const turnstileToken = await turnstile.current?.getToken()
-    const res = await submitServiceRequest({ serviceId, description, timeframe, budget, phone }, turnstileToken)
+    const res = await submitServiceRequest({ serviceId, description, timeframe, budget, phone: phone.replace(/\s/g, '') }, turnstileToken)
     if (!res.ok) {
       setPending(false)
       setFormError({ text: res.error })
@@ -200,7 +201,7 @@ export function ServiceRequestForm({
               aria-hidden="true"
               className="flex h-full shrink-0 items-center border-s border-border-subtle bg-surface-sunken pe-3.5 ps-3 text-sm font-medium text-text-muted"
             >
-              TND
+              {t('product.form.currency_suffix', lang)}
             </span>
           </div>
           {/* Error replaces the helper, as in Input/Textarea. */}
@@ -226,10 +227,15 @@ export function ServiceRequestForm({
           dir="ltr"
           maxLength={PHONE_INPUT_MAX}
           value={phone}
-          onChange={(e) => setPhone(e.target.value)}
+          onChange={(e) => {
+              // Regroup only while typing at the end; a mid-number edit keeps the caret where it is (review of #304).
+              const v = e.target.value
+              setPhone(e.target.selectionStart === v.length ? formatLocalPhoneInput(v) : v)
+            }}
           iconStart={
             <span className="flex shrink-0 items-center gap-2 text-base text-text-secondary">
-              +216
+              {/* LTR-isolated: in AR « +216 » read « 216+ » (walk / E1 Q1). */}
+              <bdi dir="ltr">+216</bdi>
               <span aria-hidden="true" className="h-5 w-px bg-border-subtle" />
             </span>
           }

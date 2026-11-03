@@ -38,3 +38,15 @@ export function formatPhoneDisplay(stored: string): string {
   const m = /^(?:\+|00)?216([0-9]{2})([0-9]{3})([0-9]{3})$/.exec(stored.replace(/\s/g, ''))
   return m ? `+216 ${m[1]} ${m[2]} ${m[3]}` : stored
 }
+
+/**
+ * The local 8 digits as the buyer types them, grouped for display only (founder, 2026-11-03): « 55123456 » → « 55 123 456 ». A value that
+ * is not a plain local number (a pasted +216…, letters) is left exactly as typed; isValidPhone / normalizePhone ignore the spaces and the
+ * forms submit the digits only.
+ */
+export function formatLocalPhoneInput(value: string): string {
+  if (!/^[\d\s]*$/.test(value)) return value
+  const d = value.replace(/\s/g, '')
+  if (d.length > 8) return value
+  return [d.slice(0, 2), d.slice(2, 5), d.slice(5, 8)].filter(Boolean).join(' ')
+}

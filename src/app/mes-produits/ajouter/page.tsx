@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { localizedMetadata } from '@/lib/i18n/metadata'
 import { randomUUID } from 'node:crypto'
 import Link from 'next/link'
 import { ChevronRight } from 'lucide-react'
@@ -11,7 +12,9 @@ import { t } from '@/lib/i18n'
 import { FOCUS_RING } from '@/components/layout/styles'
 import { cn } from '@/lib/utils'
 
-export const metadata: Metadata = { title: 'Ajouter un produit — Servyou' }
+export async function generateMetadata(): Promise<Metadata> {
+  return localizedMetadata('meta.product_add')
+}
 
 const ROUTE = '/mes-produits/ajouter'
 

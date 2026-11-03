@@ -66,7 +66,7 @@ export function ServiceRequestScreen({
         {t('demander.recap.title', lang)}
       </h2>
 
-      <p className="text-[15px] font-semibold leading-[22px] text-brand-blue-800">{service.title}</p>
+      <p className="text-[15px] font-semibold leading-[22px] text-brand-blue-800"><bdi>{service.title}</bdi></p>
 
       <Chips items={chips} />
 
@@ -134,7 +134,7 @@ export function ServiceRequestScreen({
         )}
         <ChevronRight className="hidden h-3.5 w-3.5 shrink-0 rtl:rotate-180 lg:block" aria-hidden="true" />
         <Link href={`/services/${service.id}`} className="hidden hover:text-text-secondary lg:inline">
-          {service.title}
+          <bdi>{service.title}</bdi>
         </Link>
         <ChevronRight className="h-3 w-3 shrink-0 rtl:rotate-180 lg:h-3.5 lg:w-3.5" aria-hidden="true" />
         <span className="text-text-secondary">{t('demander.breadcrumb.request', lang)}</span>

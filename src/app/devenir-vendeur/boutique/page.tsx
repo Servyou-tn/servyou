@@ -1,12 +1,11 @@
 import type { Metadata } from 'next'
+import { localizedMetadata } from '@/lib/i18n/metadata'
 import { AppShell } from '@/components/shell/AppShell'
 import { DevenirVendeurContent } from '@/components/devenir/DevenirVendeurContent'
 import { getShellUser } from '@/lib/marche/shell-user'
 
-export const metadata: Metadata = {
-  title: 'Devenir vendeur — Servyou',
-  description:
-    'Lancez votre boutique en ligne sur Servyou. Sans commission. Paiement à la livraison. Pour vendre en Tunisie.',
+export async function generateMetadata(): Promise<Metadata> {
+  return localizedMetadata('meta.become_seller_shop', {}, 'meta.desc.become_seller_shop')
 }
 
 // Moved from /devenir-vendeur (unchanged content) — the shared role-choice entry now lives

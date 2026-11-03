@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { localizedMetadata } from '@/lib/i18n/metadata'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { ChevronRight } from 'lucide-react'
@@ -12,7 +13,9 @@ import { FOCUS_RING } from '@/components/layout/styles'
 import { cn } from '@/lib/utils'
 import { EditProductForm } from './_components/EditProductForm'
 
-export const metadata: Metadata = { title: 'Modifier le produit — Servyou' }
+export async function generateMetadata(): Promise<Metadata> {
+  return localizedMetadata('meta.product_edit')
+}
 
 const LIST = '/mes-produits'
 

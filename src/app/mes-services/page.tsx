@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { localizedMetadata } from '@/lib/i18n/metadata'
 import Link from 'next/link'
 import { Wrench, LayoutGrid, Inbox, CheckCircle, TrendingUp } from 'lucide-react'
 import { AppShell } from '@/components/shell/AppShell'
@@ -23,7 +24,9 @@ import { StatTile } from '@/components/shared/StatTile'
 import { ServiceFiltersBar } from './_components/ServiceFiltersBar'
 import { ServicesList } from './_components/ServicesList'
 
-export const metadata: Metadata = { title: 'Mes services — Servyou' }
+export async function generateMetadata(): Promise<Metadata> {
+  return localizedMetadata('meta.services_mine')
+}
 
 const ROUTE = '/mes-services'
 

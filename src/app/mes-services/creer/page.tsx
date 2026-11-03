@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { localizedMetadata } from '@/lib/i18n/metadata'
 import Link from 'next/link'
 import { AppShell } from '@/components/shell/AppShell'
 import { FOCUS_RING } from '@/components/layout/styles'
@@ -12,7 +13,9 @@ import { cn } from '@/lib/utils'
 import { WizardPageIntro } from '../_components/WizardPageIntro'
 import { ServiceWizard } from './_components/ServiceWizard'
 
-export const metadata: Metadata = { title: 'Créer un service — Servyou' }
+export async function generateMetadata(): Promise<Metadata> {
+  return localizedMetadata('meta.service_create')
+}
 
 const ROUTE = '/mes-services/creer'
 

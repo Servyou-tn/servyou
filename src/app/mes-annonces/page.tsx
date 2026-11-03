@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { localizedMetadata } from '@/lib/i18n/metadata'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { Inbox, Megaphone, MessageSquare, Send, UserCheck } from 'lucide-react'
@@ -30,7 +31,9 @@ import { AnnonceRow } from './_components/AnnonceRow'
 import { AnnonceSearch } from './_components/AnnonceSearch'
 import { COL } from './_components/annonce-columns'
 
-export const metadata: Metadata = { title: 'Mes annonces — Servyou' }
+export async function generateMetadata(): Promise<Metadata> {
+  return localizedMetadata('meta.annonces')
+}
 
 const ROUTE = '/mes-annonces'
 

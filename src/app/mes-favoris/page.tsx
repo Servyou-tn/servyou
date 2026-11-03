@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { localizedMetadata } from '@/lib/i18n/metadata'
 import { redirect } from 'next/navigation'
 import { AppShell } from '@/components/shell/AppShell'
 import { PageHeader } from '@/components/marche/PageHeader'
@@ -11,7 +12,9 @@ import { getLang } from '@/lib/i18n/server'
 import { t, tn } from '@/lib/i18n'
 import { FavorisTabs } from './_components/FavorisTabs'
 
-export const metadata: Metadata = { title: 'Mes favoris — Servyou' }
+export async function generateMetadata(): Promise<Metadata> {
+  return localizedMetadata('meta.favorites')
+}
 
 // F1 — /mes-favoris. Wires the existing getMyFavorites (lib/marche/my-data.ts), which had zero
 // callers before this PR — same unused-data-layer pattern D1 found for getProductDetail. It

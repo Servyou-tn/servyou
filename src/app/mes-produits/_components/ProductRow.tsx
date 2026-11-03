@@ -93,7 +93,7 @@ export function ProductRow({
       {/* Non-uniform columns: "Toujours disponible" (Stock, untracked) and a 4-digit-plus-decimals
           price both overflow an equal-thirds split at any reasonable row width. */}
       <div className="grid grid-cols-[minmax(70px,auto)_minmax(120px,auto)_minmax(56px,auto)] gap-4 lg:shrink-0">
-        <StatCol label={t('product.col_price', lang)} value={tndPrice(product.priceTnd)} />
+        <StatCol label={t('product.col_price', lang)} value={tndPrice(product.priceTnd, lang)} />
         <StatCol
           label={t('product.col_stock', lang)}
           value={product.tracksStock ? String(product.stockCount ?? 0) : t('common.stock_always', lang)}

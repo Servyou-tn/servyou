@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { localizedMetadata } from '@/lib/i18n/metadata'
 import { redirect } from 'next/navigation'
 import { AppShell } from '@/components/shell/AppShell'
 import { ConfigurationForm } from './_components/ConfigurationForm'
@@ -7,7 +8,9 @@ import { resolveOwnedShopId } from '@/lib/shops/owner-shop'
 import { getProductCategories } from '@/lib/marche/product-categories'
 import { createClient } from '@/lib/supabase/server'
 
-export const metadata: Metadata = { title: 'Configuration de la boutique — Servyou' }
+export async function generateMetadata(): Promise<Metadata> {
+  return localizedMetadata('meta.shop_configuration')
+}
 
 const ROUTE = '/ma-boutique/creer/configuration'
 

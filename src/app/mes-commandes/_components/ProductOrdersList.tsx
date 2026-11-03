@@ -12,6 +12,7 @@ import { PhoneAfterAcceptance } from '@/components/orders/PhoneAfterAcceptance'
 import { buyerContactState } from '@/lib/orders/phone-visibility'
 import { useLang } from '@/components/LangProvider'
 import { t } from '@/lib/i18n'
+import { tndPriceGrouped } from '@/components/listings/listing-utils'
 import type { MyProductOrder } from '@/lib/marche/my-orders'
 import { BUYER_CANCEL_REASONS } from '@/lib/orders/cancel-reasons'
 import { isCancelled, longDate, shortDate, shortRef, statusPillFor } from '@/lib/orders/order-status'
@@ -56,7 +57,7 @@ function ProductOrderRow({ order, open, onToggle }: { order: MyProductOrder; ope
   const contact = buyerContactState(order.status)
   const pill = statusPillFor(order.status, 'product') ?? statusPillFor('pending', 'product')!
   const title = order.title ?? t('mesCommandes.untitled.product', lang)
-  const price = order.total != null ? `${order.total.toLocaleString('fr-FR')} TND` : null
+  const price = order.total != null ? tndPriceGrouped(order.total, lang) : null
 
   return (
     <OrderAccordionRow

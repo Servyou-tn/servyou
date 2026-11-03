@@ -53,6 +53,8 @@ export function ProductDescription({ description }: { description: string }) {
     <div className="flex flex-col gap-3 max-lg:gap-2">
       <p
         ref={ref}
+        // Seller-written: a French description runs LTR on the Arabic page (walk #26 — its final period jumped to the start).
+        dir="auto"
         id="product-description"
         className={`whitespace-pre-line text-[15px] leading-[26px] text-text-secondary max-lg:leading-6 ${
           expanded ? '' : 'line-clamp-3 max-lg:line-clamp-5'

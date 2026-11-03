@@ -40,6 +40,7 @@ export function ServiceDescription({ text }: { text: string }) {
   return (
     <div className="flex flex-col gap-2">
       <p
+        dir="auto"
         ref={ref}
         id="service-description"
         className={`whitespace-pre-line text-[15px] leading-6 text-text-secondary ${expanded ? '' : 'line-clamp-8 lg:line-clamp-none'}`}

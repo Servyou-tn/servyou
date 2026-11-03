@@ -85,7 +85,7 @@ export function ServiceRow({ service, lang }: { service: SellerServiceRow; lang:
         <div className="flex lg:w-[150px]">
           <StatusPill status={pillStatus}>{pillLabel}</StatusPill>
         </div>
-        <StatCol label={t('service.from_price', lang)} value={tndPrice(service.priceTnd)} className="lg:w-[120px]" />
+        <StatCol label={t('service.from_price', lang)} value={tndPrice(service.priceTnd, lang)} className="lg:w-[120px]" />
         <StatCol
           label={t('service.row_orders_label', lang)}
           value={String(service.ordersCount)}

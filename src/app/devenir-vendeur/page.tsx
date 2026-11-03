@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { localizedMetadata } from '@/lib/i18n/metadata'
 import { Briefcase, Store } from 'lucide-react'
 import { AppShell } from '@/components/shell/AppShell'
 import { RoleChoiceCard } from './_components/RoleChoiceCard'
@@ -11,10 +12,8 @@ import { isOldEnoughToSignup, MIN_SELLER_AGE } from '@/lib/signup-validation'
 import { getLang } from '@/lib/i18n/server'
 import { t } from '@/lib/i18n'
 
-export const metadata: Metadata = {
-  title: 'Devenir vendeur — Servyou',
-  description:
-    'Lancez votre activité sur Servyou, en freelance ou en boutique. Sans commission. Pour vendre en Tunisie.',
+export async function generateMetadata(): Promise<Metadata> {
+  return localizedMetadata('meta.become_seller', {}, 'meta.desc.become_seller')
 }
 
 // The shared seller entry (Figma 469:20560, founder-confirmed as a NEW page, not a

@@ -1,6 +1,15 @@
 // Pure helpers for the listing cards. Kept render-free so the relative-time logic
 // is unit-testable (see listing-utils.test.ts).
 
+import type { Lang } from '@/lib/i18n'
+
+// One currency notation per language (founder, 2026-11-03, walk #25 / #30): « TND » in FR, « د.ت » in AR — the seller dashboard's
+// notation. Render the result inside a <bdi> (auto direction): FR resolves LTR, AR resolves RTL, so « 120 د.ت » reads number-then-currency
+// in Arabic order and never reorders with French text next to it.
+export function tndCurrency(lang: Lang = 'fr'): string {
+  return lang === 'ar' ? 'د.ت' : 'TND'
+}
+
 /**
  * The NUMBER half of a price, with no currency code: integers stay bare, anything else gets
  * exactly two decimals.
@@ -16,7 +25,15 @@ export function tndAmount(value: number | string | null): string {
   return Number.isInteger(n) ? String(n) : n.toFixed(2)
 }
 
-/** Price as a plain "{n} TND" string — currency code, not translatable copy. */
-export function tndPrice(value: number | string | null): string {
-  return `${tndAmount(value)} TND`
+/** Price as « {n} TND » (FR) / « {n} د.ت » (AR). FR output is unchanged from the locale-blind version. */
+export function tndPrice(value: number | string | null, lang: Lang = 'fr'): string {
+  return `${tndAmount(value)} ${tndCurrency(lang)}`
+}
+
+/**
+ * The grouped variant the order lists and the confirmation use: « 1 250 TND » / « 1 250 د.ت ». The SAME French grouping (a narrow space,
+ * a comma for decimals) in both languages: the Arabic locale's « 1.250 » reads as 1 dinar 250 millimes in Tunisia (review of #304).
+ */
+export function tndPriceGrouped(value: number, lang: Lang = 'fr'): string {
+  return `${value.toLocaleString('fr-FR')} ${tndCurrency(lang)}`
 }

@@ -78,7 +78,8 @@ export function AnnonceResponseCard({
               <dt>{t('annonces.detail.proposed_price', lang)} :</dt>
               {/* bdi, not dir="ltr" on the block: the LTR run is isolated and the row keeps its own direction. */}
               <dd>
-                <bdi dir="ltr">
+                {/* Auto-direction isolate (walk #25): « 80 TND » LTR in FR, « 80 د.ت » RTL in AR — the dashboard's reading order. */}
+                <bdi>
                   {tndAmount(proposedPrice)} {t('annonce.form.budget_currency', lang)}
                 </bdi>
               </dd>

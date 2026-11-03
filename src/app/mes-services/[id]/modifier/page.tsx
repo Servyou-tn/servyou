@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { localizedMetadata } from '@/lib/i18n/metadata'
 import { notFound } from 'next/navigation'
 import { AppShell } from '@/components/shell/AppShell'
 import { ModerationBanner } from '@/components/ModerationBanner'
@@ -13,7 +14,9 @@ import { StepPublication } from '../../creer/_components/StepPublication'
 import { WizardPageIntro } from '../../_components/WizardPageIntro'
 import { getStatusPresentation } from '../../_components/service-status'
 
-export const metadata: Metadata = { title: 'Modifier le service — Servyou' }
+export async function generateMetadata(): Promise<Metadata> {
+  return localizedMetadata('meta.service_edit')
+}
 
 // H7 « Modifier un service » — /mes-services/[id]/modifier (docs/design/h7-deltas.md). No Figma frame
 // exists for it: it is the H6 wizard (docs/design/h6-measurements.md, h6-pr*-deltas.md) in edit mode.

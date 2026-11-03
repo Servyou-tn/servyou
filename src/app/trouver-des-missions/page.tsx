@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { localizedMetadata } from '@/lib/i18n/metadata'
 import Link from 'next/link'
 import { AlertCircle, Compass, Info, X } from 'lucide-react'
 import { AppShell } from '@/components/shell/AppShell'
@@ -24,7 +25,9 @@ import { getMissionBoard, getMyProfileSkills, getServiceSectors } from '@/lib/ma
 import { MissionSelect } from './_components/MissionSelect'
 import { RemoteToggle } from './_components/RemoteToggle'
 
-export const metadata: Metadata = { title: 'Trouver des missions — Servyou' }
+export async function generateMetadata(): Promise<Metadata> {
+  return localizedMetadata('meta.find_missions')
+}
 
 const ROUTE = '/trouver-des-missions'
 

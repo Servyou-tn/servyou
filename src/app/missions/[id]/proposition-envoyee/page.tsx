@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { localizedMetadata } from '@/lib/i18n/metadata'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { CheckCircle, Inbox, MessageCircle, Users } from 'lucide-react'
@@ -11,7 +12,9 @@ import { getLang } from '@/lib/i18n/server'
 import { t, tn } from '@/lib/i18n'
 import { SentRecap } from './_components/SentRecap'
 
-export const metadata: Metadata = { title: 'Proposition envoyée — Servyou' }
+export async function generateMetadata(): Promise<Metadata> {
+  return localizedMetadata('meta.proposal_sent')
+}
 
 // H13 « Proposition envoyée » — Figma 376:10511 (docs/design/h9-h13-measurements.md §4): ONE centred 640-wide column, gap 32 —
 // hero · « CE QUE VOUS AVEZ ENVOYÉ » recap · « ET MAINTENANT ? » next steps · WhatsApp CTA + « Voir mes propositions ».

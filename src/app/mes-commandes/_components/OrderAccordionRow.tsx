@@ -61,7 +61,9 @@ export function OrderAccordionRow({
           {thumb}
 
           <span className="flex min-w-0 flex-1 flex-col gap-0.5">
-            <span className="truncate text-body-sm font-semibold text-text-primary lg:text-[15px] lg:leading-[22px]">
+            {/* Seller-written title: its own direction, hugging the page's start side in AR, so a French title is cut at its END (walk #26 —
+                the product card's fix from #299). LTR pages keep the stretched box. */}
+            <span dir="auto" className="truncate text-body-sm font-semibold text-text-primary rtl:max-w-full rtl:self-start lg:text-[15px] lg:leading-[22px]">
               {title}
             </span>
             {/* Desktop: counterpart and date on their own lines. Mobile: one "Nom · 24 nov" line. */}

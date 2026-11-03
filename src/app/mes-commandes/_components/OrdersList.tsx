@@ -11,6 +11,7 @@ import { buyerContactState } from '@/lib/orders/phone-visibility'
 import { OrderAccordionRow } from './OrderAccordionRow'
 import { useLang } from '@/components/LangProvider'
 import { t } from '@/lib/i18n'
+import { tndPriceGrouped } from '@/components/listings/listing-utils'
 import { createClient } from '@/lib/supabase/client'
 import { confirmReceiptAction } from '@/app/actions/orders'
 import { Avatar } from '@/components/ui/avatar'
@@ -77,7 +78,7 @@ function OrderRow({
   const contact = buyerContactState(order.status)
   const title = order.title ?? t('mesCommandes.untitled', lang)
   const price =
-    order.startingPrice != null ? `${order.startingPrice.toLocaleString('fr-FR')} TND` : null
+    order.startingPrice != null ? tndPriceGrouped(order.startingPrice, lang) : null
 
   return (
     <OrderAccordionRow

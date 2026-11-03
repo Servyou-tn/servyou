@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { localizedMetadata } from '@/lib/i18n/metadata'
 import { redirect } from 'next/navigation'
 import { AppShell } from '@/components/shell/AppShell'
 import { AlreadyHaveRole } from '@/components/devenir/AlreadyHaveRole'
@@ -9,7 +10,9 @@ import { createClient } from '@/lib/supabase/server'
 import { getLang } from '@/lib/i18n/server'
 import { t } from '@/lib/i18n'
 
-export const metadata: Metadata = { title: 'Créer ma boutique — Servyou' }
+export async function generateMetadata(): Promise<Metadata> {
+  return localizedMetadata('meta.shop_create')
+}
 
 const ROUTE = '/ma-boutique/creer'
 

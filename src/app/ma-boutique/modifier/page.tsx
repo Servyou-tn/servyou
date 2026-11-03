@@ -1,11 +1,14 @@
 import type { Metadata } from 'next'
+import { localizedMetadata } from '@/lib/i18n/metadata'
 import { redirect } from 'next/navigation'
 import { AppShell } from '@/components/shell/AppShell'
 import { EditShopForm } from './_components/EditShopForm'
 import { requireShopOwner } from '@/lib/auth/require-seller'
 import { createClient } from '@/lib/supabase/server'
 
-export const metadata: Metadata = { title: 'Modifier ma boutique — Servyou' }
+export async function generateMetadata(): Promise<Metadata> {
+  return localizedMetadata('meta.shop_edit')
+}
 
 const ROUTE = '/ma-boutique/modifier'
 

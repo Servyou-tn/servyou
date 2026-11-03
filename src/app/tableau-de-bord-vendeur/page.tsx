@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { localizedMetadata } from '@/lib/i18n/metadata'
 import Link from 'next/link'
 import {
   Inbox,
@@ -30,7 +31,9 @@ import { StatTile } from './_components/StatTile'
 import { Panel, PanelEmpty } from './_components/Panel'
 import { AdvanceOrderButton } from './_components/AdvanceOrderButton'
 
-export const metadata: Metadata = { title: 'Tableau de bord — Servyou' }
+export async function generateMetadata(): Promise<Metadata> {
+  return localizedMetadata('meta.dashboard_seller')
+}
 
 const ROUTE = '/tableau-de-bord-vendeur'
 
@@ -150,7 +153,7 @@ export default async function TableauDeBordVendeurPage() {
               <StatTile
                 label={t('seller.dashboard.tile.profit', lang)}
                 value={t('seller.dashboard.tile.profit_value', lang, {
-                  amount: data.netProfit.value.toLocaleString(lang === 'ar' ? 'ar-TN-u-nu-latn' : 'fr-FR'),
+                  amount: data.netProfit.value.toLocaleString('fr-FR' /* both languages: the AR locale's « 1.250 » reads as millimes (#304) */),
                 })}
                 subtitle={
                   data.netProfit.measuredCount === data.netProfit.deliveredCount

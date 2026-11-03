@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { t, type Lang } from '@/lib/i18n'
-import { tndAmount } from '@/components/listings/listing-utils'
+import { tndAmount, tndCurrency } from '@/components/listings/listing-utils'
 import { FOCUS_RING } from '@/components/layout/styles'
 import { relativeTimeLabel } from '@/lib/relative-time'
 import type { MissionMatch } from '@/lib/marche/freelancer-dashboard'
@@ -20,11 +20,12 @@ import type { MissionMatch } from '@/lib/marche/freelancer-dashboard'
 //
 // Read-only: the whole row links to /trouver-des-missions (a real route — a ComingSoon stub
 // today, but a stub is a page, not a 404), unchanged from before this pass.
-function budgetValue(min: number | null, max: number | null): string | null {
-  if (min != null && max != null) return `${tndAmount(min)} – ${tndAmount(max)} TND`
-  if (min != null) return `≥ ${tndAmount(min)} TND`
+function budgetValue(min: number | null, max: number | null, lang: Lang): string | null {
+  const cur = tndCurrency(lang)
+  if (min != null && max != null) return `${tndAmount(min)} – ${tndAmount(max)} ${cur}`
+  if (min != null) return `≥ ${tndAmount(min)} ${cur}`
   // The annonce form's single « Budget approximatif » is saved as budget_max: a figure, not a ceiling (formatJobBudget).
-  if (max != null) return `${tndAmount(max)} TND`
+  if (max != null) return `${tndAmount(max)} ${cur}`
   return null
 }
 
@@ -43,7 +44,7 @@ function MetaCol({ label, value, ltr }: { label: string; value: string; ltr?: bo
 }
 
 export function MissionRow({ mission, lang }: { mission: MissionMatch; lang: Lang }) {
-  const budget = budgetValue(mission.budgetMin, mission.budgetMax)
+  const budget = budgetValue(mission.budgetMin, mission.budgetMax, lang)
   // Structurally present, never true today — see the file header note.
   const isUrgent = false as boolean
 

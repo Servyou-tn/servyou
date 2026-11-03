@@ -1,10 +1,13 @@
 import type { Metadata } from 'next'
+import { localizedMetadata } from '@/lib/i18n/metadata'
 import Link from 'next/link'
 import { getLang } from '@/lib/i18n/server'
 import { t } from '@/lib/i18n'
 import { FOCUS_RING } from '@/components/layout/styles'
 
-export const metadata: Metadata = { title: 'À propos — Servyou' }
+export async function generateMetadata(): Promise<Metadata> {
+  return localizedMetadata('meta.about')
+}
 
 const VALUES = [
   { n: '01', title: 'about.values.v1.title', body: 'about.values.v1.body' },
