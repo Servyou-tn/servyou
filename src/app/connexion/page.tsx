@@ -25,10 +25,12 @@ async function demanderContext(next: string | null, lang: Lang): Promise<Context
   const id = demanderTargetId(next)
   if (!id) return null
   try {
-    if (await getProductDetail(id)) {
+    // In parallel: the id is one or the other, and the sign-in page should not wait for two round trips in a row.
+    const [product, service] = await Promise.all([getProductDetail(id), getServiceDetail(id)])
+    if (product) {
       return { notice: t('signin.reason.product', lang), back: { href: `/produits/${id}`, label: t('auth.back.product', lang) } }
     }
-    if (await getServiceDetail(id)) {
+    if (service) {
       return { notice: t('signin.reason.service', lang), back: { href: `/services/${id}`, label: t('auth.back.service', lang) } }
     }
   } catch {

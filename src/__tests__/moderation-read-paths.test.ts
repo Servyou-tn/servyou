@@ -446,6 +446,9 @@ const OWNER_SCOPED: Record<string, string> = {
   // unaffected either way — admin_hide_content sets status='hidden' on a product, and every count
   // on this page already filters status='active'.
   'seller-dashboard.ts': "the seller's own shop — an owner must see their own moderated content",
+  // Nav packet 1 (walk #33): the signed-in FREELANCER's own freelancer_profiles.id (profile_id = me) for the user menu's
+  // « Voir mon profil public » — an owner reaches their own moderated page behind ModerationBanner, so it must not be filtered.
+  'shell-user.ts': "the signed-in freelancer's own profile id for the user-menu link (profile_id = auth user)",
 }
 
 function readPathFiles(): { name: string; source: string }[] {

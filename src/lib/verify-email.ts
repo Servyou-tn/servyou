@@ -1,7 +1,7 @@
 import { roleConfig, type SignupRole } from './signup-role'
 import type { SellerType } from './layout/select-variant'
 import { roleWorkspacePath } from './roles'
-import { isValidInternalPath } from './internal-path'
+import { isUsefulNext } from './auth/next-param'
 
 // Where to send a user after their email is verified (the State-2 "Continuer").
 // A safe `next` carried from /connexion?next= through the sign-up funnel wins (the visitor came to order a product, say — send them
@@ -14,7 +14,7 @@ export function nextDestinationAfterVerify(
   sellerType: SellerType,
   next?: string | null,
 ): string {
-  if (next && isValidInternalPath(next)) return next
+  if (isUsefulNext(next)) return next
   if (role) return roleConfig(role).destination
   return roleWorkspacePath(sellerType)
 }

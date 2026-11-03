@@ -15,6 +15,14 @@ describe('readNext — the validated ?next= of a funnel page', () => {
       expect(readNext(bad)).toBeNull()
     }
   })
+
+  it("drops the funnel's own pages, which would land a signed-in visitor back on a form", () => {
+    for (const funnel of ['/connexion', '/connexion?next=/x', '/inscription', '/inscription/consumer', '/auth/signout', '/verifier-email', '/nouveau-mot-de-passe', '/mot-de-passe-oublie']) {
+      expect(readNext(funnel)).toBeNull()
+      expect(withNext('/inscription', funnel)).toBe('/inscription')
+    }
+    expect(readNext('/connexions-utiles')).toBe('/connexions-utiles') // whole segments only
+  })
 })
 
 describe('withNext — a funnel link that keeps ?next=', () => {
@@ -50,6 +58,7 @@ describe('nextDestinationAfterVerify — a safe next from the funnel wins over t
   it('falls back to the role destination (or the workspace) when next is missing or unsafe', () => {
     expect(nextDestinationAfterVerify('consumer', null, null)).toBe('/')
     expect(nextDestinationAfterVerify('freelancer', null, '//evil.example')).toBe('/devenir-vendeur/freelance')
+    expect(nextDestinationAfterVerify('consumer', null, '/connexion')).toBe('/')
     expect(nextDestinationAfterVerify(null, null)).toBe(nextDestinationAfterVerify(null, null, undefined))
   })
 })
