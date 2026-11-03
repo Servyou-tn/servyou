@@ -13,6 +13,9 @@ export type SignupRole = 'consumer' | 'shopOwner' | 'freelancer'
 /** sessionStorage key holding the chosen role across the signup → verify hop. */
 export const SIGNUP_ROLE_KEY = 'servyou.signupRole'
 
+/** sessionStorage key holding the funnel's validated `?next=` across the same hop (read back through isValidInternalPath). */
+export const SIGNUP_NEXT_KEY = 'servyou.signupNext'
+
 /** Narrow an arbitrary sessionStorage value back to a SignupRole (or null). */
 export function asSignupRole(value: string | null | undefined): SignupRole | null {
   return value === 'consumer' || value === 'shopOwner' || value === 'freelancer'

@@ -49,6 +49,7 @@ afterEach(() => {
 
 const ORDER_ID = '11111111-1111-4111-8111-111111111111'
 const CONFIRM = t('common.confirm_receipt_action', 'fr')
+const YES = t('receipt.confirm.yes', 'fr')
 
 const ORDER: MyServiceOrder = {
   id: ORDER_ID,
@@ -65,6 +66,13 @@ const ORDER: MyServiceOrder = {
   sellerCity: 'Tunis',
 }
 
+
+// jsdom has no showModal / close on <dialog>: the receipt confirm (ModalDialog) needs them. Toggling `open` is all these tests read.
+if (typeof HTMLDialogElement !== 'undefined') {
+  HTMLDialogElement.prototype.showModal ??= function (this: HTMLDialogElement) { this.setAttribute('open', '') }
+  HTMLDialogElement.prototype.close ??= function (this: HTMLDialogElement) { this.removeAttribute('open') }
+}
+
 describe('ReceiptConfirmButton', () => {
   it('calls confirmReceiptAction with only the order id (no browser-side write)', async () => {
     const user = userEvent.setup()
@@ -74,6 +82,8 @@ describe('ReceiptConfirmButton', () => {
       </LangProvider>,
     )
     await user.click(screen.getByRole('button', { name: CONFIRM }))
+    expect(h.calls).toHaveLength(0) // walk #16: the final write asks first
+    await user.click(await screen.findByRole('button', { name: YES }))
     await waitFor(() => expect(h.calls).toHaveLength(1))
     expect(h.calls[0]).toEqual({ orderId: ORDER_ID })
   })
@@ -87,6 +97,8 @@ describe('ReceiptConfirmButton', () => {
       </LangProvider>,
     )
     await user.click(screen.getByRole('button', { name: CONFIRM }))
+    expect(h.calls).toHaveLength(0) // walk #16: the final write asks first
+    await user.click(await screen.findByRole('button', { name: YES }))
     expect(await screen.findByText(t('common.receipt_confirm_error', 'fr'))).toBeInTheDocument()
     expect(h.calls).toEqual([{ orderId: ORDER_ID }])
   })
@@ -102,6 +114,8 @@ describe('ReceiptConfirmButton — a rejected call', () => {
       </LangProvider>,
     )
     await user.click(screen.getByRole('button', { name: CONFIRM }))
+    expect(h.calls).toHaveLength(0) // walk #16: the final write asks first
+    await user.click(await screen.findByRole('button', { name: YES }))
     expect(await screen.findByText(t('common.receipt_confirm_error', 'fr'))).toBeInTheDocument()
     expect(screen.getByRole('button', { name: CONFIRM })).not.toBeDisabled()
   })
@@ -122,6 +136,8 @@ describe('E3 OrdersList — ConfirmReceipt', () => {
   it('calls confirmReceiptAction with only the order id (no browser-side write)', async () => {
     const user = await open()
     await user.click(await screen.findByRole('button', { name: CONFIRM }))
+    expect(h.calls).toHaveLength(0) // walk #16: the final write asks first
+    await user.click(await screen.findByRole('button', { name: YES }))
     await waitFor(() => expect(h.calls).toHaveLength(1))
     expect(h.calls[0]).toEqual({ orderId: ORDER_ID })
   })

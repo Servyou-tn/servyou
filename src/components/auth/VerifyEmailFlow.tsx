@@ -8,7 +8,7 @@ import { useLang } from '@/components/LangProvider'
 import { t } from '@/lib/i18n'
 import { isValidEmail } from '@/lib/signup-validation'
 import { verifyEmailRedirectUrl } from '@/lib/auth/email-redirect'
-import { SIGNUP_ROLE_KEY, asSignupRole } from '@/lib/signup-role'
+import { SIGNUP_NEXT_KEY, SIGNUP_ROLE_KEY, asSignupRole } from '@/lib/signup-role'
 import { nextDestinationAfterVerify } from '@/lib/verify-email'
 import { resolveRole } from '@/lib/roles'
 import type { SellerType } from '@/lib/layout/select-variant'
@@ -119,12 +119,18 @@ export function VerifyEmailFlow({
     }
   }, [supabase])
 
-  // Where to go after verification: role intent (sessionStorage) wins; else the
-  // actual seller_type (cross-device). Guarded against double-fire (button + auto).
+  // Where to go after verification: the funnel's ?next= (sessionStorage, re-validated in nextDestinationAfterVerify) wins, then the
+  // role intent; else the actual seller_type (cross-device). Guarded against double-fire (button + auto).
   async function doContinue() {
     if (redirectingRef.current) return
     redirectingRef.current = true
     const role = asSignupRole(typeof window !== 'undefined' ? sessionStorage.getItem(SIGNUP_ROLE_KEY) : null)
+    let next: string | null = null
+    try {
+      next = sessionStorage.getItem(SIGNUP_NEXT_KEY)
+    } catch {
+      // storage disabled — no next to honour
+    }
     let sellerType: SellerType = null
     if (!role && userId) {
       const { data: profile, error } = await supabase
@@ -137,10 +143,11 @@ export function VerifyEmailFlow({
     }
     try {
       sessionStorage.removeItem(SIGNUP_ROLE_KEY)
+      sessionStorage.removeItem(SIGNUP_NEXT_KEY)
     } catch {
       // storage disabled — nothing to clear
     }
-    router.push(nextDestinationAfterVerify(role, sellerType))
+    router.push(nextDestinationAfterVerify(role, sellerType, next))
   }
 
   // On reaching State 2, move focus to Continue and run the 3s auto-redirect.

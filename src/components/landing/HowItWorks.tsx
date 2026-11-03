@@ -41,20 +41,22 @@ type StepKey = (typeof steps)[number]['key']
 // (not in the locale files). Several intended routes don't exist yet — those fall
 // back to "/" with a TODO so they get wired when the pages ship.
 const ctaHref: Record<Role, Record<StepKey, string>> = {
+  // Walk 2026-11-02 #1 / #2: these all pointed back to `/`. « Voir nos garanties » and the two FAQ steps open the landing's FAQ
+  // (anti-scam, refusing a delivery, no commission — the guarantees); the public /aide needs a sign-in.
   client: {
-    step1: '/', // TODO: route doesn't exist yet, fallback to / (intended: signup — real route is /inscription)
-    step2: '/', // "Explorer Servyou" → homepage (intended destination)
-    step3: '/', // TODO: route doesn't exist yet, fallback to / (intended: /securite)
+    step1: '/inscription', // « Créer mon compte »
+    step2: '/marche/produits', // « Explorer Servyou » → the marketplace
+    step3: '#faq', // « Voir nos garanties »
   },
   freelancer: {
-    step1: '/', // TODO: route doesn't exist yet, fallback to / (intended: /devenir-freelance — real entry is /inscription/freelancer)
+    step1: '/inscription/freelancer',
     step2: '/missions',
-    step3: '/', // TODO: route doesn't exist yet, fallback to / (intended: /faq)
+    step3: '#faq',
   },
   boutique: {
     step1: '/devenir-vendeur',
-    step2: '/', // TODO: route doesn't exist yet, fallback to / (intended: /boutiques — closest real route is /recherche)
-    step3: '/', // TODO: route doesn't exist yet, fallback to / (intended: /faq)
+    step2: '/marche/produits?vue=boutiques', // the Boutiques lens
+    step3: '#faq',
   },
 }
 

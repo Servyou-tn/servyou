@@ -47,6 +47,10 @@ export const fr: Record<string, string> = {
   'common.awaiting_buyer':         "En attente de confirmation de l'acheteur",
   // Buyer receipt confirmation (PR-C)
   'common.confirm_receipt_action':    "Confirmer la réception",
+  // « Confirmer la réception » is final (walk #16): a confirm dialog before the write.
+  'receipt.confirm.title':  "Confirmer la réception ?",
+  'receipt.confirm.body':   "Confirmez seulement si vous l'avez bien reçue. C'est définitif : le statut passe à « Reçue » et ne pourra plus être modifié.",
+  'receipt.confirm.yes':    "Oui, je l'ai reçue",
   'common.confirm_receipt_help':      "Cliquez ici une fois la commande bien reçue.",
   'common.receipt_confirmed_success': "Réception confirmée.",
   'common.receipt_confirm_error':     "Une erreur est survenue, veuillez réessayer.",
@@ -436,6 +440,13 @@ export const fr: Record<string, string> = {
   'signin.submitting':     "Connexion en cours…",
   'signin.noAccount':      "Pas encore de compte ?",
   'signin.signupLink':     "Créer un compte",
+  // Sign-in / sign-up funnel (walk 2026-11-02 #7 #8): why the visitor is here, and the way back.
+  'signin.reason.product':  "Connectez-vous pour demander ce produit.",
+  'signin.reason.service':  "Connectez-vous pour demander ce service.",
+  'signin.reason.request':  "Connectez-vous pour envoyer votre demande.",
+  'auth.back.product':      "Retour au produit",
+  'auth.back.service':      "Retour au service",
+  'auth.home':              "Accueil — Servyou",
   'signin.errors.invalidCredentials': "E-mail ou mot de passe incorrect.",
   'signin.errors.generic':            "Une erreur s'est produite. Veuillez réessayer.",
   'signin.errors.invalidEmail':       "Format d'email invalide.",
@@ -2254,9 +2265,10 @@ export const fr: Record<string, string> = {
   // the existing `freelance.view_public` key rather than a new one, so the label can't drift from
   // the same CTA used elsewhere (the navbar avatar dropdown).
   'freelance.create.succes.title':               "Votre profil est créé !",
-  'freelance.create.succes.subline':             "Bienvenue parmi les freelances Servyou. Votre profil est maintenant visible.",
+  'freelance.create.succes.subline':             "Bienvenue parmi les freelances Servyou. Votre profil sera visible par les clients dès que vous aurez publié un service.",
+  'freelance.create.succes.subline_visible':     "Bienvenue parmi les freelances Servyou. Votre profil est visible par les clients.",
   'freelance.create.succes.cta_dashboard':       "Aller à mon tableau de bord",
-  'freelance.create.succes.public_profile_note': "Cette page sera bientôt disponible.",
+  'freelance.create.succes.public_profile_note': "Pour l'instant, vous seul pouvez voir votre profil public.",
 
   // Create profile
   'freelance.create_title':       "Créer mon profil freelance",
@@ -3284,7 +3296,7 @@ export const fr: Record<string, string> = {
   'seller.dashboard.ac.footer':           "Voir toutes les commandes →",
 
   // Seller-owned transitions. Keyed by TARGET status — the verb is what the seller is about to do.
-  'seller.dashboard.advance.accepted':    "Confirmer",
+  'seller.dashboard.advance.accepted':    "Accepter",
   'seller.dashboard.advance.prepared':    "Marquer préparée",
   'seller.dashboard.advance.dispatched':  "Marquer expédiée",
   'seller.dashboard.advance.in_delivery': "Marquer en livraison",
@@ -3681,8 +3693,8 @@ export const fr: Record<string, string> = {
   'proposal.sent.step1':             "{name} voit votre proposition dans ses annonces.",
   'proposal.sent.step2':             "Le client vous contactera sur WhatsApp s'il retient votre proposition.",
   // Phone reveal rule (2026-11-01): the buyer sees this instead of a WhatsApp button while the order / request is pending.
-  'phone.after_acceptance.seller':       "Disponible après acceptation par le vendeur",
-  'phone.after_acceptance.freelancer':   "Disponible après acceptation par le freelance",
+  'phone.after_acceptance.seller':       "Le contact de la boutique s'affiche après acceptation",
+  'phone.after_acceptance.freelancer':   "Le contact du freelance s'affiche après acceptation",
   'proposal.sent.mine':              "Voir mes propositions →",
 
   // ─── H6 « Créer un service » wizard (/mes-services/creer) ─────────────────────

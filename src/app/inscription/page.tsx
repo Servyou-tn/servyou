@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { getLang } from '@/lib/i18n/server'
 import { t } from '@/lib/i18n'
 import { AuthFunnelLayout } from '@/components/auth/AuthFunnelLayout'
+import { readNext, withNext } from '@/lib/auth/next-param'
 
 // `display` = the Manrope display voice; AuthFunnelLayout sets --font-display on
 // its <main>, so it applies to everything rendered here. No 'use client': pure
@@ -42,8 +43,14 @@ const ROLE_CARDS = [
 // Step 1 — the role intent picker. Title/subtitle render on the white page (in
 // AuthFunnelLayout's header); the 3 white role cards sit inside the navy box and
 // pop against it; the "already registered" link sits on white below the box.
-export default async function InscriptionPage() {
+// A ?next= from /connexion (walk #9) rides on every card and on « Se connecter », so the new account lands back where it started.
+export default async function InscriptionPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>
+}) {
   const lang = await getLang()
+  const next = readNext((await searchParams).next)
   const isRtl = lang === 'ar'
 
   return (
@@ -51,11 +58,13 @@ export default async function InscriptionPage() {
       maxWidthClass="max-w-[720px]"
       title={t('signup.intent.title', lang)}
       subtitle={t('signup.intent.subtitle', lang)}
+      homeBar
+      homeLabel={t('auth.home', lang)}
       footer={
         <>
           {t('signup.intent.alreadyAccount', lang)}{' '}
           <Link
-            href="/connexion"
+            href={withNext('/connexion', next)}
             className="rounded font-semibold text-[var(--brand-blue-600)] outline-none hover:underline focus-visible:ring-2 focus-visible:ring-[var(--brand-blue-600)] focus-visible:ring-offset-2"
           >
             {t('signup.intent.signInLink', lang)}
@@ -72,7 +81,7 @@ export default async function InscriptionPage() {
           return (
             <li key={key} className="md:h-full">
               <Link
-                href={href}
+                href={withNext(href, next)}
                 aria-label={`${label} — ${description}`}
                 className={`${display} group relative flex h-full min-h-[140px] cursor-pointer flex-col items-center rounded-[20px] border-[1.5px] border-[var(--border-subtle)] bg-[var(--surface-base)] px-5 py-6 text-center outline-none transition-all duration-[250ms] ease-out hover:border-[var(--brand-blue-600)] hover:shadow-[0_16px_40px_rgba(37,99,235,0.12)] focus-visible:ring-2 focus-visible:ring-[var(--brand-blue-600)] focus-visible:ring-offset-2 motion-safe:hover:-translate-y-1 motion-safe:active:scale-[0.99] motion-reduce:transition-none md:min-h-[280px] md:py-8`}
               >

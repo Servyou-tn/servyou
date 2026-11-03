@@ -155,6 +155,30 @@ describe('SECONDARY failure keeps the partial display and reports once', () => {
     expect(h.captureException).toHaveBeenCalledTimes(1)
   })
 
+  it('a freelancer\'s shell carries their public profile id (user menu « Voir mon profil public », walk #33)', async () => {
+    h.results.profiles = { data: { full_name: 'Zina', seller_type: 'freelancer', avatar_url: null }, error: null }
+    h.results.freelancer_profiles = { data: { id: 'fp-1' }, error: null }
+    const shell = await getShellUser()
+    expect(shell?.topBarUser).toMatchObject({ seller_type: 'freelancer', freelancer_profile_id: 'fp-1' })
+    expect(h.captureException).not.toHaveBeenCalled()
+  })
+
+  it('a failed freelancer_profiles read leaves the id null (the menu hides the item) and reports', async () => {
+    h.results.profiles = { data: { full_name: 'Zina', seller_type: 'freelancer', avatar_url: null }, error: null }
+    h.results.freelancer_profiles = fail(OUTAGE)
+    const shell = await getShellUser()
+    expect(shell?.topBarUser).toMatchObject({ seller_type: 'freelancer', freelancer_profile_id: null })
+    expect(h.captureException).toHaveBeenCalledTimes(1)
+  })
+
+  it('a non-freelancer never reads freelancer_profiles', async () => {
+    h.results.profiles = { data: { full_name: 'Ali', seller_type: null, avatar_url: null }, error: null }
+    h.results.freelancer_profiles = fail(OUTAGE)
+    const shell = await getShellUser()
+    expect(shell?.topBarUser.freelancer_profile_id).toBeNull()
+    expect(h.captureException).not.toHaveBeenCalled()
+  })
+
   it('the deletion context degrades to « nothing pending, no open orders » and reports each failure', async () => {
     h.results.deletion_requests = fail(OUTAGE)
     h.results.orders = fail(OUTAGE)

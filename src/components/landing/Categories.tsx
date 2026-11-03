@@ -37,8 +37,9 @@ const display = 'font-[family-name:var(--font-display)]'
 
 // Ten modern-marketplace categories spanning e-commerce, creator/service and IT.
 // Icons are inline SVGs (the project deliberately avoids the lucide-react package
-// — see icons.tsx); the geometry is lucide's exact path data. `slug` is the future
-// listing filter value (feeds the href below once /boutiques ships).
+// — see icons.tsx); the geometry is lucide's exact path data. `slug` is the REAL category the tile opens at
+// /categories/[slug] (walk 2026-11-02 #1: every tile pointed back to `/`): a product category for the four product tiles, a service
+// sector (lib/taxonomy/service-categories.ts) for the six service tiles.
 type Category = {
   id: string
   slug: string
@@ -46,16 +47,16 @@ type Category = {
 }
 
 const CATEGORIES: Category[] = [
-  { id: 'mode', slug: 'mode-style', Icon: ShirtIcon },
-  { id: 'beaute', slug: 'beaute-cosmetiques', Icon: SparklesIcon },
-  { id: 'tech', slug: 'electronique-tech', Icon: SmartphoneIcon },
-  { id: 'maison', slug: 'maison-lifestyle', Icon: SofaIcon },
-  { id: 'video', slug: 'video-ugc', Icon: VideoIcon },
-  { id: 'design', slug: 'design-graphisme', Icon: PaletteIcon },
-  { id: 'uiux', slug: 'ui-ux-design', Icon: LayoutIcon },
-  { id: 'marketing', slug: 'marketing-social-media', Icon: MegaphoneIcon },
-  { id: 'dev', slug: 'developpement-ia', Icon: CodeIcon },
-  { id: 'audio', slug: 'voix-off-audio', Icon: MicIcon },
+  { id: 'mode', slug: 'mode', Icon: ShirtIcon },
+  { id: 'beaute', slug: 'beaute-soins', Icon: SparklesIcon },
+  { id: 'tech', slug: 'electronique', Icon: SmartphoneIcon },
+  { id: 'maison', slug: 'maison', Icon: SofaIcon },
+  { id: 'video', slug: 'montage-video-motion', Icon: VideoIcon },
+  { id: 'design', slug: 'design-graphique-logo', Icon: PaletteIcon },
+  { id: 'uiux', slug: 'design-ui-ux', Icon: LayoutIcon },
+  { id: 'marketing', slug: 'marketing-digital', Icon: MegaphoneIcon },
+  { id: 'dev', slug: 'developpement-web-mobile', Icon: CodeIcon },
+  { id: 'audio', slug: 'voix-off-doublage', Icon: MicIcon },
 ]
 
 // Shared card chrome. The lift is gated on motion-safe so it is fully suppressed
@@ -76,7 +77,9 @@ export function Categories({ lang }: { lang: Lang }) {
     // Full-bleed pure white band — covers the page-level fixed gradient so this
     // section reads as one clean white canvas with the hero (navy is reserved for
     // Section 2). The grid mirrors automatically under <html dir="rtl">.
+    // id="categories": the footer's « Catégories » lands here (walk #3).
     <section
+      id="categories"
       aria-labelledby={headingId}
       className={`${manrope.variable} bg-[var(--surface-base)] pt-8 pb-10 md:pt-12 md:pb-14`}
     >
@@ -93,12 +96,10 @@ export function Categories({ lang }: { lang: Lang }) {
             "Développement" clip in a 5-col tablet), opening to a clean 5×2 at
             desktop (≥1024px). */}
         <ul className="grid grid-cols-2 gap-3 md:gap-4 lg:grid-cols-5">
-          {CATEGORIES.map(({ id, Icon }) => (
+          {CATEGORIES.map(({ id, slug, Icon }) => (
             <li key={id}>
               <Link
-                // TODO: intended /boutiques?category=<slug> — listing route not built
-                // yet (no /boutiques in the app), so fall back to "/" until it ships.
-                href="/"
+                href={`/categories/${slug}`}
                 className={cardBase}
               >
                 <Icon

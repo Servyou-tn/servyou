@@ -35,33 +35,33 @@ const order = (status: string, orderType: 'product' | 'service' = 'service') =>
 describe('/mes-commandes/[id] — the Vendeur / Freelance panel', () => {
   const contact = () => screen.queryByRole('button', { name: /Contacter/ })
 
-  it('service order, pending: the hint « …par le freelance », no button', () => {
+  it('service order, pending: the hint « Le contact du freelance… », no button', () => {
     render(<SellerPanel order={order('pending')} phone={null} lang="fr" />)
     expect(contact()).toBeNull()
-    expect(screen.getByText('Disponible après acceptation par le freelance')).toBeInTheDocument()
+    expect(screen.getByText("Le contact du freelance s'affiche après acceptation")).toBeInTheDocument()
   })
 
-  it('product order, pending: the hint « …par le vendeur », no button', () => {
+  it('product order, pending: the hint « Le contact de la boutique… », no button', () => {
     render(<SellerPanel order={order('pending', 'product')} phone={null} lang="fr" />)
     expect(contact()).toBeNull()
-    expect(screen.getByText('Disponible après acceptation par le vendeur')).toBeInTheDocument()
+    expect(screen.getByText("Le contact de la boutique s'affiche après acceptation")).toBeInTheDocument()
   })
 
   it('accepted: the button and the number row, no hint', () => {
     render(<SellerPanel order={order('accepted')} phone="+21620123456" lang="fr" />)
     expect(contact()).toBeInTheDocument()
-    expect(screen.queryByText(/Disponible après acceptation/)).toBeNull()
+    expect(screen.queryByText(/s'affiche après acceptation/)).toBeNull()
   })
 
   it('cancelled: neither', () => {
     render(<SellerPanel order={order('cancelled')} phone={null} lang="fr" />)
     expect(contact()).toBeNull()
-    expect(screen.queryByText(/Disponible après acceptation/)).toBeNull()
+    expect(screen.queryByText(/s'affiche après acceptation/)).toBeNull()
   })
 
   it('AR: the hint is translated', () => {
     render(<SellerPanel order={order('pending')} phone={null} lang="ar" />)
-    expect(screen.getByText('متاح بعد قبول المستقل')).toBeInTheDocument()
+    expect(screen.getByText('تظهر بيانات التواصل مع المستقل بعد القبول')).toBeInTheDocument()
   })
 })
 
@@ -70,20 +70,20 @@ describe('/freelance/[id] — the primary CTA', () => {
 
   it('a pending request: the hint instead of « Demander un service » (which would read as asking twice)', () => {
     render(<PrimaryCta {...props} contactPhone={null} firstServiceId="svc-1" pendingRequest />)
-    expect(screen.getByText('Disponible après acceptation par le freelance')).toBeInTheDocument()
+    expect(screen.getByText("Le contact du freelance s'affiche après acceptation")).toBeInTheDocument()
     expect(screen.queryByRole('link', { name: /Demander un service/ })).toBeNull()
   })
 
   it('no request yet: « Demander un service »', () => {
     render(<PrimaryCta {...props} contactPhone={null} firstServiceId="svc-1" />)
     expect(screen.getByRole('link', { name: /Demander un service/ }).getAttribute('href')).toBe('/demander/svc-1')
-    expect(screen.queryByText(/Disponible après acceptation/)).toBeNull()
+    expect(screen.queryByText(/s'affiche après acceptation/)).toBeNull()
   })
 
   it('an accepted request / a mission proposal (a phone exists): the WhatsApp button wins, even if a second request is pending', () => {
     render(<PrimaryCta {...props} contactPhone="+21620123456" firstServiceId="svc-1" pendingRequest />)
     expect(screen.getByRole('button', { name: /WhatsApp/ })).toBeInTheDocument()
-    expect(screen.queryByText(/Disponible après acceptation/)).toBeNull()
+    expect(screen.queryByText(/s'affiche après acceptation/)).toBeNull()
   })
 })
 

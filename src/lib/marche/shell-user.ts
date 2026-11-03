@@ -24,14 +24,24 @@ export async function getShellUser(): Promise<{ id: string; topBarUser: TopBarUs
   // read it themselves and throw.
   if (error) reportQueryError('shell-user profile', error)
 
+  // A freelancer's public page (/freelance/[id]) for the user menu. A failed read hides the item — reported, never a broken link.
+  const sellerType = (profile?.seller_type as 'shop_owner' | 'freelancer' | null) ?? null
+  let freelancerProfileId: string | null = null
+  if (sellerType === 'freelancer') {
+    const { data: fp, error: fpError } = await supabase.from('freelancer_profiles').select('id').eq('profile_id', user.id).maybeSingle()
+    if (fpError) reportQueryError('shell-user freelancer profile', fpError)
+    freelancerProfileId = (fp?.id as string | undefined) ?? null
+  }
+
   return {
     id: user.id,
     topBarUser: {
       id: user.id,
       email: user.email ?? '',
       full_name: profile?.full_name ?? null,
-      seller_type: (profile?.seller_type as 'shop_owner' | 'freelancer' | null) ?? null,
+      seller_type: sellerType,
       avatar_url: profile?.avatar_url ?? null,
+      freelancer_profile_id: freelancerProfileId,
     },
   }
 }

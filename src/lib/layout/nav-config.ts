@@ -14,14 +14,13 @@ export type HeaderAccount = { fullName: string | null; avatarUrl: string | null;
 /** Center-pill links for the resolved variant. Routes are the real ones that exist. */
 export function navLinks(state: HeaderState): NavLink[] {
   if (state.variant === 'public') {
-    // The marketing navbar. Boutiques / Freelances / À propos are landing-page
-    // anchor sections (#boutiques and #freelances live in Journeys, #a-propos in
-    // the footer). Missions points to /missions — the same target the page footer
-    // links to; that route 404s until the Phase 7 job board ships.
+    // The marketing navbar. Boutiques / Freelances open the marketplace's Boutiques and Freelances lenses (walk 2026-11-02 #1: the home
+    // anchors they used to scroll to only offered « Créer ma boutique / mon profil freelance »). À propos is the footer anchor; Missions
+    // points to /missions, the same target the page footer links to.
     return [
       { href: '/', key: 'nav.home' },
-      { href: '/#boutiques', key: 'nav.shops' },
-      { href: '/#freelances', key: 'nav.freelancers' },
+      { href: '/marche/produits?vue=boutiques', key: 'nav.shops' },
+      { href: '/marche/services?vue=freelances', key: 'nav.freelancers' },
       { href: '/missions', key: 'nav.missions_board' },
       { href: '/#a-propos', key: 'nav.about' },
     ]

@@ -11,11 +11,13 @@ import { ManageCookiesButton } from '@/components/consent/ManageCookiesButton'
 // anchors that exist today; pages still pending (the four legal docs) point to "#" —
 // honest over broken. /a-propos, /contact, /faq are now real routes.
 
+// Walk 2026-11-02 #1 / #3: Boutiques / Freelances open the marketplace lenses (as the header); « Catégories » lands on the landing's
+// ten category tiles (each opens its /categories/[slug] page) — it used to open the search page.
 const discoverLinks = [
-  { key: 'nav.shops', href: '/#boutiques' },
-  { key: 'nav.freelancers', href: '/#freelances' },
+  { key: 'nav.shops', href: '/marche/produits?vue=boutiques' },
+  { key: 'nav.freelancers', href: '/marche/services?vue=freelances' },
   { key: 'nav.missions_board', href: '/missions' },
-  { key: 'home.categories', href: '/recherche' },
+  { key: 'home.categories', href: '/#categories' },
 ] as const
 
 const servyouLinks = [

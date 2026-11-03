@@ -6,6 +6,7 @@ import { confirmReceiptAction } from '@/app/actions/orders'
 import { Button } from '@/components/ui/button'
 import { useLang } from '@/components/LangProvider'
 import { t } from '@/lib/i18n'
+import { ConfirmReceiptDialog } from '@/components/orders/ConfirmReceiptDialog'
 
 type Props = {
   orderId: string
@@ -31,6 +32,8 @@ export function ReceiptConfirmButton({ orderId, panel = false }: Props) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [confirmed, setConfirmed] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  // The write is final, so every click asks first (ConfirmReceiptDialog); « Oui » closes the dialog and runs confirmReceipt.
+  const [asking, setAsking] = useState(false)
 
   async function confirmReceipt() {
     setIsSubmitting(true)
@@ -49,11 +52,22 @@ export function ReceiptConfirmButton({ orderId, panel = false }: Props) {
     if (panel) setTimeout(() => setIsSubmitting(false), 8000)
   }
 
+  const dialog = asking ? (
+    <ConfirmReceiptDialog
+      lang={lang}
+      onClose={() => setAsking(false)}
+      onConfirm={() => {
+        setAsking(false)
+        void confirmReceipt()
+      }}
+    />
+  ) : null
+
   if (panel) {
     // After a successful write the button stays busy until router.refresh() swaps the panel for « Commande terminée ».
     return (
       <div className="flex flex-col gap-2">
-        <Button variant="primary" size="lg" className="w-full" loading={isSubmitting} onClick={confirmReceipt}>
+        <Button variant="primary" size="lg" className="w-full" loading={isSubmitting} onClick={() => setAsking(true)}>
           {t('common.confirm_receipt_action', lang)}
         </Button>
         {error && (
@@ -61,6 +75,7 @@ export function ReceiptConfirmButton({ orderId, panel = false }: Props) {
             {error}
           </p>
         )}
+        {dialog}
       </div>
     )
   }
@@ -76,7 +91,7 @@ export function ReceiptConfirmButton({ orderId, panel = false }: Props) {
   return (
     <div className="space-y-1">
       <button
-        onClick={confirmReceipt}
+        onClick={() => setAsking(true)}
         disabled={isSubmitting}
         className="bg-brand-blue-600 hover:bg-brand-blue-700 disabled:opacity-60 text-white text-sm font-medium px-4 py-2 rounded transition-colors"
       >
@@ -84,6 +99,7 @@ export function ReceiptConfirmButton({ orderId, panel = false }: Props) {
       </button>
       <p className="text-xs text-gray-500">{t('common.confirm_receipt_help', lang)}</p>
       {error && <p className="text-xs text-red-600">{error}</p>}
+      {dialog}
     </div>
   )
 }

@@ -80,6 +80,10 @@ export const ar: Record<string, string> = {
   'common.awaiting_buyer':         "في انتظار تأكيد المشتري",
   // Buyer receipt confirmation (PR-C)
   'common.confirm_receipt_action':    "تأكيد الاستلام",
+  // REVIEW_AR_TRANSLATION — receipt confirm dialog (walk #16).
+  'receipt.confirm.title':  "تأكيد الاستلام؟",
+  'receipt.confirm.body':   "أكد فقط إذا استلمتها فعلا. هذا نهائي: ستصبح الحالة « مستلمة » ولا يمكن تغييرها بعد ذلك.",
+  'receipt.confirm.yes':    "نعم، استلمتها",
   'common.confirm_receipt_help':      "انقر هنا بمجرد استلام الطلب بنجاح.",
   'common.receipt_confirmed_success': "تم تأكيد الاستلام.",
   'common.receipt_confirm_error':     "حدث خطأ، يرجى المحاولة مرة أخرى.",
@@ -467,6 +471,13 @@ export const ar: Record<string, string> = {
   'signin.submitting':     "جار تسجيل الدخول…",
   'signin.noAccount':      "ليس لديك حساب بعد ؟",
   'signin.signupLink':     "إنشاء حساب",
+  // REVIEW_AR_TRANSLATION — sign-in / sign-up funnel (walk 2026-11-02 #7 #8).
+  'signin.reason.product':  "سجل الدخول لطلب هذا المنتج.",
+  'signin.reason.service':  "سجل الدخول لطلب هذه الخدمة.",
+  'signin.reason.request':  "سجل الدخول لإرسال طلبك.",
+  'auth.back.product':      "العودة إلى المنتج",
+  'auth.back.service':      "العودة إلى الخدمة",
+  'auth.home':              "الرئيسية — Servyou",
   'signin.errors.invalidCredentials': "البريد الإلكتروني أو كلمة المرور غير صحيحة.",
   'signin.errors.generic':            "حدث خطأ ما. يرجى المحاولة مرة أخرى.",
   'signin.errors.invalidEmail':       "صيغة البريد الإلكتروني غير صحيحة.",
@@ -2195,9 +2206,10 @@ export const ar: Record<string, string> = {
 
   // ─── H2 success — mirrors fr.ts exactly.
   'freelance.create.succes.title':               "تم إنشاء ملفك الشخصي!",
-  'freelance.create.succes.subline':             "مرحبا بك بين مستقلي Servyou. أصبح ملفك الشخصي مرئيا الآن.",
+  'freelance.create.succes.subline':             "مرحبا بك بين مستقلي Servyou. سيظهر ملفك الشخصي للعملاء بمجرد نشر خدمة.", // REVIEW_AR_TRANSLATION
+  'freelance.create.succes.subline_visible':     "مرحبا بك بين مستقلي Servyou. ملفك الشخصي ظاهر للعملاء.", // REVIEW_AR_TRANSLATION
   'freelance.create.succes.cta_dashboard':       "الذهاب إلى لوحة التحكم",
-  'freelance.create.succes.public_profile_note': "ستكون هذه الصفحة متاحة قريبا.",
+  'freelance.create.succes.public_profile_note': "حاليا، أنت وحدك من يمكنه رؤية ملفك العام.", // REVIEW_AR_TRANSLATION
 
   // Create profile
   'freelance.create_title':       "إنشاء ملفي كمستقل",
@@ -3214,7 +3226,7 @@ export const ar: Record<string, string> = {
   'seller.dashboard.ac.empty_body':       "لا توجد طلبات قيد الانتظار.",
   'seller.dashboard.ac.footer':           "عرض كل الطلبات ←",
 
-  'seller.dashboard.advance.accepted':    "تأكيد",
+  'seller.dashboard.advance.accepted':    "قبول",
   'seller.dashboard.advance.prepared':    "تحديد كمجهز",
   'seller.dashboard.advance.dispatched':  "تحديد كمرسل",
   'seller.dashboard.advance.in_delivery': "تحديد قيد التوصيل",
@@ -3577,8 +3589,8 @@ export const ar: Record<string, string> = {
   // REVIEW_AR_TRANSLATION
   'proposal.sent.step2':             "سيتواصل معك العميل عبر واتساب إذا اختار عرضك.",
   // REVIEW_AR_TRANSLATION — phone reveal rule (2026-11-01)
-  'phone.after_acceptance.seller':       "متاح بعد قبول البائع",
-  'phone.after_acceptance.freelancer':   "متاح بعد قبول المستقل",
+  'phone.after_acceptance.seller':       "تظهر بيانات التواصل مع المتجر بعد القبول", // REVIEW_AR_TRANSLATION
+  'phone.after_acceptance.freelancer':   "تظهر بيانات التواصل مع المستقل بعد القبول", // REVIEW_AR_TRANSLATION
   'proposal.sent.mine':              "عرض عروضي ←",
 
   // ─── H6 « Créer un service » wizard (/mes-services/creer) ─────────────────────
