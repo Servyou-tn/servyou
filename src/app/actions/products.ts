@@ -303,9 +303,18 @@ const FIELD_ERROR: Record<string, { field: ProductFormField; key: string }> = {
   stockCount: { field: 'stockCount', key: 'product.error_stock_required' },
 }
 
-function productFieldError(path: PropertyKey | undefined, lang: Lang): { error: string; field: ProductFormField } | null {
+function productFieldError(
+  issue: { code: string; path: PropertyKey[] } | undefined,
+  lang: Lang,
+): { error: string; field: ProductFormField } | null {
+  const path = issue?.path[0]
   const hit = typeof path === 'string' ? FIELD_ERROR[path] : undefined
-  return hit ? { error: t(hit.key, lang), field: hit.field } : null
+  if (!hit) return null
+  // A positive amount with 3+ decimals (multipleOf(0.01)) is not « <= 0 » — it gets its own message.
+  if ((path === 'priceTnd' || path === 'deliveryFeeTnd') && issue?.code === 'not_multiple_of') {
+    return { error: t('product.error_price_decimals', lang), field: hit.field }
+  }
+  return { error: t(hit.key, lang), field: hit.field }
 }
 
 /**
@@ -331,7 +340,7 @@ export async function createProductAction(input: unknown): Promise<CreateProduct
     if (issue?.message === 'image_required') {
       return { ok: false, error: t('product.error.image_required', lang) }
     }
-    const fieldError = productFieldError(issue?.path[0], lang)
+    const fieldError = productFieldError(issue, lang)
     if (fieldError) return { ok: false, ...fieldError }
     return { ok: false, error: t('product.error_add', lang) }
   }
@@ -834,7 +843,7 @@ export async function updateProductAction(input: unknown): Promise<UpdateProduct
       `[updateProduct] rejected: input failed validation — ` +
         parsed.error.issues.map((i) => `${i.path.join('.') || '(root)'}:${i.message}`).join(', '),
     )
-    const fieldError = productFieldError(issue?.path[0], lang)
+    const fieldError = productFieldError(issue, lang)
     return fieldError ? { ok: false, ...fieldError } : { ok: false, error: t('product.error_update', lang) }
   }
   const p = parsed.data

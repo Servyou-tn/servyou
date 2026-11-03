@@ -336,6 +336,7 @@ describe('product writes — price > 0, title required, field errors (walk #31)'
     ['price -3', { priceTnd: -3 }, 'price', 'product.error_price_positive'],
     ['blank title', { title: '   ' }, 'title', 'product.error_title'],
     ['negative delivery fee', { deliveryFeeTnd: -1 }, 'deliveryFee', 'product.error_price'],
+    ['price 12.345 (positive, 3 decimals)', { priceTnd: 12.345 }, 'price', 'product.error_price_decimals'],
   ])('create: %s → field %s with its own message, nothing inserted', async (_label, over, field, error) => {
     const res = await createProductAction(okInput(over))
     expect(res).toEqual({ ok: false, field, error })

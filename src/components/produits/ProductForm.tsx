@@ -11,6 +11,7 @@ import { Input } from '@/components/ui/input'
 import { Toggle } from '@/components/ui/toggle'
 import { createProductAction } from '@/app/actions/products'
 import type { ProductFormField } from '@/lib/products/constants'
+import { hasAtMostTwoDecimals } from '@/lib/products/price'
 import type { ProductCategory } from '@/lib/marche/product-categories'
 import { ImageUploadGrid, type UploadedImage } from './ImageUploadGrid'
 
@@ -74,6 +75,14 @@ export function ProductForm({
   // A price <= 0 is refused (walk #31), so the preview never adds it: « -3 + 7 = 4 » read as a valid total.
   const safePrice = Number.isFinite(priceNum) && priceNum > 0 ? priceNum : 0
   const priceInvalid = price.trim() !== '' && !(Number.isFinite(priceNum) && priceNum > 0)
+  // Typing into a field clears the error shown under it (a server-attributed one included).
+  const clearFieldError = (field: ProductFormField) =>
+    setFieldErrors((prev) => {
+      if (!(field in prev)) return prev
+      const next = { ...prev }
+      delete next[field]
+      return next
+    })
   const safeFee = Number.isFinite(feeNum) ? feeNum : 0
   const fmt = (n: number) => n.toFixed(2).replace(/\.00$/, '')
 
@@ -96,6 +105,7 @@ export function ProductForm({
     const next: Partial<Record<ProductFormField, string>> = {}
     if (!title.trim()) next.title = t('product.error_title', lang)
     if (!(Number.isFinite(priceNum) && priceNum > 0)) next.price = t('product.error_price_positive', lang)
+    else if (!hasAtMostTwoDecimals(price)) next.price = t('product.error_price_decimals', lang)
     if (!(Number.isFinite(feeNum) && feeNum >= 0)) next.deliveryFee = t('product.error_price', lang)
     if (tracksStock && stockCount.trim() === '') next.stockCount = t('product.error_stock_required', lang)
     return next
@@ -120,8 +130,9 @@ export function ProductForm({
         publish,
       })
       if (!res.ok) {
-        setError(res.error)
+        // A field error shows under its field only; the banner is for errors that belong to no field.
         if (res.field) setFieldErrors((prev) => ({ ...prev, [res.field as ProductFormField]: res.error }))
+        else setError(res.error)
         return
       }
       // ⚑ TWO MESSAGES, BECAUSE THERE ARE TWO CTAs. `publish` maps to status active|hidden
@@ -178,7 +189,10 @@ export function ProductForm({
             maxLength={100}
             value={title}
             error={fieldErrors.title}
-            onChange={(e) => setTitle(e.target.value)}
+            onChange={(e) => {
+              setTitle(e.target.value)
+              clearFieldError('title')
+            }}
           />
 
           {/* ⚑ HALF-WIDTH, deliberately. Sous-catégorie is the one approved divergence (no second
@@ -258,7 +272,10 @@ export function ProductForm({
               placeholder="0"
               value={price}
               error={fieldErrors.price ?? (priceInvalid ? t('product.error_price_positive', lang) : undefined)}
-              onChange={(e) => setPrice(e.target.value)}
+              onChange={(e) => {
+                setPrice(e.target.value)
+                clearFieldError('price')
+              }}
             />
             <Input
               id="product-delivery"
@@ -272,7 +289,10 @@ export function ProductForm({
               iconEnd={suffix}
               value={deliveryFee}
               error={fieldErrors.deliveryFee}
-              onChange={(e) => setDeliveryFee(e.target.value)}
+              onChange={(e) => {
+                setDeliveryFee(e.target.value)
+                clearFieldError('deliveryFee')
+              }}
             />
           </div>
 
@@ -316,7 +336,10 @@ export function ProductForm({
               placeholder="0"
               value={stockCount}
               error={fieldErrors.stockCount}
-              onChange={(e) => setStockCount(e.target.value)}
+              onChange={(e) => {
+                setStockCount(e.target.value)
+                clearFieldError('stockCount')
+              }}
             />
           </div>
         )}

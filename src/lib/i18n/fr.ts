@@ -742,6 +742,7 @@ export const fr: Record<string, string> = {
   'product.error_title':    "Le titre est requis.",
   'product.error_price':    "Veuillez entrer un prix valide (>= 0).",
   'product.error_price_positive': "Le prix doit être supérieur à 0.",
+  'product.error_price_decimals': "Le prix a deux décimales au maximum (ex : 12.50).",
   'product.error_stock_required': "Veuillez indiquer la quantité en stock.",
   'product.error_update':   "Une erreur est survenue lors de la mise à jour. Veuillez réessayer.",
   'product.error_add':      "Une erreur est survenue lors de l'ajout. Veuillez réessayer.",

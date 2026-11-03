@@ -104,7 +104,9 @@ async function createUser(local: string): Promise<string> {
 }
 
 async function makeShopOwner(profileId: string): Promise<void> {
-  const { error } = await admin.from('profiles').update({ seller_type: 'shop_owner' }).eq('id', profileId)
+  // With a contact phone: since enforce_seller_contact_phone (walk #17) an owner's own client cannot create a shop
+  // without one (the « created by its owner » control below does).
+  const { error } = await admin.from('profiles').update({ seller_type: 'shop_owner', phone: '+21620000000' }).eq('id', profileId)
   if (error) throw new Error(`seller upgrade failed: ${error.message}`)
 }
 

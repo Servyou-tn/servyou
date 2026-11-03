@@ -9,20 +9,24 @@
 import { describe, it, expect, vi } from 'vitest'
 import { ecosystemCounts } from '@/lib/marche/freelancer-dashboard'
 
-const h = vi.hoisted(() => ({ orders: [] as Record<string, unknown>[] }))
+const h = vi.hoisted(() => ({
+  orders: [] as Record<string, unknown>[],
+  // Per-table result overrides (orders → h.orders, anything unset → empty list).
+  tables: {} as Record<string, { data: unknown; error: unknown }>,
+}))
 
 vi.mock('@/lib/supabase/server', () => ({
   createClient: async () => ({
     from: (table: string) => {
-      const result =
-        table === 'orders' ? { data: h.orders, error: null } : { data: [], error: null }
+      const result = h.tables[table] ?? (table === 'orders' ? { data: h.orders, error: null } : { data: [], error: null })
       const q: Record<string, unknown> = {}
-      for (const op of ['select', 'eq', 'in', 'order']) q[op] = () => q
+      for (const op of ['select', 'eq', 'in', 'order', 'limit']) q[op] = () => q
       q.then = (resolve: (v: unknown) => void) => resolve(result)
       return q
     },
   }),
 }))
+vi.mock('@/lib/supabase/query-error', () => ({ reportQueryError: vi.fn() }))
 
 describe('ecosystemCounts (#19)', () => {
   it('a brand-new freelancer with no orders sees 0 and 0', () => {
@@ -68,5 +72,51 @@ describe('getSellerDashboard — « Commandes à traiter » = « À traiter main
     expect(data.actionable.map((o) => o.id)).toEqual(['o1', 'o2', 'o3', 'o4'])
     expect(data.pendingCount).toBe(4)
     expect(data.pendingCount).toBe(data.actionable.length)
+  })
+})
+
+describe('getFreelancerDashboard — Écosystème wiring (#19)', () => {
+  const order = (id: string, status: string, buyer: string) => ({
+    id, status, buyer_id: buyer, created_at: '2026-10-01T00:00:00Z', item_title: 'S', service_listings: { title: 'S' }, order_events: [],
+  })
+
+  it('a new freelancer (no service orders) gets 0 / 0 — not the platform totals', async () => {
+    h.orders = []
+    h.tables = {}
+    const { getFreelancerDashboard } = await import('@/lib/marche/freelancer-dashboard')
+    const data = await getFreelancerDashboard('free-new', null, null)
+    expect(data.ecosystem).toEqual({ consumers: 0, shops: 0 })
+  })
+
+  it("counts this freelancer's own buyers, split by the buyer's account type", async () => {
+    h.orders = [order('o1', 'received', 'c1'), order('o2', 'pending', 's1'), order('o3', 'cancelled', 'c2')]
+    h.tables = {
+      public_profiles: {
+        data: [
+          { id: 'c1', full_name: 'C1', seller_type: null },
+          { id: 's1', full_name: 'S1', seller_type: 'shop_owner' },
+          { id: 'c2', full_name: 'C2', seller_type: null },
+        ],
+        error: null,
+      },
+    }
+    const { getFreelancerDashboard } = await import('@/lib/marche/freelancer-dashboard')
+    const data = await getFreelancerDashboard('free-1', null, null)
+    expect(data.ecosystem).toEqual({ consumers: 1, shops: 1 })
+  })
+
+  it('a failed buyer-profile read throws — the dashboard never renders a wrong count', async () => {
+    h.orders = [order('o1', 'received', 'c1')]
+    h.tables = { public_profiles: { data: null, error: { message: 'boom', code: 'XX000' } } }
+    const { getFreelancerDashboard } = await import('@/lib/marche/freelancer-dashboard')
+    await expect(getFreelancerDashboard('free-2', null, null)).rejects.toThrow(/buyer profiles fetch failed/)
+  })
+})
+
+describe('hasAtMostTwoDecimals (#31)', () => {
+  it('accepts up to two decimals, refuses more', async () => {
+    const { hasAtMostTwoDecimals } = await import('@/lib/products/price')
+    expect(['10', '10.5', '10.50', ' 7 '].map(hasAtMostTwoDecimals)).toEqual([true, true, true, true])
+    expect(['12.345', 'abc', '', '-3'].map(hasAtMostTwoDecimals)).toEqual([false, false, false, false])
   })
 })

@@ -195,6 +195,12 @@ beforeAll(async () => {
   await setSellerType(freelancer2Id, 'freelancer')
   await setSellerType(sellerId, 'shop_owner')
   await setSellerType(seller2Id, 'shop_owner')
+  // The « G2 payload » control creates a shop through seller2's own client: since enforce_seller_contact_phone
+  // (walk #17) that needs a contact phone. Seeded as the service role.
+  {
+    const { error: phoneErr } = await admin.from('profiles').update({ phone: '+21620000000' }).eq('id', seller2Id)
+    if (phoneErr) throw new Error(`seller2 phone seed failed: ${phoneErr.message}`)
+  }
   const { error: fpErr } = await admin.from('freelancer_profiles').insert({ profile_id: responderId })
   if (fpErr) throw new Error(`freelancer_profiles seed failed: ${fpErr.message}`)
   const { error: promoteErr } = await admin.from('profiles').update({ is_admin: true }).eq('id', adminId)

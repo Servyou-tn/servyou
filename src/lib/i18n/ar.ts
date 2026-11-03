@@ -774,6 +774,7 @@ export const ar: Record<string, string> = {
   'product.error_title':    "العنوان إلزامي.",
   'product.error_price':    "يرجى إدخال سعر صالح (>= 0).",
   'product.error_price_positive': "يجب أن يكون السعر أكبر من 0.",
+  'product.error_price_decimals': "يجب ألا يتجاوز السعر رقمين بعد الفاصلة (مثال: 12.50).",
   'product.error_stock_required': "يرجى تحديد الكمية المتوفرة في المخزون.",
   'product.error_update':   "حدث خطأ أثناء التحديث. يرجى المحاولة مرة أخرى.",
   'product.error_add':      "حدث خطأ أثناء الإضافة. يرجى المحاولة مرة أخرى.",

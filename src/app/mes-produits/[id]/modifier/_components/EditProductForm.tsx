@@ -17,6 +17,7 @@ import { updateProductAction, toggleProductStatusAction } from '@/app/actions/pr
 import type { ProductCategory } from '@/lib/marche/product-categories'
 import type { SellerProductDetail } from '@/lib/marche/seller-products-query'
 import { EditImageGallery } from './EditImageGallery'
+import { hasAtMostTwoDecimals } from '@/lib/products/price'
 
 type Errors = { title?: string; price?: string; deliveryFee?: string; stockCount?: string }
 
@@ -112,6 +113,7 @@ export function EditProductForm({
     if (!title.trim()) next.title = t('product.error_title', lang)
     // > 0, not >= 0 (walk #31): a product price of 0 or less is refused, server-side and by products_price_positive.
     if (price.trim() === '' || !Number.isFinite(priceNum) || priceNum <= 0) next.price = t('product.error_price_positive', lang)
+    else if (!hasAtMostTwoDecimals(price)) next.price = t('product.error_price_decimals', lang)
     if (deliveryFee.trim() === '' || !Number.isFinite(feeNum) || feeNum < 0) {
       next.deliveryFee = t('product.error_price', lang)
     }
