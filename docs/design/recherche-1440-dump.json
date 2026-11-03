@@ -1,0 +1,6441 @@
+{
+ "n": "Recherche — résultats — 1440",
+ "t": "FRAME",
+ "w": 1440,
+ "h": 1145,
+ "layout": "HORIZONTAL",
+ "gap": 0,
+ "pad": "0 0 0 0",
+ "align": "MIN/MIN",
+ "size": "FIXED/HUG",
+ "fill": [
+  "var:surface/subtle"
+ ],
+ "c": [
+  {
+   "n": "Sidebar",
+   "t": "INSTANCE",
+   "w": 240,
+   "h": 1145,
+   "layout": "VERTICAL",
+   "gap": 0,
+   "pad": "0 16 24 16",
+   "align": "MIN/MIN",
+   "size": "FIXED/FILL",
+   "fill": [
+    "var:blue/950"
+   ],
+   "comp": "Sidebar / sellerType=consumer",
+   "c": [
+    {
+     "n": "S-mark band",
+     "t": "FRAME",
+     "w": 208,
+     "h": 72,
+     "layout": "HORIZONTAL",
+     "gap": 0,
+     "pad": "0 16 0 12",
+     "align": "MIN/CENTER",
+     "size": "FILL/FIXED",
+     "fill": [
+      "var:blue/950"
+     ],
+     "c": [
+      {
+       "n": "Lockup",
+       "t": "INSTANCE",
+       "w": 123,
+       "h": 32,
+       "layout": "HORIZONTAL",
+       "gap": 8,
+       "pad": "0 0 0 0",
+       "align": "MIN/CENTER",
+       "size": "HUG/HUG",
+       "comp": "Lockup / theme=onDark",
+       "c": [
+        {
+         "n": "S-mark",
+         "t": "FRAME",
+         "w": 32,
+         "h": 32,
+         "size": "FIXED/FIXED",
+         "fill": [
+          "IMAGE"
+         ],
+         "c": []
+        },
+        {
+         "n": "Wordmark",
+         "t": "INSTANCE",
+         "w": 83,
+         "h": 24,
+         "layout": "HORIZONTAL",
+         "gap": 0,
+         "pad": "0 0 0 0",
+         "align": "MIN/MIN",
+         "size": "HUG/HUG",
+         "comp": "Wordmark / theme=onDark",
+         "c": [
+          {
+           "n": "Serv",
+           "t": "TEXT",
+           "w": 46,
+           "h": 24,
+           "size": "HUG/HUG",
+           "fill": [
+            "var:text/inverse"
+           ],
+           "text": "Serv",
+           "fs": 20,
+           "font": "Bold"
+          },
+          {
+           "n": "You",
+           "t": "TEXT",
+           "w": 37,
+           "h": 24,
+           "size": "HUG/HUG",
+           "fill": [
+            "var:text/inverse"
+           ],
+           "text": "You",
+           "fs": 20,
+           "font": "Bold"
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "n": "Top",
+     "t": "FRAME",
+     "w": 208,
+     "h": 364,
+     "layout": "VERTICAL",
+     "gap": 2,
+     "pad": "12 0 0 0",
+     "align": "MIN/MIN",
+     "size": "FILL/HUG",
+     "c": [
+      {
+       "n": "Section Label",
+       "t": "INSTANCE",
+       "w": 208,
+       "h": 32,
+       "layout": "HORIZONTAL",
+       "gap": 0,
+       "pad": "12 12 8 12",
+       "align": "MIN/CENTER",
+       "size": "FILL/FIXED",
+       "comp": "Section Label",
+       "c": [
+        {
+         "n": "Label",
+         "t": "TEXT",
+         "w": 147,
+         "h": 15,
+         "size": "HUG/HUG",
+         "fill": [
+          "var:blue/300"
+         ],
+         "text": "DÉCOUVRIR & ACHATS",
+         "fs": 12,
+         "font": "Semi Bold"
+        }
+       ]
+      },
+      {
+       "n": "Nav Item",
+       "t": "INSTANCE",
+       "w": 208,
+       "h": 44,
+       "layout": "HORIZONTAL",
+       "gap": 12,
+       "pad": "8 12 8 12",
+       "align": "MIN/CENTER",
+       "size": "FILL/FIXED",
+       "r": 10,
+       "fill": [
+        "var:blue/600"
+       ],
+       "comp": "Nav Item / state=active",
+       "c": [
+        {
+         "n": "icon",
+         "t": "INSTANCE",
+         "w": 20,
+         "h": 20,
+         "size": "FIXED/FIXED",
+         "comp": "icon-store",
+         "c": [
+          {
+           "n": "Vector",
+           "t": "VECTOR",
+           "w": 5,
+           "h": 5,
+           "size": "FIXED/FIXED",
+           "stroke": [
+            "var:text/inverse"
+           ],
+           "sw": 2
+          },
+          {
+           "n": "Vector",
+           "t": "VECTOR",
+           "w": 17,
+           "h": 8,
+           "size": "FIXED/FIXED",
+           "stroke": [
+            "var:text/inverse"
+           ],
+           "sw": 2
+          },
+          {
+           "n": "Vector",
+           "t": "VECTOR",
+           "w": 13,
+           "h": 8,
+           "size": "FIXED/FIXED",
+           "stroke": [
+            "var:text/inverse"
+           ],
+           "sw": 2
+          }
+         ]
+        },
+        {
+         "n": "Label",
+         "t": "TEXT",
+         "w": 152,
+         "h": 21,
+         "size": "FILL/HUG",
+         "fill": [
+          "var:text/inverse"
+         ],
+         "text": "Marketplace",
+         "fs": 14,
+         "font": "Semi Bold"
+        },
+        {
+         "n": "Badge",
+         "t": "INSTANCE",
+         "w": 16,
+         "h": 16,
+         "hidden": true,
+         "layout": "HORIZONTAL",
+         "gap": 0,
+         "pad": "0 4 0 4",
+         "align": "CENTER/CENTER",
+         "size": "HUG/HUG",
+         "r": 9999,
+         "fill": [
+          "var:blue/600"
+         ],
+         "comp": "Badge / kind=count",
+         "c": [
+          {
+           "n": "Label",
+           "t": "TEXT",
+           "w": 8,
+           "h": 16,
+           "size": "HUG/HUG",
+           "fill": [
+            "var:text/inverse"
+           ],
+           "text": "3",
+           "fs": 12,
+           "font": "Semi Bold"
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "n": "Nav Item",
+       "t": "INSTANCE",
+       "w": 208,
+       "h": 44,
+       "layout": "HORIZONTAL",
+       "gap": 12,
+       "pad": "8 12 8 12",
+       "align": "MIN/CENTER",
+       "size": "FILL/FIXED",
+       "r": 10,
+       "comp": "Nav Item / state=default",
+       "c": [
+        {
+         "n": "icon",
+         "t": "INSTANCE",
+         "w": 20,
+         "h": 20,
+         "size": "FIXED/FIXED",
+         "comp": "icon-package",
+         "c": [
+          {
+           "n": "Vector",
+           "t": "VECTOR",
+           "w": 15,
+           "h": 17,
+           "size": "FIXED/FIXED",
+           "stroke": [
+            "var:blue/300"
+           ],
+           "sw": 2
+          },
+          {
+           "n": "Vector",
+           "t": "VECTOR",
+           "w": 0,
+           "h": 8,
+           "size": "FIXED/FIXED",
+           "stroke": [
+            "var:blue/300"
+           ],
+           "sw": 2
+          },
+          {
+           "n": "Vector",
+           "t": "VECTOR",
+           "w": 15,
+           "h": 4,
+           "size": "FIXED/FIXED",
+           "stroke": [
+            "var:blue/300"
+           ],
+           "sw": 2
+          },
+          {
+           "n": "Vector",
+           "t": "VECTOR",
+           "w": 8,
+           "h": 4,
+           "size": "FIXED/FIXED",
+           "stroke": [
+            "var:blue/300"
+           ],
+           "sw": 2
+          }
+         ]
+        },
+        {
+         "n": "Label",
+         "t": "TEXT",
+         "w": 152,
+         "h": 21,
+         "size": "FILL/HUG",
+         "fill": [
+          "var:text/inverse"
+         ],
+         "text": "Mes commandes",
+         "fs": 14,
+         "font": "Medium"
+        },
+        {
+         "n": "Badge",
+         "t": "INSTANCE",
+         "w": 16,
+         "h": 16,
+         "hidden": true,
+         "layout": "HORIZONTAL",
+         "gap": 0,
+         "pad": "0 4 0 4",
+         "align": "CENTER/CENTER",
+         "size": "HUG/HUG",
+         "r": 9999,
+         "fill": [
+          "var:blue/600"
+         ],
+         "comp": "Badge / kind=count",
+         "c": [
+          {
+           "n": "Label",
+           "t": "TEXT",
+           "w": 8,
+           "h": 16,
+           "size": "HUG/HUG",
+           "fill": [
+            "var:text/inverse"
+           ],
+           "text": "3",
+           "fs": 12,
+           "font": "Semi Bold"
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "n": "Nav Item",
+       "t": "INSTANCE",
+       "w": 208,
+       "h": 44,
+       "layout": "HORIZONTAL",
+       "gap": 12,
+       "pad": "8 12 8 12",
+       "align": "MIN/CENTER",
+       "size": "FILL/FIXED",
+       "r": 10,
+       "comp": "Nav Item / state=default",
+       "c": [
+        {
+         "n": "icon",
+         "t": "INSTANCE",
+         "w": 20,
+         "h": 20,
+         "size": "FIXED/FIXED",
+         "comp": "icon-heart",
+         "c": [
+          {
+           "n": "Vector",
+           "t": "VECTOR",
+           "w": 17,
+           "h": 14,
+           "size": "FIXED/FIXED",
+           "stroke": [
+            "var:blue/300"
+           ],
+           "sw": 2
+          }
+         ]
+        },
+        {
+         "n": "Label",
+         "t": "TEXT",
+         "w": 152,
+         "h": 21,
+         "size": "FILL/HUG",
+         "fill": [
+          "var:text/inverse"
+         ],
+         "text": "Mes favoris",
+         "fs": 14,
+         "font": "Medium"
+        },
+        {
+         "n": "Badge",
+         "t": "INSTANCE",
+         "w": 16,
+         "h": 16,
+         "hidden": true,
+         "layout": "HORIZONTAL",
+         "gap": 0,
+         "pad": "0 4 0 4",
+         "align": "CENTER/CENTER",
+         "size": "HUG/HUG",
+         "r": 9999,
+         "fill": [
+          "var:blue/600"
+         ],
+         "comp": "Badge / kind=count",
+         "c": [
+          {
+           "n": "Label",
+           "t": "TEXT",
+           "w": 8,
+           "h": 16,
+           "size": "HUG/HUG",
+           "fill": [
+            "var:text/inverse"
+           ],
+           "text": "3",
+           "fs": 12,
+           "font": "Semi Bold"
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "n": "Nav Item",
+       "t": "INSTANCE",
+       "w": 208,
+       "h": 44,
+       "layout": "HORIZONTAL",
+       "gap": 12,
+       "pad": "8 12 8 12",
+       "align": "MIN/CENTER",
+       "size": "FILL/FIXED",
+       "r": 10,
+       "comp": "Nav Item / state=default",
+       "c": [
+        {
+         "n": "icon",
+         "t": "INSTANCE",
+         "w": 20,
+         "h": 20,
+         "size": "FIXED/FIXED",
+         "comp": "icon-megaphone",
+         "c": [
+          {
+           "n": "Vector",
+           "t": "VECTOR",
+           "w": 15,
+           "h": 12,
+           "size": "FIXED/FIXED",
+           "stroke": [
+            "var:blue/300"
+           ],
+           "sw": 2
+          },
+          {
+           "n": "Vector",
+           "t": "VECTOR",
+           "w": 5,
+           "h": 7,
+           "size": "FIXED/FIXED",
+           "stroke": [
+            "var:blue/300"
+           ],
+           "sw": 2
+          },
+          {
+           "n": "Vector",
+           "t": "VECTOR",
+           "w": 0,
+           "h": 7,
+           "size": "FIXED/FIXED",
+           "stroke": [
+            "var:blue/300"
+           ],
+           "sw": 2
+          }
+         ]
+        },
+        {
+         "n": "Label",
+         "t": "TEXT",
+         "w": 152,
+         "h": 21,
+         "size": "FILL/HUG",
+         "fill": [
+          "var:text/inverse"
+         ],
+         "text": "Mes annonces",
+         "fs": 14,
+         "font": "Medium"
+        },
+        {
+         "n": "Badge",
+         "t": "INSTANCE",
+         "w": 16,
+         "h": 16,
+         "hidden": true,
+         "layout": "HORIZONTAL",
+         "gap": 0,
+         "pad": "0 4 0 4",
+         "align": "CENTER/CENTER",
+         "size": "HUG/HUG",
+         "r": 9999,
+         "fill": [
+          "var:blue/600"
+         ],
+         "comp": "Badge / kind=count",
+         "c": [
+          {
+           "n": "Label",
+           "t": "TEXT",
+           "w": 8,
+           "h": 16,
+           "size": "HUG/HUG",
+           "fill": [
+            "var:text/inverse"
+           ],
+           "text": "3",
+           "fs": 12,
+           "font": "Semi Bold"
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "n": "Devenir vendeur (CTA)",
+       "t": "FRAME",
+       "w": 208,
+       "h": 134,
+       "layout": "VERTICAL",
+       "gap": 8,
+       "pad": "16 16 16 16",
+       "align": "MIN/MIN",
+       "size": "FILL/HUG",
+       "r": 12,
+       "fill": [
+        "var:blue/600"
+       ],
+       "c": [
+        {
+         "n": "icon-rocket",
+         "t": "INSTANCE",
+         "w": 24,
+         "h": 24,
+         "size": "FIXED/FIXED",
+         "comp": "icon-rocket",
+         "c": [
+          {
+           "n": "Vector",
+           "t": "VECTOR",
+           "w": 4,
+           "h": 7,
+           "size": "FIXED/FIXED",
+           "stroke": [
+            "var:text/inverse"
+           ],
+           "sw": 2
+          },
+          {
+           "n": "Vector",
+           "t": "VECTOR",
+           "w": 6,
+           "h": 6,
+           "size": "FIXED/FIXED",
+           "stroke": [
+            "var:text/inverse"
+           ],
+           "sw": 2
+          },
+          {
+           "n": "Vector",
+           "t": "VECTOR",
+           "w": 13,
+           "h": 13,
+           "size": "FIXED/FIXED",
+           "stroke": [
+            "var:text/inverse"
+           ],
+           "sw": 2
+          },
+          {
+           "n": "Vector",
+           "t": "VECTOR",
+           "w": 7,
+           "h": 4,
+           "size": "FIXED/FIXED",
+           "stroke": [
+            "var:text/inverse"
+           ],
+           "sw": 2
+          }
+         ]
+        },
+        {
+         "n": "Devenir vendeur",
+         "t": "TEXT",
+         "w": 176,
+         "h": 22,
+         "size": "FILL/HUG",
+         "fill": [
+          "var:text/inverse"
+         ],
+         "text": "Devenir vendeur",
+         "fs": 16,
+         "font": "Semi Bold"
+        },
+        {
+         "n": "Vendez vos produits ou services",
+         "t": "TEXT",
+         "w": 176,
+         "h": 40,
+         "size": "FILL/HUG",
+         "fill": [
+          "var:blue/100"
+         ],
+         "text": "Vendez vos produits ou services",
+         "fs": 14,
+         "font": "Regular"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "n": "spacer",
+     "t": "FRAME",
+     "w": 208,
+     "h": 2,
+     "size": "FILL/FIXED",
+     "c": []
+    },
+    {
+     "n": "Account",
+     "t": "FRAME",
+     "w": 208,
+     "h": 124,
+     "layout": "VERTICAL",
+     "gap": 2,
+     "pad": "0 0 0 0",
+     "align": "MIN/MIN",
+     "size": "FILL/HUG",
+     "c": [
+      {
+       "n": "Section Label",
+       "t": "INSTANCE",
+       "w": 208,
+       "h": 32,
+       "layout": "HORIZONTAL",
+       "gap": 0,
+       "pad": "12 12 8 12",
+       "align": "MIN/CENTER",
+       "size": "FILL/FIXED",
+       "comp": "Section Label",
+       "c": [
+        {
+         "n": "Label",
+         "t": "TEXT",
+         "w": 120,
+         "h": 15,
+         "size": "HUG/HUG",
+         "fill": [
+          "var:blue/300"
+         ],
+         "text": "OUTILS & COMPTE",
+         "fs": 12,
+         "font": "Semi Bold"
+        }
+       ]
+      },
+      {
+       "n": "Nav Item",
+       "t": "INSTANCE",
+       "w": 208,
+       "h": 44,
+       "layout": "HORIZONTAL",
+       "gap": 12,
+       "pad": "8 12 8 12",
+       "align": "MIN/CENTER",
+       "size": "FILL/FIXED",
+       "r": 10,
+       "comp": "Nav Item / state=default",
+       "c": [
+        {
+         "n": "icon",
+         "t": "INSTANCE",
+         "w": 20,
+         "h": 20,
+         "size": "FIXED/FIXED",
+         "comp": "icon-settings",
+         "c": [
+          {
+           "n": "Vector",
+           "t": "VECTOR",
+           "w": 15,
+           "h": 17,
+           "size": "FIXED/FIXED",
+           "stroke": [
+            "var:blue/300"
+           ],
+           "sw": 2
+          },
+          {
+           "n": "Vector",
+           "t": "VECTOR",
+           "w": 5,
+           "h": 5,
+           "size": "FIXED/FIXED",
+           "stroke": [
+            "var:blue/300"
+           ],
+           "sw": 2
+          }
+         ]
+        },
+        {
+         "n": "Label",
+         "t": "TEXT",
+         "w": 152,
+         "h": 21,
+         "size": "FILL/HUG",
+         "fill": [
+          "var:text/inverse"
+         ],
+         "text": "Paramètres",
+         "fs": 14,
+         "font": "Medium"
+        },
+        {
+         "n": "Badge",
+         "t": "INSTANCE",
+         "w": 16,
+         "h": 16,
+         "hidden": true,
+         "layout": "HORIZONTAL",
+         "gap": 0,
+         "pad": "0 4 0 4",
+         "align": "CENTER/CENTER",
+         "size": "HUG/HUG",
+         "r": 9999,
+         "fill": [
+          "var:blue/600"
+         ],
+         "comp": "Badge / kind=count",
+         "c": [
+          {
+           "n": "Label",
+           "t": "TEXT",
+           "w": 8,
+           "h": 16,
+           "size": "HUG/HUG",
+           "fill": [
+            "var:text/inverse"
+           ],
+           "text": "3",
+           "fs": 12,
+           "font": "Semi Bold"
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "n": "Nav Item",
+       "t": "INSTANCE",
+       "w": 208,
+       "h": 44,
+       "layout": "HORIZONTAL",
+       "gap": 12,
+       "pad": "8 12 8 12",
+       "align": "MIN/CENTER",
+       "size": "FILL/FIXED",
+       "r": 10,
+       "comp": "Nav Item / state=default",
+       "c": [
+        {
+         "n": "icon",
+         "t": "INSTANCE",
+         "w": 20,
+         "h": 20,
+         "size": "FIXED/FIXED",
+         "comp": "icon-help-circle",
+         "c": [
+          {
+           "n": "Vector",
+           "t": "VECTOR",
+           "w": 17,
+           "h": 17,
+           "size": "FIXED/FIXED",
+           "stroke": [
+            "var:blue/300"
+           ],
+           "sw": 2
+          },
+          {
+           "n": "Vector",
+           "t": "VECTOR",
+           "w": 5,
+           "h": 5,
+           "size": "FIXED/FIXED",
+           "stroke": [
+            "var:blue/300"
+           ],
+           "sw": 2
+          },
+          {
+           "n": "Vector",
+           "t": "VECTOR",
+           "w": 0,
+           "h": 0,
+           "size": "FIXED/FIXED",
+           "stroke": [
+            "var:blue/300"
+           ],
+           "sw": 2
+          }
+         ]
+        },
+        {
+         "n": "Label",
+         "t": "TEXT",
+         "w": 152,
+         "h": 21,
+         "size": "FILL/HUG",
+         "fill": [
+          "var:text/inverse"
+         ],
+         "text": "Aide",
+         "fs": 14,
+         "font": "Medium"
+        },
+        {
+         "n": "Badge",
+         "t": "INSTANCE",
+         "w": 16,
+         "h": 16,
+         "hidden": true,
+         "layout": "HORIZONTAL",
+         "gap": 0,
+         "pad": "0 4 0 4",
+         "align": "CENTER/CENTER",
+         "size": "HUG/HUG",
+         "r": 9999,
+         "fill": [
+          "var:blue/600"
+         ],
+         "comp": "Badge / kind=count",
+         "c": [
+          {
+           "n": "Label",
+           "t": "TEXT",
+           "w": 8,
+           "h": 16,
+           "size": "HUG/HUG",
+           "fill": [
+            "var:text/inverse"
+           ],
+           "text": "3",
+           "fs": 12,
+           "font": "Semi Bold"
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "n": "right",
+   "t": "FRAME",
+   "w": 1200,
+   "h": 1145,
+   "layout": "VERTICAL",
+   "gap": 0,
+   "pad": "0 0 0 0",
+   "align": "MIN/MIN",
+   "size": "FILL/HUG",
+   "c": [
+    {
+     "n": "Topbar",
+     "t": "INSTANCE",
+     "w": 1200,
+     "h": 64,
+     "layout": "HORIZONTAL",
+     "gap": 16,
+     "pad": "0 24 0 24",
+     "align": "MIN/CENTER",
+     "size": "FILL/FIXED",
+     "fill": [
+      "var:surface/base"
+     ],
+     "stroke": [
+      "var:border/subtle"
+     ],
+     "comp": "Topbar / viewport=desktop",
+     "c": [
+      {
+       "n": "Search",
+       "t": "FRAME",
+       "w": 821,
+       "h": 40,
+       "layout": "HORIZONTAL",
+       "gap": 8,
+       "pad": "0 12 0 12",
+       "align": "MIN/CENTER",
+       "size": "FILL/FIXED",
+       "r": 10,
+       "fill": [
+        "var:surface/subtle"
+       ],
+       "stroke": [
+        "var:border/subtle"
+       ],
+       "sw": 1,
+       "c": [
+        {
+         "n": "icon-search",
+         "t": "INSTANCE",
+         "w": 16,
+         "h": 16,
+         "size": "FIXED/FIXED",
+         "comp": "icon-search",
+         "c": [
+          {
+           "n": "Vector",
+           "t": "VECTOR",
+           "w": 3,
+           "h": 3,
+           "size": "FIXED/FIXED",
+           "stroke": [
+            "var:text/muted"
+           ],
+           "sw": 2
+          },
+          {
+           "n": "Vector",
+           "t": "VECTOR",
+           "w": 11,
+           "h": 11,
+           "size": "FIXED/FIXED",
+           "stroke": [
+            "var:text/muted"
+           ],
+           "sw": 2
+          }
+         ]
+        },
+        {
+         "n": "SearchPlaceholder",
+         "t": "TEXT",
+         "w": 773,
+         "h": 20,
+         "size": "FILL/HUG",
+         "fill": [
+          "var:text/muted"
+         ],
+         "text": "Rechercher une boutique, un produit…",
+         "fs": 14,
+         "font": "Regular"
+        }
+       ]
+      },
+      {
+       "n": "LangToggle",
+       "t": "INSTANCE",
+       "w": 93,
+       "h": 32,
+       "layout": "HORIZONTAL",
+       "gap": 0,
+       "pad": "4 4 4 4",
+       "align": "MIN/CENTER",
+       "size": "HUG/FIXED",
+       "r": 10,
+       "fill": [
+        "var:surface/sunken"
+       ],
+       "comp": "LangToggle / selected=FR",
+       "c": [
+        {
+         "n": "segment",
+         "t": "FRAME",
+         "w": 42,
+         "h": 24,
+         "layout": "HORIZONTAL",
+         "gap": 0,
+         "pad": "0 12 0 12",
+         "align": "CENTER/CENTER",
+         "size": "HUG/FILL",
+         "r": 8,
+         "fill": [
+          "var:surface/base"
+         ],
+         "c": [
+          {
+           "n": "seglabel",
+           "t": "TEXT",
+           "w": 18,
+           "h": 17,
+           "size": "HUG/HUG",
+           "fill": [
+            "var:text/primary"
+           ],
+           "text": "FR",
+           "fs": 14,
+           "font": "Medium"
+          }
+         ]
+        },
+        {
+         "n": "segment",
+         "t": "FRAME",
+         "w": 43,
+         "h": 24,
+         "layout": "HORIZONTAL",
+         "gap": 0,
+         "pad": "0 12 0 12",
+         "align": "CENTER/CENTER",
+         "size": "HUG/FILL",
+         "r": 8,
+         "c": [
+          {
+           "n": "seglabel",
+           "t": "TEXT",
+           "w": 19,
+           "h": 17,
+           "size": "HUG/HUG",
+           "fill": [
+            "var:text/secondary"
+           ],
+           "text": "AR",
+           "fs": 14,
+           "font": "Medium"
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "n": "IconButton",
+       "t": "FRAME",
+       "w": 40,
+       "h": 40,
+       "layout": "HORIZONTAL",
+       "gap": 0,
+       "pad": "0 0 0 0",
+       "align": "CENTER/CENTER",
+       "size": "FIXED/FIXED",
+       "r": 10,
+       "c": [
+        {
+         "n": "icon-bell",
+         "t": "INSTANCE",
+         "w": 20,
+         "h": 20,
+         "size": "FIXED/FIXED",
+         "comp": "icon-bell",
+         "c": [
+          {
+           "n": "Vector",
+           "t": "VECTOR",
+           "w": 3,
+           "h": 1,
+           "size": "FIXED/FIXED",
+           "stroke": [
+            "var:text/muted"
+           ],
+           "sw": 2
+          },
+          {
+           "n": "Vector",
+           "t": "VECTOR",
+           "w": 15,
+           "h": 13,
+           "size": "FIXED/FIXED",
+           "stroke": [
+            "var:text/muted"
+           ],
+           "sw": 2
+          }
+         ]
+        },
+        {
+         "n": "Badge",
+         "t": "INSTANCE",
+         "w": 16,
+         "h": 16,
+         "layout": "HORIZONTAL",
+         "gap": 0,
+         "pad": "0 4 0 4",
+         "align": "CENTER/CENTER",
+         "size": "HUG/HUG",
+         "r": 9999,
+         "fill": [
+          "var:blue/600"
+         ],
+         "comp": "Badge / kind=count",
+         "c": [
+          {
+           "n": "Label",
+           "t": "TEXT",
+           "w": 8,
+           "h": 16,
+           "size": "HUG/HUG",
+           "fill": [
+            "var:text/inverse"
+           ],
+           "text": "2",
+           "fs": 12,
+           "font": "Semi Bold"
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "n": "User",
+       "t": "FRAME",
+       "w": 150,
+       "h": 60,
+       "layout": "HORIZONTAL",
+       "gap": 8,
+       "pad": "0 0 0 0",
+       "align": "MIN/CENTER",
+       "size": "HUG/HUG",
+       "c": [
+        {
+         "n": "Avatar",
+         "t": "INSTANCE",
+         "w": 40,
+         "h": 40,
+         "size": "FIXED/FIXED",
+         "comp": "Avatar / size=md, type=image, status=online",
+         "c": [
+          {
+           "n": "Shape",
+           "t": "FRAME",
+           "w": 40,
+           "h": 40,
+           "layout": "HORIZONTAL",
+           "gap": 0,
+           "pad": "0 0 0 0",
+           "align": "CENTER/CENTER",
+           "size": "FIXED/FIXED",
+           "r": 9999,
+           "fill": [
+            "var:border/strong"
+           ],
+           "c": [
+            {
+             "n": "icon",
+             "t": "FRAME",
+             "w": 22,
+             "h": 22,
+             "size": "FIXED/FIXED",
+             "c": [
+              {
+               "n": "Vector",
+               "t": "VECTOR",
+               "w": 13,
+               "h": 6,
+               "size": "FIXED/FIXED",
+               "fill": [
+                "var:text/muted"
+               ],
+               "stroke": [
+                "var:surface/base"
+               ],
+               "sw": 1.8333333730697632
+              },
+              {
+               "n": "Vector",
+               "t": "VECTOR",
+               "w": 7,
+               "h": 7,
+               "size": "FIXED/FIXED",
+               "fill": [
+                "var:text/muted"
+               ],
+               "stroke": [
+                "var:surface/base"
+               ],
+               "sw": 1.8333333730697632
+              }
+             ]
+            }
+           ]
+          },
+          {
+           "n": "OnlineDot",
+           "t": "FRAME",
+           "w": 10,
+           "h": 10,
+           "size": "FIXED/FIXED",
+           "r": 9999,
+           "fill": [
+            "var:success/500"
+           ],
+           "stroke": [
+            "var:surface/base"
+           ],
+           "sw": 2,
+           "c": []
+          },
+          {
+           "n": "Verified",
+           "t": "FRAME",
+           "w": 16,
+           "h": 16,
+           "hidden": true,
+           "layout": "HORIZONTAL",
+           "gap": 0,
+           "pad": "0 0 0 0",
+           "align": "CENTER/CENTER",
+           "size": "FIXED/FIXED",
+           "r": 9999,
+           "fill": [
+            "var:blue/600"
+           ],
+           "stroke": [
+            "var:surface/base"
+           ],
+           "sw": 2,
+           "c": [
+            {
+             "n": "icon",
+             "t": "FRAME",
+             "w": 11,
+             "h": 11,
+             "size": "FIXED/FIXED",
+             "c": [
+              {
+               "n": "Vector",
+               "t": "VECTOR",
+               "w": 7,
+               "h": 5,
+               "size": "FIXED/FIXED",
+               "fill": [
+                "var:text/muted"
+               ],
+               "stroke": [
+                "var:text/inverse"
+               ],
+               "sw": 0.9166666865348816
+              }
+             ]
+            }
+           ]
+          }
+         ]
+        },
+        {
+         "n": "NameRole",
+         "t": "FRAME",
+         "w": 78,
+         "h": 60,
+         "layout": "VERTICAL",
+         "gap": 0,
+         "pad": "0 0 0 0",
+         "align": "MIN/MIN",
+         "size": "HUG/HUG",
+         "c": [
+          {
+           "n": "Name",
+           "t": "TEXT",
+           "w": 78,
+           "h": 44,
+           "size": "FIXED/HUG",
+           "fill": [
+            "var:text/primary"
+           ],
+           "text": "Yassine Ben Ali",
+           "fs": 16,
+           "font": "Medium"
+          },
+          {
+           "n": "Role",
+           "t": "TEXT",
+           "w": 56,
+           "h": 16,
+           "size": "FIXED/HUG",
+           "fill": [
+            "var:text/muted"
+           ],
+           "text": "Client",
+           "fs": 12,
+           "font": "Regular"
+          }
+         ]
+        },
+        {
+         "n": "icon-chevron-down",
+         "t": "INSTANCE",
+         "w": 16,
+         "h": 16,
+         "size": "FIXED/FIXED",
+         "comp": "icon-chevron-down",
+         "c": [
+          {
+           "n": "Vector",
+           "t": "VECTOR",
+           "w": 8,
+           "h": 4,
+           "size": "FIXED/FIXED",
+           "stroke": [
+            "var:text/muted"
+           ],
+           "sw": 2
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "n": "content",
+     "t": "FRAME",
+     "w": 1200,
+     "h": 1081,
+     "layout": "VERTICAL",
+     "gap": 24,
+     "pad": "32 32 32 32",
+     "align": "MIN/MIN",
+     "size": "FILL/HUG",
+     "c": [
+      {
+       "n": "browseHead",
+       "t": "FRAME",
+       "w": 1136,
+       "h": 137,
+       "layout": "VERTICAL",
+       "gap": 16,
+       "pad": "0 0 0 0",
+       "align": "MIN/MIN",
+       "size": "FILL/HUG",
+       "c": [
+        {
+         "n": "Filter Bar",
+         "t": "INSTANCE",
+         "w": 1136,
+         "h": 97,
+         "layout": "VERTICAL",
+         "gap": 12,
+         "pad": "0 0 0 0",
+         "align": "MIN/MIN",
+         "size": "FILL/HUG",
+         "comp": "Filter Bar / viewport=desktop",
+         "c": [
+          {
+           "n": "main-row",
+           "t": "FRAME",
+           "w": 1136,
+           "h": 97,
+           "layout": "HORIZONTAL",
+           "gap": 12,
+           "pad": "0 0 0 0",
+           "align": "MIN/CENTER",
+           "size": "FILL/HUG",
+           "c": [
+            {
+             "n": "search",
+             "t": "INSTANCE",
+             "w": 550,
+             "h": 97,
+             "layout": "VERTICAL",
+             "gap": 8,
+             "pad": "0 0 0 0",
+             "align": "MIN/MIN",
+             "size": "FILL/HUG",
+             "comp": "Input / variant=search, state=default",
+             "c": [
+              {
+               "n": "Frame",
+               "t": "FRAME",
+               "w": 0,
+               "h": 21,
+               "layout": "HORIZONTAL",
+               "gap": 2,
+               "pad": "0 0 0 0",
+               "align": "MIN/CENTER",
+               "size": "HUG/HUG",
+               "c": [
+                {
+                 "n": "label",
+                 "t": "TEXT",
+                 "w": 0,
+                 "h": 21,
+                 "size": "HUG/HUG",
+                 "fill": [
+                  "var:text/secondary"
+                 ],
+                 "text": "",
+                 "fs": 14,
+                 "font": "Medium"
+                },
+                {
+                 "n": "asterisk",
+                 "t": "TEXT",
+                 "w": 8,
+                 "h": 21,
+                 "hidden": true,
+                 "size": "FIXED/FIXED",
+                 "fill": [
+                  "var:danger/500"
+                 ],
+                 "text": "*",
+                 "fs": 14,
+                 "font": "Medium"
+                }
+               ]
+              },
+              {
+               "n": "field",
+               "t": "FRAME",
+               "w": 550,
+               "h": 44,
+               "layout": "HORIZONTAL",
+               "gap": 8,
+               "pad": "0 16 0 16",
+               "align": "MIN/CENTER",
+               "size": "FILL/FIXED",
+               "r": 10,
+               "fill": [
+                "var:surface/base"
+               ],
+               "stroke": [
+                "var:border/strong"
+               ],
+               "sw": 1,
+               "c": [
+                {
+                 "n": "icon-search",
+                 "t": "FRAME",
+                 "w": 18,
+                 "h": 18,
+                 "size": "FIXED/FIXED",
+                 "c": [
+                  {
+                   "n": "Vector",
+                   "t": "VECTOR",
+                   "w": 12,
+                   "h": 12,
+                   "size": "FIXED/FIXED",
+                   "stroke": [
+                    "var:text/muted"
+                   ],
+                   "sw": 1.5
+                  },
+                  {
+                   "n": "Vector",
+                   "t": "VECTOR",
+                   "w": 3,
+                   "h": 3,
+                   "size": "FIXED/FIXED",
+                   "stroke": [
+                    "var:text/muted"
+                   ],
+                   "sw": 1.5
+                  }
+                 ]
+                },
+                {
+                 "n": "value",
+                 "t": "TEXT",
+                 "w": 492,
+                 "h": 26,
+                 "size": "FILL/HUG",
+                 "fill": [
+                  "var:text/primary"
+                 ],
+                 "text": "coussin",
+                 "fs": 16,
+                 "font": "Regular",
+                 "style": "Body"
+                }
+               ]
+              },
+              {
+               "n": "helperRow",
+               "t": "FRAME",
+               "w": 550,
+               "h": 16,
+               "layout": "HORIZONTAL",
+               "gap": 0,
+               "pad": "0 0 0 0",
+               "align": "SPACE_BETWEEN/CENTER",
+               "size": "FILL/FIXED",
+               "c": [
+                {
+                 "n": "helper",
+                 "t": "TEXT",
+                 "w": 0,
+                 "h": 21,
+                 "size": "HUG/HUG",
+                 "fill": [
+                  "var:text/muted"
+                 ],
+                 "text": "",
+                 "fs": 14,
+                 "font": "Regular",
+                 "style": "Body Small"
+                },
+                {
+                 "n": "counter",
+                 "t": "TEXT",
+                 "w": 29,
+                 "h": 17,
+                 "hidden": true,
+                 "size": "FIXED/FIXED",
+                 "fill": [
+                  "var:text/muted"
+                 ],
+                 "text": "0/80",
+                 "fs": 12,
+                 "font": "Medium",
+                 "style": "Overline"
+                }
+               ]
+              }
+             ]
+            },
+            {
+             "n": "select",
+             "t": "INSTANCE",
+             "w": 133,
+             "h": 40,
+             "layout": "VERTICAL",
+             "gap": 8,
+             "pad": "0 0 0 0",
+             "align": "MIN/MIN",
+             "size": "HUG/HUG",
+             "comp": "Select — Trigger / variant=single, size=compact, state=default",
+             "c": [
+              {
+               "n": "field",
+               "t": "FRAME",
+               "w": 133,
+               "h": 40,
+               "layout": "HORIZONTAL",
+               "gap": 8,
+               "pad": "0 16 0 16",
+               "align": "MIN/CENTER",
+               "size": "FILL/FIXED",
+               "r": 10,
+               "fill": [
+                "var:surface/base"
+               ],
+               "stroke": [
+                "var:border/strong"
+               ],
+               "sw": 1,
+               "c": [
+                {
+                 "n": "value",
+                 "t": "TEXT",
+                 "w": 75,
+                 "h": 26,
+                 "size": "FILL/HUG",
+                 "fill": [
+                  "var:text/muted"
+                 ],
+                 "text": "Catégorie",
+                 "fs": 16,
+                 "font": "Regular",
+                 "style": "Body"
+                },
+                {
+                 "n": "icon-chevron",
+                 "t": "FRAME",
+                 "w": 18,
+                 "h": 18,
+                 "size": "FIXED/FIXED",
+                 "c": [
+                  {
+                   "n": "Vector",
+                   "t": "VECTOR",
+                   "w": 9,
+                   "h": 5,
+                   "size": "FIXED/FIXED",
+                   "stroke": [
+                    "var:text/muted"
+                   ],
+                   "sw": 1.5
+                  }
+                 ]
+                }
+               ]
+              }
+             ]
+            },
+            {
+             "n": "select",
+             "t": "INSTANCE",
+             "w": 90,
+             "h": 40,
+             "layout": "VERTICAL",
+             "gap": 8,
+             "pad": "0 0 0 0",
+             "align": "MIN/MIN",
+             "size": "HUG/HUG",
+             "comp": "Select — Trigger / variant=single, size=compact, state=default",
+             "c": [
+              {
+               "n": "field",
+               "t": "FRAME",
+               "w": 90,
+               "h": 40,
+               "layout": "HORIZONTAL",
+               "gap": 8,
+               "pad": "0 16 0 16",
+               "align": "MIN/CENTER",
+               "size": "FILL/FIXED",
+               "r": 10,
+               "fill": [
+                "var:surface/base"
+               ],
+               "stroke": [
+                "var:border/strong"
+               ],
+               "sw": 1,
+               "c": [
+                {
+                 "n": "value",
+                 "t": "TEXT",
+                 "w": 32,
+                 "h": 26,
+                 "size": "FILL/HUG",
+                 "fill": [
+                  "var:text/muted"
+                 ],
+                 "text": "Ville",
+                 "fs": 16,
+                 "font": "Regular",
+                 "style": "Body"
+                },
+                {
+                 "n": "icon-chevron",
+                 "t": "FRAME",
+                 "w": 18,
+                 "h": 18,
+                 "size": "FIXED/FIXED",
+                 "c": [
+                  {
+                   "n": "Vector",
+                   "t": "VECTOR",
+                   "w": 9,
+                   "h": 5,
+                   "size": "FIXED/FIXED",
+                   "stroke": [
+                    "var:text/muted"
+                   ],
+                   "sw": 1.5
+                  }
+                 ]
+                }
+               ]
+              }
+             ]
+            },
+            {
+             "n": "select",
+             "t": "INSTANCE",
+             "w": 87,
+             "h": 40,
+             "layout": "VERTICAL",
+             "gap": 8,
+             "pad": "0 0 0 0",
+             "align": "MIN/MIN",
+             "size": "HUG/HUG",
+             "comp": "Select — Trigger / variant=single, size=compact, state=default",
+             "c": [
+              {
+               "n": "field",
+               "t": "FRAME",
+               "w": 87,
+               "h": 40,
+               "layout": "HORIZONTAL",
+               "gap": 8,
+               "pad": "0 16 0 16",
+               "align": "MIN/CENTER",
+               "size": "FILL/FIXED",
+               "r": 10,
+               "fill": [
+                "var:surface/base"
+               ],
+               "stroke": [
+                "var:border/strong"
+               ],
+               "sw": 1,
+               "c": [
+                {
+                 "n": "value",
+                 "t": "TEXT",
+                 "w": 29,
+                 "h": 26,
+                 "size": "FILL/HUG",
+                 "fill": [
+                  "var:text/muted"
+                 ],
+                 "text": "Prix",
+                 "fs": 16,
+                 "font": "Regular",
+                 "style": "Body"
+                },
+                {
+                 "n": "icon-chevron",
+                 "t": "FRAME",
+                 "w": 18,
+                 "h": 18,
+                 "size": "FIXED/FIXED",
+                 "c": [
+                  {
+                   "n": "Vector",
+                   "t": "VECTOR",
+                   "w": 9,
+                   "h": 5,
+                   "size": "FIXED/FIXED",
+                   "stroke": [
+                    "var:text/muted"
+                   ],
+                   "sw": 1.5
+                  }
+                 ]
+                }
+               ]
+              }
+             ]
+            },
+            {
+             "n": "select",
+             "t": "INSTANCE",
+             "w": 228,
+             "h": 40,
+             "layout": "VERTICAL",
+             "gap": 8,
+             "pad": "0 0 0 0",
+             "align": "MIN/MIN",
+             "size": "HUG/HUG",
+             "comp": "Select — Trigger / variant=single, size=compact, state=default",
+             "c": [
+              {
+               "n": "field",
+               "t": "FRAME",
+               "w": 228,
+               "h": 40,
+               "layout": "HORIZONTAL",
+               "gap": 8,
+               "pad": "0 16 0 16",
+               "align": "MIN/CENTER",
+               "size": "FILL/FIXED",
+               "r": 10,
+               "fill": [
+                "var:surface/base"
+               ],
+               "stroke": [
+                "var:border/strong"
+               ],
+               "sw": 1,
+               "c": [
+                {
+                 "n": "value",
+                 "t": "TEXT",
+                 "w": 170,
+                 "h": 26,
+                 "size": "FILL/HUG",
+                 "fill": [
+                  "var:text/muted"
+                 ],
+                 "text": "Trier par : Plus récents",
+                 "fs": 16,
+                 "font": "Regular",
+                 "style": "Body"
+                },
+                {
+                 "n": "icon-chevron",
+                 "t": "FRAME",
+                 "w": 18,
+                 "h": 18,
+                 "size": "FIXED/FIXED",
+                 "c": [
+                  {
+                   "n": "Vector",
+                   "t": "VECTOR",
+                   "w": 9,
+                   "h": 5,
+                   "size": "FIXED/FIXED",
+                   "stroke": [
+                    "var:text/muted"
+                   ],
+                   "sw": 1.5
+                  }
+                 ]
+                }
+               ]
+              }
+             ]
+            },
+            {
+             "n": "view-toggle",
+             "t": "INSTANCE",
+             "w": 96,
+             "h": 44,
+             "hidden": true,
+             "layout": "HORIZONTAL",
+             "gap": 0,
+             "pad": "4 4 4 4",
+             "align": "MIN/MIN",
+             "size": "HUG/HUG",
+             "r": 10,
+             "fill": [
+              "var:surface/sunken"
+             ],
+             "comp": "Segmented / count=2, state=default, selected=0",
+             "c": [
+              {
+               "n": "segment",
+               "t": "FRAME",
+               "w": 44,
+               "h": 36,
+               "layout": "HORIZONTAL",
+               "gap": 4,
+               "pad": "0 12 0 12",
+               "align": "CENTER/CENTER",
+               "size": "HUG/FIXED",
+               "r": 8,
+               "fill": [
+                "var:surface/base"
+               ],
+               "c": [
+                {
+                 "n": "icon-layout-grid",
+                 "t": "INSTANCE",
+                 "w": 16,
+                 "h": 16,
+                 "size": "FIXED/FIXED",
+                 "comp": "icon-layout-grid",
+                 "c": [
+                  {
+                   "n": "Vector",
+                   "t": "VECTOR",
+                   "w": 5,
+                   "h": 5,
+                   "size": "FIXED/FIXED",
+                   "stroke": [
+                    "var:text/muted"
+                   ],
+                   "sw": 2
+                  },
+                  {
+                   "n": "Vector",
+                   "t": "VECTOR",
+                   "w": 5,
+                   "h": 5,
+                   "size": "FIXED/FIXED",
+                   "stroke": [
+                    "var:text/muted"
+                   ],
+                   "sw": 2
+                  },
+                  {
+                   "n": "Vector",
+                   "t": "VECTOR",
+                   "w": 5,
+                   "h": 5,
+                   "size": "FIXED/FIXED",
+                   "stroke": [
+                    "var:text/muted"
+                   ],
+                   "sw": 2
+                  },
+                  {
+                   "n": "Vector",
+                   "t": "VECTOR",
+                   "w": 5,
+                   "h": 5,
+                   "size": "FIXED/FIXED",
+                   "stroke": [
+                    "var:text/muted"
+                   ],
+                   "sw": 2
+                  }
+                 ]
+                },
+                {
+                 "n": "seglabel0",
+                 "t": "TEXT",
+                 "w": 0,
+                 "h": 21,
+                 "size": "HUG/HUG",
+                 "fill": [
+                  "var:text/primary"
+                 ],
+                 "text": "",
+                 "fs": 14,
+                 "font": "Medium"
+                }
+               ]
+              },
+              {
+               "n": "segment",
+               "t": "FRAME",
+               "w": 44,
+               "h": 36,
+               "layout": "HORIZONTAL",
+               "gap": 4,
+               "pad": "0 12 0 12",
+               "align": "CENTER/CENTER",
+               "size": "HUG/FIXED",
+               "r": 8,
+               "c": [
+                {
+                 "n": "seg-icon",
+                 "t": "INSTANCE",
+                 "w": 16,
+                 "h": 16,
+                 "size": "FIXED/FIXED",
+                 "comp": "icon-list",
+                 "c": [
+                  {
+                   "n": "Vector",
+                   "t": "VECTOR",
+                   "w": 0,
+                   "h": 0,
+                   "size": "FIXED/FIXED",
+                   "stroke": [
+                    "var:text/muted"
+                   ],
+                   "sw": 2
+                  },
+                  {
+                   "n": "Vector",
+                   "t": "VECTOR",
+                   "w": 0,
+                   "h": 0,
+                   "size": "FIXED/FIXED",
+                   "stroke": [
+                    "var:text/muted"
+                   ],
+                   "sw": 2
+                  },
+                  {
+                   "n": "Vector",
+                   "t": "VECTOR",
+                   "w": 0,
+                   "h": 0,
+                   "size": "FIXED/FIXED",
+                   "stroke": [
+                    "var:text/muted"
+                   ],
+                   "sw": 2
+                  },
+                  {
+                   "n": "Vector",
+                   "t": "VECTOR",
+                   "w": 9,
+                   "h": 0,
+                   "size": "FIXED/FIXED",
+                   "stroke": [
+                    "var:text/muted"
+                   ],
+                   "sw": 2
+                  },
+                  {
+                   "n": "Vector",
+                   "t": "VECTOR",
+                   "w": 9,
+                   "h": 0,
+                   "size": "FIXED/FIXED",
+                   "stroke": [
+                    "var:text/muted"
+                   ],
+                   "sw": 2
+                  },
+                  {
+                   "n": "Vector",
+                   "t": "VECTOR",
+                   "w": 9,
+                   "h": 0,
+                   "size": "FIXED/FIXED",
+                   "stroke": [
+                    "var:text/muted"
+                   ],
+                   "sw": 2
+                  }
+                 ]
+                },
+                {
+                 "n": "seglabel1",
+                 "t": "TEXT",
+                 "w": 0,
+                 "h": 21,
+                 "size": "HUG/HUG",
+                 "fill": [
+                  "var:text/secondary"
+                 ],
+                 "text": "",
+                 "fs": 14,
+                 "font": "Medium"
+                }
+               ]
+              }
+             ]
+            }
+           ]
+          },
+          {
+           "n": "chips-row",
+           "t": "FRAME",
+           "w": 403,
+           "h": 29,
+           "hidden": true,
+           "layout": "HORIZONTAL",
+           "gap": 8,
+           "pad": "0 0 0 0",
+           "align": "MIN/CENTER",
+           "size": "HUG/HUG",
+           "c": [
+            {
+             "n": "chip",
+             "t": "INSTANCE",
+             "w": 100,
+             "h": 29,
+             "layout": "HORIZONTAL",
+             "gap": 4,
+             "pad": "4 8 4 12",
+             "align": "CENTER/CENTER",
+             "size": "HUG/HUG",
+             "r": 9999,
+             "fill": [
+              "var:blue/50"
+             ],
+             "comp": "Badge / kind=filter",
+             "c": [
+              {
+               "n": "Label",
+               "t": "TEXT",
+               "w": 62,
+               "h": 21,
+               "size": "HUG/HUG",
+               "fill": [
+                "var:blue/600"
+               ],
+               "text": "Artisanat",
+               "fs": 14,
+               "font": "Medium"
+              },
+              {
+               "n": "icon",
+               "t": "FRAME",
+               "w": 14,
+               "h": 14,
+               "size": "FIXED/FIXED",
+               "c": [
+                {
+                 "n": "Vector",
+                 "t": "VECTOR",
+                 "w": 7,
+                 "h": 7,
+                 "size": "FIXED/FIXED",
+                 "stroke": [
+                  "var:blue/600"
+                 ],
+                 "sw": 1.1666666269302368
+                },
+                {
+                 "n": "Vector",
+                 "t": "VECTOR",
+                 "w": 7,
+                 "h": 7,
+                 "size": "FIXED/FIXED",
+                 "stroke": [
+                  "var:blue/600"
+                 ],
+                 "sw": 1.1666666269302368
+                }
+               ]
+              }
+             ]
+            },
+            {
+             "n": "chip",
+             "t": "INSTANCE",
+             "w": 74,
+             "h": 29,
+             "layout": "HORIZONTAL",
+             "gap": 4,
+             "pad": "4 8 4 12",
+             "align": "CENTER/CENTER",
+             "size": "HUG/HUG",
+             "r": 9999,
+             "fill": [
+              "var:blue/50"
+             ],
+             "comp": "Badge / kind=filter",
+             "c": [
+              {
+               "n": "Label",
+               "t": "TEXT",
+               "w": 36,
+               "h": 21,
+               "size": "HUG/HUG",
+               "fill": [
+                "var:blue/600"
+               ],
+               "text": "Tunis",
+               "fs": 14,
+               "font": "Medium"
+              },
+              {
+               "n": "icon",
+               "t": "FRAME",
+               "w": 14,
+               "h": 14,
+               "size": "FIXED/FIXED",
+               "c": [
+                {
+                 "n": "Vector",
+                 "t": "VECTOR",
+                 "w": 7,
+                 "h": 7,
+                 "size": "FIXED/FIXED",
+                 "stroke": [
+                  "var:blue/600"
+                 ],
+                 "sw": 1.1666666269302368
+                },
+                {
+                 "n": "Vector",
+                 "t": "VECTOR",
+                 "w": 7,
+                 "h": 7,
+                 "size": "FIXED/FIXED",
+                 "stroke": [
+                  "var:blue/600"
+                 ],
+                 "sw": 1.1666666269302368
+                }
+               ]
+              }
+             ]
+            },
+            {
+             "n": "chip",
+             "t": "INSTANCE",
+             "w": 122,
+             "h": 29,
+             "layout": "HORIZONTAL",
+             "gap": 4,
+             "pad": "4 8 4 12",
+             "align": "CENTER/CENTER",
+             "size": "HUG/HUG",
+             "r": 9999,
+             "fill": [
+              "var:blue/50"
+             ],
+             "comp": "Badge / kind=filter",
+             "c": [
+              {
+               "n": "Label",
+               "t": "TEXT",
+               "w": 84,
+               "h": 21,
+               "size": "HUG/HUG",
+               "fill": [
+                "var:blue/600"
+               ],
+               "text": "20-250 TND",
+               "fs": 14,
+               "font": "Medium"
+              },
+              {
+               "n": "icon",
+               "t": "FRAME",
+               "w": 14,
+               "h": 14,
+               "size": "FIXED/FIXED",
+               "c": [
+                {
+                 "n": "Vector",
+                 "t": "VECTOR",
+                 "w": 7,
+                 "h": 7,
+                 "size": "FIXED/FIXED",
+                 "stroke": [
+                  "var:blue/600"
+                 ],
+                 "sw": 1.1666666269302368
+                },
+                {
+                 "n": "Vector",
+                 "t": "VECTOR",
+                 "w": 7,
+                 "h": 7,
+                 "size": "FIXED/FIXED",
+                 "stroke": [
+                  "var:blue/600"
+                 ],
+                 "sw": 1.1666666269302368
+                }
+               ]
+              }
+             ]
+            },
+            {
+             "n": "Tout effacer",
+             "t": "TEXT",
+             "w": 83,
+             "h": 20,
+             "size": "HUG/HUG",
+             "fill": [
+              "var:blue/600"
+             ],
+             "text": "Tout effacer",
+             "fs": 14,
+             "font": "Semi Bold"
+            }
+           ]
+          }
+         ]
+        },
+        {
+         "n": "queryEcho",
+         "t": "FRAME",
+         "w": 1136,
+         "h": 24,
+         "layout": "HORIZONTAL",
+         "gap": 12,
+         "pad": "0 0 0 0",
+         "align": "SPACE_BETWEEN/CENTER",
+         "size": "FILL/HUG",
+         "c": [
+          {
+           "n": "subtitle",
+           "t": "TEXT",
+           "w": 209,
+           "h": 24,
+           "size": "HUG/HUG",
+           "text": "7 résultats pour « coussin »",
+           "fs": 16
+          },
+          {
+           "n": "clear",
+           "t": "TEXT",
+           "w": 135,
+           "h": 21,
+           "size": "HUG/HUG",
+           "fill": [
+            "#64748b"
+           ],
+           "text": "Effacer la recherche",
+           "fs": 14,
+           "font": "Medium"
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "n": "gridWrap",
+       "t": "FRAME",
+       "w": 1136,
+       "h": 856,
+       "layout": "VERTICAL",
+       "gap": 32,
+       "pad": "0 0 0 0",
+       "align": "MIN/MIN",
+       "size": "FILL/HUG",
+       "c": [
+        {
+         "n": "grid",
+         "t": "FRAME",
+         "w": 1136,
+         "h": 762,
+         "layout": "HORIZONTAL",
+         "gap": 16,
+         "pad": "0 0 0 0",
+         "align": "MIN/MIN",
+         "size": "FILL/HUG",
+         "c": [
+          {
+           "n": "Product Card",
+           "t": "INSTANCE",
+           "w": 272,
+           "h": 373,
+           "layout": "VERTICAL",
+           "gap": 0,
+           "pad": "0 0 0 0",
+           "align": "MIN/MIN",
+           "size": "FIXED/HUG",
+           "r": 12,
+           "fill": [
+            "var:surface/base"
+           ],
+           "stroke": [
+            "var:border/subtle"
+           ],
+           "sw": 1,
+           "comp": "Product Card / state=default, ribbon=none",
+           "c": [
+            {
+             "n": "cover",
+             "t": "FRAME",
+             "w": 272,
+             "h": 276,
+             "size": "FILL/FIXED",
+             "fill": [
+              "var:surface/sunken"
+             ],
+             "stroke": [
+              "var:border/subtle"
+             ],
+             "c": [
+              {
+               "n": "cover-image",
+               "t": "INSTANCE",
+               "w": 48,
+               "h": 48,
+               "size": "FIXED/FIXED",
+               "comp": "icon-image",
+               "c": [
+                {
+                 "n": "Vector",
+                 "t": "VECTOR",
+                 "w": 36,
+                 "h": 36,
+                 "size": "FIXED/FIXED",
+                 "stroke": [
+                  "var:text/muted"
+                 ],
+                 "sw": 2
+                },
+                {
+                 "n": "Vector",
+                 "t": "VECTOR",
+                 "w": 8,
+                 "h": 8,
+                 "size": "FIXED/FIXED",
+                 "stroke": [
+                  "var:text/muted"
+                 ],
+                 "sw": 2
+                },
+                {
+                 "n": "Vector",
+                 "t": "VECTOR",
+                 "w": 30,
+                 "h": 19,
+                 "size": "FIXED/FIXED",
+                 "stroke": [
+                  "var:text/muted"
+                 ],
+                 "sw": 2
+                }
+               ]
+              },
+              {
+               "n": "ribbon",
+               "t": "FRAME",
+               "w": 68,
+               "h": 25,
+               "hidden": true,
+               "layout": "HORIZONTAL",
+               "gap": 0,
+               "pad": "4 8 4 8",
+               "align": "MIN/MIN",
+               "size": "HUG/HUG",
+               "r": 9999,
+               "fill": [
+                "var:blue/600"
+               ],
+               "c": [
+                {
+                 "n": "ribbon-label",
+                 "t": "TEXT",
+                 "w": 52,
+                 "h": 17,
+                 "size": "HUG/HUG",
+                 "fill": [
+                  "var:text/inverse"
+                 ],
+                 "text": "Nouveau",
+                 "fs": 12,
+                 "font": "Semi Bold"
+                }
+               ]
+              },
+              {
+               "n": "heart",
+               "t": "FRAME",
+               "w": 32,
+               "h": 32,
+               "layout": "HORIZONTAL",
+               "gap": 0,
+               "pad": "0 0 0 0",
+               "align": "CENTER/CENTER",
+               "size": "FIXED/FIXED",
+               "r": 16,
+               "fill": [
+                "var:surface/base"
+               ],
+               "stroke": [
+                "var:border/subtle"
+               ],
+               "sw": 1,
+               "c": [
+                {
+                 "n": "heart-icon",
+                 "t": "INSTANCE",
+                 "w": 18,
+                 "h": 18,
+                 "size": "FIXED/FIXED",
+                 "comp": "icon-heart",
+                 "c": [
+                  {
+                   "n": "Vector",
+                   "t": "VECTOR",
+                   "w": 15,
+                   "h": 13,
+                   "size": "FIXED/FIXED",
+                   "stroke": [
+                    "var:blue/300"
+                   ],
+                   "sw": 2
+                  }
+                 ]
+                }
+               ]
+              },
+              {
+               "n": "shop-logo",
+               "t": "FRAME",
+               "w": 32,
+               "h": 32,
+               "layout": "HORIZONTAL",
+               "gap": 0,
+               "pad": "0 0 0 0",
+               "align": "CENTER/CENTER",
+               "size": "FIXED/FIXED",
+               "r": 16,
+               "fill": [
+                "var:surface/base"
+               ],
+               "stroke": [
+                "var:border/subtle"
+               ],
+               "sw": 1,
+               "c": [
+                {
+                 "n": "initials",
+                 "t": "TEXT",
+                 "w": 17,
+                 "h": 15,
+                 "size": "HUG/HUG",
+                 "fill": [
+                  "var:blue/800"
+                 ],
+                 "text": "AS",
+                 "fs": 12,
+                 "font": "Semi Bold"
+                }
+               ]
+              },
+              {
+               "n": "category",
+               "t": "INSTANCE",
+               "w": 130,
+               "h": 29,
+               "layout": "HORIZONTAL",
+               "gap": 4,
+               "pad": "4 12 4 12",
+               "align": "CENTER/CENTER",
+               "size": "HUG/HUG",
+               "r": 8,
+               "fill": [
+                "var:surface/sunken"
+               ],
+               "comp": "Badge / kind=category",
+               "c": [
+                {
+                 "n": "chip-icon",
+                 "t": "INSTANCE",
+                 "w": 14,
+                 "h": 14,
+                 "hidden": true,
+                 "size": "FIXED/FIXED",
+                 "comp": "icon-banknote",
+                 "c": [
+                  {
+                   "n": "Vector",
+                   "t": "VECTOR",
+                   "w": 12,
+                   "h": 7,
+                   "size": "FIXED/FIXED",
+                   "stroke": [
+                    "var:text/muted"
+                   ],
+                   "sw": 2
+                  },
+                  {
+                   "n": "Vector",
+                   "t": "VECTOR",
+                   "w": 2,
+                   "h": 2,
+                   "size": "FIXED/FIXED",
+                   "stroke": [
+                    "var:text/muted"
+                   ],
+                   "sw": 2
+                  },
+                  {
+                   "n": "Vector",
+                   "t": "VECTOR",
+                   "w": 7,
+                   "h": 0,
+                   "size": "FIXED/FIXED",
+                   "stroke": [
+                    "var:text/muted"
+                   ],
+                   "sw": 2
+                  }
+                 ]
+                },
+                {
+                 "n": "Label",
+                 "t": "TEXT",
+                 "w": 106,
+                 "h": 21,
+                 "size": "HUG/HUG",
+                 "fill": [
+                  "var:text/secondary"
+                 ],
+                 "text": "Textile artisanal",
+                 "fs": 14,
+                 "font": "Medium"
+                }
+               ]
+              }
+             ]
+            },
+            {
+             "n": "body",
+             "t": "FRAME",
+             "w": 272,
+             "h": 97,
+             "layout": "VERTICAL",
+             "gap": 10,
+             "pad": "12 12 12 12",
+             "align": "MIN/MIN",
+             "size": "FILL/HUG",
+             "fill": [
+              "var:surface/base"
+             ],
+             "c": [
+              {
+               "n": "title",
+               "t": "TEXT",
+               "w": 248,
+               "h": 22,
+               "size": "FILL/HUG",
+               "fill": [
+                "var:text/primary"
+               ],
+               "text": "Coussin brodé main — motif berbère",
+               "fs": 16,
+               "font": "Semi Bold"
+              },
+              {
+               "n": "bottom-row",
+               "t": "FRAME",
+               "w": 248,
+               "h": 41,
+               "layout": "HORIZONTAL",
+               "gap": 8,
+               "pad": "0 0 0 0",
+               "align": "SPACE_BETWEEN/CENTER",
+               "size": "FILL/HUG",
+               "c": [
+                {
+                 "n": "left-col",
+                 "t": "FRAME",
+                 "w": 63,
+                 "h": 41,
+                 "layout": "VERTICAL",
+                 "gap": 2,
+                 "pad": "0 0 0 0",
+                 "align": "MIN/MIN",
+                 "size": "HUG/HUG",
+                 "c": [
+                  {
+                   "n": "price-group",
+                   "t": "FRAME",
+                   "w": 63,
+                   "h": 22,
+                   "layout": "HORIZONTAL",
+                   "gap": 4,
+                   "pad": "0 0 0 0",
+                   "align": "MIN/CENTER",
+                   "size": "HUG/HUG",
+                   "c": [
+                    {
+                     "n": "price",
+                     "t": "TEXT",
+                     "w": 63,
+                     "h": 22,
+                     "size": "HUG/HUG",
+                     "fill": [
+                      "var:text/primary"
+                     ],
+                     "text": "45 TND",
+                     "fs": 17,
+                     "font": "Semi Bold"
+                    },
+                    {
+                     "n": "oldPrice",
+                     "t": "TEXT",
+                     "w": 52,
+                     "h": 20,
+                     "hidden": true,
+                     "size": "FIXED/FIXED",
+                     "fill": [
+                      "var:text/muted"
+                     ],
+                     "text": "60 TND",
+                     "fs": 14,
+                     "font": "Regular"
+                    }
+                   ]
+                  },
+                  {
+                   "n": "city-row",
+                   "t": "FRAME",
+                   "w": 49,
+                   "h": 17,
+                   "layout": "HORIZONTAL",
+                   "gap": 4,
+                   "pad": "0 0 0 0",
+                   "align": "MIN/CENTER",
+                   "size": "HUG/HUG",
+                   "c": [
+                    {
+                     "n": "city-icon",
+                     "t": "INSTANCE",
+                     "w": 14,
+                     "h": 14,
+                     "size": "FIXED/FIXED",
+                     "comp": "icon-map-pin",
+                     "c": [
+                      {
+                       "n": "Vector",
+                       "t": "VECTOR",
+                       "w": 9,
+                       "h": 12,
+                       "size": "FIXED/FIXED",
+                       "stroke": [
+                        "var:text/muted"
+                       ],
+                       "sw": 2
+                      },
+                      {
+                       "n": "Vector",
+                       "t": "VECTOR",
+                       "w": 4,
+                       "h": 4,
+                       "size": "FIXED/FIXED",
+                       "stroke": [
+                        "var:text/muted"
+                       ],
+                       "sw": 2
+                      }
+                     ]
+                    },
+                    {
+                     "n": "city",
+                     "t": "TEXT",
+                     "w": 31,
+                     "h": 17,
+                     "size": "HUG/HUG",
+                     "fill": [
+                      "var:text/muted"
+                     ],
+                     "text": "Tunis",
+                     "fs": 12,
+                     "font": "Medium"
+                    }
+                   ]
+                  }
+                 ]
+                },
+                {
+                 "n": "cta",
+                 "t": "FRAME",
+                 "w": 40,
+                 "h": 40,
+                 "layout": "HORIZONTAL",
+                 "gap": 0,
+                 "pad": "0 0 0 0",
+                 "align": "CENTER/CENTER",
+                 "size": "FIXED/FIXED",
+                 "r": 8,
+                 "fill": [
+                  "var:blue/600"
+                 ],
+                 "c": [
+                  {
+                   "n": "icon-shopping-bag",
+                   "t": "INSTANCE",
+                   "w": 20,
+                   "h": 20,
+                   "size": "FIXED/FIXED",
+                   "comp": "icon-shopping-bag",
+                   "c": [
+                    {
+                     "n": "Vector",
+                     "t": "VECTOR",
+                     "w": 7,
+                     "h": 3,
+                     "size": "FIXED/FIXED",
+                     "stroke": [
+                      "var:text/inverse"
+                     ],
+                     "sw": 2
+                    },
+                    {
+                     "n": "Vector",
+                     "t": "VECTOR",
+                     "w": 15,
+                     "h": 0,
+                     "size": "FIXED/FIXED",
+                     "stroke": [
+                      "var:text/inverse"
+                     ],
+                     "sw": 2
+                    },
+                    {
+                     "n": "Vector",
+                     "t": "VECTOR",
+                     "w": 15,
+                     "h": 17,
+                     "size": "FIXED/FIXED",
+                     "stroke": [
+                      "var:text/inverse"
+                     ],
+                     "sw": 2
+                    }
+                   ]
+                  }
+                 ]
+                }
+               ]
+              },
+              {
+               "n": "shopName",
+               "t": "TEXT",
+               "w": 149,
+               "h": 20,
+               "hidden": true,
+               "size": "FIXED/FIXED",
+               "fill": [
+                "var:text/secondary"
+               ],
+               "text": "Boutique Artisan Tunis",
+               "fs": 14,
+               "font": "Regular"
+              },
+              {
+               "n": "rating-row",
+               "t": "FRAME",
+               "w": 71,
+               "h": 20,
+               "hidden": true,
+               "layout": "HORIZONTAL",
+               "gap": 4,
+               "pad": "0 0 0 0",
+               "align": "MIN/CENTER",
+               "size": "HUG/HUG",
+               "c": [
+                {
+                 "n": "star",
+                 "t": "INSTANCE",
+                 "w": 16,
+                 "h": 16,
+                 "size": "FIXED/FIXED",
+                 "comp": "icon-star",
+                 "c": [
+                  {
+                   "n": "Vector",
+                   "t": "VECTOR",
+                   "w": 13,
+                   "h": 13,
+                   "size": "FIXED/FIXED",
+                   "fill": [
+                    "var:rating"
+                   ]
+                  }
+                 ]
+                },
+                {
+                 "n": "rating",
+                 "t": "TEXT",
+                 "w": 22,
+                 "h": 20,
+                 "size": "HUG/HUG",
+                 "fill": [
+                  "var:text/primary"
+                 ],
+                 "text": "4.8",
+                 "fs": 14,
+                 "font": "Semi Bold"
+                },
+                {
+                 "n": "rating-count",
+                 "t": "TEXT",
+                 "w": 25,
+                 "h": 17,
+                 "size": "HUG/HUG",
+                 "fill": [
+                  "var:text/muted"
+                 ],
+                 "text": "(24)",
+                 "fs": 12,
+                 "font": "Medium"
+                }
+               ]
+              }
+             ]
+            }
+           ]
+          },
+          {
+           "n": "Product Card",
+           "t": "INSTANCE",
+           "w": 272,
+           "h": 373,
+           "layout": "VERTICAL",
+           "gap": 0,
+           "pad": "0 0 0 0",
+           "align": "MIN/MIN",
+           "size": "FIXED/HUG",
+           "r": 12,
+           "fill": [
+            "var:surface/base"
+           ],
+           "stroke": [
+            "var:border/subtle"
+           ],
+           "sw": 1,
+           "comp": "Product Card / state=default, ribbon=none",
+           "c": [
+            {
+             "n": "cover",
+             "t": "FRAME",
+             "w": 272,
+             "h": 276,
+             "size": "FILL/FIXED",
+             "fill": [
+              "var:surface/sunken"
+             ],
+             "stroke": [
+              "var:border/subtle"
+             ],
+             "c": [
+              {
+               "n": "cover-image",
+               "t": "INSTANCE",
+               "w": 48,
+               "h": 48,
+               "size": "FIXED/FIXED",
+               "comp": "icon-image",
+               "c": [
+                {
+                 "n": "Vector",
+                 "t": "VECTOR",
+                 "w": 36,
+                 "h": 36,
+                 "size": "FIXED/FIXED",
+                 "stroke": [
+                  "var:text/muted"
+                 ],
+                 "sw": 2
+                },
+                {
+                 "n": "Vector",
+                 "t": "VECTOR",
+                 "w": 8,
+                 "h": 8,
+                 "size": "FIXED/FIXED",
+                 "stroke": [
+                  "var:text/muted"
+                 ],
+                 "sw": 2
+                },
+                {
+                 "n": "Vector",
+                 "t": "VECTOR",
+                 "w": 30,
+                 "h": 19,
+                 "size": "FIXED/FIXED",
+                 "stroke": [
+                  "var:text/muted"
+                 ],
+                 "sw": 2
+                }
+               ]
+              },
+              {
+               "n": "ribbon",
+               "t": "FRAME",
+               "w": 68,
+               "h": 25,
+               "hidden": true,
+               "layout": "HORIZONTAL",
+               "gap": 0,
+               "pad": "4 8 4 8",
+               "align": "MIN/MIN",
+               "size": "HUG/HUG",
+               "r": 9999,
+               "fill": [
+                "var:blue/600"
+               ],
+               "c": [
+                {
+                 "n": "ribbon-label",
+                 "t": "TEXT",
+                 "w": 52,
+                 "h": 17,
+                 "size": "HUG/HUG",
+                 "fill": [
+                  "var:text/inverse"
+                 ],
+                 "text": "Nouveau",
+                 "fs": 12,
+                 "font": "Semi Bold"
+                }
+               ]
+              },
+              {
+               "n": "heart",
+               "t": "FRAME",
+               "w": 32,
+               "h": 32,
+               "layout": "HORIZONTAL",
+               "gap": 0,
+               "pad": "0 0 0 0",
+               "align": "CENTER/CENTER",
+               "size": "FIXED/FIXED",
+               "r": 16,
+               "fill": [
+                "var:surface/base"
+               ],
+               "stroke": [
+                "var:border/subtle"
+               ],
+               "sw": 1,
+               "c": [
+                {
+                 "n": "heart-icon",
+                 "t": "INSTANCE",
+                 "w": 18,
+                 "h": 18,
+                 "size": "FIXED/FIXED",
+                 "comp": "icon-heart",
+                 "c": [
+                  {
+                   "n": "Vector",
+                   "t": "VECTOR",
+                   "w": 15,
+                   "h": 13,
+                   "size": "FIXED/FIXED",
+                   "stroke": [
+                    "var:blue/300"
+                   ],
+                   "sw": 2
+                  }
+                 ]
+                }
+               ]
+              },
+              {
+               "n": "shop-logo",
+               "t": "FRAME",
+               "w": 32,
+               "h": 32,
+               "layout": "HORIZONTAL",
+               "gap": 0,
+               "pad": "0 0 0 0",
+               "align": "CENTER/CENTER",
+               "size": "FIXED/FIXED",
+               "r": 16,
+               "fill": [
+                "var:surface/base"
+               ],
+               "stroke": [
+                "var:border/subtle"
+               ],
+               "sw": 1,
+               "c": [
+                {
+                 "n": "initials",
+                 "t": "TEXT",
+                 "w": 15,
+                 "h": 15,
+                 "size": "HUG/HUG",
+                 "fill": [
+                  "var:blue/800"
+                 ],
+                 "text": "KL",
+                 "fs": 12,
+                 "font": "Semi Bold"
+                }
+               ]
+              },
+              {
+               "n": "category",
+               "t": "INSTANCE",
+               "w": 115,
+               "h": 29,
+               "layout": "HORIZONTAL",
+               "gap": 4,
+               "pad": "4 12 4 12",
+               "align": "CENTER/CENTER",
+               "size": "HUG/HUG",
+               "r": 8,
+               "fill": [
+                "var:surface/sunken"
+               ],
+               "comp": "Badge / kind=category",
+               "c": [
+                {
+                 "n": "chip-icon",
+                 "t": "INSTANCE",
+                 "w": 14,
+                 "h": 14,
+                 "hidden": true,
+                 "size": "FIXED/FIXED",
+                 "comp": "icon-banknote",
+                 "c": [
+                  {
+                   "n": "Vector",
+                   "t": "VECTOR",
+                   "w": 12,
+                   "h": 7,
+                   "size": "FIXED/FIXED",
+                   "stroke": [
+                    "var:text/muted"
+                   ],
+                   "sw": 2
+                  },
+                  {
+                   "n": "Vector",
+                   "t": "VECTOR",
+                   "w": 2,
+                   "h": 2,
+                   "size": "FIXED/FIXED",
+                   "stroke": [
+                    "var:text/muted"
+                   ],
+                   "sw": 2
+                  },
+                  {
+                   "n": "Vector",
+                   "t": "VECTOR",
+                   "w": 7,
+                   "h": 0,
+                   "size": "FIXED/FIXED",
+                   "stroke": [
+                    "var:text/muted"
+                   ],
+                   "sw": 2
+                  }
+                 ]
+                },
+                {
+                 "n": "Label",
+                 "t": "TEXT",
+                 "w": 91,
+                 "h": 21,
+                 "size": "HUG/HUG",
+                 "fill": [
+                  "var:text/secondary"
+                 ],
+                 "text": "Tapis & kilims",
+                 "fs": 14,
+                 "font": "Medium"
+                }
+               ]
+              }
+             ]
+            },
+            {
+             "n": "body",
+             "t": "FRAME",
+             "w": 272,
+             "h": 97,
+             "layout": "VERTICAL",
+             "gap": 10,
+             "pad": "12 12 12 12",
+             "align": "MIN/MIN",
+             "size": "FILL/HUG",
+             "fill": [
+              "var:surface/base"
+             ],
+             "c": [
+              {
+               "n": "title",
+               "t": "TEXT",
+               "w": 248,
+               "h": 22,
+               "size": "FILL/HUG",
+               "fill": [
+                "var:text/primary"
+               ],
+               "text": "Coussin en kilim tissé",
+               "fs": 16,
+               "font": "Semi Bold"
+              },
+              {
+               "n": "bottom-row",
+               "t": "FRAME",
+               "w": 248,
+               "h": 41,
+               "layout": "HORIZONTAL",
+               "gap": 8,
+               "pad": "0 0 0 0",
+               "align": "SPACE_BETWEEN/CENTER",
+               "size": "FILL/HUG",
+               "c": [
+                {
+                 "n": "left-col",
+                 "t": "FRAME",
+                 "w": 69,
+                 "h": 41,
+                 "layout": "VERTICAL",
+                 "gap": 2,
+                 "pad": "0 0 0 0",
+                 "align": "MIN/MIN",
+                 "size": "HUG/HUG",
+                 "c": [
+                  {
+                   "n": "price-group",
+                   "t": "FRAME",
+                   "w": 62,
+                   "h": 22,
+                   "layout": "HORIZONTAL",
+                   "gap": 4,
+                   "pad": "0 0 0 0",
+                   "align": "MIN/CENTER",
+                   "size": "HUG/HUG",
+                   "c": [
+                    {
+                     "n": "price",
+                     "t": "TEXT",
+                     "w": 62,
+                     "h": 22,
+                     "size": "HUG/HUG",
+                     "fill": [
+                      "var:text/primary"
+                     ],
+                     "text": "55 TND",
+                     "fs": 17,
+                     "font": "Semi Bold"
+                    },
+                    {
+                     "n": "oldPrice",
+                     "t": "TEXT",
+                     "w": 52,
+                     "h": 20,
+                     "hidden": true,
+                     "size": "FIXED/FIXED",
+                     "fill": [
+                      "var:text/muted"
+                     ],
+                     "text": "60 TND",
+                     "fs": 14,
+                     "font": "Regular"
+                    }
+                   ]
+                  },
+                  {
+                   "n": "city-row",
+                   "t": "FRAME",
+                   "w": 69,
+                   "h": 17,
+                   "layout": "HORIZONTAL",
+                   "gap": 4,
+                   "pad": "0 0 0 0",
+                   "align": "MIN/CENTER",
+                   "size": "HUG/HUG",
+                   "c": [
+                    {
+                     "n": "city-icon",
+                     "t": "INSTANCE",
+                     "w": 14,
+                     "h": 14,
+                     "size": "FIXED/FIXED",
+                     "comp": "icon-map-pin",
+                     "c": [
+                      {
+                       "n": "Vector",
+                       "t": "VECTOR",
+                       "w": 9,
+                       "h": 12,
+                       "size": "FIXED/FIXED",
+                       "stroke": [
+                        "var:text/muted"
+                       ],
+                       "sw": 2
+                      },
+                      {
+                       "n": "Vector",
+                       "t": "VECTOR",
+                       "w": 4,
+                       "h": 4,
+                       "size": "FIXED/FIXED",
+                       "stroke": [
+                        "var:text/muted"
+                       ],
+                       "sw": 2
+                      }
+                     ]
+                    },
+                    {
+                     "n": "city",
+                     "t": "TEXT",
+                     "w": 51,
+                     "h": 17,
+                     "size": "HUG/HUG",
+                     "fill": [
+                      "var:text/muted"
+                     ],
+                     "text": "Kairouan",
+                     "fs": 12,
+                     "font": "Medium"
+                    }
+                   ]
+                  }
+                 ]
+                },
+                {
+                 "n": "cta",
+                 "t": "FRAME",
+                 "w": 40,
+                 "h": 40,
+                 "layout": "HORIZONTAL",
+                 "gap": 0,
+                 "pad": "0 0 0 0",
+                 "align": "CENTER/CENTER",
+                 "size": "FIXED/FIXED",
+                 "r": 8,
+                 "fill": [
+                  "var:blue/600"
+                 ],
+                 "c": [
+                  {
+                   "n": "icon-shopping-bag",
+                   "t": "INSTANCE",
+                   "w": 20,
+                   "h": 20,
+                   "size": "FIXED/FIXED",
+                   "comp": "icon-shopping-bag",
+                   "c": [
+                    {
+                     "n": "Vector",
+                     "t": "VECTOR",
+                     "w": 7,
+                     "h": 3,
+                     "size": "FIXED/FIXED",
+                     "stroke": [
+                      "var:text/inverse"
+                     ],
+                     "sw": 2
+                    },
+                    {
+                     "n": "Vector",
+                     "t": "VECTOR",
+                     "w": 15,
+                     "h": 0,
+                     "size": "FIXED/FIXED",
+                     "stroke": [
+                      "var:text/inverse"
+                     ],
+                     "sw": 2
+                    },
+                    {
+                     "n": "Vector",
+                     "t": "VECTOR",
+                     "w": 15,
+                     "h": 17,
+                     "size": "FIXED/FIXED",
+                     "stroke": [
+                      "var:text/inverse"
+                     ],
+                     "sw": 2
+                    }
+                   ]
+                  }
+                 ]
+                }
+               ]
+              },
+              {
+               "n": "shopName",
+               "t": "TEXT",
+               "w": 149,
+               "h": 20,
+               "hidden": true,
+               "size": "FIXED/FIXED",
+               "fill": [
+                "var:text/secondary"
+               ],
+               "text": "Boutique Artisan Tunis",
+               "fs": 14,
+               "font": "Regular"
+              },
+              {
+               "n": "rating-row",
+               "t": "FRAME",
+               "w": 71,
+               "h": 20,
+               "hidden": true,
+               "layout": "HORIZONTAL",
+               "gap": 4,
+               "pad": "0 0 0 0",
+               "align": "MIN/CENTER",
+               "size": "HUG/HUG",
+               "c": [
+                {
+                 "n": "star",
+                 "t": "INSTANCE",
+                 "w": 16,
+                 "h": 16,
+                 "size": "FIXED/FIXED",
+                 "comp": "icon-star",
+                 "c": [
+                  {
+                   "n": "Vector",
+                   "t": "VECTOR",
+                   "w": 13,
+                   "h": 13,
+                   "size": "FIXED/FIXED",
+                   "fill": [
+                    "var:rating"
+                   ]
+                  }
+                 ]
+                },
+                {
+                 "n": "rating",
+                 "t": "TEXT",
+                 "w": 22,
+                 "h": 20,
+                 "size": "HUG/HUG",
+                 "fill": [
+                  "var:text/primary"
+                 ],
+                 "text": "4.8",
+                 "fs": 14,
+                 "font": "Semi Bold"
+                },
+                {
+                 "n": "rating-count",
+                 "t": "TEXT",
+                 "w": 25,
+                 "h": 17,
+                 "size": "HUG/HUG",
+                 "fill": [
+                  "var:text/muted"
+                 ],
+                 "text": "(24)",
+                 "fs": 12,
+                 "font": "Medium"
+                }
+               ]
+              }
+             ]
+            }
+           ]
+          },
+          {
+           "n": "Product Card",
+           "t": "INSTANCE",
+           "w": 272,
+           "h": 373,
+           "layout": "VERTICAL",
+           "gap": 0,
+           "pad": "0 0 0 0",
+           "align": "MIN/MIN",
+           "size": "FIXED/HUG",
+           "r": 12,
+           "fill": [
+            "var:surface/base"
+           ],
+           "stroke": [
+            "var:border/subtle"
+           ],
+           "sw": 1,
+           "comp": "Product Card / state=default, ribbon=none",
+           "c": [
+            {
+             "n": "cover",
+             "t": "FRAME",
+             "w": 272,
+             "h": 276,
+             "size": "FILL/FIXED",
+             "fill": [
+              "var:surface/sunken"
+             ],
+             "stroke": [
+              "var:border/subtle"
+             ],
+             "c": [
+              {
+               "n": "cover-image",
+               "t": "INSTANCE",
+               "w": 48,
+               "h": 48,
+               "size": "FIXED/FIXED",
+               "comp": "icon-image",
+               "c": [
+                {
+                 "n": "Vector",
+                 "t": "VECTOR",
+                 "w": 36,
+                 "h": 36,
+                 "size": "FIXED/FIXED",
+                 "stroke": [
+                  "var:text/muted"
+                 ],
+                 "sw": 2
+                },
+                {
+                 "n": "Vector",
+                 "t": "VECTOR",
+                 "w": 8,
+                 "h": 8,
+                 "size": "FIXED/FIXED",
+                 "stroke": [
+                  "var:text/muted"
+                 ],
+                 "sw": 2
+                },
+                {
+                 "n": "Vector",
+                 "t": "VECTOR",
+                 "w": 30,
+                 "h": 19,
+                 "size": "FIXED/FIXED",
+                 "stroke": [
+                  "var:text/muted"
+                 ],
+                 "sw": 2
+                }
+               ]
+              },
+              {
+               "n": "ribbon",
+               "t": "FRAME",
+               "w": 68,
+               "h": 25,
+               "hidden": true,
+               "layout": "HORIZONTAL",
+               "gap": 0,
+               "pad": "4 8 4 8",
+               "align": "MIN/MIN",
+               "size": "HUG/HUG",
+               "r": 9999,
+               "fill": [
+                "var:blue/600"
+               ],
+               "c": [
+                {
+                 "n": "ribbon-label",
+                 "t": "TEXT",
+                 "w": 52,
+                 "h": 17,
+                 "size": "HUG/HUG",
+                 "fill": [
+                  "var:text/inverse"
+                 ],
+                 "text": "Nouveau",
+                 "fs": 12,
+                 "font": "Semi Bold"
+                }
+               ]
+              },
+              {
+               "n": "heart",
+               "t": "FRAME",
+               "w": 32,
+               "h": 32,
+               "layout": "HORIZONTAL",
+               "gap": 0,
+               "pad": "0 0 0 0",
+               "align": "CENTER/CENTER",
+               "size": "FIXED/FIXED",
+               "r": 16,
+               "fill": [
+                "var:surface/base"
+               ],
+               "stroke": [
+                "var:border/subtle"
+               ],
+               "sw": 1,
+               "c": [
+                {
+                 "n": "heart-icon",
+                 "t": "INSTANCE",
+                 "w": 18,
+                 "h": 18,
+                 "size": "FIXED/FIXED",
+                 "comp": "icon-heart",
+                 "c": [
+                  {
+                   "n": "Vector",
+                   "t": "VECTOR",
+                   "w": 15,
+                   "h": 13,
+                   "size": "FIXED/FIXED",
+                   "stroke": [
+                    "var:blue/300"
+                   ],
+                   "sw": 2
+                  }
+                 ]
+                }
+               ]
+              },
+              {
+               "n": "shop-logo",
+               "t": "FRAME",
+               "w": 32,
+               "h": 32,
+               "layout": "HORIZONTAL",
+               "gap": 0,
+               "pad": "0 0 0 0",
+               "align": "CENTER/CENTER",
+               "size": "FIXED/FIXED",
+               "r": 16,
+               "fill": [
+                "var:surface/base"
+               ],
+               "stroke": [
+                "var:border/subtle"
+               ],
+               "sw": 1,
+               "c": [
+                {
+                 "n": "initials",
+                 "t": "TEXT",
+                 "w": 17,
+                 "h": 15,
+                 "size": "HUG/HUG",
+                 "fill": [
+                  "var:blue/800"
+                 ],
+                 "text": "DV",
+                 "fs": 12,
+                 "font": "Semi Bold"
+                }
+               ]
+              },
+              {
+               "n": "category",
+               "t": "INSTANCE",
+               "w": 98,
+               "h": 29,
+               "layout": "HORIZONTAL",
+               "gap": 4,
+               "pad": "4 12 4 12",
+               "align": "CENTER/CENTER",
+               "size": "HUG/HUG",
+               "r": 8,
+               "fill": [
+                "var:surface/sunken"
+               ],
+               "comp": "Badge / kind=category",
+               "c": [
+                {
+                 "n": "chip-icon",
+                 "t": "INSTANCE",
+                 "w": 14,
+                 "h": 14,
+                 "hidden": true,
+                 "size": "FIXED/FIXED",
+                 "comp": "icon-banknote",
+                 "c": [
+                  {
+                   "n": "Vector",
+                   "t": "VECTOR",
+                   "w": 12,
+                   "h": 7,
+                   "size": "FIXED/FIXED",
+                   "stroke": [
+                    "var:text/muted"
+                   ],
+                   "sw": 2
+                  },
+                  {
+                   "n": "Vector",
+                   "t": "VECTOR",
+                   "w": 2,
+                   "h": 2,
+                   "size": "FIXED/FIXED",
+                   "stroke": [
+                    "var:text/muted"
+                   ],
+                   "sw": 2
+                  },
+                  {
+                   "n": "Vector",
+                   "t": "VECTOR",
+                   "w": 7,
+                   "h": 0,
+                   "size": "FIXED/FIXED",
+                   "stroke": [
+                    "var:text/muted"
+                   ],
+                   "sw": 2
+                  }
+                 ]
+                },
+                {
+                 "n": "Label",
+                 "t": "TEXT",
+                 "w": 74,
+                 "h": 21,
+                 "size": "HUG/HUG",
+                 "fill": [
+                  "var:text/secondary"
+                 ],
+                 "text": "Décoration",
+                 "fs": 14,
+                 "font": "Medium"
+                }
+               ]
+              }
+             ]
+            },
+            {
+             "n": "body",
+             "t": "FRAME",
+             "w": 272,
+             "h": 97,
+             "layout": "VERTICAL",
+             "gap": 10,
+             "pad": "12 12 12 12",
+             "align": "MIN/MIN",
+             "size": "FILL/HUG",
+             "fill": [
+              "var:surface/base"
+             ],
+             "c": [
+              {
+               "n": "title",
+               "t": "TEXT",
+               "w": 248,
+               "h": 22,
+               "size": "FILL/HUG",
+               "fill": [
+                "var:text/primary"
+               ],
+               "text": "Coussin velours vert émeraude",
+               "fs": 16,
+               "font": "Semi Bold"
+              },
+              {
+               "n": "bottom-row",
+               "t": "FRAME",
+               "w": 248,
+               "h": 41,
+               "layout": "HORIZONTAL",
+               "gap": 8,
+               "pad": "0 0 0 0",
+               "align": "SPACE_BETWEEN/CENTER",
+               "size": "FILL/HUG",
+               "c": [
+                {
+                 "n": "left-col",
+                 "t": "FRAME",
+                 "w": 63,
+                 "h": 41,
+                 "layout": "VERTICAL",
+                 "gap": 2,
+                 "pad": "0 0 0 0",
+                 "align": "MIN/MIN",
+                 "size": "HUG/HUG",
+                 "c": [
+                  {
+                   "n": "price-group",
+                   "t": "FRAME",
+                   "w": 63,
+                   "h": 22,
+                   "layout": "HORIZONTAL",
+                   "gap": 4,
+                   "pad": "0 0 0 0",
+                   "align": "MIN/CENTER",
+                   "size": "HUG/HUG",
+                   "c": [
+                    {
+                     "n": "price",
+                     "t": "TEXT",
+                     "w": 63,
+                     "h": 22,
+                     "size": "HUG/HUG",
+                     "fill": [
+                      "var:text/primary"
+                     ],
+                     "text": "39 TND",
+                     "fs": 17,
+                     "font": "Semi Bold"
+                    },
+                    {
+                     "n": "oldPrice",
+                     "t": "TEXT",
+                     "w": 52,
+                     "h": 20,
+                     "hidden": true,
+                     "size": "FIXED/FIXED",
+                     "fill": [
+                      "var:text/muted"
+                     ],
+                     "text": "60 TND",
+                     "fs": 14,
+                     "font": "Regular"
+                    }
+                   ]
+                  },
+                  {
+                   "n": "city-row",
+                   "t": "FRAME",
+                   "w": 49,
+                   "h": 17,
+                   "layout": "HORIZONTAL",
+                   "gap": 4,
+                   "pad": "0 0 0 0",
+                   "align": "MIN/CENTER",
+                   "size": "HUG/HUG",
+                   "c": [
+                    {
+                     "n": "city-icon",
+                     "t": "INSTANCE",
+                     "w": 14,
+                     "h": 14,
+                     "size": "FIXED/FIXED",
+                     "comp": "icon-map-pin",
+                     "c": [
+                      {
+                       "n": "Vector",
+                       "t": "VECTOR",
+                       "w": 9,
+                       "h": 12,
+                       "size": "FIXED/FIXED",
+                       "stroke": [
+                        "var:text/muted"
+                       ],
+                       "sw": 2
+                      },
+                      {
+                       "n": "Vector",
+                       "t": "VECTOR",
+                       "w": 4,
+                       "h": 4,
+                       "size": "FIXED/FIXED",
+                       "stroke": [
+                        "var:text/muted"
+                       ],
+                       "sw": 2
+                      }
+                     ]
+                    },
+                    {
+                     "n": "city",
+                     "t": "TEXT",
+                     "w": 31,
+                     "h": 17,
+                     "size": "HUG/HUG",
+                     "fill": [
+                      "var:text/muted"
+                     ],
+                     "text": "Tunis",
+                     "fs": 12,
+                     "font": "Medium"
+                    }
+                   ]
+                  }
+                 ]
+                },
+                {
+                 "n": "cta",
+                 "t": "FRAME",
+                 "w": 40,
+                 "h": 40,
+                 "layout": "HORIZONTAL",
+                 "gap": 0,
+                 "pad": "0 0 0 0",
+                 "align": "CENTER/CENTER",
+                 "size": "FIXED/FIXED",
+                 "r": 8,
+                 "fill": [
+                  "var:blue/600"
+                 ],
+                 "c": [
+                  {
+                   "n": "icon-shopping-bag",
+                   "t": "INSTANCE",
+                   "w": 20,
+                   "h": 20,
+                   "size": "FIXED/FIXED",
+                   "comp": "icon-shopping-bag",
+                   "c": [
+                    {
+                     "n": "Vector",
+                     "t": "VECTOR",
+                     "w": 7,
+                     "h": 3,
+                     "size": "FIXED/FIXED",
+                     "stroke": [
+                      "var:text/inverse"
+                     ],
+                     "sw": 2
+                    },
+                    {
+                     "n": "Vector",
+                     "t": "VECTOR",
+                     "w": 15,
+                     "h": 0,
+                     "size": "FIXED/FIXED",
+                     "stroke": [
+                      "var:text/inverse"
+                     ],
+                     "sw": 2
+                    },
+                    {
+                     "n": "Vector",
+                     "t": "VECTOR",
+                     "w": 15,
+                     "h": 17,
+                     "size": "FIXED/FIXED",
+                     "stroke": [
+                      "var:text/inverse"
+                     ],
+                     "sw": 2
+                    }
+                   ]
+                  }
+                 ]
+                }
+               ]
+              },
+              {
+               "n": "shopName",
+               "t": "TEXT",
+               "w": 149,
+               "h": 20,
+               "hidden": true,
+               "size": "FIXED/FIXED",
+               "fill": [
+                "var:text/secondary"
+               ],
+               "text": "Boutique Artisan Tunis",
+               "fs": 14,
+               "font": "Regular"
+              },
+              {
+               "n": "rating-row",
+               "t": "FRAME",
+               "w": 71,
+               "h": 20,
+               "hidden": true,
+               "layout": "HORIZONTAL",
+               "gap": 4,
+               "pad": "0 0 0 0",
+               "align": "MIN/CENTER",
+               "size": "HUG/HUG",
+               "c": [
+                {
+                 "n": "star",
+                 "t": "INSTANCE",
+                 "w": 16,
+                 "h": 16,
+                 "size": "FIXED/FIXED",
+                 "comp": "icon-star",
+                 "c": [
+                  {
+                   "n": "Vector",
+                   "t": "VECTOR",
+                   "w": 13,
+                   "h": 13,
+                   "size": "FIXED/FIXED",
+                   "fill": [
+                    "var:rating"
+                   ]
+                  }
+                 ]
+                },
+                {
+                 "n": "rating",
+                 "t": "TEXT",
+                 "w": 22,
+                 "h": 20,
+                 "size": "HUG/HUG",
+                 "fill": [
+                  "var:text/primary"
+                 ],
+                 "text": "4.8",
+                 "fs": 14,
+                 "font": "Semi Bold"
+                },
+                {
+                 "n": "rating-count",
+                 "t": "TEXT",
+                 "w": 25,
+                 "h": 17,
+                 "size": "HUG/HUG",
+                 "fill": [
+                  "var:text/muted"
+                 ],
+                 "text": "(24)",
+                 "fs": 12,
+                 "font": "Medium"
+                }
+               ]
+              }
+             ]
+            }
+           ]
+          },
+          {
+           "n": "Product Card",
+           "t": "INSTANCE",
+           "w": 272,
+           "h": 373,
+           "layout": "VERTICAL",
+           "gap": 0,
+           "pad": "0 0 0 0",
+           "align": "MIN/MIN",
+           "size": "FIXED/HUG",
+           "r": 12,
+           "fill": [
+            "var:surface/base"
+           ],
+           "stroke": [
+            "var:border/subtle"
+           ],
+           "sw": 1,
+           "comp": "Product Card / state=default, ribbon=none",
+           "c": [
+            {
+             "n": "cover",
+             "t": "FRAME",
+             "w": 272,
+             "h": 276,
+             "size": "FILL/FIXED",
+             "fill": [
+              "var:surface/sunken"
+             ],
+             "stroke": [
+              "var:border/subtle"
+             ],
+             "c": [
+              {
+               "n": "cover-image",
+               "t": "INSTANCE",
+               "w": 48,
+               "h": 48,
+               "size": "FIXED/FIXED",
+               "comp": "icon-image",
+               "c": [
+                {
+                 "n": "Vector",
+                 "t": "VECTOR",
+                 "w": 36,
+                 "h": 36,
+                 "size": "FIXED/FIXED",
+                 "stroke": [
+                  "var:text/muted"
+                 ],
+                 "sw": 2
+                },
+                {
+                 "n": "Vector",
+                 "t": "VECTOR",
+                 "w": 8,
+                 "h": 8,
+                 "size": "FIXED/FIXED",
+                 "stroke": [
+                  "var:text/muted"
+                 ],
+                 "sw": 2
+                },
+                {
+                 "n": "Vector",
+                 "t": "VECTOR",
+                 "w": 30,
+                 "h": 19,
+                 "size": "FIXED/FIXED",
+                 "stroke": [
+                  "var:text/muted"
+                 ],
+                 "sw": 2
+                }
+               ]
+              },
+              {
+               "n": "ribbon",
+               "t": "FRAME",
+               "w": 68,
+               "h": 25,
+               "hidden": true,
+               "layout": "HORIZONTAL",
+               "gap": 0,
+               "pad": "4 8 4 8",
+               "align": "MIN/MIN",
+               "size": "HUG/HUG",
+               "r": 9999,
+               "fill": [
+                "var:blue/600"
+               ],
+               "c": [
+                {
+                 "n": "ribbon-label",
+                 "t": "TEXT",
+                 "w": 52,
+                 "h": 17,
+                 "size": "HUG/HUG",
+                 "fill": [
+                  "var:text/inverse"
+                 ],
+                 "text": "Nouveau",
+                 "fs": 12,
+                 "font": "Semi Bold"
+                }
+               ]
+              },
+              {
+               "n": "heart",
+               "t": "FRAME",
+               "w": 32,
+               "h": 32,
+               "layout": "HORIZONTAL",
+               "gap": 0,
+               "pad": "0 0 0 0",
+               "align": "CENTER/CENTER",
+               "size": "FIXED/FIXED",
+               "r": 16,
+               "fill": [
+                "var:surface/base"
+               ],
+               "stroke": [
+                "var:border/subtle"
+               ],
+               "sw": 1,
+               "c": [
+                {
+                 "n": "heart-icon",
+                 "t": "INSTANCE",
+                 "w": 18,
+                 "h": 18,
+                 "size": "FIXED/FIXED",
+                 "comp": "icon-heart",
+                 "c": [
+                  {
+                   "n": "Vector",
+                   "t": "VECTOR",
+                   "w": 15,
+                   "h": 13,
+                   "size": "FIXED/FIXED",
+                   "stroke": [
+                    "var:blue/300"
+                   ],
+                   "sw": 2
+                  }
+                 ]
+                }
+               ]
+              },
+              {
+               "n": "shop-logo",
+               "t": "FRAME",
+               "w": 32,
+               "h": 32,
+               "layout": "HORIZONTAL",
+               "gap": 0,
+               "pad": "0 0 0 0",
+               "align": "CENTER/CENTER",
+               "size": "FIXED/FIXED",
+               "r": 16,
+               "fill": [
+                "var:surface/base"
+               ],
+               "stroke": [
+                "var:border/subtle"
+               ],
+               "sw": 1,
+               "c": [
+                {
+                 "n": "initials",
+                 "t": "TEXT",
+                 "w": 16,
+                 "h": 15,
+                 "size": "HUG/HUG",
+                 "fill": [
+                  "var:blue/800"
+                 ],
+                 "text": "LN",
+                 "fs": 12,
+                 "font": "Semi Bold"
+                }
+               ]
+              },
+              {
+               "n": "category",
+               "t": "INSTANCE",
+               "w": 121,
+               "h": 29,
+               "layout": "HORIZONTAL",
+               "gap": 4,
+               "pad": "4 12 4 12",
+               "align": "CENTER/CENTER",
+               "size": "HUG/HUG",
+               "r": 8,
+               "fill": [
+                "var:surface/sunken"
+               ],
+               "comp": "Badge / kind=category",
+               "c": [
+                {
+                 "n": "chip-icon",
+                 "t": "INSTANCE",
+                 "w": 14,
+                 "h": 14,
+                 "hidden": true,
+                 "size": "FIXED/FIXED",
+                 "comp": "icon-banknote",
+                 "c": [
+                  {
+                   "n": "Vector",
+                   "t": "VECTOR",
+                   "w": 12,
+                   "h": 7,
+                   "size": "FIXED/FIXED",
+                   "stroke": [
+                    "var:text/muted"
+                   ],
+                   "sw": 2
+                  },
+                  {
+                   "n": "Vector",
+                   "t": "VECTOR",
+                   "w": 2,
+                   "h": 2,
+                   "size": "FIXED/FIXED",
+                   "stroke": [
+                    "var:text/muted"
+                   ],
+                   "sw": 2
+                  },
+                  {
+                   "n": "Vector",
+                   "t": "VECTOR",
+                   "w": 7,
+                   "h": 0,
+                   "size": "FIXED/FIXED",
+                   "stroke": [
+                    "var:text/muted"
+                   ],
+                   "sw": 2
+                  }
+                 ]
+                },
+                {
+                 "n": "Label",
+                 "t": "TEXT",
+                 "w": 97,
+                 "h": 21,
+                 "size": "HUG/HUG",
+                 "fill": [
+                  "var:text/secondary"
+                 ],
+                 "text": "Textile maison",
+                 "fs": 14,
+                 "font": "Medium"
+                }
+               ]
+              }
+             ]
+            },
+            {
+             "n": "body",
+             "t": "FRAME",
+             "w": 272,
+             "h": 97,
+             "layout": "VERTICAL",
+             "gap": 10,
+             "pad": "12 12 12 12",
+             "align": "MIN/MIN",
+             "size": "FILL/HUG",
+             "fill": [
+              "var:surface/base"
+             ],
+             "c": [
+              {
+               "n": "title",
+               "t": "TEXT",
+               "w": 248,
+               "h": 22,
+               "size": "FILL/HUG",
+               "fill": [
+                "var:text/primary"
+               ],
+               "text": "Housse de coussin en lin lavé",
+               "fs": 16,
+               "font": "Semi Bold"
+              },
+              {
+               "n": "bottom-row",
+               "t": "FRAME",
+               "w": 248,
+               "h": 41,
+               "layout": "HORIZONTAL",
+               "gap": 8,
+               "pad": "0 0 0 0",
+               "align": "SPACE_BETWEEN/CENTER",
+               "size": "FILL/HUG",
+               "c": [
+                {
+                 "n": "left-col",
+                 "t": "FRAME",
+                 "w": 62,
+                 "h": 41,
+                 "layout": "VERTICAL",
+                 "gap": 2,
+                 "pad": "0 0 0 0",
+                 "align": "MIN/MIN",
+                 "size": "HUG/HUG",
+                 "c": [
+                  {
+                   "n": "price-group",
+                   "t": "FRAME",
+                   "w": 62,
+                   "h": 22,
+                   "layout": "HORIZONTAL",
+                   "gap": 4,
+                   "pad": "0 0 0 0",
+                   "align": "MIN/CENTER",
+                   "size": "HUG/HUG",
+                   "c": [
+                    {
+                     "n": "price",
+                     "t": "TEXT",
+                     "w": 62,
+                     "h": 22,
+                     "size": "HUG/HUG",
+                     "fill": [
+                      "var:text/primary"
+                     ],
+                     "text": "25 TND",
+                     "fs": 17,
+                     "font": "Semi Bold"
+                    },
+                    {
+                     "n": "oldPrice",
+                     "t": "TEXT",
+                     "w": 52,
+                     "h": 20,
+                     "hidden": true,
+                     "size": "FIXED/FIXED",
+                     "fill": [
+                      "var:text/muted"
+                     ],
+                     "text": "60 TND",
+                     "fs": 14,
+                     "font": "Regular"
+                    }
+                   ]
+                  },
+                  {
+                   "n": "city-row",
+                   "t": "FRAME",
+                   "w": 44,
+                   "h": 17,
+                   "layout": "HORIZONTAL",
+                   "gap": 4,
+                   "pad": "0 0 0 0",
+                   "align": "MIN/CENTER",
+                   "size": "HUG/HUG",
+                   "c": [
+                    {
+                     "n": "city-icon",
+                     "t": "INSTANCE",
+                     "w": 14,
+                     "h": 14,
+                     "size": "FIXED/FIXED",
+                     "comp": "icon-map-pin",
+                     "c": [
+                      {
+                       "n": "Vector",
+                       "t": "VECTOR",
+                       "w": 9,
+                       "h": 12,
+                       "size": "FIXED/FIXED",
+                       "stroke": [
+                        "var:text/muted"
+                       ],
+                       "sw": 2
+                      },
+                      {
+                       "n": "Vector",
+                       "t": "VECTOR",
+                       "w": 4,
+                       "h": 4,
+                       "size": "FIXED/FIXED",
+                       "stroke": [
+                        "var:text/muted"
+                       ],
+                       "sw": 2
+                      }
+                     ]
+                    },
+                    {
+                     "n": "city",
+                     "t": "TEXT",
+                     "w": 26,
+                     "h": 17,
+                     "size": "HUG/HUG",
+                     "fill": [
+                      "var:text/muted"
+                     ],
+                     "text": "Sfax",
+                     "fs": 12,
+                     "font": "Medium"
+                    }
+                   ]
+                  }
+                 ]
+                },
+                {
+                 "n": "cta",
+                 "t": "FRAME",
+                 "w": 40,
+                 "h": 40,
+                 "layout": "HORIZONTAL",
+                 "gap": 0,
+                 "pad": "0 0 0 0",
+                 "align": "CENTER/CENTER",
+                 "size": "FIXED/FIXED",
+                 "r": 8,
+                 "fill": [
+                  "var:blue/600"
+                 ],
+                 "c": [
+                  {
+                   "n": "icon-shopping-bag",
+                   "t": "INSTANCE",
+                   "w": 20,
+                   "h": 20,
+                   "size": "FIXED/FIXED",
+                   "comp": "icon-shopping-bag",
+                   "c": [
+                    {
+                     "n": "Vector",
+                     "t": "VECTOR",
+                     "w": 7,
+                     "h": 3,
+                     "size": "FIXED/FIXED",
+                     "stroke": [
+                      "var:text/inverse"
+                     ],
+                     "sw": 2
+                    },
+                    {
+                     "n": "Vector",
+                     "t": "VECTOR",
+                     "w": 15,
+                     "h": 0,
+                     "size": "FIXED/FIXED",
+                     "stroke": [
+                      "var:text/inverse"
+                     ],
+                     "sw": 2
+                    },
+                    {
+                     "n": "Vector",
+                     "t": "VECTOR",
+                     "w": 15,
+                     "h": 17,
+                     "size": "FIXED/FIXED",
+                     "stroke": [
+                      "var:text/inverse"
+                     ],
+                     "sw": 2
+                    }
+                   ]
+                  }
+                 ]
+                }
+               ]
+              },
+              {
+               "n": "shopName",
+               "t": "TEXT",
+               "w": 149,
+               "h": 20,
+               "hidden": true,
+               "size": "FIXED/FIXED",
+               "fill": [
+                "var:text/secondary"
+               ],
+               "text": "Boutique Artisan Tunis",
+               "fs": 14,
+               "font": "Regular"
+              },
+              {
+               "n": "rating-row",
+               "t": "FRAME",
+               "w": 71,
+               "h": 20,
+               "hidden": true,
+               "layout": "HORIZONTAL",
+               "gap": 4,
+               "pad": "0 0 0 0",
+               "align": "MIN/CENTER",
+               "size": "HUG/HUG",
+               "c": [
+                {
+                 "n": "star",
+                 "t": "INSTANCE",
+                 "w": 16,
+                 "h": 16,
+                 "size": "FIXED/FIXED",
+                 "comp": "icon-star",
+                 "c": [
+                  {
+                   "n": "Vector",
+                   "t": "VECTOR",
+                   "w": 13,
+                   "h": 13,
+                   "size": "FIXED/FIXED",
+                   "fill": [
+                    "var:rating"
+                   ]
+                  }
+                 ]
+                },
+                {
+                 "n": "rating",
+                 "t": "TEXT",
+                 "w": 22,
+                 "h": 20,
+                 "size": "HUG/HUG",
+                 "fill": [
+                  "var:text/primary"
+                 ],
+                 "text": "4.8",
+                 "fs": 14,
+                 "font": "Semi Bold"
+                },
+                {
+                 "n": "rating-count",
+                 "t": "TEXT",
+                 "w": 25,
+                 "h": 17,
+                 "size": "HUG/HUG",
+                 "fill": [
+                  "var:text/muted"
+                 ],
+                 "text": "(24)",
+                 "fs": 12,
+                 "font": "Medium"
+                }
+               ]
+              }
+             ]
+            }
+           ]
+          },
+          {
+           "n": "Product Card",
+           "t": "INSTANCE",
+           "w": 272,
+           "h": 373,
+           "layout": "VERTICAL",
+           "gap": 0,
+           "pad": "0 0 0 0",
+           "align": "MIN/MIN",
+           "size": "FIXED/HUG",
+           "r": 12,
+           "fill": [
+            "var:surface/base"
+           ],
+           "stroke": [
+            "var:border/subtle"
+           ],
+           "sw": 1,
+           "comp": "Product Card / state=default, ribbon=none",
+           "c": [
+            {
+             "n": "cover",
+             "t": "FRAME",
+             "w": 272,
+             "h": 276,
+             "size": "FILL/FIXED",
+             "fill": [
+              "var:surface/sunken"
+             ],
+             "stroke": [
+              "var:border/subtle"
+             ],
+             "c": [
+              {
+               "n": "cover-image",
+               "t": "INSTANCE",
+               "w": 48,
+               "h": 48,
+               "size": "FIXED/FIXED",
+               "comp": "icon-image",
+               "c": [
+                {
+                 "n": "Vector",
+                 "t": "VECTOR",
+                 "w": 36,
+                 "h": 36,
+                 "size": "FIXED/FIXED",
+                 "stroke": [
+                  "var:text/muted"
+                 ],
+                 "sw": 2
+                },
+                {
+                 "n": "Vector",
+                 "t": "VECTOR",
+                 "w": 8,
+                 "h": 8,
+                 "size": "FIXED/FIXED",
+                 "stroke": [
+                  "var:text/muted"
+                 ],
+                 "sw": 2
+                },
+                {
+                 "n": "Vector",
+                 "t": "VECTOR",
+                 "w": 30,
+                 "h": 19,
+                 "size": "FIXED/FIXED",
+                 "stroke": [
+                  "var:text/muted"
+                 ],
+                 "sw": 2
+                }
+               ]
+              },
+              {
+               "n": "ribbon",
+               "t": "FRAME",
+               "w": 68,
+               "h": 25,
+               "hidden": true,
+               "layout": "HORIZONTAL",
+               "gap": 0,
+               "pad": "4 8 4 8",
+               "align": "MIN/MIN",
+               "size": "HUG/HUG",
+               "r": 9999,
+               "fill": [
+                "var:blue/600"
+               ],
+               "c": [
+                {
+                 "n": "ribbon-label",
+                 "t": "TEXT",
+                 "w": 52,
+                 "h": 17,
+                 "size": "HUG/HUG",
+                 "fill": [
+                  "var:text/inverse"
+                 ],
+                 "text": "Nouveau",
+                 "fs": 12,
+                 "font": "Semi Bold"
+                }
+               ]
+              },
+              {
+               "n": "heart",
+               "t": "FRAME",
+               "w": 32,
+               "h": 32,
+               "layout": "HORIZONTAL",
+               "gap": 0,
+               "pad": "0 0 0 0",
+               "align": "CENTER/CENTER",
+               "size": "FIXED/FIXED",
+               "r": 16,
+               "fill": [
+                "var:surface/base"
+               ],
+               "stroke": [
+                "var:border/subtle"
+               ],
+               "sw": 1,
+               "c": [
+                {
+                 "n": "heart-icon",
+                 "t": "INSTANCE",
+                 "w": 18,
+                 "h": 18,
+                 "size": "FIXED/FIXED",
+                 "comp": "icon-heart",
+                 "c": [
+                  {
+                   "n": "Vector",
+                   "t": "VECTOR",
+                   "w": 15,
+                   "h": 13,
+                   "size": "FIXED/FIXED",
+                   "stroke": [
+                    "var:blue/300"
+                   ],
+                   "sw": 2
+                  }
+                 ]
+                }
+               ]
+              },
+              {
+               "n": "shop-logo",
+               "t": "FRAME",
+               "w": 32,
+               "h": 32,
+               "layout": "HORIZONTAL",
+               "gap": 0,
+               "pad": "0 0 0 0",
+               "align": "CENTER/CENTER",
+               "size": "FIXED/FIXED",
+               "r": 16,
+               "fill": [
+                "var:surface/base"
+               ],
+               "stroke": [
+                "var:border/subtle"
+               ],
+               "sw": 1,
+               "c": [
+                {
+                 "n": "initials",
+                 "t": "TEXT",
+                 "w": 19,
+                 "h": 15,
+                 "size": "HUG/HUG",
+                 "fill": [
+                  "var:blue/800"
+                 ],
+                 "text": "MS",
+                 "fs": 12,
+                 "font": "Semi Bold"
+                }
+               ]
+              },
+              {
+               "n": "category",
+               "t": "INSTANCE",
+               "w": 98,
+               "h": 29,
+               "layout": "HORIZONTAL",
+               "gap": 4,
+               "pad": "4 12 4 12",
+               "align": "CENTER/CENTER",
+               "size": "HUG/HUG",
+               "r": 8,
+               "fill": [
+                "var:surface/sunken"
+               ],
+               "comp": "Badge / kind=category",
+               "c": [
+                {
+                 "n": "chip-icon",
+                 "t": "INSTANCE",
+                 "w": 14,
+                 "h": 14,
+                 "hidden": true,
+                 "size": "FIXED/FIXED",
+                 "comp": "icon-banknote",
+                 "c": [
+                  {
+                   "n": "Vector",
+                   "t": "VECTOR",
+                   "w": 12,
+                   "h": 7,
+                   "size": "FIXED/FIXED",
+                   "stroke": [
+                    "var:text/muted"
+                   ],
+                   "sw": 2
+                  },
+                  {
+                   "n": "Vector",
+                   "t": "VECTOR",
+                   "w": 2,
+                   "h": 2,
+                   "size": "FIXED/FIXED",
+                   "stroke": [
+                    "var:text/muted"
+                   ],
+                   "sw": 2
+                  },
+                  {
+                   "n": "Vector",
+                   "t": "VECTOR",
+                   "w": 7,
+                   "h": 0,
+                   "size": "FIXED/FIXED",
+                   "stroke": [
+                    "var:text/muted"
+                   ],
+                   "sw": 2
+                  }
+                 ]
+                },
+                {
+                 "n": "Label",
+                 "t": "TEXT",
+                 "w": 74,
+                 "h": 21,
+                 "size": "HUG/HUG",
+                 "fill": [
+                  "var:text/secondary"
+                 ],
+                 "text": "Décoration",
+                 "fs": 14,
+                 "font": "Medium"
+                }
+               ]
+              }
+             ]
+            },
+            {
+             "n": "body",
+             "t": "FRAME",
+             "w": 272,
+             "h": 97,
+             "layout": "VERTICAL",
+             "gap": 10,
+             "pad": "12 12 12 12",
+             "align": "MIN/MIN",
+             "size": "FILL/HUG",
+             "fill": [
+              "var:surface/base"
+             ],
+             "c": [
+              {
+               "n": "title",
+               "t": "TEXT",
+               "w": 248,
+               "h": 22,
+               "size": "FILL/HUG",
+               "fill": [
+                "var:text/primary"
+               ],
+               "text": "Coussin de sol marocain",
+               "fs": 16,
+               "font": "Semi Bold"
+              },
+              {
+               "n": "bottom-row",
+               "t": "FRAME",
+               "w": 248,
+               "h": 41,
+               "layout": "HORIZONTAL",
+               "gap": 8,
+               "pad": "0 0 0 0",
+               "align": "SPACE_BETWEEN/CENTER",
+               "size": "FILL/HUG",
+               "c": [
+                {
+                 "n": "left-col",
+                 "t": "FRAME",
+                 "w": 62,
+                 "h": 41,
+                 "layout": "VERTICAL",
+                 "gap": 2,
+                 "pad": "0 0 0 0",
+                 "align": "MIN/MIN",
+                 "size": "HUG/HUG",
+                 "c": [
+                  {
+                   "n": "price-group",
+                   "t": "FRAME",
+                   "w": 62,
+                   "h": 22,
+                   "layout": "HORIZONTAL",
+                   "gap": 4,
+                   "pad": "0 0 0 0",
+                   "align": "MIN/CENTER",
+                   "size": "HUG/HUG",
+                   "c": [
+                    {
+                     "n": "price",
+                     "t": "TEXT",
+                     "w": 62,
+                     "h": 22,
+                     "size": "HUG/HUG",
+                     "fill": [
+                      "var:text/primary"
+                     ],
+                     "text": "70 TND",
+                     "fs": 17,
+                     "font": "Semi Bold"
+                    },
+                    {
+                     "n": "oldPrice",
+                     "t": "TEXT",
+                     "w": 52,
+                     "h": 20,
+                     "hidden": true,
+                     "size": "FIXED/FIXED",
+                     "fill": [
+                      "var:text/muted"
+                     ],
+                     "text": "60 TND",
+                     "fs": 14,
+                     "font": "Regular"
+                    }
+                   ]
+                  },
+                  {
+                   "n": "city-row",
+                   "t": "FRAME",
+                   "w": 60,
+                   "h": 17,
+                   "layout": "HORIZONTAL",
+                   "gap": 4,
+                   "pad": "0 0 0 0",
+                   "align": "MIN/CENTER",
+                   "size": "HUG/HUG",
+                   "c": [
+                    {
+                     "n": "city-icon",
+                     "t": "INSTANCE",
+                     "w": 14,
+                     "h": 14,
+                     "size": "FIXED/FIXED",
+                     "comp": "icon-map-pin",
+                     "c": [
+                      {
+                       "n": "Vector",
+                       "t": "VECTOR",
+                       "w": 9,
+                       "h": 12,
+                       "size": "FIXED/FIXED",
+                       "stroke": [
+                        "var:text/muted"
+                       ],
+                       "sw": 2
+                      },
+                      {
+                       "n": "Vector",
+                       "t": "VECTOR",
+                       "w": 4,
+                       "h": 4,
+                       "size": "FIXED/FIXED",
+                       "stroke": [
+                        "var:text/muted"
+                       ],
+                       "sw": 2
+                      }
+                     ]
+                    },
+                    {
+                     "n": "city",
+                     "t": "TEXT",
+                     "w": 42,
+                     "h": 17,
+                     "size": "HUG/HUG",
+                     "fill": [
+                      "var:text/muted"
+                     ],
+                     "text": "Sousse",
+                     "fs": 12,
+                     "font": "Medium"
+                    }
+                   ]
+                  }
+                 ]
+                },
+                {
+                 "n": "cta",
+                 "t": "FRAME",
+                 "w": 40,
+                 "h": 40,
+                 "layout": "HORIZONTAL",
+                 "gap": 0,
+                 "pad": "0 0 0 0",
+                 "align": "CENTER/CENTER",
+                 "size": "FIXED/FIXED",
+                 "r": 8,
+                 "fill": [
+                  "var:blue/600"
+                 ],
+                 "c": [
+                  {
+                   "n": "icon-shopping-bag",
+                   "t": "INSTANCE",
+                   "w": 20,
+                   "h": 20,
+                   "size": "FIXED/FIXED",
+                   "comp": "icon-shopping-bag",
+                   "c": [
+                    {
+                     "n": "Vector",
+                     "t": "VECTOR",
+                     "w": 7,
+                     "h": 3,
+                     "size": "FIXED/FIXED",
+                     "stroke": [
+                      "var:text/inverse"
+                     ],
+                     "sw": 2
+                    },
+                    {
+                     "n": "Vector",
+                     "t": "VECTOR",
+                     "w": 15,
+                     "h": 0,
+                     "size": "FIXED/FIXED",
+                     "stroke": [
+                      "var:text/inverse"
+                     ],
+                     "sw": 2
+                    },
+                    {
+                     "n": "Vector",
+                     "t": "VECTOR",
+                     "w": 15,
+                     "h": 17,
+                     "size": "FIXED/FIXED",
+                     "stroke": [
+                      "var:text/inverse"
+                     ],
+                     "sw": 2
+                    }
+                   ]
+                  }
+                 ]
+                }
+               ]
+              },
+              {
+               "n": "shopName",
+               "t": "TEXT",
+               "w": 149,
+               "h": 20,
+               "hidden": true,
+               "size": "FIXED/FIXED",
+               "fill": [
+                "var:text/secondary"
+               ],
+               "text": "Boutique Artisan Tunis",
+               "fs": 14,
+               "font": "Regular"
+              },
+              {
+               "n": "rating-row",
+               "t": "FRAME",
+               "w": 71,
+               "h": 20,
+               "hidden": true,
+               "layout": "HORIZONTAL",
+               "gap": 4,
+               "pad": "0 0 0 0",
+               "align": "MIN/CENTER",
+               "size": "HUG/HUG",
+               "c": [
+                {
+                 "n": "star",
+                 "t": "INSTANCE",
+                 "w": 16,
+                 "h": 16,
+                 "size": "FIXED/FIXED",
+                 "comp": "icon-star",
+                 "c": [
+                  {
+                   "n": "Vector",
+                   "t": "VECTOR",
+                   "w": 13,
+                   "h": 13,
+                   "size": "FIXED/FIXED",
+                   "fill": [
+                    "var:rating"
+                   ]
+                  }
+                 ]
+                },
+                {
+                 "n": "rating",
+                 "t": "TEXT",
+                 "w": 22,
+                 "h": 20,
+                 "size": "HUG/HUG",
+                 "fill": [
+                  "var:text/primary"
+                 ],
+                 "text": "4.8",
+                 "fs": 14,
+                 "font": "Semi Bold"
+                },
+                {
+                 "n": "rating-count",
+                 "t": "TEXT",
+                 "w": 25,
+                 "h": 17,
+                 "size": "HUG/HUG",
+                 "fill": [
+                  "var:text/muted"
+                 ],
+                 "text": "(24)",
+                 "fs": 12,
+                 "font": "Medium"
+                }
+               ]
+              }
+             ]
+            }
+           ]
+          },
+          {
+           "n": "Product Card",
+           "t": "INSTANCE",
+           "w": 272,
+           "h": 373,
+           "layout": "VERTICAL",
+           "gap": 0,
+           "pad": "0 0 0 0",
+           "align": "MIN/MIN",
+           "size": "FIXED/HUG",
+           "r": 12,
+           "fill": [
+            "var:surface/base"
+           ],
+           "stroke": [
+            "var:border/subtle"
+           ],
+           "sw": 1,
+           "comp": "Product Card / state=default, ribbon=none",
+           "c": [
+            {
+             "n": "cover",
+             "t": "FRAME",
+             "w": 272,
+             "h": 276,
+             "size": "FILL/FIXED",
+             "fill": [
+              "var:surface/sunken"
+             ],
+             "stroke": [
+              "var:border/subtle"
+             ],
+             "c": [
+              {
+               "n": "cover-image",
+               "t": "INSTANCE",
+               "w": 48,
+               "h": 48,
+               "size": "FIXED/FIXED",
+               "comp": "icon-image",
+               "c": [
+                {
+                 "n": "Vector",
+                 "t": "VECTOR",
+                 "w": 36,
+                 "h": 36,
+                 "size": "FIXED/FIXED",
+                 "stroke": [
+                  "var:text/muted"
+                 ],
+                 "sw": 2
+                },
+                {
+                 "n": "Vector",
+                 "t": "VECTOR",
+                 "w": 8,
+                 "h": 8,
+                 "size": "FIXED/FIXED",
+                 "stroke": [
+                  "var:text/muted"
+                 ],
+                 "sw": 2
+                },
+                {
+                 "n": "Vector",
+                 "t": "VECTOR",
+                 "w": 30,
+                 "h": 19,
+                 "size": "FIXED/FIXED",
+                 "stroke": [
+                  "var:text/muted"
+                 ],
+                 "sw": 2
+                }
+               ]
+              },
+              {
+               "n": "ribbon",
+               "t": "FRAME",
+               "w": 68,
+               "h": 25,
+               "hidden": true,
+               "layout": "HORIZONTAL",
+               "gap": 0,
+               "pad": "4 8 4 8",
+               "align": "MIN/MIN",
+               "size": "HUG/HUG",
+               "r": 9999,
+               "fill": [
+                "var:blue/600"
+               ],
+               "c": [
+                {
+                 "n": "ribbon-label",
+                 "t": "TEXT",
+                 "w": 52,
+                 "h": 17,
+                 "size": "HUG/HUG",
+                 "fill": [
+                  "var:text/inverse"
+                 ],
+                 "text": "Nouveau",
+                 "fs": 12,
+                 "font": "Semi Bold"
+                }
+               ]
+              },
+              {
+               "n": "heart",
+               "t": "FRAME",
+               "w": 32,
+               "h": 32,
+               "layout": "HORIZONTAL",
+               "gap": 0,
+               "pad": "0 0 0 0",
+               "align": "CENTER/CENTER",
+               "size": "FIXED/FIXED",
+               "r": 16,
+               "fill": [
+                "var:surface/base"
+               ],
+               "stroke": [
+                "var:border/subtle"
+               ],
+               "sw": 1,
+               "c": [
+                {
+                 "n": "heart-icon",
+                 "t": "INSTANCE",
+                 "w": 18,
+                 "h": 18,
+                 "size": "FIXED/FIXED",
+                 "comp": "icon-heart",
+                 "c": [
+                  {
+                   "n": "Vector",
+                   "t": "VECTOR",
+                   "w": 15,
+                   "h": 13,
+                   "size": "FIXED/FIXED",
+                   "stroke": [
+                    "var:blue/300"
+                   ],
+                   "sw": 2
+                  }
+                 ]
+                }
+               ]
+              },
+              {
+               "n": "shop-logo",
+               "t": "FRAME",
+               "w": 32,
+               "h": 32,
+               "layout": "HORIZONTAL",
+               "gap": 0,
+               "pad": "0 0 0 0",
+               "align": "CENTER/CENTER",
+               "size": "FIXED/FIXED",
+               "r": 16,
+               "fill": [
+                "var:surface/base"
+               ],
+               "stroke": [
+                "var:border/subtle"
+               ],
+               "sw": 1,
+               "c": [
+                {
+                 "n": "initials",
+                 "t": "TEXT",
+                 "w": 16,
+                 "h": 15,
+                 "size": "HUG/HUG",
+                 "fill": [
+                  "var:blue/800"
+                 ],
+                 "text": "PP",
+                 "fs": 12,
+                 "font": "Semi Bold"
+                }
+               ]
+              },
+              {
+               "n": "category",
+               "t": "INSTANCE",
+               "w": 98,
+               "h": 29,
+               "layout": "HORIZONTAL",
+               "gap": 4,
+               "pad": "4 12 4 12",
+               "align": "CENTER/CENTER",
+               "size": "HUG/HUG",
+               "r": 8,
+               "fill": [
+                "var:surface/sunken"
+               ],
+               "comp": "Badge / kind=category",
+               "c": [
+                {
+                 "n": "chip-icon",
+                 "t": "INSTANCE",
+                 "w": 14,
+                 "h": 14,
+                 "hidden": true,
+                 "size": "FIXED/FIXED",
+                 "comp": "icon-banknote",
+                 "c": [
+                  {
+                   "n": "Vector",
+                   "t": "VECTOR",
+                   "w": 12,
+                   "h": 7,
+                   "size": "FIXED/FIXED",
+                   "stroke": [
+                    "var:text/muted"
+                   ],
+                   "sw": 2
+                  },
+                  {
+                   "n": "Vector",
+                   "t": "VECTOR",
+                   "w": 2,
+                   "h": 2,
+                   "size": "FIXED/FIXED",
+                   "stroke": [
+                    "var:text/muted"
+                   ],
+                   "sw": 2
+                  },
+                  {
+                   "n": "Vector",
+                   "t": "VECTOR",
+                   "w": 7,
+                   "h": 0,
+                   "size": "FIXED/FIXED",
+                   "stroke": [
+                    "var:text/muted"
+                   ],
+                   "sw": 2
+                  }
+                 ]
+                },
+                {
+                 "n": "Label",
+                 "t": "TEXT",
+                 "w": 74,
+                 "h": 21,
+                 "size": "HUG/HUG",
+                 "fill": [
+                  "var:text/secondary"
+                 ],
+                 "text": "Décoration",
+                 "fs": 14,
+                 "font": "Medium"
+                }
+               ]
+              }
+             ]
+            },
+            {
+             "n": "body",
+             "t": "FRAME",
+             "w": 272,
+             "h": 97,
+             "layout": "VERTICAL",
+             "gap": 10,
+             "pad": "12 12 12 12",
+             "align": "MIN/MIN",
+             "size": "FILL/HUG",
+             "fill": [
+              "var:surface/base"
+             ],
+             "c": [
+              {
+               "n": "title",
+               "t": "TEXT",
+               "w": 248,
+               "h": 22,
+               "size": "FILL/HUG",
+               "fill": [
+                "var:text/primary"
+               ],
+               "text": "Coussin décoratif à pompons",
+               "fs": 16,
+               "font": "Semi Bold"
+              },
+              {
+               "n": "bottom-row",
+               "t": "FRAME",
+               "w": 248,
+               "h": 41,
+               "layout": "HORIZONTAL",
+               "gap": 8,
+               "pad": "0 0 0 0",
+               "align": "SPACE_BETWEEN/CENTER",
+               "size": "FILL/HUG",
+               "c": [
+                {
+                 "n": "left-col",
+                 "t": "FRAME",
+                 "w": 62,
+                 "h": 41,
+                 "layout": "VERTICAL",
+                 "gap": 2,
+                 "pad": "0 0 0 0",
+                 "align": "MIN/MIN",
+                 "size": "HUG/HUG",
+                 "c": [
+                  {
+                   "n": "price-group",
+                   "t": "FRAME",
+                   "w": 62,
+                   "h": 22,
+                   "layout": "HORIZONTAL",
+                   "gap": 4,
+                   "pad": "0 0 0 0",
+                   "align": "MIN/CENTER",
+                   "size": "HUG/HUG",
+                   "c": [
+                    {
+                     "n": "price",
+                     "t": "TEXT",
+                     "w": 62,
+                     "h": 22,
+                     "size": "HUG/HUG",
+                     "fill": [
+                      "var:text/primary"
+                     ],
+                     "text": "32 TND",
+                     "fs": 17,
+                     "font": "Semi Bold"
+                    },
+                    {
+                     "n": "oldPrice",
+                     "t": "TEXT",
+                     "w": 52,
+                     "h": 20,
+                     "hidden": true,
+                     "size": "FIXED/FIXED",
+                     "fill": [
+                      "var:text/muted"
+                     ],
+                     "text": "60 TND",
+                     "fs": 14,
+                     "font": "Regular"
+                    }
+                   ]
+                  },
+                  {
+                   "n": "city-row",
+                   "t": "FRAME",
+                   "w": 55,
+                   "h": 17,
+                   "layout": "HORIZONTAL",
+                   "gap": 4,
+                   "pad": "0 0 0 0",
+                   "align": "MIN/CENTER",
+                   "size": "HUG/HUG",
+                   "c": [
+                    {
+                     "n": "city-icon",
+                     "t": "INSTANCE",
+                     "w": 14,
+                     "h": 14,
+                     "size": "FIXED/FIXED",
+                     "comp": "icon-map-pin",
+                     "c": [
+                      {
+                       "n": "Vector",
+                       "t": "VECTOR",
+                       "w": 9,
+                       "h": 12,
+                       "size": "FIXED/FIXED",
+                       "stroke": [
+                        "var:text/muted"
+                       ],
+                       "sw": 2
+                      },
+                      {
+                       "n": "Vector",
+                       "t": "VECTOR",
+                       "w": 4,
+                       "h": 4,
+                       "size": "FIXED/FIXED",
+                       "stroke": [
+                        "var:text/muted"
+                       ],
+                       "sw": 2
+                      }
+                     ]
+                    },
+                    {
+                     "n": "city",
+                     "t": "TEXT",
+                     "w": 37,
+                     "h": 17,
+                     "size": "HUG/HUG",
+                     "fill": [
+                      "var:text/muted"
+                     ],
+                     "text": "Ariana",
+                     "fs": 12,
+                     "font": "Medium"
+                    }
+                   ]
+                  }
+                 ]
+                },
+                {
+                 "n": "cta",
+                 "t": "FRAME",
+                 "w": 40,
+                 "h": 40,
+                 "layout": "HORIZONTAL",
+                 "gap": 0,
+                 "pad": "0 0 0 0",
+                 "align": "CENTER/CENTER",
+                 "size": "FIXED/FIXED",
+                 "r": 8,
+                 "fill": [
+                  "var:blue/600"
+                 ],
+                 "c": [
+                  {
+                   "n": "icon-shopping-bag",
+                   "t": "INSTANCE",
+                   "w": 20,
+                   "h": 20,
+                   "size": "FIXED/FIXED",
+                   "comp": "icon-shopping-bag",
+                   "c": [
+                    {
+                     "n": "Vector",
+                     "t": "VECTOR",
+                     "w": 7,
+                     "h": 3,
+                     "size": "FIXED/FIXED",
+                     "stroke": [
+                      "var:text/inverse"
+                     ],
+                     "sw": 2
+                    },
+                    {
+                     "n": "Vector",
+                     "t": "VECTOR",
+                     "w": 15,
+                     "h": 0,
+                     "size": "FIXED/FIXED",
+                     "stroke": [
+                      "var:text/inverse"
+                     ],
+                     "sw": 2
+                    },
+                    {
+                     "n": "Vector",
+                     "t": "VECTOR",
+                     "w": 15,
+                     "h": 17,
+                     "size": "FIXED/FIXED",
+                     "stroke": [
+                      "var:text/inverse"
+                     ],
+                     "sw": 2
+                    }
+                   ]
+                  }
+                 ]
+                }
+               ]
+              },
+              {
+               "n": "shopName",
+               "t": "TEXT",
+               "w": 149,
+               "h": 20,
+               "hidden": true,
+               "size": "FIXED/FIXED",
+               "fill": [
+                "var:text/secondary"
+               ],
+               "text": "Boutique Artisan Tunis",
+               "fs": 14,
+               "font": "Regular"
+              },
+              {
+               "n": "rating-row",
+               "t": "FRAME",
+               "w": 71,
+               "h": 20,
+               "hidden": true,
+               "layout": "HORIZONTAL",
+               "gap": 4,
+               "pad": "0 0 0 0",
+               "align": "MIN/CENTER",
+               "size": "HUG/HUG",
+               "c": [
+                {
+                 "n": "star",
+                 "t": "INSTANCE",
+                 "w": 16,
+                 "h": 16,
+                 "size": "FIXED/FIXED",
+                 "comp": "icon-star",
+                 "c": [
+                  {
+                   "n": "Vector",
+                   "t": "VECTOR",
+                   "w": 13,
+                   "h": 13,
+                   "size": "FIXED/FIXED",
+                   "fill": [
+                    "var:rating"
+                   ]
+                  }
+                 ]
+                },
+                {
+                 "n": "rating",
+                 "t": "TEXT",
+                 "w": 22,
+                 "h": 20,
+                 "size": "HUG/HUG",
+                 "fill": [
+                  "var:text/primary"
+                 ],
+                 "text": "4.8",
+                 "fs": 14,
+                 "font": "Semi Bold"
+                },
+                {
+                 "n": "rating-count",
+                 "t": "TEXT",
+                 "w": 25,
+                 "h": 17,
+                 "size": "HUG/HUG",
+                 "fill": [
+                  "var:text/muted"
+                 ],
+                 "text": "(24)",
+                 "fs": 12,
+                 "font": "Medium"
+                }
+               ]
+              }
+             ]
+            }
+           ]
+          },
+          {
+           "n": "Product Card",
+           "t": "INSTANCE",
+           "w": 272,
+           "h": 373,
+           "layout": "VERTICAL",
+           "gap": 0,
+           "pad": "0 0 0 0",
+           "align": "MIN/MIN",
+           "size": "FIXED/HUG",
+           "r": 12,
+           "fill": [
+            "var:surface/base"
+           ],
+           "stroke": [
+            "var:border/subtle"
+           ],
+           "sw": 1,
+           "comp": "Product Card / state=default, ribbon=none",
+           "c": [
+            {
+             "n": "cover",
+             "t": "FRAME",
+             "w": 272,
+             "h": 276,
+             "size": "FILL/FIXED",
+             "fill": [
+              "var:surface/sunken"
+             ],
+             "stroke": [
+              "var:border/subtle"
+             ],
+             "c": [
+              {
+               "n": "cover-image",
+               "t": "INSTANCE",
+               "w": 48,
+               "h": 48,
+               "size": "FIXED/FIXED",
+               "comp": "icon-image",
+               "c": [
+                {
+                 "n": "Vector",
+                 "t": "VECTOR",
+                 "w": 36,
+                 "h": 36,
+                 "size": "FIXED/FIXED",
+                 "stroke": [
+                  "var:text/muted"
+                 ],
+                 "sw": 2
+                },
+                {
+                 "n": "Vector",
+                 "t": "VECTOR",
+                 "w": 8,
+                 "h": 8,
+                 "size": "FIXED/FIXED",
+                 "stroke": [
+                  "var:text/muted"
+                 ],
+                 "sw": 2
+                },
+                {
+                 "n": "Vector",
+                 "t": "VECTOR",
+                 "w": 30,
+                 "h": 19,
+                 "size": "FIXED/FIXED",
+                 "stroke": [
+                  "var:text/muted"
+                 ],
+                 "sw": 2
+                }
+               ]
+              },
+              {
+               "n": "ribbon",
+               "t": "FRAME",
+               "w": 68,
+               "h": 25,
+               "hidden": true,
+               "layout": "HORIZONTAL",
+               "gap": 0,
+               "pad": "4 8 4 8",
+               "align": "MIN/MIN",
+               "size": "HUG/HUG",
+               "r": 9999,
+               "fill": [
+                "var:blue/600"
+               ],
+               "c": [
+                {
+                 "n": "ribbon-label",
+                 "t": "TEXT",
+                 "w": 52,
+                 "h": 17,
+                 "size": "HUG/HUG",
+                 "fill": [
+                  "var:text/inverse"
+                 ],
+                 "text": "Nouveau",
+                 "fs": 12,
+                 "font": "Semi Bold"
+                }
+               ]
+              },
+              {
+               "n": "heart",
+               "t": "FRAME",
+               "w": 32,
+               "h": 32,
+               "layout": "HORIZONTAL",
+               "gap": 0,
+               "pad": "0 0 0 0",
+               "align": "CENTER/CENTER",
+               "size": "FIXED/FIXED",
+               "r": 16,
+               "fill": [
+                "var:surface/base"
+               ],
+               "stroke": [
+                "var:border/subtle"
+               ],
+               "sw": 1,
+               "c": [
+                {
+                 "n": "heart-icon",
+                 "t": "INSTANCE",
+                 "w": 18,
+                 "h": 18,
+                 "size": "FIXED/FIXED",
+                 "comp": "icon-heart",
+                 "c": [
+                  {
+                   "n": "Vector",
+                   "t": "VECTOR",
+                   "w": 15,
+                   "h": 13,
+                   "size": "FIXED/FIXED",
+                   "stroke": [
+                    "var:blue/300"
+                   ],
+                   "sw": 2
+                  }
+                 ]
+                }
+               ]
+              },
+              {
+               "n": "shop-logo",
+               "t": "FRAME",
+               "w": 32,
+               "h": 32,
+               "layout": "HORIZONTAL",
+               "gap": 0,
+               "pad": "0 0 0 0",
+               "align": "CENTER/CENTER",
+               "size": "FIXED/FIXED",
+               "r": 16,
+               "fill": [
+                "var:surface/base"
+               ],
+               "stroke": [
+                "var:border/subtle"
+               ],
+               "sw": 1,
+               "c": [
+                {
+                 "n": "initials",
+                 "t": "TEXT",
+                 "w": 16,
+                 "h": 15,
+                 "size": "HUG/HUG",
+                 "fill": [
+                  "var:blue/800"
+                 ],
+                 "text": "EX",
+                 "fs": 12,
+                 "font": "Semi Bold"
+                }
+               ]
+              },
+              {
+               "n": "category",
+               "t": "INSTANCE",
+               "w": 142,
+               "h": 29,
+               "layout": "HORIZONTAL",
+               "gap": 4,
+               "pad": "4 12 4 12",
+               "align": "CENTER/CENTER",
+               "size": "HUG/HUG",
+               "r": 8,
+               "fill": [
+                "var:surface/sunken"
+               ],
+               "comp": "Badge / kind=category",
+               "c": [
+                {
+                 "n": "chip-icon",
+                 "t": "INSTANCE",
+                 "w": 14,
+                 "h": 14,
+                 "hidden": true,
+                 "size": "FIXED/FIXED",
+                 "comp": "icon-banknote",
+                 "c": [
+                  {
+                   "n": "Vector",
+                   "t": "VECTOR",
+                   "w": 12,
+                   "h": 7,
+                   "size": "FIXED/FIXED",
+                   "stroke": [
+                    "var:text/muted"
+                   ],
+                   "sw": 2
+                  },
+                  {
+                   "n": "Vector",
+                   "t": "VECTOR",
+                   "w": 2,
+                   "h": 2,
+                   "size": "FIXED/FIXED",
+                   "stroke": [
+                    "var:text/muted"
+                   ],
+                   "sw": 2
+                  },
+                  {
+                   "n": "Vector",
+                   "t": "VECTOR",
+                   "w": 7,
+                   "h": 0,
+                   "size": "FIXED/FIXED",
+                   "stroke": [
+                    "var:text/muted"
+                   ],
+                   "sw": 2
+                  }
+                 ]
+                },
+                {
+                 "n": "Label",
+                 "t": "TEXT",
+                 "w": 118,
+                 "h": 21,
+                 "size": "HUG/HUG",
+                 "fill": [
+                  "var:text/secondary"
+                 ],
+                 "text": "Jardin & extérieur",
+                 "fs": 14,
+                 "font": "Medium"
+                }
+               ]
+              }
+             ]
+            },
+            {
+             "n": "body",
+             "t": "FRAME",
+             "w": 272,
+             "h": 97,
+             "layout": "VERTICAL",
+             "gap": 10,
+             "pad": "12 12 12 12",
+             "align": "MIN/MIN",
+             "size": "FILL/HUG",
+             "fill": [
+              "var:surface/base"
+             ],
+             "c": [
+              {
+               "n": "title",
+               "t": "TEXT",
+               "w": 248,
+               "h": 22,
+               "size": "FILL/HUG",
+               "fill": [
+                "var:text/primary"
+               ],
+               "text": "Coussin extérieur imperméable",
+               "fs": 16,
+               "font": "Semi Bold"
+              },
+              {
+               "n": "bottom-row",
+               "t": "FRAME",
+               "w": 248,
+               "h": 41,
+               "layout": "HORIZONTAL",
+               "gap": 8,
+               "pad": "0 0 0 0",
+               "align": "SPACE_BETWEEN/CENTER",
+               "size": "FILL/HUG",
+               "c": [
+                {
+                 "n": "left-col",
+                 "t": "FRAME",
+                 "w": 77,
+                 "h": 41,
+                 "layout": "VERTICAL",
+                 "gap": 2,
+                 "pad": "0 0 0 0",
+                 "align": "MIN/MIN",
+                 "size": "HUG/HUG",
+                 "c": [
+                  {
+                   "n": "price-group",
+                   "t": "FRAME",
+                   "w": 63,
+                   "h": 22,
+                   "layout": "HORIZONTAL",
+                   "gap": 4,
+                   "pad": "0 0 0 0",
+                   "align": "MIN/CENTER",
+                   "size": "HUG/HUG",
+                   "c": [
+                    {
+                     "n": "price",
+                     "t": "TEXT",
+                     "w": 63,
+                     "h": 22,
+                     "size": "HUG/HUG",
+                     "fill": [
+                      "var:text/primary"
+                     ],
+                     "text": "48 TND",
+                     "fs": 17,
+                     "font": "Semi Bold"
+                    },
+                    {
+                     "n": "oldPrice",
+                     "t": "TEXT",
+                     "w": 52,
+                     "h": 20,
+                     "hidden": true,
+                     "size": "FIXED/FIXED",
+                     "fill": [
+                      "var:text/muted"
+                     ],
+                     "text": "60 TND",
+                     "fs": 14,
+                     "font": "Regular"
+                    }
+                   ]
+                  },
+                  {
+                   "n": "city-row",
+                   "t": "FRAME",
+                   "w": 77,
+                   "h": 17,
+                   "layout": "HORIZONTAL",
+                   "gap": 4,
+                   "pad": "0 0 0 0",
+                   "align": "MIN/CENTER",
+                   "size": "HUG/HUG",
+                   "c": [
+                    {
+                     "n": "city-icon",
+                     "t": "INSTANCE",
+                     "w": 14,
+                     "h": 14,
+                     "size": "FIXED/FIXED",
+                     "comp": "icon-map-pin",
+                     "c": [
+                      {
+                       "n": "Vector",
+                       "t": "VECTOR",
+                       "w": 9,
+                       "h": 12,
+                       "size": "FIXED/FIXED",
+                       "stroke": [
+                        "var:text/muted"
+                       ],
+                       "sw": 2
+                      },
+                      {
+                       "n": "Vector",
+                       "t": "VECTOR",
+                       "w": 4,
+                       "h": 4,
+                       "size": "FIXED/FIXED",
+                       "stroke": [
+                        "var:text/muted"
+                       ],
+                       "sw": 2
+                      }
+                     ]
+                    },
+                    {
+                     "n": "city",
+                     "t": "TEXT",
+                     "w": 59,
+                     "h": 17,
+                     "size": "HUG/HUG",
+                     "fill": [
+                      "var:text/muted"
+                     ],
+                     "text": "Ben Arous",
+                     "fs": 12,
+                     "font": "Medium"
+                    }
+                   ]
+                  }
+                 ]
+                },
+                {
+                 "n": "cta",
+                 "t": "FRAME",
+                 "w": 40,
+                 "h": 40,
+                 "layout": "HORIZONTAL",
+                 "gap": 0,
+                 "pad": "0 0 0 0",
+                 "align": "CENTER/CENTER",
+                 "size": "FIXED/FIXED",
+                 "r": 8,
+                 "fill": [
+                  "var:blue/600"
+                 ],
+                 "c": [
+                  {
+                   "n": "icon-shopping-bag",
+                   "t": "INSTANCE",
+                   "w": 20,
+                   "h": 20,
+                   "size": "FIXED/FIXED",
+                   "comp": "icon-shopping-bag",
+                   "c": [
+                    {
+                     "n": "Vector",
+                     "t": "VECTOR",
+                     "w": 7,
+                     "h": 3,
+                     "size": "FIXED/FIXED",
+                     "stroke": [
+                      "var:text/inverse"
+                     ],
+                     "sw": 2
+                    },
+                    {
+                     "n": "Vector",
+                     "t": "VECTOR",
+                     "w": 15,
+                     "h": 0,
+                     "size": "FIXED/FIXED",
+                     "stroke": [
+                      "var:text/inverse"
+                     ],
+                     "sw": 2
+                    },
+                    {
+                     "n": "Vector",
+                     "t": "VECTOR",
+                     "w": 15,
+                     "h": 17,
+                     "size": "FIXED/FIXED",
+                     "stroke": [
+                      "var:text/inverse"
+                     ],
+                     "sw": 2
+                    }
+                   ]
+                  }
+                 ]
+                }
+               ]
+              },
+              {
+               "n": "shopName",
+               "t": "TEXT",
+               "w": 149,
+               "h": 20,
+               "hidden": true,
+               "size": "FIXED/FIXED",
+               "fill": [
+                "var:text/secondary"
+               ],
+               "text": "Boutique Artisan Tunis",
+               "fs": 14,
+               "font": "Regular"
+              },
+              {
+               "n": "rating-row",
+               "t": "FRAME",
+               "w": 71,
+               "h": 20,
+               "hidden": true,
+               "layout": "HORIZONTAL",
+               "gap": 4,
+               "pad": "0 0 0 0",
+               "align": "MIN/CENTER",
+               "size": "HUG/HUG",
+               "c": [
+                {
+                 "n": "star",
+                 "t": "INSTANCE",
+                 "w": 16,
+                 "h": 16,
+                 "size": "FIXED/FIXED",
+                 "comp": "icon-star",
+                 "c": [
+                  {
+                   "n": "Vector",
+                   "t": "VECTOR",
+                   "w": 13,
+                   "h": 13,
+                   "size": "FIXED/FIXED",
+                   "fill": [
+                    "var:rating"
+                   ]
+                  }
+                 ]
+                },
+                {
+                 "n": "rating",
+                 "t": "TEXT",
+                 "w": 22,
+                 "h": 20,
+                 "size": "HUG/HUG",
+                 "fill": [
+                  "var:text/primary"
+                 ],
+                 "text": "4.8",
+                 "fs": 14,
+                 "font": "Semi Bold"
+                },
+                {
+                 "n": "rating-count",
+                 "t": "TEXT",
+                 "w": 25,
+                 "h": 17,
+                 "size": "HUG/HUG",
+                 "fill": [
+                  "var:text/muted"
+                 ],
+                 "text": "(24)",
+                 "fs": 12,
+                 "font": "Medium"
+                }
+               ]
+              }
+             ]
+            }
+           ]
+          }
+         ]
+        },
+        {
+         "n": "paginationRow",
+         "t": "FRAME",
+         "w": 1136,
+         "h": 62,
+         "layout": "HORIZONTAL",
+         "gap": 0,
+         "pad": "0 0 0 0",
+         "align": "CENTER/CENTER",
+         "size": "FILL/HUG",
+         "c": [
+          {
+           "n": "Pagination",
+           "t": "INSTANCE",
+           "w": 125,
+           "h": 62,
+           "layout": "VERTICAL",
+           "gap": 10,
+           "pad": "0 0 0 0",
+           "align": "MIN/MIN",
+           "size": "HUG/HUG",
+           "comp": "Pagination",
+           "c": [
+            {
+             "n": "pages",
+             "t": "FRAME",
+             "w": 116,
+             "h": 36,
+             "layout": "HORIZONTAL",
+             "gap": 4,
+             "pad": "0 0 0 0",
+             "align": "MIN/CENTER",
+             "size": "HUG/HUG",
+             "c": [
+              {
+               "n": "arrow",
+               "t": "FRAME",
+               "w": 36,
+               "h": 36,
+               "layout": "HORIZONTAL",
+               "gap": 0,
+               "pad": "0 0 0 0",
+               "align": "CENTER/CENTER",
+               "size": "FIXED/FIXED",
+               "r": 8,
+               "stroke": [
+                "var:border/subtle"
+               ],
+               "sw": 1,
+               "c": [
+                {
+                 "n": "icon-chevron-left",
+                 "t": "INSTANCE",
+                 "w": 16,
+                 "h": 16,
+                 "size": "FIXED/FIXED",
+                 "comp": "icon-chevron-left",
+                 "c": [
+                  {
+                   "n": "Vector",
+                   "t": "VECTOR",
+                   "w": 4,
+                   "h": 8,
+                   "size": "FIXED/FIXED",
+                   "stroke": [
+                    "var:text/secondary"
+                   ],
+                   "sw": 2
+                  }
+                 ]
+                }
+               ]
+              },
+              {
+               "n": "page",
+               "t": "FRAME",
+               "w": 36,
+               "h": 36,
+               "layout": "HORIZONTAL",
+               "gap": 0,
+               "pad": "0 0 0 0",
+               "align": "CENTER/CENTER",
+               "size": "FIXED/FIXED",
+               "r": 8,
+               "fill": [
+                "var:blue/600"
+               ],
+               "c": [
+                {
+                 "n": "1",
+                 "t": "TEXT",
+                 "w": 7,
+                 "h": 17,
+                 "size": "HUG/HUG",
+                 "fill": [
+                  "var:text/inverse"
+                 ],
+                 "text": "1",
+                 "fs": 14,
+                 "font": "Semi Bold"
+                }
+               ]
+              },
+              {
+               "n": "page",
+               "t": "FRAME",
+               "w": 36,
+               "h": 36,
+               "hidden": true,
+               "layout": "HORIZONTAL",
+               "gap": 0,
+               "pad": "0 0 0 0",
+               "align": "CENTER/CENTER",
+               "size": "FIXED/FIXED",
+               "r": 8,
+               "fill": [
+                "var:surface/base"
+               ],
+               "stroke": [
+                "var:border/subtle"
+               ],
+               "sw": 1,
+               "c": [
+                {
+                 "n": "2",
+                 "t": "TEXT",
+                 "w": 9,
+                 "h": 17,
+                 "size": "HUG/HUG",
+                 "fill": [
+                  "var:text/secondary"
+                 ],
+                 "text": "2",
+                 "fs": 14,
+                 "font": "Semi Bold"
+                }
+               ]
+              },
+              {
+               "n": "page",
+               "t": "FRAME",
+               "w": 36,
+               "h": 36,
+               "hidden": true,
+               "layout": "HORIZONTAL",
+               "gap": 0,
+               "pad": "0 0 0 0",
+               "align": "CENTER/CENTER",
+               "size": "FIXED/FIXED",
+               "r": 8,
+               "fill": [
+                "var:surface/base"
+               ],
+               "stroke": [
+                "var:border/subtle"
+               ],
+               "sw": 1,
+               "c": [
+                {
+                 "n": "3",
+                 "t": "TEXT",
+                 "w": 10,
+                 "h": 17,
+                 "size": "HUG/HUG",
+                 "fill": [
+                  "var:text/secondary"
+                 ],
+                 "text": "3",
+                 "fs": 14,
+                 "font": "Semi Bold"
+                }
+               ]
+              },
+              {
+               "n": "…",
+               "t": "TEXT",
+               "w": 12,
+               "h": 17,
+               "hidden": true,
+               "size": "FIXED/FIXED",
+               "fill": [
+                "var:text/muted"
+               ],
+               "text": "…",
+               "fs": 14,
+               "font": "Semi Bold"
+              },
+              {
+               "n": "page",
+               "t": "FRAME",
+               "w": 36,
+               "h": 36,
+               "hidden": true,
+               "layout": "HORIZONTAL",
+               "gap": 0,
+               "pad": "0 0 0 0",
+               "align": "CENTER/CENTER",
+               "size": "FIXED/FIXED",
+               "r": 8,
+               "fill": [
+                "var:surface/base"
+               ],
+               "stroke": [
+                "var:border/subtle"
+               ],
+               "sw": 1,
+               "c": [
+                {
+                 "n": "8",
+                 "t": "TEXT",
+                 "w": 26,
+                 "h": 17,
+                 "size": "HUG/HUG",
+                 "fill": [
+                  "var:text/secondary"
+                 ],
+                 "text": "104",
+                 "fs": 14,
+                 "font": "Semi Bold"
+                }
+               ]
+              },
+              {
+               "n": "arrow",
+               "t": "FRAME",
+               "w": 36,
+               "h": 36,
+               "layout": "HORIZONTAL",
+               "gap": 0,
+               "pad": "0 0 0 0",
+               "align": "CENTER/CENTER",
+               "size": "FIXED/FIXED",
+               "r": 8,
+               "stroke": [
+                "var:border/subtle"
+               ],
+               "sw": 1,
+               "c": [
+                {
+                 "n": "icon-chevron-right",
+                 "t": "INSTANCE",
+                 "w": 16,
+                 "h": 16,
+                 "size": "FIXED/FIXED",
+                 "comp": "icon-chevron-right",
+                 "c": [
+                  {
+                   "n": "Vector",
+                   "t": "VECTOR",
+                   "w": 4,
+                   "h": 8,
+                   "size": "FIXED/FIXED",
+                   "stroke": [
+                    "var:text/secondary"
+                   ],
+                   "sw": 2
+                  }
+                 ]
+                }
+               ]
+              }
+             ]
+            },
+            {
+             "n": "Affichage 1 à 10 sur 80",
+             "t": "TEXT",
+             "w": 125,
+             "h": 16,
+             "size": "HUG/HUG",
+             "fill": [
+              "var:text/muted"
+             ],
+             "text": "Affichage 1 à 7 sur 7",
+             "fs": 13,
+             "font": "Regular"
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

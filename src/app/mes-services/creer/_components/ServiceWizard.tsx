@@ -296,8 +296,9 @@ export function ServiceWizard({
     state: (i + 1 < step ? 'done' : i + 1 === step ? 'active' : 'upcoming') as StepState,
   }))
 
+  // Below lg (375 frames 1488:59392 / 1594:27724 / 27846 / 27978 / 28113): stepper → box gap 20, box pad 24/16.
   return (
-    <div className="flex flex-col gap-8">
+    <div className="flex flex-col gap-8 max-lg:gap-5">
       <div className="flex flex-col gap-4">
         {!editing && resumedTitle && (
           <p className="flex items-start gap-2 text-body-sm text-text-secondary">
@@ -317,7 +318,7 @@ export function ServiceWizard({
         />
       </div>
 
-      <section className="flex flex-col gap-5 rounded-xl border border-border-subtle bg-surface-base p-6">
+      <section className="flex flex-col gap-5 rounded-xl border border-border-subtle bg-surface-base p-6 max-lg:px-4">
         <h2 ref={headingRef} tabIndex={-1} className="sr-only">
           {stepLabel(step - 1)}
         </h2>

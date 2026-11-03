@@ -1,0 +1,511 @@
+{
+ "n": "Créer ma boutique — succès (375 mobile)",
+ "t": "FRAME",
+ "w": 375,
+ "h": 649,
+ "layout": "VERTICAL",
+ "gap": 16,
+ "pad": "20 16 32 16",
+ "align": "MIN/MIN",
+ "size": "FIXED/HUG",
+ "fill": [
+  "var:surface/base"
+ ],
+ "c": [
+  {
+   "n": "content",
+   "t": "FRAME",
+   "w": 343,
+   "h": 597,
+   "layout": "VERTICAL",
+   "gap": 0,
+   "pad": "0 0 0 0",
+   "align": "MIN/CENTER",
+   "size": "FILL/HUG",
+   "c": [
+    {
+     "n": "column",
+     "t": "FRAME",
+     "w": 343,
+     "h": 597,
+     "layout": "VERTICAL",
+     "gap": 0,
+     "pad": "0 0 0 0",
+     "align": "MIN/MIN",
+     "size": "FILL/HUG",
+     "c": [
+      {
+       "n": "top",
+       "t": "FRAME",
+       "w": 343,
+       "h": 113,
+       "layout": "VERTICAL",
+       "gap": 24,
+       "pad": "0 0 0 0",
+       "align": "MIN/MIN",
+       "size": "FILL/HUG",
+       "c": [
+        {
+         "n": "page-header",
+         "t": "FRAME",
+         "w": 343,
+         "h": 113,
+         "layout": "VERTICAL",
+         "gap": 8,
+         "pad": "0 0 0 0",
+         "align": "MIN/MIN",
+         "size": "FILL/HUG",
+         "c": [
+          {
+           "n": "Breadcrumb",
+           "t": "INSTANCE",
+           "w": 265,
+           "h": 17,
+           "layout": "HORIZONTAL",
+           "gap": 8,
+           "pad": "0 0 0 0",
+           "align": "MIN/CENTER",
+           "size": "HUG/HUG",
+           "comp": "Breadcrumb",
+           "c": [
+            {
+             "n": "Accueil",
+             "t": "TEXT",
+             "w": 110,
+             "h": 17,
+             "size": "HUG/HUG",
+             "fill": [
+              "var:text/muted"
+             ],
+             "text": "Devenir vendeur",
+             "fs": 14,
+             "font": "Medium"
+            },
+            {
+             "n": "icon-chevron-right",
+             "t": "INSTANCE",
+             "w": 14,
+             "h": 14,
+             "size": "FIXED/FIXED",
+             "comp": "icon-chevron-right",
+             "c": [
+              {
+               "n": "Vector",
+               "t": "VECTOR",
+               "w": 4,
+               "h": 7,
+               "size": "FIXED/FIXED",
+               "stroke": [
+                "var:text/muted"
+               ],
+               "sw": 2
+              }
+             ]
+            },
+            {
+             "n": "Artisanat",
+             "t": "TEXT",
+             "w": 125,
+             "h": 17,
+             "size": "HUG/HUG",
+             "fill": [
+              "var:text/muted"
+             ],
+             "text": "Créer ma boutique",
+             "fs": 14,
+             "font": "Medium"
+            },
+            {
+             "n": "icon-chevron-right",
+             "t": "INSTANCE",
+             "w": 14,
+             "h": 14,
+             "hidden": true,
+             "size": "FIXED/FIXED",
+             "comp": "icon-chevron-right",
+             "c": [
+              {
+               "n": "Vector",
+               "t": "VECTOR",
+               "w": 4,
+               "h": 7,
+               "size": "FIXED/FIXED",
+               "stroke": [
+                "var:text/muted"
+               ],
+               "sw": 2
+              }
+             ]
+            },
+            {
+             "n": "Poterie de Nabeul",
+             "t": "TEXT",
+             "w": 126,
+             "h": 17,
+             "hidden": true,
+             "size": "FIXED/FIXED",
+             "fill": [
+              "var:text/primary"
+             ],
+             "text": "Créer ma boutique",
+             "fs": 14,
+             "font": "Semi Bold"
+            }
+           ]
+          },
+          {
+           "n": "Créer ma boutique",
+           "t": "TEXT",
+           "w": 343,
+           "h": 38,
+           "size": "FILL/HUG",
+           "fill": [
+            "var:text/primary"
+           ],
+           "text": "Créer ma boutique",
+           "fs": 32,
+           "font": "Bold",
+           "style": "H1"
+          },
+          {
+           "n": "Deux étapes pour lancer votre boutique. Vous pourrez tout modifier plus tard.",
+           "t": "TEXT",
+           "w": 343,
+           "h": 42,
+           "size": "FILL/HUG",
+           "fill": [
+            "var:text/secondary"
+           ],
+           "text": "Deux étapes pour lancer votre boutique. Vous pourrez tout modifier plus tard.",
+           "fs": 14,
+           "font": "Regular",
+           "style": "Body Small"
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "n": "boxWrap",
+       "t": "FRAME",
+       "w": 343,
+       "h": 484,
+       "layout": "VERTICAL",
+       "gap": 0,
+       "pad": "20 0 20 0",
+       "align": "MIN/MIN",
+       "size": "FILL/HUG",
+       "c": [
+        {
+         "n": "box",
+         "t": "FRAME",
+         "w": 343,
+         "h": 444,
+         "layout": "VERTICAL",
+         "gap": 20,
+         "pad": "40 16 40 16",
+         "align": "MIN/CENTER",
+         "size": "FILL/HUG",
+         "r": 12,
+         "fill": [
+          "var:surface/base"
+         ],
+         "stroke": [
+          "var:border/subtle"
+         ],
+         "sw": 1,
+         "c": [
+          {
+           "n": "Frame",
+           "t": "FRAME",
+           "w": 96,
+           "h": 96,
+           "layout": "HORIZONTAL",
+           "gap": 0,
+           "pad": "0 0 0 0",
+           "align": "CENTER/CENTER",
+           "size": "FIXED/FIXED",
+           "r": 9999,
+           "fill": [
+            "var:success/100"
+           ],
+           "c": [
+            {
+             "n": "icon-check-circle",
+             "t": "INSTANCE",
+             "w": 48,
+             "h": 48,
+             "size": "FIXED/FIXED",
+             "comp": "icon-check-circle",
+             "c": [
+              {
+               "n": "Vector",
+               "t": "VECTOR",
+               "w": 40,
+               "h": 40,
+               "size": "FIXED/FIXED",
+               "stroke": [
+                "var:success/500"
+               ],
+               "sw": 2
+              },
+              {
+               "n": "Vector",
+               "t": "VECTOR",
+               "w": 12,
+               "h": 8,
+               "size": "FIXED/FIXED",
+               "stroke": [
+                "var:success/500"
+               ],
+               "sw": 2
+              }
+             ]
+            }
+           ]
+          },
+          {
+           "n": "Votre boutique est créée !",
+           "t": "TEXT",
+           "w": 297,
+           "h": 30,
+           "size": "HUG/HUG",
+           "fill": [
+            "var:text/primary"
+           ],
+           "text": "Votre boutique est créée !",
+           "fs": 24,
+           "font": "Bold",
+           "style": "H2"
+          },
+          {
+           "n": "Bienvenue parmi les vendeurs Servyou. Ajoutez votre premier produit pour commencer à vendre.",
+           "t": "TEXT",
+           "w": 311,
+           "h": 78,
+           "size": "FILL/HUG",
+           "fill": [
+            "var:text/secondary"
+           ],
+           "text": "Bienvenue parmi les vendeurs Servyou. Ajoutez votre premier produit pour commencer à vendre.",
+           "fs": 16,
+           "font": "Regular",
+           "style": "Body"
+          },
+          {
+           "n": "Frame",
+           "t": "FRAME",
+           "w": 311,
+           "h": 100,
+           "layout": "VERTICAL",
+           "gap": 12,
+           "pad": "8 0 0 0",
+           "align": "MIN/CENTER",
+           "size": "FILL/FIXED",
+           "c": [
+            {
+             "n": "Button",
+             "t": "INSTANCE",
+             "w": 311,
+             "h": 40,
+             "layout": "HORIZONTAL",
+             "gap": 8,
+             "pad": "0 16 0 16",
+             "align": "CENTER/CENTER",
+             "size": "FILL/FIXED",
+             "r": 10,
+             "fill": [
+              "var:surface/base"
+             ],
+             "stroke": [
+              "var:border/strong"
+             ],
+             "sw": 1,
+             "comp": "Button / variant=secondary, size=md, state=default",
+             "c": [
+              {
+               "n": "icon",
+               "t": "FRAME",
+               "w": 18,
+               "h": 18,
+               "hidden": true,
+               "size": "FIXED/FIXED",
+               "c": [
+                {
+                 "n": "bar-h",
+                 "t": "RECTANGLE",
+                 "w": 12,
+                 "h": 2,
+                 "size": "FIXED/FIXED",
+                 "r": 1,
+                 "fill": [
+                  "var:text/primary"
+                 ]
+                },
+                {
+                 "n": "bar-v",
+                 "t": "RECTANGLE",
+                 "w": 2,
+                 "h": 12,
+                 "size": "FIXED/FIXED",
+                 "r": 1,
+                 "fill": [
+                  "var:text/primary"
+                 ]
+                }
+               ]
+              },
+              {
+               "n": "label",
+               "t": "TEXT",
+               "w": 203,
+               "h": 26,
+               "size": "HUG/HUG",
+               "fill": [
+                "var:text/primary"
+               ],
+               "text": "Voir ma boutique publique",
+               "fs": 16,
+               "font": "Semi Bold"
+              },
+              {
+               "n": "badge",
+               "t": "INSTANCE",
+               "w": 16,
+               "h": 16,
+               "hidden": true,
+               "layout": "HORIZONTAL",
+               "gap": 0,
+               "pad": "0 4 0 4",
+               "align": "CENTER/CENTER",
+               "size": "HUG/HUG",
+               "r": 9999,
+               "fill": [
+                "var:blue/600"
+               ],
+               "comp": "Badge / kind=count",
+               "c": [
+                {
+                 "n": "Label",
+                 "t": "TEXT",
+                 "w": 8,
+                 "h": 16,
+                 "size": "HUG/HUG",
+                 "fill": [
+                  "var:text/inverse"
+                 ],
+                 "text": "3",
+                 "fs": 12,
+                 "font": "Semi Bold"
+                }
+               ]
+              }
+             ]
+            },
+            {
+             "n": "Button",
+             "t": "INSTANCE",
+             "w": 311,
+             "h": 40,
+             "layout": "HORIZONTAL",
+             "gap": 8,
+             "pad": "0 16 0 16",
+             "align": "CENTER/CENTER",
+             "size": "FILL/FIXED",
+             "r": 10,
+             "fill": [
+              "var:blue/600"
+             ],
+             "comp": "Button / variant=primary, size=md, state=default",
+             "c": [
+              {
+               "n": "icon",
+               "t": "FRAME",
+               "w": 18,
+               "h": 18,
+               "hidden": true,
+               "size": "FIXED/FIXED",
+               "c": [
+                {
+                 "n": "bar-h",
+                 "t": "RECTANGLE",
+                 "w": 12,
+                 "h": 2,
+                 "size": "FIXED/FIXED",
+                 "r": 1,
+                 "fill": [
+                  "var:text/inverse"
+                 ]
+                },
+                {
+                 "n": "bar-v",
+                 "t": "RECTANGLE",
+                 "w": 2,
+                 "h": 12,
+                 "size": "FIXED/FIXED",
+                 "r": 1,
+                 "fill": [
+                  "var:text/inverse"
+                 ]
+                }
+               ]
+              },
+              {
+               "n": "label",
+               "t": "TEXT",
+               "w": 212,
+               "h": 26,
+               "size": "HUG/HUG",
+               "fill": [
+                "var:text/inverse"
+               ],
+               "text": "Aller à mon tableau de bord",
+               "fs": 16,
+               "font": "Semi Bold"
+              },
+              {
+               "n": "badge",
+               "t": "INSTANCE",
+               "w": 16,
+               "h": 16,
+               "hidden": true,
+               "layout": "HORIZONTAL",
+               "gap": 0,
+               "pad": "0 4 0 4",
+               "align": "CENTER/CENTER",
+               "size": "HUG/HUG",
+               "r": 9999,
+               "fill": [
+                "var:blue/600"
+               ],
+               "comp": "Badge / kind=count",
+               "c": [
+                {
+                 "n": "Label",
+                 "t": "TEXT",
+                 "w": 8,
+                 "h": 16,
+                 "size": "HUG/HUG",
+                 "fill": [
+                  "var:text/inverse"
+                 ],
+                 "text": "3",
+                 "fs": 12,
+                 "font": "Semi Bold"
+                }
+               ]
+              }
+             ]
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}
