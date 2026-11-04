@@ -14,6 +14,8 @@ import {
   Eye,
   ChevronRight,
   Store,
+  Image as ImageIcon,
+  MapPin,
 } from 'lucide-react'
 import { AppShell } from '@/components/shell/AppShell'
 import { StatusPill, type StatusValue } from '@/components/ui/status-pill'
@@ -46,9 +48,8 @@ const ROUTE = '/tableau-de-bord-vendeur'
 // Center is the surface that unblocks the order pipeline: before it, a buyer could create an
 // order and nothing on the platform could move it.
 //
-// ⚑ NO MOBILE FRAME EXISTS for G4 — nor for any of the ten seller pages (G1-G9 + D3). Every
-// below-lg value here is DERIVED, not measured, and each is flagged `derived:` at its call site.
-// Logged in docs/follow-ups.md as a design item.
+// 375: measured against the m375-g4-dashboard export (Figma 1488:60277), docs/design/m375-g4-g8-deltas.md. The `derived:` notes below
+// mark the values that export does not settle (the stat tiles stay one column: Q2). `max-lg:` / `max-sm:` only — desktop unchanged.
 
 // Order lifecycle -> StatusPill status. The pill vocabulary is locked (Figma 41:694) and these
 // are the order-lifecycle members of it; `prepared`/`dispatched` map onto the shipped French
@@ -90,13 +91,13 @@ export default async function TableauDeBordVendeurPage() {
     <AppShell user={topBarUser}>
       {/* derived: below-lg the whole page collapses to one column (gap-6 ≈ the measured 32/24
           rhythm scaled down). The measured desktop grid is content 1136 = main 752 + rail 360. */}
-      <div className="flex flex-col gap-6 lg:gap-8">
+      <div className="flex flex-col gap-6 max-lg:gap-5 lg:gap-8">
         {/* ── Band 1: header + glance ───────────────────────────────────────────────────── */}
         <div className="flex flex-col gap-6">
           {/* derived: stacks below-lg; measured desktop is a space-between row, cta 187×40. */}
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div className="flex flex-col gap-1">
-              <h1 className="text-h1 text-text-primary">
+              <h1 className="text-h1 text-text-primary max-lg:leading-[38px]">
                 {t('seller.dashboard.title', lang, { shop: shop?.name ?? '' })}
               </h1>
               <p className="text-body-sm text-text-secondary">
@@ -110,7 +111,7 @@ export default async function TableauDeBordVendeurPage() {
                 rather than copying this a third time. */}
             <Link
               href="/mes-produits/ajouter"
-              className={`inline-flex h-10 shrink-0 items-center justify-center gap-2 self-start rounded-lg bg-brand-blue-600 px-4 text-base font-semibold whitespace-nowrap text-text-inverse transition-colors hover:bg-brand-blue-700 active:bg-brand-blue-800 motion-reduce:transition-none lg:self-auto ${FOCUS_RING}`}
+              className={`inline-flex h-10 shrink-0 items-center justify-center gap-2 self-start rounded-lg bg-brand-blue-600 px-4 text-base font-semibold whitespace-nowrap text-text-inverse transition-colors hover:bg-brand-blue-700 active:bg-brand-blue-800 motion-reduce:transition-none max-lg:self-stretch lg:self-auto ${FOCUS_RING}`}
             >
               <Plus className="h-4 w-4 shrink-0" aria-hidden="true" />
               {t('seller.dashboard.cta_add_product', lang)}
@@ -185,10 +186,11 @@ export default async function TableauDeBordVendeurPage() {
         </div>
 
         {/* ── Band 2: Action Center ─────────────────────────────────────────────────────── */}
-        <section className="flex flex-col gap-4 rounded-xl border-[1.5px] border-brand-blue-200 bg-brand-blue-50 p-6">
+        {/* 375: the 1.5 px stroke sits inside Figma's pad 24 / 16 → content 311. */}
+        <section className="flex flex-col gap-4 rounded-xl border-[1.5px] border-brand-blue-200 bg-brand-blue-50 p-6 max-lg:px-[14.5px] max-lg:py-[22.5px]">
           <div className="flex items-center gap-2">
             <Zap className="h-[22px] w-[22px] shrink-0 text-brand-blue-600" aria-hidden="true" />
-            <h2 className="text-h3 text-text-primary">{t('seller.dashboard.ac.title', lang)}</h2>
+            <h2 className="text-h3 text-text-primary max-lg:leading-[26px]">{t('seller.dashboard.ac.title', lang)}</h2>
             {/* Count chip is hidden at zero — measured: the specimen sets ac-count hidden. */}
             {data.actionable.length > 0 ? (
               <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-brand-blue-600 px-1 text-caption font-semibold text-text-inverse">
@@ -217,28 +219,46 @@ export default async function TableauDeBordVendeurPage() {
                 return (
                   <li
                     key={order.id}
-                    // derived: stacks below-sm. Measured desktop row is 1088×83.
-                    className="flex flex-col gap-3 rounded-lg bg-surface-base p-4 sm:flex-row sm:items-center sm:gap-4"
+                    // Below sm the 375 card (OAR-*, m375-g4-dashboard): r10, 1 px border/subtle inside pad 16 (content 279), gap 16 — the
+                    // placeholder thumb, the title + buyer, then the pill with the row's ONE action and « Voir détails ». Measured desktop
+                    // row is 1088×83 (unchanged: the 375-only pieces are sm:hidden and their wrapper is sm:contents).
+                    className="flex flex-col gap-3 rounded-lg bg-surface-base p-4 max-sm:gap-4 max-sm:rounded-[10px] max-sm:border max-sm:border-border-subtle max-sm:p-[15px] sm:flex-row sm:items-center sm:gap-4"
                   >
+                    <span className="flex size-12 shrink-0 items-center justify-center rounded-md bg-surface-sunken sm:hidden">
+                      <ImageIcon className="size-[22px] text-icon-muted" aria-hidden="true" />
+                    </span>
                     <div className="flex min-w-0 flex-1 flex-col gap-1">
                       <div className="flex items-center gap-2">
-                        <StatusPill status={pillFor(order.status)}>
+                        <StatusPill status={pillFor(order.status)} className="max-sm:hidden">
                           {t(`common.status_${order.status}`, lang)}
                         </StatusPill>
-                        <p className="truncate text-body text-text-primary">{order.title}</p>
+                        <p className="truncate text-body text-text-primary max-sm:font-semibold">{order.title}</p>
                       </div>
-                      <p className="text-body-sm text-text-secondary">
+                      <p className="text-body-sm text-text-secondary max-sm:flex max-sm:items-center max-sm:gap-2">
+                        <MapPin className="size-3.5 shrink-0 sm:hidden" aria-hidden="true" />
                         {order.buyerName}
                         {order.buyerCity ? ` · ${order.buyerCity}` : ''}
                       </p>
                     </div>
-                    {label ? (
-                      <AdvanceOrderButton
-                        orderId={order.id}
-                        label={label}
-                        variant={order.status === 'pending' ? 'primary' : 'secondary'}
-                      />
-                    ) : null}
+                    <div className="flex flex-wrap items-center gap-3 sm:contents">
+                      {/* The frame stretches the pending pill across the card; the other states hug it. */}
+                      <StatusPill status={pillFor(order.status)} className={`sm:hidden ${order.status === 'pending' ? 'w-full' : ''}`}>
+                        {t(`common.status_${order.status}`, lang)}
+                      </StatusPill>
+                      {label ? (
+                        <AdvanceOrderButton
+                          orderId={order.id}
+                          label={label}
+                          variant={order.status === 'pending' ? 'primary' : 'secondary'}
+                        />
+                      ) : null}
+                      <Link
+                        href={`/commandes-recues/${order.id}`}
+                        className={`rounded text-body-sm text-brand-blue-600 hover:underline sm:hidden ${order.status === 'pending' ? 'basis-full' : ''} ${FOCUS_RING}`}
+                      >
+                        {t('seller.orders.view_detail', lang)}
+                      </Link>
+                    </div>
                   </li>
                 )
               })}
@@ -271,16 +291,22 @@ export default async function TableauDeBordVendeurPage() {
                 {data.inFlight.map((order, i) => (
                   <li
                     key={order.id}
-                    className={`flex items-center gap-3 py-4 ${i > 0 ? 'border-t border-border-subtle' : ''}`}
+                    // Below sm the 375 List Row: pad 16, the pill beside the Semi Bold title, the buyer 8 under it.
+                    className={`flex items-center gap-3 py-4 max-sm:px-4 ${i > 0 ? 'border-t border-border-subtle' : ''}`}
                   >
-                    <div className="flex min-w-0 flex-1 flex-col gap-1">
-                      <p className="truncate text-body text-text-primary">{order.title}</p>
+                    <div className="flex min-w-0 flex-1 flex-col gap-1 max-sm:gap-2">
+                      <div className="flex min-w-0 items-center gap-2">
+                        <p className="truncate text-body text-text-primary max-sm:font-semibold">{order.title}</p>
+                        <StatusPill status={pillFor(order.status)} className="shrink-0 sm:hidden">
+                          {t(`common.status_${order.status}`, lang)}
+                        </StatusPill>
+                      </div>
                       <p className="text-body-sm text-text-secondary">
                         {order.buyerName}
                         {order.buyerCity ? ` · ${order.buyerCity}` : ''}
                       </p>
                     </div>
-                    <StatusPill status={pillFor(order.status)}>
+                    <StatusPill status={pillFor(order.status)} className="max-sm:hidden">
                       {t(`common.status_${order.status}`, lang)}
                     </StatusPill>
                   </li>
@@ -307,7 +333,7 @@ export default async function TableauDeBordVendeurPage() {
                 <ul className="flex flex-col gap-3">
                   {data.lowStock.map((p) => (
                     <li key={p.id} className="flex items-center gap-3">
-                      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-surface-sunken">
+                      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-surface-sunken max-lg:rounded-md">
                         <Package className="h-5 w-5 text-icon-muted" aria-hidden="true" />
                       </span>
                       <div className="flex min-w-0 flex-1 flex-col gap-1">
@@ -330,7 +356,7 @@ export default async function TableauDeBordVendeurPage() {
                       href={a.href}
                       className={`flex items-center gap-3 rounded-lg py-2 transition-colors hover:bg-surface-sunken ${FOCUS_RING}`}
                     >
-                      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-brand-blue-50">
+                      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-brand-blue-50 max-lg:rounded-md">
                         <a.icon className="h-5 w-5 text-brand-blue-600" aria-hidden="true" />
                       </span>
                       <span className="min-w-0 flex-1 text-body text-text-primary">

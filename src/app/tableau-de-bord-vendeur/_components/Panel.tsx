@@ -25,12 +25,14 @@ export function Panel({
   children: ReactNode
 }) {
   return (
-    <section className="flex flex-col gap-4 rounded-xl border border-border-subtle bg-surface-base p-6">
-      <div className="flex items-center gap-2">
+    // 375 (m375-g4-dashboard): the stroke sits inside Figma's pad 24 / 16 (content 311), the title line is 26, and a header link drops
+    // under the title.
+    <section className="flex flex-col gap-4 rounded-xl border border-border-subtle bg-surface-base p-6 max-lg:px-[15px] max-lg:py-[23px]">
+      <div className="flex items-center gap-2 max-lg:flex-wrap">
         {Icon ? (
           <Icon className={cn('h-5 w-5 shrink-0', iconClassName)} aria-hidden="true" />
         ) : null}
-        <h2 className="text-h3 text-text-primary">{title}</h2>
+        <h2 className="text-h3 text-text-primary max-lg:leading-[26px]">{title}</h2>
         {/* ⚑ The link below is NOT `cn()` — same eviction as OrderRail's labels. tailwind-merge
             files our custom `text-*` size tokens under the catch-all `text-*` colour group, so
             `text-brand-blue-600` was deleting `text-body-sm` and this link shipped at the
@@ -38,7 +40,7 @@ export function Panel({
         {link ? (
           <Link
             href={link.href}
-            className={`ms-auto rounded text-body-sm text-brand-blue-600 hover:underline ${FOCUS_RING}`}
+            className={`ms-auto rounded text-body-sm text-brand-blue-600 hover:underline max-lg:ms-0 max-lg:basis-full ${FOCUS_RING}`}
           >
             {link.label}
           </Link>
