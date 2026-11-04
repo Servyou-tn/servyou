@@ -163,27 +163,27 @@ export function CreateShopForm({ askPhone = false }: { askPhone?: boolean }) {
       id="create-shop-form"
       onSubmit={onSubmit}
       noValidate
-      className="mx-auto flex w-full max-w-[760px] flex-col gap-6"
+      className="mx-auto flex w-full max-w-[760px] flex-col gap-6 max-lg:gap-5"
     >
       <div className="flex flex-col gap-6">
         <div>
-          <nav aria-label="Fil d'Ariane" className="mb-3">
-            <ol className="flex items-center gap-1.5 text-sm text-text-muted">
+          <nav aria-label="Fil d'Ariane" className="mb-3 max-lg:mb-2">
+            <ol className="flex items-center gap-1.5 text-sm text-text-muted max-lg:gap-2 max-lg:font-medium">
               <li>
                 <Link href="/devenir-vendeur" className={`rounded ${FOCUS_RING}`}>
                   {t('shop.create.crumb_devenir', lang)}
                 </Link>
               </li>
               <li aria-hidden="true" className="flex items-center">
-                <ChevronRight className="h-4 w-4 rtl:rotate-180" />
+                <ChevronRight className="h-4 w-4 rtl:rotate-180 max-lg:h-3.5 max-lg:w-3.5" />
               </li>
-              <li aria-current="page" className="font-medium text-text-primary">
+              <li aria-current="page" className="font-medium text-text-primary max-lg:text-text-muted">
                 {t('shop.create.crumb_current', lang)}
               </li>
             </ol>
           </nav>
-          <h1 className="text-2xl font-semibold text-text-primary">{t('shop.create.page_title', lang)}</h1>
-          <p className="mt-1.5 text-sm text-text-muted">{t('shop.create.page_subtitle', lang)}</p>
+          <h1 className="text-2xl font-semibold text-text-primary max-lg:text-[32px] max-lg:font-bold max-lg:leading-[38px]">{t('shop.create.page_title', lang)}</h1>
+          <p className="mt-1.5 text-sm text-text-muted max-lg:mt-2 max-lg:text-text-secondary">{t('shop.create.page_subtitle', lang)}</p>
         </div>
 
         <Stepper
@@ -194,7 +194,7 @@ export function CreateShopForm({ askPhone = false }: { askPhone?: boolean }) {
         />
       </div>
 
-      <div className="flex flex-col gap-5 rounded-card border border-border-subtle bg-surface-base p-4 sm:p-6">
+      <div className="flex flex-col gap-5 rounded-card border border-border-subtle bg-surface-base p-4 max-sm:py-6 sm:p-6">
         <LogoField previewUrl={logoPreview} onPick={pickLogo} />
 
         <BannerField previewUrl={bannerPreview} onPick={pickBanner} onRemove={removeBanner} />

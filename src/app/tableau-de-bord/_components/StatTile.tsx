@@ -36,7 +36,7 @@ export function StatTile({
   muted?: boolean
 }) {
   return (
-    <div className="flex flex-1 flex-col gap-3 rounded-xl border border-border-subtle bg-surface-base p-5 shadow-xs">
+    <div className="flex flex-1 flex-col gap-3 rounded-xl border border-border-subtle bg-surface-base p-5 shadow-xs max-sm:px-4">
       <span
         className={cn(
           'flex h-11 w-11 shrink-0 items-center justify-center rounded-full',
@@ -56,7 +56,7 @@ export function StatTile({
         <p
           className={cn(
             'text-[28px] font-bold leading-[normal]',
-            muted ? 'text-text-muted' : 'text-brand-blue-800',
+            muted ? 'text-text-muted' : 'text-brand-blue-800 max-lg:text-text-primary',
           )}
         >
           {value}

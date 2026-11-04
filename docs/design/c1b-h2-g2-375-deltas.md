@@ -34,3 +34,8 @@ step footers (not drawn) · G2 « Catégories de la boutique » wraps to 3 lines
 5. **H2 succès « Voir mon profil public »**: drawn 40 tall; kept 48 (the 44 px touch-target rule).
 
 Controls: tsc · eslint · desktop 0 px (full set, 9 screens × 1440 + 1100 × FR + AR) · 375 FR side by side · AR spot check.
+
+## Founder answers (2026-11-04, after #314)
+
+Q1 G2 step 1 export sent → built in PR-B4 · Q2 keep the Boutiques filters on mobile · Q3 keep 4 thumbnails, `ShopCard`
+stays shared and unchanged · Q5 keep 48 px.

@@ -31,11 +31,11 @@ function budgetValue(min: number | null, max: number | null, lang: Lang): string
 
 function MetaCol({ label, value, ltr }: { label: string; value: string; ltr?: boolean }) {
   return (
-    <div className="flex flex-col items-end gap-0.5">
+    <div className="flex flex-col items-end gap-0.5 max-sm:items-start">
       <p className="text-caption text-text-muted">{label}</p>
       <p
         dir={ltr ? 'ltr' : undefined}
-        className="text-end text-body-sm font-semibold text-text-primary"
+        className="text-end text-body-sm font-semibold text-text-primary max-sm:text-start"
       >
         {value}
       </p>
@@ -51,17 +51,17 @@ export function MissionRow({ mission, lang }: { mission: MissionMatch; lang: Lan
   return (
     <Link
       href="/trouver-des-missions"
-      className={`flex items-center justify-between gap-4 rounded-lg py-3 transition-colors hover:bg-surface-sunken ${FOCUS_RING}`}
+      className={`flex items-center justify-between gap-4 rounded-lg py-3 transition-colors hover:bg-surface-sunken max-sm:flex-col max-sm:items-stretch max-sm:py-4 ${FOCUS_RING}`}
     >
       <div className="flex min-w-0 flex-1 items-center gap-2">
-        <p className="truncate text-body text-text-primary">{mission.title}</p>
+        <p className="truncate text-body text-text-primary max-sm:whitespace-normal max-sm:font-semibold">{mission.title}</p>
         {isUrgent ? (
           <span className="shrink-0 rounded-full bg-danger-100 px-2 py-0.5 text-caption font-semibold text-danger-700">
             {t('mission.urgent', lang)}
           </span>
         ) : null}
       </div>
-      <div className="flex shrink-0 items-center gap-6">
+      <div className="flex shrink-0 items-center gap-6 max-sm:justify-start">
         {/* ltr on Budget only — reference_rtl_numeric_run_reversal: a bidi-neutral-separated
             number pair ("800 – 1500") visually reorders in AR unless pinned. "Publié" is a full
             relative-time PHRASE (Arabic prose in AR mode, e.g. "منذ 39 يومًا") — forcing ltr on

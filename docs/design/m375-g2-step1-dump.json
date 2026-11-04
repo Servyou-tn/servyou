@@ -1,0 +1,1278 @@
+{
+ "n": "Créer ma boutique (375 mobile)",
+ "t": "FRAME",
+ "w": 375,
+ "h": 1017,
+ "layout": "VERTICAL",
+ "gap": 16,
+ "pad": "20 16 32 16",
+ "align": "MIN/MIN",
+ "size": "FIXED/HUG",
+ "fill": [
+  "var:surface/base"
+ ],
+ "c": [
+  {
+   "n": "content",
+   "t": "FRAME",
+   "w": 343,
+   "h": 965,
+   "layout": "VERTICAL",
+   "gap": 0,
+   "pad": "0 0 0 0",
+   "align": "MIN/CENTER",
+   "size": "FILL/HUG",
+   "c": [
+    {
+     "n": "column",
+     "t": "FRAME",
+     "w": 343,
+     "h": 965,
+     "layout": "VERTICAL",
+     "gap": 0,
+     "pad": "0 0 0 0",
+     "align": "MIN/MIN",
+     "size": "FILL/HUG",
+     "c": [
+      {
+       "n": "top",
+       "t": "FRAME",
+       "w": 343,
+       "h": 202,
+       "layout": "VERTICAL",
+       "gap": 24,
+       "pad": "0 0 0 0",
+       "align": "MIN/MIN",
+       "size": "FILL/HUG",
+       "c": [
+        {
+         "n": "page-header",
+         "t": "FRAME",
+         "w": 343,
+         "h": 113,
+         "layout": "VERTICAL",
+         "gap": 8,
+         "pad": "0 0 0 0",
+         "align": "MIN/MIN",
+         "size": "FILL/HUG",
+         "c": [
+          {
+           "n": "Breadcrumb",
+           "t": "INSTANCE",
+           "w": 265,
+           "h": 17,
+           "layout": "HORIZONTAL",
+           "gap": 8,
+           "pad": "0 0 0 0",
+           "align": "MIN/CENTER",
+           "size": "HUG/HUG",
+           "comp": "Breadcrumb",
+           "c": [
+            {
+             "n": "Accueil",
+             "t": "TEXT",
+             "w": 110,
+             "h": 17,
+             "size": "HUG/HUG",
+             "fill": [
+              "var:text/muted"
+             ],
+             "text": "Devenir vendeur",
+             "fs": 14,
+             "font": "Medium"
+            },
+            {
+             "n": "icon-chevron-right",
+             "t": "INSTANCE",
+             "w": 14,
+             "h": 14,
+             "size": "FIXED/FIXED",
+             "comp": "icon-chevron-right",
+             "c": [
+              {
+               "n": "Vector",
+               "t": "VECTOR",
+               "w": 4,
+               "h": 7,
+               "size": "FIXED/FIXED",
+               "stroke": [
+                "var:text/muted"
+               ],
+               "sw": 2
+              }
+             ]
+            },
+            {
+             "n": "Artisanat",
+             "t": "TEXT",
+             "w": 125,
+             "h": 17,
+             "size": "HUG/HUG",
+             "fill": [
+              "var:text/muted"
+             ],
+             "text": "Créer ma boutique",
+             "fs": 14,
+             "font": "Medium"
+            },
+            {
+             "n": "icon-chevron-right",
+             "t": "INSTANCE",
+             "w": 14,
+             "h": 14,
+             "hidden": true,
+             "size": "FIXED/FIXED",
+             "comp": "icon-chevron-right",
+             "c": [
+              {
+               "n": "Vector",
+               "t": "VECTOR",
+               "w": 4,
+               "h": 7,
+               "size": "FIXED/FIXED",
+               "stroke": [
+                "var:text/muted"
+               ],
+               "sw": 2
+              }
+             ]
+            },
+            {
+             "n": "Poterie de Nabeul",
+             "t": "TEXT",
+             "w": 126,
+             "h": 17,
+             "hidden": true,
+             "size": "FIXED/FIXED",
+             "fill": [
+              "var:text/primary"
+             ],
+             "text": "Créer ma boutique",
+             "fs": 14,
+             "font": "Semi Bold"
+            }
+           ]
+          },
+          {
+           "n": "Créer ma boutique",
+           "t": "TEXT",
+           "w": 343,
+           "h": 38,
+           "size": "FILL/HUG",
+           "fill": [
+            "var:text/primary"
+           ],
+           "text": "Créer ma boutique",
+           "fs": 32,
+           "font": "Bold",
+           "style": "H1"
+          },
+          {
+           "n": "Deux étapes pour lancer votre boutique. Vous pourrez tout modifier plus tard.",
+           "t": "TEXT",
+           "w": 343,
+           "h": 42,
+           "size": "FILL/HUG",
+           "fill": [
+            "var:text/secondary"
+           ],
+           "text": "Deux étapes pour lancer votre boutique. Vous pourrez tout modifier plus tard.",
+           "fs": 14,
+           "font": "Regular",
+           "style": "Body Small"
+          }
+         ]
+        },
+        {
+         "n": "Stepper",
+         "t": "FRAME",
+         "w": 343,
+         "h": 65,
+         "layout": "HORIZONTAL",
+         "gap": 0,
+         "pad": "0 0 0 0",
+         "align": "MIN/MIN",
+         "size": "FILL/HUG",
+         "c": [
+          {
+           "n": "step",
+           "t": "FRAME",
+           "w": 100,
+           "h": 65,
+           "layout": "VERTICAL",
+           "gap": 8,
+           "pad": "0 0 0 0",
+           "align": "MIN/CENTER",
+           "size": "FIXED/HUG",
+           "c": [
+            {
+             "n": "Frame",
+             "t": "FRAME",
+             "w": 36,
+             "h": 36,
+             "layout": "HORIZONTAL",
+             "gap": 0,
+             "pad": "0 0 0 0",
+             "align": "CENTER/CENTER",
+             "size": "FIXED/FIXED",
+             "r": 9999,
+             "fill": [
+              "var:blue/600"
+             ],
+             "c": [
+              {
+               "n": "1",
+               "t": "TEXT",
+               "w": 8,
+               "h": 19,
+               "size": "HUG/HUG",
+               "fill": [
+                "var:text/inverse"
+               ],
+               "text": "1",
+               "fs": 16,
+               "font": "Semi Bold"
+              }
+             ]
+            },
+            {
+             "n": "Bases",
+             "t": "TEXT",
+             "w": 41,
+             "h": 21,
+             "size": "HUG/HUG",
+             "fill": [
+              "var:text/primary"
+             ],
+             "text": "Bases",
+             "fs": 14,
+             "font": "Semi Bold"
+            }
+           ]
+          },
+          {
+           "n": "conn",
+           "t": "FRAME",
+           "w": 40,
+           "h": 36,
+           "layout": "HORIZONTAL",
+           "gap": 0,
+           "pad": "0 0 0 0",
+           "align": "CENTER/CENTER",
+           "size": "FIXED/FIXED",
+           "c": [
+            {
+             "n": "Rectangle",
+             "t": "RECTANGLE",
+             "w": 40,
+             "h": 2,
+             "size": "FIXED/FIXED",
+             "fill": [
+              "var:border/subtle"
+             ]
+            }
+           ]
+          },
+          {
+           "n": "step",
+           "t": "FRAME",
+           "w": 100,
+           "h": 65,
+           "layout": "VERTICAL",
+           "gap": 8,
+           "pad": "0 0 0 0",
+           "align": "MIN/CENTER",
+           "size": "FIXED/HUG",
+           "c": [
+            {
+             "n": "Frame",
+             "t": "FRAME",
+             "w": 36,
+             "h": 36,
+             "layout": "HORIZONTAL",
+             "gap": 0,
+             "pad": "0 0 0 0",
+             "align": "CENTER/CENTER",
+             "size": "FIXED/FIXED",
+             "r": 9999,
+             "fill": [
+              "var:surface/base"
+             ],
+             "stroke": [
+              "var:border/subtle"
+             ],
+             "sw": 2,
+             "c": [
+              {
+               "n": "2",
+               "t": "TEXT",
+               "w": 10,
+               "h": 19,
+               "size": "HUG/HUG",
+               "fill": [
+                "var:text/muted"
+               ],
+               "text": "2",
+               "fs": 16,
+               "font": "Semi Bold"
+              }
+             ]
+            },
+            {
+             "n": "Configuration",
+             "t": "TEXT",
+             "w": 90,
+             "h": 21,
+             "size": "HUG/HUG",
+             "fill": [
+              "var:text/muted"
+             ],
+             "text": "Configuration",
+             "fs": 14,
+             "font": "Regular",
+             "style": "Body Small"
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "n": "boxWrap",
+       "t": "FRAME",
+       "w": 343,
+       "h": 763,
+       "layout": "VERTICAL",
+       "gap": 0,
+       "pad": "20 0 20 0",
+       "align": "MIN/MIN",
+       "size": "FILL/HUG",
+       "c": [
+        {
+         "n": "box",
+         "t": "FRAME",
+         "w": 343,
+         "h": 723,
+         "layout": "VERTICAL",
+         "gap": 20,
+         "pad": "24 16 24 16",
+         "align": "MIN/MIN",
+         "size": "FILL/HUG",
+         "r": 12,
+         "fill": [
+          "var:surface/base"
+         ],
+         "stroke": [
+          "var:border/subtle"
+         ],
+         "sw": 1,
+         "c": [
+          {
+           "n": "field-logo",
+           "t": "FRAME",
+           "w": 311,
+           "h": 145,
+           "layout": "HORIZONTAL",
+           "gap": 16,
+           "pad": "0 0 0 0",
+           "align": "MIN/CENTER",
+           "size": "FILL/HUG",
+           "c": [
+            {
+             "n": "avatar-ring",
+             "t": "FRAME",
+             "w": 128,
+             "h": 120,
+             "layout": "HORIZONTAL",
+             "gap": 0,
+             "pad": "0 0 0 0",
+             "align": "CENTER/CENTER",
+             "size": "FIXED/HUG",
+             "r": 9999,
+             "fill": [
+              "var:surface/base"
+             ],
+             "c": [
+              {
+               "n": "Avatar",
+               "t": "INSTANCE",
+               "w": 120,
+               "h": 120,
+               "size": "FIXED/FIXED",
+               "comp": "Avatar / size=2xl, type=initials, status=none",
+               "c": [
+                {
+                 "n": "Shape",
+                 "t": "FRAME",
+                 "w": 120,
+                 "h": 58,
+                 "layout": "HORIZONTAL",
+                 "gap": 0,
+                 "pad": "0 0 0 0",
+                 "align": "CENTER/CENTER",
+                 "size": "FIXED/HUG",
+                 "r": 9999,
+                 "fill": [
+                  "var:blue/100"
+                 ],
+                 "c": [
+                  {
+                   "n": "Initials",
+                   "t": "TEXT",
+                   "w": 66,
+                   "h": 58,
+                   "size": "HUG/HUG",
+                   "fill": [
+                    "var:blue/600"
+                   ],
+                   "text": "AS",
+                   "fs": 48,
+                   "font": "Semi Bold"
+                  }
+                 ]
+                },
+                {
+                 "n": "Verified",
+                 "t": "FRAME",
+                 "w": 36,
+                 "h": 36,
+                 "hidden": true,
+                 "layout": "HORIZONTAL",
+                 "gap": 0,
+                 "pad": "0 0 0 0",
+                 "align": "CENTER/CENTER",
+                 "size": "FIXED/FIXED",
+                 "r": 9999,
+                 "fill": [
+                  "var:blue/600"
+                 ],
+                 "stroke": [
+                  "var:surface/base"
+                 ],
+                 "sw": 2,
+                 "c": [
+                  {
+                   "n": "icon",
+                   "t": "FRAME",
+                   "w": 24,
+                   "h": 24,
+                   "size": "FIXED/FIXED",
+                   "c": [
+                    {
+                     "n": "Vector",
+                     "t": "VECTOR",
+                     "w": 16,
+                     "h": 11,
+                     "size": "FIXED/FIXED",
+                     "fill": [
+                      "var:text/muted"
+                     ],
+                     "stroke": [
+                      "var:text/inverse"
+                     ],
+                     "sw": 2
+                    }
+                   ]
+                  }
+                 ]
+                }
+               ]
+              },
+              {
+               "n": "photo-edit-badge",
+               "t": "FRAME",
+               "w": 16,
+               "h": 32,
+               "layout": "HORIZONTAL",
+               "gap": 0,
+               "pad": "0 0 0 0",
+               "align": "CENTER/CENTER",
+               "size": "HUG/FIXED",
+               "r": 9999,
+               "fill": [
+                "var:blue/600"
+               ],
+               "stroke": [
+                "var:surface/base"
+               ],
+               "sw": 2,
+               "c": [
+                {
+                 "n": "icon-camera",
+                 "t": "INSTANCE",
+                 "w": 16,
+                 "h": 16,
+                 "size": "FIXED/FIXED",
+                 "comp": "icon-camera",
+                 "c": [
+                  {
+                   "n": "Vector",
+                   "t": "VECTOR",
+                   "w": 13,
+                   "h": 11,
+                   "size": "FIXED/FIXED",
+                   "stroke": [
+                    "var:text/inverse"
+                   ],
+                   "sw": 2
+                  },
+                  {
+                   "n": "Vector",
+                   "t": "VECTOR",
+                   "w": 4,
+                   "h": 4,
+                   "size": "FIXED/FIXED",
+                   "stroke": [
+                    "var:text/inverse"
+                   ],
+                   "sw": 2
+                  }
+                 ]
+                }
+               ]
+              }
+             ]
+            },
+            {
+             "n": "Frame",
+             "t": "FRAME",
+             "w": 167,
+             "h": 145,
+             "layout": "VERTICAL",
+             "gap": 8,
+             "pad": "0 0 0 0",
+             "align": "MIN/MIN",
+             "size": "FILL/HUG",
+             "c": [
+              {
+               "n": "Button",
+               "t": "INSTANCE",
+               "w": 128,
+               "h": 32,
+               "layout": "HORIZONTAL",
+               "gap": 8,
+               "pad": "0 12 0 12",
+               "align": "CENTER/CENTER",
+               "size": "HUG/FIXED",
+               "r": 10,
+               "fill": [
+                "var:surface/base"
+               ],
+               "stroke": [
+                "var:border/strong"
+               ],
+               "sw": 1,
+               "comp": "Button / variant=secondary, size=sm, state=default",
+               "c": [
+                {
+                 "n": "icon",
+                 "t": "FRAME",
+                 "w": 16,
+                 "h": 16,
+                 "hidden": true,
+                 "size": "FIXED/FIXED",
+                 "c": [
+                  {
+                   "n": "bar-h",
+                   "t": "RECTANGLE",
+                   "w": 11,
+                   "h": 2,
+                   "size": "FIXED/FIXED",
+                   "r": 1,
+                   "fill": [
+                    "var:text/primary"
+                   ]
+                  },
+                  {
+                   "n": "bar-v",
+                   "t": "RECTANGLE",
+                   "w": 2,
+                   "h": 11,
+                   "size": "FIXED/FIXED",
+                   "r": 1,
+                   "fill": [
+                    "var:text/primary"
+                   ]
+                  }
+                 ]
+                },
+                {
+                 "n": "label",
+                 "t": "TEXT",
+                 "w": 104,
+                 "h": 21,
+                 "size": "HUG/HUG",
+                 "fill": [
+                  "var:text/primary"
+                 ],
+                 "text": "Ajouter un logo",
+                 "fs": 14,
+                 "font": "Semi Bold"
+                },
+                {
+                 "n": "badge",
+                 "t": "INSTANCE",
+                 "w": 16,
+                 "h": 16,
+                 "hidden": true,
+                 "layout": "HORIZONTAL",
+                 "gap": 0,
+                 "pad": "0 4 0 4",
+                 "align": "CENTER/CENTER",
+                 "size": "HUG/HUG",
+                 "r": 9999,
+                 "fill": [
+                  "var:blue/600"
+                 ],
+                 "comp": "Badge / kind=count",
+                 "c": [
+                  {
+                   "n": "Label",
+                   "t": "TEXT",
+                   "w": 8,
+                   "h": 16,
+                   "size": "HUG/HUG",
+                   "fill": [
+                    "var:text/inverse"
+                   ],
+                   "text": "3",
+                   "fs": 12,
+                   "font": "Semi Bold"
+                  }
+                 ]
+                }
+               ]
+              },
+              {
+               "n": "Votre logo apparaît sur votre boutique et vos bons de livraison. (optionnel mais recommandé)",
+               "t": "TEXT",
+               "w": 167,
+               "h": 105,
+               "size": "FILL/HUG",
+               "fill": [
+                "var:text/secondary"
+               ],
+               "text": "Votre logo apparaît sur votre boutique et vos bons de livraison. (optionnel mais recommandé)",
+               "fs": 14,
+               "font": "Regular",
+               "style": "Body Small"
+              }
+             ]
+            }
+           ]
+          },
+          {
+           "n": "field-banner",
+           "t": "FRAME",
+           "w": 311,
+           "h": 101,
+           "layout": "VERTICAL",
+           "gap": 12,
+           "pad": "0 0 0 0",
+           "align": "CENTER/CENTER",
+           "size": "FILL/HUG",
+           "r": 10,
+           "fill": [
+            "GRADIENT_LINEAR"
+           ],
+           "stroke": [
+            "var:surface/base"
+           ],
+           "sw": 2,
+           "c": [
+            {
+             "n": "icon-camera",
+             "t": "INSTANCE",
+             "w": 28,
+             "h": 28,
+             "size": "FIXED/FIXED",
+             "comp": "icon-camera",
+             "c": [
+              {
+               "n": "Vector",
+               "t": "VECTOR",
+               "w": 23,
+               "h": 19,
+               "size": "FIXED/FIXED",
+               "stroke": [
+                "var:text/inverse"
+               ],
+               "sw": 2
+              },
+              {
+               "n": "Vector",
+               "t": "VECTOR",
+               "w": 7,
+               "h": 7,
+               "size": "FIXED/FIXED",
+               "stroke": [
+                "var:text/inverse"
+               ],
+               "sw": 2
+              }
+             ]
+            },
+            {
+             "n": "Button",
+             "t": "INSTANCE",
+             "w": 166,
+             "h": 32,
+             "layout": "HORIZONTAL",
+             "gap": 8,
+             "pad": "0 12 0 12",
+             "align": "CENTER/CENTER",
+             "size": "HUG/FIXED",
+             "r": 10,
+             "fill": [
+              "var:surface/base"
+             ],
+             "stroke": [
+              "var:border/strong"
+             ],
+             "sw": 1,
+             "comp": "Button / variant=secondary, size=sm, state=default",
+             "c": [
+              {
+               "n": "icon",
+               "t": "FRAME",
+               "w": 16,
+               "h": 16,
+               "hidden": true,
+               "size": "FIXED/FIXED",
+               "c": [
+                {
+                 "n": "bar-h",
+                 "t": "RECTANGLE",
+                 "w": 11,
+                 "h": 2,
+                 "size": "FIXED/FIXED",
+                 "r": 1,
+                 "fill": [
+                  "var:text/primary"
+                 ]
+                },
+                {
+                 "n": "bar-v",
+                 "t": "RECTANGLE",
+                 "w": 2,
+                 "h": 11,
+                 "size": "FIXED/FIXED",
+                 "r": 1,
+                 "fill": [
+                  "var:text/primary"
+                 ]
+                }
+               ]
+              },
+              {
+               "n": "label",
+               "t": "TEXT",
+               "w": 142,
+               "h": 21,
+               "size": "HUG/HUG",
+               "fill": [
+                "var:text/primary"
+               ],
+               "text": "Ajouter une bannière",
+               "fs": 14,
+               "font": "Semi Bold"
+              },
+              {
+               "n": "badge",
+               "t": "INSTANCE",
+               "w": 16,
+               "h": 16,
+               "hidden": true,
+               "layout": "HORIZONTAL",
+               "gap": 0,
+               "pad": "0 4 0 4",
+               "align": "CENTER/CENTER",
+               "size": "HUG/HUG",
+               "r": 9999,
+               "fill": [
+                "var:blue/600"
+               ],
+               "comp": "Badge / kind=count",
+               "c": [
+                {
+                 "n": "Label",
+                 "t": "TEXT",
+                 "w": 8,
+                 "h": 16,
+                 "size": "HUG/HUG",
+                 "fill": [
+                  "var:text/inverse"
+                 ],
+                 "text": "3",
+                 "fs": 12,
+                 "font": "Semi Bold"
+                }
+               ]
+              }
+             ]
+            },
+            {
+             "n": "L'image d'en-tête de votre boutique. (optionnel)",
+             "t": "TEXT",
+             "w": 311,
+             "h": 17,
+             "size": "FILL/HUG",
+             "fill": [
+              "var:text/inverse"
+             ],
+             "text": "L'image d'en-tête de votre boutique. (optionnel)",
+             "fs": 12,
+             "font": "Medium"
+            }
+           ]
+          },
+          {
+           "n": "field-nom",
+           "t": "INSTANCE",
+           "w": 311,
+           "h": 97,
+           "layout": "VERTICAL",
+           "gap": 8,
+           "pad": "0 0 0 0",
+           "align": "MIN/MIN",
+           "size": "FILL/HUG",
+           "comp": "Input / variant=text, state=default",
+           "c": [
+            {
+             "n": "Frame",
+             "t": "FRAME",
+             "w": 141,
+             "h": 21,
+             "layout": "HORIZONTAL",
+             "gap": 2,
+             "pad": "0 0 0 0",
+             "align": "MIN/CENTER",
+             "size": "HUG/HUG",
+             "c": [
+              {
+               "n": "label",
+               "t": "TEXT",
+               "w": 131,
+               "h": 21,
+               "size": "HUG/HUG",
+               "fill": [
+                "var:text/secondary"
+               ],
+               "text": "Nom de la boutique",
+               "fs": 14,
+               "font": "Medium"
+              },
+              {
+               "n": "asterisk",
+               "t": "TEXT",
+               "w": 8,
+               "h": 21,
+               "size": "HUG/HUG",
+               "fill": [
+                "var:danger/500"
+               ],
+               "text": "*",
+               "fs": 14,
+               "font": "Medium"
+              }
+             ]
+            },
+            {
+             "n": "field",
+             "t": "FRAME",
+             "w": 311,
+             "h": 44,
+             "layout": "HORIZONTAL",
+             "gap": 8,
+             "pad": "0 16 0 16",
+             "align": "MIN/CENTER",
+             "size": "FILL/FIXED",
+             "r": 10,
+             "fill": [
+              "var:surface/base"
+             ],
+             "stroke": [
+              "var:border/strong"
+             ],
+             "sw": 1,
+             "c": [
+              {
+               "n": "value",
+               "t": "TEXT",
+               "w": 279,
+               "h": 26,
+               "size": "FILL/HUG",
+               "fill": [
+                "var:text/muted"
+               ],
+               "text": "Ex: Atelier Sahbeni",
+               "fs": 16,
+               "font": "Regular",
+               "style": "Body"
+              }
+             ]
+            },
+            {
+             "n": "helperRow",
+             "t": "FRAME",
+             "w": 311,
+             "h": 16,
+             "layout": "HORIZONTAL",
+             "gap": 0,
+             "pad": "0 0 0 0",
+             "align": "SPACE_BETWEEN/CENTER",
+             "size": "FILL/FIXED",
+             "c": [
+              {
+               "n": "helper",
+               "t": "TEXT",
+               "w": 354,
+               "h": 21,
+               "size": "HUG/HUG",
+               "fill": [
+                "var:text/muted"
+               ],
+               "text": "Doit être unique. C'est le nom que verront vos clients.",
+               "fs": 14,
+               "font": "Regular",
+               "style": "Body Small"
+              },
+              {
+               "n": "counter",
+               "t": "TEXT",
+               "w": 43,
+               "h": 17,
+               "size": "HUG/HUG",
+               "fill": [
+                "var:text/muted"
+               ],
+               "text": "0 / 100",
+               "fs": 12,
+               "font": "Medium",
+               "style": "Overline"
+              }
+             ]
+            }
+           ]
+          },
+          {
+           "n": "field-ville",
+           "t": "INSTANCE",
+           "w": 311,
+           "h": 97,
+           "layout": "VERTICAL",
+           "gap": 8,
+           "pad": "0 0 0 0",
+           "align": "MIN/MIN",
+           "size": "FILL/HUG",
+           "comp": "Select — Trigger / variant=single, size=default, state=default",
+           "c": [
+            {
+             "n": "Frame",
+             "t": "FRAME",
+             "w": 39,
+             "h": 21,
+             "layout": "HORIZONTAL",
+             "gap": 2,
+             "pad": "0 0 0 0",
+             "align": "MIN/CENTER",
+             "size": "HUG/HUG",
+             "c": [
+              {
+               "n": "label",
+               "t": "TEXT",
+               "w": 29,
+               "h": 21,
+               "size": "HUG/HUG",
+               "fill": [
+                "var:text/secondary"
+               ],
+               "text": "Ville",
+               "fs": 14,
+               "font": "Medium"
+              },
+              {
+               "n": "asterisk",
+               "t": "TEXT",
+               "w": 8,
+               "h": 21,
+               "size": "HUG/HUG",
+               "fill": [
+                "var:danger/500"
+               ],
+               "text": "*",
+               "fs": 14,
+               "font": "Medium"
+              }
+             ]
+            },
+            {
+             "n": "field",
+             "t": "FRAME",
+             "w": 311,
+             "h": 44,
+             "layout": "HORIZONTAL",
+             "gap": 8,
+             "pad": "0 16 0 16",
+             "align": "MIN/CENTER",
+             "size": "FILL/FIXED",
+             "r": 10,
+             "fill": [
+              "var:surface/base"
+             ],
+             "stroke": [
+              "var:border/strong"
+             ],
+             "sw": 1,
+             "c": [
+              {
+               "n": "value",
+               "t": "TEXT",
+               "w": 253,
+               "h": 26,
+               "size": "FILL/HUG",
+               "fill": [
+                "var:text/muted"
+               ],
+               "text": "Sélectionnez une ville",
+               "fs": 16,
+               "font": "Regular",
+               "style": "Body"
+              },
+              {
+               "n": "icon-chevron",
+               "t": "FRAME",
+               "w": 18,
+               "h": 18,
+               "size": "FIXED/FIXED",
+               "c": [
+                {
+                 "n": "Vector",
+                 "t": "VECTOR",
+                 "w": 9,
+                 "h": 5,
+                 "size": "FIXED/FIXED",
+                 "stroke": [
+                  "var:text/muted"
+                 ],
+                 "sw": 1.5
+                }
+               ]
+              }
+             ]
+            },
+            {
+             "n": "helperRow",
+             "t": "FRAME",
+             "w": 280,
+             "h": 16,
+             "layout": "HORIZONTAL",
+             "gap": 0,
+             "pad": "0 0 0 0",
+             "align": "SPACE_BETWEEN/CENTER",
+             "size": "FIXED/FIXED",
+             "c": [
+              {
+               "n": "helper",
+               "t": "TEXT",
+               "w": 189,
+               "h": 21,
+               "size": "HUG/HUG",
+               "fill": [
+                "var:text/muted"
+               ],
+               "text": "Où se trouve votre boutique.",
+               "fs": 14,
+               "font": "Regular",
+               "style": "Body Small"
+              },
+              {
+               "n": "counter",
+               "t": "TEXT",
+               "w": 29,
+               "h": 17,
+               "hidden": true,
+               "size": "FIXED/FIXED",
+               "fill": [
+                "var:text/muted"
+               ],
+               "text": "0/80",
+               "fs": 12,
+               "font": "Medium",
+               "style": "Overline"
+              }
+             ]
+            }
+           ]
+          },
+          {
+           "n": "field-desc",
+           "t": "INSTANCE",
+           "w": 311,
+           "h": 155,
+           "layout": "VERTICAL",
+           "gap": 8,
+           "pad": "0 0 0 0",
+           "align": "MIN/MIN",
+           "size": "FILL/HUG",
+           "comp": "Textarea / state=default",
+           "c": [
+            {
+             "n": "Frame",
+             "t": "FRAME",
+             "w": 87,
+             "h": 21,
+             "layout": "HORIZONTAL",
+             "gap": 2,
+             "pad": "0 0 0 0",
+             "align": "MIN/CENTER",
+             "size": "HUG/HUG",
+             "c": [
+              {
+               "n": "label",
+               "t": "TEXT",
+               "w": 77,
+               "h": 21,
+               "size": "HUG/HUG",
+               "fill": [
+                "var:text/secondary"
+               ],
+               "text": "Description",
+               "fs": 14,
+               "font": "Medium"
+              },
+              {
+               "n": "asterisk",
+               "t": "TEXT",
+               "w": 8,
+               "h": 21,
+               "size": "HUG/HUG",
+               "fill": [
+                "var:danger/500"
+               ],
+               "text": "*",
+               "fs": 14,
+               "font": "Medium"
+              }
+             ]
+            },
+            {
+             "n": "field",
+             "t": "FRAME",
+             "w": 311,
+             "h": 102,
+             "layout": "HORIZONTAL",
+             "gap": 8,
+             "pad": "12 16 12 16",
+             "align": "MIN/MIN",
+             "size": "FILL/HUG",
+             "r": 10,
+             "fill": [
+              "var:surface/base"
+             ],
+             "stroke": [
+              "var:border/strong"
+             ],
+             "sw": 1,
+             "c": [
+              {
+               "n": "value",
+               "t": "TEXT",
+               "w": 279,
+               "h": 78,
+               "size": "FILL/HUG",
+               "fill": [
+                "var:text/muted"
+               ],
+               "text": "Décrivez votre boutique : ce que vous vendez, ce qui vous rend unique.",
+               "fs": 16,
+               "font": "Regular",
+               "style": "Body"
+              },
+              {
+               "n": "resize-grip",
+               "t": "FRAME",
+               "w": 12,
+               "h": 12,
+               "size": "FIXED/FIXED",
+               "c": [
+                {
+                 "n": "Vector",
+                 "t": "VECTOR",
+                 "w": 7,
+                 "h": 7,
+                 "size": "FIXED/FIXED",
+                 "stroke": [
+                  "var:border/strong"
+                 ],
+                 "sw": 1.25
+                },
+                {
+                 "n": "Vector",
+                 "t": "VECTOR",
+                 "w": 3,
+                 "h": 3,
+                 "size": "FIXED/FIXED",
+                 "stroke": [
+                  "var:border/strong"
+                 ],
+                 "sw": 1.25
+                }
+               ]
+              }
+             ]
+            },
+            {
+             "n": "helperRow",
+             "t": "FRAME",
+             "w": 311,
+             "h": 16,
+             "layout": "HORIZONTAL",
+             "gap": 0,
+             "pad": "0 0 0 0",
+             "align": "SPACE_BETWEEN/CENTER",
+             "size": "FILL/FIXED",
+             "c": [
+              {
+               "n": "helper",
+               "t": "TEXT",
+               "w": 159,
+               "h": 21,
+               "size": "HUG/HUG",
+               "fill": [
+                "var:text/muted"
+               ],
+               "text": "Minimum 50 caractères.",
+               "fs": 14,
+               "font": "Regular",
+               "style": "Body Small"
+              },
+              {
+               "n": "counter",
+               "t": "TEXT",
+               "w": 53,
+               "h": 17,
+               "size": "HUG/HUG",
+               "fill": [
+                "var:text/muted"
+               ],
+               "text": "0 / 2000",
+               "fs": 12,
+               "font": "Medium",
+               "style": "Overline"
+              }
+             ]
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

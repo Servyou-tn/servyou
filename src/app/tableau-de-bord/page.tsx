@@ -76,7 +76,7 @@ export default async function TableauDeBordPage() {
 
   return (
     <AppShell user={topBarUser}>
-      <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-6 max-lg:gap-5">
         {/* ── Header — 📐 measured title/subtitle (h4-discovery.md §9), name interpolated. ──── */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex flex-col gap-1">
@@ -88,7 +88,7 @@ export default async function TableauDeBordPage() {
           {/* H6 /mes-services/creer — live since H6 PR-4. Button's primary recipe on a Link. */}
           <Link
             href="/mes-services/creer"
-            className={cn(BUTTON_BASE, BUTTON_SIZE.md, VARIANT_BASE.primary, VARIANT_STATE.primary, 'w-fit shrink-0 self-start sm:self-auto')}
+            className={cn(BUTTON_BASE, BUTTON_SIZE.md, VARIANT_BASE.primary, VARIANT_STATE.primary, 'w-fit shrink-0 self-start max-sm:w-full sm:self-auto')}
           >
             <Plus aria-hidden="true" />
             {t('freelance.dashboard.createService', lang)}
@@ -114,7 +114,7 @@ export default async function TableauDeBordPage() {
             📐 MEASURED (h4-discovery.md §9): services=blue, engagements=success, pending=warning,
             views=blue. None carry a delta. Two lines per tile, not three — Pass 4 (167:1225x,
             figma-cli Safe Mode read): the frame has no subtitle text node; see StatTile.tsx. ── */}
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-1 gap-4 max-sm:grid-cols-2 max-sm:gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <StatTile
             label={t('freelance.dashboard.tile.services', lang)}
             value={String(data.servicesActifs)}
@@ -158,11 +158,11 @@ export default async function TableauDeBordPage() {
             glyphs (Users/Store) were already right; card text needs `leading-[normal]`, not the
             token defaults (title 16px→19px measured, body/link 14px→17px, same ≈1.214 ratio as
             the stat tiles); the connector is a dashed line with arrow chevrons, not a solid bar. */}
-        <div className="flex flex-col gap-4 rounded-xl border border-border-subtle bg-surface-base p-5 sm:flex-row sm:items-start">
+        <div className="flex flex-col gap-4 rounded-xl border border-border-subtle bg-surface-base p-5 max-sm:gap-3 max-sm:px-4 sm:flex-row sm:items-start">
           {/* Card A — consumers. Link target: the closest existing surface showing the
               freelancer's relationship to consumers; no dedicated "demandes" list route exists
               to link more precisely. */}
-          <div className="flex flex-1 flex-col gap-2.5 rounded-xl bg-success-100 p-5">
+          <div className="flex flex-1 flex-col gap-2.5 rounded-xl bg-success-100 p-5 max-sm:px-4">
             <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-success-500">
               <Users className="h-5 w-5 text-white" aria-hidden="true" />
             </span>
@@ -183,7 +183,7 @@ export default async function TableauDeBordPage() {
           </div>
 
           {/* Connector — 48px zone, dashed line + arrow chevrons at both ends. 📐 167:12291. */}
-          <div className="hidden w-12 shrink-0 items-center justify-center gap-0.5 self-stretch sm:flex" aria-hidden="true">
+          <div className="flex w-12 shrink-0 items-center justify-center gap-0.5 self-stretch max-sm:h-6 max-sm:self-center" aria-hidden="true">
             <ChevronLeft className="h-3 w-3 shrink-0 text-border-strong" />
             <div className="h-0 flex-1 border-t-2 border-dashed border-border-strong" />
             <ChevronRight className="h-3 w-3 shrink-0 text-border-strong" />
@@ -193,7 +193,7 @@ export default async function TableauDeBordPage() {
               167:12291 — was `User`, a plain person, wrong). No flex-1 spacer: Figma's own
               eco-card-center has 4 children (chip/title/body/button), not 5 — the side cards'
               spacer doesn't apply here, and keeping it added a gap the frame doesn't have. */}
-          <div className="flex flex-1 flex-col gap-2.5 rounded-xl bg-brand-blue-600 p-5 text-text-inverse">
+          <div className="flex flex-1 flex-col gap-2.5 rounded-xl bg-brand-blue-600 p-5 text-text-inverse max-sm:px-4">
             <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-white">
               <Briefcase className="h-5 w-5 text-brand-blue-600" aria-hidden="true" />
             </span>
@@ -207,7 +207,7 @@ export default async function TableauDeBordPage() {
             </Link>
           </div>
 
-          <div className="hidden w-12 shrink-0 items-center justify-center gap-0.5 self-stretch sm:flex" aria-hidden="true">
+          <div className="flex w-12 shrink-0 items-center justify-center gap-0.5 self-stretch max-sm:h-6 max-sm:self-center" aria-hidden="true">
             <ChevronLeft className="h-3 w-3 shrink-0 text-border-strong" />
             <div className="h-0 flex-1 border-t-2 border-dashed border-border-strong" />
             <ChevronRight className="h-3 w-3 shrink-0 text-border-strong" />
@@ -216,7 +216,7 @@ export default async function TableauDeBordPage() {
           {/* Card C — shops. Link target: /marche/produits, the real route that carries the
               Produits/Boutiques toggle — not investigated deep enough to force the Boutiques tab
               via a query param. */}
-          <div className="flex flex-1 flex-col gap-2.5 rounded-xl bg-warning-100 p-5">
+          <div className="flex flex-1 flex-col gap-2.5 rounded-xl bg-warning-100 p-5 max-sm:px-4">
             <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-warning-500">
               <StoreIcon className="h-5 w-5 text-white" aria-hidden="true" />
             </span>
