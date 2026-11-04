@@ -1,0 +1,1091 @@
+{
+ "n": "Créer un service — étape 5 Publication (375 mobile)",
+ "t": "FRAME",
+ "w": 375,
+ "h": 643,
+ "layout": "VERTICAL",
+ "gap": 16,
+ "pad": "20 16 32 16",
+ "align": "MIN/MIN",
+ "size": "FIXED/HUG",
+ "fill": [
+  "var:surface/base"
+ ],
+ "c": [
+  {
+   "n": "content",
+   "t": "FRAME",
+   "w": 343,
+   "h": 591,
+   "layout": "VERTICAL",
+   "gap": 20,
+   "pad": "0 0 0 0",
+   "align": "MIN/MIN",
+   "size": "FILL/HUG",
+   "c": [
+    {
+     "n": "top",
+     "t": "FRAME",
+     "w": 343,
+     "h": 206,
+     "layout": "VERTICAL",
+     "gap": 24,
+     "pad": "0 0 0 0",
+     "align": "MIN/MIN",
+     "size": "FILL/HUG",
+     "c": [
+      {
+       "n": "page-header",
+       "t": "FRAME",
+       "w": 343,
+       "h": 113,
+       "layout": "VERTICAL",
+       "gap": 8,
+       "pad": "0 0 0 0",
+       "align": "MIN/MIN",
+       "size": "FILL/HUG",
+       "c": [
+        {
+         "n": "Breadcrumb",
+         "t": "INSTANCE",
+         "w": 230,
+         "h": 17,
+         "layout": "HORIZONTAL",
+         "gap": 8,
+         "pad": "0 0 0 0",
+         "align": "MIN/CENTER",
+         "size": "HUG/HUG",
+         "comp": "Breadcrumb",
+         "c": [
+          {
+           "n": "Accueil",
+           "t": "TEXT",
+           "w": 89,
+           "h": 17,
+           "size": "HUG/HUG",
+           "fill": [
+            "var:text/muted"
+           ],
+           "text": "Mes services",
+           "fs": 14,
+           "font": "Medium"
+          },
+          {
+           "n": "icon-chevron-right",
+           "t": "INSTANCE",
+           "w": 14,
+           "h": 14,
+           "size": "FIXED/FIXED",
+           "comp": "icon-chevron-right",
+           "c": [
+            {
+             "n": "Vector",
+             "t": "VECTOR",
+             "w": 4,
+             "h": 7,
+             "size": "FIXED/FIXED",
+             "stroke": [
+              "var:text/muted"
+             ],
+             "sw": 2
+            }
+           ]
+          },
+          {
+           "n": "Artisanat",
+           "t": "TEXT",
+           "w": 111,
+           "h": 17,
+           "size": "HUG/HUG",
+           "fill": [
+            "var:text/muted"
+           ],
+           "text": "Créer un service",
+           "fs": 14,
+           "font": "Medium"
+          },
+          {
+           "n": "icon-chevron-right",
+           "t": "INSTANCE",
+           "w": 14,
+           "h": 14,
+           "hidden": true,
+           "size": "FIXED/FIXED",
+           "comp": "icon-chevron-right",
+           "c": [
+            {
+             "n": "Vector",
+             "t": "VECTOR",
+             "w": 4,
+             "h": 7,
+             "size": "FIXED/FIXED",
+             "stroke": [
+              "var:text/muted"
+             ],
+             "sw": 2
+            }
+           ]
+          },
+          {
+           "n": "Poterie de Nabeul",
+           "t": "TEXT",
+           "w": 121,
+           "h": 17,
+           "hidden": true,
+           "size": "FIXED/FIXED",
+           "fill": [
+            "var:text/primary"
+           ],
+           "text": "Poterie de Nabeul",
+           "fs": 14,
+           "font": "Semi Bold"
+          }
+         ]
+        },
+        {
+         "n": "Créer un service",
+         "t": "TEXT",
+         "w": 343,
+         "h": 38,
+         "size": "FILL/HUG",
+         "fill": [
+          "var:text/primary"
+         ],
+         "text": "Créer un service",
+         "fs": 32,
+         "font": "Bold",
+         "style": "H1"
+        },
+        {
+         "n": "Décrivez votre service en quelques étapes. Vous pouvez enregistrer et revenir à tout moment.",
+         "t": "TEXT",
+         "w": 343,
+         "h": 42,
+         "size": "FILL/HUG",
+         "fill": [
+          "var:text/secondary"
+         ],
+         "text": "Décrivez votre service en quelques étapes. Vous pouvez enregistrer et revenir à tout moment.",
+         "fs": 14,
+         "font": "Regular",
+         "style": "Body Small"
+        }
+       ]
+      },
+      {
+       "n": "stepper-wrap",
+       "t": "FRAME",
+       "w": 343,
+       "h": 69,
+       "layout": "VERTICAL",
+       "gap": 12,
+       "pad": "0 0 0 0",
+       "align": "MIN/MIN",
+       "size": "FILL/HUG",
+       "c": [
+        {
+         "n": "Stepper",
+         "t": "FRAME",
+         "w": 343,
+         "h": 36,
+         "layout": "HORIZONTAL",
+         "gap": 0,
+         "pad": "0 0 0 0",
+         "align": "MIN/MIN",
+         "size": "FILL/HUG",
+         "c": [
+          {
+           "n": "step",
+           "t": "FRAME",
+           "w": 36,
+           "h": 36,
+           "layout": "VERTICAL",
+           "gap": 8,
+           "pad": "0 0 0 0",
+           "align": "MIN/CENTER",
+           "size": "FIXED/HUG",
+           "c": [
+            {
+             "n": "circle",
+             "t": "FRAME",
+             "w": 36,
+             "h": 36,
+             "layout": "HORIZONTAL",
+             "gap": 0,
+             "pad": "0 0 0 0",
+             "align": "CENTER/CENTER",
+             "size": "FIXED/FIXED",
+             "r": 9999,
+             "fill": [
+              "var:blue/600"
+             ],
+             "c": [
+              {
+               "n": "icon-check",
+               "t": "INSTANCE",
+               "w": 18,
+               "h": 18,
+               "size": "FIXED/FIXED",
+               "comp": "icon-check",
+               "c": [
+                {
+                 "n": "Vector",
+                 "t": "VECTOR",
+                 "w": 12,
+                 "h": 8,
+                 "size": "FIXED/FIXED",
+                 "stroke": [
+                  "var:text/inverse"
+                 ],
+                 "sw": 2
+                }
+               ]
+              }
+             ]
+            },
+            {
+             "n": "Métier",
+             "t": "TEXT",
+             "w": 43,
+             "h": 21,
+             "hidden": true,
+             "size": "FIXED/FIXED",
+             "fill": [
+              "var:text/secondary"
+             ],
+             "text": "Métier",
+             "fs": 14,
+             "font": "Regular"
+            }
+           ]
+          },
+          {
+           "n": "conn",
+           "t": "FRAME",
+           "w": 41,
+           "h": 36,
+           "layout": "HORIZONTAL",
+           "gap": 0,
+           "pad": "0 0 0 0",
+           "align": "CENTER/CENTER",
+           "size": "FILL/FIXED",
+           "c": [
+            {
+             "n": "line",
+             "t": "RECTANGLE",
+             "w": 41,
+             "h": 2,
+             "size": "FILL/FIXED",
+             "fill": [
+              "var:blue/600"
+             ]
+            }
+           ]
+          },
+          {
+           "n": "step",
+           "t": "FRAME",
+           "w": 36,
+           "h": 36,
+           "layout": "VERTICAL",
+           "gap": 8,
+           "pad": "0 0 0 0",
+           "align": "MIN/CENTER",
+           "size": "FIXED/HUG",
+           "c": [
+            {
+             "n": "circle",
+             "t": "FRAME",
+             "w": 36,
+             "h": 36,
+             "layout": "HORIZONTAL",
+             "gap": 0,
+             "pad": "0 0 0 0",
+             "align": "CENTER/CENTER",
+             "size": "FIXED/FIXED",
+             "r": 9999,
+             "fill": [
+              "var:blue/600"
+             ],
+             "c": [
+              {
+               "n": "icon-check",
+               "t": "INSTANCE",
+               "w": 18,
+               "h": 18,
+               "size": "FIXED/FIXED",
+               "comp": "icon-check",
+               "c": [
+                {
+                 "n": "Vector",
+                 "t": "VECTOR",
+                 "w": 12,
+                 "h": 8,
+                 "size": "FIXED/FIXED",
+                 "stroke": [
+                  "var:text/inverse"
+                 ],
+                 "sw": 2
+                }
+               ]
+              }
+             ]
+            },
+            {
+             "n": "Description",
+             "t": "TEXT",
+             "w": 76,
+             "h": 21,
+             "hidden": true,
+             "size": "FIXED/FIXED",
+             "fill": [
+              "var:text/secondary"
+             ],
+             "text": "Description",
+             "fs": 14,
+             "font": "Regular"
+            }
+           ]
+          },
+          {
+           "n": "conn",
+           "t": "FRAME",
+           "w": 41,
+           "h": 36,
+           "layout": "HORIZONTAL",
+           "gap": 0,
+           "pad": "0 0 0 0",
+           "align": "CENTER/CENTER",
+           "size": "FILL/FIXED",
+           "c": [
+            {
+             "n": "line",
+             "t": "RECTANGLE",
+             "w": 41,
+             "h": 2,
+             "size": "FILL/FIXED",
+             "fill": [
+              "var:blue/600"
+             ]
+            }
+           ]
+          },
+          {
+           "n": "step",
+           "t": "FRAME",
+           "w": 36,
+           "h": 36,
+           "layout": "VERTICAL",
+           "gap": 8,
+           "pad": "0 0 0 0",
+           "align": "MIN/CENTER",
+           "size": "FIXED/HUG",
+           "c": [
+            {
+             "n": "circle",
+             "t": "FRAME",
+             "w": 36,
+             "h": 36,
+             "layout": "HORIZONTAL",
+             "gap": 0,
+             "pad": "0 0 0 0",
+             "align": "CENTER/CENTER",
+             "size": "FIXED/FIXED",
+             "r": 9999,
+             "fill": [
+              "var:blue/600"
+             ],
+             "c": [
+              {
+               "n": "icon-check",
+               "t": "INSTANCE",
+               "w": 18,
+               "h": 18,
+               "size": "FIXED/FIXED",
+               "comp": "icon-check",
+               "c": [
+                {
+                 "n": "Vector",
+                 "t": "VECTOR",
+                 "w": 12,
+                 "h": 8,
+                 "size": "FIXED/FIXED",
+                 "stroke": [
+                  "var:text/inverse"
+                 ],
+                 "sw": 2
+                }
+               ]
+              }
+             ]
+            },
+            {
+             "n": "Tarif",
+             "t": "TEXT",
+             "w": 30,
+             "h": 21,
+             "hidden": true,
+             "size": "FIXED/FIXED",
+             "fill": [
+              "var:text/secondary"
+             ],
+             "text": "Tarif",
+             "fs": 14,
+             "font": "Regular"
+            }
+           ]
+          },
+          {
+           "n": "conn",
+           "t": "FRAME",
+           "w": 41,
+           "h": 36,
+           "layout": "HORIZONTAL",
+           "gap": 0,
+           "pad": "0 0 0 0",
+           "align": "CENTER/CENTER",
+           "size": "FILL/FIXED",
+           "c": [
+            {
+             "n": "line",
+             "t": "RECTANGLE",
+             "w": 41,
+             "h": 2,
+             "size": "FILL/FIXED",
+             "fill": [
+              "var:blue/600"
+             ]
+            }
+           ]
+          },
+          {
+           "n": "step",
+           "t": "FRAME",
+           "w": 36,
+           "h": 36,
+           "layout": "VERTICAL",
+           "gap": 8,
+           "pad": "0 0 0 0",
+           "align": "MIN/CENTER",
+           "size": "FIXED/HUG",
+           "c": [
+            {
+             "n": "circle",
+             "t": "FRAME",
+             "w": 36,
+             "h": 36,
+             "layout": "HORIZONTAL",
+             "gap": 0,
+             "pad": "0 0 0 0",
+             "align": "CENTER/CENTER",
+             "size": "FIXED/FIXED",
+             "r": 9999,
+             "fill": [
+              "var:blue/600"
+             ],
+             "c": [
+              {
+               "n": "icon-check",
+               "t": "INSTANCE",
+               "w": 18,
+               "h": 18,
+               "size": "FIXED/FIXED",
+               "comp": "icon-check",
+               "c": [
+                {
+                 "n": "Vector",
+                 "t": "VECTOR",
+                 "w": 12,
+                 "h": 8,
+                 "size": "FIXED/FIXED",
+                 "stroke": [
+                  "var:text/inverse"
+                 ],
+                 "sw": 2
+                }
+               ]
+              }
+             ]
+            },
+            {
+             "n": "Prestation",
+             "t": "TEXT",
+             "w": 68,
+             "h": 21,
+             "hidden": true,
+             "size": "FIXED/FIXED",
+             "fill": [
+              "var:text/secondary"
+             ],
+             "text": "Prestation",
+             "fs": 14,
+             "font": "Regular"
+            }
+           ]
+          },
+          {
+           "n": "conn",
+           "t": "FRAME",
+           "w": 41,
+           "h": 36,
+           "layout": "HORIZONTAL",
+           "gap": 0,
+           "pad": "0 0 0 0",
+           "align": "CENTER/CENTER",
+           "size": "FILL/FIXED",
+           "c": [
+            {
+             "n": "line",
+             "t": "RECTANGLE",
+             "w": 41,
+             "h": 2,
+             "size": "FILL/FIXED",
+             "fill": [
+              "var:blue/600"
+             ]
+            }
+           ]
+          },
+          {
+           "n": "step",
+           "t": "FRAME",
+           "w": 36,
+           "h": 36,
+           "layout": "VERTICAL",
+           "gap": 8,
+           "pad": "0 0 0 0",
+           "align": "MIN/CENTER",
+           "size": "FIXED/HUG",
+           "c": [
+            {
+             "n": "circle",
+             "t": "FRAME",
+             "w": 36,
+             "h": 36,
+             "layout": "HORIZONTAL",
+             "gap": 0,
+             "pad": "0 0 0 0",
+             "align": "CENTER/CENTER",
+             "size": "FIXED/FIXED",
+             "r": 9999,
+             "fill": [
+              "var:blue/600"
+             ],
+             "c": [
+              {
+               "n": "5",
+               "t": "TEXT",
+               "w": 11,
+               "h": 19,
+               "size": "HUG/HUG",
+               "fill": [
+                "var:text/inverse"
+               ],
+               "text": "5",
+               "fs": 16,
+               "font": "Semi Bold"
+              }
+             ]
+            },
+            {
+             "n": "Publication",
+             "t": "TEXT",
+             "w": 76,
+             "h": 21,
+             "hidden": true,
+             "size": "FIXED/FIXED",
+             "fill": [
+              "var:text/primary"
+             ],
+             "text": "Publication",
+             "fs": 14,
+             "font": "Semi Bold"
+            }
+           ]
+          }
+         ]
+        },
+        {
+         "n": "summary",
+         "t": "TEXT",
+         "w": 176,
+         "h": 21,
+         "size": "HUG/HUG",
+         "fill": [
+          "var:text/primary"
+         ],
+         "text": "Étape 5 sur 5 · Publication",
+         "fs": 14,
+         "font": "Semi Bold"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "n": "Box — étape 5 Publication",
+     "t": "FRAME",
+     "w": 343,
+     "h": 365,
+     "layout": "VERTICAL",
+     "gap": 20,
+     "pad": "24 16 24 16",
+     "align": "MIN/MIN",
+     "size": "FILL/HUG",
+     "r": 12,
+     "fill": [
+      "var:surface/base"
+     ],
+     "stroke": [
+      "var:border/subtle"
+     ],
+     "sw": 1,
+     "c": [
+      {
+       "n": "recapitulatif",
+       "t": "FRAME",
+       "w": 311,
+       "h": 317,
+       "layout": "VERTICAL",
+       "gap": 0,
+       "pad": "4 16 4 16",
+       "align": "MIN/MIN",
+       "size": "FILL/HUG",
+       "r": 10,
+       "fill": [
+        "var:surface/subtle"
+       ],
+       "stroke": [
+        "var:border/subtle"
+       ],
+       "sw": 1,
+       "c": [
+        {
+         "n": "Frame",
+         "t": "FRAME",
+         "w": 279,
+         "h": 58,
+         "layout": "HORIZONTAL",
+         "gap": 0,
+         "pad": "8 0 8 0",
+         "align": "SPACE_BETWEEN/CENTER",
+         "size": "FILL/HUG",
+         "stroke": [
+          "var:border/subtle"
+         ],
+         "c": [
+          {
+           "n": "Frame",
+           "t": "FRAME",
+           "w": 224,
+           "h": 42,
+           "layout": "HORIZONTAL",
+           "gap": 12,
+           "pad": "0 0 0 0",
+           "align": "MIN/CENTER",
+           "size": "FILL/HUG",
+           "c": [
+            {
+             "n": "Titre",
+             "t": "TEXT",
+             "w": 31,
+             "h": 21,
+             "size": "HUG/HUG",
+             "fill": [
+              "var:text/muted"
+             ],
+             "text": "Titre",
+             "fs": 14,
+             "font": "Regular",
+             "style": "Body Small"
+            },
+            {
+             "n": "Je crée votre boutique en ligne clé en main",
+             "t": "TEXT",
+             "w": 181,
+             "h": 42,
+             "size": "FILL/HUG",
+             "fill": [
+              "var:text/primary"
+             ],
+             "text": "Je crée votre boutique en ligne clé en main",
+             "fs": 14,
+             "font": "Medium"
+            }
+           ]
+          },
+          {
+           "n": "Modifier",
+           "t": "TEXT",
+           "w": 55,
+           "h": 21,
+           "size": "HUG/HUG",
+           "fill": [
+            "var:blue/600"
+           ],
+           "text": "Modifier",
+           "fs": 14,
+           "font": "Regular",
+           "style": "Body Small"
+          }
+         ]
+        },
+        {
+         "n": "Frame",
+         "t": "FRAME",
+         "w": 279,
+         "h": 70,
+         "layout": "HORIZONTAL",
+         "gap": 0,
+         "pad": "8 0 8 0",
+         "align": "SPACE_BETWEEN/CENTER",
+         "size": "FILL/HUG",
+         "stroke": [
+          "var:border/subtle"
+         ],
+         "c": [
+          {
+           "n": "Frame",
+           "t": "FRAME",
+           "w": 224,
+           "h": 54,
+           "layout": "HORIZONTAL",
+           "gap": 12,
+           "pad": "0 0 0 0",
+           "align": "MIN/CENTER",
+           "size": "FILL/HUG",
+           "c": [
+            {
+             "n": "Catégorie",
+             "t": "TEXT",
+             "w": 65,
+             "h": 21,
+             "size": "HUG/HUG",
+             "fill": [
+              "var:text/muted"
+             ],
+             "text": "Catégorie",
+             "fs": 14,
+             "font": "Regular",
+             "style": "Body Small"
+            },
+            {
+             "n": "Développement web › Sites web",
+             "t": "TEXT",
+             "w": 216,
+             "h": 21,
+             "size": "HUG/HUG",
+             "fill": [
+              "var:text/primary"
+             ],
+             "text": "Développement web › Sites web",
+             "fs": 14,
+             "font": "Medium"
+            }
+           ]
+          },
+          {
+           "n": "Modifier",
+           "t": "TEXT",
+           "w": 55,
+           "h": 21,
+           "size": "HUG/HUG",
+           "fill": [
+            "var:blue/600"
+           ],
+           "text": "Modifier",
+           "fs": 14,
+           "font": "Regular",
+           "style": "Body Small"
+          }
+         ]
+        },
+        {
+         "n": "Frame",
+         "t": "FRAME",
+         "w": 279,
+         "h": 70,
+         "layout": "HORIZONTAL",
+         "gap": 0,
+         "pad": "8 0 8 0",
+         "align": "SPACE_BETWEEN/CENTER",
+         "size": "FILL/HUG",
+         "stroke": [
+          "var:border/subtle"
+         ],
+         "c": [
+          {
+           "n": "Frame",
+           "t": "FRAME",
+           "w": 224,
+           "h": 54,
+           "layout": "HORIZONTAL",
+           "gap": 12,
+           "pad": "0 0 0 0",
+           "align": "MIN/CENTER",
+           "size": "FILL/HUG",
+           "c": [
+            {
+             "n": "Compétences",
+             "t": "TEXT",
+             "w": 93,
+             "h": 21,
+             "size": "HUG/HUG",
+             "fill": [
+              "var:text/muted"
+             ],
+             "text": "Compétences",
+             "fs": 14,
+             "font": "Regular",
+             "style": "Body Small"
+            },
+            {
+             "n": "React · Next.js · TypeScript",
+             "t": "TEXT",
+             "w": 181,
+             "h": 21,
+             "size": "HUG/HUG",
+             "fill": [
+              "var:text/primary"
+             ],
+             "text": "React · Next.js · TypeScript",
+             "fs": 14,
+             "font": "Medium"
+            }
+           ]
+          },
+          {
+           "n": "Modifier",
+           "t": "TEXT",
+           "w": 55,
+           "h": 21,
+           "size": "HUG/HUG",
+           "fill": [
+            "var:blue/600"
+           ],
+           "text": "Modifier",
+           "fs": 14,
+           "font": "Regular",
+           "style": "Body Small"
+          }
+         ]
+        },
+        {
+         "n": "Frame",
+         "t": "FRAME",
+         "w": 279,
+         "h": 37,
+         "layout": "HORIZONTAL",
+         "gap": 0,
+         "pad": "8 0 8 0",
+         "align": "SPACE_BETWEEN/CENTER",
+         "size": "FILL/HUG",
+         "stroke": [
+          "var:border/subtle"
+         ],
+         "c": [
+          {
+           "n": "Frame",
+           "t": "FRAME",
+           "w": 174,
+           "h": 21,
+           "layout": "HORIZONTAL",
+           "gap": 12,
+           "pad": "0 0 0 0",
+           "align": "MIN/CENTER",
+           "size": "HUG/HUG",
+           "c": [
+            {
+             "n": "Prix",
+             "t": "TEXT",
+             "w": 25,
+             "h": 21,
+             "size": "HUG/HUG",
+             "fill": [
+              "var:text/muted"
+             ],
+             "text": "Prix",
+             "fs": 14,
+             "font": "Regular",
+             "style": "Body Small"
+            },
+            {
+             "n": "800 TND · Par projet",
+             "t": "TEXT",
+             "w": 137,
+             "h": 21,
+             "size": "HUG/HUG",
+             "fill": [
+              "var:text/primary"
+             ],
+             "text": "800 TND · Par projet",
+             "fs": 14,
+             "font": "Medium"
+            }
+           ]
+          },
+          {
+           "n": "Modifier",
+           "t": "TEXT",
+           "w": 55,
+           "h": 21,
+           "size": "HUG/HUG",
+           "fill": [
+            "var:blue/600"
+           ],
+           "text": "Modifier",
+           "fs": 14,
+           "font": "Regular",
+           "style": "Body Small"
+          }
+         ]
+        },
+        {
+         "n": "Frame",
+         "t": "FRAME",
+         "w": 279,
+         "h": 37,
+         "layout": "HORIZONTAL",
+         "gap": 0,
+         "pad": "8 0 8 0",
+         "align": "SPACE_BETWEEN/CENTER",
+         "size": "FILL/HUG",
+         "stroke": [
+          "var:border/subtle"
+         ],
+         "c": [
+          {
+           "n": "Frame",
+           "t": "FRAME",
+           "w": 115,
+           "h": 21,
+           "layout": "HORIZONTAL",
+           "gap": 12,
+           "pad": "0 0 0 0",
+           "align": "MIN/CENTER",
+           "size": "HUG/HUG",
+           "c": [
+            {
+             "n": "Délai",
+             "t": "TEXT",
+             "w": 33,
+             "h": 21,
+             "size": "HUG/HUG",
+             "fill": [
+              "var:text/muted"
+             ],
+             "text": "Délai",
+             "fs": 14,
+             "font": "Regular",
+             "style": "Body Small"
+            },
+            {
+             "n": "3 à 5 jours",
+             "t": "TEXT",
+             "w": 70,
+             "h": 21,
+             "size": "HUG/HUG",
+             "fill": [
+              "var:text/primary"
+             ],
+             "text": "3 à 5 jours",
+             "fs": 14,
+             "font": "Medium"
+            }
+           ]
+          },
+          {
+           "n": "Modifier",
+           "t": "TEXT",
+           "w": 55,
+           "h": 21,
+           "size": "HUG/HUG",
+           "fill": [
+            "var:blue/600"
+           ],
+           "text": "Modifier",
+           "fs": 14,
+           "font": "Regular",
+           "style": "Body Small"
+          }
+         ]
+        },
+        {
+         "n": "Frame",
+         "t": "FRAME",
+         "w": 279,
+         "h": 37,
+         "layout": "HORIZONTAL",
+         "gap": 0,
+         "pad": "8 0 8 0",
+         "align": "SPACE_BETWEEN/CENTER",
+         "size": "FILL/HUG",
+         "stroke": [
+          "var:border/subtle"
+         ],
+         "sw": 0,
+         "c": [
+          {
+           "n": "Frame",
+           "t": "FRAME",
+           "w": 121,
+           "h": 21,
+           "layout": "HORIZONTAL",
+           "gap": 12,
+           "pad": "0 0 0 0",
+           "align": "MIN/CENTER",
+           "size": "HUG/HUG",
+           "c": [
+            {
+             "n": "Mode",
+             "t": "TEXT",
+             "w": 38,
+             "h": 21,
+             "size": "HUG/HUG",
+             "fill": [
+              "var:text/muted"
+             ],
+             "text": "Mode",
+             "fs": 14,
+             "font": "Regular",
+             "style": "Body Small"
+            },
+            {
+             "n": "À distance",
+             "t": "TEXT",
+             "w": 71,
+             "h": 21,
+             "size": "HUG/HUG",
+             "fill": [
+              "var:text/primary"
+             ],
+             "text": "À distance",
+             "fs": 14,
+             "font": "Medium"
+            }
+           ]
+          },
+          {
+           "n": "Modifier",
+           "t": "TEXT",
+           "w": 55,
+           "h": 21,
+           "size": "HUG/HUG",
+           "fill": [
+            "var:blue/600"
+           ],
+           "text": "Modifier",
+           "fs": 14,
+           "font": "Regular",
+           "style": "Body Small"
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

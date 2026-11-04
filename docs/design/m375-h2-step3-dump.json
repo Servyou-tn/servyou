@@ -1,0 +1,812 @@
+{
+ "n": "Créer mon profil freelance — étape 3 Détails (375 mobile)",
+ "t": "FRAME",
+ "w": 375,
+ "h": 902,
+ "layout": "VERTICAL",
+ "gap": 16,
+ "pad": "20 16 32 16",
+ "align": "MIN/MIN",
+ "size": "FIXED/HUG",
+ "fill": [
+  "var:surface/base"
+ ],
+ "c": [
+  {
+   "n": "content",
+   "t": "FRAME",
+   "w": 343,
+   "h": 850,
+   "layout": "VERTICAL",
+   "gap": 0,
+   "pad": "0 0 0 0",
+   "align": "MIN/CENTER",
+   "size": "FILL/HUG",
+   "c": [
+    {
+     "n": "column",
+     "t": "FRAME",
+     "w": 343,
+     "h": 850,
+     "layout": "VERTICAL",
+     "gap": 0,
+     "pad": "0 0 0 0",
+     "align": "MIN/MIN",
+     "size": "FILL/HUG",
+     "c": [
+      {
+       "n": "top",
+       "t": "FRAME",
+       "w": 343,
+       "h": 240,
+       "layout": "VERTICAL",
+       "gap": 24,
+       "pad": "0 0 0 0",
+       "align": "MIN/MIN",
+       "size": "FILL/HUG",
+       "c": [
+        {
+         "n": "page-header",
+         "t": "FRAME",
+         "w": 343,
+         "h": 151,
+         "layout": "VERTICAL",
+         "gap": 8,
+         "pad": "0 0 0 0",
+         "align": "MIN/MIN",
+         "size": "FILL/HUG",
+         "c": [
+          {
+           "n": "Breadcrumb",
+           "t": "INSTANCE",
+           "w": 257,
+           "h": 17,
+           "layout": "HORIZONTAL",
+           "gap": 8,
+           "pad": "0 0 0 0",
+           "align": "MIN/CENTER",
+           "size": "HUG/HUG",
+           "comp": "Breadcrumb",
+           "c": [
+            {
+             "n": "Accueil",
+             "t": "TEXT",
+             "w": 118,
+             "h": 17,
+             "size": "HUG/HUG",
+             "fill": [
+              "var:text/muted"
+             ],
+             "text": "Devenir freelance",
+             "fs": 14,
+             "font": "Medium"
+            },
+            {
+             "n": "icon-chevron-right",
+             "t": "INSTANCE",
+             "w": 14,
+             "h": 14,
+             "size": "FIXED/FIXED",
+             "comp": "icon-chevron-right",
+             "c": [
+              {
+               "n": "Vector",
+               "t": "VECTOR",
+               "w": 4,
+               "h": 7,
+               "size": "FIXED/FIXED",
+               "stroke": [
+                "var:text/muted"
+               ],
+               "sw": 2
+              }
+             ]
+            },
+            {
+             "n": "Artisanat",
+             "t": "TEXT",
+             "w": 109,
+             "h": 17,
+             "size": "HUG/HUG",
+             "fill": [
+              "var:text/muted"
+             ],
+             "text": "Créer mon profil",
+             "fs": 14,
+             "font": "Medium"
+            },
+            {
+             "n": "icon-chevron-right",
+             "t": "INSTANCE",
+             "w": 14,
+             "h": 14,
+             "hidden": true,
+             "size": "FIXED/FIXED",
+             "comp": "icon-chevron-right",
+             "c": [
+              {
+               "n": "Vector",
+               "t": "VECTOR",
+               "w": 4,
+               "h": 7,
+               "size": "FIXED/FIXED",
+               "stroke": [
+                "var:text/muted"
+               ],
+               "sw": 2
+              }
+             ]
+            },
+            {
+             "n": "Poterie de Nabeul",
+             "t": "TEXT",
+             "w": 121,
+             "h": 17,
+             "hidden": true,
+             "size": "FIXED/FIXED",
+             "fill": [
+              "var:text/primary"
+             ],
+             "text": "Poterie de Nabeul",
+             "fs": 14,
+             "font": "Semi Bold"
+            }
+           ]
+          },
+          {
+           "n": "Créer mon profil freelance",
+           "t": "TEXT",
+           "w": 343,
+           "h": 76,
+           "size": "FILL/HUG",
+           "fill": [
+            "var:text/primary"
+           ],
+           "text": "Créer mon profil freelance",
+           "fs": 32,
+           "font": "Bold",
+           "style": "H1"
+          },
+          {
+           "n": "Trois étapes pour lancer votre profil. Vous pourrez tout modifier plus tard.",
+           "t": "TEXT",
+           "w": 343,
+           "h": 42,
+           "size": "FILL/HUG",
+           "fill": [
+            "var:text/secondary"
+           ],
+           "text": "Trois étapes pour lancer votre profil. Vous pourrez tout modifier plus tard.",
+           "fs": 14,
+           "font": "Regular",
+           "style": "Body Small"
+          }
+         ]
+        },
+        {
+         "n": "Stepper",
+         "t": "FRAME",
+         "w": 343,
+         "h": 65,
+         "layout": "HORIZONTAL",
+         "gap": 0,
+         "pad": "0 0 0 0",
+         "align": "MIN/MIN",
+         "size": "FILL/HUG",
+         "c": [
+          {
+           "n": "step",
+           "t": "FRAME",
+           "w": 80,
+           "h": 65,
+           "layout": "VERTICAL",
+           "gap": 8,
+           "pad": "0 0 0 0",
+           "align": "MIN/CENTER",
+           "size": "FIXED/HUG",
+           "c": [
+            {
+             "n": "Frame",
+             "t": "FRAME",
+             "w": 36,
+             "h": 36,
+             "layout": "HORIZONTAL",
+             "gap": 0,
+             "pad": "0 0 0 0",
+             "align": "CENTER/CENTER",
+             "size": "FIXED/FIXED",
+             "r": 9999,
+             "fill": [
+              "var:blue/600"
+             ],
+             "c": [
+              {
+               "n": "icon-check",
+               "t": "INSTANCE",
+               "w": 18,
+               "h": 18,
+               "size": "FIXED/FIXED",
+               "comp": "icon-check",
+               "c": [
+                {
+                 "n": "Vector",
+                 "t": "VECTOR",
+                 "w": 12,
+                 "h": 8,
+                 "size": "FIXED/FIXED",
+                 "stroke": [
+                  "var:text/inverse"
+                 ],
+                 "sw": 2
+                }
+               ]
+              }
+             ]
+            },
+            {
+             "n": "Bases",
+             "t": "TEXT",
+             "w": 40,
+             "h": 21,
+             "size": "HUG/HUG",
+             "fill": [
+              "var:text/secondary"
+             ],
+             "text": "Bases",
+             "fs": 14,
+             "font": "Regular"
+            }
+           ]
+          },
+          {
+           "n": "conn",
+           "t": "FRAME",
+           "w": 40,
+           "h": 36,
+           "layout": "HORIZONTAL",
+           "gap": 0,
+           "pad": "0 0 0 0",
+           "align": "CENTER/CENTER",
+           "size": "FIXED/FIXED",
+           "c": [
+            {
+             "n": "Rectangle",
+             "t": "RECTANGLE",
+             "w": 40,
+             "h": 2,
+             "size": "FIXED/FIXED",
+             "fill": [
+              "var:blue/600"
+             ]
+            }
+           ]
+          },
+          {
+           "n": "step",
+           "t": "FRAME",
+           "w": 80,
+           "h": 65,
+           "layout": "VERTICAL",
+           "gap": 8,
+           "pad": "0 0 0 0",
+           "align": "MIN/CENTER",
+           "size": "FIXED/HUG",
+           "c": [
+            {
+             "n": "Frame",
+             "t": "FRAME",
+             "w": 36,
+             "h": 36,
+             "layout": "HORIZONTAL",
+             "gap": 0,
+             "pad": "0 0 0 0",
+             "align": "CENTER/CENTER",
+             "size": "FIXED/FIXED",
+             "r": 9999,
+             "fill": [
+              "var:blue/600"
+             ],
+             "c": [
+              {
+               "n": "icon-check",
+               "t": "INSTANCE",
+               "w": 18,
+               "h": 18,
+               "size": "FIXED/FIXED",
+               "comp": "icon-check",
+               "c": [
+                {
+                 "n": "Vector",
+                 "t": "VECTOR",
+                 "w": 12,
+                 "h": 8,
+                 "size": "FIXED/FIXED",
+                 "stroke": [
+                  "var:text/inverse"
+                 ],
+                 "sw": 2
+                }
+               ]
+              }
+             ]
+            },
+            {
+             "n": "Compétences",
+             "t": "TEXT",
+             "w": 93,
+             "h": 21,
+             "size": "HUG/HUG",
+             "fill": [
+              "var:text/secondary"
+             ],
+             "text": "Compétences",
+             "fs": 14,
+             "font": "Regular"
+            }
+           ]
+          },
+          {
+           "n": "conn",
+           "t": "FRAME",
+           "w": 40,
+           "h": 36,
+           "layout": "HORIZONTAL",
+           "gap": 0,
+           "pad": "0 0 0 0",
+           "align": "CENTER/CENTER",
+           "size": "FIXED/FIXED",
+           "c": [
+            {
+             "n": "Rectangle",
+             "t": "RECTANGLE",
+             "w": 40,
+             "h": 2,
+             "size": "FIXED/FIXED",
+             "fill": [
+              "var:blue/600"
+             ]
+            }
+           ]
+          },
+          {
+           "n": "step",
+           "t": "FRAME",
+           "w": 80,
+           "h": 65,
+           "layout": "VERTICAL",
+           "gap": 8,
+           "pad": "0 0 0 0",
+           "align": "MIN/CENTER",
+           "size": "FIXED/HUG",
+           "c": [
+            {
+             "n": "Frame",
+             "t": "FRAME",
+             "w": 36,
+             "h": 36,
+             "layout": "HORIZONTAL",
+             "gap": 0,
+             "pad": "0 0 0 0",
+             "align": "CENTER/CENTER",
+             "size": "FIXED/FIXED",
+             "r": 9999,
+             "fill": [
+              "var:blue/600"
+             ],
+             "c": [
+              {
+               "n": "3",
+               "t": "TEXT",
+               "w": 11,
+               "h": 19,
+               "size": "HUG/HUG",
+               "fill": [
+                "var:text/inverse"
+               ],
+               "text": "3",
+               "fs": 16,
+               "font": "Semi Bold"
+              }
+             ]
+            },
+            {
+             "n": "Détails",
+             "t": "TEXT",
+             "w": 47,
+             "h": 21,
+             "size": "HUG/HUG",
+             "fill": [
+              "var:text/primary"
+             ],
+             "text": "Détails",
+             "fs": 14,
+             "font": "Semi Bold"
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "n": "boxWrap",
+       "t": "FRAME",
+       "w": 343,
+       "h": 610,
+       "layout": "VERTICAL",
+       "gap": 0,
+       "pad": "20 0 20 0",
+       "align": "MIN/MIN",
+       "size": "FILL/HUG",
+       "c": [
+        {
+         "n": "box",
+         "t": "FRAME",
+         "w": 343,
+         "h": 570,
+         "layout": "VERTICAL",
+         "gap": 20,
+         "pad": "24 16 24 16",
+         "align": "MIN/MIN",
+         "size": "FILL/HUG",
+         "r": 12,
+         "fill": [
+          "var:surface/base"
+         ],
+         "stroke": [
+          "var:border/subtle"
+         ],
+         "sw": 1,
+         "c": [
+          {
+           "n": "Ces sections sont facultatives. Vous pouvez les remplir maintenant ou plus tard.",
+           "t": "TEXT",
+           "w": 311,
+           "h": 42,
+           "size": "FILL/HUG",
+           "fill": [
+            "var:text/muted"
+           ],
+           "text": "Ces sections sont facultatives. Vous pouvez les remplir maintenant ou plus tard.",
+           "fs": 14,
+           "font": "Regular",
+           "style": "Body Small"
+          },
+          {
+           "n": "acc",
+           "t": "FRAME",
+           "w": 311,
+           "h": 100,
+           "layout": "HORIZONTAL",
+           "gap": 0,
+           "pad": "20 24 20 24",
+           "align": "SPACE_BETWEEN/CENTER",
+           "size": "FILL/FIXED",
+           "r": 12,
+           "fill": [
+            "var:surface/base"
+           ],
+           "stroke": [
+            "var:border/subtle"
+           ],
+           "sw": 1,
+           "c": [
+            {
+             "n": "Frame",
+             "t": "FRAME",
+             "w": 159,
+             "h": 26,
+             "layout": "HORIZONTAL",
+             "gap": 8,
+             "pad": "0 0 0 0",
+             "align": "MIN/CENTER",
+             "size": "HUG/HUG",
+             "c": [
+              {
+               "n": "Formation",
+               "t": "TEXT",
+               "w": 79,
+               "h": 26,
+               "size": "HUG/HUG",
+               "fill": [
+                "var:text/primary"
+               ],
+               "text": "Formation",
+               "fs": 16,
+               "font": "Semi Bold"
+              },
+              {
+               "n": "(optionnel)",
+               "t": "TEXT",
+               "w": 72,
+               "h": 21,
+               "size": "HUG/HUG",
+               "fill": [
+                "var:text/muted"
+               ],
+               "text": "(optionnel)",
+               "fs": 14,
+               "font": "Regular",
+               "style": "Body Small"
+              }
+             ]
+            },
+            {
+             "n": "icon-chevron-down",
+             "t": "INSTANCE",
+             "w": 20,
+             "h": 20,
+             "size": "FIXED/FIXED",
+             "comp": "icon-chevron-down",
+             "c": [
+              {
+               "n": "Vector",
+               "t": "VECTOR",
+               "w": 10,
+               "h": 5,
+               "size": "FIXED/FIXED",
+               "stroke": [
+                "var:text/muted"
+               ],
+               "sw": 2
+              }
+             ]
+            }
+           ]
+          },
+          {
+           "n": "acc",
+           "t": "FRAME",
+           "w": 311,
+           "h": 100,
+           "layout": "HORIZONTAL",
+           "gap": 0,
+           "pad": "20 24 20 24",
+           "align": "SPACE_BETWEEN/CENTER",
+           "size": "FILL/FIXED",
+           "r": 12,
+           "fill": [
+            "var:surface/base"
+           ],
+           "stroke": [
+            "var:border/subtle"
+           ],
+           "sw": 1,
+           "c": [
+            {
+             "n": "Frame",
+             "t": "FRAME",
+             "w": 186,
+             "h": 26,
+             "layout": "HORIZONTAL",
+             "gap": 8,
+             "pad": "0 0 0 0",
+             "align": "MIN/CENTER",
+             "size": "HUG/HUG",
+             "c": [
+              {
+               "n": "Certifications",
+               "t": "TEXT",
+               "w": 106,
+               "h": 26,
+               "size": "HUG/HUG",
+               "fill": [
+                "var:text/primary"
+               ],
+               "text": "Certifications",
+               "fs": 16,
+               "font": "Semi Bold"
+              },
+              {
+               "n": "(optionnel)",
+               "t": "TEXT",
+               "w": 72,
+               "h": 21,
+               "size": "HUG/HUG",
+               "fill": [
+                "var:text/muted"
+               ],
+               "text": "(optionnel)",
+               "fs": 14,
+               "font": "Regular",
+               "style": "Body Small"
+              }
+             ]
+            },
+            {
+             "n": "icon-chevron-down",
+             "t": "INSTANCE",
+             "w": 20,
+             "h": 20,
+             "size": "FIXED/FIXED",
+             "comp": "icon-chevron-down",
+             "c": [
+              {
+               "n": "Vector",
+               "t": "VECTOR",
+               "w": 10,
+               "h": 5,
+               "size": "FIXED/FIXED",
+               "stroke": [
+                "var:text/muted"
+               ],
+               "sw": 2
+              }
+             ]
+            }
+           ]
+          },
+          {
+           "n": "acc",
+           "t": "FRAME",
+           "w": 311,
+           "h": 100,
+           "layout": "HORIZONTAL",
+           "gap": 0,
+           "pad": "20 24 20 24",
+           "align": "SPACE_BETWEEN/CENTER",
+           "size": "FILL/FIXED",
+           "r": 12,
+           "fill": [
+            "var:surface/base"
+           ],
+           "stroke": [
+            "var:border/subtle"
+           ],
+           "sw": 1,
+           "c": [
+            {
+             "n": "Frame",
+             "t": "FRAME",
+             "w": 208,
+             "h": 26,
+             "layout": "HORIZONTAL",
+             "gap": 8,
+             "pad": "0 0 0 0",
+             "align": "MIN/CENTER",
+             "size": "HUG/HUG",
+             "c": [
+              {
+               "n": "Outils & logiciels",
+               "t": "TEXT",
+               "w": 128,
+               "h": 26,
+               "size": "HUG/HUG",
+               "fill": [
+                "var:text/primary"
+               ],
+               "text": "Outils & logiciels",
+               "fs": 16,
+               "font": "Semi Bold"
+              },
+              {
+               "n": "(optionnel)",
+               "t": "TEXT",
+               "w": 72,
+               "h": 21,
+               "size": "HUG/HUG",
+               "fill": [
+                "var:text/muted"
+               ],
+               "text": "(optionnel)",
+               "fs": 14,
+               "font": "Regular",
+               "style": "Body Small"
+              }
+             ]
+            },
+            {
+             "n": "icon-chevron-down",
+             "t": "INSTANCE",
+             "w": 20,
+             "h": 20,
+             "size": "FIXED/FIXED",
+             "comp": "icon-chevron-down",
+             "c": [
+              {
+               "n": "Vector",
+               "t": "VECTOR",
+               "w": 10,
+               "h": 5,
+               "size": "FIXED/FIXED",
+               "stroke": [
+                "var:text/muted"
+               ],
+               "sw": 2
+              }
+             ]
+            }
+           ]
+          },
+          {
+           "n": "acc",
+           "t": "FRAME",
+           "w": 311,
+           "h": 100,
+           "layout": "HORIZONTAL",
+           "gap": 0,
+           "pad": "20 24 20 24",
+           "align": "SPACE_BETWEEN/CENTER",
+           "size": "FILL/FIXED",
+           "r": 12,
+           "fill": [
+            "var:surface/base"
+           ],
+           "stroke": [
+            "var:border/subtle"
+           ],
+           "sw": 1,
+           "c": [
+            {
+             "n": "Frame",
+             "t": "FRAME",
+             "w": 221,
+             "h": 26,
+             "layout": "HORIZONTAL",
+             "gap": 8,
+             "pad": "0 0 0 0",
+             "align": "MIN/CENTER",
+             "size": "HUG/HUG",
+             "c": [
+              {
+               "n": "Horaires de travail",
+               "t": "TEXT",
+               "w": 141,
+               "h": 26,
+               "size": "HUG/HUG",
+               "fill": [
+                "var:text/primary"
+               ],
+               "text": "Horaires de travail",
+               "fs": 16,
+               "font": "Semi Bold"
+              },
+              {
+               "n": "(optionnel)",
+               "t": "TEXT",
+               "w": 72,
+               "h": 21,
+               "size": "HUG/HUG",
+               "fill": [
+                "var:text/muted"
+               ],
+               "text": "(optionnel)",
+               "fs": 14,
+               "font": "Regular",
+               "style": "Body Small"
+              }
+             ]
+            },
+            {
+             "n": "icon-chevron-down",
+             "t": "INSTANCE",
+             "w": 20,
+             "h": 20,
+             "size": "FIXED/FIXED",
+             "comp": "icon-chevron-down",
+             "c": [
+              {
+               "n": "Vector",
+               "t": "VECTOR",
+               "w": 10,
+               "h": 5,
+               "size": "FIXED/FIXED",
+               "stroke": [
+                "var:text/muted"
+               ],
+               "sw": 2
+              }
+             ]
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

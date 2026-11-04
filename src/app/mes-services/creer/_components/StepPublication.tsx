@@ -138,32 +138,37 @@ export function StepPublication({
           const flagged = row.fields.some((f) => failedFields.includes(f))
           let value: React.ReactNode = t('service.wizard.recap.not_set', lang)
           if (row.value) value = row.userText ? <bdi>{row.value}</bdi> : row.value
+          // 375 frame (1594:28113): label + value wrap together (gap 12) with « Modifier » centred at the end. The value claims
+          // at least 144 px, so it sits beside a short label (Titre, Prix, Délai, Mode) and drops under a long one (Catégorie,
+          // Compétences). From sm the group never wraps: label · value (flex-1) · « Modifier », as before.
           return (
             <li
               key={row.key}
-              className={`flex flex-wrap items-center justify-between gap-x-3 gap-y-1 py-2 sm:flex-nowrap ${
+              className={`flex items-center justify-between gap-x-3 py-2 ${
                 i < rows.length - 1 ? 'border-b border-border-subtle' : ''
               }`}
             >
-              <span className={`order-1 flex shrink-0 items-center gap-1 text-body-sm ${flagged ? 'text-danger-500' : 'text-text-muted'}`}>
-                {flagged && <CircleAlert className="h-4 w-4 shrink-0" aria-hidden="true" />}
-                {label}
-                {flagged && <span className="sr-only">{t('service.wizard.recap.flagged', lang)}</span>}
-              </span>
-              <span
-                className={`order-3 min-w-0 basis-full break-words text-body-sm sm:order-2 sm:flex-1 sm:basis-auto ${
-                  row.value ? 'font-medium text-text-primary' : 'text-text-muted'
-                }`}
-              >
-                {value}
-              </span>
+              <div className="flex min-w-0 flex-1 flex-wrap items-center gap-x-3 gap-y-3 sm:flex-nowrap">
+                <span className={`flex shrink-0 items-center gap-1 text-body-sm ${flagged ? 'text-danger-500' : 'text-text-muted'}`}>
+                  {flagged && <CircleAlert className="h-4 w-4 shrink-0" aria-hidden="true" />}
+                  {label}
+                  {flagged && <span className="sr-only">{t('service.wizard.recap.flagged', lang)}</span>}
+                </span>
+                <span
+                  className={`min-w-0 grow basis-36 break-words text-body-sm sm:flex-1 sm:basis-auto ${
+                    row.value ? 'font-medium text-text-primary' : 'text-text-muted'
+                  }`}
+                >
+                  {value}
+                </span>
+              </div>
               {!readOnly && onEdit && (
                 <button
                   type="button"
                   disabled={disabled}
                   onClick={() => onEdit(row.step)}
                   aria-label={t('service.wizard.recap.edit_aria', lang, { field: label })}
-                  className={`relative order-2 shrink-0 rounded text-body-sm text-brand-blue-600 hover:underline disabled:cursor-not-allowed disabled:text-text-muted disabled:no-underline sm:order-3 ${FOCUS_RING}`}
+                  className={`relative shrink-0 rounded text-body-sm text-brand-blue-600 hover:underline disabled:cursor-not-allowed disabled:text-text-muted disabled:no-underline ${FOCUS_RING}`}
                 >
                   {t('service.wizard.recap.edit', lang)}
                   {/* Touch target: ≥ 44 px tall without moving the 21 px text (Button's own hit-area pattern). */}
