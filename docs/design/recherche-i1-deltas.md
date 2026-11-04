@@ -108,6 +108,7 @@ The landing (bare /recherche) and the error state are not drawn and stay as buil
 | D4 | ‹ 1 › drawn on a single page | caption only when there is one page | shared `Pagination` behaviour |
 | D5 | « Filtres » r 10 rectangle, no icon | the pill with its icon | founder answer 5 |
 | D6 | page background white under the 375 band | shell surface/subtle | AppShell |
+| D7 | 1440 chips row hidden (the frame shows no active filter) | the shared bar still shows chips for an active Catégorie / Ville / Prix; the « q » chip is off on /recherche (the header echoes it) | the bar's behaviour; it only differs from the frame once a filter is picked |
 
 ### Before / after (desktop change allowed — answer 7)
 

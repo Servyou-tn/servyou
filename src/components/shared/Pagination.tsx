@@ -30,7 +30,7 @@ export function Pagination({
   /**
    * Optional "Affichage {start} à {end} sur {total}" caption (Figma 611:45637). Both must be
    * supplied together; omit them and the control renders exactly as before — the three other
-   * consumers (/recherche, /categories/[slug], /mes-annonces) are deliberately unchanged.
+   * consumers (/categories/[slug], /mes-annonces) are deliberately unchanged; /recherche passes them since PR-2b.
    */
   totalItems?: number
   perPage?: number

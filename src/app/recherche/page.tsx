@@ -153,10 +153,14 @@ export default async function RecherchePage({
   //         « Filtres » (gap 12), the 2-up grid 20 below.
   return (
     <AppShell user={topBarUser}>
-      <div className="-mx-4 -mt-6 flex flex-col gap-3 border-b border-border-subtle bg-surface-base p-4 lg:hidden">
+      {/* Bleeds through main's padding (px-4 py-6, md:px-8 md:py-8), as MarketplaceMobileHeader does. */}
+      <div className="-mx-4 -mt-6 flex flex-col gap-3 border-b border-border-subtle bg-surface-base p-4 md:-mx-8 md:-mt-8 lg:hidden">
         <h1 className="text-xl font-semibold text-text-primary">{t('search.title', lang)}</h1>
         <SearchQueryInput initialQuery={params.q} type={params.type} basePath="/recherche" />
       </div>
+
+      {/* The desktop frame draws no title; the page keeps its h1 for assistive tech (the mobile band shows it). */}
+      <h1 className="sr-only max-lg:hidden">{t('search.title', lang)}</h1>
 
       <div className="flex flex-col gap-6 max-lg:gap-5 max-lg:pt-2">
         <div className="flex flex-col gap-4 max-lg:gap-3">
@@ -199,16 +203,21 @@ export default async function RecherchePage({
               </p>
               <Link
                 href={clearSearchHref}
-                className={`rounded text-body-sm font-medium text-text-muted underline underline-offset-2 ${FOCUS_RING}`}
+                className={`relative rounded text-body-sm font-medium text-text-muted underline underline-offset-2 ${FOCUS_RING}`}
               >
                 {t('search.clear', lang)}
+                {/* Touch target: ≥ 44 px tall without moving the 21 px text. */}
+                <span aria-hidden="true" className="absolute inset-x-0 -inset-y-3" />
               </Link>
             </div>
           )}
 
           {/* Mobile: the filters live behind « Filtres » + the bottom sheet, with its Ville + Trier par fieldsets. */}
           <div className="lg:hidden">
+            {/* Keyed on the URL's filters: the sheet keeps its drafts in state, so a link that changes the URL (« Effacer les
+                filtres », « Parcourir tout », the other-side nudge) must give it fresh ones. */}
             <SearchFiltersSheet
+              key={[params.categorie.join(','), params.ville ?? '', params.tri, params.prixMin ?? '', params.prixMax ?? ''].join('|')}
               categories={categories}
               selectedCategorie={params.categorie}
               prixMin={params.prixMin}

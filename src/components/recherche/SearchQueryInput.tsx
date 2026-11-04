@@ -11,7 +11,7 @@ import type { SearchType } from '@/lib/search/search-params'
 // The free-text query input for /recherche and /categories/[slug] — both public pages whose
 // entire search UI used to be shell-supplied (MarcheTopBar's ExpandableSearch, retired with the
 // legacy marche shell). Copied from ProduitsFilterBar's q-input pattern
-// (marche/produits/_components/ProduitsFilterBar.tsx), not the whole filter bar — Catégorie /
+// (components/marche/ProduitsFilterBar.tsx, shared since PR-2b), not the whole filter bar — Catégorie /
 // Ville / Prix / Tri already exist on both consumers via SearchFilters / SearchFiltersSheet; only
 // the free-text box was missing. /categories/[slug] had none at all before this (MarcheLayout was
 // always passed searchQuery="" there — there was no reachable UI to set it).
