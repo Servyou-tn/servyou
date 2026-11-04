@@ -38,3 +38,9 @@ Batch 2, PR-A5.
 Controls (375, FR + AR):
 - **G9:** crumb → `/commandes-recues`, tracking save, WhatsApp, « Marquer préparée », cancel modal opens.
 - **G5:** 4 tabs, 10 « Modifier » links, one check shows the bulk bar (Désélectionner / Activer / Supprimer), kebab menu (Masquer / Supprimer).
+
+## Founder answers (2026-11-04)
+
+1 no change to the shared tracker · 2 G5 filters / sort / count / select-all after the beta (logged in `docs/follow-ups/m375-g9-g5.md`) ·
+3 yes — the « ⋮ » button gets an invisible 44 px hit area → **done in PR-A6** (`docs/design/m375-g6-g7-deltas.md`) · 4 the desktop
+« Modifier » size waits for the design pass.

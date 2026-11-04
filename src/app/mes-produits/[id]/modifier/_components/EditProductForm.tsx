@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import Link from 'next/link'
+import { AlertTriangle } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { useLang } from '@/components/LangProvider'
@@ -149,8 +150,10 @@ export function EditProductForm({
     })
   }
 
-  const section = `rounded-2xl bg-white p-6 sm:p-8 ${CARD_SHADOW}`
-  const heading = 'mb-5 text-base font-semibold text-text-primary'
+  // 375 (m375-g6-ajouter / m375-g7-modifier, docs/design/m375-g6-g7-deltas.md): no cards — the sections sit on the page, 32 apart,
+  // each titled 20 Semi Bold / 26, 16 above its fields. Below lg only (plain strings: no cn(), nothing to evict).
+  const section = `rounded-2xl bg-white p-6 sm:p-8 ${CARD_SHADOW} max-lg:rounded-none max-lg:bg-transparent max-lg:p-0 max-lg:shadow-none`
+  const heading = 'mb-5 text-base font-semibold text-text-primary max-lg:mb-4 max-lg:text-h3 max-lg:leading-[26px]'
   const label = 'mb-1.5 block text-sm font-medium text-text-secondary'
   const selectField = `w-full rounded-lg border border-border-strong bg-surface-base px-4 h-11 text-base text-text-primary outline-none transition-colors focus:border-brand-blue-600 ${FOCUS_RING}`
   const suffix = (
@@ -167,10 +170,11 @@ export function EditProductForm({
           footer's link — a server-rendered header can't react to the §5 toggle without a reload.
           Stacked below sm: H1 "Modifier le produit" + a pill is already long in FR, a second
           full-width link on the same row would overflow well before 375px. */}
-      <div className="mb-8 max-w-[760px]">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      {/* 375 (m375-g7-modifier): H1 32 Bold / 38 with its pill, « Voir le produit » under it, the subline 14 secondary, 24 above the form. */}
+      <div className="mb-8 max-w-[760px] max-lg:mb-6">
+        <div className="flex flex-col gap-3 max-lg:gap-1 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex flex-wrap items-center gap-3">
-            <h1 className="text-2xl font-semibold text-text-primary">{t('product.edit_title', lang)}</h1>
+            <h1 className="text-2xl font-semibold text-text-primary max-lg:text-[32px] max-lg:leading-[38px] max-lg:font-bold">{t('product.edit_title', lang)}</h1>
             <StatusPill status={status === 'active' ? 'active' : 'masqué'}>
               {t(status === 'active' ? 'common.status_active' : 'common.status_hidden', lang)}
             </StatusPill>
@@ -186,7 +190,7 @@ export function EditProductForm({
             </Link>
           ) : null}
         </div>
-        <p className="mt-1.5 text-sm text-text-muted">{t('product.edit.page_subtitle', lang)}</p>
+        <p className="mt-1.5 text-sm text-text-muted max-lg:mt-2 max-lg:leading-[21px] max-lg:text-text-secondary">{t('product.edit.page_subtitle', lang)}</p>
       </div>
 
       <form
@@ -194,7 +198,7 @@ export function EditProductForm({
           e.preventDefault()
           submit()
         }}
-        className="max-w-[760px] space-y-5"
+        className="max-w-[760px] space-y-5 max-lg:space-y-8"
       >
         {/* ─── 1. Informations ─── */}
         <section className={section}>
@@ -357,16 +361,17 @@ export function EditProductForm({
         <section className={section}>
           <h2 className={heading}>{t('product.edit.section_status', lang)}</h2>
 
-          <div className="flex flex-col gap-3 border-b border-border-subtle pb-6">
+          {/* 375 (m375-g7-modifier): the label + description beside the switch, no divider, the danger zone 24 under. */}
+          <div className="flex flex-col gap-3 border-b border-border-subtle pb-6 max-lg:flex-row max-lg:items-center max-lg:justify-between max-lg:gap-4 max-lg:border-b-0 max-lg:pb-0">
             <div>
-              <p className="text-sm font-medium text-text-primary">{t('product.edit.status_label', lang)}</p>
-              <p className="mt-1 text-sm text-text-muted">{t('product.edit.status_desc', lang)}</p>
+              <p className="text-sm font-medium text-text-primary max-lg:text-base max-lg:leading-[26px]">{t('product.edit.status_label', lang)}</p>
+              <p className="mt-1 text-sm text-text-muted max-lg:leading-[21px] max-lg:text-text-secondary">{t('product.edit.status_desc', lang)}</p>
             </div>
             <SegmentedControl
               ariaLabel={t('product.edit.status_label', lang)}
               value={status}
               onChange={runStatusChange}
-              className="w-fit"
+              className="w-fit max-lg:shrink-0"
               options={[
                 {
                   value: 'active',
@@ -389,14 +394,19 @@ export function EditProductForm({
               orders this renders the disabled-with-reason state ProductRow already ships (same
               string, product.error_delete_has_orders), not a modal that promises a delete it cannot
               perform. */}
-          <div className="mt-6 flex flex-col gap-3 rounded-xl border border-danger-100 bg-danger-50 p-4">
+          {/* 375: the frame's danger card — transparent, a 1 px danger/500 stroke inside pad 24 / 16, an alert icon + a 20 Semi Bold title,
+              the body 8 under it, the button 24 under the body. */}
+          <div className="mt-6 flex flex-col gap-3 rounded-xl border border-danger-100 bg-danger-50 p-4 max-lg:gap-6 max-lg:border-danger-500 max-lg:bg-transparent max-lg:px-[15px] max-lg:py-[23px]">
             <div>
-              <p className="text-sm font-semibold text-danger-700">{t('product.edit.danger_title', lang)}</p>
+              <p className="text-sm font-semibold text-danger-700 max-lg:flex max-lg:items-center max-lg:gap-2 max-lg:text-h3 max-lg:leading-[26px] max-lg:text-text-primary">
+                <AlertTriangle className="size-5 shrink-0 text-danger-500 lg:hidden" aria-hidden="true" />
+                {t('product.edit.danger_title', lang)}
+              </p>
               {/* danger-600 is not a real token — only 50/100/500/700 exist in @theme
                   (src/styles/tokens.css:41-104). Confirmed live: text-danger-600 rendered as
                   rgb(237,237,237), unreadable against bg-danger-50. danger-700 is the only defined
                   dark shade. */}
-              <p className="mt-1 text-sm text-danger-700">
+              <p className="mt-1 text-sm text-danger-700 max-lg:mt-2 max-lg:leading-[21px] max-lg:text-text-secondary">
                 {product.hasOrders ? t('product.error_delete_has_orders', lang) : t('product.edit.danger_body', lang)}
               </p>
             </div>
@@ -420,7 +430,7 @@ export function EditProductForm({
 
         {/* ─── Footer: dirty-state indicator + Voir le produit + Enregistrer les modifications.
             No publish gate — the product already exists with a status, managed above in §5. ─── */}
-        <div className={`sticky bottom-[var(--cookie-banner-h,0px)] flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-white p-5 ${CARD_SHADOW}`}>
+        <div className={`sticky bottom-[var(--cookie-banner-h,0px)] flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-white p-5 ${CARD_SHADOW} max-lg:rounded-xl max-lg:border max-lg:border-border-subtle max-lg:px-[15px] max-lg:py-[19px] max-lg:shadow-none`}>
           <p className="flex items-center gap-2 text-sm text-text-muted">
             {isDirty ? (
               <>

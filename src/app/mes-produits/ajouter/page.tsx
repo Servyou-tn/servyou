@@ -82,27 +82,28 @@ export default async function AjouterProduitPage() {
 // is no longer disabled.
 function PageIntro({ lang }: { lang: Awaited<ReturnType<typeof getLang>> }) {
   return (
-    <div className="mb-8 max-w-[760px]">
-      <nav aria-label="Fil d'Ariane" className="mb-3">
-        <ol className="flex items-center gap-1.5 text-sm text-text-muted">
+    // 375 (m375-g6-ajouter): crumb 14 Medium with a blue link, 8 above an H1 32 Bold / 38, 8 above the 14 secondary subline, 24 above the form.
+    <div className="mb-8 max-w-[760px] max-lg:mb-6">
+      <nav aria-label="Fil d'Ariane" className="mb-3 max-lg:mb-2">
+        <ol className="flex items-center gap-1.5 text-sm text-text-muted max-lg:gap-2 max-lg:font-medium max-lg:leading-[17px]">
           <li>
             <Link
               href="/mes-produits"
-              className={cn('rounded hover:text-text-primary hover:underline', FOCUS_RING)}
+              className={cn('rounded hover:text-text-primary hover:underline max-lg:text-brand-blue-600', FOCUS_RING)}
             >
               {t('product.form.crumb_products', lang)}
             </Link>
           </li>
           <li aria-hidden="true" className="flex items-center">
-            <ChevronRight className="h-4 w-4 rtl:rotate-180" />
+            <ChevronRight className="h-4 w-4 rtl:rotate-180 max-lg:size-3.5" />
           </li>
           <li aria-current="page" className="font-medium text-text-primary">
             {t('product.form.crumb_current', lang)}
           </li>
         </ol>
       </nav>
-      <h1 className="text-2xl font-semibold text-text-primary">{t('product.form.page_title', lang)}</h1>
-      <p className="mt-1.5 text-sm text-text-muted">{t('product.form.page_subtitle', lang)}</p>
+      <h1 className="text-2xl font-semibold text-text-primary max-lg:text-[32px] max-lg:leading-[38px] max-lg:font-bold">{t('product.form.page_title', lang)}</h1>
+      <p className="mt-1.5 text-sm text-text-muted max-lg:mt-2 max-lg:leading-[21px] max-lg:text-text-secondary">{t('product.form.page_subtitle', lang)}</p>
     </div>
   )
 }
