@@ -156,7 +156,7 @@ export function ProductForm({
 
   // 375 (m375-g6-ajouter / m375-g7-modifier, docs/design/m375-g6-g7-deltas.md): no cards — the sections sit on the page, 32 apart,
   // each titled 20 Semi Bold / 26, 16 above its fields. Below lg only (plain strings: no cn(), nothing to evict).
-  const section = `rounded-2xl bg-white p-6 sm:p-8 ${CARD_SHADOW} max-lg:rounded-none max-lg:bg-transparent max-lg:p-0 max-lg:shadow-none`
+  const section = `rounded-2xl bg-white p-6 sm:p-8 ${CARD_SHADOW} max-lg:rounded-none max-lg:bg-transparent max-lg:p-0 max-lg:shadow-none max-lg:sm:p-0`
   const heading = 'mb-5 text-base font-semibold text-text-primary max-lg:mb-4 max-lg:text-h3 max-lg:leading-[26px]'
   const label = 'mb-1.5 block text-sm font-medium text-text-secondary'
   // No error state on this select today, so the default border is appended unconditionally —
