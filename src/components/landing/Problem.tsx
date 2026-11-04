@@ -27,15 +27,16 @@ export function Problem({ lang }: { lang: Lang }) {
           {t('landing.problem.body', lang)}
         </p>
 
-        {/* Wordless before/after comparison */}
+        {/* Wordless before/after comparison. Below sm the « before » card is p-4 with 56 blobs 8 apart (282 wide): at p-6 / 64 / 16 it was 354
+            in the 327 a 375 screen leaves, and its grid column cannot shrink below that — the page scrolled sideways by 3 px (FR + AR). */}
         <div className="mt-14 grid items-center gap-6 lg:grid-cols-[1fr_auto_1fr]">
           {/* Before — chaos */}
-          <div className="relative h-64 rounded-2xl border border-border-subtle bg-white p-6">
-            <div className="flex h-full items-center justify-center gap-4">
+          <div className="relative h-64 rounded-2xl border border-border-subtle bg-white p-6 max-sm:p-4">
+            <div className="flex h-full items-center justify-center gap-4 max-sm:gap-2">
               {chaosBlobs.map((b, i) => (
                 <div
                   key={i}
-                  className={`relative grid h-16 w-16 place-items-center rounded-2xl ${b.tint} ${b.rotate} shadow-md`}
+                  className={`relative grid h-16 w-16 place-items-center rounded-2xl max-sm:size-14 ${b.tint} ${b.rotate} shadow-md`}
                   aria-hidden="true"
                 >
                   <span className="h-6 w-6 rounded-full bg-white/40" />

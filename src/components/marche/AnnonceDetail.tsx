@@ -31,10 +31,14 @@ import {
 const PROPOSALS_SHOWN = 3
 
 // Panel recipe shared by the two left cards (Figma 1477:29190 / 375 frame 1488:65602): surface/base, 1px border, radius xl, gap 12, p 24 — px 16 at 375.
-const PANEL = 'flex flex-col gap-3 rounded-xl border border-border-subtle bg-surface-base px-4 py-6 sm:p-6'
+// At 375 Figma's stroke sits INSIDE that padding (m375-f4-annonce, docs/design/m375-f4-home-ar-deltas.md): 23 / 15 + the border → content 311.
+const PANEL = 'flex flex-col gap-3 rounded-xl border border-border-subtle bg-surface-base px-[15px] py-[23px] sm:p-6'
 
 // F4 « Détail de mon annonce » (Figma 1477:29190, 1440). Left: description panel, then the proposals received. Right (376 from `xl`): the
 // decision card. Below `xl` everything is ONE column in that order — the 375 frame (1488:65602) is applied separately.
+//
+// 375 re-measured against m375-f4-annonce (docs/design/m375-f4-home-ar-deltas.md): content 311 in every card, the back link 14 / 17, the
+// meta and label lines 17, the captions 15. Below lg only (the cards' own mobile padding is their base class, which sm:p-6 overrides).
 export function AnnonceDetail({ annonce }: { annonce: AnnonceDetailData }) {
   const lang = useLang()
   const router = useRouter()
@@ -134,7 +138,10 @@ export function AnnonceDetail({ annonce }: { annonce: AnnonceDetailData }) {
       <Link
         href="/mes-annonces"
         className={cn(
-          'inline-flex w-fit items-center gap-1.5 rounded text-body-sm font-semibold text-brand-blue-600 hover:underline',
+          // ⚑ cn() evicts `text-body-sm` next to `text-brand-blue-600` (the link renders 16): the 375 size rides on its own variant, which
+          // nothing else in this call competes with. Desktop keeps today's 16 (logged: docs/follow-ups/m375-f4-home-ar.md).
+          // max-lg py / -my 3: a 44 px tap target around the 20 px link without moving the layout.
+          'inline-flex w-fit items-center gap-1.5 rounded text-body-sm font-semibold text-brand-blue-600 hover:underline max-lg:-my-3 max-lg:py-3 max-lg:text-body-sm max-lg:leading-[17px]',
           FOCUS_RING,
         )}
       >
@@ -149,7 +156,7 @@ export function AnnonceDetail({ annonce }: { annonce: AnnonceDetailData }) {
           <StatusPill status={pillStatus}>{t(statusLabelKey, lang)}</StatusPill>
         </div>
         <h1 className="wrap-anywhere text-h1 text-text-primary">{annonce.title}</h1>
-        <ul className="flex flex-wrap items-center gap-x-4 gap-y-2 text-body-sm font-medium text-text-muted">
+        <ul className="flex flex-wrap items-center gap-x-4 gap-y-2 text-body-sm font-medium text-text-muted max-lg:leading-[17px]">
           <li className="inline-flex items-center gap-1.5">
             <Clock className="size-4 shrink-0" aria-hidden="true" />
             {t('annonces.detail.posted_on', lang, { date: formatTunisDate(annonce.createdAt, lang, 'long') })}
@@ -179,12 +186,12 @@ export function AnnonceDetail({ annonce }: { annonce: AnnonceDetailData }) {
         {/* LEFT — description, then the proposals received */}
         <div className="flex min-w-0 flex-col gap-6 xl:flex-1">
           <section className={PANEL}>
-            <h2 className="text-body-sm font-semibold text-text-secondary">{t('annonces.detail.desc_title', lang)}</h2>
+            <h2 className="text-body-sm font-semibold text-text-secondary max-lg:leading-[17px]">{t('annonces.detail.desc_title', lang)}</h2>
             <p className="whitespace-pre-line wrap-anywhere text-body text-text-primary">{annonce.description}</p>
           </section>
 
           <section className={PANEL} aria-labelledby="proposals-title">
-            <h2 id="proposals-title" className="text-body-sm font-semibold text-text-secondary">
+            <h2 id="proposals-title" className="text-body-sm font-semibold text-text-secondary max-lg:leading-[17px]">
               {t('annonces.detail.proposals_title', lang, { n: count })}
             </h2>
 
@@ -224,12 +231,12 @@ export function AnnonceDetail({ annonce }: { annonce: AnnonceDetailData }) {
         </div>
 
         {/* RIGHT — decision card (376 from `xl`) */}
-        <aside className="flex flex-col gap-4 rounded-xl border border-border-subtle bg-surface-base px-4 py-6 sm:p-6 xl:sticky xl:top-24 xl:w-94 xl:shrink-0">
+        <aside className="flex flex-col gap-4 rounded-xl border border-border-subtle bg-surface-base px-[15px] py-[23px] sm:p-6 xl:sticky xl:top-24 xl:w-94 xl:shrink-0">
           <div>
-            <p className="text-caption font-medium text-text-muted">{t('annonces.detail.budget_label', lang)}</p>
+            <p className="text-caption font-medium text-text-muted max-lg:leading-[15px]">{t('annonces.detail.budget_label', lang)}</p>
             {/* <bdi dir="ltr">: « 200 – 400 TND » reorders in an RTL block otherwise; only the figure branch is isolated — « Selon budget »
                 is real translated text and keeps the ambient direction. */}
-            <p className="mt-0.5 text-h1 text-text-primary">{hasBudget ? <bdi dir="ltr">{budgetLabel}</bdi> : budgetLabel}</p>
+            <p className="mt-0.5 text-h1 text-text-primary max-lg:leading-[39px]">{hasBudget ? <bdi dir="ltr">{budgetLabel}</bdi> : budgetLabel}</p>
           </div>
 
           <hr className="border-border-subtle" />
@@ -237,7 +244,7 @@ export function AnnonceDetail({ annonce }: { annonce: AnnonceDetailData }) {
           <div className="flex flex-col gap-1.5">
             <CompetitionPill count={count} cap={annonce.isAtCap} lang={lang} />
             {/* The « 5 / 10 » pair is its own LTR run: in an RTL line the spaced slash is a neutral and the numbers swap (« 10 / 5 »). */}
-            <p className="text-caption font-medium text-text-muted">
+            <p className="text-caption font-medium text-text-muted max-lg:leading-[15px]">
               <bdi dir="ltr">
                 {count} / {MAX_RESPONSES_PER_POST}
               </bdi>{' '}
@@ -249,7 +256,7 @@ export function AnnonceDetail({ annonce }: { annonce: AnnonceDetailData }) {
             <>
               <hr className="border-border-subtle" />
               <div className="flex flex-col gap-1.5">
-                <p className="text-caption font-medium text-text-muted">{t('annonces.detail.skills_label', lang)}</p>
+                <p className="text-caption font-medium text-text-muted max-lg:leading-[15px]">{t('annonces.detail.skills_label', lang)}</p>
                 <div className="flex flex-wrap gap-2">
                   {annonce.skills.map((s) => (
                     <SkillChip key={s}>{s}</SkillChip>
@@ -261,7 +268,7 @@ export function AnnonceDetail({ annonce }: { annonce: AnnonceDetailData }) {
 
           <hr className="border-border-subtle" />
 
-          <dl className="flex flex-col gap-3 text-body-sm">
+          <dl className="flex flex-col gap-3 text-body-sm max-lg:leading-[17px]">
             {where && <MetaRow icon={MapPin} label={t('annonces.detail.location_label', lang)} value={where} />}
             {annonce.deadline && (
               <MetaRow icon={Calendar} label={t('annonces.detail.deadline_label', lang)} value={formatTunisDate(annonce.deadline, lang, 'long')} />
@@ -361,7 +368,7 @@ function CompetitionPill({ count, cap, lang }: { count: number; cap: boolean; la
   const tone = count === 0 ? 'bg-surface-sunken text-text-secondary' : cap ? 'bg-warning-100 text-warning-700' : 'bg-success-100 text-success-700'
   const dot = count === 0 ? 'bg-text-muted' : cap ? 'bg-warning-500' : 'bg-success-500'
   return (
-    <span className={`inline-flex w-fit items-center gap-2 rounded-full px-2.5 py-1 text-caption font-semibold ${tone}`}>
+    <span className={`inline-flex w-fit items-center gap-2 rounded-full px-2.5 py-1 text-caption font-semibold max-lg:leading-[15px] ${tone}`}>
       <span className={`size-2 rounded-full ${dot}`} aria-hidden="true" />
       {count === 0 ? t('annonces.detail.competition_none', lang) : tn('annonces.detail.competition', lang, count)}
     </span>
