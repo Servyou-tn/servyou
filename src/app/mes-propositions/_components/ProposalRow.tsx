@@ -60,7 +60,7 @@ export function ProposalRow({ proposal: p, lang }: { proposal: Proposal; lang: L
             {category ? <p className="truncate text-caption font-medium text-text-muted">{category}</p> : null}
           </div>
         </div>
-        <span className="shrink-0 xl:hidden">
+        <span className="shrink-0 max-lg:hidden xl:hidden">
           <StatusPill status={pill.status}>{t(pill.labelKey, lang)}</StatusPill>
         </span>
       </div>
@@ -91,7 +91,7 @@ export function ProposalRow({ proposal: p, lang }: { proposal: Proposal; lang: L
         )}
       </div>
 
-      <div className="grid grid-cols-2 gap-4 xl:contents">
+      <div className="grid grid-cols-2 gap-4 max-lg:contents xl:contents">
         {/* ma proposition */}
         <div className={`flex min-w-0 flex-col gap-0.5 ${COL.terms}`}>
           <p className="text-caption text-text-muted xl:hidden">{t('propositions.col.terms', lang)}</p>
@@ -110,7 +110,7 @@ export function ProposalRow({ proposal: p, lang }: { proposal: Proposal; lang: L
         </div>
 
         {/* envoyée le */}
-        <div className={`flex min-w-0 flex-col gap-0.5 ${COL.sentOn}`}>
+        <div className={`flex min-w-0 flex-col gap-0.5 max-lg:order-2 ${COL.sentOn}`}>
           <p className="text-caption text-text-muted xl:hidden">{t('propositions.col.sent_on', lang)}</p>
           <p className="truncate text-body-sm leading-5 text-text-muted">{shortDate(p.createdAt, lang)}</p>
           <p className="truncate text-[13px] leading-5 text-text-muted">{relativeTimeLabel(p.createdAt, lang)}</p>
@@ -118,13 +118,13 @@ export function ProposalRow({ proposal: p, lang }: { proposal: Proposal; lang: L
       </div>
 
       {/* statut — its own column from xl; the « Envoyée » caption sits above the post-state pill */}
-      <div className={`hidden flex-col items-start gap-1 xl:flex ${COL.statut}`}>
+      <div className={`hidden flex-col items-start gap-1 max-lg:order-1 max-lg:flex xl:flex ${COL.statut}`}>
         <p className="text-caption font-medium text-text-muted">{t('propositions.sent_caption', lang)}</p>
         <StatusPill status={pill.status}>{t(pill.labelKey, lang)}</StatusPill>
       </div>
 
       {/* actions */}
-      <div className={COL.actions}>
+      <div className={`max-lg:order-3 ${COL.actions}`}>
         <ProposalActions
           responseId={p.id}
           jobPostId={p.jobPostId}

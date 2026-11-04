@@ -116,7 +116,7 @@ export default async function MesEngagementsPage({
         </div>
 
         {/* ── stats (273:8583): 4 tiles, gap 16. Tile 2 is « À traiter », not the frame's « À livrer » (D4). ── */}
-        <div className="flex flex-wrap gap-4">
+        <div className="flex flex-wrap gap-4 max-lg:grid max-lg:grid-cols-2 max-lg:gap-3">
           <StatTile
             label={t('engagements.tile.in_progress', lang)}
             value={String(data.stats.inProgress)}

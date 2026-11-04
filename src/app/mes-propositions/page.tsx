@@ -112,7 +112,7 @@ export default async function MesPropositionsPage({
         </div>
 
         {/* ── stats (298:9139): 4 tiles, gap 16. Fermées is the recessive grey circle; Actives carries the one coloured caption. ── */}
-        <div className="flex flex-wrap gap-4">
+        <div className="flex flex-wrap gap-4 max-lg:grid max-lg:grid-cols-2 max-lg:gap-3">
           <StatTile
             label={t('propositions.tile.sent', lang)}
             value={String(data.stats.sent)}

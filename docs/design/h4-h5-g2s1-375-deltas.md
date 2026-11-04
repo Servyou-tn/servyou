@@ -33,3 +33,8 @@ Review fixes: G2 logo row wraps on a 320 screen (CTA column ≥ 160 px; beside t
 
 Controls: tsc · eslint · desktop 0 px (full set — one base-class change, the connectors `hidden … sm:flex` → `flex …`) ·
 375 FR side by side · AR spot check (H4, H5) · H4 desktop: only the fixture's budget data and top-bar capture noise (two "after" shots differ there too); H5 + G2 step 1 8/8 identical.
+
+## Founder answers (2026-11-04, after #316)
+
+Q1 keep the shared `StatTile` · Q2 logo initials wait for the design pass · Q3 « 800 – 800 TND » logged as a follow-up
+(`docs/follow-ups/mission-budget-equal-bounds.md`), not now · Q4 tablets keep the max-lg rule; tablet polish in the design pass.
