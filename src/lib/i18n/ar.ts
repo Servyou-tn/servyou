@@ -963,6 +963,8 @@ export const ar: Record<string, string> = {
   'produits.filters.clearAll':      "مسح الكل",
   'produits.filters.removeFilter':  "إزالة عامل التصفية {filter}",
   'produits.sort.label':            "ترتيب حسب",
+  // REVIEW_AR_TRANSLATION — /recherche: a typed search's default sort (PR-2b).
+  'produits.sort.pertinence':       "الأكثر صلة",
   'produits.sort.recent':           "الأحدث",
   'produits.sort.prix_asc':         "السعر تصاعديا",
   'produits.sort.prix_desc':        "السعر تنازليا",

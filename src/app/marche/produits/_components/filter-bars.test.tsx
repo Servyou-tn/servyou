@@ -15,7 +15,7 @@ vi.mock('next/navigation', () => ({
 
 import { LangProvider } from '@/components/LangProvider'
 import { BoutiquesFilterBar } from './BoutiquesFilterBar'
-import { ProduitsFilterBar } from './ProduitsFilterBar'
+import { ProduitsFilterBar } from '@/components/marche/ProduitsFilterBar'
 
 afterEach(cleanup)
 
