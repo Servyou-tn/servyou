@@ -31,6 +31,9 @@ const ROUTE = '/mes-produits'
 // `page`), the shared Pagination component. The two real deltas from G8 are Vendus (a second,
 // unfiltered order signal per row — §8.3) and bulk select (§8.5, current-page-only, pre-check and
 // report on both risky actions), neither of which G8 needed.
+//
+// 375: measured against m375-g5-produits (docs/design/m375-g9-g5-deltas.md) — blocks 20 apart, H1 line 38, the add button full width 12
+// under the title. Below lg only.
 
 function parseTab(v: string | undefined): ProductTab {
   return (PRODUCT_TABS as readonly string[]).includes(v ?? '') ? (v as ProductTab) : DEFAULT_PRODUCT_TAB
@@ -84,7 +87,7 @@ export default async function MesProduitsPage({
 
   return (
     <AppShell user={topBarUser}>
-      <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-6 max-lg:gap-5">
         <Header lang={lang} />
 
         {data.counts.all === 0 ? (
@@ -168,15 +171,15 @@ export default async function MesProduitsPage({
 
 function Header({ lang }: { lang: Awaited<ReturnType<typeof getLang>> }) {
   return (
-    <div className="flex flex-wrap items-center justify-between gap-4">
+    <div className="flex flex-wrap items-center justify-between gap-4 max-lg:gap-3">
       <div className="flex flex-col gap-1">
-        <h1 className="text-h1 text-text-primary">{t('product.list_title', lang)}</h1>
+        <h1 className="text-h1 text-text-primary max-lg:leading-[38px]">{t('product.list_title', lang)}</h1>
         <p className="text-body-sm text-text-secondary">{t('product.list_subtitle', lang)}</p>
       </div>
       <Link
         href="/mes-produits/ajouter"
         className={cn(
-          'inline-flex h-10 items-center rounded-lg bg-brand-blue-600 px-4 text-body font-semibold text-text-inverse hover:bg-brand-blue-700',
+          'inline-flex h-10 items-center rounded-lg bg-brand-blue-600 px-4 text-body font-semibold text-text-inverse hover:bg-brand-blue-700 max-lg:w-full max-lg:justify-center',
           FOCUS_RING,
         )}
       >

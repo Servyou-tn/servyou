@@ -42,3 +42,9 @@ Batch 2, PR-A4.
 Controls (375, FR + AR):
 - **G4:** every link resolves (add product, 4 « Voir détails », « Voir toutes les commandes », edit shop, public shop).
 - **G8:** the 5 tabs, sort (2 options), 10 detail links, page 2, and the cancel modal opens (Escape doesn't close it — pre-existing, logged).
+
+## Founder answers (2026-11-04)
+
+1 keep « Accepter » next to WhatsApp · 2 G4 stat tiles stay one column · 3 tracking number + « Voir » in « Commandes en cours »: not now,
+after the beta (logged in `docs/follow-ups/m375-g4-g8.md`) · 4 the waiting time stays as built · 5 « Refusée » is a Figma slip, ignored ·
+6 multi-select stays deferred.
