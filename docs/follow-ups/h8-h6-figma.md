@@ -2,6 +2,8 @@
 
 ## Arabic « Historique » times read backwards (« 1809:12 07/ » for « 18/07 09h12 »)
 
+✅ CLOSED — #308 (agent A, 2026-11-03).
+
 **What** In AR, each `OrderTimeline` entry prints « · 18/07 09h12 » as one span inside an RTL line, so the bidi algorithm
 reorders the digit runs. Seen on `/mes-engagements/[id]` at 1440 and 375; every caller of the timeline is affected.
 

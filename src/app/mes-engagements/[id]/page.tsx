@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import { localizedMetadata } from '@/lib/i18n/metadata'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { ChevronRight, Package } from 'lucide-react'
+import { Briefcase, ChevronRight } from 'lucide-react'
 import { AppShell } from '@/components/shell/AppShell'
 import { StatusPill } from '@/components/ui/status-pill'
 import { OrderRail } from '@/components/orders/OrderRail'
@@ -24,6 +24,7 @@ import {
 import { isUuid } from '@/lib/uuid'
 import { formatServicePrice, servicePriceLabel } from '@/lib/freelance/service-price'
 import { SERVICE_CANCEL_REASONS } from '@/lib/orders/cancel-reasons'
+import { cancelledAfterStage } from '@/lib/orders/buyer-order'
 import { longDate, shortDate, shortRef, stageTimestamps, statusPillFor } from '@/lib/orders/order-status'
 import { isCancellable, lifecycleFor, nextSellerStatus, statusLabelKey, type OrderStatus } from '@/lib/types/order-status'
 import { getLang } from '@/lib/i18n/server'
@@ -130,6 +131,10 @@ export default async function EngagementDetailPage({ params }: { params: Promise
                   return iso ? shortDate(iso, lang) : null
                 }}
                 lang={lang}
+                // A cancelled engagement: E4's red « Annulée » node in place of the stage after the last one reached
+                // (founder ruling, PR-2). OrderRail's detail look and cancelledAfterStage already handle the service chain.
+                cancelledAfter={order.status === 'cancelled' ? cancelledAfterStage(order.events, lifecycleFor('service')) : undefined}
+                cancelledLabelKey="common.status_cancelled"
               />
             </div>
           </section>
@@ -142,13 +147,13 @@ export default async function EngagementDetailPage({ params }: { params: Promise
             <section className="flex flex-col gap-4 rounded-xl border border-border-subtle bg-surface-base p-6 max-lg:px-4">
               <h2 className="text-h3 text-text-primary">{t('engagements.detail.service_panel', lang)}</h2>
               <div className="flex items-start gap-4">
-                {/* thumb: a 28 px sunken tile (border/subtle, radius 8) around icon-package — drawn 28×80 at 1440 (the row's
-                    height), 28×28 at 375. */}
+                {/* thumb: a 28 px sunken tile (border/subtle, radius 8) — drawn 28×80 at 1440 (the row's height), 28×28 at
+                    375. The frame's icon-package is a Figma slip (a package reads as a parcel): founder ruling, the Briefcase. */}
                 <span
                   aria-hidden="true"
                   className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-border-subtle bg-surface-sunken lg:h-20"
                 >
-                  <Package className="h-7 w-7 text-icon-muted" />
+                  <Briefcase className="h-7 w-7 text-icon-muted" />
                 </span>
                 <div className="flex min-w-0 flex-col gap-1">
                   <p dir="auto" className="text-body font-semibold text-text-primary">

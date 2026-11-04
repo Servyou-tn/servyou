@@ -91,7 +91,8 @@ export function MonCompteForm({
 
   return (
     <>
-      <div className="mx-auto flex w-full max-w-180 flex-col gap-6">
+      {/* Below sm (1595:28325): panels gap 20, inset 16 inside the page margin. */}
+      <div className="mx-auto flex w-full max-w-180 flex-col gap-6 max-sm:gap-5 max-sm:px-4">
         <section className={PANEL} aria-labelledby="account-profile-title">
           <h2 id="account-profile-title" className={PANEL_HEADING}>
             {t('monCompte.section.profile', lang)}
@@ -130,7 +131,7 @@ export function MonCompteForm({
             {errorFor('city') && <p className="text-sm text-danger-500">{errorFor('city')}</p>}
           </div>
 
-          <div className="flex min-h-25 items-center justify-between gap-4 py-1">
+          <div className="flex min-h-25 items-center justify-between gap-4 py-1 max-sm:min-h-0">
             <p className="text-sm text-text-secondary">{t('monCompte.field.accountType', lang)}</p>
             <div className="flex items-center gap-3">
               {role === null && (
@@ -183,7 +184,7 @@ export function MonCompteForm({
 
           <hr className="w-full max-w-80 border-border-subtle" />
 
-          <div className="flex min-h-25 flex-wrap items-center justify-between gap-3">
+          <div className="flex min-h-25 flex-wrap items-center justify-between gap-3 max-sm:min-h-0 max-sm:gap-y-2">
             <p className="text-sm font-medium text-text-primary">{t('monCompte.password.row', lang)}</p>
             <Button type="button" variant="secondary" size="md" onClick={() => setPasswordOpen(true)}>
               {t('monCompte.password.change', lang)}
@@ -211,9 +212,10 @@ export function MonCompteForm({
       </div>
 
       {/* Save bar — 724:63911. Desktop: caption left, Annuler + Enregistrer right, centred on the
-          720 column. 375 (728:64244): stacked full-width, Enregistrer FIRST. */}
-      <div className="mt-8 border-t border-border-subtle py-5">
-        <div className="mx-auto flex w-full max-w-180 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          720 column. 375 (728:64244, 1595:28325): stacked full-width, Enregistrer FIRST, 20 below the last panel, buttons
+          inset 16 like the panels. */}
+      <div className="mt-8 border-t border-border-subtle py-5 max-sm:mt-5">
+        <div className="mx-auto flex w-full max-w-180 flex-col gap-3 max-sm:px-4 sm:flex-row sm:items-center sm:justify-between">
           <p className="flex items-center gap-2 text-sm font-medium text-text-muted" aria-live="polite">
             {isDirty && (
               <>
