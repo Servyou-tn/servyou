@@ -14,7 +14,7 @@ Batch 2, PR-A4.
 | G4 / G8 root | blocks 20 apart | ✓ 20 (were 24) |
 | G4 / G8 H1 | 32 Bold / **38** | ✓ 38 (were 40) |
 | G4 « + Ajouter un produit » | full width | ✓ 343 × 40 (was 196; the frame's 26 tall is a hug slip — kept 40) |
-| G4 action centre | blue/50, 1.5 px blue/200 **inside** pad 24 / 16 → content 311; title line 26 | ✓ content 312 (was 292), title 26 |
+| G4 action centre | blue/50, 1.5 px blue/200 **inside** pad 24 / 16 → content 311; title line 26 | ✓ content 311 (was 292), title 26 — measured 312 at device pixel ratio 1, where Chrome floors the 1.5 px border to 1 (the rows inside measure 280 for the same reason) |
 | G4 action rows (OAR) | card r10, 1 px border/subtle inside pad 16 → 279, gap 16: thumb 48 r8 · title 16 Semi Bold + pin · buyer · pill (pending: full width) + the action · « Voir détails » | ✓ the card below 640 (was a borderless 2-line row); 280 content; « Voir détails » → `/commandes-recues/{id}` (existing text). Tablet / desktop rows unchanged |
 | G4 panels (Commandes en cours, Stock faible, Actions rapides) | stroke inside pad 24 / 16 → 311; title line 26; the header link under the title | ✓ 311, 26, link on its own line — **Stock faible 267, Actions rapides 310: equal to the frame** |
 | G4 « Commandes en cours » rows | pad 16; title Semi Bold with the pill beside it; buyer 8 under | ✓ |
