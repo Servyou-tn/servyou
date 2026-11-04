@@ -23,8 +23,8 @@ a fixture order (four states). Both pages sit behind sign-in, so no live account
 | `H1` | 22 Semi Bold / 28, **blue/800** | ✓ blue/800 (was text-primary) |
 | `segmented` | **343** × 44 (FILL), pad 4, r10; segments hug **80 / 82**, h36, pad 0 12, **icons hidden** | ✓ 343 × 44, segments 79 / 82 (was a 214 track with 101 / 104 segments and their icons) |
 | `Input` (search) | field **343 × 44**, pad 0 16, gap 8, 18 icon, **16** Regular placeholder; the instance's empty label row (21 + 8) above and helper row (8 + 16) below | ✓ 343 × 44 at y157 (= 149 + 8), text 16. It was **23 px tall**: `flex-1` collapsed it to its content in the column. The empty label / helper offsets were reproduced (mt 29 / mb 28) here; per Q2 they are gone since PR-A2 (16 under the tabs, 12 above the selects) |
-| `selRow` | two 168 × 40, gap 8, at y233 | ✓ 168 × 40 at y241 (labels: Q3) |
-| `list` | rows 82 (header 81 + divider), gap 12, from y289 | ✓ from y297, pitch 94 (unchanged) |
+| `selRow` | two 168 × 40, gap 8, at y233 | ✓ 168 × 40 at y241 (labels: Q3). Since PR-A2 (Q2, no empty-row offsets): at y184, 12 under the search at y128 |
+| `list` | rows 82 (header 81 + divider), gap 12, from y289 | ✓ from y297, pitch 94 (unchanged). Since PR-A2: from y240 |
 | row `header` | pad 16, gap 12; thumb 48 **r8**; title 14 Semi Bold **/ 20**; sub 12 **/ 17**; price + pill gap 4; chevron 20 **blue/300** | ✓ thumb r8 (was 10), title line 20 (was 21), sub line 17 (was 16.8), chevron blue/300 (was text-muted). Price line stays 21: the shared `StatusPill` is 24 where the frame's is 25, and the extra 1 keeps the header at 81 (Q6) |
 | row-3 `body` | pad 16, gap 16; actions **stacked, gap 8**: WhatsApp **311 × 36** with an 18 glyph, Confirmer 311 × 32 | ✓ WhatsApp 311 × 36 + 18 glyph (was a 199 wide label-only button), 8 apart (was 12) |
 | `timeline` | 4 stages, 32 circles, labels 11 Medium | unchanged: the product chain has 7 stages and scrolls inside its strip (Q4) |

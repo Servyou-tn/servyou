@@ -90,7 +90,7 @@ export default async function MesAnnoncesPage({
   if (!loaded.ok) {
     return (
       <AppShell user={shell.topBarUser}>
-        <div className="flex flex-col gap-6">
+        <div className="flex flex-col gap-6 max-lg:gap-5">
           {header}
           <ErrorState lang={lang} />
         </div>
