@@ -84,14 +84,15 @@ export function AvatarUploadCard({
 
   return (
     <div className="flex flex-col gap-3">
-      {/* Avatar + CTA side by side at every width (375 frame 1595:28325: 80 avatar, gap 16). */}
-      <div className="flex flex-row items-center gap-4">
+      {/* Avatar + CTA side by side (375 frame 1595:28325: 80 avatar, gap 16). The CTA column claims at least 160 px, so
+          below ~360 px the row wraps and the button drops under the avatar instead of pushing the page wider. */}
+      <div className="flex flex-row flex-wrap items-center gap-4">
         {/* decorative={false}: this avatar is the sole identity cue in the row — there is no
             adjacent visible name for it to duplicate — so it is exposed with an accessible label.
             xl = 80, the I1 avatar-row (724:64064); the panel's « Profil » heading is the title. */}
         <Avatar size="xl" src={avatarUrl} name={fullName ?? undefined} decorative={false} />
 
-        <div className="flex flex-col gap-2">
+        <div className="flex min-w-0 grow basis-40 flex-col gap-2">
           <div className="flex flex-wrap items-center gap-2">
             <Button
               type="button"

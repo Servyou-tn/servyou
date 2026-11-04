@@ -36,7 +36,7 @@ I1 was built on the older 375 frame 728:64216 (`docs/design/i1-k-measurements.md
 | 2 | H1 32 Bold / 38 below sm (the `sm:` 28/38 is unchanged) | same |
 | 3 | Header + form column + footer buttons inset 16 (`max-sm:px-4`), header `max-sm:pt-4` (40 to the breadcrumb, as drawn) | `page.tsx`, `_components/MonCompteForm.tsx` |
 | 4 | Panels gap 20 (`max-sm:gap-5`) | `MonCompteForm.tsx` |
-| 5 | Avatar + CTA side by side at every width (was stacked below sm) | `_components/AvatarUploadCard.tsx` |
+| 5 | Avatar + CTA side by side (was stacked below sm). The CTA column claims ≥ 160 px and the row wraps, so below ~360 px the button drops under the avatar instead of widening the page (review fix: « Choisir une photo » is 171 px, the frame's label 166; at 375 FR it runs 6 px into the panel padding, no scroll) | `_components/AvatarUploadCard.tsx` |
 | 6 | « Type de compte » row without its 100 px floor below sm (`max-sm:min-h-0`) | `MonCompteForm.tsx` |
 | 7 | Password row: no 100 px floor, 8 between label and button below sm | same |
 | 8 | Footer bar 20 under the last panel (`max-sm:mt-5`) | same |
