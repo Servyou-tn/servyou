@@ -80,7 +80,7 @@ export function EngagementRow({ engagement: e, lang }: { engagement: Engagement;
           </div>
         </div>
         {pill ? (
-          <span className="xl:hidden">
+          <span className="max-lg:hidden xl:hidden">
             <StatusPill status={pill.pill}>{t(pill.labelKey, lang)}</StatusPill>
           </span>
         ) : null}
@@ -103,11 +103,11 @@ export function EngagementRow({ engagement: e, lang }: { engagement: Engagement;
       </div>
 
       {/* statut — its own column from xl */}
-      <div className={`hidden xl:flex ${COL.statut}`}>
+      <div className={`hidden max-lg:flex max-lg:empty:hidden xl:flex ${COL.statut}`}>
         {pill ? <StatusPill status={pill.pill}>{t(pill.labelKey, lang)}</StatusPill> : null}
       </div>
 
-      <div className="grid grid-cols-2 gap-4 xl:contents">
+      <div className="grid grid-cols-2 gap-4 max-lg:flex max-lg:flex-col max-lg:gap-3 xl:contents">
         {/* budget */}
         <div className={`flex flex-col gap-0.5 ${COL.budget}`}>
           <p className="text-caption text-text-muted xl:hidden">{t('engagements.col.budget', lang)}</p>
