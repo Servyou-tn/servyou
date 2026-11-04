@@ -118,20 +118,23 @@ export default async function OrderDetailPage({
 
   return (
     <AppShell user={topBarUser}>
-      <div className="flex flex-col gap-6">
+      {/* 375: measured against m375-g9-commande (docs/design/m375-g9-g5-deltas.md) — blocks 20 apart, the crumb 12 above the title and the
+          stepper 24 under the date, the pill on its own full-width row, every panel's stroke inside pad 24 / 16 (content 311), titles 26.
+          The horizontal rail overflowed the page by 58 px at 375; below lg it is the shared rail's vertical look. Below lg only. */}
+      <div className="flex flex-col gap-6 max-lg:gap-5">
         {/* ── topGroup: breadcrumb · title + pill · date ── */}
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-4 max-lg:gap-3">
           <nav aria-label={t('seller.orderDetail.breadcrumb_aria', lang)}>
-            <ol className="flex items-center gap-1 text-caption text-text-muted">
+            <ol className="flex items-center gap-1 text-caption text-text-muted max-lg:gap-2 max-lg:text-body-sm max-lg:font-medium max-lg:leading-[17px]">
               <li>
-                <Link href={LIST} className={`rounded hover:underline ${FOCUS_RING}`}>
+                <Link href={LIST} className={`rounded hover:underline max-lg:text-brand-blue-600 ${FOCUS_RING}`}>
                   {t('seller.orders.title', lang)}
                 </Link>
               </li>
               <li aria-hidden="true">
-                <ChevronRight className="h-3 w-3 rtl:-scale-x-100" />
+                <ChevronRight className="h-3 w-3 rtl:-scale-x-100 max-lg:size-3.5" />
               </li>
-              <li aria-current="page" className="text-text-secondary">
+              <li aria-current="page" className="text-text-secondary max-lg:text-text-primary">
                 <bdi dir="ltr">{ref}</bdi>
               </li>
             </ol>
@@ -139,13 +142,13 @@ export default async function OrderDetailPage({
 
           {/* derived: stacks below-lg. Measured desktop is a space-between row. */}
           <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-            <div className="flex items-center gap-3">
-              <h1 className="text-h1 text-text-primary">
+            <div className="flex items-center gap-3 max-lg:flex-col max-lg:items-start">
+              <h1 className="text-h1 text-text-primary max-lg:leading-[38px]">
                 {/* AR: « #551768 » isolated LTR inside the sentence (walk #29: it read « 551768# الطلب »). */}
                 {t('seller.orderDetail.title', lang, { ref: lang === 'ar' ? `\u2066${ref}\u2069` : ref })}
               </h1>
               {pill ? (
-                <StatusPill status={pill.pill}>{t(pill.labelKey, lang)}</StatusPill>
+                <StatusPill status={pill.pill} className="max-lg:w-full">{t(pill.labelKey, lang)}</StatusPill>
               ) : null}
             </div>
             <p className="text-body-sm text-text-secondary">
@@ -155,7 +158,7 @@ export default async function OrderDetailPage({
             </p>
           </div>
 
-          <section className="rounded-xl border border-border-subtle bg-surface-base p-6">
+          <section className="rounded-xl border border-border-subtle bg-surface-base p-6 max-lg:mt-3 max-lg:flex max-lg:justify-center max-lg:px-[15px] max-lg:py-[23px]">
             {/* The SELLER's chain — 7 steps for a product, 4 for a service. Deliberately not
                 E3's RAIL_STAGES: that is the buyer's service rail, and showing a seller four
                 steps would be showing them someone else's journey. */}
@@ -173,16 +176,33 @@ export default async function OrderDetailPage({
                 The common case is NO dates at all: every one of the 14 pre-migration orders has
                 zero events, so `stageTimestamps` returns {} and every node renders its label alone.
                 That path is the default, not the fallback. */}
-            <OrderRail
-              stages={lifecycleFor(order.orderType)}
-              status={order.status}
-              labelKeyFor={(stage) => statusLabelKey(stage as OrderStatus, order.orderType)}
-              timestampFor={(stage) => {
-                const iso = stageDates[stage]
-                return iso ? shortDate(iso, lang) : null
-              }}
-              lang={lang}
-            />
+            <div className="max-lg:hidden">
+              <OrderRail
+                stages={lifecycleFor(order.orderType)}
+                status={order.status}
+                labelKeyFor={(stage) => statusLabelKey(stage as OrderStatus, order.orderType)}
+                timestampFor={(stage) => {
+                  const iso = stageDates[stage]
+                  return iso ? shortDate(iso, lang) : null
+                }}
+                lang={lang}
+              />
+            </div>
+            {/* Below lg: the shared rail's existing vertical look (E4's) — 7 × 56 px columns cannot fit 311. */}
+            <div className="lg:hidden">
+              <OrderRail
+                look="detail"
+                ariaLabel={t('buyerOrder.stepper_aria', lang)}
+                stages={lifecycleFor(order.orderType)}
+                status={order.status}
+                labelKeyFor={(stage) => statusLabelKey(stage as OrderStatus, order.orderType)}
+                timestampFor={(stage) => {
+                  const iso = stageDates[stage]
+                  return iso ? shortDate(iso, lang) : null
+                }}
+                lang={lang}
+              />
+            </div>
           </section>
         </div>
 
@@ -191,8 +211,8 @@ export default async function OrderDetailPage({
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-[752fr_360fr]">
           <div className="flex flex-col gap-4">
             {/* panel-produit */}
-            <section className="flex flex-col gap-4 rounded-xl border border-border-subtle bg-surface-base p-6">
-              <h2 className="text-h3 text-text-primary">
+            <section className="flex flex-col gap-4 rounded-xl border border-border-subtle bg-surface-base p-6 max-lg:px-[15px] max-lg:py-[23px]">
+              <h2 className="text-h3 text-text-primary max-lg:leading-[26px]">
                 {t(
                   order.orderType === 'product'
                     ? 'seller.orderDetail.product'
@@ -292,11 +312,11 @@ export default async function OrderDetailPage({
             </section>
 
             {/* panel-livraison */}
-            <section className="flex flex-col gap-4 rounded-xl border border-border-subtle bg-surface-base p-6">
-              <h2 className="text-h3 text-text-primary">
+            <section className="flex flex-col gap-4 rounded-xl border border-border-subtle bg-surface-base p-6 max-lg:px-[15px] max-lg:py-[23px]">
+              <h2 className="text-h3 text-text-primary max-lg:leading-[26px]">
                 {t('seller.orderDetail.delivery', lang)}
               </h2>
-              <dl className="flex flex-col gap-4">
+              <dl className="flex flex-col gap-4 max-lg:gap-3">
                 <div className="flex flex-col gap-1">
                   <dt className="text-body-sm text-text-secondary">
                     {t('seller.orderDetail.recipient', lang)}
@@ -344,11 +364,11 @@ export default async function OrderDetailPage({
               {/* NOTE DU CLIENT — the frame's quote block. A product order carries free text; a
                   service order carries the folded brief E1 wrote, parsed into its three parts. */}
               {order.buyerNote ? (
-                <div className="rounded-lg bg-surface-sunken p-4">
-                  <p className="text-caption font-semibold uppercase tracking-wide text-text-muted">
+                <div className="rounded-lg bg-surface-sunken p-4 max-lg:-mt-1 max-lg:rounded-md max-lg:border-s-4 max-lg:border-brand-blue-200 max-lg:bg-surface-subtle max-lg:p-3">
+                  <p className="text-caption font-semibold uppercase tracking-wide text-text-muted max-lg:font-medium max-lg:leading-[17px] max-lg:tracking-normal">
                     {t('seller.orderDetail.buyer_note', lang)}
                   </p>
-                  <p className="mt-1 text-body-sm text-text-primary">« {order.buyerNote} »</p>
+                  <p className="mt-1 text-body-sm text-text-primary max-lg:text-text-secondary">« {order.buyerNote} »</p>
                 </div>
               ) : null}
               {order.serviceBrief && order.serviceBrief.description ? (
@@ -385,8 +405,8 @@ export default async function OrderDetailPage({
                 tracking number is still shown — as read-only text via the carrier/tracking rows —
                 but there is nothing left to enter. */}
             {order.orderType === 'product' ? (
-              <section className="flex flex-col gap-4 rounded-xl border border-border-subtle bg-surface-base p-6">
-                <h2 className="text-h3 text-text-primary">
+              <section className="flex flex-col gap-4 rounded-xl border border-border-subtle bg-surface-base p-6 max-lg:px-[15px] max-lg:py-[23px]">
+                <h2 className="text-h3 text-text-primary max-lg:leading-[26px]">
                   {t('seller.orderDetail.shipping', lang)}
                 </h2>
 
@@ -440,8 +460,8 @@ export default async function OrderDetailPage({
                 The cancellation entry that this panel used to render on its own is now just the
                 `status_change → cancelled` event, carrying its reason in `note`. */}
             {order.events.length > 0 ? (
-              <section className="flex flex-col gap-4 rounded-xl border border-border-subtle bg-surface-base p-6">
-                <h2 className="text-h3 text-text-primary">
+              <section className="flex flex-col gap-4 rounded-xl border border-border-subtle bg-surface-base p-6 max-lg:px-[15px] max-lg:py-[23px]">
+                <h2 className="text-h3 text-text-primary max-lg:leading-[26px]">
                   {t('seller.orderDetail.history', lang)}
                 </h2>
                 {/* Measured from Figma 504:27044: timeline gap 16 · entry = a gap-8 row of a 10px
@@ -496,10 +516,10 @@ export default async function OrderDetailPage({
           {/* ── rail ── */}
           <div className="flex flex-col gap-4">
             {/* panel-client */}
-            <section className="flex flex-col gap-4 rounded-xl border border-border-subtle bg-surface-base p-6">
-              <h2 className="text-h3 text-text-primary">{t('seller.orderDetail.client', lang)}</h2>
+            <section className="flex flex-col gap-4 rounded-xl border border-border-subtle bg-surface-base p-6 max-lg:px-[15px] max-lg:py-[23px]">
+              <h2 className="text-h3 text-text-primary max-lg:leading-[26px]">{t('seller.orderDetail.client', lang)}</h2>
               <div className="flex flex-col gap-1">
-                <p className="text-body font-semibold text-text-primary">{order.buyerName}</p>
+                <p className="text-body font-semibold text-text-primary max-lg:leading-[25px]">{order.buyerName}</p>
                 {order.buyerCity ? (
                   <p className="text-body-sm text-text-secondary">{order.buyerCity}</p>
                 ) : null}
@@ -512,14 +532,15 @@ export default async function OrderDetailPage({
               <WhatsAppContactButton
                 targetId={order.buyerId}
                 size="lg"
+                glyphClassName="lg:hidden"
                 label={t('seller.orderDetail.whatsapp_cta', lang)}
                 message={waMessage}
               />
             </section>
 
             {/* panel-action — "Prochaine étape" */}
-            <section className="flex flex-col gap-4 rounded-xl border border-border-subtle bg-surface-base p-6">
-              <h2 className="text-h3 text-text-primary">
+            <section className="flex flex-col gap-4 rounded-xl border border-border-subtle bg-surface-base p-6 max-lg:px-[15px] max-lg:py-[23px]">
+              <h2 className="text-h3 text-text-primary max-lg:leading-[26px]">
                 {t('seller.orderDetail.next_step', lang)}
               </h2>
 

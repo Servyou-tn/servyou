@@ -102,7 +102,7 @@ export function ProductsList({ products, lang }: { products: SellerProductRow[];
         </div>
       ) : null}
 
-      <ul className="flex flex-col gap-3">
+      <ul className="flex flex-col gap-3 max-lg:gap-4">
         {products.map((product) => (
           <ProductRow
             key={product.id}
