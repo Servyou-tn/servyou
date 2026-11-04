@@ -84,11 +84,11 @@ export function AvatarField({
   return (
     <div className="flex items-center gap-4">
       {avatarUrl ? (
-        <Avatar size="2xl" src={avatarUrl} name={fullName ?? undefined} decorative={false} />
+        <Avatar size="2xl" src={avatarUrl} name={fullName ?? undefined} decorative={false} className="max-sm:size-20" />
       ) : (
         <span
           aria-hidden="true"
-          className="flex size-30 shrink-0 items-center justify-center rounded-full bg-surface-sunken"
+          className="flex size-30 shrink-0 items-center justify-center rounded-full bg-surface-sunken max-sm:size-20"
         >
           <Camera className="size-8 text-text-muted" />
         </span>

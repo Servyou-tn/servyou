@@ -79,7 +79,7 @@ export function BoutiquesFilterBar({ categories, cities, selectedCategorie, vill
             push({ q: query.trim() || null })
           }}
           // Full-width row on a phone (the selects wrap beneath it), the flexible first control on desktop.
-          className="min-w-0 basis-full lg:basis-0 lg:flex-1"
+          className="min-w-0 basis-full max-lg:hidden lg:basis-0 lg:flex-1"
           role="search"
         >
           <div className="flex h-11 items-center gap-2 rounded-[10px] border border-border-strong bg-white px-4 focus-within:border-brand-blue-600">

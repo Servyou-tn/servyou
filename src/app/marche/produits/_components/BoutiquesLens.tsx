@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { AppShell } from '@/components/shell/AppShell'
 import { ErrorState } from '@/components/marche/ErrorState'
+import { MarketplaceMobileHeader } from '@/components/marche/MarketplaceMobileHeader'
 import { Pagination } from '@/components/shared/Pagination'
 import { ShopCard } from '@/components/shops/ShopCard'
 import { StorefrontIcon } from '@/components/marche/icons'
@@ -57,11 +58,23 @@ export async function BoutiquesLens({
 
   return (
     <AppShell user={topBarUser}>
-      <div className="flex flex-col gap-6">
-        <div className="flex flex-col gap-4">
-          {/* Mobile page title — desktop takes its identity from the sidebar's active item. */}
-          <h1 className="text-xl font-semibold text-text-primary lg:hidden">{t('shell.sidebar.marketplace', lang)}</h1>
-
+      {/* Below lg the frame (m375-c1-boutiques, 1595:28748) opens like the Produits lens: the shared « Marketplace » + search
+          band (the shop search lives there), the toggle 4 under it, then the kept dropdowns (D2) and the cards 20 under them. From lg the layout is
+          unchanged (desktop takes its identity from the sidebar). */}
+      <div className="flex flex-col gap-6 max-lg:gap-5">
+        <MarketplaceMobileHeader
+          lang={lang}
+          action={BASE}
+          q={params.q}
+          placeholderKey="boutiques.filters.searchPlaceholder"
+          keep={{
+            vue: 'boutiques',
+            ...(params.categorie.length ? { categorie: params.categorie.join(',') } : {}),
+            ...(params.ville ? { ville: params.ville } : {}),
+            ...(params.tri !== 'recent' ? { tri: params.tri } : {}),
+          }}
+        />
+        <div className="flex flex-col gap-4 max-lg:-mt-5 max-lg:pt-1">
           <ProduitsLensToggle lang={lang} active="boutiques" />
 
           {/* The bar follows `q` from the URL by itself (render-time sync) — no remount, so a submitted search keeps the focus. */}

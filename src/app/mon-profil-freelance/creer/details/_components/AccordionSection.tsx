@@ -24,7 +24,7 @@ export function AccordionSection({
 }) {
   return (
     <details className="group rounded-card border border-border-subtle bg-surface-base [&_summary::-webkit-details-marker]:hidden">
-      <summary className={`flex cursor-pointer items-center justify-between gap-3 rounded-card px-6 py-5 ${FOCUS_RING}`}>
+      <summary className={`flex cursor-pointer items-center justify-between gap-3 rounded-card px-6 py-5 max-lg:min-h-[98px] ${FOCUS_RING}`}>
         <span className="flex items-baseline gap-2">
           <span className="text-base font-semibold text-text-primary">{title}</span>
           <span className="text-sm text-text-muted">{suffix}</span>
