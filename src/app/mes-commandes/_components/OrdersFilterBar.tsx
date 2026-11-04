@@ -83,10 +83,10 @@ export function OrdersFilterBar({
   return (
     <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:gap-3">
       {/* Search — full width on mobile, grows on desktop (Figma 816 of 1136).
-          375 (m375-e3-commandes): a 44 field — `flex-1` collapsed it to its 23 px content in the column. The frame's Input instance keeps
-          its empty label row (21 + 8) above and helper row (8 + 16) below the field: mt 29 / mb 28 reproduce those offsets. */}
+          375 (m375-e3-commandes): a 44 field — `flex-1` collapsed it to its 23 px content in the column. 16 under the tabs, 12 above the
+          selects: the frame's empty label / helper rows are an instance artefact (founder, #306 Q2). */}
       <div
-        className={`flex h-10 flex-1 items-center gap-2 rounded-[10px] border border-border-strong bg-white px-4 focus-within:border-brand-blue-600 focus-within:ring-2 focus-within:ring-brand-blue-600 focus-within:ring-offset-2 focus-within:ring-offset-surface-base max-lg:mb-7 max-lg:mt-[29px] max-lg:h-11 max-lg:flex-none`}
+        className={`flex h-10 flex-1 items-center gap-2 rounded-[10px] border border-border-strong bg-white px-4 focus-within:border-brand-blue-600 focus-within:ring-2 focus-within:ring-brand-blue-600 focus-within:ring-offset-2 focus-within:ring-offset-surface-base max-lg:h-11 max-lg:flex-none`}
       >
         <Search className="h-[18px] w-[18px] shrink-0 text-text-muted" aria-hidden="true" />
         <input

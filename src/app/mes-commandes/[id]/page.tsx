@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import { localizedMetadata } from '@/lib/i18n/metadata'
 import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
-import { ChevronRight } from 'lucide-react'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { AppShell } from '@/components/shell/AppShell'
 import { ErrorState } from '@/components/marche/ErrorState'
 import { StatusPill } from '@/components/ui/status-pill'
@@ -34,7 +34,7 @@ const LIST = '/mes-commandes'
 // not-found as a missing one. Layout: a 752 + 360 two-column on desktop; on mobile the action panel jumps up to sit right after
 // the stepper (the mobile frame), then product → seller → delivery → tracking → history.
 //
-// 375 re-measured against m375-e4-commande (docs/design/m375-e3-e4-deltas.md): no breadcrumb, H1 22 Semi Bold blue/800, the pill on its own
+// 375 re-measured against m375-e4-commande (docs/design/m375-e3-e4-deltas.md): a « ‹ Mes commandes » back link for the breadcrumb, H1 22 Semi Bold blue/800, the pill on its own
 // row, every block 16 apart; Figma's strokes sit INSIDE its panels, so below lg the borders come out of the padding (pad 24 / 16 → 23 / 15).
 
 export default async function BuyerOrderDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -80,6 +80,17 @@ export default async function BuyerOrderDetailPage({ params }: { params: Promise
       <div className="flex flex-col gap-6 max-lg:gap-4">
         {/* ── topGroup: breadcrumb · title + pill · date · stepper ── */}
         <div className="flex flex-col gap-4">
+          {/* Below lg the breadcrumb gives way to a « ‹ Mes commandes » back link (founder, #306 Q7 — E1 / E2's « ‹ Services » pattern):
+              13 / 16 muted, 16 chevron; py / -my 3.5 make a 44 px tap target without moving the layout. */}
+          <nav aria-label={t('seller.orderDetail.breadcrumb_aria', lang)} className="flex lg:hidden">
+            <Link
+              href={LIST}
+              className={`-my-3.5 inline-flex items-center gap-1.5 rounded py-3.5 text-[13px] leading-4 text-text-muted hover:text-text-secondary ${FOCUS_RING}`}
+            >
+              <ChevronLeft className="size-4 shrink-0 rtl:rotate-180" aria-hidden="true" />
+              {t('mesCommandes.title', lang)}
+            </Link>
+          </nav>
           <nav aria-label={t('seller.orderDetail.breadcrumb_aria', lang)} className="max-lg:hidden">
             <ol className="flex items-center gap-1 text-caption text-text-muted">
               <li>

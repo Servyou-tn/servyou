@@ -38,6 +38,9 @@ import { cn } from '@/lib/utils'
 // The server re-reads the post and decides (owner, still open, no proposal yet — the DB freezes the content once one arrives); the
 // title / description limits apply to an edit only where the text changed (validateJobPost's `original`), which the form cannot know, so
 // its own counter check is skipped for a field left at its stored value.
+//
+// 375 re-measured against m375-f2-publier (docs/design/m375-f2-f3-deltas.md): the card's stroke sits inside Figma's box (content 311, pad
+// 19 / 15 + the border), heading line 26, budget label / helper line 17, the 30-day note line 18. Below lg only (sm:p-8 above 640).
 
 /** Edit mode: the post's id, its stored values, and — for an old post saved with a min (a range, or « à partir de ») — the budget text to show (kept unless the amount changes). */
 export type AnnonceFormEdit = { id: string; initial: JobPostInput; legacyRange: string | null }
@@ -137,10 +140,10 @@ export function AnnonceForm({ categories, edit }: { categories: AnnonceCategoryO
     <form
       onSubmit={onSubmit}
       noValidate
-      className="flex min-w-0 flex-col gap-6 rounded-xl border border-border-subtle bg-surface-base px-4 py-5 shadow-xs sm:p-8"
+      className="flex min-w-0 flex-col gap-6 rounded-xl border border-border-subtle bg-surface-base px-[15px] py-[19px] shadow-xs sm:p-8"
     >
       <div className="flex flex-col gap-5">
-        <h2 className="text-h3 text-text-primary">{t(edit ? 'annonce.form.edit_title' : 'annonce.form.section_title', lang)}</h2>
+        <h2 className="text-h3 text-text-primary max-lg:leading-[26px]">{t(edit ? 'annonce.form.edit_title' : 'annonce.form.section_title', lang)}</h2>
 
         <Input
           id="annonce-title"
@@ -248,7 +251,7 @@ export function AnnonceForm({ categories, edit }: { categories: AnnonceCategoryO
         />
       </div>
 
-      <p className="text-caption text-text-muted">
+      <p className="text-caption text-text-muted max-lg:leading-[18px]">
         {t('annonce.form.lifetime_note', lang, { days: JOB_POST_EXPIRY_DAYS, max: MAX_RESPONSES_PER_POST })}
       </p>
 
@@ -350,7 +353,7 @@ function PriceField({
   const noteId = `${reactId}-budget-note`
   return (
     <div className="flex flex-col gap-1.5">
-      <label htmlFor={fieldId} className="text-sm font-semibold text-text-secondary">
+      <label htmlFor={fieldId} className="text-sm font-semibold text-text-secondary max-lg:leading-[17px]">
         {label}
       </label>
       <div
@@ -379,7 +382,7 @@ function PriceField({
         </span>
       </div>
       {/* Plain template string, NOT cn(): tailwind-merge would evict `text-caption` next to a text colour (reference_twmerge_text_size_color_footgun). */}
-      <p id={noteId} className={`text-caption ${error ? 'text-danger-500' : 'text-text-muted'}`}>
+      <p id={noteId} className={`text-caption max-lg:leading-[17px] ${error ? 'text-danger-500' : 'text-text-muted'}`}>
         {error ?? helper}
       </p>
     </div>
