@@ -48,16 +48,16 @@ export default async function ModifierProduitPage({
 
   return (
     <AppShell user={topBarUser}>
-      <div className="mb-3 max-w-[760px]">
+      <div className="mb-3 max-w-[760px] max-lg:mb-2">
         <nav aria-label="Fil d'Ariane">
-          <ol className="flex items-center gap-1.5 text-sm text-text-muted">
+          <ol className="flex items-center gap-1.5 text-sm text-text-muted max-lg:gap-2 max-lg:font-medium max-lg:leading-[17px]">
             <li>
-              <Link href={LIST} className={cn('rounded hover:text-text-primary hover:underline', FOCUS_RING)}>
+              <Link href={LIST} className={cn('rounded hover:text-text-primary hover:underline max-lg:text-brand-blue-600', FOCUS_RING)}>
                 {t('product.form.crumb_products', lang)}
               </Link>
             </li>
             <li aria-hidden="true" className="flex items-center">
-              <ChevronRight className="h-4 w-4 rtl:rotate-180" />
+              <ChevronRight className="h-4 w-4 rtl:rotate-180 max-lg:size-3.5" />
             </li>
             <li aria-current="page" className="font-medium text-text-primary">
               {t('product.edit.crumb_current', lang)}

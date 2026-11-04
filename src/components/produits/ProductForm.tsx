@@ -154,8 +154,10 @@ export function ProductForm({
     })
   }
 
-  const section = `rounded-2xl bg-white p-6 sm:p-8 ${CARD_SHADOW}`
-  const heading = 'mb-5 text-base font-semibold text-text-primary'
+  // 375 (m375-g6-ajouter / m375-g7-modifier, docs/design/m375-g6-g7-deltas.md): no cards — the sections sit on the page, 32 apart,
+  // each titled 20 Semi Bold / 26, 16 above its fields. Below lg only (plain strings: no cn(), nothing to evict).
+  const section = `rounded-2xl bg-white p-6 sm:p-8 ${CARD_SHADOW} max-lg:rounded-none max-lg:bg-transparent max-lg:p-0 max-lg:shadow-none max-lg:sm:p-0`
+  const heading = 'mb-5 text-base font-semibold text-text-primary max-lg:mb-4 max-lg:text-h3 max-lg:leading-[26px]'
   const label = 'mb-1.5 block text-sm font-medium text-text-secondary'
   // No error state on this select today, so the default border is appended unconditionally —
   // token-for-token the same rendered class list this local constant produced before promotion.
@@ -173,7 +175,7 @@ export function ProductForm({
         e.preventDefault()
         if (canPublish) submit(true)
       }}
-      className="max-w-[760px] space-y-5"
+      className="max-w-[760px] space-y-5 max-lg:space-y-8"
     >
       {/* ─── 1. Informations ─── */}
       <section className={section}>
@@ -363,7 +365,7 @@ export function ProductForm({
           and Figma has no third control here.
           ⚑ Publish ships DISABLED (gated on ≥1 image) and Button's Figma matrix is sparse —
           `primary/lg/disabled` does not exist — so it stays at the default size `md`. */}
-      <div className={`sticky bottom-[var(--cookie-banner-h,0px)] flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-white p-5 ${CARD_SHADOW}`}>
+      <div className={`sticky bottom-[var(--cookie-banner-h,0px)] flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-white p-5 ${CARD_SHADOW} max-lg:rounded-xl max-lg:border max-lg:border-border-subtle max-lg:px-[15px] max-lg:py-[19px] max-lg:shadow-none`}>
         <Button type="button" variant="secondary" onClick={() => submit(false)} disabled={pending}>
           {t('product.form.save_draft', lang)}
         </Button>

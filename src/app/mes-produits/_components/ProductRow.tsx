@@ -126,11 +126,13 @@ export function ProductRow({
               disabled={pending}
               aria-label={t('product.actions_menu_aria', lang, { title: product.title })}
               className={cn(
-                'flex h-9 w-9 items-center justify-center rounded-lg text-text-secondary hover:bg-surface-subtle disabled:opacity-50',
+                'relative flex h-9 w-9 items-center justify-center rounded-lg text-text-secondary hover:bg-surface-subtle disabled:opacity-50',
                 FOCUS_RING,
               )}
             >
               <MoreVertical className="h-4 w-4" aria-hidden="true" />
+              {/* Invisible 44 × 44 hit area around the 36 px button (founder, #315 Q3) — paints nothing. */}
+              <span aria-hidden="true" className="absolute -inset-1" />
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent
