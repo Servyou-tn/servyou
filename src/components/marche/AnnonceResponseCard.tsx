@@ -32,6 +32,9 @@ const LONG_MESSAGE = 240
 //
 // Plain class strings, not cn(), wherever a text size and a text colour sit together: tailwind-merge treats every `text-*` as one
 // group and evicts the custom size tokens (text-caption / text-body-sm) next to a colour.
+//
+// 375 (m375-f4-annonce, docs/design/m375-f4-home-ar-deltas.md): the stroke sits inside Figma's pad 20 / 16 (content 279), caption line 15,
+// name 19, « headline · city » and the price / délai lines 17, the message 27. Below lg only.
 export function AnnonceResponseCard({
   response,
   annonceTitle,
@@ -50,19 +53,19 @@ export function AnnonceResponseCard({
   const identity = [headline, city].filter(Boolean).join(' · ')
 
   return (
-    <div className="flex flex-col gap-3 rounded-xl border border-border-subtle bg-surface-base px-4 py-5 sm:p-5">
-      <p className="text-caption font-medium text-text-muted">
+    <div className="flex flex-col gap-3 rounded-xl border border-border-subtle bg-surface-base px-[15px] py-[19px] sm:p-5">
+      <p className="text-caption font-medium text-text-muted max-lg:leading-[15px]">
         {t('annonces.detail.received_ago', lang, { when: midSentence(relativeTimeLabel(response.createdAt, lang, now), lang) })}
       </p>
 
       <div className="flex items-center gap-3">
         <Avatar size="md" initials={getInitials(response.fullName)} className="shrink-0" />
         <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-          <p className="wrap-anywhere text-body font-semibold text-text-primary">
+          <p className="wrap-anywhere text-body font-semibold text-text-primary max-lg:leading-[19px]">
             {response.fullName || t('annonces.detail.freelance_unnamed', lang)}
           </p>
           {identity && (
-            <p className="flex items-center gap-1.5 text-body-sm font-medium text-text-muted">
+            <p className="flex items-center gap-1.5 text-body-sm font-medium text-text-muted max-lg:leading-[17px]">
               <User className="size-4 shrink-0" aria-hidden="true" />
               <span className="wrap-anywhere">{identity}</span>
             </p>
@@ -71,7 +74,7 @@ export function AnnonceResponseCard({
       </div>
 
       {(proposedPrice != null || proposedTimeframe) && (
-        <dl className="flex flex-wrap gap-x-4 gap-y-1 text-body-sm font-medium text-text-muted">
+        <dl className="flex flex-wrap gap-x-4 gap-y-1 text-body-sm font-medium text-text-muted max-lg:leading-[17px]">
           {proposedPrice != null && (
             <div className="flex items-center gap-1.5">
               <Wallet className="size-4 shrink-0" aria-hidden="true" />
@@ -98,7 +101,7 @@ export function AnnonceResponseCard({
       {proposalMessage && (
         <div>
           <p
-            className={`whitespace-pre-line wrap-anywhere text-body leading-7 text-text-primary ${long && !expanded ? 'line-clamp-3' : ''}`}
+            className={`whitespace-pre-line wrap-anywhere text-body leading-7 text-text-primary max-lg:leading-[27px] ${long && !expanded ? 'line-clamp-3' : ''}`}
           >
             {proposalMessage}
           </p>
@@ -124,6 +127,7 @@ export function AnnonceResponseCard({
             message={message}
             label={t('annonces.detail.contact_wa', lang)}
             size="md"
+            glyphClassName="lg:hidden"
             errorMessageKey="annonces.detail.phone_reveal_error"
             noPhoneMessageKey="annonces.detail.no_phone"
           />
