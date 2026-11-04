@@ -40,6 +40,9 @@ import { CancelOrderButton } from '@/components/orders/CancelOrderButton'
 // A third control adds ~104 (button + gap), so the cluster lands at ~594 and mid at ~480 — it
 // fits, but 53% of the row would be controls, so the row uses the SHORT WhatsApp label
 // ("WhatsApp") while G9's larger rail button carries the full sentence.
+// 375 (m375-g8-commandes, docs/design/m375-g4-g8-deltas.md): the card's stroke sits inside pad 16 (content 311 — the frame's checkbox
+// column is the deferred multi-select, not drawn), gap 16, the thumb on its own line above the title; the pending pill spans the card and
+// « Voir détails » takes its own line under the actions; the WhatsApp button carries its 18 glyph. Below lg only.
 export function OrderActionRow({
   order,
   lang,
@@ -58,13 +61,13 @@ export function OrderActionRow({
   const isTerminal = order.status === 'received' || order.status === 'cancelled'
 
   return (
-    <li className="flex flex-col gap-3 rounded-[10px] border border-border-subtle bg-surface-base p-4 lg:flex-row lg:items-center lg:gap-4">
+    <li className="flex flex-col gap-3 rounded-[10px] border border-border-subtle bg-surface-base p-4 max-lg:gap-4 max-lg:p-[15px] lg:flex-row lg:items-center lg:gap-4">
       {/* derived: below-lg the row stacks. Measured desktop is a single 1136×83 flex row. */}
-      <div className="flex min-w-0 flex-1 items-center gap-4">
-        <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-surface-sunken">
+      <div className="flex min-w-0 flex-1 items-center gap-4 max-lg:flex-col max-lg:items-start max-lg:self-stretch">
+        <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-surface-sunken max-lg:rounded-md">
           <ImageIcon className="h-[22px] w-[22px] text-icon-muted" aria-hidden="true" />
         </span>
-        <div className="flex min-w-0 flex-1 flex-col gap-1">
+        <div className="flex min-w-0 flex-1 flex-col gap-1 max-lg:w-full">
           <p className="truncate text-body font-semibold text-text-primary">{order.title}</p>
           <div className="flex items-center gap-2">
             <MapPin className="h-3.5 w-3.5 shrink-0 text-text-secondary" aria-hidden="true" />
@@ -89,7 +92,11 @@ export function OrderActionRow({
       </div>
 
       <div className="flex shrink-0 flex-wrap items-center gap-3">
-        {pill ? <StatusPill status={pill.pill}>{t(pill.labelKey, lang)}</StatusPill> : null}
+        {pill ? (
+          <StatusPill status={pill.pill} className={order.status === 'pending' ? 'max-lg:w-full' : undefined}>
+            {t(pill.labelKey, lang)}
+          </StatusPill>
+        ) : null}
 
         {order.status === 'arrived' ? (
           <span className="text-body-sm text-text-muted">
@@ -104,6 +111,7 @@ export function OrderActionRow({
         {order.status === 'pending' ? (
           <WhatsAppContactButton
             targetId={order.buyerId}
+            glyphClassName="size-[18px] lg:hidden"
             label={t('seller.orders.whatsapp_short', lang)}
             message={t('seller.orders.whatsapp_message', lang, {
               buyer: order.buyerName,
@@ -143,7 +151,7 @@ export function OrderActionRow({
 
         <Link
           href={detailHref}
-          className={`rounded text-body-sm text-brand-blue-600 hover:underline ${FOCUS_RING}`}
+          className={`rounded text-body-sm text-brand-blue-600 hover:underline ${order.status === 'pending' ? 'max-lg:basis-full' : ''} ${FOCUS_RING}`}
         >
           {t('seller.orders.view_detail', lang)}
         </Link>

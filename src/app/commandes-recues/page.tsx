@@ -39,8 +39,8 @@ const ROUTE = '/commandes-recues'
 // partial-failure semantics for a feature with no destination. The `filtre` specimen is the
 // same list WITHOUT the checkbox column, so it is the honest target. See docs/follow-ups.md.
 //
-// ⚑ NO MOBILE FRAME EXISTS for G8 (nor for any of the ten seller pages). Every below-lg value
-// here is DERIVED, not measured, and flagged `derived:` at its call site.
+// 375: measured against the m375-g8-commandes export (Figma 1488:61161), docs/design/m375-g4-g8-deltas.md — its checkbox column is the
+// deferred multi-select above, so the cards take the full 343. `max-lg:` only; desktop unchanged.
 
 function parseTab(v: string | undefined): OrderTab {
   return (ORDER_TABS as readonly string[]).includes(v ?? '') ? (v as OrderTab) : DEFAULT_ORDER_TAB
@@ -85,10 +85,10 @@ export default async function CommandesRecuesPage({
 
   return (
     <AppShell user={topBarUser}>
-      <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-6 max-lg:gap-5">
         {/* ── header (measured 1136×63: title 32/38 over a 14/21 subline, gap 4) ── */}
         <div className="flex flex-col gap-1">
-          <h1 className="text-h1 text-text-primary">{t('seller.orders.title', lang)}</h1>
+          <h1 className="text-h1 text-text-primary max-lg:leading-[38px]">{t('seller.orders.title', lang)}</h1>
           <p className="text-body-sm text-text-secondary">{t('seller.orders.subline', lang)}</p>
         </div>
 
