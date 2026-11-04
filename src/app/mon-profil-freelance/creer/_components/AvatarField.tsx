@@ -88,7 +88,7 @@ export function AvatarField({
       ) : (
         <span
           aria-hidden="true"
-          className="flex size-30 shrink-0 items-center justify-center rounded-full bg-surface-sunken"
+          className="flex size-30 shrink-0 items-center justify-center rounded-full bg-surface-sunken max-sm:size-20"
         >
           <Camera className="size-8 text-text-muted" />
         </span>

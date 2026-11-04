@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import { localizedMetadata } from '@/lib/i18n/metadata'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
-import { CircleCheckBig } from 'lucide-react'
+import { ChevronRight, CircleCheckBig } from 'lucide-react'
 import { AppShell } from '@/components/shell/AppShell'
 import { FOCUS_RING } from '@/components/layout/styles'
 import { getShellUser } from '@/lib/marche/shell-user'
@@ -53,22 +53,42 @@ export default async function FreelancerProfileCreatedPage() {
   }
   const isVisible = published?.is_published === true
 
-  const secondaryLinkClasses = `inline-flex h-12 w-full items-center justify-center rounded-lg border border-border-strong bg-surface-base px-5 text-base font-semibold text-text-primary transition-colors hover:bg-surface-subtle sm:w-auto ${FOCUS_RING}`
+  const secondaryLinkClasses = `inline-flex h-12 max-sm:h-10 w-full items-center justify-center rounded-lg border border-border-strong bg-surface-base px-5 text-base font-semibold text-text-primary transition-colors hover:bg-surface-subtle sm:w-auto ${FOCUS_RING}`
   const primaryLinkClasses = `inline-flex h-10 w-full items-center justify-center rounded-lg bg-brand-blue-600 px-4 text-base font-semibold text-text-inverse transition-colors hover:bg-brand-blue-700 active:bg-brand-blue-800 sm:w-auto ${FOCUS_RING}`
 
   return (
     <AppShell user={shell.topBarUser}>
+      {/* Below lg (375 frame): the wizard's page header over the card — breadcrumb 14 Medium muted (gap 8, chevron 14),
+          the page title 32 Bold / 38, the subtitle 14 secondary; the card 20 under it. The title is a <p>: the card's
+          « … créé(e) ! » stays the page's one h1. */}
+      <div className="mb-5 flex flex-col gap-2 lg:hidden">
+        <nav aria-label="Fil d'Ariane">
+          <ol className="flex items-center gap-2 text-sm font-medium text-text-muted">
+            <li>
+              <Link href="/devenir-vendeur/freelance" className={`rounded ${FOCUS_RING}`}>
+                {t('freelance.create.crumb_devenir', lang)}
+              </Link>
+            </li>
+            <li aria-hidden="true" className="flex items-center">
+              <ChevronRight className="h-3.5 w-3.5 rtl:rotate-180" />
+            </li>
+            <li>{t('freelance.create.crumb_current', lang)}</li>
+          </ol>
+        </nav>
+        <p className="text-[32px] font-bold leading-[38px] text-text-primary">{t('freelance.create.page_title', lang)}</p>
+        <p className="text-sm text-text-secondary">{t('freelance.create.page_subtitle', lang)}</p>
+      </div>
       <div className="flex justify-center">
-        <div className="flex w-full max-w-[760px] flex-col items-center gap-4 rounded-card border border-border-subtle bg-surface-base p-8 text-center sm:p-12">
-          <span className="flex h-24 w-24 shrink-0 items-center justify-center rounded-full bg-success-50">
+        <div className="flex w-full max-w-[760px] flex-col items-center gap-4 rounded-card border border-border-subtle bg-surface-base p-8 text-center max-lg:gap-5 max-sm:px-4 max-sm:py-10 sm:p-12">
+          <span className="flex h-24 w-24 shrink-0 items-center justify-center rounded-full bg-success-50 max-lg:bg-success-100">
             <CircleCheckBig className="h-12 w-12 text-success-500" aria-hidden="true" />
           </span>
 
-          <h1 className="text-2xl font-semibold leading-[30px] text-brand-blue-800">
+          <h1 className="text-2xl font-semibold leading-[30px] text-brand-blue-800 max-lg:font-bold max-lg:text-text-primary">
             {t('freelance.create.succes.title', lang)}
           </h1>
 
-          <p className="max-w-[420px] text-[15px] leading-6 text-text-muted">
+          <p className="max-w-[420px] text-[15px] leading-6 text-text-muted max-lg:text-base max-lg:leading-[26px] max-lg:text-text-secondary">
             {t(isVisible ? 'freelance.create.succes.subline_visible' : 'freelance.create.succes.subline', lang)}
           </p>
 

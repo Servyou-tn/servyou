@@ -28,8 +28,8 @@ export function AccordionSection({
 
   return (
     <details className="group rounded-card border border-border-subtle bg-surface-base [&_summary::-webkit-details-marker]:hidden">
-      <summary className={cn('flex cursor-pointer items-center justify-between gap-3 rounded-card px-4 py-5 sm:px-6', FOCUS_RING)}>
-        <span className="text-base font-semibold text-text-primary">{title}</span>
+      <summary className={cn('flex cursor-pointer items-center justify-between gap-3 rounded-card px-6 py-5', FOCUS_RING)}>
+        <span className="text-base font-semibold text-text-primary max-lg:text-xl max-lg:leading-[26px]">{title}</span>
         <span className="flex shrink-0 items-center gap-3">
           <StatusPill status={complete ? 'complete' : 'optional'}>
             {t(complete ? 'boutique.config.badge_complete' : 'boutique.config.badge_optional', lang)}
