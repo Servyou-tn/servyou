@@ -29,7 +29,7 @@ import { isOutOfStock, type SellerProductRow } from '@/lib/marche/seller-product
 // frame exists — flagged for a founder visual check, not treated as measured.
 // 375 (m375-g5-produits, docs/design/m375-g9-g5-deltas.md): the card's stroke inside pad 16, gap 16; the checkbox + thumb on a first line,
 // then the title (wrapping) with its pill beside it, the Prix / Stock / Vendus columns 24 apart with Medium labels, and « Modifier » as the
-// frame's full-width secondary button (14 Semi Bold — cn() had evicted its size). Below lg only.
+// frame's full-width secondary button (14 Semi Bold, a plain class string — cn() had evicted its size). Below lg only.
 export function ProductRow({
   product,
   lang,
@@ -95,7 +95,9 @@ export function ProductRow({
 
       {/* Non-uniform columns: "Toujours disponible" (Stock, untracked) and a 4-digit-plus-decimals
           price both overflow an equal-thirds split at any reasonable row width. */}
-      <div className="grid grid-cols-[minmax(70px,auto)_minmax(120px,auto)_minmax(56px,auto)] gap-4 max-lg:justify-start max-lg:gap-x-6 lg:shrink-0">
+      {/* Below lg the tracks hug their values, 24 apart, as the frame: the 70 / 120 / 56 minimums plus the frame's gap (294) overflowed
+          cards under ~358 px; auto tracks can shrink (the values truncate) and « Toujours disponible » still fits at 375. */}
+      <div className="grid grid-cols-[minmax(70px,auto)_minmax(120px,auto)_minmax(56px,auto)] gap-4 max-lg:grid-cols-[auto_auto_auto] max-lg:justify-start max-lg:gap-x-6 lg:shrink-0">
         <StatCol label={t('product.col_price', lang)} value={tndPrice(product.priceTnd, lang)} />
         <StatCol
           label={t('product.col_stock', lang)}
@@ -108,12 +110,11 @@ export function ProductRow({
         {/* G7 shipped — was the §8.2 Bientôt span pointing nowhere; now a real link. */}
         <Link
           href={`/mes-produits/${product.id}/modifier`}
-          className={cn(
-            // ⚑ cn() evicts `text-body-sm` next to `text-text-secondary` (the link renders 16): the 375 size rides on its own variant. Desktop
-            // keeps today's 16 (logged: docs/follow-ups/m375-g9-g5.md).
-            'inline-flex h-9 items-center rounded-lg border border-border-subtle px-3 text-body-sm font-medium text-text-secondary hover:bg-surface-subtle max-lg:flex-1 max-lg:justify-center max-lg:border-border-strong max-lg:text-body-sm max-lg:font-semibold max-lg:text-text-primary',
-            FOCUS_RING,
-          )}
+          // ⚑ A plain string, NOT cn(): tailwind-merge files `text-body-sm` in the colour group, so it evicted the size next to
+          // `text-text-secondary` (the link rendered 16) — and would evict a `max-lg:text-body-sm` next to `max-lg:text-text-primary` too.
+          // The desktop classes are exactly what cn() produced (no base size: desktop keeps today's 16, logged in
+          // docs/follow-ups/m375-g9-g5.md); below lg the frame's 14 Semi Bold full-width secondary.
+          className={`inline-flex h-9 items-center rounded-lg border border-border-subtle px-3 font-medium text-text-secondary hover:bg-surface-subtle max-lg:flex-1 max-lg:justify-center max-lg:border-border-strong max-lg:text-body-sm max-lg:font-semibold max-lg:text-text-primary ${FOCUS_RING}`}
         >
           {t('common.edit', lang)}
         </Link>
@@ -191,7 +192,7 @@ export function ProductRow({
 
 function StatCol({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex flex-col gap-0.5 max-lg:gap-1">
+    <div className="flex flex-col gap-0.5 max-lg:min-w-0 max-lg:gap-1">
       <p className="text-caption text-text-muted max-lg:font-medium max-lg:leading-[17px]">{label}</p>
       <p dir="ltr" className="truncate text-start text-body-sm font-semibold text-text-primary">
         {value}

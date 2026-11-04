@@ -4,7 +4,7 @@ Batch 2, PR-A5.
 - **Frames:** `m375-g9-commande` (375 × 2610) and `m375-g5-produits` (375 × 2916), dump + png each. No Figma MCP read was used.
 - **Fixture:** one temporary route (`fixture-m375/[which]`) with the frames' content, deleted before the commit. Shell offset: the frame's y + 4.
 - **Desktop:** 8 pairs (G9 + G5 × 1440 / 1100 × FR / AR), stash-compared against `main`: **0 differing pixels in all 8.** It was the full set, because G9 adds wrapper elements.
-- **Overflow:** none at 375 in FR or AR. **G9 scrolled 58 px sideways before (433 wide)**; it is fixed.
+- **Overflow:** none at 375 in FR or AR. **G9 scrolled 58 px sideways before (433 wide)**; it is fixed. At 320 the only overflow left is the shared shell's top bar (16 px, every page — pre-existing, out of scope).
 
 ## Diff
 
@@ -17,7 +17,7 @@ Batch 2, PR-A5.
 | G9 Livraison | fields gap 12; the client note r8, blue/200 start bar, 12 Medium caption, text secondary, 12 under the fields | ✓ |
 | G9 Client | name 16 Semi Bold / 25; WhatsApp lg with a 20 glyph | ✓ (glyph via the button's `glyphClassName`) |
 | G5 header | H1 / 38; the add button full width, 12 under | ✓ |
-| G5 rows | card stroke inside pad 16, gap 16, list gap 16; thumb r8 above the title; the title wraps with its pill beside it; Prix / Stock / Vendus start-packed 24 apart, labels 12 Medium / 17, 4 above the value; « Modifier » a full-width secondary (border-strong, 14 Semi Bold) beside the kebab | ✓ rows 258 / 232 (frame 255 / 229). « Modifier » rendered **16 Medium** at every width (`cn()` evicted its size); fixed below lg, logged for desktop |
+| G5 rows | card stroke inside pad 16, gap 16, list gap 16; thumb r8 above the title; the title wraps with its pill beside it; Prix / Stock / Vendus start-packed 24 apart, labels 12 Medium / 17, 4 above the value; « Modifier » a full-width secondary (border-strong, 14 Semi Bold) beside the kebab | ✓ rows 258 / 232 (frame 255 / 229); the columns hug their values (auto tracks, shrinkable — the built 70 / 120 / 56 minimums plus the gap overflowed cards under ~358 px). « Modifier » rendered **16 Medium** at every width (`cn()` evicted its size); now a plain class string, 14 / 21 Semi Bold below lg; desktop keeps 16 (logged) |
 
 ## Kept (standing defaults)
 
@@ -26,7 +26,6 @@ Batch 2, PR-A5.
 - **G9 extras kept:** the tracking « Enregistrer » button and the « Quartier » row (real fields). The crumb shows the order ref (« #A4F729 »), the built text, where the frame has « Commande #A4F729 ».
 - **G5 checkbox inside the card.** The frame puts it in a 68 px column outside. G5's bulk select is built, so the box stays inside, beside the thumb.
 - **G5 frame-only controls are not built:** the « Toutes les catégories » filter, « Plus récents » sort, « 28 produits » count line and « Tout sélectionner ». They are new controls / text.
-- **G5 Stock column** keeps its 120 minimum (« Toujours disponible » fits); the frame's is 33.
 - **The frame's 26 px buttons and 20 px thumbs** are Figma hug slips, ignored.
 
 ## Questions
