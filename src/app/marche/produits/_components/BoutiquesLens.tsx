@@ -59,7 +59,7 @@ export async function BoutiquesLens({
   return (
     <AppShell user={topBarUser}>
       {/* Below lg the frame (m375-c1-boutiques, 1595:28748) opens like the Produits lens: the shared « Marketplace » + search
-          band (the shop search lives there), the toggle 4 under it, the cards 20 under the toggle. From lg the layout is
+          band (the shop search lives there), the toggle 4 under it, then the kept dropdowns (D2) and the cards 20 under them. From lg the layout is
           unchanged (desktop takes its identity from the sidebar). */}
       <div className="flex flex-col gap-6 max-lg:gap-5">
         <MarketplaceMobileHeader

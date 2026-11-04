@@ -72,7 +72,7 @@ export default async function ShopCreatedPage() {
             <li aria-hidden="true" className="flex items-center">
               <ChevronRight className="h-3.5 w-3.5 rtl:rotate-180" />
             </li>
-            <li>{t('shop.create.crumb_current', lang)}</li>
+            <li aria-current="page">{t('shop.create.crumb_current', lang)}</li>
           </ol>
         </nav>
         <p className="text-[32px] font-bold leading-[38px] text-text-primary">{t('shop.create.page_title', lang)}</p>

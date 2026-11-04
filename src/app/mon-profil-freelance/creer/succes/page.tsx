@@ -53,7 +53,7 @@ export default async function FreelancerProfileCreatedPage() {
   }
   const isVisible = published?.is_published === true
 
-  const secondaryLinkClasses = `inline-flex h-12 max-sm:h-10 w-full items-center justify-center rounded-lg border border-border-strong bg-surface-base px-5 text-base font-semibold text-text-primary transition-colors hover:bg-surface-subtle sm:w-auto ${FOCUS_RING}`
+  const secondaryLinkClasses = `inline-flex h-12 w-full items-center justify-center rounded-lg border border-border-strong bg-surface-base px-5 text-base font-semibold text-text-primary transition-colors hover:bg-surface-subtle sm:w-auto ${FOCUS_RING}`
   const primaryLinkClasses = `inline-flex h-10 w-full items-center justify-center rounded-lg bg-brand-blue-600 px-4 text-base font-semibold text-text-inverse transition-colors hover:bg-brand-blue-700 active:bg-brand-blue-800 sm:w-auto ${FOCUS_RING}`
 
   return (
@@ -72,7 +72,7 @@ export default async function FreelancerProfileCreatedPage() {
             <li aria-hidden="true" className="flex items-center">
               <ChevronRight className="h-3.5 w-3.5 rtl:rotate-180" />
             </li>
-            <li>{t('freelance.create.crumb_current', lang)}</li>
+            <li aria-current="page">{t('freelance.create.crumb_current', lang)}</li>
           </ol>
         </nav>
         <p className="text-[32px] font-bold leading-[38px] text-text-primary">{t('freelance.create.page_title', lang)}</p>
