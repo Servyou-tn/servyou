@@ -19,7 +19,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 
-// The desktop (lg+) filter bar for /marche/produits — Figma 570:40225: an in-page search, then
+// The desktop (lg+) filter bar for /marche/produits — Figma 570:40225 — and, since PR-2b, /recherche (1596:41289): an in-page search, then
 // single-select Catégorie / Ville, a Prix range popover and a sort dropdown, with a row of
 // dismissible active-filter chips beneath. Every control writes to the URL
 // (buildSearchQuery → router.push); the server page re-fetches.
@@ -33,6 +33,10 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 // Ville filters on the SHOP's city through the products→shops join, and only when a city is picked
 // — never a gate (see applyProductFilters). The option list is DB-driven (cities that actually have
 // active listings), so no option can return zero results.
+//
+// SHARED since PR-2b (moved from marche/produits/_components, founder ruling: zero behaviour change). Every prop added
+// for /recherche is optional and defaults to what /marche/produits always had: the three browse sorts with « Plus
+// récents » as the default, the « q » chip, the product placeholder.
 
 type Props = {
   categories: FilterCategory[]
@@ -44,6 +48,14 @@ type Props = {
   tri: SearchSort
   q: string
   basePath: string
+  /** The sorts offered. Default: the browse three. /recherche adds `pertinence` (its typed-search default). */
+  sortOptions?: readonly SearchSort[]
+  /** The sort that means « no ?tri » for this surface — picking it clears the param. Default `recent`. */
+  triDefault?: SearchSort
+  /** Show the « q » chip in the active-filter row. /recherche echoes the query in its results header instead. */
+  showQueryChip?: boolean
+  /** i18n key of the search field placeholder. */
+  searchPlaceholderKey?: string
 }
 
 // The three sorts offered on the browse surface. `pertinence` is a typed-search concept that
@@ -67,6 +79,10 @@ export function ProduitsFilterBar({
   tri,
   q,
   basePath,
+  sortOptions = SORT_OPTIONS,
+  triDefault = 'recent',
+  showQueryChip = true,
+  searchPlaceholderKey = 'produits.filters.searchPlaceholder',
 }: Props) {
   const router = useRouter()
   const sp = useSearchParams()
@@ -104,7 +120,8 @@ export function ProduitsFilterBar({
   // ⚑ NORMALIZED, NOT PASSED THROUGH. `parseSearchParams` defaults `tri` to 'pertinence', which has
   // no entry under produits.sort.* — rendering it raw would put the literal key on screen. The
   // frame's trigger reads "Trier par : Plus récents", so the default folds to 'recent'.
-  const sortValue: SearchSort = tri === 'prix_asc' || tri === 'prix_desc' ? tri : 'recent'
+  // With the default options this is exactly the old fold (prix_* kept, anything else → recent).
+  const sortValue: SearchSort = sortOptions.includes(tri) ? tri : triDefault
   const priceActive = prixMin != null || prixMax != null
 
   const priceChipLabel = () => {
@@ -115,7 +132,7 @@ export function ProduitsFilterBar({
   }
 
   const hasActive =
-    selectedCategorie.length > 0 || Boolean(ville) || priceActive || q.trim() !== ''
+    selectedCategorie.length > 0 || Boolean(ville) || priceActive || (showQueryChip && q.trim() !== '')
 
   return (
     <div className="flex flex-col gap-3">
@@ -136,8 +153,8 @@ export function ProduitsFilterBar({
               type="search"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder={t('produits.filters.searchPlaceholder', lang)}
-              aria-label={t('produits.filters.searchPlaceholder', lang)}
+              placeholder={t(searchPlaceholderKey, lang)}
+              aria-label={t(searchPlaceholderKey, lang)}
               className="min-w-0 flex-1 bg-transparent text-base text-text-primary outline-none placeholder:text-text-muted"
             />
           </div>
@@ -267,9 +284,9 @@ export function ProduitsFilterBar({
           <DropdownMenuContent align="end" className={`w-56 ${MENU_CONTENT}`}>
             <DropdownMenuRadioGroup
               value={sortValue}
-              onValueChange={(v) => push({ tri: v === 'recent' ? null : v })}
+              onValueChange={(v) => push({ tri: v === triDefault ? null : v })}
             >
-              {SORT_OPTIONS.map((s) => (
+              {sortOptions.map((s) => (
                 <DropdownMenuRadioItem key={s} value={s} className={MENU_ITEM}>
                   {t(`produits.sort.${s}`, lang)}
                 </DropdownMenuRadioItem>
@@ -283,7 +300,7 @@ export function ProduitsFilterBar({
           shown by the "filtres actifs" specimen 571:40540). */}
       {hasActive && (
         <div className="flex flex-wrap items-center gap-2">
-          {q.trim() !== '' && (
+          {showQueryChip && q.trim() !== '' && (
             <FilterChip label={`« ${q} »`} onRemove={() => push({ q: null })} lang={lang} />
           )}
           {selectedCategorie.map((slug) => (
@@ -305,7 +322,8 @@ export function ProduitsFilterBar({
           <button
             type="button"
             onClick={() =>
-              push({ categorie: null, ville: null, prix_min: null, prix_max: null, q: null })
+              // Without the « q » chip (/recherche) the query is not a filter here: clearing keeps it.
+              push({ categorie: null, ville: null, prix_min: null, prix_max: null, ...(showQueryChip ? { q: null } : {}) })
             }
             className={`rounded-full px-3 py-1 text-body-sm font-semibold text-brand-blue-600 underline-offset-2 hover:underline ${FOCUS_RING}`}
           >

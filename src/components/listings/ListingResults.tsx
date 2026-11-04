@@ -3,13 +3,17 @@
 import { useReducedMotion } from 'motion/react'
 import { BlurFade } from '@/components/magicui/blur-fade'
 import { ProductListingCard, type ProductListing } from './ProductListingCard'
+import { ProductBrowseCard } from '@/components/produits/ProductBrowseCard'
 import { ServiceListingCard, type ServiceListing } from './ServiceListingCard'
 
 // Client wrapper that renders the right card type with a staggered, reduced-motion-
 // aware BlurFade entrance (the entrance lives here, not in the cards, so the cards
 // stay pure presenters).
 type Props =
-  | { type: 'product'; items: ProductListing[] }
+  // `look="browse"`: the marketplace card (ProductBrowseCard) on C1's ramp — 2 per row below `sm` (165 wide, 13 across,
+  // 12 down), 4 from lg. /recherche only (founder ruling PR-2b: its frames 1596:41289 / 1596:42384 draw that card, 2-up at 375).
+  // Omitted, the product grid is exactly what it always was.
+  | { type: 'product'; items: ProductListing[]; look?: 'listing' | 'browse' }
   // `gap="tight"`: 16 at every width — the C2 category frame (1486:24359) draws its 3-up grid at 16, where the /marche/services frame draws 24.
   // `layout="rail"`: below `sm` the cards sit in ONE horizontally scrolling row of 300-wide cards at gap 12, bleeding to the screen's right edge (D2's « Autres services » —
   // m375-d2-service `cardsRow`); from `sm` it is the same grid as the default.
@@ -45,6 +49,19 @@ export function ListingResults(props: Props) {
         {props.items.map((s, i) => (
           <BlurFade key={s.id} delay={i * 0.05} duration={0.2} {...fade} inView>
             <ServiceListingCard service={s} />
+          </BlurFade>
+        ))}
+      </div>
+    )
+  }
+
+  if (props.look === 'browse') {
+    return (
+      // Same classes as marche/produits' ProductBrowseGrid (C1's measured ramp).
+      <div className="grid grid-cols-2 gap-x-[13px] gap-y-3 sm:gap-4 lg:grid-cols-4">
+        {props.items.map((p, i) => (
+          <BlurFade key={p.id} delay={i * 0.05} duration={0.2} {...fade} inView>
+            <ProductBrowseCard product={p} sizes="(max-width: 1024px) 50vw, 25vw" />
           </BlurFade>
         ))}
       </div>

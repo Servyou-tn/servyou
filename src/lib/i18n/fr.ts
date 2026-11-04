@@ -941,6 +941,7 @@ export const fr: Record<string, string> = {
   'produits.filters.clearAll':      "Tout effacer",
   'produits.filters.removeFilter':  "Retirer le filtre {filter}",
   'produits.sort.label':            "Trier par",
+  'produits.sort.pertinence':       "Pertinence", // /recherche: a typed search's default sort (founder, PR-2b).
   'produits.sort.recent':           "Plus récents",
   'produits.sort.prix_asc':         "Prix croissant",
   'produits.sort.prix_desc':        "Prix décroissant",

@@ -18,7 +18,7 @@ import { t } from '@/lib/i18n'
 import { FOCUS_RING } from '@/components/layout/styles'
 import { ProduitsLensToggle } from './_components/ProduitsLensToggle'
 import { MarketplaceMobileHeader } from '@/components/marche/MarketplaceMobileHeader'
-import { ProduitsFilterBar } from './_components/ProduitsFilterBar'
+import { ProduitsFilterBar } from '@/components/marche/ProduitsFilterBar'
 import { ProductBrowseGrid } from './_components/ProductBrowseGrid'
 import { BoutiquesLens } from './_components/BoutiquesLens'
 

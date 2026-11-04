@@ -6,18 +6,18 @@ import { getLang } from '@/lib/i18n/server'
 import { t, tn } from '@/lib/i18n'
 import type { Lang } from '@/lib/i18n'
 import { FOCUS_RING } from '@/components/layout/styles'
-import { otherType, parseSearchParams, type SearchType } from '@/lib/search/search-params'
+import { otherType, parseSearchParams, type SearchSort, type SearchType } from '@/lib/search/search-params'
 import { searchMarketplace } from '@/lib/search/search-marketplace'
 import { settle } from '@/lib/supabase/query-error'
 import { ErrorState } from '@/components/marche/ErrorState'
 import { getFilterCategoriesForType } from '@/lib/marche/filter-categories'
+import { getProductCities, getServiceCities } from '@/lib/marche/filter-cities'
+import { ProduitsFilterBar } from '@/components/marche/ProduitsFilterBar'
 import { isWeakResult, shouldShowSearchLanding } from '@/lib/search/recherche-logic'
 import { buildSearchQuery } from '@/components/recherche/search-url'
-import { SearchFilters } from '@/components/recherche/SearchFilters'
 import { SearchFiltersSheet } from '@/components/recherche/SearchFiltersSheet'
 import { SearchQueryInput } from '@/components/recherche/SearchQueryInput'
 import { Pagination } from '@/components/shared/Pagination'
-import { PageHeader } from '@/components/shared/PageHeader'
 import { SearchEmptyState } from '@/components/recherche/SearchEmptyState'
 import { SearchLanding } from '@/components/recherche/SearchLanding'
 
@@ -62,7 +62,12 @@ export default async function RecherchePage({
 
   // Type-scoped category filter: only categories with ≥1 active listing of the toggled type,
   // consistent with the two browse engines.
-  const categories = await getFilterCategoriesForType(params.type)
+  // Ville (founder ruling PR-2b): the shop's city for products, the freelancer's for services. The predicates already live
+  // in searchMarketplace (applyProductFilters / applyServiceFilters); the options are the cities that have listings.
+  const [categories, cities] = await Promise.all([
+    getFilterCategoriesForType(params.type),
+    params.type === 'product' ? getProductCities() : getServiceCities(),
+  ])
   const topCategories = categories.slice(0, 3)
 
   const searched = await settle('recherche search', searchMarketplace(params))
@@ -82,7 +87,7 @@ export default async function RecherchePage({
   const isEmpty = result.totalCount === 0
   const hasQuery = params.q !== ''
   const hasFilters =
-    params.categorie.length > 0 || params.prixMin != null || params.prixMax != null
+    params.categorie.length > 0 || params.ville != null || params.prixMin != null || params.prixMax != null
   // Header echo is redundant with the empty-state card at zero, so only show it when a
   // query actually matched something.
   const showQueryEcho = hasQuery && result.totalCount > 0
@@ -95,6 +100,7 @@ export default async function RecherchePage({
   if (params.categorie.length) current.set('categorie', params.categorie.join(','))
   if (params.prixMin != null) current.set('prix_min', String(params.prixMin))
   if (params.prixMax != null) current.set('prix_max', String(params.prixMax))
+  if (params.ville) current.set('ville', params.ville)
   if (params.tri !== 'pertinence') current.set('tri', params.tri)
 
   const hrefFrom = (qs: string) => (qs ? `/recherche?${qs}` : '/recherche')
@@ -102,13 +108,14 @@ export default async function RecherchePage({
   const clearSearchHref = hrefFrom(buildSearchQuery(current, { q: null }))
   // "Effacer les filtres": drop category/price, keep the query + type + sort.
   const clearFiltersHref = hrefFrom(
-    buildSearchQuery(current, { categorie: null, prix_min: null, prix_max: null }),
+    buildSearchQuery(current, { categorie: null, ville: null, prix_min: null, prix_max: null }),
   )
   // "Parcourir tout": drop the query AND filters, keep only the type tab (+ sort).
   const browseAllHref = hrefFrom(
     buildSearchQuery(current, {
       q: null,
       categorie: null,
+      ville: null,
       prix_min: null,
       prix_max: null,
     }),
@@ -124,63 +131,109 @@ export default async function RecherchePage({
     buildSearchQuery(current, {
       type: otherT === 'service' ? 'service' : null,
       categorie: null,
+      // Ville too: each side lists its own cities (shops vs freelancers), so a carried city could empty the other side.
+      ville: null,
     }),
   )
   const currentLabel = sideLabel(params.type, lang)
   const otherLabel = sideLabel(otherT, lang)
   const showWeakHelper = hasQuery && isWeakResult(result.totalCount)
 
+  // Results header (page-local, existing plural keys — no new text): the count in Semi Bold, the rest of the sentence
+  // muted, « Effacer la recherche » at the end (1440: one row; 375: it wraps under).
+  const subtitle = tn('page_header.recherche.subtitle', lang, result.totalCount, { query: params.q })
+  const emphasis = tn('page_header.recherche.emphasis', lang, result.totalCount)
+  const emAt = subtitle.indexOf(emphasis)
+  const sortOptions: SearchSort[] = ['pertinence', 'recent', 'prix_asc', 'prix_desc']
+
+  // Layout — Figma 1596:41289 (1440) / 1596:42384 (375), docs/design/recherche-i1-deltas.md §2:
+  //   1440: the shared filter bar (search · Catégorie · Ville · Prix · Trier par), the results header 16 below, the grid 24
+  //         below that; no sidebar.
+  //   375:  a full-bleed white header band (« Recherche » + the search field, border-bottom), then the results header and
+  //         « Filtres » (gap 12), the 2-up grid 20 below.
   return (
     <AppShell user={topBarUser}>
-      <div className="mb-4">
+      {/* Bleeds through main's padding (px-4 py-6, md:px-8 md:py-8), as MarketplaceMobileHeader does. */}
+      <div className="-mx-4 -mt-6 flex flex-col gap-3 border-b border-border-subtle bg-surface-base p-4 md:-mx-8 md:-mt-8 lg:hidden">
+        <h1 className="text-xl font-semibold text-text-primary">{t('search.title', lang)}</h1>
         <SearchQueryInput initialQuery={params.q} type={params.type} basePath="/recherche" />
       </div>
 
-      {/* Query echo + clear-search — only when a query actually matched something
-          (suppressed on zero results, where the empty card speaks). */}
-      {showQueryEcho && (
-        <>
-          <PageHeader
-            subtitle={tn('page_header.recherche.subtitle', lang, result.totalCount, { query: params.q })}
-            emphasisWord={tn('page_header.recherche.emphasis', lang, result.totalCount)}
-          />
-          <div className="mb-4 mt-3 flex justify-end">
-            <Link
-              href={clearSearchHref}
-              className={`rounded text-body-sm font-medium text-text-muted underline-offset-2 hover:underline ${FOCUS_RING}`}
-            >
-              {t('search.clear', lang)}
-            </Link>
+      {/* The desktop frame draws no title; the page keeps its h1 for assistive tech (the mobile band shows it). */}
+      <h1 className="sr-only max-lg:hidden">{t('search.title', lang)}</h1>
+
+      <div className="flex flex-col gap-6 max-lg:gap-5 max-lg:pt-2">
+        <div className="flex flex-col gap-4 max-lg:gap-3">
+          {/* Desktop (lg+): the filter bar shared with /marche/produits. Pertinence stays the typed-search default; the
+              query is echoed in the header below, not as a chip. */}
+          <div className="hidden lg:block">
+            <ProduitsFilterBar
+              categories={categories}
+              cities={cities}
+              selectedCategorie={params.categorie}
+              ville={params.ville}
+              prixMin={params.prixMin}
+              prixMax={params.prixMax}
+              tri={params.tri}
+              q={params.q}
+              basePath="/recherche"
+              sortOptions={sortOptions}
+              triDefault="pertinence"
+              showQueryChip={false}
+              searchPlaceholderKey={
+                params.type === 'product' ? 'produits.filters.searchPlaceholder' : 'services.filters.searchPlaceholder'
+              }
+            />
           </div>
-        </>
-      )}
 
-      {/* Mobile: the filters live behind a button + bottom sheet (hidden ≥lg). */}
-      <div className="mb-4 lg:hidden">
-        <SearchFiltersSheet
-          categories={categories}
-          selectedCategorie={params.categorie}
-          prixMin={params.prixMin}
-          prixMax={params.prixMax}
-        />
-      </div>
+          {/* Query echo + clear-search — only when a query actually matched something (suppressed on zero results,
+              where the empty card speaks). */}
+          {showQueryEcho && (
+            <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
+              <p className="text-base text-text-muted">
+                {emAt >= 0 ? (
+                  <>
+                    {subtitle.slice(0, emAt)}
+                    <span className="font-semibold text-text-primary">{emphasis}</span>
+                    {subtitle.slice(emAt + emphasis.length)}
+                  </>
+                ) : (
+                  subtitle
+                )}
+              </p>
+              <Link
+                href={clearSearchHref}
+                className={`relative rounded text-body-sm font-medium text-text-muted underline underline-offset-2 ${FOCUS_RING}`}
+              >
+                {t('search.clear', lang)}
+                {/* Touch target: ≥ 44 px tall without moving the 21 px text. */}
+                <span aria-hidden="true" className="absolute inset-x-0 -inset-y-3" />
+              </Link>
+            </div>
+          )}
 
-      <div className="flex gap-6">
-        {/* Desktop filter sidebar (≥lg). */}
-        <aside className="hidden w-60 shrink-0 lg:block">
-          <div className="card-premium p-5">
-            <SearchFilters
-              mode="inline"
+          {/* Mobile: the filters live behind « Filtres » + the bottom sheet, with its Ville + Trier par fieldsets. */}
+          <div className="lg:hidden">
+            {/* Keyed on the URL's filters: the sheet keeps its drafts in state, so a link that changes the URL (« Effacer les
+                filtres », « Parcourir tout », the other-side nudge) must give it fresh ones. */}
+            <SearchFiltersSheet
+              key={[params.categorie.join(','), params.ville ?? '', params.tri, params.prixMin ?? '', params.prixMax ?? ''].join('|')}
               categories={categories}
               selectedCategorie={params.categorie}
               prixMin={params.prixMin}
               prixMax={params.prixMax}
+              extras={{
+                cities,
+                ville: params.ville,
+                tri: params.tri,
+                triDefault: 'pertinence',
+                sortOptions: sortOptions.map((value) => ({ value, labelKey: `produits.sort.${value}` })),
+              }}
             />
           </div>
-        </aside>
+        </div>
 
-        {/* Results column. */}
-        <div className="min-w-0 flex-1">
+        <div className="min-w-0">
           {isEmpty ? (
             <SearchEmptyState
               lang={lang}
@@ -196,7 +249,7 @@ export default async function RecherchePage({
           ) : (
             <>
               {result.type === 'product' ? (
-                <ListingResults type="product" items={result.products} />
+                <ListingResults type="product" items={result.products} look="browse" />
               ) : (
                 <ListingResults type="service" items={result.services} />
               )}
@@ -214,7 +267,13 @@ export default async function RecherchePage({
               )}
 
               <div className="mt-8">
-                <Pagination page={result.page} totalPages={result.totalPages} basePath="/recherche" />
+                <Pagination
+                  page={result.page}
+                  totalPages={result.totalPages}
+                  basePath="/recherche"
+                  totalItems={result.totalCount}
+                  perPage={result.perPage}
+                />
               </div>
             </>
           )}
