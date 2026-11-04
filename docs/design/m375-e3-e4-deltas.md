@@ -22,7 +22,7 @@ a fixture order (four states). Both pages sit behind sign-in, so no live account
 |---|---|---|
 | `H1` | 22 Semi Bold / 28, **blue/800** | ✓ blue/800 (was text-primary) |
 | `segmented` | **343** × 44 (FILL), pad 4, r10; segments hug **80 / 82**, h36, pad 0 12, **icons hidden** | ✓ 343 × 44, segments 79 / 82 (was a 214 track with 101 / 104 segments and their icons) |
-| `Input` (search) | field **343 × 44**, pad 0 16, gap 8, 18 icon, **16** Regular placeholder; the instance's empty label row (21 + 8) above and helper row (8 + 16) below | ✓ 343 × 44 at y157 (= 149 + 8), text 16. It was **23 px tall**: `flex-1` collapsed it to its content in the column. The empty label / helper offsets are reproduced (mt 29 / mb 28) — see Q2 |
+| `Input` (search) | field **343 × 44**, pad 0 16, gap 8, 18 icon, **16** Regular placeholder; the instance's empty label row (21 + 8) above and helper row (8 + 16) below | ✓ 343 × 44 at y157 (= 149 + 8), text 16. It was **23 px tall**: `flex-1` collapsed it to its content in the column. The empty label / helper offsets were reproduced (mt 29 / mb 28) here; per Q2 they are gone since PR-A2 (16 under the tabs, 12 above the selects) |
 | `selRow` | two 168 × 40, gap 8, at y233 | ✓ 168 × 40 at y241 (labels: Q3) |
 | `list` | rows 82 (header 81 + divider), gap 12, from y289 | ✓ from y297, pitch 94 (unchanged) |
 | row `header` | pad 16, gap 12; thumb 48 **r8**; title 14 Semi Bold **/ 20**; sub 12 **/ 17**; price + pill gap 4; chevron 20 **blue/300** | ✓ thumb r8 (was 10), title line 20 (was 21), sub line 17 (was 16.8), chevron blue/300 (was text-muted). Price line stays 21: the shared `StatusPill` is 24 where the frame's is 25, and the extra 1 keeps the header at 81 (Q6) |
@@ -38,7 +38,7 @@ actions are now 8 apart like Produits' (its WhatsApp button was already 311 wide
 
 | Frame node | Frame | Now (375) |
 |---|---|---|
-| breadcrumb | **none** | ✓ hidden below lg (was « Mes commandes › Commande #A4F729 ») — Q7 |
+| breadcrumb | **none** | ✓ hidden below lg (was « Mes commandes › Commande #A4F729 ») — Q7: since PR-A2 a « ‹ Mes commandes » back link takes its place |
 | `H1` | **22 Semi Bold / 28, blue/800** | ✓ 22 / 28 Semi Bold blue/800 (was 32 / 40 Bold text-primary, the desktop H1) |
 | `StatusPill` | its own row, 16 under the H1 | ✓ y68 (= 60 + 8) (was beside the H1) |
 | date | 14 secondary, 16 under the pill | ✓ 16 under the pill |
@@ -97,3 +97,9 @@ No horizontal overflow at 375 (FR + AR, both pages, E4 in all four states: `scro
    link at « Arrivée »?
 10. **Arabic times reversed (every width, so desktop AR too — not changed here).** E4's Historique reads « 1809:12 07/ · » in AR instead of
     « 18/07 09h12 ». Same bidi class as E1 / E2 Q1; it lives in the shared `OrderTimeline` (G9, H8 too). Want it?
+
+## Founder answers (2026-11-03) and where they landed
+
+1 keep the single-page caption · 2 tighten to 16 / 12 → **done in PR-A2** (`docs/design/m375-f2-f3-deltas.md`) · 3 keep 14 and the texts ·
+4 keep the 7-stage rail · 5 keep · 6 ignore · 7 YES, a mobile « ‹ Mes commandes » back link → **done in PR-A2** · 8 keep 80 × 80 (Figma
+slip) · 9 keep our copy and the cancel link · 10 YES → **#308** (the cause was ICU's right-to-left mark after the day, not a missing isolate).

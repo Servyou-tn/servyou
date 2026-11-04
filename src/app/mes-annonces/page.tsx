@@ -41,6 +41,9 @@ const ROUTE = '/mes-annonces'
 // job posts and the proposals they received. The frame is H11's scaffold (header · 4 StatTiles · tab <nav> of Links · search · sort ·
 // table · Pagination) with annonce content; tab / search / sort / page live in the URL (?statut= ?q= ?tri= ?page=) so the page stays a
 // Server Component. Decisions D8 (sort options), D9 (moderation notice + countdown kept on the row), D12 (stat sources): deltas doc.
+//
+// 375 re-measured against m375-f3-annonces (docs/design/m375-f2-f3-deltas.md): every block 20 apart, the publish button 12 under the
+// subtitle, the tab rule across the full row. Below lg only.
 
 function parseTab(v: string | undefined): AnnonceTab {
   return (ANNONCE_TABS as readonly string[]).includes(v ?? '') ? (v as AnnonceTab) : DEFAULT_ANNONCE_TAB
@@ -72,7 +75,7 @@ export default async function MesAnnoncesPage({
     </Link>
   )
   const header = (
-    <div className="flex flex-wrap items-center justify-between gap-4">
+    <div className="flex flex-wrap items-center justify-between gap-4 max-lg:gap-3">
       <div className="flex min-w-0 flex-col gap-1">
         <h1 className="text-h1 text-text-primary">{t('mesannonces.title', lang)}</h1>
         <p className="text-body text-text-muted">{t('mesannonces.subtitle', lang)}</p>
@@ -119,7 +122,7 @@ export default async function MesAnnoncesPage({
 
   return (
     <AppShell user={shell.topBarUser}>
-      <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-6 max-lg:gap-5">
         {header}
 
         {noneAtAll ? (
@@ -130,8 +133,9 @@ export default async function MesAnnoncesPage({
           />
         ) : (
           <>
-            {/* ── stats (1476:27959): 4 equal tiles, gap 16 (2 × 2 at 375: 165 + 12 + 165). Real counts over ALL annonces, never fake. ── */}
-            <div className="flex flex-wrap gap-3 sm:gap-4">
+            {/* ── stats (1476:27959): 4 equal tiles, gap 16 (2 × 2 at 375: 165 + 12 + 165). Real counts over ALL annonces, never fake.
+                Below lg a 2-column grid: with `flex-wrap` the shorter Arabic labels let three tiles share a row (3 × 106 + one 343). ── */}
+            <div className="flex flex-wrap gap-3 max-lg:grid max-lg:grid-cols-2 sm:gap-4">
               <StatTile
                 label={t('mesannonces.tile.published', lang)}
                 value={String(data.stats.published)}
@@ -170,7 +174,7 @@ export default async function MesAnnoncesPage({
                     px 16, active = Semi Bold blue/600 + 2 px indicator, inactive = Medium text/muted, 1 px border/subtle rule. */}
                 <nav
                   aria-label={t('mesannonces.tabs_aria', lang)}
-                  className="flex min-w-0 max-w-full overflow-x-auto border-b border-border-subtle"
+                  className="flex min-w-0 max-w-full overflow-x-auto border-b border-border-subtle max-lg:w-full"
                 >
                   {ANNONCE_TABS.map((key) => {
                     const active = key === tab

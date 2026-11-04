@@ -27,6 +27,9 @@ import { COL } from './annonce-columns'
 // Kept from the card this replaces (not drawn): the moderation notice (`admin_hidden_at`) under the title and the last-7-days expiry
 // countdown under the pill — the owner must still see them. Server Component: only the actions cell is interactive.
 // ⚑ No `cn()` around a `text-<size>` next to a `text-<colour>` (reference_twmerge_text_size_color_footgun): plain template strings.
+//
+// 375 re-measured against m375-f3-annonces (docs/design/m375-f2-f3-deltas.md): content 311 (the table's stroke sits inside Figma's box),
+// icon tile r8, the two captions on a 15 line, the deadline on 17, « Annonce » 2 above the pill. Below lg only.
 
 export function AnnonceRow({ annonce: a, lang }: { annonce: MyAnnonce; lang: Lang }) {
   const pill = ANNONCE_STATUS_PILL[a.display_status]
@@ -42,11 +45,11 @@ export function AnnonceRow({ annonce: a, lang }: { annonce: MyAnnonce; lang: Lan
     annonceEditBlock({ displayStatus: a.display_status, responseCount: a.response_count, adminHiddenAt: a.admin_hidden_at }) === null
 
   return (
-    <li className={`flex flex-col gap-4 border-b border-border-subtle bg-surface-base px-4 py-5 last:border-b-0 ${COL.line}`}>
+    <li className={`flex flex-col gap-4 border-b border-border-subtle bg-surface-base px-4 py-5 last:border-b-0 max-lg:px-[15px] ${COL.line}`}>
       {/* mission */}
       <div className={`flex min-w-0 flex-col gap-2 ${COL.mission}`}>
         <div className="flex min-w-0 items-center gap-3">
-          <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-brand-blue-50">
+          <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-brand-blue-50 max-lg:rounded-md">
             <CategoryIcon className="size-5 text-brand-blue-300" aria-hidden="true" />
           </span>
           <div className="flex min-w-0 flex-col gap-0.5">
@@ -68,7 +71,7 @@ export function AnnonceRow({ annonce: a, lang }: { annonce: MyAnnonce; lang: Lan
             ? t('mesannonces.row.proposals_zero', lang)
             : tn('mesannonces.row.proposals', lang, a.response_count)}
         </p>
-        <p className="truncate text-caption font-medium text-text-secondary">
+        <p className="truncate text-caption font-medium text-text-secondary max-lg:leading-[15px]">
           {note.key === 'of_max'
             ? t('mesannonces.row.of_max', lang, { max: note.max ?? 0 })
             : t(`mesannonces.row.${note.key}`, lang)}
@@ -87,15 +90,15 @@ export function AnnonceRow({ annonce: a, lang }: { annonce: MyAnnonce; lang: Lan
           <p className="text-body-sm leading-6 text-text-muted">{t('mesannonces.row.budget_none', lang)}</p>
         )}
         {a.deadline ? (
-          <p className="truncate text-body-sm leading-5 text-text-muted">
+          <p className="truncate text-body-sm leading-5 text-text-muted max-lg:leading-[17px]">
             {t('mesannonces.row.deadline', lang, { date: shortDate(a.deadline, lang) })}
           </p>
         ) : null}
       </div>
 
       {/* statut — the « Annonce » caption sits above the pill */}
-      <div className={`flex flex-col items-start gap-1 ${COL.statut}`}>
-        <p className="text-caption font-medium text-text-muted">{t('mesannonces.row.status_caption', lang)}</p>
+      <div className={`flex flex-col items-start gap-1 max-lg:gap-0.5 ${COL.statut}`}>
+        <p className="text-caption font-medium text-text-muted max-lg:leading-[15px]">{t('mesannonces.row.status_caption', lang)}</p>
         <StatusPill status={pill.status}>{t(pill.labelKey, lang)}</StatusPill>
         {countdownDays != null ? (
           <p className="text-caption font-semibold text-warning-700">{tn('mesannonces.expiry_countdown', lang, countdownDays)}</p>

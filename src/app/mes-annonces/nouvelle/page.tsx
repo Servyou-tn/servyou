@@ -21,6 +21,9 @@ const TIPS = ['annonce.form.tip_1', 'annonce.form.tip_2', 'annonce.form.tip_3', 
 // F2 « Publier une annonce » — Figma 1478:29808 (+ 375 frame 1488:65880). Auth-gated; the insert (RLS: consumer_id = auth.uid()) is the
 // real guard, with shared app-layer validation (job-post-validation.ts) for friendly errors. Breadcrumb, then the form card (750) and the
 // tips card side by side from `xl`; below it the tips card stacks under the form, as at 375.
+//
+// 375 re-measured against m375-f2-publier (docs/design/m375-f2-f3-deltas.md): breadcrumb on a 16 line with a 44 px tap target; Figma's
+// strokes sit INSIDE its cards, so below lg the borders come out of the padding (tips content 311).
 export default async function NouvelleAnnoncePage() {
   const shell = await getShellUser()
   if (!shell) redirect('/connexion')
@@ -47,9 +50,10 @@ export default async function NouvelleAnnoncePage() {
 function Breadcrumb({ lang }: { lang: Lang }) {
   return (
     <nav aria-label={t('annonce.form.crumb_aria', lang)}>
-      <ol className="flex items-center gap-2 text-[13px] text-text-muted">
+      <ol className="flex items-center gap-2 text-[13px] text-text-muted max-lg:leading-4">
         <li>
-          <Link href="/mes-annonces" className={cn('rounded hover:text-text-primary hover:underline', FOCUS_RING)}>
+          {/* max-lg py 3.5 on the inline link: a 44 px tap target around the 16 px crumb; inline padding moves nothing. */}
+          <Link href="/mes-annonces" className={cn('rounded hover:text-text-primary hover:underline max-lg:py-3.5', FOCUS_RING)}>
             {t('annonce.form.crumb_annonces', lang)}
           </Link>
         </li>
@@ -66,7 +70,7 @@ function Breadcrumb({ lang }: { lang: Lang }) {
 // 15/22 Semi Bold blue/800, a divider, then five « ✓ » lines 12/18 muted.
 function TipsCard({ lang }: { lang: Lang }) {
   return (
-    <aside className="flex min-w-0 flex-col gap-4 rounded-xl border-2 border-brand-blue-600 bg-surface-base px-4 py-6 xl:min-w-[280px] xl:flex-1 xl:p-6">
+    <aside className="flex min-w-0 flex-col gap-4 rounded-xl border-2 border-brand-blue-600 bg-surface-base px-4 py-6 max-lg:px-3.5 max-lg:py-[22px] xl:min-w-[280px] xl:flex-1 xl:p-6">
       <h2 className="text-[15px] font-semibold leading-5 text-text-primary">{t('annonce.form.tips_title', lang)}</h2>
       <p className="text-[15px] font-semibold leading-[22px] text-brand-blue-800">{t('annonce.form.tips_lead', lang)}</p>
       <hr className="border-border-subtle" />
