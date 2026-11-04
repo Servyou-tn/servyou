@@ -31,7 +31,7 @@ export function LogoField({
   const openPicker = () => inputRef.current?.click()
 
   return (
-    <div className="flex flex-col items-start gap-4 max-sm:flex-row max-sm:items-center sm:flex-row sm:items-center">
+    <div className="flex flex-col items-start gap-4 max-sm:flex-row max-sm:flex-wrap max-sm:items-center sm:flex-row sm:items-center">
       <div className="relative h-30 w-30 shrink-0">
         {previewUrl ? (
           <div className="h-full w-full overflow-hidden rounded-full">
@@ -64,7 +64,8 @@ export function LogoField({
         />
       </div>
 
-      <div className="flex flex-col items-start gap-2 max-sm:min-w-0 max-sm:flex-1">
+      {/* Below sm the CTA column claims ≥ 160 px: beside the logo at 375 (as drawn), under it on a 320 screen. */}
+      <div className="flex flex-col items-start gap-2 max-sm:min-w-0 max-sm:grow max-sm:basis-40">
         <Button type="button" variant="secondary" size="sm" onClick={openPicker}>
           {t(previewUrl ? 'shop.create.logo_replace' : 'shop.create.logo_choose', lang)}
         </Button>

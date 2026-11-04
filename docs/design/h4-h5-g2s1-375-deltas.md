@@ -27,6 +27,9 @@ helpers) · the empty-banner placeholder (the frame draws a filled default banne
 1. H5 tiles: adopt the frame's tile (small square icon, label/value stacked tighter)? It is the shared `StatTile`.
 2. G2 step 1: show the shop-name initials in the logo placeholder (frame « AS ») instead of the user icon?
 3. H4 missions: a mission saved with both budget bounds equal prints « 800 – 800 TND » (`budgetValue`); show one figure?
+4. Tablet (640–1023): per the « max-lg: » rule the H5 stacked rows, the H4 value colour and the G2 32 px header also apply on tablets (sparse rows at ~800 px). Narrow them to below sm?
+
+Review fixes: G2 logo row wraps on a 320 screen (CTA column ≥ 160 px; beside the logo at 375) · H4 « Voir toutes les missions » gets a 44 px hit area below sm.
 
 Controls: tsc · eslint · desktop 0 px (full set — one base-class change, the connectors `hidden … sm:flex` → `flex …`) ·
 375 FR side by side · AR spot check (H4, H5) · H4 desktop: only the fixture's budget data and top-bar capture noise (two "after" shots differ there too); H5 + G2 step 1 8/8 identical.

@@ -34,9 +34,11 @@ export function Panel({
         {link ? (
           <Link
             href={link.href}
-            className={`ms-auto rounded text-body-sm text-brand-blue-600 hover:underline max-sm:ms-0 max-sm:basis-full ${FOCUS_RING}`}
+            className={`ms-auto rounded text-body-sm text-brand-blue-600 hover:underline max-sm:relative max-sm:ms-0 max-sm:basis-full ${FOCUS_RING}`}
           >
             {link.label}
+            {/* Below sm the link is its own row: ≥ 44 px tall to the touch, the 20 px text unmoved. */}
+            <span aria-hidden="true" className="hidden max-sm:absolute max-sm:-inset-y-3 max-sm:inset-x-0 max-sm:block" />
           </Link>
         ) : null}
       </div>
