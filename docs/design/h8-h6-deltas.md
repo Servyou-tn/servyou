@@ -34,18 +34,18 @@ The page was built in H8 PR-2 without a frame (G9 mirror). The frames are new, s
 
 Breadcrumb style · gaps 32/24/12 (20 below lg) · panel pad 24/16 below lg · stepper in OrderRail's existing
 `look="detail"` (E4's opt-in: 162 px columns for 4 stages, 14 px labels, blue connector, no date on desktop) inside a
-77 px band · sunken package tile · noteQuote · muted request labels · client panel without avatar, Caption disclosure,
+77 px band · sunken tile (Briefcase glyph, see below) · noteQuote · muted request labels · client panel without avatar, Caption disclosure,
 WhatsApp glyph (the button's existing `glyphClassName` opt-in) · hint secondary.
 
 Desktop now matches the frame within the type ramp's line heights (breadcrumb 20 vs 17, H1 40 vs 38).
 
 Checked in every status (pending · accepted · arrived · received · cancelled) at 1440 + 375, FR, and cancelled in AR.
 
-**Removed to match the frame — please confirm** (each shipped on purpose in H8 PR-2):
+**Removed to match the frame** (each shipped on purpose in H8 PR-2) — founder answers 2026-11-04 in brackets:
 
-- the client's **avatar** (the frame's client row is the name + city only);
-- the **Briefcase** icon, now the sunken **package** tile;
-- the **stage dates under the desktop stepper** (the frame hides that layer; « Historique » still lists every time).
+- the client's **avatar** (the frame's client row is the name + city only) [✅ removal OK];
+- the bare **Briefcase** icon, now inside the sunken tile [the frame's icon-package was a Figma slip — a package reads as a parcel: ✅ the tile keeps the **Briefcase** glyph, PR-2];
+- [✅ removal OK] the **stage dates under the desktop stepper** (the frame hides that layer; « Historique » still lists every time).
   Below lg the detail look still shows them under each label.
 
 The stepper's accessible name reuses `buyerOrder.stepper_aria` (« Avancement de la commande » / « تقدّم الطلب »), which
@@ -61,7 +61,7 @@ E4 already uses for the same look, so no new string was added.
 | D4 | Price line | « 800 TND · Par projet » | « 800 TND » for a fixed price, « · Par mois » etc. by unit | keep the code (H6 D13 replaced « Par projet » with « Par mois ») |
 | D5 | Button / WhatsApp labels | label box fills the button (reads start-aligned) | centred | keep centred |
 | D6 | Page background at 375 | surface/base | shell's surface/subtle (AppShell, shared) | keep |
-| D7 | Cancelled engagement on the stepper | not drawn | every stage upcoming (unchanged from PR-2) | keep; or E4's red « Annulée » node after the last reached stage (`cancelledAfter`, a logic change) |
+| D7 | Cancelled engagement on the stepper | not drawn | **✅ BUILT (PR-2):** E4's red « Annulée » node replaces the stage after the last one reached (`cancelledAfter` = `cancelledAfterStage(events, service chain)`, label `common.status_cancelled`) — both already existed, no shared change | founder: yes, if OrderRail already supports it (it does) |
 | D8 | Title at 375 | « Engagement #A4F729 » on one line (341 in a 343 box) | wraps: our Inter sets it at 349.5 | keep the type ramp (a smaller mobile H1 would be a token change) |
 
 ## 2. H6 — /mes-services/creer at 375
@@ -112,3 +112,8 @@ Desktop proof: before/after captures at 1440 and 1100, FR and AR, steps 1–5 fi
 | D14 | « Ce que le client doit préparer. » | the longer helper |
 
 These strings are shared with desktop, so changing them changes desktop text too.
+
+## Founder answers 2026-11-04 (after #307)
+
+D1 no (keep E4's mobile rail) · D2 keep · D3 no (keep 24) · D4 keep · D5 keep · D6 keep · D7 yes → built · D8 keep our type
+sizes · D9–D14 no (keep the built texts). The Arabic « Historique » times were fixed by #308.

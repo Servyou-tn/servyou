@@ -19,6 +19,8 @@ export async function generateMetadata(): Promise<Metadata> {
 // docs/design/i1-k-measurements.md. Identity + security + avatar + city; preferences live in I2
 // (/parametres), professional profiles in H3/G3. Auth-gated: logged-out visitors go to /connexion with
 // the return path preserved. Breadcrumb and heading are static, so they stay server-rendered here.
+// Below sm the newer 375 frame 1595:28325 applies (docs/design/recherche-i1-deltas.md): the breadcrumb shows, H1 32 Bold,
+// and the page sits 16 px further in (its « page » frame pad 20/16 inside the root pad).
 export default async function MonComptePage() {
   const shell = await getShellUser()
   if (!shell) redirect('/connexion?next=/mon-compte')
@@ -30,15 +32,15 @@ export default async function MonComptePage() {
 
   return (
     <AppShell user={shell.topBarUser}>
-      <div className="mx-auto flex w-full max-w-180 flex-col gap-2">
-        <nav aria-label={t('monCompte.title', lang)} className="hidden items-center gap-2 text-sm font-medium text-text-muted sm:flex">
+      <div className="mx-auto flex w-full max-w-180 flex-col gap-2 max-sm:px-4 max-sm:pt-4">
+        <nav aria-label={t('monCompte.title', lang)} className="flex items-center gap-2 text-sm font-medium text-text-muted">
           <Link href="/" className={`rounded hover:underline ${FOCUS_RING}`}>
             {t('monCompte.breadcrumb.home', lang)}
           </Link>
           <ChevronRight className="size-3.5 rtl:rotate-180" aria-hidden="true" />
           <span>{t('monCompte.title', lang)}</span>
         </nav>
-        <h1 className="text-2xl font-semibold text-text-primary sm:text-[28px] sm:font-bold sm:leading-[38px]">
+        <h1 className="text-[32px] font-bold leading-[38px] text-text-primary sm:text-[28px]">
           {t('monCompte.title', lang)}
         </h1>
       </div>
