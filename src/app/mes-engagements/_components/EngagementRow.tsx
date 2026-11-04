@@ -103,7 +103,7 @@ export function EngagementRow({ engagement: e, lang }: { engagement: Engagement;
       </div>
 
       {/* statut — its own column from xl */}
-      <div className={`hidden max-lg:flex xl:flex ${COL.statut}`}>
+      <div className={`hidden max-lg:flex max-lg:empty:hidden xl:flex ${COL.statut}`}>
         {pill ? <StatusPill status={pill.pill}>{t(pill.labelKey, lang)}</StatusPill> : null}
       </div>
 

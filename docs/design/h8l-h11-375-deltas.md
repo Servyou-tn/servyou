@@ -10,6 +10,8 @@ Exports in this folder: `m375-h8-engagements`, `m375-h11-propositions`.
 | H8 row | Client · service · **status** · price · date · actions: the pill leaves the client line for the « statut » column (already after the service in the DOM); Budget / Délai stack | `_components/EngagementRow.tsx` |
 | H11 row | Title · client · terms · **« Envoyée » + state** · sent date · actions: the pill leaves the title line; the « statut » column moves between terms and date (`contents` + flex `order`, no DOM move) | `_components/ProposalRow.tsx` |
 
+Review notes: below lg a status without a pill leaves no empty gap (`max-lg:empty:hidden`); in H11 a screen reader meets the sent date before the status (DOM order), as the xl table already does — actions stay last, tab order unchanged.
+
 ## Kept as built (standing defaults)
 
 Built texts (« Budget », « Délai souhaité », « Dès … », « Ma proposition », « Envoyée le », the « 6 engagements » caption) ·
