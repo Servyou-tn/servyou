@@ -58,6 +58,7 @@ export function ServiceFiltersBar({
     <div className="flex flex-wrap items-center justify-between gap-4">
       <SegmentedControl
         ariaLabel={t('service.tabs_aria', lang)}
+        className="max-sm:w-full"
         value={tab}
         onChange={(next) => push({ statut: next === 'all' ? null : next })}
         options={SERVICE_TABS.map((key) => ({

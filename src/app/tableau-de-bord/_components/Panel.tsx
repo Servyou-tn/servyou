@@ -25,8 +25,8 @@ export function Panel({
   children: ReactNode
 }) {
   return (
-    <section className="flex flex-col gap-4 rounded-xl border border-border-subtle bg-surface-base p-6">
-      <div className="flex items-center gap-2">
+    <section className="flex flex-col gap-4 rounded-xl border border-border-subtle bg-surface-base p-6 max-sm:px-4">
+      <div className="flex items-center gap-2 max-sm:flex-wrap max-sm:gap-y-3">
         {Icon ? (
           <Icon className={cn('h-5 w-5 shrink-0', iconClassName)} aria-hidden="true" />
         ) : null}
@@ -34,7 +34,7 @@ export function Panel({
         {link ? (
           <Link
             href={link.href}
-            className={`ms-auto rounded text-body-sm text-brand-blue-600 hover:underline ${FOCUS_RING}`}
+            className={`ms-auto rounded text-body-sm text-brand-blue-600 hover:underline max-sm:ms-0 max-sm:basis-full ${FOCUS_RING}`}
           >
             {link.label}
           </Link>

@@ -68,12 +68,12 @@ export function ServiceRow({ service, lang }: { service: SellerServiceRow; lang:
   }
 
   return (
-    <li className="flex flex-col gap-3 border-b border-border-subtle p-4 last:border-b-0 lg:flex-row lg:items-center lg:gap-6 lg:px-6 lg:py-4">
-      <div className="flex min-w-0 flex-1 items-center gap-4">
+    <li className="flex flex-col gap-3 border-b border-border-subtle p-4 last:border-b-0 max-lg:gap-5 lg:flex-row lg:items-center lg:gap-6 lg:px-6 lg:py-4">
+      <div className="flex min-w-0 flex-1 items-center gap-4 max-lg:flex-col max-lg:items-start max-lg:gap-5 max-lg:self-stretch">
         <span className="flex size-12 shrink-0 items-center justify-center rounded-lg bg-brand-blue-50">
           <CategoryIcon className="size-5 text-brand-blue-600" aria-hidden="true" />
         </span>
-        <div className="flex min-w-0 flex-1 flex-col gap-1">
+        <div className="flex min-w-0 flex-1 flex-col gap-1 max-lg:self-stretch">
           <p className="truncate text-body font-semibold text-text-primary">{service.title}</p>
           {service.description ? (
             <p className="truncate text-body-sm text-text-secondary">{service.description}</p>
@@ -81,7 +81,7 @@ export function ServiceRow({ service, lang }: { service: SellerServiceRow; lang:
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-4 lg:flex lg:shrink-0 lg:items-center lg:gap-6">
+      <div className="grid grid-cols-3 gap-4 max-lg:flex max-lg:flex-col max-lg:gap-5 lg:flex lg:shrink-0 lg:items-center lg:gap-6">
         <div className="flex lg:w-[150px]">
           <StatusPill status={pillStatus}>{pillLabel}</StatusPill>
         </div>
@@ -93,7 +93,7 @@ export function ServiceRow({ service, lang }: { service: SellerServiceRow; lang:
         />
       </div>
 
-      <div className="flex shrink-0 items-center gap-2">
+      <div className="flex shrink-0 items-center gap-2 max-lg:justify-end">
         {/* Plain template, NOT `cn()` — `text-body-sm` (size) + `text-text-secondary` (colour) is
             exactly the pair tailwind-merge cannot classify and silently evicts the size from (DOM-
             verified here: 14px rendered as 16px through cn()). docs/follow-ups.md's tracked class. */}
@@ -188,7 +188,7 @@ function StatCol({ label, value, className }: { label: string; value: string; cl
   return (
     <div className={cn('flex flex-col gap-0.5', className)}>
       <p className="text-caption text-text-muted">{label}</p>
-      <p dir="ltr" className="truncate text-start text-body-sm font-semibold text-text-primary">
+      <p dir="ltr" className="truncate text-start text-body-sm font-semibold text-text-primary max-lg:text-body max-lg:rtl:text-end">
         {value}
       </p>
     </div>

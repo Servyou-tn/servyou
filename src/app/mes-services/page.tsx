@@ -98,11 +98,11 @@ export default async function MesServicesPage({
 
   return (
     <AppShell user={topBarUser}>
-      <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-6 max-lg:gap-5">
         <Header lang={lang} />
         <SellerPhoneNotice userId={userId} lang={lang} />
 
-        <div className="flex flex-wrap gap-4">
+        <div className="flex flex-wrap gap-4 max-sm:grid max-sm:grid-cols-2 max-sm:gap-3">
           <StatTile
             label={t('service.stats.active_label', lang)}
             value={String(data.stats.activeCount)}
