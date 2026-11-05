@@ -51,7 +51,7 @@ export function DevenirVendeurContent({ isAuthenticated }: { isAuthenticated: bo
         <span className="mb-4 inline-block rounded-full bg-brand-blue-600/10 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-brand-blue-600 max-lg:mb-2 max-lg:block max-lg:rounded-none max-lg:bg-transparent max-lg:p-0 max-lg:font-medium max-lg:leading-[17px]">
           {k('hero.eyebrow')}
         </span>
-        <h1 className="mb-4 text-4xl font-bold leading-tight text-text-primary md:text-5xl max-lg:mb-2 max-lg:text-[32px] max-lg:leading-[38px]">
+        <h1 className="mb-4 text-4xl font-bold leading-tight text-text-primary md:text-5xl max-lg:mb-2 max-lg:text-[32px] max-lg:leading-[38px] max-lg:md:text-[32px]">
           {k('hero.headline')}
         </h1>
         <p className="mx-auto mb-8 max-w-2xl text-lg leading-relaxed text-text-muted max-lg:leading-7 max-lg:text-text-secondary">
