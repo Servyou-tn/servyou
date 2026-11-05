@@ -44,15 +44,17 @@ export function DevenirVendeurContent({ isAuthenticated }: { isAuthenticated: bo
   return (
     // Mirrors /devenir-vendeur/page.tsx's and DevenirFreelanceContent.tsx's wrapper verbatim —
     // this frame's column also measures exactly 720px.
-    <div className="mx-auto max-w-[720px] px-4 py-10 sm:px-6 lg:px-0">
+    // 375 (m375-g1-boutique): the column spans the shell's 343; hero gap 8 — a plain 12 Medium eyebrow (no pill),
+    // H1 32 / 38, sub 18 / 28 secondary.
+    <div className="mx-auto max-w-[720px] px-4 py-10 sm:px-6 lg:px-0 max-sm:px-0 max-lg:py-0">
       <section className="text-center">
-        <span className="mb-4 inline-block rounded-full bg-brand-blue-600/10 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-brand-blue-600">
+        <span className="mb-4 inline-block rounded-full bg-brand-blue-600/10 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-brand-blue-600 max-lg:mb-2 max-lg:block max-lg:rounded-none max-lg:bg-transparent max-lg:p-0 max-lg:font-medium max-lg:leading-[17px]">
           {k('hero.eyebrow')}
         </span>
-        <h1 className="mb-4 text-4xl font-bold leading-tight text-text-primary md:text-5xl">
+        <h1 className="mb-4 text-4xl font-bold leading-tight text-text-primary md:text-5xl max-lg:mb-2 max-lg:text-[32px] max-lg:leading-[38px]">
           {k('hero.headline')}
         </h1>
-        <p className="mx-auto mb-8 max-w-2xl text-lg leading-relaxed text-text-muted">
+        <p className="mx-auto mb-8 max-w-2xl text-lg leading-relaxed text-text-muted max-lg:leading-7 max-lg:text-text-secondary">
           {k('hero.subheadline')}
         </p>
         <div className="flex flex-wrap justify-center gap-3">
@@ -77,10 +79,11 @@ export function DevenirVendeurContent({ isAuthenticated }: { isAuthenticated: bo
       <div className="mt-8">
         <BenefitGrid
           columns={3}
+          mobileLook="outline"
           benefits={[
-            { icon: <Store className="h-6 w-6" aria-hidden="true" />, title: k('card1.title'), description: k('card1.desc') },
-            { icon: <Wallet className="h-6 w-6" aria-hidden="true" />, title: k('card2.title'), description: k('card2.desc') },
-            { icon: <Package className="h-6 w-6" aria-hidden="true" />, title: k('card3.title'), description: k('card3.desc') },
+            { icon: <Store className="h-6 w-6 max-lg:h-5 max-lg:w-5" aria-hidden="true" />, title: k('card1.title'), description: k('card1.desc') },
+            { icon: <Wallet className="h-6 w-6 max-lg:h-5 max-lg:w-5" aria-hidden="true" />, title: k('card2.title'), description: k('card2.desc') },
+            { icon: <Package className="h-6 w-6 max-lg:h-5 max-lg:w-5" aria-hidden="true" />, title: k('card3.title'), description: k('card3.desc') },
           ]}
         />
       </div>

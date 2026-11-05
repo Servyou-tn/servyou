@@ -32,16 +32,18 @@ export function RoleChoiceCard({
 }) {
   const titleId = `${id}-title`
   const noteId = `${id}-note`
+  // 375 (m375-g1-devenir-vendeur): card gap 16 — a round 56 icon, the title 20 Semi Bold / 26, the description 14 / 21,
+  // the points 4 lower (20 under it) in text/primary.
   const body = (
     <>
-      <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-blue-50">
+      <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-blue-50 max-lg:mb-4 max-lg:rounded-full">
         {icon}
       </div>
-      <h2 id={titleId} className="mb-3 text-h3 font-bold text-text-primary">{title}</h2>
-      <p className="mb-6 text-body-sm leading-6 text-text-secondary">{description}</p>
+      <h2 id={titleId} className="mb-3 text-h3 font-bold text-text-primary max-lg:mb-4 max-lg:font-semibold max-lg:leading-[26px]">{title}</h2>
+      <p className="mb-6 text-body-sm leading-6 text-text-secondary max-lg:mb-5 max-lg:leading-[21px]">{description}</p>
       <ul className="flex flex-col gap-2">
         {points.map((point) => (
-          <li key={point} className="flex items-start gap-2 text-body-sm text-text-secondary">
+          <li key={point} className="flex items-start gap-2 text-body-sm text-text-secondary max-lg:text-text-primary">
             <Check className="mt-1 h-4 w-4 shrink-0 text-brand-blue-600" aria-hidden="true" />
             {point}
           </li>
@@ -56,7 +58,7 @@ export function RoleChoiceCard({
         role="group"
         aria-labelledby={titleId}
         aria-describedby={noteId}
-        className="flex min-w-0 flex-col rounded-3xl border border-border-subtle bg-surface-subtle p-8 opacity-70"
+        className="flex min-w-0 flex-col rounded-3xl border border-border-subtle bg-surface-subtle p-8 opacity-70 max-lg:rounded-xl max-lg:px-[15px] max-lg:py-[19px]"
       >
         {body}
         <p id={noteId} className="mt-6 rounded-xl bg-white px-4 py-3 text-body-sm text-text-muted">
@@ -69,7 +71,7 @@ export function RoleChoiceCard({
   return (
     <Link
       href={href}
-      className={`flex min-w-0 flex-col rounded-3xl border-2 border-border-subtle bg-white p-8 transition-colors duration-200 ease-out hover:border-brand-blue-600 ${FOCUS_RING}`}
+      className={`flex min-w-0 flex-col rounded-3xl border-2 border-border-subtle bg-white p-8 max-lg:rounded-xl max-lg:px-[14px] max-lg:py-[18px] transition-colors duration-200 ease-out hover:border-brand-blue-600 ${FOCUS_RING}`}
     >
       {body}
     </Link>

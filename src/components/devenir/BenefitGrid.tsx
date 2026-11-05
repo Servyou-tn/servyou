@@ -19,17 +19,34 @@ const GRID_COLS: Record<3 | 4, string> = {
   4: 'grid-cols-1 md:grid-cols-2 lg:grid-cols-4',
 }
 
+// `mobileLook` is opt-in, so a caller that leaves it out renders exactly as before. 'outline' is the boutique 375
+// frame (m375-g1-boutique), below lg only: cards 16 apart, r12, a 1 px border/subtle and no shadow, pad 24 / 16
+// (stroke inside), gap 12; a round 48 blue/50 icon; the title 20 Semi Bold / 26; the description 14 / 21 secondary.
+const MOBILE_LOOK = {
+  premium: { grid: '', card: '', icon: '', title: '', desc: '' },
+  outline: {
+    grid: ' max-lg:gap-4',
+    card: ' max-lg:rounded-xl max-lg:border-border-subtle max-lg:px-[15px] max-lg:py-[23px] max-lg:shadow-none',
+    icon: ' max-lg:rounded-full max-lg:bg-brand-blue-50',
+    title: ' max-lg:mt-3 max-lg:text-h3 max-lg:leading-[26px]',
+    desc: ' max-lg:mt-3 max-lg:leading-[21px] max-lg:text-text-secondary',
+  },
+} as const
+
 export function BenefitGrid({
   sectionTitle,
   sectionSubtitle,
   benefits,
   columns = 4,
+  mobileLook = 'premium',
 }: {
   sectionTitle?: string
   sectionSubtitle?: string
   benefits: Benefit[]
   columns?: 3 | 4
+  mobileLook?: keyof typeof MOBILE_LOOK
 }) {
+  const look = MOBILE_LOOK[mobileLook]
   return (
     <section className="mb-12">
       {sectionTitle && (
@@ -39,14 +56,14 @@ export function BenefitGrid({
         <p className="mx-auto mb-8 max-w-2xl text-center text-base text-text-muted">{sectionSubtitle}</p>
       )}
 
-      <div className={`grid gap-6 ${GRID_COLS[columns]}`}>
+      <div className={`grid gap-6 ${GRID_COLS[columns]}${look.grid}`}>
         {benefits.map((b) => (
-          <div key={b.title} className="card-premium outline-brand rounded-2xl bg-white p-6">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-blue-600/10 text-brand-blue-600">
+          <div key={b.title} className={`card-premium outline-brand rounded-2xl bg-white p-6${look.card}`}>
+            <div className={`flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-blue-600/10 text-brand-blue-600${look.icon}`}>
               {b.icon}
             </div>
-            <h3 className="mt-4 text-lg font-semibold text-text-primary">{b.title}</h3>
-            <p className="mt-2 text-sm leading-relaxed text-text-muted">{b.description}</p>
+            <h3 className={`mt-4 text-lg font-semibold text-text-primary${look.title}`}>{b.title}</h3>
+            <p className={`mt-2 text-sm leading-relaxed text-text-muted${look.desc}`}>{b.description}</p>
           </div>
         ))}
       </div>
