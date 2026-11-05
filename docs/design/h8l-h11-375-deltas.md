@@ -26,3 +26,7 @@ button only where the row's logic shows it.
 
 Controls: tsc · eslint · desktop sentinel 1440 FR + AR (max-lg only; same frozen fixture data; only the known top-bar
 capture-noise band differs) · 375 FR side by side · AR spot check.
+
+## Founder answer (2026-11-05, after #318)
+
+Standing defaults accepted: Q1 (AR timeframe alignment) and Q2 (full-width sort) stay as built.

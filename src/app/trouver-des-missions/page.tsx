@@ -83,8 +83,9 @@ export default async function TrouverDesMissionsPage({
       <div className="flex flex-col gap-6">
         {/* ── page-header (311:10539): H1 32 Bold over a 16 muted line, the live count on the right ── */}
         <div className="flex flex-wrap items-center justify-between gap-4">
-          <div className="flex flex-col gap-1">
-            <h1 className="text-h1 text-text-primary">{t('missionboard.title', lang)}</h1>
+          {/* Below lg (m375-h9-missions): the white « mobile-header » band through main's padding, title 20 Semi Bold. */}
+          <div className="flex flex-col gap-1 max-lg:-mx-4 max-lg:-mt-6 max-lg:basis-[calc(100%+2rem)] max-lg:border-b max-lg:border-border-subtle max-lg:bg-surface-base max-lg:p-4 md:max-lg:-mx-8 md:max-lg:-mt-8 md:max-lg:basis-[calc(100%+4rem)]">
+            <h1 className="text-h1 text-text-primary max-lg:text-[20px] max-lg:font-semibold max-lg:leading-6">{t('missionboard.title', lang)}</h1>
             <p className="text-body text-text-muted">{t('missionboard.subtitle', lang)}</p>
           </div>
           <p className="text-body font-semibold text-brand-blue-600">{tn('missionboard.count', lang, board.totalAvailable)}</p>
@@ -125,7 +126,7 @@ export default async function TrouverDesMissionsPage({
         <div
           role="group"
           aria-label={t('missionboard.filters_aria', lang)}
-          className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:flex xl:items-center"
+          className="grid grid-cols-1 gap-4 max-sm:grid-cols-2 max-sm:gap-3 sm:grid-cols-2 xl:flex xl:items-center"
         >
           <MissionSelect
             className="xl:flex-1"
@@ -169,8 +170,8 @@ export default async function TrouverDesMissionsPage({
         </div>
 
         {/* ── sort-row (311:10871): active-filter chips ⟷ « Trier par » (FIXED 200) ── */}
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <ul className="flex min-w-0 flex-wrap items-center gap-2">
+        <div className="flex flex-wrap items-center justify-between gap-3 max-sm:justify-start">
+          <ul className="flex min-w-0 flex-wrap items-center gap-2 max-sm:empty:hidden">
             {chips.map((chip) => (
               <li key={chip.key}>
                 <Link
@@ -188,7 +189,7 @@ export default async function TrouverDesMissionsPage({
             ))}
           </ul>
           <MissionSelect
-            className="w-full sm:w-[200px]"
+            className="w-full max-sm:w-auto sm:w-[200px]"
             label={t('missionboard.sort_aria', lang)}
             placeholder={t('missionboard.sort.recent', lang)}
             alwaysSelected

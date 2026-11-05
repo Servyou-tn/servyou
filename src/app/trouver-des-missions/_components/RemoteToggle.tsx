@@ -12,7 +12,7 @@ import { Toggle } from '@/components/ui/toggle'
 export function RemoteToggle({ checked, label, hrefOn, hrefOff }: { checked: boolean; label: string; hrefOn: string; hrefOff: string }) {
   const router = useRouter()
   return (
-    <label className="flex h-11 shrink-0 cursor-pointer items-center gap-2 rounded-[10px] border border-border-strong bg-surface-base px-3.5">
+    <label className="flex h-11 shrink-0 cursor-pointer items-center gap-2 rounded-[10px] border border-border-strong bg-surface-base px-3.5 max-sm:col-span-2">
       <Toggle checked={checked} onCheckedChange={(next) => router.push(next ? hrefOn : hrefOff)} showLabel={false} aria-label={label} />
       <span className="text-body-sm font-medium whitespace-nowrap text-text-secondary">{label}</span>
     </label>
