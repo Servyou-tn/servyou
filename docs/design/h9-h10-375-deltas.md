@@ -24,3 +24,7 @@ match). H10: the shared `ClientCard` (frame pad 20/16) and `MissionFacts` (frame
 
 Controls: tsc · eslint · desktop sentinel 1440 FR + AR (max-* only; same frozen fixture; only the known top-bar noise band
 differs) · 375 FR side by side · AR + 768 spot check of the H9 band.
+
+## Founder answer (2026-11-05, after #320)
+
+Standing defaults accepted: Q1 (missions text search) and Q2 (shared mission-card padding) stay as built; tablet → design pass.

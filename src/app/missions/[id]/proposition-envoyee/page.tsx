@@ -56,7 +56,7 @@ export default async function PropositionEnvoyeePage({ params }: { params: Promi
 
         <SentRecap sent={sent} lang={lang} />
 
-        <section className="flex w-full flex-col gap-4 rounded-xl bg-brand-blue-50 p-6">
+        <section className="flex w-full flex-col gap-4 rounded-xl bg-brand-blue-50 p-6 max-lg:px-4">
           <h2 className="text-caption font-semibold text-text-muted uppercase">{t('proposal.sent.next', lang)}</h2>
           <ul className="flex flex-col gap-3 text-body-sm text-text-secondary">
             <li className="flex items-start gap-3">

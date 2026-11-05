@@ -51,7 +51,7 @@ export default async function ProposerPage({ params }: { params: Promise<{ id: s
 
   return (
     <AppShell user={shell.topBarUser}>
-      <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-6 max-lg:gap-5">
         <Link
           href={`/missions/${id}`}
           className={`inline-flex w-fit items-center gap-1.5 rounded-sm text-body-sm font-semibold text-brand-blue-600 hover:underline ${FOCUS_RING}`}
@@ -65,7 +65,7 @@ export default async function ProposerPage({ params }: { params: Promise<{ id: s
           <p className="text-body text-text-muted">{t('proposal.subtitle', lang, { name })}</p>
         </header>
 
-        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_376px] lg:items-start">
+        <div className="grid gap-6 max-lg:gap-5 lg:grid-cols-[minmax(0,1fr)_376px] lg:items-start">
           <ProposalForm
             jobPostId={mission.id}
             clientFirstName={mission.client.firstName}
@@ -75,7 +75,7 @@ export default async function ProposerPage({ params }: { params: Promise<{ id: s
             mySkills={mySkills}
           />
 
-          <aside className="flex flex-col gap-6 lg:sticky lg:top-[88px]">
+          <aside className="flex flex-col gap-6 max-lg:gap-4 lg:sticky lg:top-[88px]">
             <MissionFacts
               mission={mission}
               lang={lang}

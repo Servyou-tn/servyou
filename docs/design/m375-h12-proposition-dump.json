@@ -1,0 +1,2642 @@
+{
+ "n": "Proposition (375 mobile)",
+ "t": "FRAME",
+ "w": 375,
+ "h": 1957,
+ "layout": "VERTICAL",
+ "gap": 16,
+ "pad": "20 16 32 16",
+ "align": "MIN/MIN",
+ "size": "FIXED/HUG",
+ "fill": [
+  "var:surface/base"
+ ],
+ "c": [
+  {
+   "n": "content",
+   "t": "FRAME",
+   "w": 343,
+   "h": 1905,
+   "layout": "VERTICAL",
+   "gap": 20,
+   "pad": "0 0 0 0",
+   "align": "MIN/MIN",
+   "size": "FILL/HUG",
+   "c": [
+    {
+     "n": "back-link",
+     "t": "FRAME",
+     "w": 154,
+     "h": 20,
+     "layout": "HORIZONTAL",
+     "gap": 6,
+     "pad": "0 0 0 0",
+     "align": "MIN/CENTER",
+     "size": "HUG/HUG",
+     "c": [
+      {
+       "n": "icon-arrow-left",
+       "t": "INSTANCE",
+       "w": 20,
+       "h": 20,
+       "size": "FIXED/FIXED",
+       "comp": "icon-arrow-left",
+       "c": [
+        {
+         "n": "Vector",
+         "t": "VECTOR",
+         "w": 12,
+         "h": 0,
+         "size": "FIXED/FIXED",
+         "stroke": [
+          "var:blue/600"
+         ],
+         "sw": 2
+        },
+        {
+         "n": "Vector",
+         "t": "VECTOR",
+         "w": 6,
+         "h": 12,
+         "size": "FIXED/FIXED",
+         "stroke": [
+          "var:blue/600"
+         ],
+         "sw": 2
+        }
+       ]
+      },
+      {
+       "n": "Retour à la mission",
+       "t": "TEXT",
+       "w": 128,
+       "h": 17,
+       "size": "HUG/HUG",
+       "fill": [
+        "var:blue/600"
+       ],
+       "text": "Retour à la mission",
+       "fs": 14,
+       "font": "Semi Bold"
+      }
+     ]
+    },
+    {
+     "n": "post-header",
+     "t": "FRAME",
+     "w": 343,
+     "h": 140,
+     "layout": "VERTICAL",
+     "gap": 8,
+     "pad": "0 0 0 0",
+     "align": "MIN/MIN",
+     "size": "FILL/HUG",
+     "c": [
+      {
+       "n": "Envoyer ma proposition",
+       "t": "TEXT",
+       "w": 343,
+       "h": 80,
+       "size": "FILL/HUG",
+       "fill": [
+        "var:text/primary"
+       ],
+       "text": "Envoyer ma proposition",
+       "fs": 32,
+       "font": "Bold"
+      },
+      {
+       "n": "subtitle",
+       "t": "TEXT",
+       "w": 343,
+       "h": 52,
+       "size": "FILL/HUG",
+       "fill": [
+        "var:text/muted"
+       ],
+       "text": "Expliquez à Karim pourquoi vous êtes le bon choix",
+       "fs": 16,
+       "font": "Regular"
+      }
+     ]
+    },
+    {
+     "n": "columns",
+     "t": "FRAME",
+     "w": 343,
+     "h": 1705,
+     "layout": "VERTICAL",
+     "gap": 20,
+     "pad": "0 0 0 0",
+     "align": "MIN/MIN",
+     "size": "FILL/HUG",
+     "c": [
+      {
+       "n": "left-col",
+       "t": "FRAME",
+       "w": 343,
+       "h": 1028,
+       "layout": "VERTICAL",
+       "gap": 24,
+       "pad": "0 0 0 0",
+       "align": "MIN/MIN",
+       "size": "FILL/HUG",
+       "c": [
+        {
+         "n": "form-panel",
+         "t": "FRAME",
+         "w": 343,
+         "h": 1028,
+         "layout": "VERTICAL",
+         "gap": 20,
+         "pad": "24 16 24 16",
+         "align": "MIN/MIN",
+         "size": "FILL/HUG",
+         "r": 12,
+         "fill": [
+          "var:surface/base"
+         ],
+         "stroke": [
+          "var:border/subtle"
+         ],
+         "sw": 1,
+         "c": [
+          {
+           "n": "Textarea",
+           "t": "INSTANCE",
+           "w": 311,
+           "h": 181,
+           "layout": "VERTICAL",
+           "gap": 8,
+           "pad": "0 0 0 0",
+           "align": "MIN/MIN",
+           "size": "FILL/HUG",
+           "comp": "Textarea / state=default",
+           "c": [
+            {
+             "n": "Frame",
+             "t": "FRAME",
+             "w": 101,
+             "h": 21,
+             "layout": "HORIZONTAL",
+             "gap": 2,
+             "pad": "0 0 0 0",
+             "align": "MIN/CENTER",
+             "size": "HUG/HUG",
+             "c": [
+              {
+               "n": "label",
+               "t": "TEXT",
+               "w": 101,
+               "h": 21,
+               "size": "HUG/HUG",
+               "fill": [
+                "var:text/secondary"
+               ],
+               "text": "Votre message",
+               "fs": 14,
+               "font": "Medium"
+              },
+              {
+               "n": "asterisk",
+               "t": "TEXT",
+               "w": 8,
+               "h": 21,
+               "hidden": true,
+               "size": "FIXED/FIXED",
+               "fill": [
+                "var:danger/500"
+               ],
+               "text": "*",
+               "fs": 14,
+               "font": "Medium"
+              }
+             ]
+            },
+            {
+             "n": "field",
+             "t": "FRAME",
+             "w": 311,
+             "h": 128,
+             "layout": "HORIZONTAL",
+             "gap": 8,
+             "pad": "12 16 12 16",
+             "align": "MIN/MIN",
+             "size": "FILL/HUG",
+             "r": 10,
+             "fill": [
+              "var:surface/base"
+             ],
+             "stroke": [
+              "var:border/strong"
+             ],
+             "sw": 1,
+             "c": [
+              {
+               "n": "value",
+               "t": "TEXT",
+               "w": 279,
+               "h": 104,
+               "size": "FILL/HUG",
+               "fill": [
+                "var:text/muted"
+               ],
+               "text": "Expliquez votre approche : ce que vous avez compris du besoin, comment vous le feriez, et pourquoi vous êtes le bon choix.",
+               "fs": 16,
+               "font": "Regular",
+               "style": "Body"
+              },
+              {
+               "n": "resize-grip",
+               "t": "FRAME",
+               "w": 12,
+               "h": 12,
+               "size": "FIXED/FIXED",
+               "c": [
+                {
+                 "n": "Vector",
+                 "t": "VECTOR",
+                 "w": 7,
+                 "h": 7,
+                 "size": "FIXED/FIXED",
+                 "stroke": [
+                  "var:border/strong"
+                 ],
+                 "sw": 1.25
+                },
+                {
+                 "n": "Vector",
+                 "t": "VECTOR",
+                 "w": 3,
+                 "h": 3,
+                 "size": "FIXED/FIXED",
+                 "stroke": [
+                  "var:border/strong"
+                 ],
+                 "sw": 1.25
+                }
+               ]
+              }
+             ]
+            },
+            {
+             "n": "helperRow",
+             "t": "FRAME",
+             "w": 311,
+             "h": 16,
+             "layout": "HORIZONTAL",
+             "gap": 0,
+             "pad": "0 0 0 0",
+             "align": "SPACE_BETWEEN/CENTER",
+             "size": "FILL/FIXED",
+             "c": [
+              {
+               "n": "helper",
+               "t": "TEXT",
+               "w": 427,
+               "h": 21,
+               "size": "HUG/HUG",
+               "fill": [
+                "var:text/muted"
+               ],
+               "text": "Les propositions courtes et précises reçoivent plus de réponses.",
+               "fs": 14,
+               "font": "Regular",
+               "style": "Body Small"
+              },
+              {
+               "n": "counter",
+               "t": "TEXT",
+               "w": 51,
+               "h": 17,
+               "size": "HUG/HUG",
+               "fill": [
+                "var:text/muted"
+               ],
+               "text": "0 / 1000",
+               "fs": 12,
+               "font": "Medium",
+               "style": "Overline"
+              }
+             ]
+            }
+           ]
+          },
+          {
+           "n": "links-field",
+           "t": "FRAME",
+           "w": 311,
+           "h": 228,
+           "layout": "VERTICAL",
+           "gap": 8,
+           "pad": "0 0 0 0",
+           "align": "MIN/MIN",
+           "size": "FILL/HUG",
+           "c": [
+            {
+             "n": "Liens vers vos réalisations (optionnel)",
+             "t": "TEXT",
+             "w": 311,
+             "h": 21,
+             "size": "FILL/HUG",
+             "fill": [
+              "var:text/secondary"
+             ],
+             "text": "Liens vers vos réalisations (optionnel)",
+             "fs": 14,
+             "font": "Medium"
+            },
+            {
+             "n": "Ajoutez jusqu’à 3 liens vers vos meilleurs travaux similaires. Les propositions avec des exemples reçoivent 40% plus de réponses.",
+             "t": "TEXT",
+             "w": 311,
+             "h": 51,
+             "size": "FILL/HUG",
+             "fill": [
+              "var:text/muted"
+             ],
+             "text": "Ajoutez jusqu’à 3 liens vers vos meilleurs travaux similaires. Les propositions avec des exemples reçoivent 40% plus de réponses.",
+             "fs": 12,
+             "font": "Regular"
+            },
+            {
+             "n": "rows",
+             "t": "FRAME",
+             "w": 311,
+             "h": 100,
+             "layout": "VERTICAL",
+             "gap": 8,
+             "pad": "0 0 0 0",
+             "align": "MIN/MIN",
+             "size": "FILL/HUG",
+             "c": [
+              {
+               "n": "link-row",
+               "t": "FRAME",
+               "w": 311,
+               "h": 100,
+               "layout": "VERTICAL",
+               "gap": 12,
+               "pad": "0 0 0 0",
+               "align": "MIN/MIN",
+               "size": "FILL/HUG",
+               "c": [
+                {
+                 "n": "Input",
+                 "t": "INSTANCE",
+                 "w": 311,
+                 "h": 44,
+                 "layout": "VERTICAL",
+                 "gap": 8,
+                 "pad": "0 0 0 0",
+                 "align": "MIN/MIN",
+                 "size": "FILL/HUG",
+                 "comp": "Input / variant=text, state=default",
+                 "c": [
+                  {
+                   "n": "Frame",
+                   "t": "FRAME",
+                   "w": 37,
+                   "h": 21,
+                   "hidden": true,
+                   "layout": "HORIZONTAL",
+                   "gap": 2,
+                   "pad": "0 0 0 0",
+                   "align": "MIN/CENTER",
+                   "size": "HUG/HUG",
+                   "c": [
+                    {
+                     "n": "label",
+                     "t": "TEXT",
+                     "w": 37,
+                     "h": 21,
+                     "size": "HUG/HUG",
+                     "fill": [
+                      "var:text/secondary"
+                     ],
+                     "text": "Label",
+                     "fs": 14,
+                     "font": "Medium"
+                    },
+                    {
+                     "n": "asterisk",
+                     "t": "TEXT",
+                     "w": 8,
+                     "h": 21,
+                     "hidden": true,
+                     "size": "FIXED/FIXED",
+                     "fill": [
+                      "var:danger/500"
+                     ],
+                     "text": "*",
+                     "fs": 14,
+                     "font": "Medium"
+                    }
+                   ]
+                  },
+                  {
+                   "n": "field",
+                   "t": "FRAME",
+                   "w": 311,
+                   "h": 44,
+                   "layout": "HORIZONTAL",
+                   "gap": 8,
+                   "pad": "0 16 0 16",
+                   "align": "MIN/CENTER",
+                   "size": "FILL/FIXED",
+                   "r": 10,
+                   "fill": [
+                    "var:surface/base"
+                   ],
+                   "stroke": [
+                    "var:border/strong"
+                   ],
+                   "sw": 1,
+                   "c": [
+                    {
+                     "n": "value",
+                     "t": "TEXT",
+                     "w": 279,
+                     "h": 26,
+                     "size": "FILL/HUG",
+                     "fill": [
+                      "var:text/muted"
+                     ],
+                     "text": "Ex: Site e-commerce artisan",
+                     "fs": 16,
+                     "font": "Regular",
+                     "style": "Body"
+                    }
+                   ]
+                  },
+                  {
+                   "n": "helperRow",
+                   "t": "FRAME",
+                   "w": 280,
+                   "h": 16,
+                   "hidden": true,
+                   "layout": "HORIZONTAL",
+                   "gap": 0,
+                   "pad": "0 0 0 0",
+                   "align": "SPACE_BETWEEN/CENTER",
+                   "size": "FIXED/FIXED",
+                   "c": [
+                    {
+                     "n": "helper",
+                     "t": "TEXT",
+                     "w": 74,
+                     "h": 21,
+                     "size": "HUG/HUG",
+                     "fill": [
+                      "var:text/muted"
+                     ],
+                     "text": "Helper text",
+                     "fs": 14,
+                     "font": "Regular",
+                     "style": "Body Small"
+                    },
+                    {
+                     "n": "counter",
+                     "t": "TEXT",
+                     "w": 29,
+                     "h": 17,
+                     "hidden": true,
+                     "size": "FIXED/FIXED",
+                     "fill": [
+                      "var:text/muted"
+                     ],
+                     "text": "0/80",
+                     "fs": 12,
+                     "font": "Medium",
+                     "style": "Overline"
+                    }
+                   ]
+                  }
+                 ]
+                },
+                {
+                 "n": "Input",
+                 "t": "INSTANCE",
+                 "w": 311,
+                 "h": 44,
+                 "layout": "VERTICAL",
+                 "gap": 8,
+                 "pad": "0 0 0 0",
+                 "align": "MIN/MIN",
+                 "size": "FILL/HUG",
+                 "comp": "Input / variant=text, state=default",
+                 "c": [
+                  {
+                   "n": "Frame",
+                   "t": "FRAME",
+                   "w": 37,
+                   "h": 21,
+                   "hidden": true,
+                   "layout": "HORIZONTAL",
+                   "gap": 2,
+                   "pad": "0 0 0 0",
+                   "align": "MIN/CENTER",
+                   "size": "HUG/HUG",
+                   "c": [
+                    {
+                     "n": "label",
+                     "t": "TEXT",
+                     "w": 37,
+                     "h": 21,
+                     "size": "HUG/HUG",
+                     "fill": [
+                      "var:text/secondary"
+                     ],
+                     "text": "Label",
+                     "fs": 14,
+                     "font": "Medium"
+                    },
+                    {
+                     "n": "asterisk",
+                     "t": "TEXT",
+                     "w": 8,
+                     "h": 21,
+                     "hidden": true,
+                     "size": "FIXED/FIXED",
+                     "fill": [
+                      "var:danger/500"
+                     ],
+                     "text": "*",
+                     "fs": 14,
+                     "font": "Medium"
+                    }
+                   ]
+                  },
+                  {
+                   "n": "field",
+                   "t": "FRAME",
+                   "w": 311,
+                   "h": 44,
+                   "layout": "HORIZONTAL",
+                   "gap": 8,
+                   "pad": "0 16 0 16",
+                   "align": "MIN/CENTER",
+                   "size": "FILL/FIXED",
+                   "r": 10,
+                   "fill": [
+                    "var:surface/base"
+                   ],
+                   "stroke": [
+                    "var:border/strong"
+                   ],
+                   "sw": 1,
+                   "c": [
+                    {
+                     "n": "value",
+                     "t": "TEXT",
+                     "w": 279,
+                     "h": 26,
+                     "size": "FILL/HUG",
+                     "fill": [
+                      "var:text/muted"
+                     ],
+                     "text": "https://...",
+                     "fs": 16,
+                     "font": "Regular",
+                     "style": "Body"
+                    }
+                   ]
+                  },
+                  {
+                   "n": "helperRow",
+                   "t": "FRAME",
+                   "w": 280,
+                   "h": 16,
+                   "hidden": true,
+                   "layout": "HORIZONTAL",
+                   "gap": 0,
+                   "pad": "0 0 0 0",
+                   "align": "SPACE_BETWEEN/CENTER",
+                   "size": "FIXED/FIXED",
+                   "c": [
+                    {
+                     "n": "helper",
+                     "t": "TEXT",
+                     "w": 74,
+                     "h": 21,
+                     "size": "HUG/HUG",
+                     "fill": [
+                      "var:text/muted"
+                     ],
+                     "text": "Helper text",
+                     "fs": 14,
+                     "font": "Regular",
+                     "style": "Body Small"
+                    },
+                    {
+                     "n": "counter",
+                     "t": "TEXT",
+                     "w": 29,
+                     "h": 17,
+                     "hidden": true,
+                     "size": "FIXED/FIXED",
+                     "fill": [
+                      "var:text/muted"
+                     ],
+                     "text": "0/80",
+                     "fs": 12,
+                     "font": "Medium",
+                     "style": "Overline"
+                    }
+                   ]
+                  }
+                 ]
+                }
+               ]
+              }
+             ]
+            },
+            {
+             "n": "add-row",
+             "t": "FRAME",
+             "w": 311,
+             "h": 32,
+             "layout": "HORIZONTAL",
+             "gap": 8,
+             "pad": "0 0 0 0",
+             "align": "SPACE_BETWEEN/CENTER",
+             "size": "FILL/HUG",
+             "c": [
+              {
+               "n": "Button",
+               "t": "INSTANCE",
+               "w": 147,
+               "h": 32,
+               "layout": "HORIZONTAL",
+               "gap": 8,
+               "pad": "0 12 0 12",
+               "align": "CENTER/CENTER",
+               "size": "HUG/FIXED",
+               "r": 10,
+               "fill": [
+                "var:surface/base"
+               ],
+               "stroke": [
+                "var:border/strong"
+               ],
+               "sw": 1,
+               "comp": "Button / variant=secondary, size=sm, state=default",
+               "c": [
+                {
+                 "n": "icon",
+                 "t": "FRAME",
+                 "w": 16,
+                 "h": 16,
+                 "size": "FIXED/FIXED",
+                 "c": [
+                  {
+                   "n": "bar-h",
+                   "t": "RECTANGLE",
+                   "w": 11,
+                   "h": 2,
+                   "size": "FIXED/FIXED",
+                   "r": 1,
+                   "fill": [
+                    "var:text/primary"
+                   ]
+                  },
+                  {
+                   "n": "bar-v",
+                   "t": "RECTANGLE",
+                   "w": 2,
+                   "h": 11,
+                   "size": "FIXED/FIXED",
+                   "r": 1,
+                   "fill": [
+                    "var:text/primary"
+                   ]
+                  }
+                 ]
+                },
+                {
+                 "n": "label",
+                 "t": "TEXT",
+                 "w": 99,
+                 "h": 21,
+                 "size": "HUG/HUG",
+                 "fill": [
+                  "var:text/primary"
+                 ],
+                 "text": "Ajouter un lien",
+                 "fs": 14,
+                 "font": "Semi Bold"
+                },
+                {
+                 "n": "badge",
+                 "t": "INSTANCE",
+                 "w": 16,
+                 "h": 16,
+                 "hidden": true,
+                 "layout": "HORIZONTAL",
+                 "gap": 0,
+                 "pad": "0 4 0 4",
+                 "align": "CENTER/CENTER",
+                 "size": "HUG/HUG",
+                 "r": 9999,
+                 "fill": [
+                  "var:blue/600"
+                 ],
+                 "comp": "Badge / kind=count",
+                 "c": [
+                  {
+                   "n": "Label",
+                   "t": "TEXT",
+                   "w": 8,
+                   "h": 16,
+                   "size": "HUG/HUG",
+                   "fill": [
+                    "var:text/inverse"
+                   ],
+                   "text": "3",
+                   "fs": 12,
+                   "font": "Semi Bold"
+                  }
+                 ]
+                }
+               ]
+              },
+              {
+               "n": "1 / 3",
+               "t": "TEXT",
+               "w": 25,
+               "h": 17,
+               "size": "HUG/HUG",
+               "fill": [
+                "var:text/muted"
+               ],
+               "text": "1 / 3",
+               "fs": 12,
+               "font": "Regular"
+              }
+             ]
+            }
+           ]
+          },
+          {
+           "n": "skills-field",
+           "t": "FRAME",
+           "w": 311,
+           "h": 173,
+           "layout": "VERTICAL",
+           "gap": 8,
+           "pad": "0 0 0 0",
+           "align": "MIN/MIN",
+           "size": "FILL/HUG",
+           "c": [
+            {
+             "n": "Vos compétences pour cette mission (optionnel)",
+             "t": "TEXT",
+             "w": 311,
+             "h": 42,
+             "size": "FILL/HUG",
+             "fill": [
+              "var:text/secondary"
+             ],
+             "text": "Vos compétences pour cette mission (optionnel)",
+             "fs": 14,
+             "font": "Medium"
+            },
+            {
+             "n": "Sélectionnez les compétences qui correspondent à cette mission.",
+             "t": "TEXT",
+             "w": 311,
+             "h": 34,
+             "size": "FILL/HUG",
+             "fill": [
+              "var:text/muted"
+             ],
+             "text": "Sélectionnez les compétences qui correspondent à cette mission.",
+             "fs": 12,
+             "font": "Regular"
+            },
+            {
+             "n": "skills-trigger",
+             "t": "INSTANCE",
+             "w": 311,
+             "h": 44,
+             "layout": "VERTICAL",
+             "gap": 8,
+             "pad": "0 0 0 0",
+             "align": "MIN/MIN",
+             "size": "FILL/HUG",
+             "comp": "Select — Trigger / variant=multi, size=default, state=default",
+             "c": [
+              {
+               "n": "Frame",
+               "t": "FRAME",
+               "w": 37,
+               "h": 21,
+               "hidden": true,
+               "layout": "HORIZONTAL",
+               "gap": 2,
+               "pad": "0 0 0 0",
+               "align": "MIN/CENTER",
+               "size": "HUG/HUG",
+               "c": [
+                {
+                 "n": "label",
+                 "t": "TEXT",
+                 "w": 37,
+                 "h": 21,
+                 "size": "HUG/HUG",
+                 "fill": [
+                  "var:text/secondary"
+                 ],
+                 "text": "Label",
+                 "fs": 14,
+                 "font": "Medium"
+                },
+                {
+                 "n": "asterisk",
+                 "t": "TEXT",
+                 "w": 8,
+                 "h": 21,
+                 "hidden": true,
+                 "size": "FIXED/FIXED",
+                 "fill": [
+                  "var:danger/500"
+                 ],
+                 "text": "*",
+                 "fs": 14,
+                 "font": "Medium"
+                }
+               ]
+              },
+              {
+               "n": "field",
+               "t": "FRAME",
+               "w": 311,
+               "h": 44,
+               "layout": "HORIZONTAL",
+               "gap": 8,
+               "pad": "0 16 0 16",
+               "align": "MIN/CENTER",
+               "size": "FILL/FIXED",
+               "r": 10,
+               "fill": [
+                "var:surface/base"
+               ],
+               "stroke": [
+                "var:border/strong"
+               ],
+               "sw": 1,
+               "c": [
+                {
+                 "n": "value",
+                 "t": "TEXT",
+                 "w": 253,
+                 "h": 26,
+                 "size": "FILL/HUG",
+                 "fill": [
+                  "var:text/primary"
+                 ],
+                 "text": "3 compétences sélectionnées",
+                 "fs": 16,
+                 "font": "Regular",
+                 "style": "Body"
+                },
+                {
+                 "n": "icon-chevron",
+                 "t": "FRAME",
+                 "w": 18,
+                 "h": 18,
+                 "size": "FIXED/FIXED",
+                 "c": [
+                  {
+                   "n": "Vector",
+                   "t": "VECTOR",
+                   "w": 9,
+                   "h": 5,
+                   "size": "FIXED/FIXED",
+                   "stroke": [
+                    "var:text/muted"
+                   ],
+                   "sw": 1.5
+                  }
+                 ]
+                }
+               ]
+              },
+              {
+               "n": "helperRow",
+               "t": "FRAME",
+               "w": 280,
+               "h": 16,
+               "hidden": true,
+               "layout": "HORIZONTAL",
+               "gap": 0,
+               "pad": "0 0 0 0",
+               "align": "SPACE_BETWEEN/CENTER",
+               "size": "FIXED/FIXED",
+               "c": [
+                {
+                 "n": "helper",
+                 "t": "TEXT",
+                 "w": 74,
+                 "h": 21,
+                 "size": "HUG/HUG",
+                 "fill": [
+                  "var:text/muted"
+                 ],
+                 "text": "Helper text",
+                 "fs": 14,
+                 "font": "Regular",
+                 "style": "Body Small"
+                },
+                {
+                 "n": "counter",
+                 "t": "TEXT",
+                 "w": 29,
+                 "h": 17,
+                 "hidden": true,
+                 "size": "FIXED/FIXED",
+                 "fill": [
+                  "var:text/muted"
+                 ],
+                 "text": "0/80",
+                 "fs": 12,
+                 "font": "Medium",
+                 "style": "Overline"
+                }
+               ]
+              }
+             ]
+            },
+            {
+             "n": "chips-row",
+             "t": "FRAME",
+             "w": 311,
+             "h": 29,
+             "layout": "HORIZONTAL",
+             "gap": 8,
+             "pad": "0 0 0 0",
+             "align": "MIN/MIN",
+             "size": "FILL/HUG",
+             "c": [
+              {
+               "n": "Badge",
+               "t": "INSTANCE",
+               "w": 77,
+               "h": 29,
+               "layout": "HORIZONTAL",
+               "gap": 4,
+               "pad": "4 8 4 12",
+               "align": "CENTER/CENTER",
+               "size": "HUG/HUG",
+               "r": 9999,
+               "fill": [
+                "var:blue/50"
+               ],
+               "comp": "Badge / kind=dismissible",
+               "c": [
+                {
+                 "n": "Label",
+                 "t": "TEXT",
+                 "w": 39,
+                 "h": 21,
+                 "size": "HUG/HUG",
+                 "fill": [
+                  "var:blue/600"
+                 ],
+                 "text": "React",
+                 "fs": 14,
+                 "font": "Medium"
+                },
+                {
+                 "n": "icon",
+                 "t": "FRAME",
+                 "w": 14,
+                 "h": 14,
+                 "size": "FIXED/FIXED",
+                 "c": [
+                  {
+                   "n": "Vector",
+                   "t": "VECTOR",
+                   "w": 7,
+                   "h": 7,
+                   "size": "FIXED/FIXED",
+                   "stroke": [
+                    "var:text/muted"
+                   ],
+                   "sw": 1.1666666269302368
+                  },
+                  {
+                   "n": "Vector",
+                   "t": "VECTOR",
+                   "w": 7,
+                   "h": 7,
+                   "size": "FIXED/FIXED",
+                   "stroke": [
+                    "var:text/muted"
+                   ],
+                   "sw": 1.1666666269302368
+                  }
+                 ]
+                }
+               ]
+              },
+              {
+               "n": "Badge",
+               "t": "INSTANCE",
+               "w": 85,
+               "h": 29,
+               "layout": "HORIZONTAL",
+               "gap": 4,
+               "pad": "4 8 4 12",
+               "align": "CENTER/CENTER",
+               "size": "HUG/HUG",
+               "r": 9999,
+               "fill": [
+                "var:blue/50"
+               ],
+               "comp": "Badge / kind=dismissible",
+               "c": [
+                {
+                 "n": "Label",
+                 "t": "TEXT",
+                 "w": 47,
+                 "h": 21,
+                 "size": "HUG/HUG",
+                 "fill": [
+                  "var:blue/600"
+                 ],
+                 "text": "Next.js",
+                 "fs": 14,
+                 "font": "Medium"
+                },
+                {
+                 "n": "icon",
+                 "t": "FRAME",
+                 "w": 14,
+                 "h": 14,
+                 "size": "FIXED/FIXED",
+                 "c": [
+                  {
+                   "n": "Vector",
+                   "t": "VECTOR",
+                   "w": 7,
+                   "h": 7,
+                   "size": "FIXED/FIXED",
+                   "stroke": [
+                    "var:text/muted"
+                   ],
+                   "sw": 1.1666666269302368
+                  },
+                  {
+                   "n": "Vector",
+                   "t": "VECTOR",
+                   "w": 7,
+                   "h": 7,
+                   "size": "FIXED/FIXED",
+                   "stroke": [
+                    "var:text/muted"
+                   ],
+                   "sw": 1.1666666269302368
+                  }
+                 ]
+                }
+               ]
+              },
+              {
+               "n": "Badge",
+               "t": "INSTANCE",
+               "w": 77,
+               "h": 29,
+               "layout": "HORIZONTAL",
+               "gap": 4,
+               "pad": "4 8 4 12",
+               "align": "CENTER/CENTER",
+               "size": "HUG/HUG",
+               "r": 9999,
+               "fill": [
+                "var:blue/50"
+               ],
+               "comp": "Badge / kind=dismissible",
+               "c": [
+                {
+                 "n": "Label",
+                 "t": "TEXT",
+                 "w": 39,
+                 "h": 21,
+                 "size": "HUG/HUG",
+                 "fill": [
+                  "var:blue/600"
+                 ],
+                 "text": "UI/UX",
+                 "fs": 14,
+                 "font": "Medium"
+                },
+                {
+                 "n": "icon",
+                 "t": "FRAME",
+                 "w": 14,
+                 "h": 14,
+                 "size": "FIXED/FIXED",
+                 "c": [
+                  {
+                   "n": "Vector",
+                   "t": "VECTOR",
+                   "w": 7,
+                   "h": 7,
+                   "size": "FIXED/FIXED",
+                   "stroke": [
+                    "var:text/muted"
+                   ],
+                   "sw": 1.1666666269302368
+                  },
+                  {
+                   "n": "Vector",
+                   "t": "VECTOR",
+                   "w": 7,
+                   "h": 7,
+                   "size": "FIXED/FIXED",
+                   "stroke": [
+                    "var:text/muted"
+                   ],
+                   "sw": 1.1666666269302368
+                  }
+                 ]
+                }
+               ]
+              }
+             ]
+            }
+           ]
+          },
+          {
+           "n": "price-group",
+           "t": "FRAME",
+           "w": 311,
+           "h": 107,
+           "layout": "VERTICAL",
+           "gap": 6,
+           "pad": "0 0 0 0",
+           "align": "MIN/MIN",
+           "size": "FILL/HUG",
+           "c": [
+            {
+             "n": "Price Input",
+             "t": "INSTANCE",
+             "w": 311,
+             "h": 67,
+             "layout": "VERTICAL",
+             "gap": 6,
+             "pad": "0 0 0 0",
+             "align": "MIN/MIN",
+             "size": "FILL/HUG",
+             "comp": "Price Input / state=default",
+             "c": [
+              {
+               "n": "Prix",
+               "t": "TEXT",
+               "w": 164,
+               "h": 17,
+               "size": "HUG/HUG",
+               "fill": [
+                "var:text/secondary"
+               ],
+               "text": "Prix proposé (optionnel)",
+               "fs": 14,
+               "font": "Semi Bold"
+              },
+              {
+               "n": "field",
+               "t": "FRAME",
+               "w": 311,
+               "h": 44,
+               "layout": "HORIZONTAL",
+               "gap": 0,
+               "pad": "0 0 0 16",
+               "align": "MIN/CENTER",
+               "size": "FILL/FIXED",
+               "r": 10,
+               "fill": [
+                "var:surface/base"
+               ],
+               "stroke": [
+                "var:border/strong"
+               ],
+               "sw": 1,
+               "c": [
+                {
+                 "n": "value",
+                 "t": "FRAME",
+                 "w": 239,
+                 "h": 44,
+                 "layout": "HORIZONTAL",
+                 "gap": 0,
+                 "pad": "0 12 0 0",
+                 "align": "MIN/CENTER",
+                 "size": "FILL/FILL",
+                 "c": [
+                  {
+                   "n": "78,00",
+                   "t": "TEXT",
+                   "w": 227,
+                   "h": 19,
+                   "size": "FILL/HUG",
+                   "fill": [
+                    "var:text/primary"
+                   ],
+                   "text": "",
+                   "fs": 16,
+                   "font": "Regular"
+                  }
+                 ]
+                },
+                {
+                 "n": "suffix",
+                 "t": "FRAME",
+                 "w": 56,
+                 "h": 44,
+                 "layout": "HORIZONTAL",
+                 "gap": 0,
+                 "pad": "0 14 0 12",
+                 "align": "CENTER/CENTER",
+                 "size": "HUG/FILL",
+                 "fill": [
+                  "var:surface/sunken"
+                 ],
+                 "stroke": [
+                  "var:border/subtle"
+                 ],
+                 "c": [
+                  {
+                   "n": "TND",
+                   "t": "TEXT",
+                   "w": 30,
+                   "h": 17,
+                   "size": "HUG/HUG",
+                   "fill": [
+                    "var:text/muted"
+                   ],
+                   "text": "TND",
+                   "fs": 14,
+                   "font": "Medium"
+                  }
+                 ]
+                }
+               ]
+              }
+             ]
+            },
+            {
+             "n": "Le budget indiqué est 800 TND. Laissez vide pour en discuter.",
+             "t": "TEXT",
+             "w": 311,
+             "h": 34,
+             "size": "FILL/HUG",
+             "fill": [
+              "var:text/muted"
+             ],
+             "text": "Le budget indiqué est 800 TND. Laissez vide pour en discuter.",
+             "fs": 12,
+             "font": "Regular"
+            }
+           ]
+          },
+          {
+           "n": "Input",
+           "t": "INSTANCE",
+           "w": 311,
+           "h": 97,
+           "layout": "VERTICAL",
+           "gap": 8,
+           "pad": "0 0 0 0",
+           "align": "MIN/MIN",
+           "size": "FILL/HUG",
+           "comp": "Input / variant=text, state=default",
+           "c": [
+            {
+             "n": "Frame",
+             "t": "FRAME",
+             "w": 169,
+             "h": 21,
+             "layout": "HORIZONTAL",
+             "gap": 2,
+             "pad": "0 0 0 0",
+             "align": "MIN/CENTER",
+             "size": "HUG/HUG",
+             "c": [
+              {
+               "n": "label",
+               "t": "TEXT",
+               "w": 169,
+               "h": 21,
+               "size": "HUG/HUG",
+               "fill": [
+                "var:text/secondary"
+               ],
+               "text": "Délai proposé (optionnel)",
+               "fs": 14,
+               "font": "Medium"
+              },
+              {
+               "n": "asterisk",
+               "t": "TEXT",
+               "w": 8,
+               "h": 21,
+               "hidden": true,
+               "size": "FIXED/FIXED",
+               "fill": [
+                "var:danger/500"
+               ],
+               "text": "*",
+               "fs": 14,
+               "font": "Medium"
+              }
+             ]
+            },
+            {
+             "n": "field",
+             "t": "FRAME",
+             "w": 311,
+             "h": 44,
+             "layout": "HORIZONTAL",
+             "gap": 8,
+             "pad": "0 16 0 16",
+             "align": "MIN/CENTER",
+             "size": "FILL/FIXED",
+             "r": 10,
+             "fill": [
+              "var:surface/base"
+             ],
+             "stroke": [
+              "var:border/strong"
+             ],
+             "sw": 1,
+             "c": [
+              {
+               "n": "value",
+               "t": "TEXT",
+               "w": 279,
+               "h": 26,
+               "size": "FILL/HUG",
+               "fill": [
+                "var:text/muted"
+               ],
+               "text": "Ex: 10 jours",
+               "fs": 16,
+               "font": "Regular",
+               "style": "Body"
+              }
+             ]
+            },
+            {
+             "n": "helperRow",
+             "t": "FRAME",
+             "w": 311,
+             "h": 16,
+             "layout": "HORIZONTAL",
+             "gap": 0,
+             "pad": "0 0 0 0",
+             "align": "MIN/CENTER",
+             "size": "FILL/FIXED",
+             "c": [
+              {
+               "n": "helper",
+               "t": "TEXT",
+               "w": 311,
+               "h": 21,
+               "size": "FILL/HUG",
+               "fill": [
+                "var:text/muted"
+               ],
+               "text": "Vous pourrez ajuster le délai avec le client.",
+               "fs": 14,
+               "font": "Regular",
+               "style": "Body Small"
+              },
+              {
+               "n": "counter",
+               "t": "TEXT",
+               "w": 29,
+               "h": 17,
+               "hidden": true,
+               "size": "FIXED/FIXED",
+               "fill": [
+                "var:text/muted"
+               ],
+               "text": "0/80",
+               "fs": 12,
+               "font": "Medium",
+               "style": "Overline"
+              }
+             ]
+            }
+           ]
+          },
+          {
+           "n": "Button",
+           "t": "INSTANCE",
+           "w": 311,
+           "h": 40,
+           "layout": "HORIZONTAL",
+           "gap": 8,
+           "pad": "0 16 0 16",
+           "align": "CENTER/CENTER",
+           "size": "FILL/FIXED",
+           "r": 10,
+           "fill": [
+            "var:blue/600"
+           ],
+           "comp": "Button / variant=primary, size=md, state=default",
+           "c": [
+            {
+             "n": "icon",
+             "t": "FRAME",
+             "w": 18,
+             "h": 18,
+             "hidden": true,
+             "size": "FIXED/FIXED",
+             "c": [
+              {
+               "n": "bar-h",
+               "t": "RECTANGLE",
+               "w": 12,
+               "h": 2,
+               "size": "FIXED/FIXED",
+               "r": 1,
+               "fill": [
+                "var:text/inverse"
+               ]
+              },
+              {
+               "n": "bar-v",
+               "t": "RECTANGLE",
+               "w": 2,
+               "h": 12,
+               "size": "FIXED/FIXED",
+               "r": 1,
+               "fill": [
+                "var:text/inverse"
+               ]
+              }
+             ]
+            },
+            {
+             "n": "label",
+             "t": "TEXT",
+             "w": 157,
+             "h": 26,
+             "size": "HUG/HUG",
+             "fill": [
+              "var:text/inverse"
+             ],
+             "text": "Envoyer ma réponse",
+             "fs": 16,
+             "font": "Semi Bold"
+            },
+            {
+             "n": "badge",
+             "t": "INSTANCE",
+             "w": 16,
+             "h": 16,
+             "hidden": true,
+             "layout": "HORIZONTAL",
+             "gap": 0,
+             "pad": "0 4 0 4",
+             "align": "CENTER/CENTER",
+             "size": "HUG/HUG",
+             "r": 9999,
+             "fill": [
+              "var:blue/600"
+             ],
+             "comp": "Badge / kind=count",
+             "c": [
+              {
+               "n": "Label",
+               "t": "TEXT",
+               "w": 8,
+               "h": 16,
+               "size": "HUG/HUG",
+               "fill": [
+                "var:text/inverse"
+               ],
+               "text": "3",
+               "fs": 12,
+               "font": "Semi Bold"
+              }
+             ]
+            }
+           ]
+          },
+          {
+           "n": "Karim verra votre proposition dans ses offres. Vous pourrez ensuite le contacter directement.",
+           "t": "TEXT",
+           "w": 311,
+           "h": 34,
+           "size": "FILL/HUG",
+           "fill": [
+            "var:text/muted"
+           ],
+           "text": "Karim verra votre proposition dans ses offres. Vous pourrez ensuite le contacter directement.",
+           "fs": 12,
+           "font": "Regular"
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "n": "right-col",
+       "t": "FRAME",
+       "w": 343,
+       "h": 657,
+       "layout": "VERTICAL",
+       "gap": 16,
+       "pad": "0 0 0 0",
+       "align": "MIN/MIN",
+       "size": "FILL/HUG",
+       "c": [
+        {
+         "n": "recap-card",
+         "t": "FRAME",
+         "w": 343,
+         "h": 534,
+         "layout": "VERTICAL",
+         "gap": 16,
+         "pad": "24 16 24 16",
+         "align": "MIN/MIN",
+         "size": "FILL/HUG",
+         "r": 12,
+         "fill": [
+          "var:surface/base"
+         ],
+         "stroke": [
+          "var:border/subtle"
+         ],
+         "sw": 1,
+         "c": [
+          {
+           "n": "mission-id",
+           "t": "FRAME",
+           "w": 311,
+           "h": 88,
+           "layout": "VERTICAL",
+           "gap": 8,
+           "pad": "0 0 0 0",
+           "align": "MIN/MIN",
+           "size": "FILL/HUG",
+           "c": [
+            {
+             "n": "la-mission-label",
+             "t": "TEXT",
+             "w": 75,
+             "h": 17,
+             "size": "HUG/HUG",
+             "fill": [
+              "var:text/muted"
+             ],
+             "text": "LA MISSION",
+             "fs": 12,
+             "font": "Semi Bold"
+            },
+            {
+             "n": "cat-chip",
+             "t": "INSTANCE",
+             "w": 148,
+             "h": 29,
+             "layout": "HORIZONTAL",
+             "gap": 4,
+             "pad": "4 12 4 12",
+             "align": "CENTER/CENTER",
+             "size": "HUG/HUG",
+             "r": 8,
+             "fill": [
+              "var:blue/50"
+             ],
+             "comp": "Badge / kind=category",
+             "c": [
+              {
+               "n": "chip-icon",
+               "t": "INSTANCE",
+               "w": 14,
+               "h": 14,
+               "size": "FIXED/FIXED",
+               "comp": "icon-code",
+               "c": [
+                {
+                 "n": "Vector",
+                 "t": "VECTOR",
+                 "w": 4,
+                 "h": 7,
+                 "size": "FIXED/FIXED",
+                 "stroke": [
+                  "var:blue/600"
+                 ],
+                 "sw": 2
+                },
+                {
+                 "n": "Vector",
+                 "t": "VECTOR",
+                 "w": 4,
+                 "h": 7,
+                 "size": "FIXED/FIXED",
+                 "stroke": [
+                  "var:blue/600"
+                 ],
+                 "sw": 2
+                }
+               ]
+              },
+              {
+               "n": "Label",
+               "t": "TEXT",
+               "w": 106,
+               "h": 21,
+               "size": "HUG/HUG",
+               "fill": [
+                "var:blue/700"
+               ],
+               "text": "Développement",
+               "fs": 14,
+               "font": "Medium"
+              }
+             ]
+            },
+            {
+             "n": "recap-title",
+             "t": "TEXT",
+             "w": 311,
+             "h": 26,
+             "size": "FILL/HUG",
+             "fill": [
+              "var:text/primary"
+             ],
+             "text": "Refonte site e-commerce artisan",
+             "fs": 18,
+             "font": "Semi Bold"
+            }
+           ]
+          },
+          {
+           "n": "Divider",
+           "t": "INSTANCE",
+           "w": 311,
+           "h": 1,
+           "layout": "HORIZONTAL",
+           "gap": 0,
+           "pad": "0 0 0 0",
+           "align": "MIN/MIN",
+           "size": "FILL/FIXED",
+           "comp": "Divider / variant=plain",
+           "c": [
+            {
+             "n": "line",
+             "t": "FRAME",
+             "w": 311,
+             "h": 1,
+             "size": "FILL/FILL",
+             "fill": [
+              "var:border/subtle"
+             ],
+             "c": []
+            }
+           ]
+          },
+          {
+           "n": "budget",
+           "t": "FRAME",
+           "w": 311,
+           "h": 56,
+           "layout": "VERTICAL",
+           "gap": 2,
+           "pad": "0 0 0 0",
+           "align": "MIN/MIN",
+           "size": "FILL/HUG",
+           "c": [
+            {
+             "n": "Budget",
+             "t": "TEXT",
+             "w": 42,
+             "h": 15,
+             "size": "HUG/HUG",
+             "fill": [
+              "var:text/muted"
+             ],
+             "text": "Budget",
+             "fs": 12,
+             "font": "Medium"
+            },
+            {
+             "n": "800 TND",
+             "t": "TEXT",
+             "w": 141,
+             "h": 39,
+             "size": "HUG/HUG",
+             "fill": [
+              "var:text/primary"
+             ],
+             "text": "800 TND",
+             "fs": 32,
+             "font": "Bold"
+            }
+           ]
+          },
+          {
+           "n": "Divider",
+           "t": "INSTANCE",
+           "w": 311,
+           "h": 1,
+           "layout": "HORIZONTAL",
+           "gap": 0,
+           "pad": "0 0 0 0",
+           "align": "MIN/MIN",
+           "size": "FILL/FIXED",
+           "comp": "Divider / variant=plain",
+           "c": [
+            {
+             "n": "line",
+             "t": "FRAME",
+             "w": 311,
+             "h": 1,
+             "size": "FILL/FILL",
+             "fill": [
+              "var:border/subtle"
+             ],
+             "c": []
+            }
+           ]
+          },
+          {
+           "n": "competition",
+           "t": "FRAME",
+           "w": 311,
+           "h": 44,
+           "layout": "VERTICAL",
+           "gap": 6,
+           "pad": "0 0 0 0",
+           "align": "MIN/MIN",
+           "size": "FILL/HUG",
+           "c": [
+            {
+             "n": "comp-pill",
+             "t": "INSTANCE",
+             "w": 151,
+             "h": 23,
+             "layout": "HORIZONTAL",
+             "gap": 6,
+             "pad": "4 10 4 10",
+             "align": "MIN/CENTER",
+             "size": "HUG/HUG",
+             "r": 9999,
+             "fill": [
+              "var:success/100"
+             ],
+             "comp": "Competition Pill / level=low",
+             "c": [
+              {
+               "n": "Ellipse",
+               "t": "ELLIPSE",
+               "w": 8,
+               "h": 8,
+               "size": "FIXED/FIXED",
+               "fill": [
+                "var:success/500"
+               ]
+              },
+              {
+               "n": "Peu de concurrence",
+               "t": "TEXT",
+               "w": 117,
+               "h": 15,
+               "size": "HUG/HUG",
+               "fill": [
+                "var:success/700"
+               ],
+               "text": "Peu de concurrence",
+               "fs": 12,
+               "font": "Semi Bold"
+              }
+             ]
+            },
+            {
+             "n": "2 / 10 réponses",
+             "t": "TEXT",
+             "w": 88,
+             "h": 15,
+             "size": "HUG/HUG",
+             "fill": [
+              "var:text/muted"
+             ],
+             "text": "2 / 10 réponses",
+             "fs": 12,
+             "font": "Medium"
+            }
+           ]
+          },
+          {
+           "n": "Divider",
+           "t": "INSTANCE",
+           "w": 311,
+           "h": 1,
+           "layout": "HORIZONTAL",
+           "gap": 0,
+           "pad": "0 0 0 0",
+           "align": "MIN/MIN",
+           "size": "FILL/FIXED",
+           "comp": "Divider / variant=plain",
+           "c": [
+            {
+             "n": "line",
+             "t": "FRAME",
+             "w": 311,
+             "h": 1,
+             "size": "FILL/FILL",
+             "fill": [
+              "var:border/subtle"
+             ],
+             "c": []
+            }
+           ]
+          },
+          {
+           "n": "skills",
+           "t": "FRAME",
+           "w": 311,
+           "h": 87,
+           "layout": "VERTICAL",
+           "gap": 6,
+           "pad": "0 0 0 0",
+           "align": "MIN/MIN",
+           "size": "FILL/HUG",
+           "c": [
+            {
+             "n": "skills-label",
+             "t": "TEXT",
+             "w": 133,
+             "h": 15,
+             "size": "HUG/HUG",
+             "fill": [
+              "var:text/muted"
+             ],
+             "text": "Compétences requises",
+             "fs": 12,
+             "font": "Medium"
+            },
+            {
+             "n": "chips",
+             "t": "FRAME",
+             "w": 311,
+             "h": 66,
+             "layout": "HORIZONTAL",
+             "gap": 8,
+             "pad": "0 0 0 0",
+             "align": "MIN/MIN",
+             "size": "FILL/HUG",
+             "c": [
+              {
+               "n": "Badge",
+               "t": "INSTANCE",
+               "w": 63,
+               "h": 29,
+               "layout": "HORIZONTAL",
+               "gap": 4,
+               "pad": "4 12 4 12",
+               "align": "CENTER/CENTER",
+               "size": "HUG/HUG",
+               "r": 8,
+               "fill": [
+                "var:surface/sunken"
+               ],
+               "comp": "Badge / kind=category",
+               "c": [
+                {
+                 "n": "chip-icon",
+                 "t": "INSTANCE",
+                 "w": 14,
+                 "h": 14,
+                 "hidden": true,
+                 "size": "FIXED/FIXED",
+                 "comp": "icon-banknote",
+                 "c": [
+                  {
+                   "n": "Vector",
+                   "t": "VECTOR",
+                   "w": 12,
+                   "h": 7,
+                   "size": "FIXED/FIXED",
+                   "stroke": [
+                    "var:text/muted"
+                   ],
+                   "sw": 2
+                  },
+                  {
+                   "n": "Vector",
+                   "t": "VECTOR",
+                   "w": 2,
+                   "h": 2,
+                   "size": "FIXED/FIXED",
+                   "stroke": [
+                    "var:text/muted"
+                   ],
+                   "sw": 2
+                  },
+                  {
+                   "n": "Vector",
+                   "t": "VECTOR",
+                   "w": 7,
+                   "h": 0,
+                   "size": "FIXED/FIXED",
+                   "stroke": [
+                    "var:text/muted"
+                   ],
+                   "sw": 2
+                  }
+                 ]
+                },
+                {
+                 "n": "Label",
+                 "t": "TEXT",
+                 "w": 39,
+                 "h": 21,
+                 "size": "HUG/HUG",
+                 "fill": [
+                  "var:text/secondary"
+                 ],
+                 "text": "React",
+                 "fs": 14,
+                 "font": "Medium"
+                }
+               ]
+              },
+              {
+               "n": "Badge",
+               "t": "INSTANCE",
+               "w": 71,
+               "h": 29,
+               "layout": "HORIZONTAL",
+               "gap": 4,
+               "pad": "4 12 4 12",
+               "align": "CENTER/CENTER",
+               "size": "HUG/HUG",
+               "r": 8,
+               "fill": [
+                "var:surface/sunken"
+               ],
+               "comp": "Badge / kind=category",
+               "c": [
+                {
+                 "n": "chip-icon",
+                 "t": "INSTANCE",
+                 "w": 14,
+                 "h": 14,
+                 "hidden": true,
+                 "size": "FIXED/FIXED",
+                 "comp": "icon-banknote",
+                 "c": [
+                  {
+                   "n": "Vector",
+                   "t": "VECTOR",
+                   "w": 12,
+                   "h": 7,
+                   "size": "FIXED/FIXED",
+                   "stroke": [
+                    "var:text/muted"
+                   ],
+                   "sw": 2
+                  },
+                  {
+                   "n": "Vector",
+                   "t": "VECTOR",
+                   "w": 2,
+                   "h": 2,
+                   "size": "FIXED/FIXED",
+                   "stroke": [
+                    "var:text/muted"
+                   ],
+                   "sw": 2
+                  },
+                  {
+                   "n": "Vector",
+                   "t": "VECTOR",
+                   "w": 7,
+                   "h": 0,
+                   "size": "FIXED/FIXED",
+                   "stroke": [
+                    "var:text/muted"
+                   ],
+                   "sw": 2
+                  }
+                 ]
+                },
+                {
+                 "n": "Label",
+                 "t": "TEXT",
+                 "w": 47,
+                 "h": 21,
+                 "size": "HUG/HUG",
+                 "fill": [
+                  "var:text/secondary"
+                 ],
+                 "text": "Next.js",
+                 "fs": 14,
+                 "font": "Medium"
+                }
+               ]
+              },
+              {
+               "n": "Badge",
+               "t": "INSTANCE",
+               "w": 63,
+               "h": 29,
+               "layout": "HORIZONTAL",
+               "gap": 4,
+               "pad": "4 12 4 12",
+               "align": "CENTER/CENTER",
+               "size": "HUG/HUG",
+               "r": 8,
+               "fill": [
+                "var:surface/sunken"
+               ],
+               "comp": "Badge / kind=category",
+               "c": [
+                {
+                 "n": "chip-icon",
+                 "t": "INSTANCE",
+                 "w": 14,
+                 "h": 14,
+                 "hidden": true,
+                 "size": "FIXED/FIXED",
+                 "comp": "icon-banknote",
+                 "c": [
+                  {
+                   "n": "Vector",
+                   "t": "VECTOR",
+                   "w": 12,
+                   "h": 7,
+                   "size": "FIXED/FIXED",
+                   "stroke": [
+                    "var:text/muted"
+                   ],
+                   "sw": 2
+                  },
+                  {
+                   "n": "Vector",
+                   "t": "VECTOR",
+                   "w": 2,
+                   "h": 2,
+                   "size": "FIXED/FIXED",
+                   "stroke": [
+                    "var:text/muted"
+                   ],
+                   "sw": 2
+                  },
+                  {
+                   "n": "Vector",
+                   "t": "VECTOR",
+                   "w": 7,
+                   "h": 0,
+                   "size": "FIXED/FIXED",
+                   "stroke": [
+                    "var:text/muted"
+                   ],
+                   "sw": 2
+                  }
+                 ]
+                },
+                {
+                 "n": "Label",
+                 "t": "TEXT",
+                 "w": 39,
+                 "h": 21,
+                 "size": "HUG/HUG",
+                 "fill": [
+                  "var:text/secondary"
+                 ],
+                 "text": "UI/UX",
+                 "fs": 14,
+                 "font": "Medium"
+                }
+               ]
+              },
+              {
+               "n": "Badge",
+               "t": "INSTANCE",
+               "w": 101,
+               "h": 29,
+               "layout": "HORIZONTAL",
+               "gap": 4,
+               "pad": "4 12 4 12",
+               "align": "CENTER/CENTER",
+               "size": "HUG/HUG",
+               "r": 8,
+               "fill": [
+                "var:surface/sunken"
+               ],
+               "comp": "Badge / kind=category",
+               "c": [
+                {
+                 "n": "chip-icon",
+                 "t": "INSTANCE",
+                 "w": 14,
+                 "h": 14,
+                 "hidden": true,
+                 "size": "FIXED/FIXED",
+                 "comp": "icon-banknote",
+                 "c": [
+                  {
+                   "n": "Vector",
+                   "t": "VECTOR",
+                   "w": 12,
+                   "h": 7,
+                   "size": "FIXED/FIXED",
+                   "stroke": [
+                    "var:text/muted"
+                   ],
+                   "sw": 2
+                  },
+                  {
+                   "n": "Vector",
+                   "t": "VECTOR",
+                   "w": 2,
+                   "h": 2,
+                   "size": "FIXED/FIXED",
+                   "stroke": [
+                    "var:text/muted"
+                   ],
+                   "sw": 2
+                  },
+                  {
+                   "n": "Vector",
+                   "t": "VECTOR",
+                   "w": 7,
+                   "h": 0,
+                   "size": "FIXED/FIXED",
+                   "stroke": [
+                    "var:text/muted"
+                   ],
+                   "sw": 2
+                  }
+                 ]
+                },
+                {
+                 "n": "Label",
+                 "t": "TEXT",
+                 "w": 77,
+                 "h": 21,
+                 "size": "HUG/HUG",
+                 "fill": [
+                  "var:text/secondary"
+                 ],
+                 "text": "Responsive",
+                 "fs": 14,
+                 "font": "Medium"
+                }
+               ]
+              }
+             ]
+            }
+           ]
+          },
+          {
+           "n": "Divider",
+           "t": "INSTANCE",
+           "w": 311,
+           "h": 1,
+           "layout": "HORIZONTAL",
+           "gap": 0,
+           "pad": "0 0 0 0",
+           "align": "MIN/MIN",
+           "size": "FILL/FIXED",
+           "comp": "Divider / variant=plain",
+           "c": [
+            {
+             "n": "line",
+             "t": "FRAME",
+             "w": 311,
+             "h": 1,
+             "size": "FILL/FILL",
+             "fill": [
+              "var:border/subtle"
+             ],
+             "c": []
+            }
+           ]
+          },
+          {
+           "n": "meta",
+           "t": "FRAME",
+           "w": 311,
+           "h": 46,
+           "layout": "VERTICAL",
+           "gap": 12,
+           "pad": "0 0 0 0",
+           "align": "MIN/MIN",
+           "size": "FILL/HUG",
+           "c": [
+            {
+             "n": "mrow",
+             "t": "FRAME",
+             "w": 311,
+             "h": 17,
+             "layout": "HORIZONTAL",
+             "gap": 8,
+             "pad": "0 0 0 0",
+             "align": "SPACE_BETWEEN/CENTER",
+             "size": "FILL/HUG",
+             "c": [
+              {
+               "n": "l",
+               "t": "FRAME",
+               "w": 103,
+               "h": 17,
+               "layout": "HORIZONTAL",
+               "gap": 6,
+               "pad": "0 0 0 0",
+               "align": "MIN/CENTER",
+               "size": "HUG/HUG",
+               "c": [
+                {
+                 "n": "icon-map-pin",
+                 "t": "INSTANCE",
+                 "w": 16,
+                 "h": 16,
+                 "size": "FIXED/FIXED",
+                 "comp": "icon-map-pin",
+                 "c": [
+                  {
+                   "n": "Vector",
+                   "t": "VECTOR",
+                   "w": 11,
+                   "h": 13,
+                   "size": "FIXED/FIXED",
+                   "stroke": [
+                    "var:text/muted"
+                   ],
+                   "sw": 2
+                  },
+                  {
+                   "n": "Vector",
+                   "t": "VECTOR",
+                   "w": 4,
+                   "h": 4,
+                   "size": "FIXED/FIXED",
+                   "stroke": [
+                    "var:text/muted"
+                   ],
+                   "sw": 2
+                  }
+                 ]
+                },
+                {
+                 "n": "Localisation",
+                 "t": "TEXT",
+                 "w": 81,
+                 "h": 17,
+                 "size": "HUG/HUG",
+                 "fill": [
+                  "var:text/secondary"
+                 ],
+                 "text": "Localisation",
+                 "fs": 14,
+                 "font": "Medium"
+                }
+               ]
+              },
+              {
+               "n": "Tunis",
+               "t": "TEXT",
+               "w": 37,
+               "h": 17,
+               "size": "HUG/HUG",
+               "fill": [
+                "var:text/primary"
+               ],
+               "text": "Tunis",
+               "fs": 14,
+               "font": "Semi Bold"
+              }
+             ]
+            },
+            {
+             "n": "mrow",
+             "t": "FRAME",
+             "w": 311,
+             "h": 17,
+             "layout": "HORIZONTAL",
+             "gap": 8,
+             "pad": "0 0 0 0",
+             "align": "SPACE_BETWEEN/CENTER",
+             "size": "FILL/HUG",
+             "c": [
+              {
+               "n": "l",
+               "t": "FRAME",
+               "w": 100,
+               "h": 17,
+               "layout": "HORIZONTAL",
+               "gap": 6,
+               "pad": "0 0 0 0",
+               "align": "MIN/CENTER",
+               "size": "HUG/HUG",
+               "c": [
+                {
+                 "n": "icon-clock",
+                 "t": "INSTANCE",
+                 "w": 16,
+                 "h": 16,
+                 "size": "FIXED/FIXED",
+                 "comp": "icon-clock",
+                 "c": [
+                  {
+                   "n": "Vector",
+                   "t": "VECTOR",
+                   "w": 13,
+                   "h": 13,
+                   "size": "FIXED/FIXED",
+                   "stroke": [
+                    "var:text/muted"
+                   ],
+                   "sw": 2
+                  },
+                  {
+                   "n": "Vector",
+                   "t": "VECTOR",
+                   "w": 3,
+                   "h": 5,
+                   "size": "FIXED/FIXED",
+                   "stroke": [
+                    "var:text/muted"
+                   ],
+                   "sw": 2
+                  }
+                 ]
+                },
+                {
+                 "n": "Expire dans",
+                 "t": "TEXT",
+                 "w": 78,
+                 "h": 17,
+                 "size": "HUG/HUG",
+                 "fill": [
+                  "var:text/secondary"
+                 ],
+                 "text": "Expire dans",
+                 "fs": 14,
+                 "font": "Medium"
+                }
+               ]
+              },
+              {
+               "n": "12 jours",
+               "t": "TEXT",
+               "w": 53,
+               "h": 17,
+               "size": "HUG/HUG",
+               "fill": [
+                "var:text/primary"
+               ],
+               "text": "12 jours",
+               "fs": 14,
+               "font": "Semi Bold"
+              }
+             ]
+            }
+           ]
+          },
+          {
+           "n": "recap-link",
+           "t": "TEXT",
+           "w": 154,
+           "h": 17,
+           "size": "HUG/HUG",
+           "fill": [
+            "var:blue/600"
+           ],
+           "text": "Voir la mission complète →",
+           "fs": 12,
+           "font": "Medium"
+          }
+         ]
+        },
+        {
+         "n": "client-card",
+         "t": "FRAME",
+         "w": 343,
+         "h": 107,
+         "layout": "VERTICAL",
+         "gap": 12,
+         "pad": "20 16 20 16",
+         "align": "MIN/MIN",
+         "size": "FILL/HUG",
+         "r": 12,
+         "fill": [
+          "var:surface/base"
+         ],
+         "stroke": [
+          "var:border/subtle"
+         ],
+         "sw": 1,
+         "c": [
+          {
+           "n": "Publié par",
+           "t": "TEXT",
+           "w": 58,
+           "h": 15,
+           "size": "HUG/HUG",
+           "fill": [
+            "var:text/muted"
+           ],
+           "text": "Publié par",
+           "fs": 12,
+           "font": "Medium"
+          },
+          {
+           "n": "client-row",
+           "t": "FRAME",
+           "w": 311,
+           "h": 40,
+           "layout": "HORIZONTAL",
+           "gap": 12,
+           "pad": "0 0 0 0",
+           "align": "MIN/CENTER",
+           "size": "FILL/HUG",
+           "c": [
+            {
+             "n": "avatar",
+             "t": "INSTANCE",
+             "w": 40,
+             "h": 40,
+             "size": "FIXED/FIXED",
+             "comp": "Avatar / size=md, type=initials, status=none",
+             "c": [
+              {
+               "n": "Shape",
+               "t": "FRAME",
+               "w": 40,
+               "h": 40,
+               "layout": "HORIZONTAL",
+               "gap": 0,
+               "pad": "0 0 0 0",
+               "align": "CENTER/CENTER",
+               "size": "FIXED/FIXED",
+               "r": 9999,
+               "fill": [
+                "var:blue/100"
+               ],
+               "c": [
+                {
+                 "n": "Initials",
+                 "t": "TEXT",
+                 "w": 11,
+                 "h": 19,
+                 "size": "HUG/HUG",
+                 "fill": [
+                  "var:blue/600"
+                 ],
+                 "text": "K",
+                 "fs": 16,
+                 "font": "Semi Bold"
+                }
+               ]
+              },
+              {
+               "n": "Verified",
+               "t": "FRAME",
+               "w": 16,
+               "h": 16,
+               "hidden": true,
+               "layout": "HORIZONTAL",
+               "gap": 0,
+               "pad": "0 0 0 0",
+               "align": "CENTER/CENTER",
+               "size": "FIXED/FIXED",
+               "r": 9999,
+               "fill": [
+                "var:blue/600"
+               ],
+               "stroke": [
+                "var:surface/base"
+               ],
+               "sw": 2,
+               "c": [
+                {
+                 "n": "icon",
+                 "t": "FRAME",
+                 "w": 11,
+                 "h": 11,
+                 "size": "FIXED/FIXED",
+                 "c": [
+                  {
+                   "n": "Vector",
+                   "t": "VECTOR",
+                   "w": 7,
+                   "h": 5,
+                   "size": "FIXED/FIXED",
+                   "fill": [
+                    "var:text/muted"
+                   ],
+                   "stroke": [
+                    "var:text/inverse"
+                   ],
+                   "sw": 0.9166666865348816
+                  }
+                 ]
+                }
+               ]
+              }
+             ]
+            },
+            {
+             "n": "info",
+             "t": "FRAME",
+             "w": 259,
+             "h": 38,
+             "layout": "VERTICAL",
+             "gap": 2,
+             "pad": "0 0 0 0",
+             "align": "MIN/MIN",
+             "size": "FILL/HUG",
+             "c": [
+              {
+               "n": "Karim",
+               "t": "TEXT",
+               "w": 45,
+               "h": 19,
+               "size": "HUG/HUG",
+               "fill": [
+                "var:text/primary"
+               ],
+               "text": "Karim",
+               "fs": 16,
+               "font": "Semi Bold"
+              },
+              {
+               "n": "type",
+               "t": "FRAME",
+               "w": 170,
+               "h": 17,
+               "layout": "HORIZONTAL",
+               "gap": 4,
+               "pad": "0 0 0 0",
+               "align": "MIN/CENTER",
+               "size": "HUG/HUG",
+               "c": [
+                {
+                 "n": "icon-user",
+                 "t": "INSTANCE",
+                 "w": 16,
+                 "h": 16,
+                 "size": "FIXED/FIXED",
+                 "comp": "icon-user",
+                 "c": [
+                  {
+                   "n": "Vector",
+                   "t": "VECTOR",
+                   "w": 9,
+                   "h": 4,
+                   "size": "FIXED/FIXED",
+                   "stroke": [
+                    "var:text/muted"
+                   ],
+                   "sw": 2
+                  },
+                  {
+                   "n": "Vector",
+                   "t": "VECTOR",
+                   "w": 5,
+                   "h": 5,
+                   "size": "FIXED/FIXED",
+                   "stroke": [
+                    "var:text/muted"
+                   ],
+                   "sw": 2
+                  }
+                 ]
+                },
+                {
+                 "n": "Tunis · Consommateur",
+                 "t": "TEXT",
+                 "w": 150,
+                 "h": 17,
+                 "size": "HUG/HUG",
+                 "fill": [
+                  "var:text/muted"
+                 ],
+                 "text": "Tunis · Consommateur",
+                 "fs": 14,
+                 "font": "Medium"
+                }
+               ]
+              }
+             ]
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}
