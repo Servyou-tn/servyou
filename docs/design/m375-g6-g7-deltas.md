@@ -36,3 +36,7 @@ Controls (375, FR + AR):
 - **G6:** crumb → `/mes-produits`, footer (Enregistrer le brouillon / Publier disabled until valid), stock switch toggles.
 - **G7:** crumb, « Voir le produit » → `/produits/{id}`, delete modal opens.
 - **G5:** kebab 36 × 36 with a 44 × 44 hit area, menu unchanged.
+
+## Founder answer (2026-11-05)
+
+1 « Sous-catégorie » after the beta — kept logged in `docs/follow-ups/m375-g6-g7.md`.

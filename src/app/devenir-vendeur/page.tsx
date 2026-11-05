@@ -39,22 +39,23 @@ export default async function DevenirVendeurChoicePage() {
 
   return (
     <AppShell user={shell?.topBarUser ?? null}>
-      <div className="mx-auto max-w-[720px] px-4 py-10 sm:px-6 lg:px-0">
+      {/* 375 (m375-g1-devenir-vendeur): the column spans the shell's 343, hero gap 8, H1 / 38, sub 18 / 28, cards 32 under. */}
+      <div className="mx-auto max-w-[720px] px-4 py-10 sm:px-6 lg:px-0 max-sm:px-0 max-lg:py-0">
         {profile && isUnderage ? (
           <AgeGateRefusalCard dateOfBirth={profile.date_of_birth} lang={lang} />
         ) : (
           <>
             <div className="text-center">
-              <p className="text-caption font-semibold tracking-wide text-brand-blue-600 uppercase">
+              <p className="text-caption font-semibold tracking-wide text-brand-blue-600 uppercase max-lg:font-medium">
                 {t('devenir.choice.hero.eyebrow', lang)}
               </p>
-              <h1 className="mt-3 text-h1 font-bold text-text-primary">{t('devenir.choice.hero.headline', lang)}</h1>
-              <p className="mx-auto mt-3 max-w-lg text-body text-text-secondary">
+              <h1 className="mt-3 text-h1 font-bold text-text-primary max-lg:mt-2 max-lg:leading-[38px]">{t('devenir.choice.hero.headline', lang)}</h1>
+              <p className="mx-auto mt-3 max-w-lg text-body text-text-secondary max-lg:mt-2 max-lg:text-body-lg max-lg:leading-7">
                 {t('devenir.choice.hero.subheadline', lang)}
               </p>
             </div>
 
-            <div className="mt-10 grid grid-cols-1 gap-5 md:grid-cols-2">
+            <div className="mt-10 grid grid-cols-1 gap-5 md:grid-cols-2 max-lg:mt-8">
               <RoleChoiceCard
                 id="role-choice-freelance"
                 href="/devenir-vendeur/freelance"

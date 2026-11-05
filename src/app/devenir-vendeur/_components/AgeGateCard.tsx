@@ -15,9 +15,11 @@ export function AgeGateCard({ dateOfBirth, lang }: { dateOfBirth: string; lang: 
   const formatted = `${day}/${month}/${year}`
 
   return (
-    <div className="mx-auto mt-8 max-w-[480px] rounded-3xl border border-border-subtle bg-surface-subtle p-6">
+    // 375 (m375-g1-devenir-vendeur): the full 343 column, r10, no stroke, pad 24 / 16, gap 16; the DOB row sits on the card
+    // with its check 8 away, no white box.
+    <div className="mx-auto mt-8 max-w-[480px] rounded-3xl border border-border-subtle bg-surface-subtle p-6 max-lg:max-w-none max-lg:rounded-[10px] max-lg:border-0 max-lg:px-4">
       <p className="text-body-sm text-text-secondary">{t('devenir.choice.agegate.message', lang)}</p>
-      <div className="mt-6 flex items-center justify-between gap-3 rounded-xl bg-white px-4 py-3">
+      <div className="mt-6 flex items-center justify-between gap-3 rounded-xl bg-white px-4 py-3 max-lg:mt-4 max-lg:gap-2 max-lg:rounded-none max-lg:bg-transparent max-lg:p-0">
         <span className="text-body-sm text-text-primary">
           {t('devenir.choice.agegate.dobPass.prefix', lang)}
           <span dir="ltr" className="inline-block">{formatted}</span>
