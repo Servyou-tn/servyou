@@ -1,0 +1,1986 @@
+{
+ "n": "Modifier un service (375 mobile)",
+ "t": "FRAME",
+ "w": 375,
+ "h": 1649,
+ "layout": "VERTICAL",
+ "gap": 16,
+ "pad": "20 16 32 16",
+ "align": "MIN/MIN",
+ "size": "FIXED/HUG",
+ "fill": [
+  "var:surface/base"
+ ],
+ "c": [
+  {
+   "n": "content",
+   "t": "FRAME",
+   "w": 343,
+   "h": 1597,
+   "layout": "VERTICAL",
+   "gap": 20,
+   "pad": "0 0 0 0",
+   "align": "MIN/MIN",
+   "size": "FILL/HUG",
+   "c": [
+    {
+     "n": "page-header",
+     "t": "FRAME",
+     "w": 343,
+     "h": 139,
+     "layout": "VERTICAL",
+     "gap": 8,
+     "pad": "0 0 0 0",
+     "align": "MIN/MIN",
+     "size": "FILL/HUG",
+     "c": [
+      {
+       "n": "Breadcrumb",
+       "t": "INSTANCE",
+       "w": 175,
+       "h": 17,
+       "layout": "HORIZONTAL",
+       "gap": 8,
+       "pad": "0 0 0 0",
+       "align": "MIN/CENTER",
+       "size": "HUG/HUG",
+       "comp": "Breadcrumb",
+       "c": [
+        {
+         "n": "Accueil",
+         "t": "TEXT",
+         "w": 89,
+         "h": 17,
+         "size": "HUG/HUG",
+         "fill": [
+          "var:text/muted"
+         ],
+         "text": "Mes services",
+         "fs": 14,
+         "font": "Medium"
+        },
+        {
+         "n": "icon-chevron-right",
+         "t": "INSTANCE",
+         "w": 14,
+         "h": 14,
+         "size": "FIXED/FIXED",
+         "comp": "icon-chevron-right",
+         "c": [
+          {
+           "n": "Vector",
+           "t": "VECTOR",
+           "w": 4,
+           "h": 7,
+           "size": "FIXED/FIXED",
+           "stroke": [
+            "var:text/muted"
+           ],
+           "sw": 2
+          }
+         ]
+        },
+        {
+         "n": "Artisanat",
+         "t": "TEXT",
+         "w": 56,
+         "h": 17,
+         "size": "HUG/HUG",
+         "fill": [
+          "var:text/muted"
+         ],
+         "text": "Modifier",
+         "fs": 14,
+         "font": "Medium"
+        },
+        {
+         "n": "icon-chevron-right",
+         "t": "INSTANCE",
+         "w": 14,
+         "h": 14,
+         "hidden": true,
+         "size": "FIXED/FIXED",
+         "comp": "icon-chevron-right",
+         "c": [
+          {
+           "n": "Vector",
+           "t": "VECTOR",
+           "w": 4,
+           "h": 7,
+           "size": "FIXED/FIXED",
+           "stroke": [
+            "var:text/muted"
+           ],
+           "sw": 2
+          }
+         ]
+        },
+        {
+         "n": "Poterie de Nabeul",
+         "t": "TEXT",
+         "w": 121,
+         "h": 17,
+         "hidden": true,
+         "size": "FIXED/FIXED",
+         "fill": [
+          "var:text/primary"
+         ],
+         "text": "Poterie de Nabeul",
+         "fs": 14,
+         "font": "Semi Bold"
+        }
+       ]
+      },
+      {
+       "n": "title-row",
+       "t": "FRAME",
+       "w": 343,
+       "h": 64,
+       "layout": "VERTICAL",
+       "gap": 12,
+       "pad": "0 0 0 0",
+       "align": "SPACE_BETWEEN/MIN",
+       "size": "FILL/HUG",
+       "c": [
+        {
+         "n": "lhs",
+         "t": "FRAME",
+         "w": 343,
+         "h": 38,
+         "layout": "HORIZONTAL",
+         "gap": 12,
+         "pad": "0 0 0 0",
+         "align": "MIN/CENTER",
+         "size": "FILL/HUG",
+         "c": [
+          {
+           "n": "Modifier le service",
+           "t": "TEXT",
+           "w": 279,
+           "h": 38,
+           "size": "FILL/HUG",
+           "fill": [
+            "var:text/primary"
+           ],
+           "text": "Modifier le service",
+           "fs": 32,
+           "font": "Bold",
+           "style": "H1"
+          },
+          {
+           "n": "StatusPill",
+           "t": "INSTANCE",
+           "w": 52,
+           "h": 25,
+           "layout": "HORIZONTAL",
+           "gap": 0,
+           "pad": "4 12 4 12",
+           "align": "MIN/CENTER",
+           "size": "HUG/HUG",
+           "r": 9999,
+           "fill": [
+            "var:success/100"
+           ],
+           "comp": "StatusPill / status=active",
+           "c": [
+            {
+             "n": "Actif",
+             "t": "TEXT",
+             "w": 28,
+             "h": 17,
+             "size": "HUG/HUG",
+             "fill": [
+              "var:success/500"
+             ],
+             "text": "Actif",
+             "fs": 12,
+             "font": "Semi Bold"
+            }
+           ]
+          }
+         ]
+        },
+        {
+         "n": "Voir le service",
+         "t": "TEXT",
+         "w": 343,
+         "h": 26,
+         "size": "FILL/HUG",
+         "fill": [
+          "var:blue/600"
+         ],
+         "text": "Voir le service",
+         "fs": 16,
+         "font": "Regular",
+         "style": "Body"
+        }
+       ]
+      },
+      {
+       "n": "Modifiez les détails de votre service. Les changements sont visibles après enregistrement.",
+       "t": "TEXT",
+       "w": 343,
+       "h": 42,
+       "size": "FILL/HUG",
+       "fill": [
+        "var:text/secondary"
+       ],
+       "text": "Modifiez les détails de votre service. Les changements sont visibles après enregistrement.",
+       "fs": 14,
+       "font": "Regular",
+       "style": "Body Small"
+      }
+     ]
+    },
+    {
+     "n": "accordion-group",
+     "t": "FRAME",
+     "w": 343,
+     "h": 1438,
+     "layout": "VERTICAL",
+     "gap": 16,
+     "pad": "0 0 0 0",
+     "align": "MIN/MIN",
+     "size": "FILL/HUG",
+     "c": [
+      {
+       "n": "section-Métier & description",
+       "t": "FRAME",
+       "w": 343,
+       "h": 1039,
+       "layout": "VERTICAL",
+       "gap": 0,
+       "pad": "0 0 0 0",
+       "align": "MIN/MIN",
+       "size": "FILL/HUG",
+       "r": 12,
+       "fill": [
+        "var:surface/base"
+       ],
+       "stroke": [
+        "var:border/subtle"
+       ],
+       "sw": 1,
+       "c": [
+        {
+         "n": "header",
+         "t": "FRAME",
+         "w": 343,
+         "h": 66,
+         "layout": "HORIZONTAL",
+         "gap": 0,
+         "pad": "20 16 20 16",
+         "align": "SPACE_BETWEEN/CENTER",
+         "size": "FILL/HUG",
+         "c": [
+          {
+           "n": "lhs",
+           "t": "FRAME",
+           "w": 291,
+           "h": 26,
+           "layout": "HORIZONTAL",
+           "gap": 12,
+           "pad": "0 0 0 0",
+           "align": "MIN/CENTER",
+           "size": "FILL/HUG",
+           "c": [
+            {
+             "n": "Métier & description",
+             "t": "TEXT",
+             "w": 157,
+             "h": 26,
+             "size": "HUG/HUG",
+             "fill": [
+              "var:text/primary"
+             ],
+             "text": "Métier & description",
+             "fs": 16,
+             "font": "Semi Bold"
+            },
+            {
+             "n": "pill",
+             "t": "FRAME",
+             "w": 72,
+             "h": 21,
+             "layout": "HORIZONTAL",
+             "gap": 0,
+             "pad": "2 8 2 8",
+             "align": "MIN/CENTER",
+             "size": "HUG/HUG",
+             "r": 9999,
+             "fill": [
+              "var:success/100"
+             ],
+             "c": [
+              {
+               "n": "Complété",
+               "t": "TEXT",
+               "w": 56,
+               "h": 17,
+               "size": "HUG/HUG",
+               "fill": [
+                "var:success/500"
+               ],
+               "text": "Complété",
+               "fs": 12,
+               "font": "Medium",
+               "style": "Caption"
+              }
+             ]
+            }
+           ]
+          },
+          {
+           "n": "icon-chevron-up",
+           "t": "INSTANCE",
+           "w": 20,
+           "h": 20,
+           "size": "FIXED/FIXED",
+           "comp": "icon-chevron-up",
+           "c": [
+            {
+             "n": "Vector",
+             "t": "VECTOR",
+             "w": 10,
+             "h": 5,
+             "size": "FIXED/FIXED",
+             "stroke": [
+              "var:text/muted"
+             ],
+             "sw": 2
+            }
+           ]
+          }
+         ]
+        },
+        {
+         "n": "body",
+         "t": "FRAME",
+         "w": 343,
+         "h": 973,
+         "layout": "VERTICAL",
+         "gap": 20,
+         "pad": "0 16 24 16",
+         "align": "MIN/MIN",
+         "size": "FILL/HUG",
+         "c": [
+          {
+           "n": "Input",
+           "t": "INSTANCE",
+           "w": 311,
+           "h": 97,
+           "layout": "VERTICAL",
+           "gap": 8,
+           "pad": "0 0 0 0",
+           "align": "MIN/MIN",
+           "size": "FILL/HUG",
+           "comp": "Input / variant=text, state=filled",
+           "c": [
+            {
+             "n": "Frame",
+             "t": "FRAME",
+             "w": 115,
+             "h": 21,
+             "layout": "HORIZONTAL",
+             "gap": 2,
+             "pad": "0 0 0 0",
+             "align": "MIN/CENTER",
+             "size": "HUG/HUG",
+             "c": [
+              {
+               "n": "label",
+               "t": "TEXT",
+               "w": 105,
+               "h": 21,
+               "size": "HUG/HUG",
+               "fill": [
+                "var:text/secondary"
+               ],
+               "text": "Titre du service",
+               "fs": 14,
+               "font": "Medium"
+              },
+              {
+               "n": "asterisk",
+               "t": "TEXT",
+               "w": 8,
+               "h": 21,
+               "size": "HUG/HUG",
+               "fill": [
+                "var:danger/500"
+               ],
+               "text": "*",
+               "fs": 14,
+               "font": "Medium"
+              }
+             ]
+            },
+            {
+             "n": "field",
+             "t": "FRAME",
+             "w": 311,
+             "h": 44,
+             "layout": "HORIZONTAL",
+             "gap": 8,
+             "pad": "0 16 0 16",
+             "align": "MIN/CENTER",
+             "size": "FILL/FIXED",
+             "r": 10,
+             "fill": [
+              "var:surface/base"
+             ],
+             "stroke": [
+              "var:border/strong"
+             ],
+             "sw": 1,
+             "c": [
+              {
+               "n": "value",
+               "t": "TEXT",
+               "w": 279,
+               "h": 52,
+               "size": "FILL/HUG",
+               "fill": [
+                "var:text/primary"
+               ],
+               "text": "Création de boutique en ligne clé en main",
+               "fs": 16,
+               "font": "Regular",
+               "style": "Body"
+              }
+             ]
+            },
+            {
+             "n": "helperRow",
+             "t": "FRAME",
+             "w": 311,
+             "h": 16,
+             "layout": "HORIZONTAL",
+             "gap": 0,
+             "pad": "0 0 0 0",
+             "align": "SPACE_BETWEEN/CENTER",
+             "size": "FILL/FIXED",
+             "c": [
+              {
+               "n": "helper",
+               "t": "TEXT",
+               "w": 537,
+               "h": 21,
+               "size": "HUG/HUG",
+               "fill": [
+                "var:text/muted"
+               ],
+               "text": "Commencez par un verbe d'action. C'est la première chose que voient les clients.",
+               "fs": 14,
+               "font": "Regular",
+               "style": "Body Small"
+              },
+              {
+               "n": "counter",
+               "t": "TEXT",
+               "w": 38,
+               "h": 17,
+               "size": "HUG/HUG",
+               "fill": [
+                "var:text/muted"
+               ],
+               "text": "40/80",
+               "fs": 12,
+               "font": "Medium",
+               "style": "Overline"
+              }
+             ]
+            }
+           ]
+          },
+          {
+           "n": "two-col",
+           "t": "FRAME",
+           "w": 311,
+           "h": 214,
+           "layout": "VERTICAL",
+           "gap": 20,
+           "pad": "0 0 0 0",
+           "align": "MIN/MIN",
+           "size": "FILL/HUG",
+           "c": [
+            {
+             "n": "Select — Trigger",
+             "t": "INSTANCE",
+             "w": 311,
+             "h": 97,
+             "layout": "VERTICAL",
+             "gap": 8,
+             "pad": "0 0 0 0",
+             "align": "MIN/MIN",
+             "size": "FILL/HUG",
+             "comp": "Select — Trigger / variant=single, size=default, state=filled",
+             "c": [
+              {
+               "n": "Frame",
+               "t": "FRAME",
+               "w": 76,
+               "h": 21,
+               "layout": "HORIZONTAL",
+               "gap": 2,
+               "pad": "0 0 0 0",
+               "align": "MIN/CENTER",
+               "size": "HUG/HUG",
+               "c": [
+                {
+                 "n": "label",
+                 "t": "TEXT",
+                 "w": 66,
+                 "h": 21,
+                 "size": "HUG/HUG",
+                 "fill": [
+                  "var:text/secondary"
+                 ],
+                 "text": "Catégorie",
+                 "fs": 14,
+                 "font": "Medium"
+                },
+                {
+                 "n": "asterisk",
+                 "t": "TEXT",
+                 "w": 8,
+                 "h": 21,
+                 "size": "HUG/HUG",
+                 "fill": [
+                  "var:danger/500"
+                 ],
+                 "text": "*",
+                 "fs": 14,
+                 "font": "Medium"
+                }
+               ]
+              },
+              {
+               "n": "field",
+               "t": "FRAME",
+               "w": 311,
+               "h": 44,
+               "layout": "HORIZONTAL",
+               "gap": 8,
+               "pad": "0 16 0 16",
+               "align": "MIN/CENTER",
+               "size": "FILL/FIXED",
+               "r": 10,
+               "fill": [
+                "var:surface/base"
+               ],
+               "stroke": [
+                "var:border/strong"
+               ],
+               "sw": 1,
+               "c": [
+                {
+                 "n": "value",
+                 "t": "TEXT",
+                 "w": 253,
+                 "h": 26,
+                 "size": "FILL/HUG",
+                 "fill": [
+                  "var:text/primary"
+                 ],
+                 "text": "Développement web & mobile",
+                 "fs": 16,
+                 "font": "Regular",
+                 "style": "Body"
+                },
+                {
+                 "n": "icon-chevron",
+                 "t": "FRAME",
+                 "w": 18,
+                 "h": 18,
+                 "size": "FIXED/FIXED",
+                 "c": [
+                  {
+                   "n": "Vector",
+                   "t": "VECTOR",
+                   "w": 9,
+                   "h": 5,
+                   "size": "FIXED/FIXED",
+                   "stroke": [
+                    "var:text/muted"
+                   ],
+                   "sw": 1.5
+                  }
+                 ]
+                }
+               ]
+              },
+              {
+               "n": "helperRow",
+               "t": "FRAME",
+               "w": 280,
+               "h": 16,
+               "layout": "HORIZONTAL",
+               "gap": 0,
+               "pad": "0 0 0 0",
+               "align": "SPACE_BETWEEN/CENTER",
+               "size": "FIXED/FIXED",
+               "c": [
+                {
+                 "n": "helper",
+                 "t": "TEXT",
+                 "w": 252,
+                 "h": 21,
+                 "size": "HUG/HUG",
+                 "fill": [
+                  "var:text/muted"
+                 ],
+                 "text": "Le domaine principal de votre service.",
+                 "fs": 14,
+                 "font": "Regular",
+                 "style": "Body Small"
+                },
+                {
+                 "n": "counter",
+                 "t": "TEXT",
+                 "w": 29,
+                 "h": 17,
+                 "hidden": true,
+                 "size": "FIXED/FIXED",
+                 "fill": [
+                  "var:text/muted"
+                 ],
+                 "text": "0/80",
+                 "fs": 12,
+                 "font": "Medium",
+                 "style": "Overline"
+                }
+               ]
+              }
+             ]
+            },
+            {
+             "n": "Select — Trigger",
+             "t": "INSTANCE",
+             "w": 311,
+             "h": 97,
+             "layout": "VERTICAL",
+             "gap": 8,
+             "pad": "0 0 0 0",
+             "align": "MIN/MIN",
+             "size": "FILL/HUG",
+             "comp": "Select — Trigger / variant=single, size=default, state=filled",
+             "c": [
+              {
+               "n": "Frame",
+               "t": "FRAME",
+               "w": 114,
+               "h": 21,
+               "layout": "HORIZONTAL",
+               "gap": 2,
+               "pad": "0 0 0 0",
+               "align": "MIN/CENTER",
+               "size": "HUG/HUG",
+               "c": [
+                {
+                 "n": "label",
+                 "t": "TEXT",
+                 "w": 104,
+                 "h": 21,
+                 "size": "HUG/HUG",
+                 "fill": [
+                  "var:text/secondary"
+                 ],
+                 "text": "Sous-catégorie",
+                 "fs": 14,
+                 "font": "Medium"
+                },
+                {
+                 "n": "asterisk",
+                 "t": "TEXT",
+                 "w": 8,
+                 "h": 21,
+                 "size": "HUG/HUG",
+                 "fill": [
+                  "var:danger/500"
+                 ],
+                 "text": "*",
+                 "fs": 14,
+                 "font": "Medium"
+                }
+               ]
+              },
+              {
+               "n": "field",
+               "t": "FRAME",
+               "w": 311,
+               "h": 44,
+               "layout": "HORIZONTAL",
+               "gap": 8,
+               "pad": "0 16 0 16",
+               "align": "MIN/CENTER",
+               "size": "FILL/FIXED",
+               "r": 10,
+               "fill": [
+                "var:surface/base"
+               ],
+               "stroke": [
+                "var:border/strong"
+               ],
+               "sw": 1,
+               "c": [
+                {
+                 "n": "value",
+                 "t": "TEXT",
+                 "w": 253,
+                 "h": 26,
+                 "size": "FILL/HUG",
+                 "fill": [
+                  "var:text/primary"
+                 ],
+                 "text": "E-commerce",
+                 "fs": 16,
+                 "font": "Regular",
+                 "style": "Body"
+                },
+                {
+                 "n": "icon-chevron",
+                 "t": "FRAME",
+                 "w": 18,
+                 "h": 18,
+                 "size": "FIXED/FIXED",
+                 "c": [
+                  {
+                   "n": "Vector",
+                   "t": "VECTOR",
+                   "w": 9,
+                   "h": 5,
+                   "size": "FIXED/FIXED",
+                   "stroke": [
+                    "var:text/muted"
+                   ],
+                   "sw": 1.5
+                  }
+                 ]
+                }
+               ]
+              },
+              {
+               "n": "helperRow",
+               "t": "FRAME",
+               "w": 280,
+               "h": 16,
+               "layout": "HORIZONTAL",
+               "gap": 0,
+               "pad": "0 0 0 0",
+               "align": "SPACE_BETWEEN/CENTER",
+               "size": "FIXED/FIXED",
+               "c": [
+                {
+                 "n": "helper",
+                 "t": "TEXT",
+                 "w": 142,
+                 "h": 21,
+                 "size": "HUG/HUG",
+                 "fill": [
+                  "var:text/muted"
+                 ],
+                 "text": "Affine votre domaine.",
+                 "fs": 14,
+                 "font": "Regular",
+                 "style": "Body Small"
+                },
+                {
+                 "n": "counter",
+                 "t": "TEXT",
+                 "w": 29,
+                 "h": 17,
+                 "hidden": true,
+                 "size": "FIXED/FIXED",
+                 "fill": [
+                  "var:text/muted"
+                 ],
+                 "text": "0/80",
+                 "fs": 12,
+                 "font": "Medium",
+                 "style": "Overline"
+                }
+               ]
+              }
+             ]
+            }
+           ]
+          },
+          {
+           "n": "field-competences",
+           "t": "FRAME",
+           "w": 311,
+           "h": 202,
+           "layout": "VERTICAL",
+           "gap": 8,
+           "pad": "0 0 0 0",
+           "align": "MIN/MIN",
+           "size": "FILL/HUG",
+           "c": [
+            {
+             "n": "Frame",
+             "t": "FRAME",
+             "w": 311,
+             "h": 26,
+             "layout": "HORIZONTAL",
+             "gap": 0,
+             "pad": "0 0 0 0",
+             "align": "SPACE_BETWEEN/CENTER",
+             "size": "FILL/HUG",
+             "c": [
+              {
+               "n": "Compétences *",
+               "t": "TEXT",
+               "w": 120,
+               "h": 26,
+               "size": "HUG/HUG",
+               "fill": [
+                "var:text/primary"
+               ],
+               "text": "Compétences *",
+               "fs": 16,
+               "font": "Medium"
+              },
+              {
+               "n": "4/5",
+               "t": "TEXT",
+               "w": 23,
+               "h": 21,
+               "size": "HUG/HUG",
+               "fill": [
+                "var:text/muted"
+               ],
+               "text": "4/5",
+               "fs": 14,
+               "font": "Regular",
+               "style": "Body Small"
+              }
+             ]
+            },
+            {
+             "n": "combo-input",
+             "t": "FRAME",
+             "w": 311,
+             "h": 44,
+             "layout": "HORIZONTAL",
+             "gap": 8,
+             "pad": "0 12 0 12",
+             "align": "MIN/CENTER",
+             "size": "FILL/FIXED",
+             "r": 10,
+             "fill": [
+              "var:surface/base"
+             ],
+             "stroke": [
+              "var:border/strong"
+             ],
+             "sw": 1,
+             "c": [
+              {
+               "n": "icon-search",
+               "t": "INSTANCE",
+               "w": 18,
+               "h": 18,
+               "size": "FIXED/FIXED",
+               "comp": "icon-search",
+               "c": [
+                {
+                 "n": "Vector",
+                 "t": "VECTOR",
+                 "w": 3,
+                 "h": 3,
+                 "size": "FIXED/FIXED",
+                 "stroke": [
+                  "var:text/muted"
+                 ],
+                 "sw": 2
+                },
+                {
+                 "n": "Vector",
+                 "t": "VECTOR",
+                 "w": 12,
+                 "h": 12,
+                 "size": "FIXED/FIXED",
+                 "stroke": [
+                  "var:text/muted"
+                 ],
+                 "sw": 2
+                }
+               ]
+              },
+              {
+               "n": "Ajouter une compétence…",
+               "t": "TEXT",
+               "w": 261,
+               "h": 26,
+               "size": "FILL/HUG",
+               "fill": [
+                "var:text/muted"
+               ],
+               "text": "Ajouter une compétence…",
+               "fs": 16,
+               "font": "Regular",
+               "style": "Body"
+              }
+             ]
+            },
+            {
+             "n": "chips",
+             "t": "FRAME",
+             "w": 311,
+             "h": 66,
+             "layout": "HORIZONTAL",
+             "gap": 8,
+             "pad": "0 0 0 0",
+             "align": "MIN/MIN",
+             "size": "FILL/HUG",
+             "c": [
+              {
+               "n": "Badge",
+               "t": "INSTANCE",
+               "w": 77,
+               "h": 29,
+               "layout": "HORIZONTAL",
+               "gap": 4,
+               "pad": "4 8 4 12",
+               "align": "CENTER/CENTER",
+               "size": "HUG/HUG",
+               "r": 9999,
+               "fill": [
+                "var:blue/50"
+               ],
+               "comp": "Badge / kind=dismissible",
+               "c": [
+                {
+                 "n": "Label",
+                 "t": "TEXT",
+                 "w": 39,
+                 "h": 21,
+                 "size": "HUG/HUG",
+                 "fill": [
+                  "var:blue/600"
+                 ],
+                 "text": "React",
+                 "fs": 14,
+                 "font": "Medium"
+                },
+                {
+                 "n": "icon",
+                 "t": "FRAME",
+                 "w": 14,
+                 "h": 14,
+                 "size": "FIXED/FIXED",
+                 "c": [
+                  {
+                   "n": "Vector",
+                   "t": "VECTOR",
+                   "w": 7,
+                   "h": 7,
+                   "size": "FIXED/FIXED",
+                   "stroke": [
+                    "var:text/muted"
+                   ],
+                   "sw": 1.1666666269302368
+                  },
+                  {
+                   "n": "Vector",
+                   "t": "VECTOR",
+                   "w": 7,
+                   "h": 7,
+                   "size": "FIXED/FIXED",
+                   "stroke": [
+                    "var:text/muted"
+                   ],
+                   "sw": 1.1666666269302368
+                  }
+                 ]
+                }
+               ]
+              },
+              {
+               "n": "Badge",
+               "t": "INSTANCE",
+               "w": 85,
+               "h": 29,
+               "layout": "HORIZONTAL",
+               "gap": 4,
+               "pad": "4 8 4 12",
+               "align": "CENTER/CENTER",
+               "size": "HUG/HUG",
+               "r": 9999,
+               "fill": [
+                "var:blue/50"
+               ],
+               "comp": "Badge / kind=dismissible",
+               "c": [
+                {
+                 "n": "Label",
+                 "t": "TEXT",
+                 "w": 47,
+                 "h": 21,
+                 "size": "HUG/HUG",
+                 "fill": [
+                  "var:blue/600"
+                 ],
+                 "text": "Next.js",
+                 "fs": 14,
+                 "font": "Medium"
+                },
+                {
+                 "n": "icon",
+                 "t": "FRAME",
+                 "w": 14,
+                 "h": 14,
+                 "size": "FIXED/FIXED",
+                 "c": [
+                  {
+                   "n": "Vector",
+                   "t": "VECTOR",
+                   "w": 7,
+                   "h": 7,
+                   "size": "FIXED/FIXED",
+                   "stroke": [
+                    "var:text/muted"
+                   ],
+                   "sw": 1.1666666269302368
+                  },
+                  {
+                   "n": "Vector",
+                   "t": "VECTOR",
+                   "w": 7,
+                   "h": 7,
+                   "size": "FIXED/FIXED",
+                   "stroke": [
+                    "var:text/muted"
+                   ],
+                   "sw": 1.1666666269302368
+                  }
+                 ]
+                }
+               ]
+              },
+              {
+               "n": "Badge",
+               "t": "INSTANCE",
+               "w": 105,
+               "h": 29,
+               "layout": "HORIZONTAL",
+               "gap": 4,
+               "pad": "4 8 4 12",
+               "align": "CENTER/CENTER",
+               "size": "HUG/HUG",
+               "r": 9999,
+               "fill": [
+                "var:blue/50"
+               ],
+               "comp": "Badge / kind=dismissible",
+               "c": [
+                {
+                 "n": "Label",
+                 "t": "TEXT",
+                 "w": 67,
+                 "h": 21,
+                 "size": "HUG/HUG",
+                 "fill": [
+                  "var:blue/600"
+                 ],
+                 "text": "Supabase",
+                 "fs": 14,
+                 "font": "Medium"
+                },
+                {
+                 "n": "icon",
+                 "t": "FRAME",
+                 "w": 14,
+                 "h": 14,
+                 "size": "FIXED/FIXED",
+                 "c": [
+                  {
+                   "n": "Vector",
+                   "t": "VECTOR",
+                   "w": 7,
+                   "h": 7,
+                   "size": "FIXED/FIXED",
+                   "stroke": [
+                    "var:text/muted"
+                   ],
+                   "sw": 1.1666666269302368
+                  },
+                  {
+                   "n": "Vector",
+                   "t": "VECTOR",
+                   "w": 7,
+                   "h": 7,
+                   "size": "FIXED/FIXED",
+                   "stroke": [
+                    "var:text/muted"
+                   ],
+                   "sw": 1.1666666269302368
+                  }
+                 ]
+                }
+               ]
+              },
+              {
+               "n": "Badge",
+               "t": "INSTANCE",
+               "w": 124,
+               "h": 29,
+               "layout": "HORIZONTAL",
+               "gap": 4,
+               "pad": "4 8 4 12",
+               "align": "CENTER/CENTER",
+               "size": "HUG/HUG",
+               "r": 9999,
+               "fill": [
+                "var:blue/50"
+               ],
+               "comp": "Badge / kind=dismissible",
+               "c": [
+                {
+                 "n": "Label",
+                 "t": "TEXT",
+                 "w": 86,
+                 "h": 21,
+                 "size": "HUG/HUG",
+                 "fill": [
+                  "var:blue/600"
+                 ],
+                 "text": "E-commerce",
+                 "fs": 14,
+                 "font": "Medium"
+                },
+                {
+                 "n": "icon",
+                 "t": "FRAME",
+                 "w": 14,
+                 "h": 14,
+                 "size": "FIXED/FIXED",
+                 "c": [
+                  {
+                   "n": "Vector",
+                   "t": "VECTOR",
+                   "w": 7,
+                   "h": 7,
+                   "size": "FIXED/FIXED",
+                   "stroke": [
+                    "var:text/muted"
+                   ],
+                   "sw": 1.1666666269302368
+                  },
+                  {
+                   "n": "Vector",
+                   "t": "VECTOR",
+                   "w": 7,
+                   "h": 7,
+                   "size": "FIXED/FIXED",
+                   "stroke": [
+                    "var:text/muted"
+                   ],
+                   "sw": 1.1666666269302368
+                  }
+                 ]
+                }
+               ]
+              }
+             ]
+            },
+            {
+             "n": "Jusqu'à 5. Elles aident les clients à vous trouver.",
+             "t": "TEXT",
+             "w": 311,
+             "h": 42,
+             "size": "FILL/HUG",
+             "fill": [
+              "var:text/secondary"
+             ],
+             "text": "Jusqu'à 5. Elles aident les clients à vous trouver.",
+             "fs": 14,
+             "font": "Regular",
+             "style": "Body Small"
+            }
+           ]
+          },
+          {
+           "n": "Input",
+           "t": "INSTANCE",
+           "w": 311,
+           "h": 97,
+           "layout": "VERTICAL",
+           "gap": 8,
+           "pad": "0 0 0 0",
+           "align": "MIN/MIN",
+           "size": "FILL/HUG",
+           "comp": "Input / variant=text, state=filled",
+           "c": [
+            {
+             "n": "Frame",
+             "t": "FRAME",
+             "w": 135,
+             "h": 21,
+             "layout": "HORIZONTAL",
+             "gap": 2,
+             "pad": "0 0 0 0",
+             "align": "MIN/CENTER",
+             "size": "HUG/HUG",
+             "c": [
+              {
+               "n": "label",
+               "t": "TEXT",
+               "w": 125,
+               "h": 21,
+               "size": "HUG/HUG",
+               "fill": [
+                "var:text/secondary"
+               ],
+               "text": "Description courte",
+               "fs": 14,
+               "font": "Medium"
+              },
+              {
+               "n": "asterisk",
+               "t": "TEXT",
+               "w": 8,
+               "h": 21,
+               "size": "HUG/HUG",
+               "fill": [
+                "var:danger/500"
+               ],
+               "text": "*",
+               "fs": 14,
+               "font": "Medium"
+              }
+             ]
+            },
+            {
+             "n": "field",
+             "t": "FRAME",
+             "w": 311,
+             "h": 44,
+             "layout": "HORIZONTAL",
+             "gap": 8,
+             "pad": "0 16 0 16",
+             "align": "MIN/CENTER",
+             "size": "FILL/FIXED",
+             "r": 10,
+             "fill": [
+              "var:surface/base"
+             ],
+             "stroke": [
+              "var:border/strong"
+             ],
+             "sw": 1,
+             "c": [
+              {
+               "n": "value",
+               "t": "TEXT",
+               "w": 279,
+               "h": 78,
+               "size": "FILL/HUG",
+               "fill": [
+                "var:text/primary"
+               ],
+               "text": "Boutique e-commerce complète avec paiement à la livraison, prête en 7 jours.",
+               "fs": 16,
+               "font": "Regular",
+               "style": "Body"
+              }
+             ]
+            },
+            {
+             "n": "helperRow",
+             "t": "FRAME",
+             "w": 311,
+             "h": 16,
+             "layout": "HORIZONTAL",
+             "gap": 0,
+             "pad": "0 0 0 0",
+             "align": "SPACE_BETWEEN/CENTER",
+             "size": "FILL/FIXED",
+             "c": [
+              {
+               "n": "helper",
+               "t": "TEXT",
+               "w": 367,
+               "h": 21,
+               "size": "HUG/HUG",
+               "fill": [
+                "var:text/muted"
+               ],
+               "text": "Le résumé qui apparaît dans les résultats de recherche.",
+               "fs": 14,
+               "font": "Regular",
+               "style": "Body Small"
+              },
+              {
+               "n": "counter",
+               "t": "TEXT",
+               "w": 44,
+               "h": 17,
+               "size": "HUG/HUG",
+               "fill": [
+                "var:text/muted"
+               ],
+               "text": "88/160",
+               "fs": 12,
+               "font": "Medium",
+               "style": "Overline"
+              }
+             ]
+            }
+           ]
+          },
+          {
+           "n": "Textarea",
+           "t": "INSTANCE",
+           "w": 311,
+           "h": 259,
+           "layout": "VERTICAL",
+           "gap": 8,
+           "pad": "0 0 0 0",
+           "align": "MIN/MIN",
+           "size": "FILL/HUG",
+           "comp": "Textarea / state=filled",
+           "c": [
+            {
+             "n": "Frame",
+             "t": "FRAME",
+             "w": 148,
+             "h": 21,
+             "layout": "HORIZONTAL",
+             "gap": 2,
+             "pad": "0 0 0 0",
+             "align": "MIN/CENTER",
+             "size": "HUG/HUG",
+             "c": [
+              {
+               "n": "label",
+               "t": "TEXT",
+               "w": 138,
+               "h": 21,
+               "size": "HUG/HUG",
+               "fill": [
+                "var:text/secondary"
+               ],
+               "text": "Description détaillée",
+               "fs": 14,
+               "font": "Medium"
+              },
+              {
+               "n": "asterisk",
+               "t": "TEXT",
+               "w": 8,
+               "h": 21,
+               "size": "HUG/HUG",
+               "fill": [
+                "var:danger/500"
+               ],
+               "text": "*",
+               "fs": 14,
+               "font": "Medium"
+              }
+             ]
+            },
+            {
+             "n": "field",
+             "t": "FRAME",
+             "w": 311,
+             "h": 206,
+             "layout": "HORIZONTAL",
+             "gap": 8,
+             "pad": "12 16 12 16",
+             "align": "MIN/MIN",
+             "size": "FILL/HUG",
+             "r": 10,
+             "fill": [
+              "var:surface/base"
+             ],
+             "stroke": [
+              "var:border/strong"
+             ],
+             "sw": 1,
+             "c": [
+              {
+               "n": "value",
+               "t": "TEXT",
+               "w": 279,
+               "h": 182,
+               "size": "FILL/HUG",
+               "fill": [
+                "var:text/primary"
+               ],
+               "text": "Je crée votre boutique en ligne de A à Z : catalogue produits, panier, paiement à la livraison, et intégration WhatsApp pour les commandes. Livraison en 7 à 10 jours, avec une formation pour gérer vos",
+               "fs": 16,
+               "font": "Regular",
+               "style": "Body"
+              },
+              {
+               "n": "resize-grip",
+               "t": "FRAME",
+               "w": 12,
+               "h": 12,
+               "size": "FIXED/FIXED",
+               "c": [
+                {
+                 "n": "Vector",
+                 "t": "VECTOR",
+                 "w": 7,
+                 "h": 7,
+                 "size": "FIXED/FIXED",
+                 "stroke": [
+                  "var:border/strong"
+                 ],
+                 "sw": 1.25
+                },
+                {
+                 "n": "Vector",
+                 "t": "VECTOR",
+                 "w": 3,
+                 "h": 3,
+                 "size": "FIXED/FIXED",
+                 "stroke": [
+                  "var:border/strong"
+                 ],
+                 "sw": 1.25
+                }
+               ]
+              }
+             ]
+            },
+            {
+             "n": "helperRow",
+             "t": "FRAME",
+             "w": 311,
+             "h": 16,
+             "layout": "HORIZONTAL",
+             "gap": 0,
+             "pad": "0 0 0 0",
+             "align": "SPACE_BETWEEN/CENTER",
+             "size": "FILL/FIXED",
+             "c": [
+              {
+               "n": "helper",
+               "t": "TEXT",
+               "w": 399,
+               "h": 21,
+               "size": "HUG/HUG",
+               "fill": [
+                "var:text/muted"
+               ],
+               "text": "Minimum 100 caractères. C'est votre argumentaire de vente.",
+               "fs": 14,
+               "font": "Regular",
+               "style": "Body Small"
+              },
+              {
+               "n": "counter",
+               "t": "TEXT",
+               "w": 62,
+               "h": 17,
+               "size": "HUG/HUG",
+               "fill": [
+                "var:text/muted"
+               ],
+               "text": "340/2000",
+               "fs": 12,
+               "font": "Medium",
+               "style": "Overline"
+              }
+             ]
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "n": "section-Tarif & délai",
+       "t": "FRAME",
+       "w": 343,
+       "h": 66,
+       "layout": "VERTICAL",
+       "gap": 0,
+       "pad": "0 0 0 0",
+       "align": "MIN/MIN",
+       "size": "FILL/HUG",
+       "r": 12,
+       "fill": [
+        "var:surface/base"
+       ],
+       "stroke": [
+        "var:border/subtle"
+       ],
+       "sw": 1,
+       "c": [
+        {
+         "n": "header",
+         "t": "FRAME",
+         "w": 343,
+         "h": 66,
+         "layout": "HORIZONTAL",
+         "gap": 0,
+         "pad": "20 16 20 16",
+         "align": "SPACE_BETWEEN/CENTER",
+         "size": "FILL/HUG",
+         "c": [
+          {
+           "n": "lhs",
+           "t": "FRAME",
+           "w": 175,
+           "h": 26,
+           "layout": "HORIZONTAL",
+           "gap": 12,
+           "pad": "0 0 0 0",
+           "align": "MIN/CENTER",
+           "size": "HUG/HUG",
+           "c": [
+            {
+             "n": "Tarif & délai",
+             "t": "TEXT",
+             "w": 91,
+             "h": 26,
+             "size": "HUG/HUG",
+             "fill": [
+              "var:text/primary"
+             ],
+             "text": "Tarif & délai",
+             "fs": 16,
+             "font": "Semi Bold"
+            },
+            {
+             "n": "pill",
+             "t": "FRAME",
+             "w": 72,
+             "h": 21,
+             "layout": "HORIZONTAL",
+             "gap": 0,
+             "pad": "2 8 2 8",
+             "align": "MIN/CENTER",
+             "size": "HUG/HUG",
+             "r": 9999,
+             "fill": [
+              "var:success/100"
+             ],
+             "c": [
+              {
+               "n": "Complété",
+               "t": "TEXT",
+               "w": 56,
+               "h": 17,
+               "size": "HUG/HUG",
+               "fill": [
+                "var:success/500"
+               ],
+               "text": "Complété",
+               "fs": 12,
+               "font": "Medium",
+               "style": "Caption"
+              }
+             ]
+            }
+           ]
+          },
+          {
+           "n": "icon-chevron-down",
+           "t": "INSTANCE",
+           "w": 20,
+           "h": 20,
+           "size": "FIXED/FIXED",
+           "comp": "icon-chevron-down",
+           "c": [
+            {
+             "n": "Vector",
+             "t": "VECTOR",
+             "w": 10,
+             "h": 5,
+             "size": "FIXED/FIXED",
+             "stroke": [
+              "var:text/muted"
+             ],
+             "sw": 2
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "n": "section-Prestation",
+       "t": "FRAME",
+       "w": 343,
+       "h": 219,
+       "layout": "VERTICAL",
+       "gap": 0,
+       "pad": "0 0 0 0",
+       "align": "MIN/MIN",
+       "size": "FILL/HUG",
+       "r": 12,
+       "fill": [
+        "var:surface/base"
+       ],
+       "stroke": [
+        "var:border/subtle"
+       ],
+       "sw": 1,
+       "c": [
+        {
+         "n": "header",
+         "t": "FRAME",
+         "w": 343,
+         "h": 66,
+         "layout": "HORIZONTAL",
+         "gap": 0,
+         "pad": "20 16 20 16",
+         "align": "SPACE_BETWEEN/CENTER",
+         "size": "FILL/HUG",
+         "c": [
+          {
+           "n": "lhs",
+           "t": "FRAME",
+           "w": 164,
+           "h": 26,
+           "layout": "HORIZONTAL",
+           "gap": 12,
+           "pad": "0 0 0 0",
+           "align": "MIN/CENTER",
+           "size": "HUG/HUG",
+           "c": [
+            {
+             "n": "Prestation",
+             "t": "TEXT",
+             "w": 80,
+             "h": 26,
+             "size": "HUG/HUG",
+             "fill": [
+              "var:text/primary"
+             ],
+             "text": "Prestation",
+             "fs": 16,
+             "font": "Semi Bold"
+            },
+            {
+             "n": "pill",
+             "t": "FRAME",
+             "w": 72,
+             "h": 21,
+             "layout": "HORIZONTAL",
+             "gap": 0,
+             "pad": "2 8 2 8",
+             "align": "MIN/CENTER",
+             "size": "HUG/HUG",
+             "r": 9999,
+             "fill": [
+              "var:success/100"
+             ],
+             "c": [
+              {
+               "n": "Complété",
+               "t": "TEXT",
+               "w": 56,
+               "h": 17,
+               "size": "HUG/HUG",
+               "fill": [
+                "var:success/500"
+               ],
+               "text": "Complété",
+               "fs": 12,
+               "font": "Medium",
+               "style": "Caption"
+              }
+             ]
+            }
+           ]
+          },
+          {
+           "n": "icon-chevron-down",
+           "t": "INSTANCE",
+           "w": 20,
+           "h": 20,
+           "size": "FIXED/FIXED",
+           "comp": "icon-chevron-down",
+           "c": [
+            {
+             "n": "Vector",
+             "t": "VECTOR",
+             "w": 10,
+             "h": 5,
+             "size": "FIXED/FIXED",
+             "stroke": [
+              "var:text/muted"
+             ],
+             "sw": 2
+            }
+           ]
+          }
+         ]
+        },
+        {
+         "n": "body",
+         "t": "FRAME",
+         "w": 343,
+         "h": 153,
+         "layout": "VERTICAL",
+         "gap": 20,
+         "pad": "0 16 24 16",
+         "align": "MIN/MIN",
+         "size": "FILL/HUG",
+         "r": 12,
+         "stroke": [
+          "var:border/subtle"
+         ],
+         "sw": 1,
+         "c": [
+          {
+           "n": "Textarea",
+           "t": "INSTANCE",
+           "w": 311,
+           "h": 129,
+           "layout": "VERTICAL",
+           "gap": 8,
+           "pad": "0 0 0 0",
+           "align": "MIN/MIN",
+           "size": "FILL/HUG",
+           "comp": "Textarea / state=default",
+           "c": [
+            {
+             "n": "Frame",
+             "t": "FRAME",
+             "w": 121,
+             "h": 21,
+             "layout": "HORIZONTAL",
+             "gap": 2,
+             "pad": "0 0 0 0",
+             "align": "MIN/CENTER",
+             "size": "HUG/HUG",
+             "c": [
+              {
+               "n": "label",
+               "t": "TEXT",
+               "w": 111,
+               "h": 21,
+               "size": "HUG/HUG",
+               "fill": [
+                "var:text/secondary"
+               ],
+               "text": "Ce qui est inclus",
+               "fs": 14,
+               "font": "Medium"
+              },
+              {
+               "n": "asterisk",
+               "t": "TEXT",
+               "w": 8,
+               "h": 21,
+               "size": "HUG/HUG",
+               "fill": [
+                "var:danger/500"
+               ],
+               "text": "*",
+               "fs": 14,
+               "font": "Medium"
+              }
+             ]
+            },
+            {
+             "n": "field",
+             "t": "FRAME",
+             "w": 311,
+             "h": 76,
+             "layout": "HORIZONTAL",
+             "gap": 8,
+             "pad": "12 16 12 16",
+             "align": "MIN/MIN",
+             "size": "FILL/HUG",
+             "r": 10,
+             "fill": [
+              "var:surface/base"
+             ],
+             "stroke": [
+              "var:border/strong"
+             ],
+             "sw": 1,
+             "c": [
+              {
+               "n": "value",
+               "t": "TEXT",
+               "w": 279,
+               "h": 52,
+               "size": "FILL/HUG",
+               "fill": [
+                "var:text/muted"
+               ],
+               "text": "Ex: Design UI iOS/Android · 3 écrans · 1 révision · Fichiers sources",
+               "fs": 16,
+               "font": "Regular",
+               "style": "Body"
+              },
+              {
+               "n": "resize-grip",
+               "t": "FRAME",
+               "w": 12,
+               "h": 12,
+               "size": "FIXED/FIXED",
+               "c": [
+                {
+                 "n": "Vector",
+                 "t": "VECTOR",
+                 "w": 7,
+                 "h": 7,
+                 "size": "FIXED/FIXED",
+                 "stroke": [
+                  "var:border/strong"
+                 ],
+                 "sw": 1.25
+                },
+                {
+                 "n": "Vector",
+                 "t": "VECTOR",
+                 "w": 3,
+                 "h": 3,
+                 "size": "FIXED/FIXED",
+                 "stroke": [
+                  "var:border/strong"
+                 ],
+                 "sw": 1.25
+                }
+               ]
+              }
+             ]
+            },
+            {
+             "n": "helperRow",
+             "t": "FRAME",
+             "w": 311,
+             "h": 16,
+             "layout": "HORIZONTAL",
+             "gap": 0,
+             "pad": "0 0 0 0",
+             "align": "SPACE_BETWEEN/CENTER",
+             "size": "FILL/FIXED",
+             "c": [
+              {
+               "n": "helper",
+               "t": "TEXT",
+               "w": 324,
+               "h": 21,
+               "size": "HUG/HUG",
+               "fill": [
+                "var:text/muted"
+               ],
+               "text": "Une ligne par élément. Ex: Design UI iOS/Android",
+               "fs": 14,
+               "font": "Regular",
+               "style": "Body Small"
+              },
+              {
+               "n": "counter",
+               "t": "TEXT",
+               "w": 38,
+               "h": 17,
+               "hidden": true,
+               "size": "FIXED/FIXED",
+               "fill": [
+                "var:text/muted"
+               ],
+               "text": "0/500",
+               "fs": 12,
+               "font": "Medium",
+               "style": "Overline"
+              }
+             ]
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "n": "section-Statut & visibilité",
+       "t": "FRAME",
+       "w": 343,
+       "h": 66,
+       "layout": "VERTICAL",
+       "gap": 0,
+       "pad": "0 0 0 0",
+       "align": "MIN/MIN",
+       "size": "FILL/HUG",
+       "r": 12,
+       "fill": [
+        "var:surface/base"
+       ],
+       "stroke": [
+        "var:border/subtle"
+       ],
+       "sw": 1,
+       "c": [
+        {
+         "n": "header",
+         "t": "FRAME",
+         "w": 343,
+         "h": 66,
+         "layout": "HORIZONTAL",
+         "gap": 0,
+         "pad": "20 16 20 16",
+         "align": "SPACE_BETWEEN/CENTER",
+         "size": "FILL/HUG",
+         "c": [
+          {
+           "n": "lhs",
+           "t": "FRAME",
+           "w": 131,
+           "h": 26,
+           "layout": "HORIZONTAL",
+           "gap": 12,
+           "pad": "0 0 0 0",
+           "align": "MIN/CENTER",
+           "size": "HUG/HUG",
+           "c": [
+            {
+             "n": "Statut & visibilité",
+             "t": "TEXT",
+             "w": 131,
+             "h": 26,
+             "size": "HUG/HUG",
+             "fill": [
+              "var:text/primary"
+             ],
+             "text": "Statut & visibilité",
+             "fs": 16,
+             "font": "Semi Bold"
+            }
+           ]
+          },
+          {
+           "n": "icon-chevron-down",
+           "t": "INSTANCE",
+           "w": 20,
+           "h": 20,
+           "size": "FIXED/FIXED",
+           "comp": "icon-chevron-down",
+           "c": [
+            {
+             "n": "Vector",
+             "t": "VECTOR",
+             "w": 10,
+             "h": 5,
+             "size": "FIXED/FIXED",
+             "stroke": [
+              "var:text/muted"
+             ],
+             "sw": 2
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

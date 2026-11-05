@@ -52,14 +52,15 @@ export function DevenirFreelanceContent({ isAuthenticated }: { isAuthenticated: 
     // the frame's own column is measured at exactly 720px, the same width as the parent page's
     // already-shipped, already-overflow-tested wrapper, so reusing it isn't a new value.
     <div className="mx-auto max-w-[720px] px-4 py-10 sm:px-6 lg:px-0">
+      {/* Below lg (m375-h1-devenir-freelance): the eyebrow is plain blue caps (no pill), H1 32 Bold at every width below lg (max-lg:md: beats md:text-5xl on tablets), the subline secondary, icons 20. */}
       <section className="text-center">
-        <span className="mb-4 inline-block rounded-full bg-brand-blue-600/10 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-brand-blue-600">
+        <span className="mb-4 inline-block rounded-full bg-brand-blue-600/10 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-brand-blue-600 max-lg:bg-transparent max-lg:px-0 max-lg:py-0">
           {k('hero.eyebrow')}
         </span>
-        <h1 className="mb-4 text-4xl font-bold leading-tight text-text-primary md:text-5xl">
+        <h1 className="mb-4 text-4xl font-bold leading-tight text-text-primary max-lg:text-[32px] max-lg:leading-[38px] md:text-5xl max-lg:md:text-[32px]">
           {k('hero.headline')}
         </h1>
-        <p className="mx-auto mb-8 max-w-2xl text-lg leading-relaxed text-text-muted">
+        <p className="mx-auto mb-8 max-w-2xl text-lg leading-relaxed text-text-muted max-lg:text-text-secondary">
           {k('hero.subheadline')}
         </p>
         <div className="flex flex-wrap justify-center gap-3">
@@ -84,10 +85,11 @@ export function DevenirFreelanceContent({ isAuthenticated }: { isAuthenticated: 
       <div className="mt-8">
         <BenefitGrid
           columns={3}
+          mobileLook="outline"
           benefits={[
-            { icon: <Search className="h-6 w-6" aria-hidden="true" />, title: k('card1.title'), description: k('card1.desc') },
-            { icon: <Wallet className="h-6 w-6" aria-hidden="true" />, title: k('card2.title'), description: k('card2.desc') },
-            { icon: <TrendingUp className="h-6 w-6" aria-hidden="true" />, title: k('card3.title'), description: k('card3.desc') },
+            { icon: <Search className="h-6 w-6 max-lg:h-5 max-lg:w-5" aria-hidden="true" />, title: k('card1.title'), description: k('card1.desc') },
+            { icon: <Wallet className="h-6 w-6 max-lg:h-5 max-lg:w-5" aria-hidden="true" />, title: k('card2.title'), description: k('card2.desc') },
+            { icon: <TrendingUp className="h-6 w-6 max-lg:h-5 max-lg:w-5" aria-hidden="true" />, title: k('card3.title'), description: k('card3.desc') },
           ]}
         />
       </div>
