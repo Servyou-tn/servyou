@@ -128,7 +128,7 @@ export function ProposalForm({ jobPostId, clientFirstName, budgetMin, budgetMax,
         e.preventDefault()
         if (!locked) submit()
       }}
-      className="flex flex-col gap-5 rounded-xl border border-border-subtle bg-surface-base p-6"
+      className="flex flex-col gap-5 rounded-xl border border-border-subtle bg-surface-base p-6 max-lg:px-4"
     >
       {failure ? <FailureNotice reason={failure} onRetry={submit} retrying={pending} /> : null}
 

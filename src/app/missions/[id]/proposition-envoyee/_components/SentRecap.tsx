@@ -23,7 +23,7 @@ function Label({ children }: { children: React.ReactNode }) {
 export function SentRecap({ sent, lang }: { sent: SentProposal; lang: Lang }) {
   const hasTerms = sent.price != null || sent.timeframe
   return (
-    <section className="flex w-full flex-col gap-4 rounded-xl border border-border-subtle bg-surface-base p-6">
+    <section className="flex w-full flex-col gap-4 rounded-xl border border-border-subtle bg-surface-base p-6 max-lg:px-4">
       <h2 className="text-caption font-semibold text-text-muted uppercase">{t('proposal.sent.recap', lang)}</h2>
 
       {sent.mission ? (
