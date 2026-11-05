@@ -29,5 +29,5 @@ Controls: tsc · eslint · desktop sentinel 1440 FR + AR on H1 (max-lg only): id
 
 ## Founder answers (2026-11-05, after #324)
 
-1. H7 stays the aligned 5-step wizard. The collapsible edit-page redesign is logged for after the beta, not now.
+1. H7 stays the aligned 5-step wizard. The collapsible edit-page redesign is logged for after the beta, not now (`docs/follow-ups/h7-service-edit-accordion-redesign.md`).
 2. The age check stays upstream on /devenir-vendeur — no change to H1.
