@@ -60,12 +60,13 @@ export function SocialLinksSection({
     >
       <summary
         className={cn(
-          'flex cursor-pointer gap-3 rounded-card px-4 py-5 max-sm:flex-col sm:items-center sm:justify-between sm:px-6',
+          // 375 (m375-g3-boutique-modifier): pad 20 / 16 with the stroke inside; the pill and the chevron 12 apart, start-packed.
+          'flex cursor-pointer gap-3 rounded-card px-4 py-5 max-sm:flex-col max-sm:px-[15px] max-sm:py-[19px] sm:items-center sm:justify-between sm:px-6',
           FOCUS_RING,
         )}
       >
         <span className="text-h3 leading-[26px] text-text-primary">{t('shop.edit.social.title', lang)}</span>
-        <span className="flex shrink-0 items-center gap-3 max-sm:justify-between">
+        <span className="flex shrink-0 items-center gap-3">
           <StatusPill status={complete ? 'complete' : 'optional'}>
             {t(complete ? 'shop.edit.social.badge_complete' : 'boutique.config.badge_optional', lang)}
           </StatusPill>
@@ -73,7 +74,7 @@ export function SocialLinksSection({
         </span>
       </summary>
 
-      <div className="flex flex-col gap-4 px-4 pt-1 pb-6 sm:px-6">
+      <div className="flex flex-col gap-4 px-4 pt-1 pb-6 max-sm:px-[15px] sm:px-6">
         <p className="text-body-sm text-text-secondary">{t('shop.edit.social.intro', lang)}</p>
         {SHOP_SOCIAL_PLATFORMS.map((platform) => {
           const id = `shop-${SHOP_SOCIAL_COLUMNS[platform]}`
