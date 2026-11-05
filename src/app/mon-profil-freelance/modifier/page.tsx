@@ -64,10 +64,10 @@ export default async function ModifierProfilPage({ searchParams }: { searchParam
   return (
     <AppShell user={topBarUser}>
       <div className="flex flex-col gap-2">
-        <nav aria-label="Fil d'Ariane" className="text-sm text-text-muted">
+        <nav aria-label="Fil d'Ariane" className="text-sm text-text-muted max-lg:font-medium">
           {t('freelance.edit.breadcrumb', lang)}
         </nav>
-        <h1 className="text-h1 text-text-primary">{t('freelance.edit.page_title', lang)}</h1>
+        <h1 className="text-h1 text-text-primary max-lg:leading-[38px]">{t('freelance.edit.page_title', lang)}</h1>
         <p className="text-body-sm text-text-secondary">{t('freelance.edit.page_subtitle', lang)}</p>
       </div>
 

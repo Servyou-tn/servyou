@@ -48,7 +48,7 @@ export function AccordionSection({
       className="group scroll-mt-36 rounded-card border border-border-subtle bg-surface-base [&_summary::-webkit-details-marker]:hidden"
     >
       <summary className={cn('flex cursor-pointer items-center justify-between gap-3 rounded-card px-4 py-5 sm:px-6', FOCUS_RING)}>
-        <span className="text-base font-semibold text-text-primary">{title}</span>
+        <span className="text-base font-semibold text-text-primary max-lg:text-[20px] max-lg:leading-[26px]">{title}</span>
         <span className="flex shrink-0 items-center gap-3">
           <StatusPill status={complete ? 'complete' : 'optional'}>
             {t(complete ? 'freelance.edit.badge_complete' : 'freelance.edit.badge_empty', lang)}
@@ -56,7 +56,7 @@ export function AccordionSection({
           <ChevronDown aria-hidden="true" className="h-5 w-5 text-text-muted transition-transform group-open:rotate-180" />
         </span>
       </summary>
-      <div className="flex flex-col gap-5 border-t border-border-subtle p-4 sm:p-6">{children}</div>
+      <div className="flex flex-col gap-5 border-t border-border-subtle p-4 max-sm:border-t-0 max-sm:pt-1 max-sm:pb-6 sm:p-6">{children}</div>
     </details>
   )
 }

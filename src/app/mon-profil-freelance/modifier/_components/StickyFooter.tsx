@@ -32,7 +32,7 @@ export function StickyFooter({
   onPublish: () => void
 }) {
   return (
-    <div className="sticky bottom-[var(--cookie-banner-h,0px)] z-10 flex flex-col gap-3 border-t border-border-subtle bg-surface-base px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+    <div className="sticky bottom-[var(--cookie-banner-h,0px)] z-10 flex flex-col gap-3 border-t border-border-subtle bg-surface-base px-4 py-4 max-sm:py-5 sm:flex-row sm:items-center sm:justify-between sm:px-6">
       <div className="flex items-center gap-2 text-sm">
         <span
           aria-hidden="true"
@@ -43,7 +43,7 @@ export function StickyFooter({
         </span>
       </div>
 
-      <div className="flex flex-wrap items-center justify-end gap-3">
+      <div className="flex flex-wrap items-center justify-end gap-3 max-sm:justify-start">
         {/* Button never renders anything but a real <button> (no asChild) — a plain <a> styled to
             match its own 'link' variant classes (text-brand-blue-600, hover:underline) is the
             correct way to get a navigating, button-shaped link here. */}
