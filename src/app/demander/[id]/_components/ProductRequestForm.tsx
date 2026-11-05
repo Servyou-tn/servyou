@@ -40,9 +40,10 @@ import {
 //      prop-drilling `quantity` back down through a server boundary, which doesn't exist here.
 //
 // Layout: `xl:grid xl:grid-cols-[minmax(0,724px)_380px] xl:items-start xl:gap-8` — see
-// ProductRequestScreen.tsx for the breakpoint arithmetic. Below `xl:`, single column with the
-// order summary FIRST in the DOM (col-start-2/row-start-1 at xl:), form fields second — the exact
-// reorder trick E1-service already proved (col-start/row-start), just at a different breakpoint.
+// ProductRequestScreen.tsx for the breakpoint arithmetic. Below `xl:`, single column: the form fields, then the
+// order summary (DOM order, as the 375 frame m375-e1-produit draws it); `lg:max-xl:order-first` lifts the summary
+// above the form from lg to xl, and xl places it with col-start-2/row-start-1 — the reorder trick E1-service
+// already proved (col-start/row-start), just at a different breakpoint.
 //
 // ⚑ NO SEPARATE "Annuler" BUTTON. The measured frame lists no cancel/secondary control in either
 // column — E1-service's footer row (cancel ⟷ submit) does not exist here. The breadcrumb's own
@@ -166,67 +167,10 @@ export function ProductRequestForm({
       noValidate
       className="flex flex-col gap-5 xl:grid xl:grid-cols-[minmax(0,724px)_380px] xl:items-start xl:gap-8"
     >
-      {/* summaryCol — 380 fixed, padding 24, order-summary card. First in the DOM (mobile:
-          summary before the form); xl: repositions it to column 2. */}
-      <aside className="flex flex-col gap-4 rounded-card border-2 border-brand-blue-600 bg-surface-base p-6 xl:col-start-2 xl:row-start-1">
-        <div className="flex items-center gap-3">
-          <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-lg bg-surface-sunken">
-            <ProductCoverImage src={imageUrl} alt={title} sizes="64px" />
-          </div>
-          <div className="flex min-w-0 flex-col gap-0.5">
-            <p dir="auto" className="truncate text-[15px] font-semibold leading-[21px] text-brand-blue-800 rtl:max-w-full rtl:self-start">
-              {title}
-            </p>
-            <p className="truncate text-body-sm leading-[21px] text-text-muted">{shopName}</p>
-          </div>
-        </div>
-
-        <div className="h-px bg-border-subtle" aria-hidden="true" />
-
-        {/* Prices: tndPrice(value, lang) inside a <bdi> (walk #25) — « 120 TND » LTR in FR, « 120 د.ت » RTL in AR (the seller dashboard's
-            notation and reading order), isolated so the digits never swap with the label beside them. */}
-        <div className="flex flex-col gap-2">
-          <div className="flex items-baseline justify-between gap-2">
-            <span className="text-body-sm text-text-secondary">
-              {t('demander.summary.product', lang, { n: String(quantity) })}
-            </span>
-            <bdi className="text-body-sm font-medium text-text-primary">{tndPrice(subtotal, lang)}</bdi>
-          </div>
-          <div className="flex items-baseline justify-between gap-2">
-            <span className="text-body-sm text-text-secondary">
-              {t('demander.summary.delivery', lang)}
-            </span>
-            <bdi className="text-body-sm font-medium text-text-primary">{tndPrice(deliveryFee, lang)}</bdi>
-          </div>
-          <div className="h-px bg-border-subtle" aria-hidden="true" />
-          <div className="flex items-baseline justify-between gap-2">
-            <span className="text-base font-semibold text-text-primary">
-              {t('demander.summary.total', lang)}
-            </span>
-            <bdi className="text-base font-semibold text-brand-blue-800">{tndPrice(total, lang)}</bdi>
-          </div>
-        </div>
-
-        <p className="text-caption leading-[18px] text-text-muted">
-          {t('demander.subtitle.product', lang)}
-        </p>
-
-        <Turnstile ref={turnstile} action="order_product" />
-        <Button type="submit" size="lg" loading={pending} className="w-full">
-          {pending ? t('demander.submit.loading', lang) : t('demander.submit.product', lang)}
-        </Button>
-
-        {formError && (
-          <p role="alert" className="text-body-sm text-danger-500">
-            {formError}
-          </p>
-        )}
-      </aside>
-
       {/* formCol — 724 max, minmax(0,·) so it shrinks below xl: instead of overflowing. */}
-      <div className="flex flex-col gap-5 xl:col-start-1 xl:row-start-1 xl:gap-6">
-        <div className="flex flex-col gap-5 rounded-card border border-border-subtle bg-surface-base p-4 xl:p-8">
-          <h2 className="text-xl font-semibold text-text-primary">
+      <div className="flex flex-col gap-5 xl:col-start-1 xl:row-start-1 xl:gap-6 max-lg:gap-8">
+        <div className="flex flex-col gap-5 rounded-card border border-border-subtle bg-surface-base p-4 xl:p-8 max-lg:border-0 max-lg:bg-transparent max-lg:p-0">
+          <h2 className="text-xl font-semibold text-text-primary max-lg:leading-[26px]">
             {t('demander.section.delivery', lang)}
           </h2>
 
@@ -342,8 +286,8 @@ export function ProductRequestForm({
           />
         </div>
 
-        <div className="flex flex-col gap-3 rounded-card border border-border-subtle bg-surface-base p-4 xl:p-8">
-          <h2 className="text-xl font-semibold text-text-primary">
+        <div className="flex flex-col gap-3 rounded-card border border-border-subtle bg-surface-base p-4 xl:p-8 max-lg:border-0 max-lg:bg-transparent max-lg:p-0">
+          <h2 className="text-xl font-semibold text-text-primary max-lg:leading-[26px]">
             {t('demander.section.quantity', lang)}
           </h2>
           <div className="flex items-center gap-3">
@@ -367,6 +311,64 @@ export function ProductRequestForm({
           </div>
         </div>
       </div>
+
+      {/* summaryCol — 380 fixed, padding 24, order-summary card. After the form in the DOM: below lg the 375 frame
+          (m375-e1-produit) draws it last, under the quantity, so the reading and tab order follow the screen; from lg to xl
+          order-first keeps it above the form as before, and xl repositions it to column 2. */}
+      <aside className="flex flex-col gap-4 rounded-card border-2 border-brand-blue-600 bg-surface-base p-6 xl:col-start-2 xl:row-start-1 lg:max-xl:order-first max-lg:border max-lg:border-border-subtle max-lg:px-[15px] max-lg:py-[23px]">
+        <div className="flex items-center gap-3">
+          <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-lg bg-surface-sunken">
+            <ProductCoverImage src={imageUrl} alt={title} sizes="64px" />
+          </div>
+          <div className="flex min-w-0 flex-col gap-0.5 max-lg:gap-1">
+            <p dir="auto" className="truncate text-[15px] font-semibold leading-[21px] text-brand-blue-800 rtl:max-w-full rtl:self-start max-lg:text-body-sm max-lg:leading-[21px] max-lg:text-text-primary">
+              {title}
+            </p>
+            <p className="truncate text-body-sm leading-[21px] text-text-muted max-lg:text-text-secondary">{shopName}</p>
+          </div>
+        </div>
+
+        <div className="h-px bg-border-subtle" aria-hidden="true" />
+
+        {/* Prices: tndPrice(value, lang) inside a <bdi> (walk #25) — « 120 TND » LTR in FR, « 120 د.ت » RTL in AR (the seller dashboard's
+            notation and reading order), isolated so the digits never swap with the label beside them. */}
+        <div className="flex flex-col gap-2">
+          <div className="flex items-baseline justify-between gap-2">
+            <span className="text-body-sm text-text-secondary max-lg:text-base max-lg:leading-[26px]">
+              {t('demander.summary.product', lang, { n: String(quantity) })}
+            </span>
+            <bdi className="text-body-sm font-medium text-text-primary max-lg:text-base max-lg:leading-[26px] max-lg:font-normal">{tndPrice(subtotal, lang)}</bdi>
+          </div>
+          <div className="flex items-baseline justify-between gap-2">
+            <span className="text-body-sm text-text-secondary max-lg:text-base max-lg:leading-[26px]">
+              {t('demander.summary.delivery', lang)}
+            </span>
+            <bdi className="text-body-sm font-medium text-text-primary max-lg:text-base max-lg:leading-[26px] max-lg:font-normal">{tndPrice(deliveryFee, lang)}</bdi>
+          </div>
+          <div className="h-px bg-border-subtle" aria-hidden="true" />
+          <div className="flex items-baseline justify-between gap-2">
+            <span className="text-base font-semibold text-text-primary max-lg:font-bold max-lg:leading-[26px]">
+              {t('demander.summary.total', lang)}
+            </span>
+            <bdi className="text-base font-semibold text-brand-blue-800 max-lg:font-bold max-lg:leading-[26px]">{tndPrice(total, lang)}</bdi>
+          </div>
+        </div>
+
+        <p className="text-caption leading-[18px] text-text-muted max-lg:rounded-[8px] max-lg:bg-brand-blue-50 max-lg:p-3 max-lg:text-body-sm max-lg:leading-[21px] max-lg:text-text-secondary">
+          {t('demander.subtitle.product', lang)}
+        </p>
+
+        <Turnstile ref={turnstile} action="order_product" />
+        <Button type="submit" size="lg" loading={pending} className="w-full">
+          {pending ? t('demander.submit.loading', lang) : t('demander.submit.product', lang)}
+        </Button>
+
+        {formError && (
+          <p role="alert" className="text-body-sm text-danger-500">
+            {formError}
+          </p>
+        )}
+      </aside>
     </form>
   )
 }

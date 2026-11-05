@@ -28,7 +28,8 @@ export function ProductRequestScreen({
   lang: Lang
 }) {
   return (
-    <div className="flex flex-col gap-6 xl:gap-8">
+    // Below lg (m375-e1-produit): the crumb, H1 8 apart, the form 20 under the header; H1 32 Bold / 38 text/primary.
+    <div className="flex flex-col gap-6 xl:gap-8 max-lg:gap-5">
       <nav
         aria-label="Fil d'Ariane"
         className="flex flex-wrap items-center gap-2 text-[13px] leading-[17px] text-text-muted max-lg:gap-1.5 max-lg:leading-4"
@@ -58,8 +59,8 @@ export function ProductRequestScreen({
         <span className="text-text-secondary">{t('demander.breadcrumb.request', lang)}</span>
       </nav>
 
-      <div className="flex flex-col gap-2">
-        <h1 className="text-2xl font-semibold leading-8 text-brand-blue-800">
+      <div className="flex flex-col gap-2 max-lg:-mt-3">
+        <h1 className="text-2xl font-semibold leading-8 text-brand-blue-800 max-lg:text-[32px] max-lg:font-bold max-lg:leading-[38px] max-lg:text-text-primary">
           {t('demander.title.product', lang)}
         </h1>
       </div>
