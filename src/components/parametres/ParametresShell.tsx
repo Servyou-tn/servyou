@@ -117,7 +117,8 @@ export function ParametresShell({
 
   return (
     <div className="flex flex-col gap-5">
-      <div className="flex w-full flex-col gap-8 lg:flex-row">
+      {/* 375 (m375-i2-parametres): the panels start 20 under the stacked sub-tabs. */}
+      <div className="flex w-full flex-col gap-8 lg:flex-row max-lg:gap-5">
         {/* Sub-tab rail. Desktop: a 240 column. Mobile (Figma 1488:59777): the four Sub-Tab Items STACK, each full width (311×40,
             gap 4) — not a horizontal scroller, so the old edge-fade workaround for a clipped fourth tab is gone. */}
         <nav aria-label={t('parametres.title', lang)} className="flex w-full shrink-0 flex-col gap-1 lg:w-60">

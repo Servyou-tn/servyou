@@ -33,3 +33,8 @@ Batch 2, PR-A8. E1 service was done in `m375-e1-e2`; its Q4 (the product breadcr
 4. **F1 count pill:** keep « 4 favoris » beside the title, or drop it on mobile to match the frame?
 
 Controls (375, FR + AR): E1 tab order fields → stepper → « Confirmer la demande »; an empty submit stays on the page with « Veuillez corriger les erreurs du formulaire » / « يرجى تصحيح أخطاء النموذج. » and 5 invalid fields (not submitted, so no order is written); links `/marche/produits`, `/produits/{id}` · F1 four tabs switch (products → 4 cards; empty Services / Boutiques / Freelances → their CTAs `/marche/services`, `/marche/produits?vue=boutiques`).
+
+## Founder answers (2026-11-05)
+
+1 keep « Confirmer votre demande » · 2 + 3 no new text before the beta — the subline and the « Adresse » sub-heading are logged for the
+design pass (`docs/follow-ups/m375-f1-e1.md`) · 4 keep the « 4 favoris » counter.

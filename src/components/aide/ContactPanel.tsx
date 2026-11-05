@@ -31,10 +31,10 @@ export function ContactPanel({ lang }: { lang: Lang }) {
     <aside
       id="aide-contact"
       aria-labelledby="aide-contact-heading"
-      className="flex scroll-mt-24 flex-col gap-6 rounded-xl border border-border-subtle bg-surface-base p-6"
+      className="flex scroll-mt-24 flex-col gap-6 rounded-xl border border-border-subtle bg-surface-base p-6 max-lg:px-[15px] max-lg:py-[23px]"
     >
       <div className="flex flex-col gap-2">
-        <h2 id="aide-contact-heading" className="text-xl font-semibold text-text-primary">
+        <h2 id="aide-contact-heading" className="text-xl font-semibold text-text-primary max-lg:leading-[26px]">
           {t('aide.contact.title', lang)}
         </h2>
         <p className="text-body-sm text-text-secondary">{t('aide.contact.subtitle', lang)}</p>

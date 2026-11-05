@@ -105,7 +105,8 @@ export function AideCenter({
   }, [spoken])
 
   return (
-    <div className="flex flex-col gap-8">
+    // 375 (m375-aide): the groups start 20 under the search caption; the contact panel 20 under the last group.
+    <div className="flex flex-col gap-8 max-lg:gap-5">
       <div className="flex flex-col gap-2">
         <Input
           id={SEARCH_ID}
@@ -140,7 +141,10 @@ export function AideCenter({
             ) : undefined
           }
         />
-        <p className={cn('break-words', searching ? 'text-body-sm text-text-secondary' : 'text-caption font-medium text-text-muted')}>
+        {/* A plain class string, not cn(): cn() drops the text-body-sm / text-caption size beside a text colour, so this line rendered
+            16 / 24 at every width. Below lg the intended sizes apply (12 Medium / 17 caption, the frame's); from lg the classes are
+            exactly what cn() resolved to, so desktop is unchanged (logged in docs/follow-ups/m375-i2-aide.md). */}
+        <p className={`break-words ${searching ? 'text-text-secondary max-lg:text-body-sm' : 'font-medium text-text-muted max-lg:text-caption max-lg:leading-[17px]'}`}>
           {caption}
         </p>
         <p role="status" aria-live="polite" className="sr-only">
@@ -148,7 +152,7 @@ export function AideCenter({
         </p>
       </div>
 
-      <div className="flex flex-col gap-8 lg:flex-row lg:items-start">
+      <div className="flex flex-col gap-8 lg:flex-row lg:items-start max-lg:gap-5">
         <div className="flex min-w-0 flex-1 flex-col gap-6">
           {noResult ? (
             <NoResult query={trimmed} />
@@ -180,7 +184,7 @@ function AccordionGroup({
     <section aria-labelledby={headingId} className="flex flex-col gap-4">
       <div className="flex items-center gap-2">
         <Icon className="size-5 shrink-0 text-text-primary" aria-hidden="true" />
-        <h2 id={headingId} className="text-xl font-semibold text-text-primary">
+        <h2 id={headingId} className="text-xl font-semibold text-text-primary max-lg:leading-[26px]">
           {group.title}
         </h2>
         <span className="inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-brand-blue-600 px-1 text-caption font-semibold leading-4 text-text-inverse">

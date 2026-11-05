@@ -1,0 +1,1870 @@
+{
+ "n": "Paramètres (375 mobile)",
+ "t": "FRAME",
+ "w": 375,
+ "h": 2075,
+ "layout": "VERTICAL",
+ "gap": 16,
+ "pad": "20 16 32 16",
+ "align": "MIN/MIN",
+ "size": "FIXED/HUG",
+ "fill": [
+  "var:surface/base"
+ ],
+ "c": [
+  {
+   "n": "content",
+   "t": "FRAME",
+   "w": 343,
+   "h": 2023,
+   "layout": "VERTICAL",
+   "gap": 0,
+   "pad": "0 0 0 0",
+   "align": "MIN/MIN",
+   "size": "FILL/HUG",
+   "c": [
+    {
+     "n": "page",
+     "t": "FRAME",
+     "w": 343,
+     "h": 1874,
+     "layout": "VERTICAL",
+     "gap": 24,
+     "pad": "20 16 20 16",
+     "align": "MIN/MIN",
+     "size": "FILL/HUG",
+     "c": [
+      {
+       "n": "page-header",
+       "t": "FRAME",
+       "w": 311,
+       "h": 167,
+       "layout": "VERTICAL",
+       "gap": 8,
+       "pad": "0 0 0 0",
+       "align": "MIN/MIN",
+       "size": "FILL/HUG",
+       "c": [
+        {
+         "n": "Breadcrumb",
+         "t": "INSTANCE",
+         "w": 157,
+         "h": 17,
+         "layout": "HORIZONTAL",
+         "gap": 8,
+         "pad": "0 0 0 0",
+         "align": "MIN/CENTER",
+         "size": "HUG/HUG",
+         "comp": "Breadcrumb",
+         "c": [
+          {
+           "n": "Accueil",
+           "t": "TEXT",
+           "w": 50,
+           "h": 17,
+           "size": "HUG/HUG",
+           "fill": [
+            "var:text/muted"
+           ],
+           "text": "Accueil",
+           "fs": 14,
+           "font": "Medium"
+          },
+          {
+           "n": "icon-chevron-right",
+           "t": "INSTANCE",
+           "w": 14,
+           "h": 14,
+           "size": "FIXED/FIXED",
+           "comp": "icon-chevron-right",
+           "c": [
+            {
+             "n": "Vector",
+             "t": "VECTOR",
+             "w": 4,
+             "h": 7,
+             "size": "FIXED/FIXED",
+             "stroke": [
+              "var:text/muted"
+             ],
+             "sw": 2
+            }
+           ]
+          },
+          {
+           "n": "Artisanat",
+           "t": "TEXT",
+           "w": 77,
+           "h": 17,
+           "size": "HUG/HUG",
+           "fill": [
+            "var:text/muted"
+           ],
+           "text": "Paramètres",
+           "fs": 14,
+           "font": "Medium"
+          },
+          {
+           "n": "icon-chevron-right",
+           "t": "INSTANCE",
+           "w": 14,
+           "h": 14,
+           "hidden": true,
+           "size": "FIXED/FIXED",
+           "comp": "icon-chevron-right",
+           "c": [
+            {
+             "n": "Vector",
+             "t": "VECTOR",
+             "w": 4,
+             "h": 7,
+             "size": "FIXED/FIXED",
+             "stroke": [
+              "var:text/muted"
+             ],
+             "sw": 2
+            }
+           ]
+          },
+          {
+           "n": "Poterie de Nabeul",
+           "t": "TEXT",
+           "w": 121,
+           "h": 17,
+           "hidden": true,
+           "size": "FIXED/FIXED",
+           "fill": [
+            "var:text/primary"
+           ],
+           "text": "Poterie de Nabeul",
+           "fs": 14,
+           "font": "Semi Bold"
+          }
+         ]
+        },
+        {
+         "n": "Paramètres",
+         "t": "TEXT",
+         "w": 311,
+         "h": 38,
+         "size": "FILL/HUG",
+         "fill": [
+          "var:text/primary"
+         ],
+         "text": "Paramètres",
+         "fs": 32,
+         "font": "Bold"
+        },
+        {
+         "n": "subline",
+         "t": "FRAME",
+         "w": 311,
+         "h": 96,
+         "layout": "VERTICAL",
+         "gap": 12,
+         "pad": "0 0 0 0",
+         "align": "MIN/MIN",
+         "size": "FILL/HUG",
+         "c": [
+          {
+           "n": "Gérez vos préférences, notifications, et confidentialité. Pour modifier vos informations personnelles, allez à",
+           "t": "TEXT",
+           "w": 311,
+           "h": 63,
+           "size": "FILL/HUG",
+           "fill": [
+            "var:text/secondary"
+           ],
+           "text": "Gérez vos préférences, notifications, et confidentialité. Pour modifier vos informations personnelles, allez à",
+           "fs": 14,
+           "font": "Regular"
+          },
+          {
+           "n": "Mon compte.",
+           "t": "TEXT",
+           "w": 311,
+           "h": 21,
+           "size": "FILL/HUG",
+           "fill": [
+            "var:blue/600"
+           ],
+           "text": "Mon compte.",
+           "fs": 14,
+           "font": "Medium"
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "n": "two-col",
+       "t": "FRAME",
+       "w": 311,
+       "h": 1643,
+       "layout": "VERTICAL",
+       "gap": 20,
+       "pad": "0 0 0 0",
+       "align": "MIN/MIN",
+       "size": "FILL/HUG",
+       "c": [
+        {
+         "n": "subtab-nav",
+         "t": "FRAME",
+         "w": 311,
+         "h": 172,
+         "layout": "VERTICAL",
+         "gap": 4,
+         "pad": "0 0 0 0",
+         "align": "MIN/MIN",
+         "size": "FILL/HUG",
+         "c": [
+          {
+           "n": "Sub-Tab Item",
+           "t": "INSTANCE",
+           "w": 311,
+           "h": 40,
+           "layout": "HORIZONTAL",
+           "gap": 0,
+           "pad": "0 0 0 0",
+           "align": "MIN/CENTER",
+           "size": "FILL/FIXED",
+           "r": 8,
+           "fill": [
+            "var:blue/50"
+           ],
+           "comp": "Sub-Tab Item / state=active",
+           "c": [
+            {
+             "n": "accent",
+             "t": "FRAME",
+             "w": 156,
+             "h": 40,
+             "size": "FILL/FILL",
+             "fill": [
+              "var:blue/600"
+             ],
+             "c": []
+            },
+            {
+             "n": "content",
+             "t": "FRAME",
+             "w": 156,
+             "h": 40,
+             "layout": "HORIZONTAL",
+             "gap": 12,
+             "pad": "10 16 10 14",
+             "align": "MIN/CENTER",
+             "size": "FILL/HUG",
+             "c": [
+              {
+               "n": "icon-bell",
+               "t": "INSTANCE",
+               "w": 20,
+               "h": 20,
+               "size": "FIXED/FIXED",
+               "comp": "icon-bell",
+               "c": [
+                {
+                 "n": "Vector",
+                 "t": "VECTOR",
+                 "w": 3,
+                 "h": 1,
+                 "size": "FIXED/FIXED",
+                 "stroke": [
+                  "var:blue/600"
+                 ],
+                 "sw": 2
+                },
+                {
+                 "n": "Vector",
+                 "t": "VECTOR",
+                 "w": 15,
+                 "h": 13,
+                 "size": "FIXED/FIXED",
+                 "stroke": [
+                  "var:blue/600"
+                 ],
+                 "sw": 2
+                }
+               ]
+              },
+              {
+               "n": "label",
+               "t": "TEXT",
+               "w": 87,
+               "h": 17,
+               "size": "HUG/HUG",
+               "fill": [
+                "var:blue/600"
+               ],
+               "text": "Notifications",
+               "fs": 14,
+               "font": "Semi Bold"
+              }
+             ]
+            }
+           ]
+          },
+          {
+           "n": "Sub-Tab Item",
+           "t": "INSTANCE",
+           "w": 311,
+           "h": 40,
+           "layout": "HORIZONTAL",
+           "gap": 0,
+           "pad": "0 0 0 0",
+           "align": "MIN/CENTER",
+           "size": "FILL/FIXED",
+           "r": 8,
+           "comp": "Sub-Tab Item / state=default",
+           "c": [
+            {
+             "n": "accent",
+             "t": "FRAME",
+             "w": 156,
+             "h": 40,
+             "size": "FILL/FILL",
+             "c": []
+            },
+            {
+             "n": "content",
+             "t": "FRAME",
+             "w": 156,
+             "h": 40,
+             "layout": "HORIZONTAL",
+             "gap": 12,
+             "pad": "10 16 10 14",
+             "align": "MIN/CENTER",
+             "size": "FILL/HUG",
+             "c": [
+              {
+               "n": "icon-shield",
+               "t": "INSTANCE",
+               "w": 20,
+               "h": 20,
+               "size": "FIXED/FIXED",
+               "comp": "icon-shield",
+               "c": [
+                {
+                 "n": "Vector",
+                 "t": "VECTOR",
+                 "w": 13,
+                 "h": 17,
+                 "size": "FIXED/FIXED",
+                 "stroke": [
+                  "var:text/secondary"
+                 ],
+                 "sw": 2
+                }
+               ]
+              },
+              {
+               "n": "label",
+               "t": "TEXT",
+               "w": 99,
+               "h": 17,
+               "size": "HUG/HUG",
+               "fill": [
+                "var:text/secondary"
+               ],
+               "text": "Confidentialité",
+               "fs": 14,
+               "font": "Medium"
+              }
+             ]
+            }
+           ]
+          },
+          {
+           "n": "Sub-Tab Item",
+           "t": "INSTANCE",
+           "w": 311,
+           "h": 40,
+           "layout": "HORIZONTAL",
+           "gap": 0,
+           "pad": "0 0 0 0",
+           "align": "MIN/CENTER",
+           "size": "FILL/FIXED",
+           "r": 8,
+           "comp": "Sub-Tab Item / state=default",
+           "c": [
+            {
+             "n": "accent",
+             "t": "FRAME",
+             "w": 156,
+             "h": 40,
+             "size": "FILL/FILL",
+             "c": []
+            },
+            {
+             "n": "content",
+             "t": "FRAME",
+             "w": 156,
+             "h": 40,
+             "layout": "HORIZONTAL",
+             "gap": 12,
+             "pad": "10 16 10 14",
+             "align": "MIN/CENTER",
+             "size": "FILL/HUG",
+             "c": [
+              {
+               "n": "icon-globe",
+               "t": "INSTANCE",
+               "w": 20,
+               "h": 20,
+               "size": "FIXED/FIXED",
+               "comp": "icon-globe",
+               "c": [
+                {
+                 "n": "Vector",
+                 "t": "VECTOR",
+                 "w": 17,
+                 "h": 17,
+                 "size": "FIXED/FIXED",
+                 "stroke": [
+                  "var:text/secondary"
+                 ],
+                 "sw": 2
+                },
+                {
+                 "n": "Vector",
+                 "t": "VECTOR",
+                 "w": 7,
+                 "h": 17,
+                 "size": "FIXED/FIXED",
+                 "stroke": [
+                  "var:text/secondary"
+                 ],
+                 "sw": 2
+                },
+                {
+                 "n": "Vector",
+                 "t": "VECTOR",
+                 "w": 17,
+                 "h": 0,
+                 "size": "FIXED/FIXED",
+                 "stroke": [
+                  "var:text/secondary"
+                 ],
+                 "sw": 2
+                }
+               ]
+              },
+              {
+               "n": "label",
+               "t": "TEXT",
+               "w": 109,
+               "h": 17,
+               "size": "HUG/HUG",
+               "fill": [
+                "var:text/secondary"
+               ],
+               "text": "Langue & région",
+               "fs": 14,
+               "font": "Medium"
+              }
+             ]
+            }
+           ]
+          },
+          {
+           "n": "Sub-Tab Item",
+           "t": "INSTANCE",
+           "w": 311,
+           "h": 40,
+           "layout": "HORIZONTAL",
+           "gap": 0,
+           "pad": "0 0 0 0",
+           "align": "MIN/CENTER",
+           "size": "FILL/FIXED",
+           "r": 8,
+           "comp": "Sub-Tab Item / state=default",
+           "c": [
+            {
+             "n": "accent",
+             "t": "FRAME",
+             "w": 156,
+             "h": 40,
+             "size": "FILL/FILL",
+             "c": []
+            },
+            {
+             "n": "content",
+             "t": "FRAME",
+             "w": 156,
+             "h": 40,
+             "layout": "HORIZONTAL",
+             "gap": 12,
+             "pad": "10 16 10 14",
+             "align": "MIN/CENTER",
+             "size": "FILL/HUG",
+             "c": [
+              {
+               "n": "icon-link",
+               "t": "INSTANCE",
+               "w": 20,
+               "h": 20,
+               "size": "FIXED/FIXED",
+               "comp": "icon-link",
+               "c": [
+                {
+                 "n": "Vector",
+                 "t": "VECTOR",
+                 "w": 10,
+                 "h": 11,
+                 "size": "FIXED/FIXED",
+                 "stroke": [
+                  "var:text/secondary"
+                 ],
+                 "sw": 2
+                },
+                {
+                 "n": "Vector",
+                 "t": "VECTOR",
+                 "w": 10,
+                 "h": 11,
+                 "size": "FIXED/FIXED",
+                 "stroke": [
+                  "var:text/secondary"
+                 ],
+                 "sw": 2
+                }
+               ]
+              },
+              {
+               "n": "label",
+               "t": "TEXT",
+               "w": 135,
+               "h": 17,
+               "size": "HUG/HUG",
+               "fill": [
+                "var:text/secondary"
+               ],
+               "text": "Comptes connectés",
+               "fs": 14,
+               "font": "Medium"
+              }
+             ]
+            }
+           ]
+          }
+         ]
+        },
+        {
+         "n": "settings-content",
+         "t": "FRAME",
+         "w": 311,
+         "h": 1451,
+         "layout": "VERTICAL",
+         "gap": 24,
+         "pad": "0 0 0 0",
+         "align": "MIN/MIN",
+         "size": "FILL/HUG",
+         "c": [
+          {
+           "n": "panel-emails",
+           "t": "FRAME",
+           "w": 311,
+           "h": 1215,
+           "layout": "VERTICAL",
+           "gap": 8,
+           "pad": "24 16 24 16",
+           "align": "MIN/MIN",
+           "size": "FILL/HUG",
+           "r": 12,
+           "fill": [
+            "var:surface/base"
+           ],
+           "stroke": [
+            "var:border/subtle"
+           ],
+           "sw": 1,
+           "c": [
+            {
+             "n": "E-mails",
+             "t": "TEXT",
+             "w": 73,
+             "h": 26,
+             "size": "HUG/HUG",
+             "fill": [
+              "var:text/primary"
+             ],
+             "text": "E-mails",
+             "fs": 20,
+             "font": "Semi Bold"
+            },
+            {
+             "n": "Choisissez les e-mails que vous souhaitez recevoir. Vous pouvez modifier ces préférences à tout moment.",
+             "t": "TEXT",
+             "w": 279,
+             "h": 63,
+             "size": "FILL/HUG",
+             "fill": [
+              "var:text/secondary"
+             ],
+             "text": "Choisissez les e-mails que vous souhaitez recevoir. Vous pouvez modifier ces préférences à tout moment.",
+             "fs": 14,
+             "font": "Regular"
+            },
+            {
+             "n": "email-rows",
+             "t": "FRAME",
+             "w": 279,
+             "h": 1062,
+             "layout": "VERTICAL",
+             "gap": 12,
+             "pad": "16 0 0 0",
+             "align": "MIN/MIN",
+             "size": "FILL/HUG",
+             "c": [
+              {
+               "n": "Setting Row",
+               "t": "FRAME",
+               "w": 279,
+               "h": 157,
+               "layout": "HORIZONTAL",
+               "gap": 16,
+               "pad": "16 0 16 0",
+               "align": "SPACE_BETWEEN/CENTER",
+               "size": "FILL/HUG",
+               "fill": [
+                "var:surface/base"
+               ],
+               "stroke": [
+                "var:border/subtle"
+               ],
+               "c": [
+                {
+                 "n": "left",
+                 "t": "FRAME",
+                 "w": 235,
+                 "h": 125,
+                 "layout": "VERTICAL",
+                 "gap": 2,
+                 "pad": "0 40 0 0",
+                 "align": "MIN/MIN",
+                 "size": "FILL/HUG",
+                 "c": [
+                  {
+                   "n": "label",
+                   "t": "TEXT",
+                   "w": 195,
+                   "h": 38,
+                   "size": "FILL/HUG",
+                   "fill": [
+                    "var:text/primary"
+                   ],
+                   "text": "Nouvelles commandes reçues",
+                   "fs": 16,
+                   "font": "Semi Bold"
+                  },
+                  {
+                   "n": "description",
+                   "t": "TEXT",
+                   "w": 195,
+                   "h": 85,
+                   "size": "FILL/HUG",
+                   "fill": [
+                    "var:text/muted"
+                   ],
+                   "text": "Recevez un e-mail quand un client demande vos services. S’affiche uniquement dans votre boîte e-mail, jamais sur votre profil public.",
+                   "fs": 14,
+                   "font": "Regular"
+                  }
+                 ]
+                },
+                {
+                 "n": "control",
+                 "t": "INSTANCE",
+                 "w": 44,
+                 "h": 24,
+                 "layout": "HORIZONTAL",
+                 "gap": 8,
+                 "pad": "0 0 0 0",
+                 "align": "MIN/CENTER",
+                 "size": "HUG/HUG",
+                 "comp": "Toggle / size=md, state=default, on=on",
+                 "c": [
+                  {
+                   "n": "track",
+                   "t": "FRAME",
+                   "w": 44,
+                   "h": 24,
+                   "size": "FIXED/FIXED",
+                   "r": 9999,
+                   "fill": [
+                    "var:blue/600"
+                   ],
+                   "c": [
+                    {
+                     "n": "knob",
+                     "t": "ELLIPSE",
+                     "w": 20,
+                     "h": 20,
+                     "size": "FIXED/FIXED",
+                     "fill": [
+                      "var:surface/base"
+                     ]
+                    }
+                   ]
+                  },
+                  {
+                   "n": "label",
+                   "t": "TEXT",
+                   "w": 42,
+                   "h": 26,
+                   "hidden": true,
+                   "size": "FIXED/FIXED",
+                   "fill": [
+                    "var:text/primary"
+                   ],
+                   "text": "Label",
+                   "fs": 16,
+                   "font": "Regular",
+                   "style": "Body"
+                  }
+                 ]
+                }
+               ]
+              },
+              {
+               "n": "Divider",
+               "t": "INSTANCE",
+               "w": 279,
+               "h": 1,
+               "layout": "HORIZONTAL",
+               "gap": 0,
+               "pad": "0 0 0 0",
+               "align": "MIN/MIN",
+               "size": "FILL/FIXED",
+               "comp": "Divider / variant=plain",
+               "c": [
+                {
+                 "n": "line",
+                 "t": "FRAME",
+                 "w": 279,
+                 "h": 1,
+                 "size": "FILL/FILL",
+                 "fill": [
+                  "var:border/subtle"
+                 ],
+                 "c": []
+                }
+               ]
+              },
+              {
+               "n": "Setting Row",
+               "t": "FRAME",
+               "w": 279,
+               "h": 140,
+               "layout": "HORIZONTAL",
+               "gap": 16,
+               "pad": "16 0 16 0",
+               "align": "SPACE_BETWEEN/CENTER",
+               "size": "FILL/HUG",
+               "fill": [
+                "var:surface/base"
+               ],
+               "stroke": [
+                "var:border/subtle"
+               ],
+               "c": [
+                {
+                 "n": "left",
+                 "t": "FRAME",
+                 "w": 235,
+                 "h": 108,
+                 "layout": "VERTICAL",
+                 "gap": 2,
+                 "pad": "0 40 0 0",
+                 "align": "MIN/MIN",
+                 "size": "FILL/HUG",
+                 "c": [
+                  {
+                   "n": "label",
+                   "t": "TEXT",
+                   "w": 195,
+                   "h": 38,
+                   "size": "FILL/HUG",
+                   "fill": [
+                    "var:text/primary"
+                   ],
+                   "text": "Propositions reçues sur mes annonces",
+                   "fs": 16,
+                   "font": "Semi Bold"
+                  },
+                  {
+                   "n": "description",
+                   "t": "TEXT",
+                   "w": 195,
+                   "h": 68,
+                   "size": "FILL/HUG",
+                   "fill": [
+                    "var:text/muted"
+                   ],
+                   "text": "Recevez un e-mail quand un freelance répond à un emploi que vous avez posté. Modifie uniquement vos e-mails.",
+                   "fs": 14,
+                   "font": "Regular"
+                  }
+                 ]
+                },
+                {
+                 "n": "control",
+                 "t": "INSTANCE",
+                 "w": 44,
+                 "h": 24,
+                 "layout": "HORIZONTAL",
+                 "gap": 8,
+                 "pad": "0 0 0 0",
+                 "align": "MIN/CENTER",
+                 "size": "HUG/HUG",
+                 "comp": "Toggle / size=md, state=default, on=on",
+                 "c": [
+                  {
+                   "n": "track",
+                   "t": "FRAME",
+                   "w": 44,
+                   "h": 24,
+                   "size": "FIXED/FIXED",
+                   "r": 9999,
+                   "fill": [
+                    "var:blue/600"
+                   ],
+                   "c": [
+                    {
+                     "n": "knob",
+                     "t": "ELLIPSE",
+                     "w": 20,
+                     "h": 20,
+                     "size": "FIXED/FIXED",
+                     "fill": [
+                      "var:surface/base"
+                     ]
+                    }
+                   ]
+                  },
+                  {
+                   "n": "label",
+                   "t": "TEXT",
+                   "w": 42,
+                   "h": 26,
+                   "hidden": true,
+                   "size": "FIXED/FIXED",
+                   "fill": [
+                    "var:text/primary"
+                   ],
+                   "text": "Label",
+                   "fs": 16,
+                   "font": "Regular",
+                   "style": "Body"
+                  }
+                 ]
+                }
+               ]
+              },
+              {
+               "n": "Divider",
+               "t": "INSTANCE",
+               "w": 279,
+               "h": 1,
+               "layout": "HORIZONTAL",
+               "gap": 0,
+               "pad": "0 0 0 0",
+               "align": "MIN/MIN",
+               "size": "FILL/FIXED",
+               "comp": "Divider / variant=plain",
+               "c": [
+                {
+                 "n": "line",
+                 "t": "FRAME",
+                 "w": 279,
+                 "h": 1,
+                 "size": "FILL/FILL",
+                 "fill": [
+                  "var:border/subtle"
+                 ],
+                 "c": []
+                }
+               ]
+              },
+              {
+               "n": "Setting Row",
+               "t": "FRAME",
+               "w": 279,
+               "h": 138,
+               "layout": "HORIZONTAL",
+               "gap": 16,
+               "pad": "16 0 16 0",
+               "align": "SPACE_BETWEEN/CENTER",
+               "size": "FILL/HUG",
+               "fill": [
+                "var:surface/base"
+               ],
+               "stroke": [
+                "var:border/subtle"
+               ],
+               "c": [
+                {
+                 "n": "left",
+                 "t": "FRAME",
+                 "w": 235,
+                 "h": 106,
+                 "layout": "VERTICAL",
+                 "gap": 2,
+                 "pad": "0 40 0 0",
+                 "align": "MIN/MIN",
+                 "size": "FILL/HUG",
+                 "c": [
+                  {
+                   "n": "label",
+                   "t": "TEXT",
+                   "w": 195,
+                   "h": 19,
+                   "size": "FILL/HUG",
+                   "fill": [
+                    "var:text/primary"
+                   ],
+                   "text": "Nouveaux avis clients",
+                   "fs": 16,
+                   "font": "Semi Bold"
+                  },
+                  {
+                   "n": "description",
+                   "t": "TEXT",
+                   "w": 195,
+                   "h": 85,
+                   "size": "FILL/HUG",
+                   "fill": [
+                    "var:text/muted"
+                   ],
+                   "text": "Recevez un e-mail quand un client laisse un avis sur votre profil. Les avis restent visibles publiquement dans tous les cas.",
+                   "fs": 14,
+                   "font": "Regular"
+                  }
+                 ]
+                },
+                {
+                 "n": "control",
+                 "t": "INSTANCE",
+                 "w": 44,
+                 "h": 24,
+                 "layout": "HORIZONTAL",
+                 "gap": 8,
+                 "pad": "0 0 0 0",
+                 "align": "MIN/CENTER",
+                 "size": "HUG/HUG",
+                 "comp": "Toggle / size=md, state=default, on=on",
+                 "c": [
+                  {
+                   "n": "track",
+                   "t": "FRAME",
+                   "w": 44,
+                   "h": 24,
+                   "size": "FIXED/FIXED",
+                   "r": 9999,
+                   "fill": [
+                    "var:blue/600"
+                   ],
+                   "c": [
+                    {
+                     "n": "knob",
+                     "t": "ELLIPSE",
+                     "w": 20,
+                     "h": 20,
+                     "size": "FIXED/FIXED",
+                     "fill": [
+                      "var:surface/base"
+                     ]
+                    }
+                   ]
+                  },
+                  {
+                   "n": "label",
+                   "t": "TEXT",
+                   "w": 42,
+                   "h": 26,
+                   "hidden": true,
+                   "size": "FIXED/FIXED",
+                   "fill": [
+                    "var:text/primary"
+                   ],
+                   "text": "Label",
+                   "fs": 16,
+                   "font": "Regular",
+                   "style": "Body"
+                  }
+                 ]
+                }
+               ]
+              },
+              {
+               "n": "Divider",
+               "t": "INSTANCE",
+               "w": 279,
+               "h": 1,
+               "layout": "HORIZONTAL",
+               "gap": 0,
+               "pad": "0 0 0 0",
+               "align": "MIN/MIN",
+               "size": "FILL/FIXED",
+               "comp": "Divider / variant=plain",
+               "c": [
+                {
+                 "n": "line",
+                 "t": "FRAME",
+                 "w": 279,
+                 "h": 1,
+                 "size": "FILL/FILL",
+                 "fill": [
+                  "var:border/subtle"
+                 ],
+                 "c": []
+                }
+               ]
+              },
+              {
+               "n": "Setting Row",
+               "t": "FRAME",
+               "w": 279,
+               "h": 155,
+               "layout": "HORIZONTAL",
+               "gap": 16,
+               "pad": "16 0 16 0",
+               "align": "SPACE_BETWEEN/CENTER",
+               "size": "FILL/HUG",
+               "fill": [
+                "var:surface/base"
+               ],
+               "stroke": [
+                "var:border/subtle"
+               ],
+               "c": [
+                {
+                 "n": "left",
+                 "t": "FRAME",
+                 "w": 211,
+                 "h": 123,
+                 "layout": "VERTICAL",
+                 "gap": 2,
+                 "pad": "0 40 0 0",
+                 "align": "MIN/MIN",
+                 "size": "FILL/HUG",
+                 "c": [
+                  {
+                   "n": "label",
+                   "t": "TEXT",
+                   "w": 171,
+                   "h": 19,
+                   "size": "FILL/HUG",
+                   "fill": [
+                    "var:text/primary"
+                   ],
+                   "text": "Alertes de sécurité",
+                   "fs": 16,
+                   "font": "Semi Bold"
+                  },
+                  {
+                   "n": "description",
+                   "t": "TEXT",
+                   "w": 171,
+                   "h": 102,
+                   "size": "FILL/HUG",
+                   "fill": [
+                    "var:text/muted"
+                   ],
+                   "text": "Connexions inhabituelles et modifications de mot de passe. Toujours activé pour la sécurité de votre compte, ne peut être désactivé.",
+                   "fs": 14,
+                   "font": "Regular"
+                  }
+                 ]
+                },
+                {
+                 "n": "control",
+                 "t": "FRAME",
+                 "w": 68,
+                 "h": 24,
+                 "layout": "HORIZONTAL",
+                 "gap": 8,
+                 "pad": "0 0 0 0",
+                 "align": "MIN/CENTER",
+                 "size": "HUG/HUG",
+                 "c": [
+                  {
+                   "n": "icon-lock",
+                   "t": "INSTANCE",
+                   "w": 16,
+                   "h": 16,
+                   "size": "FIXED/FIXED",
+                   "comp": "icon-lock",
+                   "c": [
+                    {
+                     "n": "Vector",
+                     "t": "VECTOR",
+                     "w": 12,
+                     "h": 7,
+                     "size": "FIXED/FIXED",
+                     "stroke": [
+                      "var:text/muted"
+                     ],
+                     "sw": 2
+                    },
+                    {
+                     "n": "Vector",
+                     "t": "VECTOR",
+                     "w": 7,
+                     "h": 6,
+                     "size": "FIXED/FIXED",
+                     "stroke": [
+                      "var:text/muted"
+                     ],
+                     "sw": 2
+                    }
+                   ]
+                  },
+                  {
+                   "n": "toggle",
+                   "t": "INSTANCE",
+                   "w": 44,
+                   "h": 24,
+                   "layout": "HORIZONTAL",
+                   "gap": 8,
+                   "pad": "0 0 0 0",
+                   "align": "MIN/CENTER",
+                   "size": "HUG/HUG",
+                   "comp": "Toggle / size=md, state=default, on=on",
+                   "c": [
+                    {
+                     "n": "track",
+                     "t": "FRAME",
+                     "w": 44,
+                     "h": 24,
+                     "size": "FIXED/FIXED",
+                     "r": 9999,
+                     "fill": [
+                      "var:blue/600"
+                     ],
+                     "c": [
+                      {
+                       "n": "knob",
+                       "t": "ELLIPSE",
+                       "w": 20,
+                       "h": 20,
+                       "size": "FIXED/FIXED",
+                       "fill": [
+                        "var:surface/base"
+                       ]
+                      }
+                     ]
+                    },
+                    {
+                     "n": "label",
+                     "t": "TEXT",
+                     "w": 42,
+                     "h": 26,
+                     "hidden": true,
+                     "size": "FIXED/FIXED",
+                     "fill": [
+                      "var:text/primary"
+                     ],
+                     "text": "Label",
+                     "fs": 16,
+                     "font": "Regular",
+                     "style": "Body"
+                    }
+                   ]
+                  }
+                 ]
+                }
+               ]
+              },
+              {
+               "n": "Divider",
+               "t": "INSTANCE",
+               "w": 279,
+               "h": 1,
+               "layout": "HORIZONTAL",
+               "gap": 0,
+               "pad": "0 0 0 0",
+               "align": "MIN/MIN",
+               "size": "FILL/FIXED",
+               "comp": "Divider / variant=plain",
+               "c": [
+                {
+                 "n": "line",
+                 "t": "FRAME",
+                 "w": 279,
+                 "h": 1,
+                 "size": "FILL/FILL",
+                 "fill": [
+                  "var:border/subtle"
+                 ],
+                 "c": []
+                }
+               ]
+              },
+              {
+               "n": "Setting Row",
+               "t": "FRAME",
+               "w": 279,
+               "h": 174,
+               "layout": "HORIZONTAL",
+               "gap": 16,
+               "pad": "16 0 16 0",
+               "align": "SPACE_BETWEEN/CENTER",
+               "size": "FILL/HUG",
+               "fill": [
+                "var:surface/base"
+               ],
+               "stroke": [
+                "var:border/subtle"
+               ],
+               "c": [
+                {
+                 "n": "left",
+                 "t": "FRAME",
+                 "w": 235,
+                 "h": 142,
+                 "layout": "VERTICAL",
+                 "gap": 2,
+                 "pad": "0 40 0 0",
+                 "align": "MIN/MIN",
+                 "size": "FILL/HUG",
+                 "c": [
+                  {
+                   "n": "label",
+                   "t": "TEXT",
+                   "w": 195,
+                   "h": 38,
+                   "size": "FILL/HUG",
+                   "fill": [
+                    "var:text/primary"
+                   ],
+                   "text": "Missions correspondant à mes compétences",
+                   "fs": 16,
+                   "font": "Semi Bold"
+                  },
+                  {
+                   "n": "description",
+                   "t": "TEXT",
+                   "w": 195,
+                   "h": 102,
+                   "size": "FILL/HUG",
+                   "fill": [
+                    "var:text/muted"
+                   ],
+                   "text": "Recevez une sélection hebdomadaire de nouvelles missions dans votre boîte e-mail. N’affecte pas les résultats de recherche sur la plateforme.",
+                   "fs": 14,
+                   "font": "Regular"
+                  }
+                 ]
+                },
+                {
+                 "n": "control",
+                 "t": "INSTANCE",
+                 "w": 44,
+                 "h": 24,
+                 "layout": "HORIZONTAL",
+                 "gap": 8,
+                 "pad": "0 0 0 0",
+                 "align": "MIN/CENTER",
+                 "size": "HUG/HUG",
+                 "comp": "Toggle / size=md, state=default, on=off",
+                 "c": [
+                  {
+                   "n": "track",
+                   "t": "FRAME",
+                   "w": 44,
+                   "h": 24,
+                   "size": "FIXED/FIXED",
+                   "r": 9999,
+                   "fill": [
+                    "var:surface/sunken"
+                   ],
+                   "stroke": [
+                    "var:border/strong"
+                   ],
+                   "sw": 1,
+                   "c": [
+                    {
+                     "n": "knob",
+                     "t": "ELLIPSE",
+                     "w": 20,
+                     "h": 20,
+                     "size": "FIXED/FIXED",
+                     "fill": [
+                      "var:surface/base"
+                     ]
+                    }
+                   ]
+                  },
+                  {
+                   "n": "label",
+                   "t": "TEXT",
+                   "w": 42,
+                   "h": 26,
+                   "hidden": true,
+                   "size": "FIXED/FIXED",
+                   "fill": [
+                    "var:text/primary"
+                   ],
+                   "text": "Label",
+                   "fs": 16,
+                   "font": "Regular",
+                   "style": "Body"
+                  }
+                 ]
+                }
+               ]
+              },
+              {
+               "n": "Divider",
+               "t": "INSTANCE",
+               "w": 279,
+               "h": 1,
+               "layout": "HORIZONTAL",
+               "gap": 0,
+               "pad": "0 0 0 0",
+               "align": "MIN/MIN",
+               "size": "FILL/FIXED",
+               "comp": "Divider / variant=plain",
+               "c": [
+                {
+                 "n": "line",
+                 "t": "FRAME",
+                 "w": 279,
+                 "h": 1,
+                 "size": "FILL/FILL",
+                 "fill": [
+                  "var:border/subtle"
+                 ],
+                 "c": []
+                }
+               ]
+              },
+              {
+               "n": "Setting Row",
+               "t": "FRAME",
+               "w": 279,
+               "h": 157,
+               "layout": "HORIZONTAL",
+               "gap": 16,
+               "pad": "16 0 16 0",
+               "align": "SPACE_BETWEEN/CENTER",
+               "size": "FILL/HUG",
+               "fill": [
+                "var:surface/base"
+               ],
+               "stroke": [
+                "var:border/subtle"
+               ],
+               "c": [
+                {
+                 "n": "left",
+                 "t": "FRAME",
+                 "w": 235,
+                 "h": 125,
+                 "layout": "VERTICAL",
+                 "gap": 2,
+                 "pad": "0 40 0 0",
+                 "align": "MIN/MIN",
+                 "size": "FILL/HUG",
+                 "c": [
+                  {
+                   "n": "label",
+                   "t": "TEXT",
+                   "w": 195,
+                   "h": 38,
+                   "size": "FILL/HUG",
+                   "fill": [
+                    "var:text/primary"
+                   ],
+                   "text": "Newsletter et actualités Servyou",
+                   "fs": 16,
+                   "font": "Semi Bold"
+                  },
+                  {
+                   "n": "description",
+                   "t": "TEXT",
+                   "w": 195,
+                   "h": 85,
+                   "size": "FILL/HUG",
+                   "fill": [
+                    "var:text/muted"
+                   ],
+                   "text": "Nouvelles fonctionnalités, conseils, et opportunités. Envoyé une fois par mois maximum. Aucun impact sur votre profil.",
+                   "fs": 14,
+                   "font": "Regular"
+                  }
+                 ]
+                },
+                {
+                 "n": "control",
+                 "t": "INSTANCE",
+                 "w": 44,
+                 "h": 24,
+                 "layout": "HORIZONTAL",
+                 "gap": 8,
+                 "pad": "0 0 0 0",
+                 "align": "MIN/CENTER",
+                 "size": "HUG/HUG",
+                 "comp": "Toggle / size=md, state=default, on=off",
+                 "c": [
+                  {
+                   "n": "track",
+                   "t": "FRAME",
+                   "w": 44,
+                   "h": 24,
+                   "size": "FIXED/FIXED",
+                   "r": 9999,
+                   "fill": [
+                    "var:surface/sunken"
+                   ],
+                   "stroke": [
+                    "var:border/strong"
+                   ],
+                   "sw": 1,
+                   "c": [
+                    {
+                     "n": "knob",
+                     "t": "ELLIPSE",
+                     "w": 20,
+                     "h": 20,
+                     "size": "FIXED/FIXED",
+                     "fill": [
+                      "var:surface/base"
+                     ]
+                    }
+                   ]
+                  },
+                  {
+                   "n": "label",
+                   "t": "TEXT",
+                   "w": 42,
+                   "h": 26,
+                   "hidden": true,
+                   "size": "FIXED/FIXED",
+                   "fill": [
+                    "var:text/primary"
+                   ],
+                   "text": "Label",
+                   "fs": 16,
+                   "font": "Regular",
+                   "style": "Body"
+                  }
+                 ]
+                }
+               ]
+              }
+             ]
+            }
+           ]
+          },
+          {
+           "n": "panel-platform",
+           "t": "FRAME",
+           "w": 311,
+           "h": 212,
+           "layout": "VERTICAL",
+           "gap": 8,
+           "pad": "24 16 24 16",
+           "align": "MIN/MIN",
+           "size": "FILL/HUG",
+           "r": 12,
+           "fill": [
+            "var:surface/subtle"
+           ],
+           "stroke": [
+            "var:border/subtle"
+           ],
+           "sw": 1,
+           "c": [
+            {
+             "n": "hrow",
+             "t": "FRAME",
+             "w": 279,
+             "h": 93,
+             "layout": "VERTICAL",
+             "gap": 12,
+             "pad": "0 0 0 0",
+             "align": "MIN/MIN",
+             "size": "FILL/HUG",
+             "c": [
+              {
+               "n": "Notifications sur la plateforme",
+               "t": "TEXT",
+               "w": 279,
+               "h": 52,
+               "size": "FILL/HUG",
+               "fill": [
+                "var:text/secondary"
+               ],
+               "text": "Notifications sur la plateforme",
+               "fs": 20,
+               "font": "Semi Bold"
+              },
+              {
+               "n": "Badge",
+               "t": "INSTANCE",
+               "w": 279,
+               "h": 29,
+               "layout": "HORIZONTAL",
+               "gap": 4,
+               "pad": "4 12 4 12",
+               "align": "CENTER/CENTER",
+               "size": "FILL/HUG",
+               "r": 8,
+               "fill": [
+                "var:surface/sunken"
+               ],
+               "comp": "Badge / kind=category",
+               "c": [
+                {
+                 "n": "chip-icon",
+                 "t": "INSTANCE",
+                 "w": 14,
+                 "h": 14,
+                 "hidden": true,
+                 "size": "FIXED/FIXED",
+                 "comp": "icon-banknote",
+                 "c": [
+                  {
+                   "n": "Vector",
+                   "t": "VECTOR",
+                   "w": 12,
+                   "h": 7,
+                   "size": "FIXED/FIXED",
+                   "stroke": [
+                    "var:text/muted"
+                   ],
+                   "sw": 2
+                  },
+                  {
+                   "n": "Vector",
+                   "t": "VECTOR",
+                   "w": 2,
+                   "h": 2,
+                   "size": "FIXED/FIXED",
+                   "stroke": [
+                    "var:text/muted"
+                   ],
+                   "sw": 2
+                  },
+                  {
+                   "n": "Vector",
+                   "t": "VECTOR",
+                   "w": 7,
+                   "h": 0,
+                   "size": "FIXED/FIXED",
+                   "stroke": [
+                    "var:text/muted"
+                   ],
+                   "sw": 2
+                  }
+                 ]
+                },
+                {
+                 "n": "Label",
+                 "t": "TEXT",
+                 "w": 121,
+                 "h": 21,
+                 "size": "HUG/HUG",
+                 "fill": [
+                  "var:text/secondary"
+                 ],
+                 "text": "Bientôt disponible",
+                 "fs": 14,
+                 "font": "Medium"
+                }
+               ]
+              }
+             ]
+            },
+            {
+             "n": "Les notifications en temps réel dans la plateforme (cloche + tiroir) arriveront dans une prochaine mise à jour.",
+             "t": "TEXT",
+             "w": 279,
+             "h": 63,
+             "size": "FILL/HUG",
+             "fill": [
+              "var:text/secondary"
+             ],
+             "text": "Les notifications en temps réel dans la plateforme (cloche + tiroir) arriveront dans une prochaine mise à jour.",
+             "fs": 14,
+             "font": "Regular"
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "n": "footer-bar",
+     "t": "FRAME",
+     "w": 343,
+     "h": 149,
+     "layout": "VERTICAL",
+     "gap": 12,
+     "pad": "20 16 20 16",
+     "align": "SPACE_BETWEEN/MIN",
+     "size": "FILL/HUG",
+     "fill": [
+      "var:surface/base"
+     ],
+     "stroke": [
+      "var:border/subtle"
+     ],
+     "c": [
+      {
+       "n": "footer-left",
+       "t": "FRAME",
+       "w": 311,
+       "h": 21,
+       "layout": "HORIZONTAL",
+       "gap": 8,
+       "pad": "0 0 0 0",
+       "align": "MIN/CENTER",
+       "size": "FILL/HUG",
+       "c": [
+        {
+         "n": "dirty-dot",
+         "t": "FRAME",
+         "w": 8,
+         "h": 8,
+         "size": "FIXED/FIXED",
+         "r": 9999,
+         "fill": [
+          "var:warning/500"
+         ],
+         "c": []
+        },
+        {
+         "n": "Modifications non enregistrées",
+         "t": "TEXT",
+         "w": 208,
+         "h": 21,
+         "size": "HUG/HUG",
+         "fill": [
+          "var:text/muted"
+         ],
+         "text": "Modifications non enregistrées",
+         "fs": 14,
+         "font": "Medium"
+        }
+       ]
+      },
+      {
+       "n": "footer-right",
+       "t": "FRAME",
+       "w": 311,
+       "h": 88,
+       "layout": "HORIZONTAL",
+       "gap": 12,
+       "pad": "0 0 0 0",
+       "align": "MIN/CENTER",
+       "size": "FILL/HUG",
+       "c": [
+        {
+         "n": "Button",
+         "t": "INSTANCE",
+         "w": 229,
+         "h": 40,
+         "layout": "HORIZONTAL",
+         "gap": 8,
+         "pad": "0 16 0 16",
+         "align": "CENTER/CENTER",
+         "size": "HUG/FIXED",
+         "r": 10,
+         "fill": [
+          "var:surface/base"
+         ],
+         "stroke": [
+          "var:border/strong"
+         ],
+         "sw": 1,
+         "comp": "Button / variant=secondary, size=md, state=default",
+         "c": [
+          {
+           "n": "icon",
+           "t": "FRAME",
+           "w": 18,
+           "h": 18,
+           "hidden": true,
+           "size": "FIXED/FIXED",
+           "c": [
+            {
+             "n": "bar-h",
+             "t": "RECTANGLE",
+             "w": 12,
+             "h": 2,
+             "size": "FIXED/FIXED",
+             "r": 1,
+             "fill": [
+              "var:text/primary"
+             ]
+            },
+            {
+             "n": "bar-v",
+             "t": "RECTANGLE",
+             "w": 2,
+             "h": 12,
+             "size": "FIXED/FIXED",
+             "r": 1,
+             "fill": [
+              "var:text/primary"
+             ]
+            }
+           ]
+          },
+          {
+           "n": "label",
+           "t": "TEXT",
+           "w": 197,
+           "h": 26,
+           "size": "HUG/HUG",
+           "fill": [
+            "var:text/primary"
+           ],
+           "text": "Annuler les modifications",
+           "fs": 16,
+           "font": "Semi Bold"
+          },
+          {
+           "n": "badge",
+           "t": "INSTANCE",
+           "w": 16,
+           "h": 16,
+           "hidden": true,
+           "layout": "HORIZONTAL",
+           "gap": 0,
+           "pad": "0 4 0 4",
+           "align": "CENTER/CENTER",
+           "size": "HUG/HUG",
+           "r": 9999,
+           "fill": [
+            "var:blue/600"
+           ],
+           "comp": "Badge / kind=count",
+           "c": [
+            {
+             "n": "Label",
+             "t": "TEXT",
+             "w": 8,
+             "h": 16,
+             "size": "HUG/HUG",
+             "fill": [
+              "var:text/inverse"
+             ],
+             "text": "3",
+             "fs": 12,
+             "font": "Semi Bold"
+            }
+           ]
+          }
+         ]
+        },
+        {
+         "n": "Button",
+         "t": "INSTANCE",
+         "w": 118,
+         "h": 40,
+         "layout": "HORIZONTAL",
+         "gap": 8,
+         "pad": "0 16 0 16",
+         "align": "CENTER/CENTER",
+         "size": "HUG/FIXED",
+         "r": 10,
+         "fill": [
+          "var:blue/600"
+         ],
+         "comp": "Button / variant=primary, size=md, state=default",
+         "c": [
+          {
+           "n": "icon",
+           "t": "FRAME",
+           "w": 18,
+           "h": 18,
+           "hidden": true,
+           "size": "FIXED/FIXED",
+           "c": [
+            {
+             "n": "bar-h",
+             "t": "RECTANGLE",
+             "w": 12,
+             "h": 2,
+             "size": "FIXED/FIXED",
+             "r": 1,
+             "fill": [
+              "var:text/inverse"
+             ]
+            },
+            {
+             "n": "bar-v",
+             "t": "RECTANGLE",
+             "w": 2,
+             "h": 12,
+             "size": "FIXED/FIXED",
+             "r": 1,
+             "fill": [
+              "var:text/inverse"
+             ]
+            }
+           ]
+          },
+          {
+           "n": "label",
+           "t": "TEXT",
+           "w": 86,
+           "h": 26,
+           "size": "HUG/HUG",
+           "fill": [
+            "var:text/inverse"
+           ],
+           "text": "Enregistrer",
+           "fs": 16,
+           "font": "Semi Bold"
+          },
+          {
+           "n": "badge",
+           "t": "INSTANCE",
+           "w": 16,
+           "h": 16,
+           "hidden": true,
+           "layout": "HORIZONTAL",
+           "gap": 0,
+           "pad": "0 4 0 4",
+           "align": "CENTER/CENTER",
+           "size": "HUG/HUG",
+           "r": 9999,
+           "fill": [
+            "var:blue/600"
+           ],
+           "comp": "Badge / kind=count",
+           "c": [
+            {
+             "n": "Label",
+             "t": "TEXT",
+             "w": 8,
+             "h": 16,
+             "size": "HUG/HUG",
+             "fill": [
+              "var:text/inverse"
+             ],
+             "text": "3",
+             "fs": 12,
+             "font": "Semi Bold"
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}
