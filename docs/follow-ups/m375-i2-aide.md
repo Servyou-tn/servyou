@@ -12,15 +12,8 @@ G5's « Modifier ».
 **Where it lives** `src/components/aide/AideCenter.tsx` (the caption `<p>` under the search) — add `text-caption leading-[17px]` /
 `text-body-sm` to the base of its plain class string.
 
-**Trigger** The founder's answer to Q2 (or the design pass).
+**Trigger** The design pass (with F4's back link and G5's « Modifier ») — founder, 2026-11-05.
 
 ## I2 page inset at 375
 
-**What** The Paramètres 375 frame nests the page in a second 16 px padding (content 311 at x 32, footer content at x 32). We keep the full
-343 column used by every other mobile page.
-
-**Why deferred** A layout choice that differs from every other page; asked as Q1.
-
-**Where it lives** `src/app/parametres/page.tsx`, `src/components/parametres/ParametresShell.tsx` (footer).
-
-**Trigger** The founder's answer to Q1.
+✅ CLOSED — founder, 2026-11-05: keep the full 343 column, consistent with every other mobile page.

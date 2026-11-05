@@ -39,3 +39,8 @@ Batch 2, PR-A9. It also records the #321 answers in `m375-f1-e1-deltas.md`.
 Controls (375, FR + AR):
 - **I2:** a toggle shows « Modifications non enregistrées » / « تعديلات غير محفوظة », and « Annuler les modifications » restores it (nothing saved). The 4 tabs switch.
 - **Aide:** an accordion expands; « Nous écrire » → `#aide-contact`; search filters (1 group, 1 item for « mot de passe » in FR); contact links (WhatsApp, `mailto:`, `/conditions`, `/confidentialite`, `/cookies`, `/accessibilite`) unchanged.
+
+## Founder answers (2026-11-05)
+
+1 keep the full 343 column, consistent with every other mobile page · 2 the desktop Aide search caption goes to the design pass, with
+F4's back link and G5's « Modifier ».

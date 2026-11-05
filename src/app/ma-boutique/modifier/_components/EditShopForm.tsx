@@ -213,26 +213,29 @@ export function EditShopForm({ shopId, initial }: { shopId: string; initial: Edi
       className="mx-auto flex w-full max-w-[760px] flex-col gap-6"
     >
       <div>
-        <nav aria-label="Fil d'Ariane" className="mb-3">
-          <ol className="flex items-center gap-1.5 text-sm text-text-muted">
+        {/* 375 (m375-g3-boutique-modifier): the crumb 14 Medium / 17, gap 8, chevron 14, « Ma boutique » a blue/600 link; 8 → H1
+            32 Bold / 38; 8 → the subline 14 / 21 secondary. */}
+        <nav aria-label="Fil d'Ariane" className="mb-3 max-lg:mb-2">
+          <ol className="flex items-center gap-1.5 text-sm text-text-muted max-lg:gap-2 max-lg:font-medium max-lg:leading-[17px]">
             <li>
-              <Link href="/tableau-de-bord-vendeur" className={`rounded ${FOCUS_RING}`}>
+              <Link href="/tableau-de-bord-vendeur" className={`rounded max-lg:text-brand-blue-600 ${FOCUS_RING}`}>
                 {t('shop.edit.crumb_shop', lang)}
               </Link>
             </li>
             <li aria-hidden="true" className="flex items-center">
-              <ChevronRight className="h-4 w-4 rtl:rotate-180" />
+              <ChevronRight className="h-4 w-4 rtl:rotate-180 max-lg:size-3.5" />
             </li>
             <li aria-current="page" className="font-medium text-text-primary">
               {t('shop.edit.crumb_current', lang)}
             </li>
           </ol>
         </nav>
-        <h1 className="text-2xl font-semibold text-text-primary">{t('shop.edit.page_title', lang)}</h1>
-        <p className="mt-1.5 text-sm text-text-muted">{t('shop.edit.page_subtitle', lang)}</p>
+        <h1 className="text-2xl font-semibold text-text-primary max-lg:text-[32px] max-lg:font-bold max-lg:leading-[38px]">{t('shop.edit.page_title', lang)}</h1>
+        <p className="mt-1.5 text-sm text-text-muted max-lg:mt-2 max-lg:leading-[21px] max-lg:text-text-secondary">{t('shop.edit.page_subtitle', lang)}</p>
       </div>
 
-      <div className="flex flex-col gap-5 rounded-card border border-border-subtle bg-surface-base p-4 sm:p-6">
+      {/* 375: the identity panel pads 24 / 16 with the stroke inside. */}
+      <div className="flex flex-col gap-5 rounded-card border border-border-subtle bg-surface-base p-4 sm:p-6 max-sm:px-[15px] max-sm:py-[23px]">
         <LogoField previewUrl={logoPreview} onPick={pickLogo} />
 
         <BannerField previewUrl={bannerPreview} onPick={pickBanner} onRemove={removeBanner} />
@@ -318,7 +321,9 @@ export function EditShopForm({ shopId, initial }: { shopId: string; initial: Edi
           viewable — not gated on any publish state, since none exists). Ghost-button classes
           copied onto a Link, same improvised pattern tableau-de-bord-vendeur/page.tsx already
           uses where a Button-shaped control must navigate instead of submit. */}
-      <div className="flex flex-col-reverse gap-3 border-t border-border-subtle pt-6 sm:flex-row sm:items-center sm:justify-between">
+      {/* 375: the footer is a white r12 card (1 px border/subtle inside pad 20 / 16) and « Voir ma boutique » comes first, above the
+          save button, as the frame stacks them — DOM order, so the tab order follows. */}
+      <div className="flex flex-col-reverse gap-3 border-t border-border-subtle pt-6 sm:flex-row sm:items-center sm:justify-between max-sm:flex-col max-sm:rounded-card max-sm:border max-sm:bg-surface-base max-sm:px-[15px] max-sm:py-[19px]">
         <Link
           href={`/boutique/${shopId}`}
           className={`relative inline-flex h-12 w-full items-center justify-center gap-2 rounded-lg px-6 text-base font-semibold whitespace-nowrap text-brand-blue-600 transition-colors hover:bg-brand-blue-50 active:bg-brand-blue-100 motion-reduce:transition-none sm:w-auto ${FOCUS_RING}`}
