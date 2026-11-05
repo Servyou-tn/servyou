@@ -62,7 +62,7 @@ export default async function MissionDetailPage({ params }: { params: Promise<{ 
 
   return (
     <AppShell user={shell.topBarUser}>
-      <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-6 max-lg:gap-5">
         <Link
           href="/trouver-des-missions"
           className={`inline-flex w-fit items-center gap-1.5 rounded-sm text-body-sm font-semibold text-brand-blue-600 hover:underline ${FOCUS_RING}`}
@@ -105,15 +105,15 @@ export default async function MissionDetailPage({ params }: { params: Promise<{ 
           </ul>
         </header>
 
-        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_376px] lg:items-start">
+        <div className="grid gap-6 max-lg:gap-5 lg:grid-cols-[minmax(0,1fr)_376px] lg:items-start">
           {/* ── description-panel (322:11768): plain text, width capped at 640 (D-H10-1: no markdown, no raw HTML) ── */}
-          <section className="flex flex-col gap-3 rounded-xl border border-border-subtle bg-surface-base p-6">
+          <section className="flex flex-col gap-3 rounded-xl border border-border-subtle bg-surface-base p-6 max-lg:px-4">
             <h2 className="text-body-sm font-semibold text-text-secondary">{t('missiondetail.description_label', lang)}</h2>
             <p className="max-w-[640px] text-body whitespace-pre-line text-text-primary [overflow-wrap:anywhere]">{mission.description}</p>
           </section>
 
           {/* ── right-col (FIXED 376): the sticky track. top = topbar 64 + 24 so it never sits under the topbar (WCAG 2.2 focus not obscured). ── */}
-          <aside className="flex flex-col gap-6 lg:sticky lg:top-[88px]">
+          <aside className="flex flex-col gap-6 max-lg:gap-4 lg:sticky lg:top-[88px]">
             <ClientCard firstName={mission.client.firstName} city={mission.client.city} avatarUrl={mission.client.avatarUrl} lang={lang} />
             <MissionFacts mission={mission} lang={lang}>
               {mission.cta ? <MissionCta state={mission.cta} missionId={mission.id} answeredAt={mission.answeredAt} lang={lang} /> : null}
