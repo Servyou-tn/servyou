@@ -7,7 +7,7 @@ Exports in this folder: `m375-h7-service-modifier`, `m375-h1-devenir-freelance`.
 
 | Screen | Change | File |
 |---|---|---|
-| H1 | Eyebrow as plain blue caps (no pill) · H1 32 Bold / 38 · subline secondary | `src/components/devenir/DevenirFreelanceContent.tsx` |
+| H1 | Eyebrow as plain blue caps (no pill) · H1 32 Bold / 38 at every width below lg (tablets too, review fix) · subline secondary · card icons 20 | `src/components/devenir/DevenirFreelanceContent.tsx` |
 | H1 | Benefit cards in the boutique-375 look via BenefitGrid's existing `mobileLook="outline"` (#319, unchanged) | same |
 | H7 | — (nothing: see Q1) | — |
 
@@ -25,4 +25,4 @@ H7: the 5-step wizard (shared with Créer un service, aligned at 375 in #307) ·
 2. H1: the frame ends with the « Avant de commencer » age block (date of birth + « Continuer ») and has no hero CTAs. Bring
    the age check back onto this page?
 
-Controls: tsc · eslint · desktop sentinel 1440 FR + AR on H1 (max-lg only): identical · 375 FR side by side · AR spot check.
+Controls: tsc · eslint · desktop sentinel 1440 FR + AR on H1 (max-lg only): identical, before and after the review fix · H1 32/38 + icons 20 measured at 375 and 1023, 48/60 + 24 at 1440 · 375 FR side by side · AR spot check.
