@@ -23,3 +23,7 @@ category chip (frame: an icon beside the title) · H13's next steps as built (th
 
 Controls: tsc · eslint · desktop sentinel 1440 FR + AR (max-* only; same frozen fixture; only the known top-bar noise band
 differs) · 375 FR side by side · AR spot check (H12 form).
+
+## Founder answer (2026-11-05, after #322)
+
+Standing defaults accepted (Q1, the WhatsApp-the-client button, stays as built); any new text waits for the design pass.
