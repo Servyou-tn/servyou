@@ -213,9 +213,11 @@ begin
   delete from public.notification_preferences where profile_id = v_target.id;
   delete from public.job_responses where freelancer_id = v_target.id;
   get diagnostics v_n = row_count;  v_counts := v_counts || jsonb_build_object('job_responses', v_n);
-  -- A post with an open report is closed (status 'deleted', the app's own soft delete) instead, so the report keeps its target.
+  -- (D8) A post that has proposals or an open report is closed (status 'deleted', the app's own soft delete) instead: a hard
+  -- delete would cascade other freelancers' proposals away, and the report keeps its target.
   delete from public.job_posts jp
    where jp.consumer_id = v_target.id
+     and jp.response_count = 0
      and not exists (select 1 from public.reports r where r.target_id = jp.id and r.status in ('open', 'under_review'));   -- cascades the posts' skills and the responses to them
   get diagnostics v_n = row_count;  v_counts := v_counts || jsonb_build_object('job_posts', v_n);
   update public.job_posts set status = 'deleted' where consumer_id = v_target.id and status <> 'deleted';
@@ -298,6 +300,12 @@ begin
          suspended_at     = coalesce(suspended_at, now()),
          suspended_reason = 'Compte supprimé'
    where id = v_target.id;
+
+  -- (D9) A pending data-export request of the same account is closed with it: there is no account left to export to.
+  update public.data_exports
+     set status = 'rejected', processed_at = now(), processed_by = auth.uid()
+   where user_id = v_target.id and status = 'pending';
+  get diagnostics v_n = row_count;  v_counts := v_counts || jsonb_build_object('exports_closed', v_n);
 
   update public.deletion_requests
      set status = 'approved', processed_at = now(), processed_by = auth.uid()

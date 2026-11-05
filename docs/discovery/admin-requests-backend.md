@@ -36,12 +36,12 @@ There is **no deletion path in the app today**: nothing calls `auth.admin.delete
 3. **`admin_process_deletion_request(id, 'approve' | 'reject', note)`**, in one transaction:
    - A reject needs a note.
    - An approve refuses when orders are still open (the Mon compte promise), when the target is an admin, or when it is the caller. Otherwise it **tombstones** the account:
-     - deletes favourites, notification prefs, the person's job responses and job posts (a post with an open report is set to `deleted`, the app's soft delete, instead);
+     - deletes favourites, notification prefs, the person's job responses and job posts (a post with proposals or an open report is set to `deleted`, the app's soft delete, instead — D8);
      - deletes listings no order **and no open report** points to, and hides the rest for good (`status hidden` + `admin_hidden_* = 'Compte supprimé'`; a draft service stays `draft`);
      - deletes the shop / freelancer profile if nothing is left under it and no open report points to it, otherwise hides it;
      - nulls delivery name / address / phone / note on the orders they **bought** (amounts, item title, statuses and dates stay);
      - replaces the profile with `full_name 'Compte supprimé'`, `email supprime-<id>@deleted.servyou.invalid`, phone / city / avatar null, `date_of_birth 1900-01-01`, and suspends it (any open session can write nothing).
-   - It marks the request approved and logs **ids and counts only** (never the erased name / e-mail).
+   - It closes a pending data-export request of the same account (`rejected`, D9), marks the request approved and logs **ids and counts only** (never the erased name / e-mail).
    - It returns `{ user_id, tombstone_email, counts }` for the auth side (D2).
 4. **`admin_process_data_export(id, 'completed' | 'rejected', note)`** marks the request processed; a reject needs a note. `export_url` is not set: the file goes by e-mail, as promised.
 5. **`admin_mark_contact_message_handled(id, note)`:** new → handled (refuses a second time).
@@ -81,9 +81,12 @@ There is **no deletion path in the app today**: nothing calls `auth.admin.delete
   - **Their deletion request's own `reason`.**
   - **Hidden shop / freelancer / listing rows:** their text stays in the database, readable by admins only.
   - **Other text they wrote on shared records:** dispute descriptions, `cancellation_reason` on orders, and the notes in `order_events`.
+  - **Important for the hidden shop / freelancer rows:** they keep their name, description, bio, logo / banner and links, and **past buyers can still read them** through the order clause of the shops / freelancer_profiles SELECT policies. « Hidden » here is not « erased ». Scrubbing those text columns (some are NOT NULL, and products keep their own text) is a follow-up migration if you want it; say so.
 
   Say if any of these should be erased too.
 - **D7 `date_of_birth`** is NOT NULL, so it's set to `1900-01-01` rather than kept.
+- **D8 Job posts with proposals are soft-deleted** (status `deleted`), not hard-deleted, so other freelancers' proposals survive; the post's own title / description stay in the row (not public).
+- **D9 A pending export of the deleted account is closed** (`rejected`) in the same transaction.
 - **Low, logged:** a buyer could place an order on one of the person's still-active listings in the instant between the open-order check and the hide step (same transaction, but the listings are not locked `FOR UPDATE`). That order would stay open on a tombstoned seller. Locking the listings first closes it; say if you want that.
 
 ## Test plan (after the apply; one live suite, ≤ 12 sign-ins, unique prefix, verified cleanup)
