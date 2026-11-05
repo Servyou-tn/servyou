@@ -51,3 +51,8 @@ K1 `/a-bientot`, K2 `/session-expiree`, K3 `/compte-suspendu`, K4 `/maintenance`
 
 Controls (375, FR + AR):
 - **G3:** crumb → `/tableau-de-bord-vendeur`; `/ma-boutique/creer/configuration`; `/boutique/{id}`. The footer and tab order run « Voir ma boutique » → « Enregistrer les modifications ». « Réseaux sociaux » opens. An empty name blocks the save with « Veuillez corriger les champs en rouge. » / « يرجى تصحيح الحقول باللون الأحمر. » (nothing sent).
+
+## Founder answers (2026-11-05)
+
+1 keep the identity-only page with the link to configuration · 2 no unsaved-changes line for now · 3 yes — one small PR for invisible
+44 px hit areas (no pixel change) before the beta, when the founder says so.
