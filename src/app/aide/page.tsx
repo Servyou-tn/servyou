@@ -46,7 +46,7 @@ export default async function AidePage() {
     <AppShell user={shell.topBarUser}>
       <div className="flex flex-col gap-6">
         <div className="flex flex-col gap-2">
-          <nav aria-label={t('aide.breadcrumb.label', lang)} className="flex items-center gap-2 text-sm text-text-muted">
+          <nav aria-label={t('aide.breadcrumb.label', lang)} className="flex items-center gap-2 text-sm text-text-muted max-lg:font-medium max-lg:leading-[17px]">
             <Link href="/" className={`rounded hover:underline ${FOCUS_RING}`}>
               {t('aide.breadcrumb.home', lang)}
             </Link>
@@ -66,7 +66,8 @@ export default async function AidePage() {
               {t('aide.writeUs', lang)}
             </a>
           </div>
-          <p className="text-sm text-text-secondary">{t('aide.subtitle', lang)}</p>
+          {/* 375 (m375-aide): the crumb 14 Medium / 17, the subtitle 14 / 21. */}
+          <p className="text-sm text-text-secondary max-lg:leading-[21px]">{t('aide.subtitle', lang)}</p>
         </div>
 
         <AideCenter

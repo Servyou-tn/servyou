@@ -45,9 +45,10 @@ export function NotificationsTab({
 
   return (
     <div className="flex flex-col gap-6">
-      <section className="flex flex-col gap-2 rounded-xl border border-border-subtle bg-surface-base px-4 py-6 shadow-[0px_1px_1px_rgba(0,0,0,0.04)] lg:p-6">
-        <h2 className="text-xl font-semibold text-text-primary">{t('parametres.notifications.emails.title', lang)}</h2>
-        <p className="text-sm text-text-secondary">{t('parametres.notifications.emails.subtitle', lang)}</p>
+      {/* 375 (m375-i2-parametres): both panels pad 24 / 16 with the stroke inside, titles 20 / 26, text 14 / 21. */}
+      <section className="flex flex-col gap-2 rounded-xl border border-border-subtle bg-surface-base px-4 py-6 shadow-[0px_1px_1px_rgba(0,0,0,0.04)] lg:p-6 max-lg:px-[15px] max-lg:py-[23px]">
+        <h2 className="text-xl font-semibold text-text-primary max-lg:leading-[26px]">{t('parametres.notifications.emails.title', lang)}</h2>
+        <p className="text-sm text-text-secondary max-lg:leading-[21px]">{t('parametres.notifications.emails.subtitle', lang)}</p>
 
         {value === null ? (
           <div role="alert" className="flex flex-col items-start gap-3 pt-4">
@@ -82,14 +83,14 @@ export function NotificationsTab({
         )}
       </section>
 
-      <section className="flex flex-col gap-2 rounded-xl border border-border-subtle bg-surface-subtle px-4 py-6 shadow-[0px_1px_1px_rgba(0,0,0,0.04)] lg:p-6">
+      <section className="flex flex-col gap-2 rounded-xl border border-border-subtle bg-surface-subtle px-4 py-6 shadow-[0px_1px_1px_rgba(0,0,0,0.04)] lg:p-6 max-lg:px-[15px] max-lg:py-[23px]">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
-          <h2 className="text-xl font-semibold text-text-secondary">{t('parametres.notifications.platform.title', lang)}</h2>
-          <span className="rounded-md bg-surface-sunken px-3 py-1 text-center text-sm font-medium text-text-secondary lg:text-start">
+          <h2 className="text-xl font-semibold text-text-secondary max-lg:leading-[26px]">{t('parametres.notifications.platform.title', lang)}</h2>
+          <span className="rounded-md bg-surface-sunken px-3 py-1 text-center text-sm font-medium text-text-secondary lg:text-start max-lg:leading-[21px]">
             {t('marche.sidebar.coming_soon', lang)}
           </span>
         </div>
-        <p className="text-sm text-text-secondary">{t('parametres.notifications.platform.body', lang)}</p>
+        <p className="text-sm text-text-secondary max-lg:leading-[21px]">{t('parametres.notifications.platform.body', lang)}</p>
       </section>
     </div>
   )

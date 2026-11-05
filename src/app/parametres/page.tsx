@@ -41,7 +41,7 @@ export default async function ParametresPage() {
   return (
     <AppShell user={shell.topBarUser}>
       <div className="flex flex-col gap-2">
-        <nav aria-label={t('parametres.title', lang)} className="flex items-center gap-2 text-sm text-text-muted">
+        <nav aria-label={t('parametres.title', lang)} className="flex items-center gap-2 text-sm text-text-muted max-lg:font-medium max-lg:leading-[17px]">
           <Link href="/" className={`rounded hover:underline ${FOCUS_RING}`}>
             {t('parametres.breadcrumb.home', lang)}
           </Link>
@@ -49,7 +49,8 @@ export default async function ParametresPage() {
           <span>{t('parametres.title', lang)}</span>
         </nav>
         <h1 className="text-[32px] font-bold leading-[38px] text-text-primary">{t('parametres.title', lang)}</h1>
-        <p className="text-sm text-text-secondary">
+        {/* 375 (m375-i2-parametres): the crumb 14 Medium / 17, the subline 14 / 21. */}
+        <p className="text-sm text-text-secondary max-lg:leading-[21px]">
           {t('parametres.subline.text', lang)}
           <Link href="/mon-compte" className={`mt-3 block w-fit font-medium text-brand-blue-600 hover:underline lg:mt-0 lg:inline ${FOCUS_RING}`}>
             {t('parametres.subline.link', lang)}
