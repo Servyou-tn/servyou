@@ -77,8 +77,9 @@ export function LinksField({
                 />
               </div>
               {i === 0 ? (
-                // Transparent spacer: same box as the delete button below, so every row ends at the same edge.
-                <span aria-hidden="true" className="size-11 shrink-0 max-sm:hidden" />
+                // Transparent spacer: same box as the delete button below, so every row ends at the same edge. Below sm a lone
+                // row runs full width (m375-h12-proposition); once a second row exists the spacer returns, so edges still line up.
+                <span aria-hidden="true" className={`size-11 shrink-0 ${rows.length === 1 ? 'max-sm:hidden' : ''}`} />
               ) : (
                 <button
                   type="button"

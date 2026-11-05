@@ -7,7 +7,7 @@ Exports in this folder: `m375-h12-proposition`, `m375-h13-envoyee`.
 | Screen | Change | File |
 |---|---|---|
 | H12 | Content + columns gap 20 · right column gap 16 · form panel pad 24/16 | `missions/[id]/proposer/page.tsx`, `_components/ProposalForm.tsx` |
-| H12 | Link inputs full width: the first row's 44 px alignment spacer takes no room below sm (rows with a delete button keep it) | `_components/LinksField.tsx` |
+| H12 | Link inputs full width while there is a single row: its 44 px alignment spacer takes no room below sm; with two or more rows the spacer returns so every row ends at the same edge (review fix) | `_components/LinksField.tsx` |
 | H13 | « Ce que vous avez envoyé » and « Et maintenant ? » panels pad 24/16 | `proposition-envoyee/_components/SentRecap.tsx`, `page.tsx` |
 
 ## Kept as built (standing defaults)
