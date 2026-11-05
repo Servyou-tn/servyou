@@ -1,0 +1,1858 @@
+{
+ "n": "Demander ce produit (375 mobile)",
+ "t": "FRAME",
+ "w": 375,
+ "h": 1572,
+ "layout": "VERTICAL",
+ "gap": 16,
+ "pad": "20 16 32 16",
+ "align": "MIN/MIN",
+ "size": "FIXED/HUG",
+ "fill": [
+  "var:surface/base"
+ ],
+ "c": [
+  {
+   "n": "content",
+   "t": "FRAME",
+   "w": 343,
+   "h": 1520,
+   "layout": "VERTICAL",
+   "gap": 20,
+   "pad": "0 0 0 0",
+   "align": "MIN/MIN",
+   "size": "FILL/HUG",
+   "c": [
+    {
+     "n": "header",
+     "t": "FRAME",
+     "w": 343,
+     "h": 113,
+     "layout": "VERTICAL",
+     "gap": 8,
+     "pad": "0 0 0 0",
+     "align": "MIN/MIN",
+     "size": "FILL/HUG",
+     "c": [
+      {
+       "n": "Breadcrumb",
+       "t": "INSTANCE",
+       "w": 149,
+       "h": 17,
+       "layout": "HORIZONTAL",
+       "gap": 8,
+       "pad": "0 0 0 0",
+       "align": "MIN/CENTER",
+       "size": "HUG/HUG",
+       "comp": "Breadcrumb",
+       "c": [
+        {
+         "n": "Accueil",
+         "t": "TEXT",
+         "w": 49,
+         "h": 17,
+         "size": "HUG/HUG",
+         "fill": [
+          "var:text/muted"
+         ],
+         "text": "Produit",
+         "fs": 14,
+         "font": "Medium"
+        },
+        {
+         "n": "icon-chevron-right",
+         "t": "INSTANCE",
+         "w": 14,
+         "h": 14,
+         "size": "FIXED/FIXED",
+         "comp": "icon-chevron-right",
+         "c": [
+          {
+           "n": "Vector",
+           "t": "VECTOR",
+           "w": 4,
+           "h": 7,
+           "size": "FIXED/FIXED",
+           "stroke": [
+            "var:text/muted"
+           ],
+           "sw": 2
+          }
+         ]
+        },
+        {
+         "n": "Artisanat",
+         "t": "TEXT",
+         "w": 70,
+         "h": 17,
+         "size": "HUG/HUG",
+         "fill": [
+          "var:text/muted"
+         ],
+         "text": "Demander",
+         "fs": 14,
+         "font": "Medium"
+        },
+        {
+         "n": "icon-chevron-right",
+         "t": "INSTANCE",
+         "w": 14,
+         "h": 14,
+         "hidden": true,
+         "size": "FIXED/FIXED",
+         "comp": "icon-chevron-right",
+         "c": [
+          {
+           "n": "Vector",
+           "t": "VECTOR",
+           "w": 4,
+           "h": 7,
+           "size": "FIXED/FIXED",
+           "stroke": [
+            "var:text/muted"
+           ],
+           "sw": 2
+          }
+         ]
+        },
+        {
+         "n": "Poterie de Nabeul",
+         "t": "TEXT",
+         "w": 121,
+         "h": 17,
+         "hidden": true,
+         "size": "FIXED/FIXED",
+         "fill": [
+          "var:text/primary"
+         ],
+         "text": "Poterie de Nabeul",
+         "fs": 14,
+         "font": "Semi Bold"
+        }
+       ]
+      },
+      {
+       "n": "H1",
+       "t": "TEXT",
+       "w": 343,
+       "h": 38,
+       "size": "FILL/HUG",
+       "fill": [
+        "var:text/primary"
+       ],
+       "text": "Demander ce produit",
+       "fs": 32,
+       "font": "Bold",
+       "style": "H1"
+      },
+      {
+       "n": "subline",
+       "t": "TEXT",
+       "w": 343,
+       "h": 42,
+       "size": "FILL/HUG",
+       "fill": [
+        "var:text/secondary"
+       ],
+       "text": "Renseignez vos coordonnées de livraison. Vous payez à la réception.",
+       "fs": 14,
+       "font": "Regular",
+       "style": "Body Small"
+      }
+     ]
+    },
+    {
+     "n": "twoCol",
+     "t": "FRAME",
+     "w": 343,
+     "h": 1387,
+     "layout": "VERTICAL",
+     "gap": 20,
+     "pad": "0 0 0 0",
+     "align": "MIN/MIN",
+     "size": "FILL/HUG",
+     "c": [
+      {
+       "n": "formCol",
+       "t": "FRAME",
+       "w": 343,
+       "h": 991,
+       "layout": "VERTICAL",
+       "gap": 32,
+       "pad": "0 0 0 0",
+       "align": "MIN/MIN",
+       "size": "FILL/HUG",
+       "c": [
+        {
+         "n": "section1",
+         "t": "FRAME",
+         "w": 343,
+         "h": 881,
+         "layout": "VERTICAL",
+         "gap": 20,
+         "pad": "0 0 0 0",
+         "align": "MIN/MIN",
+         "size": "FILL/HUG",
+         "c": [
+          {
+           "n": "h3",
+           "t": "TEXT",
+           "w": 343,
+           "h": 26,
+           "size": "FILL/HUG",
+           "fill": [
+            "var:text/primary"
+           ],
+           "text": "Coordonnées de livraison",
+           "fs": 20,
+           "font": "Semi Bold",
+           "style": "H3"
+          },
+          {
+           "n": "Input",
+           "t": "INSTANCE",
+           "w": 343,
+           "h": 97,
+           "layout": "VERTICAL",
+           "gap": 8,
+           "pad": "0 0 0 0",
+           "align": "MIN/MIN",
+           "size": "FILL/HUG",
+           "comp": "Input / variant=text, state=filled",
+           "c": [
+            {
+             "n": "Frame",
+             "t": "FRAME",
+             "w": 204,
+             "h": 21,
+             "layout": "HORIZONTAL",
+             "gap": 2,
+             "pad": "0 0 0 0",
+             "align": "MIN/CENTER",
+             "size": "HUG/HUG",
+             "c": [
+              {
+               "n": "label",
+               "t": "TEXT",
+               "w": 194,
+               "h": 21,
+               "size": "HUG/HUG",
+               "fill": [
+                "var:text/secondary"
+               ],
+               "text": "Nom complet du destinataire",
+               "fs": 14,
+               "font": "Medium"
+              },
+              {
+               "n": "asterisk",
+               "t": "TEXT",
+               "w": 8,
+               "h": 21,
+               "size": "HUG/HUG",
+               "fill": [
+                "var:danger/500"
+               ],
+               "text": "*",
+               "fs": 14,
+               "font": "Medium"
+              }
+             ]
+            },
+            {
+             "n": "field",
+             "t": "FRAME",
+             "w": 343,
+             "h": 44,
+             "layout": "HORIZONTAL",
+             "gap": 8,
+             "pad": "0 16 0 16",
+             "align": "MIN/CENTER",
+             "size": "FILL/FIXED",
+             "r": 10,
+             "fill": [
+              "var:surface/base"
+             ],
+             "stroke": [
+              "var:border/strong"
+             ],
+             "sw": 1,
+             "c": [
+              {
+               "n": "value",
+               "t": "TEXT",
+               "w": 311,
+               "h": 26,
+               "size": "FILL/HUG",
+               "fill": [
+                "var:text/primary"
+               ],
+               "text": "Yassine Ben Ali",
+               "fs": 16,
+               "font": "Regular",
+               "style": "Body"
+              }
+             ]
+            },
+            {
+             "n": "helperRow",
+             "t": "FRAME",
+             "w": 343,
+             "h": 16,
+             "layout": "HORIZONTAL",
+             "gap": 0,
+             "pad": "0 0 0 0",
+             "align": "SPACE_BETWEEN/CENTER",
+             "size": "FILL/FIXED",
+             "c": [
+              {
+               "n": "helper",
+               "t": "TEXT",
+               "w": 373,
+               "h": 21,
+               "size": "HUG/HUG",
+               "fill": [
+                "var:text/muted"
+               ],
+               "text": "Modifiable si la commande est livrée à quelqu’un d’autre.",
+               "fs": 14,
+               "font": "Regular",
+               "style": "Body Small"
+              },
+              {
+               "n": "counter",
+               "t": "TEXT",
+               "w": 29,
+               "h": 17,
+               "hidden": true,
+               "size": "FIXED/FIXED",
+               "fill": [
+                "var:text/muted"
+               ],
+               "text": "0/80",
+               "fs": 12,
+               "font": "Medium",
+               "style": "Overline"
+              }
+             ]
+            }
+           ]
+          },
+          {
+           "n": "Input",
+           "t": "INSTANCE",
+           "w": 343,
+           "h": 97,
+           "layout": "VERTICAL",
+           "gap": 8,
+           "pad": "0 0 0 0",
+           "align": "MIN/MIN",
+           "size": "FILL/HUG",
+           "comp": "Input / variant=phone, state=default",
+           "c": [
+            {
+             "n": "Frame",
+             "t": "FRAME",
+             "w": 81,
+             "h": 21,
+             "layout": "HORIZONTAL",
+             "gap": 2,
+             "pad": "0 0 0 0",
+             "align": "MIN/CENTER",
+             "size": "HUG/HUG",
+             "c": [
+              {
+               "n": "label",
+               "t": "TEXT",
+               "w": 71,
+               "h": 21,
+               "size": "HUG/HUG",
+               "fill": [
+                "var:text/secondary"
+               ],
+               "text": "Téléphone",
+               "fs": 14,
+               "font": "Medium"
+              },
+              {
+               "n": "asterisk",
+               "t": "TEXT",
+               "w": 8,
+               "h": 21,
+               "size": "HUG/HUG",
+               "fill": [
+                "var:danger/500"
+               ],
+               "text": "*",
+               "fs": 14,
+               "font": "Medium"
+              }
+             ]
+            },
+            {
+             "n": "field",
+             "t": "FRAME",
+             "w": 343,
+             "h": 44,
+             "layout": "HORIZONTAL",
+             "gap": 8,
+             "pad": "0 16 0 16",
+             "align": "MIN/CENTER",
+             "size": "FILL/FIXED",
+             "r": 10,
+             "fill": [
+              "var:surface/base"
+             ],
+             "stroke": [
+              "var:border/strong"
+             ],
+             "sw": 1,
+             "c": [
+              {
+               "n": "phone-prefix",
+               "t": "FRAME",
+               "w": 47,
+               "h": 26,
+               "layout": "HORIZONTAL",
+               "gap": 8,
+               "pad": "0 0 0 0",
+               "align": "MIN/CENTER",
+               "size": "HUG/HUG",
+               "c": [
+                {
+                 "n": "+216",
+                 "t": "TEXT",
+                 "w": 38,
+                 "h": 26,
+                 "size": "HUG/HUG",
+                 "fill": [
+                  "var:text/secondary"
+                 ],
+                 "text": "+216",
+                 "fs": 16,
+                 "font": "Regular",
+                 "style": "Body"
+                },
+                {
+                 "n": "divider",
+                 "t": "RECTANGLE",
+                 "w": 1,
+                 "h": 20,
+                 "size": "FIXED/FIXED",
+                 "fill": [
+                  "var:border/subtle"
+                 ]
+                }
+               ]
+              },
+              {
+               "n": "value",
+               "t": "TEXT",
+               "w": 256,
+               "h": 26,
+               "size": "FILL/HUG",
+               "fill": [
+                "var:text/muted"
+               ],
+               "text": "20 123 456",
+               "fs": 16,
+               "font": "Regular",
+               "style": "Body"
+              }
+             ]
+            },
+            {
+             "n": "helperRow",
+             "t": "FRAME",
+             "w": 343,
+             "h": 16,
+             "layout": "HORIZONTAL",
+             "gap": 0,
+             "pad": "0 0 0 0",
+             "align": "SPACE_BETWEEN/CENTER",
+             "size": "FILL/FIXED",
+             "c": [
+              {
+               "n": "helper",
+               "t": "TEXT",
+               "w": 261,
+               "h": 21,
+               "size": "HUG/HUG",
+               "fill": [
+                "var:text/muted"
+               ],
+               "text": "Le livreur vous contactera à ce numéro.",
+               "fs": 14,
+               "font": "Regular",
+               "style": "Body Small"
+              },
+              {
+               "n": "counter",
+               "t": "TEXT",
+               "w": 29,
+               "h": 17,
+               "hidden": true,
+               "size": "FIXED/FIXED",
+               "fill": [
+                "var:text/muted"
+               ],
+               "text": "0/80",
+               "fs": 12,
+               "font": "Medium",
+               "style": "Overline"
+              }
+             ]
+            }
+           ]
+          },
+          {
+           "n": "adresse",
+           "t": "FRAME",
+           "w": 343,
+           "h": 478,
+           "layout": "VERTICAL",
+           "gap": 16,
+           "pad": "0 0 0 0",
+           "align": "MIN/MIN",
+           "size": "FILL/HUG",
+           "c": [
+            {
+             "n": "adresseLabel",
+             "t": "TEXT",
+             "w": 343,
+             "h": 26,
+             "size": "FILL/HUG",
+             "fill": [
+              "var:text/primary"
+             ],
+             "text": "Adresse *",
+             "fs": 16,
+             "font": "Medium"
+            },
+            {
+             "n": "Input",
+             "t": "INSTANCE",
+             "w": 343,
+             "h": 97,
+             "layout": "VERTICAL",
+             "gap": 8,
+             "pad": "0 0 0 0",
+             "align": "MIN/MIN",
+             "size": "FILL/HUG",
+             "comp": "Input / variant=text, state=default",
+             "c": [
+              {
+               "n": "Frame",
+               "t": "FRAME",
+               "w": 108,
+               "h": 21,
+               "layout": "HORIZONTAL",
+               "gap": 2,
+               "pad": "0 0 0 0",
+               "align": "MIN/CENTER",
+               "size": "HUG/HUG",
+               "c": [
+                {
+                 "n": "label",
+                 "t": "TEXT",
+                 "w": 98,
+                 "h": 21,
+                 "size": "HUG/HUG",
+                 "fill": [
+                  "var:text/secondary"
+                 ],
+                 "text": "Rue et numéro",
+                 "fs": 14,
+                 "font": "Medium"
+                },
+                {
+                 "n": "asterisk",
+                 "t": "TEXT",
+                 "w": 8,
+                 "h": 21,
+                 "size": "HUG/HUG",
+                 "fill": [
+                  "var:danger/500"
+                 ],
+                 "text": "*",
+                 "fs": 14,
+                 "font": "Medium"
+                }
+               ]
+              },
+              {
+               "n": "field",
+               "t": "FRAME",
+               "w": 343,
+               "h": 44,
+               "layout": "HORIZONTAL",
+               "gap": 8,
+               "pad": "0 16 0 16",
+               "align": "MIN/CENTER",
+               "size": "FILL/FIXED",
+               "r": 10,
+               "fill": [
+                "var:surface/base"
+               ],
+               "stroke": [
+                "var:border/strong"
+               ],
+               "sw": 1,
+               "c": [
+                {
+                 "n": "value",
+                 "t": "TEXT",
+                 "w": 311,
+                 "h": 26,
+                 "size": "FILL/HUG",
+                 "fill": [
+                  "var:text/muted"
+                 ],
+                 "text": "12 rue de la République",
+                 "fs": 16,
+                 "font": "Regular",
+                 "style": "Body"
+                }
+               ]
+              },
+              {
+               "n": "helperRow",
+               "t": "FRAME",
+               "w": 343,
+               "h": 16,
+               "layout": "HORIZONTAL",
+               "gap": 0,
+               "pad": "0 0 0 0",
+               "align": "SPACE_BETWEEN/CENTER",
+               "size": "FILL/FIXED",
+               "c": [
+                {
+                 "n": "helper",
+                 "t": "TEXT",
+                 "w": 343,
+                 "h": 21,
+                 "size": "FILL/HUG",
+                 "fill": [
+                  "var:text/muted"
+                 ],
+                 "text": "",
+                 "fs": 14,
+                 "font": "Regular",
+                 "style": "Body Small"
+                },
+                {
+                 "n": "counter",
+                 "t": "TEXT",
+                 "w": 29,
+                 "h": 17,
+                 "hidden": true,
+                 "size": "FIXED/FIXED",
+                 "fill": [
+                  "var:text/muted"
+                 ],
+                 "text": "0/80",
+                 "fs": 12,
+                 "font": "Medium",
+                 "style": "Overline"
+                }
+               ]
+              }
+             ]
+            },
+            {
+             "n": "Input",
+             "t": "INSTANCE",
+             "w": 343,
+             "h": 97,
+             "layout": "VERTICAL",
+             "gap": 8,
+             "pad": "0 0 0 0",
+             "align": "MIN/MIN",
+             "size": "FILL/HUG",
+             "comp": "Input / variant=text, state=default",
+             "c": [
+              {
+               "n": "Frame",
+               "t": "FRAME",
+               "w": 66,
+               "h": 21,
+               "layout": "HORIZONTAL",
+               "gap": 2,
+               "pad": "0 0 0 0",
+               "align": "MIN/CENTER",
+               "size": "HUG/HUG",
+               "c": [
+                {
+                 "n": "label",
+                 "t": "TEXT",
+                 "w": 56,
+                 "h": 21,
+                 "size": "HUG/HUG",
+                 "fill": [
+                  "var:text/secondary"
+                 ],
+                 "text": "Quartier",
+                 "fs": 14,
+                 "font": "Medium"
+                },
+                {
+                 "n": "asterisk",
+                 "t": "TEXT",
+                 "w": 8,
+                 "h": 21,
+                 "size": "HUG/HUG",
+                 "fill": [
+                  "var:danger/500"
+                 ],
+                 "text": "*",
+                 "fs": 14,
+                 "font": "Medium"
+                }
+               ]
+              },
+              {
+               "n": "field",
+               "t": "FRAME",
+               "w": 343,
+               "h": 44,
+               "layout": "HORIZONTAL",
+               "gap": 8,
+               "pad": "0 16 0 16",
+               "align": "MIN/CENTER",
+               "size": "FILL/FIXED",
+               "r": 10,
+               "fill": [
+                "var:surface/base"
+               ],
+               "stroke": [
+                "var:border/strong"
+               ],
+               "sw": 1,
+               "c": [
+                {
+                 "n": "value",
+                 "t": "TEXT",
+                 "w": 311,
+                 "h": 26,
+                 "size": "FILL/HUG",
+                 "fill": [
+                  "var:text/muted"
+                 ],
+                 "text": "Centre-ville",
+                 "fs": 16,
+                 "font": "Regular",
+                 "style": "Body"
+                }
+               ]
+              },
+              {
+               "n": "helperRow",
+               "t": "FRAME",
+               "w": 343,
+               "h": 16,
+               "layout": "HORIZONTAL",
+               "gap": 0,
+               "pad": "0 0 0 0",
+               "align": "SPACE_BETWEEN/CENTER",
+               "size": "FILL/FIXED",
+               "c": [
+                {
+                 "n": "helper",
+                 "t": "TEXT",
+                 "w": 343,
+                 "h": 21,
+                 "size": "FILL/HUG",
+                 "fill": [
+                  "var:text/muted"
+                 ],
+                 "text": "",
+                 "fs": 14,
+                 "font": "Regular",
+                 "style": "Body Small"
+                },
+                {
+                 "n": "counter",
+                 "t": "TEXT",
+                 "w": 29,
+                 "h": 17,
+                 "hidden": true,
+                 "size": "FIXED/FIXED",
+                 "fill": [
+                  "var:text/muted"
+                 ],
+                 "text": "0/80",
+                 "fs": 12,
+                 "font": "Medium",
+                 "style": "Overline"
+                }
+               ]
+              }
+             ]
+            },
+            {
+             "n": "cityRow",
+             "t": "FRAME",
+             "w": 343,
+             "h": 210,
+             "layout": "VERTICAL",
+             "gap": 16,
+             "pad": "0 0 0 0",
+             "align": "MIN/MIN",
+             "size": "FILL/HUG",
+             "c": [
+              {
+               "n": "Select — Trigger",
+               "t": "INSTANCE",
+               "w": 343,
+               "h": 97,
+               "layout": "VERTICAL",
+               "gap": 8,
+               "pad": "0 0 0 0",
+               "align": "MIN/MIN",
+               "size": "FILL/HUG",
+               "comp": "Select — Trigger / variant=single, size=default, state=default",
+               "c": [
+                {
+                 "n": "Frame",
+                 "t": "FRAME",
+                 "w": 39,
+                 "h": 21,
+                 "layout": "HORIZONTAL",
+                 "gap": 2,
+                 "pad": "0 0 0 0",
+                 "align": "MIN/CENTER",
+                 "size": "HUG/HUG",
+                 "c": [
+                  {
+                   "n": "label",
+                   "t": "TEXT",
+                   "w": 29,
+                   "h": 21,
+                   "size": "HUG/HUG",
+                   "fill": [
+                    "var:text/secondary"
+                   ],
+                   "text": "Ville",
+                   "fs": 14,
+                   "font": "Medium"
+                  },
+                  {
+                   "n": "asterisk",
+                   "t": "TEXT",
+                   "w": 8,
+                   "h": 21,
+                   "size": "HUG/HUG",
+                   "fill": [
+                    "var:danger/500"
+                   ],
+                   "text": "*",
+                   "fs": 14,
+                   "font": "Medium"
+                  }
+                 ]
+                },
+                {
+                 "n": "field",
+                 "t": "FRAME",
+                 "w": 343,
+                 "h": 44,
+                 "layout": "HORIZONTAL",
+                 "gap": 8,
+                 "pad": "0 16 0 16",
+                 "align": "MIN/CENTER",
+                 "size": "FILL/FIXED",
+                 "r": 10,
+                 "fill": [
+                  "var:surface/base"
+                 ],
+                 "stroke": [
+                  "var:border/strong"
+                 ],
+                 "sw": 1,
+                 "c": [
+                  {
+                   "n": "value",
+                   "t": "TEXT",
+                   "w": 285,
+                   "h": 26,
+                   "size": "FILL/HUG",
+                   "fill": [
+                    "var:text/muted"
+                   ],
+                   "text": "Sélectionner",
+                   "fs": 16,
+                   "font": "Regular",
+                   "style": "Body"
+                  },
+                  {
+                   "n": "icon-chevron",
+                   "t": "FRAME",
+                   "w": 18,
+                   "h": 18,
+                   "size": "FIXED/FIXED",
+                   "c": [
+                    {
+                     "n": "Vector",
+                     "t": "VECTOR",
+                     "w": 9,
+                     "h": 5,
+                     "size": "FIXED/FIXED",
+                     "stroke": [
+                      "var:text/muted"
+                     ],
+                     "sw": 1.5
+                    }
+                   ]
+                  }
+                 ]
+                },
+                {
+                 "n": "helperRow",
+                 "t": "FRAME",
+                 "w": 280,
+                 "h": 16,
+                 "layout": "HORIZONTAL",
+                 "gap": 0,
+                 "pad": "0 0 0 0",
+                 "align": "SPACE_BETWEEN/CENTER",
+                 "size": "FIXED/FIXED",
+                 "c": [
+                  {
+                   "n": "helper",
+                   "t": "TEXT",
+                   "w": 280,
+                   "h": 21,
+                   "size": "FILL/HUG",
+                   "fill": [
+                    "var:text/muted"
+                   ],
+                   "text": "",
+                   "fs": 14,
+                   "font": "Regular",
+                   "style": "Body Small"
+                  },
+                  {
+                   "n": "counter",
+                   "t": "TEXT",
+                   "w": 29,
+                   "h": 17,
+                   "hidden": true,
+                   "size": "FIXED/FIXED",
+                   "fill": [
+                    "var:text/muted"
+                   ],
+                   "text": "0/80",
+                   "fs": 12,
+                   "font": "Medium",
+                   "style": "Overline"
+                  }
+                 ]
+                }
+               ]
+              },
+              {
+               "n": "Select — Trigger",
+               "t": "INSTANCE",
+               "w": 343,
+               "h": 97,
+               "layout": "VERTICAL",
+               "gap": 8,
+               "pad": "0 0 0 0",
+               "align": "MIN/MIN",
+               "size": "FILL/HUG",
+               "comp": "Select — Trigger / variant=single, size=default, state=default",
+               "c": [
+                {
+                 "n": "Frame",
+                 "t": "FRAME",
+                 "w": 94,
+                 "h": 21,
+                 "layout": "HORIZONTAL",
+                 "gap": 2,
+                 "pad": "0 0 0 0",
+                 "align": "MIN/CENTER",
+                 "size": "HUG/HUG",
+                 "c": [
+                  {
+                   "n": "label",
+                   "t": "TEXT",
+                   "w": 84,
+                   "h": 21,
+                   "size": "HUG/HUG",
+                   "fill": [
+                    "var:text/secondary"
+                   ],
+                   "text": "Gouvernorat",
+                   "fs": 14,
+                   "font": "Medium"
+                  },
+                  {
+                   "n": "asterisk",
+                   "t": "TEXT",
+                   "w": 8,
+                   "h": 21,
+                   "size": "HUG/HUG",
+                   "fill": [
+                    "var:danger/500"
+                   ],
+                   "text": "*",
+                   "fs": 14,
+                   "font": "Medium"
+                  }
+                 ]
+                },
+                {
+                 "n": "field",
+                 "t": "FRAME",
+                 "w": 343,
+                 "h": 44,
+                 "layout": "HORIZONTAL",
+                 "gap": 8,
+                 "pad": "0 16 0 16",
+                 "align": "MIN/CENTER",
+                 "size": "FILL/FIXED",
+                 "r": 10,
+                 "fill": [
+                  "var:surface/base"
+                 ],
+                 "stroke": [
+                  "var:border/strong"
+                 ],
+                 "sw": 1,
+                 "c": [
+                  {
+                   "n": "value",
+                   "t": "TEXT",
+                   "w": 285,
+                   "h": 26,
+                   "size": "FILL/HUG",
+                   "fill": [
+                    "var:text/muted"
+                   ],
+                   "text": "Sélectionner",
+                   "fs": 16,
+                   "font": "Regular",
+                   "style": "Body"
+                  },
+                  {
+                   "n": "icon-chevron",
+                   "t": "FRAME",
+                   "w": 18,
+                   "h": 18,
+                   "size": "FIXED/FIXED",
+                   "c": [
+                    {
+                     "n": "Vector",
+                     "t": "VECTOR",
+                     "w": 9,
+                     "h": 5,
+                     "size": "FIXED/FIXED",
+                     "stroke": [
+                      "var:text/muted"
+                     ],
+                     "sw": 1.5
+                    }
+                   ]
+                  }
+                 ]
+                },
+                {
+                 "n": "helperRow",
+                 "t": "FRAME",
+                 "w": 280,
+                 "h": 16,
+                 "layout": "HORIZONTAL",
+                 "gap": 0,
+                 "pad": "0 0 0 0",
+                 "align": "SPACE_BETWEEN/CENTER",
+                 "size": "FIXED/FIXED",
+                 "c": [
+                  {
+                   "n": "helper",
+                   "t": "TEXT",
+                   "w": 280,
+                   "h": 21,
+                   "size": "FILL/HUG",
+                   "fill": [
+                    "var:text/muted"
+                   ],
+                   "text": "",
+                   "fs": 14,
+                   "font": "Regular",
+                   "style": "Body Small"
+                  },
+                  {
+                   "n": "counter",
+                   "t": "TEXT",
+                   "w": 29,
+                   "h": 17,
+                   "hidden": true,
+                   "size": "FIXED/FIXED",
+                   "fill": [
+                    "var:text/muted"
+                   ],
+                   "text": "0/80",
+                   "fs": 12,
+                   "font": "Medium",
+                   "style": "Overline"
+                  }
+                 ]
+                }
+               ]
+              }
+             ]
+            }
+           ]
+          },
+          {
+           "n": "Textarea",
+           "t": "INSTANCE",
+           "w": 343,
+           "h": 103,
+           "layout": "VERTICAL",
+           "gap": 8,
+           "pad": "0 0 0 0",
+           "align": "MIN/MIN",
+           "size": "FILL/HUG",
+           "comp": "Textarea / state=default",
+           "c": [
+            {
+             "n": "Frame",
+             "t": "FRAME",
+             "w": 218,
+             "h": 21,
+             "layout": "HORIZONTAL",
+             "gap": 2,
+             "pad": "0 0 0 0",
+             "align": "MIN/CENTER",
+             "size": "HUG/HUG",
+             "c": [
+              {
+               "n": "label",
+               "t": "TEXT",
+               "w": 218,
+               "h": 21,
+               "size": "HUG/HUG",
+               "fill": [
+                "var:text/secondary"
+               ],
+               "text": "Note pour le vendeur (optionnel)",
+               "fs": 14,
+               "font": "Medium"
+              },
+              {
+               "n": "asterisk",
+               "t": "TEXT",
+               "w": 8,
+               "h": 21,
+               "hidden": true,
+               "size": "FIXED/FIXED",
+               "fill": [
+                "var:danger/500"
+               ],
+               "text": "*",
+               "fs": 14,
+               "font": "Medium"
+              }
+             ]
+            },
+            {
+             "n": "field",
+             "t": "FRAME",
+             "w": 343,
+             "h": 50,
+             "layout": "HORIZONTAL",
+             "gap": 8,
+             "pad": "12 16 12 16",
+             "align": "MIN/MIN",
+             "size": "FILL/HUG",
+             "r": 10,
+             "fill": [
+              "var:surface/base"
+             ],
+             "stroke": [
+              "var:border/strong"
+             ],
+             "sw": 1,
+             "c": [
+              {
+               "n": "value",
+               "t": "TEXT",
+               "w": 311,
+               "h": 26,
+               "size": "FILL/HUG",
+               "fill": [
+                "var:text/muted"
+               ],
+               "text": "Ex: Livrer l’après-midi, appeler avant.",
+               "fs": 16,
+               "font": "Regular",
+               "style": "Body"
+              },
+              {
+               "n": "resize-grip",
+               "t": "FRAME",
+               "w": 12,
+               "h": 12,
+               "size": "FIXED/FIXED",
+               "c": [
+                {
+                 "n": "Vector",
+                 "t": "VECTOR",
+                 "w": 7,
+                 "h": 7,
+                 "size": "FIXED/FIXED",
+                 "stroke": [
+                  "var:border/strong"
+                 ],
+                 "sw": 1.25
+                },
+                {
+                 "n": "Vector",
+                 "t": "VECTOR",
+                 "w": 3,
+                 "h": 3,
+                 "size": "FIXED/FIXED",
+                 "stroke": [
+                  "var:border/strong"
+                 ],
+                 "sw": 1.25
+                }
+               ]
+              }
+             ]
+            },
+            {
+             "n": "helperRow",
+             "t": "FRAME",
+             "w": 343,
+             "h": 16,
+             "layout": "HORIZONTAL",
+             "gap": 0,
+             "pad": "0 0 0 0",
+             "align": "SPACE_BETWEEN/CENTER",
+             "size": "FILL/FIXED",
+             "c": [
+              {
+               "n": "helper",
+               "t": "TEXT",
+               "w": 210,
+               "h": 21,
+               "size": "HUG/HUG",
+               "fill": [
+                "var:text/muted"
+               ],
+               "text": "Une précision pour la livraison ?",
+               "fs": 14,
+               "font": "Regular",
+               "style": "Body Small"
+              },
+              {
+               "n": "counter",
+               "t": "TEXT",
+               "w": 38,
+               "h": 17,
+               "size": "HUG/HUG",
+               "fill": [
+                "var:text/muted"
+               ],
+               "text": "0/300",
+               "fs": 12,
+               "font": "Medium",
+               "style": "Overline"
+              }
+             ]
+            }
+           ]
+          }
+         ]
+        },
+        {
+         "n": "section2",
+         "t": "FRAME",
+         "w": 343,
+         "h": 78,
+         "layout": "VERTICAL",
+         "gap": 12,
+         "pad": "0 0 0 0",
+         "align": "MIN/MIN",
+         "size": "FILL/HUG",
+         "c": [
+          {
+           "n": "h3",
+           "t": "TEXT",
+           "w": 343,
+           "h": 26,
+           "size": "FILL/HUG",
+           "fill": [
+            "var:text/primary"
+           ],
+           "text": "Quantité",
+           "fs": 20,
+           "font": "Semi Bold",
+           "style": "H3"
+          },
+          {
+           "n": "stepGrp",
+           "t": "FRAME",
+           "w": 343,
+           "h": 40,
+           "layout": "HORIZONTAL",
+           "gap": 12,
+           "pad": "0 0 0 0",
+           "align": "MIN/CENTER",
+           "size": "FILL/HUG",
+           "c": [
+            {
+             "n": "Number Stepper",
+             "t": "INSTANCE",
+             "w": 136,
+             "h": 40,
+             "layout": "HORIZONTAL",
+             "gap": 0,
+             "pad": "0 0 0 0",
+             "align": "MIN/CENTER",
+             "size": "HUG/HUG",
+             "r": 10,
+             "fill": [
+              "var:surface/base"
+             ],
+             "stroke": [
+              "var:border/strong"
+             ],
+             "sw": 1,
+             "comp": "Number Stepper / state=default",
+             "c": [
+              {
+               "n": "minus",
+               "t": "FRAME",
+               "w": 40,
+               "h": 40,
+               "layout": "HORIZONTAL",
+               "gap": 0,
+               "pad": "0 0 0 0",
+               "align": "CENTER/CENTER",
+               "size": "FIXED/FIXED",
+               "c": [
+                {
+                 "n": "icon-minus",
+                 "t": "INSTANCE",
+                 "w": 18,
+                 "h": 18,
+                 "size": "FIXED/FIXED",
+                 "comp": "icon-minus",
+                 "c": [
+                  {
+                   "n": "Vector",
+                   "t": "VECTOR",
+                   "w": 11,
+                   "h": 0,
+                   "size": "FIXED/FIXED",
+                   "stroke": [
+                    "var:text/secondary"
+                   ],
+                   "sw": 2
+                  }
+                 ]
+                }
+               ]
+              },
+              {
+               "n": "value",
+               "t": "FRAME",
+               "w": 56,
+               "h": 40,
+               "layout": "HORIZONTAL",
+               "gap": 0,
+               "pad": "0 0 0 0",
+               "align": "CENTER/CENTER",
+               "size": "FIXED/FIXED",
+               "stroke": [
+                "var:border/subtle"
+               ],
+               "c": [
+                {
+                 "n": "1",
+                 "t": "TEXT",
+                 "w": 8,
+                 "h": 19,
+                 "size": "HUG/HUG",
+                 "fill": [
+                  "var:text/primary"
+                 ],
+                 "text": "1",
+                 "fs": 16,
+                 "font": "Semi Bold"
+                }
+               ]
+              },
+              {
+               "n": "plus",
+               "t": "FRAME",
+               "w": 40,
+               "h": 40,
+               "layout": "HORIZONTAL",
+               "gap": 0,
+               "pad": "0 0 0 0",
+               "align": "CENTER/CENTER",
+               "size": "FIXED/FIXED",
+               "c": [
+                {
+                 "n": "icon-plus",
+                 "t": "INSTANCE",
+                 "w": 18,
+                 "h": 18,
+                 "size": "FIXED/FIXED",
+                 "comp": "icon-plus",
+                 "c": [
+                  {
+                   "n": "Vector",
+                   "t": "VECTOR",
+                   "w": 11,
+                   "h": 0,
+                   "size": "FIXED/FIXED",
+                   "stroke": [
+                    "var:text/secondary"
+                   ],
+                   "sw": 2
+                  },
+                  {
+                   "n": "Vector",
+                   "t": "VECTOR",
+                   "w": 0,
+                   "h": 11,
+                   "size": "FIXED/FIXED",
+                   "stroke": [
+                    "var:text/secondary"
+                   ],
+                   "sw": 2
+                  }
+                 ]
+                }
+               ]
+              }
+             ]
+            },
+            {
+             "n": "avail",
+             "t": "TEXT",
+             "w": 89,
+             "h": 21,
+             "size": "HUG/HUG",
+             "fill": [
+              "var:text/muted"
+             ],
+             "text": "3 disponibles",
+             "fs": 14,
+             "font": "Regular",
+             "style": "Body Small"
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "n": "summaryCol",
+       "t": "FRAME",
+       "w": 343,
+       "h": 376,
+       "layout": "VERTICAL",
+       "gap": 0,
+       "pad": "0 0 0 0",
+       "align": "MIN/MIN",
+       "size": "FILL/HUG",
+       "c": [
+        {
+         "n": "order-summary",
+         "t": "FRAME",
+         "w": 343,
+         "h": 376,
+         "layout": "VERTICAL",
+         "gap": 16,
+         "pad": "24 16 24 16",
+         "align": "MIN/MIN",
+         "size": "FILL/HUG",
+         "r": 12,
+         "fill": [
+          "var:surface/base"
+         ],
+         "stroke": [
+          "var:border/subtle"
+         ],
+         "sw": 1,
+         "c": [
+          {
+           "n": "product",
+           "t": "FRAME",
+           "w": 311,
+           "h": 46,
+           "layout": "HORIZONTAL",
+           "gap": 12,
+           "pad": "0 0 0 0",
+           "align": "MIN/MIN",
+           "size": "FILL/HUG",
+           "c": [
+            {
+             "n": "thumb",
+             "t": "FRAME",
+             "w": 24,
+             "h": 24,
+             "layout": "HORIZONTAL",
+             "gap": 0,
+             "pad": "0 0 0 0",
+             "align": "CENTER/CENTER",
+             "size": "HUG/HUG",
+             "r": 8,
+             "fill": [
+              "var:surface/sunken"
+             ],
+             "c": [
+              {
+               "n": "icon-image",
+               "t": "INSTANCE",
+               "w": 24,
+               "h": 24,
+               "size": "FIXED/FIXED",
+               "comp": "icon-image",
+               "c": [
+                {
+                 "n": "Vector",
+                 "t": "VECTOR",
+                 "w": 18,
+                 "h": 18,
+                 "size": "FIXED/FIXED",
+                 "stroke": [
+                  "var:text/muted"
+                 ],
+                 "sw": 2
+                },
+                {
+                 "n": "Vector",
+                 "t": "VECTOR",
+                 "w": 4,
+                 "h": 4,
+                 "size": "FIXED/FIXED",
+                 "stroke": [
+                  "var:text/muted"
+                 ],
+                 "sw": 2
+                },
+                {
+                 "n": "Vector",
+                 "t": "VECTOR",
+                 "w": 15,
+                 "h": 10,
+                 "size": "FIXED/FIXED",
+                 "stroke": [
+                  "var:text/muted"
+                 ],
+                 "sw": 2
+                }
+               ]
+              }
+             ]
+            },
+            {
+             "n": "pinfo",
+             "t": "FRAME",
+             "w": 275,
+             "h": 46,
+             "layout": "VERTICAL",
+             "gap": 4,
+             "pad": "0 0 0 0",
+             "align": "MIN/MIN",
+             "size": "FILL/HUG",
+             "c": [
+              {
+               "n": "title",
+               "t": "TEXT",
+               "w": 275,
+               "h": 21,
+               "size": "FILL/HUG",
+               "fill": [
+                "var:text/primary"
+               ],
+               "text": "Coussin brodé main — motif berbère",
+               "fs": 14,
+               "font": "Semi Bold"
+              },
+              {
+               "n": "seller",
+               "t": "TEXT",
+               "w": 275,
+               "h": 21,
+               "size": "FILL/HUG",
+               "fill": [
+                "var:text/muted"
+               ],
+               "text": "Atelier Sahbeni",
+               "fs": 14,
+               "font": "Regular",
+               "style": "Body Small"
+              }
+             ]
+            }
+           ]
+          },
+          {
+           "n": "Divider",
+           "t": "FRAME",
+           "w": 311,
+           "h": 1,
+           "size": "FILL/FIXED",
+           "fill": [
+            "var:border/subtle"
+           ],
+           "c": []
+          },
+          {
+           "n": "priceBox",
+           "t": "FRAME",
+           "w": 311,
+           "h": 103,
+           "layout": "VERTICAL",
+           "gap": 8,
+           "pad": "0 0 0 0",
+           "align": "MIN/MIN",
+           "size": "FILL/HUG",
+           "c": [
+            {
+             "n": "row",
+             "t": "FRAME",
+             "w": 311,
+             "h": 26,
+             "layout": "HORIZONTAL",
+             "gap": 0,
+             "pad": "0 0 0 0",
+             "align": "SPACE_BETWEEN/CENTER",
+             "size": "FILL/HUG",
+             "c": [
+              {
+               "n": "label",
+               "t": "TEXT",
+               "w": 93,
+               "h": 26,
+               "size": "HUG/HUG",
+               "fill": [
+                "var:text/secondary"
+               ],
+               "text": "Produit (× 1)",
+               "fs": 16,
+               "font": "Regular",
+               "style": "Body"
+              },
+              {
+               "n": "value",
+               "t": "TEXT",
+               "w": 59,
+               "h": 26,
+               "size": "HUG/HUG",
+               "fill": [
+                "var:text/primary"
+               ],
+               "text": "45 TND",
+               "fs": 16,
+               "font": "Regular",
+               "style": "Body"
+              }
+             ]
+            },
+            {
+             "n": "row",
+             "t": "FRAME",
+             "w": 311,
+             "h": 26,
+             "layout": "HORIZONTAL",
+             "gap": 0,
+             "pad": "0 0 0 0",
+             "align": "SPACE_BETWEEN/CENTER",
+             "size": "FILL/HUG",
+             "c": [
+              {
+               "n": "label",
+               "t": "TEXT",
+               "w": 68,
+               "h": 26,
+               "size": "HUG/HUG",
+               "fill": [
+                "var:text/secondary"
+               ],
+               "text": "Livraison",
+               "fs": 16,
+               "font": "Regular",
+               "style": "Body"
+              },
+              {
+               "n": "value",
+               "t": "TEXT",
+               "w": 48,
+               "h": 26,
+               "size": "HUG/HUG",
+               "fill": [
+                "var:text/primary"
+               ],
+               "text": "7 TND",
+               "fs": 16,
+               "font": "Regular",
+               "style": "Body"
+              }
+             ]
+            },
+            {
+             "n": "Divider",
+             "t": "FRAME",
+             "w": 311,
+             "h": 1,
+             "size": "FILL/FIXED",
+             "fill": [
+              "var:border/subtle"
+             ],
+             "c": []
+            },
+            {
+             "n": "row",
+             "t": "FRAME",
+             "w": 311,
+             "h": 26,
+             "layout": "HORIZONTAL",
+             "gap": 0,
+             "pad": "0 0 0 0",
+             "align": "SPACE_BETWEEN/CENTER",
+             "size": "FILL/HUG",
+             "c": [
+              {
+               "n": "label",
+               "t": "TEXT",
+               "w": 101,
+               "h": 26,
+               "size": "HUG/HUG",
+               "fill": [
+                "var:text/primary"
+               ],
+               "text": "Total à payer",
+               "fs": 16,
+               "font": "Bold"
+              },
+              {
+               "n": "value",
+               "t": "TEXT",
+               "w": 59,
+               "h": 26,
+               "size": "HUG/HUG",
+               "fill": [
+                "var:blue/800"
+               ],
+               "text": "52 TND",
+               "fs": 16,
+               "font": "Bold"
+              }
+             ]
+            }
+           ]
+          },
+          {
+           "n": "cod",
+           "t": "FRAME",
+           "w": 311,
+           "h": 66,
+           "layout": "HORIZONTAL",
+           "gap": 8,
+           "pad": "12 12 12 12",
+           "align": "MIN/MIN",
+           "size": "FILL/HUG",
+           "r": 8,
+           "fill": [
+            "var:blue/50"
+           ],
+           "c": [
+            {
+             "n": "codText",
+             "t": "TEXT",
+             "w": 287,
+             "h": 42,
+             "size": "FILL/HUG",
+             "fill": [
+              "var:text/secondary"
+             ],
+             "text": "💵 Paiement à la livraison. Aucune carte requise.",
+             "fs": 14,
+             "font": "Regular",
+             "style": "Body Small"
+            }
+           ]
+          },
+          {
+           "n": "CTA",
+           "t": "INSTANCE",
+           "w": 311,
+           "h": 48,
+           "layout": "HORIZONTAL",
+           "gap": 8,
+           "pad": "0 20 0 20",
+           "align": "CENTER/CENTER",
+           "size": "FILL/FIXED",
+           "r": 10,
+           "fill": [
+            "var:blue/600"
+           ],
+           "comp": "Button / variant=primary, size=lg, state=default",
+           "c": [
+            {
+             "n": "icon",
+             "t": "FRAME",
+             "w": 20,
+             "h": 20,
+             "hidden": true,
+             "size": "FIXED/FIXED",
+             "c": [
+              {
+               "n": "bar-h",
+               "t": "RECTANGLE",
+               "w": 13,
+               "h": 2,
+               "size": "FIXED/FIXED",
+               "r": 1,
+               "fill": [
+                "var:text/inverse"
+               ]
+              },
+              {
+               "n": "bar-v",
+               "t": "RECTANGLE",
+               "w": 2,
+               "h": 13,
+               "size": "FIXED/FIXED",
+               "r": 1,
+               "fill": [
+                "var:text/inverse"
+               ]
+              }
+             ]
+            },
+            {
+             "n": "label",
+             "t": "TEXT",
+             "w": 172,
+             "h": 26,
+             "size": "HUG/HUG",
+             "fill": [
+              "var:text/inverse"
+             ],
+             "text": "Confirmer la demande",
+             "fs": 16,
+             "font": "Semi Bold"
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

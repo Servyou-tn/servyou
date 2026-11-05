@@ -63,7 +63,8 @@ export function FavorisTabs({
   const { totalPages: servicePages } = paginate(services.length, 1)
 
   return (
-    <div className="flex flex-col gap-6">
+    // Below lg (m375-f1-favoris): the cards start 20 under the tab track (the bar's 4 + the list's 16).
+    <div className="flex flex-col gap-6 max-lg:gap-5">
       {/* Quiet tab bar (Figma 718:60584, sunken track): matches ProduitsLensToggle/
           ServicesLensToggle/OrdersTabs, not SegmentedControl — those three were each measured
           against a real frame and landed on the same white-pill-on-surface-sunken look;
