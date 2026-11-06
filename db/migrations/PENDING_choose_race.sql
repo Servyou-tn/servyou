@@ -121,7 +121,8 @@ revoke all on function public.enforce_job_response_withdraw() from public, anon,
 -- -- r2: another proposal of the same freelancer, moved onto Q (pending, on an open post: withdrawable).
 -- select set_config('t.r2', (select id::text from public.job_responses
 --   where freelancer_id = current_setting('t.f1')::uuid and id <> current_setting('t.r1')::uuid limit 1), true);
--- update public.job_responses set job_post_id = current_setting('t.q')::uuid where id = current_setting('t.r2')::uuid;
+-- -- (status set explicitly: T3 must not depend on how the backfill left it; postgres passes the status guard)
+-- update public.job_responses set job_post_id = current_setting('t.q')::uuid, status = 'pending' where id = current_setting('t.r2')::uuid;
 -- do $$ begin
 --   if nullif(current_setting('t.p', true), '') is null or nullif(current_setting('t.q', true), '') is null
 --      or nullif(current_setting('t.r2', true), '') is null then
@@ -129,9 +130,20 @@ revoke all on function public.enforce_job_response_withdraw() from public, anon,
 --   end if;
 -- end $$;
 --
+-- -- T0 · case a's end state: a proposal that no longer exists (withdrawn first) is P0002 not_found.
 -- -- T1 · the owner still chooses: r1 chosen, the post filled, the post id returned.
 -- select set_config('request.jwt.claims', json_build_object('sub', current_setting('t.owner'), 'role', 'authenticated')::text, true);
 -- set local role authenticated;
+-- do $$ declare v_state text; v_hint text; begin
+--   begin
+--     perform public.choose_job_response(gen_random_uuid());
+--     raise exception 'FAIL T0: accepted';
+--   exception when others then
+--     get stacked diagnostics v_state = returned_sqlstate, v_hint = pg_exception_hint;
+--     if sqlerrm like 'FAIL%' then raise; end if;
+--     if v_state <> 'P0002' or v_hint <> 'not_found' then raise exception 'FAIL T0: % % %', v_state, v_hint, sqlerrm; end if;
+--   end;
+-- end $$;
 -- do $$ declare v uuid; begin
 --   v := public.choose_job_response(current_setting('t.r1')::uuid);
 --   if v <> current_setting('t.p')::uuid then raise exception 'FAIL T1 returned %', v; end if;
