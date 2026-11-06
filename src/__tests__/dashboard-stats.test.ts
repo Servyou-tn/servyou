@@ -49,6 +49,12 @@ describe('parseDashboardStats', () => {
     expect(r.stats.previous.declared_value_tnd).toBe(32.5)
   })
 
+  it('accepts a hand-seeded (non-v4) category id', () => {
+    const s = sample()
+    s.by_category[0].category_id = 'aaaaaaaa-0000-0000-0000-000000000001'
+    expect(parseDashboardStats(s).ok).toBe(true)
+  })
+
   it('fails on a missing previous_to (the pre-same-span shape)', () => {
     const s = sample() as { period: Record<string, unknown> }
     delete s.period.previous_to

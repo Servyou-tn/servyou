@@ -71,7 +71,8 @@ export const dashboardStatsSchema = z.object({
   }),
   /** Top-level categories: live listings now, orders and job posts in the period (D2). The UI sets the thresholds. */
   by_category: z.array(z.object({
-    category_id: z.string().uuid(),
+    // Loose 8-4-4-4-12 check: one hand-seeded id must not take the whole dashboard down.
+    category_id: z.guid(),
     name_fr: z.string(),
     name_ar: z.string(),
     kind: z.string(),

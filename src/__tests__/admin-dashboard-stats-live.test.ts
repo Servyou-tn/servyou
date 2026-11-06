@@ -13,7 +13,8 @@
  *     the row fields (amount, seller, blocked, exact « depuis ») and no delivery / phone / e-mail field;
  *   * audit log — a fixture admin action comes back with its target label (the shop's name) and the admin's name.
  *   * periods — every answer parses with src/lib/admin/dashboard-stats.ts; for 7 / 30 / 90 days previous_to = to − p_days
- *     and the previous span is as long as the current one.
+ *     and the previous span is as long as the current one; two received orders straddling previous_to prove the
+ *     previous KPIs use [previous_from, previous_to) (the one past it was counted before the fix).
  *
  * Fixtures (`adm-dash-`, passwords random per run), written by the service role: an admin (signs in), a consumer
  * (signs in), a buyer, a shop owner (signs in, to accept an order) + shop + product, three orders, one audit row.
@@ -57,10 +58,11 @@ const admin: Client = hasCreds ? createClient<Database>(url, serviceKey, opts) :
 
 type Local = 'admin' | 'consumer' | 'buyer' | 'seller'
 const ids = {} as Record<Local, string>
-const fx = { shop: '', product: '', received: '', blocked: '', accepted: '' }
+const fx = { shop: '', product: '', edgeProduct: '', received: '', blocked: '', accepted: '' }
 let adminClient: Client
 let consumerClient: Client
 let before: Stats
+let before30: Stats
 
 async function signIn(local: Local): Promise<Client> {
   const c = createClient<Database>(url, anonKey, opts)
@@ -153,6 +155,7 @@ beforeAll(async () => {
   consumerClient = await signIn('consumer')
 
   before = await stats()
+  before30 = await stats(30)
   fx.shop = await insertId('shops', { owner_id: ids.seller, name: SHOP_NAME, description: 'Une boutique de test', city: 'Tunis' })
   fx.product = await insertId('products', { shop_id: fx.shop, title: PRODUCT_TITLE, price_tnd: PRICE, delivery_fee_tnd: FEE, status: 'active' })
   fx.received = await insertId('orders', order('received'))
@@ -168,6 +171,20 @@ beforeAll(async () => {
     before_state: { admin_hidden_at: null }, after_state: { admin_hidden_at: '2026-11-06T00:00:00Z' },
   })
   if (logErr) throw new Error(`audit seed failed: ${logErr.message}`)
+
+  // Two received orders on either side of the 30-day previous_to (migration 20261106132948): `inside` 1 min before it,
+  // `outside` halfway between previous_to and from — inside the OLD previous window [previous_from, from), outside the
+  // new one. About 30 days back, so neither is in a `current` window or in the rolling 7-day list (whose search also
+  // matches the shop name).
+  // A second product (its title does not contain TITLE) keeps them out of the title searches; received_at = created_at.
+  fx.edgeProduct = await insertId('products', { shop_id: fx.shop, title: `${PREFIX}edge-${RUN}`, price_tnd: PRICE, status: 'active' })
+  const previousTo = Date.parse(before30.period.previous_to)
+  const edge = (at: number) => {
+    const iso = new Date(at).toISOString()
+    return { ...order('received', iso), product_id: fx.edgeProduct, received_at: iso }
+  }
+  await insertId('orders', edge(previousTo - 60_000))
+  await insertId('orders', edge(previousTo + (Date.parse(before30.period.from) - previousTo) / 2))
 }, 120_000)
 
 afterAll(async () => {
@@ -241,6 +258,16 @@ describe.skipIf(!hasCreds)('admin_dashboard_stats (7 days)', () => {
 })
 
 describe.skipIf(!hasCreds)('admin_dashboard_stats periods (migration 20261106132948, same span)', () => {
+  it('previous KPIs count [previous_from, previous_to) only: the order just after previous_to is left out', async () => {
+    const after = await stats(30)
+    const delta = (k: keyof DashboardKpis) => Number(after.previous[k]) - Number(before30.previous[k])
+    expect(delta('orders_created')).toBe(1)
+    expect(delta('orders_received')).toBe(1)
+    expect(delta('created_then_received')).toBe(1)
+  })
+
+  // Exact millisecond equality: PostgREST sessions run in UTC and Africa/Tunis has no DST, so `now() - p_days days`
+  // is exactly p_days × 24 h; both sides of each subtraction carry the same microseconds.
   it.each(DASHBOARD_PERIODS)('%i days: previous_to = to − p_days, and previous spans as long as current', async (days) => {
     const { period } = await stats(days)
     const ms = (s: string) => Date.parse(s)
