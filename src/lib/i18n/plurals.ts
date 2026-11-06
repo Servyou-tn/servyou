@@ -54,6 +54,8 @@ const frPlurals: Record<string, PluralVariants> = {
   'admin.users.tile_hidden':               { one: '{count} masqué', other: '{count} masqués' },
   'admin.users.tile_open_reports':         { one: '{count} ouvert', other: '{count} ouverts' },
   'admin.users.info_products':             { one: '{count} produit', other: '{count} produits' },
+  // Admin J4 — PR-3 block.
+  'admin.content.reports_count':           { one: '{count} signalement', other: '{count} signalements' },
   // Admin J5 / J6 (Figma NOV 4 — Admin). French zero is forced to `other` (« 0 rejetés »).
   'admin.nav.pending_count':               { one: '{count} en attente', other: '{count} en attente' },
   'admin.reports.sent_count':              { one: '{count} signalement envoyé', other: '{count} signalements envoyés' },
@@ -138,6 +140,8 @@ const arPlurals: Record<string, PluralVariants> = {
   'admin.users.tile_hidden':               { one: '{count} مخفي', two: '{count} مخفيان', other: '{count} مخفية' },
   'admin.users.tile_open_reports':         { one: '{count} مفتوح', two: '{count} مفتوحان', other: '{count} مفتوحة' },
   'admin.users.info_products':             { one: 'منتج واحد', two: 'منتجان', other: '{count} منتجات' },
+  // REVIEW_AR_TRANSLATION — admin J4 — PR-3 block.
+  'admin.content.reports_count':           { one: 'بلاغ واحد', two: 'بلاغان', other: '{count} بلاغات' },
   // REVIEW_AR_TRANSLATION — admin J5 / J6. Non-human plurals take feminine-singular agreement (بلاغات مرسلة).
   'admin.nav.pending_count':               { one: '{count} قيد الانتظار', two: '{count} قيد الانتظار', other: '{count} قيد الانتظار' },
   'admin.reports.sent_count':              { one: 'بلاغ واحد مُرسل', two: 'بلاغان مُرسلان', other: '{count} بلاغات مُرسلة' },

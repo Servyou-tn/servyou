@@ -53,7 +53,7 @@ const TOP_SECTIONS: NavSection[] = [
     items: [
       { key: 'admin.nav.reports', href: '/admin/signalements', icon: TriangleAlert, count: 'reports' },
       { key: 'admin.nav.disputes', href: '/admin/litiges', icon: Shield, count: 'disputes' },
-      { key: 'admin.nav.content', href: '/admin/contenu', icon: Eye, disabled: true },
+      { key: 'admin.nav.content', href: '/admin/contenu', icon: Eye },
       { key: 'admin.nav.users', href: '/admin/utilisateurs', icon: Users },
     ],
   },
