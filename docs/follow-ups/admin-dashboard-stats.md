@@ -3,6 +3,22 @@
 Migration `20261106093535_admin_dashboard_stats` (README #123, discovery `docs/discovery/admin-dashboard-stats.md`).
 Ranked, most important first.
 
+## 0. 🟠 MEDIUM — « current » is shorter than « previous », so every delta leans negative (review, 2026-11-06)
+
+**What:** in `admin_dashboard_stats`:
+- `current` = [00:00 Tunis (p_days − 1) days ago, now): p_days − 1 full days plus part of today;
+- `previous` = [v_from − p_days days, v_from): p_days full days.
+
+At 09:00 Tunis the 7-day `current` is ~6.4 days against a full 7, so orders, sign-ups, sellers and declared value all
+show a negative bias that shrinks through the day. The UI computes the % from these raw values.
+**Fix (new migration, architect):** compare the same elapsed span one period back — `previous` =
+[v_prev, v_now − p_days days):
+`'previous', private.admin_period_kpis(v_prev, v_now - make_interval(days => p_days))`, and add `previous_to` to
+`period`. The signature is unchanged; the live suite's deltas stay valid (they read `current` only).
+**Why deferred:** it changes an applied function; only the architect applies migrations.
+**Where it lives:** `public.admin_dashboard_stats`, the `'previous'` line.
+**Trigger:** before B shows a delta % on J1 / J8. Until then, B should show `previous` without a % or hold the delta.
+
 ## 1. The brief's plan doc was never found: D1–D6 and D10 are recommendations, not rulings
 
 **What:** `claude/admin-dashboard-plan-2026-11-04.md` is not in either checkout, in git history or on disk. Every metric
@@ -26,7 +42,9 @@ D3 (city filter side), D4 (« vendeur actif »), D5 (loyal buyers, all time) and
 
 **What:** the live suite proves the KPIs, the funnel, the queue's blocked count, the list / counts and the journal by
 exact fixture deltas. `by_category`, `by_city`, `weekly` and `snapshot` (active sellers, sellers without orders, loyal
-buyers) were only checked for shape and against the read-only compile check of the discovery.
+buyers) were only checked for shape and against the read-only compile check of the discovery. Also not asserted:
+`new_signups` and `job_posts` (the fixture users exist before the baseline), the `p_city` filter, and the journal's
+`p_action` / `p_target_type` filters.
 **Why deferred:** each needs categories / cities / backdated weeks on production fixtures, for metrics whose definition
 (D2, D4–D6, D9) may still change (#1).
 **Where it lives:** `src/__tests__/admin-dashboard-stats-live.test.ts`.
@@ -39,3 +57,14 @@ a shape change.
 **Why deferred:** B's call: B may prefer its own type next to the page.
 **Where it lives:** the `Stats` type in the live suite is the shape B needs.
 **Trigger:** B asks for it.
+
+## 5. LOW — small consistency notes for the next migration that touches these functions (review, 2026-11-06)
+
+- `admin_list_orders` orders by `created_at` only: rows with the same timestamp can repeat or skip across pages. Add
+  `, o.id` as a tie-break.
+- `by_category` counts listings whose owner is suspended; `active_sellers` and `by_city` exclude them.
+- `admin_list_audit_log` returns `before_state` / `after_state` whole. No action stores personal data there today; a
+  future one that does would surface on J11.
+
+**Why deferred:** none is wrong at today's volume; each needs a new migration.
+**Trigger:** fold into the migration for #0.

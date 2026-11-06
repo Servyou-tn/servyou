@@ -16,7 +16,8 @@
  * (signs in), a buyer, a shop owner (signs in, to accept an order) + shop + product, three orders, one audit row.
  * 3 fixture sign-ins.
  * While the suite runs, its orders show on the live dashboard; the teardown removes them (and runs first, to recover a
- * crashed run). A real order placed during the run would move the same counters: on a delta mismatch, re-run once.
+ * crashed run). A real order placed during the run, or a run that crosses 00:00 Africa/Tunis (the KPI window starts
+ * at a Tunis day boundary), would move the same counters: on a delta mismatch, re-run once.
  *
  * Run: npx vitest run --config vitest.integration.config.ts --no-file-parallelism src/__tests__/admin-dashboard-stats-live.test.ts
  */
