@@ -20,12 +20,17 @@
  *     one audit row each, ids and counts only (no e-mail, no name); a second process is 23514;
  *   * reject — with a note: status rejected, audit row;
  *   * export / contact — each processes, logs, and refuses a repeat; a refusal needs a note;
- *   * grant lockdown — an admin's direct UPDATE of a request is refused by privilege.
+ *   * grant lockdown — an admin's direct UPDATE of a request is refused by privilege;
+ *   * D2 erasure (src/lib/admin/account-erasure.ts, called directly — the server action needs a cookie session; its
+ *     logic is unit-tested in admin-demandes-actions.test.ts): refused on a live account; on a tombstone the auth e-mail
+ *     and identity are replaced, the metadata emptied, the account banned, every file (an un-indexed one included) and
+ *     image row removed; a second run is a no-op; neither the old nor the tombstone e-mail can sign in.
  *
  * Fixtures (`adm-req-`, passwords random per run), written by the service role: an admin (signs in), a second admin, a
- * consumer (signs in), a buyer, a shop owner, a freelancer, plus one /contact message. 2 fixture sign-ins.
- * The RPC never touches auth.users, so the auth e-mail keeps the fixture prefix after the tombstone: teardown finds the
- * users through the auth admin API, not profiles.email.
+ * consumer (signs in), a buyer, two shop owners, a freelancer, five small webp files, plus one /contact message.
+ * 3 fixture sign-ins (the third is the banned account's refused one).
+ * Teardown finds the users through the auth admin API — by e-mail prefix, or by the `app_metadata.fixture` tag once the
+ * erasure has replaced the e-mail — and removes their files before deleting them.
  *
  * Run: npx vitest run --config vitest.integration.config.ts --no-file-parallelism src/__tests__/admin-requests-live.test.ts
  */
@@ -36,6 +41,7 @@ import { randomUUID } from 'crypto'
 import type { Database } from '@/lib/supabase/database.types'
 import { refuseTeardownOnForeignOrders } from './live-teardown-guard'
 import { fixtureSignIn } from './fixture-session'
+import { finishAccountErasure, tombstoneEmail } from '@/lib/admin/account-erasure'
 
 type Client = SupabaseClient<Database>
 
@@ -61,7 +67,7 @@ type Local = 'admin' | 'admin2' | 'consumer' | 'buyer' | 'seller' | 'seller2' | 
 const ids = {} as Record<Local, string>
 const req = {} as Record<'seller' | 'buyer' | 'freelancer' | 'admin2' | 'self' | 'seller2', string>
 const fx = {
-  shop: '', productSold: '', productUnsold: '', productReported: '', openOrder: '', receivedOrder: '', shop2: '', product2: '',
+  productImagePath: '', shop: '', productSold: '', productUnsold: '', productReported: '', openOrder: '', receivedOrder: '', shop2: '', product2: '',
   fp: '', serviceActive: '', serviceDraft: '', postWithProposal: '', postEmpty: '', buyerExport: '', message: '',
 }
 
@@ -80,7 +86,11 @@ async function fixtureUserIds(): Promise<string[]> {
   for (let page = 1; ; page++) {
     const { data, error } = await admin.auth.admin.listUsers({ page, perPage: 1000 })
     if (error) throw new Error(`listUsers failed: ${error.message}`)
-    for (const u of data.users) if (u.email?.startsWith(PREFIX) && u.email.endsWith(EMAIL_SUFFIX)) found.push(u.id)
+    // The erasure replaces the auth e-mail, so an erased fixture is found by its app_metadata tag (never touched).
+    for (const u of data.users) {
+      const byEmail = u.email?.startsWith(PREFIX) && u.email.endsWith(EMAIL_SUFFIX)
+      if (byEmail || u.app_metadata?.fixture === PREFIX) found.push(u.id)
+    }
     if (data.users.length < 1000) return found
   }
 }
@@ -106,10 +116,45 @@ async function teardown(): Promise<void> {
     const { error } = await step
     if (error) throw new Error(`${label} cleanup failed: ${error.message}`)
   }
+  await removeFixtureFiles(found)
   for (const id of found) {
     const { error } = await admin.auth.admin.deleteUser(id)
     if (error) throw new Error(`deleteUser failed for ${id}: ${error.message}`)
   }
+}
+
+// Storage is not cascaded by deleteUser: remove what the fixtures uploaded (their provenance rows + the un-indexed
+// orphan), then the rows. Removing a missing object is not an error, so this is safe after the erasure too.
+const WEBP = () => new Blob([new Uint8Array([82, 73, 70, 70, 0, 0, 0, 0, 87, 69, 66, 80])], { type: 'image/webp' })
+async function removeFixtureFiles(userIds: string[]): Promise<void> {
+  const { data: rows, error } = await admin.from('uploaded_objects').select('bucket, path').in('owner_id', userIds)
+  if (error) throw new Error(`uploaded_objects lookup failed: ${error.message}`)
+  const byBucket = new Map<string, string[]>()
+  for (const r of rows ?? []) byBucket.set(r.bucket, [...(byBucket.get(r.bucket) ?? []), r.path])
+  for (const id of userIds) {
+    byBucket.set('avatars', [...(byBucket.get('avatars') ?? []), `${id}/a.webp`, `${id}/orphan.webp`])
+    byBucket.set('portfolio-media', [...(byBucket.get('portfolio-media') ?? []), `${id}/p.webp`])
+  }
+  for (const [bucket, paths] of byBucket) {
+    const { error: rmErr } = await admin.storage.from(bucket).remove(paths)
+    if (rmErr) throw new Error(`storage cleanup failed for ${bucket}: ${rmErr.message}`)
+  }
+  const { error: delErr } = await admin.from('uploaded_objects').delete().in('owner_id', userIds)
+  if (delErr) throw new Error(`uploaded_objects cleanup failed: ${delErr.message}`)
+}
+
+async function seedFile(bucket: string, path: string, ownerId: string | null): Promise<void> {
+  const { error } = await admin.storage.from(bucket).upload(path, WEBP(), { contentType: 'image/webp', upsert: true })
+  if (error) throw new Error(`upload ${bucket} failed: ${error.message}`)
+  if (ownerId === null) return
+  const { error: uoErr } = await admin.from('uploaded_objects').insert({ bucket, path, owner_id: ownerId })
+  if (uoErr) throw new Error(`uploaded_objects seed failed (${bucket}): ${uoErr.message}`)
+}
+
+async function listed(bucket: string, prefix: string): Promise<string[]> {
+  const { data, error } = await admin.storage.from(bucket).list(prefix)
+  if (error) throw new Error(`list ${bucket} failed: ${error.message}`)
+  return (data ?? []).filter((e) => e.id !== null).map((e) => e.name)
 }
 
 async function createUser(local: Local, patch: Database['public']['Tables']['profiles']['Update']): Promise<string> {
@@ -117,6 +162,7 @@ async function createUser(local: Local, patch: Database['public']['Tables']['pro
     email: email(local),
     password: `Ar-${randomUUID()}-Aa1!`,
     email_confirm: true,
+    app_metadata: { fixture: PREFIX },
     user_metadata: { full_name: `Adm Req ${local}`, date_of_birth: '1990-01-01', city: 'Tunis', language: 'fr' },
   })
   if (error || !data.user) throw new Error(`createUser failed for ${local}: ${error?.message}`)
@@ -180,6 +226,16 @@ beforeAll(async () => {
   fx.productUnsold = await insertId('products', { shop_id: fx.shop, title: `${TITLE} — unsold`, price_tnd: 30, status: 'active' })
   fx.productReported = await insertId('products', { shop_id: fx.shop, title: `${TITLE} — reported`, price_tnd: 35, status: 'active' })
   fx.receivedOrder = await insertId('orders', productOrder(ids.buyer, ids.seller, fx.productSold, 'received'))
+  // Files for the D2 erasure: an avatar (+ one with no provenance row, found by the folder sweep), a shop logo, an image
+  // on the sold product (kept, hidden), and — below — a portfolio image. Provenance before product_images (its trigger).
+  await seedFile('avatars', `${ids.seller}/a.webp`, ids.seller)
+  await seedFile('avatars', `${ids.seller}/orphan.webp`, null)
+  await seedFile('shop-assets', `${fx.shop}/logo/l.webp`, ids.seller)
+  fx.productImagePath = `${fx.shop}/${fx.productSold}/i.webp`
+  await seedFile('product-images', fx.productImagePath, ids.seller)
+  const imageUrl = admin.storage.from('product-images').getPublicUrl(fx.productImagePath).data.publicUrl
+  const { error: piErr } = await admin.from('product_images').insert({ product_id: fx.productSold, image_url: imageUrl })
+  if (piErr) throw new Error(`product_images seed failed: ${piErr.message}`)
   fx.openOrder = await insertId('orders', productOrder(ids.buyer, ids.seller, fx.productSold, 'pending'))
   // A second shop owner whose shop must stay too (a sold product): two tombstoned shops in a row (migration 20261106083409).
   fx.shop2 = await insertId('shops', { owner_id: ids.seller2, name: `${TITLE} — shop 2` })
@@ -204,6 +260,7 @@ beforeAll(async () => {
   if (r2Err) throw new Error(`service report seed failed: ${r2Err.message}`)
   const { error: lErr } = await admin.from('freelancer_links').insert({ freelancer_profile_id: fx.fp, label: 'Lien', url: 'https://example.com/a', display_order: 0 })
   if (lErr) throw new Error(`freelancer_links seed failed: ${lErr.message}`)
+  await seedFile('portfolio-media', `${ids.freelancer}/p.webp`, ids.freelancer)
 
   // Buyer: a favourite, a post with the freelancer's proposal, a post without one, a pending export.
   const { error: fErr } = await admin.from('favorites').insert({ user_id: ids.buyer, item_type: 'product', product_id: fx.productUnsold })
@@ -467,6 +524,62 @@ describe.skipIf(!hasCreds)('deletion — approve (tombstone)', () => {
     const audit = await auditRows(req.admin2)
     expect(audit).toHaveLength(1)
     expect(audit[0]).toMatchObject({ action: 'reject_deletion_request', target_type: 'deletion_request', note: 'Compte administrateur' })
+  })
+})
+
+describe.skipIf(!hasCreds)('D2 — finishAccountErasure (auth + files, service role)', () => {
+  const PERSONAL_KEYS = ['full_name', 'date_of_birth', 'city', 'email', 'language']
+
+  it('refuses an account that is not a tombstone, and touches nothing (fail closed)', async () => {
+    expect(await finishAccountErasure(ids.consumer)).toEqual({ ok: false, step: 'guard', reason: 'not_tombstoned' })
+    const { data } = await admin.auth.admin.getUserById(ids.consumer)
+    expect(data.user?.email).toBe(email('consumer'))
+    expect(data.user?.banned_until ?? null).toBeNull()
+    expect(data.user?.user_metadata?.full_name).toBe('Adm Req consumer')
+  })
+
+  it('seller: auth e-mail + identity replaced, metadata emptied, banned; every file and image row gone', async () => {
+    const result = await finishAccountErasure(ids.seller)
+    expect(result).toMatchObject({ ok: true, imageRowsRemoved: 1 })
+    if (result.ok) expect(result.filesRemoved).toBeGreaterThanOrEqual(4)
+
+    const { data, error } = await admin.auth.admin.getUserById(ids.seller)
+    expect(error).toBeNull()
+    const user = data.user!
+    expect(user.email).toBe(tombstoneEmail(ids.seller))
+    expect(new Date(user.banned_until ?? 0).getFullYear()).toBeGreaterThan(2100)
+    for (const key of PERSONAL_KEYS) expect(user.user_metadata?.[key], key).toBeUndefined()
+    expect(user.app_metadata?.fixture).toBe(PREFIX)
+    // The e-mail identity is where a sign-in looks the address up: it must not keep the real one.
+    const identityEmails = (user.identities ?? []).map((i) => i.identity_data?.email)
+    expect(identityEmails).not.toContain(email('seller'))
+    expect(JSON.stringify(user)).not.toContain(email('seller'))
+
+    expect(await listed('avatars', ids.seller)).toEqual([])
+    expect(await listed('shop-assets', `${fx.shop}/logo`)).toEqual([])
+    expect(await listed('product-images', `${fx.shop}/${fx.productSold}`)).toEqual([])
+    expect(await count('uploaded_objects', 'owner_id', ids.seller)).toBe(0)
+    expect(await count('product_images', 'product_id', fx.productSold)).toBe(0)
+    // The hidden product itself stays for the order history (D1).
+    expect(await count('products', 'id', fx.productSold)).toBe(1)
+  })
+
+  it('freelancer: the portfolio file goes', async () => {
+    expect(await finishAccountErasure(ids.freelancer)).toMatchObject({ ok: true })
+    expect(await listed('portfolio-media', ids.freelancer)).toEqual([])
+    expect(await count('uploaded_objects', 'owner_id', ids.freelancer)).toBe(0)
+  })
+
+  it('a second run is a no-op success (retry-safe)', async () => {
+    expect(await finishAccountErasure(ids.seller)).toEqual({ ok: true, filesRemoved: 0, imageRowsRemoved: 0 })
+  })
+
+  it('no login: the real e-mail no longer exists, the tombstone one is banned', async () => {
+    const byOldEmail = await fixtureSignIn(createClient<Database>(url, anonKey, opts), email('seller'))
+    expect(byOldEmail.error?.message).toMatch(/^generateLink:/)
+    // One /verify call: GoTrue refuses the banned account's session.
+    const byTombstone = await fixtureSignIn(createClient<Database>(url, anonKey, opts), tombstoneEmail(ids.seller))
+    expect(byTombstone.error).not.toBeNull()
   })
 })
 
