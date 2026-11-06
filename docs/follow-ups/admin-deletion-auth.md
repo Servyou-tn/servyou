@@ -3,6 +3,26 @@
 `src/app/admin/demandes/actions.ts` + `src/lib/admin/account-erasure.ts` (D2 of `docs/discovery/admin-requests-backend.md`).
 Ranked, most important first.
 
+## 0. 🔴 HIGH — a Google account keeps its real e-mail / name in `auth.identities` (review, 2026-11-06)
+
+**What:** sign-in and sign-up offer Google (`SigninForm.tsx`, `SignupForm.tsx`). A Google identity's `identity_data`
+holds the e-mail, name and picture.
+- `updateUserById({ email })` rewrites only the **e-mail** identity (proven live).
+- No admin API removes or rewrites another identity.
+
+Today such an erasure ends `identity_left`: files and rows are erased, but there is no completion row, so the page
+shows « non terminé ». Retrying cannot finish it. Live today: 0 Google identities (5 e-mail).
+**Fix (migration, architect):** a SECURITY DEFINER function `private.erase_auth_identities(p_user uuid)` that:
+- deletes the user's non-e-mail rows in `auth.identities`;
+- only when the profile is a tombstone (the same three-field guard);
+- has EXECUTE for `service_role` only, revoked from PUBLIC / anon / authenticated.
+
+`eraseAuth` then calls it before the e-mail update. Optionally it also deletes the user's `auth.sessions` /
+`auth.refresh_tokens`, which closes #1 too.
+**Why deferred:** needs a migration; nobody can hit it until a Google user asks for deletion.
+**Where it lives:** `src/lib/admin/account-erasure.ts`, `eraseAuth`.
+**Trigger:** before the first Google sign-up's deletion request, or before launch, whichever is first.
+
 ## 1. Open sessions can still READ for up to an hour after the ban
 
 **What:** the ban makes GoTrue refuse sign-in and token refresh. An access token issued before the ban stays valid at
@@ -40,7 +60,15 @@ button calls `approveDeletionRequest` again: on an approved request it only fini
 Plus the existing `common.error_generic`.
 **Trigger:** the page PR.
 
-## 4. The person can register again with the same e-mail
+## 4. A big shop could outrun the function timeout (Agent B)
+
+**What:** the erasure lists and removes Storage folders one call at a time. A shop with hundreds of images could pass
+Vercel Hobby's default function duration. Nothing is lost: each step re-derives its work, and the retry resumes. But
+the page would show « non terminé » until the admin clicks again.
+**Fix:** `export const maxDuration = 60` on the « Demandes » page (Agent B's file).
+**Trigger:** the page PR.
+
+## 5. The person can register again with the same e-mail
 
 **What:** the auth e-mail is replaced, so the address is free. A new sign-up creates a NEW account, unrelated to the
 tombstone. That is the intended behaviour of D2, but nothing tells the person.

@@ -26,7 +26,7 @@ const h = vi.hoisted(() => {
   const select = vi.fn(() => ({ eq }))
   const from = vi.fn(() => ({ select }))
   const revalidatePath = vi.fn()
-  return { state, rpc, from, revalidatePath }
+  return { state, rpc, from, select, eq, revalidatePath }
 })
 
 vi.mock('@/lib/supabase/server', () => ({ createClient: vi.fn(async () => ({ rpc: h.rpc, from: h.from })) }))
@@ -64,6 +64,8 @@ beforeEach(() => {
   h.state.request = { data: null, error: null }
   h.rpc.mockClear()
   h.from.mockClear()
+  h.select.mockClear()
+  h.eq.mockClear()
   h.revalidatePath.mockClear()
   guard.checkAdmin.mockReset()
   guard.checkAdmin.mockResolvedValue({ ok: true, userId: 'admin-1' })
@@ -152,6 +154,8 @@ describe('approveDeletionRequest', () => {
     h.state.request = { data: { status: 'approved', user_id: OTHER }, error: null }
     expect(await approveDeletionRequest(REQ)).toEqual({ success: true })
     expect(h.from).toHaveBeenCalledWith('deletion_requests')
+    expect(h.select).toHaveBeenCalledWith('status, user_id')
+    expect(h.eq).toHaveBeenCalledWith('id', REQ)
     expect(erasure.finishAccountErasure).toHaveBeenCalledWith(OTHER)
   })
 

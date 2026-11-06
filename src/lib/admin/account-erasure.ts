@@ -11,7 +11,10 @@ import { SUSPENSION_BAN_DURATION } from '@/lib/auth/auth-ban'
 //   2. auth   — the auth e-mail becomes the tombstone e-mail (GoTrue also rewrites the e-mail identity), every
 //               user_metadata key is removed (full_name, date_of_birth, city, email…), and the account is banned for
 //               100 years: sign-in and token refresh are refused. An access token issued before the ban can still READ
-//               until it expires (≤ 3600 s, auth-ban.ts); every write is already refused (the profile is suspended);
+//               until it expires (≤ 3600 s, auth-ban.ts); every write is already refused (the profile is suspended).
+//               An OAuth identity (Google) keeps its own identity_data, which no admin API rewrites or removes: the
+//               run then ends 'identity_left' — files and rows still erased, never reported done
+//               (docs/follow-ups/admin-deletion-auth.md #0);
 //   3. files  — every object the person uploaded is removed from Storage, then its uploaded_objects row;
 //   4. rows   — product_images rows of the person's products (hidden ones kept for orders) go: they point at the
 //               removed files.
@@ -37,7 +40,9 @@ export type ErasureStep = 'guard' | 'auth' | 'files' | 'rows'
 
 export type ErasureResult =
   | { ok: true; filesRemoved: number; imageRowsRemoved: number }
-  | { ok: false; step: ErasureStep; reason: 'not_tombstoned' | 'not_found' | 'failed' }
+  /** identity_left: an OAuth identity (Google) still holds the real e-mail / name in auth.identities — the admin API
+   * cannot remove it (docs/follow-ups/admin-deletion-auth.md #0). Files and rows ARE erased; the run is not « done ». */
+  | { ok: false; step: ErasureStep; reason: 'not_tombstoned' | 'not_found' | 'failed' | 'identity_left' }
 
 type Admin = ReturnType<typeof createAdminClient>
 
@@ -76,12 +81,14 @@ async function isTombstone(admin: Admin, userId: string): Promise<'yes' | 'no' |
   return ok ? 'yes' : 'no'
 }
 
-async function eraseAuth(admin: Admin, userId: string): Promise<boolean> {
+// 'residual': done, but a non-e-mail identity (OAuth) keeps its own identity_data, which updateUserById never rewrites.
+async function eraseAuth(admin: Admin, userId: string): Promise<'ok' | 'residual' | 'failed'> {
   const { data, error } = await admin.auth.admin.getUserById(userId)
   if (error || !data.user) {
     console.error(`[account-erasure] auth lookup failed for ${userId}:`, error?.message, error?.status, error?.code)
-    return false
+    return 'failed'
   }
+  const oauthIdentities = (data.user.identities ?? []).filter((identity) => identity.provider !== 'email').length
   // GoTrue MERGES user_metadata on an admin update, and drops a key sent as null — so send every key as null.
   const cleared = Object.fromEntries(Object.keys(data.user.user_metadata ?? {}).map((key) => [key, null]))
   const { error: updateError } = await admin.auth.admin.updateUserById(userId, {
@@ -92,9 +99,13 @@ async function eraseAuth(admin: Admin, userId: string): Promise<boolean> {
   })
   if (updateError) {
     console.error(`[account-erasure] auth update failed for ${userId}:`, updateError.message, updateError.status, updateError.code)
-    return false
+    return 'failed'
   }
-  return true
+  if (oauthIdentities > 0) {
+    console.error(`[account-erasure] ${oauthIdentities} OAuth identity row(s) left for ${userId}: needs the identity cleanup migration`)
+    return 'residual'
+  }
+  return 'ok'
 }
 
 /** Every file under `prefix` (folders recursed, MAX_DEPTH levels). Storage's list() is one level, folders have id null. */
@@ -109,7 +120,11 @@ async function listUnder(admin: Admin, bucket: Bucket, prefix: string, depth = 0
     for (const entry of data ?? []) {
       const path = `${prefix}/${entry.name}`
       if (entry.id !== null) files.push(path)
-      else if (depth < MAX_DEPTH) {
+      else if (depth >= MAX_DEPTH) {
+        // Deeper than any upload path the app writes: fail rather than report « done » with files left behind.
+        console.error(`[account-erasure] list ${bucket}: folder deeper than ${MAX_DEPTH} levels`)
+        return null
+      } else {
         const nested = await listUnder(admin, bucket, path, depth + 1)
         if (nested === null) return null
         files.push(...nested)
@@ -166,11 +181,30 @@ async function plan(admin: Admin, userId: string): Promise<Plan | null> {
     }
   }
 
+  // The RPC deletes a shop left empty, so its id is gone from `shops`: recover it from the first folder of the person's
+  // own shop-assets / product-images provenance rows — unless that shop now belongs to someone else (never sweep it).
+  const pathShopIds = new Set(
+    (owned ?? [])
+      .filter((row) => row.bucket === 'shop-assets' || row.bucket === 'product-images')
+      .map((row) => row.path.split('/')[0])
+      .filter((id) => id && !shopIds.includes(id)),
+  )
+  const sweepShopIds = [...shopIds]
+  if (pathShopIds.size > 0) {
+    const { data: taken, error: takenErr } = await admin.from('shops').select('id').in('id', [...pathShopIds]).neq('owner_id', userId)
+    if (takenErr) {
+      console.error(`[account-erasure] shop owner check failed for ${userId}:`, takenErr.message, takenErr.code, takenErr.details)
+      return null
+    }
+    const takenIds = new Set((taken ?? []).map((s) => s.id))
+    sweepShopIds.push(...[...pathShopIds].filter((id) => !takenIds.has(id)))
+  }
+
   const folders: [Bucket, string][] = [
     ['avatars', userId],
     ['portfolio-media', userId],
     ['verifications', userId],
-    ...shopIds.flatMap((id): [Bucket, string][] => [['shop-assets', id], ['product-images', id]]),
+    ...sweepShopIds.flatMap((id): [Bucket, string][] => [['shop-assets', id], ['product-images', id]]),
   ]
   for (const [bucket, prefix] of folders) {
     const found = await listUnder(admin, bucket, prefix)
@@ -244,7 +278,8 @@ export async function finishAccountErasure(userId: string): Promise<ErasureResul
     }
 
     step = 'auth'
-    if (!(await eraseAuth(admin, userId))) return { ok: false, step: 'auth', reason: 'failed' }
+    const auth = await eraseAuth(admin, userId)
+    if (auth === 'failed') return { ok: false, step: 'auth', reason: 'failed' }
 
     step = 'files'
     const todo = await plan(admin, userId)
@@ -257,6 +292,8 @@ export async function finishAccountErasure(userId: string): Promise<ErasureResul
     const imageRowsRemoved = await deleteImageRows(admin, userId, todo.productIds)
     if (imageRowsRemoved === null) return { ok: false, step: 'rows', reason: 'failed' }
 
+    // Files and rows are erased; the OAuth identity is not — never report that as done (no completion audit row).
+    if (auth === 'residual') return { ok: false, step: 'auth', reason: 'identity_left' }
     return { ok: true, filesRemoved, imageRowsRemoved }
   } catch (e) {
     console.error(`[account-erasure] threw at ${step} for ${userId}:`, thrown(e))

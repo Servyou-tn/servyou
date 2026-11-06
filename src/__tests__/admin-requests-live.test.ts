@@ -576,10 +576,10 @@ describe.skipIf(!hasCreds)('D2 — finishAccountErasure (auth + files, service r
 
   it('no login: the real e-mail no longer exists, the tombstone one is banned', async () => {
     const byOldEmail = await fixtureSignIn(createClient<Database>(url, anonKey, opts), email('seller'))
-    expect(byOldEmail.error?.message).toMatch(/^generateLink:/)
+    expect(byOldEmail.error?.message).toMatch(/^generateLink: .*(not found|not exist)/i)
     // One /verify call: GoTrue refuses the banned account's session.
     const byTombstone = await fixtureSignIn(createClient<Database>(url, anonKey, opts), tombstoneEmail(ids.seller))
-    expect(byTombstone.error).not.toBeNull()
+    expect(byTombstone.error?.message).toMatch(/banned/i)
   })
 })
 
