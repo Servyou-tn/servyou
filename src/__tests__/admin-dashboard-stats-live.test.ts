@@ -1,6 +1,7 @@
 /**
- * Live proof for db/migrations/20261106093535_admin_dashboard_stats.sql (docs/discovery/admin-dashboard-stats.md,
- * D1–D12): admin_dashboard_stats, admin_list_orders, admin_count_orders, admin_list_audit_log.
+ * Live proof for db/migrations/20261106093535_admin_dashboard_stats.sql and
+ * 20261106132948_admin_dashboard_stats_same_span.sql (docs/discovery/admin-dashboard-stats.md, D1–D12):
+ * admin_dashboard_stats, admin_list_orders, admin_count_orders, admin_list_audit_log.
  *
  *   * access — anon has no EXECUTE; a signed-in non-admin meets the is_admin() gate (42501) on all four;
  *   * parameters — an unknown period / tab / type / sort and an 81-character search are 23514;
@@ -11,6 +12,8 @@
  *   * orders list — ref search, title search, `%` / `_` taken literally, each tab's total_count = admin_count_orders,
  *     the row fields (amount, seller, blocked, exact « depuis ») and no delivery / phone / e-mail field;
  *   * audit log — a fixture admin action comes back with its target label (the shop's name) and the admin's name.
+ *   * periods — every answer parses with src/lib/admin/dashboard-stats.ts; for 7 / 30 / 90 days previous_to = to − p_days
+ *     and the previous span is as long as the current one.
  *
  * Fixtures (`adm-dash-`, passwords random per run), written by the service role: an admin (signs in), a consumer
  * (signs in), a buyer, a shop owner (signs in, to accept an order) + shop + product, three orders, one audit row.
@@ -28,13 +31,10 @@ import { randomUUID } from 'crypto'
 import type { Database } from '@/lib/supabase/database.types'
 import { refuseTeardownOnForeignOrders } from './live-teardown-guard'
 import { fixtureSignIn } from './fixture-session'
+import { DASHBOARD_PERIODS, parseDashboardStats, type DashboardKpis, type DashboardStats } from '@/lib/admin/dashboard-stats'
 
 type Client = SupabaseClient<Database>
-type Stats = {
-  current: Record<string, number | null>
-  funnel: Record<string, number>
-  queue: Record<string, number | string | null>
-}
+type Stats = DashboardStats
 
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -128,7 +128,10 @@ function order(status: string, createdAt?: string): Database['public']['Tables']
 async function stats(days = 7): Promise<Stats> {
   const { data, error } = await adminClient.rpc('admin_dashboard_stats', { p_days: days })
   if (error || !data) throw new Error(`admin_dashboard_stats failed: ${error?.message}`)
-  return data as unknown as Stats
+  // Every live answer goes through B's parse schema: a shape drift fails here, not on a page.
+  const parsed = parseDashboardStats(data)
+  if (!parsed.ok) throw new Error(`admin_dashboard_stats shape changed: ${parsed.issues.join(', ')}`)
+  return parsed.stats
 }
 
 async function listOrders(args: Database['public']['Functions']['admin_list_orders']['Args']) {
@@ -212,7 +215,7 @@ describe.skipIf(!hasCreds)('parameters', () => {
 describe.skipIf(!hasCreds)('admin_dashboard_stats (7 days)', () => {
   it('each KPI moves by exactly the fixtures', async () => {
     const after = await stats()
-    const delta = (k: string) => Number(after.current[k]) - Number(before.current[k])
+    const delta = (k: keyof DashboardKpis) => Number(after.current[k]) - Number(before.current[k])
     expect(delta('orders_created')).toBe(3)
     expect(delta('orders_received')).toBe(1)
     expect(delta('created_then_received')).toBe(1)
@@ -227,13 +230,25 @@ describe.skipIf(!hasCreds)('admin_dashboard_stats (7 days)', () => {
 
   it('the funnel follows the three paths (D8)', async () => {
     const after = await stats()
-    const delta = (k: string) => after.funnel[k] - before.funnel[k]
+    const delta = (k: keyof Stats['funnel']) => after.funnel[k] - before.funnel[k]
     expect(delta('created')).toBe(3)
     expect(delta('reached_accepted')).toBe(2)
     expect(delta('reached_arrived')).toBe(1)
     expect(delta('received')).toBe(1)
     expect(delta('still_pending')).toBe(1)
     expect(delta('cancelled')).toBe(0)
+  })
+})
+
+describe.skipIf(!hasCreds)('admin_dashboard_stats periods (migration 20261106132948, same span)', () => {
+  it.each(DASHBOARD_PERIODS)('%i days: previous_to = to − p_days, and previous spans as long as current', async (days) => {
+    const { period } = await stats(days)
+    const ms = (s: string) => Date.parse(s)
+    const day = 24 * 3600 * 1000
+    expect(period.days).toBe(days)
+    expect(ms(period.to) - ms(period.previous_to)).toBe(days * day)
+    expect(ms(period.from) - ms(period.previous_from)).toBe(days * day)
+    expect(ms(period.previous_to) - ms(period.previous_from)).toBe(ms(period.to) - ms(period.from))
   })
 })
 

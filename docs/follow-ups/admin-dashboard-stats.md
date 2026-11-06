@@ -5,6 +5,10 @@ Ranked, most important first.
 
 ## 0. 🟠 MEDIUM — « current » is shorter than « previous », so every delta leans negative (review, 2026-11-06)
 
+✅ CLOSED — migration `20261106132948_admin_dashboard_stats_same_span` (architect, 2026-11-06; README #124), recorded on
+`fix/admin-stats-same-span`. `previous` = [`previous_from`, `previous_to`) with `previous_to` = now − p_days days;
+`period` returns `previous_to`. The live suite asserts both spans are equal for 7 / 30 / 90 days.
+
 **What:** in `admin_dashboard_stats`:
 - `current` = [00:00 Tunis (p_days − 1) days ago, now): p_days − 1 full days plus part of today;
 - `previous` = [v_from − p_days days, v_from): p_days full days.
@@ -52,6 +56,9 @@ buyers) were only checked for shape and against the read-only compile check of t
 
 ## 4. A parse schema for the `admin_dashboard_stats` jsonb
 
+✅ CLOSED — `src/lib/admin/dashboard-stats.ts` (`parseDashboardStats`, `DashboardStats`) on `fix/admin-stats-same-span`;
+unit-tested in `dashboard-stats.test.ts`, and the live suite parses every answer with it.
+
 **What:** the RPC returns `Json`, so Agent B casts it. A zod schema in `src/lib/admin/` would type it and fail loudly on
 a shape change.
 **Why deferred:** B's call: B may prefer its own type next to the page.
@@ -67,4 +74,4 @@ a shape change.
   future one that does would surface on J11.
 
 **Why deferred:** none is wrong at today's volume; each needs a new migration.
-**Trigger:** fold into the migration for #0.
+**Trigger:** the next migration that touches these functions (the same-span fix, #0, changed only the `'previous'` line).

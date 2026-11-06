@@ -1255,6 +1255,19 @@ both on 2026-10-28.
       text, text, integer, text, integer, integer); drop function public.admin_count_orders(text, text, text, integer);
       drop function public.admin_list_audit_log(text, text, text, integer, integer, integer);` then the four
       `private.*` helpers. Nothing else depends on them.
+124. **20261106132948_admin_dashboard_stats_same_span** — follow-up #0 of #334 (review, MEDIUM); applied by the architect.
+    - `create or replace` of `public.admin_dashboard_stats(integer)` only. `previous` was [v_from − p_days, v_from):
+      p_days full days against a `current` of p_days − 1 days plus part of today, so every delta leaned negative.
+      Now `previous` = [`previous_from`, `previous_to`) with `previous_to` = now − p_days days: the same elapsed span
+      one period back. `period` gains `previous_to`. Nothing else in the body changes.
+    - Re-states the grants (revoke PUBLIC / anon, EXECUTE for authenticated); checked live: SECURITY DEFINER,
+      `search_path ''`, no anon / PUBLIC EXECUTE.
+    - The signature is unchanged, so `database.types.ts` is unchanged (regenerated and compared: identical). The jsonb
+      shape is parsed by `src/lib/admin/dashboard-stats.ts`.
+    - Live: `admin-dashboard-stats-live.test.ts` asserts, for 7 / 30 / 90 days, `previous_to` = `to` − p_days days and
+      equal spans.
+    - The recorded statement is this whole file (md5 `3dc8abe9a66acf0b4e57a8cf3cb474ae`, no trailing newline).
+    - Rollback: re-run #123's `admin_dashboard_stats` definition (it brings back the shorter-current comparison).
 
 ## Rollback paths
 
