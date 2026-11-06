@@ -59,11 +59,12 @@ const digits = (s: string) => s.replace(/\D/g, '')
  */
 export function matchesUserQuery(u: FilterableUser, query: string): boolean {
   const trimmed = query.trim()
-  if (/^[\d\s+().-]+$/.test(trimmed) && digits(trimmed).length >= 3) return digits(u.phone ?? '').includes(digits(trimmed))
   const terms = normalizeForSearch(trimmed).split(/\s+/).filter(Boolean)
   if (terms.length === 0) return true
   const text = normalizeForSearch([u.full_name, u.email].filter(Boolean).join(' '))
-  return terms.every((term) => text.includes(term))
+  if (terms.every((term) => text.includes(term))) return true
+  // Phone-shaped queries also match the phone (an OR: « 2024 » still finds « user2024@x.tn »).
+  return /^[\d\s+().-]+$/.test(trimmed) && digits(trimmed).length >= 3 && digits(u.phone ?? '').includes(digits(trimmed))
 }
 
 export function filterUsers<T extends FilterableUser>(
@@ -74,7 +75,7 @@ export function filterUsers<T extends FilterableUser>(
   return rows.filter(
     (u) =>
       inTab(u, f.tab) &&
-      (f.city === null || u.city === f.city) &&
+      (f.city === null || u.city?.trim() === f.city) &&
       (since === null || new Date(u.created_at).getTime() >= since) &&
       matchesUserQuery(u, f.q),
   )

@@ -206,7 +206,10 @@ function UserCard({ lang, row }: { lang: Lang; row: UserListRow }) {
           <span key={i}>{i > 0 ? ' · ' : null}<bdi>{part}</bdi></span>
         ))}
       </p>
-      <Link href={row.href} className={`${link} self-start`}>{t('admin.users.action_view', lang)}</Link>
+      <Link href={row.href} className={`${link} self-start`}>
+        {t('admin.users.action_view', lang)}
+        <span className="sr-only"> — {row.name}</span>
+      </Link>
     </article>
   )
 }

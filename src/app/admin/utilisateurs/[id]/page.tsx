@@ -212,7 +212,8 @@ export default async function UserDetailPage({ params, searchParams }: Props) {
     typeLabel: t(`admin.reports.target_type_${i.type}`, lang),
     title: i.title,
     pill: contentPill(i, lang),
-    href: `${contentRoute[i.type]}/${i.id}`,
+    // Hidden or inactive content 404s on its public page — no link for those rows.
+    href: !i.hidden && (i.status === 'active' || i.status === 'open') ? `${contentRoute[i.type]}/${i.id}` : null,
   }))
 
   const journalRows: JournalRow[] = (journalRes.data ?? []).map((j) => {
@@ -227,7 +228,8 @@ export default async function UserDetailPage({ params, searchParams }: Props) {
   // Tile 3 follows the account's content: a shop's products, a freelancer's services, otherwise its annonces.
   const tile3Items = shop ? items.filter((i) => i.type === 'product') : fp ? items.filter((i) => i.type === 'service') : items.filter((i) => i.type === 'job_post')
   const tile3Hidden = tile3Items.filter((i) => i.hidden).length
-  const tile3Failed = shop ? Boolean(productsRes?.error) : fp ? Boolean(servicesRes?.error) : Boolean(jobsRes.error)
+  // A failed shop / freelancer read could silently turn the tile into « Annonces »: any content failure → « — ».
+  const tile3Failed = contentFailed
   const tiles: DetailTile[] = [
     { label: t('admin.users.activity_orders_as_seller', lang), value: countValue(sellerCount), subtitle: t('admin.users.tile_as_seller', lang), accent: 'blue' },
     { label: t('admin.users.activity_orders_as_buyer', lang), value: countValue(buyerCount), subtitle: t('admin.users.tile_as_buyer', lang), accent: 'neutral' },
@@ -239,8 +241,9 @@ export default async function UserDetailPage({ params, searchParams }: Props) {
     },
     {
       label: t('admin.users.activity_reports_against', lang),
-      value: reportsRes.error ? '—' : String(reportsRes.count ?? (reportsRes.data ?? []).length),
-      subtitle: reportsRes.error ? null : tn('admin.users.tile_open_reports', lang, openReports),
+      // Reports are matched on the content ids: an incomplete content read would undercount, so it shows « — ».
+      value: reportsRes.error || contentFailed ? '—' : String(reportsRes.count ?? (reportsRes.data ?? []).length),
+      subtitle: reportsRes.error || contentFailed ? null : tn('admin.users.tile_open_reports', lang, openReports),
       accent: 'neutral',
     },
   ]
@@ -284,7 +287,8 @@ export default async function UserDetailPage({ params, searchParams }: Props) {
       name={u.full_name ?? '—'}
       initials={getInitials(u.full_name ?? u.email)}
       roles={roles.map((r) => ({ key: r, label: t(accountRoleI18nKey(r), lang), pill: ROLE_PILL[r] }))}
-      status={userStatus({ suspended_at: u.suspended_at, deletionPending: (deletionRes.data ?? []).length > 0 })}
+      // A failed deletion-request read cannot claim « Actif »: no status pill then (« — » in the view).
+      status={deletionRes.error && !u.suspended_at ? null : userStatus({ suspended_at: u.suspended_at, deletionPending: (deletionRes.data ?? []).length > 0 })}
       meta={[
         ...(u.email ? [{ text: u.email, ltr: true }] : []),
         ...(u.phone ? [{ text: u.phone, ltr: true }] : []),
@@ -297,10 +301,10 @@ export default async function UserDetailPage({ params, searchParams }: Props) {
       tabs={tabs}
       tab={tab}
       orders={orders}
-      reports={{ rows: tab === 'activite' ? reportRows.slice(0, 3) : reportRows, failed: Boolean(reportsRes.error), allHref: null }}
+      reports={{ rows: contentFailed ? [] : tab === 'activite' ? reportRows.slice(0, 3) : reportRows, failed: Boolean(reportsRes.error) || contentFailed, allHref: null }}
       content={{ rows: contentRows, failed: contentFailed }}
       info={info}
-      journal={{ rows: journalRows, failed: Boolean(journalRes.error), allHref: null }}
+      journal={{ rows: contentFailed ? [] : journalRows, failed: Boolean(journalRes.error) || contentFailed, allHref: null }}
     />
   )
 }

@@ -34,6 +34,8 @@ export function SuspendForm({ targetUserId }: { targetUserId: string }) {
       <dialog
         ref={dialogRef}
         aria-labelledby={`${id}-title`}
+        // Escape while the action runs would hide its outcome — the dialog stays until it settles.
+        onCancel={(e) => { if (pending) e.preventDefault() }}
         onClose={() => { setReason(''); setErrorKey(null) }}
         className="m-auto w-[min(28rem,calc(100vw-2rem))] rounded-xl border border-border-subtle bg-surface-base p-6 text-text-primary shadow-lg backdrop:bg-text-primary/40"
       >

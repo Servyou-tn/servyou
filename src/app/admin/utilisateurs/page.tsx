@@ -116,25 +116,19 @@ export default async function UsersListPage({
   const filtered = sortUsers(filterUsers(allRows, { tab, q, city, joined, now }), sort)
   const { items, page, totalPages } = paginate(filtered, pageParam, PER_PAGE)
 
-  // « Activité » = orders the account took part in (as buyer or seller) — read for the visible page only.
-  const pageIds = items.map((u) => u.id)
-  const orderCount = new Map<string, number>()
-  let ordersFailed = false
-  if (!failed && pageIds.length > 0) {
-    const list = pageIds.join(',')
-    const { data: orders, error: ordersError } = await supabase
-      .from('orders')
-      .select('buyer_id, seller_id')
-      .or(`buyer_id.in.(${list}),seller_id.in.(${list})`)
-    if (ordersError) {
-      reportQueryError('admin/utilisateurs order counts', ordersError)
-      ordersFailed = true
-    }
-    for (const o of orders ?? []) {
-      for (const id of new Set([o.buyer_id, o.seller_id])) {
-        if (pageIds.includes(id)) orderCount.set(id, (orderCount.get(id) ?? 0) + 1)
-      }
-    }
+  // « Activité » = orders the account took part in (as buyer or seller) — one exact head count per visible row
+  // (10 at most), so no response row cap can undercount it. A failed count shows « — » on its own row.
+  const orderCount = new Map<string, number | null>()
+  if (!failed) {
+    const counts = await Promise.all(
+      items.map((u) =>
+        supabase.from('orders').select('id', { count: 'exact', head: true }).or(`buyer_id.eq.${u.id},seller_id.eq.${u.id}`),
+      ),
+    )
+    counts.forEach((res, i) => {
+      if (res.error) reportQueryError('admin/utilisateurs order count', res.error)
+      orderCount.set(items[i].id, res.error ? null : (res.count ?? 0))
+    })
   }
 
   const rows: UserListRow[] = items.map((u) => ({
@@ -147,7 +141,7 @@ export default async function UsersListPage({
     shop: u.shop ? { id: u.shop.id, name: u.shop.name } : null,
     city: u.city,
     joined: shortDate(u.created_at, lang),
-    activity: ordersFailed ? null : tn('admin.users.orders_count', lang, orderCount.get(u.id) ?? 0),
+    activity: typeof orderCount.get(u.id) === 'number' ? tn('admin.users.orders_count', lang, orderCount.get(u.id) as number) : null,
     status: userStatus(u),
   }))
 

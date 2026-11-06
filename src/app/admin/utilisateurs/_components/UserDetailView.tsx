@@ -36,7 +36,8 @@ export function UserDetailView(props: {
   name: string
   initials: string
   roles: UserRolePill[]
-  status: UserStatus
+  /** null = the status could not be read: no pill rather than a false « Actif ». */
+  status: UserStatus | null
   meta: Array<{ text: string; ltr?: boolean }>
   publicPage: { href: string; labelKey: string } | null
   action: ReactNode
@@ -69,7 +70,7 @@ export function UserDetailView(props: {
             <div className="flex flex-wrap items-center gap-2.5">
               <h1 className="text-h2 text-text-primary"><bdi>{props.name}</bdi></h1>
               {props.roles.map((r) => <StatusPill key={r.key} status={r.pill}>{r.label}</StatusPill>)}
-              <StatusPill status={USER_STATUS_PILL[props.status].pill}>{t(USER_STATUS_PILL[props.status].key, lang)}</StatusPill>
+              {props.status ? <StatusPill status={USER_STATUS_PILL[props.status].pill}>{t(USER_STATUS_PILL[props.status].key, lang)}</StatusPill> : null}
             </div>
             <p className="text-body-sm text-text-secondary">
               {props.meta.map((m, i) => (

@@ -52,6 +52,11 @@ describe('filterUsers', () => {
     expect(matchesUserQuery(rows[2], '21655123456')).toBe(true)
     expect(matchesUserQuery(rows[0], 'a@x')).toBe(true)
     expect(matchesUserQuery(rows[0], '55')).toBe(false)
+    // a digit query still finds the e-mail / name (OR with the phone)
+    expect(matchesUserQuery({ ...rows[0], email: 'user2024@x.tn' }, '2024')).toBe(true)
+  })
+  it('city filter compares the trimmed city, matching the trimmed options', () => {
+    expect(filterUsers([{ ...rows[0], city: 'Tunis ' }], { ...base, city: 'Tunis' }).length).toBe(1)
   })
 })
 
