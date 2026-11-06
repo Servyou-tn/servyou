@@ -1,7 +1,8 @@
 # Admin « Demandes » backend — discovery + plan (`feat/admin-requests-backend`, 2026-11-05)
 
-Role: db-guardian. Migration: `db/migrations/PENDING_admin_requests_backend.sql` — **written, not applied** (the architect reviews and
-applies). All reads below are live, read-only `execute_sql` on `xggomcitqrkaylqezjjz`.
+Role: db-guardian. Migration: `db/migrations/20261106074610_admin_requests_backend.sql`, **applied by the architect on
+2026-11-06**, with one addition: section c2 (see D6). Rulings: D1 yes, D2 next PR, D8 yes, D6 as amended by c2, no extra
+locking. All reads below are live, read-only `execute_sql` on `xggomcitqrkaylqezjjz`, taken before the apply.
 
 ## What is live today
 
@@ -57,7 +58,9 @@ There is **no deletion path in the app today**: nothing calls `auth.admin.delete
 - `check_order_status_transition` lets the order scrub through (status unchanged), `emit_order_event` logs nothing for it, and `enforce_order_lifecycle_columns` is untouched (cancellation fields unchanged).
 - Functions run as `postgres` (BYPASSRLS).
 
-**Not verified:** the SQL has not been compiled (no throwaway database; nothing was run on prod). The architect's review / apply is the first compile.
+**Verified after the apply:**
+- The architect ran a rolled-back test.
+- `admin-requests-live.test.ts` (18 cases) drives every approve branch on real fixtures: deletion and hiding of products / services, the reported draft, the shop / freelancer scrub, D8, D3, D9 and the audit row.
 
 ## Decisions for the founder (numbered, the file implements the recommended option)
 
@@ -81,13 +84,14 @@ There is **no deletion path in the app today**: nothing calls `auth.admin.delete
   - **Their deletion request's own `reason`.**
   - **Hidden shop / freelancer / listing rows:** their text stays in the database, readable by admins only.
   - **Other text they wrote on shared records:** dispute descriptions, `cancellation_reason` on orders, and the notes in `order_events`.
-  - **Important for the hidden shop / freelancer rows:** they keep their name, description, bio, logo / banner and links, and **past buyers can still read them** through the order clause of the shops / freelancer_profiles SELECT policies. « Hidden » here is not « erased ». Scrubbing those text columns (some are NOT NULL, and products keep their own text) is a follow-up migration if you want it; say so.
-
-  Say if any of these should be erased too.
+  - **Hidden shop / freelancer rows — amended at apply (section c2, architect 2026-11-06):** past buyers can still read them through the order clause of the SELECT policies, so they lose their personal text.
+    - The shop becomes « Boutique supprimée ». Description, city, location, hours, delivery setup, carriers, socials, logo / banner and payment methods are erased.
+    - The freelancer profile loses headline, bio, city, workplace, links, working hours, payment method and languages, and gets `is_published = false`. Its child tables are deleted.
+    - Still kept: the text of hidden products / services (title, description, images). Logged in `docs/follow-ups/admin-requests-backend.md`.
 - **D7 `date_of_birth`** is NOT NULL, so it's set to `1900-01-01` rather than kept.
 - **D8 Job posts with proposals are soft-deleted** (status `deleted`), not hard-deleted, so other freelancers' proposals survive; the post's own title / description stay in the row (not public).
 - **D9 A pending export of the deleted account is closed** (`rejected`) in the same transaction.
-- **Low, logged:** a buyer could place an order on one of the person's still-active listings in the instant between the open-order check and the hide step (same transaction, but the listings are not locked `FOR UPDATE`). That order would stay open on a tombstoned seller. Locking the listings first closes it; say if you want that.
+- **Listing-lock race — ruled not needed (2026-11-06):** the `FOR UPDATE` on the profile already blocks a concurrent order insert, because the orders FK check takes KEY SHARE on the profile row.
 
 ## Test plan (after the apply; one live suite, ≤ 12 sign-ins, unique prefix, verified cleanup)
 

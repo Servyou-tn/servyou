@@ -1,7 +1,7 @@
 // Generated from the live Supabase schema (project xggomcitqrkaylqezjjz) — DO NOT EDIT BY HAND.
 // Regenerate after every applied migration: Supabase MCP generate_typescript_types (or
 // `npx supabase gen types typescript --project-id xggomcitqrkaylqezjjz`), then commit.
-// Generated 2026-11-01 after migration 20261101212613 shop_social_links.
+// Generated 2026-11-06 after migration 20261106074610 admin_requests_backend.
 
 export type Json =
   | string
@@ -1621,6 +1621,54 @@ export type Database = {
         Args: { reason: string; target_id: string; target_type: string }
         Returns: undefined
       }
+      admin_list_contact_messages: {
+        Args: { p_limit?: number; p_offset?: number; p_status?: string }
+        Returns: {
+          created_at: string
+          email: string
+          id: string
+          message: string
+          name: string
+          status: string
+          subject: string
+          user_id: string
+        }[]
+      }
+      admin_list_data_exports: {
+        Args: { p_limit?: number; p_offset?: number; p_status?: string }
+        Returns: {
+          email: string
+          full_name: string
+          id: string
+          processed_at: string
+          processed_by: string
+          processed_by_name: string
+          requested_at: string
+          status: string
+          user_id: string
+        }[]
+      }
+      admin_list_deletion_requests: {
+        Args: { p_limit?: number; p_offset?: number; p_status?: string }
+        Returns: {
+          email: string
+          full_name: string
+          id: string
+          open_orders: number
+          processed_at: string
+          processed_by: string
+          processed_by_name: string
+          reason: string
+          requested_at: string
+          seller_type: string
+          status: string
+          user_id: string
+        }[]
+      }
+      admin_mark_contact_message_handled: {
+        Args: { p_message_id: string; p_note?: string }
+        Returns: undefined
+      }
       admin_overview_stats: {
         Args: never
         Returns: {
@@ -1634,6 +1682,14 @@ export type Database = {
           total_shops: number
           total_users: number
         }[]
+      }
+      admin_process_data_export: {
+        Args: { p_decision: string; p_export_id: string; p_note?: string }
+        Returns: undefined
+      }
+      admin_process_deletion_request: {
+        Args: { p_decision: string; p_note?: string; p_request_id: string }
+        Returns: Json
       }
       admin_suspend_user: {
         Args: { reason: string; target_user_id: string }

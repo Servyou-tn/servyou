@@ -1166,6 +1166,40 @@ both on 2026-10-28.
       maps the hint to the phone field error. Live: `seller-phone-kept-live.test.ts`.
     - No column or type change (`database.types.ts` unchanged). The recorded statement was not compared with this
       file (no SQL access in the CC session); the live suite checks the behaviour.
+120. **20261106074610_admin_requests_backend** — admin « Demandes » backend (discovery `docs/discovery/admin-requests-backend.md`,
+    D1–D9; reviewed and applied by the architect, who added section c2).
+    - RPC-only processing: the « Admins update deletion requests / export requests » policies are dropped, and the
+      admins' column UPDATE grants on `deletion_requests` (`status`, `processed_at`, `processed_by`) and `data_exports`
+      (the same + `export_url`) are revoked. Users keep their INSERT column grants.
+    - Six functions (security definer, `search_path ''`, `is_admin()` gate, EXECUTE for authenticated only, revoked from
+      PUBLIC / anon): `admin_list_deletion_requests` (with the open-order count), `admin_list_data_exports`,
+      `admin_list_contact_messages` — pending / new first, oldest first, `p_limit` ≤ 200;
+      `admin_process_deletion_request`, `admin_process_data_export`, `admin_mark_contact_message_handled`. Each decision
+      is written through `log_admin_action`. A refusal needs a note. Errors: 42501 / 23514 / P0002, French messages.
+    - Approve = a tombstone (D1), not a hard delete. It refuses while an order is open, on an admin, or on the caller.
+      - Deletes favourites, notification prefs and job responses. Job posts are deleted, or set to `deleted` when they
+        have proposals or an open report (D8).
+      - Listings with no order and no open report are deleted; the rest are hidden (« Compte supprimé »). A draft
+        service stays `draft`. The shop / freelancer profile is deleted if empty, otherwise hidden.
+      - **c2 (architect):** the hidden shop is renamed « Boutique supprimée ». Its description, city, socials, logo /
+        banner and payment methods are erased. The freelancer profile loses its text, languages and working hours, gets
+        `is_published = false`, and its child tables are deleted.
+      - The orders the person bought lose their delivery identity and buyer note (D3).
+      - The profile is tombstoned and suspended: e-mail `supprime-<id>@deleted.servyou.invalid`, DOB 1900-01-01. A
+        pending export is closed (D9).
+      - The audit row holds ids and counts only. The RPC returns `{ user_id, tombstone_email, counts }`.
+    - Not in this migration: `auth.users` (ban, e-mail) and storage files. Those belong to the next PR's server
+      action (D2).
+    - **Known bug, fix pending:** c2 gives every shop that stays the same name. `shops_name_lower_key` therefore makes
+      the second such approval fail with 23505. See `docs/follow-ups/admin-requests-backend.md` #0.
+    - `db/client-write-allowlist.json` loses the two UPDATE entries. `database.types.ts` is regenerated (the six RPCs).
+    - Live: `admin-requests-live.test.ts`. `prelaunch-acl-hardening` and `suspension-enforcement` now expect the
+      direct UPDATE to be refused by privilege.
+    - The recorded statement is this whole file, comments included (md5 `60a53cf7f12c7c7e766d984193304b5e`, compared
+      with the recorded statement).
+    - Rollback: drop the six functions. Recreate the two « Admins update … » policies (from the tables' create
+      migrations) and the column UPDATE grants (from migration 68, `20261026190353`). Tombstoned accounts cannot be
+      restored.
 
 ## Rollback paths
 

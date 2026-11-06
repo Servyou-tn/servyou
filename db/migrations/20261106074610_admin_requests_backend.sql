@@ -1,35 +1,17 @@
--- PENDING — NOT APPLIED. Written by CC (db-guardian) for the architect's review; CC never calls apply_migration.
---
+-- Reviewed by the architect 2026-11-06 (D6 scrub of hidden shop / freelancer text added, section c2). Applied via Supabase MCP.
 -- Admin « Demandes » backend: admin-only RPCs to LIST and PROCESS account-deletion requests, data-export requests and /contact
 -- messages, every decision written to admin_audit_log through log_admin_action(). Discovery: docs/discovery/admin-requests-backend.md.
---
--- What is live today (2026-11-05):
---   deletion_requests (0 rows) / data_exports (0 rows): the owner INSERTs and SELECTs their own row; admins SELECT all and may
---     UPDATE status / processed_at / processed_by (+ export_url) DIRECTLY (policy « Admins update … » + column grants), unlogged.
---   contact_messages (1 row): no policy and no client grant at all — written by the /contact server action with the service role,
---     read by nobody in the app.
---   There is no account-deletion path anywhere: nothing calls auth.admin.deleteUser, and a hard delete would be wrong — orders.buyer_id
---   / seller_id are NOT NULL … ON DELETE CASCADE to profiles (which cascades from auth.users), so deleting a user would erase every
---   order they were part of, the other party's completed history included. And deleting a shop / freelancer profile that ever had an
---   order fails: the products / service_listings cascade sets orders.product_id / service_listing_id to NULL, which
---   order_target_matches_type refuses (23514).
---
--- So « deletion » here = a TOMBSTONE, in one transaction: the profile row stays (the orders keep pointing at it) with every personal
--- field replaced; personal lists are deleted; listings an order still points to are hidden instead of deleted; terminal orders the
--- person BOUGHT lose their delivery name / address / phone / note. The auth side (ban the login, replace the auth e-mail, remove the
--- storage files) is the server action's job with the service role — the RPC returns what it needs (decision D2).
---
--- Errors: 42501 not allowed · 23514 invalid state / data · P0002 not found. Admin-facing French messages.
+-- « deletion » = a TOMBSTONE (D1): the profile row stays with every personal field replaced; personal lists deleted; listings an order
+-- still points to are hidden instead of deleted; terminal orders the person BOUGHT lose their delivery identity. Auth side (ban, auth
+-- e-mail, storage files) is the server action's job (D2). Errors: 42501 not allowed · 23514 invalid state / data · P0002 not found.
 
--- ── 1. Processing goes through the RPCs only, so every decision is logged ─────────────────────────────────────────────────────
--- (D4) Nothing in the app writes these columns (grep: only the two owner INSERTs); prelaunch-acl-hardening.test.ts « an admin
--- processes a request through the processing columns only » and db/client-write-allowlist.json change with this, after apply.
+-- 1. Processing goes through the RPCs only, so every decision is logged
 drop policy if exists "Admins update deletion requests" on public.deletion_requests;
 drop policy if exists "Admins update export requests" on public.data_exports;
 revoke update (status, processed_at, processed_by) on table public.deletion_requests from authenticated;
 revoke update (status, processed_at, processed_by, export_url) on table public.data_exports from authenticated;
 
--- ── 2. Lists (admin-only; pending first, oldest first — the UI promises 48 h / 24–48 h) ───────────────────────────────────────
+-- 2. Lists (admin-only; pending first, oldest first)
 create or replace function public.admin_list_deletion_requests(p_status text default 'pending', p_limit int default 50, p_offset int default 0)
 returns table (
   id uuid, user_id uuid, full_name text, email text, seller_type text, reason text, status text,
@@ -131,10 +113,9 @@ begin
 end;
 $$;
 
--- ── 3. Process an account-deletion request ───────────────────────────────────────────────────────────────────────────────────
--- p_decision 'approve' | 'reject'. A rejection needs a note (D5). An approval refuses while an order is still open (the promise in
--- Mon compte: « Elles doivent être terminées ou annulées avant que votre compte puisse être supprimé »), refuses an admin account
--- and the caller's own, then tombstones the account. The audit row carries ids and counts only — never the erased name / e-mail.
+-- 3. Process an account-deletion request ('approve' | 'reject'). Rejection needs a note. Approval refuses while an order is open,
+-- refuses an admin account and the caller's own, then tombstones the account. The profile row lock (FOR UPDATE) also blocks any
+-- concurrent order insert on this account (its FK check needs KEY SHARE on the profile), so the open-order check cannot race.
 create or replace function public.admin_process_deletion_request(p_request_id uuid, p_decision text, p_note text default null)
 returns jsonb
 language plpgsql
@@ -186,7 +167,6 @@ begin
     return jsonb_build_object('status', 'rejected', 'user_id', v_req.user_id);
   end if;
 
-  -- ── approve ──
   select * into v_target from public.profiles where id = v_req.user_id for update;
   if not found then
     raise exception 'Compte introuvable.' using errcode = 'P0002';
@@ -213,18 +193,15 @@ begin
   delete from public.notification_preferences where profile_id = v_target.id;
   delete from public.job_responses where freelancer_id = v_target.id;
   get diagnostics v_n = row_count;  v_counts := v_counts || jsonb_build_object('job_responses', v_n);
-  -- (D8) A post that has proposals or an open report is closed (status 'deleted', the app's own soft delete) instead: a hard
-  -- delete would cascade other freelancers' proposals away, and the report keeps its target.
+  -- (D8) A post with proposals or an open report is closed (status 'deleted') instead of deleted.
   delete from public.job_posts jp
    where jp.consumer_id = v_target.id
      and jp.response_count = 0
-     and not exists (select 1 from public.reports r where r.target_id = jp.id and r.status in ('open', 'under_review'));   -- cascades the posts' skills and the responses to them
+     and not exists (select 1 from public.reports r where r.target_id = jp.id and r.status in ('open', 'under_review'));
   get diagnostics v_n = row_count;  v_counts := v_counts || jsonb_build_object('job_posts', v_n);
   update public.job_posts set status = 'deleted' where consumer_id = v_target.id and status <> 'deleted';
 
-  -- b. Listings. One with no order and no open report is deleted; one an order or an open report still points to is hidden for good (deleting it would null the order's
-  --    product_id / service_listing_id, which order_target_matches_type refuses); a row already under moderation is left as it is
-  --    (enforce_moderated_row_no_delete refuses its delete even for an admin) — the hide below covers it.
+  -- b. Listings: deleted when no order and no open report points to them, otherwise hidden for good.
   delete from public.products pr
    using public.shops s
    where pr.shop_id = s.id and s.owner_id = v_target.id
@@ -247,8 +224,7 @@ begin
      and not exists (select 1 from public.orders o where o.service_listing_id = sl.id)
      and not exists (select 1 from public.reports r where r.target_id = sl.id and r.status in ('open', 'under_review'));
   get diagnostics v_n = row_count;  v_counts := v_counts || jsonb_build_object('services_deleted', v_n);
-  -- A draft stays a draft: draft → hidden would trip service_listings_price_required_unless_draft and
-  -- enforce_service_publish_requirements (no admin bypass; it treats a move out of draft as a publish). Drafts are never public.
+  -- A draft stays a draft (draft → hidden would trip the publish requirements). Drafts are never public.
   update public.service_listings sl
      set status = case when sl.status = 'draft' then 'draft' else 'hidden' end,
          admin_hidden_at = coalesce(sl.admin_hidden_at, now()),
@@ -280,15 +256,33 @@ begin
    where profile_id = v_target.id;
   get diagnostics v_n = row_count;  v_counts := v_counts || jsonb_build_object('freelancer_profiles_hidden', v_n);
 
-  -- d. Terminal orders the person BOUGHT keep their amounts, item title, dates and statuses (the seller's history and figures) but
-  --    lose the delivery identity (D3). Orders they SOLD hold nothing personal of theirs beyond seller_id → the tombstoned profile.
+  -- c2. (D6, architect 2026-11-06) What stays hidden for the orders' sake loses its personal text: past buyers can still open it.
+  update public.shops
+     set name = 'Boutique supprimée', description = null, city = null, location_detail = null, working_hours = null,
+         delivery_setup = null, preferred_carriers = null, facebook_url = null, instagram_url = null, tiktok_url = null,
+         logo_url = null, banner_url = null
+   where owner_id = v_target.id;
+  delete from public.shop_payment_methods spm using public.shops s where spm.shop_id = s.id and s.owner_id = v_target.id;
+  update public.freelancer_profiles
+     set headline = null, bio = null, city = null, current_workplace = null, workplace_location = null, portfolio_link = null,
+         working_hours = null, preferred_payment_method = null, languages = null, is_published = false
+   where profile_id = v_target.id;
+  delete from public.freelancer_certifications   c using public.freelancer_profiles fp where c.freelancer_id = fp.id and fp.profile_id = v_target.id;
+  delete from public.freelancer_education        c using public.freelancer_profiles fp where c.freelancer_id = fp.id and fp.profile_id = v_target.id;
+  delete from public.freelancer_tools            c using public.freelancer_profiles fp where c.freelancer_id = fp.id and fp.profile_id = v_target.id;
+  delete from public.freelancer_languages        c using public.freelancer_profiles fp where c.freelancer_profile_id = fp.id and fp.profile_id = v_target.id;
+  delete from public.freelancer_links            c using public.freelancer_profiles fp where c.freelancer_profile_id = fp.id and fp.profile_id = v_target.id;
+  delete from public.freelancer_portfolio_items  c using public.freelancer_profiles fp where c.freelancer_profile_id = fp.id and fp.profile_id = v_target.id;
+  delete from public.freelancer_skills           c using public.freelancer_profiles fp where c.freelancer_profile_id = fp.id and fp.profile_id = v_target.id;
+
+  -- d. Terminal orders the person BOUGHT keep amounts, title, dates and statuses but lose the delivery identity (D3).
   update public.orders
      set delivery_name = null, delivery_address = null, delivery_phone = null, buyer_note = null
    where buyer_id = v_target.id
      and (delivery_name is not null or delivery_address is not null or delivery_phone is not null or buyer_note is not null);
   get diagnostics v_n = row_count;  v_counts := v_counts || jsonb_build_object('orders_anonymised', v_n);
 
-  -- e. The profile becomes a tombstone (D1). Suspended, so any session still open can write nothing (enforce_active_user / RLS).
+  -- e. The profile becomes a tombstone (D1), suspended so any open session can write nothing.
   v_email := 'supprime-' || v_target.id::text || '@deleted.servyou.invalid';
   update public.profiles
      set full_name        = 'Compte supprimé',
@@ -301,7 +295,7 @@ begin
          suspended_reason = 'Compte supprimé'
    where id = v_target.id;
 
-  -- (D9) A pending data-export request of the same account is closed with it: there is no account left to export to.
+  -- (D9) A pending data-export request of the same account is closed with it.
   update public.data_exports
      set status = 'rejected', processed_at = now(), processed_by = auth.uid()
    where user_id = v_target.id and status = 'pending';
@@ -320,13 +314,11 @@ begin
     p_note         => v_note
   );
 
-  -- What the server action needs for the auth side (D2): the user to ban and the e-mail to give the auth row.
   return jsonb_build_object('status', 'approved', 'user_id', v_target.id, 'tombstone_email', v_email, 'counts', v_counts);
 end;
 $$;
 
--- ── 4. Process a data-export request ─────────────────────────────────────────────────────────────────────────────────────────
--- p_decision 'completed' (the file was sent by e-mail, as Paramètres promises) | 'rejected' (needs a note). export_url is not set.
+-- 4. Process a data-export request ('completed' | 'rejected' with a note).
 create or replace function public.admin_process_data_export(p_export_id uuid, p_decision text, p_note text default null)
 returns void
 language plpgsql
@@ -373,7 +365,7 @@ begin
 end;
 $$;
 
--- ── 5. Mark a /contact message handled ───────────────────────────────────────────────────────────────────────────────────────
+-- 5. Mark a /contact message handled
 create or replace function public.admin_mark_contact_message_handled(p_message_id uuid, p_note text default null)
 returns void
 language plpgsql
@@ -412,7 +404,7 @@ begin
 end;
 $$;
 
--- ── 6. EXECUTE: authenticated only (the gate inside is is_admin()); nothing for anon / PUBLIC ─────────────────────────────────
+-- 6. EXECUTE: authenticated only (the gate inside is is_admin()); nothing for anon / PUBLIC
 revoke all on function public.admin_list_deletion_requests(text, int, int)         from public, anon;
 revoke all on function public.admin_list_data_exports(text, int, int)              from public, anon;
 revoke all on function public.admin_list_contact_messages(text, int, int)          from public, anon;
@@ -425,13 +417,3 @@ grant execute on function public.admin_list_contact_messages(text, int, int)    
 grant execute on function public.admin_process_deletion_request(uuid, text, text)  to authenticated;
 grant execute on function public.admin_process_data_export(uuid, text, text)       to authenticated;
 grant execute on function public.admin_mark_contact_message_handled(uuid, text)    to authenticated;
-
--- ── Rollback (manual) ────────────────────────────────────────────────────────────────────────────────────────────────────────
--- drop function public.admin_list_deletion_requests(text, int, int), public.admin_list_data_exports(text, int, int),
---   public.admin_list_contact_messages(text, int, int), public.admin_process_deletion_request(uuid, text, text),
---   public.admin_process_data_export(uuid, text, text), public.admin_mark_contact_message_handled(uuid, text);
--- grant update (status, processed_at, processed_by) on table public.deletion_requests to authenticated;
--- grant update (status, processed_at, processed_by, export_url) on table public.data_exports to authenticated;
--- create policy "Admins update deletion requests" on public.deletion_requests for update using (is_admin());
--- create policy "Admins update export requests" on public.data_exports for update using (is_admin());
--- A tombstone is NOT reversible: the erased fields are gone (that is the point). Rows already processed stay processed.
