@@ -24,3 +24,14 @@
 - **Why deferred:** `scripts/gate/session.mjs` mints a real session on production auth (a write), and that needs the founder's OK.
 - **Where it lives:** `scripts/gate/authed.mjs` + the probe in `docs/design/mobile-hit-area-probe.md`.
 - **Trigger:** founder OKs gate sessions for a shop owner, a freelancer and an admin test account.
+
+## Review leftovers (PR #338)
+- **What:**
+  - (a) Pagination cells are 36 px wide and 4 px apart (`gap-1`). Each takes 2 px of the gap, so they reach 40 × 46; 44 across needs `max-lg:gap-2`.
+  - (b) The auth footer's inline text links (« Créer un compte », « Se connecter ») carry an inline `max-lg:relative`. If one wraps onto two lines (a longer translation), its hit box follows the first / last line fragments.
+  - (c) `Button size="sm"` callers that already add `max-sm:min-h-11` get a 58 px tall hit area. It steals nothing (8 px gaps).
+- **Why deferred:**
+  - (a) is a layout change.
+  - (b) and (c) cause no theft and no painted change.
+- **Where it lives:** `src/components/shared/Pagination.tsx`, `src/app/connexion/page.tsx`, `src/app/inscription/page.tsx`, `src/components/ui/button.tsx`.
+- **Trigger:** the founder's call on taller or wider mobile rows (same decision as the entries above).

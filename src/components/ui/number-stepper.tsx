@@ -51,7 +51,8 @@ export function NumberStepper({
       aria-label={label}
       className={cn(
         // overflow-visible below lg: a clipped box clips hit-testing too, so the ± hit areas could not reach 44.
-        // Nothing paints outside the 40 px group at rest (the buttons are transparent until hovered / pressed).
+        // Nothing paints outside the 40 px group at rest; the buttons round their own outer corners below lg, so a tap's
+        // hover fill stays inside the border as the clip used to keep it.
         'inline-flex h-10 w-34 items-stretch overflow-hidden rounded-lg border border-border-strong bg-surface-base max-lg:overflow-visible',
         className,
       )}
@@ -62,7 +63,7 @@ export function NumberStepper({
         disabled={atMin}
         aria-label={decreaseLabel}
         className={cn(
-          'flex w-10 shrink-0 items-center justify-center text-text-secondary transition-colors max-lg:relative',
+          'flex w-10 shrink-0 items-center justify-center text-text-secondary transition-colors max-lg:relative max-lg:first:rounded-s-lg max-lg:last:rounded-e-lg',
           'hover:bg-surface-subtle disabled:cursor-not-allowed disabled:text-text-muted disabled:hover:bg-transparent',
           FOCUS_RING,
         )}
@@ -84,7 +85,7 @@ export function NumberStepper({
         disabled={atMax}
         aria-label={increaseLabel}
         className={cn(
-          'flex w-10 shrink-0 items-center justify-center text-text-secondary transition-colors max-lg:relative',
+          'flex w-10 shrink-0 items-center justify-center text-text-secondary transition-colors max-lg:relative max-lg:first:rounded-s-lg max-lg:last:rounded-e-lg',
           'hover:bg-surface-subtle disabled:cursor-not-allowed disabled:text-text-muted disabled:hover:bg-transparent',
           FOCUS_RING,
         )}

@@ -65,7 +65,7 @@ export function SearchEmptyState({
                 className={`max-lg:relative inline-flex items-center rounded-full border border-border-subtle bg-white px-4 py-2 text-body-sm font-medium text-text-primary transition-colors hover:bg-slate-50 ${FOCUS_RING}`}
               >
                 {lang === 'ar' ? c.name_ar : c.name_fr}
-                {/* 39 → 47 tall; wrapped rows are 8 px apart, so two rows' extensions meet exactly. */}
+                {/* 39 → 49 tall; wrapped rows are 8 px apart, so two rows' extensions overlap by 2 px in the gap — no chip covered. */}
                 <HitArea size={36} axis="y" />
               </Link>
             ))}

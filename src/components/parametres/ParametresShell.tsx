@@ -19,7 +19,6 @@ import { LangueRegionTab } from './LangueRegionTab'
 import { ConfidentialiteTab } from './ConfidentialiteTab'
 import { NotificationsTab } from './NotificationsTab'
 import { ComptesConnectesTab } from './ComptesConnectesTab'
-import { HitArea } from '@/components/ui/interactive-surface'
 
 type TabKey = 'notifications' | 'confidentialite' | 'langue' | 'comptes'
 
@@ -126,13 +125,15 @@ export function ParametresShell({
           {TABS.map(({ key, icon: Icon, labelKey }) => {
             const active = key === activeTab
             return (
+              // The button clips its children (overflow-hidden rounds the accent bar), and a clip also clips
+              // hit-testing — so below lg the hit span's containing block is this wrapper, outside the clip.
+              <div key={key} className="shrink-0 max-lg:relative">
               <button
-                key={key}
                 type="button"
                 onClick={() => setActiveTab(key)}
                 aria-current={active ? 'true' : undefined}
                 className={cn(
-                  'max-lg:relative flex h-10 w-full shrink-0 items-center overflow-hidden rounded-md',
+                  'flex h-10 w-full shrink-0 items-center overflow-hidden rounded-md',
                   active && 'bg-brand-blue-50',
                   FOCUS_RING,
                 )}
@@ -152,8 +153,10 @@ export function ParametresShell({
                     {t(labelKey, lang)}
                   </span>
                 </span>
-                <HitArea size={40} axis="y" />
+                {/* The tabs are 4 px apart: each takes 2 px of the gap per side, 40 → 44, no overlap. */}
+                <span aria-hidden="true" className="pointer-events-auto absolute max-lg:inset-x-0 max-lg:-inset-y-0.5" />
               </button>
+              </div>
             )
           })}
         </nav>

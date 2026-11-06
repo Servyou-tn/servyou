@@ -74,7 +74,7 @@ export function FavorisTabs({
       <div
         role="tablist"
         aria-label={t('mesfavoris.tabsAria', lang)}
-        className="inline-flex max-w-full items-center self-start overflow-x-auto rounded-[10px] bg-surface-sunken p-1"
+        className="inline-flex max-w-full items-center self-start overflow-x-auto rounded-[10px] bg-surface-sunken p-1 max-lg:overflow-y-hidden"
       >
         {tabs.map((value) => {
           const isActive = tab === value

@@ -156,7 +156,7 @@ export function WhatsAppContactButton({
             This is the SECOND time the text-* group has silently evicted a class in this
             codebase — a size during the /marche/services rebuild, a colour here. */}
         <span className="text-text-primary">{label}</span>
-        <HitArea size={36} axis="y" />
+        {size === 'sm' ? <HitArea size={36} axis="y" /> : null}
       </button>
       {error ? (
         <p role="alert" className="text-caption text-danger-500">

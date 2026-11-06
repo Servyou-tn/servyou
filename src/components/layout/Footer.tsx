@@ -58,8 +58,8 @@ function FooterColumn({
               className={`max-lg:relative rounded text-sm text-slate-300 transition-colors hover:text-white ${FOCUS_RING}`}
             >
               {t(l.key, lang)}
-              {/* The links are 12 px apart (space-y-3): each takes half the gap (6 px) and no more, so none steals
-                  its neighbour's tap. 44 here would need taller rows — a layout change, left for the founder. */}
+              {/* The links are 12 px apart (space-y-3): each reaches 7 px, so only the two extensions overlap (by 2 px,
+                  in the gap) — no link's own box is covered. 44 here needs taller rows, a layout change (follow-up). */}
               <HitArea size={32} axis="y" />
             </Link>
           </li>

@@ -14,7 +14,6 @@ import { display, labelClass, errorClass, inputBase, primaryBtn } from '@/compon
 import { FOCUS_RING } from '@/components/layout/styles'
 import { SuspendedBanner } from './SuspendedBanner'
 import { Turnstile, type TurnstileHandle } from '@/components/security/Turnstile'
-import { HitArea } from '@/components/ui/interactive-surface'
 
 // Google OAuth built but DISABLED this sprint — same gate + rationale as the
 // signup form. OAuth sign-in would also need the handle_new_user trigger migration

@@ -9,7 +9,6 @@ import { cn } from '@/lib/utils'
 import { FOCUS_RING } from '@/components/layout/styles'
 import { buildSearchQuery } from '@/components/recherche/search-url'
 import { paginationRange } from './pagination-range'
-import { HitArea } from '@/components/ui/interactive-surface'
 
 // URL-driven numbered pagination (Upwork-style): [‹] [1] … [4] [5] [6] … [N] [›]. Each page is a
 // real <Link> that sets ?page= while preserving every other search param (filters, sort, query,
@@ -74,6 +73,8 @@ export function Pagination({
   // Figma 188:14219: every cell is a 36×36 square at radius 8 (rounded-md — tokens.css sets
   // --radius-md: 8px), NOT a pill. Idle cells carry a 1px border-subtle outline on white; the
   // active cell is a solid brand-blue-600 fill. Numbers are semibold in both states.
+  // Below lg: 36 → 46 tall; across, the cells are only 4 px apart, so each takes 2 px per side (40 wide, pitch-limited).
+  const PAGE_HIT = 'pointer-events-auto absolute max-lg:-inset-x-0.5 max-lg:-inset-y-1.25'
   const cell =
     'max-lg:relative inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md text-sm font-semibold transition-colors'
   const numberIdle = cn(cell, 'border border-border-subtle bg-white text-text-secondary hover:bg-surface-subtle', FOCUS_RING)
@@ -106,7 +107,7 @@ export function Pagination({
       return (
         <Link key={item} href={hrefFor(item)} className={numberIdle} aria-label={pageLabel(item)}>
           {item}
-          <HitArea size={36} />
+          <span aria-hidden="true" className={PAGE_HIT} />
         </Link>
       )
     })
@@ -127,7 +128,7 @@ export function Pagination({
         ) : (
           <Link href={hrefFor(current - 1)} rel="prev" className={arrowEnabled} aria-label={t('search.pagination.prev', lang)}>
             <ChevronLeft className="h-4 w-4" aria-hidden="true" />
-            <HitArea size={36} />
+            <span aria-hidden="true" className={PAGE_HIT} />
           </Link>
         )}
 
@@ -142,7 +143,7 @@ export function Pagination({
         ) : (
           <Link href={hrefFor(current + 1)} rel="next" className={arrowEnabled} aria-label={t('search.pagination.next', lang)}>
             <ChevronRight className="h-4 w-4" aria-hidden="true" />
-            <HitArea size={36} />
+            <span aria-hidden="true" className={PAGE_HIT} />
           </Link>
         )}
       </nav>
