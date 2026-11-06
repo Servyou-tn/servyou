@@ -4,6 +4,9 @@ Migration `20261106074610_admin_requests_backend` (README #120). Ranked, most im
 
 ## 0. 🔴 HIGH — the second shop owner's deletion fails on `shops_name_lower_key` (found in review, 2026-11-06)
 
+✅ CLOSED — migration `20261106083409_admin_deletion_shop_name_unique` (architect, 2026-11-06), recorded on
+`feat/admin-deletion-auth`; the live suite approves two shop owners in a row.
+
 **What:** section c2 renames every shop that has to stay to the same literal, « Boutique supprimée ». `shops` has a
 unique index on `lower(name)` (`shops_name_lower_key`, checked live). The first shop owner whose shop stays (because of a
 sold or reported product) goes through. The second one gets a raw **23505**, and the whole approval rolls back, so that
