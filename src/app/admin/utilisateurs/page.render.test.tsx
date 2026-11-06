@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { renderToString } from 'react-dom/server'
 import { createElement } from 'react'
 
-// Admin › Utilisateurs (list): every role as a badge, the owner's shop linked, the ?role= filter. Supabase, the
+// Admin › Utilisateurs (list, J2): every role as a pill, the owner's shop linked, the ?role= tabs with counts. Supabase, the
 // admin gate and the language are mocked — this pins the page's own logic, not RLS.
 type Row = Record<string, unknown>
 const h = vi.hoisted(() => ({
@@ -20,16 +20,26 @@ vi.mock('@/lib/auth/require-admin', () => ({ requireAdmin: async () => ({ userId
 vi.mock('@/lib/i18n/server', () => ({ getLang: async () => 'fr' }))
 vi.mock('@/lib/supabase/query-error', () => ({ reportQueryError: vi.fn() }))
 vi.mock('@/components/marche/ErrorState', () => ({ ErrorState: () => createElement('p', null, 'ERROR_STATE') }))
+// A chainable, thenable builder: every filter returns the builder, awaiting it yields the table's result.
+function builder(result: () => { data: unknown; error: unknown }) {
+  const b: Record<string, unknown> = {}
+  for (const m of ['select', 'eq', 'or', 'in', 'order', 'limit']) b[m] = () => b
+  b.then = (resolve: (v: unknown) => unknown) => resolve(result())
+  return b
+}
 vi.mock('@/lib/supabase/server', () => ({
   createClient: async () => ({
     from: (table: string) => {
-      if (table === 'profiles') {
-        return { select: () => ({ order: async () => ({ data: h.profilesError ? null : h.profiles, error: h.profilesError }) }) }
-      }
-      return { select: async () => ({ data: h.shopsError ? null : h.shops, error: h.shopsError }) }
+      if (table === 'profiles') return builder(() => ({ data: h.profilesError ? null : h.profiles, error: h.profilesError }))
+      if (table === 'shops') return builder(() => ({ data: h.shopsError ? null : h.shops, error: h.shopsError }))
+      return builder(() => ({ data: [], error: null })) // deletion_requests, orders
     },
   }),
 }))
+// Client widgets (next/navigation hooks) are not under test here.
+vi.mock('@/components/shared/Pagination', () => ({ Pagination: () => null }))
+vi.mock('@/components/orders/SortSelect', () => ({ SortSelect: () => null }))
+vi.mock('@/components/AdminSearch', () => ({ AdminSearch: () => null }))
 
 const Page = (await import('./page')).default
 
@@ -83,7 +93,7 @@ describe('Admin › Utilisateurs — roles, shop, filter', () => {
     const html = await render('shop_owner')
     expect(html).toContain('href="/admin/utilisateurs?role=shop_owner" aria-current="page"')
     expect(html).toMatch(/Tous(<!-- -->)?<span[^>]*>3</)
-    expect(html).toMatch(/Boutique(<!-- -->)?<span[^>]*>1</)
+    expect(html).toMatch(/Boutiques(<!-- -->)?<span[^>]*>1</)
     expect(rowOf(html, 'admin')).not.toBe('')
     expect(rowOf(html, 'free')).toBe('')
     expect(rowOf(html, 'cons')).toBe('')
