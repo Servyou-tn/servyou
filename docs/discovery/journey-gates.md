@@ -1,8 +1,18 @@
 # Journey gates G1 · G2 · G10 — discovery + plan (`feat/journey-gates-db`, 2026-11-06)
 
-Role: db-guardian. Migration: `db/migrations/PENDING_journey_gates.sql`, **written, not applied**. Founder decisions G1,
-G2 and G10 of `docs/discovery/journeys-2026-11-07.md`. All reads below are live, read-only SELECTs on
-`xggomcitqrkaylqezjjz` (2026-11-06). Nothing was created or changed.
+Role: db-guardian. Migration: `db/migrations/20261106153901_journey_gates.sql` (README #125).
+- **Applied by the architect on 2026-11-06,** after the rolled-back script below passed (ALL PASSED). He changed one
+  fixture: all 4 live proposals belong to one freelancer, so `r2` was re-assigned to a second eligible freelancer
+  inside the transaction.
+- **Founder rulings:**
+  - D1: the trigger is OK.
+  - D6: orders may sit pending (test data, wiped before launch; new freelancers give a phone at sign-up), so no extra
+    migration.
+  - D7: the client's phone stays hidden from the chosen freelancer.
+- **Live proof:** `src/__tests__/journey-gates-live.test.ts`.
+
+Founder decisions G1, G2 and G10 of `docs/discovery/journeys-2026-11-07.md`. All reads below are live, read-only
+SELECTs on `xggomcitqrkaylqezjjz` (2026-11-06), taken before the apply.
 
 ## What is live today
 
@@ -116,35 +126,26 @@ date too. A stored `expired` can come later with a scheduled job, if wanted.
 - **D7 (not implemented)** The chosen freelancer still never sees the client's phone (the `get_contact_phone` ruling:
   never freelancer → client through a mission). With `chosen` it could open for that one freelancer. Say if wanted.
 
-## After the apply (this branch)
+## After the apply (done on this branch, 2026-11-06)
 
-1. Rename the file to the recorded version, add the README entry, and regenerate the types:
-   - `job_responses.status`;
-   - `choose_job_response: { Args: { p_response_id: string }; Returns: string }`.
-2. Live suite `src/__tests__/journey-gates-live.test.ts`, ≤ 12 sign-ins: fixture post owner, 3 freelancers, a seller.
-   It covers the cases of the script below through the real API, plus PostgREST's error shape (code + hint).
-3. **Live suites G2 will likely break: fixture change in the record PR.** These suites seed sellers through the
-   service role, usually with no `profiles.phone`, then accept an order from the seller's session. G2 now refuses that.
-   The fix is a phone on the seller fixture.
-   - Likely (unverified until run): `orders-lifecycle-columns`, `order-cancel-buyer-service`, `orders-jobposts-caps`,
-     `job-posts-write-guards`, `suspension-enforcement`, `security-followups-batch`. The last one already sets a
-     phone on one seller.
-   - G10: no suite found that reads a backdated post as neither owner nor responder.
-   - Sync trigger: `admin-requests-live` closes a buyer's post that has a proposal (`admin_process_deletion_request`),
-     so the new trigger runs inside it. Re-run it.
-   - `job_posts` has no NOT VALID constraint (live), so the D1 trap exists only on `job_responses`.
-4. Re-run the regression suites on the same tables:
-   - `job-responses-proposal-fields`: the message rule still maps;
-   - `job-posts-write-guards`: close / reopen / delete with proposals;
-   - `job-limits`, `job-posts-responder-read`, `job-responses-integrity`;
-   - `orders-lifecycle-columns`, `order-cancel-buyer-service`, `seller-orders`: the accept path, every seller fixture
-     with a phone.
-5. **App (not in this PR; Agent B or a follow-up):**
-   - « Choisir ce freelance » on `/mes-annonces/[id]` calling the RPC, mapping its hints;
-   - the reopen error `job_response_chosen`;
-   - `/mes-propositions` showing « Choisie », « Non retenue », « En attente », and « Expirée » (derived);
-   - `advanceErrorKey` mapping 23514 `seller_phone_required` to a message with a link to `/mon-compte`;
-   - `proposals-query.ts` reading `status`.
+1. **Recorded:** `20261106153901_journey_gates.sql`, byte-identical to `schema_migrations` (md5 `75c9566d…`). The
+   architect reformatted it (comments removed, some lines joined); the code is identical to the PENDING file. README
+   #125. Types regenerated: `job_responses.status`, and `choose_job_response: { Args: { p_response_id: string };
+   Returns: string }`.
+2. **Live suite `src/__tests__/journey-gates-live.test.ts`:** 4 sign-ins (post owner, 2 freelancers, a phone-less shop
+   owner). It covers the script's cases through the real API, including PostgREST's error shape (code + hint), with a
+   never-touched fresh post as the G10 positive control.
+3. **Seller fixtures given a phone** in the 5 live suites where a seller accepts from its own session:
+   `orders-lifecycle-columns`, `order-cancel-buyer-service`, `orders-jobposts-caps`, `suspension-enforcement`,
+   `security-followups-batch`.
+   - `job-posts-write-guards` needed nothing: its only accept is an admin's, refused earlier as « not your order ».
+   - No suite reads a backdated post as neither owner nor responder, so G10 broke nothing.
+   - `job_posts` has no NOT VALID constraint, so the D1 trap existed only on `job_responses`.
+4. **Regression runs** (the PR body has the results):
+   - `job-responses-proposal-fields`, `job-posts-write-guards`, `job-limits`, `job-posts-responder-read`,
+     `job-responses-integrity`;
+   - `admin-requests-live`, because the sync trigger runs inside `admin_process_deletion_request`.
+5. **App (not in this PR):** `docs/follow-ups/journey-gates.md`.
 
 ## Rolled-back test script (for the architect: paste after the migration body, in the same transaction)
 

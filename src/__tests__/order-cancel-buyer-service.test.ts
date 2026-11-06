@@ -111,7 +111,8 @@ beforeAll(async () => {
   freelancerId = await createUser('freelancer')
   shopOwnerId = await createUser('shop')
 
-  const up1 = await admin.from('profiles').update({ seller_type: 'freelancer' }).eq('id', freelancerId)
+  // Accepting needs a seller phone (migration 20261106153901, G2).
+  const up1 = await admin.from('profiles').update({ seller_type: 'freelancer', phone: '+21620000000' }).eq('id', freelancerId)
   if (up1.error) throw new Error(`freelancer upgrade failed: ${up1.error.message}`)
   const fp = await admin.from('freelancer_profiles').insert({ profile_id: freelancerId }).select('id').single()
   if (fp.error || !fp.data) throw new Error(`freelancer_profile failed: ${fp.error?.message}`)
@@ -122,7 +123,7 @@ beforeAll(async () => {
   if (sl.error || !sl.data) throw new Error(`service_listing failed: ${sl.error?.message}`)
   serviceId = sl.data.id
 
-  const up2 = await admin.from('profiles').update({ seller_type: 'shop_owner' }).eq('id', shopOwnerId)
+  const up2 = await admin.from('profiles').update({ seller_type: 'shop_owner', phone: '+21620000000' }).eq('id', shopOwnerId)
   if (up2.error) throw new Error(`shop owner upgrade failed: ${up2.error.message}`)
   const shop = await admin.from('shops').insert({ owner_id: shopOwnerId, name: `BCancel Shop ${RUN}` }).select('id').single()
   if (shop.error || !shop.data) throw new Error(`shop failed: ${shop.error?.message}`)
