@@ -5,14 +5,12 @@
     "categories": { "authenticated": { "DELETE": "*", "INSERT": "*", "UPDATE": "*" } },
     "data_exports": {
       "authenticated": {
-        "INSERT": ["user_id"],
-        "UPDATE": ["export_url", "processed_at", "processed_by", "status"]
+        "INSERT": ["user_id"]
       }
     },
     "deletion_requests": {
       "authenticated": {
-        "INSERT": ["reason", "user_id"],
-        "UPDATE": ["processed_at", "processed_by", "status"]
+        "INSERT": ["reason", "user_id"]
       }
     },
     "disputes": {

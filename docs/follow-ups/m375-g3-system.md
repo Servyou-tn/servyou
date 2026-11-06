@@ -14,7 +14,7 @@ The built page is identity-only and links to `/ma-boutique/creer/configuration` 
 
 **Where it lives** `src/app/ma-boutique/modifier/_components/EditShopForm.tsx`, `src/app/ma-boutique/creer/configuration/`.
 
-**Trigger** The founder's answers to Q1 / Q2.
+✅ CLOSED — founder, 2026-11-05: keep the identity-only page with the link to configuration; no unsaved-changes line for now.
 
 ## Touch targets under 44 px on the system pages and C2
 
@@ -28,4 +28,5 @@ The built page is identity-only and links to `/ma-boutique/creer/configuration` 
 
 **Where it lives** `src/components/system/SystemStateScreen.tsx`, `src/components/categories/SubcategoryStrip.tsx`, `src/components/categories/CategoryServicesPage.tsx` (breadcrumb), `src/components/FavoriteButton.tsx`.
 
-**Trigger** The founder's answer to Q3 (or the mobile accessibility sweep).
+**Trigger** Approved (founder, 2026-11-05): one small PR before the beta, invisible hit areas only (no pixel change) — started when the
+founder says so.

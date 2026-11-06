@@ -12,7 +12,8 @@
  *   f_unaccent's qualified body still feeds search_vector. That the trigger functions themselves are
  *   closed is catalog-level (has_function_privilege, checked by the architect at apply), not RPC-level.
  * C — data_exports / deletion_requests: a user names only themselves (and a reason); every system column
- *   is refused 42501; admins may update only the processing columns.
+ *   is refused 42501; nobody updates a request directly — since migration 20261106074610 processing is
+ *   RPC-only (admin-requests-live.test.ts covers the RPCs).
  * D — anon never writes; authenticated's policy-less DELETE / UPDATE are refused by privilege; anon reads
  *   of the marketplace still work (the PUBLIC policies read orders as the caller); anon cannot read
  *   admin_audit_log / disputes. TRUNCATE is not reachable over PostgREST: catalog-checked at apply.
@@ -360,27 +361,35 @@ describe.skipIf(!hasCreds)('C — data_exports / deletion_requests: the user nam
   it('the user can neither withdraw nor process their own request', async () => {
     expectDenied((await buyerClient.from('data_exports').delete().eq('user_id', buyerId)).error, tableDenied('data_exports'))
     expectDenied((await buyerClient.from('deletion_requests').delete().eq('user_id', buyerId)).error, tableDenied('deletion_requests'))
-    // status is column-granted for the admins' policy, but the UPDATE policy is is_admin(): 0 rows.
-    const { data, error } = await buyerClient.from('data_exports').update({ status: 'completed' }).eq('user_id', buyerId).select('id')
-    expect(error).toBeNull()
-    expect(data).toEqual([])
+    // No client UPDATE grant at all since migration 20261106074610 (admin_requests_backend): refused by privilege.
+    expectDenied((await buyerClient.from('data_exports').update({ status: 'completed' }).eq('user_id', buyerId)).error, tableDenied('data_exports'))
     const { data: row } = await admin.from('data_exports').select('status').eq('user_id', buyerId).single()
     expect(row?.status).toBe('pending')
   })
 
-  it('an admin processes a request through the processing columns only', async () => {
-    const { data, error } = await adminClient
-      .from('data_exports')
-      .update({ status: 'completed', processed_at: new Date().toISOString(), processed_by: adminId, export_url: 'https://servyou.vercel.app/export.zip' })
-      .eq('user_id', buyerId)
-      .select('status, processed_by')
-    expect(error).toBeNull()
-    expect(data).toEqual([{ status: 'completed', processed_by: adminId }])
+  it('an admin cannot update a request directly: processing is RPC-only (migration 20261106074610, D4)', async () => {
+    // The processing columns lost their UPDATE grant and the « Admins update … » policies were dropped, so
+    // every decision goes through admin_process_data_export / admin_process_deletion_request (always logged).
+    expectDenied(
+      (await adminClient
+        .from('data_exports')
+        .update({ status: 'completed', processed_at: new Date().toISOString(), processed_by: adminId, export_url: 'https://servyou.vercel.app/export.zip' })
+        .eq('user_id', buyerId)).error,
+      tableDenied('data_exports'),
+    )
     expectDenied((await adminClient.from('data_exports').update({ user_id: adminId }).eq('user_id', buyerId)).error, tableDenied('data_exports'))
+    expectDenied(
+      (await adminClient.from('deletion_requests').update({ status: 'approved' }).eq('user_id', buyerId)).error,
+      tableDenied('deletion_requests'),
+    )
     expectDenied(
       (await adminClient.from('deletion_requests').update({ requested_at: new Date().toISOString() }).eq('user_id', buyerId)).error,
       tableDenied('deletion_requests'),
     )
+    for (const table of ['data_exports', 'deletion_requests'] as const) {
+      const { data } = await admin.from(table).select('status, processed_by').eq('user_id', buyerId).single()
+      expect(data, table).toMatchObject({ status: 'pending', processed_by: null })
+    }
   })
 })
 

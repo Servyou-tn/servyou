@@ -120,8 +120,8 @@ const TRIGGERED: Record<string, { guarded: Verb[]; noGrant?: Verb[]; set?: Recor
   orders: { guarded: ALL, noGrant: ['delete'], set: { status: 'cancelled' } }, // D6; no DELETE grant since migration 68
   reports: { guarded: ALL, noGrant: ['delete'], insertKey: 'reporter_id' }, // D5; no DELETE grant since migration 68; INSERT column-granted (id excluded) since the reports anti-abuse migration
   disputes: { guarded: ['update'], noGrant: ['delete'] }, // D4; no DELETE grant since migration 68
-  data_exports: { guarded: ['update'], noGrant: ['delete'], set: { status: 'pending' }, insertKey: 'user_id' }, // D3; column grants since migration 68 (C)
-  deletion_requests: { guarded: ['update'], noGrant: ['delete'], set: { status: 'pending' }, insertKey: 'user_id' }, // D3; column grants since migration 68 (C)
+  data_exports: { guarded: [], noGrant: ['update', 'delete'], set: { status: 'pending' }, insertKey: 'user_id' }, // D3; column grants since migration 68 (C); no UPDATE grant since 20261106074610 (RPC-only processing)
+  deletion_requests: { guarded: [], noGrant: ['update', 'delete'], set: { status: 'pending' }, insertKey: 'user_id' }, // D3; column grants since migration 68 (C); no UPDATE grant since 20261106074610 (RPC-only processing)
   notification_preferences: { guarded: ALL, noGrant: ['delete'], set: { email_newsletter: false }, insertKey: 'profile_id', key: 'profile_id' }, // migration 97: keyed on profile_id, column grants, no DELETE grant
 }
 // Exposed relations with no client write privilege at all, and the error each refusal carries.
