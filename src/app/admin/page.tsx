@@ -1,61 +1,40 @@
 import { getLang } from '@/lib/i18n/server'
-import { t } from '@/lib/i18n'
 import { createClient } from '@/lib/supabase/server'
 import { requireAdmin } from '@/lib/auth/require-admin'
 import { reportQueryError } from '@/lib/supabase/query-error'
-import { AdminMetricCard } from '@/components/AdminMetricCard'
+import { loadDashboardStats } from './_lib/load'
+import { ALL_TIME, type AdminAuditRow, type AdminOrderRow } from './_lib/format'
+import { buildOverview } from './_lib/overview-vm'
+import { OverviewView } from './_components/OverviewView'
 
-// Live counts arrive via the admin_overview_stats() RPC (PR-I-stats).
-// The RPC is SECURITY DEFINER + is_admin()-gated, so it bypasses RLS to
-// count accurately — a client-side count(*) would silently under-count
-// on the 7 of 8 source tables whose RLS restricts row visibility.
-// Each key's suffix after 'admin.metrics.' matches an RPC column 1:1.
-const METRIC_KEYS = [
-  'admin.metrics.total_users',
-  'admin.metrics.total_shops',
-  'admin.metrics.total_freelancers',
-  'admin.metrics.total_products',
-  'admin.metrics.total_services',
-  'admin.metrics.total_job_posts',
-  'admin.metrics.completed_orders',
-  'admin.metrics.pending_reports',
-]
-
-const KEY_PREFIX = 'admin.metrics.'
+// J1 « Vue d'ensemble » + M1 375 (Figma NOV 4 — Admin) on the live read RPCs (migration 20261106093535,
+// docs/discovery/admin-dashboard-stats.md): admin_dashboard_stats(7) for the queue, the tiles and the cities (the
+// layout's sidebar pills share the call through the per-request cache); « Commandes récentes » =
+// admin_list_orders(p_limit 5) and « Dernières actions » = admin_list_audit_log(p_limit 3) (D12), both across all
+// time so the panels show the latest rows, not an empty week. Every RPC is is_admin()-gated; none returns a
+// phone, an e-mail or a delivery field.
 
 export default async function AdminOverviewPage() {
   await requireAdmin('/admin')
   const lang = await getLang()
   const supabase = await createClient()
+  // eslint-disable-next-line react-hooks/purity -- request-time evaluation in an async Server Component (rendered once per request), the admin/statistiques precedent.
+  const now = Date.now()
 
-  // Single RPC call returns one row with the 8 aggregate counts. bigint
-  // columns arrive as strings from PostgREST; we render them as strings.
-  // On any error (incl. the is_admin() gate raising for a non-admin), fall
-  // back to undefined so each card shows its built-in '—' placeholder
-  // rather than breaking the page — and report it, so the '—' is not silent.
-  const { data, error } = await supabase.rpc('admin_overview_stats')
-  if (error) reportQueryError('admin/overview admin_overview_stats', error)
-  const stats = (!error && Array.isArray(data) && data.length > 0) ? data[0] : null
+  const [stats, ordersRes, logRes] = await Promise.all([
+    loadDashboardStats(7),
+    supabase.rpc('admin_list_orders', { p_tab: 'all', p_days: ALL_TIME, p_sort: 'newest', p_limit: 5 }),
+    supabase.rpc('admin_list_audit_log', { p_days: ALL_TIME, p_limit: 3 }),
+  ])
+  if (ordersRes.error) reportQueryError('admin/overview admin_list_orders', ordersRes.error)
+  if (logRes.error) reportQueryError('admin/overview admin_list_audit_log', logRes.error)
 
-  return (
-    <div className="max-w-5xl">
-      <h1 className="text-2xl font-bold text-gray-800 mb-6">{t('admin.overview.title', lang)}</h1>
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        {METRIC_KEYS.map(key => {
-          const col = key.slice(KEY_PREFIX.length)
-          // `col` is derived from METRIC_KEYS at runtime, so it cannot index the RPC's typed row directly.
-          const raw = stats ? (stats as Record<string, unknown>)[col] : null
-          const value = raw != null ? String(raw) : undefined
-          return <AdminMetricCard key={key} label={t(key, lang)} value={value} />
-        })}
-        {/* pending_disputes is rendered explicitly (not via METRIC_KEYS): its label
-            key lives under admin.overview.*, while the map derives RPC columns from
-            the admin.metrics.* prefix. Reads the 9th RPC column from the same row. */}
-        <AdminMetricCard
-          label={t('admin.overview.pending_disputes', lang)}
-          value={stats?.pending_disputes != null ? String(stats.pending_disputes) : undefined}
-        />
-      </div>
-    </div>
-  )
+  const vm = buildOverview({
+    stats,
+    orders: (ordersRes.data ?? []) as AdminOrderRow[],
+    log: (logRes.data ?? []) as AdminAuditRow[],
+    now,
+    lang,
+  })
+  return <OverviewView lang={lang} {...vm} recentFailed={Boolean(ordersRes.error)} actionsFailed={Boolean(logRes.error)} />
 }

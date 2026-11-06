@@ -34,10 +34,18 @@ import { SidebarSection } from '@/components/shell/SidebarSection'
 // treatment). Counts come from the layout; a count with no source — or a failed read — is `undefined`
 // and renders no pill, never a fake 0.
 
-export type AdminCounts = { reports?: number; disputes?: number }
+export type AdminCounts = { reports?: number; disputes?: number; orders?: number; requests?: number }
 
 type CountKey = keyof AdminCounts
 type NavItem = { key: string; href: string; icon: LucideIcon; disabled?: boolean; count?: CountKey }
+
+// What each pill counts, for screen readers (« 3 commandes bloquées », not « 3 en attente », on Commandes).
+const COUNT_LABEL: Record<CountKey, string> = {
+  reports: 'admin.nav.pending_count',
+  disputes: 'admin.nav.pending_count',
+  orders: 'admin.nav.blocked_count',
+  requests: 'admin.nav.to_handle_count',
+}
 type NavSection = { labelKey: string; items: NavItem[] }
 
 const TOP_SECTIONS: NavSection[] = [
@@ -60,8 +68,8 @@ const TOP_SECTIONS: NavSection[] = [
   {
     labelKey: 'admin.nav.section.operations',
     items: [
-      { key: 'admin.nav.orders', href: '/admin/commandes', icon: Package, disabled: true },
-      { key: 'admin.nav.requests', href: '/admin/demandes', icon: Inbox },
+      { key: 'admin.nav.orders', href: '/admin/commandes', icon: Package, count: 'orders' },
+      { key: 'admin.nav.requests', href: '/admin/demandes', icon: Inbox, count: 'requests' },
       { key: 'admin.nav.journal', href: '/admin/journal', icon: FileText },
     ],
   },
@@ -108,7 +116,7 @@ export function AdminSidebar({
         label={t(item.key, lang)}
         active={!item.disabled && isActive(pathname, item.href)}
         count={count}
-        countLabel={count ? tn('admin.nav.pending_count', lang, count) : undefined}
+        countLabel={count && item.count ? tn(COUNT_LABEL[item.count], lang, count) : undefined}
         soonLabel={t('shell.sidebar.soon', lang)}
         onNavigate={onNavigate}
       />
