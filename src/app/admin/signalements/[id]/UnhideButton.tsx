@@ -3,6 +3,7 @@
 import { useState, useTransition } from 'react'
 import { useLang } from '@/components/LangProvider'
 import { t } from '@/lib/i18n'
+import { Button } from '@/components/ui/button'
 import { unhideContent, type ModerationTargetType } from '../actions'
 
 // Unhide = clear the admin moderation marker and restore status='active' via
@@ -24,21 +25,16 @@ export function UnhideButton({ targetType, targetId, reportId }: {
     setError(null)
     startTransition(async () => {
       const res = await unhideContent(targetType, targetId, reportId)
-      if (!res.success) setError(tr(res.error ?? 'common.error_generic'))
+      if (!res.success) setError(res.error ?? 'common.error_generic')
     })
   }
 
   return (
-    <div className="space-y-2">
-      <button
-        type="button"
-        onClick={onClick}
-        disabled={pending}
-        className="rounded border border-green-600 px-4 py-2 text-sm font-semibold text-green-700 transition-colors hover:bg-green-50 disabled:opacity-50"
-      >
+    <div className="flex flex-col gap-2">
+      <Button variant="secondary" className="w-full" onClick={onClick} loading={pending}>
         {tr('admin.moderation.action_unhide')}
-      </button>
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      </Button>
+      {error && <p role="alert" className="text-body-sm text-danger-700">{tr(error)}</p>}
     </div>
   )
 }
