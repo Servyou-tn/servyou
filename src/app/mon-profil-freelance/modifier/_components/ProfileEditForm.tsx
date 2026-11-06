@@ -267,20 +267,20 @@ export function ProfileEditForm({
   return (
     <div className="flex flex-col gap-6 pb-6">
       {openSection ? <ScrollToSection id={openSection} /> : null}
-      <div id="photo" className="flex scroll-mt-36 flex-col gap-6 rounded-xl border border-border-subtle bg-surface-base p-5 sm:p-6">
+      <div id="photo" className="flex scroll-mt-36 flex-col gap-6 rounded-xl border border-border-subtle bg-surface-base p-5 max-lg:gap-5 max-sm:px-4 max-sm:py-6 sm:p-6">
         <AvatarField avatarUrl={initial.identity.avatarUrl} fullName={initial.identity.fullName} lang={lang} />
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div className="rounded-lg bg-surface-subtle p-4">
-            <p className="text-sm text-text-muted">{t('freelance.edit.display_name_label', lang)}</p>
-            <p className="text-base font-medium text-text-primary">{initial.identity.fullName}</p>
+            <p className="text-sm text-text-muted max-lg:text-xs max-lg:font-medium">{t('freelance.edit.display_name_label', lang)}</p>
+            <p className="text-base font-medium text-text-primary max-lg:font-normal">{initial.identity.fullName}</p>
             <a href="/parametres" className="mt-1 inline-block text-sm font-medium text-brand-blue-600 hover:underline">
               {t('freelance.edit.edit_in_settings', lang)}
             </a>
           </div>
           <div className="rounded-lg bg-surface-subtle p-4">
-            <p className="text-sm text-text-muted">{t('freelance.edit.location_label', lang)}</p>
-            <p className="text-base font-medium text-text-primary">{initial.identity.city}</p>
+            <p className="text-sm text-text-muted max-lg:text-xs max-lg:font-medium">{t('freelance.edit.location_label', lang)}</p>
+            <p className="text-base font-medium text-text-primary max-lg:font-normal">{initial.identity.city}</p>
             <a href="/parametres" className="mt-1 inline-block text-sm font-medium text-brand-blue-600 hover:underline">
               {t('freelance.edit.edit_in_settings', lang)}
             </a>
@@ -301,7 +301,7 @@ export function ProfileEditForm({
         </div>
       </div>
 
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-4 max-lg:gap-6">
         <AccordionSection id="liens" forceOpen={openSection === 'liens'} title={t('freelance.edit.trust_title', lang)} complete={linkRows.some((r) => r.url.trim() !== '') || Number(yearsExperience) > 0} defaultOpen>
           <div>
             <label className="text-sm font-medium text-text-secondary">{t('freelance.edit.years_experience_label', lang)}</label>
@@ -357,13 +357,13 @@ export function ProfileEditForm({
             <FieldError show={publishMissing.includes('skills')} textKey="freelance.edit.error_skills" lang={lang} />
           </div>
 
-          <div className="border-t border-border-subtle pt-4">
+          <div className="border-t border-border-subtle pt-4 max-lg:-mt-1">
             <p className="mb-2 text-sm font-medium text-text-secondary">{t('freelance.edit.languages_title', lang)}</p>
-            <p className="mb-2 text-sm text-text-muted">{t('freelance.edit.languages_helper', lang)}</p>
+            <p className="mb-2 text-sm text-text-muted max-lg:text-xs">{t('freelance.edit.languages_helper', lang)}</p>
             <LanguageRepeater rows={languageRows} onChange={setLanguagesT} lang={lang} />
           </div>
 
-          <div className="border-t border-border-subtle pt-4">
+          <div className="border-t border-border-subtle pt-4 max-lg:-mt-1">
             <TagInput
               value={tools}
               onChange={setToolsT}
@@ -377,7 +377,7 @@ export function ProfileEditForm({
 
         <AccordionSection id="realisations" forceOpen={openSection === 'realisations'} title={t('freelance.edit.portfolio_title', lang)} complete={isPortfolioComplete(portfolioRows.length)}>
           <PortfolioRepeater rows={portfolioRows} onChange={setPortfolioT} lang={lang} errors={urlErrorsFor(urlInvalid.portfolio)} />
-          <div className="border-t border-border-subtle pt-4">
+          <div className="border-t border-border-subtle pt-4 max-lg:-mt-1">
             <Input
               label={t('freelance.edit.portfolio_link_label', lang)}
               dir="ltr"
@@ -398,12 +398,12 @@ export function ProfileEditForm({
         <AccordionSection title={t('freelance.edit.formation_title', lang)} complete={educationRows.length > 0 || certificationRows.length > 0}>
           <div>
             <p className="mb-2 text-sm font-medium text-text-secondary">{t('freelance.edit.education_title', lang)}</p>
-            <p className="mb-2 text-sm text-text-muted">{t('freelance.edit.education_helper', lang)}</p>
+            <p className="mb-2 text-sm text-text-muted max-lg:text-xs">{t('freelance.edit.education_helper', lang)}</p>
             <EducationRepeater rows={educationRows} onChange={setEducationT} lang={lang} />
           </div>
-          <div className="border-t border-border-subtle pt-4">
+          <div className="border-t border-border-subtle pt-4 max-lg:-mt-1">
             <p className="mb-2 text-sm font-medium text-text-secondary">{t('freelance.edit.certifications_title', lang)}</p>
-            <p className="mb-2 text-sm text-text-muted">{t('freelance.edit.certifications_helper', lang)}</p>
+            <p className="mb-2 text-sm text-text-muted max-lg:text-xs">{t('freelance.edit.certifications_helper', lang)}</p>
             <CertificationRepeater rows={certificationRows} onChange={setCertificationsT} lang={lang} error={urlErrorsFor(urlInvalid.certifications)} />
           </div>
         </AccordionSection>

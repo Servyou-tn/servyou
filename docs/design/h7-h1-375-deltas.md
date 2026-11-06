@@ -26,3 +26,8 @@ H7: the 5-step wizard (shared with Créer un service, aligned at 375 in #307) ·
    the age check back onto this page?
 
 Controls: tsc · eslint · desktop sentinel 1440 FR + AR on H1 (max-lg only): identical, before and after the review fix · H1 32/38 + icons 20 measured at 375 and 1023, 48/60 + 24 at 1440 · 375 FR side by side · AR spot check.
+
+## Founder answers (2026-11-05, after #324)
+
+1. H7 stays the aligned 5-step wizard. The collapsible edit-page redesign is logged for after the beta, not now (`docs/follow-ups/h7-service-edit-accordion-redesign.md`).
+2. The age check stays upstream on /devenir-vendeur — no change to H1.
