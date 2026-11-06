@@ -1,179 +1,221 @@
-import Link from 'next/link'
 import { getLang } from '@/lib/i18n/server'
-import { t } from '@/lib/i18n'
-import type { Lang } from '@/lib/i18n'
+import { t, tn, type Lang } from '@/lib/i18n'
 import { createClient } from '@/lib/supabase/server'
 import { requireAdmin } from '@/lib/auth/require-admin'
 import { reportQueryError } from '@/lib/supabase/query-error'
-import { ErrorState } from '@/components/marche/ErrorState'
-import { ACCOUNT_ROLES, accountRoleI18nKey, accountRoles, parseAccountRole, type AccountRole } from '@/lib/roles'
+import { getInitials } from '@/components/ui/initials'
+import type { StatusValue } from '@/components/ui/status-pill'
+import type { AdminTab } from '@/components/AdminTabs'
+import { accountRoleI18nKey, accountRoles, type AccountRole } from '@/lib/roles'
+import {
+  JOINED_WINDOWS,
+  USER_SORTS,
+  USER_TABS,
+  cityOptions,
+  filterUsers,
+  inTab,
+  paginate,
+  parseOne,
+  parseUserTab,
+  sortUsers,
+  userStatus,
+  type UserTab,
+} from './_lib/users'
+import { UsersListView, type UserListRow, type UsersSelect } from './_components/UsersListView'
 
-// NOTE: reads the RAW profiles table (not public_profiles) — the admin needs email
-// and the suspended state, which public_profiles strips. This is allowed only by the
-// admin-gated "Admin reads all profiles" SELECT policy added in migration 23.
+// NOTE: reads the RAW profiles table (not public_profiles) — the admin needs email, phone (search only, never
+// rendered here) and the suspended state, which public_profiles strips. This is allowed only by the admin-gated
+// "Admin reads all profiles" SELECT policy added in migration 23.
 type ProfileRow = {
   id: string
   full_name: string | null
   email: string | null
+  phone: string | null
   seller_type: string | null
   is_admin: boolean
   city: string | null
   created_at: string
   suspended_at: string | null
 }
-
 type ShopRow = { id: string; name: string; owner_id: string }
 
-const ROLE_BADGE: Record<AccountRole, string> = {
-  admin: 'bg-brand-blue-50 text-brand-blue-700',
-  shop_owner: 'bg-amber-50 text-amber-700',
-  freelancer: 'bg-brand-indigo-100 text-brand-indigo-600', // not green: that is the « Actif » status badge
-  consumer: 'bg-gray-100 text-gray-700',
+const ROUTE = '/admin/utilisateurs'
+const PER_PAGE = 10
+const one = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v)
+
+// Role pill tones as drawn (J2): Freelance / Boutique blue, Acheteur warning; Administrateur gets the accent.
+const ROLE_PILL: Record<AccountRole, StatusValue> = {
+  admin: 'completed',
+  shop_owner: 'arrivee',
+  freelancer: 'acceptee',
+  consumer: 'pending',
 }
 
-function formatDate(value: string, lang: Lang): string {
-  return new Date(value).toLocaleDateString(lang === 'ar' ? 'ar-TN' : 'fr-TN', {
-    day: '2-digit', month: 'short', year: 'numeric',
-  })
+function shortDate(iso: string, lang: Lang): string {
+  return new Date(iso).toLocaleDateString(lang === 'ar' ? 'ar-TN' : 'fr-TN', { day: 'numeric', month: 'short' })
 }
 
-function StatusBadge({ suspended, tr }: { suspended: boolean; tr: (k: string) => string }) {
-  return (
-    <span className={`inline-block whitespace-nowrap rounded-full px-2 py-0.5 text-xs font-medium ${
-      suspended ? 'bg-red-50 text-red-700' : 'bg-green-50 text-green-700'
-    }`}>
-      {tr(suspended ? 'admin.users.status_suspended' : 'admin.users.status_active')}
-    </span>
-  )
+const TAB_LABEL: Record<(typeof USER_TABS)[number], string> = {
+  all: 'admin.users.filter_all',
+  consumer: 'admin.users.tab.consumer',
+  freelancer: 'admin.users.tab.freelancer',
+  shop_owner: 'admin.users.tab.shop_owner',
+  suspended: 'admin.users.tab.suspended',
 }
 
-// Every role an account holds is a badge (an admin who owns a shop shows « Administrateur » AND « Boutique »), the
+// Every role an account holds is a pill (an admin who owns a shop shows « Administrateur » AND « Boutique »), the
 // shop name links to its public page, and ?role= filters the list (lib/roles.ts accountRoles / parseAccountRole).
 export default async function UsersListPage({
   searchParams,
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>
 }) {
-  await requireAdmin('/admin/utilisateurs')
+  await requireAdmin(ROUTE)
+  const sp = await searchParams
   const lang = await getLang()
-  const tr = (key: string): string => t(key, lang)
   const supabase = await createClient()
-  const roleFilter = parseAccountRole((await searchParams).role)
+
+  const tab: UserTab = parseUserTab(sp.role)
+  const q = (one(sp.q) ?? '').slice(0, 100)
+  const joined = parseOne(one(sp.inscription), JOINED_WINDOWS, 'all')
+  const sort = parseOne(one(sp.tri), USER_SORTS, 'recent')
+  const pageParam = Number(one(sp.page) ?? '1')
 
   // Shops are read on their own (not embedded): admins read every shop, hidden or not, through the shops SELECT
-  // policy's is_admin() branch; the columns named here are in the shops column-level SELECT grant.
-  const [{ data: profiles, error }, { data: shops, error: shopsError }] = await Promise.all([
+  // policy's is_admin() branch; the columns named here are in the shops column-level SELECT grant. Pending
+  // deletion requests are read through their is_admin() SELECT policy.
+  const [{ data: profiles, error }, { data: shops, error: shopsError }, { data: deletions, error: deletionsError }] = await Promise.all([
     supabase
       .from('profiles')
-      .select('id, full_name, email, seller_type, is_admin, city, created_at, suspended_at')
+      .select('id, full_name, email, phone, seller_type, is_admin, city, created_at, suspended_at')
       .order('created_at', { ascending: false }),
     supabase.from('shops').select('id, name, owner_id'),
+    supabase.from('deletion_requests').select('user_id').eq('status', 'pending'),
   ])
 
-  // A failed read is an error state, never the « no users » empty list or a silently missing shop.
+  // A failed read is an error state, never the « no users » empty list, a silently missing shop or a « Actif »
+  // pill on an account whose deletion is pending.
   if (error) reportQueryError('admin/utilisateurs list', error)
   if (shopsError) reportQueryError('admin/utilisateurs shops', shopsError)
+  if (deletionsError) reportQueryError('admin/utilisateurs deletion requests', deletionsError)
+  const failed = Boolean(error || shopsError || deletionsError)
+
   const shopByOwner = new Map(((shops as ShopRow[] | null) ?? []).map((s) => [s.owner_id, s]))
+  const pendingDeletion = new Set(((deletions as Array<{ user_id: string }> | null) ?? []).map((d) => d.user_id))
   const allRows = ((profiles as ProfileRow[] | null) ?? []).map((u) => ({
     ...u,
     roles: accountRoles(u),
     shop: shopByOwner.get(u.id) ?? null,
+    deletionPending: pendingDeletion.has(u.id),
   }))
-  const countFor = (role: AccountRole) => allRows.filter((u) => u.roles.includes(role)).length
-  const rows = roleFilter ? allRows.filter((u) => u.roles.includes(roleFilter)) : allRows
-  const filters: { role: AccountRole | null; label: string; count: number }[] = [
-    { role: null, label: tr('admin.users.filter_all'), count: allRows.length },
-    ...ACCOUNT_ROLES.map((role) => ({ role, label: tr(accountRoleI18nKey(role)), count: countFor(role) })),
+
+  const cities = cityOptions(allRows)
+  const city = typeof sp.ville === 'string' && cities.includes(sp.ville) ? sp.ville : null
+  // eslint-disable-next-line react-hooks/purity -- request-time evaluation in an async Server Component (rendered once per request), the admin/statistiques precedent.
+  const now = Date.now()
+  const filtered = sortUsers(filterUsers(allRows, { tab, q, city, joined, now }), sort)
+  const { items, page, totalPages } = paginate(filtered, pageParam, PER_PAGE)
+
+  // « Activité » = orders the account took part in (as buyer or seller) — one exact head count per visible row
+  // (10 at most), so no response row cap can undercount it. A failed count shows « — » on its own row.
+  const orderCount = new Map<string, number | null>()
+  if (!failed) {
+    const counts = await Promise.all(
+      items.map((u) =>
+        supabase.from('orders').select('id', { count: 'exact', head: true }).or(`buyer_id.eq.${u.id},seller_id.eq.${u.id}`),
+      ),
+    )
+    counts.forEach((res, i) => {
+      if (res.error) reportQueryError('admin/utilisateurs order count', res.error)
+      orderCount.set(items[i].id, res.error ? null : (res.count ?? 0))
+    })
+  }
+
+  const rows: UserListRow[] = items.map((u) => ({
+    id: u.id,
+    href: `${ROUTE}/${u.id}`,
+    name: u.full_name ?? '—',
+    initials: getInitials(u.full_name ?? u.email),
+    email: u.email,
+    roles: u.roles.map((role) => ({ key: role, label: t(accountRoleI18nKey(role), lang), pill: ROLE_PILL[role] })),
+    shop: u.shop ? { id: u.shop.id, name: u.shop.name } : null,
+    city: u.city,
+    joined: shortDate(u.created_at, lang),
+    activity: typeof orderCount.get(u.id) === 'number' ? tn('admin.users.orders_count', lang, orderCount.get(u.id) as number) : null,
+    status: userStatus(u),
+  }))
+
+  // Query string helpers — every link keeps the other params and drops `page`.
+  const current: Record<string, string | null> = {
+    role: tab === 'all' ? null : tab,
+    q: q || null,
+    ville: city,
+    inscription: joined === 'all' ? null : joined,
+    tri: sort === 'recent' ? null : sort,
+  }
+  const hrefFor = (patch: Record<string, string | null>) => {
+    const next = new URLSearchParams()
+    for (const [k, v] of Object.entries({ ...current, ...patch })) if (v) next.set(k, v)
+    const qs = next.toString()
+    return qs ? `${ROUTE}?${qs}` : ROUTE
+  }
+
+  const countFor = (key: UserTab) => allRows.filter((u) => inTab(u, key)).length
+  const tabs: AdminTab[] = USER_TABS.map((key) => ({
+    key,
+    label: t(TAB_LABEL[key], lang),
+    href: hrefFor({ role: key === 'all' ? null : key }),
+    active: key === tab,
+    count: countFor(key),
+  }))
+  // ?role=admin has no drawn tab; it still filters (built behaviour) and Tous stays unselected.
+
+  const selects: UsersSelect[] = [
+    {
+      value: city ?? 'all',
+      label: t('admin.users.filter_city_aria', lang),
+      options: [
+        { value: 'all', label: t('admin.users.filter_city_all', lang), href: hrefFor({ ville: null }) },
+        ...cities.map((c) => ({ value: c, label: t('admin.users.filter_city_prefix', lang, { city: c }), href: hrefFor({ ville: c }) })),
+      ],
+    },
+    {
+      value: joined,
+      label: t('admin.users.filter_joined_aria', lang),
+      options: JOINED_WINDOWS.map((w) => ({ value: w, label: t(`admin.users.filter_joined_${w}`, lang), href: hrefFor({ inscription: w === 'all' ? null : w }) })),
+    },
+    {
+      value: sort,
+      label: t('admin.users.sort_aria', lang),
+      options: USER_SORTS.map((s) => ({ value: s, label: t(`admin.users.sort_${s}`, lang), href: hrefFor({ tri: s === 'recent' ? null : s }) })),
+    },
   ]
 
+  const subtitle = failed
+    ? null
+    : [
+        tn('admin.users.summary_accounts', lang, allRows.length),
+        [
+          tn('admin.users.summary_consumers', lang, countFor('consumer')),
+          tn('admin.users.summary_freelancers', lang, countFor('freelancer')),
+          tn('admin.users.summary_shops', lang, countFor('shop_owner')),
+        ].join(lang === 'ar' ? '، ' : ', '),
+      ].join(' · ')
+
+  const emptyKey =
+    allRows.length === 0 ? 'admin.users.empty' : q || city || joined !== 'all' ? 'admin.users.empty_search' : 'admin.users.empty_filtered'
+
   return (
-    <div className="max-w-5xl">
-      <h1 className="mb-6 text-2xl font-bold text-gray-800">{tr('admin.users.title')}</h1>
-
-      {error || shopsError ? null : (
-        <nav aria-label={tr('admin.users.filter_label')} className="mb-4 flex flex-wrap gap-2">
-          {filters.map((f) => {
-            const active = f.role === roleFilter
-            return (
-              <Link
-                key={f.role ?? 'all'}
-                href={f.role ? `/admin/utilisateurs?role=${f.role}` : '/admin/utilisateurs'}
-                aria-current={active ? 'page' : undefined}
-                className={`inline-flex min-h-11 items-center gap-1.5 rounded-full border px-3 text-sm font-medium ${
-                  active
-                    ? 'border-brand-blue-600 bg-brand-blue-50 text-brand-blue-700'
-                    : 'border-gray-200 bg-white text-gray-700 hover:bg-gray-50'
-                }`}
-              >
-                {f.label}
-                <span className="text-xs text-gray-500">{f.count}</span>
-              </Link>
-            )
-          })}
-        </nav>
-      )}
-
-      {error || shopsError ? (
-        <ErrorState lang={lang} />
-      ) : allRows.length === 0 ? (
-        <p className="text-sm text-gray-500">{tr('admin.users.empty')}</p>
-      ) : rows.length === 0 ? (
-        <p className="text-sm text-gray-500">{tr('admin.users.empty_filtered')}</p>
-      ) : (
-        <div className="overflow-x-auto rounded-lg border border-gray-200 bg-white">
-          <table className="w-full text-sm">
-            <thead className="bg-gray-50 text-xs uppercase tracking-wide text-gray-500">
-              <tr>
-                <th className="px-4 py-3 text-start font-medium">{tr('admin.users.field_name')}</th>
-                <th className="px-4 py-3 text-start font-medium">{tr('admin.users.field_email')}</th>
-                <th className="px-4 py-3 text-start font-medium">{tr('admin.users.field_roles')}</th>
-                <th className="px-4 py-3 text-start font-medium">{tr('admin.users.field_city')}</th>
-                <th className="px-4 py-3 text-start font-medium">{tr('admin.users.field_status')}</th>
-                <th className="px-4 py-3 text-start font-medium">{tr('admin.users.field_created_at')}</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100">
-              {rows.map(u => (
-                <tr key={u.id} className="hover:bg-gray-50">
-                  <td className="px-4 py-3">
-                    <Link href={`/admin/utilisateurs/${u.id}`} className="font-medium text-brand-blue-600 hover:underline">
-                      {u.full_name ?? '—'}
-                    </Link>
-                  </td>
-                  <td className="px-4 py-3 text-gray-700">{u.email ?? '—'}</td>
-                  <td className="px-4 py-3">
-                    <div className="flex flex-wrap gap-1">
-                      {u.roles.map((role) => (
-                        <span
-                          key={role}
-                          className={`inline-block whitespace-nowrap rounded-full px-2 py-0.5 text-xs font-medium ${ROLE_BADGE[role]}`}
-                        >
-                          {tr(accountRoleI18nKey(role))}
-                        </span>
-                      ))}
-                    </div>
-                    {u.shop ? (
-                      <Link
-                        href={`/boutique/${u.shop.id}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        dir="auto"
-                        className="mt-1 inline-block text-xs font-medium text-brand-blue-600 hover:underline"
-                      >
-                        {u.shop.name}
-                        <span className="sr-only"> {tr('admin.users.opens_new_tab')}</span>
-                      </Link>
-                    ) : null}
-                  </td>
-                  <td className="px-4 py-3 text-gray-700">{u.city ?? '—'}</td>
-                  <td className="px-4 py-3"><StatusBadge suspended={!!u.suspended_at} tr={tr} /></td>
-                  <td className="px-4 py-3 whitespace-nowrap text-gray-600">{formatDate(u.created_at, lang)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-    </div>
+    <UsersListView
+      lang={lang}
+      subtitle={subtitle}
+      tabs={tabs}
+      q={q}
+      selects={selects}
+      rows={rows}
+      failed={failed}
+      emptyKey={emptyKey}
+      pagination={{ page, totalPages, totalItems: filtered.length, perPage: PER_PAGE }}
+    />
   )
 }

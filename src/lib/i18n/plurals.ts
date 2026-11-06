@@ -44,6 +44,16 @@ function pickVariant(variants: PluralVariants, lang: Lang, count: number): strin
 // the string has an adjective or sits after a preposition.
 
 const frPlurals: Record<string, PluralVariants> = {
+  // Admin J2 / J3 — PR-2 block. French zero is forced to `other`.
+  'admin.users.orders_count':              { one: '{count} commande', other: '{count} commandes' },
+  'admin.users.summary_accounts':          { one: '{count} compte', other: '{count} comptes' },
+  'admin.users.summary_consumers':         { one: '{count} acheteur', other: '{count} acheteurs' },
+  'admin.users.summary_freelancers':       { one: '{count} freelance', other: '{count} freelances' },
+  'admin.users.summary_shops':             { one: '{count} boutique', other: '{count} boutiques' },
+  'admin.users.tile_visible':              { one: '{count} visible', other: '{count} visibles' },
+  'admin.users.tile_hidden':               { one: '{count} masqué', other: '{count} masqués' },
+  'admin.users.tile_open_reports':         { one: '{count} ouvert', other: '{count} ouverts' },
+  'admin.users.info_products':             { one: '{count} produit', other: '{count} produits' },
   // Admin J5 / J6 (Figma NOV 4 — Admin). French zero is forced to `other` (« 0 rejetés »).
   'admin.nav.pending_count':               { one: '{count} en attente', other: '{count} en attente' },
   'admin.reports.sent_count':              { one: '{count} signalement envoyé', other: '{count} signalements envoyés' },
@@ -118,6 +128,16 @@ const frPlurals: Record<string, PluralVariants> = {
 }
 
 const arPlurals: Record<string, PluralVariants> = {
+  // REVIEW_AR_TRANSLATION — admin J2 / J3 — PR-2 block. Non-human plurals: feminine-singular agreement.
+  'admin.users.orders_count':              { one: 'طلبية واحدة', two: 'طلبيتان', other: '{count} طلبيات' },
+  'admin.users.summary_accounts':          { one: 'حساب واحد', two: 'حسابان', other: '{count} حسابات' },
+  'admin.users.summary_consumers':         { one: 'مشترٍ واحد', two: 'مشتريان', other: '{count} مشترين' },
+  'admin.users.summary_freelancers':       { one: 'مستقل واحد', two: 'مستقلان', other: '{count} مستقلين' },
+  'admin.users.summary_shops':             { one: 'متجر واحد', two: 'متجران', other: '{count} متاجر' },
+  'admin.users.tile_visible':              { one: '{count} ظاهر', two: '{count} ظاهران', other: '{count} ظاهرة' },
+  'admin.users.tile_hidden':               { one: '{count} مخفي', two: '{count} مخفيان', other: '{count} مخفية' },
+  'admin.users.tile_open_reports':         { one: '{count} مفتوح', two: '{count} مفتوحان', other: '{count} مفتوحة' },
+  'admin.users.info_products':             { one: 'منتج واحد', two: 'منتجان', other: '{count} منتجات' },
   // REVIEW_AR_TRANSLATION — admin J5 / J6. Non-human plurals take feminine-singular agreement (بلاغات مرسلة).
   'admin.nav.pending_count':               { one: '{count} قيد الانتظار', two: '{count} قيد الانتظار', other: '{count} قيد الانتظار' },
   'admin.reports.sent_count':              { one: 'بلاغ واحد مُرسل', two: 'بلاغان مُرسلان', other: '{count} بلاغات مُرسلة' },
