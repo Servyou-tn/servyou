@@ -21,6 +21,7 @@
 - **Trigger:** more than 200 admin actions in a period.
 
 ## Statistics CSV export no longer rendered
+✅ CLOSED — `fix/mobile-hit-area`, 2026-11-06: the founder ruled delete (D-OS-3). `CsvExportButton.tsx`, `actions.ts` and `csv-export.test.ts` are removed. Their `admin.statistiques.*` keys and the old count page's `admin.metrics.*` keys are now unused, and are left for an i18n tidy PR (no text changes in a fix PR).
 - **What:** the brief rules out « Exporter CSV », so the rebuilt J8 does not render the old count page's
   `CsvExportButton`. The button, its `actions.ts` and their test stay in place.
 - **Why deferred:** deleting a built feature needs the founder's call (deltas doc D-OS-3).

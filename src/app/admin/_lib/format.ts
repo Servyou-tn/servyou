@@ -2,7 +2,7 @@ import { t, tn, type Lang } from '@/lib/i18n'
 import { tndPriceGrouped } from '@/components/listings/listing-utils'
 import { GOVERNORATES } from '@/lib/tunisia-governorates'
 import type { KpiDelta } from '../_components/KpiTile'
-import { durationParts, formatCount, sinceParts, type Delta, type DurationParts } from './dashboard'
+import { deltaTone, durationParts, formatCount, sinceParts, type Delta, type DurationParts, type Polarity } from './dashboard'
 
 // Locale glue for the admin read side: numbers and durations through admin.dash.* keys (FR + AR), every
 // number LTR (the callers wrap them in <bdi dir="ltr">). The tile deltas carry a full sr-only sentence.
@@ -26,8 +26,8 @@ export function amountText(value: number | null, lang: Lang): string {
 
 type DeltaUnit = 'pct' | 'pts' | 'count' | 'minutes'
 
-/** A tile's delta: the visible text (« 300 % », « 8 pts », « 2 », « 3 h ») plus its sr-only sentence. */
-export function kpiDelta(d: Delta | null, unit: DeltaUnit, lang: Lang): KpiDelta | null {
+/** A tile's delta: the visible text (« 300 % », « 8 pts », « 2 », « 3 h »), its colour by meaning, and its sr-only sentence. */
+export function kpiDelta(d: Delta | null, unit: DeltaUnit, lang: Lang, polarity: Polarity = 'higher_better'): KpiDelta | null {
   if (!d) return null
   const text =
     unit === 'pct' ? `${formatCount(d.value)} %`
@@ -35,7 +35,7 @@ export function kpiDelta(d: Delta | null, unit: DeltaUnit, lang: Lang): KpiDelta
     : unit === 'minutes' ? medianText(d.value, lang)
     : formatCount(d.value)
   const key = d.direction === 'up' ? 'admin.dash.delta_up' : d.direction === 'down' ? 'admin.dash.delta_down' : 'admin.dash.delta_flat'
-  return { direction: d.direction, text, label: t(key, lang, { value: text }) }
+  return { direction: d.direction, tone: deltaTone(d, polarity), text, label: t(key, lang, { value: text }) }
 }
 
 /** « il y a 2 h » / « hier » / « il y a 3 jours » — the app's relative-time bands, admin wording. */

@@ -9,7 +9,7 @@ import { StatsView } from './_components/StatsView'
 // docs/discovery/admin-dashboard-stats.md D1–D10). ?periode=7|30|90, default 7. Every delta compares the same span
 // just before (`previous`); a % shows only over a non-zero previous value, « pts » only when both periods had
 // orders, and a null median is « — » with no delta. The declared value is cash on delivery (D1), never collected.
-// No « Exporter CSV » (brief) — the old count page's CsvExportButton is no longer rendered (deltas doc).
+// No « Exporter CSV » (brief); the old count page's export code was deleted after #336 (founder ruling on D-OS-3).
 
 const ROUTE = '/admin/statistiques'
 const one = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v)

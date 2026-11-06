@@ -34,14 +34,14 @@ function tilesOf(s: DashboardStats, lang: Lang): { tiles: TileVM[]; tiles2: Tile
       declaredUnknown(c)
         ? { key: 'value', label: t('admin.stats.kpi_declared', lang), value: '—', accent: 'indigo', subtitle: t('admin.stats.kpi_declared_unknown', lang) }
         : { key: 'value', label: t('admin.stats.kpi_declared', lang), value: amountText(c.declared_value_tnd, lang), accent: 'indigo', delta: declaredUnknown(p) ? null : kpiDelta(pctDelta(c.declared_value_tnd, p.declared_value_tnd), 'pct', lang) },
-      { key: 'cancel', label: t('admin.dash.kpi_cancel', lang), value: formatPercent(cancel), accent: 'neutral', delta: kpiDelta(absDelta(cancel, prevCancel), 'pts', lang) },
+      { key: 'cancel', label: t('admin.dash.kpi_cancel', lang), value: formatPercent(cancel), accent: 'neutral', delta: kpiDelta(absDelta(cancel, prevCancel), 'pts', lang, 'lower_better') },
     ],
     tiles2: [
       { key: 'new_sellers', label: t('admin.stats.kpi_new_sellers', lang), value: formatCount(c.new_sellers), accent: 'neutral', delta: kpiDelta(absDelta(c.new_sellers, p.new_sellers), 'count', lang) },
       // Snapshots (D5, D6): no previous value, so a subtitle instead of a delta.
       { key: 'idle_sellers', label: t('admin.stats.kpi_idle_sellers', lang), value: formatCount(s.snapshot.sellers_without_orders), accent: 'neutral', subtitle: t('admin.stats.kpi_idle_sellers_sub', lang) },
       { key: 'loyal', label: t('admin.stats.kpi_loyal', lang), value: formatCount(s.snapshot.loyal_buyers), accent: 'neutral', subtitle: t('admin.stats.kpi_loyal_sub', lang) },
-      { key: 'first_proposal', label: t('admin.stats.kpi_first_proposal', lang), value: medianText(c.first_proposal_median_minutes, lang), accent: 'neutral', delta: kpiDelta(absDelta(c.first_proposal_median_minutes, p.first_proposal_median_minutes), 'minutes', lang) },
+      { key: 'first_proposal', label: t('admin.stats.kpi_first_proposal', lang), value: medianText(c.first_proposal_median_minutes, lang), accent: 'neutral', delta: kpiDelta(absDelta(c.first_proposal_median_minutes, p.first_proposal_median_minutes), 'minutes', lang, 'lower_better') },
     ],
   }
 }
