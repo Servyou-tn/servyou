@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { getClientNames } from './missions-query'
+import { parseJobResponseStatus, proposalOutcome } from './journey-gates'
 import {
   pageProposals,
   resolveProposalState,
@@ -32,6 +33,8 @@ type Row = {
   created_at: string
   proposed_price_tnd: number | string | null
   proposed_timeframe: string | null
+  /** G1 (migration 20261106153901) — typed locally until the regenerated types land. */
+  status: unknown
   job_posts: PostEmbed | PostEmbed[] | null
 }
 
@@ -48,7 +51,7 @@ export async function getMyProposals(
   const { data, error } = await supabase
     .from('job_responses')
     .select(
-      `id, job_post_id, created_at, proposed_price_tnd, proposed_timeframe,
+      `id, job_post_id, created_at, proposed_price_tnd, proposed_timeframe, status,
        job_posts ( id, title, status, created_at, consumer_id, categories ( slug, name_fr, name_ar ) )`,
     )
     .eq('freelancer_id', userId)
@@ -67,14 +70,16 @@ export async function getMyProposals(
     const post = posts[i]
     const cat = one(post?.categories)
     const client = post ? clients.get(post.consumer_id) : undefined
+    const state = resolveProposalState(
+      post ? { status: post.status as 'open' | 'filled' | 'expired' | 'deleted', createdAt: post.created_at } : null,
+      now,
+    )
     return {
       id: r.id,
       jobPostId: r.job_post_id,
       createdAt: r.created_at,
-      state: resolveProposalState(
-        post ? { status: post.status as 'open' | 'filled' | 'expired' | 'deleted', createdAt: post.created_at } : null,
-        now,
-      ),
+      state,
+      outcome: proposalOutcome(parseJobResponseStatus(r.status), state),
       price: r.proposed_price_tnd == null ? null : Number(r.proposed_price_tnd),
       timeframe: r.proposed_timeframe,
       title: post?.title ?? null,

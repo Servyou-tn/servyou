@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { advanceOrderAction } from '@/app/actions/orders'
+import { PhoneRequiredError } from '@/components/orders/PhoneRequiredError'
 import type { SellerOrderPath } from '@/lib/orders/seller-paths'
 
 // One button = one hop along the seller-owned chain. The TARGET is derived server-side from the
@@ -37,6 +38,7 @@ export function AdvanceOrderButton({
 }) {
   const [pending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
+  const [needsPhone, setNeedsPhone] = useState(false)
   const router = useRouter()
 
   return (
@@ -48,16 +50,22 @@ export function AdvanceOrderButton({
         loading={pending}
         onClick={() => {
           setError(null)
+          setNeedsPhone(false)
           startTransition(async () => {
             const result = await advanceOrderAction({ orderId, revalidate })
             if (result.ok) router.refresh()
-            else setError(result.error)
+            else {
+              setError(result.error)
+              setNeedsPhone(Boolean(result.needsPhone))
+            }
           })
         }}
       >
         {label}
       </Button>
-      {error ? (
+      {needsPhone ? (
+        <PhoneRequiredError />
+      ) : error ? (
         <p role="alert" className="text-caption text-danger-500">
           {error}
         </p>

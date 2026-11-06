@@ -2,6 +2,7 @@ import { cache } from 'react'
 import { createClient } from '@/lib/supabase/server'
 import { failQuery, isNoRowLike, reportQueryError } from '@/lib/supabase/query-error'
 import { MAX_RESPONSES_PER_POST } from '@/lib/job-constants'
+import { parseJobResponseStatus, type JobResponseStatus } from '@/lib/marche/journey-gates'
 import { isAnnoncePastExpiry, resolveAnnonceStatus, type AnnonceDisplayStatus } from '@/lib/marche/annonce-status'
 import { getExpiryDaysLeft } from '@/lib/marche/annonce-expiry-countdown'
 import { parseSentLinks, type SentLink } from '@/lib/marche/sent-proposal-query'
@@ -66,6 +67,8 @@ export type AnnonceResponse = {
   proposedTimeframe: string | null
   links: SentLink[]
   skills: string[]
+  /** G1 outcome (job_responses.status, migration 20261106153901): pending until the owner chooses. */
+  status: JobResponseStatus
 }
 
 export type AnnonceDetailData = {
@@ -152,7 +155,7 @@ export const getAnnonceDetail = cache(
     const { data: respData, error: respErr } = await supabase
       .from('job_responses')
       .select(
-        `id, freelancer_id, proposal_message, created_at, proposed_price_tnd, proposed_timeframe, portfolio_links,
+        `id, freelancer_id, proposal_message, created_at, proposed_price_tnd, proposed_timeframe, portfolio_links, status,
          job_response_skills ( skill )`,
       )
       .eq('job_post_id', row.id)
@@ -168,6 +171,7 @@ export const getAnnonceDetail = cache(
       proposed_price_tnd: number | string | null
       proposed_timeframe: string | null
       portfolio_links: unknown
+      status: unknown
       job_response_skills: { skill: string }[] | null
     }[]
 
@@ -213,6 +217,7 @@ export const getAnnonceDetail = cache(
       proposedTimeframe: r.proposed_timeframe,
       links: parseSentLinks(r.portfolio_links),
       skills: (r.job_response_skills ?? []).map((s) => s.skill),
+      status: parseJobResponseStatus(r.status),
     }))
 
     const now = new Date()

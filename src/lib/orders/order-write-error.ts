@@ -4,9 +4,9 @@
 // triggers raise plain exceptions with no hint, so their refusals are matched on their own wording, anchored at the
 // start (or, for the CHECK, on the constraint name); anything else → the generic error.
 
-type DbError = { code?: string | null; message?: string | null }
+type DbError = { code?: string | null; message?: string | null; hint?: string | null }
 
-export type AdvanceErrorKey = 'seller.dashboard.error_no_transition' | 'common.error_generic'
+export type AdvanceErrorKey = 'seller.dashboard.error_no_transition' | 'seller.dashboard.error_phone_required' | 'common.error_generic'
 export type TrackingErrorKey =
   | 'seller.orderDetail.tracking_terminal'
   | 'seller.orderDetail.tracking_product_only'
@@ -17,6 +17,8 @@ export type TrackingErrorKey =
 const STALE_TRANSITION = ['Transition invalide', 'Cette commande est terminée', 'Seul le vendeur peut faire avancer']
 
 export function advanceErrorKey(error: DbError): AdvanceErrorKey {
+  // G2 (migration 20261106153901): pending → accepted needs the seller's phone — the buyer must be able to reach them.
+  if (error.code === '23514' && error.hint === 'seller_phone_required') return 'seller.dashboard.error_phone_required'
   const message = error.message ?? ''
   if (error.code === 'P0001' && STALE_TRANSITION.some((prefix) => message.startsWith(prefix))) {
     return 'seller.dashboard.error_no_transition'

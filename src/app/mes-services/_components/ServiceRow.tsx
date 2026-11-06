@@ -98,13 +98,17 @@ export function ServiceRow({ service, lang }: { service: SellerServiceRow; lang:
         {/* Plain template, NOT `cn()` — `text-body-sm` (size) + `text-text-secondary` (colour) is
             exactly the pair tailwind-merge cannot classify and silently evicts the size from (DOM-
             verified here: 14px rendered as 16px through cn()). docs/follow-ups.md's tracked class. */}
-        <Link
-          href={`/services/${service.id}`}
-          className={`max-lg:relative inline-flex h-9 items-center rounded-lg border border-border-subtle px-3 text-body-sm font-medium text-text-secondary hover:bg-surface-subtle ${FOCUS_RING}`}
-        >
-          {t('service.action_view', lang)}
-          <HitArea size={36} axis="y" />
-        </Link>
+        {/* G9: /services/[id] shows a live service only (status active, not moderated) — a draft or paused one would 404, so
+            « Voir » is offered only for a live service. The owner opens a draft / paused one through « Modifier » in the menu. */}
+        {isActive && !isModerated ? (
+          <Link
+            href={`/services/${service.id}`}
+            className={`max-lg:relative inline-flex h-9 items-center rounded-lg border border-border-subtle px-3 text-body-sm font-medium text-text-secondary hover:bg-surface-subtle ${FOCUS_RING}`}
+          >
+            {t('service.action_view', lang)}
+            <HitArea size={36} axis="y" />
+          </Link>
+        ) : null}
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
