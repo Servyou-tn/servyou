@@ -62,6 +62,7 @@ export function ReportDetailView({
   reasonLabel,
   description,
   others,
+  othersFailed,
   decision,
   closed,
   reporter,
@@ -78,6 +79,8 @@ export function ReportDetailView({
   reasonLabel: string
   description: string | null
   others: DetailOther[]
+  /** The read failed (reported server-side): « — », never « no other reports ». */
+  othersFailed: boolean
   decision: ReactNode
   closed: { headerKey: string; note: string | null; date: string } | null
   reporter: DetailPerson
@@ -161,7 +164,7 @@ export function ReportDetailView({
           <section className={panel} aria-labelledby="panel-others">
             <h2 id="panel-others" className={panelTitle}>{t('admin.reports.panel_others', lang)}</h2>
             {others.length === 0 ? (
-              <p className="text-body-sm text-text-muted">{t('admin.reports.others_empty', lang)}</p>
+              <p className="text-body-sm text-text-muted">{othersFailed ? '—' : t('admin.reports.others_empty', lang)}</p>
             ) : (
               <div className="overflow-x-auto rounded-xl border border-border-subtle">
                 <table className="w-full min-w-[520px] table-fixed">

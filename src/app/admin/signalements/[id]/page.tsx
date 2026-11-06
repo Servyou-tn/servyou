@@ -103,6 +103,8 @@ export default async function ReportDetailPage({ params }: Props) {
     countReportsBy(supabase, [r.reporter_id], 'admin/signalements/[id] reporter counts'),
     supabase.auth.getUser(),
   ])
+  // Only the UI's self-suspend guard depends on this; the RPC blocks self-suspend too.
+  if (me.error) reportQueryError('admin/signalements/[id] current user', me.error)
   const myId = me.data.user?.id ?? null
 
   const target = targets.get(targetKey(r.target_type, r.target_id))
@@ -179,7 +181,7 @@ export default async function ReportDetailPage({ params }: Props) {
   // The content owner — the person « Suspendre l'utilisateur » acts on (the reported user for a user report).
   const ownerCard: DetailPerson | null = owner
     ? {
-        name: target?.shopName && r.target_type !== 'user' ? `${owner.full_name} (${target.shopName})` : (owner.full_name ?? '—'),
+        name: target?.shopName && r.target_type !== 'user' ? `${owner.full_name ?? '—'} (${target.shopName})` : (owner.full_name ?? '—'),
         initials: getInitials(owner.full_name),
         line: personLine(owner, lang, false),
         stats: owner.suspended_at
@@ -210,6 +212,7 @@ export default async function ReportDetailPage({ params }: Props) {
       reasonLabel={reasonLabel}
       description={r.description}
       others={others}
+      othersFailed={Boolean(othersError)}
       closed={
         r.status === 'resolved' || r.status === 'dismissed'
           ? {

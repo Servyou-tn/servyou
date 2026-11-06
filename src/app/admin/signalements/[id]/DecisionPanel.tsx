@@ -68,9 +68,15 @@ export function DecisionPanel({
     setErrorKey(null)
     setRunning(action)
     startTransition(async () => {
-      const res = await call()
-      setRunning(null)
-      if (!res.success) setErrorKey(res.error ?? fallbackKey)
+      // A thrown action (network drop, 500) must not leave every button locked.
+      try {
+        const res = await call()
+        if (!res.success) setErrorKey(res.error ?? fallbackKey)
+      } catch {
+        setErrorKey('common.error_generic')
+      } finally {
+        setRunning(null)
+      }
     })
   }
 
