@@ -13,7 +13,7 @@
  * failed refresh silently drops supabase-js back to anon and would fake a refusal. Every refusal pins
  * the trigger's exact text, so a policy, grant or other trigger can't pass for it.
  *
- *   * catalog — the service-role OpenAPI relation set is exactly the 28 guarded tables plus the 4
+ *   * catalog — the service-role OpenAPI relation set is exactly the 28 guarded tables plus the 6
  *     relations with no client write; a new table fails here until it is classified;
  *   * matrix — each table × INSERT / UPDATE / DELETE, probed at a RANDOM id (no real row is ever
  *     touched), from a suspended session and from an active control session;
@@ -129,6 +129,10 @@ const NO_CLIENT_WRITES: Record<string, { key: string; code: string; message?: st
   uploaded_objects: { key: 'id', code: DENIED, message: 'permission denied for table uploaded_objects' },
   order_events: { key: 'id', code: DENIED, message: 'permission denied for table order_events' },
   public_profiles: { key: 'id', code: DENIED, message: 'permission denied for view public_profiles' },
+  // Server-only tables (service role writes them; no client grant at all): the /contact form and the password-change
+  // rate limit. Classified 2026-11-06 (docs/follow-ups/admin-requests-backend.md #5).
+  contact_messages: { key: 'id', code: DENIED, message: 'permission denied for table contact_messages' },
+  password_change_attempts: { key: 'id', code: DENIED, message: 'permission denied for table password_change_attempts' },
   // Not auto-updatable: the rewriter refuses before any privilege check (migration 60's test).
   buyer_cancellation_history: { key: 'buyer_id', code: '55000' },
 }
@@ -377,7 +381,7 @@ describe.skipIf(!hasCreds)('ground truth', () => {
 })
 
 describe.skipIf(!hasCreds)('catalog', () => {
-  it('the exposed relations are exactly the 28 guarded tables plus the 4 with no client write', async () => {
+  it('the exposed relations are exactly the 28 guarded tables plus the 6 with no client write', async () => {
     const res = await fetch(`${url}/rest/v1/`, {
       headers: { apikey: serviceKey, Authorization: `Bearer ${serviceKey}`, Accept: 'application/openapi+json' },
     })

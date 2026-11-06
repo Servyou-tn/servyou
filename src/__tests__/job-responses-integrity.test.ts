@@ -311,7 +311,11 @@ describe.skipIf(!hasCreds)('the exploit — a non-freelancer response and the ph
     expect(phone).toBeNull()
   })
 
-  it('control: a freelancer responds, and get_contact_phone(poster) then returns the phone', async () => {
+  // The phone-reveal rule (migration 20261101181237) unlocks a mission only owner → freelancer: « freelancer → client,
+  // never through a mission ». The founder kept it so for the chosen freelancer too (journey gates D7, 2026-11-06).
+  // So a real freelancer's proposal is accepted, yet the poster's phone stays hidden from them; the owner → freelancer
+  // direction is proven in phone-reveal-mission-live.test.ts.
+  it('control: a freelancer responds, and get_contact_phone(poster) still returns NULL (owner → freelancer only)', async () => {
     const { data: before, error: beforeErr } = await freelancerClient.rpc('get_contact_phone', { target: posterId })
     expect(beforeErr).toBeNull()
     expect(before).toBeNull()
@@ -322,7 +326,10 @@ describe.skipIf(!hasCreds)('the exploit — a non-freelancer response and the ph
 
     const { data: phone, error: rpcErr } = await freelancerClient.rpc('get_contact_phone', { target: posterId })
     expect(rpcErr).toBeNull()
-    expect(phone).toBe(POSTER_PHONE)
+    expect(phone).toBeNull()
+    // The phone exists: the NULL above is the rule, not a missing fixture.
+    const { data: seeded } = await admin.from('profiles').select('phone').eq('id', posterId).single()
+    expect(seeded?.phone).toBe(POSTER_PHONE)
   })
 })
 
