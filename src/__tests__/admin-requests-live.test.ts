@@ -538,6 +538,19 @@ describe.skipIf(!hasCreds)('D2 — finishAccountErasure (auth + files, service r
     expect(data.user?.user_metadata?.full_name).toBe('Adm Req consumer')
   })
 
+  // Migration 20261106090849. No OAuth identity is created here (that would mean writing auth.identities on production
+  // by hand); the Google path is covered by account-erasure.test.ts. These pin the grant and the guard on the real RPC.
+  it('erase_oauth_identities: service role only, and refused (42501) on an account that is not a tombstone', async () => {
+    const asAdmin = await adminClient.rpc('erase_oauth_identities', { p_user_id: ids.consumer })
+    expectCode(asAdmin.error, '42501')
+    expect(asAdmin.error?.message).toBe('permission denied for function erase_oauth_identities')
+    const anon = await createClient<Database>(url, anonKey, opts).rpc('erase_oauth_identities', { p_user_id: ids.consumer })
+    expectCode(anon.error, '42501')
+    const live = await admin.rpc('erase_oauth_identities', { p_user_id: ids.consumer })
+    expectCode(live.error, '42501')
+    expect(live.error?.message).toBe("Ce compte n'est pas supprimé : identités conservées.")
+  })
+
   it('seller: auth e-mail + identity replaced, metadata emptied, banned; every file and image row gone', async () => {
     const result = await finishAccountErasure(ids.seller)
     expect(result).toMatchObject({ ok: true, imageRowsRemoved: 1 })
@@ -572,6 +585,10 @@ describe.skipIf(!hasCreds)('D2 — finishAccountErasure (auth + files, service r
 
   it('a second run is a no-op success (retry-safe)', async () => {
     expect(await finishAccountErasure(ids.seller)).toEqual({ ok: true, filesRemoved: 0, imageRowsRemoved: 0 })
+    // On the tombstone the RPC answers 0 rows for an e-mail-only account.
+    const { data, error } = await admin.rpc('erase_oauth_identities', { p_user_id: ids.seller })
+    expect(error).toBeNull()
+    expect(data).toBe(0)
   })
 
   it('no login: the real e-mail no longer exists, the tombstone one is banned', async () => {

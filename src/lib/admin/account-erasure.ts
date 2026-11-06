@@ -12,9 +12,9 @@ import { SUSPENSION_BAN_DURATION } from '@/lib/auth/auth-ban'
 //               user_metadata key is removed (full_name, date_of_birth, city, email…), and the account is banned for
 //               100 years: sign-in and token refresh are refused. An access token issued before the ban can still READ
 //               until it expires (≤ 3600 s, auth-ban.ts); every write is already refused (the profile is suspended).
-//               An OAuth identity (Google) keeps its own identity_data, which no admin API rewrites or removes: the
-//               run then ends 'identity_left' — files and rows still erased, never reported done
-//               (docs/follow-ups/admin-deletion-auth.md #0);
+//               An OAuth identity (Google) keeps its own identity_data, which no admin API rewrites or removes:
+//               erase_oauth_identities (migration 20261106090849, service role) deletes it. If one is somehow still
+//               there, the run ends 'identity_left' — files and rows still erased, never reported done;
 //   3. files  — every object the person uploaded is removed from Storage, then its uploaded_objects row;
 //   4. rows   — product_images rows of the person's products (hidden ones kept for orders) go: they point at the
 //               removed files.
@@ -40,8 +40,8 @@ export type ErasureStep = 'guard' | 'auth' | 'files' | 'rows'
 
 export type ErasureResult =
   | { ok: true; filesRemoved: number; imageRowsRemoved: number }
-  /** identity_left: an OAuth identity (Google) still holds the real e-mail / name in auth.identities — the admin API
-   * cannot remove it (docs/follow-ups/admin-deletion-auth.md #0). Files and rows ARE erased; the run is not « done ». */
+  /** identity_left: an OAuth identity (Google) is still in auth.identities after erase_oauth_identities ran. Files and
+   * rows ARE erased; the run is not « done ». */
   | { ok: false; step: ErasureStep; reason: 'not_tombstoned' | 'not_found' | 'failed' | 'identity_left' }
 
 type Admin = ReturnType<typeof createAdminClient>
@@ -81,7 +81,7 @@ async function isTombstone(admin: Admin, userId: string): Promise<'yes' | 'no' |
   return ok ? 'yes' : 'no'
 }
 
-// 'residual': done, but a non-e-mail identity (OAuth) keeps its own identity_data, which updateUserById never rewrites.
+// 'residual': a non-e-mail identity (OAuth) is still there after erase_oauth_identities — never reported done.
 async function eraseAuth(admin: Admin, userId: string): Promise<'ok' | 'residual' | 'failed'> {
   const { data, error } = await admin.auth.admin.getUserById(userId)
   if (error || !data.user) {
@@ -101,9 +101,26 @@ async function eraseAuth(admin: Admin, userId: string): Promise<'ok' | 'residual
     console.error(`[account-erasure] auth update failed for ${userId}:`, updateError.message, updateError.status, updateError.code)
     return 'failed'
   }
+  // No admin API removes an OAuth identity: erase_oauth_identities (migration 20261106090849, service role only,
+  // refuses 42501 unless the profile is the tombstone) deletes every non-e-mail one. Called on every run — 0 rows is
+  // the normal answer for an e-mail account, and a retry is harmless.
+  const { error: rpcError } = await admin.rpc('erase_oauth_identities', { p_user_id: userId })
+  if (rpcError) {
+    console.error(`[account-erasure] erase_oauth_identities failed for ${userId}:`, rpcError.message, rpcError.code, rpcError.details)
+    return 'failed'
+  }
   if (oauthIdentities > 0) {
-    console.error(`[account-erasure] ${oauthIdentities} OAuth identity row(s) left for ${userId}: needs the identity cleanup migration`)
-    return 'residual'
+    // Confirm from GoTrue itself that none is left before the run can be reported done.
+    const { data: after, error: afterError } = await admin.auth.admin.getUserById(userId)
+    if (afterError || !after.user) {
+      console.error(`[account-erasure] auth re-check failed for ${userId}:`, afterError?.message, afterError?.status, afterError?.code)
+      return 'failed'
+    }
+    const left = (after.user.identities ?? []).filter((identity) => identity.provider !== 'email').length
+    if (left > 0) {
+      console.error(`[account-erasure] ${left} OAuth identity row(s) still present for ${userId} after erase_oauth_identities`)
+      return 'residual'
+    }
   }
   return 'ok'
 }

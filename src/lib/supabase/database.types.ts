@@ -1,7 +1,7 @@
 // Generated from the live Supabase schema (project xggomcitqrkaylqezjjz) — DO NOT EDIT BY HAND.
 // Regenerate after every applied migration: Supabase MCP generate_typescript_types (or
 // `npx supabase gen types typescript --project-id xggomcitqrkaylqezjjz`), then commit.
-// Generated 2026-11-06 after migration 20261106074610 admin_requests_backend.
+// Generated 2026-11-06 after migration 20261106090849 erase_oauth_identities.
 
 export type Json =
   | string
@@ -1712,6 +1712,7 @@ export type Database = {
           relation: string
         }[]
       }
+      erase_oauth_identities: { Args: { p_user_id: string }; Returns: number }
       f_unaccent: { Args: { "": string }; Returns: string }
       freelancer_has_active_listing: {
         Args: { p_freelancer_profile_id: string }
