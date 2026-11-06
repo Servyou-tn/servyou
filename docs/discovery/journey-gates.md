@@ -123,13 +123,23 @@ date too. A stored `expired` can come later with a scheduled job, if wanted.
    - `choose_job_response: { Args: { p_response_id: string }; Returns: string }`.
 2. Live suite `src/__tests__/journey-gates-live.test.ts`, ≤ 12 sign-ins: fixture post owner, 3 freelancers, a seller.
    It covers the cases of the script below through the real API, plus PostgREST's error shape (code + hint).
-3. Re-run the regression suites on the same tables:
+3. **Live suites G2 will likely break: fixture change in the record PR.** These suites seed sellers through the
+   service role, usually with no `profiles.phone`, then accept an order from the seller's session. G2 now refuses that.
+   The fix is a phone on the seller fixture.
+   - Likely (unverified until run): `orders-lifecycle-columns`, `order-cancel-buyer-service`, `orders-jobposts-caps`,
+     `job-posts-write-guards`, `suspension-enforcement`, `security-followups-batch`. The last one already sets a
+     phone on one seller.
+   - G10: no suite found that reads a backdated post as neither owner nor responder.
+   - Sync trigger: `admin-requests-live` closes a buyer's post that has a proposal (`admin_process_deletion_request`),
+     so the new trigger runs inside it. Re-run it.
+   - `job_posts` has no NOT VALID constraint (live), so the D1 trap exists only on `job_responses`.
+4. Re-run the regression suites on the same tables:
    - `job-responses-proposal-fields`: the message rule still maps;
    - `job-posts-write-guards`: close / reopen / delete with proposals;
    - `job-limits`, `job-posts-responder-read`, `job-responses-integrity`;
    - `orders-lifecycle-columns`, `order-cancel-buyer-service`, `seller-orders`: the accept path, every seller fixture
      with a phone.
-4. **App (not in this PR; Agent B or a follow-up):**
+5. **App (not in this PR; Agent B or a follow-up):**
    - « Choisir ce freelance » on `/mes-annonces/[id]` calling the RPC, mapping its hints;
    - the reopen error `job_response_chosen`;
    - `/mes-propositions` showing « Choisie », « Non retenue », « En attente », and « Expirée » (derived);
@@ -384,10 +394,15 @@ do $$ begin
 end $$;
 reset role;
 
-rollback;
+-- The end: a visible pass signal, which also forces the rollback even if the tool would commit.
+do $$ begin raise exception 'ALL PASSED — rolled back'; end $$;
 ```
 
 Notes on the script:
+- **It has never run:** this brief allowed no DDL, not even rolled back, so the architect's run is the first.
+  - The run ends with the error `ALL PASSED — rolled back`: that is the success signal.
+  - A `FAIL fixtures …` means a fixture could not be picked from live data, not a defect in the migration.
+  - Any other `FAIL Tn` is a real failure.
 - T1b expects the **privilege** error (no UPDATE grant), not the message rule. The message rule on insert is covered
   by the existing live suite `job-responses-proposal-fields`, which the post-apply run repeats.
 - T12 runs first: its « anon still sees recent posts » check needs an open post within 30 days. Live, there are
