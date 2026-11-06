@@ -2,7 +2,8 @@
  * Unit tests for src/lib/admin/account-erasure.ts against a fake service-role client: the guard fails closed, the
  * order of the steps (files removed BEFORE their provenance rows, so a retry still finds them), the folder sweep's
  * scope (a shop the RPC already deleted is swept; a shop that belongs to someone else never is), the depth limit, and
- * an OAuth identity never reported as « done ». The real GoTrue / Storage behaviour is proven live in
+ * OAuth identities: erase_oauth_identities (migration 20261106090849) runs after the e-mail update, a Google account
+ * ends « done » once GoTrue confirms none is left, and one still there is never reported « done ». The real GoTrue / Storage behaviour is proven live in
  * admin-requests-live.test.ts.
  */
 
@@ -34,6 +35,9 @@ const fake = vi.hoisted(() => {
     metadata: { full_name: 'Réel Nom', city: 'Tunis' } as Record<string, unknown>,
     updates: [] as unknown[],
     removed: [] as string[],
+    rpcFails: false,
+    rpcRemoves: true,
+    rpcCalls: [] as unknown[],
   }
   return s
 })
@@ -84,6 +88,14 @@ vi.mock('@/lib/supabase/admin', () => ({
         },
       }),
     },
+    rpc: async (name: string, args: unknown) => {
+      fake.log.push(`rpc:${name}`)
+      fake.rpcCalls.push([name, args])
+      if (fake.rpcFails) return { data: null, error: { message: "Ce compte n'est pas supprimé : identités conservées.", code: '42501' } }
+      const before = fake.identities.length
+      if (fake.rpcRemoves) fake.identities = fake.identities.filter((i) => i.provider === 'email')
+      return { data: before - fake.identities.length, error: null }
+    },
     auth: {
       admin: {
         getUserById: async () => {
@@ -109,7 +121,7 @@ beforeEach(() => {
   Object.assign(fake, {
     log: [], profileError: false, owned: [], shops: [], takenShops: [], products: [], images: [], tree: {},
     removeFails: false, identities: [{ provider: 'email' }], metadata: { full_name: 'Réel Nom', city: 'Tunis' },
-    updates: [], removed: [],
+    updates: [], removed: [], rpcFails: false, rpcRemoves: true, rpcCalls: [],
     profile: { full_name: 'Compte supprimé', email: TOMBSTONE, suspended_at: '2026-11-06T00:00:00Z' },
   })
 })
@@ -198,11 +210,33 @@ describe('erasure', () => {
     expect(fake.log.some((l) => l.startsWith('remove'))).toBe(false)
   })
 
-  it('an OAuth identity: files and rows are erased, but the run is « identity_left », never done', async () => {
+  it('erase_oauth_identities runs on every run, with the user id, AFTER the e-mail update', async () => {
+    expect(await finishAccountErasure(USER)).toMatchObject({ ok: true })
+    expect(fake.rpcCalls).toEqual([['erase_oauth_identities', { p_user_id: USER }]])
+    expect(fake.log.indexOf('rpc:erase_oauth_identities')).toBeGreaterThan(fake.log.indexOf('auth:update'))
+  })
+
+  it('a Google account: its identity is deleted, GoTrue confirms none is left, and the run is done', async () => {
     fake.identities = [{ provider: 'email' }, { provider: 'google' }]
+    fake.owned = [{ bucket: 'avatars', path: `${USER}/a.webp` }]
+    expect(await finishAccountErasure(USER)).toEqual({ ok: true, filesRemoved: 1, imageRowsRemoved: 0 })
+    expect(fake.identities).toEqual([{ provider: 'email' }])
+    expect(fake.log.filter((l) => l === 'auth:get')).toHaveLength(2) // the re-check
+  })
+
+  it('an OAuth identity still there after the RPC: files and rows erased, « identity_left », never done', async () => {
+    fake.identities = [{ provider: 'email' }, { provider: 'google' }]
+    fake.rpcRemoves = false
     fake.owned = [{ bucket: 'avatars', path: `${USER}/a.webp` }]
     expect(await finishAccountErasure(USER)).toEqual({ ok: false, step: 'auth', reason: 'identity_left' })
     expect(fake.removed).toContain(`avatars/${USER}/a.webp`)
     expect(fake.log).toContain('delete:uploaded_objects')
+  })
+
+  it('a refused erase_oauth_identities stops at auth, before any file is touched (the retry redoes it)', async () => {
+    fake.rpcFails = true
+    fake.owned = [{ bucket: 'avatars', path: `${USER}/a.webp` }]
+    expect(await finishAccountErasure(USER)).toEqual({ ok: false, step: 'auth', reason: 'failed' })
+    expect(fake.log.some((l) => l.startsWith('list') || l.startsWith('remove') || l.startsWith('delete'))).toBe(false)
   })
 })

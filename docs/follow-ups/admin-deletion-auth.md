@@ -5,6 +5,9 @@ Ranked, most important first.
 
 ## 0. 🔴 HIGH — a Google account keeps its real e-mail / name in `auth.identities` (review, 2026-11-06)
 
+✅ CLOSED — migration `20261106090849_erase_oauth_identities` (architect, 2026-11-06), called from `eraseAuth` on
+`feat/erase-oauth-identities`. The Google path is mock-tested; no OAuth identity was created on production.
+
 **What:** sign-in and sign-up offer Google (`SigninForm.tsx`, `SignupForm.tsx`). A Google identity's `identity_data`
 holds the e-mail, name and picture.
 - `updateUserById({ email })` rewrites only the **e-mail** identity (proven live).
@@ -24,6 +27,8 @@ shows « non terminé ». Retrying cannot finish it. Live today: 0 Google identi
 **Trigger:** before the first Google sign-up's deletion request, or before launch, whichever is first.
 
 ## 1. Open sessions can still READ for up to an hour after the ban
+
+Founder ruling 2026-11-06: accepted for the beta; stays logged.
 
 **What:** the ban makes GoTrue refuse sign-in and token refresh. An access token issued before the ban stays valid at
 PostgREST / Storage until it expires: ≤ 3600 s on this project (measured 2026-10-24, `src/lib/auth/auth-ban.ts`).

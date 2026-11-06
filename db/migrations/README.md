@@ -1214,6 +1214,21 @@ both on 2026-10-28.
     - The recorded statement is this whole file, comments included (md5 `56ef437a417c7cd0e5fd33a16f652c0d`, compared
       without the trailing newline).
     - Rollback: none needed (a rename format). Re-running is refused: the old line is no longer there.
+122. **20261106090849_erase_oauth_identities** — follow-up #0 of #329; written and applied by the architect.
+    - `public.erase_oauth_identities(p_user_id uuid) returns integer`: SECURITY DEFINER, `search_path ''`.
+    - It refuses (42501, « Ce compte n'est pas supprimé : identités conservées. ») unless the profile is already the
+      tombstone. That is the same three-field guard as `finishAccountErasure`: name, tombstone e-mail, suspended.
+    - Otherwise it deletes the user's `auth.identities` rows with `provider <> 'email'` and returns the count. No admin
+      API removes a Google identity, which holds the real e-mail / name.
+    - EXECUTE: `service_role` only; revoked from PUBLIC / anon / authenticated (checked live).
+    - Caller: `src/lib/admin/account-erasure.ts` (`eraseAuth`) calls it on every run, after the e-mail update. When the
+      account had an OAuth identity, it re-checks through GoTrue that none is left before the run can end « done ».
+    - Types regenerated (the new RPC). Live: `admin-requests-live.test.ts` pins the grant and the guard, and checks
+      the 0-row answer on an e-mail-only tombstone. The Google path is mock-tested only (`account-erasure.test.ts`):
+      creating an OAuth identity would mean writing `auth.identities` on production by hand.
+    - The recorded statement is this whole file, comments included (md5 `0eca352c2452a6ba81533f214ae43e9a`, compared
+      without the trailing newline).
+    - Rollback: `drop function public.erase_oauth_identities(uuid);` (the erasure would then fail at its auth step).
 
 ## Rollback paths
 
