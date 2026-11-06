@@ -4321,6 +4321,8 @@ export const ar: Record<string, string> = {
   'propositions.withdraw.confirm':      "سحب",
   'propositions.withdraw.done':         "تم سحب العرض.",
   'propositions.withdraw.stale':        "تعذر سحب هذا العرض لأن المهمة تغيرت. تم تحديث القائمة.",
+  // REVIEW_AR_TRANSLATION
+  'propositions.withdraw.decided': "تلقّى هذا العرض ردًّا بالفعل: لم يعد بالإمكان سحبه.",
   'propositions.empty_cta':             "ابحث عن مهام",
   'propositions.empty_none_title':      "لا توجد عروض بعد",
   'propositions.empty_none_body':       "تصفح المهام المفتوحة وأرسل أول عرض لك: سيظهر هنا.",

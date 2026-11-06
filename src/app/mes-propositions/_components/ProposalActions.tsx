@@ -12,6 +12,7 @@ import { ButtonLink } from '@/components/ui/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { ConfirmModal } from '@/components/marche/ConfirmModal'
 import { isProposalActive, type ProposalState } from '@/lib/marche/proposals'
+import type { ProposalOutcome } from '@/lib/marche/journey-gates'
 import { withdrawProposalAction } from '../actions'
 
 // The row's `actions` cell — Figma 296:9022: [« Voir la mission » secondary/sm · kebab 36], gap 8, end-aligned. The frame's WhatsApp icon (client contact) is GONE:
@@ -26,12 +27,15 @@ export function ProposalActions({
   responseId,
   jobPostId,
   state,
+  outcome,
   title,
   lang,
 }: {
   responseId: string
   jobPostId: string
   state: ProposalState
+  /** G1: only a still-pending proposal can be withdrawn — a decided one (chosen / not chosen) is refused by the DB. */
+  outcome: ProposalOutcome
   /** Names the kebab for assistive tech and the confirmation. */
   title: string
   lang: Lang
@@ -40,6 +44,7 @@ export function ProposalActions({
   const [confirmOpen, setConfirmOpen] = useState(false)
   const [pending, startTransition] = useTransition()
   const active = isProposalActive(state)
+  const canWithdraw = active && outcome === 'pending'
   const gone = state === 'unavailable'
   const recapHref = `/missions/${jobPostId}/proposition-envoyee`
 
@@ -53,7 +58,9 @@ export function ProposalActions({
         return
       }
       // A post that closed in the meantime, or a row already gone, is a stale list: say why and refresh it.
-      toast.error(t(result.reason === 'technical' ? 'common.error_generic' : 'propositions.withdraw.stale', lang))
+      toast.error(
+        t(result.reason === 'technical' ? 'common.error_generic' : result.reason === 'decided' ? 'propositions.withdraw.decided' : 'propositions.withdraw.stale', lang),
+      )
       if (result.reason !== 'technical') router.refresh()
     })
   }
@@ -85,7 +92,7 @@ export function ProposalActions({
             <DropdownMenuItem asChild>
               <Link href={recapHref}>{t('propositions.view_mine', lang)}</Link>
             </DropdownMenuItem>
-            {active ? (
+            {canWithdraw ? (
               <>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem variant="destructive" onSelect={() => setConfirmOpen(true)}>

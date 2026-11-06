@@ -4423,6 +4423,7 @@ export const fr: Record<string, string> = {
   'propositions.withdraw.confirm':      "Retirer",
   'propositions.withdraw.done':         "Proposition retirée.",
   'propositions.withdraw.stale':        "Cette proposition n'a pas pu être retirée : la mission a changé. La liste a été mise à jour.",
+  'propositions.withdraw.decided': "Cette proposition a déjà reçu une réponse : elle ne peut plus être retirée.",
   'propositions.empty_cta':             "Trouver des missions",
   'propositions.empty_none_title':      "Aucune proposition pour l'instant",
   'propositions.empty_none_body':       "Parcourez les missions ouvertes et envoyez votre première proposition : elle apparaîtra ici.",

@@ -90,7 +90,7 @@ describe('/freelance/[id] — the primary CTA', () => {
 describe('the freelancer never gets the client’s number through a mission', () => {
   it('« Mes propositions » rows have no WhatsApp control, live or closed', () => {
     for (const state of ['open', 'filled', 'expired', 'unavailable'] as const) {
-      const { unmount } = render(<ProposalActions responseId="r1" jobPostId="j1" state={state} title="Logo" lang="fr" />)
+      const { unmount } = render(<ProposalActions responseId="r1" jobPostId="j1" state={state} outcome="pending" title="Logo" lang="fr" />)
       expect(screen.queryByRole('button', { name: /whatsapp/i })).toBeNull()
       expect(screen.queryByRole('img', { name: /whatsapp/i })).toBeNull()
       unmount()

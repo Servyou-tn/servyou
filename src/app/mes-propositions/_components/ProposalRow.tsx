@@ -133,6 +133,7 @@ export function ProposalRow({ proposal: p, lang }: { proposal: Proposal; lang: L
           responseId={p.id}
           jobPostId={p.jobPostId}
           state={p.state}
+          outcome={p.outcome}
           title={title}
           lang={lang}
         />

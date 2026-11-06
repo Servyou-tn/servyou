@@ -43,13 +43,14 @@ const POST = '11111111-1111-4111-8111-111111111111'
 const isDelete = (c: Call) => c.ops.some(([n]) => n === 'delete')
 const deletes = () => h.calls.filter(isDelete)
 
-function respond(opts: { post?: { status: string; created_at: string } | null; row?: boolean; deleted?: unknown[]; readError?: boolean; deleteError?: boolean }) {
+function respond(opts: { post?: { status: string; created_at: string } | null; row?: boolean; rowStatus?: string; deleted?: unknown[]; readError?: boolean; deleteError?: boolean; deleteDecided?: boolean }) {
   h.respond = (c) => {
+    if (isDelete(c) && opts.deleteDecided) return { data: null, error: { message: 'decided', code: '42501', hint: 'response_decided' } }
     if (isDelete(c)) return opts.deleteError ? { data: null, error: { message: 'boom', code: '42501' } } : { data: opts.deleted ?? [{ id: RESPONSE }], error: null }
     if (opts.readError) return { data: null, error: { message: 'boom', code: '500' } }
     if (opts.row === false) return { data: null, error: null }
     const post = opts.post === undefined ? { status: 'open', created_at: new Date().toISOString() } : opts.post
-    return { data: { id: RESPONSE, job_post_id: POST, job_posts: post }, error: null }
+    return { data: { id: RESPONSE, job_post_id: POST, status: opts.rowStatus ?? 'pending', job_posts: post }, error: null }
   }
 }
 
@@ -108,6 +109,25 @@ describe('withdrawProposalAction', () => {
     respond({ deleteError: true })
     expect(await withdrawProposalAction({ responseId: RESPONSE })).toEqual({ ok: false, reason: 'technical' })
     expect(console.error).toHaveBeenCalledWith('[withdrawProposal] delete failed:', 'boom', '42501', undefined)
+    expect(h.revalidated).toHaveLength(0)
+  })
+
+  it('a closed post still reads « not open » even though the sync trigger marked the proposal not_chosen', async () => {
+    respond({ rowStatus: 'not_chosen', post: { status: 'filled', created_at: new Date().toISOString() } })
+    expect(await withdrawProposalAction({ responseId: RESPONSE })).toEqual({ ok: false, reason: 'not_open' })
+    expect(deletes()).toHaveLength(0)
+  })
+
+  it.each(['chosen', 'not_chosen'])('a %s proposal is « decided »: nothing is deleted', async (rowStatus) => {
+    respond({ rowStatus })
+    expect(await withdrawProposalAction({ responseId: RESPONSE })).toEqual({ ok: false, reason: 'decided' })
+    expect(deletes()).toHaveLength(0)
+  })
+
+  it('a decision made in between (DB 42501 response_decided) is « decided », not technical, and nothing is revalidated', async () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => {})
+    respond({ deleteDecided: true })
+    expect(await withdrawProposalAction({ responseId: RESPONSE })).toEqual({ ok: false, reason: 'decided' })
     expect(h.revalidated).toHaveLength(0)
   })
 
