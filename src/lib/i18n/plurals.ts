@@ -56,6 +56,15 @@ const frPlurals: Record<string, PluralVariants> = {
   'admin.users.info_products':             { one: '{count} produit', other: '{count} produits' },
   // Admin J4 — PR-3 block.
   'admin.content.reports_count':           { one: '{count} signalement', other: '{count} signalements' },
+  // Admin J10 — PR-4 block.
+  'admin.requests.hours_left': { one: 'Il reste {count} h', other: 'Il reste {count} h' },
+  'admin.requests.hours_left_long': { one: 'Il reste {count} h pour traiter', other: 'Il reste {count} h pour traiter' },
+  'admin.requests.overdue': { one: 'En retard de {count} h', other: 'En retard de {count} h' },
+  'admin.requests.m_services': { one: '{count} service actif', other: '{count} services actifs' },
+  'admin.requests.m_products': { one: '{count} produit actif', other: '{count} produits actifs' },
+  'admin.requests.m_open_orders': { one: '{count} commande en cours', other: '{count} commandes en cours' },
+  'admin.requests.m_done_orders': { one: '{count} terminée (conservée, anonymisée)', other: '{count} terminées (conservées, anonymisées)' },
+  'admin.requests.open_orders_warning': { one: '{count} commande est encore en cours : prévenez le client avant de supprimer.', other: '{count} commandes sont encore en cours : prévenez les clients avant de supprimer.' },
   // Admin J5 / J6 (Figma NOV 4 — Admin). French zero is forced to `other` (« 0 rejetés »).
   'admin.nav.pending_count':               { one: '{count} en attente', other: '{count} en attente' },
   'admin.reports.sent_count':              { one: '{count} signalement envoyé', other: '{count} signalements envoyés' },
@@ -142,6 +151,15 @@ const arPlurals: Record<string, PluralVariants> = {
   'admin.users.info_products':             { one: 'منتج واحد', two: 'منتجان', other: '{count} منتجات' },
   // REVIEW_AR_TRANSLATION — admin J4 — PR-3 block.
   'admin.content.reports_count':           { one: 'بلاغ واحد', two: 'بلاغان', other: '{count} بلاغات' },
+  // REVIEW_AR_TRANSLATION — admin J10 — PR-4 block.
+  'admin.requests.hours_left': { one: 'تبقى ساعة واحدة', two: 'تبقى ساعتان', other: 'تبقى {count} ساعة' },
+  'admin.requests.hours_left_long': { one: 'تبقى ساعة واحدة للمعالجة', two: 'تبقى ساعتان للمعالجة', other: 'تبقى {count} ساعة للمعالجة' },
+  'admin.requests.overdue': { one: 'متأخر بساعة واحدة', two: 'متأخر بساعتين', other: 'متأخر بـ {count} ساعة' },
+  'admin.requests.m_services': { one: 'خدمة نشطة واحدة', two: 'خدمتان نشطتان', other: '{count} خدمات نشطة' },
+  'admin.requests.m_products': { one: 'منتج نشط واحد', two: 'منتجان نشطان', other: '{count} منتجات نشطة' },
+  'admin.requests.m_open_orders': { one: 'طلبية جارية واحدة', two: 'طلبيتان جاريتان', other: '{count} طلبيات جارية' },
+  'admin.requests.m_done_orders': { one: 'واحدة منتهية (محفوظة ومجهولة الهوية)', two: 'اثنتان منتهيتان (محفوظتان ومجهولتا الهوية)', other: '{count} منتهية (محفوظة ومجهولة الهوية)' },
+  'admin.requests.open_orders_warning': { one: 'طلبية واحدة ما زالت جارية: أبلغ العميل قبل الحذف.', two: 'طلبيتان ما زالتا جاريتين: أبلغ العملاء قبل الحذف.', other: '{count} طلبيات ما زالت جارية: أبلغ العملاء قبل الحذف.' },
   // REVIEW_AR_TRANSLATION — admin J5 / J6. Non-human plurals take feminine-singular agreement (بلاغات مرسلة).
   'admin.nav.pending_count':               { one: '{count} قيد الانتظار', two: '{count} قيد الانتظار', other: '{count} قيد الانتظار' },
   'admin.reports.sent_count':              { one: 'بلاغ واحد مُرسل', two: 'بلاغان مُرسلان', other: '{count} بلاغات مُرسلة' },
