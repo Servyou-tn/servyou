@@ -2598,6 +2598,9 @@ export const ar: Record<string, string> = {
   'admin.orders.seller_freelance': "مستقل",
   'admin.orders.empty': "لا توجد طلبيات حاليًا.",
   'admin.orders.empty_filtered': "لا توجد طلبيات تطابق هذه المرشحات.",
+  'admin.orders.blocked_sr': "عالقة",
+  'admin.orders.since_label': "منذ:",
+  'admin.stats.kpi_declared_unknown': "السعر غير مسجّل في الطلبيات المستلمة",
   // REVIEW_AR_TRANSLATION — J10 Demandes + J11 Journal — PR-4 block
   'admin.requests.title': "الطلبات",
   'admin.requests.subtitle': "حذف الحسابات وتصدير البيانات ورسائل نموذج التواصل",

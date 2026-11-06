@@ -2657,6 +2657,9 @@ export const fr: Record<string, string> = {
   'admin.orders.seller_freelance': "Freelance",
   'admin.orders.empty': "Aucune commande pour l'instant.",
   'admin.orders.empty_filtered': "Aucune commande ne correspond à ces filtres.",
+  'admin.orders.blocked_sr': "bloquée",
+  'admin.orders.since_label': "Depuis :",
+  'admin.stats.kpi_declared_unknown': "prix non enregistré sur les commandes reçues",
   // J10 Demandes + J11 Journal (Figma NOV 4 — Admin) — PR-4 block
   'admin.requests.title': "Demandes",
   'admin.requests.subtitle': "Suppressions de compte, exports de données et messages du formulaire de contact",

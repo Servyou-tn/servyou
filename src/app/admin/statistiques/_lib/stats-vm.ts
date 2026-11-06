@@ -19,6 +19,8 @@ import type { CategoryVM, CityRowVM, FunnelVM, PeriodVM, WeekVM } from '../_comp
 
 // J8 view-model: the RPC's jsonb → the strings StatsView draws. Kept out of page.tsx so the page stays a thin loader.
 
+const declaredUnknown = (k: DashboardStats['current']) => k.orders_received > 0 && k.declared_value_tnd === 0
+
 function tilesOf(s: DashboardStats, lang: Lang): { tiles: TileVM[]; tiles2: TileVM[] } {
   const c = s.current, p = s.previous
   const success = rate(c.created_then_received, c.orders_created), prevSuccess = rate(p.created_then_received, p.orders_created)
@@ -27,7 +29,11 @@ function tilesOf(s: DashboardStats, lang: Lang): { tiles: TileVM[]; tiles2: Tile
     tiles: [
       { key: 'received', label: t('admin.dash.kpi_received', lang), value: formatCount(c.orders_received), accent: 'green', delta: kpiDelta(pctDelta(c.orders_received, p.orders_received), 'pct', lang) },
       { key: 'success', label: t('admin.dash.kpi_success', lang), value: formatPercent(success), accent: 'blue', delta: kpiDelta(absDelta(success, prevSuccess), 'pts', lang) },
-      { key: 'value', label: t('admin.stats.kpi_declared', lang), value: amountText(c.declared_value_tnd, lang), accent: 'indigo', delta: kpiDelta(pctDelta(c.declared_value_tnd, p.declared_value_tnd), 'pct', lang) },
+      // D10: orders before the price snapshot add nothing to the sum, so received orders with a 0 total are « — »
+      // (« prix non enregistré »), never a fake « 0 TND »; an unknown previous value gives no delta.
+      declaredUnknown(c)
+        ? { key: 'value', label: t('admin.stats.kpi_declared', lang), value: '—', accent: 'indigo', subtitle: t('admin.stats.kpi_declared_unknown', lang) }
+        : { key: 'value', label: t('admin.stats.kpi_declared', lang), value: amountText(c.declared_value_tnd, lang), accent: 'indigo', delta: declaredUnknown(p) ? null : kpiDelta(pctDelta(c.declared_value_tnd, p.declared_value_tnd), 'pct', lang) },
       { key: 'cancel', label: t('admin.dash.kpi_cancel', lang), value: formatPercent(cancel), accent: 'neutral', delta: kpiDelta(absDelta(cancel, prevCancel), 'pts', lang) },
     ],
     tiles2: [

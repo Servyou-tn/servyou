@@ -38,6 +38,14 @@ export type AdminCounts = { reports?: number; disputes?: number; orders?: number
 
 type CountKey = keyof AdminCounts
 type NavItem = { key: string; href: string; icon: LucideIcon; disabled?: boolean; count?: CountKey }
+
+// What each pill counts, for screen readers (« 3 commandes bloquées », not « 3 en attente », on Commandes).
+const COUNT_LABEL: Record<CountKey, string> = {
+  reports: 'admin.nav.pending_count',
+  disputes: 'admin.nav.pending_count',
+  orders: 'admin.nav.blocked_count',
+  requests: 'admin.nav.to_handle_count',
+}
 type NavSection = { labelKey: string; items: NavItem[] }
 
 const TOP_SECTIONS: NavSection[] = [
@@ -108,7 +116,7 @@ export function AdminSidebar({
         label={t(item.key, lang)}
         active={!item.disabled && isActive(pathname, item.href)}
         count={count}
-        countLabel={count ? tn('admin.nav.pending_count', lang, count) : undefined}
+        countLabel={count && item.count ? tn(COUNT_LABEL[item.count], lang, count) : undefined}
         soonLabel={t('shell.sidebar.soon', lang)}
         onNavigate={onNavigate}
       />

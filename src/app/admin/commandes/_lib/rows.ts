@@ -18,7 +18,8 @@ export function buildOrderRows(list: AdminOrderRow[], now: number, lang: Lang): 
       typeLabel: t(o.order_type === 'service' ? 'admin.orders.type_service' : 'admin.orders.type_product', lang),
       amount: amountText(o.amount_tnd, lang),
       status: o.status,
-      since: sinceText(o.status_since, now, lang),
+      // D7: when the status date is a fallback (updated_at), it is marked approximate.
+      since: `${o.status_since_exact ? '' : '≈ '}${sinceText(o.status_since, now, lang)}`,
       blocked: o.is_blocked,
     }
   })

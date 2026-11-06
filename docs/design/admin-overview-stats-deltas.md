@@ -84,6 +84,12 @@ no pill, never a 0.
   - J9 shows a card per order below 1280 (the 8-column table needs ~1 000 px; at 1100 the content is 796).
   - M1 (375) has no second tile row and no rail, as drawn.
 
+- **D-OS-16 (review)** — a few display rules that are not in the frames:
+  - « Depuis » is prefixed « ≈ » when `status_since_exact` is false. That happens when it falls back to `updated_at` (D7).
+  - A blocked order adds a small warning icon and sr-only « bloquée » to its red « Depuis » (WCAG 1.4.1).
+  - When orders were received in the period but none had a price snapshot, « Valeur déclarée » reads « — » with « prix non
+    enregistré… », not « 0 TND ».
+
 ## Verification
 
 - **Fixture route:** a temporary `/fixture-admin`, deleted before commit, fed the real builders (`overview-vm`,

@@ -1,3 +1,4 @@
+import { redirect } from 'next/navigation'
 import { getLang } from '@/lib/i18n/server'
 import { t } from '@/lib/i18n'
 import { createClient } from '@/lib/supabase/server'
@@ -115,8 +116,10 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
 
   const rows = buildOrderRows(list, now, lang)
 
-  const filtered = Boolean(q || type !== 'all' || city || period !== 'all')
+  const filtered = Boolean(q || type !== 'all' || city || period !== '30')
   const totalPages = Math.max(1, Math.ceil(total / PER_PAGE))
+  // A page past the end (an old link, a shrunk result) lands on the last page, never on an empty dead end.
+  if (!listRes.error && list.length === 0 && pageParam > totalPages && total > 0) redirect(hrefFor({ page: String(totalPages) }))
 
   return (
     <OrdersListView

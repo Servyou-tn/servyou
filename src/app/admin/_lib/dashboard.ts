@@ -177,7 +177,7 @@ export function queueItems(q: Queue): QueueItem[] {
     { kind: 'fake_scam', count: q.reports_fake_scam_open, oldestAt: null, tone: 'danger', href: '/admin/signalements?motif=fake_scam' },
     { kind: 'reports', count: q.reports_open - q.reports_fake_scam_open, oldestAt: q.reports_oldest_at, tone: 'warning', href: '/admin/signalements' },
     { kind: 'disputes', count: q.disputes_open, oldestAt: q.disputes_oldest_at, tone: 'warning', href: '/admin/litiges' },
-    { kind: 'orders_blocked', count: q.orders_blocked, oldestAt: null, tone: 'info', href: '/admin/commandes?onglet=blocked' },
+    { kind: 'orders_blocked', count: q.orders_blocked, oldestAt: null, tone: 'info', href: '/admin/commandes?onglet=blocked&periode=all' },
     { kind: 'deletions', count: q.deletion_requests_pending, oldestAt: q.deletion_requests_oldest_at, tone: 'info', href: '/admin/demandes' },
     { kind: 'exports', count: q.data_exports_pending, oldestAt: null, tone: 'info', href: '/admin/demandes?onglet=export' },
     { kind: 'contacts', count: q.contact_messages_new, oldestAt: q.contact_messages_oldest_at, tone: 'muted', href: '/admin/demandes?onglet=contact' },

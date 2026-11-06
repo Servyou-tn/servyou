@@ -117,6 +117,10 @@ describe('admin dashboard logic', () => {
     ])
   })
 
+  it('the blocked line opens the blocked tab over all time, as it is counted', () => {
+    expect(queueItems(queue).find((i) => i.kind === 'orders_blocked')?.href).toBe('/admin/commandes?onglet=blocked&periode=all')
+  })
+
   it('sidebar pills: Demandes = deletions + exports + new messages', () => {
     expect(sidebarCounts(queue)).toEqual({ reports: 3, disputes: 0, orders: 6, requests: 4 })
   })

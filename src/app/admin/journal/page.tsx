@@ -1,3 +1,4 @@
+import { redirect } from 'next/navigation'
 import { getLang } from '@/lib/i18n/server'
 import { t, type Lang } from '@/lib/i18n'
 import { createClient } from '@/lib/supabase/server'
@@ -87,6 +88,9 @@ export default async function JournalPage({ searchParams }: { searchParams: Prom
     const qs = next.toString()
     return qs ? `${ROUTE}?${qs}` : ROUTE
   }
+  // A page past the end (only knowable when the RPC returns no row) goes back to page 1 of the same filters.
+  if (!error && !grouped && fetched.length === 0 && pageParam > 1) redirect(hrefFor({}))
+
   const selects: LogSelect[] = [
     {
       value: group,

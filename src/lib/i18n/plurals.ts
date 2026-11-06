@@ -63,6 +63,8 @@ const frPlurals: Record<string, PluralVariants> = {
   'admin.stats.drop_pending': { one: "Plus grosse perte : {count} commande restée « En attente » (le vendeur n'a pas répondu).", other: "Plus grosse perte : {count} commandes restées « En attente » (le vendeur n'a pas répondu)." },
   'admin.stats.drop_step': { one: "Plus grosse perte : {count} commande entre « {from} » et « {to} ».", other: "Plus grosse perte : {count} commandes entre « {from} » et « {to} »." },
   'admin.orders.blocked_title': { one: "{count} commande bloquée", other: "{count} commandes bloquées" },
+  'admin.nav.blocked_count': { one: "{count} commande bloquée", other: "{count} commandes bloquées" },
+  'admin.nav.to_handle_count': { one: "{count} demande à traiter", other: "{count} demandes à traiter" },
   // Admin J2 / J3 — PR-2 block. French zero is forced to `other`.
   'admin.users.orders_count':              { one: '{count} commande', other: '{count} commandes' },
   'admin.users.summary_accounts':          { one: '{count} compte', other: '{count} comptes' },
@@ -177,6 +179,8 @@ const arPlurals: Record<string, PluralVariants> = {
   'admin.stats.drop_pending': { one: "أكبر خسارة: طلبية واحدة بقيت « قيد الانتظار » (لم يردّ البائع).", two: "أكبر خسارة: طلبيتان بقيتا « قيد الانتظار » (لم يردّ البائع).", other: "أكبر خسارة: {count} طلبيات بقيت « قيد الانتظار » (لم يردّ البائع)." },
   'admin.stats.drop_step': { one: "أكبر خسارة: طلبية واحدة بين « {from} » و« {to} ».", two: "أكبر خسارة: طلبيتان بين « {from} » و« {to} ».", other: "أكبر خسارة: {count} طلبيات بين « {from} » و« {to} »." },
   'admin.orders.blocked_title': { one: "طلبية واحدة عالقة", two: "طلبيتان عالقتان", other: "{count} طلبيات عالقة" },
+  'admin.nav.blocked_count': { one: "طلبية واحدة عالقة", two: "طلبيتان عالقتان", other: "{count} طلبيات عالقة" },
+  'admin.nav.to_handle_count': { one: "طلب واحد للمعالجة", two: "طلبان للمعالجة", other: "{count} طلبات للمعالجة" },
   // REVIEW_AR_TRANSLATION — admin J2 / J3 — PR-2 block. Non-human plurals: feminine-singular agreement.
   'admin.users.orders_count':              { one: 'طلبية واحدة', two: 'طلبيتان', other: '{count} طلبيات' },
   'admin.users.summary_accounts':          { one: 'حساب واحد', two: 'حسابان', other: '{count} حسابات' },

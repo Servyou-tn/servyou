@@ -129,8 +129,8 @@ export function StatsView({
                       {categories.map((c) => (
                         <tr key={c.id} className="border-b border-border-subtle last:border-b-0">
                           <td className={`${td} font-medium text-text-primary`}><bdi>{c.name}</bdi></td>
-                          <td className={`${td} text-end text-text-secondary`} dir="ltr">{c.listings}</td>
-                          <td className={`${td} text-end text-text-secondary`} dir="ltr">{c.demand}</td>
+                          <td className={`${td} text-end text-text-secondary`}><bdi dir="ltr">{c.listings}</bdi></td>
+                          <td className={`${td} text-end text-text-secondary`}><bdi dir="ltr">{c.demand}</bdi></td>
                           <td className={td}><StatusPill status={BALANCE_PILL[c.balance].pill}>{t(BALANCE_PILL[c.balance].key, lang)}</StatusPill></td>
                         </tr>
                       ))}
@@ -158,9 +158,9 @@ export function StatsView({
                       {cities.map((c) => (
                         <tr key={c.city} className="border-b border-border-subtle last:border-b-0">
                           <td className={`${td} font-medium text-text-primary`}><bdi>{c.city}</bdi></td>
-                          <td className={`${td} text-end text-text-secondary`} dir="ltr">{c.sellers}</td>
-                          <td className={`${td} text-end text-text-secondary`} dir="ltr">{c.buyers}</td>
-                          <td className={`${td} text-end text-text-secondary`} dir="ltr">{c.orders}</td>
+                          <td className={`${td} text-end text-text-secondary`}><bdi dir="ltr">{c.sellers}</bdi></td>
+                          <td className={`${td} text-end text-text-secondary`}><bdi dir="ltr">{c.buyers}</bdi></td>
+                          <td className={`${td} text-end text-text-secondary`}><bdi dir="ltr">{c.orders}</bdi></td>
                         </tr>
                       ))}
                     </tbody>

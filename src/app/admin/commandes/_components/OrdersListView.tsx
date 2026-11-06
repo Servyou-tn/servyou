@@ -108,7 +108,18 @@ function Who({ p }: { p: { name: string; initials: string; line: string | null }
 }
 
 // text-body-sm joins by template string, never cn(): twMerge would evict it next to a text colour.
-const sinceClass = (blocked: boolean) => `${blocked ? 'font-semibold text-danger-700' : 'text-text-secondary'} text-body-sm`
+const sinceClass = (blocked: boolean) => `${blocked ? 'inline-flex items-center gap-1 font-semibold text-danger-700' : 'text-text-secondary'} text-body-sm`
+
+/** « Depuis », with a non-colour cue for a blocked order (icon + sr-only « bloquée », WCAG 1.4.1). */
+function Since({ lang, r }: { lang: Lang; r: OrderRowVM }) {
+  return (
+    <span className={sinceClass(r.blocked)}>
+      {r.blocked ? <TriangleAlert className="size-3.5 shrink-0" aria-hidden="true" /> : null}
+      <bdi dir={figureDir(r.since)}>{r.since}</bdi>
+      {r.blocked ? <span className="sr-only">{t('admin.orders.blocked_sr', lang)}</span> : null}
+    </span>
+  )
+}
 
 function OrdersTable({ lang, rows }: { lang: Lang; rows: OrderRowVM[] }) {
   const th = 'px-2 py-2.5 text-caption font-medium uppercase text-text-muted first:ps-5 last:pe-5'
@@ -141,7 +152,7 @@ function OrdersTable({ lang, rows }: { lang: Lang; rows: OrderRowVM[] }) {
               <td className={`${td} text-text-secondary`}>{r.typeLabel}</td>
               <td className={`${td} text-end text-text-secondary`}><bdi dir="ltr">{r.amount}</bdi></td>
               <td className={td}><OrderStatusPill status={r.status} type={r.type} lang={lang} /></td>
-              <td className={`${td} text-end`}><span className={sinceClass(r.blocked)}><bdi dir={figureDir(r.since)}>{r.since}</bdi></span></td>
+              <td className={`${td} text-end`}><Since lang={lang} r={r} /></td>
             </tr>
           ))}
         </tbody>
@@ -165,7 +176,7 @@ function OrderCard({ lang, r }: { lang: Lang; r: OrderRowVM }) {
         <Who p={r.seller} />
       </div>
       <p className="text-caption font-medium text-text-muted">
-        {t('admin.home.col_since', lang)} : <span className={sinceClass(r.blocked)}><bdi dir={figureDir(r.since)}>{r.since}</bdi></span>
+        {t('admin.orders.since_label', lang)} <Since lang={lang} r={r} />
       </p>
     </article>
   )
