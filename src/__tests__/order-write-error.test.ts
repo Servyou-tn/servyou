@@ -19,6 +19,14 @@ describe('advanceErrorKey', () => {
     expect(advanceErrorKey({ code: 'P0001', message })).toBe('seller.dashboard.error_no_transition')
   })
 
+  it('a seller with no phone cannot accept (G2, 23514 seller_phone_required) → « Ajoutez votre numéro… »', () => {
+    expect(advanceErrorKey({ code: '23514', hint: 'seller_phone_required', message: 'Ajoutez votre numéro de téléphone…' })).toBe(
+      'seller.dashboard.error_phone_required',
+    )
+    // the hint alone on another code is not the phone rule
+    expect(advanceErrorKey({ code: 'P0001', hint: 'seller_phone_required' })).toBe('common.error_generic')
+  })
+
   it.each([
     ['a non-party', { code: 'P0001', message: "Vous n'êtes pas autorisé à modifier cette commande." }],
     ['a suspended account', { code: '42501', message: 'Ce compte est suspendu.' }],

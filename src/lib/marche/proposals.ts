@@ -1,6 +1,7 @@
 import { MAX_ACTIVE_RESPONSES_PER_FREELANCER } from '@/lib/job-constants'
 import { resolveAnnonceStatus, type AnnonceDisplayStatus } from '@/lib/marche/annonce-status'
 import { TUNIS_TZ } from '@/lib/datetime'
+import type { ProposalOutcome } from '@/lib/marche/journey-gates'
 
 // H11 « Mes propositions » — pure types, state/tab/stat rules, search and paging. NO Supabase import on purpose (same split as
 // engagements.ts / engagements-query.ts): unit-testable, and a client component can import the types for free.
@@ -35,6 +36,8 @@ export type Proposal = {
   createdAt: string
   /** Server-clock result (never re-derived in a client render — hydration). */
   state: ProposalState
+  /** G1: what became of THIS proposal (chosen / not chosen / pending / expired) — the row's pill. journey-gates.ts. */
+  outcome: ProposalOutcome
   price: number | null
   timeframe: string | null
   /** null when the post is `unavailable`. */

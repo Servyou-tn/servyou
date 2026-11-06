@@ -31,6 +31,7 @@ const base: AnnonceResponse = {
   proposedTimeframe: null,
   links: [],
   skills: [],
+  status: 'pending',
 }
 
 function view(over: Partial<AnnonceResponse> = {}, lang: 'fr' | 'ar' = 'fr') {

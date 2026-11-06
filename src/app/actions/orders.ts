@@ -43,7 +43,7 @@ const AdvanceOrderInput = z.object({
   revalidate: z.enum(SELLER_PATHS).optional(),
 })
 
-export type ActionResult = { ok: true } | { ok: false; error: string }
+export type ActionResult = { ok: true } | { ok: false; error: string; needsPhone?: boolean }
 
 /**
  * Advance one order by exactly one hop along the seller-owned chain.
@@ -95,7 +95,12 @@ export async function advanceOrderAction(input: unknown): Promise<ActionResult> 
     // A stale transition (advanced in another tab, cancelled by the buyer) answers « n'attend plus d'action »;
     // anything else the generic error. Never the raw trigger text (audit pass 2).
     console.error('[advanceOrder] update error:', updateError.message, updateError.code)
-    return { ok: false, error: t(advanceErrorKey(updateError), lang) }
+    const key = advanceErrorKey(updateError)
+    // G2: the button renders this one with a link to /mon-compte (PhoneRequiredError); `error` stays the plain sentence.
+    if (key === 'seller.dashboard.error_phone_required') {
+      return { ok: false, error: t(key, lang, { link: t('seller.dashboard.error_phone_link', lang) }), needsPhone: true }
+    }
+    return { ok: false, error: t(key, lang) }
   }
 
   revalidatePath(parsed.data.revalidate ?? '/tableau-de-bord-vendeur')

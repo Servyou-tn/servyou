@@ -318,7 +318,8 @@ beforeAll(async () => {
 
   await serviceUpdate('profiles', { is_admin: true }, adminId)
   await serviceUpdate('profiles', { is_admin: true }, admin2Id)
-  for (const id of [sellerId, seller2Id]) await serviceUpdate('profiles', { seller_type: 'shop_owner' }, id)
+  // Accepting needs a seller phone (migration 20261106153901, G2).
+  for (const id of [sellerId, seller2Id]) await serviceUpdate('profiles', { seller_type: 'shop_owner', phone: '+21620000000' }, id)
   await serviceUpdate('profiles', { seller_type: 'freelancer' }, freelancerId)
 
   shopId = await serviceInsert('shops', { owner_id: sellerId, name: `${TITLE} ${RUN} — S` })

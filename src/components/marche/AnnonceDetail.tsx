@@ -25,7 +25,10 @@ import {
   closeMissionAction,
   reopenMissionAction,
   deleteMissionAction,
+  chooseProposalAction,
 } from '@/app/mes-annonces/[id]/actions'
+import { canChooseProposal } from '@/lib/marche/journey-gates'
+import type { AnnonceResponse } from '@/lib/marche/annonce-detail'
 
 /** F4 draws the first three proposals, then « + N autres propositions ». */
 const PROPOSALS_SHOWN = 3
@@ -49,6 +52,8 @@ export function AnnonceDetail({ annonce }: { annonce: AnnonceDetailData }) {
   const [deleteOpen, setDeleteOpen] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [showAll, setShowAll] = useState(false)
+  const [chooseTarget, setChooseTarget] = useState<AnnonceResponse | null>(null)
+  const [choosing, setChoosing] = useState(false)
 
   // Resolved server-side (lib/marche/annonce-status.ts, shared with the list row) and passed down
   // as `displayStatus` — NOT recomputed here. A resolver reading `Date.now()` inside this
@@ -60,7 +65,10 @@ export function AnnonceDetail({ annonce }: { annonce: AnnonceDetailData }) {
   // Action gating: an expired-but-open post offers no « pourvue » (it would be a no-op); a filled post can be reopened only while
   // still inside the 30-day window.
   const canManageOpen = display === 'open'
-  const canReopen = annonce.status === 'filled' && !annonce.isExpired
+  // G1: a post decided by choosing a freelancer stays decided — the database refuses filled → open then (job_response_chosen).
+  const anyChosen = annonce.responses.some((r) => r.status === 'chosen')
+  const canReopen = annonce.status === 'filled' && !annonce.isExpired && !anyChosen
+  const canChoose = canChooseProposal(display, anyChosen, annonce.adminHiddenAt != null)
   // « Modifier » (PR-3): a link while the post can still be edited; once a proposal has arrived the DB freezes the content, so the button stays
   // visible but disabled with the reason in plain text; a closed / expired / moderated post simply has no Modifier.
   const editBlock = annonceEditBlock({ displayStatus: display, responseCount: annonce.responseCount, adminHiddenAt: annonce.adminHiddenAt })
@@ -92,6 +100,23 @@ export function AnnonceDetail({ annonce }: { annonce: AnnonceDetailData }) {
     router.refresh()
   }
 
+  async function doChoose() {
+    if (!chooseTarget) return
+    setChoosing(true)
+    try {
+      const res = await chooseProposalAction({ responseId: chooseTarget.id })
+      if (res.ok) toast.success(t('annonces.choose.success', lang))
+      else toast.error(t(res.errorKey ?? 'common.error_generic', lang))
+    } catch {
+      // A thrown action (network, 5xx) must not leave the modal locked on « pending ».
+      toast.error(t('common.error_generic', lang))
+    } finally {
+      setChoosing(false)
+      setChooseTarget(null)
+      router.refresh()
+    }
+  }
+
   async function doDelete() {
     setDeleting(true)
     const res = await deleteMissionAction(annonce.id)
@@ -119,7 +144,9 @@ export function AnnonceDetail({ annonce }: { annonce: AnnonceDetailData }) {
 
   const count = annonce.responseCount
   const places = MAX_RESPONSES_PER_POST - count
-  const visibleResponses = showAll ? annonce.responses : annonce.responses.slice(0, PROPOSALS_SHOWN)
+  // The chosen proposal leads the list, so « + N autres » never folds it away.
+  const ordered = anyChosen ? [...annonce.responses].sort((a, b) => Number(b.status === 'chosen') - Number(a.status === 'chosen')) : annonce.responses
+  const visibleResponses = showAll ? ordered : ordered.slice(0, PROPOSALS_SHOWN)
   const hiddenCount = annonce.responses.length - PROPOSALS_SHOWN
 
   // « Expire dans N jours » only means something while the post is open.
@@ -210,6 +237,7 @@ export function AnnonceDetail({ annonce }: { annonce: AnnonceDetailData }) {
                     annonceTitle={annonce.title}
                     lang={lang}
                     now={annonce.fetchedAt}
+                    onChoose={canChoose ? () => setChooseTarget(resp) : undefined}
                   />
                 ))}
                 {hiddenCount > 0 && (
@@ -330,6 +358,21 @@ export function AnnonceDetail({ annonce }: { annonce: AnnonceDetailData }) {
           pending={closing}
           onCancel={() => setCloseOpen(false)}
           onConfirm={doClose}
+        />
+      )}
+
+      {/* G1 « Choisir ce freelance » — not reversible (the post then cannot reopen), so the body says what happens to the others. */}
+      {chooseTarget && (
+        <ConfirmModal
+          titleId="choose-proposal-title"
+          title={t('annonces.choose.modal_title', lang, { name: chooseTarget.fullName || t('annonces.detail.freelance_unnamed', lang) })}
+          body={t('annonces.choose.modal_body', lang)}
+          cancelLabel={t('common.cancel', lang)}
+          confirmLabel={t('annonces.choose.confirm', lang)}
+          confirmVariant="primary"
+          pending={choosing}
+          onCancel={() => setChooseTarget(null)}
+          onConfirm={doChoose}
         />
       )}
 

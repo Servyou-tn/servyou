@@ -81,7 +81,8 @@ async function signIn(local: string): Promise<Client> {
 }
 
 async function setSellerType(id: string, sellerType: 'freelancer' | 'shop_owner'): Promise<void> {
-  const { error } = await admin.from('profiles').update({ seller_type: sellerType }).eq('id', id)
+  // Accepting needs a seller phone (migration 20261106153901, G2).
+  const { error } = await admin.from('profiles').update({ seller_type: sellerType, phone: '+21620000000' }).eq('id', id)
   if (error) throw new Error(`seller_type seed failed: ${error.message}`)
 }
 

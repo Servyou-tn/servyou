@@ -1268,6 +1268,41 @@ both on 2026-10-28.
       equal spans.
     - The recorded statement is this whole file (md5 `3dc8abe9a66acf0b4e57a8cf3cb474ae`, no trailing newline).
     - Rollback: re-run #123's `admin_dashboard_stats` definition (it brings back the shorter-current comparison).
+125. **20261106153901_journey_gates** — founder decisions G1 / G2 / G10 of `docs/discovery/journeys-2026-11-07.md`
+    (discovery `docs/discovery/journey-gates.md`, D1–D7). Written by db-guardian; reviewed, tested rolled back
+    (ALL PASSED) and applied by the architect.
+    - **G1 — a proposal gets an outcome.**
+      - `job_responses.status`: pending (default) / chosen / not_chosen; at most one chosen per post (partial unique
+        index `job_responses_one_chosen_per_post`).
+      - `choose_job_response(p_response_id uuid) returns uuid`: SECURITY DEFINER, EXECUTE for authenticated only.
+        For the post owner on an open, visible post under 30 days old: the proposal becomes chosen, the others
+        not_chosen, the post filled, in one transaction. Refusals: 42501 `not_signed_in` / `suspended`; P0002
+        `not_found` (unknown proposal or someone else's post); 23514 `job_filled` / `job_deleted` / `job_expired` /
+        `job_unavailable` / `freelancer_unavailable`.
+      - `enforce_job_response_status`: a client insert is always pending, and no client changes a status (42501
+        `invalid_status`).
+      - `sync_job_responses_on_post_status` (AFTER UPDATE OF status on `job_posts`, SECURITY DEFINER): a post closed,
+        expired or deleted turns its pending proposals not_chosen; a reopen is refused once one is chosen (23514
+        `job_response_chosen`), otherwise not_chosen goes back to pending.
+      - D1: the NOT VALID CHECK `job_responses_proposal_message_length` (3 of 4 live rows broke it, which would have
+        blocked every status write) is replaced by the trigger `enforce_job_response_message` on insert and message
+        edits. It raises the same text and constraint name.
+      - Backfill: 0 rows (all 4 proposals were on posts stored `open`).
+    - **G2:** `check_order_status_transition` refuses pending → accepted for a seller with no phone (23514
+      `seller_phone_required`). The rest of the body is unchanged.
+    - **G10:** « Open posts or own posts readable » also requires `created_at` within 30 days in its public branch.
+      The owner, responder and admin policies are unchanged.
+    - Checked after the apply: triggers present, the old CHECK gone, `choose_job_response` EXECUTE for authenticated
+      only (not anon), the sync function not executable by clients, G2 and G10 in the live bodies.
+    - Types regenerated (`job_responses.status`, `choose_job_response`). Live: `journey-gates-live.test.ts`; seller
+      fixtures of the suites that accept an order now have a phone.
+    - The recorded statement is this whole file: the PENDING file with comments removed and some lines joined, code
+      unchanged (md5 `75c9566d046760c85e6ce7e59468fd44`, no trailing newline).
+    - Rollback: the commented block at the end of the PENDING file, `git show 2356774:db/migrations/PENDING_journey_gates.sql`.
+      - Drop the RPC, both triggers and their functions, the index and the column.
+      - Re-add the NOT VALID CHECK.
+      - Re-run `check_order_status_transition` without the G2 block.
+      - Restore the policy expression.
 
 ## Rollback paths
 
