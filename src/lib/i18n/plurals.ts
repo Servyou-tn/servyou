@@ -44,6 +44,8 @@ function pickVariant(variants: PluralVariants, lang: Lang, count: number): strin
 // the string has an adjective or sits after a preposition.
 
 const frPlurals: Record<string, PluralVariants> = {
+  // Admin J4 — PR-3 block.
+  'admin.content.reports_count':           { one: '{count} signalement', other: '{count} signalements' },
   // Admin J5 / J6 (Figma NOV 4 — Admin). French zero is forced to `other` (« 0 rejetés »).
   'admin.nav.pending_count':               { one: '{count} en attente', other: '{count} en attente' },
   'admin.reports.sent_count':              { one: '{count} signalement envoyé', other: '{count} signalements envoyés' },
@@ -118,6 +120,8 @@ const frPlurals: Record<string, PluralVariants> = {
 }
 
 const arPlurals: Record<string, PluralVariants> = {
+  // REVIEW_AR_TRANSLATION — admin J4 — PR-3 block.
+  'admin.content.reports_count':           { one: 'بلاغ واحد', two: 'بلاغان', other: '{count} بلاغات' },
   // REVIEW_AR_TRANSLATION — admin J5 / J6. Non-human plurals take feminine-singular agreement (بلاغات مرسلة).
   'admin.nav.pending_count':               { one: '{count} قيد الانتظار', two: '{count} قيد الانتظار', other: '{count} قيد الانتظار' },
   'admin.reports.sent_count':              { one: 'بلاغ واحد مُرسل', two: 'بلاغان مُرسلان', other: '{count} بلاغات مُرسلة' },
