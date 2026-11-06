@@ -16,6 +16,7 @@
 - **Trigger:** the DB record PR.
 
 ## « Voir » on a draft / paused product
+✅ CLOSED — `fix/withdraw-decided`, 2026-11-06. Already fine: the product list row has no « Voir ». Both « Voir le produit » links on `/mes-produits/[id]/modifier` (`EditProductForm`) render only while the product's live status is `active`. The one gap left is the same class as (a) below: a product in a shop an admin hid still shows the link, and `/produits/[id]` 404s on it (`shops.admin_hidden_at`). It belongs in the same plumbing change.
 - **What:** G9 fixed the service row only. The product rows (`mes-produits` `ProductRow`) were not checked for the same 404.
 - **Why deferred:** out of the brief's scope.
 - **Where it lives:** `src/app/mes-produits/_components/ProductRow.tsx`.

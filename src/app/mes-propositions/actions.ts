@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
 import { resolveAnnonceStatus } from '@/lib/marche/annonce-status'
+import { parseJobResponseStatus } from '@/lib/marche/journey-gates'
 
 // H11 « Retirer ma proposition » — the only legal write on a job_response (RLS "Freelancer deletes own response"; UPDATE is revoked),
 // D-H11-2. The DB decrements job_posts.response_count (trg_sync_job_post_response_count) and frees one of the 5 active slots; the
@@ -13,13 +14,17 @@ import { resolveAnnonceStatus } from '@/lib/marche/annonce-status'
 // while the post is open »: open, unmoderated, within 30 days — a closed post's DELETE matches 0 rows). The state is still
 // re-derived here from the persisted post, never from the client's view of the row, so the user gets `not_open`, not `not_found`.
 //
+// Since the journey gates (migrations 20261106153901 + 20261106170449_choose_race), a proposal the owner has decided (chosen or not
+// chosen) can no longer be withdrawn: the DB refuses the DELETE with 42501 hint `response_decided`. The status is checked here first
+// (so the freelancer reads why, not a generic error), and the DB refusal is mapped too, for a decision made in between.
+//
 // Never logs the raw error object: message / code / details only.
 
 const Input = z.object({ responseId: z.string().uuid() })
 
 export type WithdrawProposalResult =
   | { ok: true }
-  | { ok: false; reason: 'not_found' | 'not_open' | 'technical' }
+  | { ok: false; reason: 'not_found' | 'not_open' | 'decided' | 'technical' }
 
 export async function withdrawProposalAction(input: unknown): Promise<WithdrawProposalResult> {
   const parsed = Input.safeParse(input)
@@ -36,7 +41,7 @@ export async function withdrawProposalAction(input: unknown): Promise<WithdrawPr
   // simply « not found » (RLS would hide it anyway).
   const { data: row, error: readError } = await supabase
     .from('job_responses')
-    .select('id, job_post_id, job_posts ( status, created_at )')
+    .select('id, job_post_id, status, job_posts ( status, created_at )')
     .eq('id', responseId)
     .eq('freelancer_id', user.id)
     .maybeSingle()
@@ -45,6 +50,8 @@ export async function withdrawProposalAction(input: unknown): Promise<WithdrawPr
     return { ok: false, reason: 'technical' }
   }
   if (!row) return { ok: false, reason: 'not_found' }
+  // ⚑ `status` is typed locally (journey-gates.ts) until the regenerated database types land.
+  if (parseJobResponseStatus((row as { status?: unknown }).status) !== 'pending') return { ok: false, reason: 'decided' }
 
   const embed = row.job_posts as unknown as { status: string; created_at: string } | { status: string; created_at: string }[] | null
   const post = Array.isArray(embed) ? (embed[0] ?? null) : embed
@@ -61,6 +68,10 @@ export async function withdrawProposalAction(input: unknown): Promise<WithdrawPr
     .eq('freelancer_id', user.id)
     .select('id')
   if (deleteError) {
+    if (deleteError.code === '42501' && deleteError.hint === 'response_decided') {
+      console.warn('[withdrawProposal] refused:', deleteError.code, deleteError.hint)
+      return { ok: false, reason: 'decided' }
+    }
     console.error('[withdrawProposal] delete failed:', deleteError.message, deleteError.code, deleteError.details)
     return { ok: false, reason: 'technical' }
   }
