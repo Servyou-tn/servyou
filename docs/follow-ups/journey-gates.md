@@ -60,6 +60,8 @@ change.
 
 ## 6. LOW — a withdraw racing a choose can leave a filled post with no chosen proposal (review, 2026-11-06)
 
+✅ CLOSED — migration `20261106170449_choose_race` (architect, 2026-11-06; README #126), PR #341. Two parts: `choose_job_response` locks the proposal and requires exactly one chosen; a client can withdraw only a pending proposal (`enforce_job_response_withdraw`, 42501 `response_decided`).
+
 **What:** `choose_job_response` locks the post, then reads the freelancer's proposal without locking it. If the
 freelancer withdraws in the milliseconds between that read and the UPDATE, the UPDATE matches no row to make `chosen`,
 yet the post still becomes `filled` and the RPC returns success.
@@ -78,6 +80,8 @@ cancels. The founder accepted this as test data (wiped before launch; new freela
 
 ## 8. Stale live control in `job-responses-integrity.test.ts` (found by the regression run, 2026-11-06)
 
+✅ CLOSED — PR #341. The control now expects the poster's phone to stay hidden. `suspension-enforcement` « catalog » classifies `contact_messages` and `password_change_attempts` (admin-requests-backend.md #5). Both suites are green live.
+
 **What:** « control: a freelancer responds, and get_contact_phone(poster) then returns the phone » (line 314) expects
 the freelancer to see the poster's phone after proposing. The phone-reveal rule (migration 20261101181237) says
 « freelancer → client: never through a mission », and the founder reaffirmed it (D7). The live run returns `null`, as
@@ -88,3 +92,25 @@ owner → freelancer direction.
 **Why deferred:** one PR, one focus; it is a pre-existing test, not part of the journey gates.
 **Also red, and already logged:** `suspension-enforcement` « catalog » (`contact_messages`,
 `password_change_attempts` unclassified; `docs/follow-ups/admin-requests-backend.md` #5).
+
+## 9. « Retirer ma proposition » shows the generic error on `response_decided` (review of #341, 2026-11-06)
+
+**What:** since migration `20261106170449`, deleting a proposal that is no longer `pending` raises 42501
+`hint = 'response_decided'`. The UI only offers « Retirer » on an open post, so this is reached only when the choice
+lands while the withdraw is in flight. `withdrawProposalAction` (`src/app/mes-propositions/actions.ts`) maps any
+`deleteError` to `technical`.
+**Fix:** map the hint to `not_open` (or a new key: « Cette proposition a déjà reçu une réponse »), and revalidate so the
+row shows its outcome. Add a unit case.
+**Why deferred:** B's file.
+**Trigger:** next B packet on `/mes-propositions`.
+
+## 10. LOW — a rare deadlock between a withdraw and a choose: retry once on 40P01
+
+**What:** a withdraw holds the proposal row, then its AFTER DELETE trigger (`sync_job_post_response_count`) updates the
+post. A choose holds the post, then locks the proposal. When both happen in the same instant, PostgreSQL aborts one with
+40P01 after `deadlock_timeout` (1 s). Nothing is left half-done: the aborted call changed nothing. The pre-#341 body had
+the same lock order.
+**Fix:** in the two server actions (choose, withdraw), retry once on `error.code === '40P01'`; otherwise show the generic
+error.
+**Why deferred:** a millisecond window, consistent state, B's files.
+**Trigger:** any 40P01 in the logs, or with #9.

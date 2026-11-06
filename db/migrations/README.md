@@ -1303,6 +1303,28 @@ both on 2026-10-28.
       - Re-add the NOT VALID CHECK.
       - Re-run `check_order_status_transition` without the G2 block.
       - Restore the policy expression.
+126. **20261106170449_choose_race** — follow-up #6 of `docs/follow-ups/journey-gates.md` (review of #339). Written by
+    db-guardian; tested rolled back (ALL PASSED) and applied by the architect.
+    - **The race:** a withdraw racing `choose_job_response` could leave a filled post with nobody chosen, two ways.
+      - The withdraw commits between the RPC's read and its UPDATE.
+      - Or it waits on the row and runs after the choice commits: the DELETE policy's « post is open » subquery keeps
+        its old snapshot.
+    - **The fix:**
+      - `choose_job_response` locks the proposal (`FOR UPDATE`, after the post).
+      - After its UPDATE it requires exactly one `chosen` proposal on the post, and that it is this one; else P0002
+        `not_found` (rolled back). The signature and the ACL are unchanged, so the types are unchanged.
+      - New guard `enforce_job_response_withdraw` (BEFORE DELETE on `job_responses`): a client (`current_user` anon /
+        authenticated) withdraws only a `pending` proposal, else 42501 `response_decided`. Definer code, cascades and
+        the service role pass. On an open post every proposal is pending, so a real withdraw is never blocked.
+    - Checked after the apply: the trigger is present; the guard function is not executable by clients;
+      `choose_job_response` is EXECUTE for authenticated only, with the lock and the count check in the live body.
+    - Live: `journey-gates-live.test.ts` (the choose path) and `job-responses-integrity` (withdraws) re-run green.
+    - The recorded statement is this whole file (md5 `b83e1743d473c1d7bc3a5589412a647b`, no trailing newline). Its code
+      is identical to the reviewed PENDING file.
+    - Rollback:
+      - `drop trigger trg_enforce_job_response_withdraw on public.job_responses;`
+      - `drop function public.enforce_job_response_withdraw();`
+      - re-run #125's `choose_job_response` body.
 
 ## Rollback paths
 
