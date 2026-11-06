@@ -144,7 +144,7 @@ export default async function JournalPage({ searchParams }: { searchParams: Prom
       selects={selects}
       rows={rows}
       failed={Boolean(error)}
-      emptyKey={audit.length === 0 && !q ? 'admin.log.empty' : 'admin.log.empty_filtered'}
+      emptyKey={q || group !== 'all' || target !== 'all' ? 'admin.log.empty_filtered' : 'admin.log.empty'}
       pagination={{ page, totalPages, totalItems: filtered.length, perPage: PER_PAGE }}
     />
   )

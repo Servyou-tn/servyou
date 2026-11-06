@@ -39,7 +39,9 @@ export function sortRequests<T extends { status: string; at: string }>(rows: rea
 }
 
 /** A mailto: href with an encoded subject — never built from unvalidated input other than the e-mail itself. */
+// The address comes from the contact form (sender-controlled): anything that could open a header field
+// (?bcc=, &body=, #, %-escapes, , ; lists) is refused, so the link can only ever carry our own subject.
 export function mailtoHref(email: string, subject: string): string | null {
-  if (!/^[^\s@<>"]+@[^\s@<>"]+\.[^\s@<>"]+$/.test(email)) return null
+  if (!/^[^\s@<>"?&=#%,;]+@[^\s@<>"?&=#%,;]+\.[^\s@<>"?&=#%,;]+$/.test(email)) return null
   return `mailto:${email}?subject=${encodeURIComponent(subject)}`
 }

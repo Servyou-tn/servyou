@@ -32,5 +32,9 @@ describe('demandes view logic', () => {
   it('mailto only for a plausible address, subject encoded', () => {
     expect(mailtoHref('leila.m@example.tn', 'Votre demande ServYou')).toBe('mailto:leila.m@example.tn?subject=Votre%20demande%20ServYou')
     expect(mailtoHref('x" onclick="y', 'z')).toBeNull()
+    // header injection from a sender-controlled address
+    expect(mailtoHref('x@y.tn?bcc=a@evil.tn&body=hi', 'z')).toBeNull()
+    expect(mailtoHref('a@b.tn,c@d.tn', 'z')).toBeNull()
+    expect(mailtoHref('a%40b@c.tn', 'z')).toBeNull()
   })
 })

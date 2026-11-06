@@ -6,6 +6,7 @@ import { reportQueryError } from '@/lib/supabase/query-error'
 import { formatTunisDate, formatTunisDateTime, formatTunisTime } from '@/lib/datetime'
 import { getInitials } from '@/components/ui/initials'
 import { ERASURE_AUDIT_ACTION } from '@/lib/admin/requests'
+import { CONTACT_SUBJECTS } from '@/lib/contact/contact-validation'
 import { REQUEST_TABS, hoursLeft, mailtoHref, needsErasureFinish, parseRequestTab, sortRequests, type RequestTab } from './_lib/view'
 import { DemandesView, type RequestCard, type RequestTabView } from './_components/DemandesView'
 import { ContactActions, DeletionActions, ExportActions, RefuseDeletion } from './_components/RequestActions'
@@ -21,7 +22,8 @@ const ROLE_KEY: Record<string, string> = { freelancer: 'shell.topbar.role.freela
 
 type Deletion = { id: string; user_id: string; full_name: string | null; email: string | null; seller_type: string | null; reason: string | null; status: string; requested_at: string; processed_at: string | null; processed_by_name: string | null; open_orders: number }
 type Export = { id: string; user_id: string; full_name: string | null; email: string | null; status: string; requested_at: string; processed_at: string | null; processed_by_name: string | null }
-type Contact = { id: string; user_id: string | null; name: string; email: string; subject: string; message: string; status: string; created_at: string }
+// subject is null or one of CONTACT_SUBJECTS (an i18n key) — submitContactMessage stores nothing else.
+type Contact = { id: string; user_id: string | null; name: string; email: string; subject: string | null; message: string; status: string; created_at: string }
 
 function stamp(iso: string, lang: Lang): string {
   return `${formatTunisDate(iso, lang, 'medium')} ${formatTunisTime(iso, lang)}`
@@ -84,7 +86,8 @@ export default async function RequestsPage({ searchParams }: { searchParams: Pro
       if (cities.error) reportQueryError('admin/demandes cities', cities.error)
       const cityOf = new Map((cities.data ?? []).map((c) => [c.id, c.city]))
       return {
-        failed: Boolean(delRes.error),
+        // A failed audit read hides the unfinished erasures: that is an error state, never « Aucune demande ».
+        failed: Boolean(delRes.error) || erasureFailed,
         cards: rows.map((d, i) => {
           const role = t(ROLE_KEY[d.seller_type ?? ''] ?? 'shell.topbar.role.consumer', lang)
           const city = cityOf.get(d.user_id) ?? null
@@ -92,7 +95,8 @@ export default async function RequestsPage({ searchParams }: { searchParams: Pro
           const h = hoursLeft(d.requested_at, now)
           const s = stats[i]
           const subject = d.full_name ?? d.email ?? '—'
-          const mailto = d.email ? mailtoHref(d.email, t('admin.requests.mail_subject_deletion', lang)) : null
+          // An approved request's e-mail is already the tombstone address: no « Contacter » there.
+          const mailto = d.email && !finish ? mailtoHref(d.email, t('admin.requests.mail_subject_deletion', lang)) : null
           return {
             id: d.id,
             name: d.full_name ?? '—',
@@ -151,7 +155,8 @@ export default async function RequestsPage({ searchParams }: { searchParams: Pro
       return {
         failed: Boolean(msgRes.error),
         cards: rows.map((m) => {
-          const mailto = mailtoHref(m.email, `Re: ${m.subject}`)
+          const subjectLabel = m.subject && (CONTACT_SUBJECTS as readonly string[]).includes(m.subject) ? t(m.subject, lang) : t('admin.requests.contact_no_subject', lang)
+          const mailto = mailtoHref(m.email, `Re: ${subjectLabel}`)
           return {
             id: m.id, name: m.name, initials: getInitials(m.name),
             line: `${m.email} · ${t(m.user_id ? 'admin.requests.has_account' : 'admin.requests.no_account', lang)}`,
@@ -159,17 +164,18 @@ export default async function RequestsPage({ searchParams }: { searchParams: Pro
             deadline: null,
             pill: { status: 'pending', label: t('admin.requests.contact_new', lang) },
             when: formatTunisDateTime(m.created_at, lang),
-            headline: null, title: m.subject, quote: null, body: m.message, stats: [], statsMobile: null, warning: null,
+            headline: null, title: subjectLabel, quote: null, body: m.message, stats: [], statsMobile: null, warning: null,
             mailto: mailto ? { href: mailto, labelKey: 'admin.requests.action_reply', primary: true } : null,
             actionsBefore: null,
-            actionsAfter: <ContactActions messageId={m.id} subject={m.subject} />,
+            actionsAfter: <ContactActions messageId={m.id} subject={subjectLabel} />,
           }
         }),
       }
     }
     // Traitées — every processed request of the three kinds, newest first.
     const processed = [
-      ...deletions.filter((d) => d.status !== 'pending').map((d) => ({ id: d.id, kind: 'deletion' as const, name: d.full_name ?? d.email ?? '—', status: d.status, at: d.processed_at ?? d.requested_at, by: d.processed_by_name })),
+      // An approved request whose erasure did not finish is not « Supprimé » (it also sits on the deletion tab).
+      ...deletions.filter((d) => d.status !== 'pending').map((d) => ({ id: d.id, kind: 'deletion' as const, name: d.full_name ?? d.email ?? '—', status: d.status === 'approved' && (erasureFailed || needsErasureFinish(d, erased)) ? 'incomplete' : d.status, at: d.processed_at ?? d.requested_at, by: d.processed_by_name })),
       ...exports.filter((x) => x.status !== 'pending').map((x) => ({ id: x.id, kind: 'export' as const, name: x.full_name ?? x.email ?? '—', status: x.status, at: x.processed_at ?? x.requested_at, by: x.processed_by_name })),
       ...messages.filter((m) => m.status !== 'new').map((m) => ({ id: m.id, kind: 'contact' as const, name: m.name, status: m.status, at: m.created_at, by: null as string | null })),
     ].sort((a, b) => new Date(b.at).getTime() - new Date(a.at).getTime())
@@ -180,7 +186,7 @@ export default async function RequestsPage({ searchParams }: { searchParams: Pro
         line: [t(`admin.requests.kind_${p.kind}`, lang), p.by ? t('admin.requests.processed_by', lang, { name: p.by }) : null].filter(Boolean).join(' · '),
         lineMobile: t(`admin.requests.kind_${p.kind}`, lang),
         deadline: null,
-        pill: { status: p.status === 'rejected' ? 'paused' : 'reçue', label: t(`admin.requests.state_${p.status}`, lang) },
+        pill: { status: p.status === 'rejected' ? 'paused' : p.status === 'incomplete' ? 'annulée' : 'reçue', label: t(p.status === 'incomplete' ? 'admin.requests.erasure_incomplete_pill' : `admin.requests.state_${p.status}`, lang) },
         when: formatTunisDate(p.at, lang, 'medium'),
         headline: null, title: null, quote: null, body: null, stats: [], statsMobile: null, warning: null, mailto: null,
         actionsBefore: null, actionsAfter: null,
