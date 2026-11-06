@@ -61,8 +61,8 @@ const TOP_SECTIONS: NavSection[] = [
     labelKey: 'admin.nav.section.operations',
     items: [
       { key: 'admin.nav.orders', href: '/admin/commandes', icon: Package, disabled: true },
-      { key: 'admin.nav.requests', href: '/admin/demandes', icon: Inbox, disabled: true },
-      { key: 'admin.nav.journal', href: '/admin/journal', icon: FileText, disabled: true },
+      { key: 'admin.nav.requests', href: '/admin/demandes', icon: Inbox },
+      { key: 'admin.nav.journal', href: '/admin/journal', icon: FileText },
     ],
   },
 ]
