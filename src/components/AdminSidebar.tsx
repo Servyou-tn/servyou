@@ -34,7 +34,7 @@ import { SidebarSection } from '@/components/shell/SidebarSection'
 // treatment). Counts come from the layout; a count with no source — or a failed read — is `undefined`
 // and renders no pill, never a fake 0.
 
-export type AdminCounts = { reports?: number; disputes?: number }
+export type AdminCounts = { reports?: number; disputes?: number; orders?: number; requests?: number }
 
 type CountKey = keyof AdminCounts
 type NavItem = { key: string; href: string; icon: LucideIcon; disabled?: boolean; count?: CountKey }
@@ -60,8 +60,8 @@ const TOP_SECTIONS: NavSection[] = [
   {
     labelKey: 'admin.nav.section.operations',
     items: [
-      { key: 'admin.nav.orders', href: '/admin/commandes', icon: Package, disabled: true },
-      { key: 'admin.nav.requests', href: '/admin/demandes', icon: Inbox },
+      { key: 'admin.nav.orders', href: '/admin/commandes', icon: Package, count: 'orders' },
+      { key: 'admin.nav.requests', href: '/admin/demandes', icon: Inbox, count: 'requests' },
       { key: 'admin.nav.journal', href: '/admin/journal', icon: FileText },
     ],
   },

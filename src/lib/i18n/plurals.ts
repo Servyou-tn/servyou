@@ -44,6 +44,25 @@ function pickVariant(variants: PluralVariants, lang: Lang, count: number): strin
 // the string has an adjective or sits after a preposition.
 
 const frPlurals: Record<string, PluralVariants> = {
+  // Admin J1 / J8 / J9 — PR-5 block.
+  'admin.dash.ago_minutes': { one: "il y a {count} min", other: "il y a {count} min" },
+  'admin.dash.ago_hours': { one: "il y a {count} h", other: "il y a {count} h" },
+  'admin.dash.ago_days': { one: "il y a {count} jour", other: "il y a {count} jours" },
+  'admin.home.q_fake_scam': { one: "Signalement grave : arnaque", other: "{count} signalements graves : arnaque" },
+  'admin.home.q_reports': { one: "{count} signalement ouvert", other: "{count} signalements ouverts" },
+  'admin.home.q_disputes': { one: "{count} litige en attente", other: "{count} litiges en attente" },
+  'admin.home.q_orders_blocked': { one: "{count} commande bloquée", other: "{count} commandes bloquées" },
+  'admin.home.q_deletions': { one: "{count} demande de suppression de compte", other: "{count} demandes de suppression de compte" },
+  'admin.home.q_exports': { one: "{count} demande d'export de données", other: "{count} demandes d'export de données" },
+  'admin.home.q_contacts': { one: "{count} message de contact", other: "{count} messages de contact" },
+  'admin.home.q_deletions_left': { one: "À traiter sous 48 h · il reste {count} h", other: "À traiter sous 48 h · il reste {count} h" },
+  'admin.home.q_deletions_late': { one: "À traiter sous 48 h · en retard de {count} h", other: "À traiter sous 48 h · en retard de {count} h" },
+  'admin.home.kpi_cancel_sub': { one: "{part} sur {count} commande", other: "{part} sur {count} commandes" },
+  'admin.home.city_sellers': { one: "{count} vendeur", other: "{count} vendeurs" },
+  'admin.home.city_orders': { one: "{count} commande", other: "{count} commandes" },
+  'admin.stats.drop_pending': { one: "Plus grosse perte : {count} commande restée « En attente » (le vendeur n'a pas répondu).", other: "Plus grosse perte : {count} commandes restées « En attente » (le vendeur n'a pas répondu)." },
+  'admin.stats.drop_step': { one: "Plus grosse perte : {count} commande entre « {from} » et « {to} ».", other: "Plus grosse perte : {count} commandes entre « {from} » et « {to} »." },
+  'admin.orders.blocked_title': { one: "{count} commande bloquée", other: "{count} commandes bloquées" },
   // Admin J2 / J3 — PR-2 block. French zero is forced to `other`.
   'admin.users.orders_count':              { one: '{count} commande', other: '{count} commandes' },
   'admin.users.summary_accounts':          { one: '{count} compte', other: '{count} comptes' },
@@ -139,6 +158,25 @@ const frPlurals: Record<string, PluralVariants> = {
 }
 
 const arPlurals: Record<string, PluralVariants> = {
+  // REVIEW_AR_TRANSLATION — admin J1 / J8 / J9 — PR-5 block.
+  'admin.dash.ago_minutes': { one: "منذ دقيقة", two: "منذ دقيقتين", other: "منذ {count} دقيقة" },
+  'admin.dash.ago_hours': { one: "منذ ساعة", two: "منذ ساعتين", other: "منذ {count} ساعة" },
+  'admin.dash.ago_days': { one: "منذ يوم", two: "منذ يومين", other: "منذ {count} أيام" },
+  'admin.home.q_fake_scam': { one: "بلاغ خطير: احتيال", two: "بلاغان خطيران: احتيال", other: "{count} بلاغات خطيرة: احتيال" },
+  'admin.home.q_reports': { one: "بلاغ واحد مفتوح", two: "بلاغان مفتوحان", other: "{count} بلاغات مفتوحة" },
+  'admin.home.q_disputes': { one: "نزاع واحد قيد الانتظار", two: "نزاعان قيد الانتظار", other: "{count} نزاعات قيد الانتظار" },
+  'admin.home.q_orders_blocked': { one: "طلبية واحدة عالقة", two: "طلبيتان عالقتان", other: "{count} طلبيات عالقة" },
+  'admin.home.q_deletions': { one: "طلب حذف حساب واحد", two: "طلبا حذف حساب", other: "{count} طلبات حذف حساب" },
+  'admin.home.q_exports': { one: "طلب تصدير بيانات واحد", two: "طلبا تصدير بيانات", other: "{count} طلبات تصدير بيانات" },
+  'admin.home.q_contacts': { one: "رسالة تواصل واحدة", two: "رسالتا تواصل", other: "{count} رسائل تواصل" },
+  'admin.home.q_deletions_left': { one: "تُعالج خلال 48 ساعة · تبقى ساعة واحدة", two: "تُعالج خلال 48 ساعة · تبقى ساعتان", other: "تُعالج خلال 48 ساعة · تبقى {count} ساعة" },
+  'admin.home.q_deletions_late': { one: "تُعالج خلال 48 ساعة · متأخر بساعة واحدة", two: "تُعالج خلال 48 ساعة · متأخر بساعتين", other: "تُعالج خلال 48 ساعة · متأخر بـ {count} ساعة" },
+  'admin.home.kpi_cancel_sub': { one: "{part} من طلبية واحدة", two: "{part} من طلبيتين", other: "{part} من {count} طلبيات" },
+  'admin.home.city_sellers': { one: "بائع واحد", two: "بائعان", other: "{count} بائعين" },
+  'admin.home.city_orders': { one: "طلبية واحدة", two: "طلبيتان", other: "{count} طلبيات" },
+  'admin.stats.drop_pending': { one: "أكبر خسارة: طلبية واحدة بقيت « قيد الانتظار » (لم يردّ البائع).", two: "أكبر خسارة: طلبيتان بقيتا « قيد الانتظار » (لم يردّ البائع).", other: "أكبر خسارة: {count} طلبيات بقيت « قيد الانتظار » (لم يردّ البائع)." },
+  'admin.stats.drop_step': { one: "أكبر خسارة: طلبية واحدة بين « {from} » و« {to} ».", two: "أكبر خسارة: طلبيتان بين « {from} » و« {to} ».", other: "أكبر خسارة: {count} طلبيات بين « {from} » و« {to} »." },
+  'admin.orders.blocked_title': { one: "طلبية واحدة عالقة", two: "طلبيتان عالقتان", other: "{count} طلبيات عالقة" },
   // REVIEW_AR_TRANSLATION — admin J2 / J3 — PR-2 block. Non-human plurals: feminine-singular agreement.
   'admin.users.orders_count':              { one: 'طلبية واحدة', two: 'طلبيتان', other: '{count} طلبيات' },
   'admin.users.summary_accounts':          { one: 'حساب واحد', two: 'حسابان', other: '{count} حسابات' },
