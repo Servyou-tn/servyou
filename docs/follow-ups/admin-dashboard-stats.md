@@ -25,6 +25,10 @@ show a negative bias that shrinks through the day. The UI computes the % from th
 
 ## 1. The brief's plan doc was never found: D1–D6 and D10 are recommendations, not rulings
 
+✅ CLOSED — founder ruling, 2026-11-06: **D1–D12 accepted as recommended, except D11: no CSV export.** The live
+functions already implement every accepted option, so no migration follows. D11 needed no database object (it paged
+through the existing RPCs), so nothing is removed either: the admin pages simply ship without an export button.
+
 **What:** `claude/admin-dashboard-plan-2026-11-04.md` is not in either checkout, in git history or on disk. Every metric
 was defined from the Figma frames (J1 / J8 / J9 / J11) as a numbered decision, and the migration implements the
 recommended option. The open founder questions are D1 (delivery fee in the declared value), D2 (demand per category),
