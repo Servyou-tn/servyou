@@ -80,6 +80,8 @@ export const INTEGRATION_GLOBS = [
   '**/seller-phone-kept-live.test.ts',
   // Admin « Demandes » RPCs + deletion tombstone (migration 20261106074610): 2 sign-ins.
   '**/admin-requests-live.test.ts',
+  // Admin dashboard stats / orders / journal RPCs (migration 20261106093535): 3 sign-ins.
+  '**/admin-dashboard-stats-live.test.ts',
 ]
 
 // Tooling artifacts that must never be scanned for tests: the headless-Chrome VRT profiles (a
