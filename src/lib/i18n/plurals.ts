@@ -44,6 +44,11 @@ function pickVariant(variants: PluralVariants, lang: Lang, count: number): strin
 // the string has an adjective or sits after a preposition.
 
 const frPlurals: Record<string, PluralVariants> = {
+  // Admin J5 / J6 (Figma NOV 4 — Admin). French zero is forced to `other` (« 0 rejetés »).
+  'admin.nav.pending_count':               { one: '{count} en attente', other: '{count} en attente' },
+  'admin.reports.sent_count':              { one: '{count} signalement envoyé', other: '{count} signalements envoyés' },
+  'admin.reports.dismissed_count':         { one: '{count} rejeté', other: '{count} rejetés' },
+  'admin.reports.card_by_count':           { one: 'Signalé par {name} · {time}', other: 'Signalé par {name} ({count} envoyés) · {time}' },
   'mesannonces.count':                     { one: '{count} annonce',  other: '{count} annonces' },
   // F3 row (Figma 1476:27949): « 0 proposition » is its own key (mesannonces.row.proposals_zero) — French zero is forced to `other` above.
   'mesannonces.row.proposals':             { one: '{count} proposition', other: '{count} propositions' },
@@ -113,6 +118,11 @@ const frPlurals: Record<string, PluralVariants> = {
 }
 
 const arPlurals: Record<string, PluralVariants> = {
+  // REVIEW_AR_TRANSLATION — admin J5 / J6. Non-human plurals take feminine-singular agreement (بلاغات مرسلة).
+  'admin.nav.pending_count':               { one: '{count} قيد الانتظار', two: '{count} قيد الانتظار', other: '{count} قيد الانتظار' },
+  'admin.reports.sent_count':              { one: 'بلاغ واحد مُرسل', two: 'بلاغان مُرسلان', other: '{count} بلاغات مُرسلة' },
+  'admin.reports.dismissed_count':         { one: 'واحد مرفوض', two: 'اثنان مرفوضان', other: '{count} مرفوضة' },
+  'admin.reports.card_by_count':           { one: 'أبلغ عنه {name} · {time}', two: 'أبلغ عنه {name} (بلاغان) · {time}', other: 'أبلغ عنه {name} ({count} بلاغات) · {time}' },
   'mesannonces.count':                     { one: '{count} إعلان', two: '{count} إعلانان', other: '{count} إعلانات' },
   // REVIEW_AR_TRANSLATION
   'mesannonces.row.proposals':             { one: 'عرض واحد', two: 'عرضان', other: '{count} عروض' },

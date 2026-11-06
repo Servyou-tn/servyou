@@ -1,61 +1,28 @@
 import Link from 'next/link'
 import { getLang } from '@/lib/i18n/server'
-import { t } from '@/lib/i18n'
-import type { Lang } from '@/lib/i18n'
+import { t, tn, type Lang } from '@/lib/i18n'
 import { createClient } from '@/lib/supabase/server'
 import { requireAdmin } from '@/lib/auth/require-admin'
 import { failQuery, isNoRowLike, reportQueryError } from '@/lib/supabase/query-error'
+import { relativeTimeLabel } from '@/lib/relative-time'
+import { getInitials } from '@/components/ui/initials'
+import { tndPrice } from '@/components/listings/listing-utils'
+import { isModerationTargetType } from '@/lib/admin/action-input'
+import { reportRef, severityTone } from '../_lib/queue'
+import { countReportsBy, resolveTargets, targetKey, targetSecondary, targetTitle, type AdminProfile } from '../_lib/targets'
+import { ReportDetailView, type DetailContent, type DetailOther, type DetailPerson } from '../_components/ReportDetailView'
 import { ClaimButton } from './ClaimButton'
-import { ResolveForm } from './ResolveForm'
-import { DismissForm } from './DismissForm'
-import { HideForm } from './HideForm'
-import { UnhideButton } from './UnhideButton'
-import { SuspendReportedUserForm } from './SuspendReportedUserForm'
-import { UnsuspendReportedUserButton } from './UnsuspendReportedUserButton'
+import { DecisionPanel } from './DecisionPanel'
 import type { ModerationTargetType } from '../actions'
 
 type Props = { params: Promise<{ id: string }> }
 
-// Report target_types that support in-place content moderation. products/service_listings
-// (PR-M) carry a status='hidden' seller feature; shops/freelancer_profiles/job_posts (PR-N)
-// have no status column, so the moderation marker is the sole signal. The section only ever
-// reads the three shared columns below, so a uniform fetch works across all five tables.
-const MODERATION_TABLES: Record<string, 'products' | 'service_listings' | 'shops' | 'freelancer_profiles' | 'job_posts'> = {
-  product: 'products',
-  service: 'service_listings',
-  shop: 'shops',
-  freelancer_profile: 'freelancer_profiles',
-  job_post: 'job_posts',
-}
-
-type ModerationTarget = {
-  id: string
-  admin_hidden_at: string | null
-  admin_hidden_reason: string | null
-}
-
-type Report = {
-  id: string
-  reporter_id: string
-  target_type: string
-  target_id: string
-  reason: string
-  description: string | null
-  status: string
-  admin_note: string | null
-  created_at: string
-  updated_at: string
-}
-
-// Base route per target_type. target_id maps to each route's natural id
-// (shop id, product id, freelancer_profile id, service_listing id, job_post id).
-// Content types link to their public pages (new tab); 'user' links to the admin user
-// detail page (/admin/utilisateurs/[id]) — internal, same tab.
+// Base route per target_type. target_id maps to each route's natural id (shop id, product id,
+// freelancer_profile id, service_listing id, job_post id). Content opens its public page in a new tab;
+// 'user' opens the admin user page (/admin/utilisateurs/[id]) in the same tab.
 const TARGET_ROUTES: Record<string, string> = {
   shop: '/boutique',
-  // The public detail routes are /produits/[id] and /services/[id] (plural). These two pointed at '/produit' and
-  // '/service' — routes that do not exist — and went unnoticed only because no product/service report could be filed
-  // until the « Signaler » modal shipped (feat/signaler-product-service).
+  // The public detail routes are /produits/[id] and /services/[id] (plural).
   product: '/produits',
   freelancer_profile: '/freelance',
   service: '/services',
@@ -63,24 +30,38 @@ const TARGET_ROUTES: Record<string, string> = {
   user: '/admin/utilisateurs',
 }
 
-function formatDate(value: string, lang: Lang): string {
-  return new Date(value).toLocaleDateString(lang === 'ar' ? 'ar-TN' : 'fr-TN', {
-    day: '2-digit', month: 'short', year: 'numeric',
-  })
+const ROLE_KEY: Record<string, string> = {
+  freelancer: 'shell.topbar.role.freelance',
+  shop_owner: 'shell.topbar.role.shopOwner',
 }
 
-const STATUS_BADGE: Record<string, string> = {
-  open: 'bg-amber-50 text-amber-700',
-  under_review: 'bg-brand-blue-50 text-brand-blue-700',
-  resolved: 'bg-green-50 text-green-700',
-  dismissed: 'bg-gray-100 text-gray-600',
+function shortDate(iso: string, lang: Lang): string {
+  return new Date(iso).toLocaleDateString(lang === 'ar' ? 'ar-TN' : 'fr-TN', { day: 'numeric', month: 'short' })
+}
+
+function fullDate(iso: string, lang: Lang): string {
+  return new Date(iso).toLocaleDateString(lang === 'ar' ? 'ar-TN' : 'fr-TN', { day: '2-digit', month: 'short', year: 'numeric' })
+}
+
+// « Quand » in « Autres signalements »: relative up to yesterday, then the short date (« 2 nov. »).
+function whenLabel(iso: string, lang: Lang, now: number): string {
+  return now - new Date(iso).getTime() < 2 * 86_400_000 ? relativeTimeLabel(iso, lang, now) : shortDate(iso, lang)
+}
+
+function personLine(p: AdminProfile | undefined, lang: Lang, joined: boolean): string | null {
+  if (!p) return null
+  const parts = [
+    t(ROLE_KEY[p.seller_type ?? ''] ?? 'shell.topbar.role.consumer', lang),
+    p.city,
+    joined ? t('admin.reports.joined_on', lang, { date: shortDate(p.created_at, lang) }) : null,
+  ]
+  return parts.filter(Boolean).join(' · ')
 }
 
 export default async function ReportDetailPage({ params }: Props) {
   const { id } = await params
   await requireAdmin(`/admin/signalements/${id}`)
   const lang = await getLang()
-  const tr = (key: string): string => t(key, lang)
   const supabase = await createClient()
 
   const { data: report, error } = await supabase
@@ -94,218 +75,162 @@ export default async function ReportDetailPage({ params }: Props) {
 
   if (!report) {
     return (
-      <div className="max-w-2xl space-y-4">
-        <p className="text-sm text-gray-700">{tr('admin.reports.error_not_found')}</p>
-        <Link href="/admin/signalements" className="inline-block text-sm text-brand-blue-600 hover:underline">
-          {tr('admin.reports.back_to_queue')}
+      <div className="flex max-w-2xl flex-col gap-4">
+        <p className="text-body-sm text-text-secondary">{t('admin.reports.error_not_found', lang)}</p>
+        <Link href="/admin/signalements" className="self-start text-body-sm font-medium text-brand-indigo-600 hover:underline">
+          {t('admin.reports.back_to_queue', lang)}
         </Link>
       </div>
     )
   }
 
-  const r = report as Report
+  const r = report
 
-  const { data: reporter, error: reporterError } = await supabase
-    .from('public_profiles').select('full_name').eq('id', r.reporter_id).single()
-  // Partial display: the name falls back to « — ». A gone reporter (PGRST116) is not a failure.
-  if (reporterError && !isNoRowLike(reporterError)) reportQueryError('admin/signalements/[id] reporter name', reporterError)
-  const reporterName = (reporter as { full_name: string } | null)?.full_name ?? '—'
+  // Other reports on the same content (newest first) — their reporters' names resolve with the rest.
+  const { data: othersData, error: othersError } = await supabase
+    .from('reports')
+    .select('id, reporter_id, reason, status, created_at')
+    .eq('target_type', r.target_type)
+    .eq('target_id', r.target_id)
+    .neq('id', r.id)
+    .order('created_at', { ascending: false })
+    .limit(20)
+  if (othersError) reportQueryError('admin/signalements/[id] other reports', othersError)
+  const othersRows = othersData ?? []
 
-  // Current admin — used only to block self-suspend in the UI (the RPC blocks it too).
-  const { data: { user: me } } = await supabase.auth.getUser()
+  const [{ targets, profiles, failed: targetsFailed }, reporterCounts, me] = await Promise.all([
+    resolveTargets(supabase, [r], [r.reporter_id, ...othersRows.map((o) => o.reporter_id)], 'admin/signalements/[id]'),
+    countReportsBy(supabase, [r.reporter_id], 'admin/signalements/[id] reporter counts'),
+    supabase.auth.getUser(),
+  ])
+  const myId = me.data.user?.id ?? null
 
-  // For user-targeted reports, fetch the target's profile to show their name and drive
-  // the suspend section. Permitted by the "Admin reads all profiles" SELECT policy
-  // (migration 23). A null targetUser means the row is gone.
-  type TargetUser = { full_name: string | null; suspended_at: string | null; suspended_reason: string | null }
-  // A failed read (as opposed to a gone row) shows « — » in its section, never « introuvable », and
-  // renders no action form: the admin cannot tell which action (suspend / unsuspend) is valid.
-  let targetUser: TargetUser | null = null
-  let targetUserFailed = false
-  if (r.target_type === 'user') {
-    const { data: tu, error: tuError } = await supabase
-      .from('profiles')
-      .select('full_name, suspended_at, suspended_reason')
-      .eq('id', r.target_id)
-      .maybeSingle()
-    if (tuError && !isNoRowLike(tuError)) {
-      reportQueryError('admin/signalements/[id] target user', tuError)
-      targetUserFailed = true
-    }
-    targetUser = (tu as TargetUser | null) ?? null
+  const target = targets.get(targetKey(r.target_type, r.target_id))
+  const owner = target?.ownerId ? profiles.get(target.ownerId) : undefined
+  const reporter = profiles.get(r.reporter_id)
+  const moderatable = isModerationTargetType(r.target_type)
+
+  // The moderation note (admin_hidden_reason has no client SELECT grant): get_moderation_reason() for owner/admin.
+  let hiddenReason: string | null = null
+  if (moderatable && target?.hiddenAt) {
+    const { data: reason, error: reasonError } = await supabase.rpc('get_moderation_reason', {
+      target_type: r.target_type,
+      target_id: r.target_id,
+    })
+    if (reasonError) reportQueryError('admin/signalements/[id] moderation reason', reasonError)
+    hiddenReason = reason ?? null
   }
-  const isSelfTarget = r.target_type === 'user' && me?.id === r.target_id
+
+  // eslint-disable-next-line react-hooks/purity -- request-time evaluation in an async Server Component (rendered once per request), the admin/statistiques precedent.
+  const now = Date.now()
+  const reasonLabel = t(`admin.reports.reason_${r.reason}`, lang)
+  const typeLabel = t(`admin.reports.target_type_${r.target_type}`, lang)
+
+  // Contenu signalé — « iPhone 15 Pro neuf — 900 TND » · « Produit · OM shop (Ahmed) · Tunis · publié le 2 nov. »
+  const baseTitle = targetTitle(target, owner)
+  const ownerName = owner?.full_name ?? null
+  const who = target?.shopName && ownerName && r.target_type !== 'shop' ? `${target.shopName} (${ownerName})` : targetSecondary(r.target_type, target, owner)
+  const content: DetailContent = {
+    type: r.target_type,
+    title: target?.priceTnd ? `${baseTitle} — ${tndPrice(target.priceTnd, lang)}` : baseTitle,
+    meta: [
+      typeLabel,
+      who,
+      r.target_type === 'product' || r.target_type === 'service' ? target?.city : null,
+      target?.createdAt && r.target_type !== 'user' ? t('admin.reports.published_on', lang, { date: shortDate(target.createdAt, lang) }) : null,
+    ].filter((p): p is string => Boolean(p)),
+    excerpt: target?.excerpt ? target.excerpt.replace(/\s+/g, ' ').trim() : null,
+    pill:
+      !target ? null
+      : r.target_type === 'user' ? (owner?.suspended_at ? { status: 'suspendu', label: t('admin.users.status_suspended', lang) } : null)
+      : target.hiddenAt ? { status: 'moderated', label: t('admin.reports.pill_hidden', lang) }
+      : { status: 'reçue', label: t('admin.reports.pill_visible', lang) },
+    hiddenNote: target?.hiddenAt
+      ? `${t('admin.moderation.moderated_at_label', lang)} ${fullDate(target.hiddenAt, lang)}${hiddenReason ? ` · ${hiddenReason}` : ''}`
+      : null,
+    missing: !target,
+    unreadable: !target && targetsFailed,
+  }
 
   const targetBase = TARGET_ROUTES[r.target_type]
-  const targetUrl = targetBase ? `${targetBase}/${r.target_id}` : null
+  const openPage = targetBase
+    ? r.target_type === 'user'
+      ? { href: `${targetBase}/${r.target_id}`, external: false, labelKey: 'admin.reports.view_user' }
+      : { href: `${targetBase}/${r.target_id}`, external: true, labelKey: 'admin.reports.open_page' }
+    : null
 
-  // Moderation target row — only for moderatable target_types. The admin can read the
-  // row even after it is hidden so the unhide UI renders: products/shops (migration
-  // 20261025213214), service_listings (migration 52) and freelancer_profiles (publish gate)
-  // each have an `is_admin()` branch in their SELECT policy; job_posts gets the dedicated
-  // "Admin reads all job_posts" policy (migration 27) so non-open posts are readable too.
-  // The section is gated on `moderationTable`; within it, a null moderationTarget means
-  // the row is gone.
-  const moderationTable = MODERATION_TABLES[r.target_type]
-  let moderationTarget: ModerationTarget | null = null
-  let moderationTargetFailed = false
-  if (moderationTable) {
-    // admin_hidden_reason has no client SELECT grant (founder ruling 9): the row read names only the
-    // marker, and the note comes from get_moderation_reason() (owner or admin).
-    const { data: targetRow, error: targetError } = await supabase
-      .from(moderationTable)
-      .select('id, admin_hidden_at')
-      .eq('id', r.target_id)
-      .maybeSingle()
-    if (targetError && !isNoRowLike(targetError)) {
-      reportQueryError('admin/signalements/[id] moderation target', targetError)
-      moderationTargetFailed = true
-    }
-    const row = (targetRow as Omit<ModerationTarget, 'admin_hidden_reason'> | null) ?? null
-    moderationTarget = row ? { ...row, admin_hidden_reason: null } : null
-    if (row?.admin_hidden_at) {
-      const { data: reason, error: reasonError } = await supabase.rpc('get_moderation_reason', {
-        target_type: r.target_type,
-        target_id: r.target_id,
-      })
-      // The note is secondary: a failed read is reported and renders « — », the moderation UI still works.
-      if (reasonError) reportQueryError('admin/signalements/[id] moderation reason', reasonError)
-      moderationTarget = { ...row, admin_hidden_reason: reason ?? null }
-    }
+  const others: DetailOther[] = othersRows.map((o) => ({
+    id: o.id,
+    reasonLabel: t(`admin.reports.reason_${o.reason}`, lang),
+    by: profiles.get(o.reporter_id)?.full_name ?? '—',
+    when: whenLabel(o.created_at, lang, now),
+    status: o.status,
+  }))
+
+  const sent = reporterCounts?.sent.get(r.reporter_id) ?? null
+  const dismissed = reporterCounts?.dismissed.get(r.reporter_id) ?? 0
+  const reporterCard: DetailPerson = {
+    name: reporter?.full_name ?? '—',
+    initials: getInitials(reporter?.full_name),
+    line: personLine(reporter, lang, true),
+    stats: sent === null ? null : `${tn('admin.reports.sent_count', lang, sent)} · ${tn('admin.reports.dismissed_count', lang, dismissed)}`,
   }
 
+  // The content owner — the person « Suspendre l'utilisateur » acts on (the reported user for a user report).
+  const ownerCard: DetailPerson | null = owner
+    ? {
+        name: target?.shopName && r.target_type !== 'user' ? `${owner.full_name} (${target.shopName})` : (owner.full_name ?? '—'),
+        initials: getInitials(owner.full_name),
+        line: personLine(owner, lang, false),
+        stats: owner.suspended_at
+          ? [t('admin.reports.owner_suspended', lang, { date: fullDate(owner.suspended_at, lang) }), owner.suspended_reason].filter(Boolean).join(' · ')
+          : null,
+        statsDanger: true,
+        href: `/admin/utilisateurs/${owner.id}`,
+      }
+    : null
+
+  const open = r.status === 'open' || r.status === 'under_review'
+  const modTarget = moderatable && target ? { targetType: r.target_type as ModerationTargetType, targetId: r.target_id } : null
+  const ownerActionable = owner && owner.id !== myId ? owner : null
+
   return (
-    <div className="max-w-2xl space-y-6">
-      <Link href="/admin/signalements" className="inline-block text-sm text-brand-blue-600 hover:underline">
-        {tr('admin.reports.back_to_queue')}
-      </Link>
-
-      <div className="space-y-5 rounded-lg border border-gray-200 bg-white p-6">
-        <div className="flex items-center justify-between">
-          <h1 className="text-xl font-bold text-gray-800">{tr('admin.reports.title')}</h1>
-          <span className={`inline-block whitespace-nowrap rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_BADGE[r.status] ?? 'bg-gray-100 text-gray-600'}`}>
-            {tr('admin.reports.status_' + r.status)}
-          </span>
-        </div>
-
-        <dl className="space-y-3 text-sm">
-          <div>
-            <dt className="font-medium text-gray-500">{tr('admin.reports.field_reporter')}</dt>
-            <dd className="mt-1 text-gray-800">{reporterName}</dd>
-          </div>
-          <div>
-            <dt className="font-medium text-gray-500">{tr('admin.reports.field_target')}</dt>
-            <dd className="mt-1 text-gray-800">
-              {tr('admin.reports.target_type_' + r.target_type)}
-              {r.target_type === 'user' && targetUrl ? (
-                <Link href={targetUrl} className="ms-2 text-brand-blue-600 hover:underline">
-                  {targetUser?.full_name ?? r.target_id}
-                </Link>
-              ) : targetUrl ? (
-                <Link href={targetUrl} target="_blank" rel="noopener noreferrer" className="ms-2 text-brand-blue-600 hover:underline">
-                  {tr('admin.reports.target_view')}
-                </Link>
-              ) : (
-                <span className="ms-2 text-gray-500">{r.target_id}</span>
-              )}
-            </dd>
-          </div>
-          <div>
-            <dt className="font-medium text-gray-500">{tr('admin.reports.field_reason')}</dt>
-            <dd className="mt-1 text-gray-800">{tr('admin.reports.reason_' + r.reason)}</dd>
-          </div>
-          <div>
-            <dt className="font-medium text-gray-500">{tr('admin.reports.field_description')}</dt>
-            <dd className="mt-1 whitespace-pre-wrap text-gray-800">{r.description ?? '—'}</dd>
-          </div>
-          <div>
-            <dt className="font-medium text-gray-500">{tr('admin.reports.field_created_at')}</dt>
-            <dd className="mt-1 text-gray-800">{formatDate(r.created_at, lang)}</dd>
-          </div>
-        </dl>
-
-        {moderationTable && (
-          <div className="space-y-3 border-t border-gray-100 pt-4">
-            <h2 className="text-sm font-semibold uppercase tracking-wide text-gray-500">
-              {tr('admin.moderation.section_title')}
-            </h2>
-            {moderationTargetFailed ? (
-              <p className="text-sm text-gray-500">—</p>
-            ) : moderationTarget === null ? (
-              <p className="text-sm text-gray-500">{tr('admin.moderation.target_not_found')}</p>
-            ) : moderationTarget.admin_hidden_at ? (
-              <div className="space-y-3">
-                <div className="space-y-1 rounded border border-red-200 bg-red-50 p-3">
-                  <p className="text-sm font-medium text-red-700">{tr('admin.moderation.status_moderated')}</p>
-                  <p className="text-sm text-red-800">
-                    <span className="font-medium">{tr('admin.moderation.moderated_at_label')}:</span>{' '}
-                    {formatDate(moderationTarget.admin_hidden_at, lang)}
-                  </p>
-                  <p className="text-sm text-red-800">
-                    <span className="font-medium">{tr('admin.moderation.moderated_reason_label')}:</span>{' '}
-                    {moderationTarget.admin_hidden_reason ?? '—'}
-                  </p>
-                </div>
-                <UnhideButton targetType={r.target_type as ModerationTargetType} targetId={r.target_id} reportId={r.id} />
-              </div>
-            ) : (
-              <HideForm targetType={r.target_type as ModerationTargetType} targetId={r.target_id} reportId={r.id} />
-            )}
-          </div>
-        )}
-
-        {r.target_type === 'user' && (
-          <div className="space-y-3 border-t border-gray-100 pt-4">
-            <h2 className="text-sm font-semibold uppercase tracking-wide text-gray-500">
-              {tr('admin.reports.suspend_section_title')}
-            </h2>
-            {targetUserFailed ? (
-              <p className="text-sm text-gray-500">—</p>
-            ) : targetUser === null ? (
-              <p className="text-sm text-gray-500">{tr('admin.users.error_not_found')}</p>
-            ) : isSelfTarget ? (
-              <p className="text-sm text-gray-500">{tr('admin.users.self_action_blocked')}</p>
-            ) : targetUser.suspended_at ? (
-              <div className="space-y-3">
-                <div className="space-y-1 rounded border border-red-200 bg-red-50 p-3">
-                  <p className="text-sm font-medium text-red-700">{tr('admin.users.status_suspended')}</p>
-                  <p className="text-sm text-red-800">
-                    <span className="font-medium">{tr('admin.users.field_suspended_at')}:</span>{' '}
-                    {formatDate(targetUser.suspended_at, lang)}
-                  </p>
-                  <p className="text-sm text-red-800">
-                    <span className="font-medium">{tr('admin.users.field_suspended_reason')}:</span>{' '}
-                    {targetUser.suspended_reason}
-                  </p>
-                </div>
-                <UnsuspendReportedUserButton targetUserId={r.target_id} reportId={r.id} />
-              </div>
-            ) : (
-              <SuspendReportedUserForm targetUserId={r.target_id} reportId={r.id} />
-            )}
-          </div>
-        )}
-
-        {r.status === 'resolved' ? (
-          <div className="space-y-1 rounded border border-gray-200 bg-gray-50 p-4">
-            <p className="text-sm font-medium text-gray-500">{tr('admin.reports.field_admin_note')}</p>
-            <p className="whitespace-pre-wrap text-sm text-gray-800">{r.admin_note}</p>
-            <p className="text-xs text-gray-400">{tr('admin.reports.error_resolved_at')} {formatDate(r.updated_at, lang)}</p>
-          </div>
-        ) : r.status === 'dismissed' ? (
-          <div className="space-y-1 rounded border border-gray-200 bg-gray-50 p-4">
-            <p className="text-sm font-medium text-gray-500">{tr('admin.reports.dismissed_header')}</p>
-            <p className="whitespace-pre-wrap text-sm text-gray-800">{r.admin_note}</p>
-            <p className="text-xs text-gray-400">{formatDate(r.updated_at, lang)}</p>
-          </div>
-        ) : (
-          <div className="space-y-4 border-t border-gray-100 pt-4">
-            {r.status === 'open' && <ClaimButton reportId={r.id} />}
-            <ResolveForm reportId={r.id} />
-            <DismissForm reportId={r.id} />
-          </div>
-        )}
-      </div>
-    </div>
+    <ReportDetailView
+      lang={lang}
+      refLabel={reportRef(r.id)}
+      subtitle={t('admin.reports.detail_subtitle', lang, {
+        time: relativeTimeLabel(r.created_at, lang, now),
+        reason: lang === 'fr' ? reasonLabel.toLocaleLowerCase('fr') : reasonLabel,
+      })}
+      status={r.status}
+      claim={r.status === 'open' ? <ClaimButton reportId={r.id} /> : null}
+      openPage={openPage}
+      content={content}
+      reasonTone={severityTone(r.reason)}
+      reasonLabel={reasonLabel}
+      description={r.description}
+      others={others}
+      closed={
+        r.status === 'resolved' || r.status === 'dismissed'
+          ? {
+              headerKey: r.status === 'resolved' ? 'admin.reports.field_admin_note' : 'admin.reports.dismissed_header',
+              note: r.admin_note,
+              date: fullDate(r.updated_at, lang),
+            }
+          : null
+      }
+      decision={
+        <DecisionPanel
+          reportId={r.id}
+          canDecide={open}
+          hide={modTarget && !target?.hiddenAt ? modTarget : null}
+          unhide={modTarget && target?.hiddenAt ? modTarget : null}
+          suspend={ownerActionable && !ownerActionable.suspended_at ? { userId: ownerActionable.id } : null}
+          unsuspend={ownerActionable && ownerActionable.suspended_at ? { userId: ownerActionable.id } : null}
+        />
+      }
+      reporter={reporterCard}
+      owner={ownerCard}
+    />
   )
 }

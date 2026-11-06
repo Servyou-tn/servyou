@@ -3,6 +3,7 @@
 import { useState, useTransition } from 'react'
 import { useLang } from '@/components/LangProvider'
 import { t } from '@/lib/i18n'
+import { Button } from '@/components/ui/button'
 import { claimReport } from '../actions'
 
 // Claim = transition the report to 'under_review'. On benign failure (already
@@ -19,21 +20,16 @@ export function ClaimButton({ reportId }: { reportId: string }) {
     setError(null)
     startTransition(async () => {
       const res = await claimReport(reportId)
-      if (!res.success) setError(tr(res.error ?? 'admin.reports.error_already_claimed'))
+      if (!res.success) setError(res.error ?? 'admin.reports.error_already_claimed')
     })
   }
 
   return (
-    <div className="space-y-2">
-      <button
-        type="button"
-        onClick={onClick}
-        disabled={pending}
-        className="rounded border border-brand-blue-600 px-4 py-2 text-sm font-semibold text-brand-blue-700 transition-colors hover:bg-brand-blue-50 disabled:opacity-50"
-      >
+    <div className="flex flex-col items-end gap-2">
+      <Button variant="secondary" size="sm" onClick={onClick} loading={pending}>
         {tr('admin.reports.action_claim')}
-      </button>
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      </Button>
+      {error && <p role="alert" className="text-body-sm text-danger-700">{tr(error)}</p>}
     </div>
   )
 }
