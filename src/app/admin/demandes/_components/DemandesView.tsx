@@ -9,6 +9,7 @@ import { Avatar } from '@/components/ui/avatar'
 import { StatusPill, type StatusValue } from '@/components/ui/status-pill'
 import { ErrorState } from '@/components/marche/ErrorState'
 import type { RequestTab } from '../_lib/view'
+import { HitArea } from '@/components/ui/interactive-surface'
 
 // J10 « Demandes » (Figma NOV 4 — Admin, 1440) + admin-m375-requests. Presentational: the page resolves every
 // string. One card per request; the tab picks the kind (the 375 frame shows one kind per tab). Below lg the tab
@@ -158,7 +159,7 @@ function Card({ lang, c }: { lang: Lang; c: RequestCard }) {
       <div className="flex flex-wrap items-center gap-3 max-sm:flex-col max-sm:items-stretch max-sm:[&_button]:w-full">
         {c.actionsBefore}
         {c.mailto ? (
-          <a href={c.mailto.href} className={`${mail} max-sm:w-full`}>{t(c.mailto.labelKey, lang)}</a>
+          <a href={c.mailto.href} className={`${mail} max-sm:w-full`}>{t(c.mailto.labelKey, lang)}<HitArea size={40} /></a>
         ) : null}
         {c.actionsAfter}
       </div>

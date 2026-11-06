@@ -10,6 +10,7 @@ import { FOCUS_RING } from '@/components/layout/styles'
 import { uploadProductImageAction, addProductImageAction, deleteProductImageAction } from '@/app/actions/products'
 import { MAX_PRODUCT_IMAGES } from '@/lib/products/constants'
 import { MAX_INPUT_BYTES, MAX_INPUT_MB } from '@/lib/images/limits'
+import { HitArea } from '@/components/ui/interactive-surface'
 
 // G7's gallery — add and remove only, no reorder (§3 of the discovery: product_images has no
 // UPDATE policy, and the storage policy mirrors it with a comment saying that's structural, not a
@@ -259,6 +260,7 @@ export function EditImageGallery({
                         className={`absolute end-2 top-2 grid h-7 w-7 place-items-center rounded-full bg-black/60 text-white transition-colors hover:bg-black/80 ${FOCUS_RING}`}
                       >
                         <X className="h-4 w-4" aria-hidden />
+                        <HitArea size={28} />
                       </button>
                     )}
                   </>
@@ -277,6 +279,7 @@ export function EditImageGallery({
                       className={`absolute end-2 top-2 grid h-7 w-7 place-items-center rounded-full bg-black/60 text-white transition-colors hover:bg-black/80 ${FOCUS_RING}`}
                     >
                       <X className="h-4 w-4" aria-hidden />
+                      <HitArea size={28} />
                     </button>
                   </>
                 )}

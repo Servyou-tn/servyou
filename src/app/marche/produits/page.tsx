@@ -21,6 +21,7 @@ import { MarketplaceMobileHeader } from '@/components/marche/MarketplaceMobileHe
 import { ProduitsFilterBar } from '@/components/marche/ProduitsFilterBar'
 import { ProductBrowseGrid } from './_components/ProductBrowseGrid'
 import { BoutiquesLens } from './_components/BoutiquesLens'
+import { HitArea } from '@/components/ui/interactive-surface'
 
 export async function generateMetadata(): Promise<Metadata> {
   return localizedMetadata('meta.products')
@@ -166,9 +167,10 @@ export default async function ProduitsPage({
               {hasFilters && (
                 <Link
                   href={clearFiltersHref}
-                  className={`inline-flex h-10 items-center gap-2 rounded-[10px] bg-brand-blue-600 px-4 text-base font-semibold text-white transition-colors hover:bg-brand-blue-600/90 ${FOCUS_RING}`}
+                  className={`max-lg:relative inline-flex h-10 items-center gap-2 rounded-[10px] bg-brand-blue-600 px-4 text-base font-semibold text-white transition-colors hover:bg-brand-blue-600/90 ${FOCUS_RING}`}
                 >
                   {t('produits.empty.resetFilters', lang)}
+                  <HitArea size={40} axis="y" />
                 </Link>
               )}
             </div>

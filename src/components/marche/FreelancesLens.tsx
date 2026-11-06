@@ -18,6 +18,7 @@ import { ServicesLensToggle } from './ServicesLensToggle'
 import { MarketplaceMobileHeader } from './MarketplaceMobileHeader'
 import { SearchFiltersSheet } from '@/components/recherche/SearchFiltersSheet'
 import { ServicesFilterBar } from './ServicesFilterBar'
+import { HitArea } from '@/components/ui/interactive-surface'
 
 const BASE = '/marche/services'
 const LENS_HREF = `${BASE}?vue=freelances`
@@ -138,9 +139,10 @@ export async function FreelancesLens({ searchParams }: { searchParams: Promise<R
               {hasFilters && (
                 <Link
                   href={LENS_HREF}
-                  className={`inline-flex h-10 items-center gap-2 rounded-[10px] bg-brand-blue-600 px-4 text-base font-semibold text-white transition-colors hover:bg-brand-blue-600/90 ${FOCUS_RING}`}
+                  className={`max-lg:relative inline-flex h-10 items-center gap-2 rounded-[10px] bg-brand-blue-600 px-4 text-base font-semibold text-white transition-colors hover:bg-brand-blue-600/90 ${FOCUS_RING}`}
                 >
                   {t('produits.empty.resetFilters', lang)}
+                  <HitArea size={40} axis="y" />
                 </Link>
               )}
             </div>

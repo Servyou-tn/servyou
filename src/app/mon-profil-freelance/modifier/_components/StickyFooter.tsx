@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { FOCUS_RING } from '@/components/layout/styles'
 import { t, type Lang } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
+import { HitArea } from '@/components/ui/interactive-surface'
 
 // Sticky footer — 408:14113/408:14810, screenshot-confirmed twice (empty + validation states).
 // Three buttons: Prévisualiser (link) / Enregistrer (secondary) / Publier mon profil (primary,
@@ -51,9 +52,10 @@ export function StickyFooter({
           href={previewHref}
           target="_blank"
           rel="noreferrer"
-          className={cn('inline-flex h-10 items-center px-2 text-base font-medium text-brand-blue-600 hover:underline', FOCUS_RING)}
+          className={cn('max-lg:relative inline-flex h-10 items-center px-2 text-base font-medium text-brand-blue-600 hover:underline', FOCUS_RING)}
         >
           {t('freelance.edit.preview', lang)}
+          <HitArea size={40} axis="y" />
         </a>
         <Button variant="secondary" size="md" loading={saving} onClick={onSave}>
           {t('freelance.edit.save', lang)}

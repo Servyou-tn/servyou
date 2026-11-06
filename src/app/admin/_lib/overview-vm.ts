@@ -40,7 +40,7 @@ function tilesOf(s: DashboardStats, lang: Lang): { tiles: TileVM[]; tiles2: Tile
   const tiles: TileVM[] = [
     { key: 'received', label: t('admin.dash.kpi_received', lang), labelShort: t('admin.home.kpi_received_short', lang), value: formatCount(c.orders_received), accent: 'green', delta: kpiDelta(pctDelta(c.orders_received, p.orders_received), 'pct', lang) },
     { key: 'success', label: t('admin.dash.kpi_success', lang), labelShort: t('admin.home.kpi_success_short', lang), value: formatPercent(success), accent: 'blue', subtitle: t('admin.home.kpi_success_sub', lang), subtitleShort: t('admin.home.kpi_success_sub_short', lang) },
-    { key: 'acceptance', label: t('admin.dash.kpi_acceptance', lang), labelShort: t('admin.home.kpi_acceptance_short', lang), value: medianText(c.acceptance_median_minutes, lang), accent: 'indigo', delta: kpiDelta(pctDelta(c.acceptance_median_minutes, p.acceptance_median_minutes), 'pct', lang) },
+    { key: 'acceptance', label: t('admin.dash.kpi_acceptance', lang), labelShort: t('admin.home.kpi_acceptance_short', lang), value: medianText(c.acceptance_median_minutes, lang), accent: 'indigo', delta: kpiDelta(pctDelta(c.acceptance_median_minutes, p.acceptance_median_minutes), 'pct', lang, 'lower_better') },
     {
       key: 'cancel', label: t('admin.dash.kpi_cancel', lang), labelShort: t('admin.home.kpi_cancel_short', lang), value: formatPercent(cancel), accent: 'neutral',
       subtitle: c.orders_created > 0 ? tn('admin.home.kpi_cancel_sub', lang, c.orders_created, { part: c.created_then_cancelled }) : null,

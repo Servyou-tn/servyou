@@ -10,6 +10,7 @@ import { ChevronDownIcon } from './icons'
 import { FOCUS_RING } from './styles'
 import { Avatar } from '@/components/ui/avatar'
 import { getInitials } from '@/components/ui/initials'
+import { HitArea } from '@/components/ui/interactive-surface'
 
 // Avatar button → dropdown menu (consumer + workspace share it). Implements the
 // ARIA menu pattern: arrow-key navigation between items, Home/End, Escape and
@@ -94,7 +95,7 @@ export function AccountMenu({
         aria-haspopup="menu"
         aria-expanded={open}
         aria-label={t('nav.account', lang)}
-        className={`inline-flex h-10 items-center gap-1.5 rounded-full ps-1 pe-2 transition-colors hover:bg-surface-pill ${FOCUS_RING}`}
+        className={`max-lg:relative inline-flex h-10 items-center gap-1.5 rounded-full ps-1 pe-2 transition-colors hover:bg-surface-pill ${FOCUS_RING}`}
       >
         <Avatar size="sm" src={avatarUrl} initials={fullName ? getInitials(fullName) : undefined} />
         {showName && fullName ? (
@@ -105,6 +106,7 @@ export function AccountMenu({
         <ChevronDownIcon
           className={`h-4 w-4 text-text-muted transition-transform rtl:-scale-x-100 ${open ? 'rotate-180' : ''}`}
         />
+        <HitArea size={40} axis="y" />
       </button>
 
       {open && (

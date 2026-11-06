@@ -5,6 +5,7 @@ import { t, type Lang } from '@/lib/i18n'
 import { FOCUS_RING } from '@/components/layout/styles'
 import { LanguageToggle } from '@/components/layout/LanguageToggle'
 import { ManageCookiesButton } from '@/components/consent/ManageCookiesButton'
+import { HitArea } from '@/components/ui/interactive-surface'
 
 // The navy site footer — shared by the landing page (via FinalCtaFooter) and every
 // (marketing) content page (via MarketingShell). Link targets are the real routes/
@@ -54,9 +55,12 @@ function FooterColumn({
           <li key={l.key}>
             <Link
               href={l.href}
-              className={`rounded text-sm text-slate-300 transition-colors hover:text-white ${FOCUS_RING}`}
+              className={`max-lg:relative rounded text-sm text-slate-300 transition-colors hover:text-white ${FOCUS_RING}`}
             >
               {t(l.key, lang)}
+              {/* The links are 12 px apart (space-y-3): each reaches 7 px, so only the two extensions overlap (by 2 px,
+                  in the gap) — no link's own box is covered. 44 here needs taller rows, a layout change (follow-up). */}
+              <HitArea size={32} axis="y" />
             </Link>
           </li>
         ))}

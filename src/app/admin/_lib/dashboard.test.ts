@@ -3,6 +3,7 @@ import {
   absDelta,
   balanceOf,
   barHeight,
+  deltaTone,
   durationParts,
   formatPercent,
   largestDrop,
@@ -58,6 +59,14 @@ describe('admin dashboard logic', () => {
     expect(pctDelta(5, 0)).toBeNull()
     expect(pctDelta(null, 3)).toBeNull()
     expect(pctDelta(2, 2)).toEqual({ direction: 'flat', value: 0 })
+  })
+
+  it('delta colour follows meaning: a shorter delay or fewer cancellations is good', () => {
+    expect(deltaTone({ direction: 'down', value: 40 }, 'lower_better')).toBe('good')
+    expect(deltaTone({ direction: 'up', value: 3 }, 'lower_better')).toBe('bad')
+    expect(deltaTone({ direction: 'up', value: 300 }, 'higher_better')).toBe('good')
+    expect(deltaTone({ direction: 'down', value: 25 }, 'higher_better')).toBe('bad')
+    expect(deltaTone({ direction: 'flat', value: 0 }, 'lower_better')).toBe('neutral')
   })
 
   it('absolute deltas need both sides (a null median has no delta)', () => {

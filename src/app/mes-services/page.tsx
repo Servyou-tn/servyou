@@ -19,11 +19,12 @@ import { getSellerServices } from '@/lib/marche/seller-services-query'
 import { getLang } from '@/lib/i18n/server'
 import { t } from '@/lib/i18n'
 import { FOCUS_RING } from '@/components/layout/styles'
-import { BASE as BUTTON_BASE, SIZE as BUTTON_SIZE, VARIANT_BASE, VARIANT_STATE } from '@/components/ui/button'
+import { ButtonLink } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { StatTile } from '@/components/shared/StatTile'
 import { ServiceFiltersBar } from './_components/ServiceFiltersBar'
 import { ServicesList } from './_components/ServicesList'
+import { HitArea } from '@/components/ui/interactive-surface'
 
 export async function generateMetadata(): Promise<Metadata> {
   return localizedMetadata('meta.services_mine')
@@ -33,7 +34,6 @@ const ROUTE = '/mes-services'
 
 // The four « Créer un service » CTAs (here ×2, H4 ×2) all lead to H6; Button's primary recipe on a Link.
 const CREATE_ROUTE = '/mes-services/creer'
-const CREATE_CTA = cn(BUTTON_BASE, BUTTON_SIZE.md, VARIANT_BASE.primary, VARIANT_STATE.primary, 'w-fit shrink-0')
 
 // H5 « Mes services » — Figma 242:7941. Full reasoning: the H5 discovery pass this PR ships
 // against, plus the founder's 9 rulings on top of it (PR body). Structure mirrors G5 (/mes-produits)
@@ -76,11 +76,12 @@ export default async function MesServicesPage({
             <Link
               href="/mon-profil-freelance/creer"
               className={cn(
-                'mt-2 inline-flex h-10 w-fit items-center justify-center rounded-lg bg-brand-blue-600 px-4 text-base font-semibold text-text-inverse hover:bg-brand-blue-700',
+                'max-lg:relative mt-2 inline-flex h-10 w-fit items-center justify-center rounded-lg bg-brand-blue-600 px-4 text-base font-semibold text-text-inverse hover:bg-brand-blue-700',
                 FOCUS_RING,
               )}
             >
               {t('freelance.dashboard.noProfile.cta', lang)}
+              <HitArea size={40} axis="y" />
             </Link>
           </div>
         </div>
@@ -152,9 +153,9 @@ export default async function MesServicesPage({
             </span>
             <p className="text-h3 text-text-primary">{t('service.empty', lang)}</p>
             {/* H6 /mes-services/creer — live since H6 PR-4 (it resumes an unfinished draft, if any). */}
-            <Link href={CREATE_ROUTE} className={CREATE_CTA}>
+            <ButtonLink href={CREATE_ROUTE} variant="primary" size="md" className="w-fit shrink-0">
               {t('service.empty_cta', lang)}
-            </Link>
+            </ButtonLink>
           </div>
         ) : (
           <>
@@ -192,9 +193,9 @@ function Header({ lang }: { lang: Awaited<ReturnType<typeof getLang>> }) {
       {/* H6 /mes-services/creer — live since H6 PR-4. Figma 242:8100's own Button instance renders no
           separate icon — the "+" is baked into the label text itself (measured via get_design_context,
           2026-09-06); a lucide <Plus> alongside it doubled the glyph. */}
-      <Link href={CREATE_ROUTE} className={CREATE_CTA}>
+      <ButtonLink href={CREATE_ROUTE} variant="primary" size="md" className="w-fit shrink-0">
         {t('service.add_btn', lang)}
-      </Link>
+      </ButtonLink>
     </div>
   )
 }

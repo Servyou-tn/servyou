@@ -125,8 +125,10 @@ export function ParametresShell({
           {TABS.map(({ key, icon: Icon, labelKey }) => {
             const active = key === activeTab
             return (
+              // The button clips its children (overflow-hidden rounds the accent bar), and a clip also clips
+              // hit-testing — so below lg the hit span's containing block is this wrapper, outside the clip.
+              <div key={key} className="shrink-0 max-lg:relative">
               <button
-                key={key}
                 type="button"
                 onClick={() => setActiveTab(key)}
                 aria-current={active ? 'true' : undefined}
@@ -151,7 +153,10 @@ export function ParametresShell({
                     {t(labelKey, lang)}
                   </span>
                 </span>
+                {/* The tabs are 4 px apart: each takes 2 px of the gap per side, 40 → 44, no overlap. */}
+                <span aria-hidden="true" className="pointer-events-auto absolute max-lg:inset-x-0 max-lg:-inset-y-0.5" />
               </button>
+              </div>
             )
           })}
         </nav>

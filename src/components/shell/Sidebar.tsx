@@ -12,6 +12,7 @@ import { sidebarSectionsForRole, type ShellRole } from './sidebar-items'
 import { isActiveRoute, isItemActive } from './active-route'
 import { SidebarSection } from './SidebarSection'
 import { SidebarItem } from './SidebarItem'
+import { HitArea } from '@/components/ui/interactive-surface'
 
 // The app-shell sidebar (design system Sections 3.1/3.2): a full-height dark-navy column, 240px
 // on desktop, rendered inside a slide-out drawer below lg. Sections + items are chosen by role
@@ -63,9 +64,10 @@ export function Sidebar({
             type="button"
             onClick={onClose}
             aria-label={t('shell.mobile.menu.close', lang)}
-            className={`inline-flex h-10 w-10 items-center justify-center rounded-pill text-white/70 transition-colors hover:bg-white/5 hover:text-white ${FOCUS_RING}`}
+            className={`max-lg:relative inline-flex h-10 w-10 items-center justify-center rounded-pill text-white/70 transition-colors hover:bg-white/5 hover:text-white ${FOCUS_RING}`}
           >
             <X className="h-5 w-5" aria-hidden="true" />
+            <HitArea size={40} />
           </button>
         ) : null}
       </div>

@@ -8,6 +8,7 @@ import { KpiTile } from '../../_components/KpiTile'
 import { Overline, Panel, PanelNote } from '../../_components/parts'
 import type { TileVM } from '../../_components/OverviewView'
 import type { Balance, FunnelStep } from '../../_lib/dashboard'
+import { HitArea } from '@/components/ui/interactive-surface'
 
 // J8 « Statistiques » (Figma NOV 4 — Admin, 1440). Presentational: the page resolves every string and number.
 // header (period segmented) · 4 tiles · Commandes par semaine (fill) + Parcours d'une commande (360) · Offre et
@@ -65,9 +66,10 @@ export function StatsView({
               key={p.days}
               href={p.href}
               aria-current={p.active ? 'page' : undefined}
-              className={`${cn('flex h-9 items-center rounded-lg px-3 font-medium transition-colors', p.active ? 'bg-surface-base text-text-primary' : 'text-text-secondary hover:text-text-primary', FOCUS_RING)} text-body-sm`}
+              className={`max-lg:relative ${cn('flex h-9 items-center rounded-lg px-3 font-medium transition-colors', p.active ? 'bg-surface-base text-text-primary' : 'text-text-secondary hover:text-text-primary', FOCUS_RING)} text-body-sm`}
             >
               {p.label}
+              <HitArea size={36} axis="y" />
             </Link>
           ))}
         </nav>

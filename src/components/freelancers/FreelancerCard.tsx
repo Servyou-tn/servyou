@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { MapPin } from 'lucide-react'
 import { Avatar } from '@/components/ui/avatar'
-import { BASE as BUTTON_BASE, SIZE as BUTTON_SIZE, VARIANT_BASE, VARIANT_STATE } from '@/components/ui/button'
+import { ButtonLink } from '@/components/ui/button'
 import { FavoriteHeart } from '@/components/favorites/FavoriteHeart'
 import { FOCUS_RING } from '@/components/layout/styles'
 import { cn } from '@/lib/utils'
@@ -100,12 +100,14 @@ export function FreelancerCard({
           ) : (
             <span />
           )}
-          <Link
+          <ButtonLink
             href={href}
-            className={cn(BUTTON_BASE, BUTTON_SIZE.sm, VARIANT_BASE.primary, VARIANT_STATE.primary, 'relative z-10 w-30 shrink-0 rounded-[10px]')}
+            variant="primary"
+            size="sm"
+            className="relative z-10 w-30 shrink-0 rounded-[10px]"
           >
             {t('freelancerCard.view', lang)}
-          </Link>
+          </ButtonLink>
         </div>
       </div>
     </article>

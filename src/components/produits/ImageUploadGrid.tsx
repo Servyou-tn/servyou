@@ -8,6 +8,7 @@ import { FOCUS_RING } from '@/components/layout/styles'
 import { uploadProductImageAction } from '@/app/actions/products'
 import { MAX_PRODUCT_IMAGES } from '@/lib/products/constants'
 import { MAX_INPUT_BYTES, MAX_INPUT_MB } from '@/lib/images/limits'
+import { HitArea } from '@/components/ui/interactive-surface'
 
 // The G6 gallery. Four affordances were designed; THREE ship here:
 //   ✅ remove          ✅ cover badge          ✅ per-file progress
@@ -287,6 +288,7 @@ export function ImageUploadGrid({
                   className={`absolute end-2 top-2 grid h-7 w-7 place-items-center rounded-full bg-black/60 text-white transition-colors hover:bg-black/80 ${FOCUS_RING}`}
                 >
                   <X className="h-4 w-4" aria-hidden />
+                  <HitArea size={28} />
                 </button>
               </>
             )}
@@ -327,6 +329,7 @@ export function ImageUploadGrid({
                   className={`absolute end-2 top-2 grid h-7 w-7 place-items-center rounded-full bg-black/60 text-white transition-colors hover:bg-black/80 ${FOCUS_RING}`}
                 >
                   <X className="h-4 w-4" aria-hidden />
+                  <HitArea size={28} />
                 </button>
               </>
             )}

@@ -13,6 +13,7 @@ import type { ServiceDetailData, DeliveryMode } from '@/lib/marche/service-detai
 import { skillLabel } from '@/lib/freelance/service-draft'
 import { formatServicePrice, servicePriceLabel } from '@/lib/freelance/service-price'
 import { ReportListingModal } from '@/components/report/ReportListingModal'
+import { HitArea } from '@/components/ui/interactive-surface'
 
 // D2 — service detail. Measured against Figma 666:55479 (1440) and 668:55920 (375).
 //
@@ -167,9 +168,10 @@ export function ServiceDetail({
           {profileHref && (
             <Link
               href={profileHref}
-              className={`inline-flex h-8 items-center justify-center gap-2 rounded-[10px] border border-border-strong bg-white text-body-sm font-semibold text-text-primary transition-colors hover:bg-surface-subtle ${FOCUS_RING}`}
+              className={`max-lg:relative inline-flex h-8 items-center justify-center gap-2 rounded-[10px] border border-border-strong bg-white text-body-sm font-semibold text-text-primary transition-colors hover:bg-surface-subtle ${FOCUS_RING}`}
             >
               {t('serviceDetail.viewProfile', lang)}
+              <HitArea size={32} axis="y" />
             </Link>
           )}
         </div>
@@ -187,9 +189,10 @@ export function ServiceDetail({
       <nav aria-label="Fil d'Ariane" className="flex flex-wrap items-center gap-1.5 text-[13px] leading-4 text-text-muted lg:gap-2">
         <Link href="/" className="hidden hover:text-text-secondary lg:inline">{t('serviceDetail.breadcrumb.home', lang)}</Link>
         <ChevronRight className="hidden h-3.5 w-3.5 shrink-0 rtl:rotate-180 lg:block" aria-hidden="true" />
-        <Link href="/marche/services" className="inline-flex items-center gap-1.5 hover:text-text-secondary lg:gap-0">
+        <Link href="/marche/services" className="max-lg:relative inline-flex items-center gap-1.5 hover:text-text-secondary lg:gap-0">
           <ChevronLeft className="size-4 shrink-0 rtl:rotate-180 lg:hidden" aria-hidden="true" />
           {t('serviceDetail.breadcrumb.services', lang)}
+          <HitArea size={16} axis="y" />
         </Link>
         {category && (
           <>

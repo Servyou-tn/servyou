@@ -4,6 +4,7 @@ import { AlertTriangle } from 'lucide-react'
 import { SYSTEM_LINK_CLASS, SystemStateScreen } from '@/components/system/SystemStateScreen'
 import { getLang } from '@/lib/i18n/server'
 import { t } from '@/lib/i18n'
+import { HitArea } from '@/components/ui/interactive-surface'
 
 export async function generateMetadata(): Promise<Metadata> {
   return localizedMetadata('meta.account_suspended', { robots: { index: false } })
@@ -28,6 +29,7 @@ export default async function CompteSuspenduPage() {
         <form action="/auth/signout" method="POST">
           <button type="submit" className={SYSTEM_LINK_CLASS}>
             {t('system.suspended.signout', lang)}
+            <HitArea size={40} />
           </button>
         </form>
       }

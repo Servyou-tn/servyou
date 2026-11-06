@@ -14,6 +14,7 @@ import { LanguageToggle } from './LanguageToggle'
 import { AccountMenu } from './AccountMenu'
 import { MobileMenu } from './MobileMenu'
 import { FOCUS_RING } from './styles'
+import { HitArea } from '@/components/ui/interactive-surface'
 
 // Shared production Header (Cultivo pill-capsule pattern). Three-zone layout:
 // brand left · centered pill capsule of nav links · actions right. The active
@@ -175,9 +176,10 @@ export function Header({
                 />
                 <Link
                   href={account.spaceHref}
-                  className={`inline-flex h-10 items-center whitespace-nowrap rounded-full bg-brand-blue-600 px-5 text-sm font-semibold text-white transition-colors hover:bg-[#1D4ED8] ${FOCUS_RING}`}
+                  className={`max-lg:relative inline-flex h-10 items-center whitespace-nowrap rounded-full bg-brand-blue-600 px-5 text-sm font-semibold text-white transition-colors hover:bg-[#1D4ED8] ${FOCUS_RING}`}
                 >
                   {t('nav.dashboard', lang)}
+                  <HitArea size={40} axis="y" />
                 </Link>
               </>
             ) : state.variant === 'public' ? (
@@ -193,13 +195,14 @@ export function Header({
                     #1D4ED8 (landing, on bg-brand-blue-600) is a stray old blue-700 — logged follow-up. */}
                 <Link
                   href="/inscription"
-                  className={`whitespace-nowrap rounded-full font-semibold text-white transition-colors ${
+                  className={`max-lg:relative whitespace-nowrap rounded-full font-semibold text-white transition-colors ${
                     isLanding
                       ? 'inline-flex h-10 items-center px-5 text-sm bg-brand-blue-600 hover:bg-[#1D4ED8]'
                       : 'px-4 py-2 text-sm bg-brand-blue-800 hover:bg-[#152C6B]'
                   } ${FOCUS_RING}`}
                 >
                   {t('nav.signup_short', lang)}
+                  <HitArea size={40} axis="y" />
                 </Link>
               </>
             ) : (

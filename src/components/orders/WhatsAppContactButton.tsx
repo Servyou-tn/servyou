@@ -10,6 +10,7 @@ import { buildWhatsAppUrl } from '@/lib/orders/whatsapp'
 import { cn } from '@/lib/utils'
 import { FOCUS_RING } from '@/components/layout/styles'
 import { WhatsAppGlyph } from '@/components/aide/WhatsAppGlyph'
+import { HitArea } from '@/components/ui/interactive-surface'
 
 // Seller → buyer WhatsApp contact, shared by G8's row and G9's detail panels.
 //
@@ -134,7 +135,7 @@ export function WhatsAppContactButton({
         disabled={loading}
         aria-busy={loading || undefined}
         className={cn(
-          'inline-flex items-center justify-center gap-2 rounded-[10px] bg-wa-brand font-semibold',
+          'max-lg:relative inline-flex items-center justify-center gap-2 rounded-[10px] bg-wa-brand font-semibold',
           'whitespace-nowrap transition-colors hover:brightness-95',
           'disabled:cursor-not-allowed disabled:opacity-60 motion-reduce:transition-none',
           size === 'lg' ? 'h-12 w-full px-4 text-body' : size === 'md' ? 'h-11 w-full px-4 text-body' : 'h-9 px-4 text-body-sm',
@@ -155,6 +156,7 @@ export function WhatsAppContactButton({
             This is the SECOND time the text-* group has silently evicted a class in this
             codebase — a size during the /marche/services rebuild, a colour here. */}
         <span className="text-text-primary">{label}</span>
+        {size === 'sm' ? <HitArea size={36} axis="y" /> : null}
       </button>
       {error ? (
         <p role="alert" className="text-caption text-danger-500">

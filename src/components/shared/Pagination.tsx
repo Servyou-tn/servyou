@@ -73,8 +73,10 @@ export function Pagination({
   // Figma 188:14219: every cell is a 36×36 square at radius 8 (rounded-md — tokens.css sets
   // --radius-md: 8px), NOT a pill. Idle cells carry a 1px border-subtle outline on white; the
   // active cell is a solid brand-blue-600 fill. Numbers are semibold in both states.
+  // Below lg: 36 → 46 tall; across, the cells are only 4 px apart, so each takes 2 px per side (40 wide, pitch-limited).
+  const PAGE_HIT = 'pointer-events-auto absolute max-lg:-inset-x-0.5 max-lg:-inset-y-1.25'
   const cell =
-    'inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md text-sm font-semibold transition-colors'
+    'max-lg:relative inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md text-sm font-semibold transition-colors'
   const numberIdle = cn(cell, 'border border-border-subtle bg-white text-text-secondary hover:bg-surface-subtle', FOCUS_RING)
   const numberActive = cn(cell, 'bg-brand-blue-600 text-white')
   // Arrows are icon-only 36×36 boxes with the same border treatment — no text label.
@@ -105,6 +107,7 @@ export function Pagination({
       return (
         <Link key={item} href={hrefFor(item)} className={numberIdle} aria-label={pageLabel(item)}>
           {item}
+          <span aria-hidden="true" className={PAGE_HIT} />
         </Link>
       )
     })
@@ -125,6 +128,7 @@ export function Pagination({
         ) : (
           <Link href={hrefFor(current - 1)} rel="prev" className={arrowEnabled} aria-label={t('search.pagination.prev', lang)}>
             <ChevronLeft className="h-4 w-4" aria-hidden="true" />
+            <span aria-hidden="true" className={PAGE_HIT} />
           </Link>
         )}
 
@@ -139,6 +143,7 @@ export function Pagination({
         ) : (
           <Link href={hrefFor(current + 1)} rel="next" className={arrowEnabled} aria-label={t('search.pagination.next', lang)}>
             <ChevronRight className="h-4 w-4" aria-hidden="true" />
+            <span aria-hidden="true" className={PAGE_HIT} />
           </Link>
         )}
       </nav>

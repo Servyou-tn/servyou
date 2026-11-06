@@ -18,6 +18,7 @@ import type { SearchOutcome } from '@/lib/search/search-marketplace'
 import type { SearchParams } from '@/lib/search/search-params'
 import { t, tn } from '@/lib/i18n'
 import type { Lang } from '@/lib/i18n'
+import { HitArea } from '@/components/ui/interactive-surface'
 
 // C2 — a SERVICE category's page (Figma 1486:24359 desktop / 1488:66061 mobile; measurements + decisions: docs/design/category-c2-measurements.md,
 // docs/design/category-c2-deltas.md). Same engine as /marche/services — only the scope differs: the category is the page. Header (breadcrumb · H1 +
@@ -180,9 +181,10 @@ export function CategoryServicesPage({
             </div>
             <Link
               href={hasFilters ? clearFiltersHref : '/marche/services'}
-              className={`inline-flex h-10 items-center gap-2 rounded-[10px] bg-brand-blue-600 px-4 text-base font-semibold text-white transition-colors hover:bg-brand-blue-600/90 ${FOCUS_RING}`}
+              className={`max-lg:relative inline-flex h-10 items-center gap-2 rounded-[10px] bg-brand-blue-600 px-4 text-base font-semibold text-white transition-colors hover:bg-brand-blue-600/90 ${FOCUS_RING}`}
             >
               {t(hasFilters ? 'services.empty.resetFilters' : 'category.empty.browseAll', lang)}
+              <HitArea size={40} axis="y" />
             </Link>
           </div>
         ) : (

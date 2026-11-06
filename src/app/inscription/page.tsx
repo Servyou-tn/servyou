@@ -4,6 +4,7 @@ import { getLang } from '@/lib/i18n/server'
 import { t } from '@/lib/i18n'
 import { AuthFunnelLayout } from '@/components/auth/AuthFunnelLayout'
 import { readNext, withNext } from '@/lib/auth/next-param'
+import { HitArea } from '@/components/ui/interactive-surface'
 
 // `display` = the Manrope display voice; AuthFunnelLayout sets --font-display on
 // its <main>, so it applies to everything rendered here. No 'use client': pure
@@ -65,9 +66,10 @@ export default async function InscriptionPage({
           {t('signup.intent.alreadyAccount', lang)}{' '}
           <Link
             href={withNext('/connexion', next)}
-            className="rounded font-semibold text-[var(--brand-blue-600)] outline-none hover:underline focus-visible:ring-2 focus-visible:ring-[var(--brand-blue-600)] focus-visible:ring-offset-2"
+            className="max-lg:relative rounded font-semibold text-[var(--brand-blue-600)] outline-none hover:underline focus-visible:ring-2 focus-visible:ring-[var(--brand-blue-600)] focus-visible:ring-offset-2"
           >
             {t('signup.intent.signInLink', lang)}
+            <HitArea size={20} axis="y" />
           </Link>
         </>
       }

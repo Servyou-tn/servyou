@@ -12,6 +12,7 @@ import { getLang } from '@/lib/i18n/server'
 import { t } from '@/lib/i18n'
 import { FOCUS_RING } from '@/components/layout/styles'
 import { ProfileEditForm } from './_components/ProfileEditForm'
+import { HitArea } from '@/components/ui/interactive-surface'
 
 export async function generateMetadata(): Promise<Metadata> {
   return localizedMetadata('meta.freelance_edit')
@@ -34,9 +35,10 @@ export default async function ModifierProfilPage({ searchParams }: { searchParam
           <p className="text-body text-text-secondary">{t('freelance.edit.noProfile.body', lang)}</p>
           <Link
             href="/mon-profil-freelance/creer"
-            className={`mt-2 inline-flex h-10 w-fit items-center justify-center rounded-lg bg-brand-blue-600 px-4 text-base font-semibold text-text-inverse transition-colors hover:bg-brand-blue-700 active:bg-brand-blue-800 motion-reduce:transition-none ${FOCUS_RING}`}
+            className={`max-lg:relative mt-2 inline-flex h-10 w-fit items-center justify-center rounded-lg bg-brand-blue-600 px-4 text-base font-semibold text-text-inverse transition-colors hover:bg-brand-blue-700 active:bg-brand-blue-800 motion-reduce:transition-none ${FOCUS_RING}`}
           >
             {t('freelance.edit.noProfile.cta', lang)}
+            <HitArea size={40} axis="y" />
           </Link>
         </div>
       </AppShell>

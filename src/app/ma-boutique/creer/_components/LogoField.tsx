@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { useLang } from '@/components/LangProvider'
 import { t } from '@/lib/i18n'
 import { FOCUS_RING } from '@/components/layout/styles'
+import { HitArea } from '@/components/ui/interactive-surface'
 
 // field-logo — Figma 555:37453, 712×100 (docs/design/g2-discovery.md §2a). Two upload affordances,
 // both measured, not one applied twice: the avatar-ring's own camera badge, and a separate
@@ -48,6 +49,7 @@ export function LogoField({
           className={`absolute bottom-0 end-0 grid h-8 w-8 place-items-center rounded-full border-2 border-surface-base bg-brand-blue-600 text-white transition-colors hover:bg-brand-blue-700 ${FOCUS_RING}`}
         >
           <Camera className="h-4 w-4" aria-hidden="true" />
+          <HitArea size={32} />
         </button>
         <input
           ref={inputRef}

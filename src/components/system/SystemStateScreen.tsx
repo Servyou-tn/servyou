@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { BASE, SIZE, VARIANT_BASE, VARIANT_STATE } from '@/components/ui/button'
+import { BASE, SIZE, VARIANT_BASE, VARIANT_STATE, ButtonLink } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { t, type Lang } from '@/lib/i18n'
 
@@ -96,8 +96,8 @@ export function SystemStateScreen({
 
 export function HomeLink({ lang }: { lang: Lang }) {
   return (
-    <Link href="/" className={SYSTEM_LINK_CLASS}>
+    <ButtonLink href="/" variant="link" size="md">
       {t('common.back_home', lang)}
-    </Link>
+    </ButtonLink>
   )
 }

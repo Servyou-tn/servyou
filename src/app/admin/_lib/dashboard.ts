@@ -84,6 +84,17 @@ export function pctDelta(current: number | null, previous: number | null): Delta
   return { direction: value > 0 ? 'up' : value < 0 ? 'down' : 'flat', value: Math.abs(value) }
 }
 
+export type Polarity = 'higher_better' | 'lower_better'
+export type DeltaTone = 'good' | 'bad' | 'neutral'
+/**
+ * The colour a change means (founder ruling after #336): for a delay or a cancellation a fall is good news, so it is
+ * green; for counts (orders, sign-ups, value) a rise is green. The arrow still shows the sign.
+ */
+export function deltaTone(d: Delta, polarity: Polarity): DeltaTone {
+  if (d.direction === 'flat') return 'neutral'
+  return (d.direction === 'up') === (polarity === 'higher_better') ? 'good' : 'bad'
+}
+
 /** Absolute change (counts, « pts » of a rate, minutes of a median); null when either side is unknown. */
 export function absDelta(current: number | null, previous: number | null, round = (n: number) => Math.round(n)): Delta | null {
   if (current === null || previous === null) return null

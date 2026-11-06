@@ -14,6 +14,7 @@ import type { ShellRole } from './sidebar-items'
 import { TopbarSearch } from './TopbarSearch'
 import { TopbarNotifications } from './TopbarNotifications'
 import { TopbarUserMenu } from './TopbarUserMenu'
+import { HitArea } from '@/components/ui/interactive-surface'
 
 // The app-shell topbar (design system Section 3.3): white, 64px, bottom border. Desktop is a
 // single row [search | spacer | language · bell · avatar]; the sidebar carries the logo there.
@@ -56,7 +57,7 @@ export function Topbar({
             (Sidebar.tsx) — and the full wordmark returns at `sm:` where the row has room. No
             mobile Figma frame exists for this topbar to contradict; this is a functional fix, not
             a redraw. */}
-        <Link href="/" aria-label="Servyou" className="shrink-0 lg:hidden">
+        <Link href="/" aria-label="Servyou" className="relative shrink-0 lg:hidden">
           <Image
             src="/brand/logo/servyou-s-mark.png"
             alt="Servyou"
@@ -73,6 +74,7 @@ export function Topbar({
             priority
             className="hidden h-8 w-auto sm:block"
           />
+          <HitArea size={32} />
         </Link>
 
         {/* Search — inline on md+, filling the row (Figma 611:45640 search sz=FILL). */}

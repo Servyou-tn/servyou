@@ -15,6 +15,7 @@ import { t, type Lang } from '@/lib/i18n'
 import type { TopBarUser } from '@/components/marche/ProfileAvatarMenu'
 import { ProduitsLensToggle } from './ProduitsLensToggle'
 import { BoutiquesFilterBar } from './BoutiquesFilterBar'
+import { HitArea } from '@/components/ui/interactive-surface'
 
 const BASE = '/marche/produits'
 
@@ -107,9 +108,10 @@ export async function BoutiquesLens({
             {hasFilters && (
               <Link
                 href={clearFiltersHref}
-                className={`inline-flex h-10 items-center gap-2 rounded-[10px] bg-brand-blue-600 px-4 text-base font-semibold text-white transition-colors hover:bg-brand-blue-600/90 ${FOCUS_RING}`}
+                className={`max-lg:relative inline-flex h-10 items-center gap-2 rounded-[10px] bg-brand-blue-600 px-4 text-base font-semibold text-white transition-colors hover:bg-brand-blue-600/90 ${FOCUS_RING}`}
               >
                 {t('produits.empty.resetFilters', lang)}
+                <HitArea size={40} axis="y" />
               </Link>
             )}
           </div>

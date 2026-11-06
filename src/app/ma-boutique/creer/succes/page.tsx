@@ -10,6 +10,7 @@ import { resolveOwnedShopId } from '@/lib/shops/owner-shop'
 import { createClient } from '@/lib/supabase/server'
 import { getLang } from '@/lib/i18n/server'
 import { t } from '@/lib/i18n'
+import { HitArea } from '@/components/ui/interactive-surface'
 
 export async function generateMetadata(): Promise<Metadata> {
   return localizedMetadata('meta.shop_created')
@@ -53,8 +54,8 @@ export default async function ShopCreatedPage() {
 
   const lang = await getLang()
 
-  const primaryLinkClasses = `inline-flex h-10 w-full items-center justify-center rounded-lg bg-brand-blue-600 px-4 text-base font-semibold text-text-inverse transition-colors hover:bg-brand-blue-700 active:bg-brand-blue-800 sm:w-auto ${FOCUS_RING}`
-  const secondaryLinkClasses = `inline-flex h-10 w-full items-center justify-center rounded-lg border border-border-strong bg-surface-base px-4 text-base font-semibold text-text-primary transition-colors hover:bg-surface-subtle active:bg-surface-sunken sm:w-auto ${FOCUS_RING}`
+  const primaryLinkClasses = `max-lg:relative inline-flex h-10 w-full items-center justify-center rounded-lg bg-brand-blue-600 px-4 text-base font-semibold text-text-inverse transition-colors hover:bg-brand-blue-700 active:bg-brand-blue-800 sm:w-auto ${FOCUS_RING}`
+  const secondaryLinkClasses = `max-lg:relative inline-flex h-10 w-full items-center justify-center rounded-lg border border-border-strong bg-surface-base px-4 text-base font-semibold text-text-primary transition-colors hover:bg-surface-subtle active:bg-surface-sunken sm:w-auto ${FOCUS_RING}`
 
   return (
     <AppShell user={shell.topBarUser}>
@@ -97,9 +98,11 @@ export default async function ShopCreatedPage() {
           <div className="mt-2 flex w-full flex-col items-center gap-3 sm:w-auto sm:flex-row">
             <Link href={`/boutique/${owned.shopId}`} className={secondaryLinkClasses}>
               {t('boutique.view_public', lang)}
+              <HitArea size={40} axis="y" />
             </Link>
             <Link href="/tableau-de-bord-vendeur" className={primaryLinkClasses}>
               {t('shop.create.succes.cta_dashboard', lang)}
+              <HitArea size={40} axis="y" />
             </Link>
           </div>
         </div>

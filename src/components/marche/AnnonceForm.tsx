@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useTransition, useId } from 'react'
-import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { useLang } from '@/components/LangProvider'
@@ -12,7 +11,7 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { SettingRow } from '@/components/ui/setting-row'
 import { SkillsPicker } from '@/components/missions/SkillsPicker'
-import { BASE as BUTTON_BASE, Button, SIZE as BUTTON_SIZE, VARIANT_BASE, VARIANT_STATE } from '@/components/ui/button'
+import { Button, ButtonLink } from '@/components/ui/button'
 import { createAnnonce } from '@/app/mes-annonces/nouvelle/actions'
 import { updateAnnonce } from '@/app/mes-annonces/[id]/modifier/actions'
 import { ANNONCE_DESCRIPTION_MAX, ANNONCE_SKILLS_MAX, ANNONCE_TITLE_MAX, BUDGET_MAX, type JobPostInput } from '@/lib/marche/job-post-validation'
@@ -263,12 +262,13 @@ export function AnnonceForm({ categories, edit }: { categories: AnnonceCategoryO
 
       {/* actions (1478:29834): space-between — Annuler secondary md · Publier l’annonce primary lg (48). One row at 375. */}
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <Link
+        <ButtonLink
           href={edit ? `/mes-annonces/${edit.id}` : '/mes-annonces'}
-          className={cn(BUTTON_BASE, BUTTON_SIZE.md, VARIANT_BASE.secondary, VARIANT_STATE.secondary)}
+          variant="secondary"
+          size="md"
         >
           {t('annonce.form.cancel', lang)}
-        </Link>
+        </ButtonLink>
         <Button type="submit" size="lg" loading={pending}>
           {pending
             ? t(edit ? 'annonce.form.edit_submitting' : 'annonce.form.submitting', lang)

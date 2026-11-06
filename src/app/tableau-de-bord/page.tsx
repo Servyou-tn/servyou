@@ -20,13 +20,14 @@ import { getFreelancerDashboard, VUES_DU_PROFIL } from '@/lib/marche/freelancer-
 import { getLang } from '@/lib/i18n/server'
 import { t, tn } from '@/lib/i18n'
 import { FOCUS_RING } from '@/components/layout/styles'
-import { BASE as BUTTON_BASE, SIZE as BUTTON_SIZE, VARIANT_BASE, VARIANT_STATE } from '@/components/ui/button'
-import { cn } from '@/lib/utils'
+import { ButtonLink } from '@/components/ui/button'
+
 import { StatTile } from './_components/StatTile'
 import { Panel, PanelEmpty } from './_components/Panel'
 import { MissionRow } from './_components/MissionRow'
 import { ActiviteRecente } from './_components/ActiviteRecente'
 import { ForceDuProfil } from './_components/ForceDuProfil'
+import { HitArea } from '@/components/ui/interactive-surface'
 
 export async function generateMetadata(): Promise<Metadata> {
   return localizedMetadata('meta.dashboard')
@@ -86,13 +87,15 @@ export default async function TableauDeBordPage() {
             <p className="text-body text-text-secondary">{t('freelance.dashboard.subline', lang)}</p>
           </div>
           {/* H6 /mes-services/creer — live since H6 PR-4. Button's primary recipe on a Link. */}
-          <Link
+          <ButtonLink
             href="/mes-services/creer"
-            className={cn(BUTTON_BASE, BUTTON_SIZE.md, VARIANT_BASE.primary, VARIANT_STATE.primary, 'w-fit shrink-0 self-start max-sm:w-full sm:self-auto')}
+            variant="primary"
+            size="md"
+            className="w-fit shrink-0 self-start max-sm:w-full sm:self-auto"
           >
             <Plus aria-hidden="true" />
             {t('freelance.dashboard.createService', lang)}
-          </Link>
+          </ButtonLink>
         </div>
 
         {!freelancerProfile ? (
@@ -103,9 +106,10 @@ export default async function TableauDeBordPage() {
             <p className="text-body text-text-secondary">{t('freelance.dashboard.noProfile.body', lang)}</p>
             <Link
               href="/mon-profil-freelance/creer"
-              className={`mt-2 inline-flex h-10 w-fit items-center justify-center rounded-lg bg-brand-blue-600 px-4 text-base font-semibold text-text-inverse transition-colors hover:bg-brand-blue-700 active:bg-brand-blue-800 motion-reduce:transition-none ${FOCUS_RING}`}
+              className={`max-lg:relative mt-2 inline-flex h-10 w-fit items-center justify-center rounded-lg bg-brand-blue-600 px-4 text-base font-semibold text-text-inverse transition-colors hover:bg-brand-blue-700 active:bg-brand-blue-800 motion-reduce:transition-none ${FOCUS_RING}`}
             >
               {t('freelance.dashboard.noProfile.cta', lang)}
+              <HitArea size={40} axis="y" />
             </Link>
           </Panel>
         ) : null}
@@ -201,9 +205,10 @@ export default async function TableauDeBordPage() {
             <p className="text-body-sm leading-[normal] text-brand-blue-100">{t('ecosysteme.you_body', lang)}</p>
             <Link
               href="/mes-services"
-              className={`inline-flex h-10 w-fit items-center justify-center rounded-lg border border-border-strong bg-white px-4 text-body-sm font-semibold text-brand-blue-700 transition-colors hover:bg-white/90 ${FOCUS_RING}`}
+              className={`max-lg:relative inline-flex h-10 w-fit items-center justify-center rounded-lg border border-border-strong bg-white px-4 text-body-sm font-semibold text-brand-blue-700 transition-colors hover:bg-white/90 ${FOCUS_RING}`}
             >
               {t('shell.sidebar.services', lang)}
+              <HitArea size={40} axis="y" />
             </Link>
           </div>
 

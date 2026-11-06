@@ -2,6 +2,7 @@
 
 import { Minus, Plus } from 'lucide-react'
 import { FOCUS_RING } from '@/components/layout/styles'
+import { HitArea } from './interactive-surface'
 import { cn } from '@/lib/utils'
 
 // Number Stepper — Figma `589:44212`, 136×40. Genuinely new: grepped the whole component tree
@@ -49,7 +50,10 @@ export function NumberStepper({
       role="group"
       aria-label={label}
       className={cn(
-        'inline-flex h-10 w-34 items-stretch overflow-hidden rounded-lg border border-border-strong bg-surface-base',
+        // overflow-visible below lg: a clipped box clips hit-testing too, so the ± hit areas could not reach 44.
+        // Nothing paints outside the 40 px group at rest; the buttons round their own outer corners below lg, so a tap's
+        // hover fill stays inside the border as the clip used to keep it.
+        'inline-flex h-10 w-34 items-stretch overflow-hidden rounded-lg border border-border-strong bg-surface-base max-lg:overflow-visible',
         className,
       )}
     >
@@ -59,12 +63,13 @@ export function NumberStepper({
         disabled={atMin}
         aria-label={decreaseLabel}
         className={cn(
-          'flex w-10 shrink-0 items-center justify-center text-text-secondary transition-colors',
+          'flex w-10 shrink-0 items-center justify-center text-text-secondary transition-colors max-lg:relative max-lg:first:rounded-s-lg max-lg:last:rounded-e-lg',
           'hover:bg-surface-subtle disabled:cursor-not-allowed disabled:text-text-muted disabled:hover:bg-transparent',
           FOCUS_RING,
         )}
       >
         <Minus className="h-4 w-4" aria-hidden="true" />
+        <HitArea size={40} />
       </button>
 
       <span
@@ -80,12 +85,13 @@ export function NumberStepper({
         disabled={atMax}
         aria-label={increaseLabel}
         className={cn(
-          'flex w-10 shrink-0 items-center justify-center text-text-secondary transition-colors',
+          'flex w-10 shrink-0 items-center justify-center text-text-secondary transition-colors max-lg:relative max-lg:first:rounded-s-lg max-lg:last:rounded-e-lg',
           'hover:bg-surface-subtle disabled:cursor-not-allowed disabled:text-text-muted disabled:hover:bg-transparent',
           FOCUS_RING,
         )}
       >
         <Plus className="h-4 w-4" aria-hidden="true" />
+        <HitArea size={40} />
       </button>
     </div>
   )

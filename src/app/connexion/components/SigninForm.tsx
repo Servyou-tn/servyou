@@ -195,8 +195,11 @@ export function SigninForm({ showResetSuccess = false }: { showResetSuccess?: bo
             autoComplete="current-password"
           />
           <div className="mt-2 text-end">
-            <Link href="/mot-de-passe-oublie" className="text-body-sm font-medium text-brand-blue-300 hover:underline">
+            <Link href="/mot-de-passe-oublie" className="text-body-sm font-medium text-brand-blue-300 hover:underline max-lg:relative">
               {t('signin.forgotPassword', lang)}
+              {/* Below lg it grows into the free space only — 6 px of the 12 above (the password field), 18 of the 19
+                  below (the submit button): 17 → 41 tall, the most it can take without stealing a neighbour's tap. */}
+              <span aria-hidden="true" className="pointer-events-auto absolute max-lg:inset-x-0 max-lg:-top-1.5 max-lg:-bottom-4.5" />
             </Link>
           </div>
         </div>

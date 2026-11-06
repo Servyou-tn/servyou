@@ -23,6 +23,7 @@ import { CascadeWarningModal } from './CascadeWarningModal'
 import { DeleteServiceModal } from './DeleteServiceModal'
 import { CATEGORY_ICONS } from '@/components/shared/service-category-icons'
 import { getStatusPresentation } from './service-status'
+import { HitArea } from '@/components/ui/interactive-surface'
 
 // H5's row — Figma 258:7898 (Service Row, state[default,hover] × status[active,paused]), measured
 // as a FLAT divided table row (cornerRadius 0, bottom-only 1px hairline, INSIDE stroke), not a
@@ -99,9 +100,10 @@ export function ServiceRow({ service, lang }: { service: SellerServiceRow; lang:
             verified here: 14px rendered as 16px through cn()). docs/follow-ups.md's tracked class. */}
         <Link
           href={`/services/${service.id}`}
-          className={`inline-flex h-9 items-center rounded-lg border border-border-subtle px-3 text-body-sm font-medium text-text-secondary hover:bg-surface-subtle ${FOCUS_RING}`}
+          className={`max-lg:relative inline-flex h-9 items-center rounded-lg border border-border-subtle px-3 text-body-sm font-medium text-text-secondary hover:bg-surface-subtle ${FOCUS_RING}`}
         >
           {t('service.action_view', lang)}
+          <HitArea size={36} axis="y" />
         </Link>
 
         <DropdownMenu>
@@ -111,11 +113,12 @@ export function ServiceRow({ service, lang }: { service: SellerServiceRow; lang:
               disabled={pending}
               aria-label={t('service.actions_menu_aria', lang, { title: service.title })}
               className={cn(
-                'flex h-9 w-9 items-center justify-center rounded-lg text-text-secondary hover:bg-surface-subtle disabled:opacity-50',
+                'max-lg:relative flex h-9 w-9 items-center justify-center rounded-lg text-text-secondary hover:bg-surface-subtle disabled:opacity-50',
                 FOCUS_RING,
               )}
             >
               <MoreVertical className="h-4 w-4" aria-hidden="true" />
+              <HitArea size={36} />
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-56 rounded-xl border border-border-subtle bg-white p-1 shadow-lg">

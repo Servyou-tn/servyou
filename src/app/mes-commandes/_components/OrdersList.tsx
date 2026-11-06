@@ -29,6 +29,7 @@ import {
   shortDate,
   shortRef,
 } from '@/lib/orders/order-status'
+import { HitArea } from '@/components/ui/interactive-surface'
 
 // E3 list — the accordion rows (Figma 709:59673 desktop / 710:59952 mobile).
 //
@@ -180,7 +181,7 @@ function WhatsAppButton({ sellerId, serviceTitle }: { sellerId: string; serviceT
       onClick={contact}
       disabled={noPhone || loading}
       title={noPhone ? t('mesCommandes.whatsapp.none', lang) : undefined}
-      className={`inline-flex h-9 items-center justify-center gap-2 rounded-[10px] px-4 text-body-sm font-semibold transition-colors ${FOCUS_RING} ${
+      className={`max-lg:relative inline-flex h-9 items-center justify-center gap-2 rounded-[10px] px-4 text-body-sm font-semibold transition-colors ${FOCUS_RING} ${
         noPhone
           ? 'cursor-not-allowed bg-surface-sunken text-text-muted'
           : 'bg-wa-brand text-text-primary hover:bg-wa-brand-hover'
@@ -188,6 +189,7 @@ function WhatsAppButton({ sellerId, serviceTitle }: { sellerId: string; serviceT
     >
       <WhatsAppGlyph />
       {t('mesCommandes.whatsapp', lang)}
+      <HitArea size={36} axis="y" />
     </button>
   )
 }

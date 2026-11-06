@@ -1,9 +1,8 @@
-import Link from 'next/link'
 import { TriangleAlert } from 'lucide-react'
 import { t, tn, type Lang } from '@/lib/i18n'
-import { cn } from '@/lib/utils'
+
 import { Avatar } from '@/components/ui/avatar'
-import { BASE as BUTTON_BASE, SIZE as BUTTON_SIZE, VARIANT_BASE, VARIANT_STATE } from '@/components/ui/button'
+import { ButtonLink } from '@/components/ui/button'
 import { SortSelect } from '@/components/orders/SortSelect'
 import { ErrorState } from '@/components/marche/ErrorState'
 import { Pagination } from '@/components/shared/Pagination'
@@ -72,9 +71,9 @@ export function OrdersListView({
             <p className="text-body-sm font-semibold text-warning-700">{tn('admin.orders.blocked_title', lang, blocked.count)}</p>
             <p className="text-caption font-medium text-warning-700">{t('admin.orders.blocked_body', lang)}</p>
           </div>
-          <Link href={blocked.href} className={cn(BUTTON_BASE, BUTTON_SIZE.sm, VARIANT_BASE.secondary, VARIANT_STATE.secondary, 'shrink-0 self-start sm:self-auto')}>
+          <ButtonLink href={blocked.href} variant="secondary" size="sm" className="shrink-0 self-start sm:self-auto">
             {t('admin.orders.blocked_cta', lang)}
-          </Link>
+          </ButtonLink>
         </div>
       ) : null}
 

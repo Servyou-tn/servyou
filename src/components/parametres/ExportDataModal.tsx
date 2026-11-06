@@ -7,6 +7,7 @@ import { t } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
 import { FOCUS_RING } from '@/components/layout/styles'
 import { requestDataExportAction } from '@/app/parametres/actions'
+import { HitArea } from '@/components/ui/interactive-surface'
 
 // Simple confirm modal (no typed confirmation) for the data-export request. Mounted only
 // while open by the parent, so no reset effect is needed.
@@ -62,22 +63,24 @@ export function ExportDataModal({ email, onClose }: { email: string; onClose: ()
             type="button"
             onClick={onClose}
             className={cn(
-              'inline-flex h-10 items-center rounded-full border border-border-subtle bg-white px-4 text-sm font-medium text-text-primary transition-colors hover:bg-slate-50',
+              'max-lg:relative inline-flex h-10 items-center rounded-full border border-border-subtle bg-white px-4 text-sm font-medium text-text-primary transition-colors hover:bg-slate-50',
               FOCUS_RING,
             )}
           >
             {t('parametres.export.cancel', lang)}
+            <HitArea size={40} axis="y" />
           </button>
           <button
             type="button"
             onClick={onConfirm}
             disabled={pending}
             className={cn(
-              'inline-flex h-10 items-center rounded-full bg-brand-blue-600 px-4 text-sm font-semibold text-white transition-colors hover:bg-brand-blue-500 disabled:opacity-60',
+              'max-lg:relative inline-flex h-10 items-center rounded-full bg-brand-blue-600 px-4 text-sm font-semibold text-white transition-colors hover:bg-brand-blue-500 disabled:opacity-60',
               FOCUS_RING,
             )}
           >
             {pending ? t('parametres.export.confirming', lang) : t('parametres.export.confirm', lang)}
+            <HitArea size={40} axis="y" />
           </button>
         </div>
       </div>

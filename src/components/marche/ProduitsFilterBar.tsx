@@ -18,6 +18,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { HitArea } from '@/components/ui/interactive-surface'
 
 // The desktop (lg+) filter bar for /marche/produits — Figma 570:40225 — and, since PR-2b, /recherche (1596:41289): an in-page search, then
 // single-select Catégorie / Ville, a Prix range popover and a sort dropdown, with a row of
@@ -351,9 +352,10 @@ function FilterChip({
         type="button"
         onClick={onRemove}
         aria-label={t('produits.filters.removeFilter', lang, { filter: label })}
-        className={`inline-flex h-5 w-5 items-center justify-center rounded-full hover:bg-brand-blue-100 ${FOCUS_RING}`}
+        className={`max-lg:relative inline-flex h-5 w-5 items-center justify-center rounded-full hover:bg-brand-blue-100 ${FOCUS_RING}`}
       >
         <X className="h-3.5 w-3.5" aria-hidden="true" />
+        <HitArea size={20} />
       </button>
     </span>
   )

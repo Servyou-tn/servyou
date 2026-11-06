@@ -6,7 +6,7 @@ import { AppShell } from '@/components/shell/AppShell'
 import { Pagination } from '@/components/shared/Pagination'
 import { SortSelect } from '@/components/orders/SortSelect'
 import { FOCUS_RING } from '@/components/layout/styles'
-import { BASE as BUTTON_BASE, SIZE as BUTTON_SIZE, VARIANT_BASE, VARIANT_STATE } from '@/components/ui/button'
+import { ButtonLink } from '@/components/ui/button'
 import { requireFreelancer } from '@/lib/auth/require-seller'
 import {
   DEFAULT_ENGAGEMENT_SORT,
@@ -107,12 +107,14 @@ export default async function MesEngagementsPage({
             <h1 className="text-h1 text-text-primary">{t('engagements.title', lang)}</h1>
             <p className="text-body text-text-muted">{t('engagements.subtitle', lang)}</p>
           </div>
-          <Link
+          <ButtonLink
             href="/trouver-des-missions"
-            className={cn(BUTTON_BASE, BUTTON_SIZE.md, VARIANT_BASE.ghost, VARIANT_STATE.ghost, 'w-fit shrink-0')}
+            variant="ghost"
+            size="md"
+            className="w-fit shrink-0"
           >
             {t('engagements.find_missions', lang)}
-          </Link>
+          </ButtonLink>
         </div>
 
         {/* ── stats (273:8583): 4 tiles, gap 16. Tile 2 is « À traiter », not the frame's « À livrer » (D4). ── */}

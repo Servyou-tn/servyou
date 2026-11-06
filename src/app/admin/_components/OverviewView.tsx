@@ -1,8 +1,7 @@
-import Link from 'next/link'
 import { Zap } from 'lucide-react'
 import { t, type Lang } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
-import { BASE as BUTTON_BASE, SIZE as BUTTON_SIZE, VARIANT_BASE, VARIANT_STATE } from '@/components/ui/button'
+import { ButtonLink } from '@/components/ui/button'
 import { ErrorState } from '@/components/marche/ErrorState'
 import { KpiTile, type KpiAccent, type KpiDelta } from './KpiTile'
 import { OrderStatusPill, Overline, Panel, PanelNote, figureDir } from './parts'
@@ -21,7 +20,6 @@ export type CityVM = { city: string; line: string; sellersPct: number; ordersPct
 export type ActionVM = { id: string; title: string; sub: string }
 
 const BAR: Record<QueueTone, string> = { danger: 'bg-danger-500', warning: 'bg-warning-500', info: 'bg-info-500', muted: 'bg-text-muted' }
-const button = (primary: boolean) => cn(BUTTON_BASE, BUTTON_SIZE.sm, VARIANT_BASE[primary ? 'primary' : 'secondary'], VARIANT_STATE[primary ? 'primary' : 'secondary'], 'shrink-0')
 
 export function OverviewView({
   lang, updated, updatedShort, queue, tiles, tiles2, statsFailed, recent, recentFailed, cities, actions, actionsFailed,
@@ -73,7 +71,7 @@ export function OverviewView({
                   <p className="text-body-sm font-semibold text-text-primary lg:text-body">{q.title}</p>
                   <p className="text-caption font-medium text-text-secondary lg:text-body-sm lg:font-normal">{q.sub}</p>
                 </div>
-                <Link href={q.href} className={button(q.primary)}>{q.action}</Link>
+                <ButtonLink href={q.href} variant={q.primary ? 'primary' : 'secondary'} size="sm" className="shrink-0">{q.action}</ButtonLink>
               </li>
             ))}
           </ul>

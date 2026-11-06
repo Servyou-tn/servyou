@@ -4,7 +4,8 @@ import { figureDir } from './parts'
 
 // The admin « StatTile » (Figma NOV 4 — Admin, J1 / J8 / M1: StatTile / color=…, delta=…, kebab=off): pad 24, gap 16,
 // border subtle, radius 12; a 48 icon circle (24 glyph — the frame draws icon-inbox on every tile); then label 14
-// Medium secondary · value 28 Bold blue-800 · either a delta row (16 arrow + 14 Medium, success up / danger down)
+// Medium secondary · value 28 Bold blue-800 · either a delta row (16 arrow + 14 Medium; the arrow shows the sign, the
+// colour the meaning: success good / danger bad — a shorter delay is green)
 // or a 14 Regular muted subtitle. A different recipe from src/components/shared/StatTile (pad 20, 44 circle,
 // value text-primary), so it stays admin-local; the J3 tiles in UserDetailView share the value style.
 const ACCENT = {
@@ -15,7 +16,9 @@ const ACCENT = {
 } as const
 export type KpiAccent = keyof typeof ACCENT
 
-export type KpiDelta = { direction: 'up' | 'down' | 'flat'; text: string; label: string }
+export type KpiDelta = { direction: 'up' | 'down' | 'flat'; tone: 'good' | 'bad' | 'neutral'; text: string; label: string }
+
+const TONE = { good: 'text-success-500', bad: 'text-danger-500', neutral: 'text-text-muted' } as const
 
 export function KpiTile({
   label,
@@ -51,13 +54,13 @@ export function KpiTile({
         <p className="text-[28px] font-bold leading-[34px] text-brand-blue-800"><bdi dir={figureDir(value)}>{value}</bdi></p>
         {delta ? (
           <p className="flex items-center gap-1">
-            {delta.direction === 'up' ? <ArrowUp className="size-4 text-success-500" aria-hidden="true" /> : null}
-            {delta.direction === 'down' ? <ArrowDown className="size-4 text-danger-500" aria-hidden="true" /> : null}
+            {delta.direction === 'up' ? <ArrowUp className={cn('size-4', TONE[delta.tone])} aria-hidden="true" /> : null}
+            {delta.direction === 'down' ? <ArrowDown className={cn('size-4', TONE[delta.tone])} aria-hidden="true" /> : null}
             {/* Template string, not cn(): twMerge would evict text-body-sm next to the colour. */}
             <span
               aria-hidden="true"
               dir={figureDir(delta.text)}
-              className={`${delta.direction === 'up' ? 'text-success-500' : delta.direction === 'down' ? 'text-danger-500' : 'text-text-muted'} text-body-sm font-medium`}
+              className={`${TONE[delta.tone]} text-body-sm font-medium`}
             >
               {delta.text}
             </span>
