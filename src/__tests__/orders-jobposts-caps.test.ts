@@ -80,7 +80,8 @@ async function signIn(local: string): Promise<Client> {
 }
 
 async function makeShopWithProduct(sellerId: string, label: string): Promise<string> {
-  const { error: upErr } = await admin.from('profiles').update({ seller_type: 'shop_owner' }).eq('id', sellerId)
+  // Accepting needs a seller phone (migration 20261106153901, G2).
+  const { error: upErr } = await admin.from('profiles').update({ seller_type: 'shop_owner', phone: '+21620000000' }).eq('id', sellerId)
   if (upErr) throw new Error(`seller upgrade failed: ${upErr.message}`)
   const { data: shop, error: shopErr } = await admin
     .from('shops').insert({ owner_id: sellerId, name: `Caps Shop ${label} ${RUN}` }).select('id').single()

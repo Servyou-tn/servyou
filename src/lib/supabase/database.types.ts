@@ -1,7 +1,7 @@
 // Generated from the live Supabase schema (project xggomcitqrkaylqezjjz) — DO NOT EDIT BY HAND.
 // Regenerate after every applied migration: Supabase MCP generate_typescript_types (or
 // `npx supabase gen types typescript --project-id xggomcitqrkaylqezjjz`), then commit.
-// Generated 2026-11-06 after migration 20261106093535 admin_dashboard_stats.
+// Generated 2026-11-06 after migration 20261106153901 journey_gates.
 
 export type Json =
   | string
@@ -794,6 +794,7 @@ export type Database = {
           proposal_message: string | null
           proposed_price_tnd: number | null
           proposed_timeframe: string | null
+          status: string
         }
         Insert: {
           created_at?: string
@@ -804,6 +805,7 @@ export type Database = {
           proposal_message?: string | null
           proposed_price_tnd?: number | null
           proposed_timeframe?: string | null
+          status?: string
         }
         Update: {
           created_at?: string
@@ -814,6 +816,7 @@ export type Database = {
           proposal_message?: string | null
           proposed_price_tnd?: number | null
           proposed_timeframe?: string | null
+          status?: string
         }
         Relationships: [
           {
@@ -1776,6 +1779,7 @@ export type Database = {
         Args: { target_user_id: string }
         Returns: undefined
       }
+      choose_job_response: { Args: { p_response_id: string }; Returns: string }
       client_write_grants: {
         Args: never
         Returns: {

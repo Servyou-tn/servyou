@@ -82,6 +82,8 @@ export const INTEGRATION_GLOBS = [
   '**/admin-requests-live.test.ts',
   // Admin dashboard stats / orders / journal RPCs (migration 20261106093535): 3 sign-ins.
   '**/admin-dashboard-stats-live.test.ts',
+  // Journey gates G1 / G2 / G10 (migration 20261106153901): 4 sign-ins.
+  '**/journey-gates-live.test.ts',
 ]
 
 // Tooling artifacts that must never be scanned for tests: the headless-Chrome VRT profiles (a

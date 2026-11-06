@@ -200,7 +200,8 @@ beforeAll(async () => {
 
   const { error: promoteErr } = await admin.from('profiles').update({ is_admin: true }).eq('id', adminId)
   if (promoteErr) throw new Error(`admin promotion failed: ${promoteErr.message}`)
-  const { error: sellerErr } = await admin.from('profiles').update({ seller_type: 'shop_owner' }).eq('id', sellerId)
+  // Accepting needs a seller phone (migration 20261106153901, G2).
+  const { error: sellerErr } = await admin.from('profiles').update({ seller_type: 'shop_owner', phone: '+21620000000' }).eq('id', sellerId)
   if (sellerErr) throw new Error(`seller upgrade failed: ${sellerErr.message}`)
 
   const { data: shop, error: shopErr } = await admin
