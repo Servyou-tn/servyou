@@ -1,7 +1,7 @@
 // Generated from the live Supabase schema (project xggomcitqrkaylqezjjz) — DO NOT EDIT BY HAND.
 // Regenerate after every applied migration: Supabase MCP generate_typescript_types (or
 // `npx supabase gen types typescript --project-id xggomcitqrkaylqezjjz`), then commit.
-// Generated 2026-11-06 after migration 20261106090849 erase_oauth_identities.
+// Generated 2026-11-06 after migration 20261106093535 admin_dashboard_stats.
 
 export type Json =
   | string
@@ -1617,9 +1617,49 @@ export type Database = {
       }
     }
     Functions: {
+      admin_count_orders: {
+        Args: {
+          p_city?: string
+          p_days?: number
+          p_search?: string
+          p_type?: string
+        }
+        Returns: {
+          all_count: number
+          blocked: number
+          cancelled: number
+          in_progress: number
+          received: number
+        }[]
+      }
+      admin_dashboard_stats: { Args: { p_days?: number }; Returns: Json }
       admin_hide_content: {
         Args: { reason: string; target_id: string; target_type: string }
         Returns: undefined
+      }
+      admin_list_audit_log: {
+        Args: {
+          p_action?: string
+          p_days?: number
+          p_limit?: number
+          p_offset?: number
+          p_search?: string
+          p_target_type?: string
+        }
+        Returns: {
+          action: string
+          admin_id: string
+          admin_name: string
+          after_state: Json
+          before_state: Json
+          created_at: string
+          id: string
+          note: string
+          target_id: string
+          target_label: string
+          target_type: string
+          total_count: number
+        }[]
       }
       admin_list_contact_messages: {
         Args: { p_limit?: number; p_offset?: number; p_status?: string }
@@ -1663,6 +1703,39 @@ export type Database = {
           seller_type: string
           status: string
           user_id: string
+        }[]
+      }
+      admin_list_orders: {
+        Args: {
+          p_city?: string
+          p_days?: number
+          p_limit?: number
+          p_offset?: number
+          p_search?: string
+          p_sort?: string
+          p_tab?: string
+          p_type?: string
+        }
+        Returns: {
+          amount_tnd: number
+          buyer_city: string
+          buyer_id: string
+          buyer_name: string
+          created_at: string
+          id: string
+          is_blocked: boolean
+          item_title: string
+          order_type: string
+          quantity: number
+          ref: string
+          seller_city: string
+          seller_id: string
+          seller_kind: string
+          seller_name: string
+          status: string
+          status_since: string
+          status_since_exact: boolean
+          total_count: number
         }[]
       }
       admin_mark_contact_message_handled: {

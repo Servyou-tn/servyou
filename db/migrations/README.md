@@ -1229,6 +1229,32 @@ both on 2026-10-28.
     - The recorded statement is this whole file, comments included (md5 `0eca352c2452a6ba81533f214ae43e9a`, compared
       without the trailing newline).
     - Rollback: `drop function public.erase_oauth_identities(uuid);` (the erasure would then fail at its auth step).
+123. **20261106093535_admin_dashboard_stats** — admin dashboard read side for Figma J1 / J8 / J9 / J11 (discovery
+    `docs/discovery/admin-dashboard-stats.md`, D1–D12). Written by db-guardian, reviewed and applied by the architect.
+    - Read-only: no table, no write grant (`db/client-write-allowlist.json` unchanged). `admin_overview_stats()` untouched.
+    - Public RPCs, each `stable`, SECURITY DEFINER, `search_path ''`, `is_admin()` gate (42501), parameters checked
+      (23514), EXECUTE for authenticated only (revoked from PUBLIC / anon):
+      · `admin_dashboard_stats(p_days 7|30|90) → jsonb`: period KPIs current + previous (raw; the UI computes deltas),
+        snapshot, 8 ISO weeks, funnel, by category, by city, the « À traiter » queue. Periods in Africa/Tunis days;
+      · `admin_list_orders(tab, search, type, city, days, sort, limit ≤ 200, offset)` and `admin_count_orders(search,
+        type, city, days)`: one shared filter (`private.admin_orders`), so the J9 tabs and the list cannot drift. No
+        `delivery_*`, phone or e-mail field;
+      · `admin_list_audit_log(search, action, target_type, days, limit ≤ 200, offset)`: newest first, with a readable
+        target label and the admin's name.
+    - Private helpers `private.order_status_rank`, `admin_active_sellers`, `admin_period_kpis`, `admin_orders`: no
+      SECURITY DEFINER, no client EXECUTE (revoked from PUBLIC / anon / authenticated; checked live).
+    - Checked after the apply: grants and settings above; as an admin session every RPC runs (orders 16 / 6 blocked /
+      5 in progress / 4 received / 2 cancelled, 8 / 8 audit rows labelled); a non-admin gets 42501 on all four.
+    - Types regenerated (the four RPCs; `admin_dashboard_stats` returns `Json`). Live: `admin-dashboard-stats-live.test.ts`
+      (access, parameters, exact KPI / funnel deltas from fixtures, list / count consistency, literal `%` / `_`, journal
+      label).
+    - The recorded statement is this whole file: the PENDING file with its comments and blank lines removed, code
+      unchanged (md5 `28aa4e9727a4f14bdae108a8899417fd`, no trailing newline). The decisions behind each metric are in
+      the discovery doc.
+    - Rollback: `drop function public.admin_dashboard_stats(integer); drop function public.admin_list_orders(text, text,
+      text, text, integer, text, integer, integer); drop function public.admin_count_orders(text, text, text, integer);
+      drop function public.admin_list_audit_log(text, text, text, integer, integer, integer);` then the four
+      `private.*` helpers. Nothing else depends on them.
 
 ## Rollback paths
 

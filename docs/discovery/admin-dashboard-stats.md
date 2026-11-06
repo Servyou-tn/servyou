@@ -1,7 +1,9 @@
 # Admin dashboard read side — discovery + plan (`feat/admin-dashboard-stats`, 2026-11-06)
 
-Role: db-guardian. Migration: `db/migrations/PENDING_admin_dashboard_stats.sql`. It is **written, not applied**: the
-architect reviews and applies it. All reads below are live, read-only `execute_sql` on `xggomcitqrkaylqezjjz`.
+Role: db-guardian. Migration: `db/migrations/20261106093535_admin_dashboard_stats.sql`, **applied by the architect on
+2026-11-06** (README #123). The recorded statement is the PENDING file without its comments; the code is unchanged.
+Live proof: `src/__tests__/admin-dashboard-stats-live.test.ts`. All reads below are live, read-only `execute_sql` on
+`xggomcitqrkaylqezjjz`.
 
 > **The brief's plan doc `claude/admin-dashboard-plan-2026-11-04.md` was not found**: not in either checkout, not in
 > git history, not on disk. It probably lives in the architect's project knowledge. Every metric below is therefore
@@ -16,14 +18,14 @@ architect reviews and applies it. All reads below are live, read-only `execute_s
 |---|---|
 | `admin_overview_stats()` | All-time totals (users, shops, freelancers, listings, posts, received orders, open reports / disputes). Used by `src/app/admin/page.tsx`. **Untouched.** |
 | `admin_audit_log` | Already has an admin SELECT policy (« Admins read audit log »). 8 rows: suspend / unsuspend user, hide / unhide shop, claim / resolve report. |
-| `orders` | 16 rows, all created **June–August 2026**: **none in the last 90 days**. Statuses: pending 5, accepted 2, prepared 1, arrived 2, received 4, cancelled 2. Product 6, service 10. Admin SELECT policy exists. |
+| `orders` | 16 rows, all created **June–August 2026**: 2 in the current 90-day window (from 9 August), none in the last 30 days. Statuses: pending 5, accepted 2, prepared 1, arrived 2, received 4, cancelled 2. Product 6, service 10. Admin SELECT policy exists. |
 | `order_events` | The trigger fires on insert and on every status change, but it started 2026-08-10: **2 rows, both `created`, no transitions**. History before that does not exist. |
 | Snapshot columns | **14 of 16 orders have no `item_title` / `unit_price_tnd`**: they predate the snapshot. One received order has no `received_at`. |
 | Cities | `profiles.city` is always filled (8 cities). `shops.city` is set on 1 shop of 6; `freelancer_profiles.city` is mostly set. |
 | Categories | product 5 top-level, service 13 top + 92 sub, 1 `both`. `service_listings.category_id` and `job_posts.category_id` hold top-level ids today. |
 
 **What that means for the dashboard today:**
-- Every 7 / 30 / 90-day figure is honestly 0 or null.
+- Every 7 / 30-day order figure is honestly 0 or null; the 90-day window holds 2 created orders, none received.
 - The two timing metrics (acceptance delay, first proposal) have 0–1 samples, so they return `null`, never 0.
 - The order list shows 6 « bloquées » (5 pending > 48 h, 1 arrived > 7 days) and 14 rows with no amount.
 - Per the phase-aware rules, there are no fake deltas: the RPC returns current and previous values raw, and the UI

@@ -1,37 +1,14 @@
--- PENDING — written by db-guardian 2026-11-06, NOT applied. Discovery + decisions: docs/discovery/admin-dashboard-stats.md.
--- Admin dashboard read side for Figma J1 (Vue d'ensemble), J8 (Statistiques), J9 (Commandes), J11 (Journal):
---   admin_dashboard_stats(p_days)  — one jsonb: period KPIs (current + previous, raw — the UI computes the deltas),
---                                    8-week series, order funnel, offer / demand by category and by city, loyalty,
---                                    and the « À traiter maintenant » queue;
---   admin_list_orders(…) + admin_count_orders(…) — the J9 table and its tab counts, one shared filter (private helper);
---   admin_list_audit_log(…)        — the J11 journal with a readable target label and the admin's name.
--- Read-only: no table, no write grant (db/client-write-allowlist.json unchanged). admin_overview_stats() is untouched.
--- Every function: is_admin() gate (42501), parameters validated (23514), SECURITY DEFINER + search_path ''. Periods are
--- cut in Africa/Tunis days. No delivery_* field, phone or e-mail is returned.
-
--- 0. Private helpers (schema private: not exposed by PostgREST; no client EXECUTE). Called only from the functions
---    below, which run as their owner.
-
--- Lifecycle rank of an order status; cancelled has none (null).
+-- Admin dashboard read side for Figma J1, J8, J9, J11 (db-guardian, reviewed + applied by architect 2026-11-06).
 create or replace function private.order_status_rank(p_status text)
-returns integer
-language sql
-immutable
-set search_path = ''
-as $$
+returns integer language sql immutable set search_path = '' as $$
   select case p_status
     when 'pending' then 0 when 'accepted' then 1 when 'prepared' then 2 when 'dispatched' then 3
     when 'in_delivery' then 4 when 'arrived' then 5 when 'received' then 6
   end
 $$;
 
--- Sellers that count as « actifs » (D4): not suspended, not a tombstone, with at least one listing a buyer can see now.
 create or replace function private.admin_active_sellers()
-returns table (seller_id uuid)
-language sql
-stable
-set search_path = ''
-as $$
+returns table (seller_id uuid) language sql stable set search_path = '' as $$
   select s.owner_id
     from public.shops s
     join public.profiles p on p.id = s.owner_id
@@ -47,19 +24,13 @@ as $$
                   where sl.freelancer_profile_id = fp.id and sl.status = 'active' and sl.admin_hidden_at is null)
 $$;
 
--- KPIs of one window [p_from, p_to). Raw counts and medians; a median with no sample is null, never 0.
 create or replace function private.admin_period_kpis(p_from timestamptz, p_to timestamptz)
-returns jsonb
-language sql
-stable
-set search_path = ''
-as $$
+returns jsonb language sql stable set search_path = '' as $$
   with created as (
     select o.id, o.buyer_id, o.status, o.created_at
       from public.orders o
      where o.created_at >= p_from and o.created_at < p_to
   ), accepted as (
-    -- First event to 'accepted' (the app's stageTimestamps rule). Orders before 2026-08-10 have no events.
     select extract(epoch from (min(e.created_at) - c.created_at)) / 60.0 as minutes
       from created c
       join public.order_events e on e.order_id = c.id and e.to_status = 'accepted'
@@ -79,8 +50,6 @@ as $$
     'orders_received',           (select count(*) from public.orders o where o.received_at >= p_from and o.received_at < p_to),
     'created_then_received',     (select count(*) from created where status = 'received'),
     'created_then_cancelled',    (select count(*) from created where status = 'cancelled'),
-    -- D1: article × quantity + delivery fee, on orders RECEIVED in the window (cash on delivery: declared, not collected
-    -- by ServYou). Orders without a price snapshot add nothing.
     'declared_value_tnd',        (select coalesce(sum(o.unit_price_tnd * o.quantity + coalesce(o.delivery_fee_tnd, 0)), 0)
                                     from public.orders o where o.received_at >= p_from and o.received_at < p_to),
     'acceptance_median_minutes', (select round(percentile_cont(0.5) within group (order by minutes))::integer from accepted),
@@ -96,11 +65,6 @@ as $$
   )
 $$;
 
--- One row per order with everything the J9 table, its filters and « Bloquées » need. Shared by admin_list_orders and
--- admin_count_orders, so the tab counts and the list can never disagree.
---   status_since: exact for pending (created_at), received (received_at), cancelled (cancelled_at); otherwise the first
---   order_events row to that status; otherwise updated_at (D7: carrier edits bump it), flagged status_since_exact = false.
---   is_blocked: pending for more than 48 h, or arrived for more than 7 days without confirmation (J9's definition).
 create or replace function private.admin_orders(p_search text, p_type text, p_city text, p_since timestamptz)
 returns table (
   id uuid, ref text, item_title text, quantity integer, order_type text, amount_tnd numeric, status text,
@@ -108,15 +72,10 @@ returns table (
   buyer_id uuid, buyer_name text, buyer_city text,
   seller_id uuid, seller_name text, seller_kind text, seller_city text
 )
-language sql
-stable
-set search_path = ''
-as $$
+language sql stable set search_path = '' as $$
   with base as (
     select o.id,
            '#' || upper(left(replace(o.id::text, '-', ''), 6)) as ref,
-           -- D10: orders before the snapshot columns (14 of 16 today) have no item_title / unit_price_tnd. The title
-           -- falls back to the listing's current one; the amount stays null (a current price could be wrong).
            coalesce(o.item_title, pr.title, sl.title) as item_title, o.quantity, o.order_type,
            o.unit_price_tnd * o.quantity + coalesce(o.delivery_fee_tnd, 0) as amount_tnd,
            o.status, o.created_at,
@@ -147,7 +106,7 @@ as $$
            or (b.status = 'arrived' and coalesce(b.exact_since, b.updated_at) < now() - interval '7 days') as is_blocked,
          b.buyer_id, b.buyer_name, b.buyer_city, b.seller_id, b.seller_name, b.seller_kind, b.seller_city
     from base b
-   where (p_city is null or b.buyer_city = p_city or b.seller_city = p_city)               -- D3: either side
+   where (p_city is null or b.buyer_city = p_city or b.seller_city = p_city)
      and (p_search is null
           or b.ref = '#' || upper(ltrim(p_search, '#'))
           or b.item_title ilike '%' || replace(replace(replace(p_search, '\', '\\'), '%', '\%'), '_', '\_') || '%'
@@ -160,14 +119,8 @@ revoke all on function private.admin_active_sellers() from public, anon, authent
 revoke all on function private.admin_period_kpis(timestamptz, timestamptz) from public, anon, authenticated;
 revoke all on function private.admin_orders(text, text, text, timestamptz) from public, anon, authenticated;
 
--- 1. J1 + J8: the dashboard in one call.
 create or replace function public.admin_dashboard_stats(p_days integer default 7)
-returns jsonb
-language plpgsql
-stable
-security definer
-set search_path = ''
-as $$
+returns jsonb language plpgsql stable security definer set search_path = '' as $$
 declare
   v_tz   constant text := 'Africa/Tunis';
   v_now  timestamptz := now();
@@ -181,22 +134,16 @@ begin
   if p_days is null or p_days not in (7, 30, 90) then
     raise exception 'Période inconnue (7, 30 ou 90 jours).' using errcode = '23514';
   end if;
-
-  -- « 7 derniers jours » = today and the 6 days before, in Tunis days.
   v_from := (date_trunc('day', v_now at time zone v_tz) - make_interval(days => p_days - 1)) at time zone v_tz;
   v_prev := v_from - make_interval(days => p_days);
   v_week := date_trunc('week', v_now at time zone v_tz);
-
   return jsonb_build_object(
     'generated_at', v_now,
     'period', jsonb_build_object('days', p_days, 'from', v_from, 'to', v_now, 'previous_from', v_prev),
     'current',  private.admin_period_kpis(v_from, v_now),
     'previous', private.admin_period_kpis(v_prev, v_from),
-
-    -- Point-in-time figures (no period, no delta).
     'snapshot', jsonb_build_object(
       'active_sellers', (select count(*) from private.admin_active_sellers()),
-      -- D6: a shop / freelancer profile older than 14 days whose owner has never sold.
       'sellers_without_orders', (
         select count(*) from (
           select s.owner_id as seller_id, s.created_at from public.shops s where s.admin_hidden_at is null
@@ -206,14 +153,11 @@ begin
         join public.profiles p on p.id = x.seller_id and p.suspended_at is null
         where x.created_at < v_now - interval '14 days'
           and not exists (select 1 from public.orders o where o.seller_id = x.seller_id)),
-      -- D5: all time, at least 2 received orders.
       'loyal_buyers', (
         select count(*) from (
           select o.buyer_id from public.orders o where o.status = 'received' group by o.buyer_id having count(*) >= 2
         ) l)
     ),
-
-    -- 8 ISO weeks ending with the current one (Tunis time): created vs received.
     'weekly', (
       select jsonb_agg(jsonb_build_object(
                'week_start', to_char(w.wk, 'YYYY-MM-DD'),
@@ -225,9 +169,6 @@ begin
              order by w.wk)
         from generate_series(v_week - interval '7 weeks', v_week, interval '1 week') as w(wk)
     ),
-
-    -- Funnel of the orders created in the period. « Reached X » = the current status is at or past X, or an event
-    -- went to X or past it. A cancelled order with no event counts as reaching only « créée » (D8).
     'funnel', (
       select jsonb_build_object(
                'created',          count(*),
@@ -243,9 +184,6 @@ begin
            where o.created_at >= v_from and o.created_at < v_now
         ) f
     ),
-
-    -- Offer vs demand per top-level category (D2: demand = orders + job posts of the period). Raw counts; the UI
-    -- labels « Équilibré / Manque d'offre / Manque de demande ».
     'by_category', (
       select coalesce(jsonb_agg(jsonb_build_object(
                'category_id', c.id, 'name_fr', c.name_fr, 'name_ar', c.name_ar, 'kind', c.kind,
@@ -282,9 +220,6 @@ begin
         ) t
         join public.categories c on c.id = t.top_id
     ),
-
-    -- Per city (D9: profiles.city — always filled at sign-up; shops.city is almost always empty): active sellers now,
-    -- distinct buyers and orders of the period (orders by the buyer's city).
     'by_city', (
       select coalesce(jsonb_agg(jsonb_build_object('city', y.city, 'sellers', y.sellers, 'buyers', y.buyers, 'orders', y.orders)
              order by y.sellers + y.orders desc, y.city), '[]'::jsonb)
@@ -303,8 +238,6 @@ begin
            group by z.city
         ) y
     ),
-
-    -- « À traiter maintenant » (no period).
     'queue', jsonb_build_object(
       'reports_open',            (select count(*) from public.reports r where r.status in ('open', 'under_review')),
       'reports_fake_scam_open',  (select count(*) from public.reports r where r.status in ('open', 'under_review') and r.reason = 'fake_scam'),
@@ -322,9 +255,6 @@ begin
 end;
 $$;
 
--- 2. J9: the orders table (+ its tab counts below), both over private.admin_orders.
--- p_tab: all | blocked | in_progress (accepted → arrived) | received | cancelled. p_days: null (all time), 7, 30 or 90.
--- Never returns delivery_name / delivery_address / delivery_phone / buyer_note, a phone or an e-mail.
 create or replace function public.admin_list_orders(
   p_tab text default 'all', p_search text default null, p_type text default null, p_city text default null,
   p_days integer default 30, p_sort text default 'newest', p_limit integer default 10, p_offset integer default 0
@@ -336,11 +266,7 @@ returns table (
   seller_id uuid, seller_name text, seller_kind text, seller_city text,
   total_count bigint
 )
-language plpgsql
-stable
-security definer
-set search_path = ''
-as $$
+language plpgsql stable security definer set search_path = '' as $$
 #variable_conflict use_column
 declare
   v_search text := nullif(btrim(coalesce(p_search, '')), '');
@@ -363,7 +289,6 @@ begin
   if v_search is not null and char_length(v_search) > 80 then
     raise exception 'La recherche est trop longue (80 caractères maximum).' using errcode = '23514';
   end if;
-
   return query
   select o.id, o.ref, o.item_title, o.quantity, o.order_type, o.amount_tnd, o.status, o.created_at,
          o.status_since, o.status_since_exact, o.is_blocked,
@@ -383,16 +308,11 @@ begin
 end;
 $$;
 
--- The J9 tab counts, under the same filters as the list.
 create or replace function public.admin_count_orders(
   p_search text default null, p_type text default null, p_city text default null, p_days integer default 30
 )
 returns table (all_count bigint, blocked bigint, in_progress bigint, received bigint, cancelled bigint)
-language plpgsql
-stable
-security definer
-set search_path = ''
-as $$
+language plpgsql stable security definer set search_path = '' as $$
 #variable_conflict use_column
 declare
   v_search text := nullif(btrim(coalesce(p_search, '')), '');
@@ -409,7 +329,6 @@ begin
   if v_search is not null and char_length(v_search) > 80 then
     raise exception 'La recherche est trop longue (80 caractères maximum).' using errcode = '23514';
   end if;
-
   return query
   select count(*),
          count(*) filter (where o.is_blocked),
@@ -421,8 +340,6 @@ begin
 end;
 $$;
 
--- 3. J11: the journal, newest first, with a readable target and the acting admin's name.
---    The table already has an admin SELECT policy; this adds the labels, the search and the filters in one round-trip.
 create or replace function public.admin_list_audit_log(
   p_search text default null, p_action text default null, p_target_type text default null,
   p_days integer default 30, p_limit integer default 10, p_offset integer default 0
@@ -431,11 +348,7 @@ returns table (
   id uuid, created_at timestamptz, action text, target_type text, target_id uuid, target_label text,
   before_state jsonb, after_state jsonb, note text, admin_id uuid, admin_name text, total_count bigint
 )
-language plpgsql
-stable
-security definer
-set search_path = ''
-as $$
+language plpgsql stable security definer set search_path = '' as $$
 #variable_conflict use_column
 declare
   v_search text := nullif(btrim(coalesce(p_search, '')), '');
@@ -451,7 +364,6 @@ begin
     raise exception 'La recherche est trop longue (80 caractères maximum).' using errcode = '23514';
   end if;
   v_like := '%' || replace(replace(replace(coalesce(v_search, ''), '\', '\\'), '%', '\%'), '_', '\_') || '%';
-
   return query
   with labelled as (
     select l.id, l.created_at, l.action, l.target_type, l.target_id,
@@ -492,7 +404,6 @@ begin
 end;
 $$;
 
--- 4. EXECUTE: authenticated only (the gate inside is is_admin()); nothing for anon / PUBLIC.
 revoke all on function public.admin_dashboard_stats(integer) from public, anon;
 revoke all on function public.admin_list_orders(text, text, text, text, integer, text, integer, integer) from public, anon;
 revoke all on function public.admin_count_orders(text, text, text, integer) from public, anon;
@@ -501,13 +412,3 @@ grant execute on function public.admin_dashboard_stats(integer) to authenticated
 grant execute on function public.admin_list_orders(text, text, text, text, integer, text, integer, integer) to authenticated;
 grant execute on function public.admin_count_orders(text, text, text, integer) to authenticated;
 grant execute on function public.admin_list_audit_log(text, text, text, integer, integer, integer) to authenticated;
-
--- Rollback:
---   drop function public.admin_list_audit_log(text, text, text, integer, integer, integer);
---   drop function public.admin_count_orders(text, text, text, integer);
---   drop function public.admin_list_orders(text, text, text, text, integer, text, integer, integer);
---   drop function public.admin_dashboard_stats(integer);
---   drop function private.admin_orders(text, text, text, timestamptz);
---   drop function private.admin_period_kpis(timestamptz, timestamptz);
---   drop function private.admin_active_sellers();
---   drop function private.order_status_rank(text);
