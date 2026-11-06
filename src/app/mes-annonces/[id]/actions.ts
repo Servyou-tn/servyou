@@ -1,10 +1,12 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
+import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
 import { isNoRowLike, reportQueryError } from '@/lib/supabase/query-error'
 import { JOB_POST_EXPIRY_DAYS } from '@/lib/job-constants'
 import { jobPostCapKey } from '@/lib/marche/cap-refusal'
+import { chooseErrorKey, isReopenAfterChoice } from '@/lib/marche/journey-gates'
 
 // Manage actions for a consumer's own mission. Each is author-scoped by the WHERE clause AND
 // re-guarded by RLS (job_posts UPDATE policy = consumer_id = auth.uid()). A status-only update
@@ -84,6 +86,11 @@ export async function reopenMissionAction(missionId: string): Promise<MissionAct
     .select('id')
 
   if (error) {
+    // G1: once a freelancer is chosen the post cannot reopen (sync_job_responses_on_post_status, 23514 job_response_chosen).
+    if (isReopenAfterChoice(error)) {
+      console.warn('[reopenMissionAction] refused:', error.code, error.hint)
+      return { ok: false, errorKey: 'annonces.detail.reopen_chosen_error' }
+    }
     // Reopening counts as opening a post: 5 open already is refused (job_post_cap_open).
     const cap = jobPostCapKey(error)
     if (cap) {
@@ -123,5 +130,41 @@ export async function deleteMissionAction(missionId: string): Promise<MissionAct
   if (!data || data.length === 0) return { ok: false, errorKey: 'common.error_generic' }
 
   revalidatePath('/mes-annonces')
+  return { ok: true }
+}
+
+// G1 « Choisir ce freelance » (migration 20261106153901): the choose_job_response RPC marks this proposal `chosen`, every other
+// one on the post `not_chosen`, and the post `filled` — in one transaction, with the post row locked. It re-checks everything
+// itself (owner only, open post inside its 30 days, freelancer not suspended or moderated); this action validates the id and
+// requires a session first, and maps the RPC's refusals by hint. ⚑ The RPC is typed locally until the regenerated types land.
+const chooseInput = z.object({ responseId: z.string().uuid() })
+
+type ChooseRpc = (fn: 'choose_job_response', args: { p_response_id: string }) => PromiseLike<{
+  data: string | null
+  error: { code?: string; hint?: string | null; message: string; details?: string | null } | null
+}>
+
+export async function chooseProposalAction(input: { responseId: string }): Promise<MissionActionResult> {
+  const parsed = chooseInput.safeParse(input)
+  if (!parsed.success) return { ok: false, errorKey: 'common.error_generic' }
+
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return { ok: false, errorKey: 'annonce.error.not_authorized' }
+
+  const rpc = supabase.rpc.bind(supabase) as unknown as ChooseRpc
+  const { data: postId, error } = await rpc('choose_job_response', { p_response_id: parsed.data.responseId })
+  if (error) {
+    const key = chooseErrorKey(error)
+    if (key === 'common.error_generic') console.error('[chooseProposalAction] rpc error:', error.message, error.code, error.details)
+    else console.warn('[chooseProposalAction] refused:', error.code, error.hint)
+    return { ok: false, errorKey: key }
+  }
+  if (!postId) return { ok: false, errorKey: 'common.error_generic' }
+
+  revalidate(postId)
+  revalidatePath('/mes-propositions')
   return { ok: true }
 }

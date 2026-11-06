@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
 import { Heart } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { FOCUS_RING } from '@/components/layout/styles'
@@ -56,7 +57,7 @@ export function FavoriteButton({
       setLoggedIn(true)
 
       const col = item_type === 'product' ? 'product_id' : 'service_listing_id'
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('favorites')
         .select('id')
         .eq('user_id', user.id)
@@ -64,43 +65,61 @@ export function FavoriteButton({
         .eq(col, item_id)
         .maybeSingle()
 
+      // A failed read is logged, never shown as « not a favourite » silently (G6): the heart still works, and a toggle re-checks.
+      if (error) console.error('[FavoriteButton] read error:', error.message, error.code, error.details)
       if (data) { setFavorited(true); setFavoriteId(data.id) }
       setLoading(false)
     }
     init()
   }, [item_id, item_type, supabase])
 
+  // G6 (docs/discovery/journeys-2026-11-07.md): every write is checked. A refused or failed delete / insert (a suspended account,
+  // RLS, the network) keeps the heart as it was and says so in a toast — it used to look like nothing happened. A delete that
+  // matched no row (already removed elsewhere) is not an error: the heart simply empties. `toggling` is always released.
   async function handleToggle() {
     if (!loggedIn) { router.push(signInHere()); return }
     if (toggling) return
     setToggling(true)
+    try {
+      if (favorited && favoriteId) {
+        const { error } = await supabase.from('favorites').delete().eq('id', favoriteId)
+        if (error) {
+          console.error('[FavoriteButton] delete error:', error.message, error.code, error.details)
+          toast.error(t('favorites.error_remove', lang))
+          return
+        }
+        setFavorited(false)
+        setFavoriteId(null)
+      } else {
+        const { data: { user } } = await supabase.auth.getUser()
+        if (!user) { router.push(signInHere()); return }
 
-    if (favorited && favoriteId) {
-      await supabase.from('favorites').delete().eq('id', favoriteId)
-      setFavorited(false)
-      setFavoriteId(null)
-    } else {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) { router.push(signInHere()); return }
+        const { data, error } = await supabase
+          .from('favorites')
+          .insert({
+            user_id: user.id,
+            item_type,
+            product_id: item_type === 'product' ? item_id : null,
+            service_listing_id: item_type === 'service' ? item_id : null,
+          })
+          .select('id')
+          .single()
 
-      const { data } = await supabase
-        .from('favorites')
-        .insert({
-          user_id: user.id,
-          item_type,
-          product_id: item_type === 'product' ? item_id : null,
-          service_listing_id: item_type === 'service' ? item_id : null,
-        })
-        .select('id')
-        .single()
+        if (error || !data) {
+          if (error) console.error('[FavoriteButton] insert error:', error.message, error.code, error.details)
+          toast.error(t('favorites.error_add', lang))
+          return
+        }
+        setFavorited(true)
+        setFavoriteId(data.id)
+      }
 
-      if (data) { setFavorited(true); setFavoriteId(data.id) }
+      // Re-fetch server components so a server-rendered list (e.g. /mes-favoris) drops the
+      // item the moment it's unfavorited. Harmless elsewhere (e.g. /marche just re-reads).
+      router.refresh()
+    } finally {
+      setToggling(false)
     }
-
-    // Re-fetch server components so a server-rendered list (e.g. /mes-favoris) drops the
-    // item the moment it's unfavorited. Harmless elsewhere (e.g. /marche just re-reads).
-    router.refresh()
-    setToggling(false)
   }
 
   const iconClass = 'relative inline-flex size-5 shrink-0 items-center justify-center rounded-full disabled:opacity-50'

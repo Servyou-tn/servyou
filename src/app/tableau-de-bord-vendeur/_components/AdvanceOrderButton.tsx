@@ -4,6 +4,7 @@ import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { advanceOrderAction } from '@/app/actions/orders'
+import { PhoneRequiredError } from '@/components/orders/PhoneRequiredError'
 
 // The smallest interactive leaf on G4 — everything else on this page is a server component.
 // One button = one hop along the seller-owned chain; the TARGET status is derived server-side
@@ -19,6 +20,7 @@ export function AdvanceOrderButton({
 }) {
   const [pending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
+  const [needsPhone, setNeedsPhone] = useState(false)
   const router = useRouter()
 
   return (
@@ -29,6 +31,7 @@ export function AdvanceOrderButton({
         loading={pending}
         onClick={() => {
           setError(null)
+          setNeedsPhone(false)
           startTransition(async () => {
             const result = await advanceOrderAction({ orderId })
             if (result.ok) {
@@ -37,6 +40,7 @@ export function AdvanceOrderButton({
               router.refresh()
             } else {
               setError(result.error)
+              setNeedsPhone(Boolean(result.needsPhone))
             }
           })
         }}
@@ -45,7 +49,9 @@ export function AdvanceOrderButton({
       </Button>
       {/* The trigger's own French message when a transition is genuinely invalid — e.g. the same
           order was advanced in another tab. role=alert so it is announced, not just painted. */}
-      {error ? (
+      {needsPhone ? (
+        <PhoneRequiredError />
+      ) : error ? (
         <p role="alert" className="text-caption text-danger-500">
           {error}
         </p>

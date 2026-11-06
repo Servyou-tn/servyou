@@ -28,15 +28,19 @@ import { COL } from './proposal-columns'
 // Server Component: only the actions cell is interactive.
 // ⚑ No `cn()` around a `text-<size>` next to a `text-<colour>` (reference_twmerge_text_size_color_footgun): plain template strings.
 
-const STATE_PILL = {
-  open: ANNONCE_STATUS_PILL.open,
-  filled: ANNONCE_STATUS_PILL.filled,
+// G1: the pill is the proposal's own outcome (journey-gates.ts proposalOutcome), no longer the post's state — a freelancer
+// reads « Choisie » / « Non retenue » / « En attente » / « Expirée » (derived from the date) instead of « Pourvue » for winner and
+// losers alike. No frame draws these: the existing StatusPill tones (success · muted · warning · the expired grey).
+const OUTCOME_PILL = {
+  chosen: { status: 'reçue', labelKey: 'propositions.outcome.chosen' },
+  not_chosen: { status: 'withdrawn', labelKey: 'propositions.outcome.not_chosen' },
+  pending: { status: 'pending', labelKey: 'propositions.outcome.pending' },
   expired: ANNONCE_STATUS_PILL.expired,
   unavailable: { status: 'withdrawn', labelKey: 'propositions.status.unavailable' },
 } as const
 
 export function ProposalRow({ proposal: p, lang }: { proposal: Proposal; lang: Lang }) {
-  const pill = STATE_PILL[p.state]
+  const pill = OUTCOME_PILL[p.outcome]
   const gone = p.state === 'unavailable'
   const title = p.title ?? t('propositions.mission_unavailable', lang)
   const category = lang === 'ar' ? (p.categoryNameAr ?? p.categoryNameFr) : p.categoryNameFr

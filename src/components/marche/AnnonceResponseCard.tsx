@@ -6,7 +6,8 @@ import { t } from '@/lib/i18n'
 import type { Lang } from '@/lib/i18n'
 
 import { Avatar } from '@/components/ui/avatar'
-import { ButtonLink } from '@/components/ui/button'
+import { Button, ButtonLink } from '@/components/ui/button'
+import { StatusPill } from '@/components/ui/status-pill'
 import { WhatsAppContactButton } from '@/components/orders/WhatsAppContactButton'
 import { getInitials } from '@/components/ui/initials'
 import { SkillChip } from '@/components/missions/MissionChips'
@@ -34,16 +35,28 @@ const LONG_MESSAGE = 240
 //
 // 375 (m375-f4-annonce, docs/design/m375-f4-home-ar-deltas.md): the stroke sits inside Figma's pad 20 / 16 (content 279), caption line 15,
 // name 19, « headline · city » and the price / délai lines 17, the message 27. Below lg only.
+// G1 (migration 20261106153901): once the owner has chosen, the card says so — « Choisi » on the chosen proposal, « Non retenu »
+// on the others. While the post can still be decided, `onChoose` adds « Choisir ce freelance » (the parent confirms and calls the
+// RPC). No frame draws these states: the pill and the button are the existing StatusPill / Button, placed where the frame's caption
+// row and action row already are (PR deltas doc).
+const OUTCOME_PILL = {
+  chosen: { status: 'reçue', labelKey: 'annonces.choose.pill_chosen' },
+  not_chosen: { status: 'withdrawn', labelKey: 'annonces.choose.pill_not_chosen' },
+} as const
+
 export function AnnonceResponseCard({
   response,
   annonceTitle,
   lang,
   now,
+  onChoose,
 }: {
   response: AnnonceResponse
   annonceTitle: string
   lang: Lang
   now: number
+  /** Present only while this post can still be decided (open, nobody chosen). */
+  onChoose?: () => void
 }) {
   const [expanded, setExpanded] = useState(false)
   const message = t('annonces.detail.whatsapp_consumer_to_responder', lang, { annonce: annonceTitle })
@@ -53,9 +66,14 @@ export function AnnonceResponseCard({
 
   return (
     <div className="flex flex-col gap-3 rounded-xl border border-border-subtle bg-surface-base px-[15px] py-[19px] sm:p-5">
-      <p className="text-caption font-medium text-text-muted max-lg:leading-[15px]">
-        {t('annonces.detail.received_ago', lang, { when: midSentence(relativeTimeLabel(response.createdAt, lang, now), lang) })}
-      </p>
+      <div className="flex items-center justify-between gap-2">
+        <p className="text-caption font-medium text-text-muted max-lg:leading-[15px]">
+          {t('annonces.detail.received_ago', lang, { when: midSentence(relativeTimeLabel(response.createdAt, lang, now), lang) })}
+        </p>
+        {response.status !== 'pending' ? (
+          <StatusPill status={OUTCOME_PILL[response.status].status}>{t(OUTCOME_PILL[response.status].labelKey, lang)}</StatusPill>
+        ) : null}
+      </div>
 
       <div className="flex items-center gap-3">
         <Avatar size="md" initials={getInitials(response.fullName)} className="shrink-0" />
@@ -120,6 +138,11 @@ export function AnnonceResponseCard({
       <ProposalExtras response={response} lang={lang} />
 
       <div className="flex flex-wrap items-center gap-2">
+        {onChoose ? (
+          <Button variant="primary" size="md" onClick={onChoose}>
+            {t('annonces.choose.cta', lang)}
+          </Button>
+        ) : null}
         <div className="w-63">
           <WhatsAppContactButton
             targetId={response.freelancerId}

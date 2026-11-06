@@ -21,6 +21,7 @@ function proposal(over: Partial<Proposal> = {}): Proposal {
     jobPostId: 'p1',
     createdAt: ago(2 * DAY),
     state: 'open',
+    outcome: 'pending',
     price: null,
     timeframe: null,
     title: 'Logo 3D',
