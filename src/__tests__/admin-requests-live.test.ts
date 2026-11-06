@@ -11,7 +11,8 @@
  *       buyer      — favourite deleted; a post with a proposal closed (D8), a post without one deleted; the received
  *                    order keeps amounts / title / status but loses the delivery identity (D3); a pending export is
  *                    closed (D9); profile tombstoned + suspended (D1);
- *       seller     — the product with no order deleted, the sold one and the reported one hidden (« Compte supprimé »);
+ *       seller(s)  — two shop owners in a row (each kept shop gets its own name, migration 20261106083409);
+ *                    the product with no order deleted, the sold one and the reported one hidden (« Compte supprimé »);
  *                    the shop hidden and scrubbed, its payment methods deleted (c2); the order history intact;
  *       freelancer — the active service with no order deleted, the reported draft hidden but still `draft`; the profile
  *                    hidden and scrubbed (is_published false), its links deleted; its proposal deleted and the post's
@@ -56,11 +57,11 @@ const PROPOSAL = 'Une proposition de test assez longue pour passer.'
 const opts = { auth: { autoRefreshToken: false, persistSession: false } }
 const admin: Client = hasCreds ? createClient<Database>(url, serviceKey, opts) : (undefined as unknown as Client)
 
-type Local = 'admin' | 'admin2' | 'consumer' | 'buyer' | 'seller' | 'freelancer'
+type Local = 'admin' | 'admin2' | 'consumer' | 'buyer' | 'seller' | 'seller2' | 'freelancer'
 const ids = {} as Record<Local, string>
-const req = {} as Record<'seller' | 'buyer' | 'freelancer' | 'admin2' | 'self', string>
+const req = {} as Record<'seller' | 'buyer' | 'freelancer' | 'admin2' | 'self' | 'seller2', string>
 const fx = {
-  shop: '', productSold: '', productUnsold: '', productReported: '', openOrder: '', receivedOrder: '',
+  shop: '', productSold: '', productUnsold: '', productReported: '', openOrder: '', receivedOrder: '', shop2: '', product2: '',
   fp: '', serviceActive: '', serviceDraft: '', postWithProposal: '', postEmpty: '', buyerExport: '', message: '',
 }
 
@@ -168,6 +169,7 @@ beforeAll(async () => {
   ids.consumer = await createUser('consumer', {})
   ids.buyer = await createUser('buyer', {})
   ids.seller = await createUser('seller', { seller_type: 'shop_owner' })
+  ids.seller2 = await createUser('seller2', { seller_type: 'shop_owner' })
   ids.freelancer = await createUser('freelancer', { seller_type: 'freelancer' })
 
   // Seller: a shop with a payment method; a product sold (received order + an open one), one never ordered, one reported.
@@ -179,6 +181,10 @@ beforeAll(async () => {
   fx.productReported = await insertId('products', { shop_id: fx.shop, title: `${TITLE} — reported`, price_tnd: 35, status: 'active' })
   fx.receivedOrder = await insertId('orders', productOrder(ids.buyer, ids.seller, fx.productSold, 'received'))
   fx.openOrder = await insertId('orders', productOrder(ids.buyer, ids.seller, fx.productSold, 'pending'))
+  // A second shop owner whose shop must stay too (a sold product): two tombstoned shops in a row (migration 20261106083409).
+  fx.shop2 = await insertId('shops', { owner_id: ids.seller2, name: `${TITLE} — shop 2` })
+  fx.product2 = await insertId('products', { shop_id: fx.shop2, title: `${TITLE} — sold 2`, price_tnd: 40, status: 'active' })
+  await insertId('orders', productOrder(ids.consumer, ids.seller2, fx.product2, 'received'))
   const { error: rErr } = await admin.from('reports').insert({ reporter_id: ids.consumer, target_type: 'product', target_id: fx.productReported, reason: 'other' })
   if (rErr) throw new Error(`report seed failed: ${rErr.message}`)
 
@@ -214,6 +220,7 @@ beforeAll(async () => {
   req.freelancer = await insertId('deletion_requests', { user_id: ids.freelancer, reason: TITLE })
   req.admin2 = await insertId('deletion_requests', { user_id: ids.admin2, reason: TITLE })
   req.self = await insertId('deletion_requests', { user_id: ids.admin, reason: TITLE })
+  req.seller2 = await insertId('deletion_requests', { user_id: ids.seller2, reason: TITLE })
 
   fx.message = await insertId('contact_messages', {
     name: `${TITLE} — contact`, email: 'sender@example.com', subject: 'contact.form.subject.general', message: 'Bonjour',
@@ -273,7 +280,7 @@ describe.skipIf(!hasCreds)('lists', () => {
     const { data, error } = await adminClient.rpc('admin_list_deletion_requests', { p_status: 'pending', p_limit: 200 })
     expect(error).toBeNull()
     const mine = (data ?? []).filter((r) => Object.values(req).includes(r.id))
-    expect(mine.map((r) => r.id)).toEqual([req.seller, req.buyer, req.freelancer, req.admin2, req.self])
+    expect(mine.map((r) => r.id)).toEqual([req.seller, req.buyer, req.freelancer, req.admin2, req.self, req.seller2])
     const seller = mine.find((r) => r.id === req.seller)!
     expect(seller).toMatchObject({ user_id: ids.seller, email: email('seller'), seller_type: 'shop_owner', status: 'pending', open_orders: 1 })
     expect(mine.find((r) => r.id === req.buyer)?.open_orders).toBe(1)
@@ -408,7 +415,7 @@ describe.skipIf(!hasCreds)('deletion — approve (tombstone)', () => {
     }
     const { data: shop } = await admin
       .from('shops').select('name, description, city, logo_url, banner_url, facebook_url, admin_hidden_at, admin_hidden_reason').eq('id', fx.shop).single()
-    expect(shop).toMatchObject({ name: 'Boutique supprimée', description: null, city: null, logo_url: null, banner_url: null, facebook_url: null, admin_hidden_reason: DELETED })
+    expect(shop).toMatchObject({ name: `Boutique supprimée · ${fx.shop.slice(0, 8)}`, description: null, city: null, logo_url: null, banner_url: null, facebook_url: null, admin_hidden_reason: DELETED })
     expect(shop?.admin_hidden_at).toBeTruthy()
     expect(await count('shop_payment_methods', 'shop_id', fx.shop)).toBe(0)
 
@@ -416,6 +423,17 @@ describe.skipIf(!hasCreds)('deletion — approve (tombstone)', () => {
     expect(order).toEqual({ status: 'received', seller_id: ids.seller, product_id: fx.productSold, item_title: `${TITLE} — sold` })
     expect((await admin.from('profiles').select('full_name, seller_type').eq('id', ids.seller).single()).data)
       .toEqual({ full_name: DELETED, seller_type: 'shop_owner' })
+  })
+
+  // Before 20261106083409 every kept shop got the same name, so this second approval failed on shops_name_lower_key (23505).
+  it('a second shop owner in a row: the kept shop gets its own name, no 23505', async () => {
+    const { data, error } = await decide(req.seller2, 'approve')
+    expect(error).toBeNull()
+    expect(data).toMatchObject({ status: 'approved', counts: { products_deleted: 0, products_hidden: 1, shops_deleted: 0, shops_hidden: 1 } })
+    const { data: shops } = await admin.from('shops').select('id, name').in('id', [fx.shop, fx.shop2])
+    const names = new Map((shops ?? []).map((r) => [r.id, r.name]))
+    expect(names.get(fx.shop2)).toBe(`Boutique supprimée · ${fx.shop2.slice(0, 8)}`)
+    expect(names.get(fx.shop)).not.toBe(names.get(fx.shop2))
   })
 
   it('freelancer: active service deleted, reported draft hidden but still draft, profile hidden and scrubbed, proposal deleted', async () => {

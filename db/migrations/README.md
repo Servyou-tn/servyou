@@ -1190,8 +1190,8 @@ both on 2026-10-28.
       - The audit row holds ids and counts only. The RPC returns `{ user_id, tombstone_email, counts }`.
     - Not in this migration: `auth.users` (ban, e-mail) and storage files. Those belong to the next PR's server
       action (D2).
-    - **Known bug, fix pending:** c2 gives every shop that stays the same name. `shops_name_lower_key` therefore makes
-      the second such approval fail with 23505. See `docs/follow-ups/admin-requests-backend.md` #0.
+    - **Known bug, fixed by #121:** c2 gave every shop that stays the same name. `shops_name_lower_key` therefore made
+      the second such approval fail with 23505 (`docs/follow-ups/admin-requests-backend.md` #0).
     - `db/client-write-allowlist.json` loses the two UPDATE entries. `database.types.ts` is regenerated (the six RPCs).
     - Live: `admin-requests-live.test.ts`. `prelaunch-acl-hardening` and `suspension-enforcement` now expect the
       direct UPDATE to be refused by privilege.
@@ -1200,6 +1200,20 @@ both on 2026-10-28.
     - Rollback: drop the six functions. Recreate the two « Admins update … » policies (from the tables' create
       migrations) and the column UPDATE grants (from migration 68, `20261026190353`). Tombstoned accounts cannot be
       restored.
+121. **20261106083409_admin_deletion_shop_name_unique** — #327 review, HIGH; written and applied by the architect.
+    - What it does: in `admin_process_deletion_request` section c2, a shop kept for its orders is renamed
+      `'Boutique supprimée · ' || left(id::text, 8)`, so each tombstoned shop has its own name under the unique index
+      `shops_name_lower_key`. Nothing else changes.
+    - **How:** a `DO` block reads the function with `pg_get_functiondef`, `replace()`s the one rename line (it raises if
+      the line is not found) and runs the result. **The live body is therefore #120's file plus this one replacement**;
+      #120's file alone no longer equals the live function.
+    - Checked after the apply: the new line is in the live body and the old one is gone. The function is still
+      SECURITY DEFINER, `search_path ''`, EXECUTE for authenticated only (create or replace keeps the ACL).
+    - The signature is unchanged, so `database.types.ts` is unchanged (regenerated and compared: identical).
+    - Live: `admin-requests-live.test.ts` approves two shop owners in a row; each kept shop is renamed uniquely.
+    - The recorded statement is this whole file, comments included (md5 `56ef437a417c7cd0e5fd33a16f652c0d`, compared
+      without the trailing newline).
+    - Rollback: none needed (a rename format). Re-running is refused: the old line is no longer there.
 
 ## Rollback paths
 
