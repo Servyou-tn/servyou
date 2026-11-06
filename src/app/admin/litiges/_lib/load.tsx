@@ -1,6 +1,6 @@
 import { t, type Lang } from '@/lib/i18n'
 import type { createClient } from '@/lib/supabase/server'
-import { reportQueryError } from '@/lib/supabase/query-error'
+import { failQuery, reportQueryError } from '@/lib/supabase/query-error'
 import { relativeTimeLabel } from '@/lib/relative-time'
 import { formatTunisDate, formatTunisDateTime } from '@/lib/datetime'
 import { tndPrice } from '@/components/listings/listing-utils'
@@ -62,7 +62,8 @@ export async function loadDisputesView(
   let selectedDispute: Dispute | null = null
   if (opts.selectedId) {
     const { data, error } = await supabase.from('disputes').select(DISPUTE_COLS).eq('id', opts.selectedId).maybeSingle()
-    if (error && error.code !== '22P02') reportQueryError('admin/litiges selected dispute', error)
+    // Only a missing row is « introuvable »; a failed read goes to error.tsx (never a fake not-found).
+    if (error) failQuery('admin/litiges selected dispute', error)
     if (!data) return { notFound: true }
     selectedDispute = data as Dispute
   }

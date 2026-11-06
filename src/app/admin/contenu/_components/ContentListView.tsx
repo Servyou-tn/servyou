@@ -121,10 +121,12 @@ function Reports({ lang, n }: { lang: Lang; n: number | null }) {
   return <StatusPill status="annulée">{tn('admin.content.reports_count', lang, n)}</StatusPill>
 }
 
+// Masquer only on VISIBLE content: admin_unhide_content restores products / services as status 'active', so hiding
+// a draft, seller-paused or sold-out item and then restoring it would publish it. Réafficher on admin-hidden items.
 function Actions({ r }: { r: ContentRow }) {
-  return r.status === 'hidden'
-    ? <UnhideContentButton targetType={r.type} targetId={r.id} title={r.title} />
-    : <HideContentButton targetType={r.type} targetId={r.id} title={r.title} />
+  if (r.status === 'hidden') return <UnhideContentButton targetType={r.type} targetId={r.id} title={r.title} />
+  if (r.status === 'visible') return <HideContentButton targetType={r.type} targetId={r.id} title={r.title} />
+  return null
 }
 
 // Table — rows 77 (48 thumb), pad 14/20, gap 16. Columns as drawn: fill · 200 · 80 · 140 · 110 · 40 · 110.
@@ -187,7 +189,7 @@ function ContentCard({ lang, r }: { lang: Lang; r: ContentRow }) {
       <div className="flex flex-wrap items-center justify-between gap-3">
         {r.href ? (
           <Link href={r.href} target="_blank" rel="noopener noreferrer" className={link}>
-            {t('admin.content.action_view', lang)}<span className="sr-only"> — {r.title}</span>
+            {t('admin.content.action_view', lang)}<span className="sr-only"> — {r.title} {t('admin.users.opens_new_tab', lang)}</span>
           </Link>
         ) : <span />}
         <Actions r={r} />
