@@ -3,7 +3,7 @@ import type { ReactNode } from 'react'
 import { Inbox } from 'lucide-react'
 import { t, type Lang } from '@/lib/i18n'
 import { FOCUS_RING } from '@/components/layout/styles'
-import { BASE as BUTTON_BASE, SIZE as BUTTON_SIZE, VARIANT_BASE, VARIANT_STATE } from '@/components/ui/button'
+import { ButtonLink } from '@/components/ui/button'
 import { Avatar } from '@/components/ui/avatar'
 import { StatusPill, type StatusValue } from '@/components/ui/status-pill'
 import { AdminTabs, type AdminTab } from '@/components/AdminTabs'
@@ -51,7 +51,6 @@ export function UserDetailView(props: {
   journal: { rows: JournalRow[]; failed: boolean; allHref: string | null }
 }) {
   const { lang, tab } = props
-  const secondaryLink = `${BUTTON_BASE} ${BUTTON_SIZE.md} ${VARIANT_BASE.secondary} ${VARIANT_STATE.secondary}`
   return (
     <div className="flex flex-col gap-6">
       <nav aria-label={t('admin.reports.breadcrumb_aria', lang)}>
@@ -81,10 +80,10 @@ export function UserDetailView(props: {
         </div>
         <div className="flex flex-wrap items-start gap-3">
           {props.publicPage ? (
-            <Link href={props.publicPage.href} target="_blank" rel="noopener noreferrer" className={secondaryLink}>
+            <ButtonLink href={props.publicPage.href} target="_blank" rel="noopener noreferrer" variant="secondary" size="md">
               {t(props.publicPage.labelKey, lang)}
               <span className="sr-only"> {t('admin.users.opens_new_tab', lang)}</span>
-            </Link>
+            </ButtonLink>
           ) : null}
           {props.action}
         </div>

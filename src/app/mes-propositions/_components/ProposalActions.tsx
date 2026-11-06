@@ -8,7 +8,7 @@ import { toast } from 'sonner'
 import { t, type Lang } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
 import { FOCUS_RING } from '@/components/layout/styles'
-import { BASE as BUTTON_BASE, SIZE as BUTTON_SIZE, VARIANT_BASE, VARIANT_STATE } from '@/components/ui/button'
+import { ButtonLink } from '@/components/ui/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { ConfirmModal } from '@/components/marche/ConfirmModal'
 import { isProposalActive, type ProposalState } from '@/lib/marche/proposals'
@@ -60,12 +60,14 @@ export function ProposalActions({
 
   return (
     <div className="flex items-center justify-end gap-2">
-      <Link
+      <ButtonLink
         href={gone ? recapHref : `/missions/${jobPostId}`}
-        className={cn(BUTTON_BASE, BUTTON_SIZE.sm, VARIANT_BASE.secondary, VARIANT_STATE.secondary, 'whitespace-nowrap')}
+        variant="secondary"
+        size="sm"
+        className="whitespace-nowrap"
       >
         {t(gone ? 'propositions.view_mine' : 'propositions.view_mission', lang)}
-      </Link>
+      </ButtonLink>
 
       {gone ? null : (
         <DropdownMenu>

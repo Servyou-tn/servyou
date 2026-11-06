@@ -11,7 +11,7 @@ import { cn } from '@/lib/utils'
 import { FOCUS_RING } from '@/components/layout/styles'
 import { MAX_RESPONSES_PER_POST } from '@/lib/job-constants'
 import { ModerationBanner } from '@/components/ModerationBanner'
-import { BASE as BUTTON_BASE, Button, SIZE as BUTTON_SIZE, VARIANT_BASE, VARIANT_STATE } from '@/components/ui/button'
+import { Button, ButtonLink } from '@/components/ui/button'
 import { StatusPill } from '@/components/ui/status-pill'
 import { CategoryChip, SkillChip } from '@/components/missions/MissionChips'
 import { ConfirmModal } from '@/components/marche/ConfirmModal'
@@ -291,12 +291,14 @@ export function AnnonceDetail({ annonce }: { annonce: AnnonceDetailData }) {
               </Button>
             )}
             {editBlock === null && (
-              <Link
+              <ButtonLink
                 href={`/mes-annonces/${annonce.id}/modifier`}
-                className={cn(BUTTON_BASE, BUTTON_SIZE.md, VARIANT_BASE.ghost, VARIANT_STATE.ghost, 'w-full')}
+                variant="ghost"
+                size="md"
+                className="w-full"
               >
                 {t('annonces.detail.edit', lang)}
-              </Link>
+              </ButtonLink>
             )}
             {/* A disabled button cannot take focus and its title is unreliable, so the reason is visible text, tied to the button for assistive tech. */}
             {editBlock === 'has_responses' && (

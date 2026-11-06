@@ -1,11 +1,11 @@
 'use client'
 
 import { useEffect } from 'react'
-import Link from 'next/link'
 import { TriangleAlert } from 'lucide-react'
 import { useLang } from '@/components/LangProvider'
-import { SYSTEM_LINK_CLASS, SystemStateScreen } from '@/components/system/SystemStateScreen'
+import { SystemStateScreen } from '@/components/system/SystemStateScreen'
 import { t } from '@/lib/i18n'
+import { ButtonLink } from '@/components/ui/button'
 
 // A10 — Figma 1478:35837 (1440) / 1478:35890 (375): the shell-less card with the 2 px danger outline — Lockup → danger icon → « Erreur 500 · réf. … »
 // → « Une erreur s’est produite de notre côté » → body → « Réessayer » (primary lg, a button) → « Retour à l’accueil » (link). Route-segment error
@@ -40,9 +40,9 @@ export default function Error({
       body={t('system.error.body', lang)}
       cta={{ onClick: () => retry(), label: t('system.error.retry', lang) }}
       link={
-        <Link href="/" className={SYSTEM_LINK_CLASS}>
+        <ButtonLink href="/" variant="link" size="md">
           {t('system.error.home', lang)}
-        </Link>
+        </ButtonLink>
       }
     />
   )

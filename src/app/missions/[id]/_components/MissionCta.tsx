@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { AlertCircle, CheckCircle } from 'lucide-react'
-import { Button, BASE as BUTTON_BASE, SIZE as BUTTON_SIZE, VARIANT_BASE, VARIANT_STATE } from '@/components/ui/button'
-import { cn } from '@/lib/utils'
+import { Button, ButtonLink } from '@/components/ui/button'
+
 import { FOCUS_RING } from '@/components/layout/styles'
 import { t, type Lang } from '@/lib/i18n'
 import { MAX_ACTIVE_RESPONSES_PER_FREELANCER, MAX_RESPONSES_PER_POST } from '@/lib/job-constants'
@@ -36,11 +36,11 @@ function WayForward({ href, children }: { href: string; children: React.ReactNod
 export function MissionCta({ state, missionId, answeredAt, lang }: { state: MissionCtaState; missionId: string; answeredAt: string | null; lang: Lang }) {
   if (state === 'can_respond') {
     return (
-      <Link href={`/missions/${missionId}/proposer`} className={cn(BUTTON_BASE, BUTTON_SIZE.md, VARIANT_BASE.primary, VARIANT_STATE.primary, 'w-full')}>
+      <ButtonLink href={`/missions/${missionId}/proposer`} variant="primary" size="md" className="w-full">
         {t('missiondetail.cta.send', lang)}
         {/* Touch target: the visible button is 40 px, the hit area reaches 44 (what Button's md does). */}
         <span aria-hidden="true" className="absolute -inset-0.5" />
-      </Link>
+      </ButtonLink>
     )
   }
 
@@ -51,13 +51,15 @@ export function MissionCta({ state, missionId, answeredAt, lang }: { state: Miss
           <CheckCircle className="mt-0.5 size-4 shrink-0 text-success-500" aria-hidden="true" />
           <span>{t('missiondetail.cta.answered', lang)}</span>
         </p>
-        <Link
+        <ButtonLink
           href={`/missions/${missionId}/proposition-envoyee`}
-          className={cn(BUTTON_BASE, BUTTON_SIZE.md, VARIANT_BASE.secondary, VARIANT_STATE.secondary, 'w-full')}
+          variant="secondary"
+          size="md"
+          className="w-full"
         >
           {t('missiondetail.cta.view_mine', lang)}
           <span aria-hidden="true" className="absolute -inset-0.5" />
-        </Link>
+        </ButtonLink>
         {answeredAt ? (
           <p className="text-center text-caption text-text-muted">
             {t('missiondetail.cta.answered_at', lang, { when: lang === 'fr' ? lowerFirst(relativeTimeLabel(answeredAt, lang)) : relativeTimeLabel(answeredAt, lang) })}

@@ -1,7 +1,9 @@
 import * as React from 'react'
+import Link from 'next/link'
 import { Loader2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { FOCUS_RING } from '@/components/layout/styles'
+import { HitArea } from './interactive-surface'
 
 // Button — F3 primitive, measured from Figma COMPONENT_SET 19:207 (42 variants), token-bound, and
 // compliant with the four shared/ui boundary rules (tokens only, role-agnostic, feature-independent,
@@ -119,9 +121,29 @@ export function Button({
       {loading ? <Loader2 aria-hidden="true" className="animate-spin" /> : iconStart}
       {children}
       {iconEnd}
-      {/* Mobile touch-target: extends the hit region to ≥44px without altering the 40px box or any
-          painted pixel. md only (sm is desktop/table-only; lg is already 48px). */}
-      {size === 'md' && <span aria-hidden="true" className="absolute -inset-0.5" />}
+      {/* Mobile touch-target: extends the hit region to ≥44px without altering the box or any painted pixel.
+          md keeps its original all-breakpoint 2 px span; sm (32 px, used on mobile too) gets a below-lg 6 px
+          HitArea, so its desktop hit area is unchanged; lg is already 48px. */}
+      {/* -inset-0.5 everywhere as before; below lg 3 px, because the inset starts inside a secondary's 1 px border
+          (2 px reached only 42). */}
+      {size === 'md' && <span aria-hidden="true" className="absolute -inset-0.5 max-lg:-inset-0.75" />}
+      {size === 'sm' && <HitArea size={32} />}
     </button>
+  )
+}
+
+/**
+ * A real <Link> (an <a>, never a <button>) drawn with the Button recipe — for navigation that looks like a button.
+ * Same classes as <Button> (className is merged last, as the call sites did with cn()), plus the below-lg hit area
+ * for sm (32 → 44) and md (40 → 44); lg is already 48. Desktop hit area and every painted pixel are unchanged.
+ */
+export type ButtonLinkProps = React.ComponentProps<typeof Link> & { variant?: ButtonVariant; size?: ButtonSize }
+
+export function ButtonLink({ variant = 'primary', size = 'md', className, children, ...props }: ButtonLinkProps) {
+  return (
+    <Link {...props} className={cn(BASE, SIZE[size], VARIANT_BASE[variant], VARIANT_STATE[variant], className)}>
+      {children}
+      {size === 'sm' ? <HitArea size={32} /> : size === 'md' ? <HitArea size={40} /> : null}
+    </Link>
   )
 }

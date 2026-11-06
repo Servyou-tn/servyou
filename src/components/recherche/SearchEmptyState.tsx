@@ -4,6 +4,7 @@ import { CARD_SHADOW, FOCUS_RING } from '@/components/layout/styles'
 import { t } from '@/lib/i18n'
 import type { Lang } from '@/lib/i18n'
 import type { FilterCategory } from './SearchFilters'
+import { HitArea } from '@/components/ui/interactive-surface'
 
 // The only empty state on /recherche: zero results. Two wordings — "Aucun résultat pour
 // « … »" when a query is active, "Aucun résultat" when only filters narrowed it to zero.
@@ -40,8 +41,8 @@ export function SearchEmptyState({
 }: Props) {
   const hasQuery = query !== ''
 
-  const primary = `inline-flex items-center rounded-full bg-brand-blue-600 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-brand-blue-600/90 ${FOCUS_RING}`
-  const textLink = `rounded text-body-sm font-medium text-text-muted underline-offset-2 hover:underline ${FOCUS_RING}`
+  const primary = `max-lg:relative inline-flex items-center rounded-full bg-brand-blue-600 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-brand-blue-600/90 ${FOCUS_RING}`
+  const textLink = `max-lg:relative rounded text-body-sm font-medium text-text-muted underline-offset-2 hover:underline ${FOCUS_RING}`
 
   return (
     <div className={`rounded-2xl bg-white p-12 text-center ${CARD_SHADOW}`}>
@@ -61,9 +62,11 @@ export function SearchEmptyState({
               <Link
                 key={c.slug}
                 href={`/recherche?categorie=${encodeURIComponent(c.slug)}`}
-                className={`inline-flex items-center rounded-full border border-border-subtle bg-white px-4 py-2 text-body-sm font-medium text-text-primary transition-colors hover:bg-slate-50 ${FOCUS_RING}`}
+                className={`max-lg:relative inline-flex items-center rounded-full border border-border-subtle bg-white px-4 py-2 text-body-sm font-medium text-text-primary transition-colors hover:bg-slate-50 ${FOCUS_RING}`}
               >
                 {lang === 'ar' ? c.name_ar : c.name_fr}
+                {/* 39 → 47 tall; wrapped rows are 8 px apart, so two rows' extensions meet exactly. */}
+                <HitArea size={36} axis="y" />
               </Link>
             ))}
           </div>
@@ -75,16 +78,19 @@ export function SearchEmptyState({
           {hasQuery && (
             <Link href={otherSideHref} className={primary}>
               {t('search.otherSide.zero', lang, { current: currentLabel, query, other: otherLabel })}
+              <HitArea size={32} axis="y" />
             </Link>
           )}
           {hasFilters && (
             <Link href={clearFiltersHref} className={hasQuery ? textLink : primary}>
               {t('search.filters.clear', lang)}
+              <HitArea size={32} axis="y" />
             </Link>
           )}
           {(hasQuery || !hasFilters) && (
             <Link href={browseAllHref} className={hasQuery || hasFilters ? textLink : primary}>
               {t('search.empty.browseAll', lang)}
+              <HitArea size={32} axis="y" />
             </Link>
           )}
         </div>

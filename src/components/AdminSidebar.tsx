@@ -24,6 +24,7 @@ import { t, tn } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
 import { FOCUS_RING } from '@/components/layout/styles'
 import { SidebarSection } from '@/components/shell/SidebarSection'
+import { HitArea } from '@/components/ui/interactive-surface'
 
 // The admin sidebar — Figma « NOV 4 — Admin » (J5/J6 « Sidebar — admin »): the seller shell's navy
 // column (240 wide, blue-950, logo band 72) with the admin IA. The frame draws PILOTAGE / MODÉRATION /
@@ -138,11 +139,12 @@ export function AdminSidebar({
             onClick={onClose}
             aria-label={t('shell.mobile.menu.close', lang)}
             className={cn(
-              'inline-flex h-10 w-10 items-center justify-center rounded-pill text-white/70 transition-colors hover:bg-white/5 hover:text-white',
+              'max-lg:relative inline-flex h-10 w-10 items-center justify-center rounded-pill text-white/70 transition-colors hover:bg-white/5 hover:text-white',
               FOCUS_RING,
             )}
           >
             <X className="h-5 w-5" aria-hidden="true" />
+            <HitArea size={40} />
           </button>
         ) : null}
       </div>

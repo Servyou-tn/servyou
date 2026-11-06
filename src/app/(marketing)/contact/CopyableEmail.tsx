@@ -5,6 +5,7 @@ import { Copy, Check } from 'lucide-react'
 import { useLang } from '@/components/LangProvider'
 import { t } from '@/lib/i18n'
 import { FOCUS_RING } from '@/components/layout/styles'
+import { HitArea } from '@/components/ui/interactive-surface'
 
 // Email as a mailto link + a copy-to-clipboard button (shows a check for ~1.5s on copy).
 export function CopyableEmail({ email }: { email: string }) {
@@ -25,21 +26,23 @@ export function CopyableEmail({ email }: { email: string }) {
     <div className="flex items-center gap-2">
       <a
         href={`mailto:${email}`}
-        className={`rounded text-sm font-medium text-brand-blue-600 hover:underline ${FOCUS_RING}`}
+        className={`max-lg:relative rounded text-sm font-medium text-brand-blue-600 hover:underline ${FOCUS_RING}`}
       >
         {email}
+        <HitArea size={20} axis="y" />
       </a>
       <button
         type="button"
         onClick={copy}
         aria-label={copied ? t('contact.methods.email.copied', lang) : email}
-        className={`inline-flex h-7 w-7 items-center justify-center rounded-md hover:bg-slate-100 ${FOCUS_RING}`}
+        className={`max-lg:relative inline-flex h-7 w-7 items-center justify-center rounded-md hover:bg-slate-100 ${FOCUS_RING}`}
       >
         {copied ? (
           <Check className="h-4 w-4 text-green-600" aria-hidden="true" />
         ) : (
           <Copy className="h-4 w-4 text-text-muted" aria-hidden="true" />
         )}
+        <HitArea size={28} />
       </button>
     </div>
   )

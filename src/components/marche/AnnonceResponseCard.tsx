@@ -1,13 +1,12 @@
 'use client'
 
 import { useState } from 'react'
-import Link from 'next/link'
 import { Clock, User, Wallet } from 'lucide-react'
 import { t } from '@/lib/i18n'
 import type { Lang } from '@/lib/i18n'
-import { cn } from '@/lib/utils'
+
 import { Avatar } from '@/components/ui/avatar'
-import { BASE as BUTTON_BASE, SIZE as BUTTON_SIZE, VARIANT_BASE, VARIANT_STATE } from '@/components/ui/button'
+import { ButtonLink } from '@/components/ui/button'
 import { WhatsAppContactButton } from '@/components/orders/WhatsAppContactButton'
 import { getInitials } from '@/components/ui/initials'
 import { SkillChip } from '@/components/missions/MissionChips'
@@ -134,12 +133,14 @@ export function AnnonceResponseCard({
         </div>
         {/* /freelance/[id] resolves freelancer_profiles.id, not the profiles.id job_responses stores — hidden when that profile is not readable. */}
         {response.freelancerProfileId && (
-          <Link
+          <ButtonLink
             href={`/freelance/${response.freelancerProfileId}`}
-            className={cn(BUTTON_BASE, BUTTON_SIZE.md, VARIANT_BASE.secondary, VARIANT_STATE.secondary, 'w-fit')}
+            variant="secondary"
+            size="md"
+            className="w-fit"
           >
             {t('annonces.detail.view_profile', lang)}
-          </Link>
+          </ButtonLink>
         )}
       </div>
     </div>

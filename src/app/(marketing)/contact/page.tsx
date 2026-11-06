@@ -5,6 +5,7 @@ import { getLang } from '@/lib/i18n/server'
 import { t } from '@/lib/i18n'
 import { ContactForm } from './ContactForm'
 import { CopyableEmail } from './CopyableEmail'
+import { HitArea } from '@/components/ui/interactive-surface'
 
 export async function generateMetadata(): Promise<Metadata> {
   return localizedMetadata('meta.contact')
@@ -49,9 +50,10 @@ export default async function ContactPage() {
           <p className="mt-3 text-sm font-bold text-text-primary">{t('contact.methods.whatsapp.label', lang)}</p>
           <a
             href="https://wa.me/216XXXXXXXX"
-            className="mt-2 inline-block text-sm font-medium text-brand-blue-600 hover:underline"
+            className="mt-2 inline-block text-sm font-medium text-brand-blue-600 hover:underline max-lg:relative"
           >
             {t('contact.methods.whatsapp.value', lang)}
+            <HitArea size={20} axis="y" />
           </a>
         </div>
 

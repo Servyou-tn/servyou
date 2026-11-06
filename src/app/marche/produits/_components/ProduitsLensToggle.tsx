@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { t, type Lang } from '@/lib/i18n'
 import { FOCUS_RING } from '@/components/layout/styles'
+import { HitArea } from '@/components/ui/interactive-surface'
 
 // The Produits / Boutiques lens toggle above the browse grid — Figma 569:39769 → view-toggle
 // 578:42513 (and 578:42528, the Boutiques specimen): a surface-sunken track (radius 10, pad 4) with
@@ -35,16 +36,18 @@ export function ProduitsLensToggle({ lang, active = 'produits' }: { lang: Lang; 
       <Link
         href="/marche/produits"
         aria-current={active === 'produits' ? 'page' : undefined}
-        className={`${SEGMENT} ${active === 'produits' ? 'bg-white text-text-primary shadow-xs' : 'text-text-secondary hover:text-text-primary'}`}
+        className={`max-lg:relative ${SEGMENT} ${active === 'produits' ? 'bg-white text-text-primary shadow-xs' : 'text-text-secondary hover:text-text-primary'}`}
       >
         {t('produits.lens.produits', lang)}
+        <HitArea size={36} axis="y" />
       </Link>
       <Link
         href="/marche/produits?vue=boutiques"
         aria-current={active === 'boutiques' ? 'page' : undefined}
-        className={`${SEGMENT} ${active === 'boutiques' ? 'bg-white text-text-primary shadow-xs' : 'text-text-secondary hover:text-text-primary'}`}
+        className={`max-lg:relative ${SEGMENT} ${active === 'boutiques' ? 'bg-white text-text-primary shadow-xs' : 'text-text-secondary hover:text-text-primary'}`}
       >
         {t('produits.lens.boutiques', lang)}
+        <HitArea size={36} axis="y" />
       </Link>
     </nav>
   )

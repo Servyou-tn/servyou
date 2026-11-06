@@ -1,14 +1,13 @@
 'use client'
 
 import { useState, useTransition } from 'react'
-import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { MoreVertical } from 'lucide-react'
 import { toast } from 'sonner'
 import { t, type Lang } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
 import { FOCUS_RING } from '@/components/layout/styles'
-import { BASE as BUTTON_BASE, SIZE as BUTTON_SIZE, VARIANT_BASE, VARIANT_STATE } from '@/components/ui/button'
+import { ButtonLink } from '@/components/ui/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { ConfirmModal } from '@/components/marche/ConfirmModal'
 import { closeMissionAction, deleteMissionAction, reopenMissionAction } from '../[id]/actions'
@@ -55,12 +54,14 @@ export function AnnonceRowActions({
 
   return (
     <div className="flex items-center justify-end gap-2">
-      <Link
+      <ButtonLink
         href={`/mes-annonces/${id}`}
-        className={cn(BUTTON_BASE, BUTTON_SIZE.sm, VARIANT_BASE.secondary, VARIANT_STATE.secondary, 'whitespace-nowrap')}
+        variant="secondary"
+        size="sm"
+        className="whitespace-nowrap"
       >
         {t('mesannonces.row.view', lang)}
-      </Link>
+      </ButtonLink>
 
       <DropdownMenu>
         <DropdownMenuTrigger asChild>

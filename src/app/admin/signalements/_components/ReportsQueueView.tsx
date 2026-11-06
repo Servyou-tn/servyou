@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { t, type Lang } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
 import { FOCUS_RING } from '@/components/layout/styles'
-import { BASE as BUTTON_BASE, SIZE as BUTTON_SIZE, VARIANT_BASE, VARIANT_STATE } from '@/components/ui/button'
+import { ButtonLink } from '@/components/ui/button'
 import { Avatar } from '@/components/ui/avatar'
 import { SortSelect } from '@/components/orders/SortSelect'
 import { ErrorState } from '@/components/marche/ErrorState'
@@ -127,11 +127,6 @@ function actionLabel(row: QueueRow, lang: Lang): string {
   return t(row.status === 'under_review' ? 'admin.reports.action_resume' : 'admin.reports.action_examine', lang)
 }
 
-function buttonClass(primary: boolean, size: 'sm' | 'md'): string {
-  const variant = primary ? 'primary' : 'secondary'
-  return cn(BUTTON_BASE, BUTTON_SIZE[size], VARIANT_BASE[variant], VARIANT_STATE[variant])
-}
-
 // Table — container radius 12, border-subtle; thead pad 10/20 on surface-subtle, 12 Medium muted
 // uppercase; rows pad 14/20, gap 16. Column widths are the frame's (190 · fill · 240 · 90 · 150 · 110),
 // each plus its share of the 16 gap and the 20 edge pad.
@@ -189,9 +184,9 @@ function QueueTable({ lang, rows }: { lang: Lang; rows: QueueRow[] }) {
                 <ReportStatusPill status={row.status} lang={lang} />
               </td>
               <td className={cn(td, 'text-end')}>
-                <Link href={row.href} className={buttonClass(i === 0, 'sm')}>
+                <ButtonLink href={row.href} variant={i === 0 ? 'primary' : 'secondary'} size="sm">
                   {actionLabel(row, lang)}
-                </Link>
+                </ButtonLink>
               </td>
             </tr>
           ))}
@@ -214,9 +209,9 @@ function QueueCard({ lang, row, primary }: { lang: Lang; row: QueueRow; primary:
       <h2 className="text-body font-medium text-text-primary"><bdi>{row.title}</bdi></h2>
       <p className="text-caption font-medium text-text-muted"><MetaParts parts={row.meta} /></p>
       <p className="text-caption font-medium text-text-secondary">{row.cardBy}</p>
-      <Link href={row.href} className={cn(buttonClass(primary, 'md'), 'w-full')}>
+      <ButtonLink href={row.href} variant={primary ? 'primary' : 'secondary'} size="md" className="w-full">
         {actionLabel(row, lang)}
-      </Link>
+      </ButtonLink>
     </article>
   )
 }

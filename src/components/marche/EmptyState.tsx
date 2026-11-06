@@ -1,8 +1,7 @@
-import Link from 'next/link'
 import type { ReactNode } from 'react'
 import { CARD_SHADOW } from '@/components/layout/styles'
-import { BASE as BUTTON_BASE, SIZE as BUTTON_SIZE, VARIANT_BASE, VARIANT_STATE } from '@/components/ui/button'
-import { cn } from '@/lib/utils'
+import { ButtonLink } from '@/components/ui/button'
+
 
 // Shared empty-state card for the account pages: a muted 48px glyph, a message, an optional
 // subtitle line, and an optional CTA. A disabled CTA renders as a muted non-link (used where
@@ -34,12 +33,14 @@ export function EmptyState({
               {cta.label}
             </span>
           ) : (
-            <Link
+            <ButtonLink
               href={cta.href}
-              className={cn('mt-6', BUTTON_BASE, BUTTON_SIZE.md, VARIANT_BASE.primary, VARIANT_STATE.primary)}
+              variant="primary"
+              size="md"
+              className="mt-6"
             >
               {cta.label}
-            </Link>
+            </ButtonLink>
           ))}
       </div>
     </div>

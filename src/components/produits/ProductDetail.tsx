@@ -18,6 +18,7 @@ import { ProductDescription } from './ProductDescription'
 import { ShareLinkButton } from './ShareLinkButton'
 import { SocialLinks } from '@/components/social/SocialLinks'
 import { ReportListingModal } from '@/components/report/ReportListingModal'
+import { HitArea } from '@/components/ui/interactive-surface'
 
 // D1 « Détail du produit » — rebuilt from Figma `562:39013`. Every desktop number below is measured
 // and recorded in docs/design/d1-discovery.md §2; nothing here is a recollection.
@@ -112,9 +113,10 @@ export function ProductDetail({
             {t('product.detail.breadcrumb.home', lang)}
           </Link>
           <ChevronRight className="h-3.5 w-3.5 shrink-0 rtl:rotate-180 max-lg:hidden" aria-hidden="true" />
-          <Link href="/marche/produits" className={`inline-flex items-center gap-1.5 rounded-sm hover:text-text-secondary lg:gap-0 ${FOCUS_RING}`}>
+          <Link href="/marche/produits" className={`max-lg:relative inline-flex items-center gap-1.5 rounded-sm hover:text-text-secondary lg:gap-0 ${FOCUS_RING}`}>
             <ChevronLeft className="size-4 shrink-0 rtl:rotate-180 lg:hidden" aria-hidden="true" />
             {t('product.detail.breadcrumb.products', lang)}
+            <HitArea size={16} axis="y" />
           </Link>
           {category && (
             <>

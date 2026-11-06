@@ -1,6 +1,5 @@
-import Link from 'next/link'
 import { WhatsAppContactButton } from '@/components/orders/WhatsAppContactButton'
-import { BASE as BUTTON_BASE, SIZE as BUTTON_SIZE, VARIANT_BASE, VARIANT_STATE } from '@/components/ui/button'
+import { ButtonLink } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { PhoneAfterAcceptance } from '@/components/orders/PhoneAfterAcceptance'
 import { t, type Lang } from '@/lib/i18n'
@@ -66,15 +65,17 @@ export function PrimaryCta({
   if (firstServiceId) {
     return (
       // Same 44 as the WhatsApp state below lg (the 375 frame draws the hero CTA 44 tall); 48 from lg as before.
-      <Link
+      <ButtonLink
         href={`/demander/${firstServiceId}`}
-        className={cn(BUTTON_BASE, BUTTON_SIZE[size], VARIANT_BASE.primary, VARIANT_STATE.primary, size === 'lg' && 'max-lg:h-11')}
+        variant="primary"
+        size={size}
+        className={cn(size === 'lg' && 'max-lg:h-11')}
       >
         {t('freelance.public.request_service_cta', lang)}
         <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-white/25 px-1.5 text-caption font-semibold">
           {serviceCount}
         </span>
-      </Link>
+      </ButtonLink>
     )
   }
   return null

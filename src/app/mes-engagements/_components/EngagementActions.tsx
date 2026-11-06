@@ -6,7 +6,7 @@ import { MoreVertical } from 'lucide-react'
 import { t, type Lang } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
 import { FOCUS_RING } from '@/components/layout/styles'
-import { BASE as BUTTON_BASE, SIZE as BUTTON_SIZE, VARIANT_BASE, VARIANT_STATE } from '@/components/ui/button'
+import { ButtonLink } from '@/components/ui/button'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -68,12 +68,14 @@ export function EngagementActions({
           className={NEXT_BUTTON}
         />
       ) : (
-        <Link
+        <ButtonLink
           href={detailHref}
-          className={cn(BUTTON_BASE, BUTTON_SIZE.sm, VARIANT_BASE.secondary, VARIANT_STATE.secondary, NEXT_BUTTON)}
+          variant="secondary"
+          size="sm"
+          className={NEXT_BUTTON}
         >
           {t('engagements.view', lang)}
-        </Link>
+        </ButtonLink>
       )}
 
       <WhatsAppContactButton

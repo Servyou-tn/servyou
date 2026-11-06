@@ -17,6 +17,7 @@ import {
   DropdownMenuRadioItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { HitArea } from '@/components/ui/interactive-surface'
 
 // The filter bar of the « Boutiques » lens — Figma 578:42528 (Filter Bar, desktop): an in-page search (44, « Rechercher une
 // boutique… »), single-select Catégorie / Ville and a sort dropdown, then dismissible chips + « Tout effacer ». Every control writes
@@ -199,9 +200,10 @@ function FilterChip({ label, onRemove, lang }: { label: string; onRemove: () => 
         type="button"
         onClick={onRemove}
         aria-label={t('produits.filters.removeFilter', lang, { filter: label })}
-        className={`inline-flex h-5 w-5 items-center justify-center rounded-full hover:bg-brand-blue-100 ${FOCUS_RING}`}
+        className={`max-lg:relative inline-flex h-5 w-5 items-center justify-center rounded-full hover:bg-brand-blue-100 ${FOCUS_RING}`}
       >
         <X className="h-3.5 w-3.5" aria-hidden="true" />
+        <HitArea size={20} />
       </button>
     </span>
   )

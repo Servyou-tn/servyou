@@ -6,6 +6,7 @@ import { getProductDetail } from '@/lib/marche/product-detail'
 import { getServiceDetail } from '@/lib/marche/service-detail'
 import { demanderTargetId, readNext, withNext } from '@/lib/auth/next-param'
 import { SigninForm } from './components/SigninForm'
+import { HitArea } from '@/components/ui/interactive-surface'
 
 // /connexion — the sign-in page. Inherits the navy AuthShell chrome via
 // AuthFunnelLayout (title on white, navy box, footer on white). Narrower box than
@@ -60,8 +61,9 @@ export default async function ConnexionPage({
       footer={
         <>
           {t('signin.noAccount', lang)}{' '}
-          <Link href={withNext('/inscription', next)} className="font-semibold text-[var(--brand-blue-600)] hover:underline">
+          <Link href={withNext('/inscription', next)} className="font-semibold text-[var(--brand-blue-600)] hover:underline max-lg:relative">
             {t('signin.signupLink', lang)}
+            <HitArea size={20} axis="y" />
           </Link>
         </>
       }

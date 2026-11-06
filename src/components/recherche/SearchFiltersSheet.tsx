@@ -6,6 +6,7 @@ import { useLang } from '@/components/LangProvider'
 import { t } from '@/lib/i18n'
 import { FOCUS_RING } from '@/components/layout/styles'
 import { SearchFilters, type FilterCategory, type SheetExtras } from './SearchFilters'
+import { HitArea } from '@/components/ui/interactive-surface'
 
 type Props = {
   categories: FilterCategory[]
@@ -75,9 +76,10 @@ export function SearchFiltersSheet({
                 type="button"
                 onClick={() => setOpen(false)}
                 aria-label={t('search.filters.close', lang)}
-                className={`inline-flex h-9 w-9 items-center justify-center rounded-full text-text-primary hover:bg-slate-100 ${FOCUS_RING}`}
+                className={`max-lg:relative inline-flex h-9 w-9 items-center justify-center rounded-full text-text-primary hover:bg-slate-100 ${FOCUS_RING}`}
               >
                 <X className="h-5 w-5" aria-hidden="true" />
+                <HitArea size={36} />
               </button>
             </div>
 

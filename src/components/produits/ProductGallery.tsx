@@ -7,6 +7,7 @@ import { FavoriteButton } from '@/components/FavoriteButton'
 import { ProductCoverImage } from '@/components/produits/ProductCoverImage'
 import { useLang } from '@/components/LangProvider'
 import { t } from '@/lib/i18n'
+import { HitArea } from '@/components/ui/interactive-surface'
 
 // D1's gallery — Figma `Image Gallery 562:39182`, measured (docs/design/d1-discovery.md §2c).
 //
@@ -155,6 +156,7 @@ export function ProductGallery({
               className={`${overlayBtn} start-3`}
             >
               <ChevronLeft className="h-5 w-5 rtl:rotate-180" aria-hidden="true" />
+              <HitArea size={40} />
             </button>
             <button
               type="button"
@@ -163,6 +165,7 @@ export function ProductGallery({
               className={`${overlayBtn} end-3`}
             >
               <ChevronRight className="h-5 w-5 rtl:rotate-180" aria-hidden="true" />
+              <HitArea size={40} />
             </button>
           </>
         )}

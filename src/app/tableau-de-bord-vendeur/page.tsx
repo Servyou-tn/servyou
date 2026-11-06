@@ -32,6 +32,7 @@ import { FOCUS_RING } from '@/components/layout/styles'
 import { StatTile } from './_components/StatTile'
 import { Panel, PanelEmpty } from './_components/Panel'
 import { AdvanceOrderButton } from './_components/AdvanceOrderButton'
+import { HitArea } from '@/components/ui/interactive-surface'
 
 export async function generateMetadata(): Promise<Metadata> {
   return localizedMetadata('meta.dashboard_seller')
@@ -111,10 +112,11 @@ export default async function TableauDeBordVendeurPage() {
                 rather than copying this a third time. */}
             <Link
               href="/mes-produits/ajouter"
-              className={`inline-flex h-10 shrink-0 items-center justify-center gap-2 self-start rounded-lg bg-brand-blue-600 px-4 text-base font-semibold whitespace-nowrap text-text-inverse transition-colors hover:bg-brand-blue-700 active:bg-brand-blue-800 motion-reduce:transition-none max-lg:self-stretch lg:self-auto ${FOCUS_RING}`}
+              className={`max-lg:relative inline-flex h-10 shrink-0 items-center justify-center gap-2 self-start rounded-lg bg-brand-blue-600 px-4 text-base font-semibold whitespace-nowrap text-text-inverse transition-colors hover:bg-brand-blue-700 active:bg-brand-blue-800 motion-reduce:transition-none max-lg:self-stretch lg:self-auto ${FOCUS_RING}`}
             >
               <Plus className="h-4 w-4 shrink-0" aria-hidden="true" />
               {t('seller.dashboard.cta_add_product', lang)}
+              <HitArea size={40} axis="y" />
             </Link>
           </div>
 

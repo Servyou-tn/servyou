@@ -13,6 +13,7 @@ import { cn } from '@/lib/utils'
 import { WizardPageIntro } from '../_components/WizardPageIntro'
 import { ServiceWizard } from './_components/ServiceWizard'
 import { SellerPhoneNotice } from '@/components/account/SellerPhoneNotice'
+import { HitArea } from '@/components/ui/interactive-surface'
 
 export async function generateMetadata(): Promise<Metadata> {
   return localizedMetadata('meta.service_create')
@@ -46,11 +47,12 @@ export default async function CreerServicePage() {
             <Link
               href="/mon-profil-freelance/creer"
               className={cn(
-                'mt-2 inline-flex h-10 w-fit items-center justify-center rounded-lg bg-brand-blue-600 px-4 text-base font-semibold text-text-inverse hover:bg-brand-blue-700',
+                'max-lg:relative mt-2 inline-flex h-10 w-fit items-center justify-center rounded-lg bg-brand-blue-600 px-4 text-base font-semibold text-text-inverse hover:bg-brand-blue-700',
                 FOCUS_RING,
               )}
             >
               {t('freelance.dashboard.noProfile.cta', lang)}
+              <HitArea size={40} axis="y" />
             </Link>
           </div>
         </div>

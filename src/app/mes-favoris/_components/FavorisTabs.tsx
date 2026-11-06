@@ -16,6 +16,7 @@ import type { ShopCardData } from '@/lib/marche/shop-cards'
 import type { FreelancerCardData } from '@/lib/marche/freelancer-cards'
 import type { ProductListing } from '@/components/listings/ProductListingCard'
 import type { ServiceListing } from '@/components/listings/ServiceListingCard'
+import { HitArea } from '@/components/ui/interactive-surface'
 
 type TabValue = 'produits' | 'services' | 'boutiques' | 'freelances'
 
@@ -84,11 +85,12 @@ export function FavorisTabs({
               role="tab"
               aria-selected={isActive}
               onClick={() => setTab(value)}
-              className={`inline-flex h-9 shrink-0 items-center justify-center rounded-md px-3 text-body-sm font-medium transition-colors ${FOCUS_RING} ${
+              className={`max-lg:relative inline-flex h-9 shrink-0 items-center justify-center rounded-md px-3 text-body-sm font-medium transition-colors ${FOCUS_RING} ${
                 isActive ? 'bg-white text-text-primary shadow-xs' : 'text-text-secondary hover:text-text-primary'
               }`}
             >
               {t(`mesfavoris.tab.${value}`, lang)}
+              <HitArea size={36} axis="y" />
             </button>
           )
         })}

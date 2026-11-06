@@ -51,7 +51,7 @@ export function LanguageToggle() {
       aria-busy={pending}
       className={cn('inline-flex items-center rounded-[10px] bg-surface-pill p-1', pending && 'opacity-70')}
     >
-      {LANGUAGES.map(({ code, label }) => {
+      {LANGUAGES.map(({ code, label }, i) => {
         const active = code === lang
         return (
           <button
@@ -61,11 +61,17 @@ export function LanguageToggle() {
             aria-pressed={active}
             // Plain template (not cn) so text-body-sm survives — tailwind-merge collapses it
             // against the text-{color} classes and would otherwise drop the 14px size to 16px.
-            className={`inline-flex h-6 items-center justify-center rounded-lg px-3 text-body-sm font-medium transition-colors ${
+            className={`max-lg:relative inline-flex h-6 items-center justify-center rounded-lg px-3 text-body-sm font-medium transition-colors ${
               active ? 'bg-white text-text-primary' : 'text-text-secondary hover:text-text-primary'
             } ${FOCUS_RING}`}
           >
             {label}
+            {/* Below lg: 24 → 44 tall. The segments touch, so each also grows 4 px on its OUTER side only (into the
+                pill's padding) — FR 41 → 45 wide, AR 43 → 47 — and neither takes the other's tap. */}
+            <span
+              aria-hidden="true"
+              className={`pointer-events-auto absolute max-lg:-inset-y-2.5 ${i === 0 ? 'max-lg:-start-1 max-lg:end-0' : 'max-lg:start-0 max-lg:-end-1'}`}
+            />
           </button>
         )
       })}

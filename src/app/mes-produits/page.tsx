@@ -17,6 +17,7 @@ import { t } from '@/lib/i18n'
 import { FOCUS_RING } from '@/components/layout/styles'
 import { cn } from '@/lib/utils'
 import { ProductsList } from './_components/ProductsList'
+import { HitArea } from '@/components/ui/interactive-surface'
 
 export async function generateMetadata(): Promise<Metadata> {
   return localizedMetadata('meta.products_mine')
@@ -101,11 +102,12 @@ export default async function MesProduitsPage({
             <Link
               href="/mes-produits/ajouter"
               className={cn(
-                'inline-flex h-10 items-center rounded-lg bg-brand-blue-600 px-4 text-body font-semibold text-text-inverse hover:bg-brand-blue-700',
+                'max-lg:relative inline-flex h-10 items-center rounded-lg bg-brand-blue-600 px-4 text-body font-semibold text-text-inverse hover:bg-brand-blue-700',
                 FOCUS_RING,
               )}
             >
               {t('product.empty_cta', lang)}
+              <HitArea size={40} axis="y" />
             </Link>
           </div>
         ) : (
@@ -179,11 +181,12 @@ function Header({ lang }: { lang: Awaited<ReturnType<typeof getLang>> }) {
       <Link
         href="/mes-produits/ajouter"
         className={cn(
-          'inline-flex h-10 items-center rounded-lg bg-brand-blue-600 px-4 text-body font-semibold text-text-inverse hover:bg-brand-blue-700 max-lg:w-full max-lg:justify-center',
+          'max-lg:relative inline-flex h-10 items-center rounded-lg bg-brand-blue-600 px-4 text-body font-semibold text-text-inverse hover:bg-brand-blue-700 max-lg:w-full max-lg:justify-center',
           FOCUS_RING,
         )}
       >
         {t('product.add_btn', lang)}
+        <HitArea size={40} axis="y" />
       </Link>
     </div>
   )

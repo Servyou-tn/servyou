@@ -6,7 +6,7 @@ import { AppShell } from '@/components/shell/AppShell'
 import { Pagination } from '@/components/shared/Pagination'
 import { SortSelect } from '@/components/orders/SortSelect'
 import { FOCUS_RING } from '@/components/layout/styles'
-import { BASE as BUTTON_BASE, SIZE as BUTTON_SIZE, VARIANT_BASE, VARIANT_STATE } from '@/components/ui/button'
+import { ButtonLink } from '@/components/ui/button'
 import { requireFreelancer } from '@/lib/auth/require-seller'
 import {
   DEFAULT_PROPOSAL_SORT,
@@ -92,7 +92,6 @@ export default async function MesPropositionsPage({
           ? 'propositions.empty_closed'
           : 'propositions.empty_search'
   const showFindCta = noneAtAll || (!q && tab === 'active')
-  const findMissions = cn(BUTTON_BASE, BUTTON_SIZE.md, VARIANT_BASE.primary, VARIANT_STATE.primary, 'w-fit')
 
   return (
     <AppShell user={topBarUser}>
@@ -103,12 +102,14 @@ export default async function MesPropositionsPage({
             <h1 className="text-h1 text-text-primary">{t('propositions.title', lang)}</h1>
             <p className="text-body text-text-muted">{t('propositions.subtitle', lang)}</p>
           </div>
-          <Link
+          <ButtonLink
             href="/trouver-des-missions"
-            className={cn(BUTTON_BASE, BUTTON_SIZE.md, VARIANT_BASE.ghost, VARIANT_STATE.ghost, 'w-fit shrink-0')}
+            variant="ghost"
+            size="md"
+            className="w-fit shrink-0"
           >
             {t('propositions.find_missions', lang)}
-          </Link>
+          </ButtonLink>
         </div>
 
         {/* ── stats (298:9139): 4 tiles, gap 16. Fermées is the recessive grey circle; Actives carries the one coloured caption. ── */}
@@ -201,9 +202,9 @@ export default async function MesPropositionsPage({
               <p className="text-body text-text-secondary">{t(`${emptyKey}_body`, lang)}</p>
             </div>
             {showFindCta ? (
-              <Link href="/trouver-des-missions" className={findMissions}>
+              <ButtonLink href="/trouver-des-missions" variant="primary" size="md" className="w-fit">
                 {t('propositions.empty_cta', lang)}
-              </Link>
+              </ButtonLink>
             ) : null}
           </div>
         ) : (

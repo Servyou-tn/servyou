@@ -21,6 +21,7 @@ import { DeleteProductModal } from '@/components/produits/DeleteProductModal'
 import { tndPrice } from '@/components/listings/listing-utils'
 import { toggleProductStatusAction } from '@/app/actions/products'
 import { isOutOfStock, type SellerProductRow } from '@/lib/marche/seller-products'
+import { HitArea } from '@/components/ui/interactive-surface'
 
 // §8.4: route-local, hand-built markup close to List Row's Figma instance (thumb, title, col1-3
 // Prix/Stock/Vendus, status pill, Modifier, kebab) — not parameterized into a shared component,
@@ -114,9 +115,10 @@ export function ProductRow({
           // `text-text-secondary` (the link rendered 16) — and would evict a `max-lg:text-body-sm` next to `max-lg:text-text-primary` too.
           // The desktop classes are exactly what cn() produced (no base size: desktop keeps today's 16, logged in
           // docs/follow-ups/m375-g9-g5.md); below lg the frame's 14 Semi Bold full-width secondary.
-          className={`inline-flex h-9 items-center rounded-lg border border-border-subtle px-3 font-medium text-text-secondary hover:bg-surface-subtle max-lg:flex-1 max-lg:justify-center max-lg:border-border-strong max-lg:text-body-sm max-lg:font-semibold max-lg:text-text-primary ${FOCUS_RING}`}
+          className={`max-lg:relative inline-flex h-9 items-center rounded-lg border border-border-subtle px-3 font-medium text-text-secondary hover:bg-surface-subtle max-lg:flex-1 max-lg:justify-center max-lg:border-border-strong max-lg:text-body-sm max-lg:font-semibold max-lg:text-text-primary ${FOCUS_RING}`}
         >
           {t('common.edit', lang)}
+          <HitArea size={36} axis="y" />
         </Link>
 
         <DropdownMenu>

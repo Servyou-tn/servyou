@@ -19,6 +19,7 @@ import { LangueRegionTab } from './LangueRegionTab'
 import { ConfidentialiteTab } from './ConfidentialiteTab'
 import { NotificationsTab } from './NotificationsTab'
 import { ComptesConnectesTab } from './ComptesConnectesTab'
+import { HitArea } from '@/components/ui/interactive-surface'
 
 type TabKey = 'notifications' | 'confidentialite' | 'langue' | 'comptes'
 
@@ -131,7 +132,7 @@ export function ParametresShell({
                 onClick={() => setActiveTab(key)}
                 aria-current={active ? 'true' : undefined}
                 className={cn(
-                  'flex h-10 w-full shrink-0 items-center overflow-hidden rounded-md',
+                  'max-lg:relative flex h-10 w-full shrink-0 items-center overflow-hidden rounded-md',
                   active && 'bg-brand-blue-50',
                   FOCUS_RING,
                 )}
@@ -151,6 +152,7 @@ export function ParametresShell({
                     {t(labelKey, lang)}
                   </span>
                 </span>
+                <HitArea size={40} axis="y" />
               </button>
             )
           })}

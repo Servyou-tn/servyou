@@ -7,6 +7,7 @@ import { useLang } from '@/components/LangProvider'
 import { t } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
 import { FOCUS_RING } from '@/components/layout/styles'
+import { HitArea } from '@/components/ui/interactive-surface'
 
 // field-banner — Figma 555:37476, 712×200 (docs/design/g2-discovery.md §2b): a CENTRED drop-zone
 // (icon → button → caption, all centre-aligned), not a side-by-side row like field-logo. The
@@ -67,6 +68,7 @@ export function BannerField({
               className={`absolute end-3 top-3 grid h-8 w-8 place-items-center rounded-full bg-black/60 text-white transition-colors hover:bg-black/80 ${FOCUS_RING}`}
             >
               <X className="h-4 w-4" aria-hidden="true" />
+              <HitArea size={32} />
             </button>
           </>
         ) : (

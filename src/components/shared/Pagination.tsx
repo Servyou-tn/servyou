@@ -9,6 +9,7 @@ import { cn } from '@/lib/utils'
 import { FOCUS_RING } from '@/components/layout/styles'
 import { buildSearchQuery } from '@/components/recherche/search-url'
 import { paginationRange } from './pagination-range'
+import { HitArea } from '@/components/ui/interactive-surface'
 
 // URL-driven numbered pagination (Upwork-style): [‹] [1] … [4] [5] [6] … [N] [›]. Each page is a
 // real <Link> that sets ?page= while preserving every other search param (filters, sort, query,
@@ -74,7 +75,7 @@ export function Pagination({
   // --radius-md: 8px), NOT a pill. Idle cells carry a 1px border-subtle outline on white; the
   // active cell is a solid brand-blue-600 fill. Numbers are semibold in both states.
   const cell =
-    'inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md text-sm font-semibold transition-colors'
+    'max-lg:relative inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md text-sm font-semibold transition-colors'
   const numberIdle = cn(cell, 'border border-border-subtle bg-white text-text-secondary hover:bg-surface-subtle', FOCUS_RING)
   const numberActive = cn(cell, 'bg-brand-blue-600 text-white')
   // Arrows are icon-only 36×36 boxes with the same border treatment — no text label.
@@ -105,6 +106,7 @@ export function Pagination({
       return (
         <Link key={item} href={hrefFor(item)} className={numberIdle} aria-label={pageLabel(item)}>
           {item}
+          <HitArea size={36} />
         </Link>
       )
     })
@@ -125,6 +127,7 @@ export function Pagination({
         ) : (
           <Link href={hrefFor(current - 1)} rel="prev" className={arrowEnabled} aria-label={t('search.pagination.prev', lang)}>
             <ChevronLeft className="h-4 w-4" aria-hidden="true" />
+            <HitArea size={36} />
           </Link>
         )}
 
@@ -139,6 +142,7 @@ export function Pagination({
         ) : (
           <Link href={hrefFor(current + 1)} rel="next" className={arrowEnabled} aria-label={t('search.pagination.next', lang)}>
             <ChevronRight className="h-4 w-4" aria-hidden="true" />
+            <HitArea size={36} />
           </Link>
         )}
       </nav>

@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { t, type Lang } from '@/lib/i18n'
 import { FOCUS_RING } from '@/components/layout/styles'
+import { HitArea } from '@/components/ui/interactive-surface'
 
 // The Services / Freelances lens toggle above the browse grid — Figma 662:53894 → view-toggle (and 663:55017 at 375): a surface-sunken track
 // (radius 10, pad 4) with two 36 px segments (radius 8, pad-x 12, body-sm Medium, text only — the segment widths 82 / 98 are text + 24). The
@@ -24,16 +25,18 @@ export function ServicesLensToggle({ lang, active = 'services' }: { lang: Lang; 
       <Link
         href="/marche/services"
         aria-current={active === 'services' ? 'page' : undefined}
-        className={`${SEGMENT} ${active === 'services' ? 'bg-white text-text-primary shadow-xs' : 'text-text-secondary hover:text-text-primary'}`}
+        className={`max-lg:relative ${SEGMENT} ${active === 'services' ? 'bg-white text-text-primary shadow-xs' : 'text-text-secondary hover:text-text-primary'}`}
       >
         {t('services.lens.services', lang)}
+        <HitArea size={36} axis="y" />
       </Link>
       <Link
         href="/marche/services?vue=freelances"
         aria-current={active === 'freelances' ? 'page' : undefined}
-        className={`${SEGMENT} ${active === 'freelances' ? 'bg-white text-text-primary shadow-xs' : 'text-text-secondary hover:text-text-primary'}`}
+        className={`max-lg:relative ${SEGMENT} ${active === 'freelances' ? 'bg-white text-text-primary shadow-xs' : 'text-text-secondary hover:text-text-primary'}`}
       >
         {t('services.lens.freelances', lang)}
+        <HitArea size={36} axis="y" />
       </Link>
     </nav>
   )

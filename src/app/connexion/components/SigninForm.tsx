@@ -14,6 +14,7 @@ import { display, labelClass, errorClass, inputBase, primaryBtn } from '@/compon
 import { FOCUS_RING } from '@/components/layout/styles'
 import { SuspendedBanner } from './SuspendedBanner'
 import { Turnstile, type TurnstileHandle } from '@/components/security/Turnstile'
+import { HitArea } from '@/components/ui/interactive-surface'
 
 // Google OAuth built but DISABLED this sprint — same gate + rationale as the
 // signup form. OAuth sign-in would also need the handle_new_user trigger migration
@@ -195,8 +196,11 @@ export function SigninForm({ showResetSuccess = false }: { showResetSuccess?: bo
             autoComplete="current-password"
           />
           <div className="mt-2 text-end">
-            <Link href="/mot-de-passe-oublie" className="text-body-sm font-medium text-brand-blue-300 hover:underline">
+            <Link href="/mot-de-passe-oublie" className="text-body-sm font-medium text-brand-blue-300 hover:underline max-lg:relative">
               {t('signin.forgotPassword', lang)}
+              {/* Below lg it grows into the free space only — 6 px of the 12 above (the password field), 18 of the 19
+                  below (the submit button): 17 → 41 tall, the most it can take without stealing a neighbour's tap. */}
+              <span aria-hidden="true" className="pointer-events-auto absolute max-lg:inset-x-0 max-lg:-top-1.5 max-lg:-bottom-4.5" />
             </Link>
           </div>
         </div>

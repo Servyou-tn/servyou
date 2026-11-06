@@ -18,6 +18,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { HitArea } from '@/components/ui/interactive-surface'
 
 // The desktop (lg+) filter bar for /marche/services — the Figma moves filtering out of the
 // sidebar into a top bar (611:45644): an in-page search, single-select Catégorie / Ville
@@ -358,9 +359,10 @@ function FilterChip({
         type="button"
         onClick={onRemove}
         aria-label={t('services.filters.removeFilter', lang, { filter: label })}
-        className={`inline-flex h-5 w-5 items-center justify-center rounded-full hover:bg-brand-blue-100 ${FOCUS_RING}`}
+        className={`max-lg:relative inline-flex h-5 w-5 items-center justify-center rounded-full hover:bg-brand-blue-100 ${FOCUS_RING}`}
       >
         <X className="h-3.5 w-3.5" aria-hidden="true" />
+        <HitArea size={20} />
       </button>
     </span>
   )

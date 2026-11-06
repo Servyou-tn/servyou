@@ -8,6 +8,7 @@ import { FOCUS_RING } from '@/components/layout/styles'
 import { useLang } from './LangProvider'
 import { t } from '@/lib/i18n'
 import { signInHref } from '@/lib/favorites/targets'
+import { HitArea } from '@/components/ui/interactive-surface'
 
 // A guest is sent to sign in and brought BACK to the page the heart is on (the card's page, not the item's): m375-d1-produit, no dead end.
 const signInHere = () => signInHref(window.location.pathname + window.location.search)
@@ -123,6 +124,7 @@ export function FavoriteButton({
       return (
         <button disabled aria-label={t('common.loading', lang)} className={`${iconClass} text-text-muted`}>
           <Heart className={iconClassName} aria-hidden="true" />
+          <HitArea size={20} />
         </button>
       )
     }

@@ -29,6 +29,7 @@ import type { AideIcon } from '@/lib/aide/groups'
 import { countAideItems, filterAideGroups, type AideGroupView } from '@/lib/aide/search'
 import { SUPPORT_WHATSAPP_HREF } from './support'
 import { WhatsAppGlyph } from './WhatsAppGlyph'
+import { HitArea } from '@/components/ui/interactive-surface'
 
 // /aide — the interactive half: the search, the accordion groups, the no-result state. Figma I-Aide
 // 449:17900 (main) · 449:18312 (active search) · 449:18375 (no result) · AccordionGroup 449:17899.
@@ -261,12 +262,13 @@ function NoResult({ query }: { query: string }) {
         <Link
           href={SUPPORT_WHATSAPP_HREF}
           className={cn(
-            'inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-wa-brand px-5 text-base font-semibold text-text-primary transition-colors hover:bg-wa-brand-hover motion-reduce:transition-none',
+            'max-lg:relative inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-wa-brand px-5 text-base font-semibold text-text-primary transition-colors hover:bg-wa-brand-hover motion-reduce:transition-none',
             FOCUS_RING,
           )}
         >
           <WhatsAppGlyph />
           {t('aide.contact.whatsapp', lang)}
+          <HitArea size={40} axis="y" />
         </Link>
       </div>
     </div>

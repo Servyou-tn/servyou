@@ -16,6 +16,7 @@ import { OrdersFilterBar } from './_components/OrdersFilterBar'
 import { MARCHE_ENGINE_PATHS } from '@/lib/marche/marche-routing'
 import { OrdersList } from './_components/OrdersList'
 import { ProductOrdersList } from './_components/ProductOrdersList'
+import { HitArea } from '@/components/ui/interactive-surface'
 
 // E3 — /mes-commandes. Services tab rebuilt from Figma 709:59662 (1440) / 710:59945 (375); Produits tab from
 // 704:58976 (1440) / 706:59409 (375). Replaces the ComingSoon stub left by chore/strip-legacy-consumer-ui.
@@ -82,9 +83,10 @@ export default async function MesCommandesPage({ searchParams }: Props) {
             </div>
             <Link
               href={hasFilters ? clearHref : products ? MARCHE_ENGINE_PATHS.product : MARCHE_ENGINE_PATHS.service}
-              className={`inline-flex h-10 items-center gap-2 rounded-[10px] bg-brand-blue-600 px-4 text-base font-semibold text-text-inverse transition-colors hover:bg-brand-blue-700 ${FOCUS_RING}`}
+              className={`max-lg:relative inline-flex h-10 items-center gap-2 rounded-[10px] bg-brand-blue-600 px-4 text-base font-semibold text-text-inverse transition-colors hover:bg-brand-blue-700 ${FOCUS_RING}`}
             >
               {t(hasFilters ? 'mesCommandes.empty.reset' : products ? 'mesCommandes.empty.produits.cta' : 'mesCommandes.empty.cta', lang)}
+              <HitArea size={40} axis="y" />
             </Link>
           </div>
         ) : (

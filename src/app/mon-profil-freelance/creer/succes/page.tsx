@@ -10,6 +10,7 @@ import { resolveOwnedFreelancerProfileId } from '@/lib/freelancer/owner-profile'
 import { createClient } from '@/lib/supabase/server'
 import { getLang } from '@/lib/i18n/server'
 import { t } from '@/lib/i18n'
+import { HitArea } from '@/components/ui/interactive-surface'
 
 export async function generateMetadata(): Promise<Metadata> {
   return localizedMetadata('meta.freelance_created')
@@ -54,7 +55,7 @@ export default async function FreelancerProfileCreatedPage() {
   const isVisible = published?.is_published === true
 
   const secondaryLinkClasses = `inline-flex h-12 w-full items-center justify-center rounded-lg border border-border-strong bg-surface-base px-5 text-base font-semibold text-text-primary transition-colors hover:bg-surface-subtle sm:w-auto ${FOCUS_RING}`
-  const primaryLinkClasses = `inline-flex h-10 w-full items-center justify-center rounded-lg bg-brand-blue-600 px-4 text-base font-semibold text-text-inverse transition-colors hover:bg-brand-blue-700 active:bg-brand-blue-800 sm:w-auto ${FOCUS_RING}`
+  const primaryLinkClasses = `max-lg:relative inline-flex h-10 w-full items-center justify-center rounded-lg bg-brand-blue-600 px-4 text-base font-semibold text-text-inverse transition-colors hover:bg-brand-blue-700 active:bg-brand-blue-800 sm:w-auto ${FOCUS_RING}`
 
   return (
     <AppShell user={shell.topBarUser}>
@@ -102,6 +103,7 @@ export default async function FreelancerProfileCreatedPage() {
             </Link>
             <Link href="/tableau-de-bord" className={primaryLinkClasses}>
               {t('freelance.create.succes.cta_dashboard', lang)}
+              <HitArea size={40} axis="y" />
             </Link>
           </div>
           {!isVisible && (

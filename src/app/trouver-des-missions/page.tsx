@@ -5,7 +5,7 @@ import { AlertCircle, Compass, Info, X } from 'lucide-react'
 import { AppShell } from '@/components/shell/AppShell'
 import { Pagination } from '@/components/shared/Pagination'
 import { MissionCard } from '@/components/missions/MissionCard'
-import { BASE as BUTTON_BASE, SIZE as BUTTON_SIZE, VARIANT_BASE, VARIANT_STATE } from '@/components/ui/button'
+import { ButtonLink } from '@/components/ui/button'
 import { FOCUS_RING } from '@/components/layout/styles'
 import { requireFreelancer } from '@/lib/auth/require-seller'
 import { createClient } from '@/lib/supabase/server'
@@ -218,9 +218,9 @@ export default async function TrouverDesMissionsPage({
               </p>
             </div>
             {board.totalAvailable > 0 && chips.length > 0 ? (
-              <Link href={ROUTE} className={cn(BUTTON_BASE, BUTTON_SIZE.md, VARIANT_BASE.secondary, VARIANT_STATE.secondary)}>
+              <ButtonLink href={ROUTE} variant="secondary" size="md">
                 {t('missionboard.reset_filters', lang)}
-              </Link>
+              </ButtonLink>
             ) : null}
           </div>
         ) : (

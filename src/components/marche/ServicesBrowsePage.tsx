@@ -18,6 +18,7 @@ import { ErrorState } from './ErrorState'
 import { getLang } from '@/lib/i18n/server'
 import { t } from '@/lib/i18n'
 import { FOCUS_RING } from '@/components/layout/styles'
+import { HitArea } from '@/components/ui/interactive-surface'
 
 const BASE = '/marche/services'
 // The services grid is 3-up × 4 rows in the Figma (611:45637 caption "Affichage 1 à 12 sur N"),
@@ -150,9 +151,10 @@ export async function ServicesBrowsePage({
               {hasFilters && (
                 <Link
                   href={clearFiltersHref}
-                  className={`inline-flex h-10 items-center gap-2 rounded-[10px] bg-brand-blue-600 px-4 text-base font-semibold text-white transition-colors hover:bg-brand-blue-600/90 ${FOCUS_RING}`}
+                  className={`max-lg:relative inline-flex h-10 items-center gap-2 rounded-[10px] bg-brand-blue-600 px-4 text-base font-semibold text-white transition-colors hover:bg-brand-blue-600/90 ${FOCUS_RING}`}
                 >
                   {t('services.empty.resetFilters', lang)}
+                  <HitArea size={40} axis="y" />
                 </Link>
               )}
             </div>

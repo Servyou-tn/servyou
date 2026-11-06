@@ -10,7 +10,7 @@ import { Pagination } from '@/components/shared/Pagination'
 import { StatTile } from '@/components/shared/StatTile'
 import { SortSelect } from '@/components/orders/SortSelect'
 import { FOCUS_RING } from '@/components/layout/styles'
-import { BASE as BUTTON_BASE, SIZE as BUTTON_SIZE, VARIANT_BASE, VARIANT_STATE } from '@/components/ui/button'
+import { ButtonLink } from '@/components/ui/button'
 import { settle } from '@/lib/supabase/query-error'
 import { getShellUser } from '@/lib/marche/shell-user'
 import { getMyAnnonces } from '@/lib/marche/my-data'
@@ -67,12 +67,14 @@ export default async function MesAnnoncesPage({
 
   const lang = await getLang()
   const publishButton = (
-    <Link
+    <ButtonLink
       href="/mes-annonces/nouvelle"
-      className={cn(BUTTON_BASE, BUTTON_SIZE.md, VARIANT_BASE.primary, VARIANT_STATE.primary, 'w-full shrink-0 sm:w-fit')}
+      variant="primary"
+      size="md"
+      className="w-full shrink-0 sm:w-fit"
     >
       {t('mesannonces.publish', lang)}
-    </Link>
+    </ButtonLink>
   )
   const header = (
     <div className="flex flex-wrap items-center justify-between gap-4 max-lg:gap-3">

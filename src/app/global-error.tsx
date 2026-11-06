@@ -6,6 +6,7 @@ import { BASE, SIZE, VARIANT_BASE, VARIANT_STATE } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { t } from '@/lib/i18n'
 import './globals.css'
+import { HitArea } from '@/components/ui/interactive-surface'
 
 // A10 for the case the root layout itself crashes — Figma 1478:35837, docs/design/system-pages-cookie-deltas.md D4. This file REPLACES the root
 // layout when it renders, so it depends on nothing the layout provides: its own <html><body>, its own stylesheet import, no LangProvider / MarketingShell /
@@ -54,6 +55,7 @@ export default function GlobalError({
             {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
             <a href="/" className={cn(BASE, SIZE.md, VARIANT_BASE.link, VARIANT_STATE.link)}>
               {t('system.error.home', 'fr')}
+              <HitArea size={40} />
             </a>
           </div>
         </main>

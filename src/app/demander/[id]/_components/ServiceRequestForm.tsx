@@ -21,6 +21,7 @@ import {
   TIMEFRAME_ALLOWED,
   isValidBudget,
 } from '../limits'
+import { HitArea } from '@/components/ui/interactive-surface'
 
 // E1 MAIN — the form card, measured from Figma 680:56165 (empty) / 682:56521 (filled) /
 // 682:56805 (mobile). Client because it owns four controlled fields, inline validation and the
@@ -50,9 +51,10 @@ function CancelLink({ serviceId, lang, className }: { serviceId: string; lang: L
   return (
     <Link
       href={`/services/${serviceId}`}
-      className={`inline-flex h-10 items-center justify-center rounded-lg border border-border-strong bg-surface-base px-4 text-base font-semibold text-text-primary transition-colors hover:bg-surface-subtle ${FOCUS_RING} ${className}`}
+      className={`max-lg:relative inline-flex h-10 items-center justify-center rounded-lg border border-border-strong bg-surface-base px-4 text-base font-semibold text-text-primary transition-colors hover:bg-surface-subtle ${FOCUS_RING} ${className}`}
     >
       {t('demander.cancel', lang)}
+      <HitArea size={40} axis="y" />
     </Link>
   )
 }

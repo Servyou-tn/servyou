@@ -1,6 +1,7 @@
 'use client'
 
 import * as React from 'react'
+import { HitArea } from './interactive-surface'
 import { cn } from '@/lib/utils'
 import { FOCUS_RING } from '@/components/layout/styles'
 
@@ -100,6 +101,8 @@ export function Toggle({
               checked ? KNOB_ON[size] : 'translate-x-0',
             )}
           />
+          {/* Below lg the track's hit area reaches 44: md (44 × 24) grows vertically only; sm (36 × 20) both ways. */}
+          {size === 'md' ? <HitArea size={24} axis="y" /> : <HitArea size={20} />}
         </button>
 
         {showLabel && label && (

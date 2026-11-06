@@ -3,6 +3,7 @@ import { Package, Briefcase } from 'lucide-react'
 import { t, type Lang } from '@/lib/i18n'
 import { FOCUS_RING } from '@/components/layout/styles'
 import type { OrdersTab } from '@/lib/marche/my-orders-params'
+import { HitArea } from '@/components/ui/interactive-surface'
 
 // The Produits · Services toggle (Figma segmented 704:59172 / 709:59668 / 710:59947): surface/pill track, radius 10,
 // pad 4; the selected segment is white with a shadow, the other text/secondary. Produits stays FIRST, as drawn.
@@ -34,12 +35,13 @@ export function OrdersTabs({ lang, tab }: { lang: Lang; tab: OrdersTab }) {
             key={key}
             href={`${BASE}?tab=${key}`}
             aria-current={active ? 'page' : undefined}
-            className={`inline-flex h-9 items-center gap-1.5 rounded-md px-3 text-body-sm font-medium transition-colors ${FOCUS_RING} ${
+            className={`max-lg:relative inline-flex h-9 items-center gap-1.5 rounded-md px-3 text-body-sm font-medium transition-colors ${FOCUS_RING} ${
               active ? 'bg-white text-text-primary shadow-sm' : 'text-text-secondary hover:text-text-primary'
             }`}
           >
             <Icon className="h-4 w-4 max-lg:hidden" aria-hidden="true" />
             {t(`mesCommandes.tab.${key}`, lang)}
+            <HitArea size={36} axis="y" />
           </Link>
         )
       })}
