@@ -112,6 +112,12 @@ describe('withdrawProposalAction', () => {
     expect(h.revalidated).toHaveLength(0)
   })
 
+  it('a closed post still reads « not open » even though the sync trigger marked the proposal not_chosen', async () => {
+    respond({ rowStatus: 'not_chosen', post: { status: 'filled', created_at: new Date().toISOString() } })
+    expect(await withdrawProposalAction({ responseId: RESPONSE })).toEqual({ ok: false, reason: 'not_open' })
+    expect(deletes()).toHaveLength(0)
+  })
+
   it.each(['chosen', 'not_chosen'])('a %s proposal is « decided »: nothing is deleted', async (rowStatus) => {
     respond({ rowStatus })
     expect(await withdrawProposalAction({ responseId: RESPONSE })).toEqual({ ok: false, reason: 'decided' })

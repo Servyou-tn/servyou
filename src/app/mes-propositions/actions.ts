@@ -50,8 +50,6 @@ export async function withdrawProposalAction(input: unknown): Promise<WithdrawPr
     return { ok: false, reason: 'technical' }
   }
   if (!row) return { ok: false, reason: 'not_found' }
-  // ⚑ `status` is typed locally (journey-gates.ts) until the regenerated database types land.
-  if (parseJobResponseStatus((row as { status?: unknown }).status) !== 'pending') return { ok: false, reason: 'decided' }
 
   const embed = row.job_posts as unknown as { status: string; created_at: string } | { status: string; created_at: string }[] | null
   const post = Array.isArray(embed) ? (embed[0] ?? null) : embed
@@ -59,6 +57,9 @@ export async function withdrawProposalAction(input: unknown): Promise<WithdrawPr
   if (!post || resolveAnnonceStatus(post.status as 'open' | 'filled' | 'expired' | 'deleted', post.created_at) !== 'open') {
     return { ok: false, reason: 'not_open' }
   }
+  // After the post check: a post that left `open` has its pending proposals set to not_chosen by the sync trigger, and the
+  // freelancer should read « the mission changed », not « already answered ».
+  if (parseJobResponseStatus(row.status) !== 'pending') return { ok: false, reason: 'decided' }
 
   // `.select('id')` so a 0-row delete (RLS silently filtering it) is detected instead of reported as success.
   const { data: deleted, error: deleteError } = await supabase
