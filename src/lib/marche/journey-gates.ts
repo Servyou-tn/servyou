@@ -18,7 +18,7 @@ export function parseJobResponseStatus(value: unknown): JobResponseStatus {
 type DbError = { code?: string | null; hint?: string | null; message?: string | null }
 
 /** choose_job_response's refusals (by hint) → the i18n key the owner reads. Anything else → the generic error. */
-const CHOOSE_ERROR_KEY: Record<string, string> = {
+const CHOOSE_ERROR_KEY = new Map<string, string>(Object.entries({
   job_filled: 'annonces.choose.error_filled',
   job_deleted: 'annonces.choose.error_unavailable',
   job_unavailable: 'annonces.choose.error_unavailable',
@@ -27,10 +27,10 @@ const CHOOSE_ERROR_KEY: Record<string, string> = {
   not_found: 'annonces.choose.error_not_found',
   not_signed_in: 'annonce.error.not_authorized',
   suspended: 'annonces.choose.error_suspended',
-}
+}))
 
 export function chooseErrorKey(error: DbError): string {
-  return (error.hint && CHOOSE_ERROR_KEY[error.hint]) || 'common.error_generic'
+  return (error.hint && CHOOSE_ERROR_KEY.get(error.hint)) || 'common.error_generic'
 }
 
 /** filled → open refused once a freelancer is chosen (sync_job_responses_on_post_status, 23514 job_response_chosen). */
@@ -53,9 +53,10 @@ export function isSellerPhoneRequired(error: DbError): boolean {
 export type ProposalOutcome = 'chosen' | 'not_chosen' | 'pending' | 'expired' | 'unavailable'
 
 export function proposalOutcome(status: JobResponseStatus, postState: ProposalState): ProposalOutcome {
+  // A post the freelancer can no longer read (deleted, moderated) has no title or link to show next to « Choisie » — say that.
+  if (postState === 'unavailable') return 'unavailable'
   if (status === 'chosen') return 'chosen'
   if (status === 'not_chosen') return 'not_chosen'
-  if (postState === 'unavailable') return 'unavailable'
   if (postState === 'expired') return 'expired'
   if (postState === 'filled') return 'not_chosen'
   return 'pending'

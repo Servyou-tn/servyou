@@ -103,18 +103,18 @@ export function AnnonceDetail({ annonce }: { annonce: AnnonceDetailData }) {
   async function doChoose() {
     if (!chooseTarget) return
     setChoosing(true)
-    const res = await chooseProposalAction({ responseId: chooseTarget.id })
-    if (!res.ok) {
-      toast.error(t(res.errorKey ?? 'common.error_generic', lang))
+    try {
+      const res = await chooseProposalAction({ responseId: chooseTarget.id })
+      if (res.ok) toast.success(t('annonces.choose.success', lang))
+      else toast.error(t(res.errorKey ?? 'common.error_generic', lang))
+    } catch {
+      // A thrown action (network, 5xx) must not leave the modal locked on « pending ».
+      toast.error(t('common.error_generic', lang))
+    } finally {
       setChoosing(false)
       setChooseTarget(null)
       router.refresh()
-      return
     }
-    toast.success(t('annonces.choose.success', lang))
-    setChoosing(false)
-    setChooseTarget(null)
-    router.refresh()
   }
 
   async function doDelete() {

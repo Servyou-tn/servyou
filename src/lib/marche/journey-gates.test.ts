@@ -26,6 +26,7 @@ describe('journey gates (G1 / G2)', () => {
     expect(chooseErrorKey({ code: '42501', hint: 'suspended' })).toBe('annonces.choose.error_suspended')
     expect(chooseErrorKey({ code: '42501', hint: 'not_signed_in' })).toBe('annonce.error.not_authorized')
     expect(chooseErrorKey({ code: '08006', message: 'network' })).toBe('common.error_generic')
+    expect(chooseErrorKey({ code: '23514', hint: 'constructor' })).toBe('common.error_generic')
   })
 
   it('recognises the reopen-after-choice and the phone refusals by code + hint only', () => {
@@ -43,6 +44,8 @@ describe('journey gates (G1 / G2)', () => {
     // closed by hand before the sync trigger existed
     expect(proposalOutcome('pending', 'filled')).toBe('not_chosen')
     expect(proposalOutcome('pending', 'unavailable')).toBe('unavailable')
+    // a chosen proposal on a post deleted afterwards reads « Indisponible », not « Choisie » beside « Mission indisponible »
+    expect(proposalOutcome('chosen', 'unavailable')).toBe('unavailable')
     // a chosen proposal stays « Choisie » even once the post is past 30 days
     expect(proposalOutcome('chosen', 'expired')).toBe('chosen')
   })

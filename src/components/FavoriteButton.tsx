@@ -65,7 +65,8 @@ export function FavoriteButton({
         .eq(col, item_id)
         .maybeSingle()
 
-      // A failed read is logged, never shown as « not a favourite » silently (G6): the heart still works, and a toggle re-checks.
+      // A failed read is logged (G6). The heart may then start empty for an existing favourite; the insert below recovers from the
+      // duplicate it then hits.
       if (error) console.error('[FavoriteButton] read error:', error.message, error.code, error.details)
       if (data) { setFavorited(true); setFavoriteId(data.id) }
       setLoading(false)
@@ -105,6 +106,22 @@ export function FavoriteButton({
           .select('id')
           .single()
 
+        if (error?.code === '23505') {
+          // Already a favourite (a failed first read, or another tab): read the row back and show it filled — not an error.
+          const col = item_type === 'product' ? 'product_id' : 'service_listing_id'
+          const { data: existing } = await supabase
+            .from('favorites')
+            .select('id')
+            .eq('user_id', user.id)
+            .eq('item_type', item_type)
+            .eq(col, item_id)
+            .maybeSingle()
+          if (existing) {
+            setFavorited(true)
+            setFavoriteId(existing.id)
+            return
+          }
+        }
         if (error || !data) {
           if (error) console.error('[FavoriteButton] insert error:', error.message, error.code, error.details)
           toast.error(t('favorites.error_add', lang))
