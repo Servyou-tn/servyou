@@ -1,118 +1,76 @@
-import { type ComponentType, type SVGProps } from 'react'
 import Link from 'next/link'
-import localFont from 'next/font/local'
+import { ChevronRight, Code, House, Megaphone, Palette, Shirt, Smartphone, Sparkles, Video, type LucideIcon } from 'lucide-react'
 import { t, type Lang } from '@/lib/i18n'
-import {
-  ShirtIcon,
-  SparklesIcon,
-  SmartphoneIcon,
-  SofaIcon,
-  VideoIcon,
-  PaletteIcon,
-  LayoutIcon,
-  MegaphoneIcon,
-  CodeIcon,
-  MicIcon,
-} from './icons'
+import { cn } from '@/lib/utils'
+import { FOCUS_RING } from '@/components/layout/styles'
+import { Eyebrow, TITLE, LEAD } from './ui'
 
-// Manrope, scoped via --font-display (same pattern as the hero / HowItWorks, so
-// the three sections read as one continuous voice). No 'use client': this section
-// is pure presentation — hover lift, focus ring and reduced-motion are all CSS,
-// and <Link> + next/font work server-side. Keeping it server-rendered serves the
-// "lightweight, fast load" intent (no JS shipped for this section).
-// One face per weight Google served, all the same variable file (src/fonts/README.md). Every
-// Manrope call site names its const `manrope`: localFont uses it as the family name, so the faces
-// of all call sites on a page merge into one family, as Google's shared "Manrope" family did.
-const manrope = localFont({
-  src: [
-    { path: '../../fonts/manrope-latin.woff2', weight: '500', style: 'normal' },
-    { path: '../../fonts/manrope-latin.woff2', weight: '600', style: 'normal' },
-    { path: '../../fonts/manrope-latin.woff2', weight: '700', style: 'normal' },
+// Section 1 · Catégories (#categories) — Figma 1693:48340. 8 real DB categories (4 services, 4 products),
+// no counts. Desktop: centred head, 2 rows of 4 cards (282 wide, 24 gap, r16, p24). Phone: left-aligned
+// head, 2×2 grids (166 wide, 12 gap, r14, p16).
+const ROWS: { slug: string; key: string; icon: LucideIcon }[][] = [
+  [
+    { slug: 'developpement-web-mobile', key: 'dev', icon: Code },
+    { slug: 'design-graphique-logo', key: 'design', icon: Palette },
+    { slug: 'montage-video-motion', key: 'video', icon: Video },
+    { slug: 'community-management', key: 'cm', icon: Megaphone },
   ],
-  variable: '--font-display',
-  display: 'swap',
-})
-
-const display = 'font-[family-name:var(--font-display)]'
-
-// Ten modern-marketplace categories spanning e-commerce, creator/service and IT.
-// Icons are inline SVGs (the project deliberately avoids the lucide-react package
-// — see icons.tsx); the geometry is lucide's exact path data. `slug` is the REAL category the tile opens at
-// /categories/[slug] (walk 2026-11-02 #1: every tile pointed back to `/`): a product category for the four product tiles, a service
-// sector (lib/taxonomy/service-categories.ts) for the six service tiles.
-type Category = {
-  id: string
-  slug: string
-  Icon: ComponentType<SVGProps<SVGSVGElement>>
-}
-
-const CATEGORIES: Category[] = [
-  { id: 'mode', slug: 'mode', Icon: ShirtIcon },
-  { id: 'beaute', slug: 'beaute-soins', Icon: SparklesIcon },
-  { id: 'tech', slug: 'electronique', Icon: SmartphoneIcon },
-  { id: 'maison', slug: 'maison', Icon: SofaIcon },
-  { id: 'video', slug: 'montage-video-motion', Icon: VideoIcon },
-  { id: 'design', slug: 'design-graphique-logo', Icon: PaletteIcon },
-  { id: 'uiux', slug: 'design-ui-ux', Icon: LayoutIcon },
-  { id: 'marketing', slug: 'marketing-digital', Icon: MegaphoneIcon },
-  { id: 'dev', slug: 'developpement-web-mobile', Icon: CodeIcon },
-  { id: 'audio', slug: 'voix-off-doublage', Icon: MicIcon },
+  [
+    { slug: 'mode', key: 'mode', icon: Shirt },
+    { slug: 'electronique', key: 'tech', icon: Smartphone },
+    { slug: 'beaute-soins', key: 'beauty', icon: Sparkles },
+    { slug: 'maison', key: 'home', icon: House },
+  ],
 ]
 
-// Shared card chrome. The lift is gated on motion-safe so it is fully suppressed
-// under prefers-reduced-motion (border/shadow still snap instantly); the rest of
-// the transitions collapse via motion-reduce:transition-none.
-const cardBase =
-  `${display} group relative flex h-full min-h-[140px] flex-col justify-between rounded-3xl p-5 outline-none ` +
-  'border border-[var(--border-subtle)] bg-[var(--surface-base)] ' +
-  'transition-all duration-[250ms] ease-out motion-safe:hover:-translate-y-1 ' +
-  'hover:border-[var(--brand-blue-600)] hover:shadow-[0_12px_32px_rgba(15,23,42,0.08)] ' +
-  'focus-visible:ring-2 focus-visible:ring-[var(--brand-blue-600)] focus-visible:ring-offset-2 ' +
-  'motion-reduce:transition-none md:min-h-[160px] md:p-7'
-
 export function Categories({ lang }: { lang: Lang }) {
-  const headingId = 'categories-heading'
-
   return (
-    // Full-bleed pure white band — covers the page-level fixed gradient so this
-    // section reads as one clean white canvas with the hero (navy is reserved for
-    // Section 2). The grid mirrors automatically under <html dir="rtl">.
-    // id="categories": the footer's « Catégories » lands here (walk #3).
-    <section
-      id="categories"
-      aria-labelledby={headingId}
-      className={`${manrope.variable} bg-[var(--surface-base)] pt-8 pb-10 md:pt-12 md:pb-14`}
-    >
-      <div className="mx-auto max-w-7xl px-4 md:px-6">
-        {/* responsive pair retained: md:text-[40px] has no clean tier; half-tokenizing would break the mobile→desktop ramp (DS-3b-3) */}
-        <h2
-          id={headingId}
-          className={`${display} mx-auto mb-8 max-w-[720px] text-balance text-center text-[30px] font-bold leading-[1.15] tracking-[-0.025em] text-[var(--text-primary)] md:mb-12 md:text-[40px]`}
-        >
-          {t('landing.categories.title', lang)}
-        </h2>
+    <section id="categories" className="mx-4 mt-8 scroll-mt-20 lg:mx-auto lg:mt-16 lg:max-w-[1200px] lg:px-0 max-xl:lg:mx-6">
+      <div className="flex flex-col gap-2 lg:mx-auto lg:max-w-[860px] lg:items-center lg:gap-3 lg:text-center">
+        <Eyebrow className="text-brand-blue-600">{t('lp.cat.eyebrow', lang)}</Eyebrow>
+        <h2 className={cn(TITLE, 'text-text-primary')}>{t('lp.cat.title', lang)}</h2>
+        <p className={cn(LEAD, 'text-text-secondary lg:max-w-[600px]')}>{t('lp.cat.subtitle', lang)}</p>
+      </div>
 
-        {/* 2 cols on mobile + tablet (5 rows of 2 — long FR labels like
-            "Développement" clip in a 5-col tablet), opening to a clean 5×2 at
-            desktop (≥1024px). */}
-        <ul className="grid grid-cols-2 gap-3 md:gap-4 lg:grid-cols-5">
-          {CATEGORIES.map(({ id, slug, Icon }) => (
-            <li key={id}>
-              <Link
-                href={`/categories/${slug}`}
-                className={cardBase}
-              >
-                <Icon
-                  aria-hidden="true"
-                  className="h-8 w-8 text-[var(--brand-blue-600)] transition-colors duration-[250ms] ease-out group-hover:text-[var(--brand-blue-800)] motion-reduce:transition-none md:h-9 md:w-9"
-                />
-                <span className="mt-auto text-base font-semibold leading-[1.3] tracking-[-0.01em] text-[var(--text-primary)] md:text-lg">
-                  {t(`landing.categories.items.${id}`, lang)}
-                </span>
-              </Link>
-            </li>
-          ))}
-        </ul>
+      <div className="mt-6 flex flex-col gap-3 lg:mt-10 lg:gap-6">
+        {ROWS.map((row, r) => (
+          <ul key={r} className="grid grid-cols-2 gap-3 lg:grid-cols-4 lg:gap-6">
+            {row.map(({ slug, key, icon: Icon }) => (
+              <li key={slug}>
+                <Link
+                  href={`/categories/${slug}`}
+                  className={cn(
+                    'group flex h-full flex-col gap-3 rounded-[14px] border border-border-subtle bg-surface-base p-4 transition-colors hover:border-brand-blue-200 lg:gap-4 lg:rounded-2xl lg:p-6',
+                    r === 0 ? 'min-h-[193px] lg:min-h-[214px]' : 'min-h-[167px] lg:min-h-[188px]',
+                    FOCUS_RING,
+                  )}
+                >
+                  <span className="flex items-center justify-between">
+                    <span className="flex size-10 items-center justify-center rounded-[10px] bg-brand-blue-50 text-brand-blue-600 lg:size-12 lg:rounded-xl">
+                      <Icon className="size-5 lg:size-6" aria-hidden="true" />
+                    </span>
+                    <ChevronRight className="hidden size-5 text-text-muted lg:block rtl:rotate-180" aria-hidden="true" />
+                  </span>
+                  <span className="flex flex-col gap-1 lg:gap-1.5">
+                    <span className="text-base leading-[26px] font-semibold text-text-primary lg:text-xl lg:leading-[26px] lg:tracking-[-0.01em] rtl:tracking-normal">
+                      {t(`lp.cat.${key}.name`, lang)}
+                    </span>
+                    <span className="text-xs leading-[17px] text-text-secondary lg:text-sm lg:leading-[21px]">{t(`lp.cat.${key}.desc`, lang)}</span>
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        ))}
+      </div>
+
+      <div className="mt-6 flex justify-center lg:mt-10">
+        <Link
+          href="/marche/services"
+          className={cn('inline-flex h-10 items-center rounded-[10px] px-4 text-base font-semibold text-brand-blue-600 hover:underline', FOCUS_RING)}
+        >
+          {t('lp.cat.all', lang)}
+        </Link>
       </div>
     </section>
   )
