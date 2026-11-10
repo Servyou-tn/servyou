@@ -16,21 +16,21 @@ const CONFIG: Record<Role, {
   band: string
   benefits: LucideIcon[]
   cta: string
-  shot: { src: string; w: number; h: number; box: string; left: number }
+  shot: { src: string; w: number; h: number; box: string; left: number; card: number; cardH: number }
 }> = {
   free: {
     id: 'freelances',
     band: 'bg-surface-subtle',
     benefits: [Link2, Briefcase, LayoutDashboard],
     cta: '/devenir-freelance',
-    shot: { src: '/brand/landing/dash-free.webp', w: 856, h: 613, box: 'w-[824px] h-[549px]', left: -32 },
+    shot: { src: '/brand/landing/dash-free.webp', w: 856, h: 613, box: 'max-w-[824px] aspect-[824/549]', left: -32, card: 824, cardH: 549 },
   },
   shop: {
     id: 'boutiques',
     band: 'bg-surface-base',
     benefits: [Store, Inbox, Truck],
     cta: '/devenir-vendeur',
-    shot: { src: '/brand/landing/dash-shop.webp', w: 848, h: 599, box: 'w-[816px] h-[535px]', left: 0 },
+    shot: { src: '/brand/landing/dash-shop.webp', w: 848, h: 599, box: 'max-w-[816px] aspect-[816/535]', left: 0, card: 816, cardH: 535 },
   },
 }
 
@@ -68,18 +68,21 @@ export function RoleShowcase({ role, lang }: { role: Role; lang: Lang }) {
     </div>
   )
 
+  // The card takes the room left next to the text (never more than its Figma size) and scales as one
+  // piece — same aspect ratio, nothing stretched — so a 1366px screen shows what Figma shows at 1440.
+  // The export carries the card's drop shadow (32px each side, 16 above): offsets are percentages of the
+  // card so the shadow scales with it.
+  const s = c.shot
   const desktopShot = (
-    <div className={cn('relative hidden min-w-0 shrink lg:block max-xl:overflow-hidden', c.shot.box)}>
+    <div className={cn('relative hidden min-w-0 flex-1 lg:block', s.box)}>
       <Image
-        src={c.shot.src}
+        src={s.src}
         alt={t(k('shot_alt'), lang)}
-        width={c.shot.w}
-        height={c.shot.h}
-        sizes="856px"
-        // The export carries the card's drop shadow (32px each side, 16 above) — physical offset so the
-        // card edge, not the shadow, lands on the frame position in both directions.
-        style={{ left: c.shot.left }}
-        className="absolute -top-4 max-w-none"
+        width={s.w}
+        height={s.h}
+        sizes="(min-width: 1440px) 856px, 60vw"
+        style={{ left: `${(s.left / s.card) * 100}%`, top: `${(-16 / s.cardH) * 100}%`, width: `${(s.w / s.card) * 100}%` }}
+        className="absolute h-auto max-w-none"
       />
     </div>
   )
