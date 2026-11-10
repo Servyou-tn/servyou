@@ -27,7 +27,7 @@ import {
 } from '@/lib/marche/seller-dashboard'
 import { nextSellerStatus, type OrderStatus, type OrderType } from '@/lib/types/order-status'
 import { getLang } from '@/lib/i18n/server'
-import { t, tn, type Lang } from '@/lib/i18n'
+import { t, tn, LOCALES, type Lang } from '@/lib/i18n'
 import { FOCUS_RING } from '@/components/layout/styles'
 import { StatTile } from './_components/StatTile'
 import { Panel, PanelEmpty } from './_components/Panel'
@@ -156,7 +156,7 @@ export default async function TableauDeBordVendeurPage() {
               <StatTile
                 label={t('seller.dashboard.tile.profit', lang)}
                 value={t('seller.dashboard.tile.profit_value', lang, {
-                  amount: data.netProfit.value.toLocaleString('fr-FR' /* both languages: the AR locale's « 1.250 » reads as millimes (#304) */),
+                  amount: data.netProfit.value.toLocaleString(lang === 'en' ? LOCALES.en : 'fr-FR' /* FR + AR: the AR locale's « 1.250 » reads as millimes (#304); EN uses « 1,250.50 » */),
                 })}
                 subtitle={
                   data.netProfit.measuredCount === data.netProfit.deliveredCount

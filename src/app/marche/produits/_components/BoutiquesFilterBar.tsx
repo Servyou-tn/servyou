@@ -151,7 +151,7 @@ export function BoutiquesFilterBar({ categories, cities, selectedCategorie, vill
         <DropdownMenu>
           <DropdownMenuTrigger className={`${TRIGGER} text-text-primary ${FOCUS_RING}`}>
             <span className="truncate">
-              {t('produits.sort.label', lang)} : {t(`boutiques.sort.${tri}`, lang)}
+              {t('produits.sort.label', lang)}{lang === 'en' ? ': ' : ' : '}{t(`boutiques.sort.${tri}`, lang)}
             </span>
             <ChevronDown className="h-4 w-4 shrink-0 text-text-muted" aria-hidden="true" />
           </DropdownMenuTrigger>

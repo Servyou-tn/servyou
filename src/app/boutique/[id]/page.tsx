@@ -6,6 +6,7 @@ import { getShopDetail, getShopProducts } from '@/lib/marche/shop-detail'
 import { getShellUser } from '@/lib/marche/shell-user'
 import { getFavoriteState } from '@/lib/marche/favorite-state'
 import { getLang } from '@/lib/i18n/server'
+import { t } from '@/lib/i18n'
 
 // D3 — public shop storefront, rebuilt from Figma 540:32918/540:32920. Mirrors
 // /produits/[id]/page.tsx exactly: public route (nullable shell, no auth gate),
@@ -19,8 +20,8 @@ export async function generateMetadata({
   params: Promise<{ id: string }>
 }): Promise<Metadata> {
   const { id } = await params
-  const shop = await getShopDetail(id)
-  return { title: shop ? `${shop.name} — Servyou` : 'Boutique — Servyou' }
+  const [shop, lang] = await Promise.all([getShopDetail(id), getLang()])
+  return { title: `${shop ? shop.name : t('boutique.not_found', lang)} — Servyou` }
 }
 
 export default async function BoutiquePage({ params }: { params: Promise<{ id: string }> }) {
