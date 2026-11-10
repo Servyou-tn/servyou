@@ -1,296 +1,284 @@
 'use client'
 
-import { useId, useRef, useState, type KeyboardEvent } from 'react'
 import Image from 'next/image'
-import Link from 'next/link'
-import localFont from 'next/font/local'
-import { AnimatePresence, motion, useReducedMotion, type Variants } from 'motion/react'
-import { t, type Lang } from '@/lib/i18n'
-import { BlurFade } from '@/components/magicui/blur-fade'
+import { useRef, useState, type KeyboardEvent, type ReactNode } from 'react'
+import { Check, FileCheck, Inbox, Package, Search, Send, ShoppingBag, Smartphone } from 'lucide-react'
+import { useLang } from '@/components/LangProvider'
+import { t } from '@/lib/i18n'
+import { cn } from '@/lib/utils'
+import { FOCUS_RING } from '@/components/layout/styles'
+import { ButtonLink, Eyebrow, LEAD, TITLE } from './ui'
 
-// Manrope for the title + card titles, scoped via --font-display (same pattern as
-// the hero, so this section reads as a continuation).
-// One face per weight Google served, all the same variable file (src/fonts/README.md). Every
-// Manrope call site names its const `manrope`: localFont uses it as the family name, so the faces
-// of all call sites on a page merge into one family, as Google's shared "Manrope" family did.
-const manrope = localFont({
-  src: [
-    { path: '../../fonts/manrope-latin.woff2', weight: '400', style: 'normal' },
-    { path: '../../fonts/manrope-latin.woff2', weight: '600', style: 'normal' },
-    { path: '../../fonts/manrope-latin.woff2', weight: '700', style: 'normal' },
-    { path: '../../fonts/manrope-latin.woff2', weight: '800', style: 'normal' },
-  ],
-  variable: '--font-display',
-  display: 'swap',
-})
+// Section 5 · Comment ça marche (#comment-ca-marche) — Figma 1715:50246 (Client state on the landing),
+// Freelance 1718:51042 and Boutique 1718:51284. One strong blue-600 box, a Client | Freelance | Boutique
+// switch with the 3 hero photos, 3 numbered white step cards each with a mini UI preview, one CTA.
+type Role = 'client' | 'free' | 'shop'
+const ROLES: { id: Role; tab: string; photo: string; cta: string; ctaKey: string }[] = [
+  { id: 'client', tab: 'lp.how.tab.client', photo: '/brand/landing/client.webp', cta: '/inscription', ctaKey: 'lp.cta.start' },
+  { id: 'free', tab: 'lp.how.tab.freelance', photo: '/brand/landing/free.webp', cta: '/devenir-freelance', ctaKey: 'lp.free.cta' },
+  { id: 'shop', tab: 'lp.how.tab.shop', photo: '/brand/landing/owner.webp', cta: '/devenir-vendeur', ctaKey: 'lp.shop.cta' },
+]
 
-// Three steps. The icon is a universal meta-step (Setup → Engage → Transact),
-// the SAME across all 3 roles — only the copy + CTA swap.
-const steps = [
-  { number: '01', key: 'step1', icon: '/brand/icons/how-it-works/step-01-account.png' },
-  { number: '02', key: 'step2', icon: '/brand/icons/how-it-works/step-02-dealing.png' },
-  { number: '03', key: 'step3', icon: '/brand/icons/how-it-works/step-03-delivery-payment.png' },
-] as const
+// ── mini UI atoms (all measured: 12/17 Semi Bold pills, 14/21 titles, 28px icon tiles, r14 cards) ──
+const Pill = ({ children, tone = 'blue', className }: { children: ReactNode; tone?: 'blue' | 'white' | 'green'; className?: string }) => (
+  <span
+    className={cn(
+      'inline-flex h-[27px] items-center gap-[5px] rounded-full px-2.5 text-xs leading-[17px] font-semibold whitespace-nowrap [&_svg]:size-[13px]',
+      tone === 'blue' && 'bg-brand-blue-100 text-brand-blue-700',
+      tone === 'white' && 'bg-surface-base text-text-secondary',
+      tone === 'green' && 'bg-success-50 text-success-700',
+      className,
+    )}
+  >
+    {children}
+  </span>
+)
+const Card = ({ children, className }: { children: ReactNode; className?: string }) => (
+  <div className={cn('flex w-full flex-col gap-2.5 rounded-[14px] border border-border-subtle bg-surface-base p-3', className)}>{children}</div>
+)
+const Tile = ({ children }: { children: ReactNode }) => (
+  <span className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-brand-blue-50 text-brand-blue-600 [&_svg]:size-4">{children}</span>
+)
+const TwoLine = ({ title, meta }: { title: string; meta: string }) => (
+  <span className="flex min-w-0 flex-col">
+    <span className="text-sm leading-[21px] font-semibold text-text-primary">{title}</span>
+    <span className="text-xs leading-[17px] text-text-muted">{meta}</span>
+  </span>
+)
+const Ok = () => (
+  <span className="ms-auto flex size-5 shrink-0 items-center justify-center rounded-full bg-success-50 text-success-500 [&_svg]:size-3">
+    <Check strokeWidth={3} aria-hidden="true" />
+  </span>
+)
+const Avatar = ({ src, size }: { src: string; size: number }) => (
+  <Image src={src} alt="" width={size} height={size} className="shrink-0 rounded-full" style={{ width: size, height: size }} />
+)
 
-// The three audiences the section switches between. 'client' is the default.
-const roles = ['client', 'freelancer', 'boutique'] as const
-type Role = (typeof roles)[number]
-type StepKey = (typeof steps)[number]['key']
-
-// CTA destinations per role + step. Routes are not translatable, so they live here
-// (not in the locale files). Several intended routes don't exist yet — those fall
-// back to "/" with a TODO so they get wired when the pages ship.
-const ctaHref: Record<Role, Record<StepKey, string>> = {
-  // Walk 2026-11-02 #1 / #2: these all pointed back to `/`. « Voir nos garanties » and the two FAQ steps open the landing's FAQ
-  // (anti-scam, refusing a delivery, no commission — the guarantees); the public /aide needs a sign-in.
-  client: {
-    step1: '/inscription', // « Créer mon compte »
-    step2: '/marche/produits', // « Explorer Servyou » → the marketplace
-    step3: '#faq', // « Voir nos garanties »
-  },
-  freelancer: {
-    step1: '/inscription/freelancer',
-    step2: '/missions',
-    step3: '#faq',
-  },
-  boutique: {
-    step1: '/devenir-vendeur',
-    step2: '/marche/produits?vue=boutiques', // the Boutiques lens
-    step3: '#faq',
-  },
-}
-
-const display = 'font-[family-name:var(--font-display)]'
-
-// Inline ArrowRight (lucide's exact path) — the project deliberately avoids the
-// lucide-react package; the hero card CTA uses this same inline glyph.
-function ArrowRight({ className }: { className?: string }) {
+function Visual({ role, step, l }: { role: Role; step: number; l: (k: string) => string }) {
+  if (role === 'client' && step === 1)
+    return (
+      <>
+        <div className="flex h-[43px] items-center gap-2 rounded-xl border border-border-subtle bg-surface-base px-3">
+          <Search className="size-4 text-text-muted" aria-hidden="true" />
+          <span className="text-sm leading-[21px] text-text-muted">{l('v.search')}</span>
+        </div>
+        <div className="flex gap-1.5">
+          <Pill>{l('v.sousse')}</Pill>
+          <Pill tone="white">{l('v.freelancers')}</Pill>
+          <Pill tone="white">{l('v.products')}</Pill>
+        </div>
+      </>
+    )
+  if (role === 'client' && step === 2)
+    return (
+      <>
+        <Card>
+          <span className="flex items-center gap-2.5">
+            <Tile><Send aria-hidden="true" /></Tile>
+            <TwoLine title={l('v.offer')} meta={l('v.offer_meta')} />
+          </span>
+          <Pill className="self-start"><Inbox aria-hidden="true" />{l('v.proposals')}</Pill>
+        </Card>
+        <span className="flex items-center gap-2">
+          <span className="text-xs leading-[17px] text-text-muted">{l('v.or')}</span>
+          <Pill tone="white" className="text-brand-blue-700"><ShoppingBag aria-hidden="true" />{l('v.order')}</Pill>
+        </span>
+      </>
+    )
+  if (role === 'client' && step === 3)
+    return (
+      <>
+        <Card><span className="flex items-center gap-2.5"><Tile><Package aria-hidden="true" /></Tile><TwoLine title={l('v.parcel')} meta={l('v.parcel_meta')} /><Ok /></span></Card>
+        <Card><span className="flex items-center gap-2.5"><Tile><FileCheck aria-hidden="true" /></Tile><TwoLine title={l('v.mission')} meta={l('v.mission_meta')} /><Ok /></span></Card>
+      </>
+    )
+  if (role === 'free' && step === 1)
+    return (
+      <Card>
+        <span className="flex items-center gap-2.5">
+          <Avatar src="/brand/landing/free.webp" size={36} />
+          <TwoLine title={l('v.profile_name')} meta={l('v.profile_meta')} />
+        </span>
+        <span className="flex items-center justify-between text-xs leading-[17px]">
+          <span className="text-text-muted">{l('v.profile_strength')}</span>
+          <span className="font-semibold text-text-primary">75&nbsp;%</span>
+        </span>
+        <span className="h-1.5 rounded-full bg-brand-blue-100"><span className="block h-full w-3/4 rounded-full bg-brand-blue-600" /></span>
+      </Card>
+    )
+  if (role === 'free' && step === 2)
+    return (
+      <Card>
+        <span className="flex items-center justify-between gap-2">
+          <TwoLine title={l('v.ugc')} meta={l('v.offer_city')} />
+          <span dir="ltr" className="text-sm leading-[21px] font-bold whitespace-nowrap text-brand-blue-700">{l('v.budget')}</span>
+        </span>
+        <span className="flex h-[33px] items-center justify-center gap-1.5 rounded-[10px] bg-brand-blue-600 text-xs leading-[17px] font-semibold text-text-inverse">
+          <Send className="size-3.5 rtl:-scale-x-100" aria-hidden="true" />
+          {l('v.apply')}
+        </span>
+      </Card>
+    )
+  if (role === 'free' && step === 3)
+    return (
+      <>
+        <span className="flex gap-1.5">
+          <Pill tone="green"><Check aria-hidden="true" />{l('v.delivered')}</Pill>
+          <Pill>{l('v.validated')}</Pill>
+        </span>
+        <Card className="py-3">
+          <span className="flex items-center gap-2.5">
+            <Avatar src="/brand/landing/client.webp" size={30} />
+            <span className="text-xs leading-[17px] font-semibold text-text-primary">{l('v.paid_direct')}</span>
+          </span>
+        </Card>
+      </>
+    )
+  if (role === 'shop' && step === 1)
+    return (
+      <Card>
+        <span className="flex items-center gap-2.5">
+          <Tile><Smartphone aria-hidden="true" /></Tile>
+          <TwoLine title="iPhone 14 Pro Max" meta={l('v.product_meta')} />
+        </span>
+        <span className="flex items-center justify-between">
+          <span className="text-xs leading-[17px] text-text-muted">{l('v.stock')}</span>
+          <Pill>{l('v.in_stock')}</Pill>
+        </span>
+      </Card>
+    )
+  if (role === 'shop' && step === 2)
+    return (
+      <>
+        <Pill className="self-start"><ShoppingBag aria-hidden="true" />{l('v.new_order')}</Pill>
+        <Card>
+          <span className="flex items-center gap-2.5">
+            <Tile><Package aria-hidden="true" /></Tile>
+            <TwoLine title="Jordan × 2" meta={l('v.order_meta')} />
+          </span>
+          <span className="flex h-[33px] items-center justify-center rounded-[10px] bg-success-700 text-xs leading-[17px] font-semibold text-text-inverse">
+            {l('v.confirm_wa')}
+          </span>
+        </Card>
+      </>
+    )
   return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2.5}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-      aria-hidden="true"
-    >
-      <line x1="5" y1="12" x2="19" y2="12" />
-      <polyline points="12 5 19 12 12 19" />
-    </svg>
+    <>
+      <span className="flex items-center gap-1">
+        {(['prep', 'ship', 'delivery'] as const).map((s, i) => (
+          <span key={s} className="flex items-center gap-1">
+            {i > 0 && <span className="h-0.5 w-2 bg-brand-blue-300" aria-hidden="true" />}
+            <span className={cn('size-2.5 rounded-full', i === 2 ? 'bg-success-500' : 'bg-brand-blue-600')} aria-hidden="true" />
+            <span className="text-xs leading-[17px] font-semibold text-text-primary">{l(`v.${s}`)}</span>
+          </span>
+        ))}
+      </span>
+      <Pill tone="green" className="self-start"><Check aria-hidden="true" />{l('v.cash')}</Pill>
+    </>
   )
 }
 
-export function HowItWorks({ lang }: { lang: Lang }) {
-  const reduce = useReducedMotion()
-  // Under reduced motion BlurFade collapses to a plain opacity fade (no slide/blur).
-  const fade = { offset: reduce ? 0 : 6, blur: reduce ? '0px' : '6px' }
+export function HowItWorks() {
+  const lang = useLang()
+  const [role, setRole] = useState<Role>('client')
+  const tabs = useRef<(HTMLButtonElement | null)[]>([])
+  const l = (k: string) => t(`lp.how.${k}`, lang)
+  const current = ROLES.find(r => r.id === role) ?? ROLES[0]
 
-  const [activeRole, setActiveRole] = useState<Role>('client')
-  const tabRefs = useRef<Array<HTMLButtonElement | null>>([])
-  const tabsId = useId()
-  const isRtl = lang === 'ar'
-
-  // Manual-activation tablist (WAI-ARIA tabs pattern): arrow keys move focus,
-  // Enter/Space activates the focused tab. Arrow direction follows reading order
-  // and mirrors under RTL.
-  function onTabKeyDown(e: KeyboardEvent<HTMLButtonElement>, index: number) {
-    const last = roles.length - 1
-    let next: number
-    switch (e.key) {
-      case 'ArrowRight':
-        next = isRtl ? index - 1 : index + 1
-        break
-      case 'ArrowLeft':
-        next = isRtl ? index + 1 : index - 1
-        break
-      case 'Home':
-        next = 0
-        break
-      case 'End':
-        next = last
-        break
-      case 'Enter':
-      case ' ':
-        e.preventDefault()
-        setActiveRole(roles[index])
-        return
-      default:
-        return
-    }
+  function onKey(e: KeyboardEvent<HTMLButtonElement>, i: number) {
+    const dir = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0
+    if (!dir) return
     e.preventDefault()
-    const wrapped = next < 0 ? last : next > last ? 0 : next
-    tabRefs.current[wrapped]?.focus()
+    const rtl = document.documentElement.dir === 'rtl'
+    const next = (i + (rtl ? -dir : dir) + ROLES.length) % ROLES.length
+    setRole(ROLES[next].id)
+    tabs.current[next]?.focus()
   }
-
-  // Per-card role-swap transition. Reduced motion → instant swap. `visible` is
-  // index-aware so the three cards still stagger in by 50ms.
-  const cardVariants: Variants = reduce
-    ? { hidden: { opacity: 1 }, visible: { opacity: 1 }, exit: { opacity: 1 } }
-    : {
-        hidden: { opacity: 0, y: 8 },
-        visible: (i: number) => ({
-          opacity: 1,
-          y: 0,
-          transition: { duration: 0.2, ease: 'easeOut', delay: i * 0.05 },
-        }),
-        exit: { opacity: 0, transition: { duration: 0.15, ease: 'easeOut' } },
-      }
 
   return (
     <section
       id="comment-ca-marche"
-      className={`${manrope.variable} w-full bg-[var(--surface-base)] px-6 pt-7 pb-16 md:pt-10 md:pb-24`}
+      className="mx-2 mt-4 flex scroll-mt-20 flex-col items-center gap-8 rounded-3xl bg-brand-blue-600 px-2 py-14 lg:mx-6 lg:mt-8 lg:gap-12 lg:rounded-[32px] lg:px-6 lg:py-24"
     >
-      {/* Section title — navy on the white page, OUTSIDE the navy container so it
-          reads as a sibling of the Categories title (same Manrope scale/weight/
-          colour/letter-spacing). */}
-      <BlurFade delay={0} {...fade} inView>
-        {/* responsive pair retained: md:text-[40px] has no clean tier; half-tokenizing would break the mobile→desktop ramp (DS-3b-3) */}
-        <h2 className={`${display} mx-auto mb-8 max-w-[720px] text-balance text-center text-[30px] font-bold leading-[1.15] tracking-[-0.025em] text-[var(--text-primary)] md:mb-12 md:text-[40px]`}>
-          {t('landing.howItWorks.title', lang)}
-        </h2>
-      </BlurFade>
+      <div className="flex max-w-[640px] flex-col items-center gap-4 text-center">
+        <Eyebrow className="text-brand-blue-100">{l('eyebrow')}</Eyebrow>
+        <h2 className={cn(TITLE, 'text-text-inverse')}>{l('title')}</h2>
+        <p className={cn(LEAD, 'text-brand-blue-50')}>{l('subtitle')}</p>
+      </div>
 
-      {/* Navy rounded container — a dark "card" floating inside the white page
-          (Linear / ClickUp pattern), now content-only: role toggle + cards. */}
-      <div className="relative mx-auto max-w-7xl overflow-hidden rounded-[32px] bg-[var(--brand-blue-800)] px-6 pt-3 pb-12 md:px-12 md:pt-5 md:pb-20">
-        {/* Gentle radial depth: a soft brand-blue-600 glow at centre fading to navy. */}
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(37,99,235,0.08),_transparent_70%)]"
-        />
-        {/* Subtle dot texture — the hero's pattern, inverted to --brand-sky at very
-            low opacity for the dark context. */}
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-0 bg-[radial-gradient(var(--brand-sky)_1px,_transparent_1px)] bg-[size:24px_24px] opacity-[0.04]"
-        />
-
-        <div className="relative z-10">
-          {/* Role toggle — Upwork-style outlined sliding pill, floating as a raised
-              white element. No BlurFade wrapper so the layoutId projection stays accurate.
-              Large mb so the floating 3D icons below clear the toggle (80px desktop /
-              64px mobile gap — the icons sit half-above their cards in this space). */}
-          <div className="mb-28 flex justify-center md:mb-32">
-            <div
-              role="tablist"
-              aria-label={t('landing.howItWorks.tabsAriaLabel', lang)}
-              className="isolate inline-flex rounded-full border border-[var(--border-subtle)] bg-[var(--surface-base)] p-1 shadow-[0_4px_12px_rgba(0,0,0,0.08)]"
+      <div
+        role="tablist"
+        aria-label={l('tabs_label')}
+        className="flex w-full max-w-[343px] gap-0.5 rounded-full bg-brand-blue-700 p-1 lg:w-auto lg:max-w-none lg:gap-1 lg:p-1.5"
+      >
+        {ROLES.map((r, i) => {
+          const active = r.id === role
+          return (
+            <button
+              key={r.id}
+              ref={el => { tabs.current[i] = el }}
+              type="button"
+              role="tab"
+              id={`how-tab-${r.id}`}
+              aria-selected={active}
+              aria-controls="how-panel"
+              tabIndex={active ? 0 : -1}
+              onClick={() => setRole(r.id)}
+              onKeyDown={e => onKey(e, i)}
+              className={cn(
+                'flex h-9 flex-1 items-center justify-center gap-[5px] rounded-full ps-1 pe-2 transition-colors lg:h-[46px] lg:flex-none lg:justify-start lg:gap-2 lg:ps-1.5 lg:pe-5',
+                active ? 'bg-surface-base text-brand-blue-700' : 'text-brand-blue-50 hover:bg-white/10',
+                FOCUS_RING,
+              )}
             >
-              {roles.map((role, index) => {
-                const selected = activeRole === role
-                return (
-                  <button
-                    key={role}
-                    ref={(el) => {
-                      tabRefs.current[index] = el
-                    }}
-                    type="button"
-                    role="tab"
-                    id={`${tabsId}-tab-${role}`}
-                    aria-selected={selected}
-                    aria-controls={`${tabsId}-panel`}
-                    tabIndex={selected ? 0 : -1}
-                    onClick={() => setActiveRole(role)}
-                    onKeyDown={(e) => onTabKeyDown(e, index)}
-                    className={`${display} relative cursor-pointer rounded-full px-7 py-2.5 text-body outline-none transition-colors duration-200 ease-out focus-visible:ring-2 focus-visible:ring-[var(--brand-blue-600)] ${
-                      selected
-                        ? 'font-semibold text-[var(--text-primary)]'
-                        : 'font-medium text-[var(--text-muted)] hover:text-[var(--text-primary)]'
-                    }`}
-                  >
-                    {selected && (
-                      <motion.span
-                        layoutId="roleToggleIndicator"
-                        aria-hidden="true"
-                        className="absolute inset-0 -z-10 rounded-full border-[1.5px] border-[var(--brand-blue-800)] bg-transparent"
-                        transition={
-                          reduce
-                            ? { duration: 0 }
-                            : { type: 'spring', stiffness: 400, damping: 30 }
-                        }
-                      />
-                    )}
-                    <span className="relative z-10">{t(`landing.howItWorks.tabs.${role}`, lang)}</span>
-                  </button>
-                )
-              })}
-            </div>
-          </div>
+              <Image
+                src={r.photo}
+                alt=""
+                width={34}
+                height={34}
+                className={cn('size-[26px] rounded-full ring-2 lg:size-[34px]', active ? 'ring-brand-blue-600' : 'ring-surface-base')}
+              />
+              <span className="text-sm leading-[21px] font-semibold lg:text-base lg:leading-[26px]">{t(r.tab, lang)}</span>
+            </button>
+          )
+        })}
+      </div>
 
-          {/* Cards. The grid is the STABLE tabpanel (so aria-controls never dangles).
-              Each column holds a static floating icon + a per-column AnimatePresence
-              that fade-swaps the copy + CTA. The CTA sits at the card bottom. */}
-          <BlurFade delay={0.2} {...fade} inView>
+      <ol
+        id="how-panel"
+        role="tabpanel"
+        aria-labelledby={`how-tab-${role}`}
+        className="flex w-full flex-col gap-4 lg:grid lg:max-w-[1200px] lg:grid-cols-[minmax(0,360px)_minmax(24px,60px)_minmax(0,360px)_minmax(24px,60px)_minmax(0,360px)] lg:items-center lg:justify-center lg:gap-0"
+      >
+        {[1, 2, 3].map(step => (
+          <li key={step} className="flex flex-col lg:contents">
+            {step > 1 && <span className="hidden h-0 w-full border-t-2 border-dashed border-white/60 lg:block" aria-hidden="true" />}
             <div
-              id={`${tabsId}-panel`}
-              role="tabpanel"
-              aria-labelledby={`${tabsId}-tab-${activeRole}`}
-              className="mx-auto mt-6 grid max-w-6xl grid-cols-1 gap-6 md:grid-cols-3"
+              className={cn(
+                'flex w-full flex-col gap-5 rounded-3xl bg-surface-base p-7 shadow-[0_24px_48px_-16px_rgb(10_26_61/0.28)] max-xl:lg:p-5',
+                role === 'client' ? 'lg:h-[440px]' : 'lg:h-[414px]',
+              )}
             >
-              {steps.map((step, i) => (
-                <div key={step.number} className="relative">
-                  {/* Floating circular icon — universal across roles, stays static on swap. */}
-                  <div className="absolute left-1/2 top-0 z-20 flex h-24 w-24 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-[var(--surface-base)] shadow-[0_8px_20px_rgba(15,23,42,0.10)]">
-                    <Image
-                      src={step.icon}
-                      width={128}
-                      height={128}
-                      alt={t(`landing.howItWorks.icons.${step.key}.alt`, lang)}
-                      className="h-16 w-16 select-none"
-                      draggable={false}
-                    />
-                  </div>
-
-                  <AnimatePresence mode="wait" initial={false}>
-                    <motion.div
-                      key={activeRole}
-                      className="h-full"
-                      custom={i}
-                      variants={cardVariants}
-                      initial="hidden"
-                      animate="visible"
-                      exit="exit"
-                    >
-                      <article className="flex h-full flex-col rounded-2xl bg-[var(--surface-base)] px-8 pb-8 pt-16 text-start shadow-[0_8px_24px_rgba(15,23,42,0.12)] transition-all duration-[250ms] ease-out hover:-translate-y-1 hover:shadow-[0_16px_40px_rgba(15,23,42,0.18)] motion-reduce:transition-none md:min-h-[420px]">
-                        {/* responsive pair retained: literal md:text-[28px] on a default text-2xl base; leave both halves (DS-3b-3) */}
-                        <h3 className={`${display} text-2xl font-bold text-[var(--text-primary)] md:text-[28px]`}>
-                          {t(`landing.howItWorks.${activeRole}.${step.key}.title`, lang)}
-                        </h3>
-
-                        {/* text-[17px] retained: sits between body(16) and body-lg(18), no clean tier (DS-3b-3) */}
-                        <p className="mt-2 max-w-[90%] text-[17px] font-semibold text-[var(--text-primary)]">
-                          {t(`landing.howItWorks.${activeRole}.${step.key}.tagline`, lang)}
-                        </p>
-
-                        <p className="mt-4 text-body font-normal leading-[1.6] text-[var(--text-muted)]">
-                          {t(`landing.howItWorks.${activeRole}.${step.key}.body`, lang)}
-                        </p>
-
-                        {/* CTA — brand-blue-600 pill, bottom-aligned (mt-auto), 24px min gap (pt-6). */}
-                        <div className="mt-auto pt-6">
-                          <Link
-                            href={ctaHref[activeRole][step.key]}
-                            className={`${display} group inline-flex items-center gap-2 rounded-full bg-[var(--brand-blue-600)] px-5 py-3 text-sm font-semibold text-white outline-none transition duration-200 ease-out hover:brightness-95 focus-visible:ring-2 focus-visible:ring-[var(--brand-blue-500)] focus-visible:ring-offset-2`}
-                          >
-                            <span>{t(`landing.howItWorks.${activeRole}.${step.key}.cta`, lang)}</span>
-                            <ArrowRight
-                              className={`h-4 w-4 shrink-0 transition-transform duration-200 ease-out motion-reduce:transition-none ${
-                                isRtl ? 'rotate-180 group-hover:-translate-x-0.5' : 'group-hover:translate-x-0.5'
-                              }`}
-                            />
-                          </Link>
-                        </div>
-                      </article>
-                    </motion.div>
-                  </AnimatePresence>
-                </div>
-              ))}
+              <span className="flex size-14 items-center justify-center rounded-full bg-brand-blue-600 text-xl leading-[26px] font-bold text-text-inverse ring-[6px] ring-brand-blue-100">
+                {step}
+              </span>
+              <div className="flex h-[150px] flex-col justify-center gap-2.5 rounded-2xl border border-brand-blue-100 bg-brand-blue-50 p-5">
+                <Visual role={role} step={step} l={l} />
+              </div>
+              <div className="flex flex-col gap-2">
+                <h3 className="text-xl leading-[26px] font-semibold tracking-[-0.01em] text-text-primary rtl:tracking-normal">{l(`${role}.s${step}.title`)}</h3>
+                <p className="text-base leading-[26px] text-text-secondary">{l(`${role}.s${step}.body`)}</p>
+              </div>
             </div>
-          </BlurFade>
-        </div>
+          </li>
+        ))}
+      </ol>
+
+      <div className="flex flex-col items-center gap-3">
+        <ButtonLink href={current.cta} variant="white" className="text-brand-blue-600">
+          {t(current.ctaKey, lang)}
+        </ButtonLink>
+        <p className="text-sm leading-[21px] text-brand-blue-100">{l('free_all')}</p>
       </div>
     </section>
   )

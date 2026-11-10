@@ -5,15 +5,15 @@ import { createClient } from '@/lib/supabase/server'
 import { failQuery } from '@/lib/supabase/query-error'
 import { resolveRole, accountSpaceHref, type Role } from '@/lib/roles'
 import type { HeaderAccount } from '@/lib/layout/nav-config'
-import { Header } from '@/components/layout/Header'
+import { TopBar } from '@/components/landing/TopBar'
 import { Hero } from '@/components/landing/Hero'
 import { Categories } from '@/components/landing/Categories'
-import { Problem } from '@/components/landing/Problem'
-import { Benefits } from '@/components/landing/Benefits'
-import { Journeys } from '@/components/landing/Journeys'
+import { RoleShowcase } from '@/components/landing/RoleShowcase'
+import { Mission } from '@/components/landing/Mission'
 import { HowItWorks } from '@/components/landing/HowItWorks'
 import { Faq } from '@/components/landing/Faq'
-import { FinalCtaFooter } from '@/components/landing/FinalCtaFooter'
+import { FinalCta } from '@/components/landing/FinalCta'
+import { LandingFooter } from '@/components/landing/LandingFooter'
 import { ConsumerHomepage } from '@/components/home/ConsumerHomepage'
 import { expiredLinkRedirect } from '@/lib/auth/expired-link'
 
@@ -77,36 +77,27 @@ export default async function HomePage({
     }
   }
 
-  return <LandingView lang={lang} role={role} account={account} />
+  return <LandingView lang={lang} account={account} />
 }
 
-// The public marketing landing page — shown to logged-out visitors and to logged-in sellers/admins.
-// The marketing Header lives here (it only ever renders on this landing branch of `/`); with an
-// `account` it shows the viewer instead of the auth CTAs.
-function LandingView({ lang, role, account }: { lang: Lang; role: Role; account?: HeaderAccount }) {
+// The public marketing landing page (Figma « LANDING PAGE v3 », section 1662:29222 — desktop 1662:29225,
+// phone 1662:29267, Arabic 1730:52028) — shown to logged-out visitors and to logged-in sellers/admins,
+// whose top bar shows THEM (avatar + « Tableau de bord ») instead of « Se connecter / S'inscrire ».
+function LandingView({ lang, account }: { lang: Lang; account?: HeaderAccount }) {
   return (
-    <>
-      <Header sellerType={role} fullName={account?.fullName ?? null} account={account} />
+    <div className="bg-surface-base">
+      <TopBar account={account} />
       <main>
-      {/* Pure white at the very top so the floating navbar capsule sits on white
-          (the Header lives in the root layout above <main>; the blue band there was
-          this backdrop, not the hero). A soft sky-blue atmosphere returns lower
-          down, then fades back to white. `fixed` so it reaches behind the navbar.
-          The #FFFFFF / #E0F2FE stops are a decorative backdrop (E0F2FE ≈ sky-100, no v2 token) — literal. */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none fixed inset-0 -z-10"
-        style={{ background: 'linear-gradient(to bottom, #FFFFFF 0%, #FFFFFF 14%, #E0F2FE 38%, #FFFFFF 72%)' }}
-      />
-      <Hero lang={lang} />
-      <Categories lang={lang} />
-      <HowItWorks lang={lang} />
-      <Problem lang={lang} />
-      <Benefits lang={lang} />
-      <Journeys lang={lang} />
-      <Faq lang={lang} />
-      <FinalCtaFooter lang={lang} />
+        <Hero lang={lang} />
+        <Categories lang={lang} />
+        <RoleShowcase role="free" lang={lang} />
+        <RoleShowcase role="shop" lang={lang} />
+        <Mission lang={lang} />
+        <HowItWorks />
+        <Faq />
+        <FinalCta lang={lang} />
       </main>
-    </>
+      <LandingFooter />
+    </div>
   )
 }
