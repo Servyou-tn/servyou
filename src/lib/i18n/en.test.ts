@@ -6,6 +6,7 @@ import { enOwnerOf, type EnOwner } from './en/ownership'
 import * as common from './en/common'
 import * as freelancer from './en/freelancer'
 import * as shop from './en/shop'
+import { enPlurals } from './en'
 
 // Guards for the English rollout (three owners write three files in parallel — see en/ownership.ts).
 const FILES: Record<Exclude<EnOwner, 'admin'>, { strings: Record<string, string>; plurals: Record<string, { other: string }> }> = {
@@ -64,6 +65,18 @@ describe('English fallback and helpers', () => {
   it('a plural with no English yet uses the French variants', () => {
     const key = Object.keys(frPlurals).find((k) => enOwnerOf(k) === 'admin')!
     expect(tn(key, 'en', 2)).toBe(tn(key, 'fr', 2))
+  })
+
+  it('an English plural uses the English rule (one / other)', () => {
+    const key = Object.keys(frPlurals)[0]
+    enPlurals[key] = { one: 'one {count}', other: 'many {count}' }
+    try {
+      expect(tn(key, 'en', 1)).toBe('one 1')
+      expect(tn(key, 'en', 0)).toBe('many 0')
+      expect(tn(key, 'en', 2)).toBe('many 2')
+    } finally {
+      delete enPlurals[key]
+    }
   })
 
   it('toLang keeps fr / ar / en and maps anything else to fr', () => {

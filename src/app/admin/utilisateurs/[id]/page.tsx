@@ -253,7 +253,7 @@ export default async function UserDetailPage({ params, searchParams }: Props) {
     { label: t('admin.users.field_role', lang), value: roles.map((r) => t(accountRoleI18nKey(r), lang)).join(', ') },
     ...(shop ? [{ label: t('admin.users.info_shop', lang), value: productsRes?.error ? shop.name : `${shop.name} · ${tn('admin.users.info_products', lang, contentIds.product.length)}` }] : []),
     ...(fp ? [{ label: t('admin.users.info_freelance', lang), value: fp.headline ?? '—' }] : []),
-    { label: t('admin.users.field_language', lang), value: u.language === 'ar' ? t('admin.users.lang_ar', lang) : u.language === 'fr' ? t('admin.users.lang_fr', lang) : '—' },
+    { label: t('admin.users.field_language', lang), value: u.language === 'ar' ? t('admin.users.lang_ar', lang) : u.language === 'fr' ? t('admin.users.lang_fr', lang) : u.language === 'en' ? t('admin.users.lang_en', lang) : '—' },
     { label: t('admin.users.field_phone', lang), value: u.phone ?? '—', ltr: true },
     { label: t('admin.users.info_age', lang), value: band ? t(AGE_KEY[band], lang) : '—' },
     // Kept from the built page: the suspension date and its internal reason.

@@ -2889,6 +2889,7 @@ export const ar: Record<string, string> = {
   'admin.users.age_under16':                      "أقل من 16 سنة",
   'admin.users.lang_fr':                          "الفرنسية",
   'admin.users.lang_ar':                          "العربية",
+  'admin.users.lang_en':                          "الإنجليزية",
   'admin.users.public_shop':                      "عرض المتجر العام",
   'admin.users.public_freelance':                 "عرض الملف العام",
   'admin.users.joined_on':                        "مسجّل في {date}",

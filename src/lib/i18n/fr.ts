@@ -2948,6 +2948,7 @@ export const fr: Record<string, string> = {
   'admin.users.age_under16':                      "Moins de 16 ans",
   'admin.users.lang_fr':                          "Français",
   'admin.users.lang_ar':                          "Arabe",
+  'admin.users.lang_en':                          "Anglais",
   'admin.users.public_shop':                      "Voir la boutique publique",
   'admin.users.public_freelance':                 "Voir le profil public",
   'admin.users.joined_on':                        "inscrit le {date}",

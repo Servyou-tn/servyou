@@ -47,8 +47,8 @@ export function Pagination({
       ? t('search.pagination.showing', lang, {
           start: (current - 1) * perPage + 1,
           end: Math.min(current * perPage, totalItems),
-          // The frame groups thousands in French (« sur 1 248 »); Arabic keeps plain digits.
-          total: lang === 'fr' ? totalItems.toLocaleString('fr-FR') : totalItems,
+          // The frame groups thousands in French (« sur 1 248 ») and English (« of 1,248 »); Arabic keeps plain digits.
+          total: lang === 'ar' ? totalItems : totalItems.toLocaleString(lang === 'en' ? 'en-GB' : 'fr-FR'),
         })
       : null
 
