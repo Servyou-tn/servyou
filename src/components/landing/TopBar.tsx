@@ -60,12 +60,17 @@ export function TopBar({ account }: { account?: HeaderAccount }) {
           <Lockup size={32} className="max-lg:hidden" />
         </Link>
 
-        <ul className="ms-[123px] hidden items-center gap-7 xl:flex">
+        <ul className="ms-[111px] hidden items-center gap-1 xl:flex">
           {SECTION_LINKS.map(l => (
             <li key={l.href}>
               <a
                 href={l.href}
-                className={cn('rounded-md text-sm leading-[21px] font-medium text-text-secondary hover:text-text-primary', FOCUS_RING)}
+                className={cn(
+                  // Fiverr-style hover (founder, Nov 10): a light grey pill behind the text. The 12px side padding
+                  // and the 4px gap keep the words where the Figma frame puts them (28px apart).
+                  'flex h-10 items-center rounded-lg px-3 text-sm leading-[21px] font-medium text-text-secondary transition-colors duration-100 hover:bg-surface-sunken hover:text-text-primary focus-visible:bg-surface-sunken motion-reduce:transition-none',
+                  FOCUS_RING,
+                )}
               >
                 {t(l.key, lang)}
               </a>
