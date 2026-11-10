@@ -1,3 +1,4 @@
+import { Suspense } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { Check, ChevronDown, MapPin, Search } from 'lucide-react'
@@ -6,6 +7,7 @@ import { cn } from '@/lib/utils'
 import { FOCUS_RING } from '@/components/layout/styles'
 import { ButtonLink } from './ui'
 import { SMarkBackdrop } from './SMarkBackdrop'
+import { getServiceCities } from '@/lib/marche/filter-cities'
 
 // Hero — Figma « HERO PROPOSAL » (desktop 1741:51431, phone 1740:37951): blue box + H1 + subheadline +
 // search bar + « Populaire » chips + 2 CTAs + reassurance line, and the 3-photo pyramid over a big
@@ -33,7 +35,7 @@ const CHIPS = [
 
 const REASSURANCE = ['lp.beta', 'lp.hero.reassure.cod', 'lp.hero.reassure.local'] as const
 
-export function Hero({ lang, cities }: { lang: Lang; cities: string[] }) {
+export function Hero({ lang }: { lang: Lang }) {
   return (
     <section className="relative mx-2 mt-0.5 overflow-hidden rounded-3xl bg-brand-blue-500 px-5 pt-9 pb-12 lg:mx-6 lg:mt-4 lg:min-h-[657px] lg:rounded-[32px] lg:px-20 lg:pt-[95px] lg:pb-16">
       <div className="relative z-10 lg:max-w-[520px] xl:max-w-[660px]">
@@ -42,7 +44,7 @@ export function Hero({ lang, cities }: { lang: Lang; cities: string[] }) {
         </h1>
         <p className="mt-[18px] max-w-[580px] text-lg leading-7 text-text-inverse lg:mt-6">{t('lp.hero.subtitle', lang)}</p>
 
-        <HeroSearch lang={lang} cities={cities} />
+        <HeroSearch lang={lang} />
 
         <div className="mt-4 flex flex-wrap items-center gap-2">
           <span className="text-[13px] leading-5 font-medium text-text-inverse/85 lg:text-sm lg:leading-[21px]">
@@ -111,13 +113,14 @@ export function Hero({ lang, cities }: { lang: Lang; cities: string[] }) {
 
 // Search bar → /recherche (services side; the results page nudges to products when that side fits better).
 // Desktop: 640×64 (r16) · icon · query · divider · city picker · « Rechercher ». Phone: 56 tall (r14), icon button.
-function HeroSearch({ lang, cities }: { lang: Lang; cities: string[] }) {
+function HeroSearch({ lang }: { lang: Lang }) {
   return (
     <form
       action="/recherche"
       method="get"
       role="search"
-      className="mt-6 flex h-14 w-full max-w-[640px] items-center gap-2.5 rounded-[14px] bg-surface-base py-1.5 ps-4 pe-1.5 shadow-[0_12px_32px_-8px_rgb(15_23_41/0.25)] focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-surface-base lg:h-16 lg:gap-3 lg:rounded-2xl lg:py-2 lg:ps-5 lg:pe-2"
+      aria-label={t('lp.hero.search.label', lang)}
+      className="mt-6 flex h-14 w-full max-w-[640px] items-center gap-2.5 rounded-[14px] bg-surface-base py-1.5 ps-4 pe-1.5 shadow-[0_12px_32px_-8px_rgb(15_23_41/0.25)] has-[input:focus-visible]:outline-2 has-[input:focus-visible]:outline-offset-2 has-[input:focus-visible]:outline-surface-base lg:h-16 lg:gap-3 lg:rounded-2xl lg:py-2 lg:ps-5 lg:pe-2"
     >
       <input type="hidden" name="type" value="service" />
       <Search className="size-[18px] shrink-0 text-text-muted lg:size-5" aria-hidden="true" />
@@ -132,18 +135,10 @@ function HeroSearch({ lang, cities }: { lang: Lang; cities: string[] }) {
       <label className="relative hidden shrink-0 items-center gap-1.5 lg:flex">
         <MapPin className="size-[18px] text-text-secondary" aria-hidden="true" />
         <span className="sr-only">{t('lp.hero.search.city', lang)}</span>
-        <select
-          name="ville"
-          defaultValue=""
-          className="cursor-pointer appearance-none rounded-md bg-transparent pe-[22px] text-base leading-[26px] font-medium text-text-secondary outline-none focus-visible:ring-2 focus-visible:ring-brand-blue-300"
-        >
-          <option value="">{t('lp.hero.search.city_all', lang)}</option>
-          {cities.map(c => (
-            <option key={c} value={c}>
-              {c}
-            </option>
-          ))}
-        </select>
+        {/* Streamed: the landing never waits on the city list (fallback = « Toute la Tunisie » only). */}
+        <Suspense fallback={<CitySelect lang={lang} cities={[]} />}>
+          <CityPicker lang={lang} />
+        </Suspense>
         <ChevronDown className="pointer-events-none absolute end-0 size-4 text-text-muted" aria-hidden="true" />
       </label>
       <button
@@ -157,5 +152,28 @@ function HeroSearch({ lang, cities }: { lang: Lang; cities: string[] }) {
         <span className="sr-only lg:not-sr-only">{t('lp.hero.search.submit', lang)}</span>
       </button>
     </form>
+  )
+}
+
+// Only cities with live services (filter-cities.ts). A failed read — returned or thrown — degrades to no cities.
+async function CityPicker({ lang }: { lang: Lang }) {
+  const cities = await getServiceCities().catch(() => [])
+  return <CitySelect lang={lang} cities={cities} />
+}
+
+function CitySelect({ lang, cities }: { lang: Lang; cities: string[] }) {
+  return (
+    <select
+      name="ville"
+      defaultValue=""
+      className="cursor-pointer appearance-none rounded-md bg-transparent pe-[22px] text-base leading-[26px] font-medium text-text-secondary outline-none focus-visible:ring-2 focus-visible:ring-brand-blue-600"
+    >
+      <option value="">{t('lp.hero.search.city_all', lang)}</option>
+      {cities.map(c => (
+        <option key={c} value={c}>
+          {c}
+        </option>
+      ))}
+    </select>
   )
 }
