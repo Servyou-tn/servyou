@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { useLang } from '@/components/LangProvider'
-import { t } from '@/lib/i18n'
+import { t, toLang, type Lang } from '@/lib/i18n'
 import { GOVERNORATES } from '@/lib/tunisia-governorates'
 import { SIGNUP_NEXT_KEY, SIGNUP_ROLE_KEY, roleConfig, type SignupRole } from '@/lib/signup-role'
 import { computeAge, isValidEmail, isValidPassword } from '@/lib/signup-validation'
@@ -76,7 +76,7 @@ export function SignupForm({ role, next = null }: { role: SignupRole; /** The fu
   const [password, setPassword] = useState('')
   const [dateOfBirth, setDateOfBirth] = useState('')
   const [city, setCity] = useState('')
-  const [language, setLanguage] = useState<'fr' | 'ar'>(lang)
+  const [language, setLanguage] = useState<Lang>(lang)
 
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
   const [formError, setFormError] = useState('')
@@ -339,10 +339,11 @@ export function SignupForm({ role, next = null }: { role: SignupRole; /** The fu
           <select
             id="language"
             value={language}
-            onChange={(e) => setLanguage(e.target.value === 'ar' ? 'ar' : 'fr')}
+            onChange={(e) => setLanguage(toLang(e.target.value))}
             className={`${inputBase} appearance-none border-[var(--border-subtle)]`}
           >
             <option value="fr">{t('signup.form.fields.language.fr', lang)}</option>
+            <option value="en">{t('signup.form.fields.language.en', lang)}</option>
             <option value="ar">{t('signup.form.fields.language.ar', lang)}</option>
           </select>
         </Field>

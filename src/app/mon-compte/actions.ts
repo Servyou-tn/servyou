@@ -5,7 +5,7 @@ import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
 import { getLang } from '@/lib/i18n/server'
-import { t } from '@/lib/i18n'
+import { t, toLang } from '@/lib/i18n'
 import { isValidPhone, normalizePhone } from '@/lib/phone'
 import { sellerPhoneClearBlocked, SELLER_PHONE_REQUIRED_HINT } from '@/lib/seller/contact-phone'
 import { isValidPassword } from '@/lib/signup-validation'
@@ -83,7 +83,7 @@ export async function updateProfileAction(input: {
       full_name: fullName,
       phone,
       city,
-      ...(languageRaw === undefined ? {} : { language: languageRaw === 'ar' ? 'ar' : 'fr' }),
+      ...(languageRaw === undefined ? {} : { language: toLang(languageRaw) }),
     })
     .eq('id', user.id)
   if (error) {

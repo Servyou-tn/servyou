@@ -1,5 +1,5 @@
 import { getLang } from '@/lib/i18n/server'
-import { t, type Lang } from '@/lib/i18n'
+import { LOCALES, t, type Lang } from '@/lib/i18n'
 import { createClient } from '@/lib/supabase/server'
 import { requireAdmin } from '@/lib/auth/require-admin'
 import { reportQueryError } from '@/lib/supabase/query-error'
@@ -60,7 +60,7 @@ type Base = {
 }
 
 function shortDate(iso: string, lang: Lang): string {
-  return new Date(iso).toLocaleDateString(lang === 'ar' ? 'ar-TN' : 'fr-TN', { day: 'numeric', month: 'short' })
+  return new Date(iso).toLocaleDateString(LOCALES[lang], { day: 'numeric', month: 'short' })
 }
 
 async function loadTab(supabase: Awaited<ReturnType<typeof createClient>>, tab: ContentTab, lang: Lang): Promise<{ rows: Base[]; failed: boolean }> {

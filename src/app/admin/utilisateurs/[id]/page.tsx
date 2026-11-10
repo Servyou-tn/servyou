@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { getLang } from '@/lib/i18n/server'
-import { t, tn, type Lang } from '@/lib/i18n'
+import { LOCALES, t, tn, type Lang } from '@/lib/i18n'
 import { createClient } from '@/lib/supabase/server'
 import { requireAdmin } from '@/lib/auth/require-admin'
 import { failQuery, isNoRowLike, reportQueryError } from '@/lib/supabase/query-error'
@@ -41,10 +41,10 @@ const TAB_LABEL: Record<DetailTabKey, string> = {
 const ROLE_PILL = { admin: 'completed', shop_owner: 'arrivee', freelancer: 'acceptee', consumer: 'pending' } as const
 
 function shortDate(iso: string, lang: Lang): string {
-  return new Date(iso).toLocaleDateString(lang === 'ar' ? 'ar-TN' : 'fr-TN', { day: 'numeric', month: 'short' })
+  return new Date(iso).toLocaleDateString(LOCALES[lang], { day: 'numeric', month: 'short' })
 }
 function fullDate(iso: string, lang: Lang): string {
-  return new Date(iso).toLocaleDateString(lang === 'ar' ? 'ar-TN' : 'fr-TN', { day: 'numeric', month: 'short', year: 'numeric' })
+  return new Date(iso).toLocaleDateString(LOCALES[lang], { day: 'numeric', month: 'short', year: 'numeric' })
 }
 // Relative up to yesterday, then the short date (« il y a 3h · Moatez », « 2 nov. · Moatez »).
 function whenLabel(iso: string, lang: Lang, now: number): string {

@@ -458,6 +458,7 @@ export const ar: Record<string, string> = {
   'signup.form.fields.language.label':     "اللغة المفضلة",
   'signup.form.fields.language.fr':        "Français",
   'signup.form.fields.language.ar':        "العربية",
+  'signup.form.fields.language.en':        "English",
   'signup.form.legal':        "بإنشاء حساب، فإنك توافق على {terms} و{privacy}.",
   'signup.form.legalTerms':   "شروط الاستخدام",
   'signup.form.legalPrivacy': "سياسة الخصوصية",

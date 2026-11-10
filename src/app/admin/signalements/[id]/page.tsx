@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { getLang } from '@/lib/i18n/server'
-import { t, tn, type Lang } from '@/lib/i18n'
+import { LOCALES, t, tn, type Lang } from '@/lib/i18n'
 import { createClient } from '@/lib/supabase/server'
 import { requireAdmin } from '@/lib/auth/require-admin'
 import { failQuery, isNoRowLike, reportQueryError } from '@/lib/supabase/query-error'
@@ -36,11 +36,11 @@ const ROLE_KEY: Record<string, string> = {
 }
 
 function shortDate(iso: string, lang: Lang): string {
-  return new Date(iso).toLocaleDateString(lang === 'ar' ? 'ar-TN' : 'fr-TN', { day: 'numeric', month: 'short' })
+  return new Date(iso).toLocaleDateString(LOCALES[lang], { day: 'numeric', month: 'short' })
 }
 
 function fullDate(iso: string, lang: Lang): string {
-  return new Date(iso).toLocaleDateString(lang === 'ar' ? 'ar-TN' : 'fr-TN', { day: '2-digit', month: 'short', year: 'numeric' })
+  return new Date(iso).toLocaleDateString(LOCALES[lang], { day: '2-digit', month: 'short', year: 'numeric' })
 }
 
 // « Quand » in « Autres signalements »: relative up to yesterday, then the short date (« 2 nov. »).

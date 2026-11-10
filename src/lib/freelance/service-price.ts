@@ -1,4 +1,4 @@
-import { t, type Lang } from '@/lib/i18n'
+import { LOCALES, t, type Lang } from '@/lib/i18n'
 
 // A service's price as buyers read it — « 800 TND », « 450 TND / mois » (H6 PR-4, ruling D32). The unit
 // is service_listings.price_unit (H6 step 3): `fixed` and NULL (the 21 listings that predate the field)
@@ -18,5 +18,5 @@ export function servicePriceLabel(price: string, unit: string | null | undefined
 
 /** The number as a surface prints it in a sentence: per-language grouping, up to 2 decimals. */
 export function formatServicePrice(amount: number, lang: Lang): string {
-  return amount.toLocaleString(lang === 'ar' ? 'ar-TN' : 'fr-TN', { maximumFractionDigits: 2 })
+  return amount.toLocaleString(LOCALES[lang], { maximumFractionDigits: 2 })
 }

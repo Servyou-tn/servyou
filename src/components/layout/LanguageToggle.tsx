@@ -5,17 +5,12 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { cn } from '@/lib/utils'
 import { useLang } from '@/components/LangProvider'
-import { t, LANG_COOKIE, type Lang } from '@/lib/i18n'
+import { t, LANG_COOKIE, LANGS, type Lang } from '@/lib/i18n'
 import { FOCUS_RING } from '@/components/layout/styles'
 
-// The supported languages, in display order. The pill shows the short language CODE (FR / AR)
-// — the segmented control is narrow, so native names ("Français"/"العربية") don't fit. Adding
-// a language later is one line here (+ its locale file + the `Lang` union): it becomes a third
-// pill, no other change.
-const LANGUAGES: { code: Lang; label: string }[] = [
-  { code: 'fr', label: 'FR' },
-  { code: 'ar', label: 'AR' },
-]
+// The supported languages, in display order (LANGS: FR | EN | AR, founder 2026-11-10). The pill shows the short
+// language CODE — the segmented control is narrow, so native names ("Français"/"العربية") don't fit.
+const LANGUAGES: { code: Lang; label: string }[] = LANGS.map((code) => ({ code, label: code.toUpperCase() }))
 
 // Language switch rendered as an FR/AR segmented control (Figma topbar 611:45637 → LangToggle
 // 159:11949): a surface-sunken track (radius 10, pad 4) with two 24px pills (pad-x 12, radius 8);
@@ -66,11 +61,13 @@ export function LanguageToggle() {
             } ${FOCUS_RING}`}
           >
             {label}
-            {/* Below lg: 24 → 44 tall. The segments touch, so each also grows 4 px on its OUTER side only (into the
-                pill's padding) — FR 41 → 45 wide, AR 43 → 47 — and neither takes the other's tap. */}
+            {/* Below lg: 24 → 44 tall. The segments touch, so the first and last also grow 4 px on their OUTER side only
+                (into the pill's padding) and no segment takes a neighbour's tap. */}
             <span
               aria-hidden="true"
-              className={`pointer-events-auto absolute max-lg:-inset-y-2.5 ${i === 0 ? 'max-lg:-start-1 max-lg:end-0' : 'max-lg:start-0 max-lg:-end-1'}`}
+              className={`pointer-events-auto absolute max-lg:-inset-y-2.5 ${
+                i === 0 ? 'max-lg:-start-1 max-lg:end-0' : i === LANGUAGES.length - 1 ? 'max-lg:start-0 max-lg:-end-1' : 'max-lg:inset-x-0'
+              }`}
             />
           </button>
         )

@@ -21,7 +21,7 @@ import type { Lang } from '@/lib/i18n'
 
 export const TUNIS_TZ = 'Africa/Tunis'
 
-const LOCALE: Record<Lang, string> = { fr: 'fr-FR', ar: 'ar-TN-u-nu-latn' }
+const LOCALE: Record<Lang, string> = { fr: 'fr-FR', ar: 'ar-TN-u-nu-latn', en: 'en-GB' }
 
 export type TunisDateStyle =
   /** « 24 nov » — a header date. */

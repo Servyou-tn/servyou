@@ -7,7 +7,7 @@ import { ProductBrowseCard } from '@/components/produits/ProductBrowseCard'
 import type { ProductListing } from '@/components/listings/ProductListingCard'
 import type { ShopDetailData } from '@/lib/marche/shop-detail'
 import { shopTypeLabelKey, deliverySetupLabelKey, paymentMethodLabelKey } from '@/lib/types/shop-config'
-import { t, tn, type Lang } from '@/lib/i18n'
+import { LOCALES, t, tn, type Lang } from '@/lib/i18n'
 import { ShopShareButton } from './ShopShareButton'
 import { FavoriteHeart } from '@/components/favorites/FavoriteHeart'
 import { ShopReportModal } from './ShopReportModal'
@@ -43,7 +43,7 @@ import { SocialLinks } from '@/components/social/SocialLinks'
 // at 13 (rows 12). Chips (r8) and Partager (r10) already matched.
 
 function formatMemberSince(iso: string, lang: Lang): string {
-  const date = new Date(iso).toLocaleDateString(lang === 'ar' ? 'ar-TN' : 'fr-TN', {
+  const date = new Date(iso).toLocaleDateString(LOCALES[lang], {
     month: 'long',
     year: 'numeric',
   })
