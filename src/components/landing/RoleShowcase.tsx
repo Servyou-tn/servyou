@@ -16,21 +16,21 @@ const CONFIG: Record<Role, {
   band: string
   benefits: LucideIcon[]
   cta: string
-  shot: { src: string; w: number; h: number; box: string; left: number; card: number; cardH: number }
+  shot: { src: string; w: number; h: number; box: string }
 }> = {
   free: {
     id: 'freelances',
     band: 'bg-surface-subtle',
     benefits: [Link2, Briefcase, LayoutDashboard],
     cta: '/devenir-freelance',
-    shot: { src: '/brand/landing/dash-free.webp', w: 856, h: 613, box: 'max-w-[824px] aspect-[824/549]', left: -32, card: 824, cardH: 549 },
+    shot: { src: '/brand/landing/dash-free.webp', w: 2160, h: 1439, box: 'max-w-[824px] aspect-[824/549] rounded-s-2xl' },
   },
   shop: {
     id: 'boutiques',
     band: 'bg-surface-base',
     benefits: [Store, Inbox, Truck],
     cta: '/devenir-vendeur',
-    shot: { src: '/brand/landing/dash-shop.webp', w: 848, h: 599, box: 'max-w-[816px] aspect-[816/535]', left: 0, card: 816, cardH: 535 },
+    shot: { src: '/brand/landing/dash-shop.webp', w: 2160, h: 1418, box: 'max-w-[816px] aspect-[816/535] rounded-e-2xl' },
   },
 }
 
@@ -69,20 +69,25 @@ export function RoleShowcase({ role, lang }: { role: Role; lang: Lang }) {
   )
 
   // The card takes the room left next to the text (never more than its Figma size) and scales as one
-  // piece — same aspect ratio, nothing stretched — so a 1366px screen shows what Figma shows at 1440.
-  // The export carries the card's drop shadow (32px each side, 16 above): offsets are percentages of the
-  // card so the shadow scales with it.
+  // piece — same aspect ratio, nothing stretched. The screenshot is exported from the vector showcase
+  // frame at 1.5x of the 1440 dashboard (≈2.6x the card) and served as-is (`unoptimized`): the default
+  // q75 re-encode blurred the small dashboard text. Frame + shadow are CSS (Figma: border-subtle 1px,
+  // r16 on the inner side, 0 16 40 -8 #0f1729/10).
   const s = c.shot
   const desktopShot = (
-    <div className={cn('relative hidden min-w-0 flex-1 lg:block', s.box)}>
+    <div
+      className={cn(
+        'relative hidden min-w-0 flex-1 overflow-hidden border border-border-subtle bg-surface-base shadow-[0_16px_40px_-8px_rgb(15_23_41/0.10)] lg:block',
+        s.box,
+      )}
+    >
       <Image
         src={s.src}
         alt={t(k('shot_alt'), lang)}
         width={s.w}
         height={s.h}
-        sizes="(min-width: 1440px) 856px, 60vw"
-        style={{ left: `${(s.left / s.card) * 100}%`, top: `${(-16 / s.cardH) * 100}%`, width: `${(s.w / s.card) * 100}%` }}
-        className="absolute h-auto max-w-none"
+        unoptimized
+        className="size-full object-cover object-top"
       />
     </div>
   )
@@ -103,7 +108,7 @@ export function RoleShowcase({ role, lang }: { role: Role; lang: Lang }) {
             alt={t(k('shot_alt'), lang)}
             width={354}
             height={668}
-            sizes="354px"
+            unoptimized
             className="mx-auto h-auto w-[354px] max-w-full"
           />
         </div>
