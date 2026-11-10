@@ -9,7 +9,7 @@ import { detectPlatform } from '@/lib/social/platforms'
 import type { ServiceListing } from '@/components/listings/ServiceListingCard'
 import type { FreelancerDetailData } from '@/lib/marche/freelancer-detail'
 import { LANGUAGES, PROFICIENCY_LEVELS } from '@/lib/freelancer/language-options'
-import { t, tn, type Lang } from '@/lib/i18n'
+import { LOCALES, t, tn, type Lang } from '@/lib/i18n'
 import { PublicServiceCard } from './PublicServiceCard'
 import { ActionsRow } from './ActionsRow'
 import { StickyBar } from './StickyBar'
@@ -398,7 +398,7 @@ export function FreelancerDetail({
 }
 
 function formatMemberSince(iso: string, lang: Lang): string {
-  const date = new Date(iso).toLocaleDateString(lang === 'ar' ? 'ar-TN' : 'fr-TN', { month: 'long', year: 'numeric' })
+  const date = new Date(iso).toLocaleDateString(LOCALES[lang], { month: 'long', year: 'numeric' })
   return t('freelance.public.member_since', lang, { date })
 }
 

@@ -1,7 +1,7 @@
 'use client'
 
 import { useLang } from '@/components/LangProvider'
-import { t, type Lang } from '@/lib/i18n'
+import { t, toLang, type Lang } from '@/lib/i18n'
 import { SettingRow } from '@/components/ui/setting-row'
 
 // Measured 423:17321 — the one working tab this PR. "Langue" writes profiles.language (via the
@@ -25,9 +25,10 @@ export function LangueRegionTab({ value, onChange }: { value: Lang; onChange: (n
             label={t('parametres.lang.title', lang)}
             description={t('parametres.langue.rowDescription', lang)}
             value={value}
-            onChange={(next) => onChange(next === 'ar' ? 'ar' : 'fr')}
+            onChange={(next) => onChange(toLang(next))}
             options={[
               { value: 'fr', label: 'Français' },
+              { value: 'en', label: 'English' },
               { value: 'ar', label: 'العربية' },
             ]}
           />

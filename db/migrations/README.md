@@ -1326,6 +1326,13 @@ both on 2026-10-28.
       - `drop function public.enforce_job_response_withdraw();`
       - re-run #125's `choose_job_response` body.
 
+127. **20261110220642_profiles_language_en** — English as a third interface language (founder decision 2026-11-10,
+    approved in chat); applied by the architect.
+    - Widens `profiles_language_check` to `fr | ar | en`. No data change; `handle_new_user` already copies the signup
+      metadata `language` (default `fr`), so an English signup now passes.
+    - Checked after the apply: the constraint reads `language = ANY (ARRAY['fr','ar','en'])`.
+    - Rollback (only if no row has `language = 'en'`): the commented block at the end of the file.
+
 ## Rollback paths
 
 Each migration in this folder represents work that has already been applied to production. Rollback is therefore reverse migration work, not file deletion. If a rollback is ever needed, write a new dated migration that reverses the relevant changes — never delete history from this folder.

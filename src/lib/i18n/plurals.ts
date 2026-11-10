@@ -1,4 +1,5 @@
 import type { Lang } from './index'
+import { enPlurals } from './en'
 
 // CLDR distinguishes six categories (zero/one/two/few/many/other), but Intl.PluralRules only ever
 // returns 'few'/'many' for Arabic 3-10 / 11-99 — this app folds both into `other` (see
@@ -14,6 +15,7 @@ export type PluralVariants = {
 const RULES: Record<Lang, Intl.PluralRules> = {
   fr: new Intl.PluralRules('fr'),
   ar: new Intl.PluralRules('ar'),
+  en: new Intl.PluralRules('en'),
 }
 
 /**
@@ -43,7 +45,7 @@ function pickVariant(variants: PluralVariants, lang: Lang, count: number): strin
 // preposition (من/خلال/منذ) take the oblique form (طلبين, not طلبان) — both are applied below where
 // the string has an adjective or sits after a preposition.
 
-const frPlurals: Record<string, PluralVariants> = {
+export const frPlurals: Record<string, PluralVariants> = {
   // Admin J1 / J8 / J9 — PR-5 block.
   'admin.dash.ago_minutes': { one: "il y a {count} min", other: "il y a {count} min" },
   'admin.dash.ago_hours': { one: "il y a {count} h", other: "il y a {count} h" },
@@ -302,7 +304,7 @@ const arPlurals: Record<string, PluralVariants> = {
   'aide.search.count':                     { one: 'سؤال واحد يطابق «{q}»', two: 'سؤالان يطابقان «{q}»', other: '{count} أسئلة تطابق «{q}»' },
 }
 
-const pluralDicts: Record<Lang, Record<string, PluralVariants>> = { fr: frPlurals, ar: arPlurals }
+const pluralDicts: Record<Lang, Record<string, PluralVariants>> = { fr: frPlurals, ar: arPlurals, en: enPlurals }
 
 /**
  * Translate a pluralized key: picks the count-appropriate variant, then interpolates `{count}`
@@ -315,9 +317,12 @@ export function tn(
   count: number,
   vars?: Record<string, string | number>,
 ): string {
-  const variants = pluralDicts[lang][key]
+  // English not written yet for this key → the French variants, picked with the French rule.
+  const own = pluralDicts[lang][key]
+  const useFr = !own && lang === 'en'
+  const variants = own ?? (useFr ? frPlurals[key] : undefined)
   if (!variants) return key
-  let str = pickVariant(variants, lang, count)
+  let str = pickVariant(variants, useFr ? 'fr' : lang, count)
   const merged: Record<string, string | number> = { count, ...vars }
   for (const [k, v] of Object.entries(merged)) {
     // Replacer FUNCTION: a string replacement expands `$&` / `$$` — and `query`/`q` here are raw user input.

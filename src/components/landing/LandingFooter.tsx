@@ -11,7 +11,7 @@ import { useLangSwitch } from './useLangSwitch'
 
 // Footer — Figma 1729:51925 / 1729:51976. Rounded box (hero-box shape), surface-sunken → border-subtle
 // gradient (a step darker than the FAQ box), brand column + 3 link columns, divider, bottom bar with the
-// FR | العربية switch. The social logos are shown but not linked yet: the real ServYou account URLs are
+// FR | EN | العربية switch. The social logos are shown but not linked yet: the real ServYou account URLs are
 // still to be provided (logged as a follow-up).
 const COLUMNS = [
   {
@@ -110,6 +110,7 @@ export function LandingFooter() {
             {(
               [
                 ['fr', 'FR'],
+                ['en', 'EN'],
                 ['ar', 'العربية'],
               ] as const
             ).map(([code, label]) => (

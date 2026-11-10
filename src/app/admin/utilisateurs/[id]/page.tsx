@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { getLang } from '@/lib/i18n/server'
-import { t, tn, type Lang } from '@/lib/i18n'
+import { LOCALES, t, tn, type Lang } from '@/lib/i18n'
 import { createClient } from '@/lib/supabase/server'
 import { requireAdmin } from '@/lib/auth/require-admin'
 import { failQuery, isNoRowLike, reportQueryError } from '@/lib/supabase/query-error'
@@ -41,10 +41,10 @@ const TAB_LABEL: Record<DetailTabKey, string> = {
 const ROLE_PILL = { admin: 'completed', shop_owner: 'arrivee', freelancer: 'acceptee', consumer: 'pending' } as const
 
 function shortDate(iso: string, lang: Lang): string {
-  return new Date(iso).toLocaleDateString(lang === 'ar' ? 'ar-TN' : 'fr-TN', { day: 'numeric', month: 'short' })
+  return new Date(iso).toLocaleDateString(LOCALES[lang], { day: 'numeric', month: 'short' })
 }
 function fullDate(iso: string, lang: Lang): string {
-  return new Date(iso).toLocaleDateString(lang === 'ar' ? 'ar-TN' : 'fr-TN', { day: 'numeric', month: 'short', year: 'numeric' })
+  return new Date(iso).toLocaleDateString(LOCALES[lang], { day: 'numeric', month: 'short', year: 'numeric' })
 }
 // Relative up to yesterday, then the short date (« il y a 3h · Moatez », « 2 nov. · Moatez »).
 function whenLabel(iso: string, lang: Lang, now: number): string {
@@ -253,7 +253,7 @@ export default async function UserDetailPage({ params, searchParams }: Props) {
     { label: t('admin.users.field_role', lang), value: roles.map((r) => t(accountRoleI18nKey(r), lang)).join(', ') },
     ...(shop ? [{ label: t('admin.users.info_shop', lang), value: productsRes?.error ? shop.name : `${shop.name} · ${tn('admin.users.info_products', lang, contentIds.product.length)}` }] : []),
     ...(fp ? [{ label: t('admin.users.info_freelance', lang), value: fp.headline ?? '—' }] : []),
-    { label: t('admin.users.field_language', lang), value: u.language === 'ar' ? t('admin.users.lang_ar', lang) : u.language === 'fr' ? t('admin.users.lang_fr', lang) : '—' },
+    { label: t('admin.users.field_language', lang), value: u.language === 'ar' ? t('admin.users.lang_ar', lang) : u.language === 'fr' ? t('admin.users.lang_fr', lang) : u.language === 'en' ? t('admin.users.lang_en', lang) : '—' },
     { label: t('admin.users.field_phone', lang), value: u.phone ?? '—', ltr: true },
     { label: t('admin.users.info_age', lang), value: band ? t(AGE_KEY[band], lang) : '—' },
     // Kept from the built page: the suspension date and its internal reason.

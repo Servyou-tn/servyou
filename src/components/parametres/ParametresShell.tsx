@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { Bell, Shield, Globe, Link2, CheckCircle2, type LucideIcon } from 'lucide-react'
 import { useLang } from '@/components/LangProvider'
-import { t, LANG_COOKIE, type Lang } from '@/lib/i18n'
+import { t, LANG_COOKIE, toLang, type Lang } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
 import { FOCUS_RING } from '@/components/layout/styles'
 import { Button } from '@/components/ui/button'
@@ -51,7 +51,7 @@ export function ParametresShell({
   const [activeTab, setActiveTab] = useState<TabKey>('notifications')
   const [pending, startTransition] = useTransition()
 
-  const initialLanguage: Lang = profile.language === 'ar' ? 'ar' : 'fr'
+  const initialLanguage: Lang = toLang(profile.language)
   const [language, setLanguage] = useState<Lang>(initialLanguage)
   const [savedLanguage, setSavedLanguage] = useState<Lang>(initialLanguage)
 
