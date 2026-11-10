@@ -16,6 +16,7 @@ import { FinalCta } from '@/components/landing/FinalCta'
 import { LandingFooter } from '@/components/landing/LandingFooter'
 import { ConsumerHomepage } from '@/components/home/ConsumerHomepage'
 import { expiredLinkRedirect } from '@/lib/auth/expired-link'
+import { getServiceCities } from '@/lib/marche/filter-cities'
 
 // / branches by viewer:
 //   • logged-out → marketing landing (unchanged)
@@ -83,12 +84,14 @@ export default async function HomePage({
 // The public marketing landing page (Figma « LANDING PAGE v3 », section 1662:29222 — desktop 1662:29225,
 // phone 1662:29267, Arabic 1730:52028) — shown to logged-out visitors and to logged-in sellers/admins,
 // whose top bar shows THEM (avatar + « Tableau de bord ») instead of « Se connecter / S'inscrire ».
-function LandingView({ lang, account }: { lang: Lang; account?: HeaderAccount }) {
+async function LandingView({ lang, account }: { lang: Lang; account?: HeaderAccount }) {
+  // The hero search's city picker offers only cities with live services (a failure degrades to « Toute la Tunisie »).
+  const cities = await getServiceCities()
   return (
     <div className="bg-surface-base">
       <TopBar account={account} />
       <main>
-        <Hero lang={lang} />
+        <Hero lang={lang} cities={cities} />
         <Categories lang={lang} />
         <RoleShowcase role="free" lang={lang} />
         <RoleShowcase role="shop" lang={lang} />
