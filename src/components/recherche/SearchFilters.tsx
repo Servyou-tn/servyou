@@ -331,20 +331,20 @@ export function SearchFilters({
             open={categorieOpen}
             onToggle={() => setCategorieOpen((o) => !o)}
             panelId={`${groupId}-categorie`}
-            ariaShow="Afficher les catégories"
-            ariaHide="Masquer les catégories"
+            ariaShow={t('search.filters.categories_show', lang)}
+            ariaHide={t('search.filters.categories_hide', lang)}
           >
             {categoryList}
           </CollapsibleGroup>
         )}
         <CollapsibleGroup
           label={t('search.filters.price', lang)}
-          badge={prixActive ? 'actif' : null}
+          badge={prixActive ? t('search.filters.active_badge', lang) : null}
           open={prixOpen}
           onToggle={() => setPrixOpen((o) => !o)}
           panelId={`${groupId}-prix`}
-          ariaShow="Afficher le filtre de prix"
-          ariaHide="Masquer le filtre de prix"
+          ariaShow={t('search.filters.price_show', lang)}
+          ariaHide={t('search.filters.price_hide', lang)}
         >
           {prixInputs}
         </CollapsibleGroup>

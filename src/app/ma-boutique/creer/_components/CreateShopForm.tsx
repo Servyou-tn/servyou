@@ -167,7 +167,7 @@ export function CreateShopForm({ askPhone = false }: { askPhone?: boolean }) {
     >
       <div className="flex flex-col gap-6">
         <div>
-          <nav aria-label="Fil d'Ariane" className="mb-3 max-lg:mb-2">
+          <nav aria-label={t('common.breadcrumb', lang)} className="mb-3 max-lg:mb-2">
             <ol className="flex items-center gap-1.5 text-sm text-text-muted max-lg:gap-2 max-lg:font-medium">
               <li>
                 <Link href="/devenir-vendeur" className={`rounded ${FOCUS_RING}`}>

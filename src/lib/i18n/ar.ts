@@ -41,6 +41,7 @@ export const ar: Record<string, string> = {
   'common.error_bot_check':        "تعذّر التحقق الأمني. يرجى المحاولة مرة أخرى.",
   'admin.note_too_long':           "النص طويل جدًا (2000 حرف كحد أقصى).",
   'common.loading':                "جار التحميل…",
+  'common.breadcrumb':             "مسار التنقل", // REVIEW_AR_TRANSLATION
   'common.rate_limit':             "محاولات كثيرة جدا. يرجى الانتظار بضع دقائق قبل المحاولة مرة أخرى.",
   // Actions
   'common.saving':                 "جار الحفظ…",
@@ -3207,6 +3208,12 @@ export const ar: Record<string, string> = {
   'search.filters.apply':        "تطبيق",
   'search.filters.clear':        "مسح الفلاتر",
   'search.filters.close':        "إغلاق",
+  // REVIEW_AR_TRANSLATION — were hard-coded French (aria labels + the price badge), 2026-11-11
+  'search.filters.categories_show': "إظهار الفئات",
+  'search.filters.categories_hide': "إخفاء الفئات",
+  'search.filters.price_show':  "إظهار فلتر السعر",
+  'search.filters.price_hide':  "إخفاء فلتر السعر",
+  'search.filters.active_badge': "مفعّل",
   'search.empty.noResults':      "لا توجد نتائج لـ « {query} »",
   'search.empty.filtered':       "لا توجد نتائج",
   'search.empty.subtitle':       "عدل بحثك أو تصفح فئاتنا الشائعة.",

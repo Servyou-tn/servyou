@@ -32,7 +32,7 @@ export function ProductRequestScreen({
     // Below lg (m375-e1-produit): the crumb, H1 8 apart, the form 20 under the header; H1 32 Bold / 38 text/primary.
     <div className="flex flex-col gap-6 xl:gap-8 max-lg:gap-5">
       <nav
-        aria-label="Fil d'Ariane"
+        aria-label={t('common.breadcrumb', lang)}
         className="flex flex-wrap items-center gap-2 text-[13px] leading-[17px] text-text-muted max-lg:gap-1.5 max-lg:leading-4"
       >
         <Link href="/" className={`rounded-sm hover:text-text-secondary max-lg:hidden ${FOCUS_RING}`}>

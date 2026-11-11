@@ -103,7 +103,7 @@ export function ProductDetail({
             « ‹ {secteur} › {sous-catégorie} » has no data behind it (product categories are ONE level: parent_id is null on every product
             row), so this is D2's mobile shape « ‹ Services › … » — Q1 in the deltas doc. Accueil and the title are desktop-only. */}
         <nav
-          aria-label="Fil d'Ariane"
+          aria-label={t('common.breadcrumb', lang)}
           className="flex flex-wrap items-center gap-2 text-[13px] leading-[17px] text-text-muted max-lg:gap-1.5 max-lg:leading-4"
         >
           <Link href="/" className={`rounded-sm hover:text-text-secondary max-lg:hidden ${FOCUS_RING}`}>
