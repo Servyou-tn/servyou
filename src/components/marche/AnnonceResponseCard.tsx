@@ -172,7 +172,7 @@ export function AnnonceResponseCard({
 
 // relativeTimeLabel's « Hier » / « À l'instant » are standalone capitalised strings; after « Proposition reçue » they read mid-sentence.
 function midSentence(s: string, lang: Lang): string {
-  return lang === 'fr' ? s.charAt(0).toLowerCase() + s.slice(1) : s
+  return lang !== 'ar' ? s.charAt(0).toLowerCase() + s.slice(1) : s
 }
 
 function hostOf(url: string): string {

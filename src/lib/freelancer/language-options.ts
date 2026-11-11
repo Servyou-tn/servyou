@@ -1,3 +1,5 @@
+import type { Lang } from '@/lib/i18n'
+
 // Langue/niveau option lists for H2 step 2 "Compétences & langues" — founder-ruled, not measured
 // (docs/design/h2-discovery.md §3c: the Figma quota was exhausted before either Select's option
 // list could be read off the frame). Stored codes are unaccented ASCII, matching
@@ -14,16 +16,17 @@ export type LanguageOption = {
   value: string
   fr: string
   ar: string
+  en: string
 }
 
 export const LANGUAGES: readonly LanguageOption[] = [
-  { value: 'fr', fr: 'Français', ar: 'الفرنسية' },
-  { value: 'ar', fr: 'Arabe', ar: 'العربية' },
-  { value: 'en', fr: 'Anglais', ar: 'الإنجليزية' },
-  { value: 'it', fr: 'Italien', ar: 'الإيطالية' },
-  { value: 'de', fr: 'Allemand', ar: 'الألمانية' },
-  { value: 'es', fr: 'Espagnol', ar: 'الإسبانية' },
-  { value: 'autre', fr: 'Autre', ar: 'أخرى' },
+  { value: 'fr', fr: 'Français', ar: 'الفرنسية', en: 'French' },
+  { value: 'ar', fr: 'Arabe', ar: 'العربية', en: 'Arabic' },
+  { value: 'en', fr: 'Anglais', ar: 'الإنجليزية', en: 'English' },
+  { value: 'it', fr: 'Italien', ar: 'الإيطالية', en: 'Italian' },
+  { value: 'de', fr: 'Allemand', ar: 'الألمانية', en: 'German' },
+  { value: 'es', fr: 'Espagnol', ar: 'الإسبانية', en: 'Spanish' },
+  { value: 'autre', fr: 'Autre', ar: 'أخرى', en: 'Other' },
 ] as const
 
 export type ProficiencyOption = {
@@ -31,14 +34,19 @@ export type ProficiencyOption = {
   value: string
   fr: string
   ar: string
+  en: string
 }
 
 export const PROFICIENCY_LEVELS: readonly ProficiencyOption[] = [
-  { value: 'natif', fr: 'Natif', ar: 'اللغة الأم' },
-  { value: 'courant', fr: 'Courant', ar: 'بطلاقة' },
-  { value: 'intermediaire', fr: 'Intermédiaire', ar: 'متوسط' },
-  { value: 'notions', fr: 'Notions', ar: 'أساسي' },
+  { value: 'natif', fr: 'Natif', ar: 'اللغة الأم', en: 'Native' },
+  { value: 'courant', fr: 'Courant', ar: 'بطلاقة', en: 'Fluent' },
+  { value: 'intermediaire', fr: 'Intermédiaire', ar: 'متوسط', en: 'Intermediate' },
+  { value: 'notions', fr: 'Notions', ar: 'أساسي', en: 'Basic' },
 ] as const
+
+/** Display label of an option in the active language (the stored `value` never changes). */
+export const optionLabel = (option: { fr: string; ar: string; en: string }, lang: Lang): string =>
+  lang === 'ar' ? option.ar : lang === 'en' ? option.en : option.fr
 
 // z.enum needs a non-empty literal tuple — derived here once so the server action's validation
 // can never drift from the option lists rendered in the UI.

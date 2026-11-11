@@ -88,7 +88,7 @@ export default async function MissionDetailPage({ params }: { params: Promise<{ 
           <ul className="flex flex-wrap items-center gap-x-4 gap-y-1 text-body-sm font-medium text-text-muted">
             <li className="inline-flex items-center gap-1.5">
               <Clock className="size-4 shrink-0" aria-hidden="true" />
-              {t('missiondetail.published', lang, { when: lang === 'fr' ? lowerFirst(published) : published })}
+              {t('missiondetail.published', lang, { when: lang !== 'ar' ? lowerFirst(published) : published })}
             </li>
             {place ? (
               <li className="inline-flex items-center gap-1.5">
