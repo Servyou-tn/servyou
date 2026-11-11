@@ -51,7 +51,8 @@ function Card({ children, className }: { children: React.ReactNode; className?: 
 // returned untouched.
 const isolateLtr = (value: string, lang: Lang) => (lang === 'ar' ? `\u2066${value}\u2069` : value)
 const isolateAuto = (value: string, lang: Lang) => (lang === 'ar' ? `\u2068${value}\u2069` : value)
-const categoryName = (order: OrderDetail, lang: Lang) => (lang === 'ar' && order.item.categoryAr ? order.item.categoryAr : order.item.category)
+const categoryName = (order: OrderDetail, lang: Lang) =>
+  lang === 'ar' && order.item.categoryAr ? order.item.categoryAr : lang === 'en' && order.item.categoryEn ? order.item.categoryEn : order.item.category
 
 // ⚑ `valueDir` is OPT-IN per call site, not a blanket rule on the component. A phone number or a
 // street address is digits/Latin content that must read as one coherent LTR unit regardless of
@@ -282,7 +283,7 @@ export default async function DemandeSuccesPage({ searchParams }: Props) {
   return (
     <AppShell user={shell.topBarUser}>
       <div className="flex flex-col gap-6 lg:gap-12">
-        <nav aria-label="Fil d'Ariane" className="flex flex-wrap items-center gap-1.5 text-[13px] text-text-muted max-lg:leading-4 lg:gap-2">
+        <nav aria-label={t('common.breadcrumb', lang)} className="flex flex-wrap items-center gap-1.5 text-[13px] text-text-muted max-lg:leading-4 lg:gap-2">
           <Link href="/" className="hidden hover:text-text-secondary lg:inline">
             {t('serviceDetail.breadcrumb.home', lang)}
           </Link>

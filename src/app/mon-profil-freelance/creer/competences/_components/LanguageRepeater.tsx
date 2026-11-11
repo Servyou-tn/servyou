@@ -5,8 +5,7 @@ import { X } from 'lucide-react'
 import { FOCUS_RING } from '@/components/layout/styles'
 import { cn } from '@/lib/utils'
 import { t, type Lang } from '@/lib/i18n'
-import { LANGUAGES, PROFICIENCY_LEVELS } from '@/lib/freelancer/language-options'
-import { pickLabel } from '@/lib/i18n/pick-label'
+import { LANGUAGES, PROFICIENCY_LEVELS, optionLabel } from '@/lib/freelancer/language-options'
 
 // H2 step 2 "Langues" repeater — Figma 467:20404, measured in docs/design/h2-discovery.md §3.
 // Each row: [Select langue][Select niveau][x remove], plus "+ Ajouter une langue". Option lists
@@ -63,7 +62,7 @@ export function LanguageRepeater({
           const options = LANGUAGES.filter((l) => l.value === row.language || !takenElsewhere.has(l.value))
           const currentLabel = LANGUAGES.find((l) => l.value === row.language)
           const removeLabel = t('freelance.create.step2.remove_language_label', lang, {
-            language: currentLabel ? (pickLabel(currentLabel, lang)) : '',
+            language: currentLabel ? optionLabel(currentLabel, lang) : '',
           })
 
           return (
@@ -79,7 +78,7 @@ export function LanguageRepeater({
                 </option>
                 {options.map((l) => (
                   <option key={l.value} value={l.value}>
-                    {pickLabel(l, lang)}
+                    {optionLabel(l, lang)}
                   </option>
                 ))}
               </select>
@@ -95,7 +94,7 @@ export function LanguageRepeater({
                 </option>
                 {PROFICIENCY_LEVELS.map((p) => (
                   <option key={p.value} value={p.value}>
-                    {pickLabel(p, lang)}
+                    {optionLabel(p, lang)}
                   </option>
                 ))}
               </select>

@@ -178,6 +178,7 @@ export type OrderDetail = {
     category: string | null
     /** The category in Arabic (walk #27: the AR confirmation showed « Maison »). Optional: fixtures built before it read as none. */
     categoryAr?: string | null
+    categoryEn?: string | null
     price: number | null
     /** `service_listings.delivery_time` (« 3 jours ») — free text; null for a product and when the listing set none. */
     deliveryTime: string | null
@@ -211,7 +212,7 @@ type OrderRow = {
         title: string
         price_tnd: number | string
         shop_id: string | null
-        categories: { name_fr: string; name_ar: string | null } | { name_fr: string; name_ar: string | null }[] | null
+        categories: { name_fr: string; name_ar: string | null; name_en: string | null } | { name_fr: string; name_ar: string | null; name_en: string | null }[] | null
         shops: { id: string; name: string | null; city: string | null; logo_url: string | null } | { id: string; name: string | null; city: string | null; logo_url: string | null }[] | null
         product_images: { image_url: string; display_order: number }[] | null
       }
@@ -223,7 +224,7 @@ type OrderRow = {
         starting_price_tnd: number | string | null
         delivery_time: string | null
         freelancer_profile_id: string | null
-        categories: { name_fr: string; name_ar: string | null } | { name_fr: string; name_ar: string | null }[] | null
+        categories: { name_fr: string; name_ar: string | null; name_en: string | null } | { name_fr: string; name_ar: string | null; name_en: string | null }[] | null
         freelancer_profiles: { id: string; city: string | null; headline: string | null } | { id: string; city: string | null; headline: string | null }[] | null
       }
     | null
@@ -241,11 +242,11 @@ export const getOrderDetail = cache(
          created_at, updated_at, cancelled_by, cancellation_reason, received_at,
          carrier, tracking_number, unit_price_tnd, delivery_fee_tnd,
          products ( id, title, price_tnd, shop_id,
-                    categories ( name_fr, name_ar ),
+                    categories ( name_fr, name_ar, name_en ),
                     shops ( id, name, city, logo_url ),
                     product_images ( image_url, display_order ) ),
          service_listings ( id, title, starting_price_tnd, delivery_time, freelancer_profile_id,
-                    categories!service_listings_category_id_fkey ( name_fr, name_ar ),
+                    categories!service_listings_category_id_fkey ( name_fr, name_ar, name_en ),
                     freelancer_profiles ( id, city, headline ) )`,
       )
       .eq('id', orderId)
@@ -316,6 +317,7 @@ export const getOrderDetail = cache(
           imageUrl: primaryImage(p?.product_images),
           category: one(p?.categories)?.name_fr ?? null,
           categoryAr: one(p?.categories)?.name_ar ?? null,
+          categoryEn: one(p?.categories)?.name_en ?? null,
           price: p ? Number(p.price_tnd) : null,
           deliveryTime: null,
         },
@@ -367,6 +369,7 @@ export const getOrderDetail = cache(
         imageUrl: null,
         category: one(s?.categories)?.name_fr ?? null,
         categoryAr: one(s?.categories)?.name_ar ?? null,
+        categoryEn: one(s?.categories)?.name_en ?? null,
         price: s?.starting_price_tnd != null ? Number(s.starting_price_tnd) : null,
         deliveryTime: s?.delivery_time ?? null,
       },

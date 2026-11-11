@@ -216,7 +216,7 @@ export function EditShopForm({ shopId, initial }: { shopId: string; initial: Edi
       <div>
         {/* 375 (m375-g3-boutique-modifier): the crumb 14 Medium / 17, gap 8, chevron 14, « Ma boutique » a blue/600 link; 8 → H1
             32 Bold / 38; 8 → the subline 14 / 21 secondary. */}
-        <nav aria-label="Fil d'Ariane" className="mb-3 max-lg:mb-2">
+        <nav aria-label={t('common.breadcrumb', lang)} className="mb-3 max-lg:mb-2">
           <ol className="flex items-center gap-1.5 text-sm text-text-muted max-lg:gap-2 max-lg:font-medium max-lg:leading-[17px]">
             <li>
               <Link href="/tableau-de-bord-vendeur" className={`rounded max-lg:text-brand-blue-600 ${FOCUS_RING}`}>

@@ -21,7 +21,7 @@ export type ShopDetailData = {
   deliverySetup: DeliverySetup | null
   createdAt: string
   paymentMethods: PaymentMethod[]
-  categories: { name_fr: string; name_ar: string | null }[]
+  categories: { name_fr: string; name_ar: string | null; name_en: string | null }[]
   /** Facebook · Instagram · TikTok, only those set (shops.*_url, migration 116). */
   socialLinks: ShopSocialLink[]
 }
@@ -40,7 +40,7 @@ type ShopRow = {
   instagram_url: string | null
   tiktok_url: string | null
   shop_payment_methods: { method: PaymentMethod }[] | null
-  shop_categories: { categories: { name_fr: string; name_ar: string | null } | { name_fr: string; name_ar: string | null }[] | null }[] | null
+  shop_categories: { categories: { name_fr: string; name_ar: string | null; name_en: string | null } | { name_fr: string; name_ar: string | null; name_en: string | null }[] | null }[] | null
 }
 
 function one<T>(embed: T | T[] | null | undefined): T | null {
@@ -58,7 +58,7 @@ export const getShopDetail = cache(async (id: string): Promise<ShopDetailData | 
       `id, name, description, city, logo_url, banner_url, shop_type, delivery_setup, created_at, admin_hidden_at,
        facebook_url, instagram_url, tiktok_url,
        shop_payment_methods ( method ),
-       shop_categories ( categories ( name_fr, name_ar ) )`,
+       shop_categories ( categories ( name_fr, name_ar, name_en ) )`,
     )
     .eq('id', id)
     .is('admin_hidden_at', null)
@@ -83,7 +83,7 @@ export const getShopDetail = cache(async (id: string): Promise<ShopDetailData | 
     paymentMethods: (row.shop_payment_methods ?? []).map((r) => r.method),
     categories: (row.shop_categories ?? [])
       .map((r) => one(r.categories))
-      .filter((c): c is { name_fr: string; name_ar: string | null } => c !== null),
+      .filter((c): c is { name_fr: string; name_ar: string | null; name_en: string | null } => c !== null),
     socialLinks: toShopSocialLinks(row),
   }
 })
@@ -93,7 +93,7 @@ type ShopProductRow = {
   title: string
   description: string | null
   price_tnd: number | string
-  categories: { name_fr: string; name_ar: string | null } | { name_fr: string; name_ar: string | null }[] | null
+  categories: { name_fr: string; name_ar: string | null; name_en: string | null } | { name_fr: string; name_ar: string | null; name_en: string | null }[] | null
   product_images: { image_url: string; display_order: number }[] | null
 }
 
@@ -118,7 +118,7 @@ export async function getShopProducts(shopId: string, shopName: string, shopCity
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('products')
-    .select('id, title, description, price_tnd, categories ( name_fr, name_ar ), product_images ( image_url, display_order )')
+    .select('id, title, description, price_tnd, categories ( name_fr, name_ar, name_en ), product_images ( image_url, display_order )')
     .eq('shop_id', shopId)
     .eq('status', 'active')
     .order('created_at', { ascending: false })
@@ -136,7 +136,7 @@ export async function getShopProducts(shopId: string, shopName: string, shopCity
       price_tnd: Number(row.price_tnd),
       image_url: primaryImage(row.product_images),
       shop: { name: shopName, city: shopCity },
-      category: category ? { name_fr: category.name_fr, name_ar: category.name_ar ?? undefined } : null,
+      category: category ? { name_fr: category.name_fr, name_ar: category.name_ar ?? undefined, name_en: category.name_en } : null,
     }
   })
 }

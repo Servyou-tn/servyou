@@ -14,6 +14,7 @@ import { skillLabel } from '@/lib/freelance/service-draft'
 import { formatServicePrice, servicePriceLabel } from '@/lib/freelance/service-price'
 import { ReportListingModal } from '@/components/report/ReportListingModal'
 import { HitArea } from '@/components/ui/interactive-surface'
+import { localName } from '@/lib/i18n/local-name'
 
 // D2 — service detail. Measured against Figma 666:55479 (1440) and 668:55920 (375).
 //
@@ -76,7 +77,7 @@ export function ServiceDetail({
   // every block 20 apart.
   // The DOM is the MOBILE order, so the tab order follows what is seen (WCAG 2.4.3); the desktop order (price · CTA · favori / partager · freelancer · COD)
   // is `lg:order-N`, dividers included. Only the freelancer row renders twice (below).
-  const pick = (n: { fr: string; ar: string | null } | null) => (n ? (lang === 'ar' && n.ar ? n.ar : n.fr) : null)
+  const pick = (n: { fr: string; ar: string | null; en?: string | null } | null) => (n ? localName({ name_fr: n.fr, name_ar: n.ar, name_en: n.en }, lang) : null)
   const category = pick(service.category)
   const subcategory = pick(service.subcategory)
   const profileHref = service.freelancerProfileId ? `/freelance/${service.freelancerProfileId}` : null
@@ -186,7 +187,7 @@ export function ServiceDetail({
     <div className="flex flex-col gap-5 lg:gap-6">
       {/* breadcrumb — 13px. 375 (m375-d2-service): « ‹ Services › {sub-category} » (the category when there is no sub-category), gap 6, chevrons 16 / 12;
           desktop: Accueil › Services › category › sub-category › title, gap 8. */}
-      <nav aria-label="Fil d'Ariane" className="flex flex-wrap items-center gap-1.5 text-[13px] leading-4 text-text-muted lg:gap-2">
+      <nav aria-label={t('common.breadcrumb', lang)} className="flex flex-wrap items-center gap-1.5 text-[13px] leading-4 text-text-muted lg:gap-2">
         <Link href="/" className="hidden hover:text-text-secondary lg:inline">{t('serviceDetail.breadcrumb.home', lang)}</Link>
         <ChevronRight className="hidden h-3.5 w-3.5 shrink-0 rtl:rotate-180 lg:block" aria-hidden="true" />
         <Link href="/marche/services" className="max-lg:relative inline-flex items-center gap-1.5 hover:text-text-secondary lg:gap-0">

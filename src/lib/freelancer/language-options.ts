@@ -1,3 +1,5 @@
+import type { Lang } from '@/lib/i18n'
+
 // Langue/niveau option lists for H2 step 2 "Compétences & langues" — founder-ruled, not measured
 // (docs/design/h2-discovery.md §3c: the Figma quota was exhausted before either Select's option
 // list could be read off the frame). Stored codes are unaccented ASCII, matching
@@ -14,8 +16,7 @@ export type LanguageOption = {
   value: string
   fr: string
   ar: string
-  /** English label; missing → the French one (pickLabel). */
-  en?: string
+  en: string
 }
 
 export const LANGUAGES: readonly LanguageOption[] = [
@@ -33,8 +34,7 @@ export type ProficiencyOption = {
   value: string
   fr: string
   ar: string
-  /** English label; missing → the French one (pickLabel). */
-  en?: string
+  en: string
 }
 
 export const PROFICIENCY_LEVELS: readonly ProficiencyOption[] = [
@@ -43,6 +43,10 @@ export const PROFICIENCY_LEVELS: readonly ProficiencyOption[] = [
   { value: 'intermediaire', fr: 'Intermédiaire', ar: 'متوسط', en: 'Intermediate' },
   { value: 'notions', fr: 'Notions', ar: 'أساسي', en: 'Basic' },
 ] as const
+
+/** Display label of an option in the active language (the stored `value` never changes). */
+export const optionLabel = (option: { fr: string; ar: string; en: string }, lang: Lang): string =>
+  lang === 'ar' ? option.ar : lang === 'en' ? option.en : option.fr
 
 // z.enum needs a non-empty literal tuple — derived here once so the server action's validation
 // can never drift from the option lists rendered in the UI.

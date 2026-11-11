@@ -49,7 +49,7 @@ export default async function ModifierProduitPage({
   return (
     <AppShell user={topBarUser}>
       <div className="mb-3 max-w-[760px] max-lg:mb-2">
-        <nav aria-label="Fil d'Ariane">
+        <nav aria-label={t('common.breadcrumb', lang)}>
           <ol className="flex items-center gap-1.5 text-sm text-text-muted max-lg:gap-2 max-lg:font-medium max-lg:leading-[17px]">
             <li>
               <Link href={LIST} className={cn('rounded hover:text-text-primary hover:underline max-lg:text-brand-blue-600', FOCUS_RING)}>

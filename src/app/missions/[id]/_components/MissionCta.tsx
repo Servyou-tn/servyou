@@ -60,7 +60,7 @@ export function MissionCta({ state, missionId, answeredAt, lang }: { state: Miss
         </ButtonLink>
         {answeredAt ? (
           <p className="text-center text-caption text-text-muted">
-            {t('missiondetail.cta.answered_at', lang, { when: lang === 'fr' ? lowerFirst(relativeTimeLabel(answeredAt, lang)) : relativeTimeLabel(answeredAt, lang) })}
+            {t('missiondetail.cta.answered_at', lang, { when: lang !== 'ar' ? lowerFirst(relativeTimeLabel(answeredAt, lang)) : relativeTimeLabel(answeredAt, lang) })}
           </p>
         ) : null}
       </div>

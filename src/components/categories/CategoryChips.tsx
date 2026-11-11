@@ -2,8 +2,9 @@ import Link from 'next/link'
 import { t } from '@/lib/i18n'
 import type { Lang } from '@/lib/i18n'
 import { FOCUS_RING } from '@/components/layout/styles'
+import { localName } from '@/lib/i18n/local-name'
 
-export type CategoryChip = { slug: string; name_fr: string; name_ar: string }
+export type CategoryChip = { slug: string; name_fr: string; name_ar: string; name_en?: string | null }
 
 // C2 sub-category chips — Figma 1486:24359 / 1488:66061 (docs/design/category-c2-measurements.md). One wrapping row of pills, gap 8: « Tout »
 // (the parent sector) first, then the children in the locked taxonomy's order; the page's own entry is the filled blue/600 pill, the others are outlined `border-subtle`. Pad 6/14,
@@ -63,7 +64,7 @@ export function CategoryChips({
                     : 'border border-border-subtle bg-surface-base text-text-secondary hover:bg-surface-subtle'
                 } ${FOCUS_RING}`}
               >
-                {lang === 'ar' ? c.name_ar : c.name_fr}
+                {localName(c, lang)}
               </Link>
             </li>
           )

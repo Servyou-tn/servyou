@@ -6,6 +6,7 @@ import { FOCUS_RING } from '@/components/layout/styles'
 import type { ServiceListing } from '@/components/listings/ServiceListingCard'
 import { servicePriceLabel } from '@/lib/freelance/service-price'
 import { t, type Lang } from '@/lib/i18n'
+import { localName } from '@/lib/i18n/local-name'
 
 // D4 « Ses services » below lg — the frame's « ServiceCard / context=public » (m375-d4-profil, 343 × 247), NOT the v3.7 grid card the
 // marketplace uses (that one stays from lg). surface/base + border/subtle, radius 12:
@@ -29,7 +30,7 @@ export function PublicServiceCard({
   const start = service.price_starting != null ? Number(service.price_starting) : 0
   const price = start > 0 ? servicePriceLabel(String(start), service.price_unit, lang) : t('listing.service.priceOnRequest', lang)
   const summary = service.short_description?.trim() || service.description
-  const category = service.category ? (lang === 'ar' && service.category.name_ar ? service.category.name_ar : service.category.name_fr) : null
+  const category = service.category ? (localName(service.category, lang)) : null
 
   return (
     <article className="relative rounded-card border border-border-subtle bg-surface-base">

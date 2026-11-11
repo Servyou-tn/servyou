@@ -8,13 +8,12 @@ import { PlatformIcon } from '@/components/social/PlatformIcon'
 import { detectPlatform } from '@/lib/social/platforms'
 import type { ServiceListing } from '@/components/listings/ServiceListingCard'
 import type { FreelancerDetailData } from '@/lib/marche/freelancer-detail'
-import { LANGUAGES, PROFICIENCY_LEVELS } from '@/lib/freelancer/language-options'
+import { LANGUAGES, PROFICIENCY_LEVELS, optionLabel } from '@/lib/freelancer/language-options'
 import { LOCALES, t, tn, type Lang } from '@/lib/i18n'
 import { PublicServiceCard } from './PublicServiceCard'
 import { ActionsRow } from './ActionsRow'
 import { StickyBar } from './StickyBar'
 import { SectionNav, type NavSection } from './SectionNav'
-import { pickLabel } from '@/lib/i18n/pick-label'
 
 // D4 « Profil freelance public » — rebuilt from Figma 390:10676, measured in the D4 discovery
 // pass. Single stacked column throughout, same skeleton as D3 (hero card + N boxes), but WITH a
@@ -418,9 +417,9 @@ function displayUrl(url: string): string {
 // the raw code only for a value outside the known list (never silently blank).
 function languageLabel(code: string, lang: Lang): string {
   const found = LANGUAGES.find((l) => l.value === code)
-  return found ? (pickLabel(found, lang)) : code
+  return found ? optionLabel(found, lang) : code
 }
 function proficiencyLabel(code: string, lang: Lang): string {
   const found = PROFICIENCY_LEVELS.find((p) => p.value === code)
-  return found ? (pickLabel(found, lang)) : code
+  return found ? optionLabel(found, lang) : code
 }

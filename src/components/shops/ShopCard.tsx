@@ -7,6 +7,7 @@ import { FOCUS_RING } from '@/components/layout/styles'
 import { FavoriteHeart } from '@/components/favorites/FavoriteHeart'
 import type { ShopCardData } from '@/lib/marche/shop-cards'
 import { t, tn, type Lang } from '@/lib/i18n'
+import { localName } from '@/lib/i18n/local-name'
 
 // Shop Card — Figma « Shop Card » 578:42367 (instance specimens on 720:62084): surface/base · border/subtle · r12, a 140 banner, an
 // 88 logo ring straddling the banner edge (start-aligned, 24 in), a content block (pad 48 / 24 / 24 / 24, gap 12) with the name
@@ -65,7 +66,7 @@ export function ShopCard({
             <ul className="flex flex-wrap gap-2">
               {chips.map((c) => (
                 <li key={c.name_fr} className="rounded-lg bg-surface-sunken px-3 py-1 text-body-sm font-medium text-text-secondary">
-                  {lang === 'ar' && c.name_ar ? c.name_ar : c.name_fr}
+                  {localName(c, lang)}
                 </li>
               ))}
             </ul>

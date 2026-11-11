@@ -7,6 +7,7 @@ import { skillLabel } from '@/lib/freelance/service-draft'
 import { formatServicePrice, servicePriceLabel } from '@/lib/freelance/service-price'
 import type { ServiceRequestTarget } from '@/lib/marche/demander'
 import { ServiceRequestForm } from './ServiceRequestForm'
+import { localName } from '@/lib/i18n/local-name'
 
 // E1 — « Demander un service ». Measured against Figma 680:56165 / 682:56521 (1440) and
 // 682:56805 (375).
@@ -56,7 +57,8 @@ export function ServiceRequestScreen({
       : null
   // Figma shows two chips (category + a tag). Real rows carry one category and 0–5 tags, so the
   // list is category-first and simply shorter when the freelancer set no tags.
-  const chips = [service.category, ...service.tags.map((tag) => skillLabel(tag, lang))].filter(
+  const categoryName = service.category ? localName(service.category, lang) : null
+  const chips = [categoryName, ...service.tags.map((tag) => skillLabel(tag, lang))].filter(
     (c): c is string => Boolean(c),
   )
 
@@ -118,7 +120,7 @@ export function ServiceRequestScreen({
     <div className="flex flex-col gap-5 lg:gap-6">
       {/* breadcrumb — 13px, gap 8 (6 on mobile), chevron separators. The desktop frame carries
           five crumbs; the middle two are the same category/title links D2 renders. */}
-      <nav aria-label="Fil d'Ariane" className="flex flex-wrap items-center gap-1.5 text-[13px] text-text-muted max-lg:leading-4 lg:gap-2">
+      <nav aria-label={t('common.breadcrumb', lang)} className="flex flex-wrap items-center gap-1.5 text-[13px] text-text-muted max-lg:leading-4 lg:gap-2">
         <Link href="/" className="hover:text-text-secondary max-lg:hidden">{t('serviceDetail.breadcrumb.home', lang)}</Link>
         <ChevronRight className="h-3.5 w-3.5 shrink-0 rtl:rotate-180 max-lg:hidden" aria-hidden="true" />
         {/* max-lg py / -my 3.5: a 44 px tap target around the 16 px crumb (≥ 44 on mobile) without moving the layout. */}
@@ -126,10 +128,10 @@ export function ServiceRequestScreen({
           <ChevronLeft className="size-4 shrink-0 rtl:rotate-180 lg:hidden" aria-hidden="true" />
           {t('serviceDetail.breadcrumb.services', lang)}
         </Link>
-        {service.category && (
+        {categoryName && (
           <>
             <ChevronRight className="hidden h-3.5 w-3.5 shrink-0 rtl:rotate-180 lg:block" aria-hidden="true" />
-            <span className="hidden lg:inline">{service.category}</span>
+            <span className="hidden lg:inline">{categoryName}</span>
           </>
         )}
         <ChevronRight className="hidden h-3.5 w-3.5 shrink-0 rtl:rotate-180 lg:block" aria-hidden="true" />

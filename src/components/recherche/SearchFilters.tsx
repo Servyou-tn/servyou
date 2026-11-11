@@ -8,8 +8,9 @@ import { t } from '@/lib/i18n'
 import { FOCUS_RING } from '@/components/layout/styles'
 import { FilterControl } from '@/components/ui/filter-control'
 import { buildSearchQuery } from './search-url'
+import { localName } from '@/lib/i18n/local-name'
 
-export type FilterCategory = { slug: string; name_fr: string; name_ar: string }
+export type FilterCategory = { slug: string; name_fr: string; name_ar: string; name_en?: string | null }
 
 /**
  * The sheet's two EXTRA fieldsets — Ville and Trier par — for the lenses whose bar has them (the Freelances lens). Absent = the sheet is exactly the
@@ -208,7 +209,7 @@ export function SearchFilters({
             checked={cat.includes(c.slug)}
             onChange={() => toggleCat(c.slug)}
           />
-          <span className="line-clamp-1">{lang === 'ar' ? c.name_ar : c.name_fr}</span>
+          <span className="line-clamp-1">{localName(c, lang)}</span>
         </label>
       ))}
     </div>
@@ -330,20 +331,20 @@ export function SearchFilters({
             open={categorieOpen}
             onToggle={() => setCategorieOpen((o) => !o)}
             panelId={`${groupId}-categorie`}
-            ariaShow="Afficher les catégories"
-            ariaHide="Masquer les catégories"
+            ariaShow={t('search.filters.categories_show', lang)}
+            ariaHide={t('search.filters.categories_hide', lang)}
           >
             {categoryList}
           </CollapsibleGroup>
         )}
         <CollapsibleGroup
           label={t('search.filters.price', lang)}
-          badge={prixActive ? 'actif' : null}
+          badge={prixActive ? t('search.filters.active_badge', lang) : null}
           open={prixOpen}
           onToggle={() => setPrixOpen((o) => !o)}
           panelId={`${groupId}-prix`}
-          ariaShow="Afficher le filtre de prix"
-          ariaHide="Masquer le filtre de prix"
+          ariaShow={t('search.filters.price_show', lang)}
+          ariaHide={t('search.filters.price_hide', lang)}
         >
           {prixInputs}
         </CollapsibleGroup>

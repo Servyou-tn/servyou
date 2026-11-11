@@ -9,6 +9,7 @@ export type Category = {
   slug: string
   name_fr: string
   name_ar: string
+  name_en: string | null
   parent_id: string | null
 }
 
@@ -17,6 +18,7 @@ export type Subcategory = {
   slug: string
   name_fr: string
   name_ar: string
+  name_en: string | null
 }
 
 /** Resolve a URL slug to its category row, or null if the slug doesn't exist (→ 404). */
@@ -24,7 +26,7 @@ export async function getCategoryBySlug(slug: string): Promise<Category | null> 
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('categories')
-    .select('id, slug, name_fr, name_ar, parent_id')
+    .select('id, slug, name_fr, name_ar, name_en, parent_id')
     .eq('slug', slug)
     .maybeSingle()
   // A failed lookup throws (root error.tsx) instead of reading as « unknown slug » → 404.
@@ -40,7 +42,7 @@ export async function getSubcategories(parentId: string): Promise<Subcategory[]>
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('categories')
-    .select('id, slug, name_fr, name_ar')
+    .select('id, slug, name_fr, name_ar, name_en')
     .eq('parent_id', parentId)
     .order('name_fr')
   // Secondary (the drill-down strip): report and show the page without it.
@@ -56,7 +58,7 @@ export async function getParentCategory(parentId: string): Promise<Category | nu
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('categories')
-    .select('id, slug, name_fr, name_ar, parent_id')
+    .select('id, slug, name_fr, name_ar, name_en, parent_id')
     .eq('id', parentId)
     .maybeSingle()
   // Secondary (one breadcrumb step): report and show the page without it.

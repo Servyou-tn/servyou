@@ -19,6 +19,7 @@ import { ShareLinkButton } from './ShareLinkButton'
 import { SocialLinks } from '@/components/social/SocialLinks'
 import { ReportListingModal } from '@/components/report/ReportListingModal'
 import { HitArea } from '@/components/ui/interactive-surface'
+import { localName } from '@/lib/i18n/local-name'
 
 // D1 « Détail du produit » — rebuilt from Figma `562:39013`. Every desktop number below is measured
 // and recorded in docs/design/d1-discovery.md §2; nothing here is a recollection.
@@ -68,11 +69,7 @@ export function ProductDetail({
   lang: Lang
   isLoggedIn: boolean
 }) {
-  const category = product.category
-    ? lang === 'ar' && product.category.name_ar
-      ? product.category.name_ar
-      : product.category.name_fr
-    : null
+  const category = product.category ? localName(product.category, lang) : null
 
   // ⚑ DERIVED FROM tracks_stock + stock_count, NEVER FROM `status` — see product-stock.ts for why
   // the obvious `status === 'sold_out'` reading is wrong on every row in the database. The frame
@@ -106,7 +103,7 @@ export function ProductDetail({
             « ‹ {secteur} › {sous-catégorie} » has no data behind it (product categories are ONE level: parent_id is null on every product
             row), so this is D2's mobile shape « ‹ Services › … » — Q1 in the deltas doc. Accueil and the title are desktop-only. */}
         <nav
-          aria-label="Fil d'Ariane"
+          aria-label={t('common.breadcrumb', lang)}
           className="flex flex-wrap items-center gap-2 text-[13px] leading-[17px] text-text-muted max-lg:gap-1.5 max-lg:leading-4"
         >
           <Link href="/" className={`rounded-sm hover:text-text-secondary max-lg:hidden ${FOCUS_RING}`}>

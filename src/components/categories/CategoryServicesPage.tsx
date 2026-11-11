@@ -19,6 +19,7 @@ import type { SearchParams } from '@/lib/search/search-params'
 import { t, tn } from '@/lib/i18n'
 import type { Lang } from '@/lib/i18n'
 import { HitArea } from '@/components/ui/interactive-surface'
+import { localName } from '@/lib/i18n/local-name'
 
 // C2 — a SERVICE category's page (Figma 1486:24359 desktop / 1488:66061 mobile; measurements + decisions: docs/design/category-c2-measurements.md,
 // docs/design/category-c2-deltas.md). Same engine as /marche/services — only the scope differs: the category is the page. Header (breadcrumb · H1 +
@@ -58,8 +59,8 @@ export function CategoryServicesPage({
   cities: string[]
 }) {
   const base = `/categories/${category.slug}`
-  const name = lang === 'ar' ? category.name_ar : category.name_fr
-  const parentName = parent ? (lang === 'ar' ? parent.name_ar : parent.name_fr) : null
+  const name = localName(category, lang)
+  const parentName = parent ? (localName(parent, lang)) : null
 
   // What the chips and the empty state carry: the typed query, city, price and sort — never the page, and never `type`
   // (a service category is a service page by default).
@@ -149,7 +150,7 @@ export function CategoryServicesPage({
             tri={params.tri}
             q={params.q}
             basePath={base}
-            scopedCategory={{ slug: category.slug, name_fr: category.name_fr, name_ar: category.name_ar }}
+            scopedCategory={{ slug: category.slug, name_fr: category.name_fr, name_ar: category.name_ar, name_en: category.name_en }}
           />
         </div>
         <div className="lg:hidden">

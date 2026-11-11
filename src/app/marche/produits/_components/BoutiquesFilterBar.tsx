@@ -18,6 +18,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { HitArea } from '@/components/ui/interactive-surface'
+import { localName } from '@/lib/i18n/local-name'
 
 // The filter bar of the « Boutiques » lens — Figma 578:42528 (Filter Bar, desktop): an in-page search (44, « Rechercher une
 // boutique… »), single-select Catégorie / Ville and a sort dropdown, then dismissible chips + « Tout effacer ». Every control writes
@@ -63,7 +64,7 @@ export function BoutiquesFilterBar({ categories, cities, selectedCategorie, vill
     router.push(qs ? `${basePath}?${qs}` : basePath)
   }
 
-  const label = (c: FilterCategory) => (lang === 'ar' ? c.name_ar : c.name_fr)
+  const label = (c: FilterCategory) => (localName(c, lang))
   const catName = (slug: string) => {
     const c = categories.find((x) => x.slug === slug)
     return c ? label(c) : slug
@@ -151,7 +152,7 @@ export function BoutiquesFilterBar({ categories, cities, selectedCategorie, vill
         <DropdownMenu>
           <DropdownMenuTrigger className={`${TRIGGER} text-text-primary ${FOCUS_RING}`}>
             <span className="truncate">
-              {t('produits.sort.label', lang)} : {t(`boutiques.sort.${tri}`, lang)}
+              {t('produits.sort.label', lang)}{lang === 'en' ? ': ' : ' : '}{t(`boutiques.sort.${tri}`, lang)}
             </span>
             <ChevronDown className="h-4 w-4 shrink-0 text-text-muted" aria-hidden="true" />
           </DropdownMenuTrigger>

@@ -80,7 +80,7 @@ export async function getMissionDetail(id: string, viewer: MissionViewer, now: D
     .from('job_posts')
     .select(
       `id, consumer_id, title, description, budget_min, budget_max, city, is_remote, status, created_at, admin_hidden_at, response_count,
-       categories ( slug, name_fr, name_ar ),
+       categories ( slug, name_fr, name_ar, name_en ),
        job_post_skills ( skill )`,
     )
     .eq('id', id)

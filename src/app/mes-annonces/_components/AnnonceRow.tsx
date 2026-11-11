@@ -33,7 +33,7 @@ import { COL } from './annonce-columns'
 
 export function AnnonceRow({ annonce: a, lang }: { annonce: MyAnnonce; lang: Lang }) {
   const pill = ANNONCE_STATUS_PILL[a.display_status]
-  const category = lang === 'ar' ? (a.category_ar ?? a.category) : a.category
+  const category = lang === 'ar' ? (a.category_ar ?? a.category) : lang === 'en' ? (a.category_en || a.category) : a.category
   const CategoryIcon = (a.category_slug && CATEGORY_ICONS[a.category_slug]) || Briefcase
   const note = annonceProposalsNote(a)
   const hasBudget = hasJobBudget(a.budget_min, a.budget_max)

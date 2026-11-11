@@ -4,6 +4,7 @@ import { t, type Lang } from '@/lib/i18n'
 import { FOCUS_RING } from '@/components/layout/styles'
 import type { ProductRequestTarget } from '@/lib/marche/demander'
 import { ProductRequestForm } from './ProductRequestForm'
+import { localName } from '@/lib/i18n/local-name'
 
 // E1-product — page shell: breadcrumb + the form (which owns its own two-column layout, see
 // ProductRequestForm.tsx's header note for why the grid lives there rather than here).
@@ -31,7 +32,7 @@ export function ProductRequestScreen({
     // Below lg (m375-e1-produit): the crumb, H1 8 apart, the form 20 under the header; H1 32 Bold / 38 text/primary.
     <div className="flex flex-col gap-6 xl:gap-8 max-lg:gap-5">
       <nav
-        aria-label="Fil d'Ariane"
+        aria-label={t('common.breadcrumb', lang)}
         className="flex flex-wrap items-center gap-2 text-[13px] leading-[17px] text-text-muted max-lg:gap-1.5 max-lg:leading-4"
       >
         <Link href="/" className={`rounded-sm hover:text-text-secondary max-lg:hidden ${FOCUS_RING}`}>
@@ -48,7 +49,7 @@ export function ProductRequestScreen({
         {product.category && (
           <>
             <ChevronRight className="h-3.5 w-3.5 shrink-0 rtl:rotate-180 max-lg:hidden" aria-hidden="true" />
-            <span className="max-lg:hidden">{product.category}</span>
+            <span className="max-lg:hidden">{localName(product.category, lang)}</span>
           </>
         )}
         <ChevronRight className="h-3.5 w-3.5 shrink-0 rtl:rotate-180 max-lg:hidden" aria-hidden="true" />

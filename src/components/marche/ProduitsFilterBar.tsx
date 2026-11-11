@@ -19,6 +19,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { HitArea } from '@/components/ui/interactive-surface'
+import { localName } from '@/lib/i18n/local-name'
 
 // The desktop (lg+) filter bar for /marche/produits — Figma 570:40225 — and, since PR-2b, /recherche (1596:41289): an in-page search, then
 // single-select Catégorie / Ville, a Prix range popover and a sort dropdown, with a row of
@@ -111,7 +112,7 @@ export function ProduitsFilterBar({
     router.push(qs ? `${basePath}?${qs}` : basePath)
   }
 
-  const label = (c: FilterCategory) => (lang === 'ar' ? c.name_ar : c.name_fr)
+  const label = (c: FilterCategory) => (localName(c, lang))
   const catName = (slug: string) => {
     const c = categories.find((x) => x.slug === slug)
     return c ? label(c) : slug
@@ -278,7 +279,7 @@ export function ProduitsFilterBar({
         <DropdownMenu>
           <DropdownMenuTrigger className={`${TRIGGER} text-text-primary ${FOCUS_RING}`}>
             <span className="truncate">
-              {t('produits.sort.label', lang)} : {t(`produits.sort.${sortValue}`, lang)}
+              {t('produits.sort.label', lang)}{lang === 'en' ? ': ' : ' : '}{t(`produits.sort.${sortValue}`, lang)}
             </span>
             <ChevronDown className="h-4 w-4 shrink-0 text-text-muted" aria-hidden="true" />
           </DropdownMenuTrigger>
