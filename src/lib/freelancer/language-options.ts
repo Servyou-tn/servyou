@@ -14,16 +14,18 @@ export type LanguageOption = {
   value: string
   fr: string
   ar: string
+  /** English label; missing → the French one (pickLabel). */
+  en?: string
 }
 
 export const LANGUAGES: readonly LanguageOption[] = [
-  { value: 'fr', fr: 'Français', ar: 'الفرنسية' },
-  { value: 'ar', fr: 'Arabe', ar: 'العربية' },
-  { value: 'en', fr: 'Anglais', ar: 'الإنجليزية' },
-  { value: 'it', fr: 'Italien', ar: 'الإيطالية' },
-  { value: 'de', fr: 'Allemand', ar: 'الألمانية' },
-  { value: 'es', fr: 'Espagnol', ar: 'الإسبانية' },
-  { value: 'autre', fr: 'Autre', ar: 'أخرى' },
+  { value: 'fr', fr: 'Français', ar: 'الفرنسية', en: 'French' },
+  { value: 'ar', fr: 'Arabe', ar: 'العربية', en: 'Arabic' },
+  { value: 'en', fr: 'Anglais', ar: 'الإنجليزية', en: 'English' },
+  { value: 'it', fr: 'Italien', ar: 'الإيطالية', en: 'Italian' },
+  { value: 'de', fr: 'Allemand', ar: 'الألمانية', en: 'German' },
+  { value: 'es', fr: 'Espagnol', ar: 'الإسبانية', en: 'Spanish' },
+  { value: 'autre', fr: 'Autre', ar: 'أخرى', en: 'Other' },
 ] as const
 
 export type ProficiencyOption = {
@@ -31,13 +33,15 @@ export type ProficiencyOption = {
   value: string
   fr: string
   ar: string
+  /** English label; missing → the French one (pickLabel). */
+  en?: string
 }
 
 export const PROFICIENCY_LEVELS: readonly ProficiencyOption[] = [
-  { value: 'natif', fr: 'Natif', ar: 'اللغة الأم' },
-  { value: 'courant', fr: 'Courant', ar: 'بطلاقة' },
-  { value: 'intermediaire', fr: 'Intermédiaire', ar: 'متوسط' },
-  { value: 'notions', fr: 'Notions', ar: 'أساسي' },
+  { value: 'natif', fr: 'Natif', ar: 'اللغة الأم', en: 'Native' },
+  { value: 'courant', fr: 'Courant', ar: 'بطلاقة', en: 'Fluent' },
+  { value: 'intermediaire', fr: 'Intermédiaire', ar: 'متوسط', en: 'Intermediate' },
+  { value: 'notions', fr: 'Notions', ar: 'أساسي', en: 'Basic' },
 ] as const
 
 // z.enum needs a non-empty literal tuple — derived here once so the server action's validation

@@ -24,6 +24,7 @@ import {
 import { getMissionBoard, getMyProfileSkills, getServiceSectors } from '@/lib/marche/missions-query'
 import { MissionSelect } from './_components/MissionSelect'
 import { RemoteToggle } from './_components/RemoteToggle'
+import { pickLabel } from '@/lib/i18n/pick-label'
 
 export async function generateMetadata(): Promise<Metadata> {
   return localizedMetadata('meta.find_missions')
@@ -65,7 +66,7 @@ export default async function TrouverDesMissionsPage({
   const sectorName = (s: { nameFr: string; nameAr: string }) => (lang === 'ar' ? s.nameAr : s.nameFr)
   const cityLabel = (value: string) => {
     const g = GOVERNORATES.find((x) => x.value === value)
-    return g ? (lang === 'ar' ? g.ar : g.fr) : value
+    return g ? (pickLabel(g, lang)) : value
   }
 
   const chips: { key: string; label: string; removeHref: string }[] = []
@@ -142,7 +143,7 @@ export default async function TrouverDesMissionsPage({
             placeholder={t('missionboard.filter.city', lang)}
             value={filters.ville}
             allOption={{ label: t('missionboard.filter.all_city', lang), href: href({ ville: null }) }}
-            options={GOVERNORATES.map((g) => ({ value: g.value, label: lang === 'ar' ? g.ar : g.fr, href: href({ ville: g.value }) }))}
+            options={GOVERNORATES.map((g) => ({ value: g.value, label: pickLabel(g, lang), href: href({ ville: g.value }) }))}
           />
           <MissionSelect
             className="xl:flex-1"

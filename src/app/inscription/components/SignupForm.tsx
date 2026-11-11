@@ -15,6 +15,7 @@ import { PasswordField } from '@/components/auth/PasswordField'
 import { display, labelClass, helpClass, errorClass, inputBase, primaryBtn } from '@/components/auth/field-styles'
 import { FOCUS_RING } from '@/components/layout/styles'
 import { Turnstile, type TurnstileHandle } from '@/components/security/Turnstile'
+import { pickLabel } from '@/lib/i18n/pick-label'
 
 // ── Google OAuth: built but DISABLED this sprint ──────────────────────────────
 // The handle_new_user trigger casts raw_user_meta_data.date_of_birth into the
@@ -67,7 +68,6 @@ export function SignupForm({ role, next = null }: { role: SignupRole; /** The fu
   const supabase = createClient()
   const router = useRouter()
   const lang = useLang()
-  const isRtl = lang === 'ar'
   const config = roleConfig(role)
 
   const turnstile = useRef<TurnstileHandle>(null)
@@ -329,7 +329,7 @@ export function SignupForm({ role, next = null }: { role: SignupRole; /** The fu
             <option value="">{t('signup.form.fields.city.placeholder', lang)}</option>
             {GOVERNORATES.map((g) => (
               <option key={g.value} value={g.value}>
-                {isRtl ? g.ar : g.fr}
+                {pickLabel(g, lang)}
               </option>
             ))}
           </select>

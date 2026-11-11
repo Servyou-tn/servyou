@@ -32,4 +32,9 @@ describe('one currency notation per language (walk #25 / #30)', () => {
     expect(tndPriceGrouped(1250.5, 'ar')).toBe(`1${NNBSP}250,5 د.ت`)
     expect(tndPriceGrouped(17, 'ar')).toBe('17 د.ت')
   })
+
+  it('English groups the international way: « 1,250.5 TND »', () => {
+    expect(tndPriceGrouped(1250, 'en')).toBe('1,250 TND')
+    expect(tndPriceGrouped(1250.5, 'en')).toBe('1,250.5 TND')
+  })
 })

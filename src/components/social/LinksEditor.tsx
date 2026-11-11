@@ -94,7 +94,7 @@ export function LinksEditor({
 
       {rows.map((row, i) => {
         const platform = rowPlatform(row)
-        const name = platform ? platformName(platform, lang === 'ar' ? 'ar' : 'fr') : t('links.editor.other', lang)
+        const name = platform ? platformName(platform, lang) : t('links.editor.other', lang)
         return (
           <div key={row.id} className="flex items-start gap-2">
             <div className="min-w-0 flex-1">

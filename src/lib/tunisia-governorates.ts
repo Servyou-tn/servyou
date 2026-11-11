@@ -12,23 +12,25 @@ export type Governorate = {
   fr: string
   /** Arabic display label. */
   ar: string
+  /** English display label (international spelling, no accents); missing → the French one. */
+  en?: string
 }
 
 export const GOVERNORATES: readonly Governorate[] = [
   { value: 'Ariana', fr: 'Ariana', ar: 'أريانة' },
-  { value: 'Béja', fr: 'Béja', ar: 'باجة' },
+  { value: 'Béja', fr: 'Béja', ar: 'باجة', en: 'Beja' },
   { value: 'Ben Arous', fr: 'Ben Arous', ar: 'بن عروس' },
   { value: 'Bizerte', fr: 'Bizerte', ar: 'بنزرت' },
-  { value: 'Gabès', fr: 'Gabès', ar: 'قابس' },
+  { value: 'Gabès', fr: 'Gabès', ar: 'قابس', en: 'Gabes' },
   { value: 'Gafsa', fr: 'Gafsa', ar: 'قفصة' },
   { value: 'Jendouba', fr: 'Jendouba', ar: 'جندوبة' },
   { value: 'Kairouan', fr: 'Kairouan', ar: 'القيروان' },
   { value: 'Kasserine', fr: 'Kasserine', ar: 'القصرين' },
-  { value: 'Kébili', fr: 'Kébili', ar: 'قبلي' },
-  { value: 'Le Kef', fr: 'Le Kef', ar: 'الكاف' },
+  { value: 'Kébili', fr: 'Kébili', ar: 'قبلي', en: 'Kebili' },
+  { value: 'Le Kef', fr: 'Le Kef', ar: 'الكاف', en: 'Kef' },
   { value: 'Mahdia', fr: 'Mahdia', ar: 'المهدية' },
   { value: 'Manouba', fr: 'Manouba', ar: 'منوبة' },
-  { value: 'Médenine', fr: 'Médenine', ar: 'مدنين' },
+  { value: 'Médenine', fr: 'Médenine', ar: 'مدنين', en: 'Medenine' },
   { value: 'Monastir', fr: 'Monastir', ar: 'المنستير' },
   { value: 'Nabeul', fr: 'Nabeul', ar: 'نابل' },
   { value: 'Sfax', fr: 'Sfax', ar: 'صفاقس' },

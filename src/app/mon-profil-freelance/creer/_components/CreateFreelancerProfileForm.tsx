@@ -16,6 +16,7 @@ import { Stepper } from '@/components/ui/stepper'
 import { AvatarField } from './AvatarField'
 import { TunisianPhoneInput } from '@/components/account/TunisianPhoneInput'
 import { isValidPhone } from '@/lib/phone'
+import { pickLabel } from '@/lib/i18n/pick-label'
 
 // H2 step 1 "Bases" — Figma 466:20244, measured in docs/design/h2-discovery.md.
 //
@@ -226,7 +227,7 @@ export function CreateFreelancerProfileForm({
             <option value="">{t('freelance.create.city_ph', lang)}</option>
             {GOVERNORATES.map((g) => (
               <option key={g.value} value={g.value}>
-                {lang === 'ar' ? g.ar : g.fr}
+                {pickLabel(g, lang)}
               </option>
             ))}
           </select>

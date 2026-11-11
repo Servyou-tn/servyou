@@ -1,3 +1,5 @@
+import type { Lang } from '@/lib/i18n'
+
 // The social / professional platforms a freelancer can link — ONE source of truth for the profile editor, the public profile, the proposal form and every
 // recap that shows a link. Later shops reuse it too.
 //
@@ -27,6 +29,8 @@ type PlatformInfo = {
   id: PlatformId
   labelFr: string
   labelAr: string
+  /** English label; missing → the French one (brand names are the same in every language). */
+  labelEn?: string
   /** Registrable hosts; a subdomain of one of these matches too. Empty for `website`, the fallback. */
   hosts: readonly string[]
   /** What a pre-set row shows in its placeholder — a hint of the address shape, not a value. */
@@ -45,10 +49,11 @@ export const PLATFORMS: Record<PlatformId, PlatformInfo> = {
   upwork: { id: 'upwork', labelFr: 'Upwork', labelAr: 'Upwork', hosts: ['upwork.com'], example: 'https://upwork.com/freelancers/votre-profil' },
   fiverr: { id: 'fiverr', labelFr: 'Fiverr', labelAr: 'Fiverr', hosts: ['fiverr.com'], example: 'https://fiverr.com/votre-nom' },
   malt: { id: 'malt', labelFr: 'Malt', labelAr: 'Malt', hosts: ['malt.fr', 'malt.com', 'malt.es', 'malt.de', 'malt.be'], example: 'https://malt.fr/profile/votre-nom' },
-  website: { id: 'website', labelFr: 'Site web', labelAr: 'موقع إلكتروني', hosts: [], example: 'https://votre-site.tn' },
+  website: { id: 'website', labelFr: 'Site web', labelAr: 'موقع إلكتروني', labelEn: 'Website', hosts: [], example: 'https://votre-site.tn' },
 }
 
-export const platformName = (id: PlatformId, lang: 'fr' | 'ar'): string => (lang === 'ar' ? PLATFORMS[id].labelAr : PLATFORMS[id].labelFr)
+export const platformName = (id: PlatformId, lang: Lang): string =>
+  lang === 'ar' ? PLATFORMS[id].labelAr : lang === 'en' ? (PLATFORMS[id].labelEn ?? PLATFORMS[id].labelFr) : PLATFORMS[id].labelFr
 
 // « scheme:// » or one of the schemes people paste by mistake. NOT any « word: »: « linkedin.com:443/in/x » and « localhost:3000 » are hosts with a port,
 // and « https:github.com » (no //) is not a web address — it gets prefixed, finds no dotted host and is refused.

@@ -6,6 +6,7 @@ import { FOCUS_RING } from '@/components/layout/styles'
 import { cn } from '@/lib/utils'
 import { t, type Lang } from '@/lib/i18n'
 import { LANGUAGES, PROFICIENCY_LEVELS } from '@/lib/freelancer/language-options'
+import { pickLabel } from '@/lib/i18n/pick-label'
 
 // "Langues" repeater — same enum-backed shape as H2's own LanguageRepeater
 // (creer/competences/_components/LanguageRepeater.tsx): freelancer_languages is the SAME table
@@ -34,7 +35,7 @@ export function LanguageRepeater({ rows, onChange, lang }: { rows: LanguageRow[]
           const options = LANGUAGES.filter((l) => l.value === row.language || !takenElsewhere.has(l.value))
           const currentLabel = LANGUAGES.find((l) => l.value === row.language)
           const removeLabel = t('freelance.edit.remove_language_label', lang, {
-            language: currentLabel ? (lang === 'ar' ? currentLabel.ar : currentLabel.fr) : '',
+            language: currentLabel ? (pickLabel(currentLabel, lang)) : '',
           })
 
           return (
@@ -50,7 +51,7 @@ export function LanguageRepeater({ rows, onChange, lang }: { rows: LanguageRow[]
                 </option>
                 {options.map((l) => (
                   <option key={l.value} value={l.value}>
-                    {lang === 'ar' ? l.ar : l.fr}
+                    {pickLabel(l, lang)}
                   </option>
                 ))}
               </select>
@@ -66,7 +67,7 @@ export function LanguageRepeater({ rows, onChange, lang }: { rows: LanguageRow[]
                 </option>
                 {PROFICIENCY_LEVELS.map((p) => (
                   <option key={p.value} value={p.value}>
-                    {lang === 'ar' ? p.ar : p.fr}
+                    {pickLabel(p, lang)}
                   </option>
                 ))}
               </select>

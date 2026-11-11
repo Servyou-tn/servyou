@@ -17,6 +17,7 @@ import { BannerField } from '../../creer/_components/BannerField'
 import { updateShopAction, updateShopLogoAction, updateShopBannerAction, removeShopBannerAction } from '../actions'
 import { SocialLinksSection, type ShopSocialErrors, type ShopSocialValues } from './SocialLinksSection'
 import { SHOP_SOCIAL_COLUMNS, SHOP_SOCIAL_PLATFORMS, shopSocialUrlSchema, type ShopSocialPlatform } from '@/lib/shops/social-links'
+import { pickLabel } from '@/lib/i18n/pick-label'
 
 // G3 "Modifier ma boutique" — identity-field edit (name, city, description, logo, banner). A
 // SEPARATE component from CreateShopForm, not a mode-prop fork: chrome (breadcrumb target, no
@@ -270,7 +271,7 @@ export function EditShopForm({ shopId, initial }: { shopId: string; initial: Edi
             <option value="">{t('shop.create.city_ph', lang)}</option>
             {GOVERNORATES.map((g) => (
               <option key={g.value} value={g.value}>
-                {lang === 'ar' ? g.ar : g.fr}
+                {pickLabel(g, lang)}
               </option>
             ))}
           </select>

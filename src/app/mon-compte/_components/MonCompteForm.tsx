@@ -17,6 +17,7 @@ import { AvatarUploadCard } from './AvatarUploadCard'
 import { ChangePasswordModal } from './ChangePasswordModal'
 import { DeleteAccountModal } from './DeleteAccountModal'
 import { accountPhoneHelperKey } from '@/lib/seller/account-phone-helper'
+import { pickLabel } from '@/lib/i18n/pick-label'
 
 // I1 « Mon compte » — Figma 724:63872 (1440) / 728:64216 (375), docs/design/i1-k-measurements.md.
 // Three panels in a centred 720 column + a save bar. Editable: full_name, city, phone (+ the avatar,
@@ -124,7 +125,7 @@ export function MonCompteForm({
               <option value="">{t('monCompte.field.city_ph', lang)}</option>
               {GOVERNORATES.map((g) => (
                 <option key={g.value} value={g.value}>
-                  {lang === 'ar' ? g.ar : g.fr}
+                  {pickLabel(g, lang)}
                 </option>
               ))}
             </select>
