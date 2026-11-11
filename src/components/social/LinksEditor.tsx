@@ -7,7 +7,7 @@ import { RecommendedPlatforms } from './RecommendedPlatforms'
 import { Button } from '@/components/ui/button'
 import { FOCUS_RING } from '@/components/layout/styles'
 import { cn } from '@/lib/utils'
-import { LINKS_MAX, PLATFORMS, detectPlatform, normalizeUrl, platformName, type PlatformId } from '@/lib/social/platforms'
+import { LINKS_MAX, PLATFORMS, detectPlatform, normalizeUrl, platformExample, platformName, type PlatformId } from '@/lib/social/platforms'
 import { t, type Lang } from '@/lib/i18n'
 
 // The freelancer's links editor (H3 « Confiance & liens »): up to 5, the suggested platforms for their trade first as « + LinkedIn » buttons, then
@@ -104,7 +104,7 @@ export function LinksEditor({
                 data-link-row={row.id}
                 onChange={(e) => update(row.id, e.target.value)}
                 aria-label={t('links.editor.url_aria', lang, { index: String(i + 1), platform: name })}
-                placeholder={row.hint ? PLATFORMS[row.hint].example : 'https://…'}
+                placeholder={row.hint ? platformExample(row.hint, lang) : 'https://…'}
                 error={errors?.[row.id]}
               />
             </div>

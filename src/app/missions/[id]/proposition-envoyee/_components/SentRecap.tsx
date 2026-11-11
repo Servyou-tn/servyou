@@ -31,7 +31,7 @@ export function SentRecap({ sent, lang }: { sent: SentProposal; lang: Lang }) {
         <>
           <div className="flex flex-col gap-2">
             <div>
-              <CategoryChip slug={sent.mission.categorySlug} nameFr={sent.mission.categoryNameFr} nameAr={sent.mission.categoryNameAr} lang={lang} />
+              <CategoryChip slug={sent.mission.categorySlug} nameFr={sent.mission.categoryNameFr} nameAr={sent.mission.categoryNameAr} nameEn={sent.mission.categoryNameEn} lang={lang} />
             </div>
             <p className="text-body font-semibold text-text-primary [overflow-wrap:anywhere]">{sent.mission.title}</p>
           </div>

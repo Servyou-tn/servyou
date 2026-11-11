@@ -18,7 +18,7 @@ import {
 // embed is a real state (`unavailable`), not a failed join. Never degrades to « no proposals » on a failed query — it throws, like
 // getEngagements. Small-data posture, as H8: the freelancer's proposals are bounded (5 active at a time) and filtered in JS.
 
-type CategoryEmbed = { slug: string; name_fr: string; name_ar: string }
+type CategoryEmbed = { slug: string; name_fr: string; name_ar: string; name_en: string | null }
 type PostEmbed = {
   id: string
   title: string
@@ -86,6 +86,7 @@ export async function getMyProposals(
       categorySlug: cat?.slug ?? null,
       categoryNameFr: cat?.name_fr ?? null,
       categoryNameAr: cat?.name_ar ?? null,
+      categoryNameEn: cat?.name_en ?? null,
       clientId: post?.consumer_id ?? null,
       clientFirstName: client?.firstName ?? '',
       clientCity: client?.city ?? null,

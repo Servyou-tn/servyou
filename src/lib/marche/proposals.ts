@@ -45,6 +45,7 @@ export type Proposal = {
   categorySlug: string | null
   categoryNameFr: string | null
   categoryNameAr: string | null
+  categoryNameEn?: string | null
   /** The post owner (get_contact_phone's target); null when `unavailable`. */
   clientId: string | null
   clientFirstName: string

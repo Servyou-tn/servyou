@@ -83,7 +83,7 @@ export default async function ProposerPage({ params }: { params: Promise<{ id: s
                 <div className="flex flex-col gap-2">
                   <p className="text-caption font-semibold tracking-[0.48px] text-text-muted uppercase">{t('proposal.recap.mission', lang)}</p>
                   <div>
-                    <CategoryChip slug={mission.categorySlug} nameFr={mission.categoryNameFr} nameAr={mission.categoryNameAr} lang={lang} />
+                    <CategoryChip slug={mission.categorySlug} nameFr={mission.categoryNameFr} nameAr={mission.categoryNameAr} nameEn={mission.categoryNameEn} lang={lang} />
                   </div>
                   <p className="text-body-lg leading-[26px] font-semibold text-text-primary [overflow-wrap:anywhere]">{mission.title}</p>
                 </div>
