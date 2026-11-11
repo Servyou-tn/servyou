@@ -1,6 +1,7 @@
 import { cache } from 'react'
 import { createClient } from '@/lib/supabase/server'
 import { failQuery, isNoRowLike, reportQueryError } from '@/lib/supabase/query-error'
+import type { LocalNamed } from '@/lib/i18n/local-name'
 
 // Target resolution for /demander/[id]: one route serves both product and service
 // requests. We try the id as a product first, then as a service_listing. Moderation is
@@ -32,7 +33,7 @@ export type ProductRequestTarget = {
   tracksStock: boolean
   imageUrl: string | null
   /** For the breadcrumb (mirrors E1-service's Accueil › Produits › catégorie › titre › Demander). */
-  category: string | null
+  category: LocalNamed | null
   shop: { name: string; city: string | null }
 }
 
@@ -45,7 +46,7 @@ export type ServiceRequestTarget = {
   deliveryTime: string | null
   /** Summary-panel chips: the category first, then the freelancer's own tags (stored values —
    *  ServiceRequestScreen resolves pool ids to labels). */
-  category: string | null
+  category: LocalNamed | null
   tags: string[]
   /**
    * The SELLER's instruction template (service_listings.buyer_briefing) — "what the client
@@ -68,7 +69,7 @@ type ProductRow = {
   delivery_fee_tnd: number | string
   tracks_stock: boolean | null
   stock_count: number | null
-  categories: { name_fr: string } | { name_fr: string }[] | null
+  categories: { name_fr: string; name_ar: string | null; name_en: string | null } | { name_fr: string; name_ar: string | null; name_en: string | null }[] | null
   shops: { name: string | null; city: string | null } | { name: string | null; city: string | null }[] | null
   product_images: { image_url: string; display_order: number }[] | null
 }
@@ -81,7 +82,7 @@ type ServiceRow = {
   delivery_time: string | null
   buyer_briefing: string | null
   tags: string[] | null
-  categories: { name_fr: string } | { name_fr: string }[] | null
+  categories: { name_fr: string; name_ar: string | null; name_en: string | null } | { name_fr: string; name_ar: string | null; name_en: string | null }[] | null
   freelancer_profiles:
     | { profile_id: string | null; city: string | null; headline: string | null }
     | { profile_id: string | null; city: string | null; headline: string | null }[]
@@ -95,7 +96,7 @@ export const getRequestTarget = cache(async (id: string): Promise<RequestTarget 
     .from('products')
     .select(
       `id, title, price_tnd, delivery_fee_tnd, tracks_stock, stock_count, status,
-       categories ( name_fr ),
+       categories ( name_fr, name_ar, name_en ),
        shops!inner ( name, city, admin_hidden_at ),
        product_images ( image_url, display_order )`,
     )
@@ -120,7 +121,7 @@ export const getRequestTarget = cache(async (id: string): Promise<RequestTarget 
         stockCount: row.stock_count,
         tracksStock: Boolean(row.tracks_stock),
         imageUrl: primaryImage(row.product_images),
-        category: one(row.categories)?.name_fr ?? null,
+        category: one(row.categories) ?? null,
         shop: { name: shop?.name ?? '', city: shop?.city ?? null },
       },
     }
@@ -130,7 +131,7 @@ export const getRequestTarget = cache(async (id: string): Promise<RequestTarget 
     .from('service_listings')
     .select(
       `id, title, starting_price_tnd, price_unit, delivery_time, status, buyer_briefing, tags,
-       categories!service_listings_category_id_fkey ( name_fr ),
+       categories!service_listings_category_id_fkey ( name_fr, name_ar, name_en ),
        freelancer_profiles!inner ( profile_id, city, headline, admin_hidden_at )`,
     )
     .eq('id', id)
@@ -161,7 +162,7 @@ export const getRequestTarget = cache(async (id: string): Promise<RequestTarget 
         startingPrice: row.starting_price_tnd != null ? Number(row.starting_price_tnd) : null,
         priceUnit: row.price_unit ?? null,
         deliveryTime: row.delivery_time ?? null,
-        category: one(row.categories)?.name_fr ?? null,
+        category: one(row.categories) ?? null,
         tags: row.tags ?? [],
         buyerBriefing: row.buyer_briefing ?? null,
         freelancer: { name, headline: fp?.headline ?? null, city: fp?.city ?? null },

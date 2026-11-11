@@ -26,7 +26,7 @@ export type ServiceListing = {
   /** The listing's skills, BOTH labels resolved server-side by the producer (skillLabelPair): the card
    *  picks by lang, so the service taxonomy never ships in this client bundle (H6 PR-4 ruling D31). */
   tags?: SkillLabelPair[]
-  category?: { name_fr: string; name_ar?: string; name_en?: string | null } | null
+  category?: { name_fr: string; name_ar?: string | null; name_en?: string | null } | null
   freelancer: { full_name: string; city: string | null }
 }
 

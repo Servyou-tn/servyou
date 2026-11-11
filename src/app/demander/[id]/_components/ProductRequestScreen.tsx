@@ -4,6 +4,7 @@ import { t, type Lang } from '@/lib/i18n'
 import { FOCUS_RING } from '@/components/layout/styles'
 import type { ProductRequestTarget } from '@/lib/marche/demander'
 import { ProductRequestForm } from './ProductRequestForm'
+import { localName } from '@/lib/i18n/local-name'
 
 // E1-product — page shell: breadcrumb + the form (which owns its own two-column layout, see
 // ProductRequestForm.tsx's header note for why the grid lives there rather than here).
@@ -48,7 +49,7 @@ export function ProductRequestScreen({
         {product.category && (
           <>
             <ChevronRight className="h-3.5 w-3.5 shrink-0 rtl:rotate-180 max-lg:hidden" aria-hidden="true" />
-            <span className="max-lg:hidden">{product.category}</span>
+            <span className="max-lg:hidden">{localName(product.category, lang)}</span>
           </>
         )}
         <ChevronRight className="h-3.5 w-3.5 shrink-0 rtl:rotate-180 max-lg:hidden" aria-hidden="true" />

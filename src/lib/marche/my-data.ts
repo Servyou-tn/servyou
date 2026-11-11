@@ -224,7 +224,7 @@ type FavoriteRow = {
           | ({ profile_id: string; city: string | null } & HiddenAt)
           | ({ profile_id: string; city: string | null } & HiddenAt)[]
           | null
-        categories: { name_fr: string } | { name_fr: string }[] | null
+        categories: { name_fr: string; name_ar: string | null; name_en: string | null } | { name_fr: string; name_ar: string | null; name_en: string | null }[] | null
       }
     | null
 }
@@ -271,7 +271,7 @@ export async function getMyFavorites(
     .select(
       `item_type, created_at,
        products ( id, title, description, price_tnd, status, admin_hidden_at, shops ( name, city, admin_hidden_at ), categories ( name_fr, name_ar, name_en ), product_images ( image_url, display_order ) ),
-       service_listings ( id, title, description, short_description, starting_price_tnd, price_unit, delivery_time, status, admin_hidden_at, freelancer_profiles ( profile_id, city, admin_hidden_at ), categories!service_listings_category_id_fkey ( name_fr ) )`,
+       service_listings ( id, title, description, short_description, starting_price_tnd, price_unit, delivery_time, status, admin_hidden_at, freelancer_profiles ( profile_id, city, admin_hidden_at ), categories!service_listings_category_id_fkey ( name_fr, name_ar, name_en ) )`,
     )
     .eq('user_id', userId)
     .order('created_at', { ascending: false })
@@ -282,7 +282,7 @@ export async function getMyFavorites(
   const rows = (data ?? []) as unknown as FavoriteRow[]
 
   const products: ProductListing[] = []
-  const serviceRows: { id: string; title: string; description: string | null; short_description: string | null; price_starting: number | null; price_unit: string | null; delivery_time: string | null; category: { name_fr: string } | null; profileId: string | null; city: string | null }[] = []
+  const serviceRows: { id: string; title: string; description: string | null; short_description: string | null; price_starting: number | null; price_unit: string | null; delivery_time: string | null; category: { name_fr: string; name_ar: string | null; name_en: string | null } | null; profileId: string | null; city: string | null }[] = []
   // The global favorited-at-DESC order across both kinds (drives the combined "Tous" list).
   const order: { kind: 'product' | 'service'; id: string }[] = []
 
@@ -316,7 +316,7 @@ export async function getMyFavorites(
         price_starting: s.starting_price_tnd != null ? Number(s.starting_price_tnd) : null,
         price_unit: s.price_unit ?? null,
         delivery_time: s.delivery_time ?? null,
-        category: one(s.categories) ? { name_fr: one(s.categories)!.name_fr } : null,
+        category: one(s.categories) ?? null,
         profileId: fp?.profile_id ?? null,
         city: fp?.city ?? null,
       })

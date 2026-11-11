@@ -20,7 +20,7 @@ export type ProductListing = {
   // renders a category chip on the cover; this card does not, and the three surfaces it serves
   // (/recherche, /categories/[slug], ConsumerHomepage) must not have to supply a field they never
   // show. Both names travel so the consumer localizes — same shape as ServiceListing.category.
-  category?: { name_fr: string; name_ar?: string; name_en?: string | null } | null
+  category?: { name_fr: string; name_ar?: string | null; name_en?: string | null } | null
 }
 
 // Vertical product card (Wink-style, pure mono — no brand color inside): a square image
