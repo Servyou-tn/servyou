@@ -28,7 +28,7 @@ type PostRow = Pick<
   | 'admin_hidden_at'
   | 'response_count'
 >
-type CategoryEmbed = { slug: string; name_fr: string; name_ar: string }
+type CategoryEmbed = { slug: string; name_fr: string; name_ar: string; name_en: string | null }
 type DetailRow = PostRow & {
   categories: CategoryEmbed | CategoryEmbed[] | null
   job_post_skills: { skill: string }[] | null
@@ -47,6 +47,7 @@ export type MissionDetail = {
   categorySlug: string | null
   categoryNameFr: string | null
   categoryNameAr: string | null
+  categoryNameEn?: string | null
   skills: string[]
   client: { firstName: string; fullName: string; city: string | null; avatarUrl: string | null }
   hidden: boolean
@@ -149,6 +150,7 @@ export async function getMissionDetail(id: string, viewer: MissionViewer, now: D
     categorySlug: cat?.slug ?? null,
     categoryNameFr: cat?.name_fr ?? null,
     categoryNameAr: cat?.name_ar ?? null,
+    categoryNameEn: cat?.name_en ?? null,
     skills: (row.job_post_skills ?? []).map((s) => s.skill),
     client,
     hidden: row.admin_hidden_at != null,

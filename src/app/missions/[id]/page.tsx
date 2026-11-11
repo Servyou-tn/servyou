@@ -81,7 +81,7 @@ export default async function MissionDetailPage({ params }: { params: Promise<{ 
         {/* ── post-header (322:11734) ── */}
         <header className="flex flex-col gap-3">
           <div className="flex flex-wrap items-center gap-2">
-            <CategoryChip slug={mission.categorySlug} nameFr={mission.categoryNameFr} nameAr={mission.categoryNameAr} lang={lang} />
+            <CategoryChip slug={mission.categorySlug} nameFr={mission.categoryNameFr} nameAr={mission.categoryNameAr} nameEn={mission.categoryNameEn} lang={lang} />
             {mission.isNew ? <NewChip lang={lang} /> : null}
           </div>
           <h1 className="text-h1 leading-10 text-text-primary">{mission.title}</h1>

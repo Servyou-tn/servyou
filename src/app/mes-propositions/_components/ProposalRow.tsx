@@ -43,7 +43,7 @@ export function ProposalRow({ proposal: p, lang }: { proposal: Proposal; lang: L
   const pill = OUTCOME_PILL[p.outcome]
   const gone = p.state === 'unavailable'
   const title = p.title ?? t('propositions.mission_unavailable', lang)
-  const category = lang === 'ar' ? (p.categoryNameAr ?? p.categoryNameFr) : p.categoryNameFr
+  const category = lang === 'ar' ? (p.categoryNameAr ?? p.categoryNameFr) : lang === 'en' ? (p.categoryNameEn || p.categoryNameFr) : p.categoryNameFr
   const CategoryIcon = (p.categorySlug && CATEGORY_ICONS[p.categorySlug]) || Wrench
   const city = localizeCity(p.clientCity, lang)
   const clientName = p.clientFirstName || t('propositions.client_unknown', lang)

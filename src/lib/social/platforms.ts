@@ -52,6 +52,13 @@ export const PLATFORMS: Record<PlatformId, PlatformInfo> = {
   website: { id: 'website', labelFr: 'Site web', labelAr: 'موقع إلكتروني', labelEn: 'Website', hosts: [], example: 'https://votre-site.tn' },
 }
 
+const EXAMPLE_EN: Record<string, string> = { nom: 'name', page: 'page', compte: 'account', chaine: 'channel', profil: 'profile', site: 'site' }
+
+/** A placeholder address in the reader's language: « votre-nom » reads « your-name » in English (FR / AR unchanged). */
+export const platformExample = (id: PlatformId, lang: Lang): string =>
+  lang === 'en' ? PLATFORMS[id].example.replace(/votre-(nom|page|compte|chaine|profil|site)/, (_m, w: string) => `your-${EXAMPLE_EN[w] ?? w}`) : PLATFORMS[id].example
+
+
 export const platformName = (id: PlatformId, lang: Lang): string =>
   lang === 'ar' ? PLATFORMS[id].labelAr : lang === 'en' ? (PLATFORMS[id].labelEn ?? PLATFORMS[id].labelFr) : PLATFORMS[id].labelFr
 

@@ -9,7 +9,7 @@ import { getClientNames } from './missions-query'
 // The post embed is a LEFT join on purpose: the responder-read policy (M-B) keeps an answered post readable while it is open /
 // filled / expired, but not once it is deleted or moderated — the recap then still shows what was sent, without the mission.
 
-type CategoryEmbed = { slug: string; name_fr: string; name_ar: string }
+type CategoryEmbed = { slug: string; name_fr: string; name_ar: string; name_en: string | null }
 type PostEmbed = {
   id: string
   title: string
@@ -45,6 +45,7 @@ export type SentProposal = {
     categorySlug: string | null
     categoryNameFr: string | null
     categoryNameAr: string | null
+    categoryNameEn?: string | null
     /** Everyone's responses including this one. */
     responseCount: number
   } | null
@@ -110,6 +111,7 @@ export async function getSentProposal(jobPostId: string, userId: string): Promis
           categorySlug: cat?.slug ?? null,
           categoryNameFr: cat?.name_fr ?? null,
           categoryNameAr: cat?.name_ar ?? null,
+          categoryNameEn: cat?.name_en ?? null,
           responseCount: post.response_count,
         }
       : null,

@@ -29,7 +29,7 @@ type PostRow = Pick<
   Database['public']['Tables']['job_posts']['Row'],
   'id' | 'title' | 'description' | 'budget_min' | 'budget_max' | 'city' | 'is_remote' | 'status' | 'created_at' | 'consumer_id' | 'response_count'
 >
-type CategoryEmbed = { slug: string; name_fr: string; name_ar: string }
+type CategoryEmbed = { slug: string; name_fr: string; name_ar: string; name_en: string | null }
 type BoardRow = PostRow & {
   categories: CategoryEmbed | CategoryEmbed[] | null
   job_post_skills: { skill: string }[] | null
@@ -47,6 +47,7 @@ export type MissionSummary = {
   categorySlug: string | null
   categoryNameFr: string | null
   categoryNameAr: string | null
+  categoryNameEn?: string | null
   /** At most the first 3 — the card shows no more. */
   skills: string[]
   clientFirstName: string
@@ -269,6 +270,7 @@ export async function getMissionBoard(
       categorySlug: cat?.slug ?? null,
       categoryNameFr: cat?.name_fr ?? null,
       categoryNameAr: cat?.name_ar ?? null,
+      categoryNameEn: cat?.name_en ?? null,
       skills: (r.job_post_skills ?? []).slice(0, 3).map((s) => s.skill),
       clientFirstName: client?.firstName ?? '',
       clientCity: client?.city ?? null,
