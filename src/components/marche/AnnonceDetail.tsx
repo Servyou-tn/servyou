@@ -29,6 +29,7 @@ import {
 } from '@/app/mes-annonces/[id]/actions'
 import { canChooseProposal } from '@/lib/marche/journey-gates'
 import type { AnnonceResponse } from '@/lib/marche/annonce-detail'
+import { skillTextLabel } from '@/lib/freelance/service-draft'
 
 /** F4 draws the first three proposals, then « + N autres propositions ». */
 const PROPOSALS_SHOWN = 3
@@ -287,7 +288,7 @@ export function AnnonceDetail({ annonce }: { annonce: AnnonceDetailData }) {
                 <p className="text-caption font-medium text-text-muted max-lg:leading-[15px]">{t('annonces.detail.skills_label', lang)}</p>
                 <div className="flex flex-wrap gap-2">
                   {annonce.skills.map((s) => (
-                    <SkillChip key={s}>{s}</SkillChip>
+                    <SkillChip key={s}>{skillTextLabel(s, lang)}</SkillChip>
                   ))}
                 </div>
               </div>

@@ -7,6 +7,7 @@ import { FOCUS_RING } from '@/components/layout/styles'
 import { cn } from '@/lib/utils'
 import type { FreelancerCardData } from '@/lib/marche/freelancer-cards'
 import { t, tn, type Lang } from '@/lib/i18n'
+import { pickLabel } from '@/lib/i18n/pick-label'
 
 // « Freelancer Card » — the Figma component as instanced on 662:53894 (1440) / 663:55017 (375); measurements in
 // docs/design/freelances-lens-measurements.md. A horizontal card, FIXED 203 high: surface/base · r12 · a 2 px blue/600 stroke on EVERY card (not a
@@ -83,7 +84,7 @@ export function FreelancerCard({
           <ul className="flex gap-2 overflow-hidden">
             {wide.map((skill, i) => (
               <li key={skill.fr} className={cn(CHIP, i >= SKILLS_NARROW && 'max-sm:hidden')}>
-                {lang === 'ar' ? skill.ar : skill.fr}
+                {pickLabel(skill, lang)}
               </li>
             ))}
             {moreWide > 0 ? <li className={cn(CHIP, 'max-sm:hidden')}>+{moreWide}</li> : null}

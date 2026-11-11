@@ -9,6 +9,7 @@ import { Avatar } from '@/components/ui/avatar'
 import type { SkillLabelPair } from '@/lib/freelance/service-draft'
 import { servicePriceLabel } from '@/lib/freelance/service-price'
 import { localName } from '@/lib/i18n/local-name'
+import { pickLabel } from '@/lib/i18n/pick-label'
 
 export type ServiceListing = {
   id: string
@@ -63,7 +64,7 @@ export function ServiceListingCard({ service }: { service: ServiceListing }) {
   // Up to 3 skill chips from `tags` (the v3.7 frame shows three). Listings with no tags fall back
   // to the single localized category label, so the chip row never renders empty.
   const tags = (service.tags ?? [])
-    .map((pair) => (lang === 'ar' ? pair.ar : pair.fr).trim())
+    .map((pair) => pickLabel(pair, lang).trim())
     .filter(Boolean)
     .slice(0, 3)
   const chips = tags.length > 0 ? tags : categoryLabel ? [categoryLabel] : []

@@ -98,6 +98,8 @@ export interface TaxonomySkill {
   labelFr: string;
   /** Arabic label — Latin term kept for tool/brand names. */
   labelAr: string;
+  /** English label; missing → the French one (tool and brand names are the same in every language). */
+  labelEn?: string;
 }
 
 export interface TaxonomySubcategory {
@@ -105,6 +107,7 @@ export interface TaxonomySubcategory {
   id: string;
   labelFr: string;
   labelAr: string;
+  labelEn?: string;
 }
 
 export interface ServiceSector {
@@ -112,6 +115,7 @@ export interface ServiceSector {
   id: string;
   labelFr: string;
   labelAr: string;
+  labelEn?: string;
   /** lucide-react icon name (kebab-case). Verified against the installed version. */
   icon: string;
   subcategories: TaxonomySubcategory[];
@@ -124,15 +128,16 @@ export const serviceCategories: ServiceSector[] = [
     id: 'developpement-web-mobile',
     labelFr: 'Développement web & mobile',
     labelAr: 'تطوير الويب والموبايل', // REVIEW_AR_TRANSLATION: "الموبايل" (Tunisian usage) vs MSA "التطبيقات الجوّالة"
+    labelEn: 'Web & mobile development',
     icon: 'code',
     subcategories: [
-      { id: 'site-vitrine', labelFr: 'Site vitrine (WordPress, Webflow)', labelAr: 'موقع تعريفي (WordPress, Webflow)' }, // REVIEW_AR_TRANSLATION
+      { id: 'site-vitrine', labelFr: 'Site vitrine (WordPress, Webflow)', labelAr: 'موقع تعريفي (WordPress, Webflow)', labelEn: 'Business website (WordPress, Webflow)' }, // REVIEW_AR_TRANSLATION
       { id: 'e-commerce', labelFr: 'E-commerce (Shopify, WooCommerce, PrestaShop)', labelAr: 'التجارة الإلكترونية (Shopify, WooCommerce, PrestaShop)' },
-      { id: 'application-web-sur-mesure', labelFr: 'Application web sur mesure (React, Next.js, Laravel)', labelAr: 'تطبيق ويب مخصص (React, Next.js, Laravel)' }, // REVIEW_AR_TRANSLATION
-      { id: 'application-mobile', labelFr: 'Application mobile (iOS, Android, Flutter, React Native)', labelAr: 'تطبيق موبايل (iOS, Android, Flutter, React Native)' }, // REVIEW_AR_TRANSLATION
-      { id: 'landing-page-tunnel-de-vente', labelFr: 'Landing page & tunnel de vente', labelAr: 'صفحة هبوط وقمع مبيعات' }, // REVIEW_AR_TRANSLATION
-      { id: 'integration-api-automatisation', labelFr: 'Intégration API & automatisation', labelAr: 'دمج API والأتمتة' }, // REVIEW_AR_TRANSLATION
-      { id: 'correction-de-bug-maintenance', labelFr: 'Correction de bug & maintenance', labelAr: 'إصلاح الأخطاء والصيانة' }, // REVIEW_AR_TRANSLATION
+      { id: 'application-web-sur-mesure', labelFr: 'Application web sur mesure (React, Next.js, Laravel)', labelAr: 'تطبيق ويب مخصص (React, Next.js, Laravel)', labelEn: 'Custom web app (React, Next.js, Laravel)' }, // REVIEW_AR_TRANSLATION
+      { id: 'application-mobile', labelFr: 'Application mobile (iOS, Android, Flutter, React Native)', labelAr: 'تطبيق موبايل (iOS, Android, Flutter, React Native)', labelEn: 'Mobile app (iOS, Android, Flutter, React Native)' }, // REVIEW_AR_TRANSLATION
+      { id: 'landing-page-tunnel-de-vente', labelFr: 'Landing page & tunnel de vente', labelAr: 'صفحة هبوط وقمع مبيعات', labelEn: 'Landing page & sales funnel' }, // REVIEW_AR_TRANSLATION
+      { id: 'integration-api-automatisation', labelFr: 'Intégration API & automatisation', labelAr: 'دمج API والأتمتة', labelEn: 'API integration & automation' }, // REVIEW_AR_TRANSLATION
+      { id: 'correction-de-bug-maintenance', labelFr: 'Correction de bug & maintenance', labelAr: 'إصلاح الأخطاء والصيانة', labelEn: 'Bug fixing & maintenance' }, // REVIEW_AR_TRANSLATION
     ],
     skills: [
       { id: 'react', labelFr: 'React', labelAr: 'React' },
@@ -161,29 +166,30 @@ export const serviceCategories: ServiceSector[] = [
     id: 'design-graphique-logo',
     labelFr: 'Design graphique & logo',
     labelAr: 'التصميم الغرافيكي والشعارات', // REVIEW_AR_TRANSLATION: extended from existing "التصميم الغرافيكي" to cover "& logo"
+    labelEn: 'Graphic design & logo',
     icon: 'palette',
     subcategories: [
-      { id: 'logo-identite-visuelle', labelFr: 'Logo & identité visuelle', labelAr: 'الشعار والهوية البصرية' },
-      { id: 'flyer-affiche-print', labelFr: 'Flyer, affiche & print', labelAr: 'منشورات وملصقات وطباعة' }, // REVIEW_AR_TRANSLATION
-      { id: 'cartes-de-visite-papeterie', labelFr: 'Cartes de visite & papeterie', labelAr: 'بطاقات العمل والقرطاسية' }, // REVIEW_AR_TRANSLATION
-      { id: 'packaging-etiquette-produit', labelFr: 'Packaging & étiquette produit', labelAr: 'التغليف وملصقات المنتج' }, // REVIEW_AR_TRANSLATION: étiquette=ملصق overlaps affiche=ملصق
-      { id: 'menu-restaurant-signaletique', labelFr: 'Menu restaurant & signalétique', labelAr: 'قوائم المطاعم واللافتات' }, // REVIEW_AR_TRANSLATION
-      { id: 'bannieres-reseaux-sociaux', labelFr: 'Bannières réseaux sociaux', labelAr: 'بانرات وسائل التواصل الاجتماعي' }, // REVIEW_AR_TRANSLATION
-      { id: 'pitch-deck-presentation', labelFr: 'Pitch deck & présentation', labelAr: 'عرض تقديمي (Pitch Deck)' }, // REVIEW_AR_TRANSLATION
-      { id: 'illustration-sur-mesure', labelFr: 'Illustration sur mesure', labelAr: 'الرسم التوضيحي المخصص' }, // REVIEW_AR_TRANSLATION
+      { id: 'logo-identite-visuelle', labelFr: 'Logo & identité visuelle', labelAr: 'الشعار والهوية البصرية', labelEn: 'Logo & visual identity' },
+      { id: 'flyer-affiche-print', labelFr: 'Flyer, affiche & print', labelAr: 'منشورات وملصقات وطباعة', labelEn: 'Flyers, posters & print' }, // REVIEW_AR_TRANSLATION
+      { id: 'cartes-de-visite-papeterie', labelFr: 'Cartes de visite & papeterie', labelAr: 'بطاقات العمل والقرطاسية', labelEn: 'Business cards & stationery' }, // REVIEW_AR_TRANSLATION
+      { id: 'packaging-etiquette-produit', labelFr: 'Packaging & étiquette produit', labelAr: 'التغليف وملصقات المنتج', labelEn: 'Packaging & product labels' }, // REVIEW_AR_TRANSLATION: étiquette=ملصق overlaps affiche=ملصق
+      { id: 'menu-restaurant-signaletique', labelFr: 'Menu restaurant & signalétique', labelAr: 'قوائم المطاعم واللافتات', labelEn: 'Restaurant menus & signage' }, // REVIEW_AR_TRANSLATION
+      { id: 'bannieres-reseaux-sociaux', labelFr: 'Bannières réseaux sociaux', labelAr: 'بانرات وسائل التواصل الاجتماعي', labelEn: 'Social media banners' }, // REVIEW_AR_TRANSLATION
+      { id: 'pitch-deck-presentation', labelFr: 'Pitch deck & présentation', labelAr: 'عرض تقديمي (Pitch Deck)', labelEn: 'Pitch deck & presentation' }, // REVIEW_AR_TRANSLATION
+      { id: 'illustration-sur-mesure', labelFr: 'Illustration sur mesure', labelAr: 'الرسم التوضيحي المخصص', labelEn: 'Custom illustration' }, // REVIEW_AR_TRANSLATION
       // Founder ruling 2026-10-23 (H6 PR-2): product photography lives here, not in a 14th sector.
-      { id: 'photographie-retouche-produit', labelFr: 'Photographie & retouche produit', labelAr: 'تصوير المنتجات وتعديل الصور' }, // REVIEW_AR_TRANSLATION
+      { id: 'photographie-retouche-produit', labelFr: 'Photographie & retouche produit', labelAr: 'تصوير المنتجات وتعديل الصور', labelEn: 'Product photography & retouching' }, // REVIEW_AR_TRANSLATION
     ],
     skills: [
       { id: 'photoshop', labelFr: 'Photoshop', labelAr: 'Photoshop' },
       { id: 'illustrator', labelFr: 'Illustrator', labelAr: 'Illustrator' },
       { id: 'indesign', labelFr: 'InDesign', labelAr: 'InDesign' },
       { id: 'logo', labelFr: 'logo', labelAr: 'شعار' },
-      { id: 'identite-de-marque', labelFr: 'identité de marque', labelAr: 'هوية العلامة التجارية' },
-      { id: 'charte-graphique', labelFr: 'charte graphique', labelAr: 'دليل الهوية البصرية' },
-      { id: 'typographie', labelFr: 'typographie', labelAr: 'التيبوغرافيا' }, // REVIEW_AR_TRANSLATION: loanword vs "فن الطباعة"
-      { id: 'retouche', labelFr: 'retouche', labelAr: 'تعديل الصور' },
-      { id: 'vectorisation', labelFr: 'vectorisation', labelAr: 'الرسم المتجه' }, // REVIEW_AR_TRANSLATION
+      { id: 'identite-de-marque', labelFr: 'identité de marque', labelAr: 'هوية العلامة التجارية', labelEn: 'brand identity' },
+      { id: 'charte-graphique', labelFr: 'charte graphique', labelAr: 'دليل الهوية البصرية', labelEn: 'brand guidelines' },
+      { id: 'typographie', labelFr: 'typographie', labelAr: 'التيبوغرافيا', labelEn: 'typography' }, // REVIEW_AR_TRANSLATION: loanword vs "فن الطباعة"
+      { id: 'retouche', labelFr: 'retouche', labelAr: 'تعديل الصور', labelEn: 'retouching' },
+      { id: 'vectorisation', labelFr: 'vectorisation', labelAr: 'الرسم المتجه', labelEn: 'vectorisation' }, // REVIEW_AR_TRANSLATION
       { id: 'print', labelFr: 'print', labelAr: 'الطباعة' },
       { id: 'flyer', labelFr: 'flyer', labelAr: 'منشور' },
       { id: 'packaging', labelFr: 'packaging', labelAr: 'التغليف' },
@@ -196,13 +202,14 @@ export const serviceCategories: ServiceSector[] = [
     id: 'design-ui-ux',
     labelFr: 'Design UI/UX',
     labelAr: 'تصميم UI/UX', // reused verbatim from landing.categories.items.uiux (ar.ts)
+    labelEn: 'UI/UX design',
     icon: 'layout-template',
     subcategories: [
-      { id: 'maquette-site-web', labelFr: 'Maquette site web (Figma)', labelAr: 'نموذج موقع ويب (Figma)' },
-      { id: 'maquette-application-mobile', labelFr: 'Maquette application mobile', labelAr: 'نموذج تطبيق موبايل' },
-      { id: 'wireframe-prototype-interactif', labelFr: 'Wireframe & prototype interactif', labelAr: 'مخطط هيكلي ونموذج أولي تفاعلي' }, // REVIEW_AR_TRANSLATION
-      { id: 'audit-ux-recommandations', labelFr: 'Audit UX & recommandations', labelAr: 'تدقيق تجربة المستخدم وتوصيات' }, // REVIEW_AR_TRANSLATION
-      { id: 'design-system-composants', labelFr: 'Design system & composants', labelAr: 'نظام التصميم والمكونات' }, // REVIEW_AR_TRANSLATION
+      { id: 'maquette-site-web', labelFr: 'Maquette site web (Figma)', labelAr: 'نموذج موقع ويب (Figma)', labelEn: 'Website mock-up (Figma)' },
+      { id: 'maquette-application-mobile', labelFr: 'Maquette application mobile', labelAr: 'نموذج تطبيق موبايل', labelEn: 'Mobile app mock-up' },
+      { id: 'wireframe-prototype-interactif', labelFr: 'Wireframe & prototype interactif', labelAr: 'مخطط هيكلي ونموذج أولي تفاعلي', labelEn: 'Wireframe & interactive prototype' }, // REVIEW_AR_TRANSLATION
+      { id: 'audit-ux-recommandations', labelFr: 'Audit UX & recommandations', labelAr: 'تدقيق تجربة المستخدم وتوصيات', labelEn: 'UX audit & recommendations' }, // REVIEW_AR_TRANSLATION
+      { id: 'design-system-composants', labelFr: 'Design system & composants', labelAr: 'نظام التصميم والمكونات', labelEn: 'Design system & components' }, // REVIEW_AR_TRANSLATION
       { id: 'refonte-dinterface-existante', labelFr: "Refonte d'interface existante", labelAr: 'إعادة تصميم واجهة قائمة' }, // REVIEW_AR_TRANSLATION
     ],
     skills: [
@@ -211,13 +218,13 @@ export const serviceCategories: ServiceSector[] = [
       { id: 'sketch', labelFr: 'Sketch', labelAr: 'Sketch' },
       { id: 'wireframe', labelFr: 'wireframe', labelAr: 'مخطط هيكلي' }, // REVIEW_AR_TRANSLATION
       { id: 'prototype', labelFr: 'prototype', labelAr: 'نموذج أولي' },
-      { id: 'maquette', labelFr: 'maquette', labelAr: 'نموذج تصميم' },
+      { id: 'maquette', labelFr: 'maquette', labelAr: 'نموذج تصميم', labelEn: 'mock-up' },
       { id: 'ui', labelFr: 'UI', labelAr: 'UI' },
       { id: 'ux', labelFr: 'UX', labelAr: 'UX' },
       { id: 'design-system', labelFr: 'design system', labelAr: 'نظام التصميم' },
       { id: 'responsive', labelFr: 'responsive', labelAr: 'تصميم متجاوب' },
-      { id: 'parcours-utilisateur', labelFr: 'parcours utilisateur', labelAr: 'رحلة المستخدم' },
-      { id: 'accessibilite', labelFr: 'accessibilité', labelAr: 'إمكانية الوصول' },
+      { id: 'parcours-utilisateur', labelFr: 'parcours utilisateur', labelAr: 'رحلة المستخدم', labelEn: 'user journey' },
+      { id: 'accessibilite', labelFr: 'accessibilité', labelAr: 'إمكانية الوصول', labelEn: 'accessibility' },
       { id: 'framer', labelFr: 'Framer', labelAr: 'Framer' },
     ],
   },
@@ -225,18 +232,19 @@ export const serviceCategories: ServiceSector[] = [
     id: 'marketing-digital',
     labelFr: 'Marketing digital',
     labelAr: 'التسويق الرقمي', // landing uses coarser "التسويق ووسائل التواصل" for its category
+    labelEn: 'Digital marketing',
     icon: 'megaphone',
     subcategories: [
       // "Community management" moved OUT to its own sector below, per the doc — no longer a
       // marketing-digital subcategory. The skill pool below keeps the term; a freelancer can
       // still tag it here even though it no longer picks this sector as its parent.
-      { id: 'strategie-marketing-digital', labelFr: 'Stratégie marketing digital', labelAr: 'استراتيجية التسويق الرقمي' },
-      { id: 'referencement-seo', labelFr: 'Référencement SEO', labelAr: 'تحسين محركات البحث (SEO)' },
+      { id: 'strategie-marketing-digital', labelFr: 'Stratégie marketing digital', labelAr: 'استراتيجية التسويق الرقمي', labelEn: 'Digital marketing strategy' },
+      { id: 'referencement-seo', labelFr: 'Référencement SEO', labelAr: 'تحسين محركات البحث (SEO)', labelEn: 'SEO' },
       { id: 'google-ads', labelFr: 'Google Ads (Search, Shopping, YouTube)', labelAr: 'إعلانات جوجل (Search, Shopping, YouTube)' },
       { id: 'linkedin-ads-tiktok-ads', labelFr: 'LinkedIn Ads & TikTok Ads', labelAr: 'إعلانات LinkedIn وTikTok' },
       { id: 'email-marketing-newsletter', labelFr: 'Email marketing & newsletter', labelAr: 'التسويق عبر البريد الإلكتروني والنشرات' }, // REVIEW_AR_TRANSLATION
-      { id: 'automatisation', labelFr: 'Automatisation (Zapier, Make, HubSpot)', labelAr: 'الأتمتة (Zapier, Make, HubSpot)' },
-      { id: 'audit-analytics', labelFr: 'Audit & analytics (GA4, Meta Pixel)', labelAr: 'تدقيق وتحليلات (GA4, Meta Pixel)' }, // REVIEW_AR_TRANSLATION
+      { id: 'automatisation', labelFr: 'Automatisation (Zapier, Make, HubSpot)', labelAr: 'الأتمتة (Zapier, Make, HubSpot)', labelEn: 'Automation (Zapier, Make, HubSpot)' },
+      { id: 'audit-analytics', labelFr: 'Audit & analytics (GA4, Meta Pixel)', labelAr: 'تدقيق وتحليلات (GA4, Meta Pixel)', labelEn: 'Audit & analytics (GA4, Meta Pixel)' }, // REVIEW_AR_TRANSLATION
     ],
     skills: [
       { id: 'seo', labelFr: 'SEO', labelAr: 'SEO' },
@@ -247,13 +255,13 @@ export const serviceCategories: ServiceSector[] = [
       { id: 'content-strategy', labelFr: 'content strategy', labelAr: 'استراتيجية المحتوى' },
       { id: 'google-analytics', labelFr: 'Google Analytics', labelAr: 'Google Analytics' },
       { id: 'meta-business', labelFr: 'Meta Business', labelAr: 'Meta Business' },
-      { id: 'emailing', labelFr: 'emailing', labelAr: 'التسويق عبر البريد الإلكتروني' },
+      { id: 'emailing', labelFr: 'emailing', labelAr: 'التسويق عبر البريد الإلكتروني', labelEn: 'email campaigns' },
       { id: 'mailchimp', labelFr: 'Mailchimp', labelAr: 'Mailchimp' },
-      { id: 'referencement', labelFr: 'référencement', labelAr: 'تحسين محركات البحث' }, // REVIEW_AR_TRANSLATION: référencement≈SEO
-      { id: 'reseaux-sociaux', labelFr: 'réseaux sociaux', labelAr: 'وسائل التواصل الاجتماعي' },
+      { id: 'referencement', labelFr: 'référencement', labelAr: 'تحسين محركات البحث', labelEn: 'search optimisation' }, // REVIEW_AR_TRANSLATION: référencement≈SEO
+      { id: 'reseaux-sociaux', labelFr: 'réseaux sociaux', labelAr: 'وسائل التواصل الاجتماعي', labelEn: 'social media' },
       { id: 'tiktok', labelFr: 'TikTok', labelAr: 'TikTok' },
       { id: 'linkedin', labelFr: 'LinkedIn', labelAr: 'LinkedIn' },
-      { id: 'copywriting-publicitaire', labelFr: 'copywriting publicitaire', labelAr: 'الكتابة الإعلانية' }, // REVIEW_AR_TRANSLATION: same AR as redaction-contenu's `copywriting` — two skills, one AR label
+      { id: 'copywriting-publicitaire', labelFr: 'copywriting publicitaire', labelAr: 'الكتابة الإعلانية', labelEn: 'ad copywriting' }, // REVIEW_AR_TRANSLATION: same AR as redaction-contenu's `copywriting` — two skills, one AR label
     ],
   },
   {
@@ -265,13 +273,13 @@ export const serviceCategories: ServiceSector[] = [
     labelAr: 'إدارة المجتمعات', // reused verbatim from the existing marketing-digital skill entry
     icon: 'message-circle', // FOUNDER-RULED, not measured — approved 2026-09-07, same status as H5's CATEGORY_ICONS map
     subcategories: [
-      { id: 'gestion-instagram-facebook', labelFr: 'Gestion Instagram & Facebook', labelAr: 'إدارة Instagram وFacebook' },
-      { id: 'gestion-tiktok-youtube-shorts', labelFr: 'Gestion TikTok & YouTube Shorts', labelAr: 'إدارة TikTok وYouTube Shorts' },
-      { id: 'gestion-linkedin-professionnel', labelFr: 'Gestion LinkedIn professionnel', labelAr: 'إدارة LinkedIn الاحترافي' }, // REVIEW_AR_TRANSLATION
-      { id: 'creation-de-contenu', labelFr: 'Création de contenu (posts, reels, stories)', labelAr: 'إنشاء المحتوى (منشورات، ريلز، ستوري)' }, // REVIEW_AR_TRANSLATION
-      { id: 'calendrier-editorial-planification', labelFr: 'Calendrier éditorial & planification', labelAr: 'التقويم التحريري والتخطيط' }, // REVIEW_AR_TRANSLATION
-      { id: 'moderation-reponse-aux-commentaires', labelFr: 'Modération & réponse aux commentaires', labelAr: 'الإشراف والرد على التعليقات' }, // REVIEW_AR_TRANSLATION
-      { id: 'influence-partenariats', labelFr: 'Influence & partenariats', labelAr: 'التأثير والشراكات' }, // REVIEW_AR_TRANSLATION
+      { id: 'gestion-instagram-facebook', labelFr: 'Gestion Instagram & Facebook', labelAr: 'إدارة Instagram وFacebook', labelEn: 'Instagram & Facebook management' },
+      { id: 'gestion-tiktok-youtube-shorts', labelFr: 'Gestion TikTok & YouTube Shorts', labelAr: 'إدارة TikTok وYouTube Shorts', labelEn: 'TikTok & YouTube Shorts management' },
+      { id: 'gestion-linkedin-professionnel', labelFr: 'Gestion LinkedIn professionnel', labelAr: 'إدارة LinkedIn الاحترافي', labelEn: 'Professional LinkedIn management' }, // REVIEW_AR_TRANSLATION
+      { id: 'creation-de-contenu', labelFr: 'Création de contenu (posts, reels, stories)', labelAr: 'إنشاء المحتوى (منشورات، ريلز، ستوري)', labelEn: 'Content creation (posts, reels, stories)' }, // REVIEW_AR_TRANSLATION
+      { id: 'calendrier-editorial-planification', labelFr: 'Calendrier éditorial & planification', labelAr: 'التقويم التحريري والتخطيط', labelEn: 'Content calendar & scheduling' }, // REVIEW_AR_TRANSLATION
+      { id: 'moderation-reponse-aux-commentaires', labelFr: 'Modération & réponse aux commentaires', labelAr: 'الإشراف والرد على التعليقات', labelEn: 'Moderation & replying to comments' }, // REVIEW_AR_TRANSLATION
+      { id: 'influence-partenariats', labelFr: 'Influence & partenariats', labelAr: 'التأثير والشراكات', labelEn: 'Influencers & partnerships' }, // REVIEW_AR_TRANSLATION
     ],
     skills: [
       // FOUNDER-UNREVIEWED — starter list, not sourced from a measured frame or prior art. Feeds
@@ -283,12 +291,12 @@ export const serviceCategories: ServiceSector[] = [
       { id: 'linkedin', labelFr: 'LinkedIn', labelAr: 'LinkedIn' },
       { id: 'meta-business-suite', labelFr: 'Meta Business Suite', labelAr: 'Meta Business Suite' },
       { id: 'canva', labelFr: 'Canva', labelAr: 'Canva' },
-      { id: 'calendrier-editorial', labelFr: 'calendrier éditorial', labelAr: 'التقويم التحريري' }, // REVIEW_AR_TRANSLATION
+      { id: 'calendrier-editorial', labelFr: 'calendrier éditorial', labelAr: 'التقويم التحريري', labelEn: 'content calendar' }, // REVIEW_AR_TRANSLATION
       { id: 'community-management', labelFr: 'community management', labelAr: 'إدارة المجتمعات' },
-      { id: 'moderation', labelFr: 'modération', labelAr: 'الإشراف' }, // REVIEW_AR_TRANSLATION
+      { id: 'moderation', labelFr: 'modération', labelAr: 'الإشراف', labelEn: 'moderation' }, // REVIEW_AR_TRANSLATION
       { id: 'reels', labelFr: 'Reels', labelAr: 'Reels' },
       { id: 'stories', labelFr: 'Stories', labelAr: 'Stories' },
-      { id: 'influenceurs', labelFr: 'influenceurs', labelAr: 'المؤثرون' },
+      { id: 'influenceurs', labelFr: 'influenceurs', labelAr: 'المؤثرون', labelEn: 'influencers' },
       { id: 'later', labelFr: 'Later', labelAr: 'Later' },
       { id: 'hootsuite', labelFr: 'Hootsuite', labelAr: 'Hootsuite' },
     ],
@@ -297,73 +305,76 @@ export const serviceCategories: ServiceSector[] = [
     id: 'redaction-contenu',
     labelFr: 'Rédaction & contenu',
     labelAr: 'الكتابة والمحتوى',
+    labelEn: 'Writing & content',
     icon: 'pen-line',
     subcategories: [
-      { id: 'article-de-blog-seo', labelFr: 'Article de blog (SEO)', labelAr: 'مقال مدونة (SEO)' },
-      { id: 'fiche-produit-e-commerce', labelFr: 'Fiche produit e-commerce', labelAr: 'وصف منتج للتجارة الإلكترونية' }, // REVIEW_AR_TRANSLATION
-      { id: 'copywriting', labelFr: 'Copywriting (page de vente, tunnel)', labelAr: 'الكتابة الإعلانية (صفحة مبيعات، قمع تحويل)' }, // REVIEW_AR_TRANSLATION
-      { id: 'script-video-podcast', labelFr: 'Script vidéo & podcast', labelAr: 'نص فيديو وبودكاست' }, // REVIEW_AR_TRANSLATION
-      { id: 'redaction-linkedin-posts-sociaux', labelFr: 'Rédaction LinkedIn & posts sociaux', labelAr: 'كتابة LinkedIn ومنشورات اجتماعية' }, // REVIEW_AR_TRANSLATION
-      { id: 'livre-blanc-guide', labelFr: 'Livre blanc & guide', labelAr: 'كتاب أبيض ودليل إرشادي' }, // REVIEW_AR_TRANSLATION
-      { id: 'correction-relecture', labelFr: 'Correction & relecture', labelAr: 'التصحيح والمراجعة' },
+      { id: 'article-de-blog-seo', labelFr: 'Article de blog (SEO)', labelAr: 'مقال مدونة (SEO)', labelEn: 'Blog articles (SEO)' },
+      { id: 'fiche-produit-e-commerce', labelFr: 'Fiche produit e-commerce', labelAr: 'وصف منتج للتجارة الإلكترونية', labelEn: 'E-commerce product descriptions' }, // REVIEW_AR_TRANSLATION
+      { id: 'copywriting', labelFr: 'Copywriting (page de vente, tunnel)', labelAr: 'الكتابة الإعلانية (صفحة مبيعات، قمع تحويل)', labelEn: 'Copywriting (sales page, funnel)' }, // REVIEW_AR_TRANSLATION
+      { id: 'script-video-podcast', labelFr: 'Script vidéo & podcast', labelAr: 'نص فيديو وبودكاست', labelEn: 'Video & podcast scripts' }, // REVIEW_AR_TRANSLATION
+      { id: 'redaction-linkedin-posts-sociaux', labelFr: 'Rédaction LinkedIn & posts sociaux', labelAr: 'كتابة LinkedIn ومنشورات اجتماعية', labelEn: 'LinkedIn & social media posts' }, // REVIEW_AR_TRANSLATION
+      { id: 'livre-blanc-guide', labelFr: 'Livre blanc & guide', labelAr: 'كتاب أبيض ودليل إرشادي', labelEn: 'White paper & guide' }, // REVIEW_AR_TRANSLATION
+      { id: 'correction-relecture', labelFr: 'Correction & relecture', labelAr: 'التصحيح والمراجعة', labelEn: 'Editing & proofreading' },
     ],
     skills: [
-      { id: 'redaction-web', labelFr: 'rédaction web', labelAr: 'الكتابة للويب' },
-      { id: 'copywriting', labelFr: 'copywriting', labelAr: 'الكتابة الإعلانية' }, // REVIEW_AR_TRANSLATION: same AR as marketing-digital's `copywriting-publicitaire`
+      { id: 'redaction-web', labelFr: 'rédaction web', labelAr: 'الكتابة للويب', labelEn: 'web writing' },
+      { id: 'copywriting', labelFr: 'copywriting', labelAr: 'الكتابة الإعلانية', labelEn: 'Copywriting (sales page, funnel)' }, // REVIEW_AR_TRANSLATION: same AR as marketing-digital's `copywriting-publicitaire`
       { id: 'seo-writing', labelFr: 'SEO writing', labelAr: 'الكتابة المحسنة لمحركات البحث' }, // REVIEW_AR_TRANSLATION
       { id: 'article', labelFr: 'article', labelAr: 'مقال' },
       { id: 'blog', labelFr: 'blog', labelAr: 'مدونة' },
       { id: 'storytelling', labelFr: 'storytelling', labelAr: 'السرد القصصي' },
-      { id: 'correction', labelFr: 'correction', labelAr: 'التصحيح' },
-      { id: 'relecture', labelFr: 'relecture', labelAr: 'المراجعة' },
+      { id: 'correction', labelFr: 'correction', labelAr: 'التصحيح', labelEn: 'editing' },
+      { id: 'relecture', labelFr: 'relecture', labelAr: 'المراجعة', labelEn: 'proofreading' },
       { id: 'ghostwriting', labelFr: 'ghostwriting', labelAr: 'الكتابة بأسماء الآخرين' }, // REVIEW_AR_TRANSLATION: term often kept "ghostwriting"
       { id: 'content', labelFr: 'content', labelAr: 'المحتوى' },
       { id: 'script', labelFr: 'script', labelAr: 'النص' },
-      { id: 'francais', labelFr: 'français', labelAr: 'الفرنسية' },
-      { id: 'arabe', labelFr: 'arabe', labelAr: 'العربية' },
-      { id: 'anglais', labelFr: 'anglais', labelAr: 'الإنجليزية' },
+      { id: 'francais', labelFr: 'français', labelAr: 'الفرنسية', labelEn: 'French' },
+      { id: 'arabe', labelFr: 'arabe', labelAr: 'العربية', labelEn: 'Arabic' },
+      { id: 'anglais', labelFr: 'anglais', labelAr: 'الإنجليزية', labelEn: 'English' },
     ],
   },
   {
     id: 'traduction',
     labelFr: 'Traduction',
     labelAr: 'الترجمة', // simplified from "الترجمة واللغات" to match the doc's plain "Traduction"
+    labelEn: 'Translation',
     icon: 'languages',
     subcategories: [
       { id: 'traduction-fr-ar', labelFr: 'FR ↔ AR', labelAr: 'فرنسي ↔ عربي' },
       { id: 'traduction-fr-en', labelFr: 'FR ↔ EN', labelAr: 'فرنسي ↔ إنجليزي' },
       { id: 'traduction-ar-en', labelFr: 'AR ↔ EN', labelAr: 'عربي ↔ إنجليزي' },
-      { id: 'traduction-technique', labelFr: 'Traduction technique (IT, juridique, médical)', labelAr: 'ترجمة تقنية (معلوماتية، قانونية، طبية)' }, // REVIEW_AR_TRANSLATION
-      { id: 'traduction-administrative', labelFr: 'Traduction administrative', labelAr: 'ترجمة إدارية' },
-      { id: 'sous-titrage-video', labelFr: 'Sous-titrage vidéo', labelAr: 'سترجة الفيديو' }, // REVIEW_AR_TRANSLATION: loanword; vs "الترجمة النصية"
-      { id: 'transcription-audio', labelFr: 'Transcription audio', labelAr: 'النسخ الصوتي' },
+      { id: 'traduction-technique', labelFr: 'Traduction technique (IT, juridique, médical)', labelAr: 'ترجمة تقنية (معلوماتية، قانونية، طبية)', labelEn: 'Technical translation (IT, legal, medical)' }, // REVIEW_AR_TRANSLATION
+      { id: 'traduction-administrative', labelFr: 'Traduction administrative', labelAr: 'ترجمة إدارية', labelEn: 'Official document translation' },
+      { id: 'sous-titrage-video', labelFr: 'Sous-titrage vidéo', labelAr: 'سترجة الفيديو', labelEn: 'Video subtitling' }, // REVIEW_AR_TRANSLATION: loanword; vs "الترجمة النصية"
+      { id: 'transcription-audio', labelFr: 'Transcription audio', labelAr: 'النسخ الصوتي', labelEn: 'Audio transcription' },
     ],
     skills: [
-      { id: 'traduction', labelFr: 'traduction', labelAr: 'الترجمة' },
-      { id: 'francais', labelFr: 'français', labelAr: 'الفرنسية' },
-      { id: 'arabe', labelFr: 'arabe', labelAr: 'العربية' },
-      { id: 'anglais', labelFr: 'anglais', labelAr: 'الإنجليزية' },
-      { id: 'localisation', labelFr: 'localisation', labelAr: 'التوطين' }, // REVIEW_AR_TRANSLATION
+      { id: 'traduction', labelFr: 'traduction', labelAr: 'الترجمة', labelEn: 'Translation' },
+      { id: 'francais', labelFr: 'français', labelAr: 'الفرنسية', labelEn: 'French' },
+      { id: 'arabe', labelFr: 'arabe', labelAr: 'العربية', labelEn: 'Arabic' },
+      { id: 'anglais', labelFr: 'anglais', labelAr: 'الإنجليزية', labelEn: 'English' },
+      { id: 'localisation', labelFr: 'localisation', labelAr: 'التوطين', labelEn: 'localisation' }, // REVIEW_AR_TRANSLATION
       { id: 'transcription', labelFr: 'transcription', labelAr: 'النسخ الصوتي' },
-      { id: 'sous-titrage', labelFr: 'sous-titrage', labelAr: 'السترجة' }, // REVIEW_AR_TRANSLATION
-      { id: 'relecture-bilingue', labelFr: 'relecture bilingue', labelAr: 'المراجعة ثنائية اللغة' },
-      { id: 'interpretation', labelFr: 'interprétation', labelAr: 'الترجمة الفورية' },
+      { id: 'sous-titrage', labelFr: 'sous-titrage', labelAr: 'السترجة', labelEn: 'subtitling' }, // REVIEW_AR_TRANSLATION
+      { id: 'relecture-bilingue', labelFr: 'relecture bilingue', labelAr: 'المراجعة ثنائية اللغة', labelEn: 'bilingual proofreading' },
+      { id: 'interpretation', labelFr: 'interprétation', labelAr: 'الترجمة الفورية', labelEn: 'interpreting' },
       { id: 'mtpe', labelFr: 'MTPE', labelAr: 'MTPE' },
-      { id: 'terminologie', labelFr: 'terminologie', labelAr: 'المصطلحات' },
+      { id: 'terminologie', labelFr: 'terminologie', labelAr: 'المصطلحات', labelEn: 'terminology' },
     ],
   },
   {
     id: 'montage-video-motion',
     labelFr: 'Montage vidéo & motion',
     labelAr: 'مونتاج الفيديو والموشن', // REVIEW_AR_TRANSLATION: reworded from "الفيديو والرسوم المتحركة" to track the doc's narrower "Montage vidéo & motion"
+    labelEn: 'Video editing & motion',
     icon: 'clapperboard',
     subcategories: [
-      { id: 'montage-video', labelFr: 'Montage vidéo (YouTube, TikTok, Reels)', labelAr: 'مونتاج الفيديو (YouTube, TikTok, Reels)' },
-      { id: 'motion-graphics-animation-2d', labelFr: 'Motion graphics & animation 2D', labelAr: 'موشن غرافيك ورسوم متحركة 2D' }, // REVIEW_AR_TRANSLATION
-      { id: 'explainer-video-tutoriel', labelFr: 'Explainer video & tutoriel', labelAr: 'فيديو تعريفي وتعليمي' }, // REVIEW_AR_TRANSLATION
-      { id: 'animation-logo-intro', labelFr: 'Animation logo & intro', labelAr: 'تحريك الشعار والمقدمة' }, // REVIEW_AR_TRANSLATION
-      { id: 'video-publicitaire-ads', labelFr: 'Vidéo publicitaire (ads)', labelAr: 'فيديو إعلاني (Ads)' },
-      { id: 'etalonnage-colorimetrique', labelFr: 'Étalonnage colorimétrique', labelAr: 'تصحيح الألوان' }, // REVIEW_AR_TRANSLATION
+      { id: 'montage-video', labelFr: 'Montage vidéo (YouTube, TikTok, Reels)', labelAr: 'مونتاج الفيديو (YouTube, TikTok, Reels)', labelEn: 'Video editing (YouTube, TikTok, Reels)' },
+      { id: 'motion-graphics-animation-2d', labelFr: 'Motion graphics & animation 2D', labelAr: 'موشن غرافيك ورسوم متحركة 2D', labelEn: 'Motion graphics & 2D animation' }, // REVIEW_AR_TRANSLATION
+      { id: 'explainer-video-tutoriel', labelFr: 'Explainer video & tutoriel', labelAr: 'فيديو تعريفي وتعليمي', labelEn: 'Explainer video & tutorial' }, // REVIEW_AR_TRANSLATION
+      { id: 'animation-logo-intro', labelFr: 'Animation logo & intro', labelAr: 'تحريك الشعار والمقدمة', labelEn: 'Logo animation & intro' }, // REVIEW_AR_TRANSLATION
+      { id: 'video-publicitaire-ads', labelFr: 'Vidéo publicitaire (ads)', labelAr: 'فيديو إعلاني (Ads)', labelEn: 'Video ads' },
+      { id: 'etalonnage-colorimetrique', labelFr: 'Étalonnage colorimétrique', labelAr: 'تصحيح الألوان', labelEn: 'Colour grading' }, // REVIEW_AR_TRANSLATION
       { id: 'sound-design', labelFr: 'Sound design', labelAr: 'تصميم صوتي' }, // REVIEW_AR_TRANSLATION
     ],
     skills: [
@@ -371,14 +382,14 @@ export const serviceCategories: ServiceSector[] = [
       { id: 'after-effects', labelFr: 'After Effects', labelAr: 'After Effects' },
       { id: 'davinci-resolve', labelFr: 'DaVinci Resolve', labelAr: 'DaVinci Resolve' },
       { id: 'final-cut', labelFr: 'Final Cut', labelAr: 'Final Cut' },
-      { id: 'montage', labelFr: 'montage', labelAr: 'المونتاج' }, // REVIEW_AR_TRANSLATION
+      { id: 'montage', labelFr: 'montage', labelAr: 'المونتاج', labelEn: 'editing' }, // REVIEW_AR_TRANSLATION
       { id: 'motion-design', labelFr: 'motion design', labelAr: 'تصميم الحركة' }, // REVIEW_AR_TRANSLATION
-      { id: 'animation-2d', labelFr: 'animation 2D', labelAr: 'الرسوم المتحركة 2D' },
-      { id: 'animation-3d', labelFr: 'animation 3D', labelAr: 'الرسوم المتحركة 3D' },
-      { id: 'sous-titrage', labelFr: 'sous-titrage', labelAr: 'السترجة' }, // REVIEW_AR_TRANSLATION (byte-identical with traduction pool)
+      { id: 'animation-2d', labelFr: 'animation 2D', labelAr: 'الرسوم المتحركة 2D', labelEn: '2D animation' },
+      { id: 'animation-3d', labelFr: 'animation 3D', labelAr: 'الرسوم المتحركة 3D', labelEn: '3D animation' },
+      { id: 'sous-titrage', labelFr: 'sous-titrage', labelAr: 'السترجة', labelEn: 'subtitling' }, // REVIEW_AR_TRANSLATION (byte-identical with traduction pool)
       { id: 'color-grading', labelFr: 'color grading', labelAr: 'تدريج الألوان' },
       { id: 'blender', labelFr: 'Blender', labelAr: 'Blender' },
-      { id: 'reseaux-sociaux', labelFr: 'réseaux sociaux', labelAr: 'وسائل التواصل الاجتماعي' },
+      { id: 'reseaux-sociaux', labelFr: 'réseaux sociaux', labelAr: 'وسائل التواصل الاجتماعي', labelEn: 'social media' },
       { id: 'reels', labelFr: 'Reels', labelAr: 'Reels' },
       { id: 'tiktok', labelFr: 'TikTok', labelAr: 'TikTok' },
     ],
@@ -389,57 +400,59 @@ export const serviceCategories: ServiceSector[] = [
     id: 'voix-off-doublage',
     labelFr: 'Voix off & doublage',
     labelAr: 'التعليق الصوتي والدبلجة', // REVIEW_AR_TRANSLATION
+    labelEn: 'Voice-over & dubbing',
     icon: 'mic', // FOUNDER-RULED, not measured — approved 2026-09-07, same status as H5's CATEGORY_ICONS map
     subcategories: [
-      { id: 'voix-off-publicite-fr', labelFr: 'Voix off publicité FR', labelAr: 'تعليق صوتي إعلاني بالفرنسية' }, // REVIEW_AR_TRANSLATION
-      { id: 'voix-off-publicite-ar', labelFr: 'Voix off publicité AR', labelAr: 'تعليق صوتي إعلاني بالعربية' }, // REVIEW_AR_TRANSLATION
-      { id: 'voix-off-publicite-en', labelFr: 'Voix off publicité EN', labelAr: 'تعليق صوتي إعلاني بالإنجليزية' }, // REVIEW_AR_TRANSLATION
-      { id: 'doublage-mena', labelFr: 'Doublage MENA (dialectes)', labelAr: 'دبلجة بلهجات الشرق الأوسط وشمال أفريقيا' }, // REVIEW_AR_TRANSLATION
-      { id: 'narration-documentaire-audiobook', labelFr: 'Narration documentaire & audiobook', labelAr: 'سرد وثائقي وكتاب صوتي' }, // REVIEW_AR_TRANSLATION
-      { id: 'voix-ivr-repondeur', labelFr: 'Voix IVR & répondeur téléphonique', labelAr: 'صوت IVR ورد آلي هاتفي' }, // REVIEW_AR_TRANSLATION
-      { id: 'chant-jingle-publicitaire', labelFr: 'Chant & jingle publicitaire', labelAr: 'غناء وجينغل إعلاني' }, // REVIEW_AR_TRANSLATION
+      { id: 'voix-off-publicite-fr', labelFr: 'Voix off publicité FR', labelAr: 'تعليق صوتي إعلاني بالفرنسية', labelEn: 'French advertising voice-over' }, // REVIEW_AR_TRANSLATION
+      { id: 'voix-off-publicite-ar', labelFr: 'Voix off publicité AR', labelAr: 'تعليق صوتي إعلاني بالعربية', labelEn: 'Arabic advertising voice-over' }, // REVIEW_AR_TRANSLATION
+      { id: 'voix-off-publicite-en', labelFr: 'Voix off publicité EN', labelAr: 'تعليق صوتي إعلاني بالإنجليزية', labelEn: 'English advertising voice-over' }, // REVIEW_AR_TRANSLATION
+      { id: 'doublage-mena', labelFr: 'Doublage MENA (dialectes)', labelAr: 'دبلجة بلهجات الشرق الأوسط وشمال أفريقيا', labelEn: 'MENA dubbing (dialects)' }, // REVIEW_AR_TRANSLATION
+      { id: 'narration-documentaire-audiobook', labelFr: 'Narration documentaire & audiobook', labelAr: 'سرد وثائقي وكتاب صوتي', labelEn: 'Documentary & audiobook narration' }, // REVIEW_AR_TRANSLATION
+      { id: 'voix-ivr-repondeur', labelFr: 'Voix IVR & répondeur téléphonique', labelAr: 'صوت IVR ورد آلي هاتفي', labelEn: 'IVR & voicemail voice' }, // REVIEW_AR_TRANSLATION
+      { id: 'chant-jingle-publicitaire', labelFr: 'Chant & jingle publicitaire', labelAr: 'غناء وجينغل إعلاني', labelEn: 'Singing & advertising jingles' }, // REVIEW_AR_TRANSLATION
     ],
     skills: [
       // FOUNDER-UNREVIEWED — starter list, not sourced from a measured frame or prior art. Feeds
       // H6's type-ahead, so a freelancer sees it as-is — review when H6's picker ships.
-      { id: 'voix-off', labelFr: 'voix off', labelAr: 'تعليق صوتي' }, // REVIEW_AR_TRANSLATION
-      { id: 'doublage', labelFr: 'doublage', labelAr: 'الدبلجة' },
+      { id: 'voix-off', labelFr: 'voix off', labelAr: 'تعليق صوتي', labelEn: 'voice-over' }, // REVIEW_AR_TRANSLATION
+      { id: 'doublage', labelFr: 'doublage', labelAr: 'الدبلجة', labelEn: 'dubbing' },
       { id: 'narration', labelFr: 'narration', labelAr: 'السرد' }, // REVIEW_AR_TRANSLATION
       { id: 'audiobook', labelFr: 'audiobook', labelAr: 'كتاب صوتي' },
       { id: 'jingle', labelFr: 'jingle', labelAr: 'جينغل' },
       { id: 'ivr', labelFr: 'IVR', labelAr: 'IVR' },
-      { id: 'dialecte-tunisien', labelFr: 'dialecte tunisien', labelAr: 'اللهجة التونسية' },
+      { id: 'dialecte-tunisien', labelFr: 'dialecte tunisien', labelAr: 'اللهجة التونسية', labelEn: 'Tunisian dialect' },
       { id: 'home-studio', labelFr: 'home studio', labelAr: 'استوديو منزلي' }, // REVIEW_AR_TRANSLATION
       { id: 'adobe-audition', labelFr: 'Adobe Audition', labelAr: 'Adobe Audition' },
-      { id: 'montage-audio', labelFr: 'montage audio', labelAr: 'مونتاج صوتي' }, // REVIEW_AR_TRANSLATION
+      { id: 'montage-audio', labelFr: 'montage audio', labelAr: 'مونتاج صوتي', labelEn: 'audio editing' }, // REVIEW_AR_TRANSLATION
     ],
   },
   {
     id: 'consulting-assistanat',
     labelFr: 'Consulting & assistanat',
     labelAr: 'الاستشارة والمساعدة', // "استشارة" established in ar.ts
+    labelEn: 'Consulting & admin support',
     icon: 'briefcase',
     subcategories: [
-      { id: 'business-plan-etude-de-marche', labelFr: 'Business plan & étude de marché', labelAr: 'خطة العمل ودراسة السوق' },
-      { id: 'dossier-bancaire-financement', labelFr: 'Dossier bancaire & financement (ANETI, BFPME)', labelAr: 'ملف بنكي وتمويل (ANETI, BFPME)' }, // REVIEW_AR_TRANSLATION
-      { id: 'assistance-administrative-a-distance', labelFr: 'Assistance administrative à distance', labelAr: 'مساعدة إدارية عن بعد' }, // REVIEW_AR_TRANSLATION
-      { id: 'saisie-mise-en-forme-documents', labelFr: 'Saisie & mise en forme documents', labelAr: 'إدخال وتنسيق الوثائق' }, // REVIEW_AR_TRANSLATION
-      { id: 'comptabilite-a-distance', labelFr: 'Comptabilité à distance (déclarations, TVA)', labelAr: 'محاسبة عن بعد (تصريحات، ضريبة القيمة المضافة)' }, // REVIEW_AR_TRANSLATION
-      { id: 'recherche-veille-concurrentielle', labelFr: 'Recherche & veille concurrentielle', labelAr: 'البحث ورصد المنافسين' }, // REVIEW_AR_TRANSLATION
-      { id: 'cv-lettre-de-motivation', labelFr: 'CV & lettre de motivation', labelAr: 'السيرة الذاتية ورسالة تحفيزية' }, // REVIEW_AR_TRANSLATION
+      { id: 'business-plan-etude-de-marche', labelFr: 'Business plan & étude de marché', labelAr: 'خطة العمل ودراسة السوق', labelEn: 'Business plan & market research' },
+      { id: 'dossier-bancaire-financement', labelFr: 'Dossier bancaire & financement (ANETI, BFPME)', labelAr: 'ملف بنكي وتمويل (ANETI, BFPME)', labelEn: 'Bank & funding applications (ANETI, BFPME)' }, // REVIEW_AR_TRANSLATION
+      { id: 'assistance-administrative-a-distance', labelFr: 'Assistance administrative à distance', labelAr: 'مساعدة إدارية عن بعد', labelEn: 'Remote admin support' }, // REVIEW_AR_TRANSLATION
+      { id: 'saisie-mise-en-forme-documents', labelFr: 'Saisie & mise en forme documents', labelAr: 'إدخال وتنسيق الوثائق', labelEn: 'Data entry & document formatting' }, // REVIEW_AR_TRANSLATION
+      { id: 'comptabilite-a-distance', labelFr: 'Comptabilité à distance (déclarations, TVA)', labelAr: 'محاسبة عن بعد (تصريحات، ضريبة القيمة المضافة)', labelEn: 'Remote bookkeeping (tax returns, VAT)' }, // REVIEW_AR_TRANSLATION
+      { id: 'recherche-veille-concurrentielle', labelFr: 'Recherche & veille concurrentielle', labelAr: 'البحث ورصد المنافسين', labelEn: 'Research & competitor monitoring' }, // REVIEW_AR_TRANSLATION
+      { id: 'cv-lettre-de-motivation', labelFr: 'CV & lettre de motivation', labelAr: 'السيرة الذاتية ورسالة تحفيزية', labelEn: 'CV & cover letter' }, // REVIEW_AR_TRANSLATION
     ],
     skills: [
       { id: 'business-plan', labelFr: 'business plan', labelAr: 'خطة العمل' },
-      { id: 'etude-de-marche', labelFr: 'étude de marché', labelAr: 'دراسة السوق' },
-      { id: 'assistance-virtuelle', labelFr: 'assistance virtuelle', labelAr: 'المساعدة الافتراضية' },
-      { id: 'comptabilite', labelFr: 'comptabilité', labelAr: 'المحاسبة' },
-      { id: 'gestion-de-projet', labelFr: 'gestion de projet', labelAr: 'إدارة المشاريع' },
+      { id: 'etude-de-marche', labelFr: 'étude de marché', labelAr: 'دراسة السوق', labelEn: 'market research' },
+      { id: 'assistance-virtuelle', labelFr: 'assistance virtuelle', labelAr: 'المساعدة الافتراضية', labelEn: 'virtual assistance' },
+      { id: 'comptabilite', labelFr: 'comptabilité', labelAr: 'المحاسبة', labelEn: 'bookkeeping' },
+      { id: 'gestion-de-projet', labelFr: 'gestion de projet', labelAr: 'إدارة المشاريع', labelEn: 'project management' },
       { id: 'excel', labelFr: 'Excel', labelAr: 'Excel' },
-      { id: 'presentation', labelFr: 'présentation', labelAr: 'العروض التقديمية' },
+      { id: 'presentation', labelFr: 'présentation', labelAr: 'العروض التقديمية', labelEn: 'presentation' },
       { id: 'powerpoint', labelFr: 'PowerPoint', labelAr: 'PowerPoint' },
-      { id: 'conseil', labelFr: 'conseil', labelAr: 'الاستشارة' },
-      { id: 'strategie', labelFr: 'stratégie', labelAr: 'الاستراتيجية' },
-      { id: 'administratif', labelFr: 'administratif', labelAr: 'الأعمال الإدارية' },
+      { id: 'conseil', labelFr: 'conseil', labelAr: 'الاستشارة', labelEn: 'consulting' },
+      { id: 'strategie', labelFr: 'stratégie', labelAr: 'الاستراتيجية', labelEn: 'strategy' },
+      { id: 'administratif', labelFr: 'administratif', labelAr: 'الأعمال الإدارية', labelEn: 'admin' },
       { id: 'crm', labelFr: 'CRM', labelAr: 'CRM' },
       { id: 'notion', labelFr: 'Notion', labelAr: 'Notion' },
     ],
@@ -452,12 +465,12 @@ export const serviceCategories: ServiceSector[] = [
     labelAr: 'العلامة الشخصية', // REVIEW_AR_TRANSLATION
     icon: 'user-round', // FOUNDER-RULED, not measured — approved 2026-09-07, same status as H5's CATEGORY_ICONS map
     subcategories: [
-      { id: 'strategie-positionnement-marque-personnelle', labelFr: 'Stratégie & positionnement marque personnelle', labelAr: 'استراتيجية وتموضع العلامة الشخصية' }, // REVIEW_AR_TRANSLATION
-      { id: 'optimisation-profil-linkedin', labelFr: 'Optimisation profil LinkedIn', labelAr: 'تحسين ملف LinkedIn الشخصي' }, // REVIEW_AR_TRANSLATION
-      { id: 'ligne-editoriale-personnelle', labelFr: 'Ligne éditoriale personnelle', labelAr: 'الخط التحريري الشخصي' }, // REVIEW_AR_TRANSLATION
-      { id: 'bio-storytelling-professionnel', labelFr: 'Bio & storytelling professionnel', labelAr: 'السيرة والسرد القصصي المهني' }, // REVIEW_AR_TRANSLATION
-      { id: 'photo-de-profil', labelFr: 'Photo de profil (retouche & optimisation)', labelAr: 'صورة الملف الشخصي (تعديل وتحسين)' },
-      { id: 'coaching-prise-de-parole-video', labelFr: 'Coaching prise de parole vidéo', labelAr: 'تدريب على التحدث أمام الكاميرا' }, // REVIEW_AR_TRANSLATION
+      { id: 'strategie-positionnement-marque-personnelle', labelFr: 'Stratégie & positionnement marque personnelle', labelAr: 'استراتيجية وتموضع العلامة الشخصية', labelEn: 'Personal brand strategy & positioning' }, // REVIEW_AR_TRANSLATION
+      { id: 'optimisation-profil-linkedin', labelFr: 'Optimisation profil LinkedIn', labelAr: 'تحسين ملف LinkedIn الشخصي', labelEn: 'LinkedIn profile optimisation' }, // REVIEW_AR_TRANSLATION
+      { id: 'ligne-editoriale-personnelle', labelFr: 'Ligne éditoriale personnelle', labelAr: 'الخط التحريري الشخصي', labelEn: 'Personal content strategy' }, // REVIEW_AR_TRANSLATION
+      { id: 'bio-storytelling-professionnel', labelFr: 'Bio & storytelling professionnel', labelAr: 'السيرة والسرد القصصي المهني', labelEn: 'Professional bio & storytelling' }, // REVIEW_AR_TRANSLATION
+      { id: 'photo-de-profil', labelFr: 'Photo de profil (retouche & optimisation)', labelAr: 'صورة الملف الشخصي (تعديل وتحسين)', labelEn: 'Profile photo (retouching & optimisation)' },
+      { id: 'coaching-prise-de-parole-video', labelFr: 'Coaching prise de parole vidéo', labelAr: 'تدريب على التحدث أمام الكاميرا', labelEn: 'On-camera speaking coaching' }, // REVIEW_AR_TRANSLATION
     ],
     skills: [
       // FOUNDER-UNREVIEWED — starter list, not sourced from a measured frame or prior art. Feeds
@@ -465,11 +478,11 @@ export const serviceCategories: ServiceSector[] = [
       { id: 'linkedin', labelFr: 'LinkedIn', labelAr: 'LinkedIn' },
       { id: 'personal-branding', labelFr: 'personal branding', labelAr: 'العلامة الشخصية' }, // REVIEW_AR_TRANSLATION
       { id: 'storytelling', labelFr: 'storytelling', labelAr: 'السرد القصصي' },
-      { id: 'bio-professionnelle', labelFr: 'bio professionnelle', labelAr: 'السيرة المهنية' }, // REVIEW_AR_TRANSLATION
-      { id: 'photo-de-profil', labelFr: 'photo de profil', labelAr: 'صورة الملف الشخصي' },
-      { id: 'prise-de-parole', labelFr: 'prise de parole', labelAr: 'التحدث أمام الجمهور' }, // REVIEW_AR_TRANSLATION
-      { id: 'coaching-video', labelFr: 'coaching vidéo', labelAr: 'تدريب فيديو' }, // REVIEW_AR_TRANSLATION
-      { id: 'positionnement-de-marque', labelFr: 'positionnement de marque', labelAr: 'تموضع العلامة' }, // REVIEW_AR_TRANSLATION
+      { id: 'bio-professionnelle', labelFr: 'bio professionnelle', labelAr: 'السيرة المهنية', labelEn: 'professional bio' }, // REVIEW_AR_TRANSLATION
+      { id: 'photo-de-profil', labelFr: 'photo de profil', labelAr: 'صورة الملف الشخصي', labelEn: 'Profile photo (retouching & optimisation)' },
+      { id: 'prise-de-parole', labelFr: 'prise de parole', labelAr: 'التحدث أمام الجمهور', labelEn: 'public speaking' }, // REVIEW_AR_TRANSLATION
+      { id: 'coaching-video', labelFr: 'coaching vidéo', labelAr: 'تدريب فيديو', labelEn: 'video coaching' }, // REVIEW_AR_TRANSLATION
+      { id: 'positionnement-de-marque', labelFr: 'positionnement de marque', labelAr: 'تموضع العلامة', labelEn: 'brand positioning' }, // REVIEW_AR_TRANSLATION
     ],
   },
   {
@@ -481,15 +494,16 @@ export const serviceCategories: ServiceSector[] = [
     id: 'coaching-meta-ads',
     labelFr: 'Coaching Meta Ads',
     labelAr: 'تدريب على إعلانات Meta', // REVIEW_AR_TRANSLATION
+    labelEn: 'Meta Ads coaching',
     icon: 'target', // FOUNDER-RULED, not measured — approved 2026-09-07, same status as H5's CATEGORY_ICONS map
     subcategories: [
-      { id: 'initiation-meta-ads-debutant', labelFr: 'Initiation Meta Ads (débutant)', labelAr: 'مبادئ إعلانات Meta (مبتدئ)' }, // REVIEW_AR_TRANSLATION
-      { id: 'meta-ads-avance', labelFr: 'Meta Ads avancé (scaling & optimisation)', labelAr: 'إعلانات Meta متقدم (توسيع وتحسين)' }, // REVIEW_AR_TRANSLATION
-      { id: 'configuration-business-manager', labelFr: 'Configuration Business Manager', labelAr: 'إعداد Business Manager' },
-      { id: 'pixel-api-conversions', labelFr: 'Pixel & API Conversions', labelAr: 'Pixel وAPI التحويلات' },
-      { id: 'formation-dropshipping-avec-meta', labelFr: 'Formation dropshipping avec Meta', labelAr: 'تدريب على الدروبشيبينغ عبر Meta' }, // REVIEW_AR_TRANSLATION
-      { id: 'audit-compte-meta-ads-existant', labelFr: 'Audit compte Meta Ads existant', labelAr: 'تدقيق حساب Meta Ads قائم' }, // REVIEW_AR_TRANSLATION
-      { id: 'coaching-campagne-en-cours-live', labelFr: 'Coaching campagne en cours (live)', labelAr: 'تدريب مباشر على حملة جارية' }, // REVIEW_AR_TRANSLATION
+      { id: 'initiation-meta-ads-debutant', labelFr: 'Initiation Meta Ads (débutant)', labelAr: 'مبادئ إعلانات Meta (مبتدئ)', labelEn: 'Meta Ads basics (beginner)' }, // REVIEW_AR_TRANSLATION
+      { id: 'meta-ads-avance', labelFr: 'Meta Ads avancé (scaling & optimisation)', labelAr: 'إعلانات Meta متقدم (توسيع وتحسين)', labelEn: 'Advanced Meta Ads (scaling & optimisation)' }, // REVIEW_AR_TRANSLATION
+      { id: 'configuration-business-manager', labelFr: 'Configuration Business Manager', labelAr: 'إعداد Business Manager', labelEn: 'Business Manager setup' },
+      { id: 'pixel-api-conversions', labelFr: 'Pixel & API Conversions', labelAr: 'Pixel وAPI التحويلات', labelEn: 'Pixel & Conversions API' },
+      { id: 'formation-dropshipping-avec-meta', labelFr: 'Formation dropshipping avec Meta', labelAr: 'تدريب على الدروبشيبينغ عبر Meta', labelEn: 'Dropshipping with Meta training' }, // REVIEW_AR_TRANSLATION
+      { id: 'audit-compte-meta-ads-existant', labelFr: 'Audit compte Meta Ads existant', labelAr: 'تدقيق حساب Meta Ads قائم', labelEn: 'Existing Meta Ads account audit' }, // REVIEW_AR_TRANSLATION
+      { id: 'coaching-campagne-en-cours-live', labelFr: 'Coaching campagne en cours (live)', labelAr: 'تدريب مباشر على حملة جارية', labelEn: 'Live campaign coaching' }, // REVIEW_AR_TRANSLATION
     ],
     skills: [
       // FOUNDER-UNREVIEWED — starter list, not sourced from a measured frame or prior art. Feeds
@@ -512,16 +526,17 @@ export const serviceCategories: ServiceSector[] = [
     id: 'coaching-ecommerce',
     labelFr: 'Coaching e-commerce',
     labelAr: 'تدريب على التجارة الإلكترونية', // REVIEW_AR_TRANSLATION
+    labelEn: 'E-commerce coaching',
     icon: 'shopping-cart', // FOUNDER-RULED, not measured — approved 2026-09-07, same status as H5's CATEGORY_ICONS map
     subcategories: [
-      { id: 'initiation-shopify-debutant', labelFr: 'Initiation Shopify (débutant)', labelAr: 'مبادئ Shopify (مبتدئ)' },
-      { id: 'initiation-woocommerce-debutant', labelFr: 'Initiation WooCommerce (débutant)', labelAr: 'مبادئ WooCommerce (مبتدئ)' },
-      { id: 'strategie-dropshipping', labelFr: 'Stratégie dropshipping', labelAr: 'استراتيجية الدروبشيبينغ' }, // REVIEW_AR_TRANSLATION
-      { id: 'choix-de-produit-gagnant', labelFr: 'Choix de produit gagnant', labelAr: 'اختيار المنتج الرابح' }, // REVIEW_AR_TRANSLATION
-      { id: 'optimisation-tunnel-de-vente', labelFr: 'Optimisation tunnel de vente', labelAr: 'تحسين قمع المبيعات' }, // REVIEW_AR_TRANSLATION
-      { id: 'logistique-cod-tunisie', labelFr: 'Logistique & COD Tunisie', labelAr: 'اللوجستيات والدفع عند الاستلام في تونس' }, // REVIEW_AR_TRANSLATION
-      { id: 'audit-boutique-existante', labelFr: 'Audit boutique existante', labelAr: 'تدقيق متجر قائم' }, // REVIEW_AR_TRANSLATION
-      { id: 'coaching-lancement-boutique', labelFr: 'Coaching lancement boutique', labelAr: 'تدريب على إطلاق متجر' }, // REVIEW_AR_TRANSLATION
+      { id: 'initiation-shopify-debutant', labelFr: 'Initiation Shopify (débutant)', labelAr: 'مبادئ Shopify (مبتدئ)', labelEn: 'Shopify basics (beginner)' },
+      { id: 'initiation-woocommerce-debutant', labelFr: 'Initiation WooCommerce (débutant)', labelAr: 'مبادئ WooCommerce (مبتدئ)', labelEn: 'WooCommerce basics (beginner)' },
+      { id: 'strategie-dropshipping', labelFr: 'Stratégie dropshipping', labelAr: 'استراتيجية الدروبشيبينغ', labelEn: 'Dropshipping strategy' }, // REVIEW_AR_TRANSLATION
+      { id: 'choix-de-produit-gagnant', labelFr: 'Choix de produit gagnant', labelAr: 'اختيار المنتج الرابح', labelEn: 'Picking a winning product' }, // REVIEW_AR_TRANSLATION
+      { id: 'optimisation-tunnel-de-vente', labelFr: 'Optimisation tunnel de vente', labelAr: 'تحسين قمع المبيعات', labelEn: 'Sales funnel optimisation' }, // REVIEW_AR_TRANSLATION
+      { id: 'logistique-cod-tunisie', labelFr: 'Logistique & COD Tunisie', labelAr: 'اللوجستيات والدفع عند الاستلام في تونس', labelEn: 'Logistics & cash on delivery in Tunisia' }, // REVIEW_AR_TRANSLATION
+      { id: 'audit-boutique-existante', labelFr: 'Audit boutique existante', labelAr: 'تدقيق متجر قائم', labelEn: 'Existing shop audit' }, // REVIEW_AR_TRANSLATION
+      { id: 'coaching-lancement-boutique', labelFr: 'Coaching lancement boutique', labelAr: 'تدريب على إطلاق متجر', labelEn: 'Shop launch coaching' }, // REVIEW_AR_TRANSLATION
     ],
     skills: [
       // FOUNDER-UNREVIEWED — starter list, not sourced from a measured frame or prior art. Feeds
@@ -529,12 +544,12 @@ export const serviceCategories: ServiceSector[] = [
       { id: 'shopify', labelFr: 'Shopify', labelAr: 'Shopify' },
       { id: 'woocommerce', labelFr: 'WooCommerce', labelAr: 'WooCommerce' },
       { id: 'dropshipping', labelFr: 'dropshipping', labelAr: 'الدروبشيبينغ' },
-      { id: 'cod', labelFr: 'COD', labelAr: 'الدفع عند الاستلام' }, // REVIEW_AR_TRANSLATION
-      { id: 'produit-gagnant', labelFr: 'produit gagnant', labelAr: 'المنتج الرابح' }, // REVIEW_AR_TRANSLATION
-      { id: 'tunnel-de-vente', labelFr: 'tunnel de vente', labelAr: 'قمع المبيعات' }, // REVIEW_AR_TRANSLATION
-      { id: 'logistique', labelFr: 'logistique', labelAr: 'اللوجستيات' },
-      { id: 'e-commerce-tunisie', labelFr: 'e-commerce Tunisie', labelAr: 'التجارة الإلكترونية في تونس' }, // REVIEW_AR_TRANSLATION
-      { id: 'fournisseurs', labelFr: 'fournisseurs', labelAr: 'الموردون' }, // REVIEW_AR_TRANSLATION
+      { id: 'cod', labelFr: 'COD', labelAr: 'الدفع عند الاستلام', labelEn: 'cash on delivery' }, // REVIEW_AR_TRANSLATION
+      { id: 'produit-gagnant', labelFr: 'produit gagnant', labelAr: 'المنتج الرابح', labelEn: 'winning product' }, // REVIEW_AR_TRANSLATION
+      { id: 'tunnel-de-vente', labelFr: 'tunnel de vente', labelAr: 'قمع المبيعات', labelEn: 'sales funnel' }, // REVIEW_AR_TRANSLATION
+      { id: 'logistique', labelFr: 'logistique', labelAr: 'اللوجستيات', labelEn: 'logistics' },
+      { id: 'e-commerce-tunisie', labelFr: 'e-commerce Tunisie', labelAr: 'التجارة الإلكترونية في تونس', labelEn: 'e-commerce in Tunisia' }, // REVIEW_AR_TRANSLATION
+      { id: 'fournisseurs', labelFr: 'fournisseurs', labelAr: 'الموردون', labelEn: 'suppliers' }, // REVIEW_AR_TRANSLATION
       { id: 'meta-ads', labelFr: 'Meta Ads', labelAr: 'Meta Ads' },
     ],
   },

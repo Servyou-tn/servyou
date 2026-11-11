@@ -49,7 +49,7 @@ const CLIENT_TYPE: Record<EngagementClientType, { icon: LucideIcon; labelKey: st
 export function EngagementRow({ engagement: e, lang }: { engagement: Engagement; lang: Lang }) {
   const pill = statusPillFor(e.status, 'service')
   const sector = e.categorySlug ? getSector(e.categorySlug) : undefined
-  const category = sector ? (lang === 'ar' ? sector.labelAr : sector.labelFr) : null
+  const category = sector ? (lang === 'ar' ? sector.labelAr : lang === 'en' ? (sector.labelEn ?? sector.labelFr) : sector.labelFr) : null
   const CategoryIcon = (e.categorySlug && CATEGORY_ICONS[e.categorySlug]) || Wrench
   const client = CLIENT_TYPE[e.clientType]
   const ClientIcon = client.icon
