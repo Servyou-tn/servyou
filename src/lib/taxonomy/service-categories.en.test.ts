@@ -3,7 +3,7 @@ import { serviceCategories } from './service-categories'
 import { skillLabel, skillLabelPair, skillTextLabel } from '@/lib/freelance/service-draft'
 
 // A label with French accents or French link words is not a brand name: it needs an English label.
-const looksFrench = (s: string) => /[éèêàâçùûôîï]|\b(de|des|du|la|le|les|et|à|sur|mesure)\b/i.test(s)
+const looksFrench = (s: string) => /[éèêàâçùûôîï]|\b(de|des|du|la|le|les|et|à|sur|mesure)\b|\b[dl]'/i.test(s)
 
 describe('service taxonomy in English', () => {
   it('every French-worded sector, subcategory and skill has an English label', () => {
@@ -20,6 +20,10 @@ describe('service taxonomy in English', () => {
     expect(skillLabel('typographie', 'fr')).toBe('typographie')
     expect(skillLabel('react', 'en')).toBe('React')
     expect(skillLabelPair('relecture')).toEqual({ fr: 'relecture', ar: expect.any(String), en: 'proofreading' })
+    // A skill that shares its id with a subcategory keeps its own short, lower-case English.
+    expect(skillLabel('copywriting', 'en')).toBe('copywriting')
+    expect(skillLabel('photo-de-profil', 'en')).toBe('profile photo')
+    expect(skillLabel('traduction', 'en')).toBe('translation')
   })
 
   it('a skill stored as French text shows in English; custom text and FR / AR stay as stored', () => {

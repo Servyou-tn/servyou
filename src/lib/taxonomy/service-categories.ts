@@ -210,7 +210,7 @@ export const serviceCategories: ServiceSector[] = [
       { id: 'wireframe-prototype-interactif', labelFr: 'Wireframe & prototype interactif', labelAr: 'مخطط هيكلي ونموذج أولي تفاعلي', labelEn: 'Wireframe & interactive prototype' }, // REVIEW_AR_TRANSLATION
       { id: 'audit-ux-recommandations', labelFr: 'Audit UX & recommandations', labelAr: 'تدقيق تجربة المستخدم وتوصيات', labelEn: 'UX audit & recommendations' }, // REVIEW_AR_TRANSLATION
       { id: 'design-system-composants', labelFr: 'Design system & composants', labelAr: 'نظام التصميم والمكونات', labelEn: 'Design system & components' }, // REVIEW_AR_TRANSLATION
-      { id: 'refonte-dinterface-existante', labelFr: "Refonte d'interface existante", labelAr: 'إعادة تصميم واجهة قائمة' }, // REVIEW_AR_TRANSLATION
+      { id: 'refonte-dinterface-existante', labelFr: "Refonte d'interface existante", labelAr: 'إعادة تصميم واجهة قائمة', labelEn: 'Redesign of an existing interface' }, // REVIEW_AR_TRANSLATION
     ],
     skills: [
       { id: 'figma', labelFr: 'Figma', labelAr: 'Figma' },
@@ -318,7 +318,7 @@ export const serviceCategories: ServiceSector[] = [
     ],
     skills: [
       { id: 'redaction-web', labelFr: 'rédaction web', labelAr: 'الكتابة للويب', labelEn: 'web writing' },
-      { id: 'copywriting', labelFr: 'copywriting', labelAr: 'الكتابة الإعلانية', labelEn: 'Copywriting (sales page, funnel)' }, // REVIEW_AR_TRANSLATION: same AR as marketing-digital's `copywriting-publicitaire`
+      { id: 'copywriting', labelFr: 'copywriting', labelAr: 'الكتابة الإعلانية', labelEn: 'copywriting' }, // REVIEW_AR_TRANSLATION: same AR as marketing-digital's `copywriting-publicitaire`
       { id: 'seo-writing', labelFr: 'SEO writing', labelAr: 'الكتابة المحسنة لمحركات البحث' }, // REVIEW_AR_TRANSLATION
       { id: 'article', labelFr: 'article', labelAr: 'مقال' },
       { id: 'blog', labelFr: 'blog', labelAr: 'مدونة' },
@@ -349,7 +349,7 @@ export const serviceCategories: ServiceSector[] = [
       { id: 'transcription-audio', labelFr: 'Transcription audio', labelAr: 'النسخ الصوتي', labelEn: 'Audio transcription' },
     ],
     skills: [
-      { id: 'traduction', labelFr: 'traduction', labelAr: 'الترجمة', labelEn: 'Translation' },
+      { id: 'traduction', labelFr: 'traduction', labelAr: 'الترجمة', labelEn: 'translation' },
       { id: 'francais', labelFr: 'français', labelAr: 'الفرنسية', labelEn: 'French' },
       { id: 'arabe', labelFr: 'arabe', labelAr: 'العربية', labelEn: 'Arabic' },
       { id: 'anglais', labelFr: 'anglais', labelAr: 'الإنجليزية', labelEn: 'English' },
@@ -479,7 +479,7 @@ export const serviceCategories: ServiceSector[] = [
       { id: 'personal-branding', labelFr: 'personal branding', labelAr: 'العلامة الشخصية' }, // REVIEW_AR_TRANSLATION
       { id: 'storytelling', labelFr: 'storytelling', labelAr: 'السرد القصصي' },
       { id: 'bio-professionnelle', labelFr: 'bio professionnelle', labelAr: 'السيرة المهنية', labelEn: 'professional bio' }, // REVIEW_AR_TRANSLATION
-      { id: 'photo-de-profil', labelFr: 'photo de profil', labelAr: 'صورة الملف الشخصي', labelEn: 'Profile photo (retouching & optimisation)' },
+      { id: 'photo-de-profil', labelFr: 'photo de profil', labelAr: 'صورة الملف الشخصي', labelEn: 'profile photo' },
       { id: 'prise-de-parole', labelFr: 'prise de parole', labelAr: 'التحدث أمام الجمهور', labelEn: 'public speaking' }, // REVIEW_AR_TRANSLATION
       { id: 'coaching-video', labelFr: 'coaching vidéo', labelAr: 'تدريب فيديو', labelEn: 'video coaching' }, // REVIEW_AR_TRANSLATION
       { id: 'positionnement-de-marque', labelFr: 'positionnement de marque', labelAr: 'تموضع العلامة', labelEn: 'brand positioning' }, // REVIEW_AR_TRANSLATION

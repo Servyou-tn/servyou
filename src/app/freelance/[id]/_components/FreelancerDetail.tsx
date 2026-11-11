@@ -14,6 +14,7 @@ import { PublicServiceCard } from './PublicServiceCard'
 import { ActionsRow } from './ActionsRow'
 import { StickyBar } from './StickyBar'
 import { SectionNav, type NavSection } from './SectionNav'
+import { skillTextLabel } from '@/lib/freelance/service-draft'
 
 // D4 « Profil freelance public » — rebuilt from Figma 390:10676, measured in the D4 discovery
 // pass. Single stacked column throughout, same skeleton as D3 (hero card + N boxes), but WITH a
@@ -201,7 +202,7 @@ export function FreelancerDetail({
               <div className="flex flex-wrap gap-2">
                 {freelancer.skills.map((skill) => (
                   <span key={skill} className="rounded-md bg-surface-sunken px-3 py-1 text-body-sm font-medium text-text-secondary">
-                    {skill}
+                    {skillTextLabel(skill, lang)}
                   </span>
                 ))}
               </div>
