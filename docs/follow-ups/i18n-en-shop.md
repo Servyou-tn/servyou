@@ -36,3 +36,12 @@ Not a Shop-agent job; no migrations allowed here.
 This PR fixed the two product / shop twins (`ProduitsFilterBar`, `BoutiquesFilterBar`: « Sort by: Newest »); the services one belongs to the
 Freelancer agent.
 **Trigger**: same one-line fix, `lang === 'en' ? ': ' : ' : '`.
+
+## `tndPriceGrouped` formats every language as `fr-FR`
+
+**What**: `src/components/listings/listing-utils.ts:37` calls `toLocaleString('fr-FR')` whatever the language. In English the buyer's order
+totals read « 1 250,5 TND » (narrow no-break space, decimal comma) instead of « 1,250.5 TND ». Callers: `mes-commandes/_components/ProductOrdersList.tsx:60`,
+`OrdersList.tsx:82`, `demander/succes/page.tsx:76` (admin also calls it, but admin stays French). The seller dashboard number was fixed in this PR.
+**Why deferred**: it is a shared util (`src/components/listings`), and the README says shared components are the architect's. Arabic must keep `fr-FR` (#304).
+**Where it lives**: `listing-utils.ts` — it needs `lang` passed in, or a `lang` parameter on `tndPriceGrouped`.
+**Trigger**: one-line fix `lang === 'en' ? LOCALES.en : 'fr-FR'` once the founder OKs touching the shared util.
