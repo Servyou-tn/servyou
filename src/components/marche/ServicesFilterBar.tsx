@@ -19,6 +19,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { HitArea } from '@/components/ui/interactive-surface'
+import { localName } from '@/lib/i18n/local-name'
 
 // The desktop (lg+) filter bar for /marche/services — the Figma moves filtering out of the
 // sidebar into a top bar (611:45644): an in-page search, single-select Catégorie / Ville
@@ -114,7 +115,7 @@ export function ServicesFilterBar({
     router.push(qs ? `${path}?${qs}` : path)
   }
 
-  const label = (c: FilterCategory) => (lang === 'ar' ? c.name_ar : c.name_fr)
+  const label = (c: FilterCategory) => (localName(c, lang))
   const catName = (slug: string) => {
     const c = scopedCategory?.slug === slug ? scopedCategory : categories.find((x) => x.slug === slug)
     return c ? label(c) : slug

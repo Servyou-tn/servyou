@@ -14,6 +14,7 @@ import { skillLabel } from '@/lib/freelance/service-draft'
 import { formatServicePrice, servicePriceLabel } from '@/lib/freelance/service-price'
 import { ReportListingModal } from '@/components/report/ReportListingModal'
 import { HitArea } from '@/components/ui/interactive-surface'
+import { localName } from '@/lib/i18n/local-name'
 
 // D2 — service detail. Measured against Figma 666:55479 (1440) and 668:55920 (375).
 //
@@ -76,7 +77,7 @@ export function ServiceDetail({
   // every block 20 apart.
   // The DOM is the MOBILE order, so the tab order follows what is seen (WCAG 2.4.3); the desktop order (price · CTA · favori / partager · freelancer · COD)
   // is `lg:order-N`, dividers included. Only the freelancer row renders twice (below).
-  const pick = (n: { fr: string; ar: string | null } | null) => (n ? (lang === 'ar' && n.ar ? n.ar : n.fr) : null)
+  const pick = (n: { fr: string; ar: string | null; en?: string | null } | null) => (n ? localName({ name_fr: n.fr, name_ar: n.ar, name_en: n.en }, lang) : null)
   const category = pick(service.category)
   const subcategory = pick(service.subcategory)
   const profileHref = service.freelancerProfileId ? `/freelance/${service.freelancerProfileId}` : null

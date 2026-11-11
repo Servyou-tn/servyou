@@ -85,8 +85,8 @@ type ProductRow = {
   // Added for C1's card, which carries a category chip on the cover (Figma 569:39818). Same shape
   // and same embed the service row already uses — both localized at the card, never here.
   categories:
-    | { name_fr: string; name_ar: string }
-    | { name_fr: string; name_ar: string }[]
+    | { name_fr: string; name_ar: string; name_en: string | null }
+    | { name_fr: string; name_ar: string; name_en: string | null }[]
     | null
 }
 
@@ -106,7 +106,7 @@ function mapProduct(row: ProductRow): ProductListing {
     // OPTIONAL on ProductListing, deliberately: `ProductListingCard` and its three surfaces
     // (/recherche, /categories/[slug], ConsumerHomepage) do not read it and must not have to.
     // Both names travel; the consumer picks by lang, as ServiceListingCard already does.
-    category: cat ? { name_fr: cat.name_fr, name_ar: cat.name_ar } : null,
+    category: cat ? { name_fr: cat.name_fr, name_ar: cat.name_ar, name_en: cat.name_en } : null,
   }
 }
 
@@ -125,8 +125,8 @@ type ServiceRow = {
     | { profile_id: string; city: string | null }[]
     | null
   categories:
-    | { name_fr: string; name_ar: string }
-    | { name_fr: string; name_ar: string }[]
+    | { name_fr: string; name_ar: string; name_en: string | null }
+    | { name_fr: string; name_ar: string; name_en: string | null }[]
     | null
 }
 
@@ -217,7 +217,7 @@ async function fetchProducts(
   let query = supabase
     .from('products')
     .select(
-      'id, title, description, price_tnd, created_at, category_id, shops!inner(name, city, admin_hidden_at), product_images(image_url, display_order), categories(name_fr, name_ar)',
+      'id, title, description, price_tnd, created_at, category_id, shops!inner(name, city, admin_hidden_at), product_images(image_url, display_order), categories(name_fr, name_ar, name_en)',
     )
     .eq('status', 'active')
     .is('admin_hidden_at', null)
@@ -252,7 +252,7 @@ async function fetchServices(
   let query = supabase
     .from('service_listings')
     .select(
-      'id, title, description, short_description, starting_price_tnd, price_unit, delivery_time, tags, created_at, category_id, freelancer_profiles!inner(profile_id, city, admin_hidden_at), categories!service_listings_category_id_fkey(name_fr, name_ar)',
+      'id, title, description, short_description, starting_price_tnd, price_unit, delivery_time, tags, created_at, category_id, freelancer_profiles!inner(profile_id, city, admin_hidden_at), categories!service_listings_category_id_fkey(name_fr, name_ar, name_en)',
     )
     .eq('status', 'active')
     .is('admin_hidden_at', null)
@@ -303,7 +303,7 @@ async function fetchServices(
         // required to publish; 8 of the 21 older listings have none, and the card falls back to the
         // category label for those — see ServiceListingCard.
         tags: (row.tags ?? []).map(skillLabelPair),
-        category: cat ? { name_fr: cat.name_fr, name_ar: cat.name_ar } : null,
+        category: cat ? { name_fr: cat.name_fr, name_ar: cat.name_ar, name_en: cat.name_en } : null,
         freelancer: {
           full_name: (fp?.profile_id ? names.get(fp.profile_id) : '') ?? '',
           city: fp?.city ?? null,

@@ -77,7 +77,7 @@ export async function getSentProposal(jobPostId: string, userId: string): Promis
     .select(
       `id, created_at, proposal_message, proposed_price_tnd, proposed_timeframe, portfolio_links,
        job_response_skills ( skill ),
-       job_posts ( id, title, consumer_id, response_count, categories ( slug, name_fr, name_ar ) )`,
+       job_posts ( id, title, consumer_id, response_count, categories ( slug, name_fr, name_ar, name_en ) )`,
     )
     .eq('job_post_id', jobPostId)
     .eq('freelancer_id', userId)

@@ -88,6 +88,7 @@ export type AnnonceDetailData = {
   updatedAt: string
   category: string | null
   categoryAr: string | null
+  categoryEn: string | null
   /** categories.slug — picks the category chip's icon (CATEGORY_ICONS). */
   categorySlug: string | null
   skills: string[]
@@ -120,7 +121,7 @@ type AnnonceRow = {
   status: 'open' | 'filled' | 'expired' | 'deleted'
   created_at: string
   updated_at: string
-  categories: { name_fr: string; name_ar: string | null; slug: string } | { name_fr: string; name_ar: string | null; slug: string }[] | null
+  categories: { name_fr: string; name_ar: string | null; name_en: string | null; slug: string } | { name_fr: string; name_ar: string | null; name_en: string | null; slug: string }[] | null
   job_post_skills: { skill: string }[] | null
   admin_hidden_at: string | null
 }
@@ -136,7 +137,7 @@ export const getAnnonceDetail = cache(
         // has no client SELECT grant once moderation_reason_owner_admin_only applies (founder ruling 9).
         `id, consumer_id, title, description, budget_min, budget_max, city, is_remote,
          deadline, status, created_at, updated_at, admin_hidden_at,
-         categories ( name_fr, name_ar, slug ),
+         categories ( name_fr, name_ar, name_en, slug ),
          job_post_skills ( skill )`,
       )
       .eq('id', annonceId)
@@ -238,6 +239,7 @@ export const getAnnonceDetail = cache(
       updatedAt: row.updated_at,
       category: one(row.categories)?.name_fr ?? null,
       categoryAr: one(row.categories)?.name_ar ?? null,
+      categoryEn: one(row.categories)?.name_en ?? null,
       categorySlug: one(row.categories)?.slug ?? null,
       skills: (row.job_post_skills ?? []).map((s) => s.skill),
       adminHiddenAt: row.admin_hidden_at ?? null,

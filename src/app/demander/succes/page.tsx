@@ -51,7 +51,8 @@ function Card({ children, className }: { children: React.ReactNode; className?: 
 // returned untouched.
 const isolateLtr = (value: string, lang: Lang) => (lang === 'ar' ? `\u2066${value}\u2069` : value)
 const isolateAuto = (value: string, lang: Lang) => (lang === 'ar' ? `\u2068${value}\u2069` : value)
-const categoryName = (order: OrderDetail, lang: Lang) => (lang === 'ar' && order.item.categoryAr ? order.item.categoryAr : order.item.category)
+const categoryName = (order: OrderDetail, lang: Lang) =>
+  lang === 'ar' && order.item.categoryAr ? order.item.categoryAr : lang === 'en' && order.item.categoryEn ? order.item.categoryEn : order.item.category
 
 // ⚑ `valueDir` is OPT-IN per call site, not a blanket rule on the component. A phone number or a
 // street address is digits/Latin content that must read as one coherent LTR unit regardless of

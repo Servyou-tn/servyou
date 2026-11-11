@@ -52,7 +52,7 @@ export async function getMyProposals(
     .from('job_responses')
     .select(
       `id, job_post_id, created_at, proposed_price_tnd, proposed_timeframe, status,
-       job_posts ( id, title, status, created_at, consumer_id, categories ( slug, name_fr, name_ar ) )`,
+       job_posts ( id, title, status, created_at, consumer_id, categories ( slug, name_fr, name_ar, name_en ) )`,
     )
     .eq('freelancer_id', userId)
     .order('created_at', { ascending: false })

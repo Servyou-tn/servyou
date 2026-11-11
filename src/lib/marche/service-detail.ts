@@ -31,7 +31,7 @@ function asMode(v: string | null | undefined): DeliveryMode | null {
   return v != null && MODES.includes(v) ? (v as DeliveryMode) : null
 }
 
-export type CategoryName = { fr: string; ar: string | null }
+export type CategoryName = { fr: string; ar: string | null; en?: string | null }
 
 export type ServiceDetailData = {
   id: string
@@ -63,10 +63,10 @@ export type ServiceDetailData = {
   tags: string[]
 }
 
-type CategoryRow = { name_fr: string; name_ar: string | null }
+type CategoryRow = { name_fr: string; name_ar: string | null; name_en: string | null }
 const categoryName = (embed: CategoryRow | CategoryRow[] | null | undefined): CategoryName | null => {
   const c = one(embed)
-  return c ? { fr: c.name_fr, ar: c.name_ar ?? null } : null
+  return c ? { fr: c.name_fr, ar: c.name_ar ?? null, en: c.name_en ?? null } : null
 }
 
 type DetailRow = {
@@ -97,8 +97,8 @@ export const getServiceDetail = cache(async (id: string): Promise<ServiceDetailD
     .select(
       `id, title, description, starting_price_tnd, price_unit, delivery_time, status, category_id, freelancer_profile_id,
        deliverables, delivery_mode, revisions_count, tags,
-       categories!service_listings_category_id_fkey ( name_fr, name_ar ),
-       subcategory:categories!service_listings_subcategory_id_fkey ( name_fr, name_ar ),
+       categories!service_listings_category_id_fkey ( name_fr, name_ar, name_en ),
+       subcategory:categories!service_listings_subcategory_id_fkey ( name_fr, name_ar, name_en ),
        freelancer_profiles!inner ( id, profile_id, city, headline, admin_hidden_at )`,
     )
     .eq('id', id)

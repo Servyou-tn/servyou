@@ -19,6 +19,7 @@ import type { ProductCategory } from '@/lib/marche/product-categories'
 import type { SellerProductDetail } from '@/lib/marche/seller-products-query'
 import { EditImageGallery } from './EditImageGallery'
 import { hasAtMostTwoDecimals } from '@/lib/products/price'
+import { localName } from '@/lib/i18n/local-name'
 
 type Errors = { title?: string; price?: string; deliveryFee?: string; stockCount?: string }
 
@@ -236,7 +237,7 @@ export function EditProductForm({
               >
                 {categories.map((c) => (
                   <option key={c.id} value={c.id}>
-                    {lang === 'ar' ? (c.name_ar ?? c.name_fr) : c.name_fr}
+                    {localName(c, lang)}
                   </option>
                 ))}
               </select>

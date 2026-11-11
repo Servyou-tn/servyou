@@ -179,7 +179,7 @@ export function AnnonceDetail({ annonce }: { annonce: AnnonceDetailData }) {
       {/* Post header: category chip + status pill, H1, meta row. */}
       <header className="flex flex-col gap-3">
         <div className="flex flex-wrap items-center gap-2">
-          <CategoryChip slug={annonce.categorySlug} nameFr={annonce.category} nameAr={annonce.categoryAr} lang={lang} />
+          <CategoryChip slug={annonce.categorySlug} nameFr={annonce.category} nameAr={annonce.categoryAr} nameEn={annonce.categoryEn} lang={lang} />
           <StatusPill status={pillStatus}>{t(statusLabelKey, lang)}</StatusPill>
         </div>
         <h1 className="wrap-anywhere text-h1 text-text-primary">{annonce.title}</h1>

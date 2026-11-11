@@ -203,8 +203,8 @@ type FavoriteRow = {
           | ({ name: string | null; city: string | null } & HiddenAt)[]
           | null
         categories:
-          | { name_fr: string; name_ar: string | null }
-          | { name_fr: string; name_ar: string | null }[]
+          | { name_fr: string; name_ar: string | null; name_en?: string | null }
+          | { name_fr: string; name_ar: string | null; name_en?: string | null }[]
           | null
         product_images: { image_url: string; display_order: number }[] | null
       }
@@ -270,7 +270,7 @@ export async function getMyFavorites(
     .from('favorites')
     .select(
       `item_type, created_at,
-       products ( id, title, description, price_tnd, status, admin_hidden_at, shops ( name, city, admin_hidden_at ), categories ( name_fr, name_ar ), product_images ( image_url, display_order ) ),
+       products ( id, title, description, price_tnd, status, admin_hidden_at, shops ( name, city, admin_hidden_at ), categories ( name_fr, name_ar, name_en ), product_images ( image_url, display_order ) ),
        service_listings ( id, title, description, short_description, starting_price_tnd, price_unit, delivery_time, status, admin_hidden_at, freelancer_profiles ( profile_id, city, admin_hidden_at ), categories!service_listings_category_id_fkey ( name_fr ) )`,
     )
     .eq('user_id', userId)
@@ -300,7 +300,7 @@ export async function getMyFavorites(
         price_tnd: Number(p.price_tnd),
         image_url: primaryImage(p.product_images),
         shop: { name: shop?.name ?? '', city: shop?.city ?? null },
-        category: category ? { name_fr: category.name_fr, name_ar: category.name_ar ?? undefined } : null,
+        category: category ? { name_fr: category.name_fr, name_ar: category.name_ar ?? undefined, name_en: category.name_en } : null,
       })
       order.push({ kind: 'product', id: p.id })
     } else {
@@ -390,6 +390,7 @@ export type MyAnnonce = {
   category: string | null
   /** categories.name_ar — the Arabic page renders this, never the French name. */
   category_ar: string | null
+  category_en: string | null
   /** categories.slug — keys the row's icon tile. */
   category_slug: string | null
   response_count: number
@@ -398,7 +399,7 @@ export type MyAnnonce = {
   admin_hidden_at: string | null
 }
 
-type AnnonceCategory = { name_fr: string; name_ar: string | null; slug: string }
+type AnnonceCategory = { name_fr: string; name_ar: string | null; name_en: string | null; slug: string }
 
 type AnnonceRow = {
   id: string
@@ -427,7 +428,7 @@ export async function getMyAnnonces(userId: string): Promise<MyAnnonce[]> {
     .from('job_posts')
     .select(
       `id, title, description, budget_min, budget_max, city, is_remote, deadline, status, created_at,
-       categories ( name_fr, name_ar, slug ), job_responses ( count ), job_post_skills ( skill ), admin_hidden_at`,
+       categories ( name_fr, name_ar, name_en, slug ), job_responses ( count ), job_post_skills ( skill ), admin_hidden_at`,
     )
     .eq('consumer_id', userId)
     .neq('status', 'deleted')
@@ -450,6 +451,7 @@ export async function getMyAnnonces(userId: string): Promise<MyAnnonce[]> {
     created_at: row.created_at,
     category: one(row.categories)?.name_fr ?? null,
     category_ar: one(row.categories)?.name_ar ?? null,
+    category_en: one(row.categories)?.name_en ?? null,
     category_slug: one(row.categories)?.slug ?? null,
     response_count: row.job_responses?.[0]?.count ?? 0,
     skills: (row.job_post_skills ?? []).map((s) => s.skill),
@@ -475,13 +477,13 @@ export async function getMyAnnonces(userId: string): Promise<MyAnnonce[]> {
 // subcategories interleaved alphabetically by name_fr. A job post files at SECTOR granularity only
 // (job_posts.category_id has no UI path to a leaf category today) — the picker offering leaves
 // would be a second, separate feature decision, not a side effect of this filter.
-export type AnnonceCategoryOption = { id: string; slug: string; name_fr: string; name_ar: string | null }
+export type AnnonceCategoryOption = { id: string; slug: string; name_fr: string; name_ar: string | null; name_en?: string | null }
 
 export async function getCategories(): Promise<AnnonceCategoryOption[]> {
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('categories')
-    .select('id, slug, name_fr, name_ar')
+    .select('id, slug, name_fr, name_ar, name_en')
     .in('kind', ['service', 'both'])
     .is('parent_id', null)
     .order('name_fr')

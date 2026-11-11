@@ -8,6 +8,7 @@ import { FavoriteButton } from '@/components/FavoriteButton'
 import { Avatar } from '@/components/ui/avatar'
 import type { SkillLabelPair } from '@/lib/freelance/service-draft'
 import { servicePriceLabel } from '@/lib/freelance/service-price'
+import { localName } from '@/lib/i18n/local-name'
 
 export type ServiceListing = {
   id: string
@@ -25,7 +26,7 @@ export type ServiceListing = {
   /** The listing's skills, BOTH labels resolved server-side by the producer (skillLabelPair): the card
    *  picks by lang, so the service taxonomy never ships in this client bundle (H6 PR-4 ruling D31). */
   tags?: SkillLabelPair[]
-  category?: { name_fr: string; name_ar?: string } | null
+  category?: { name_fr: string; name_ar?: string; name_en?: string | null } | null
   freelancer: { full_name: string; city: string | null }
 }
 
@@ -58,11 +59,7 @@ export function ServiceListingCard({ service }: { service: ServiceListing }) {
       : t('listing.service.priceOnRequest', lang)
   const summary = service.short_description?.trim() || service.description
 
-  const categoryLabel = service.category
-    ? lang === 'ar' && service.category.name_ar
-      ? service.category.name_ar
-      : service.category.name_fr
-    : null
+  const categoryLabel = service.category ? localName(service.category, lang) : null
   // Up to 3 skill chips from `tags` (the v3.7 frame shows three). Listings with no tags fall back
   // to the single localized category label, so the chip row never renders empty.
   const tags = (service.tags ?? [])

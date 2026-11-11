@@ -4,6 +4,7 @@ import type { Lang } from '@/lib/i18n'
 import { CARD_SHADOW, HOVER_SHADOW, FOCUS_RING } from '@/components/layout/styles'
 import { getInitials } from '@/components/ui/initials'
 import type { Subcategory } from '@/lib/categories/category-data'
+import { localName } from '@/lib/i18n/local-name'
 
 // A horizontal, scrollable strip of child-category cards rendered above the results grid.
 // Renders NOTHING when the category has no children (the flat-taxonomy case — true for
@@ -19,7 +20,7 @@ export function SubcategoryStrip({ items, lang }: { items: Subcategory[]; lang: 
       </p>
       <div className="flex gap-3 overflow-x-auto pb-1">
         {items.map((c) => {
-          const name = lang === 'ar' ? c.name_ar : c.name_fr
+          const name = localName(c, lang)
           return (
             <Link
               key={c.slug}

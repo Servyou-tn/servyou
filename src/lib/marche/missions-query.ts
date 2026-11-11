@@ -123,7 +123,7 @@ export async function getMyResponseState(
 export async function getServiceSectors(supabase: Client): Promise<ServiceSector[]> {
   const { data, error } = await supabase
     .from('categories')
-    .select('id, slug, name_fr, name_ar')
+    .select('id, slug, name_fr, name_ar, name_en')
     .in('kind', ['service', 'both'])
     .is('parent_id', null)
     .order('name_fr')
@@ -177,7 +177,7 @@ function boardQuery(supabase: Client, a: BoardQueryArgs) {
 }
 
 const CARD_SELECT = `id, title, description, budget_min, budget_max, city, is_remote, status, created_at, consumer_id, response_count,
-  categories ( slug, name_fr, name_ar ),
+  categories ( slug, name_fr, name_ar, name_en ),
   job_post_skills ( skill )`
 
 export async function getMissionBoard(
