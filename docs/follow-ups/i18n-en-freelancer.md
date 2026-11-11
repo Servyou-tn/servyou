@@ -27,3 +27,24 @@
 **Why deferred:** user-entered content; a structured delivery time (number + unit) would be needed to localise it.
 **Where it lives:** `service.detail.deliveryIn`, `listing.service.deliveryTime`, `serviceDetail.deliveredIn` with the free-text `delivery_time` column.
 **Trigger:** only if a structured delivery-time field is ever added.
+
+## « 1 years » and the French « 1 ans »: two year labels have no plural form
+
+**What:** `freelance.public.years_value` (« {years} ans ») and `freelance.edit.years_suffix` (« ans ») print "1 years" in English (and « 1 ans » in French) for a single year.
+**Why deferred:** `t()` cannot pluralise; the fix is turning `years_value` into a `tn()` plural for all three languages, which touches `fr.ts`, `ar.ts` and `plurals.ts` (outside this translation PR).
+**Where it lives:** `src/lib/i18n/fr.ts` · `src/app/freelance/[id]/_components/FreelancerDetail.tsx` · profile edit form.
+**Trigger:** next time the public profile header or the edit form is touched.
+
+## Price formatting hard-codes the French locale
+
+**What:** `tndPriceGrouped` in `src/components/listings/listing-utils.ts` calls `toLocaleString('fr-FR')`, so English shows « 1 250,50 TND » (narrow space, decimal comma) instead of « 1,250.50 TND ». Deliberate for FR / AR (see the #304 review comment), not for English.
+**Why deferred:** shared listings component (the architect's).
+**Where it lives:** `src/components/listings/listing-utils.ts`; used by the service and product cards.
+**Trigger:** with the architect's English pass over shared components.
+
+## « Chaque projet livré renforce votre note » promises ratings
+
+**What:** `devenir.freelance.card3.desc` says delivered projects strengthen the freelancer's rating, but ratings and reviews are deferred to Phase 3+. The English now says « builds your reputation »; French and Arabic were left unchanged (no FR / AR edits in this PR).
+**Why deferred:** founder decision on the FR and AR wording.
+**Where it lives:** `devenir.freelance.card3.desc` in `fr.ts` and `ar.ts`.
+**Trigger:** founder OK, then change all three languages together.
