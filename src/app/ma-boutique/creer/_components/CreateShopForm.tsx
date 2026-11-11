@@ -18,6 +18,7 @@ import { LogoField } from './LogoField'
 import { BannerField } from './BannerField'
 import { TunisianPhoneInput } from '@/components/account/TunisianPhoneInput'
 import { isValidPhone } from '@/lib/phone'
+import { pickLabel } from '@/lib/i18n/pick-label'
 
 // G2 step 1 "Bases" — Figma 555:37234/555:37236, measured in docs/design/g2-discovery.md.
 //
@@ -229,7 +230,7 @@ export function CreateShopForm({ askPhone = false }: { askPhone?: boolean }) {
             <option value="">{t('shop.create.city_ph', lang)}</option>
             {GOVERNORATES.map((g) => (
               <option key={g.value} value={g.value}>
-                {lang === 'ar' ? g.ar : g.fr}
+                {pickLabel(g, lang)}
               </option>
             ))}
           </select>

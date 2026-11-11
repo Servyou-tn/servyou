@@ -31,9 +31,10 @@ export function tndPrice(value: number | string | null, lang: Lang = 'fr'): stri
 }
 
 /**
- * The grouped variant the order lists and the confirmation use: « 1 250 TND » / « 1 250 د.ت ». The SAME French grouping (a narrow space,
- * a comma for decimals) in both languages: the Arabic locale's « 1.250 » reads as 1 dinar 250 millimes in Tunisia (review of #304).
+ * The grouped variant the order lists and the confirmation use: « 1 250 TND » / « 1 250 د.ت » / « 1,250 TND » (EN). The SAME French grouping (a narrow space,
+ * a comma for decimals) in FR and AR: the Arabic locale's « 1.250 » reads as 1 dinar 250 millimes in Tunisia (review of #304).
  */
 export function tndPriceGrouped(value: number, lang: Lang = 'fr'): string {
-  return `${value.toLocaleString('fr-FR')} ${tndCurrency(lang)}`
+  // EN: international grouping « 1,250.5 TND » (same as the seller dashboard's profit figure).
+  return `${value.toLocaleString(lang === 'en' ? 'en-GB' : 'fr-FR')} ${tndCurrency(lang)}`
 }

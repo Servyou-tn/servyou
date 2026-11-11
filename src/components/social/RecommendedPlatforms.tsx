@@ -22,7 +22,7 @@ export function RecommendedPlatforms({
   return (
     <div role="group" aria-label={t('links.editor.suggested', lang)} className="flex flex-wrap gap-2">
       {platforms.map((id) => {
-        const name = platformName(id, lang === 'ar' ? 'ar' : 'fr')
+        const name = platformName(id, lang)
         return (
           <Button key={id} variant="secondary" size="sm" className="max-sm:min-h-11" onClick={() => onPick(id)} aria-label={t('links.editor.add_named', lang, { platform: name })}>
             <Plus className="size-4" aria-hidden="true" />

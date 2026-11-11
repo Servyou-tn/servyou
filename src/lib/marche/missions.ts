@@ -2,6 +2,7 @@ import { GOVERNORATES } from '@/lib/tunisia-governorates'
 import type { Lang } from '@/lib/i18n'
 import { resolveAnnonceStatus } from '@/lib/marche/annonce-status'
 import { COMPETITION_LOW_MAX, COMPETITION_MEDIUM_MAX, JOB_POST_EXPIRY_DAYS, NEW_MISSION_WINDOW_HOURS } from '@/lib/job-constants'
+import { pickLabel } from '@/lib/i18n/pick-label'
 
 // H9 « Trouver des missions » — pure rules (no I/O, no clock reads of its own: every function takes `now`).
 // Rulings: docs/design/h9-h13-measurements.md §10.2 (D-H9-3…7). The data layer is missions-query.ts.
@@ -155,5 +156,5 @@ export function firstName(fullName: string | null | undefined): string {
 export function localizeCity(city: string | null | undefined, lang: Lang): string | null {
   if (!city) return null
   const g = GOVERNORATES.find((x) => x.value === city)
-  return g ? (lang === 'ar' ? g.ar : g.fr) : city
+  return g ? pickLabel(g, lang) : city
 }

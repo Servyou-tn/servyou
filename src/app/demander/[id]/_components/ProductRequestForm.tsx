@@ -23,6 +23,7 @@ import {
   QUANTITY_MAX,
   PHONE_INPUT_MAX,
 } from '../limits'
+import { pickLabel } from '@/lib/i18n/pick-label'
 
 // E1-product — form + summary, ONE component. Measured from Figma 589:43997 §6c/§6d
 // (docs/design/d1-discovery.md). Labels/helpers are founder-screenshot-sourced, not Figma text —
@@ -264,7 +265,7 @@ export function ProductRequestForm({
                 <option value="">{t('demander.field.governorate_ph', lang)}</option>
                 {GOVERNORATES.map((g) => (
                   <option key={g.value} value={g.value}>
-                    {lang === 'ar' ? g.ar : g.fr}
+                    {pickLabel(g, lang)}
                   </option>
                 ))}
               </select>

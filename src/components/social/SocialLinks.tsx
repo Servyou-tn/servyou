@@ -26,7 +26,7 @@ export function SocialLinks({
         const label =
           platform === 'website'
             ? t('social.website_of', lang, { name })
-            : t('social.profile_of', lang, { platform: platformName(platform, lang === 'ar' ? 'ar' : 'fr'), name })
+            : t('social.profile_of', lang, { platform: platformName(platform, lang), name })
         return (
           <li key={link.id}>
             <a

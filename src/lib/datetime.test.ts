@@ -76,6 +76,11 @@ describe('formatTunisDateTime — « 18/07 09h12 », with a real 00h at midnight
     expect(formatTunisDateTime(HALF_PAST_MIDNIGHT, 'ar')).not.toContain('h')
   })
 
+  it('EN uses « 09:12 », no French hour mark', () => {
+    expect(formatTunisDateTime('2026-07-18T08:12:00Z', 'en')).toBe('18/07 09:12')
+    expect(formatTunisDateTime(HALF_PAST_MIDNIGHT, 'en')).toBe('06/07 00:30')
+  })
+
   it('23:59 Tunis is still the 5th', () => {
     expect(formatTunisDateTime(LAST_SECOND_OF_5TH, 'fr')).toBe('05/07 23h59')
   })

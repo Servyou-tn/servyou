@@ -19,6 +19,7 @@ import { JOB_POST_EXPIRY_DAYS, MAX_RESPONSES_PER_POST } from '@/lib/job-constant
 import type { AnnonceCategoryOption } from '@/lib/marche/my-data'
 import { getSkillPool } from '@/lib/taxonomy/service-categories'
 import { cn } from '@/lib/utils'
+import { pickLabel } from '@/lib/i18n/pick-label'
 import { localName } from '@/lib/i18n/local-name'
 
 // F2 « Publier une annonce » — Figma 1478:29808 (+ 375 frame 1488:65880), docs/design/mes-annonces-measurements.md §F2. This is the MAIN
@@ -200,7 +201,7 @@ export function AnnonceForm({ categories, edit }: { categories: AnnonceCategoryO
           value={city}
           onChange={setCity}
           error={err('city')}
-          options={GOVERNORATES.map((g) => ({ value: g.value, label: lang === 'ar' ? g.ar : g.fr }))}
+          options={GOVERNORATES.map((g) => ({ value: g.value, label: pickLabel(g, lang) }))}
         />
 
         {/* F5-distance (1478:35767): Setting Row — min-h 72, py 16, border-b border/subtle, label 16 Semi Bold + helper 14 muted. */}
