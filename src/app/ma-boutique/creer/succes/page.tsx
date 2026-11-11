@@ -63,7 +63,7 @@ export default async function ShopCreatedPage() {
           the page title 32 Bold / 38, the subtitle 14 secondary; the card 20 under it. The title is a <p>: the card's
           « … créé(e) ! » stays the page's one h1. */}
       <div className="mb-5 flex flex-col gap-2 lg:hidden">
-        <nav aria-label="Fil d'Ariane">
+        <nav aria-label={t('common.breadcrumb', lang)}>
           <ol className="flex items-center gap-2 text-sm font-medium text-text-muted">
             <li>
               <Link href="/devenir-vendeur" className={`rounded ${FOCUS_RING}`}>

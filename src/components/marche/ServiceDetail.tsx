@@ -186,7 +186,7 @@ export function ServiceDetail({
     <div className="flex flex-col gap-5 lg:gap-6">
       {/* breadcrumb — 13px. 375 (m375-d2-service): « ‹ Services › {sub-category} » (the category when there is no sub-category), gap 6, chevrons 16 / 12;
           desktop: Accueil › Services › category › sub-category › title, gap 8. */}
-      <nav aria-label="Fil d'Ariane" className="flex flex-wrap items-center gap-1.5 text-[13px] leading-4 text-text-muted lg:gap-2">
+      <nav aria-label={t('common.breadcrumb', lang)} className="flex flex-wrap items-center gap-1.5 text-[13px] leading-4 text-text-muted lg:gap-2">
         <Link href="/" className="hidden hover:text-text-secondary lg:inline">{t('serviceDetail.breadcrumb.home', lang)}</Link>
         <ChevronRight className="hidden h-3.5 w-3.5 shrink-0 rtl:rotate-180 lg:block" aria-hidden="true" />
         <Link href="/marche/services" className="max-lg:relative inline-flex items-center gap-1.5 hover:text-text-secondary lg:gap-0">

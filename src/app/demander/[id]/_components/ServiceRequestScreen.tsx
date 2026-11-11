@@ -118,7 +118,7 @@ export function ServiceRequestScreen({
     <div className="flex flex-col gap-5 lg:gap-6">
       {/* breadcrumb — 13px, gap 8 (6 on mobile), chevron separators. The desktop frame carries
           five crumbs; the middle two are the same category/title links D2 renders. */}
-      <nav aria-label="Fil d'Ariane" className="flex flex-wrap items-center gap-1.5 text-[13px] text-text-muted max-lg:leading-4 lg:gap-2">
+      <nav aria-label={t('common.breadcrumb', lang)} className="flex flex-wrap items-center gap-1.5 text-[13px] text-text-muted max-lg:leading-4 lg:gap-2">
         <Link href="/" className="hover:text-text-secondary max-lg:hidden">{t('serviceDetail.breadcrumb.home', lang)}</Link>
         <ChevronRight className="h-3.5 w-3.5 shrink-0 rtl:rotate-180 max-lg:hidden" aria-hidden="true" />
         {/* max-lg py / -my 3.5: a 44 px tap target around the 16 px crumb (≥ 44 on mobile) without moving the layout. */}

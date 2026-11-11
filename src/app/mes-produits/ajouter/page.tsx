@@ -84,7 +84,7 @@ function PageIntro({ lang }: { lang: Awaited<ReturnType<typeof getLang>> }) {
   return (
     // 375 (m375-g6-ajouter): crumb 14 Medium with a blue link, 8 above an H1 32 Bold / 38, 8 above the 14 secondary subline, 24 above the form.
     <div className="mb-8 max-w-[760px] max-lg:mb-6">
-      <nav aria-label="Fil d'Ariane" className="mb-3 max-lg:mb-2">
+      <nav aria-label={t('common.breadcrumb', lang)} className="mb-3 max-lg:mb-2">
         <ol className="flex items-center gap-1.5 text-sm text-text-muted max-lg:gap-2 max-lg:font-medium max-lg:leading-[17px]">
           <li>
             <Link

@@ -282,7 +282,7 @@ export default async function DemandeSuccesPage({ searchParams }: Props) {
   return (
     <AppShell user={shell.topBarUser}>
       <div className="flex flex-col gap-6 lg:gap-12">
-        <nav aria-label="Fil d'Ariane" className="flex flex-wrap items-center gap-1.5 text-[13px] text-text-muted max-lg:leading-4 lg:gap-2">
+        <nav aria-label={t('common.breadcrumb', lang)} className="flex flex-wrap items-center gap-1.5 text-[13px] text-text-muted max-lg:leading-4 lg:gap-2">
           <Link href="/" className="hidden hover:text-text-secondary lg:inline">
             {t('serviceDetail.breadcrumb.home', lang)}
           </Link>
