@@ -24,6 +24,7 @@ import {
 import { getMissionBoard, getMyProfileSkills, getServiceSectors } from '@/lib/marche/missions-query'
 import { MissionSelect } from './_components/MissionSelect'
 import { RemoteToggle } from './_components/RemoteToggle'
+import { localName } from '@/lib/i18n/local-name'
 
 export async function generateMetadata(): Promise<Metadata> {
   return localizedMetadata('meta.find_missions')
@@ -62,7 +63,7 @@ export default async function TrouverDesMissionsPage({
   const board = await getMissionBoard(userId, filters, sector?.id ?? null)
 
   const href = (patch: Parameters<typeof buildMissionsHref>[2] = {}) => buildMissionsHref(ROUTE, filters, patch)
-  const sectorName = (s: { nameFr: string; nameAr: string }) => (lang === 'ar' ? s.nameAr : s.nameFr)
+  const sectorName = (s: { nameFr: string; nameAr: string; nameEn?: string | null }) => localName({ name_fr: s.nameFr, name_ar: s.nameAr, name_en: s.nameEn }, lang)
   const cityLabel = (value: string) => {
     const g = GOVERNORATES.find((x) => x.value === value)
     return g ? (lang === 'ar' ? g.ar : g.fr) : value

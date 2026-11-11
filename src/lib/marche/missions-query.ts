@@ -68,7 +68,7 @@ export type MissionBoardPage = {
   activeResponses: number
 }
 
-export type ServiceSector = { id: string; slug: string; nameFr: string; nameAr: string }
+export type ServiceSector = { id: string; slug: string; nameFr: string; nameAr: string; nameEn: string | null }
 
 function one<T>(embed: T | T[] | null | undefined): T | null {
   if (Array.isArray(embed)) return embed[0] ?? null
@@ -128,7 +128,7 @@ export async function getServiceSectors(supabase: Client): Promise<ServiceSector
     .is('parent_id', null)
     .order('name_fr')
   if (error) fail('missions sectors', error)
-  return (data ?? []).map((c) => ({ id: c.id as string, slug: c.slug as string, nameFr: c.name_fr as string, nameAr: c.name_ar as string }))
+  return (data ?? []).map((c) => ({ id: c.id as string, slug: c.slug as string, nameFr: c.name_fr as string, nameAr: c.name_ar as string, nameEn: (c.name_en as string | null) ?? null }))
 }
 
 /** The viewer's own profile skills — the pool for the Compétences filter (D-H9-4). */
