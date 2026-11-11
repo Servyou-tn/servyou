@@ -8,7 +8,7 @@ import { PlatformIcon } from '@/components/social/PlatformIcon'
 import { detectPlatform } from '@/lib/social/platforms'
 import type { ServiceListing } from '@/components/listings/ServiceListingCard'
 import type { FreelancerDetailData } from '@/lib/marche/freelancer-detail'
-import { LANGUAGES, PROFICIENCY_LEVELS } from '@/lib/freelancer/language-options'
+import { LANGUAGES, PROFICIENCY_LEVELS, optionLabel } from '@/lib/freelancer/language-options'
 import { LOCALES, t, tn, type Lang } from '@/lib/i18n'
 import { PublicServiceCard } from './PublicServiceCard'
 import { ActionsRow } from './ActionsRow'
@@ -417,9 +417,9 @@ function displayUrl(url: string): string {
 // the raw code only for a value outside the known list (never silently blank).
 function languageLabel(code: string, lang: Lang): string {
   const found = LANGUAGES.find((l) => l.value === code)
-  return found ? (lang === 'ar' ? found.ar : found.fr) : code
+  return found ? optionLabel(found, lang) : code
 }
 function proficiencyLabel(code: string, lang: Lang): string {
   const found = PROFICIENCY_LEVELS.find((p) => p.value === code)
-  return found ? (lang === 'ar' ? found.ar : found.fr) : code
+  return found ? optionLabel(found, lang) : code
 }
