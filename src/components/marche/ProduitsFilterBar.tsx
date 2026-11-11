@@ -278,7 +278,7 @@ export function ProduitsFilterBar({
         <DropdownMenu>
           <DropdownMenuTrigger className={`${TRIGGER} text-text-primary ${FOCUS_RING}`}>
             <span className="truncate">
-              {t('produits.sort.label', lang)} : {t(`produits.sort.${sortValue}`, lang)}
+              {t('produits.sort.label', lang)}{lang === 'en' ? ': ' : ' : '}{t(`produits.sort.${sortValue}`, lang)}
             </span>
             <ChevronDown className="h-4 w-4 shrink-0 text-text-muted" aria-hidden="true" />
           </DropdownMenuTrigger>

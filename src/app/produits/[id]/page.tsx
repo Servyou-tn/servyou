@@ -5,6 +5,7 @@ import { ProductDetail } from '@/components/produits/ProductDetail'
 import { getProductDetail, getRelatedProducts } from '@/lib/marche/product-detail'
 import { getShellUser } from '@/lib/marche/shell-user'
 import { getLang } from '@/lib/i18n/server'
+import { t } from '@/lib/i18n'
 
 // D1 — product detail, rebuilt from Figma 562:39013. Replaces the ComingSoon stub left by
 // chore/strip-legacy-consumer-ui, which ignored the [id] segment entirely. Mirrors
@@ -26,8 +27,8 @@ export async function generateMetadata({
   const { id } = await params
   // getProductDetail is wrapped in React cache(), so this and the render below share ONE fetch per
   // request rather than hitting Postgres twice for the same row.
-  const product = await getProductDetail(id)
-  return { title: product ? `${product.title} — Servyou` : 'Produit — Servyou' }
+  const [product, lang] = await Promise.all([getProductDetail(id), getLang()])
+  return { title: `${product ? product.title : t('product.not_found', lang)} — Servyou` }
 }
 
 export default async function ProduitPage({ params }: { params: Promise<{ id: string }> }) {
