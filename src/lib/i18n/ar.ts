@@ -1495,7 +1495,7 @@ export const ar: Record<string, string> = {
   'devenir.freelance.card2.title':       "الدفع عند الاستلام",
   'devenir.freelance.card2.desc':        "بدون عمولة على أرباحك. تتفاوض وتُدفع لك مباشرة، بالدينار.",
   'devenir.freelance.card3.title':       "ابن سمعتك",
-  'devenir.freelance.card3.desc':        "كل مشروع تُنجزه يعزز تقييمك ويجذب مزيدا من العملاء.",
+  'devenir.freelance.card3.desc':        "كل مشروع تُنجزه يعزز سمعتك ويجذب مزيدا من العملاء.",
 
   // Avatar dropdown — role-upgrade discovery
   'profileMenu.devenirVendeur':    "كن بائعا",
