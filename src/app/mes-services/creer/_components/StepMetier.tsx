@@ -32,7 +32,8 @@ export function StepMetier({
   onTouch: (field: Step1Field) => void
 }) {
   const message = (e?: FieldError) => (e ? t(e.key, lang, e.vars) : undefined)
-  const labelOf = (item: { labelFr: string; labelAr: string }) => (lang === 'ar' ? item.labelAr : item.labelFr)
+  const labelOf = (item: { labelFr: string; labelAr: string; labelEn?: string }) =>
+    lang === 'ar' ? item.labelAr : lang === 'en' ? (item.labelEn ?? item.labelFr) : item.labelFr
 
   const sector = getSector(form.sectorId)
   const suggestions = getSkillPool(form.sectorId).map((s) => ({ value: s.id, label: labelOf(s) }))

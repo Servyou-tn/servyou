@@ -5,6 +5,7 @@ import { tndPrice } from '@/components/listings/listing-utils'
 import { PlatformIcon } from '@/components/social/PlatformIcon'
 import { detectPlatform } from '@/lib/social/platforms'
 import type { SentProposal } from '@/lib/marche/sent-proposal-query'
+import { skillTextLabel } from '@/lib/freelance/service-draft'
 
 // recap-panel — Figma 377:10742: surface/base, 1 px border/subtle, radius 12, pad 24, gap 16. Rows with no value are
 // ABSENT, not blank (no link, skill, price or délai → no empty label). The message is a 3-line preview (D-H13-4).
@@ -66,7 +67,7 @@ export function SentRecap({ sent, lang }: { sent: SentProposal; lang: Lang }) {
           <Label>{t('proposal.sent.skills', lang)}</Label>
           <div className="flex flex-wrap gap-2">
             {sent.skills.map((s) => (
-              <SkillChip key={s}>{s}</SkillChip>
+              <SkillChip key={s}>{skillTextLabel(s, lang)}</SkillChip>
             ))}
           </div>
         </div>

@@ -8,6 +8,7 @@ import { localizeCity } from '@/lib/marche/missions'
 import { FOCUS_RING } from '@/components/layout/styles'
 import { CompetitionPill } from './CompetitionPill'
 import { CategoryChip, NewChip, SkillChip } from './MissionChips'
+import { skillTextLabel } from '@/lib/freelance/service-draft'
 
 // MissionCard — Figma 311:10264, measured in docs/design/h9-h13-measurements.md §1.2: surface/base, 1 px
 // border/subtle, radius xl, pad 20, gap 12, no shadow at rest (hover: blue/600 border + shadow-xs, from memory,
@@ -69,7 +70,7 @@ export function MissionCard({ mission, lang }: { mission: MissionSummary; lang: 
       {mission.skills.length > 0 ? (
         <div className="flex flex-wrap gap-1.5">
           {mission.skills.map((skill) => (
-            <SkillChip key={skill}>{skill}</SkillChip>
+            <SkillChip key={skill}>{skillTextLabel(skill, lang)}</SkillChip>
           ))}
         </div>
       ) : null}

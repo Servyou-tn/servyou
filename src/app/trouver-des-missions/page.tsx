@@ -26,6 +26,7 @@ import { MissionSelect } from './_components/MissionSelect'
 import { RemoteToggle } from './_components/RemoteToggle'
 import { pickLabel } from '@/lib/i18n/pick-label'
 import { localName } from '@/lib/i18n/local-name'
+import { skillTextLabel } from '@/lib/freelance/service-draft'
 
 export async function generateMetadata(): Promise<Metadata> {
   return localizedMetadata('meta.find_missions')
@@ -74,7 +75,7 @@ export default async function TrouverDesMissionsPage({
   if (sector) chips.push({ key: 'categorie', label: t('missionboard.chip.category', lang, { value: sectorName(sector) }), removeHref: href({ categorie: null }) })
   if (filters.ville) chips.push({ key: 'ville', label: t('missionboard.chip.city', lang, { value: cityLabel(filters.ville) }), removeHref: href({ ville: null }) })
   if (filters.budget) chips.push({ key: 'budget', label: t('missionboard.chip.budget', lang, { value: t(`missionboard.budget.${filters.budget}`, lang) }), removeHref: href({ budget: null }) })
-  if (filters.competence) chips.push({ key: 'competence', label: t('missionboard.chip.skill', lang, { value: filters.competence }), removeHref: href({ competence: null }) })
+  if (filters.competence) chips.push({ key: 'competence', label: t('missionboard.chip.skill', lang, { value: skillTextLabel(filters.competence, lang) }), removeHref: href({ competence: null }) })
   if (filters.teletravail) chips.push({ key: 'teletravail', label: t('missionboard.chip.remote', lang), removeHref: href({ teletravail: false }) })
 
   const atCap = board.activeResponses >= MAX_ACTIVE_RESPONSES_PER_FREELANCER
@@ -161,7 +162,7 @@ export default async function TrouverDesMissionsPage({
             value={filters.competence}
             disabled={mySkills.length === 0 && !filters.competence}
             allOption={{ label: t('missionboard.filter.all_skills', lang), href: href({ competence: null }) }}
-            options={mySkills.map((s) => ({ value: s, label: s, href: href({ competence: s }) }))}
+            options={mySkills.map((s) => ({ value: s, label: skillTextLabel(s, lang), href: href({ competence: s }) }))}
           />
           <RemoteToggle
             checked={filters.teletravail}

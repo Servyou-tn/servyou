@@ -5,6 +5,7 @@ import { formatJobBudget, hasJobBudget } from '@/lib/marche/format-job-budget'
 import { localizeCity } from '@/lib/marche/missions'
 import { CompetitionPill } from './CompetitionPill'
 import { SkillChip } from './MissionChips'
+import { skillTextLabel } from '@/lib/freelance/service-draft'
 
 // decision-card — Figma 323:11838 (docs/design/h9-h13-measurements.md §2.1): surface/base, 1 px border/subtle,
 // radius xl, pad 24, gap 16, three hairline dividers. Budget (Bold 32) · competition · required skills ·
@@ -73,7 +74,7 @@ export function MissionFacts({
             <p className="text-caption font-medium text-text-muted">{t('missiondetail.skills_label', lang)}</p>
             <div className="flex flex-wrap gap-2">
               {mission.skills.map((skill) => (
-                <SkillChip key={skill}>{skill}</SkillChip>
+                <SkillChip key={skill}>{skillTextLabel(skill, lang)}</SkillChip>
               ))}
             </div>
           </div>

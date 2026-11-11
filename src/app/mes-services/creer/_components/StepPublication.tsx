@@ -46,7 +46,8 @@ type RecapRow = {
 function recapRows(form: DraftForm, lang: Lang): RecapRow[] {
   const sector = getSector(form.sectorId)
   const sub = getSubcategory(form.sectorId, form.subcategoryId)
-  const label = (x: { labelFr: string; labelAr: string } | undefined) => (x ? (lang === 'ar' ? x.labelAr : x.labelFr) : '')
+  const label = (x: { labelFr: string; labelAr: string; labelEn?: string } | undefined) =>
+    x ? (lang === 'ar' ? x.labelAr : lang === 'en' ? (x.labelEn ?? x.labelFr) : x.labelFr) : ''
   const price = parsePrice(form.price)
   return [
     { key: 'title', labelKey: 'service.wizard.recap.title', value: form.title.trim(), userText: true, step: 1, fields: ['title'] },

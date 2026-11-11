@@ -303,10 +303,20 @@ export function normalizeSkill(text: string, sectorId?: string): string {
 export function skillLabel(value: string, lang: Lang): string {
   const skill = getSkill(value)
   if (!skill) return value
-  return lang === 'ar' ? skill.labelAr : skill.labelFr
+  return lang === 'ar' ? skill.labelAr : lang === 'en' ? (skill.labelEn ?? skill.labelFr) : skill.labelFr
 }
 
-export type SkillLabelPair = { fr: string; ar: string }
+/**
+ * A skill stored as TEXT (job posts keep the French label so poster and freelancer compare the same text) shown in
+ * English when it is a pool skill. Display only: the stored value never changes. French and Arabic show the text as stored.
+ */
+export function skillTextLabel(text: string, lang: Lang): string {
+  if (lang !== 'en') return text
+  const skill = findSkillByLabel(text)
+  return skill?.labelEn ?? text
+}
+
+export type SkillLabelPair = { fr: string; ar: string; en?: string }
 
 /**
  * A stored tag → both labels, for a 'use client' consumer (ServiceListingCard) that picks by `lang`
@@ -316,7 +326,7 @@ export type SkillLabelPair = { fr: string; ar: string }
  */
 export function skillLabelPair(value: string): SkillLabelPair {
   const skill = getSkill(value)
-  return skill ? { fr: skill.labelFr, ar: skill.labelAr } : { fr: value, ar: value }
+  return skill ? { fr: skill.labelFr, ar: skill.labelAr, en: skill.labelEn } : { fr: value, ar: value }
 }
 
 /** Normalizes, drops blanks, de-duplicates case-insensitively, keeps order, caps at skillsMax. */
