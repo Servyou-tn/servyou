@@ -1333,6 +1333,14 @@ both on 2026-10-28.
     - Checked after the apply: the constraint reads `language = ANY (ARRAY['fr','ar','en'])`.
     - Rollback (only if no row has `language = 'en'`): the commented block at the end of the file.
 
+128. **20261111163250_categories_name_en** — English category names (founder decision 2026-11-11, « Add a DB column »,
+    SQL approved in chat); applied by the architect.
+    - Adds nullable `categories.name_en` and fills it for all 111 rows. Nullable because the admin category form stays
+      French: a new category shows `name_fr` in English until filled (`localName()` in `src/lib/i18n/local-name.ts`).
+    - No policy or grant change: the public SELECT policy and table-level grants cover the new column; no view depends on it.
+    - Checked after the apply: 111/111 rows have `name_en`; column `text`, nullable.
+    - Rollback: `alter table public.categories drop column name_en;`
+
 ## Rollback paths
 
 Each migration in this folder represents work that has already been applied to production. Rollback is therefore reverse migration work, not file deletion. If a rollback is ever needed, write a new dated migration that reverses the relevant changes — never delete history from this folder.

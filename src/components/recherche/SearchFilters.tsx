@@ -8,8 +8,9 @@ import { t } from '@/lib/i18n'
 import { FOCUS_RING } from '@/components/layout/styles'
 import { FilterControl } from '@/components/ui/filter-control'
 import { buildSearchQuery } from './search-url'
+import { localName } from '@/lib/i18n/local-name'
 
-export type FilterCategory = { slug: string; name_fr: string; name_ar: string }
+export type FilterCategory = { slug: string; name_fr: string; name_ar: string; name_en?: string | null }
 
 /**
  * The sheet's two EXTRA fieldsets — Ville and Trier par — for the lenses whose bar has them (the Freelances lens). Absent = the sheet is exactly the
@@ -208,7 +209,7 @@ export function SearchFilters({
             checked={cat.includes(c.slug)}
             onChange={() => toggleCat(c.slug)}
           />
-          <span className="line-clamp-1">{lang === 'ar' ? c.name_ar : c.name_fr}</span>
+          <span className="line-clamp-1">{localName(c, lang)}</span>
         </label>
       ))}
     </div>

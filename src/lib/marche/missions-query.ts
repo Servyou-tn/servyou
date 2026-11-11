@@ -68,7 +68,7 @@ export type MissionBoardPage = {
   activeResponses: number
 }
 
-export type ServiceSector = { id: string; slug: string; nameFr: string; nameAr: string }
+export type ServiceSector = { id: string; slug: string; nameFr: string; nameAr: string; nameEn: string | null }
 
 function one<T>(embed: T | T[] | null | undefined): T | null {
   if (Array.isArray(embed)) return embed[0] ?? null
@@ -123,12 +123,12 @@ export async function getMyResponseState(
 export async function getServiceSectors(supabase: Client): Promise<ServiceSector[]> {
   const { data, error } = await supabase
     .from('categories')
-    .select('id, slug, name_fr, name_ar')
+    .select('id, slug, name_fr, name_ar, name_en')
     .in('kind', ['service', 'both'])
     .is('parent_id', null)
     .order('name_fr')
   if (error) fail('missions sectors', error)
-  return (data ?? []).map((c) => ({ id: c.id as string, slug: c.slug as string, nameFr: c.name_fr as string, nameAr: c.name_ar as string }))
+  return (data ?? []).map((c) => ({ id: c.id as string, slug: c.slug as string, nameFr: c.name_fr as string, nameAr: c.name_ar as string, nameEn: (c.name_en as string | null) ?? null }))
 }
 
 /** The viewer's own profile skills — the pool for the Compétences filter (D-H9-4). */
@@ -177,7 +177,7 @@ function boardQuery(supabase: Client, a: BoardQueryArgs) {
 }
 
 const CARD_SELECT = `id, title, description, budget_min, budget_max, city, is_remote, status, created_at, consumer_id, response_count,
-  categories ( slug, name_fr, name_ar ),
+  categories ( slug, name_fr, name_ar, name_en ),
   job_post_skills ( skill )`
 
 export async function getMissionBoard(

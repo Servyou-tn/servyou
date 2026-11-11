@@ -29,13 +29,13 @@ import { failQuery } from '@/lib/supabase/query-error'
 // ⚑ The MISSION picker (`my-data.ts` getCategories) still selects name_fr only and shows French
 // category names in the Arabic form. Same gap, different surface — NOT fixed here (PR #112 shipped
 // it and this is a one-PR-one-focus repo). Logged for its own pass.
-export type ProductCategory = { id: string; name_fr: string; name_ar: string | null }
+export type ProductCategory = { id: string; name_fr: string; name_ar: string | null; name_en: string | null }
 
 export async function getProductCategories(): Promise<ProductCategory[]> {
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('categories')
-    .select('id, name_fr, name_ar')
+    .select('id, name_fr, name_ar, name_en')
     .in('kind', ['product', 'both'])
     // Ordered by name_fr in both locales. Ordering by the displayed name would reshuffle the list
     // between FR and AR, and a picker whose order depends on the language is harder to learn.

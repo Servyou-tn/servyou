@@ -39,7 +39,7 @@ export type ProductDetailData = {
   // category in the Badge AND in the breadcrumb of the Arabic page — beside related cards whose
   // chips localize correctly, because their embed selects both. One flat category, rendered twice
   // on this screen, is not a good place to leak the default locale.
-  category: { name_fr: string; name_ar: string | null } | null
+  category: { name_fr: string; name_ar: string | null; name_en?: string | null } | null
   categoryId: string | null
   shopId: string | null
   images: { url: string }[]
@@ -64,7 +64,7 @@ type DetailRow = {
   stock_count: number | null
   category_id: string | null
   shop_id: string | null
-  categories: { name_fr: string; name_ar: string | null } | { name_fr: string; name_ar: string | null }[] | null
+  categories: { name_fr: string; name_ar: string | null; name_en: string | null } | { name_fr: string; name_ar: string | null; name_en: string | null }[] | null
   shops: DetailShopRow | DetailShopRow[] | null
   product_images: { image_url: string; display_order: number }[] | null
 }
@@ -87,7 +87,7 @@ export const getProductDetail = cache(async (id: string): Promise<ProductDetailD
     .select(
       `id, title, description, price_tnd, delivery_fee_tnd, tracks_stock, stock_count, status,
        category_id, shop_id,
-       categories ( name_fr, name_ar ),
+       categories ( name_fr, name_ar, name_en ),
        shops!inner ( name, city, logo_url, description, facebook_url, instagram_url, tiktok_url, admin_hidden_at ),
        product_images ( image_url, display_order )`,
     )
@@ -116,7 +116,7 @@ export const getProductDetail = cache(async (id: string): Promise<ProductDetailD
     stock_count: row.stock_count,
     category: (() => {
       const c = one(row.categories)
-      return c ? { name_fr: c.name_fr, name_ar: c.name_ar ?? null } : null
+      return c ? { name_fr: c.name_fr, name_ar: c.name_ar ?? null, name_en: c.name_en ?? null } : null
     })(),
     categoryId: row.category_id,
     shopId: row.shop_id,
@@ -141,7 +141,7 @@ type RelatedRow = {
   shops: { name: string | null; city: string | null } | { name: string | null; city: string | null }[] | null
   // Both names travel, because ProductListing.category carries both and the consumer picks by
   // locale. Selecting name_fr alone would render French chips inside the Arabic page.
-  categories: { name_fr: string; name_ar: string | null } | { name_fr: string; name_ar: string | null }[] | null
+  categories: { name_fr: string; name_ar: string | null; name_en: string | null } | { name_fr: string; name_ar: string | null; name_en: string | null }[] | null
   product_images: { image_url: string; display_order: number }[] | null
 }
 
@@ -170,7 +170,7 @@ export async function getRelatedProducts(opts: {
     .select(
       `id, title, description, price_tnd,
        shops!inner ( name, city, admin_hidden_at ),
-       categories ( name_fr, name_ar ),
+       categories ( name_fr, name_ar, name_en ),
        product_images ( image_url, display_order )`,
     )
     .eq('status', 'active')
@@ -198,7 +198,7 @@ export async function getRelatedProducts(opts: {
       shop: { name: shop?.name ?? '', city: shop?.city ?? null },
       // Null when the product has no category — `category_id` is nullable. The card hides the chip
       // rather than rendering an empty pill, so null is a real state, not a fallback.
-      category: category ? { name_fr: category.name_fr, name_ar: category.name_ar ?? undefined } : null,
+      category: category ? { name_fr: category.name_fr, name_ar: category.name_ar ?? undefined, name_en: category.name_en } : null,
     }
   })
 }

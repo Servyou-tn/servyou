@@ -14,6 +14,7 @@ import type { ProductFormField } from '@/lib/products/constants'
 import { hasAtMostTwoDecimals } from '@/lib/products/price'
 import type { ProductCategory } from '@/lib/marche/product-categories'
 import { ImageUploadGrid, type UploadedImage } from './ImageUploadGrid'
+import { localName } from '@/lib/i18n/local-name'
 
 // G6 « Ajouter un produit » — Figma 530:31784. Four sections plus a two-CTA footer.
 //
@@ -219,7 +220,7 @@ export function ProductForm({
                   <option key={c.id} value={c.id}>
                     {/* Falls back to name_fr so a category added without a translation degrades
                         to French rather than rendering an empty option. */}
-                    {lang === 'ar' ? (c.name_ar ?? c.name_fr) : c.name_fr}
+                    {localName(c, lang)}
                   </option>
                 ))}
               </select>

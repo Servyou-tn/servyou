@@ -31,7 +31,7 @@ function asMode(v: string | null | undefined): DeliveryMode | null {
   return v != null && MODES.includes(v) ? (v as DeliveryMode) : null
 }
 
-export type CategoryName = { fr: string; ar: string | null }
+export type CategoryName = { fr: string; ar: string | null; en?: string | null }
 
 export type ServiceDetailData = {
   id: string
@@ -63,10 +63,10 @@ export type ServiceDetailData = {
   tags: string[]
 }
 
-type CategoryRow = { name_fr: string; name_ar: string | null }
+type CategoryRow = { name_fr: string; name_ar: string | null; name_en: string | null }
 const categoryName = (embed: CategoryRow | CategoryRow[] | null | undefined): CategoryName | null => {
   const c = one(embed)
-  return c ? { fr: c.name_fr, ar: c.name_ar ?? null } : null
+  return c ? { fr: c.name_fr, ar: c.name_ar ?? null, en: c.name_en ?? null } : null
 }
 
 type DetailRow = {
@@ -97,8 +97,8 @@ export const getServiceDetail = cache(async (id: string): Promise<ServiceDetailD
     .select(
       `id, title, description, starting_price_tnd, price_unit, delivery_time, status, category_id, freelancer_profile_id,
        deliverables, delivery_mode, revisions_count, tags,
-       categories!service_listings_category_id_fkey ( name_fr, name_ar ),
-       subcategory:categories!service_listings_subcategory_id_fkey ( name_fr, name_ar ),
+       categories!service_listings_category_id_fkey ( name_fr, name_ar, name_en ),
+       subcategory:categories!service_listings_subcategory_id_fkey ( name_fr, name_ar, name_en ),
        freelancer_profiles!inner ( id, profile_id, city, headline, admin_hidden_at )`,
     )
     .eq('id', id)
@@ -154,7 +154,7 @@ type RelatedRow = {
   starting_price_tnd: number | string | null
   price_unit: string | null
   delivery_time: string | null
-  categories: { name_fr: string } | { name_fr: string }[] | null
+  categories: { name_fr: string; name_ar: string | null; name_en: string | null } | { name_fr: string; name_ar: string | null; name_en: string | null }[] | null
   freelancer_profiles: { profile_id: string | null; city: string | null } | { profile_id: string | null; city: string | null }[] | null
 }
 
@@ -193,7 +193,7 @@ export async function getRelatedServices(opts: {
       .from('service_listings')
       .select(
         `id, title, description, short_description, starting_price_tnd, price_unit, delivery_time,
-         categories!service_listings_category_id_fkey ( name_fr ),
+         categories!service_listings_category_id_fkey ( name_fr, name_ar, name_en ),
          freelancer_profiles!inner ( profile_id, city, admin_hidden_at )`,
       )
       .eq('status', 'active')
@@ -260,7 +260,7 @@ export async function getRelatedServices(opts: {
       price_starting: row.starting_price_tnd != null ? Number(row.starting_price_tnd) : null,
       price_unit: row.price_unit ?? null,
       delivery_time: row.delivery_time ?? null,
-      category: one(row.categories) ? { name_fr: one(row.categories)!.name_fr } : null,
+      category: one(row.categories) ?? null,
       freelancer: {
         full_name: (fp?.profile_id ? names.get(fp.profile_id) : '') ?? '',
         city: fp?.city ?? null,

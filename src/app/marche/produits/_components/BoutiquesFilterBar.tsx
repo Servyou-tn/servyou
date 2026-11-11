@@ -18,6 +18,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { HitArea } from '@/components/ui/interactive-surface'
+import { localName } from '@/lib/i18n/local-name'
 
 // The filter bar of the « Boutiques » lens — Figma 578:42528 (Filter Bar, desktop): an in-page search (44, « Rechercher une
 // boutique… »), single-select Catégorie / Ville and a sort dropdown, then dismissible chips + « Tout effacer ». Every control writes
@@ -63,7 +64,7 @@ export function BoutiquesFilterBar({ categories, cities, selectedCategorie, vill
     router.push(qs ? `${basePath}?${qs}` : basePath)
   }
 
-  const label = (c: FilterCategory) => (lang === 'ar' ? c.name_ar : c.name_fr)
+  const label = (c: FilterCategory) => (localName(c, lang))
   const catName = (slug: string) => {
     const c = categories.find((x) => x.slug === slug)
     return c ? label(c) : slug

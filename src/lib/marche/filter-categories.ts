@@ -40,7 +40,7 @@ export async function getFilterCategoriesForType(
 
   const { data: cats, error: catsError } = await supabase
     .from('categories')
-    .select('slug, name_fr, name_ar')
+    .select('slug, name_fr, name_ar, name_en')
     .in('id', ids)
     .order('name_fr')
   if (catsError) {

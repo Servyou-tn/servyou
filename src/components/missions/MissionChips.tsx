@@ -6,8 +6,8 @@ import { t, type Lang } from '@/lib/i18n'
 // Server components; plain class strings (see CompetitionPill on why not cn()).
 
 /** Category chip: blue/50, radius md, px 12 / py 4, 14 px icon + Medium 14 blue/700. */
-export function CategoryChip({ slug, nameFr, nameAr, lang }: { slug: string | null; nameFr: string | null; nameAr: string | null; lang: Lang }) {
-  const name = lang === 'ar' ? (nameAr ?? nameFr) : nameFr
+export function CategoryChip({ slug, nameFr, nameAr, nameEn, lang }: { slug: string | null; nameFr: string | null; nameAr: string | null; nameEn?: string | null; lang: Lang }) {
+  const name = lang === 'ar' ? (nameAr ?? nameFr) : lang === 'en' ? (nameEn || nameFr) : nameFr
   if (!name) return null
   const Icon = (slug && CATEGORY_ICONS[slug]) || Wrench
   return (

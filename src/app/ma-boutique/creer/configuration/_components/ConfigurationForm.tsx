@@ -24,6 +24,7 @@ import { saveShopConfigAction } from '../actions'
 import { Stepper } from '@/components/ui/stepper'
 import { AccordionSection } from './AccordionSection'
 import { CheckboxRow, RadioRow } from './FormControls'
+import { localName } from '@/lib/i18n/local-name'
 
 // G2 step 2 "Configuration" — Figma 556:37564, measured in docs/design/g2-discovery.md §12-18.
 //
@@ -54,7 +55,7 @@ export type ConfigurationInitial = {
   categoryIds: string[]
 }
 
-export type ConfigurationCategory = { id: string; name_fr: string; name_ar: string | null }
+export type ConfigurationCategory = { id: string; name_fr: string; name_ar: string | null; name_en?: string | null }
 
 export function ConfigurationForm({
   categories,
@@ -298,7 +299,7 @@ export function ConfigurationForm({
                 <CheckboxRow
                   key={category.id}
                   id={`category-${category.id}`}
-                  label={(lang === 'ar' ? category.name_ar : category.name_fr) || category.name_fr}
+                  label={localName(category, lang)}
                   checked={categoryIds.has(category.id)}
                   onChange={(checked) => toggleCategory(category.id, checked)}
                 />

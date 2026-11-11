@@ -9,6 +9,7 @@ import { tndPrice } from '@/components/listings/listing-utils'
 import { getInitials } from '@/components/ui/initials'
 import type { ProductListing } from '@/components/listings/ProductListingCard'
 import { ProductCoverImage } from './ProductCoverImage'
+import { localName } from '@/lib/i18n/local-name'
 
 // C1's product card — Figma 569:39818, measured (272×373).
 //
@@ -30,11 +31,7 @@ const DEFAULT_SIZES = '(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw'
 export function ProductBrowseCard({ product, sizes = DEFAULT_SIZES }: { product: ProductListing; sizes?: string }) {
   const lang = useLang()
   const city = product.shop.city?.trim() || null
-  const category = product.category
-    ? lang === 'ar' && product.category.name_ar
-      ? product.category.name_ar
-      : product.category.name_fr
-    : null
+  const category = product.category ? localName(product.category, lang) : null
 
   // The shop badge is initials, not a logo: `shops.logo_url` is null on every row today, and the
   // frame's badge draws a two-letter monogram ("AS"). Two words → two initials, one word → one.

@@ -17,12 +17,12 @@ export type ShopCardData = {
   bannerUrl: string | null
   /** Active products. null = could not be counted (the card hides the figure instead of showing a false « 0 »). */
   productCount: number | null
-  categories: { name_fr: string; name_ar: string | null }[]
+  categories: { name_fr: string; name_ar: string | null; name_en: string | null }[]
   /** Up to four product image URLs, newest product first. */
   thumbs: string[]
 }
 
-type Cat = { name_fr: string; name_ar: string | null }
+type Cat = { name_fr: string; name_ar: string | null; name_en: string | null }
 type ShopRow = {
   id: string
   name: string
@@ -54,7 +54,7 @@ export async function getShopCards(ids: string[]): Promise<ShopCardData[]> {
 
   const { data, error } = await supabase
     .from('shops')
-    .select('id, name, city, logo_url, banner_url, shop_categories ( categories ( name_fr, name_ar ) )')
+    .select('id, name, city, logo_url, banner_url, shop_categories ( categories ( name_fr, name_ar, name_en ) )')
     .in('id', ids)
     .is('admin_hidden_at', null)
   if (error) failQuery('shop-cards shops', error)

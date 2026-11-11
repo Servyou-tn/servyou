@@ -12,6 +12,7 @@ import { ShopShareButton } from './ShopShareButton'
 import { FavoriteHeart } from '@/components/favorites/FavoriteHeart'
 import { ShopReportModal } from './ShopReportModal'
 import { SocialLinks } from '@/components/social/SocialLinks'
+import { localName } from '@/lib/i18n/local-name'
 
 // D3 « Boutique publique » — rebuilt from Figma 540:32918/540:32920, measured in
 // docs/design/d3-discovery.md. Single stacked column throughout (confirmed by 540:32920's own
@@ -163,7 +164,7 @@ export function ShopDetail({
                     <div className="flex flex-wrap gap-2">
                       {shop.categories.map((c, i) => (
                         <span key={i} className="rounded-md bg-surface-sunken px-3 py-1 text-body-sm font-medium text-text-secondary">
-                          {lang === 'ar' && c.name_ar ? c.name_ar : c.name_fr}
+                          {localName(c, lang)}
                         </span>
                       ))}
                     </div>

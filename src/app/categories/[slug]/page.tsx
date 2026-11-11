@@ -23,6 +23,7 @@ import { getServiceCities } from '@/lib/marche/filter-cities'
 import { CategoryServicesPage, CATEGORY_SERVICES_PER_PAGE } from '@/components/categories/CategoryServicesPage'
 import { SubcategoryStrip } from '@/components/categories/SubcategoryStrip'
 import { CategoryEmptyState } from '@/components/categories/CategoryEmptyState'
+import { localName } from '@/lib/i18n/local-name'
 
 // /categories/[slug] — the category-scoped browse surface (public). The slug locks the
 // category; the page browses-by-default (full grid immediately), refinable by city/price.
@@ -92,7 +93,7 @@ export default async function CategoryPage({
   // Browse-by-default within the category (default sort = newest, since q is always empty
   // here so 'pertinence' collapses to created_at DESC).
   const searched = await settle('categories search', searchMarketplace(sParams, { categoryId: category.id }))
-  const name = lang === 'ar' ? category.name_ar : category.name_fr
+  const name = localName(category, lang)
   // A failed search is an inline error state inside the shell (the search box stays) — never the
   // « this category is empty » card.
   if (!searched.ok) {

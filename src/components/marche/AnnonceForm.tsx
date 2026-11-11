@@ -19,6 +19,7 @@ import { JOB_POST_EXPIRY_DAYS, MAX_RESPONSES_PER_POST } from '@/lib/job-constant
 import type { AnnonceCategoryOption } from '@/lib/marche/my-data'
 import { getSkillPool } from '@/lib/taxonomy/service-categories'
 import { cn } from '@/lib/utils'
+import { localName } from '@/lib/i18n/local-name'
 
 // F2 « Publier une annonce » — Figma 1478:29808 (+ 375 frame 1488:65880), docs/design/mes-annonces-measurements.md §F2. This is the MAIN
 // card only: the page puts the tips card beside it. Field order and copy are the frame's: titre · catégorie · description · budget ·
@@ -163,7 +164,7 @@ export function AnnonceForm({ categories, edit }: { categories: AnnonceCategoryO
           value={categoryId}
           onChange={setCategoryId}
           error={err('category')}
-          options={categories.map((c) => ({ value: c.id, label: lang === 'ar' ? (c.name_ar ?? c.name_fr) : c.name_fr }))}
+          options={categories.map((c) => ({ value: c.id, label: localName(c, lang) }))}
         />
 
         <Textarea

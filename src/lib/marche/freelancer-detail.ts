@@ -149,7 +149,7 @@ type ServiceRow = {
   price_unit: string | null
   delivery_time: string | null
   tags: string[] | null
-  categories: { name_fr: string; name_ar: string | null } | { name_fr: string; name_ar: string | null }[] | null
+  categories: { name_fr: string; name_ar: string | null; name_en: string | null } | { name_fr: string; name_ar: string | null; name_en: string | null }[] | null
 }
 
 // ACTIVE, non-admin-hidden listings for this freelancer — same status='active' convention every
@@ -166,7 +166,7 @@ export async function getFreelancerServices(
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('service_listings')
-    .select('id, title, description, short_description, starting_price_tnd, price_unit, delivery_time, tags, categories!service_listings_category_id_fkey ( name_fr, name_ar )')
+    .select('id, title, description, short_description, starting_price_tnd, price_unit, delivery_time, tags, categories!service_listings_category_id_fkey ( name_fr, name_ar, name_en )')
     .eq('freelancer_profile_id', freelancerProfileId)
     .eq('status', 'active')
     .is('admin_hidden_at', null)
@@ -187,7 +187,7 @@ export async function getFreelancerServices(
       price_unit: row.price_unit ?? null,
       delivery_time: row.delivery_time ?? null,
       tags: (row.tags ?? []).map(skillLabelPair),
-      category: category ? { name_fr: category.name_fr, name_ar: category.name_ar ?? undefined } : null,
+      category: category ? { name_fr: category.name_fr, name_ar: category.name_ar ?? undefined, name_en: category.name_en } : null,
       freelancer: { full_name: freelancerName, city: freelancerCity },
     }
   })

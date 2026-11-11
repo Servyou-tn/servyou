@@ -5,6 +5,7 @@ import { t } from '@/lib/i18n'
 import type { Lang } from '@/lib/i18n'
 import type { FilterCategory } from './SearchFilters'
 import { HitArea } from '@/components/ui/interactive-surface'
+import { localName } from '@/lib/i18n/local-name'
 
 // The only empty state on /recherche: zero results. Two wordings — "Aucun résultat pour
 // « … »" when a query is active, "Aucun résultat" when only filters narrowed it to zero.
@@ -64,7 +65,7 @@ export function SearchEmptyState({
                 href={`/recherche?categorie=${encodeURIComponent(c.slug)}`}
                 className={`max-lg:relative inline-flex items-center rounded-full border border-border-subtle bg-white px-4 py-2 text-body-sm font-medium text-text-primary transition-colors hover:bg-slate-50 ${FOCUS_RING}`}
               >
-                {lang === 'ar' ? c.name_ar : c.name_fr}
+                {localName(c, lang)}
                 {/* 39 → 49 tall; wrapped rows are 8 px apart, so two rows' extensions overlap by 2 px in the gap — no chip covered. */}
                 <HitArea size={36} axis="y" />
               </Link>
