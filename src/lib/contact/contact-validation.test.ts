@@ -9,6 +9,27 @@ describe('isValidEmail', () => {
     expect(isValidEmail('no@domain')).toBe(false)
     expect(isValidEmail('')).toBe(false)
   })
+
+  // Audit H3: the old regex took ~10 s on this shape (many dots, then a character that fails the end anchor).
+  const fake64k = 'a@' + 'a.'.repeat(31_998) + '@x'
+
+  it('refuses a 64,000-character fake email in under 5 ms', () => {
+    expect(fake64k).toHaveLength(64_000)
+    const start = performance.now()
+    const result = isValidEmail(fake64k)
+    const elapsed = performance.now() - start
+    expect(result).toBe(false)
+    expect(elapsed).toBeLessThan(5)
+  })
+
+  it('the server-side form check refuses it in under 5 ms too', () => {
+    const start = performance.now()
+    const { ok, errors } = validateContactForm({ name: 'Yasmine', email: fake64k, message: 'Bonjour' })
+    const elapsed = performance.now() - start
+    expect(ok).toBe(false)
+    expect(errors).toEqual({ email: true })
+    expect(elapsed).toBeLessThan(5)
+  })
 })
 
 describe('validateContactForm', () => {

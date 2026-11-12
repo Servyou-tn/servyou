@@ -9,11 +9,9 @@ export const MIN_SIGNUP_AGE = 16
 // the DB separately enforces 18+ when seller_type is actually set at /devenir-*.
 export const MIN_SELLER_AGE = 18
 
-export const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-
-export function isValidEmail(email: string): boolean {
-  return EMAIL_RE.test(email.trim())
-}
+// The email rule (254-character limit first, then a linear shape check — audit H3) is shared with the contact
+// form in email-check.ts. Re-exported so the auth forms' imports keep working.
+export { isValidEmail } from './email-check'
 
 // Parse a YYYY-MM-DD native-date-input value as a LOCAL calendar date, so age is
 // timezone-stable (new Date('YYYY-MM-DD') parses as UTC and would shift a day in

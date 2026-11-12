@@ -89,4 +89,14 @@ describe('isValidEmail', () => {
     expect(isValidEmail('a@b')).toBe(false)
     expect(isValidEmail('a b@c.com')).toBe(false)
   })
+  it('refuses a 64,000-character fake email in under 5 ms (audit H3)', () => {
+    // The old regex took ~10 s on this shape: many dots, then a character that fails the end anchor.
+    const fake64k = 'a@' + 'a.'.repeat(31_998) + '@x'
+    expect(fake64k).toHaveLength(64_000)
+    const start = performance.now()
+    const result = isValidEmail(fake64k)
+    const elapsed = performance.now() - start
+    expect(result).toBe(false)
+    expect(elapsed).toBeLessThan(5)
+  })
 })
