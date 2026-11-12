@@ -58,15 +58,19 @@ const VALUE_PATTERNS: [RegExp, string][] = [
   // keeps the reset code in the address until « Continuer », and Supabase puts #access_token=…&refresh_token=… in
   // fragments. The VALUE becomes [Filtered]; the name (and `type`) stays, so a report still shows which link it was.
   // FIRST in the list, so the JWT rule below cannot turn `access_token=eyJ…` into a bare [REDACTED].
-  //   - The name must follow the start of the string, `?` `&` `#` `;`, or their encodings %3F %26 %23 (a URL nested
-  //     in ?next= / ?redirect_to=), and be followed directly by `=` or %3D. So `error_code=otp_expired`, `tokens=` and
-  //     a free-text « code 23514 » are untouched. The bare `^` covers OTel's url.query / url.fragment (no ? or #).
-  //   - The value runs to the next `&` `#` whitespace quote `<` `>`, or an encoded %26 / %23. Any other %xx stays
-  //     inside it, so a percent-encoded token is filtered whole.
-  //   - Bounded at MAX_SCRUBBED_STRING (strings are cut to that length first, so no value tail can survive), and
-  //     linear: nothing follows the quantifier, and its two branches start on different characters.
+  //   - Names: the five above, plus the OAuth fragment's provider_token / provider_refresh_token / id_token (Google
+  //     tokens, the app signs in with OAuth).
+  //   - The name must follow the start of a line (`m`), `?` `&` `#` `;`, their percent encodings %3F %26 %23 (a URL
+  //     nested in ?next= / ?redirect_to=) or their JSON escapes ? & # (a URL inside a serialized
+  //     payload), and be followed directly by `=`, %3D or =. So `error_code=otp_expired`, `tokens=` and a
+  //     free-text « code 23514 » are untouched. The bare `^` covers OTel's url.query / url.fragment (no ? or #).
+  //   - The value runs to the next `&` `#` whitespace quote `<` `>` backslash, or an encoded %26 / %23. Any other `%`
+  //     stays inside it, so a percent-encoded (or malformed) token is filtered whole.
+  //   - Bounded above the longest string redactString ever sees (MAX_SCRUBBED_STRING plus the truncation marker), so
+  //     no value tail can survive; linear: nothing follows the quantifier, and its two branches start on different
+  //     characters.
   [
-    /(^|[?&#;]|%3F|%26|%23)(token_hash|code|token|access_token|refresh_token)(=|%3D)(?:[^&#\s"'<>%]|%(?!26|23)[0-9a-f]{2}){0,20000}/gi,
+    /(^|[?&#;]|%3F|%26|%23|\\u003f|\\u0026|\\u0023)(provider_refresh_token|provider_token|refresh_token|access_token|token_hash|id_token|token|code)(=|%3D|\\u003d)(?:[^&#\s"'<>%\\]|%(?!26|23)){0,20100}/gim,
     '$1$2$3[Filtered]',
   ],
   // Emails, including the %40-encoded form a URL carries. The last label must be letters, so `next@16.4.3` is kept.
@@ -126,21 +130,32 @@ function redact(value: unknown): unknown {
 // request.query_string the name is a key, not URL text, so the pattern above cannot see it: matched here on the exact
 // key instead. Never added to SENSITIVE_FIELDS — that is a substring match, and `code` would blank status_code /
 // error_code (Postgres codes the logs depend on) everywhere.
-const URL_SECRET_PARAMS = new Set(['token_hash', 'code', 'token', 'access_token', 'refresh_token'])
+const URL_SECRET_PARAMS = new Set([
+  'token_hash',
+  'code',
+  'token',
+  'access_token',
+  'refresh_token',
+  'provider_token',
+  'provider_refresh_token',
+  'id_token',
+])
 const FILTERED = '[Filtered]'
+// `code[]=…` parses to the key `code[]`.
+const isUrlSecretParam = (k: string) => URL_SECRET_PARAMS.has(k.toLowerCase().replace(/\[\]$/, ''))
 
 function scrubQueryString(qs: unknown): unknown {
   if (Array.isArray(qs)) {
     return qs.map((pair) =>
       Array.isArray(pair) && pair.length === 2 && typeof pair[0] === 'string'
-        ? [pair[0], URL_SECRET_PARAMS.has(pair[0].toLowerCase()) ? FILTERED : redact(pair[1])]
+        ? [pair[0], isUrlSecretParam(pair[0]) ? FILTERED : redact(pair[1])]
         : redact(pair),
     )
   }
   if (qs !== null && typeof qs === 'object') {
     const out: Record<string, unknown> = {}
     for (const [k, v] of Object.entries(qs as Record<string, unknown>)) {
-      out[k] = URL_SECRET_PARAMS.has(k.toLowerCase()) ? FILTERED : isSensitiveKey(k) ? REDACTED : redact(v)
+      out[k] = isUrlSecretParam(k) ? FILTERED : isSensitiveKey(k) ? REDACTED : redact(v)
     }
     return out
   }

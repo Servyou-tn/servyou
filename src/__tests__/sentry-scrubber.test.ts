@@ -269,6 +269,20 @@ describe('scrubPII — one-time codes and tokens in URLs (audit H5)', () => {
     ],
     ['upper-case names', '/x?TOKEN_HASH=abc&Code=def', '/x?TOKEN_HASH=[Filtered]&Code=[Filtered]'],
     ['a value inside quoted JSON', '{"url":"/verifier-email?token_hash=abc&type=signup"}', '{"url":"/verifier-email?token_hash=[Filtered]&type=signup"}'],
+    // Review of #359:
+    [
+      "the OAuth fragment's provider tokens and id_token",
+      '/x#provider_token=ya29.abc&provider_refresh_token=1//xyz&id_token=eyJ.a.b&access_token=eyJabc&type=recovery',
+      '/x#provider_token=[Filtered]&provider_refresh_token=[Filtered]&id_token=[Filtered]&access_token=[Filtered]&type=recovery',
+    ],
+    [
+      'JSON-escaped separators (a URL inside a serialized payload)',
+      '{"u":"/x?a=1\\u0026token_hash=abc\\u0026type=recovery","v":"/y\\u003fcode\\u003ddef"}',
+      '{"u":"/x?a=1\\u0026token_hash=[Filtered]\\u0026type=recovery","v":"/y\\u003fcode\\u003d[Filtered]"}',
+    ],
+    ['an HTML-escaped &amp;', '/x?a=1&amp;token_hash=abc&amp;type=recovery', '/x?a=1&amp;token_hash=[Filtered]&amp;type=recovery'],
+    ['a malformed % inside the value (no tail survives)', '/x?token_hash=abc%zzdef%2Bg&type=recovery', '/x?token_hash=[Filtered]&type=recovery'],
+    ['a URL at the start of a later line', 'redirect failed\ncode=abc&next=%2F', 'redirect failed\ncode=[Filtered]&next=%2F'],
   ])('filters %s', (_label, input, expected) => {
     expect(scrub({ message: input }).message).toBe(expected)
   })
@@ -285,6 +299,11 @@ describe('scrubPII — one-time codes and tokens in URLs (audit H5)', () => {
   it('a token longer than any URL limit is filtered whole (no tail survives)', () => {
     const out = scrub({ message: `/x?token_hash=${'f'.repeat(5_000)}&type=recovery` })
     expect(out.message).toBe('/x?token_hash=[Filtered]&type=recovery')
+  })
+
+  it('a token past the 20k cut is filtered through the truncation marker (nothing of it survives)', () => {
+    const out = scrub({ message: `/x?token_hash=${'f'.repeat(25_000)}` })
+    expect(out.message).toBe('/x?token_hash=[Filtered]')
   })
 
   it('request.url, the Referer header and the transaction name', () => {
@@ -308,8 +327,17 @@ describe('scrubPII — one-time codes and tokens in URLs (audit H5)', () => {
     const asString = scrub({ request: { query_string: 'token_hash=abc&type=recovery' } })
     expect(asString.request?.query_string).toBe('token_hash=[Filtered]&type=recovery')
 
-    const asObject = scrub({ request: { query_string: { token_hash: 'abc', code: 'def', access_token: 'ghi', type: 'recovery' } } })
-    expect(asObject.request?.query_string).toEqual({ token_hash: '[Filtered]', code: '[Filtered]', access_token: '[Filtered]', type: 'recovery' })
+    const asObject = scrub({
+      request: { query_string: { token_hash: 'abc', code: 'def', 'code[]': ['x'], provider_token: 'p', access_token: 'ghi', type: 'recovery' } },
+    })
+    expect(asObject.request?.query_string).toEqual({
+      token_hash: '[Filtered]',
+      code: '[Filtered]',
+      'code[]': '[Filtered]',
+      provider_token: '[Filtered]',
+      access_token: '[Filtered]',
+      type: 'recovery',
+    })
 
     const asPairs = scrub({
       request: { query_string: [['token_hash', 'abc'], ['refresh_token', 'r'], ['token', 't'], ['type', 'recovery']] },
@@ -372,6 +400,8 @@ describe('scrubPII — one-time codes and tokens in URLs (audit H5)', () => {
       '/x?code=' + '%2'.repeat(6_600),
       '/x?token_hash=' + 'a'.repeat(19_900),
       '/x' + '%3Ftoken%3D'.repeat(1_800),
+      '/x' + '\\u0026provider_toke'.repeat(950),
+      '/x?id_token=' + '%'.repeat(19_900),
     ]
     for (const url of shapes) {
       expect(url.length).toBeLessThan(20_000)
