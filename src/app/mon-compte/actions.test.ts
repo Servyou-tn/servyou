@@ -181,10 +181,11 @@ describe('changePasswordAction', () => {
 
   // Audit H2: with « Require current password when updating » on, Supabase Auth refuses a password change that does
   // not carry the current password. It is sent, and Auth's two refusals read as « mot de passe actuel incorrect ».
-  it('sends the current password to Auth with the new one (current_password)', async () => {
+  it('the current password Auth gets with the update is the one the re-auth just proved', async () => {
     await changePasswordAction(input, TOKEN)
     expect(h.updateUser).toHaveBeenCalledTimes(1)
-    expect(h.updateUser.mock.calls[0][0]).toEqual({ password: 'NewPass456', current_password: 'OldPass123' })
+    const proved = h.signInWithPassword.mock.calls[0][0].password
+    expect(h.updateUser.mock.calls[0][0]).toEqual({ password: 'NewPass456', current_password: proved })
   })
 
   it.each(['current_password_invalid', 'current_password_required'])(
@@ -198,6 +199,7 @@ describe('changePasswordAction', () => {
         field: 'currentPassword',
       })
       expect(h.signOut).not.toHaveBeenCalled()
+      expect(attempts.release).toHaveBeenCalledWith('att-1') // the re-auth passed: this never counts toward the limit
       expect(log).not.toHaveBeenCalled()
       log.mockRestore()
     },
