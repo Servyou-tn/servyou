@@ -2,15 +2,15 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import type { ProvenanceBucket } from './provenance'
 
 // The rolling 24-hour upload cap per account (pre-beta review M3; enforced in the database by
-// trg_limit_daily_uploads on uploaded_objects, hint daily_upload_cap). Product images, portfolio and avatars count;
-// shop-assets (one logo + one banner per shop) do not, as ruled.
+// trg_limit_daily_uploads on uploaded_objects, hint daily_upload_cap). Product images, portfolio, avatars and — since
+// audit 2026-11-11 H4 — shop-assets (logo + banner) all count: shop images were the one uncapped upload path.
 //
 // The upload actions call this BEFORE decoding or storing anything, so a refused upload leaves no orphan file: the
 // trigger refuses the provenance row only AFTER the bytes are stored, which is the backstop for a concurrent burst,
 // not the normal refusal. Counted with the service role, like the provenance rows themselves (uploaded_objects
 // denies SELECT to clients by design).
 export const DAILY_UPLOAD_CAP = 100
-const CAPPED_BUCKETS: readonly ProvenanceBucket[] = ['product-images', 'portfolio-media', 'avatars']
+const CAPPED_BUCKETS: readonly ProvenanceBucket[] = ['product-images', 'portfolio-media', 'avatars', 'shop-assets']
 
 export type UploadQuota = { ok: true; reached: boolean } | { ok: false }
 

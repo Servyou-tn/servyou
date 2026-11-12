@@ -31,7 +31,7 @@ const h = vi.hoisted(() => {
     // The 8-image cap: the action's one table read, a head count of the product's attached images.
     attached: { count: 0 as number | null, error: null as Err },
   }
-  const calls = { uploaded: [] as string[], countFilters: [] as [string, string][] }
+  const calls = { uploaded: [] as string[], removed: [] as string[][], countFilters: [] as [string, string][] }
   const storage = {
     from: () => ({
       upload: vi.fn((path: string) => {
@@ -39,6 +39,10 @@ const h = vi.hoisted(() => {
         return Promise.resolve({ error: state.uploadError })
       }),
       info: vi.fn(() => Promise.resolve(state.infoResult)),
+      remove: vi.fn((paths: string[]) => {
+        calls.removed.push(paths)
+        return Promise.resolve({ error: null })
+      }),
       getPublicUrl: (p: string) => ({ data: { publicUrl: `https://cdn.test/product-images/${p}` } }),
     }),
   }
@@ -121,6 +125,7 @@ beforeEach(() => {
   h.state.infoResult = { data: { size: 4 }, error: null }
   h.state.attached = { count: 0, error: null }
   h.calls.uploaded.length = 0
+  h.calls.removed.length = 0
   h.calls.countFilters.length = 0
   provenanceCalls.length = 0
   provenanceInsertShouldFail = false
@@ -236,11 +241,14 @@ describe('uploadProductImageAction — the daily upload cap (100 per rolling 24 
     provenanceCapReached = true
     const res = await uploadProductImageAction(imageFormData())
     expect(res).toEqual({ ok: false, error: 'upload.error.daily_cap' })
+    // Audit 2026-11-11 H4: the refused upload's bytes are deleted, never left in storage.
+    expect(h.calls.removed).toEqual([[h.calls.uploaded[0]]])
   })
 
-  it('any other provenance failure keeps its own error', async () => {
+  it('any other provenance failure keeps its own error and leaves the object for the reconciliation sweep', async () => {
     provenanceInsertShouldFail = true
     const res = await uploadProductImageAction(imageFormData())
     expect(res).toMatchObject({ ok: false, error: 'product.image.error.upload' })
+    expect(h.calls.removed).toEqual([])
   })
 })

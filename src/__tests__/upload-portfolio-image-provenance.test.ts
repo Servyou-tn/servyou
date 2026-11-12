@@ -18,12 +18,16 @@ const h = vi.hoisted(() => {
   const FREELANCER_PROFILE_ID = '33333333-3333-4333-8333-333333333333'
   type Err = { message: string; code?: string } | null
   const state = { user: null as { id: string } | null, uploadError: null as Err, storedSize: 4 as number | null }
-  const calls = { uploaded: [] as string[] }
+  const calls = { uploaded: [] as string[], removed: [] as string[][] }
   const storage = {
     from: () => ({
       upload: vi.fn((path: string) => {
         calls.uploaded.push(path)
         return Promise.resolve({ error: state.uploadError })
+      }),
+      remove: vi.fn((paths: string[]) => {
+        calls.removed.push(paths)
+        return Promise.resolve({ error: null })
       }),
       getPublicUrl: (p: string) => ({ data: { publicUrl: `https://cdn.test/portfolio-media/${p}` } }),
       // The stored-size read-back; the mocked normalizer's blob is 4 bytes ('test').
@@ -92,6 +96,7 @@ beforeEach(() => {
   h.state.uploadError = null
   h.state.storedSize = 4
   h.calls.uploaded.length = 0
+  h.calls.removed.length = 0
   provenanceCalls.length = 0
   provenanceInsertShouldFail = false
   provenanceCallOrder = null
@@ -200,11 +205,14 @@ describe('uploadPortfolioImageAction — the daily upload cap (100 per rolling 2
     provenanceCapReached = true
     const res = await uploadPortfolioImageAction(imageFormData())
     expect(res).toEqual({ ok: false, error: 'upload.error.daily_cap' })
+    // Audit 2026-11-11 H4: the refused upload's bytes are deleted, never left in storage.
+    expect(h.calls.removed).toEqual([[h.calls.uploaded[0]]])
   })
 
-  it('any other provenance failure keeps its own error', async () => {
+  it('any other provenance failure keeps its own error and leaves the object for the reconciliation sweep', async () => {
     provenanceInsertShouldFail = true
     const res = await uploadPortfolioImageAction(imageFormData())
     expect(res).toMatchObject({ ok: false, error: 'common.error_generic' })
+    expect(h.calls.removed).toEqual([])
   })
 })

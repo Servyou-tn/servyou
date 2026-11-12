@@ -21,6 +21,8 @@ import {
 } from '@/lib/images/normalize'
 import { recordUploadProvenance, deleteUploadProvenance } from '@/lib/images/provenance'
 import { isCallerActive, uploadBucket } from '@/lib/images/upload-guard'
+import { dailyUploadQuota, DAILY_UPLOAD_CAP } from '@/lib/images/upload-quota'
+import { pathFromPublicUrl } from '@/lib/images/storage-path'
 
 // G2 "Créer ma boutique" step 1. Full reasoning: docs/design/g2-discovery.md §7.
 //
@@ -252,9 +254,11 @@ async function uploadShopAsset(params: {
 
   // Ownership re-derived from the session, not trusted from the client. Since S-3 this re-read is the ONLY
   // guard on the client's shopId: the bytes go through the service role, which skips storage RLS.
+  // The current logo / banner URL comes back in the same read: step 1 can be re-submitted (a new logo before
+  // « Continuer »), and the object it replaces is deleted once the update below succeeds (audit 2026-11-11 M5).
   const { data: shop, error: shopErr } = await supabase
     .from('shops')
-    .select('id')
+    .select('id, logo_url, banner_url')
     .eq('id', shopId.data)
     .eq('owner_id', user.id)
     .maybeSingle()
@@ -265,6 +269,17 @@ async function uploadShopAsset(params: {
   if (!shop) {
     console.error(`[uploadShopAsset:${kind}] rejected: shop ${shopId.data} not owned by user ${user.id}`)
     return { ok: false, error: t('common.error_generic', lang) }
+  }
+  const previousUrl = kind === 'logo' ? shop.logo_url : shop.banner_url
+
+  // The daily upload cap (DAILY_UPLOAD_CAP per rolling 24 h, enforced in the database by trg_limit_daily_uploads,
+  // which counts shop-assets since audit 2026-11-11 H4): refused before the decode, so nothing is stored. A failed
+  // count refuses too (generic error, never an unchecked upload).
+  const quota = await dailyUploadQuota(user.id)
+  if (!quota.ok) return { ok: false, error: t('common.error_generic', lang) }
+  if (quota.reached) {
+    console.warn(`[uploadShopAsset:${kind}] refused: daily upload cap reached for user ${user.id}`)
+    return { ok: false, error: t('upload.error.daily_cap', lang, { max: DAILY_UPLOAD_CAP }) }
   }
 
   const normalized = await normalize(Buffer.from(await parsed.data.arrayBuffer()))
@@ -302,6 +317,7 @@ async function uploadShopAsset(params: {
   if (!provenance.ok) {
     console.error(`[uploadShopAsset:${kind}] provenance insert failed, removing orphaned object at ${path}`)
     await uploadBucket(SHOP_BUCKET).remove([path])
+    if (provenance.capReached) return { ok: false, error: t('upload.error.daily_cap', lang, { max: DAILY_UPLOAD_CAP }) }
     return { ok: false, error: t('product.image.error.upload', lang) }
   }
 
@@ -331,6 +347,20 @@ async function uploadShopAsset(params: {
     await deleteUploadProvenance('shop-assets', path)
     console.error(`[uploadShopAsset:${kind}] shop update failed:`, updateError.message, updateError.code)
     return { ok: false, error: t('common.error_generic', lang) }
+  }
+
+  // Audit 2026-11-11 M5: delete the replaced object ONLY NOW, after the update succeeded, exactly as updateShopAsset
+  // (ma-boutique/modifier/actions.ts) does — one file per kind per shop. Through the session client, so the storage
+  // owner-delete policy scopes it to this caller's own shop folder whatever the column held. Best-effort and
+  // non-fatal: a failed delete strands the old object rather than losing the image just set.
+  // Its uploaded_objects row is deliberately KEPT: it is what the daily upload cap counts, so deleting it would let
+  // an upload-then-replace loop run forever without reaching the cap.
+  const oldPath = pathFromPublicUrl(previousUrl, SHOP_BUCKET)
+  if (oldPath && oldPath !== path) {
+    const { error: removeError } = await supabase.storage.from(SHOP_BUCKET).remove([oldPath])
+    if (removeError) {
+      console.error(`[uploadShopAsset:${kind}] old-object delete failed (stranded, not fatal):`, removeError.message)
+    }
   }
 
   revalidatePath('/tableau-de-bord-vendeur')
