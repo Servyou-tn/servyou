@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { productMetadata } from '@/lib/seo/detail-metadata'
 import { notFound } from 'next/navigation'
 import { AppShell } from '@/components/shell/AppShell'
 import { ProductDetail } from '@/components/produits/ProductDetail'
@@ -28,7 +29,8 @@ export async function generateMetadata({
   // getProductDetail is wrapped in React cache(), so this and the render below share ONE fetch per
   // request rather than hitting Postgres twice for the same row.
   const [product, lang] = await Promise.all([getProductDetail(id), getLang()])
-  return { title: `${product ? product.title : t('product.not_found', lang)} — Servyou` }
+  // A missing / inactive product is a 404: no description or canonical, and the root's noindex stays.
+  return product ? productMetadata(product, lang) : { title: t('product.not_found', lang) }
 }
 
 export default async function ProduitPage({ params }: { params: Promise<{ id: string }> }) {

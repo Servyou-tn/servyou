@@ -24,6 +24,25 @@ import { CategoryServicesPage, CATEGORY_SERVICES_PER_PAGE } from '@/components/c
 import { SubcategoryStrip } from '@/components/categories/SubcategoryStrip'
 import { CategoryEmptyState } from '@/components/categories/CategoryEmptyState'
 import { localName } from '@/lib/i18n/local-name'
+import type { Metadata } from 'next'
+import { buildPublicMetadata } from '@/lib/seo/metadata'
+
+// Search / share metadata (audit checklist 5): the category's own name, in the visitor's language. The canonical is
+// the bare slug (no ?type= or filters), so its description follows the slug's own catalogue. An unknown slug is a
+// 404 and keeps the default noindex.
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const { slug } = await params
+  const [category, lang] = await Promise.all([getCategoryBySlug(slug), getLang()])
+  if (!category) return {}
+  const name = localName(category, lang)
+  const descKey = categoryCatalogue(undefined, category.slug) === 'service' ? 'seo.desc.category_services' : 'seo.desc.category_products'
+  return buildPublicMetadata({
+    title: name,
+    description: t(descKey, lang, { category: name }),
+    path: `/categories/${category.slug}`,
+    lang,
+  })
+}
 
 // /categories/[slug] — the category-scoped browse surface (public). The slug locks the
 // category; the page browses-by-default (full grid immediately), refinable by city/price.

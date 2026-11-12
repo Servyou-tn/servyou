@@ -20,6 +20,14 @@ import { SearchQueryInput } from '@/components/recherche/SearchQueryInput'
 import { Pagination } from '@/components/shared/Pagination'
 import { SearchEmptyState } from '@/components/recherche/SearchEmptyState'
 import { SearchLanding } from '@/components/recherche/SearchLanding'
+import type { Metadata } from 'next'
+import { publicMetadata } from '@/lib/seo/metadata'
+
+// Search / share metadata (audit checklist 5). Search results are crawlable (their links lead to the listings) but
+// kept out of the index: every query would be a near-duplicate page.
+export async function generateMetadata(): Promise<Metadata> {
+  return publicMetadata('seo.title.search', 'seo.desc.search', '/recherche', { noindex: true })
+}
 
 // /recherche — Engine 3, the search surface (public, no auth gate). Search runs against ONE
 // side only, chosen by ?type (product default, service otherwise) — the sidebar's expandable

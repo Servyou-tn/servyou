@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { localizedMetadata } from '@/lib/i18n/metadata'
+import { publicMetadata } from '@/lib/seo/metadata'
 import Link from 'next/link'
 import { Package } from 'lucide-react'
 import { AppShell } from '@/components/shell/AppShell'
@@ -24,7 +24,7 @@ import { BoutiquesLens } from './_components/BoutiquesLens'
 import { HitArea } from '@/components/ui/interactive-surface'
 
 export async function generateMetadata(): Promise<Metadata> {
-  return localizedMetadata('meta.products')
+  return publicMetadata('meta.products', 'seo.desc.products', '/marche/produits')
 }
 
 const BASE = '/marche/produits'

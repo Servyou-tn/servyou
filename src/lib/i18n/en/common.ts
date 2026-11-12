@@ -1542,6 +1542,32 @@ export const strings: Record<string, string> = {
   "meta.become_seller_shop": "Become a seller",
   "meta.desc.become_freelancer": "Work as a freelancer on Servyou. List your services, find jobs, grow your business. No commission.",
   "meta.become_freelancer": "Become a freelancer",
+
+  // SEO: search-result titles and descriptions of the public pages (audit checklist 5). Pending founder approval.
+  "seo.home.title": "ServYou — the Tunisian marketplace for freelancers and shops",
+  "seo.title.services": "Freelance services",
+  "seo.title.become_shop": "Open a shop",
+  "seo.title.search": "Search",
+  "seo.desc.about": "ServYou's mission: bringing freelancers, shops and clients in Tunisia together on one platform.",
+  "seo.desc.accessibility": "Our commitment to a site everyone can use: conformance level, known limits and how to report a problem.",
+  "seo.desc.terms": "ServYou's terms of use: the platform rules for clients, freelancers and shops.",
+  "seo.desc.privacy": "How ServYou collects, uses and protects your personal data, and how to exercise your rights.",
+  "seo.desc.contact": "A question? Write to the ServYou team: a person reads every message and replies within 24 to 48 hours.",
+  "seo.desc.cookies": "The cookies ServYou uses, what they are for and how to manage your choices.",
+  "seo.desc.faq": "Answers to common questions about ServYou: buying, selling, offering your services, paying and using the platform safely.",
+  "seo.desc.services": "Browse services from Tunisian freelancers, compare offers and contact the right pro.",
+  "seo.desc.products": "Shop from Tunisian stores: browse products, order online and pay on delivery.",
+  "seo.desc.search": "Search for services, products, freelancers and shops on ServYou.",
+  "seo.desc.category_products": "{category}: products from Tunisian shops on ServYou. Order online and pay on delivery.",
+  "seo.desc.category_services": "{category}: services from Tunisian freelancers on ServYou. Compare offers and contact the right pro.",
+  "seo.desc.freelancer": "{name}, freelancer on ServYou: see their services, skills and portfolio.",
+  "seo.desc.freelancer_city": "{name}, freelancer in {city} on ServYou: see their services, skills and portfolio.",
+  "seo.desc.shop": "{name}, a shop on ServYou: browse its products, order online and pay on delivery.",
+  "seo.desc.shop_city": "{name}, a shop in {city} on ServYou: browse its products, order online and pay on delivery.",
+  "seo.desc.product": "{title} on ServYou. Order online and pay on delivery.",
+  "seo.desc.product_shop": "{title}, sold by {shop} on ServYou. Order online and pay on delivery.",
+  "seo.desc.service": "{title} on ServYou. Contact the freelancer to discuss it.",
+  "seo.desc.service_freelancer": "{title}, offered by {name} on ServYou. Contact the freelancer to discuss it.",
 }
 
 export const plurals: Record<string, PluralVariants> = {

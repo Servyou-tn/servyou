@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { serviceMetadata } from '@/lib/seo/detail-metadata'
 import { notFound } from 'next/navigation'
 import { AppShell } from '@/components/shell/AppShell'
 import { ServiceDetail } from '@/components/marche/ServiceDetail'
@@ -19,8 +20,9 @@ export async function generateMetadata({
   params: Promise<{ id: string }>
 }): Promise<Metadata> {
   const { id } = await params
-  const service = await getServiceDetail(id)
-  return { title: service ? `${service.title} — Servyou` : 'Service — Servyou' }
+  const [service, lang] = await Promise.all([getServiceDetail(id), getLang()])
+  // A missing / inactive service is a 404: no description or canonical, and the root's noindex stays.
+  return service ? serviceMetadata(service, lang) : { title: 'Service' }
 }
 
 export default async function ServicePage({ params }: { params: Promise<{ id: string }> }) {
