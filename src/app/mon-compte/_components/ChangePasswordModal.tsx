@@ -3,7 +3,7 @@
 import { useRef, useState, useTransition, type FormEvent } from 'react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+import { PasswordInput } from '@/components/ui/password-input'
 import { changePasswordAction } from '@/app/mon-compte/actions'
 import { isValidPassword } from '@/lib/signup-validation'
 import { t, type Lang } from '@/lib/i18n'
@@ -68,18 +68,16 @@ export function ChangePasswordModal({ lang, onClose }: { lang: Lang; onClose: ()
   return (
     <ModalShell titleId="change-password-title" title={t('monCompte.password.modalTitle', lang)} busy={pending} onClose={onClose}>
       <form onSubmit={submit} noValidate className="flex flex-col gap-4">
-        <Input
+        <PasswordInput
           label={t('monCompte.field.currentPassword', lang)}
-          type="password"
           autoComplete="current-password"
           required
           value={current}
           onChange={(e) => setCurrent(e.target.value)}
           error={say(currentError)}
         />
-        <Input
+        <PasswordInput
           label={t('monCompte.field.newPassword', lang)}
-          type="password"
           autoComplete="new-password"
           required
           value={next}
@@ -87,9 +85,8 @@ export function ChangePasswordModal({ lang, onClose }: { lang: Lang; onClose: ()
           helper={t('monCompte.password.invalid', lang)}
           error={say(nextError)}
         />
-        <Input
+        <PasswordInput
           label={t('monCompte.field.confirmPassword', lang)}
-          type="password"
           autoComplete="new-password"
           required
           value={confirm}

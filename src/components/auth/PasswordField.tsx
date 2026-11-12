@@ -1,18 +1,18 @@
 'use client'
 
-import { useState } from 'react'
 import { useLang } from '@/components/LangProvider'
 import { t } from '@/lib/i18n'
 import { passwordStrength } from '@/lib/signup-validation'
-import { EyeIcon, EyeOffIcon } from './Icons'
+import { PasswordRevealButton, PASSWORD_INPUT_ATTRS, usePasswordReveal } from '@/components/ui/password-reveal'
 import { labelClass, helpClass, errorClass, inputBase } from './field-styles'
-import { FOCUS_RING } from '@/components/layout/styles'
 
 // Reusable password input: label + white input with a show/hide eye toggle, an
 // optional helper line, an optional error, and an optional red/amber/green strength
 // meter. Toggle aria-labels and the strength words use the shared
 // signup.form.fields.password.* strings (label/helper/error come in as already-
 // translated props). Markup matches the original SignupForm password field verbatim.
+// The eye is the shared PasswordRevealButton (src/components/ui/password-reveal.tsx): hidden by default, back to hidden
+// when the form submits, aria-controls → the input, no aria-pressed. Same 48 px box at the field's end as before.
 export function PasswordField({
   id,
   label,
@@ -35,7 +35,7 @@ export function PasswordField({
   placeholder?: string
 }) {
   const lang = useLang()
-  const [show, setShow] = useState(false)
+  const { shown: show, toggle } = usePasswordReveal(id)
 
   const strength = showStrengthMeter && value ? passwordStrength(value) : null
   const strengthColor = strength === 'strong' ? 'bg-emerald-500' : strength === 'medium' ? 'bg-amber-400' : 'bg-red-400'
@@ -48,6 +48,7 @@ export function PasswordField({
       </label>
       <div className="relative">
         <input
+          {...PASSWORD_INPUT_ATTRS}
           id={id}
           type={show ? 'text' : 'password'}
           autoComplete={autoComplete}
@@ -56,17 +57,9 @@ export function PasswordField({
           onChange={(e) => onChange(e.target.value)}
           aria-invalid={!!error}
           aria-describedby={describedBy}
-          className={`${inputBase} ${error ? 'border-red-400' : 'border-[var(--border-subtle)]'} pe-12`}
+          className={`${inputBase} ${error ? 'border-red-400' : 'border-[var(--border-subtle)]'} pe-12 [&::-ms-reveal]:hidden`}
         />
-        <button
-          type="button"
-          onClick={() => setShow((v) => !v)}
-          aria-label={t(show ? 'signup.form.fields.password.toggleHide' : 'signup.form.fields.password.toggleShow', lang)}
-          aria-pressed={show}
-          className={`absolute inset-y-0 end-0 flex w-12 items-center justify-center rounded-e-xl text-[var(--text-muted)] transition-colors hover:text-[var(--text-primary)] ${FOCUS_RING}`}
-        >
-          {show ? <EyeOffIcon className="h-5 w-5" /> : <EyeIcon className="h-5 w-5" />}
-        </button>
+        <PasswordRevealButton controls={id} shown={show} onToggle={toggle} className="absolute inset-y-0 end-0 w-12 rounded-e-xl" />
       </div>
       {helperText && !error ? (
         <p id={`${id}-help`} className={helpClass}>
