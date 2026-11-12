@@ -336,7 +336,8 @@ const passwordInputSchema = z.object({
 
 // Inline password change. The email used to re-authenticate is the SESSION user's, never a client
 // value. signInWithPassword proves the current password (and gives the session the "secure password
-// change" setting asks for, whether or not it is on); updateUser then writes the new one.
+// change" setting asks for, whether or not it is on); updateUser then writes the new one, sending the current
+// password again for the « Require current password when updating » setting (audit H2).
 //
 // Guessing the current password from a stolen session (pre-beta review M1): every attempt needs a fresh Turnstile
 // token (Supabase Auth's CAPTCHA on the password grant — refused here first when the token is missing), and an
@@ -396,8 +397,16 @@ export async function changePasswordAction(
     return { ok: false, error: t('monCompte.password.error', lang) }
   }
 
-  const { error } = await supabase.auth.updateUser({ password: newPassword })
+  // The current password rides along too (audit H2): with Supabase Auth's « Require current password when updating »
+  // setting on, Auth refuses a password change without it (current_password_required) or with a wrong one
+  // (current_password_invalid). Sessions opened from an email link (the /nouveau-mot-de-passe reset) are exempt
+  // server-side, and that flow never sends it. The re-auth above already proved the password, so either code here
+  // means it changed in between: same answer as a wrong current password.
+  const { error } = await supabase.auth.updateUser({ password: newPassword, current_password: currentPassword })
   if (error) {
+    if (error.code === 'current_password_invalid' || error.code === 'current_password_required') {
+      return { ok: false, error: t('monCompte.password.wrongCurrent', lang), field: 'currentPassword' }
+    }
     if (error.code === 'same_password') return { ok: false, error: t('monCompte.password.same', lang), field: 'newPassword' }
     if (error.code === 'weak_password') return { ok: false, error: t('monCompte.password.invalid', lang), field: 'newPassword' }
     console.error('[changePasswordAction] update failed:', error.message, error.code, error.status)
