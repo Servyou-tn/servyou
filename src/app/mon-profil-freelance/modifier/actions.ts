@@ -256,8 +256,14 @@ export async function uploadPortfolioImageAction(formData: FormData): Promise<Up
   // INSERT to `authenticated` by design (20260903143928).
   const provenance = await recordUploadProvenance('portfolio-media', path, user.id)
   if (!provenance.ok) {
+    // Audit 2026-11-11 H4: a cap refusal means the row was never written, so nothing can ever reference this path —
+    // the object is deleted, never left in storage. Any OTHER failure keeps the leave-it-for-the-sweep posture.
+    if (provenance.capReached) {
+      console.warn(`[uploadPortfolioImage] daily upload cap refused the provenance row, removing ${path} (user ${user.id})`)
+      await uploadBucket(PORTFOLIO_BUCKET).remove([path])
+      return { ok: false, error: t('upload.error.daily_cap', lang, { max: DAILY_UPLOAD_CAP }) }
+    }
     console.error(`[uploadPortfolioImage] provenance insert failed for ${path}, user ${user.id} — object left for reconciliation`)
-    if (provenance.capReached) return { ok: false, error: t('upload.error.daily_cap', lang, { max: DAILY_UPLOAD_CAP }) }
     return { ok: false, error: t('common.error_generic', lang) }
   }
 

@@ -4,7 +4,8 @@
  *     service role is not capped (seeds, admin tooling);
  *   * at most 100 image uploads per account per rolling 24 h: the 101st `uploaded_objects` row for one owner is
  *     refused (23514, hint daily_upload_cap) WHOEVER writes it — these rows are always written by the service role,
- *     so this cap deliberately has no service-role bypass; a backfilled row and a shop-assets row are not counted.
+ *     so this cap deliberately has no service-role bypass; a backfilled row is not counted. Since audit 2026-11-11 H4
+ *     (db/migrations/PENDING_shop_assets_daily_upload_cap.sql) a shop-assets row IS counted (logo / banner uploads).
  * The services half (20 per freelancer) is services-cap-live.test.ts (it needs a freelancer: one seller capability
  * per account).
  *
@@ -127,16 +128,15 @@ describe.skipIf(!hasCreds)('uploads — at most 100 per account per rolling 24 h
     expect(error?.hint).toBe('daily_upload_cap')
   })
 
-  it('portfolio and avatar uploads count toward the same cap', async () => {
-    for (const bucket of ['portfolio-media', 'avatars']) {
+  it('portfolio, avatar and (since audit H4) shop-assets uploads count toward the same cap', async () => {
+    for (const bucket of ['portfolio-media', 'avatars', 'shop-assets']) {
       const { error } = await admin.from('uploaded_objects').insert(upload(ownerId, bucket))
       expect(error?.hint).toBe('daily_upload_cap')
     }
   })
 
-  it('a shop-assets row and a backfilled row are not counted', async () => {
-    expect((await admin.from('uploaded_objects').insert(upload(ownerId, 'shop-assets'))).error).toBeNull()
+  it('a backfilled row is not counted', async () => {
     expect((await admin.from('uploaded_objects').insert(upload(ownerId, 'product-images', true))).error).toBeNull()
-    expect(await count('uploaded_objects', ownerId)).toBe(102)
+    expect(await count('uploaded_objects', ownerId)).toBe(101)
   })
 })

@@ -231,8 +231,15 @@ export async function uploadProductImageAction(formData: FormData): Promise<Uplo
   // takes on the integrity-check branch below.
   const provenance = await recordUploadProvenance('product-images', path, user.id)
   if (!provenance.ok) {
+    // Audit 2026-11-11 H4: a cap refusal is not a DB hiccup — the row was refused, never written, so nothing can
+    // ever reference this path. The object is deleted, never left: otherwise every refused upload past the cap would
+    // still land in storage. Any OTHER failure keeps the leave-it-for-the-sweep posture described above.
+    if (provenance.capReached) {
+      console.warn(`[uploadProductImage] daily upload cap refused the provenance row, removing ${path} (user ${user.id})`)
+      await uploadBucket(PRODUCT_BUCKET).remove([path])
+      return { ok: false, error: t('upload.error.daily_cap', lang, { max: DAILY_UPLOAD_CAP }) }
+    }
     console.error(`[uploadProductImage] provenance insert failed for ${path}, user ${user.id} — object left for reconciliation`)
-    if (provenance.capReached) return { ok: false, error: t('upload.error.daily_cap', lang, { max: DAILY_UPLOAD_CAP }) }
     return { ok: false, error: t('product.image.error.upload', lang) }
   }
 

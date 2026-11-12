@@ -20,6 +20,8 @@ import {
 } from '@/lib/images/normalize'
 import { recordUploadProvenance, deleteUploadProvenance } from '@/lib/images/provenance'
 import { isCallerActive, uploadBucket } from '@/lib/images/upload-guard'
+import { dailyUploadQuota, DAILY_UPLOAD_CAP } from '@/lib/images/upload-quota'
+import { pathFromPublicUrl } from '@/lib/images/storage-path'
 
 // G3 "Modifier ma boutique" — the identity-field edit surface (name, city, description, logo,
 // banner). The other six accordions (type, livraison, horaires, adresse, paiement, catégories)
@@ -170,23 +172,9 @@ const FAILURE_KEY: Record<NormalizeFailure, string> = {
   too_large: 'product.image.error.tooLarge',
 }
 
-// Derives the object path from a stored public URL — {shopId}/{kind}/{uuid}.webp — so the
-// previous object can be targeted for deletion without a second column just to remember its path.
-// Returns null on anything that doesn't match the expected shape; callers treat that as "nothing
-// to clean up" rather than an error, since a malformed URL should never block the caller.
-function pathFromPublicUrl(url: string | null, bucket: string): string | null {
-  if (!url) return null
-  const marker = `/object/public/${bucket}/`
-  const idx = url.indexOf(marker)
-  if (idx === -1) return null
-  // Verified against this project's actual getPublicUrl() output: no query string today. Stripped
-  // defensively anyway — a future transform/query-carrying URL shape must not corrupt the path.
-  return decodeURIComponent(url.slice(idx + marker.length).split('?')[0])
-}
-
 /**
- * Shared REPLACE body for both asset kinds. Unlike ma-boutique/creer/actions.ts's uploadShopAsset
- * (create — the column starts null, nothing to clean up), this one reads the column's CURRENT
+ * Shared REPLACE body for both asset kinds. Like ma-boutique/creer/actions.ts's uploadShopAsset
+ * (which does the same old-object delete since audit 2026-11-11 M5), this one reads the column's CURRENT
  * value before touching anything, uploads the new object, points the column at it, and only THEN
  * — after the update has succeeded — deletes the old object through the Storage API. Never SQL,
  * per the standing rule (docs/follow-ups.md:2000-2004). If the delete fails it is logged and the
@@ -258,6 +246,16 @@ async function updateShopAsset(params: {
   }
   const previousUrl = kind === 'logo' ? current.logo_url : current.banner_url
 
+  // The daily upload cap (DAILY_UPLOAD_CAP per rolling 24 h, enforced in the database by trg_limit_daily_uploads,
+  // which counts shop-assets since audit 2026-11-11 H4): refused before the decode, so nothing is stored. A failed
+  // count refuses too (generic error, never an unchecked upload).
+  const quota = await dailyUploadQuota(user.id)
+  if (!quota.ok) return { ok: false, error: t('common.error_generic', lang) }
+  if (quota.reached) {
+    console.warn(`[updateShopAsset:${kind}] refused: daily upload cap reached for user ${user.id}`)
+    return { ok: false, error: t('upload.error.daily_cap', lang, { max: DAILY_UPLOAD_CAP }) }
+  }
+
   const normalized = await normalize(Buffer.from(await parsed.data.arrayBuffer()))
   if (!normalized.ok) {
     console.error(
@@ -293,6 +291,7 @@ async function updateShopAsset(params: {
   if (!provenance.ok) {
     console.error(`[updateShopAsset:${kind}] provenance insert failed, removing orphaned object at ${path}`)
     await uploadBucket(SHOP_BUCKET).remove([path])
+    if (provenance.capReached) return { ok: false, error: t('upload.error.daily_cap', lang, { max: DAILY_UPLOAD_CAP }) }
     return { ok: false, error: t('product.image.error.upload', lang) }
   }
 

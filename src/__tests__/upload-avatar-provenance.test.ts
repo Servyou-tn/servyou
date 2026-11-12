@@ -210,6 +210,8 @@ describe('uploadAvatarAction — the daily upload cap (100 per rolling 24 h)', (
     provenanceCapReached = true
     const res = await uploadAvatarAction(avatarFormData())
     expect(res).toEqual({ ok: false, error: 'upload.error.daily_cap' })
+    // Audit 2026-11-11 H4 (already true here, now pinned): the refused upload's bytes are deleted.
+    expect(h.calls.removed).toEqual([[h.calls.uploaded[0]]])
   })
 
   it('any other provenance failure keeps its own error', async () => {
