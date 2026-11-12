@@ -89,4 +89,18 @@ describe('isValidEmail', () => {
     expect(isValidEmail('a@b')).toBe(false)
     expect(isValidEmail('a b@c.com')).toBe(false)
   })
+  it('refuses a 64,000-character fake email in under 5 ms (audit H3)', () => {
+    // The old regex took ~10 s on this shape: many dots, then a character that fails the end anchor.
+    const fake64k = 'a@' + 'a.'.repeat(31_998) + '@x'
+    expect(fake64k).toHaveLength(64_000)
+    expect(isValidEmail(fake64k)).toBe(false)
+    // Fastest of 3 calls, so one GC pause on a shared CI runner cannot fail the bound (the old code: ~10 s every call).
+    let fastest = Infinity
+    for (let i = 0; i < 3; i++) {
+      const start = performance.now()
+      isValidEmail(fake64k)
+      fastest = Math.min(fastest, performance.now() - start)
+    }
+    expect(fastest).toBeLessThan(5)
+  })
 })
