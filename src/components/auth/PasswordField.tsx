@@ -35,7 +35,7 @@ export function PasswordField({
   placeholder?: string
 }) {
   const lang = useLang()
-  const { shown: show, toggle } = usePasswordReveal(id)
+  const { shown: show, toggle, buttonRef } = usePasswordReveal(id)
 
   const strength = showStrengthMeter && value ? passwordStrength(value) : null
   const strengthColor = strength === 'strong' ? 'bg-emerald-500' : strength === 'medium' ? 'bg-amber-400' : 'bg-red-400'
@@ -59,7 +59,13 @@ export function PasswordField({
           aria-describedby={describedBy}
           className={`${inputBase} ${error ? 'border-red-400' : 'border-[var(--border-subtle)]'} pe-12 [&::-ms-reveal]:hidden`}
         />
-        <PasswordRevealButton controls={id} shown={show} onToggle={toggle} className="absolute inset-y-0 end-0 w-12 rounded-e-xl" />
+        <PasswordRevealButton
+          controls={id}
+          shown={show}
+          onToggle={toggle}
+          buttonRef={buttonRef}
+          className="absolute inset-y-0 end-0 w-12 rounded-e-xl"
+        />
       </div>
       {helperText && !error ? (
         <p id={`${id}-help`} className={helpClass}>

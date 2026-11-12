@@ -116,6 +116,63 @@ describe('back to hidden when the form submits — already during the event', ()
     fireEvent.click(screen.getByRole('button', { name: SHOW }))
     expect(input('Mot de passe')).toHaveAttribute('type', 'text')
   })
+
+  it('Enter in a textarea (a new line, not a submission) leaves the field revealed', () => {
+    renderInForm(
+      <>
+        <PasswordInput label="Mot de passe" />
+        <textarea aria-label="Note" />
+      </>,
+    )
+    fireEvent.click(screen.getByRole('button', { name: SHOW }))
+    fireEvent.keyDown(screen.getByLabelText('Note'), { key: 'Enter' })
+    expect(input('Mot de passe')).toHaveAttribute('type', 'text')
+  })
+
+  it('two forms reusing the same input id each bind to their own field', () => {
+    render(
+      <LangProvider lang="fr">
+        <form aria-label="A" onSubmit={(e) => e.preventDefault()}>
+          <PasswordInput id="password" label="Premier" />
+        </form>
+        <form aria-label="B" onSubmit={(e) => e.preventDefault()}>
+          <PasswordInput id="password" label="Second" />
+        </form>
+      </LangProvider>,
+    )
+    // Duplicate ids break the labels' `for` (both point at the first input), so each form's input is read from the form.
+    const first = screen.getByRole('form', { name: 'A' }).querySelector('input')!
+    const second = screen.getByRole('form', { name: 'B' }).querySelector('input')!
+    const [, secondEye] = screen.getAllByRole('button', { name: SHOW })
+    fireEvent.click(secondEye)
+    expect(second).toHaveAttribute('type', 'text')
+    expect(first).toHaveAttribute('type', 'password')
+    fireEvent.submit(second.form!)
+    expect(second).toHaveAttribute('type', 'password')
+  })
+
+  it('stops listening once the field is gone', () => {
+    const { rerender } = renderInForm(<PasswordInput label="Mot de passe" />)
+    const form = input('Mot de passe').form!
+    rerender(
+      <LangProvider lang="fr">
+        <form onSubmit={(e) => e.preventDefault()} noValidate>
+          <button type="submit">Envoyer</button>
+        </form>
+      </LangProvider>,
+    )
+    expect(() => fireEvent.submit(form)).not.toThrow()
+  })
+})
+
+describe('a disabled field', () => {
+  it('has a disabled eye: it cannot be revealed', () => {
+    renderInForm(<PasswordInput label="Mot de passe" disabled />)
+    const eye = screen.getByRole('button', { name: SHOW })
+    expect(eye).toBeDisabled()
+    fireEvent.click(eye)
+    expect(input('Mot de passe')).toHaveAttribute('type', 'password')
+  })
 })
 
 describe('PasswordField — the auth funnel field uses the same eye', () => {

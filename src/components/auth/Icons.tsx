@@ -1,9 +1,6 @@
-// Shared inline-SVG icons for the auth funnel. The project deliberately avoids the
-// lucide-react PACKAGE (see Hero/HowItWorks/Step-1) — these reuse lucide's exact
-// paths as inline SVGs. className-based (callers pass h-/w-/text- utilities), which
-// is how every existing call site uses them, so consolidating here is a pure
-// refactor. (Written when lucide-react was not a dependency; it is now. The password eye moved to lucide's Eye / EyeOff
-// in the shared PasswordRevealButton, src/components/ui/password-reveal.tsx.)
+// Shared inline-SVG icons for the auth funnel — lucide's exact paths as inline SVGs, written when lucide-react was not
+// yet a dependency (it is now). className-based: callers pass h-/w-/text- utilities. The password eye moved to lucide's
+// Eye / EyeOff in the shared PasswordRevealButton (src/components/ui/password-reveal.tsx).
 
 export function CheckIcon({ className }: { className?: string }) {
   return (
