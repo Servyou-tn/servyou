@@ -1368,6 +1368,33 @@ both on 2026-10-28.
     - Rollback: `select cron.unschedule('purge-unconfirmed-signups'); drop function public.purge_unconfirmed_signups();`
       (pg_cron stays installed: dropping it deletes every cron job).
 
+131. **20261112222905_advisor_fk_indexes** — audit 2026-11-11 M9 (fix plan PR 15a, PR #363): the 8 unindexed foreign
+    keys get an index; applied by the architect.
+    - Partial indexes (`where <col> is not null`; all 8 columns are nullable) on `contact_messages.user_id`,
+      `data_exports.processed_by`, `deletion_requests.processed_by`, `favorites.product_id`,
+      `favorites.service_listing_id`, `order_events.actor_id`, `orders.service_listing_id`,
+      `service_listings.subcategory_id`.
+    - Drops `job_posts_status_idx`, redundant with `job_posts_status_response_count_idx (status, response_count)`.
+      The other 12 « unused » indexes stay (founder decision 2026-11-12): 5 back an FK, 2 are the full-text search
+      GIN indexes, 5 serve admin filters.
+    - Checked after the apply: advisor `unindexed_foreign_keys` 0; `unused_index` 20 (the 12 kept + the 8 new ones,
+      which have no scans yet: the lint counts FK-backing indexes too).
+    - Rollback: the commented block at the end of the file.
+
+132. **20261112224114_rls_initplan_wrap** — audit 2026-11-11 M9 (fix plan PR 15a, PR #363): RLS policies read the
+    signed-in user once per query instead of once per row; applied by the architect.
+    - `ALTER POLICY` on the 65 public policies that called `auth.uid()` (56) or `is_admin()` (13) bare (4 did both):
+      each call is wrapped in a scalar sub-select. The live text was changed in exactly those two ways and nothing
+      else; names, commands, roles and permissive flags are unchanged. Storage policies are out of scope (owned by
+      `supabase_storage_admin`).
+    - Self-guarded: the file copies the live definitions, applies the ALTERs, then requires each one, unwrapped, to
+      equal its copy, and none to call either function bare (else it raises and rolls back). The guard passed on
+      apply.
+    - Static proof: `src/__tests__/rls-initplan-wrap-static.test.ts`.
+    - Checked after the apply: 0 public policies call `auth.uid()` / `is_admin()` bare; advisor `auth_rls_initplan`
+      0; RLS on for every public table; `multiple_permissive_policies` unchanged at 33 (the merges are PR 15b).
+    - Rollback: the commented ALTER block at the end of the file (each policy back to its « -- old » definition).
+
 ## Rollback paths
 
 Each migration in this folder represents work that has already been applied to production. Rollback is therefore reverse migration work, not file deletion. If a rollback is ever needed, write a new dated migration that reverses the relevant changes — never delete history from this folder.
