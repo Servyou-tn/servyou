@@ -25,6 +25,7 @@ const fail = (code: string, status: number): VerifyResult => ({ data: { session:
 const h = vi.hoisted(() => ({
   listener: null as Listener | null,
   verifyOtp: null as unknown as import('vitest').Mock<(params: { token_hash: string; type: string }) => Promise<VerifyResult>>,
+  updateUser: null as unknown as import('vitest').Mock<(attrs: Record<string, unknown>) => Promise<{ error: null }>>,
 }))
 
 vi.mock('next/navigation', () => ({ useRouter: () => ({ push: vi.fn() }) }))
@@ -36,7 +37,7 @@ vi.mock('@/lib/supabase/client', () => ({
         return { data: { subscription: { unsubscribe: vi.fn() } } }
       },
       verifyOtp: (params: { token_hash: string; type: string }) => h.verifyOtp(params),
-      updateUser: vi.fn(async () => ({ error: null })),
+      updateUser: (attrs: Record<string, unknown>) => h.updateUser(attrs),
       signOut: vi.fn(async () => ({ error: null })),
     },
   }),
@@ -58,6 +59,7 @@ beforeEach(() => {
   sessionStorage.clear()
   h.listener = null
   h.verifyOtp = vi.fn(async () => OK)
+  h.updateUser = vi.fn(async () => ({ error: null }))
 })
 afterEach(() => {
   cleanup()
@@ -104,6 +106,23 @@ describe('NewPasswordForm — recovery sessions only', () => {
     emit('INITIAL_SESSION', null)
     act(() => vi.advanceTimersByTime(2100))
     expect(invalidBody()).toBeInTheDocument()
+  })
+})
+
+// Audit H2: Mon compte's change now sends current_password for Supabase Auth's « Require current password when
+// updating ». The reset must NOT: the user has forgotten it, and Auth exempts sessions opened from an email link.
+describe('NewPasswordForm — the reset sends only the new password', () => {
+  it('a recovery session sets the new password with updateUser({ password }) — no current_password', async () => {
+    render(<NewPasswordForm initialView="checking" />)
+    emit('PASSWORD_RECOVERY', 'user-1')
+    fireEvent.change(screen.getByLabelText(t('newPassword.fields.password.label', 'fr')), { target: { value: 'NewPass456' } })
+    fireEvent.change(screen.getByLabelText(t('newPassword.fields.confirmPassword.label', 'fr')), { target: { value: 'NewPass456' } })
+    await act(async () => {
+      fireEvent.click(passwordField()!)
+    })
+    expect(h.updateUser).toHaveBeenCalledTimes(1)
+    expect(h.updateUser.mock.calls[0][0]).toEqual({ password: 'NewPass456' })
+    expect(h.updateUser.mock.calls[0][0]).not.toHaveProperty('current_password')
   })
 })
 

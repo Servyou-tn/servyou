@@ -5,6 +5,9 @@
  * password. The fixture sign-in here IS that recovery path: admin generateLink(type 'recovery') + the user's own
  * verifyOtp(token_hash) — exactly what the emailed link does.
  *
+ * It also covers « Require current password when updating » (audit H2): Auth exempts a recovery session from that
+ * check, so this updateUser — which sends no current_password, like /nouveau-mot-de-passe — must still succeed.
+ *
  * The other half — Mon compte's change-password, which re-checks the current password with signInWithPassword — needs
  * a real Turnstile token for the production CAPTCHA, so it is covered by the mocked suite
  * (src/app/mon-compte/actions.test.ts), not here.

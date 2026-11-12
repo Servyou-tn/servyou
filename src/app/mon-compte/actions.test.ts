@@ -174,10 +174,36 @@ describe('changePasswordAction', () => {
   it("re-authenticates with the SESSION user's email, updates, then ends the OTHER sessions — in that order", async () => {
     expect(await changePasswordAction(input, TOKEN)).toEqual({ ok: true })
     expect(h.signInWithPassword).toHaveBeenCalledWith({ email: 'me@example.com', password: 'OldPass123', options: { captchaToken: TOKEN } })
-    expect(h.updateUser).toHaveBeenCalledWith({ password: 'NewPass456' })
+    expect(h.updateUser).toHaveBeenCalledWith({ password: 'NewPass456', current_password: 'OldPass123' })
     expect(h.signOut).toHaveBeenCalledWith({ scope: 'others' })
     expect(h.calls).toEqual(['signIn', 'updateUser', 'signOut'])
   })
+
+  // Audit H2: with « Require current password when updating » on, Supabase Auth refuses a password change that does
+  // not carry the current password. It is sent, and Auth's two refusals read as « mot de passe actuel incorrect ».
+  it('the current password Auth gets with the update is the one the re-auth just proved', async () => {
+    await changePasswordAction(input, TOKEN)
+    expect(h.updateUser).toHaveBeenCalledTimes(1)
+    const proved = h.signInWithPassword.mock.calls[0][0].password
+    expect(h.updateUser.mock.calls[0][0]).toEqual({ password: 'NewPass456', current_password: proved })
+  })
+
+  it.each(['current_password_invalid', 'current_password_required'])(
+    'Auth %s is « mot de passe actuel incorrect » on currentPassword, and ends no session',
+    async (code) => {
+      const log = vi.spyOn(console, 'error').mockImplementation(() => {})
+      h.updateUser.mockResolvedValue({ error: { code, message: 'Current password required when setting new password.', status: 400 } })
+      expect(await changePasswordAction(input, TOKEN)).toEqual({
+        ok: false,
+        error: t('monCompte.password.wrongCurrent', 'fr'),
+        field: 'currentPassword',
+      })
+      expect(h.signOut).not.toHaveBeenCalled()
+      expect(attempts.release).toHaveBeenCalledWith('att-1') // the re-auth passed: this never counts toward the limit
+      expect(log).not.toHaveBeenCalled()
+      log.mockRestore()
+    },
+  )
 
   it('still succeeds, and logs the fields, when ending the other sessions fails', async () => {
     const log = vi.spyOn(console, 'error').mockImplementation(() => {})
