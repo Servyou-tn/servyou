@@ -1,7 +1,7 @@
 // Generated from the live Supabase schema (project xggomcitqrkaylqezjjz) — DO NOT EDIT BY HAND.
 // Regenerate after every applied migration: Supabase MCP generate_typescript_types (or
 // `npx supabase gen types typescript --project-id xggomcitqrkaylqezjjz`), then commit.
-// Generated 2026-11-11 after migration 20261111163250 categories_name_en.
+// Generated 2026-11-12 after migration 20261112204634 purge_unconfirmed_signups.
 
 export type Json =
   | string
@@ -1821,6 +1821,7 @@ export type Database = {
         }
         Returns: string
       }
+      purge_unconfirmed_signups: { Args: never; Returns: number }
       service_listing_publish_problems: {
         Args: { r: Database["public"]["Tables"]["service_listings"]["Row"] }
         Returns: string[]

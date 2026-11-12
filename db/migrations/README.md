@@ -1352,6 +1352,22 @@ both on 2026-10-28.
       row is refused at the cap, a backfilled row still passes).
     - Rollback: the commented three-bucket body at the end of the file.
 
+130. **20261112204634_purge_unconfirmed_signups** — audit 2026-11-11 H1 fix (1): a daily job deletes sign-ups not
+    confirmed within 24 hours (PR #361); applied by the architect.
+    - Enables `pg_cron` (Supabase's documented install, `with schema pg_catalog`; usage on `cron` for `postgres`).
+    - `public.purge_unconfirmed_signups()` (SECURITY DEFINER, `search_path ''`, returns the count; EXECUTE for its
+      owner only): deletes, row by row (a refused row is kept and logged, at most 5000 a run), `auth.users` rows with
+      `email_confirmed_at` null and `created_at` older than 24 h — `created_at`, never `confirmation_sent_at`, which a
+      resend refreshes. Kept: anonymous, phone-confirmed, invited and SSO users, and anyone who owns a shop or a
+      freelancer profile (protects the 7 demo accounts), has an order, job post, proposal or report, is an admin, or
+      is referenced by `admin_audit_log.admin_id` (RESTRICT) / `data_exports.processed_by` /
+      `deletion_requests.processed_by` (NO ACTION).
+    - pg_cron job `purge-unconfirmed-signups`, `17 3 * * *` (UTC).
+    - Checked after the apply: the job is active as `postgres`; EXECUTE owner only; anon / authenticated have no
+      usage on `cron`; a rolled-back run returned 0 (the 7 demo accounts kept).
+    - Rollback: `select cron.unschedule('purge-unconfirmed-signups'); drop function public.purge_unconfirmed_signups();`
+      (pg_cron stays installed: dropping it deletes every cron job).
+
 ## Rollback paths
 
 Each migration in this folder represents work that has already been applied to production. Rollback is therefore reverse migration work, not file deletion. If a rollback is ever needed, write a new dated migration that reverses the relevant changes — never delete history from this folder.
