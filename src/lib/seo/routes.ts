@@ -44,6 +44,16 @@ export const PUBLIC_PAGE_FILES = [
 ] as const
 
 /**
+ * Routes that are neither public pages nor private areas: crawlers may visit them, but they never reach the index.
+ * seo-routes check: every src/app page must be in PUBLIC_PAGE_FILES, under a DISALLOWED_PREFIXES entry, or here.
+ */
+export const OPEN_NOINDEX_PATHS = [
+  '/marche', // redirects to /marche/services or /marche/produits
+  '/devenir-freelance', // 308 to /devenir-vendeur/freelance
+  '/recherche', // search results: crawlable for their links, noindex (near-duplicates of the listings)
+] as const
+
+/**
  * Private areas crawlers must not visit: signed-in spaces, admin, account flows, auth pages, API and preview pages.
  * robots.txt rules match by PREFIX (« /mes- » covers /mes-commandes, /mes-services…), so none of these may be a
  * prefix of a public path — seo-routes.test.ts checks it.

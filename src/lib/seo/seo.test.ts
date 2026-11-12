@@ -4,8 +4,8 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { readFileSync, existsSync } from 'fs'
-import { join } from 'path'
+import { readFileSync, existsSync, readdirSync } from 'fs'
+import { join, relative } from 'path'
 
 vi.mock('@/lib/i18n/server', () => ({ getLang: async () => 'fr' }))
 
@@ -38,7 +38,7 @@ vi.mock('@supabase/supabase-js', () => ({ createClient: (...a: unknown[]) => db.
 import { siteUrl, DEFAULT_SITE_URL } from './site-url'
 import { buildPublicMetadata, truncate, TITLE_TEMPLATE } from './metadata'
 import { freelancerMetadata, shopMetadata, productMetadata, serviceMetadata } from './detail-metadata'
-import { PUBLIC_STATIC_PATHS, PUBLIC_PAGE_FILES, DISALLOWED_PREFIXES } from './routes'
+import { PUBLIC_STATIC_PATHS, PUBLIC_PAGE_FILES, DISALLOWED_PREFIXES, OPEN_NOINDEX_PATHS } from './routes'
 import { SITEMAP_CAP } from './sitemap-data'
 import robots from '@/app/robots'
 import sitemap from '@/app/sitemap'
@@ -235,12 +235,32 @@ describe('sitemap.xml', () => {
 describe('every public page opts in, in all three languages', () => {
   const APP = join(process.cwd(), 'src', 'app')
 
-  it('each public page file builds its metadata with the SEO helpers (else it inherits noindex)', () => {
+  it('each public page file RETURNS its metadata from the SEO helpers (else it inherits noindex)', () => {
+    const RETURNS_PUBLIC = /return (publicMetadata|buildPublicMetadata)\(|\? (freelancer|shop|product|service)Metadata\(/
     const missing = PUBLIC_PAGE_FILES.filter((file) => {
       const path = join(APP, file)
-      return !existsSync(path) || !/from '@\/lib\/seo\/(detail-)?metadata'/.test(readFileSync(path, 'utf8'))
+      return !existsSync(path) || !RETURNS_PUBLIC.test(readFileSync(path, 'utf8'))
     })
     expect(missing).toEqual([])
+  })
+
+  // A new page must be classified: public (PUBLIC_PAGE_FILES), private (a robots disallow prefix), or open-noindex.
+  it('every page under src/app is public, disallowed in robots.txt, or explicitly open-noindex', () => {
+    const pages = (function walk(dir: string): string[] {
+      return readdirSync(dir, { withFileTypes: true }).flatMap((d) =>
+        d.isDirectory() ? walk(join(dir, d.name)) : d.name === 'page.tsx' ? [join(dir, d.name)] : [],
+      )
+    })(APP).map((full) => relative(APP, full).replace(/\\/g, '/'))
+    expect(pages.length).toBeGreaterThan(80)
+    const route = (file: string) =>
+      '/' + file.replace(/(^|\/)page\.tsx$/, '').split('/').filter((s) => s && !/^\(.*\)$/.test(s)).join('/')
+    const unclassified = pages.filter((file) => {
+      const r = route(file)
+      if ((PUBLIC_PAGE_FILES as readonly string[]).includes(file)) return false
+      if ((OPEN_NOINDEX_PATHS as readonly string[]).includes(r)) return false
+      return !isDisallowed(r) && !isDisallowed(`${r}/`)
+    })
+    expect(unclassified).toEqual([])
   })
 
   it('every new seo.* key exists in French, Arabic and English with the same {placeholders}', () => {
