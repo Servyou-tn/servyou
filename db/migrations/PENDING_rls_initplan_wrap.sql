@@ -92,6 +92,10 @@
 -- old {"table":"shops","name":"Owner inserts own shop","cmd":"INSERT","roles":["public"],"using":null,"check":"(owner_id = auth.uid())"}
 -- old {"table":"shops","name":"Owner updates own shop","cmd":"UPDATE","roles":["public"],"using":"(owner_id = auth.uid())","check":"(owner_id = auth.uid())"}
 
+-- ALTER POLICY takes an ACCESS EXCLUSIVE lock on each table, held until commit: a lock wait aborts cleanly
+-- instead of queueing the app's requests behind it.
+set local lock_timeout = '5s';
+
 -- The 65 policies, captured as they are live right now (the guard below compares against this copy).
 -- The file must run as ONE transaction (apply_migration does), so a failed guard also undoes the ALTERs.
 create temp table m9_policies_before as

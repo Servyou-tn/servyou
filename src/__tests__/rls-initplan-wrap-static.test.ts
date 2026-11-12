@@ -102,8 +102,12 @@ describe('M9 migration 2 — auth.uid() / is_admin() wrapping (audit M9, PR 15a)
   it('records 65 old definitions: 56 call auth.uid() bare, 13 call is_admin() bare', () => {
     expect(olds).toHaveLength(65)
     expect(new Set(olds.map(key)).size).toBe(65)
-    expect(olds.filter((o) => BARE_UID.test(`${o.using ?? ''} ${o.check ?? ''}`))).toHaveLength(56)
-    expect(olds.filter((o) => BARE_ADMIN.test(`${o.using ?? ''} ${o.check ?? ''}`))).toHaveLength(13)
+    const both = (o: Old) => `${o.using ?? ''} ${o.check ?? ''}`
+    expect(olds.filter((o) => BARE_UID.test(both(o)))).toHaveLength(56)
+    expect(olds.filter((o) => BARE_ADMIN.test(both(o)))).toHaveLength(13)
+    // 56 + 13 - 4 = 65: every recorded policy has at least one bare call, and 4 have both.
+    expect(olds.filter((o) => BARE_UID.test(both(o)) && BARE_ADMIN.test(both(o)))).toHaveLength(4)
+    expect(olds.every((o) => BARE_UID.test(both(o)) || BARE_ADMIN.test(both(o)))).toBe(true)
   })
 
   it('has one ALTER POLICY per recorded policy, in the same order', () => {
@@ -126,12 +130,20 @@ describe('M9 migration 2 — auth.uid() / is_admin() wrapping (audit M9, PR 15a)
     }
   })
 
-  it('sets only the clauses each command takes (INSERT: WITH CHECK; SELECT / DELETE: USING)', () => {
+  it('sets only the clauses each command takes (INSERT: WITH CHECK; SELECT / DELETE: USING; UPDATE / ALL: as before)', () => {
     forward.forEach((alter, i) => {
-      const { cmd } = olds[i]
-      if (cmd === 'INSERT') expect(alter.using).toBeNull()
-      if (cmd === 'SELECT' || cmd === 'DELETE') expect(alter.check).toBeNull()
+      const old = olds[i]
+      if (old.cmd === 'INSERT') expect(alter.using).toBeNull()
+      if (old.cmd === 'SELECT' || old.cmd === 'DELETE') expect(alter.check).toBeNull()
+      // UPDATE / ALL: a clause is set exactly when the policy had one, so none is added or dropped.
+      expect(alter.using === null, `${key(old)} USING presence`).toBe(old.using === null)
+      expect(alter.check === null, `${key(old)} WITH CHECK presence`).toBe(old.check === null)
     })
+  })
+
+  it('runs with a lock timeout, so a lock wait aborts instead of queueing the app behind 65 table locks', () => {
+    expect(forwardPart).toMatch(/^set local lock_timeout = '5s';$/m)
+    expect(forwardPart.indexOf("set local lock_timeout = '5s';")).toBeLessThan(forwardPart.indexOf('alter policy'))
   })
 
   it('the commented rollback block restores exactly the old definitions', () => {
