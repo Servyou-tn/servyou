@@ -101,11 +101,11 @@ async function fixtureUserIds(): Promise<string[]> {
 // no ON DELETE action, so both go before the users; then the orders (refused while a real customer's order points at a
 // fixture seller); deleting the users cascades the rest (the moderation no-delete trigger skips the service role).
 async function teardown(): Promise<void> {
+  const found = await fixtureUserIds()
+  await revokeTestAdmins(found) // audit H6: admin rights go first, before anything that can throw
   const { error: msgErr } = await admin.from('contact_messages').delete().like('name', `${PREFIX}%`)
   if (msgErr) throw new Error(`contact_messages cleanup failed: ${msgErr.message}`)
-  const found = await fixtureUserIds()
   if (found.length === 0) return
-  await revokeTestAdmins(found) // audit H6: admin rights go first, before anything that can throw
   await refuseTeardownOnForeignOrders(admin, found, PREFIX)
   const steps: [string, PromiseLike<{ error: { message: string } | null }>][] = [
     ['admin_audit_log', admin.from('admin_audit_log').delete().in('admin_id', found)],
