@@ -240,3 +240,148 @@ describe('scrubPII — spans, user, env, JSON bodies, console objects', () => {
     expect(out.breadcrumbs?.[0].data).toBeUndefined()
   })
 })
+
+// Audit 2026-11-11 H5: one-time codes and session tokens in URLs. The reset page keeps token_hash in its address until
+// « Continuer », so every place a URL can travel must lose the VALUE (the name and `type` stay). Neutral key names
+// (url, href, from, to, path) so each case proves the pattern, not the sensitive-key rule.
+describe('scrubPII — one-time codes and tokens in URLs (audit H5)', () => {
+  const RESET = 'https://servyou.vercel.app/nouveau-mot-de-passe?token_hash=abc&type=recovery'
+  const RESET_OUT = 'https://servyou.vercel.app/nouveau-mot-de-passe?token_hash=[Filtered]&type=recovery'
+
+  it('the goal case: token_hash is filtered, type=recovery is kept', () => {
+    expect(scrub({ message: '/nouveau-mot-de-passe?token_hash=abc&type=recovery' }).message).toBe(
+      '/nouveau-mot-de-passe?token_hash=[Filtered]&type=recovery',
+    )
+  })
+
+  it.each([
+    ['code', '/auth/callback?code=4f1c2a9e-0b7d-4c3e-9a51-7d2f0e6b8c11&next=%2F', '/auth/callback?code=[Filtered]&next=%2F'],
+    ['token', '/auth/v1/verify?token=pkce_abc123&type=signup', '/auth/v1/verify?token=[Filtered]&type=signup'],
+    [
+      'a fragment',
+      '/nouveau-mot-de-passe#access_token=eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ4In0.c2lnbmF0dXJlLXZhbHVl&refresh_token=r3fr35h&type=recovery',
+      '/nouveau-mot-de-passe#access_token=[Filtered]&refresh_token=[Filtered]&type=recovery',
+    ],
+    [
+      'a URL nested in ?next= (percent-encoded)',
+      '/connexion?next=%2Fnouveau-mot-de-passe%3Ftoken_hash%3Dabc%2Bdef%26type%3Drecovery',
+      '/connexion?next=%2Fnouveau-mot-de-passe%3Ftoken_hash%3D[Filtered]%26type%3Drecovery',
+    ],
+    ['upper-case names', '/x?TOKEN_HASH=abc&Code=def', '/x?TOKEN_HASH=[Filtered]&Code=[Filtered]'],
+    ['a value inside quoted JSON', '{"url":"/verifier-email?token_hash=abc&type=signup"}', '{"url":"/verifier-email?token_hash=[Filtered]&type=signup"}'],
+  ])('filters %s', (_label, input, expected) => {
+    expect(scrub({ message: input }).message).toBe(expected)
+  })
+
+  it.each([
+    ['type=recovery alone', '/nouveau-mot-de-passe?type=recovery'],
+    ['the expired-link fragment (error_code is not code)', '/nouveau-mot-de-passe#error=access_denied&error_code=otp_expired'],
+    ['a free-text Postgres code', 'insert failed: code 23514 (check_violation)'],
+    ['a longer parameter name', '/x?tokens=3&barcode=123&code_promo=ETE'],
+  ])('keeps %s', (_label, input) => {
+    expect(scrub({ message: input }).message).toBe(input)
+  })
+
+  it('a token longer than any URL limit is filtered whole (no tail survives)', () => {
+    const out = scrub({ message: `/x?token_hash=${'f'.repeat(5_000)}&type=recovery` })
+    expect(out.message).toBe('/x?token_hash=[Filtered]&type=recovery')
+  })
+
+  it('request.url, the Referer header and the transaction name', () => {
+    const out = scrub({
+      transaction: '/nouveau-mot-de-passe?token_hash=abc&type=recovery',
+      request: { url: RESET, headers: { referer: RESET, 'user-agent': 'Mozilla/5.0' } },
+    })
+    expect(out.request?.url).toBe(RESET_OUT)
+    expect(out.request?.headers?.referer).toBe(RESET_OUT)
+    expect(out.transaction).toBe('/nouveau-mot-de-passe?token_hash=[Filtered]&type=recovery')
+  })
+
+  it('a stack frame from an inline script, whose file is the page URL', () => {
+    const out = scrub({
+      exception: { values: [{ type: 'Error', value: 'x', stacktrace: { frames: [{ filename: RESET, abs_path: RESET, lineno: 1 }] } }] },
+    })
+    expect(out.exception?.values?.[0].stacktrace?.frames?.[0]).toEqual({ filename: RESET_OUT, abs_path: RESET_OUT, lineno: 1 })
+  })
+
+  it('request.query_string as a string, an object and an array of pairs', () => {
+    const asString = scrub({ request: { query_string: 'token_hash=abc&type=recovery' } })
+    expect(asString.request?.query_string).toBe('token_hash=[Filtered]&type=recovery')
+
+    const asObject = scrub({ request: { query_string: { token_hash: 'abc', code: 'def', access_token: 'ghi', type: 'recovery' } } })
+    expect(asObject.request?.query_string).toEqual({ token_hash: '[Filtered]', code: '[Filtered]', access_token: '[Filtered]', type: 'recovery' })
+
+    const asPairs = scrub({
+      request: { query_string: [['token_hash', 'abc'], ['refresh_token', 'r'], ['token', 't'], ['type', 'recovery']] },
+    })
+    expect(asPairs.request?.query_string).toEqual([
+      ['token_hash', '[Filtered]'],
+      ['refresh_token', '[Filtered]'],
+      ['token', '[Filtered]'],
+      ['type', 'recovery'],
+    ])
+  })
+
+  it('breadcrumbs: navigation from / to, fetch url, and the message', () => {
+    const out = scrub({
+      breadcrumbs: [
+        { category: 'navigation', data: { from: RESET, to: '/connexion?code=xyz' } },
+        { category: 'fetch', data: { url: '/auth/v1/verify?token_hash=abc&type=recovery', method: 'POST' } },
+        { category: 'ui.click', message: `left ${RESET}` },
+      ],
+    })
+    expect(out.breadcrumbs?.[0].data).toEqual({ from: RESET_OUT, to: '/connexion?code=[Filtered]' })
+    expect(out.breadcrumbs?.[1].data).toEqual({ url: '/auth/v1/verify?token_hash=[Filtered]&type=recovery', method: 'POST' })
+    expect(out.breadcrumbs?.[2].message).toBe(`left ${RESET_OUT}`)
+  })
+
+  it('span descriptions and data, including the bare OTel url.query / url.fragment (no leading ? or #)', () => {
+    const out = scrub({
+      spans: [
+        {
+          description: 'GET /nouveau-mot-de-passe?token_hash=abc&type=recovery',
+          data: { 'url.full': RESET, 'url.query': 'token_hash=abc&type=recovery', 'url.fragment': 'access_token=a&type=recovery' },
+        },
+      ],
+    }) as unknown as { spans: Array<{ description: string; data: Record<string, unknown> }> }
+    expect(out.spans[0].description).toBe('GET /nouveau-mot-de-passe?token_hash=[Filtered]&type=recovery')
+    expect(out.spans[0].data).toEqual({
+      'url.full': RESET_OUT,
+      'url.query': 'token_hash=[Filtered]&type=recovery',
+      'url.fragment': 'access_token=[Filtered]&type=recovery',
+    })
+  })
+
+  it('tags, contexts and extra — and a `code` KEY (a Postgres error code) is left alone', () => {
+    const out = scrub({
+      tags: { url: RESET, route: '/nouveau-mot-de-passe' },
+      contexts: { nextjs: { request_path: '/nouveau-mot-de-passe?token_hash=abc&type=recovery' }, trace: { data: { href: RESET } } },
+      extra: { path: '/verifier-email?token_hash=abc&type=signup', code: '23514', status_code: 500 },
+    })
+    expect(out.tags).toEqual({ url: RESET_OUT, route: '/nouveau-mot-de-passe' })
+    const contexts = out.contexts as Record<string, Record<string, unknown>>
+    expect(contexts.nextjs.request_path).toBe('/nouveau-mot-de-passe?token_hash=[Filtered]&type=recovery')
+    expect(contexts.trace.data).toEqual({ href: RESET_OUT })
+    expect(out.extra).toEqual({ path: '/verifier-email?token_hash=[Filtered]&type=signup', code: '23514', status_code: 500 })
+  })
+
+  it('a very long URL is still scrubbed fast (near-miss shapes just under the 20k cut, fastest of 3)', () => {
+    const shapes = [
+      '/x?' + '&token_has'.repeat(1_990),
+      '/x?' + '?code='.repeat(3_300),
+      '/x?code=' + '%2'.repeat(6_600),
+      '/x?token_hash=' + 'a'.repeat(19_900),
+      '/x' + '%3Ftoken%3D'.repeat(1_800),
+    ]
+    for (const url of shapes) {
+      expect(url.length).toBeLessThan(20_000)
+      let fastest = Infinity
+      for (let i = 0; i < 3; i++) {
+        const started = performance.now()
+        scrub({ request: { url } })
+        fastest = Math.min(fastest, performance.now() - started)
+      }
+      expect(fastest).toBeLessThan(50)
+    }
+  })
+})
