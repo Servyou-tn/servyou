@@ -1341,6 +1341,17 @@ both on 2026-10-28.
     - Checked after the apply: 111/111 rows have `name_en`; column `text`, nullable.
     - Rollback: `alter table public.categories drop column name_en;`
 
+129. **20261112192406_shop_assets_daily_upload_cap** — audit 2026-11-11 H4: shop logos and banners count toward the
+    daily upload cap (PR #356); applied by the architect.
+    - `enforce_daily_upload_cap()` (trigger `trg_limit_daily_uploads` on `uploaded_objects`, made in #109
+      `20261031201742`) counts `'shop-assets'` in both the early return and the COUNT. Same body otherwise: backfilled
+      rows still pass, same lock, 23514 + hint `daily_upload_cap`. No grant change (allow-list untouched), no type change.
+    - App side (same PR): `'shop-assets'` in `CAPPED_BUCKETS` (`src/lib/images/upload-quota.ts`); both shop upload
+      actions pre-check the quota before storing anything.
+    - Checked after the apply: both IN lists name `'shop-assets'`; live `listing-caps-live.test.ts` green (a shop-assets
+      row is refused at the cap, a backfilled row still passes).
+    - Rollback: the commented three-bucket body at the end of the file.
+
 ## Rollback paths
 
 Each migration in this folder represents work that has already been applied to production. Rollback is therefore reverse migration work, not file deletion. If a rollback is ever needed, write a new dated migration that reverses the relevant changes — never delete history from this folder.

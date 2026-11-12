@@ -5,7 +5,7 @@
  *   * at most 100 image uploads per account per rolling 24 h: the 101st `uploaded_objects` row for one owner is
  *     refused (23514, hint daily_upload_cap) WHOEVER writes it — these rows are always written by the service role,
  *     so this cap deliberately has no service-role bypass; a backfilled row is not counted. Since audit 2026-11-11 H4
- *     (db/migrations/PENDING_shop_assets_daily_upload_cap.sql) a shop-assets row IS counted (logo / banner uploads).
+ *     (db/migrations/20261112192406_shop_assets_daily_upload_cap.sql) a shop-assets row IS counted (logo / banner uploads).
  * The services half (20 per freelancer) is services-cap-live.test.ts (it needs a freelancer: one seller capability
  * per account).
  *
