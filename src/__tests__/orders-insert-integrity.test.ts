@@ -29,6 +29,8 @@ import { describe, it, expect, beforeAll, afterAll } from 'vitest'
 import { createClient, SupabaseClient } from '@supabase/supabase-js'
 import { refuseTeardownOnForeignOrders } from './live-teardown-guard'
 import { fixtureSignIn } from './fixture-session'
+import { revokeTestAdmins, assertNoTestAdmin } from './fixture-admin'
+import { randomUUID } from 'crypto'
 
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -43,7 +45,7 @@ const hasCreds = Boolean(
 const PREFIX = 'ord-int-'
 const EMAIL_SUFFIX = '@rls-smoke.servyou.invalid'
 const email = (local: string) => `${PREFIX}${local}${EMAIL_SUFFIX}`
-const PASSWORD = 'Orders-Integrity-Test-7k2!' // ephemeral test users only; never a real account
+const PASSWORD = `Oi-${randomUUID()}-Aa1!` // per run, never committed (audit H6)
 const TITLE = 'Orders integrity test'
 const VICTIM_PHONE = '+21620000731'
 
@@ -121,6 +123,7 @@ async function teardown(): Promise<void> {
   if (error) throw new Error(`teardown lookup failed: ${error.message}`)
   const ids = (data ?? []).map((row) => row.id as string)
   if (ids.length === 0) return
+  await revokeTestAdmins(ids) // audit H6: admin rights go first, before anything that can throw
   await refuseTeardownOnForeignOrders(admin, ids, PREFIX)
 
   for (const column of ['seller_id', 'buyer_id']) {
@@ -251,6 +254,7 @@ beforeAll(async () => {
 afterAll(async () => {
   if (!hasCreds) return
   await teardown()
+  await assertNoTestAdmin() // audit H6: no test-domain account may still be an admin
 }, 120000)
 
 describe.skipIf(!hasCreds)('ground truth for every rejection below', () => {

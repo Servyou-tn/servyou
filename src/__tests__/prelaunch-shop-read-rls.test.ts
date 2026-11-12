@@ -37,6 +37,7 @@ import { randomUUID } from 'crypto'
 import type { Database } from '@/lib/supabase/database.types'
 import { refuseTeardownOnForeignOrders } from './live-teardown-guard'
 import { fixtureSignIn } from './fixture-session'
+import { revokeTestAdmins, assertNoTestAdmin } from './fixture-admin'
 
 type Client = SupabaseClient<Database>
 // The seven tables whose SELECT policies this migration owns.
@@ -258,6 +259,7 @@ async function teardown(): Promise<void> {
   if (error) throw new Error(`teardown lookup failed: ${error.message}`)
   const ids = (data ?? []).map((row) => row.id as string)
   if (ids.length === 0) return
+  await revokeTestAdmins(ids) // audit H6: admin rights go first, before anything that can throw
   await refuseTeardownOnForeignOrders(admin, ids, PREFIX)
 
   const { error: orderErr } = await admin.from('orders').delete().in('buyer_id', ids)
@@ -421,6 +423,7 @@ afterAll(async () => {
     .like('name', `${TITLE}%`)
   if (sErr) throw new Error(`cleanup check (shops) failed: ${sErr.message}`)
   if ((shops ?? 0) !== 0) throw new Error(`teardown left ${shops} fixture shops`)
+  await assertNoTestAdmin() // audit H6: no test-domain account may still be an admin
 }, 120000)
 
 type GroundProduct = {

@@ -56,6 +56,7 @@ import { createClient, SupabaseClient } from '@supabase/supabase-js'
 import { setAuthBan, syncAuthBan, isSuspensionAlreadyApplied } from '@/lib/auth/auth-ban'
 import { refuseTeardownOnForeignOrders } from './live-teardown-guard'
 import { fixtureSignIn } from './fixture-session'
+import { revokeTestAdmins, assertNoTestAdmin } from './fixture-admin'
 
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -218,6 +219,7 @@ async function teardown(): Promise<void> {
   if (error) throw new Error(`teardown lookup failed: ${error.message}`)
   const ids = (data ?? []).map((row) => row.id as string)
   if (ids.length === 0) return
+  await revokeTestAdmins(ids) // audit H6: admin rights go first, before anything that can throw
   await refuseTeardownOnForeignOrders(admin, ids, PREFIX)
 
   // orders first — enforce_order_identity_lock guards the product_id SET NULL a cascaded product
@@ -358,6 +360,7 @@ beforeAll(async () => {
 afterAll(async () => {
   if (!hasCreds) return
   await teardown()
+  await assertNoTestAdmin() // audit H6: no test-domain account may still be an admin
 }, 180000)
 
 describe.skipIf(!hasCreds)('ground truth', () => {

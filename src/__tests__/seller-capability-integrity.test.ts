@@ -36,6 +36,7 @@ import { describe, it, expect, beforeAll, afterAll } from 'vitest'
 import { randomUUID } from 'node:crypto'
 import { createClient, SupabaseClient } from '@supabase/supabase-js'
 import { fixtureSignIn } from './fixture-session'
+import { revokeTestAdmins, assertNoTestAdmin } from './fixture-admin'
 
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -50,7 +51,7 @@ const hasCreds = Boolean(
 const PREFIX = 'sel-cap-'
 const EMAIL_SUFFIX = '@rls-smoke.servyou.invalid'
 const email = (local: string) => `${PREFIX}${local}${EMAIL_SUFFIX}`
-const PASSWORD = 'Seller-Capability-Test-4q9!' // ephemeral test users only; never a real account
+const PASSWORD = `Sk-${randomUUID()}-Aa1!` // per run, never committed (audit H6)
 const TITLE = 'Seller capability test'
 const RUN = randomUUID().slice(0, 8)
 
@@ -139,6 +140,7 @@ async function sellerTypeOf(id: string): Promise<string | null> {
 async function teardown(): Promise<void> {
   const { data, error } = await admin.from('profiles').select('id').like('email', `${PREFIX}%${EMAIL_SUFFIX}`)
   if (error) throw new Error(`teardown lookup failed: ${error.message}`)
+  await revokeTestAdmins((data ?? []).map((row) => row.id as string)) // audit H6: admin rights go first
   for (const row of data ?? []) {
     const { error: delErr } = await admin.auth.admin.deleteUser(row.id as string)
     if (delErr) throw new Error(`deleteUser failed for ${row.id}: ${delErr.message}`)
@@ -246,6 +248,7 @@ afterAll(async () => {
     .like('email', `${PREFIX}%${EMAIL_SUFFIX}`)
   if (error) throw new Error(`teardown verification failed: ${error.message}`)
   if (count !== 0) throw new Error(`teardown left ${count} ${PREFIX} profile(s) behind`)
+  await assertNoTestAdmin() // audit H6: no test-domain account may still be an admin
 }, 120000)
 
 describe.skipIf(!hasCreds)('ground truth for every case below', () => {

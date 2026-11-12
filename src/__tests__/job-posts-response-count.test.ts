@@ -27,6 +27,7 @@ import { randomUUID } from 'crypto'
 import type { Database } from '@/lib/supabase/database.types'
 import { refuseTeardownOnForeignResponses } from './live-teardown-guard'
 import { fixtureSignIn } from './fixture-session'
+import { revokeTestAdmins, assertNoTestAdmin } from './fixture-admin'
 
 type Client = SupabaseClient<Database>
 type PostInsert = Database['public']['Tables']['job_posts']['Insert']
@@ -148,6 +149,7 @@ async function teardown(): Promise<void> {
   if (error) throw new Error(`teardown lookup failed: ${error.message}`)
   const ids = (data ?? []).map((row) => row.id)
   if (ids.length === 0) return
+  await revokeTestAdmins(ids) // audit H6: admin rights go first, before anything that can throw
   await refuseTeardownOnForeignResponses(admin, ids, PREFIX)
 
   for (const id of ids) {
@@ -216,6 +218,7 @@ afterAll(async () => {
     .like('title', `${TITLE}%`)
   if (postsErr) throw new Error(`cleanup check (posts) failed: ${postsErr.message}`)
   if ((posts ?? 0) !== 0) throw new Error(`teardown left ${posts} fixture posts`)
+  await assertNoTestAdmin() // audit H6: no test-domain account may still be an admin
 }, 120000)
 
 describe.skipIf(!hasCreds)('the createAnnonce insert still works, and the database owns created_at and the count', () => {

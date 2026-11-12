@@ -21,6 +21,7 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest'
 import { createClient, SupabaseClient } from '@supabase/supabase-js'
 import { fixtureSignIn } from './fixture-session'
+import { randomUUID } from 'crypto'
 
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -40,7 +41,7 @@ const EMAIL_SUFFIX = '@rls-smoke.servyou.invalid'
 const EMAIL_PREFIX = 'shop-cfg-'
 const OWNER_EMAIL = `${EMAIL_PREFIX}owner${EMAIL_SUFFIX}`
 const OTHER_EMAIL = `${EMAIL_PREFIX}other${EMAIL_SUFFIX}`
-const PASSWORD = 'Rls-Config-Test-7k2!' // ephemeral test users only; never a real account
+const PASSWORD = `Sf-${randomUUID()}-Aa1!` // per run, never committed (audit H6)
 
 const admin: SupabaseClient = hasCreds
   ? createClient(url, serviceKey, { auth: { autoRefreshToken: false, persistSession: false } })

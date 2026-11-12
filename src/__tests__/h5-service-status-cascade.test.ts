@@ -33,6 +33,8 @@ import { createClient, SupabaseClient } from '@supabase/supabase-js'
 import { countServiceTabs } from '@/lib/marche/seller-services'
 import { refuseTeardownOnForeignOrders } from './live-teardown-guard'
 import { fixtureSignIn } from './fixture-session'
+import { revokeTestAdmins, assertNoTestAdmin } from './fixture-admin'
+import { randomUUID } from 'crypto'
 
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -48,7 +50,7 @@ const EMAIL_SUFFIX = '@rls-smoke.servyou.invalid'
 const EMAIL_PREFIX = 'h5-cascade-'
 const OWNER_EMAIL = `${EMAIL_PREFIX}owner${EMAIL_SUFFIX}`
 const ADMIN_EMAIL = `${EMAIL_PREFIX}admin${EMAIL_SUFFIX}`
-const PASSWORD = 'H5-Cascade-Test-6q3!'
+const PASSWORD = `Hc-${randomUUID()}-Aa1!` // per run, never committed (audit H6)
 
 const admin: SupabaseClient = hasCreds
   ? createClient(url, serviceKey, { auth: { autoRefreshToken: false, persistSession: false } })
@@ -81,6 +83,7 @@ async function teardown(): Promise<void> {
   if (error) throw new Error(`teardown lookup failed: ${error.message}`)
   const ids = (data ?? []).map((row) => row.id)
   if (ids.length === 0) return
+  await revokeTestAdmins(ids) // audit H6: admin rights go first, before anything that can throw
   await refuseTeardownOnForeignOrders(admin, ids, EMAIL_PREFIX)
 
   // Same ON DELETE RESTRICT as d4-freelancer-services-visibility.test.ts's teardown — the admin
@@ -123,6 +126,7 @@ beforeAll(async () => {
 afterAll(async () => {
   if (!hasCreds) return
   await teardown()
+  await assertNoTestAdmin() // audit H6: no test-domain account may still be an admin
 }, 60000)
 
 async function insertActiveListing(title: string): Promise<string> {

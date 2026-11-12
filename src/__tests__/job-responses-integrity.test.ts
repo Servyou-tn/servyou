@@ -35,6 +35,7 @@ import { describe, it, expect, beforeAll, afterAll } from 'vitest'
 import { randomUUID } from 'node:crypto'
 import { createClient, SupabaseClient } from '@supabase/supabase-js'
 import { fixtureSignIn } from './fixture-session'
+import { revokeTestAdmins, assertNoTestAdmin } from './fixture-admin'
 
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -162,6 +163,7 @@ function respond(client: SupabaseClient, postId: string, freelancerId: string) {
 async function teardown(): Promise<void> {
   const { data, error } = await admin.from('profiles').select('id').like('email', `${PREFIX}%${EMAIL_SUFFIX}`)
   if (error) throw new Error(`teardown lookup failed: ${error.message}`)
+  await revokeTestAdmins((data ?? []).map((row) => row.id as string)) // audit H6: admin rights go first
   for (const row of data ?? []) {
     const { error: delErr } = await admin.auth.admin.deleteUser(row.id as string)
     if (delErr) throw new Error(`deleteUser failed for ${row.id}: ${delErr.message}`)
@@ -267,6 +269,7 @@ afterAll(async () => {
     .like('title', `${TITLE} ${RUN}%`)
   if (postsErr) throw new Error(`teardown post verification failed: ${postsErr.message}`)
   if (posts !== 0) throw new Error(`teardown left ${posts} job post(s) behind`)
+  await assertNoTestAdmin() // audit H6: no test-domain account may still be an admin
 }, 120000)
 
 describe.skipIf(!hasCreds)('ground truth for every case below', () => {

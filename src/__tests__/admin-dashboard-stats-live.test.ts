@@ -33,6 +33,7 @@ import type { Database } from '@/lib/supabase/database.types'
 import { refuseTeardownOnForeignOrders } from './live-teardown-guard'
 import { fixtureSignIn } from './fixture-session'
 import { DASHBOARD_PERIODS, parseDashboardStats, type DashboardKpis, type DashboardStats } from '@/lib/admin/dashboard-stats'
+import { revokeTestAdmins, assertNoTestAdmin } from './fixture-admin'
 
 type Client = SupabaseClient<Database>
 type Stats = DashboardStats
@@ -86,6 +87,7 @@ async function fixtureUserIds(): Promise<string[]> {
 async function teardown(): Promise<void> {
   const found = await fixtureUserIds()
   if (found.length === 0) return
+  await revokeTestAdmins(found) // audit H6: admin rights go first, before anything that can throw
   await refuseTeardownOnForeignOrders(admin, found, PREFIX)
   const { error: aErr } = await admin.from('admin_audit_log').delete().in('admin_id', found)
   if (aErr) throw new Error(`admin_audit_log cleanup failed: ${aErr.message}`)
@@ -191,6 +193,7 @@ afterAll(async () => {
   if (!hasCreds) return
   await teardown()
   expect(await fixtureUserIds()).toEqual([])
+  await assertNoTestAdmin() // audit H6: no test-domain account may still be an admin
 }, 120_000)
 
 describe.skipIf(!hasCreds)('access', () => {

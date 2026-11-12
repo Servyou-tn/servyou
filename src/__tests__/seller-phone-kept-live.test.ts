@@ -16,6 +16,7 @@ import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 import { randomUUID } from 'crypto'
 import { refuseTeardownOnForeignOrders } from './live-teardown-guard'
 import { fixtureSignIn } from './fixture-session'
+import { revokeTestAdmins, assertNoTestAdmin } from './fixture-admin'
 
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -54,6 +55,7 @@ async function teardown(): Promise<void> {
   if (error) throw new Error(`teardown lookup failed: ${error.message}`)
   const found = (data ?? []).map((row) => row.id as string)
   if (found.length === 0) return
+  await revokeTestAdmins(found) // audit H6: admin rights go first, before anything that can throw
   await refuseTeardownOnForeignOrders(admin as never, found, PREFIX)
   for (const id of found) {
     const { error: delErr } = await admin.auth.admin.deleteUser(id)
@@ -124,6 +126,7 @@ afterAll(async () => {
   const { count, error } = await admin.from('profiles').select('id', { count: 'exact', head: true }).like('email', `${PREFIX}%${EMAIL_SUFFIX}`)
   if (error) throw new Error(`cleanup check failed: ${error.message}`)
   if ((count ?? 0) !== 0) throw new Error(`teardown left ${count} ${PREFIX} profiles`)
+  await assertNoTestAdmin() // audit H6: no test-domain account may still be an admin
 }, 120000)
 
 describe.skipIf(!hasCreds)('profiles.phone — a shop owner (own client)', () => {

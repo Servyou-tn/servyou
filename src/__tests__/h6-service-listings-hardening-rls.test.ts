@@ -44,6 +44,8 @@ import { describe, it, expect, beforeAll, afterAll } from 'vitest'
 import { createClient, SupabaseClient } from '@supabase/supabase-js'
 import { refuseTeardownOnForeignOrders } from './live-teardown-guard'
 import { fixtureSignIn } from './fixture-session'
+import { revokeTestAdmins, assertNoTestAdmin } from './fixture-admin'
+import { randomUUID } from 'crypto'
 
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -61,7 +63,7 @@ const OWNER_EMAIL = `${PREFIX}owner${EMAIL_SUFFIX}`
 const OTHER_EMAIL = `${PREFIX}other${EMAIL_SUFFIX}`
 const BUYER_EMAIL = `${PREFIX}buyer${EMAIL_SUFFIX}`
 const ADMIN_EMAIL = `${PREFIX}admin${EMAIL_SUFFIX}`
-const PASSWORD = 'H6-Hardening-Test-4q8!' // ephemeral test users only; never a real account
+const PASSWORD = `Hh-${randomUUID()}-Aa1!` // per run, never committed (audit H6)
 const TITLE = 'H6 hardening test'
 
 // The two error shapes this migration introduces, pinned by text so a rejection from some OTHER
@@ -128,6 +130,7 @@ async function teardown(): Promise<void> {
   const { data, error } = await admin.from('profiles').select('id').like('email', `${PREFIX}%${EMAIL_SUFFIX}`)
   if (error) throw new Error(`teardown lookup failed: ${error.message}`)
   const ids = (data ?? []).map((row) => row.id as string)
+  await revokeTestAdmins(ids) // audit H6: admin rights go first, before anything that can throw
 
   if (ids.length > 0) {
     await refuseTeardownOnForeignOrders(admin, ids, PREFIX)
@@ -290,6 +293,7 @@ beforeAll(async () => {
 afterAll(async () => {
   if (!hasCreds) return
   await teardown()
+  await assertNoTestAdmin() // audit H6: no test-domain account may still be an admin
 }, 90000)
 
 // ─── G1: who reads what ───────────────────────────────────────────────────────────────
