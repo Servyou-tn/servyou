@@ -18,10 +18,22 @@ const code = source
   .split('\n')
   .map((line) => line.replace(/--.*$/, ''))
   .join('\n')
-const fnBody = code.slice(code.indexOf('create function public.purge_unconfirmed_signups()'), code.indexOf('$$;') + 3)
+const fnBody = code.slice(code.indexOf('create or replace function public.purge_unconfirmed_signups()'), code.indexOf('$$;') + 3)
 
-// The NOT EXISTS / NOT clauses of a WHERE, normalised, in order.
-const clauses = (text: string) => (text.match(/not (?:exists \([^)]*\)|u\.is_anonymous)/g) ?? []).map((c) => c.replace(/\s+/g, ' '))
+// The conditions of the candidate WHERE, one per line, from `where u.email_confirmed_at is null` to `stop`. Returns
+// null unless every line after the first is a top-level `and …` — so an added `or`, or a clause moved elsewhere, fails.
+function whereConditions(text: string, stop: string): string[] | null {
+  const start = text.indexOf('where u.email_confirmed_at is null')
+  const end = text.indexOf(stop, start)
+  if (start === -1 || end === -1) return null
+  const lines = text
+    .slice(start, end)
+    .split('\n')
+    .map((l) => l.trim().replace(/;$/, ''))
+    .filter(Boolean)
+  if (!lines.slice(1).every((l) => l.startsWith('and '))) return null
+  return lines.map((l) => l.replace(/^(where|and) /, ''))
+}
 
 // The dry-run block in the comments, with the comment markers stripped.
 const dryRun = source
@@ -39,16 +51,20 @@ describe('purge_unconfirmed_signups migration (audit H1)', () => {
     expect(code).toMatch(/create extension if not exists pg_cron with schema pg_catalog;/)
   })
 
-  it('is SECURITY DEFINER with an empty search_path', () => {
+  it('is create-or-replace, SECURITY DEFINER, with an empty search_path', () => {
+    expect(fnBody.startsWith('create or replace function')).toBe(true)
     expect(fnBody).toMatch(/security definer/)
     expect(fnBody).toMatch(/set search_path = ''/)
     expect(fnBody).toMatch(/returns integer/)
   })
 
   it('deletes only unconfirmed sign-ups older than 24 h, keyed on created_at (never confirmation_sent_at)', () => {
-    expect(fnBody).toMatch(/delete from auth\.users u/)
-    expect(fnBody).toMatch(/u\.email_confirmed_at is null/)
-    expect(fnBody).toMatch(/u\.created_at < now\(\) - interval '24 hours'/)
+    const conditions = whereConditions(fnBody, 'order by')
+    expect(conditions).not.toBeNull()
+    expect(conditions?.[0]).toBe('u.email_confirmed_at is null')
+    expect(conditions).toContain("u.created_at < now() - interval '24 hours'")
+    // The delete itself re-checks confirmation, so an account confirmed since the SELECT is kept.
+    expect(fnBody).toContain('delete from auth.users u where u.id = v_id and u.email_confirmed_at is null;')
     // A resend refreshes confirmation_sent_at: keying on it would let an attacker keep a squatted account alive.
     expect(fnBody).not.toMatch(/confirmation_sent_at/)
   })
@@ -64,21 +80,33 @@ describe('purge_unconfirmed_signups migration (audit H1)', () => {
     ['is referenced by admin_audit_log (RESTRICT)', 'public.admin_audit_log a where a.admin_id = u.id'],
     ['processed a data export (NO ACTION)', 'public.data_exports de where de.processed_by = u.id'],
     ['processed a deletion request (NO ACTION)', 'public.deletion_requests dr where dr.processed_by = u.id'],
-  ])('never deletes a user who %s', (_label, clause) => {
-    expect(fnBody).toContain(`and not exists (select 1 from ${clause})`)
+  ])('never deletes a user who %s (a top-level AND of the candidate WHERE)', (_label, clause) => {
+    expect(whereConditions(fnBody, 'order by')).toContain(`not exists (select 1 from ${clause})`)
   })
 
-  it('never deletes an anonymous user', () => {
-    expect(fnBody).toMatch(/and not u\.is_anonymous/)
+  it.each([
+    ['anonymous', 'not u.is_anonymous'],
+    ['confirmed by phone', 'u.phone_confirmed_at is null'],
+    ['invited by staff', 'u.invited_at is null'],
+    ['an SSO user', 'not u.is_sso_user'],
+  ])('never deletes a user who is %s', (_label, condition) => {
+    expect(whereConditions(fnBody, 'order by')).toContain(condition)
   })
 
-  it('the dry-run SELECT in the comments uses exactly the same exclusions as the function', () => {
-    expect(clauses(dryRun).length).toBeGreaterThan(10)
-    expect(clauses(dryRun)).toEqual(clauses(fnBody))
+  it('the dry-run SELECT in the comments uses exactly the same conditions as the function', () => {
+    const dry = whereConditions(dryRun, ';')
+    expect(dry?.length).toBeGreaterThan(15)
+    expect(dry).toEqual(whereConditions(fnBody, 'order by'))
   })
 
-  it('is executable by no client (revoked from PUBLIC, anon, authenticated) and never granted', () => {
-    expect(code).toMatch(/revoke execute on function public\.purge_unconfirmed_signups\(\) from public, anon, authenticated/)
+  it('deletes row by row: one refused row is kept and logged, never aborting the run; at most 5000 a night', () => {
+    expect(fnBody).toMatch(/for v_id in\s+select u\.id/)
+    expect(fnBody).toMatch(/limit 5000\s+loop/)
+    expect(fnBody).toMatch(/exception when others then\s+raise warning 'purge_unconfirmed_signups: kept user % \(% %\)', v_id, sqlstate, sqlerrm;/)
+  })
+
+  it('is executable by its owner only (revoked from PUBLIC, anon, authenticated, service_role) and never granted', () => {
+    expect(code).toContain('revoke execute on function public.purge_unconfirmed_signups() from public, anon, authenticated, service_role;')
     expect(code).not.toMatch(/grant execute on function public\.purge_unconfirmed_signups/)
     // The only grants are the documented pg_cron ones, to postgres.
     for (const grant of code.match(/^grant .*$/gm) ?? []) expect(grant).toMatch(/ to postgres;$/)
