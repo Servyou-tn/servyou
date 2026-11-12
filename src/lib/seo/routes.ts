@@ -45,12 +45,26 @@ export const PUBLIC_PAGE_FILES = [
 
 /**
  * Routes that are neither public pages nor private areas: crawlers may visit them, but they never reach the index.
- * seo-routes check: every src/app page must be in PUBLIC_PAGE_FILES, under a DISALLOWED_PREFIXES entry, or here.
+ * seo.test.ts: every src/app page must be in PUBLIC_PAGE_FILES, here, under AUTH_NOINDEX_PREFIXES or under a
+ * DISALLOWED_PREFIXES entry.
  */
 export const OPEN_NOINDEX_PATHS = [
   '/marche', // redirects to /marche/services or /marche/produits
   '/devenir-freelance', // 308 to /devenir-vendeur/freelance
   '/recherche', // search results: crawlable for their links, noindex (near-duplicates of the listings)
+] as const
+
+/**
+ * The sign-in, sign-up, password and email-verification pages (founder ruling 2026-11-12, PR #362): NOT disallowed in
+ * robots.txt, so crawlers can read their noindex (the root default). A page blocked in robots.txt cannot show its
+ * noindex, and could still appear in results as a bare link. Each prefix covers its sub-pages (/inscription/consumer…).
+ */
+export const AUTH_NOINDEX_PREFIXES = [
+  '/connexion',
+  '/inscription',
+  '/mot-de-passe-oublie',
+  '/nouveau-mot-de-passe',
+  '/verifier-email',
 ] as const
 
 /**
@@ -73,12 +87,7 @@ export const DISALLOWED_PREFIXES = [
   '/demander',
   '/aide', // the help centre needs a session (it redirects visitors to /connexion)
   '/admin',
-  // auth and account-state pages
-  '/connexion',
-  '/inscription',
-  '/mot-de-passe-oublie',
-  '/nouveau-mot-de-passe',
-  '/verifier-email',
+  // account-state pages (the sign-in / sign-up / password pages are in AUTH_NOINDEX_PREFIXES: crawlable, noindex)
   '/session-expiree',
   '/compte-suspendu',
   '/a-bientot',

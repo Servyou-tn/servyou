@@ -38,7 +38,7 @@ vi.mock('@supabase/supabase-js', () => ({ createClient: (...a: unknown[]) => db.
 import { siteUrl, DEFAULT_SITE_URL } from './site-url'
 import { buildPublicMetadata, truncate, TITLE_TEMPLATE } from './metadata'
 import { freelancerMetadata, shopMetadata, productMetadata, serviceMetadata } from './detail-metadata'
-import { PUBLIC_STATIC_PATHS, PUBLIC_PAGE_FILES, DISALLOWED_PREFIXES, OPEN_NOINDEX_PATHS } from './routes'
+import { PUBLIC_STATIC_PATHS, PUBLIC_PAGE_FILES, DISALLOWED_PREFIXES, OPEN_NOINDEX_PATHS, AUTH_NOINDEX_PREFIXES } from './routes'
 import { SITEMAP_CAP } from './sitemap-data'
 import robots from '@/app/robots'
 import sitemap from '@/app/sitemap'
@@ -140,8 +140,12 @@ describe('robots.txt', () => {
     const r = robots()
     const rule = Array.isArray(r.rules) ? r.rules[0] : r.rules
     expect(rule.allow).toBe('/')
-    for (const area of ['/tableau-de-bord', '/mon-', '/mes-', '/ma-boutique', '/admin', '/connexion', '/inscription', '/api/', '/design-tokens-verification']) {
+    for (const area of ['/tableau-de-bord', '/mon-', '/mes-', '/ma-boutique', '/admin', '/session-expiree', '/auth/', '/api/', '/design-tokens-verification']) {
       expect(rule.disallow).toContain(area)
+    }
+    // The auth pages stay crawlable so crawlers can read their noindex (founder ruling 2026-11-12).
+    for (const auth of AUTH_NOINDEX_PREFIXES) {
+      expect((rule.disallow as string[]).filter((p) => auth.startsWith(p) || p.startsWith(auth)), auth).toEqual([])
     }
     expect((rule.disallow as string[]).some((p) => p.startsWith('/_next'))).toBe(false)
     expect(r.sitemap).toBe(`${DEFAULT_SITE_URL}/sitemap.xml`)
@@ -244,23 +248,41 @@ describe('every public page opts in, in all three languages', () => {
     expect(missing).toEqual([])
   })
 
-  // A new page must be classified: public (PUBLIC_PAGE_FILES), private (a robots disallow prefix), or open-noindex.
-  it('every page under src/app is public, disallowed in robots.txt, or explicitly open-noindex', () => {
+  // A new page must be classified: public (PUBLIC_PAGE_FILES), private (a robots disallow prefix), open-noindex, or an
+  // auth page (crawlable, noindex — AUTH_NOINDEX_PREFIXES, segment-anchored: /connexion and /connexion/x, not /connexion-x).
+  const routeOf = (file: string) =>
+    '/' + file.replace(/(^|\/)page\.tsx$/, '').split('/').filter((s) => s && !/^\(.*\)$/.test(s)).join('/')
+  const isClassified = (file: string) => {
+    const r = routeOf(file)
+    return (
+      (PUBLIC_PAGE_FILES as readonly string[]).includes(file) ||
+      (OPEN_NOINDEX_PATHS as readonly string[]).includes(r) ||
+      AUTH_NOINDEX_PREFIXES.some((p) => r === p || r.startsWith(`${p}/`)) ||
+      isDisallowed(r) ||
+      isDisallowed(`${r}/`)
+    )
+  }
+
+  it('every page under src/app is public, disallowed in robots.txt, open-noindex or an auth page', () => {
     const pages = (function walk(dir: string): string[] {
       return readdirSync(dir, { withFileTypes: true }).flatMap((d) =>
         d.isDirectory() ? walk(join(dir, d.name)) : d.name === 'page.tsx' ? [join(dir, d.name)] : [],
       )
     })(APP).map((full) => relative(APP, full).replace(/\\/g, '/'))
     expect(pages.length).toBeGreaterThan(80)
-    const route = (file: string) =>
-      '/' + file.replace(/(^|\/)page\.tsx$/, '').split('/').filter((s) => s && !/^\(.*\)$/.test(s)).join('/')
-    const unclassified = pages.filter((file) => {
-      const r = route(file)
-      if ((PUBLIC_PAGE_FILES as readonly string[]).includes(file)) return false
-      if ((OPEN_NOINDEX_PATHS as readonly string[]).includes(r)) return false
-      return !isDisallowed(r) && !isDisallowed(`${r}/`)
-    })
-    expect(unclassified).toEqual([])
+    expect(pages.filter((file) => !isClassified(file))).toEqual([])
+  })
+
+  it.each([
+    ['blog/page.tsx', false],
+    ['connexion-pro/page.tsx', false],
+    ['(marketing)/presse/page.tsx', false],
+    ['mes-factures/page.tsx', true],
+    ['connexion/page.tsx', true],
+    ['inscription/shop-owner/page.tsx', true],
+    ['faq/page.tsx', false], // the real FAQ lives under (marketing)/ — a bare one would be a new, unclassified page
+  ])('the classifier on %s → classified: %s (an unclassified route still fails)', (file, classified) => {
+    expect(isClassified(file)).toBe(classified)
   })
 
   it('every new seo.* key exists in French, Arabic and English with the same {placeholders}', () => {
