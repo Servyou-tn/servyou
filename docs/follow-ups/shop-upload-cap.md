@@ -22,4 +22,3 @@
   `src/app/mon-compte/actions.ts` (`sweepAvatarFolder`).
 - **Trigger:** if `uploaded_objects` gets large, prune rows older than 24 h for those two buckets (a scheduled job, not
   the replace path).
-

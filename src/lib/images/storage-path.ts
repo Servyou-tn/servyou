@@ -12,5 +12,11 @@ export function pathFromPublicUrl(url: string | null, bucket: string): string | 
   if (idx === -1) return null
   // Verified against this project's actual getPublicUrl() output: no query string today. Stripped
   // defensively anyway — a future transform/query-carrying URL shape must not corrupt the path.
-  return decodeURIComponent(url.slice(idx + marker.length).split('?')[0])
+  // A malformed %-sequence makes decodeURIComponent throw; the create-shop caller runs this AFTER a successful update,
+  // so a throw would turn that success into a 500. Treated as "nothing to clean up", per the contract above.
+  try {
+    return decodeURIComponent(url.slice(idx + marker.length).split('?')[0])
+  } catch {
+    return null
+  }
 }

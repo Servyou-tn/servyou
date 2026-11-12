@@ -28,7 +28,8 @@ const h = vi.hoisted(() => {
   }
   const calls = {
     uploaded: [] as string[],
-    removed: [] as string[][],
+    removed: [] as string[][], // service-role (uploadBucket) deletes: the new object on a failure path
+    sessionRemoved: [] as string[][], // session-client deletes: the replaced object, scoped by the owner-delete policy
     shopUpdates: [] as Record<string, unknown>[],
     shopsEq: [] as [string, unknown][],
   }
@@ -80,7 +81,16 @@ vi.mock('@/lib/supabase/server', () => ({
   createClient: vi.fn(async () => ({
     from: h.from,
     // S-3: the session client must never upload; uploadBucket (service role) is the only writer.
-    storage: { from: () => ({ ...h.storage.from(), upload: () => { throw new Error('session-client upload: must go through uploadBucket') } }) },
+    storage: {
+      from: () => ({
+        ...h.storage.from(),
+        upload: () => { throw new Error('session-client upload: must go through uploadBucket') },
+        remove: (paths: string[]) => {
+          h.calls.sessionRemoved.push(paths)
+          return Promise.resolve({ error: null })
+        },
+      }),
+    },
     auth: { getUser: async () => ({ data: { user: h.state.user } }) },
   })),
 }))
@@ -135,6 +145,7 @@ beforeEach(() => {
   h.state.shopUpdateError = null
   h.calls.uploaded.length = 0
   h.calls.removed.length = 0
+  h.calls.sessionRemoved.length = 0
   h.calls.shopsEq.length = 0
   h.calls.shopUpdates.length = 0
   provenanceCalls.length = 0
@@ -278,14 +289,17 @@ describe.each([
     const res = await logoAction()
     expect(res.ok).toBe(true)
     expect(h.calls.shopUpdates).toHaveLength(1)
-    expect(h.calls.removed).toEqual([[OLD_LOGO]])
+    // Through the session client (the owner-delete policy scopes it to this shop), never the service role.
+    expect(h.calls.sessionRemoved).toEqual([[OLD_LOGO]])
+    expect(h.calls.removed).toEqual([])
     expect(provenanceDeleteCalls).toEqual([])
   })
 
   it('banner: deletes ONLY the old banner, never the logo', async () => {
     const res = await bannerAction()
     expect(res.ok).toBe(true)
-    expect(h.calls.removed).toEqual([[OLD_BANNER]])
+    expect(h.calls.sessionRemoved).toEqual([[OLD_BANNER]])
+    expect(h.calls.removed).toEqual([])
   })
 
   it('a failed shops update keeps the old file (the column still points at it); only the new one is cleaned up', async () => {
@@ -293,6 +307,7 @@ describe.each([
     const res = await logoAction()
     expect(res.ok).toBe(false)
     expect(h.calls.removed).toEqual([[h.calls.uploaded[0]]])
+    expect(h.calls.sessionRemoved).toEqual([])
   })
 
   it('no previous file: nothing else is deleted', async () => {
@@ -301,5 +316,15 @@ describe.each([
     const res = await logoAction()
     expect(res.ok).toBe(true)
     expect(h.calls.removed).toEqual([])
+    expect(h.calls.sessionRemoved).toEqual([])
+  })
+
+  it('a malformed stored URL is "nothing to clean up", never a failure after the update', async () => {
+    const bad = { logo_url: 'https://cdn.test/storage/v1/object/public/shop-assets/%E0%A4%A.webp', banner_url: null }
+    h.state.shopsSelectResult = { data: { id: SHOP_ID, ...bad }, error: null }
+    h.state.currentAssetResult = { data: { ...bad }, error: null }
+    const res = await logoAction()
+    expect(res.ok).toBe(true)
+    expect(h.calls.sessionRemoved).toEqual([])
   })
 })
