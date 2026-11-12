@@ -30,6 +30,8 @@ import { describe, it, expect, beforeAll, afterAll } from 'vitest'
 import { createClient, SupabaseClient } from '@supabase/supabase-js'
 import { refuseTeardownOnForeignOrders } from './live-teardown-guard'
 import { fixtureSignIn } from './fixture-session'
+import { revokeTestAdmins, assertNoTestAdmin } from './fixture-admin'
+import { randomUUID } from 'crypto'
 
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -48,7 +50,7 @@ const UNPUB_EMAIL = `${EMAIL_PREFIX}unpublished${EMAIL_SUFFIX}`
 const TRIGGER_EMAIL = `${EMAIL_PREFIX}trigger${EMAIL_SUFFIX}`
 const OTHER_EMAIL = `${EMAIL_PREFIX}other${EMAIL_SUFFIX}`
 const ADMIN_EMAIL = `${EMAIL_PREFIX}admin${EMAIL_SUFFIX}`
-const PASSWORD = 'Rls-Publish-Test-9j4!' // ephemeral test users only; never a real account
+const PASSWORD = `Fp-${randomUUID()}-Aa1!` // per run, never committed (audit H6)
 
 const admin: SupabaseClient = hasCreds
   ? createClient(url, serviceKey, { auth: { autoRefreshToken: false, persistSession: false } })
@@ -95,6 +97,7 @@ async function teardown(): Promise<void> {
   const { data, error } = await admin
     .from('profiles').select('id').like('email', `${EMAIL_PREFIX}%${EMAIL_SUFFIX}`)
   if (error) throw new Error(`teardown lookup failed: ${error.message}`)
+  await revokeTestAdmins((data ?? []).map((row) => row.id as string)) // audit H6: admin rights go first
   await refuseTeardownOnForeignOrders(admin, (data ?? []).map((row) => row.id), EMAIL_PREFIX)
   for (const row of data ?? []) {
     const { error: delErr } = await admin.auth.admin.deleteUser(row.id)
@@ -158,6 +161,7 @@ beforeAll(async () => {
 afterAll(async () => {
   if (!hasCreds) return
   await teardown()
+  await assertNoTestAdmin() // audit H6: no test-domain account may still be an admin
 }, 60000)
 
 // ─── 1 & 6: anon reads the published profile, and is denied on the unpublished one

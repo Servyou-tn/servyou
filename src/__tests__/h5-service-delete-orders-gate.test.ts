@@ -17,6 +17,7 @@ import { describe, it, expect, beforeAll, afterAll } from 'vitest'
 import { createClient, SupabaseClient } from '@supabase/supabase-js'
 import { refuseTeardownOnForeignOrders } from './live-teardown-guard'
 import { fixtureSignIn } from './fixture-session'
+import { randomUUID } from 'crypto'
 
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -36,7 +37,7 @@ const EMAIL_SUFFIX = '@rls-smoke.servyou.invalid'
 const EMAIL_PREFIX = 'h5-del-gate-'
 const OWNER_EMAIL = `${EMAIL_PREFIX}owner${EMAIL_SUFFIX}`
 const BUYER_EMAIL = `${EMAIL_PREFIX}buyer${EMAIL_SUFFIX}`
-const PASSWORD = 'H5-Del-Gate-Test-8w1!'
+const PASSWORD = `Hd-${randomUUID()}-Aa1!` // per run, never committed (audit H6)
 
 async function signIn(email: string): Promise<SupabaseClient> {
   const client = createClient(url, anonKey, { auth: { autoRefreshToken: false, persistSession: false } })

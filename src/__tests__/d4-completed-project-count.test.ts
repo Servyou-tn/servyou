@@ -20,6 +20,7 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest'
 import { createClient, SupabaseClient } from '@supabase/supabase-js'
 import { refuseTeardownOnForeignOrders } from './live-teardown-guard'
+import { randomUUID } from 'crypto'
 
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -35,7 +36,7 @@ const EMAIL_SUFFIX = '@rls-smoke.servyou.invalid'
 const EMAIL_PREFIX = 'd4-count-'
 const SELLER_EMAIL = `${EMAIL_PREFIX}seller${EMAIL_SUFFIX}`
 const BUYER_EMAIL = `${EMAIL_PREFIX}buyer${EMAIL_SUFFIX}`
-const PASSWORD = 'D4-Completed-Count-Test-9x4!' // ephemeral test users only; never a real account
+const PASSWORD = `Dc-${randomUUID()}-Aa1!` // per run, never committed (audit H6)
 
 const admin: SupabaseClient = hasCreds
   ? createClient(url, serviceKey, { auth: { autoRefreshToken: false, persistSession: false } })

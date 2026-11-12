@@ -14,6 +14,7 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest'
 import { createClient, SupabaseClient } from '@supabase/supabase-js'
 import { MAX_RESPONSES_PER_POST, MAX_ACTIVE_RESPONSES_PER_FREELANCER } from '@/lib/job-constants'
+import { randomUUID } from 'crypto'
 
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -35,7 +36,7 @@ async function createTestUser(): Promise<string> {
   const email = `test-${crypto.randomUUID()}@example.com`
   const { data, error } = await admin.auth.admin.createUser({
     email,
-    password: 'Test1234!',
+    password: `Jl-${randomUUID()}-Aa1!`, // per run, never committed (audit H6)
     email_confirm: true,
     user_metadata: {
       full_name: 'Test User',

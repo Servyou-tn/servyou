@@ -21,6 +21,7 @@ import { describe, it, expect, beforeAll, afterAll } from 'vitest'
 import { createClient, SupabaseClient } from '@supabase/supabase-js'
 import { monthBoundaries } from '@/lib/marche/seller-services-query'
 import { refuseTeardownOnForeignOrders } from './live-teardown-guard'
+import { randomUUID } from 'crypto'
 
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -37,7 +38,7 @@ const EMAIL_PREFIX = 'h5-stats-'
 async function createUser(email: string): Promise<string> {
   const { data, error } = await admin.auth.admin.createUser({
     email,
-    password: 'H5-Stats-Test-2p8!',
+    password: `Hm-${randomUUID()}-Aa1!`, // per run, never committed (audit H6)
     email_confirm: true,
     user_metadata: { full_name: 'H5 Stats Test', date_of_birth: '1990-01-01', city: 'Tunis', language: 'fr' },
   })

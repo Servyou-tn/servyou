@@ -15,6 +15,7 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest'
 import { createClient, SupabaseClient } from '@supabase/supabase-js'
 import { fixtureSignIn } from './fixture-session'
+import { randomUUID } from 'crypto'
 
 const url        = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -49,7 +50,7 @@ const testPostIds: string[] = []
 
 async function createUser(phone?: string): Promise<{ id: string; email: string; password: string }> {
   const email = `phone-test-${crypto.randomUUID()}@example.com`
-  const password = 'Test1234!'
+  const password = `Pg-${randomUUID()}-Aa1!` // per run, never committed (audit H6)
   const { data, error } = await admin.auth.admin.createUser({
     email,
     password,

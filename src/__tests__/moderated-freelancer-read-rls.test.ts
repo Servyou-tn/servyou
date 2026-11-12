@@ -37,6 +37,7 @@ import { randomUUID } from 'crypto'
 import type { Database } from '@/lib/supabase/database.types'
 import { refuseTeardownOnForeignOrders } from './live-teardown-guard'
 import { fixtureSignIn } from './fixture-session'
+import { revokeTestAdmins, assertNoTestAdmin } from './fixture-admin'
 
 type Client = SupabaseClient<Database>
 type Embed<T> = T | T[] | null
@@ -100,6 +101,7 @@ async function teardown(): Promise<void> {
   if (error) throw new Error(`teardown lookup failed: ${error.message}`)
   const ids = (data ?? []).map((row) => row.id as string)
   if (ids.length === 0) return
+  await revokeTestAdmins(ids) // audit H6: admin rights go first, before anything that can throw
   await refuseTeardownOnForeignOrders(admin, ids, PREFIX)
 
   for (const column of ['buyer_id', 'seller_id'] as const) {
@@ -276,6 +278,7 @@ afterAll(async () => {
     .like('title', `${TITLE}%`)
   if (lErr) throw new Error(`cleanup check (service_listings) failed: ${lErr.message}`)
   if ((listings ?? 0) !== 0) throw new Error(`teardown left ${listings} fixture listings`)
+  await assertNoTestAdmin() // audit H6: no test-domain account may still be an admin
 }, 120000)
 
 describe.skipIf(!hasCreds)('ground truth for every negative read below', () => {

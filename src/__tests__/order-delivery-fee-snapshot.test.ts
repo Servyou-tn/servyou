@@ -28,6 +28,7 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest'
 import { createClient, SupabaseClient } from '@supabase/supabase-js'
 import { refuseTeardownOnForeignOrders } from './live-teardown-guard'
+import { randomUUID } from 'crypto'
 
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -38,7 +39,7 @@ const hasCreds = Boolean(
 
 const EMAIL_SUFFIX = '@rls-smoke.servyou.invalid'
 const EMAIL_PREFIX = 'dfee-'
-const PASSWORD = 'Rls-Config-Test-7k2!' // ephemeral test users only; never a real account
+const PASSWORD = `Od-${randomUUID()}-Aa1!` // per run, never committed (audit H6)
 
 // The fixture fee is deliberately NOT 7: a passing assertion must prove the trigger read
 // products.delivery_fee_tnd, not that it happened to match the column DEFAULT.

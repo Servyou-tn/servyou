@@ -27,6 +27,7 @@
 // Pass = all assertions green, exit 0. Fail = first/all failures logged, exit 1.
 
 import { createClient } from '@supabase/supabase-js'
+import { randomUUID } from 'crypto'
 
 const URL = process.env.NEXT_PUBLIC_SUPABASE_URL
 const ANON = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
@@ -39,7 +40,7 @@ if (!URL || !ANON || !SERVICE) {
 }
 
 const EMAIL_SUFFIX = '@rls-smoke.servyou.invalid'
-const PASSWORD = 'Rls-Smoke-Test-9f3a!' // ephemeral test users only; never a real account
+const PASSWORD = `Rs-${randomUUID()}-Aa1!` // per run, never committed (audit H6): it creates real accounts, one an admin
 const USERS = {
   alice: { email: 'alice' + EMAIL_SUFFIX, fullName: 'RLS Smoke Alice', phone: '+21620000001' },
   bob: { email: 'bob' + EMAIL_SUFFIX, fullName: 'RLS Smoke Bob' },

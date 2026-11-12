@@ -27,6 +27,8 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest'
 import { createClient, SupabaseClient } from '@supabase/supabase-js'
 import { fixtureSignIn } from './fixture-session'
+import { revokeTestAdmins, assertNoTestAdmin } from './fixture-admin'
+import { randomUUID } from 'crypto'
 
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -41,7 +43,7 @@ const hasCreds = Boolean(
 const PREFIX = 'prof-revoke-'
 const EMAIL_SUFFIX = '@rls-smoke.servyou.invalid'
 const email = (local: string) => `${PREFIX}${local}${EMAIL_SUFFIX}`
-const PASSWORD = 'Profiles-Revoke-Test-3m9!' // ephemeral test users only; never a real account
+const PASSWORD = `Pv-${randomUUID()}-Aa1!` // per run, never committed (audit H6)
 const METADATA = { full_name: 'Profiles Revoke Test', date_of_birth: '1990-01-01', city: 'Tunis', language: 'fr' }
 
 // PostgREST surfaces a missing table privilege as Postgres insufficient_privilege.
@@ -87,6 +89,7 @@ async function teardown(extraIds: string[] = []): Promise<void> {
   const { data, error } = await admin.from('profiles').select('id').like('email', `${PREFIX}%${EMAIL_SUFFIX}`)
   if (error) throw new Error(`teardown lookup failed: ${error.message}`)
   const ids = [...(data ?? []).map((row) => row.id as string), ...extraIds]
+  await revokeTestAdmins(ids) // audit H6: admin rights go first, before anything that can throw
   for (const id of ids) {
     const { error: delErr } = await admin.auth.admin.deleteUser(id)
     if (delErr) throw new Error(`deleteUser failed for ${id}: ${delErr.message}`)
@@ -117,6 +120,7 @@ beforeAll(async () => {
 afterAll(async () => {
   if (!hasCreds) return
   await teardown(orphanId ? [orphanId] : [])
+  await assertNoTestAdmin() // audit H6: no test-domain account may still be an admin
 }, 90000)
 
 describe.skipIf(!hasCreds)('handle_new_user still creates the profile', () => {

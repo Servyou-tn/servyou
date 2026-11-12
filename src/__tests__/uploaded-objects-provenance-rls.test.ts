@@ -36,7 +36,7 @@ const hasCreds = Boolean(
 const EMAIL_SUFFIX = '@rls-smoke.servyou.invalid'
 const EMAIL_PREFIX = 'prov-'
 const ATTACKER_EMAIL = `${EMAIL_PREFIX}attacker${EMAIL_SUFFIX}`
-const PASSWORD = 'Rls-Provenance-Test-7k2!' // ephemeral test users only; never a real account
+const PASSWORD = `Up-${randomUUID()}-Aa1!` // per run, never committed (audit H6)
 
 const admin: SupabaseClient = hasCreds
   ? createClient(url, serviceKey, { auth: { autoRefreshToken: false, persistSession: false } })

@@ -14,6 +14,10 @@ export default defineConfig(({ mode }) => ({
     testTimeout: 30000,
     env: loadEnv(mode, process.cwd(), ''),
     include: INTEGRATION_GLOBS,
+    // One live suite at a time (db-guardian rule; was only the --no-file-parallelism flag on the command line).
+    // The suites share one production database, and every admin-granting suite ends with assertNoTestAdmin()
+    // (audit H6), which another suite's admin fixture mid-run would trip.
+    fileParallelism: false,
   },
   resolve: {
     alias: {

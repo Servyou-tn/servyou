@@ -33,6 +33,7 @@ import {
   TOOLS_CAP,
 } from '@/app/mon-profil-freelance/creer/details/schema'
 import { applyFreelancerDetailsSave } from '@/app/mon-profil-freelance/creer/details/apply-save'
+import { randomUUID } from 'crypto'
 
 // ─── 1. Schema — pure, no DB, no creds required ────────────────────────────────────────────
 
@@ -150,7 +151,7 @@ const admin: SupabaseClient = hasCreds
 async function createUser(email: string): Promise<string> {
   const { data, error } = await admin.auth.admin.createUser({
     email,
-    password: 'Rls-Details-Test-4q8!',
+    password: `Fw-${randomUUID()}-Aa1!`, // per run, never committed (audit H6)
     email_confirm: true,
     user_metadata: { full_name: 'Details Wizard Test', date_of_birth: '1990-01-01', city: 'Tunis', language: 'fr' },
   })
