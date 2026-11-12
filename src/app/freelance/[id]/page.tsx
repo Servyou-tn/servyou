@@ -1,4 +1,6 @@
 import type { Metadata } from 'next'
+import { freelancerMetadata } from '@/lib/seo/detail-metadata'
+import { t } from '@/lib/i18n'
 import { notFound } from 'next/navigation'
 import { AppShell } from '@/components/shell/AppShell'
 import { FreelancerDetail } from './_components/FreelancerDetail'
@@ -24,8 +26,9 @@ export async function generateMetadata({
   params: Promise<{ id: string }>
 }): Promise<Metadata> {
   const { id } = await params
-  const freelancer = await getFreelancerDetail(id)
-  return { title: freelancer ? `${freelancer.fullName} — Servyou` : 'Freelance — Servyou' }
+  const [freelancer, lang] = await Promise.all([getFreelancerDetail(id), getLang()])
+  // A missing / hidden profile is a 404: no description or canonical, and the root's noindex stays.
+  return freelancer ? freelancerMetadata(freelancer, lang) : { title: t('freelance.not_found', lang) }
 }
 
 export default async function FreelancePage({ params }: { params: Promise<{ id: string }> }) {

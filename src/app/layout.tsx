@@ -3,6 +3,9 @@ import localFont from "next/font/local"
 import "./globals.css"
 import { Toaster } from "sonner"
 import { getLang } from "@/lib/i18n/server"
+import { t } from "@/lib/i18n"
+import { siteUrl } from "@/lib/seo/site-url"
+import { SITE_NAME, TITLE_TEMPLATE, OG_LOCALE } from "@/lib/seo/metadata"
 import { LangProvider } from "@/components/LangProvider"
 import { CookieConsentProvider } from "@/components/consent/CookieConsent"
 import { getConsent } from "@/lib/consent/server"
@@ -47,9 +50,22 @@ const geistMono = localFont({
   variable: "--font-geist-mono",
 })
 
-export const metadata: Metadata = {
-  title: "Servyou",
-  description: "Votre marketplace tunisienne",
+// Search / share defaults (audit checklist 5 — src/lib/seo/metadata.ts). metadataBase resolves every page's relative
+// canonical and Open Graph url. Every page is NOINDEX unless it opts in with publicMetadata(), so a private page (and
+// any new one) stays out of search engines by default. No canonical or og:url here: a page without its own would
+// inherit the home page's.
+export async function generateMetadata(): Promise<Metadata> {
+  const lang = await getLang()
+  const description = t("lp.hero.subtitle", lang)
+  return {
+    metadataBase: new URL(siteUrl()),
+    title: { default: SITE_NAME, template: TITLE_TEMPLATE },
+    description,
+    applicationName: SITE_NAME,
+    robots: { index: false, follow: false },
+    openGraph: { type: "website", siteName: SITE_NAME, locale: OG_LOCALE[lang], title: SITE_NAME, description },
+    twitter: { card: "summary", title: SITE_NAME, description },
+  }
 }
 
 export default async function RootLayout({

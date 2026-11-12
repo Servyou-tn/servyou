@@ -15,7 +15,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params
   const shell = await getShellUser()
   const annonce = shell ? await getAnnonceDetail(id, shell.id) : null // cached — shared with the page
-  return { title: annonce?.title ? `${annonce.title} — Servyou` : 'Annonce — Servyou' }
+  return { title: annonce?.title ? annonce.title : 'Annonce' }
 }
 
 // The consumer's annonce-detail page. Auth-gated (own post) → logged-out visitors are sent to

@@ -16,6 +16,14 @@ import { FinalCta } from '@/components/landing/FinalCta'
 import { LandingFooter } from '@/components/landing/LandingFooter'
 import { ConsumerHomepage } from '@/components/home/ConsumerHomepage'
 import { expiredLinkRedirect } from '@/lib/auth/expired-link'
+import type { Metadata } from 'next'
+import { publicMetadata } from '@/lib/seo/metadata'
+
+// Search / share metadata (audit checklist 5): a full title (no « · ServYou » template) and the landing's own
+// founder-approved sentence as the description.
+export async function generateMetadata(): Promise<Metadata> {
+  return publicMetadata('seo.home.title', 'lp.hero.subtitle', '/', { absoluteTitle: true })
+}
 
 // / branches by viewer:
 //   • logged-out → marketing landing (unchanged)

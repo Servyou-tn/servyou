@@ -35,7 +35,7 @@ const BASE = '/mes-commandes'
 
 export async function generateMetadata(): Promise<Metadata> {
   const lang = await getLang()
-  return { title: `${t('mesCommandes.title', lang)} — Servyou` }
+  return { title: t('mesCommandes.title', lang) }
 }
 
 type Props = { searchParams: Promise<Record<string, string | string[] | undefined>> }

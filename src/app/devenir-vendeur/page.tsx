@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { localizedMetadata } from '@/lib/i18n/metadata'
+import { publicMetadata } from '@/lib/seo/metadata'
 import { Briefcase, Store } from 'lucide-react'
 import { AppShell } from '@/components/shell/AppShell'
 import { RoleChoiceCard } from './_components/RoleChoiceCard'
@@ -13,7 +13,7 @@ import { getLang } from '@/lib/i18n/server'
 import { t } from '@/lib/i18n'
 
 export async function generateMetadata(): Promise<Metadata> {
-  return localizedMetadata('meta.become_seller', {}, 'meta.desc.become_seller')
+  return publicMetadata('meta.become_seller', 'meta.desc.become_seller', '/devenir-vendeur')
 }
 
 // The shared seller entry (Figma 469:20560, founder-confirmed as a NEW page, not a

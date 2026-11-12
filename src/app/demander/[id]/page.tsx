@@ -10,7 +10,7 @@ import { ProductRequestScreen } from './_components/ProductRequestScreen'
 
 export async function generateMetadata(): Promise<Metadata> {
   const lang = await getLang()
-  return { title: `${t('demander.breadcrumb.request', lang)} — Servyou` }
+  return { title: t('demander.breadcrumb.request', lang) }
 }
 
 type Props = { params: Promise<{ id: string }> }

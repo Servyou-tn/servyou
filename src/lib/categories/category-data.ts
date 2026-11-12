@@ -1,3 +1,4 @@
+import { cache } from 'react'
 import { createClient } from '@/lib/supabase/server'
 import { failQuery, isNoRowLike, reportQueryError } from '@/lib/supabase/query-error'
 
@@ -21,8 +22,11 @@ export type Subcategory = {
   name_en: string | null
 }
 
-/** Resolve a URL slug to its category row, or null if the slug doesn't exist (→ 404). */
-export async function getCategoryBySlug(slug: string): Promise<Category | null> {
+/**
+ * Resolve a URL slug to its category row, or null if the slug doesn't exist (→ 404). Wrapped in cache() so the page's
+ * generateMetadata (audit checklist 5) and its render share one fetch per request.
+ */
+export const getCategoryBySlug = cache(async (slug: string): Promise<Category | null> => {
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('categories')
@@ -32,7 +36,7 @@ export async function getCategoryBySlug(slug: string): Promise<Category | null> 
   // A failed lookup throws (root error.tsx) instead of reading as « unknown slug » → 404.
   if (error && !isNoRowLike(error)) failQuery('categories slug resolve', error)
   return (data as Category | null) ?? null
-}
+})
 
 /**
  * Direct children of a category (for the drill-down strip). NOTE: the categories table is

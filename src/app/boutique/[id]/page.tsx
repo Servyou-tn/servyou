@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { shopMetadata } from '@/lib/seo/detail-metadata'
 import { notFound } from 'next/navigation'
 import { AppShell } from '@/components/shell/AppShell'
 import { ShopDetail } from './_components/ShopDetail'
@@ -21,7 +22,8 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { id } = await params
   const [shop, lang] = await Promise.all([getShopDetail(id), getLang()])
-  return { title: `${shop ? shop.name : t('boutique.not_found', lang)} — Servyou` }
+  // A missing / hidden shop is a 404: no description or canonical, and the root's noindex stays.
+  return shop ? shopMetadata(shop, lang) : { title: t('boutique.not_found', lang) }
 }
 
 export default async function BoutiquePage({ params }: { params: Promise<{ id: string }> }) {

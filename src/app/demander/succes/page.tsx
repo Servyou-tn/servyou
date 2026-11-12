@@ -31,7 +31,7 @@ import { formatPhoneDisplay } from '@/lib/phone'
 
 export async function generateMetadata(): Promise<Metadata> {
   const lang = await getLang()
-  return { title: `${t('succes.pageTitle', lang)} — Servyou` }
+  return { title: t('succes.pageTitle', lang) }
 }
 
 type Props = { searchParams: Promise<{ order?: string }> }

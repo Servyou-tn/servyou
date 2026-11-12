@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { localizedMetadata } from '@/lib/i18n/metadata'
+import { publicMetadata } from '@/lib/seo/metadata'
 import { Mail, MessageCircle, Globe } from 'lucide-react'
 import { getLang } from '@/lib/i18n/server'
 import { t } from '@/lib/i18n'
@@ -8,7 +8,7 @@ import { CopyableEmail } from './CopyableEmail'
 import { HitArea } from '@/components/ui/interactive-surface'
 
 export async function generateMetadata(): Promise<Metadata> {
-  return localizedMetadata('meta.contact')
+  return publicMetadata('meta.contact', 'seo.desc.contact', '/contact')
 }
 
 const cardClass = 'rounded-2xl border border-border-subtle bg-white p-6 text-center'
