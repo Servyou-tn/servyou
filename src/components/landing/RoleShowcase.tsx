@@ -23,14 +23,14 @@ const CONFIG: Record<Role, {
     band: 'bg-surface-subtle',
     benefits: [Link2, Briefcase, LayoutDashboard],
     cta: '/devenir-freelance',
-    shot: { src: '/brand/landing/dash-free.webp', w: 2160, h: 1439, box: 'max-w-[824px] aspect-[824/549] rounded-s-2xl' },
+    shot: { src: '/brand/landing/dash-free-v2.webp', w: 2160, h: 1439, box: 'max-w-[824px] aspect-[824/549] rounded-s-2xl' },
   },
   shop: {
     id: 'boutiques',
     band: 'bg-surface-base',
     benefits: [Store, Inbox, Truck],
     cta: '/devenir-vendeur',
-    shot: { src: '/brand/landing/dash-shop.webp', w: 2160, h: 1418, box: 'max-w-[816px] aspect-[816/535] rounded-e-2xl' },
+    shot: { src: '/brand/landing/dash-shop-v2.webp', w: 2160, h: 1418, box: 'max-w-[816px] aspect-[816/535] rounded-e-2xl' },
   },
 }
 
@@ -73,6 +73,14 @@ export function RoleShowcase({ role, lang }: { role: Role; lang: Lang }) {
   // frame at 1.5x of the 1440 dashboard (≈2.6x the card) and served as-is (`unoptimized`): the default
   // q75 re-encode blurred the small dashboard text. Frame + shadow are CSS (Figma: border-subtle 1px,
   // r16 on the inner side, 0 16 40 -8 #0f1729/10).
+  //
+  // The `-v2` files (speed PR-2) are the same exports re-encoded, under new names so no cached copy of
+  // the old ones mixes in. The dashboards keep 2160 px, at WebP q85. The phone mock-ups keep their 3x
+  // size (1062×2004), at q90, but are FLATTENED onto the band they sit on: freelances on surface-subtle
+  // #F8FAFC, boutiques on surface-base #FFFFFF. The see-through drop shadow alone cost ~290 KB of 388.
+  // On the band they draw the same pixels to within 1/255 (lossy WebP rounds #F8FAFC to 249,251,252),
+  // which is invisible. If a band colour ever changes, re-flatten these 4 files onto the new colour, or
+  // the mock-up shows as a box.
   const s = c.shot
   const desktopShot = (
     <div
@@ -104,7 +112,7 @@ export function RoleShowcase({ role, lang }: { role: Role; lang: Lang }) {
         {textFirst ? desktopShot : text}
         <div className="w-full lg:hidden">
           <Image
-            src={`/brand/landing/phone-${role}-${lang}.webp`}
+            src={`/brand/landing/phone-${role}-${lang}-v2.webp`}
             alt={t(k('shot_alt'), lang)}
             width={354}
             height={668}

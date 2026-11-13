@@ -255,7 +255,7 @@ export function FreelancerDetail({
               {freelancer.portfolioItems.map((item) => (
                 <div key={item.id} className="flex flex-col overflow-hidden rounded-xl border border-border-subtle max-lg:gap-2 max-lg:overflow-visible max-lg:rounded-none max-lg:border-0">
                   <div className="relative h-[222px] w-full overflow-hidden bg-surface-sunken max-lg:h-40 max-lg:rounded-[10px]">
-                    <Image src={item.imageUrl} alt="" fill sizes="(max-width: 1023px) 100vw, 360px" className="object-cover" />
+                    <Image src={item.imageUrl} alt="" fill sizes="(max-width: 639px) 100vw, (max-width: 1023px) 50vw, 360px" className="object-cover" />
                   </div>
                   <div className="flex flex-col gap-1 p-4 max-lg:contents">
                     {item.title && <h3 className="text-base font-semibold text-text-primary max-lg:leading-[22px]">{item.title}</h3>}

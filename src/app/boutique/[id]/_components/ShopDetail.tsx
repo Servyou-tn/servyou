@@ -198,7 +198,7 @@ export function ShopDetail({
         {products.length > 0 ? (
           <div className="grid grid-cols-1 gap-4 max-sm:grid-cols-2 max-sm:gap-x-3.25 max-sm:gap-y-3 sm:grid-cols-2 lg:grid-cols-4">
             {products.map((product) => (
-              <ProductBrowseCard key={product.id} product={product} sizes="(max-width: 1024px) 50vw, 25vw" />
+              <ProductBrowseCard key={product.id} product={product} sizes="(max-width: 1023px) 50vw, 25vw" />
             ))}
           </div>
         ) : (

@@ -348,7 +348,7 @@ export function ProductDetail({
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 max-sm:-mx-4 max-sm:-my-1.5 max-sm:flex max-sm:snap-x max-sm:gap-3 max-sm:overflow-x-auto max-sm:px-4 max-sm:py-1.5">
               {related.slice(0, 4).map((item) => (
                 <div key={item.id} className="max-sm:w-[272px] max-sm:shrink-0 max-sm:snap-start max-sm:scroll-ms-4">
-                  <ProductBrowseCard product={item} sizes="(max-width: 639px) 272px, (max-width: 1024px) 50vw, 25vw" />
+                  <ProductBrowseCard product={item} sizes="(max-width: 639px) 272px, (max-width: 1023px) 50vw, 25vw" />
                 </div>
               ))}
             </div>
