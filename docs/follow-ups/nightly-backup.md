@@ -5,6 +5,9 @@ Ranked: the two MEDIUM items first, then the LOW ones, then the items with a set
 
 ## 1. MEDIUM — Scenario 2 still says to run `npm run rls-smoke` against the restored database
 
+✅ CLOSED — PR #367, commit 4 (review fixes, approved by the architect), 2026-11-13. Step 4 now runs the latest bundle's
+`counts.sql` read-only and says never to run `rls-smoke` there.
+
 **What:** `docs/operations.md`, « Scenario 2 — Table dropped or wiped », step 4: « run `npm run rls-smoke` against
 the restored database ». CLAUDE.md forbids that script because it deletes every test-domain user on production. After
 a dashboard restore, the restored database *is* production. Drill step 5 had the same instruction and was fixed in
@@ -101,9 +104,12 @@ month of the Free plan's 5 GB uncached egress, which the app shares.
   narrow the nightly restore check and log it.
 - `extras.sql` round-trips: the 2 triggers on `auth.users` and the 11 policies on `storage.objects`, generated from
   the catalog, restore and are counted by `counts.sql`.
-- The Backblaze web form can create a key with exactly `listFiles` + `writeFiles`, and the EU region is chosen at
-  sign-up.
+- The upload key (`listBuckets,listFiles,writeFiles`, created with the b2 CLI in setup group B) is enough for the
+  job's `account authorize` and uploads. The B2 website could set neither a governance default nor exact
+  capabilities, hence the CLI. The EU region is settled: EU Central, chosen at sign-up.
+- After group B: `b2 bucket get` shows the governance default of 30 days and the two lifecycle rules unchanged.
 
 **Why deferred:** they need the private repo and the founder's accounts.
 **Where it lives:** the private repo's README and first run.
-**Trigger:** the private repo build, after the founder's setup steps 1–11.
+**Trigger:** the private repo build. The first run needs setup groups B and C done: the governance default, the
+upload key, the role password, and every secret and variable.

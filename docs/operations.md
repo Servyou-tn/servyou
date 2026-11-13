@@ -156,8 +156,10 @@ does not include point-in-time recovery (PITR), and self-serve daily backup/rest
 available in the dashboard** — so until the Pro upgrade lands, the manual `pg_dump` below
 is the *primary* safety net, not a belt-and-suspenders extra.
 
-**Since PR #367** the nightly encrypted backup (below) is the primary safety net on the Free
-plan; the manual `pg_dump` is the extra copy taken before a risky change.
+**Since PR #367** the nightly encrypted backup (below) is meant to be the primary safety net
+on the Free plan, with the manual `pg_dump` as the extra copy before a risky change. **Check
+its status line first:** until its first green run there is no nightly backup, and the manual
+`pg_dump` is still the only one.
 
 Confirm the live backup posture any time in the dashboard:
 https://supabase.com/dashboard/project/xggomcitqrkaylqezjjz/database/backups
@@ -175,8 +177,9 @@ the Vercel Pro upgrade on the launch checklist.
 ### Recovery objectives
 
 - **RPO** (Recovery Point Objective — max acceptable data loss): up to 24 hours on the
-  nightly encrypted backup (the Free plan has no backups of its own); under 1 hour on Pro
-  PITR. Pre-launch this is not material; post-launch it drives the Pro-upgrade timing.
+  nightly encrypted backup once it is live (the Free plan has no backups of its own; until
+  then, the age of the last manual `pg_dump`); under 1 hour on Pro PITR. Pre-launch this is
+  not material; post-launch it drives the Pro-upgrade timing.
 - **RTO** (Recovery Time Objective — max time to restore): committed at **4 hours** from
   incident detection during the launch phase.
 
@@ -202,8 +205,11 @@ re-creation of bulk data.
    maintenance-mode toggle to the admin dashboard — not built yet.)*
 2. Identify the latest backup before the incident from the Supabase dashboard.
 3. Initiate the restore via the dashboard.
-4. Once complete, run `npm run rls-smoke` against the restored database to confirm the RLS
-   posture survived.
+4. Once complete, check the restore read-only. In the SQL editor, run the latest nightly
+   bundle's `counts.sql` and compare the result with that bundle's `counts.tsv`. The dropped
+   table must be back; any other difference is a write made since that bundle. Never run
+   `npm run rls-smoke` here: it deletes every test-domain user on production, which is the
+   database you just restored.
 5. Spot-check a few sample reads of expected data via the SQL editor.
 6. Remove the maintenance banner.
 
@@ -250,6 +256,11 @@ point of failure for misclicks, this is the most likely incident — and the
 3. Notify the affected user with a courtesy message explaining the error.
 
 ### Nightly encrypted backup (PR #367)
+
+> **Status (2026-11-13): planned, NOT live yet.** The read-only role exists (migration #133)
+> and setup group A below is done. The private repo's workflow is not built, so **there is no
+> nightly backup until its first green run**: before any risky change, take the manual
+> `pg_dump` below. Change this line to « live since <date> » after that first green run.
 
 Supabase Free keeps no backups, so a scheduled job makes one every night. It runs in the
 **private** repo `Servyou-tn/servyou-backups`, never in this one: this repo is public, and so
@@ -308,8 +319,10 @@ so Windows' built-in `tar` can open it during a drill.
 
 **Who can read or delete what:**
 
-- **Database:** `servyou_backup` reads everything a backup holds and writes nothing. Its
-  password exists only in the private repo's secret `BACKUP_DB_URL`. The connection goes through
+- **Database:** `servyou_backup` reads everything a backup holds and writes no business data.
+  One exception: with BYPASSRLS it could delete pg_cron's run history (follow-up 3 in
+  `docs/follow-ups/nightly-backup.md`). Its password exists only in the private repo's secret
+  `BACKUP_DB_URL`. The connection goes through
   the session pooler, port 5432, as user `servyou_backup.xggomcitqrkaylqezjjz`. It can't use the
   direct host (IPv6 only, and GitHub runners are IPv4 only) or port 6543 (transaction mode, which
   `pg_dump` doesn't support).
@@ -319,8 +332,9 @@ so Windows' built-in `tar` can open it during a drill.
 - **Plaintext:** it exists only in the runner's `$RUNNER_TEMP`, is deleted at the end of the run,
   and is never printed to a log.
 - **B2:**
-  - the upload key is restricted to the bucket and holds only `listFiles` and `writeFiles`, so it
-    can't delete or shorten a lock;
+  - the upload key is restricted to the bucket and holds only `listBuckets`, `listFiles` and
+    `writeFiles`, so it can't delete or shorten a lock. `listBuckets` is there because
+    `b2 account authorize` requires it; on a restricted key it lists only that one bucket;
   - the account's master key, which can override governance, stays offline;
   - the account has 2FA.
 
@@ -333,33 +347,96 @@ so Windows' built-in `tar` can open it during a drill.
 
 #### Setup (founder, once, one action each)
 
-1. Install age: `winget install FiloSottile.age`.
-2. Generate the key pair outside OneDrive and outside the repo:
-   `age-keygen -o C:\servyou-keys\backup.key`. It prints the public key (`age1…`); send only
-   that line.
-3. Store two offline copies of `backup.key`, for example in a password manager and on a USB
-   key.
-4. Create a Backblaze B2 account, choosing the EU region at sign-up.
-5. Turn on 2FA on the Backblaze account.
-6. Create a private bucket `servyou-backups-eu` with Object Lock enabled. Object Lock can only
-   be turned on when the bucket is created.
-7. Set the bucket's default retention: governance mode, 30 days.
-8. Add two lifecycle rules: `daily/` hidden after 30 days and `monthly/` hidden after 365 days,
-   each deleted 1 day after hiding.
-9. Create an application key restricted to `servyou-backups-eu` with `listFiles` and
-   `writeFiles` only: no `deleteFiles`, `bypassGovernance` or `writeFileRetentions`. If the
-   web form offers only presets, stop there and ask for the exact command.
-10. Leave the master application key unused, and keep it out of GitHub.
-11. Create the empty private repo `Servyou-tn/servyou-backups`.
-12. Set the role's password (below).
-13. In the private repo, add:
-    - the secrets `BACKUP_DB_URL`, `B2_KEY_ID`, `B2_APP_KEY` and `SENTRY_CRON_URL` (its value
-      is given when the repo is built);
-    - the variables `AGE_RECIPIENT` (the `age1…` line) and `B2_BUCKET`.
-14. In GitHub notification settings, turn on email for failed Actions workflows.
-15. Install Docker Desktop. The restore drill needs it.
+✅ = done by Moatez on 2026-11-13. Run every command in PowerShell.
 
-#### Setting the role's password (setup step 12)
+**A. Key and Backblaze account** (all done)
+
+1. ✅ Install age: `winget install FiloSottile.age`.
+2. ✅ Create the key folder outside OneDrive and outside the repo, readable by your account only:
+   ```powershell
+   New-Item -ItemType Directory C:\servyou-keys
+   icacls C:\servyou-keys /inheritance:r /grant:r "${env:USERNAME}:(OI)(CI)F"
+   ```
+3. ✅ Generate the key pair: `age-keygen -o C:\servyou-keys\backup.key`. It prints the public
+   key (`age1…`); send only that line.
+4. ✅ Store two offline copies of `backup.key`, for example in a password manager and on a USB
+   key.
+5. ✅ Create a Backblaze B2 account in the EU region (EU Central, chosen at sign-up).
+6. ✅ Turn on 2FA on the Backblaze account.
+7. ✅ Create the private bucket `servyou-backups-eu` with Object Lock enabled (only possible at
+   creation) and SSE-B2 default encryption. Leave its default retention empty: the website
+   offers only compliance mode there, and group B sets governance.
+8. ✅ Add two lifecycle rules: `daily/` hidden after 30 days and `monthly/` hidden after 365
+   days, each deleted 1 day after hiding.
+
+**B. Governance retention and the upload key** (b2 CLI 5.0.2, used once)
+
+The B2 website can neither set a governance default nor create a key with exact
+capabilities. So these steps use Backblaze's command-line tool once, signed in with the master
+key. No key is ever typed on a command line: `account authorize` asks for it.
+
+1. Download the b2 CLI 5.0.2, Backblaze's official Windows build:
+   ```powershell
+   New-Item -ItemType Directory -Force C:\servyou-tools | Out-Null
+   curl.exe -L --fail -o C:\servyou-tools\b2.exe https://github.com/Backblaze/B2_Command_Line_Tool/releases/download/v5.0.2/b2-windows.exe
+   ```
+2. Check the download. This must print `True`: it compares the file with the SHA-256 published
+   with the release. On `False`, delete the file and stop.
+   ```powershell
+   (Get-FileHash C:\servyou-tools\b2.exe -Algorithm SHA256).Hash -eq 'D6E5B1C0918C2755FC8C14EB5B5AA698C36B43D3FDC18FCA13EA163D829BBBBB'
+   ```
+3. On the B2 website, go to Application Keys → Generate New Master Application Key. Keep the
+   page open: it shows the key only once.
+4. Sign the CLI in with the master key. It asks for the key ID, then the key; paste both from
+   the page.
+   ```powershell
+   C:\servyou-tools\b2.exe account authorize
+   ```
+5. Set the bucket's default retention to governance, 30 days. Type `governance`, never
+   `compliance`: compliance can't be undone, not even with the master key.
+   ```powershell
+   C:\servyou-tools\b2.exe bucket update --default-retention-mode governance --default-retention-period "30 days" servyou-backups-eu allPrivate
+   ```
+6. Check the bucket: `C:\servyou-tools\b2.exe bucket get servyou-backups-eu`. The output must
+   show:
+   - Object Lock on, with a default retention of governance and 30 days
+     (`fileLockConfiguration`);
+   - the two lifecycle rules, unchanged;
+   - SSE-B2 as the default encryption.
+7. Create the upload key, restricted to the bucket. It prints the key ID, then the key, once.
+   ```powershell
+   C:\servyou-tools\b2.exe key create --bucket servyou-backups-eu servyou-nightly-upload listBuckets,listFiles,writeFiles
+   ```
+8. Add the two values right away as the private repo's secrets `B2_KEY_ID` and `B2_APP_KEY`
+   (the repo → Settings → Secrets and variables → Actions).
+9. Check the key: `C:\servyou-tools\b2.exe key list --long`. The `servyou-nightly-upload` line
+   must name `servyou-backups-eu` and exactly `listBuckets,listFiles,writeFiles`. It must not
+   include `deleteFiles`, `bypassGovernance` or `writeFileRetentions`.
+10. Sign the CLI out. This erases the master key from its local cache (`.b2_account_info` in
+    your user folder).
+    ```powershell
+    C:\servyou-tools\b2.exe account clear
+    ```
+11. Retire the master key: keep it only in your password manager, never in GitHub. The
+    stronger option is to generate a new master key without saving it, which invalidates the
+    one you used. If you do, check that the next nightly run still uploads.
+12. Close the PowerShell window, then clear the clipboard history (Win+V → Clear all).
+
+**C. GitHub and the database**
+
+1. ✅ Create the empty private repo `Servyou-tn/servyou-backups`.
+2. Set the role's password (below). It ends with the secret `BACKUP_DB_URL`.
+3. In the private repo, add the variable `B2_BUCKET` = `servyou-backups-eu`. (`AGE_RECIPIENT`
+   is already set ✅.)
+4. In the private repo, add the secret `SENTRY_CRON_URL`. Its value is given when the repo is
+   built.
+5. ✅ In GitHub notification settings, turn on email for failed Actions workflows.
+
+**D. Restore drill**
+
+1. Install Docker Desktop.
+
+#### Setting the role's password (setup step C2)
 
 `log_statement` is `ddl` on this project, and `pg_stat_statements` keeps statements. So a
 plaintext `alter role … password '…'` would be stored in both. Instead, compute a SCRAM-SHA-256
@@ -386,7 +463,9 @@ console.log(`SQL editor: alter role servyou_backup with password '${verifier}';`
 2. Build the secret `BACKUP_DB_URL` from the printed password:
    `postgresql://servyou_backup.xggomcitqrkaylqezjjz:<password>@<session pooler host>:5432/postgres?sslmode=require`.
    Copy the host from Dashboard → Connect → Session pooler.
-3. Clear the PowerShell window (`Clear-Host`). The password now exists only in the secret.
+3. Close the PowerShell window; `Clear-Host` doesn't clear Windows Terminal's scrollback.
+   Then clear the clipboard history (Win+V → Clear all). The password now exists only in the
+   secret.
 
 If the first connection fails with an authentication error right after the change, wait a
 few minutes: the pooler can briefly cache the old state. To rotate the password, run the block
@@ -406,17 +485,22 @@ port 6543, doesn't support `pg_dump`. Copy the exact host from Dashboard → Con
 pooler.
 
 ```bash
-pg_dump "postgresql://postgres.xggomcitqrkaylqezjjz:[DB_PASSWORD]@aws-0-eu-central-1.pooler.supabase.com:5432/postgres" \
+pg_dump "postgresql://postgres.xggomcitqrkaylqezjjz@aws-0-eu-central-1.pooler.supabase.com:5432/postgres" \
+  --password \
   --format=custom \
   --no-owner \
   --no-privileges \
   --file=servyou-backup-$(date +%Y%m%d-%H%M).dump
 ```
 
-`[DB_PASSWORD]` is the database password from the secrets manager — never hard-code it or
-commit it. Store the resulting `.dump` file in offline storage (an encrypted external
-drive, or private cloud storage with a retention policy). **Do not commit `.dump` files to
-git.**
+`--password` makes `pg_dump` ask for the database password (from the secrets manager), so it
+never lands in the command line or the shell history. Never hard-code it or commit it.
+
+The `.dump` holds password hashes and phone numbers in plaintext. Before it leaves the folder
+you ran it in, encrypt it with the backup's age public key and delete the plaintext:
+`age -r <the age1… line> -o servyou-backup-<date>.dump.age servyou-backup-<date>.dump`.
+Store only the `.age` file, for example on an external drive. Never put a plaintext dump in
+OneDrive or any cloud storage. **Do not commit `.dump` files to git.**
 
 Suggested retention: daily manual backups kept for 7 days during the launch phase; weekly
 for 90 days post-launch.
@@ -425,8 +509,9 @@ for 90 days post-launch.
 
 - **Monthly:** confirm the latest automated backup exists in the Supabase dashboard; record
   the timestamp in the verification log below.
-- **Monthly (Free plan, since PR #367):** check that B2 holds last night's bundle and that the
-  Sentry monitor `nightly-backup` is green; record it in the verification log below.
+- **Monthly (Free plan, once the nightly backup is live):** check that B2 holds last night's
+  bundle and that the Sentry monitor `nightly-backup` is green; record it in the verification
+  log below.
 - **Quarterly:** execute the restore drill below.
 - **Before any high-risk migration:** take a manual `pg_dump`, or run the nightly workflow by
   hand.
@@ -440,23 +525,29 @@ What to execute when running the quarterly drill (the first runs the week before
 
 Since PR #367 the drill restores last night's encrypted bundle, which tests the whole nightly
 chain end to end: download, decrypt, restore, compare. It runs on the founder's PC (Docker
-Desktop, setup step 15), in a folder **outside OneDrive**, because the unpacked files hold
-password hashes and phone numbers in plaintext. In a real disaster, restore the same files into
-a new Supabase project instead, following Supabase's guide
+Desktop, setup step D1). It uses two folders **outside OneDrive**, because the unpacked files
+hold password hashes and phone numbers in plaintext:
+- `C:\servyou-restore` holds the bundle;
+- `C:\servyou-drill` holds the throwaway database's project.
+
+In a real disaster, restore the same files into a new Supabase project instead, following
+Supabase's guide
 (https://supabase.com/docs/guides/platform/migrating-within-supabase/backup-restore), then
 re-create what "Not in a bundle" lists.
 
 1. Download last night's bundle from B2 (Browse Files → `daily/`) into `C:\servyou-restore`,
-   then decrypt and unpack it:
+   then decrypt and unpack it. It unpacks into `C:\servyou-restore\bundle\`.
    ```powershell
    cd C:\servyou-restore
    age -d -i C:\servyou-keys\backup.key -o bundle.tar.gz servyou-YYYY-MM-DD.tar.gz.age
    tar -xzf bundle.tar.gz
    ```
 2. Provision a throwaway **Supabase** Postgres 17, not plain `postgres:17`: `data.sql` writes
-   into `auth`, `storage` and `cron`, which only a Supabase database has. In an empty folder,
-   with Docker Desktop running:
+   into `auth`, `storage` and `cron`, which only a Supabase database has. With Docker Desktop
+   running:
    ```powershell
+   New-Item -ItemType Directory C:\servyou-drill | Out-Null
+   cd C:\servyou-drill
    npx supabase@3.1.0 init
    npx supabase@3.1.0 start -x realtime,imgproxy,kong,mailpit,postgrest,postgres-meta,studio,edge-runtime,logflare,vector,supavisor
    ```
@@ -469,10 +560,11 @@ re-create what "Not in a bundle" lists.
    ~$0.32/day — **destroy it when done**).
 3. Restore, in Supabase's documented order, in one transaction that stops at the first error.
    The job has already made the file edits Supabase's guide lists, so the files restore as they
-   are. `docker ps` shows the database container's name (`supabase_db_<folder name>`):
+   are. The database container is `supabase_db_servyou-drill`, named after the folder; `docker
+   ps` confirms the name.
    ```powershell
-   docker cp .\bundle supabase_db_<name>:/tmp/bundle
-   docker exec -e PGPASSWORD=postgres supabase_db_<name> psql -h localhost -U postgres -d postgres `
+   docker cp C:\servyou-restore\bundle supabase_db_servyou-drill:/tmp/bundle
+   docker exec -e PGPASSWORD=postgres supabase_db_servyou-drill psql -h localhost -U postgres -d postgres `
      --single-transaction -v ON_ERROR_STOP=1 `
      -c "create extension if not exists pg_cron with schema pg_catalog" `
      -f /tmp/bundle/roles.sql -f /tmp/bundle/schema.sql `
@@ -481,14 +573,14 @@ re-create what "Not in a bundle" lists.
    ```
 4. Verify the schema: the expected public tables (32 today) are there.
    ```powershell
-   docker exec -e PGPASSWORD=postgres supabase_db_<name> psql -h localhost -U postgres -c "\dt public.*"
+   docker exec -e PGPASSWORD=postgres supabase_db_servyou-drill psql -h localhost -U postgres -c "\dt public.*"
    ```
 5. Verify the data: run the bundle's count query against the restored database and compare it
    with the counts taken at dump time. `counts.sql` also counts the triggers and policies from
    `extras.sql`.
    ```powershell
-   docker exec -e PGPASSWORD=postgres supabase_db_<name> psql -h localhost -U postgres -At -F "`t" -f /tmp/bundle/counts.sql > restored-counts.tsv
-   Compare-Object (Get-Content .\bundle\counts.tsv) (Get-Content .\restored-counts.tsv)
+   docker exec -e PGPASSWORD=postgres supabase_db_servyou-drill psql -h localhost -U postgres -At -F "`t" -f /tmp/bundle/counts.sql > C:\servyou-restore\restored-counts.tsv
+   Compare-Object (Get-Content C:\servyou-restore\bundle\counts.tsv) (Get-Content C:\servyou-restore\restored-counts.tsv)
    ```
    No output means every count matches. This replaces the old « run `npm run rls-smoke` »
    step: CLAUDE.md forbids that script, because it deletes every test-domain user on
@@ -497,9 +589,15 @@ re-create what "Not in a bundle" lists.
 7. Capture timing: how long from "I need to restore" to "verified working schema"?
 8. Update the verification log with the date, outcome, and any issues found — **we want to
    find issues during drills, not incidents.**
-9. Destroy the throwaway database and the plaintext:
-   - `npx supabase@3.1.0 stop --no-backup` (or `delete_branch`);
-   - then `Remove-Item -Recurse -Force C:\servyou-restore`.
+9. Destroy the throwaway database and the plaintext. `stop` must run from the drill folder,
+   or it leaves the stack and its data volume running.
+   ```powershell
+   cd C:\servyou-drill
+   npx supabase@3.1.0 stop --no-backup
+   cd C:\
+   Remove-Item -Recurse -Force C:\servyou-drill, C:\servyou-restore
+   ```
+   On a Supabase branch, use `delete_branch` instead.
 
 ### Verification log
 
@@ -507,5 +605,6 @@ re-create what "Not in a bundle" lists.
 |------|------|---------|------------|-------|
 | 2026-06-09 | Runbook authored | — | — | Pre-launch documentation. Org confirmed on Supabase **Free** plan; Pro upgrade + first verified restore drill scheduled for the week before launch. |
 | 2026-11-13 | Nightly backup: read-only role | Applied | — | `servyou_backup` (migration #133, PR #367). The private repo, the first nightly run and the first drill follow the founder's setup steps. |
+| 2026-11-13 | Nightly backup: founder setup, group A | Done | — | age key in `C:\servyou-keys` (owner-only) with 2 offline copies; B2 EU Central with 2FA; bucket `servyou-backups-eu` (Object Lock, SSE-B2, the 2 lifecycle rules, no default retention yet); private repo created; `AGE_RECIPIENT` set; failure emails on. Next: group B (governance + upload key). |
 
 Append a new row for each future verification.
