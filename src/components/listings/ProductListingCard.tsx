@@ -29,7 +29,16 @@ export type ProductListing = {
 // row of bold price + a black circular CTA. The heart is a sibling of the Link, so it
 // never navigates; the rest of the card — including the CTA — links to the detail page
 // (/produits/[id], which 404s until that route is rebuilt).
-export function ProductListingCard({ product }: { product: ProductListing }) {
+// `loading` / `fetchPriority` go straight to the cover; ListingResults sets them on its first-screen cards only (first-screen.ts).
+export function ProductListingCard({
+  product,
+  loading,
+  fetchPriority,
+}: {
+  product: ProductListing
+  loading?: 'eager' | 'lazy'
+  fetchPriority?: 'high' | 'low' | 'auto'
+}) {
   const lang = useLang()
   const meta = [product.shop.name, product.shop.city].filter(Boolean).join(' · ')
 
@@ -44,6 +53,8 @@ export function ProductListingCard({ product }: { product: ProductListing }) {
               alt={product.title}
               fill
               sizes="(max-width: 639px) 100vw, (max-width: 1023px) 50vw, 25vw"
+              loading={loading}
+              fetchPriority={fetchPriority}
               className="object-cover"
             />
           ) : (

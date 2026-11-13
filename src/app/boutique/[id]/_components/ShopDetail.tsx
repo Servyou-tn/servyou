@@ -73,7 +73,10 @@ export function ShopDetail({
       <div className="relative flex flex-col items-start rounded-card border border-border-subtle bg-surface-base max-lg:-mx-4 max-lg:-mt-6 max-lg:rounded-none max-lg:border-0 md:max-lg:-mx-8 md:max-lg:-mt-8">
         <div className="relative h-[200px] w-full shrink-0 overflow-hidden rounded-t-xl max-lg:h-[120px] max-lg:rounded-none">
           {shop.bannerUrl ? (
-            <Image src={shop.bannerUrl} alt="" fill sizes="(max-width: 1279px) 100vw, 1120px" className="object-cover" />
+            // The banner is this page's LCP: loaded at once and first, not lazily (speed PR perf/first-screen). `loading` +
+            // `fetchPriority` rather than Next 16's `preload` (the renamed `priority`): the <img> is in the first HTML, so the
+            // browser finds it as early as a head preload, and the request goes out at high priority from the start.
+            <Image src={shop.bannerUrl} alt="" fill sizes="(max-width: 1279px) 100vw, 1120px" loading="eager" fetchPriority="high" className="object-cover" />
           ) : (
             <div className="size-full bg-gradient-to-r from-[#5b57f2] to-brand-blue-600" />
           )}
