@@ -78,8 +78,9 @@ export function RoleShowcase({ role, lang }: { role: Role; lang: Lang }) {
   // the old ones mixes in. The dashboards keep 2160 px, at WebP q85. The phone mock-ups keep their 3x
   // size (1062×2004), at q90, but are FLATTENED onto the band they sit on: freelances on surface-subtle
   // #F8FAFC, boutiques on surface-base #FFFFFF. The see-through drop shadow alone cost ~290 KB of 388.
-  // On the band they draw the same pixels. If a band colour ever changes, re-flatten these 4 files onto
-  // the new colour, or the mock-up shows as a box.
+  // On the band they draw the same pixels to within 1/255 (lossy WebP rounds #F8FAFC to 249,251,252),
+  // which is invisible. If a band colour ever changes, re-flatten these 4 files onto the new colour, or
+  // the mock-up shows as a box.
   const s = c.shot
   const desktopShot = (
     <div

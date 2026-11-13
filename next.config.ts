@@ -83,8 +83,9 @@ const nextConfig: NextConfig = {
     // up to 64, an 8px over-fetch that costs one fewer cache key than keeping 48.
     //
     // 384 is back (speed PR-2, founder pick 3) for the 2-up product card grids on phones: every
-    // `sizes` with a vw term lists it too, so a `50vw` card at DPR <= 2 (375 x 2, Lighthouse's
-    // 412 x 1.75) gets 384 instead of jumping to the first deviceSize, 640. DPR-3 phones still get 640.
+    // `sizes` with a vw term lists it too, so a `50vw` card gets 384 instead of jumping to the first
+    // deviceSize, 640, whenever half the screen width x DPR <= 384 (375 x 2, 360 x 2, Lighthouse's
+    // 412 x 1.75). 390 x 2, 412 x 2 and every DPR-3 phone still get 640.
     // It also lets 3x phones take 384 rather than 640 for the 110px hero photos and the 120/128px
     // avatars and logos. Cost: at most one more cache key -- one transformation under the 1-year TTL
     // above -- per remote image that a phone shows in a 2-up grid.
