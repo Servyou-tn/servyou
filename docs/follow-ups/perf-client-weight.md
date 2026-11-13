@@ -1,21 +1,15 @@
 # Speed PR-1 — client weight (`perf/client-weight`, 2026-11-13)
 
-## 1. MEDIUM — the Supabase browser client is in every public page's first load (pick 6, left out)
+## 1. MEDIUM — the Supabase browser client is still in the first load of the 7 pages with a favourite heart (pick 6, option B open)
 
-- **What:** `@supabase/*` is about 60 KB per page by the analyzer's estimate (roughly 40–45 KB gzip), on all 18 public pages.
-  - On 7 pages `FavoriteButton` needs it at load: its mount effect calls `auth.getUser()` and reads the favourite. Those are `/marche/produits`, `/marche/services`, `/categories/[slug]`, `/freelance/[id]`, `/boutique/[id]`, `/produits/[id]` and `/services/[id]`.
-  - On the other 11 (home, the 3 `devenir-vendeur` pages, the 7 marketing pages) only the language switch uses it, on click: `LanguageToggle` and `useLangSwitch` write `profiles.language` for a signed-in viewer.
-- **Why deferred:** the brief allowed pick 6 only if nothing on a public page needs the client at load, and `FavoriteButton` does.
-- **Where it lives:**
-  - `src/components/FavoriteButton.tsx` (the mount effect);
-  - `src/components/layout/LanguageToggle.tsx` and `src/components/landing/useLangSwitch.ts` (the click handlers);
-  - `src/lib/supabase/client.ts`.
-- **Trigger:** the founder's choice, Decision 2 in PR #366:
-  - **(A)** `await import('@/lib/supabase/client')` inside the two click handlers: about −40 KB on the 11 pages;
-  - **(B)** also inside `FavoriteButton`'s mount effect, which takes it off all 18 pages. The heart already starts in a loading state, so its filled state comes slightly later;
-  - **(C)** keep it as it is.
+- **What:** the Supabase browser client (`@supabase/ssr` + `supabase-js`) is one 61.7 KB gzip chunk.
+  - **Done in PR #366 (architect, option A):** `LanguageToggle` and `useLangSwitch` load it on click, so it left the first load of the 11 pages without a heart: home, the 3 `devenir-vendeur` pages and the 7 marketing pages. Those pages lost about 62 KB each.
+  - **Still at load on 7 pages:** `FavoriteButton`'s mount effect calls `auth.getUser()` and reads the favourite. Those are `/marche/produits`, `/marche/services`, `/categories/[slug]`, `/freelance/[id]`, `/boutique/[id]`, `/produits/[id]` and `/services/[id]`. Since option A the client sits in its own chunk there, which costs them about +0.3 KB.
+- **Why deferred:** the architect chose A only; the heart pages stay as they are.
+- **Where it lives:** `src/components/FavoriteButton.tsx` (the mount effect) and `src/lib/supabase/client.ts`.
+- **Trigger:** a later speed PR that wants about −60 KB on the 7 heart pages. Do (B): `await import('@/lib/supabase/client')` inside `FavoriteButton`'s mount effect. The heart already starts in a loading state, so only its filled state would come slightly later. Lower those 7 budgets in the same PR.
 
-## 2. LOW — local Lighthouse cannot be trusted on image pages on this machine
+## 2. LOW — local Lighthouse on this machine: image pages break (NAT64) and TBT is noisy
 
 - **What:** the dev PC's DNS sometimes resolves `xggomcitqrkaylqezjjz.supabase.co` to NAT64 addresses (`64:ff9b::…`). Next's image optimiser then refuses the upstream as a private IP (`"url" parameter is not allowed`, 400; the server log says `hostname resolved to private IP`).
   - When it happens, the product images never load. The LCP element falls back to the cookie-banner text and the page scores better than it really is.
@@ -25,6 +19,10 @@
 - **Trigger:** PR-2 (images) measures image pages.
   - Before each Lighthouse batch, check that no `/_next/image` request returns 400.
   - Or measure the image pages on the Vercel preview.
+- **Same machine, second problem: TBT is noisy here.** The dev PC carries 50–60% background CPU (editor, MCP servers, antivirus), and Lighthouse's simulated throttling multiplies real CPU time.
+  - Home's TBT ranged 1005–2153 ms over 6 runs of one build.
+  - The swing is in style & layout (0.8–2.3 s per run on every build). Script evaluation stays steady, so check `mainthread-work-breakdown` before reading a TBT change as a JS change.
+  - For PR-2/PR-3: run more than 3 runs, or measure on a quiet machine.
 
 ## 3. LOW — browser Sentry events from previews are labelled `production`
 

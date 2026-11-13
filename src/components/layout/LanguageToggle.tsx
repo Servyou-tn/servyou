@@ -2,7 +2,6 @@
 
 import { useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
 import { cn } from '@/lib/utils'
 import { useLang } from '@/components/LangProvider'
 import { t, LANG_COOKIE, LANGS, type Lang } from '@/lib/i18n'
@@ -30,6 +29,10 @@ export function LanguageToggle() {
     startTransition(() => router.refresh())
 
     void (async () => {
+      // Loaded on click, not with the page (speed PR-1, pick 6 option A): on pages without a favourite heart this toggle is
+      // the only user of the Supabase browser client, so it stays out of their first load. Where FavoriteButton is on the
+      // page, the module is already loaded and this resolves at once.
+      const { createClient } = await import('@/lib/supabase/client')
       const supabase = createClient()
       const { data: { user } } = await supabase.auth.getUser()
       if (user) {
