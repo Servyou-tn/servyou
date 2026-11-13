@@ -183,8 +183,8 @@ describe.skipIf(!hasCreds)('get_contact_phone: relationship-gated access', () =>
         .rpc('get_contact_phone', { target: consumer.id })
       expect(error).toBeNull()
       expect(phone).toBeNull()
-      // The phone exists: the NULL above is the rule, not a missing fixture.
-      const { data: seeded, error: seededErr } = await admin
+      // The phone exists: the NULL above is the rule, not a missing fixture (the client reads their own row).
+      const { data: seeded, error: seededErr } = await clientConsumer
         .from('profiles').select('phone').eq('id', consumer.id).single()
       expect(seededErr).toBeNull()
       expect(seeded?.phone).toBe(CONSUMER_PHONE)
