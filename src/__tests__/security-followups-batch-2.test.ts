@@ -339,6 +339,8 @@ describe.skipIf(!hasCreds)('get_contact_phone — no unlock through a moderated 
   // order reveals the buyer to the seller from « pending » on, and the seller to the buyer only once accepted (the
   // fixture order is still pending). Each NULL is paired with the opposite direction returning the phone, so it is the
   // rule, not a function that always returns NULL; every phone it hides is seeded (updateProfile throws otherwise).
+  // The suspension and moderation tests run on a direction that DOES reveal the phone, and prove it in the same test
+  // before the suspension or the moderation turns it to NULL — a direction that is NULL by the rule proves nothing.
   it('control (mission): the responder does not read the poster’s phone; the poster reads the responder’s', async () => {
     expect(await phoneOf(responderClient, posterId)).toBeNull()
     expect(await phoneOf(posterClient, responderId)).toBe(responderPhone)
@@ -349,22 +351,24 @@ describe.skipIf(!hasCreds)('get_contact_phone — no unlock through a moderated 
     expect(await phoneOf(sellerClient, buyerId)).toBe(buyerPhone)
   })
 
-  it('the poster suspended: the responder no longer reads their phone (and vice versa)', async () => {
+  it('the poster suspended: the poster no longer reads the responder’s phone through the mission', async () => {
+    expect(await phoneOf(posterClient, responderId)).toBe(responderPhone)
     await whileSuspended(posterId, async () => {
-      expect(await phoneOf(responderClient, posterId)).toBeNull()
       expect(await phoneOf(posterClient, responderId)).toBeNull()
     })
   })
 
-  it('the seller suspended: the past buyer no longer reads their phone (orders branch)', async () => {
+  it('the seller suspended: the seller no longer reads the buyer’s phone (orders branch)', async () => {
+    expect(await phoneOf(sellerClient, buyerId)).toBe(buyerPhone)
     await whileSuspended(sellerId, async () => {
-      expect(await phoneOf(buyerClient, sellerId)).toBeNull()
+      expect(await phoneOf(sellerClient, buyerId)).toBeNull()
     })
   })
 
-  it('the post moderated: neither side unlocks the other through it', async () => {
+  // Last in this describe: the post stays moderated.
+  it('the post moderated: the poster no longer reads the responder’s phone through it', async () => {
+    expect(await phoneOf(posterClient, responderId)).toBe(responderPhone)
     await hide('job_post', postId)
-    expect(await phoneOf(responderClient, posterId)).toBeNull()
     expect(await phoneOf(posterClient, responderId)).toBeNull()
   })
 })

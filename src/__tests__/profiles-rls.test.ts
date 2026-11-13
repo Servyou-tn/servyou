@@ -61,7 +61,8 @@ async function createUser(phone?: string): Promise<{ id: string; email: string; 
   if (error || !data.user) throw new Error(`createUser: ${error?.message}`)
   testUserIds.push(data.user.id)
   if (phone) {
-    await admin.from('profiles').update({ phone }).eq('id', data.user.id)
+    const { error: phoneErr } = await admin.from('profiles').update({ phone }).eq('id', data.user.id)
+    if (phoneErr) throw new Error(`phone seed failed: ${phoneErr.message}`)
   }
   return { id: data.user.id, email, password }
 }
@@ -89,14 +90,32 @@ beforeAll(async () => {
   clientFreelancer = await signIn(freelancer.email)
 }, 60000)
 
+// Every step runs even when an earlier one fails (one failed delete must not leave the other users behind); the errors
+// are collected and thrown together, then this run's own rows are counted: anything left fails the suite.
 afterAll(async () => {
   if (!hasCreds) return
+  const failures: string[] = []
   if (testPostIds.length > 0) {
-    await admin.from('job_responses').delete().in('job_post_id', testPostIds)
-    await admin.from('job_posts').delete().in('id', testPostIds)
+    const { error: responsesErr } = await admin.from('job_responses').delete().in('job_post_id', testPostIds)
+    if (responsesErr) failures.push(`job_responses cleanup: ${responsesErr.message}`)
+    const { error: postsErr } = await admin.from('job_posts').delete().in('id', testPostIds)
+    if (postsErr) failures.push(`job_posts cleanup: ${postsErr.message}`)
   }
   for (const uid of testUserIds) {
-    await admin.auth.admin.deleteUser(uid)
+    const { error: userErr } = await admin.auth.admin.deleteUser(uid)
+    if (userErr) failures.push(`deleteUser ${uid}: ${userErr.message}`)
+  }
+  if (failures.length > 0) throw new Error(`profiles-rls teardown failed:\n${failures.join('\n')}`)
+
+  const { count: profilesLeft, error: profilesErr } = await admin
+    .from('profiles').select('id', { count: 'exact', head: true }).in('id', testUserIds)
+  if (profilesErr) throw new Error(`cleanup check (profiles) failed: ${profilesErr.message}`)
+  if ((profilesLeft ?? 0) !== 0) throw new Error(`teardown left ${profilesLeft} profiles`)
+  if (testPostIds.length > 0) {
+    const { count: postsLeft, error: postsLeftErr } = await admin
+      .from('job_posts').select('id', { count: 'exact', head: true }).in('id', testPostIds)
+    if (postsLeftErr) throw new Error(`cleanup check (job_posts) failed: ${postsLeftErr.message}`)
+    if ((postsLeft ?? 0) !== 0) throw new Error(`teardown left ${postsLeft} job_posts`)
   }
 }, 60000)
 
