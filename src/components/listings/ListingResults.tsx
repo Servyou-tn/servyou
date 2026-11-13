@@ -5,10 +5,12 @@ import { BlurFade } from '@/components/magicui/blur-fade'
 import { ProductListingCard, type ProductListing } from './ProductListingCard'
 import { ProductBrowseCard } from '@/components/produits/ProductBrowseCard'
 import { ServiceListingCard, type ServiceListing } from './ServiceListingCard'
+import { FIRST_SCREEN, coverLoading, entrance } from './first-screen'
 
 // Client wrapper that renders the right card type with a staggered, reduced-motion-
 // aware BlurFade entrance (the entrance lives here, not in the cards, so the cards
-// stay pure presenters).
+// stay pure presenters). In every grid below, the FIRST SCREEN's cards skip the entrance and load
+// their cover at once (first-screen.ts); the rail keeps its on-mount fade (it sits below D2's fold).
 type Props =
   // `look="browse"`: the marketplace card (ProductBrowseCard) on C1's ramp — 2 per row below `sm` (165 wide, 13 across,
   // 12 down), 4 from lg. /recherche only (founder ruling PR-2b: its frames 1596:41289 / 1596:42384 draw that card, 2-up at 375).
@@ -47,7 +49,7 @@ export function ListingResults(props: Props) {
       // /categories/[slug] and the consumer homepage, which all gain the tighter mobile stack.
       <div className={`grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 ${props.gap === 'tight' ? '' : 'sm:gap-6'}`}>
         {props.items.map((s, i) => (
-          <BlurFade key={s.id} delay={i * 0.05} duration={0.2} {...fade} inView>
+          <BlurFade key={s.id} delay={i * 0.05} duration={0.2} {...fade} {...entrance(i, FIRST_SCREEN.service)}>
             <ServiceListingCard service={s} />
           </BlurFade>
         ))}
@@ -60,8 +62,8 @@ export function ListingResults(props: Props) {
       // Same classes as marche/produits' ProductBrowseGrid (C1's measured ramp).
       <div className="grid grid-cols-2 gap-x-[13px] gap-y-3 sm:gap-4 lg:grid-cols-4">
         {props.items.map((p, i) => (
-          <BlurFade key={p.id} delay={i * 0.05} duration={0.2} {...fade} inView>
-            <ProductBrowseCard product={p} sizes="(max-width: 1023px) 50vw, 25vw" />
+          <BlurFade key={p.id} delay={i * 0.05} duration={0.2} {...fade} {...entrance(i, FIRST_SCREEN.product)}>
+            <ProductBrowseCard product={p} sizes="(max-width: 1023px) 50vw, 25vw" {...coverLoading(i, FIRST_SCREEN.product)} />
           </BlurFade>
         ))}
       </div>
@@ -71,8 +73,8 @@ export function ListingResults(props: Props) {
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
       {props.items.map((p, i) => (
-        <BlurFade key={p.id} delay={i * 0.05} duration={0.2} {...fade} inView>
-          <ProductListingCard product={p} />
+        <BlurFade key={p.id} delay={i * 0.05} duration={0.2} {...fade} {...entrance(i, FIRST_SCREEN.product)}>
+          <ProductListingCard product={p} {...coverLoading(i, FIRST_SCREEN.product)} />
         </BlurFade>
       ))}
     </div>

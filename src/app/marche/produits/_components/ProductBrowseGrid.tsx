@@ -2,6 +2,7 @@
 
 import { useReducedMotion } from 'motion/react'
 import { BlurFade } from '@/components/magicui/blur-fade'
+import { FIRST_SCREEN, coverLoading, entrance } from '@/components/listings/first-screen'
 import { ProductBrowseCard } from '@/components/produits/ProductBrowseCard'
 import type { ProductListing } from '@/components/listings/ProductListingCard'
 
@@ -19,7 +20,7 @@ import type { ProductListing } from '@/components/listings/ProductListingCard'
 // three-surface blast radius the card fork was chosen to avoid.
 //
 // Client-only for the staggered reduced-motion-aware entrance, matching the services surface. The
-// cards stay pure presenters.
+// cards stay pure presenters. The first screen's cards skip it and load their cover at once (first-screen.ts).
 export function ProductBrowseGrid({ items }: { items: ProductListing[] }) {
   const reduce = useReducedMotion()
   const fade = { offset: reduce ? 0 : 6, blur: reduce ? '0px' : '6px' }
@@ -28,8 +29,8 @@ export function ProductBrowseGrid({ items }: { items: ProductListing[] }) {
     // Below `sm` the 375 frame (m375-c1-produits) lays the cards 2 per row: 165 wide, 13 across, 12 down (a measured quirk — 3 rows + 2 gaps = 1143).
     <div className="grid grid-cols-2 gap-x-[13px] gap-y-3 sm:gap-4 lg:grid-cols-4">
       {items.map((p, i) => (
-        <BlurFade key={p.id} delay={i * 0.05} duration={0.2} {...fade} inView>
-          <ProductBrowseCard product={p} sizes="(max-width: 1023px) 50vw, 25vw" />
+        <BlurFade key={p.id} delay={i * 0.05} duration={0.2} {...fade} {...entrance(i, FIRST_SCREEN.product)}>
+          <ProductBrowseCard product={p} sizes="(max-width: 1023px) 50vw, 25vw" {...coverLoading(i, FIRST_SCREEN.product)} />
         </BlurFade>
       ))}
     </div>

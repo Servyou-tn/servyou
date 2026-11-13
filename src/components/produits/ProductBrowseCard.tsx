@@ -28,7 +28,18 @@ import { localName } from '@/lib/i18n/local-name'
 // two across from 375 and says so.
 const DEFAULT_SIZES = '(max-width: 639px) 100vw, (max-width: 1023px) 50vw, 25vw'
 
-export function ProductBrowseCard({ product, sizes = DEFAULT_SIZES }: { product: ProductListing; sizes?: string }) {
+// `loading` / `fetchPriority` go straight to the cover; a grid sets them on its first-screen cards only (listings/first-screen.ts).
+export function ProductBrowseCard({
+  product,
+  sizes = DEFAULT_SIZES,
+  loading,
+  fetchPriority,
+}: {
+  product: ProductListing
+  sizes?: string
+  loading?: 'eager' | 'lazy'
+  fetchPriority?: 'high' | 'low' | 'auto'
+}) {
   const lang = useLang()
   const city = product.shop.city?.trim() || null
   const category = product.category ? localName(product.category, lang) : null
@@ -55,6 +66,8 @@ export function ProductBrowseCard({ product, sizes = DEFAULT_SIZES }: { product:
             src={product.image_url}
             alt={product.title}
             sizes={sizes}
+            loading={loading}
+            fetchPriority={fetchPriority}
           />
 
           {/* Shop badge — top-END in the frame, which is the side the heart does NOT take. */}
