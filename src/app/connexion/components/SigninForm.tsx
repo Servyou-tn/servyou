@@ -10,6 +10,7 @@ import { isValidEmail } from '@/lib/signup-validation'
 import { resolveSignInDestination } from '@/lib/internal-path'
 import { SpinnerIcon, GoogleIcon, CheckCircleIcon } from '@/components/auth/Icons'
 import { PasswordField } from '@/components/auth/PasswordField'
+import { concealPasswords } from '@/components/ui/password-reveal'
 import { display, labelClass, errorClass, inputBase, primaryBtn } from '@/components/auth/field-styles'
 import { FOCUS_RING } from '@/components/layout/styles'
 import { SuspendedBanner } from './SuspendedBanner'
@@ -47,7 +48,7 @@ export function SigninForm({ showResetSuccess = false }: { showResetSuccess?: bo
     return () => clearTimeout(id)
   }, [showResetBanner])
 
-  async function handleSubmit(ev: FormEvent) {
+  async function handleSubmit(ev: FormEvent<HTMLFormElement>) {
     ev.preventDefault()
     setFormError('')
     setSuspended(false)
@@ -59,6 +60,8 @@ export function SigninForm({ showResetSuccess = false }: { showResetSuccess?: bo
       return
     }
 
+    // The checks passed: the form really sends, so the password goes back to hidden now (never on a blocked submit).
+    concealPasswords(ev.currentTarget)
     setLoading(true)
     try {
       // Turnstile token for Supabase Auth's own CAPTCHA check (verified by Supabase once CAPTCHA protection is

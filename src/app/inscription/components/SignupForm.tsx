@@ -12,6 +12,7 @@ import { computeAge, isValidEmail, isValidPassword } from '@/lib/signup-validati
 import { verifyEmailRedirectUrl } from '@/lib/auth/email-redirect'
 import { CheckIcon, SpinnerIcon, GoogleIcon } from '@/components/auth/Icons'
 import { PasswordField } from '@/components/auth/PasswordField'
+import { concealPasswords } from '@/components/ui/password-reveal'
 import { display, labelClass, helpClass, errorClass, inputBase, primaryBtn } from '@/components/auth/field-styles'
 import { FOCUS_RING } from '@/components/layout/styles'
 import { Turnstile, type TurnstileHandle } from '@/components/security/Turnstile'
@@ -126,7 +127,7 @@ export function SignupForm({ role, next = null }: { role: SignupRole; /** The fu
     if (first) document.getElementById(first)?.focus()
   }
 
-  async function handleSubmit(ev: FormEvent) {
+  async function handleSubmit(ev: FormEvent<HTMLFormElement>) {
     ev.preventDefault()
     setFormError('')
     const errs = validate()
@@ -135,6 +136,8 @@ export function SignupForm({ role, next = null }: { role: SignupRole; /** The fu
       focusFirstError(errs)
       return
     }
+    // The checks passed: the form really sends, so the password goes back to hidden now (never on a blocked submit).
+    concealPasswords(ev.currentTarget)
     setFieldErrors({})
     setLoading(true)
 

@@ -126,6 +126,53 @@ describe('NewPasswordForm — the reset sends only the new password', () => {
   })
 })
 
+// #364, Moatez's rule: the eye stays as the person set it. The only automatic change is hiding when the form REALLY sends
+// (after the checks passed, right before the request goes out); a submit a check stops leaves every field as it was.
+describe('NewPasswordForm — the eye: back to hidden only when the form really sends', () => {
+  const SHOW = t('signup.form.fields.password.toggleShow', 'fr')
+  const HIDE = t('signup.form.fields.password.toggleHide', 'fr')
+  const newField = () => screen.getByLabelText(t('newPassword.fields.password.label', 'fr')) as HTMLInputElement
+  const confirmField = () => screen.getByLabelText(t('newPassword.fields.confirmPassword.label', 'fr')) as HTMLInputElement
+
+  function openWithBothRevealed(password: string, confirmation: string) {
+    render(<NewPasswordForm initialView="checking" />)
+    emit('PASSWORD_RECOVERY', 'user-1')
+    fireEvent.change(newField(), { target: { value: password } })
+    fireEvent.change(confirmField(), { target: { value: confirmation } })
+    for (const eye of screen.getAllByRole('button', { name: SHOW })) fireEvent.click(eye)
+    expect(newField()).toHaveAttribute('type', 'text')
+    expect(confirmField()).toHaveAttribute('type', 'text')
+  }
+
+  it('a real send: both fields are already hidden when the request goes out', async () => {
+    openWithBothRevealed('NewPass456', 'NewPass456')
+    let typesAtRequest: string[] = []
+    h.updateUser.mockImplementation(async () => {
+      typesAtRequest = [newField().type, confirmField().type]
+      return { error: null }
+    })
+    await act(async () => {
+      fireEvent.click(passwordField()!)
+    })
+    expect(h.updateUser).toHaveBeenCalledTimes(1)
+    expect(typesAtRequest).toEqual(['password', 'password'])
+    expect(screen.getAllByRole('button', { name: SHOW })).toHaveLength(2)
+  })
+
+  it('a submit our check stops (confirmation mismatch): both fields stay revealed, nothing is sent', async () => {
+    openWithBothRevealed('NewPass456', 'NewPass457')
+    await act(async () => {
+      fireEvent.keyDown(confirmField(), { key: 'Enter' })
+      fireEvent.click(passwordField()!)
+    })
+    expect(screen.getByText(t('newPassword.errors.mismatch', 'fr'))).toBeInTheDocument()
+    expect(h.updateUser).not.toHaveBeenCalled()
+    expect(newField()).toHaveAttribute('type', 'text')
+    expect(confirmField()).toHaveAttribute('type', 'text')
+    expect(screen.getAllByRole('button', { name: HIDE })).toHaveLength(2)
+  })
+})
+
 describe('NewPasswordForm — expired link (?error_code=otp_expired)', () => {
   it('shows « Lien expiré, demandez-en un nouveau » with the request-new link, no form', () => {
     render(<NewPasswordForm initialView="expired" />)
