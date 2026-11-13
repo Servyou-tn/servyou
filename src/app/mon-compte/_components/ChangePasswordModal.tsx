@@ -4,6 +4,7 @@ import { useRef, useState, useTransition, type FormEvent } from 'react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { PasswordInput } from '@/components/ui/password-input'
+import { concealPasswords } from '@/components/ui/password-reveal'
 import { changePasswordAction } from '@/app/mon-compte/actions'
 import { isValidPassword } from '@/lib/signup-validation'
 import { t, type Lang } from '@/lib/i18n'
@@ -28,7 +29,7 @@ export function ChangePasswordModal({ lang, onClose }: { lang: Lang; onClose: ()
 
   const say = (e: FieldError | null) => (e ? ('key' in e ? t(e.key, lang) : e.text) : undefined)
 
-  function submit(ev: FormEvent) {
+  function submit(ev: FormEvent<HTMLFormElement>) {
     ev.preventDefault()
     setCurrentError(null)
     setNextError(null)
@@ -50,6 +51,8 @@ export function ChangePasswordModal({ lang, onClose }: { lang: Lang; onClose: ()
     }
     if (bad) return
 
+    // The checks passed: the form really sends, so the 3 fields go back to hidden now (never on a blocked submit).
+    concealPasswords(ev.currentTarget)
     startTransition(async () => {
       const turnstileToken = await turnstile.current?.getToken()
       const res = await changePasswordAction({ currentPassword: current, newPassword: next }, turnstileToken)

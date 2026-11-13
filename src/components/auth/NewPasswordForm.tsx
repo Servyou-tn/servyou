@@ -9,6 +9,7 @@ import { t } from '@/lib/i18n'
 import { isValidPassword } from '@/lib/signup-validation'
 import { AlertCircleIcon, SpinnerIcon } from '@/components/auth/Icons'
 import { PasswordField } from '@/components/auth/PasswordField'
+import { concealPasswords } from '@/components/ui/password-reveal'
 import { AuthShell } from '@/components/auth/AuthShell'
 import { display, primaryBtn } from '@/components/auth/field-styles'
 
@@ -125,7 +126,7 @@ export function NewPasswordForm({
     }
   }
 
-  async function handleSubmit(ev: FormEvent) {
+  async function handleSubmit(ev: FormEvent<HTMLFormElement>) {
     ev.preventDefault()
     setPasswordError('')
     setConfirmError('')
@@ -141,6 +142,8 @@ export function NewPasswordForm({
     }
     if (bad) return
 
+    // The checks passed: the form really sends, so both fields go back to hidden now (never on a blocked submit).
+    concealPasswords(ev.currentTarget)
     setLoading(true)
     try {
       const { error } = await supabase.auth.updateUser({ password })

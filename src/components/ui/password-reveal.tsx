@@ -18,12 +18,24 @@ import { FOCUS_RING } from '@/components/layout/styles'
  *  autocorrect it, and the browser must not send it to a cloud spellchecker. */
 export const PASSWORD_INPUT_ATTRS = { spellCheck: false, autoCapitalize: 'off', autoCorrect: 'off' } as const
 
+const CONCEAL_EVENT = 'servyou:conceal-passwords'
+
 /**
- * The reveal state of one password field. The field goes back to hidden when its form is submitted, so the browser never
- * records the password as an ordinary text value (autofill history). The switch is made directly on the element,
- * synchronously, when a submission starts — Enter in a field (implicit submit), a click on a submit control inside the
- * form, and the submit event itself (which also covers a submit control outside the form, `form="…"`) — so it is
- * already `type="password"` whichever moment the browser reads the form at, and before React re-renders.
+ * Puts every password field of `form` back to hidden. A form calls it once it REALLY sends: after its own checks
+ * (isValidPassword, the confirmation match, …) passed, right before the request goes out — so the browser never records
+ * the password as an ordinary text value. A submit that any check stops never calls it, and every field stays exactly as
+ * the person left it (Moatez's rule, like every familiar app). The browser's own required / minLength checks need
+ * nothing extra: when they fail, the submit event never fires, so the form's handler — and this call — never runs.
+ * Synchronous: when it returns, every field is already `type="password"`, before React re-renders.
+ */
+export function concealPasswords(form: HTMLFormElement): void {
+  form.dispatchEvent(new Event(CONCEAL_EVENT))
+}
+
+/**
+ * The reveal state of one password field. It changes only when the person presses the eye, and when the form calls
+ * concealPasswords (a real send). The switch is written on the element too (not only React state), so the field is
+ * hidden the moment concealPasswords returns.
  *
  * The form is found through the eye button (`button.form`), then the input by id INSIDE that form: two forms on a page
  * that reuse the same input id can never bind to each other's field.
@@ -44,21 +56,8 @@ export function usePasswordReveal(inputId: string): {
       input.type = 'password'
       setShown(false)
     }
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Enter' && !e.isComposing && e.target instanceof HTMLInputElement) hide()
-    }
-    const onClick = (e: MouseEvent) => {
-      const control = e.target instanceof Element ? e.target.closest('button, input') : null
-      if ((control instanceof HTMLButtonElement || control instanceof HTMLInputElement) && control.type === 'submit') hide()
-    }
-    form.addEventListener('keydown', onKeyDown, true)
-    form.addEventListener('click', onClick, true)
-    form.addEventListener('submit', hide, true)
-    return () => {
-      form.removeEventListener('keydown', onKeyDown, true)
-      form.removeEventListener('click', onClick, true)
-      form.removeEventListener('submit', hide, true)
-    }
+    form.addEventListener(CONCEAL_EVENT, hide)
+    return () => form.removeEventListener(CONCEAL_EVENT, hide)
   }, [inputId])
 
   return { shown, toggle: () => setShown((s) => !s), buttonRef }

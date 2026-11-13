@@ -12,7 +12,8 @@ import { labelClass, helpClass, errorClass, inputBase } from './field-styles'
 // signup.form.fields.password.* strings (label/helper/error come in as already-
 // translated props). Markup matches the original SignupForm password field verbatim.
 // The eye is the shared PasswordRevealButton (src/components/ui/password-reveal.tsx): hidden by default, back to hidden
-// when the form submits, aria-controls → the input, no aria-pressed. Same 48 px box at the field's end as before.
+// only when the form really sends (it calls concealPasswords), aria-controls → the input, no aria-pressed. Same 48 px
+// box at the field's end as before.
 export function PasswordField({
   id,
   label,
