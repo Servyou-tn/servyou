@@ -4,7 +4,8 @@ import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 import { getLang } from '@/lib/i18n/server'
 import { t } from '@/lib/i18n'
-import { SetFavoriteInput, TARGET_COLUMN } from '@/lib/favorites/targets'
+import { TARGET_COLUMN } from '@/lib/favorites/targets'
+import { SetFavoriteInput } from '@/lib/favorites/set-favorite-input'
 
 export type SetFavoriteResult = { ok: true } | { ok: false; error: string }
 

@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { SetFavoriteInput, favoriteReturnPath, signInHref } from '@/lib/favorites/targets'
+import { favoriteReturnPath, signInHref } from '@/lib/favorites/targets'
+import { SetFavoriteInput } from '@/lib/favorites/set-favorite-input'
 
 // setFavoriteAction — mocked Supabase only (the live favorites table is covered by notification-prefs-favorites.test.ts).
 const state = {

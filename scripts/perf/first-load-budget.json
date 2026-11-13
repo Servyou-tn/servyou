@@ -1,0 +1,23 @@
+{
+  "_note": "First-load JS budget per public page, KB gzip (scripts/perf/first-load-js.mjs). Set 2026-11-13 by speed PR-1 at the measured size + ~3 KB. Raise one only on purpose, in the PR that adds the weight, and say why there.",
+  "budgetsKb": {
+    "page.tsx": 427,
+    "marche/services/page.tsx": 540,
+    "marche/produits/page.tsx": 539,
+    "devenir-vendeur/page.tsx": 421,
+    "devenir-vendeur/freelance/page.tsx": 422,
+    "devenir-vendeur/boutique/page.tsx": 422,
+    "(marketing)/a-propos/page.tsx": 391,
+    "(marketing)/faq/page.tsx": 392,
+    "(marketing)/contact/page.tsx": 395,
+    "(marketing)/conditions/page.tsx": 391,
+    "(marketing)/confidentialite/page.tsx": 391,
+    "(marketing)/cookies/page.tsx": 391,
+    "(marketing)/accessibilite/page.tsx": 391,
+    "categories/[slug]/page.tsx": 540,
+    "freelance/[id]/page.tsx": 490,
+    "boutique/[id]/page.tsx": 488,
+    "produits/[id]/page.tsx": 490,
+    "services/[id]/page.tsx": 536
+  }
+}
