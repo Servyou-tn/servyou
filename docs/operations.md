@@ -257,10 +257,12 @@ point of failure for misclicks, this is the most likely incident — and the
 
 ### Nightly encrypted backup (PR #367)
 
-> **Status (2026-11-13): planned, NOT live yet.** The read-only role exists (migration #133)
-> and setup group A below is done. The private repo's workflow is not built, so **there is no
-> nightly backup until its first green run**: before any risky change, take the manual
-> `pg_dump` below. Change this line to « live since <date> » after that first green run.
+> **Status (2026-11-14): built, NOT green yet.** The private repo's workflow is merged
+> (servyou-backups PR #1). Run #1 (2026-11-13) dumped, encrypted and uploaded a bundle to B2,
+> then its restore check failed on `roles.sql`; the fix is servyou-backups PR #2. A bundle whose
+> restore check failed is unproven, so **there is no nightly backup until the first green run**:
+> before any risky change, take the manual `pg_dump` below. Change this line to « live since
+> <date> » after that first green run.
 
 Supabase Free keeps no backups, so a scheduled job makes one every night. It runs in the
 **private** repo `Servyou-tn/servyou-backups`, never in this one: this repo is public, and so
@@ -276,6 +278,13 @@ this section is the runbook. Plan approved by the architect on 2026-11-13 (decis
    Backblaze B2 (EU). A second copy is kept for 7 days as an Actions artifact of the private repo.
 4. Restore the bundle into a throwaway Supabase Postgres 17 on the runner, held in memory only,
    and compare the row counts (D4). A mismatch fails the run.
+   - « In memory only »: the throwaway database's data folder is a Docker volume bound to a
+     folder on the runner's tmpfs, with swap off. The CLI treats that empty volume as a new
+     database, and the job then checks that Postgres really wrote its files there.
+   - If the restore fails in `roles.sql` or `schema.sql`, which hold no rows, the log names the
+     failed statement's first line. It never prints anything from `data.sql`.
+5. If a Storage file had to be skipped (step 2), fail the run at the end, once the bundle is safe
+   in B2.
 
 **What a bundle holds:** one file per night, `servyou-YYYY-MM-DD.tar.gz.age`. It's gzip, not zstd,
 so Windows' built-in `tar` can open it during a drill.
@@ -283,31 +292,50 @@ so Windows' built-in `tar` can open it during a drill.
 - `roles.sql`, `schema.sql`, `data.sql`: Supabase's official three-file backup. It uses the same
   `pg_dumpall` / `pg_dump` flags as `supabase db dump` (CLI 3.1.0), run with a pinned PostgreSQL 17
   client but without the CLI's `--role postgres`, which the read-only role cannot use.
-  - `data.sql` includes `auth.users` and `auth.identities` (with password hashes), the
-    `storage.objects` and `storage.buckets` rows, and `cron.job`.
+  - `roles.sql` creates no role today. It leaves out `servyou_backup`, the backup's own login:
+    backup infrastructure, not app data, and nothing else names it. It also leaves out the
+    settings of Supabase's own roles (`supabase_admin`, …). On Supabase, `postgres` may change the
+    settings of the API roles only, so a restore refuses those lines: run #1 stopped at
+    `ALTER ROLE "supabase_admin" SET "statement_timeout"`. It keeps the API roles' timeouts.
+  - `data.sql` includes `auth.users` and `auth.identities` (with password hashes), and the
+    `storage.objects` and `storage.buckets` rows.
   - It leaves out `auth.sessions` and `auth.refresh_tokens` (D7), so everyone signs in again
-    after a restore.
+    after a restore. `auth.mfa_amr_claims` goes with them: one row per session, with a foreign
+    key to `auth.sessions`.
+  - It also leaves out `cron.job` and `cron.job_run_details`. `postgres` may read `cron.job` but
+    not write it (Supabase manages jobs through `cron.schedule`), so loading it would stop the
+    restore. `extras.sql` recreates the jobs instead; the run history is only logs.
 - `extras.sql`: our own objects inside schemas Supabase manages. The official schema dump skips
   those schemas entirely, so these are generated from the live catalog. Today that means:
   - the 2 triggers on `auth.users`, `on_auth_user_created` and `on_auth_user_email_changed`.
     Without the first, sign-ups after a restore get no profile.
   - the 11 policies on `storage.objects`.
+  - the event trigger `ensure_rls`, which turns RLS on for every new table. The official dump
+    deletes every event trigger.
+  - the pg_cron job `purge-unconfirmed-signups`, through `cron.schedule_in_database`.
 - `migrations.sql`: the applied-migrations history (D2). It's a record to read, not something to
   restore; `db/migrations/` in git holds the same SQL.
 - `files/`: the public buckets (`avatars`, `product-images`, `shop-assets`, `portfolio-media`),
   downloaded from their public URLs.
-  - The run fails as soon as the private `verifications` bucket holds a file (D5). That bucket
-    will then need Storage S3 keys (see `docs/follow-ups/nightly-backup.md`).
-- `counts.tsv` and `counts.sql`: exact row counts of the main tables, taken in the same snapshot
-  as `data.sql`, and the query that produced them.
+  - A file in the private `verifications` bucket is skipped (D5), as is a name that is unsafe as
+    a file path. The database and the other files are still backed up, the bundle's
+    `files-skipped.tsv` lists what is missing, and the run fails at the end. That bucket will
+    then need Storage S3 keys (see `docs/follow-ups/nightly-backup.md`, item 6).
+- `counts.tsv` and `counts.sql`: exact row counts of every table in `data.sql`, the objects of
+  `extras.sql`, and a fingerprint of the structure of `public` and `private`. They are taken in
+  the same snapshot as `data.sql`, and `counts.sql` is the query that produced them.
 
 **Not in a bundle.** Re-create these by hand after a disaster:
 
 - Auth settings, email templates, redirect URLs and CAPTCHA
   (`docs/operations/supabase-auth-config.md`);
 - API keys, Vercel environment variables and the custom roles' passwords;
-- the `pg_cron` extension: enable it before loading `data.sql`, which writes `cron.job`. The
-  other extensions are preinstalled on Supabase or created by `schema.sql`;
+- the `servyou_backup` login: run migration #133 (`20261113150840_backup_role`) on the new
+  project, set its password (« Setting the role's password » below), and write the new
+  `BACKUP_DB_URL` with `gh secret set` (« Who can read or delete what » → Secrets, below);
+- the `pg_cron` extension: enable it first, before `roles.sql`, because `extras.sql` recreates
+  the cron jobs through it. The other extensions are preinstalled on Supabase or created by
+  `schema.sql`;
 - the Vault key. The vault is empty today.
 
 **Retention:**
@@ -337,6 +365,11 @@ so Windows' built-in `tar` can open it during a drill.
     `b2 account authorize` requires it; on a restricted key it lists only that one bucket;
   - the account's master key, which can override governance, stays offline;
   - the account has 2FA.
+- **Secrets:** each is written with `gh secret set <NAME> --repo Servyou-tn/servyou-backups`,
+  reading the value on stdin straight from the command that generates it. It is never pasted
+  into the website, copied through the clipboard, or saved to a file. On 2026-11-13 the founder
+  regenerated `BACKUP_DB_URL` and the B2 upload key this way and deleted the older upload keys;
+  only `servyou-nightly-upload-20261113` remains.
 
 **Alerts:**
 
@@ -369,7 +402,8 @@ so Windows' built-in `tar` can open it during a drill.
 8. ✅ Add two lifecycle rules: `daily/` hidden after 30 days and `monthly/` hidden after 365
    days, each deleted 1 day after hiding.
 
-**B. Governance retention and the upload key** (b2 CLI 5.0.2, used once)
+**B. Governance retention and the upload key** (b2 CLI 5.0.2, used once; all done ✅, checked
+with `bucket get` and `key list --long`)
 
 The B2 website can neither set a governance default nor create a key with exact
 capabilities. So these steps use Backblaze's command-line tool once, signed in with the master
@@ -407,8 +441,9 @@ key. No key is ever typed on a command line: `account authorize` asks for it.
    ```powershell
    C:\servyou-tools\b2.exe key create --bucket servyou-backups-eu servyou-nightly-upload listBuckets,listFiles,writeFiles
    ```
-8. Add the two values right away as the private repo's secrets `B2_KEY_ID` and `B2_APP_KEY`
-   (the repo → Settings → Secrets and variables → Actions).
+8. Write the two values right away as the private repo's secrets `B2_KEY_ID` and `B2_APP_KEY`,
+   with `gh secret set` fed straight from the key's creation (« Who can read or delete what » →
+   Secrets).
 9. Check the key: `C:\servyou-tools\b2.exe key list --long`. The `servyou-nightly-upload` line
    must name `servyou-backups-eu` and exactly `listBuckets,listFiles,writeFiles`. It must not
    include `deleteFiles`, `bypassGovernance` or `writeFileRetentions`.
@@ -425,11 +460,11 @@ key. No key is ever typed on a command line: `account authorize` asks for it.
 **C. GitHub and the database**
 
 1. ✅ Create the empty private repo `Servyou-tn/servyou-backups`.
-2. Set the role's password (below). It ends with the secret `BACKUP_DB_URL`.
-3. In the private repo, add the variable `B2_BUCKET` = `servyou-backups-eu`. (`AGE_RECIPIENT`
+2. ✅ Set the role's password (below). It ends with the secret `BACKUP_DB_URL`.
+3. ✅ In the private repo, add the variable `B2_BUCKET` = `servyou-backups-eu`. (`AGE_RECIPIENT`
    is already set ✅.)
-4. In the private repo, add the secret `SENTRY_CRON_URL`. Its value is given when the repo is
-   built.
+4. ✅ In the private repo, add the secret `SENTRY_CRON_URL`: the monitor URL from the private
+   repo's README, « The Sentry cron monitor ».
 5. ✅ In GitHub notification settings, turn on email for failed Actions workflows.
 
 **D. Restore drill**
@@ -460,9 +495,10 @@ console.log(`SQL editor: alter role servyou_backup with password '${verifier}';`
 ```
 
 1. Run the printed `alter role` line in the Supabase SQL editor.
-2. Build the secret `BACKUP_DB_URL` from the printed password:
+2. Write the secret `BACKUP_DB_URL` with `gh secret set` (« Who can read or delete what » →
+   Secrets), built from the password:
    `postgresql://servyou_backup.xggomcitqrkaylqezjjz:<password>@<session pooler host>:5432/postgres?sslmode=require`.
-   Copy the host from Dashboard → Connect → Session pooler.
+   The host is in Dashboard → Connect → Session pooler.
 3. Close the PowerShell window; `Clear-Host` doesn't clear Windows Terminal's scrollback.
    Then clear the clipboard history (Win+V → Clear all). The password now exists only in the
    secret.
@@ -559,7 +595,8 @@ re-create what "Not in a bundle" lists.
    Alternatively, use a Supabase branch (`create_branch` via MCP after `confirm_cost`;
    ~$0.32/day — **destroy it when done**).
 3. Restore, in Supabase's documented order, in one transaction that stops at the first error.
-   The job has already made the file edits Supabase's guide lists, so the files restore as they
+   The job has already made the file edits Supabase's guide lists, and left out of `roles.sql`
+   the lines a Supabase target refuses (« What a bundle holds »), so the files restore as they
    are. The database container is `supabase_db_servyou-drill`, named after the folder; `docker
    ps` confirms the name.
    ```powershell
@@ -606,5 +643,8 @@ re-create what "Not in a bundle" lists.
 | 2026-06-09 | Runbook authored | — | — | Pre-launch documentation. Org confirmed on Supabase **Free** plan; Pro upgrade + first verified restore drill scheduled for the week before launch. |
 | 2026-11-13 | Nightly backup: read-only role | Applied | — | `servyou_backup` (migration #133, PR #367). The private repo, the first nightly run and the first drill follow the founder's setup steps. |
 | 2026-11-13 | Nightly backup: founder setup, group A | Done | — | age key in `C:\servyou-keys` (owner-only) with 2 offline copies; B2 EU Central with 2FA; bucket `servyou-backups-eu` (Object Lock, SSE-B2, the 2 lifecycle rules, no default retention yet); private repo created; `AGE_RECIPIENT` set; failure emails on. Next: group B (governance + upload key). |
+| 2026-11-13 | Nightly backup: founder setup, groups B and C | Done | — | Governance default of 30 days (`bucket get`); upload key restricted to the bucket with exactly `listBuckets,listFiles,writeFiles` (`key list --long`); `BACKUP_DB_URL`, `B2_KEY_ID`, `B2_APP_KEY`, `SENTRY_CRON_URL` and `B2_BUCKET` set. |
+| 2026-11-13 | Nightly backup: private repo | Merged | — | servyou-backups PR #1 (`c437966`): workflow, dump, encryption, upload, restore check. |
+| 2026-11-13 | Nightly backup: run #1 (manual, attempt 3) | Restore check failed | ~4 min | Dump, encryption, artifact and B2 upload passed: `daily/servyou-2026-11-13.tar.gz.age`, 2.2 MB, 62 tables. The restore check stopped at `roles.sql` line 19, `ALTER ROLE "supabase_admin" SET "statement_timeout"` (42501). Fix: servyou-backups PR #2. The founder also regenerated `BACKUP_DB_URL` and the upload key with `gh secret set`, and deleted the older upload keys. |
 
 Append a new row for each future verification.
