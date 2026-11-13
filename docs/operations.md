@@ -156,6 +156,9 @@ does not include point-in-time recovery (PITR), and self-serve daily backup/rest
 available in the dashboard** — so until the Pro upgrade lands, the manual `pg_dump` below
 is the *primary* safety net, not a belt-and-suspenders extra.
 
+**Since PR #367** the nightly encrypted backup (below) is the primary safety net on the Free
+plan; the manual `pg_dump` is the extra copy taken before a risky change.
+
 Confirm the live backup posture any time in the dashboard:
 https://supabase.com/dashboard/project/xggomcitqrkaylqezjjz/database/backups
 
@@ -171,9 +174,9 @@ the Vercel Pro upgrade on the launch checklist.
 
 ### Recovery objectives
 
-- **RPO** (Recovery Point Objective — max acceptable data loss): up to 24 hours on
-  Free-tier daily backups; under 1 hour on Pro PITR. Pre-launch this is not material;
-  post-launch it drives the Pro-upgrade timing.
+- **RPO** (Recovery Point Objective — max acceptable data loss): up to 24 hours on the
+  nightly encrypted backup (the Free plan has no backups of its own); under 1 hour on Pro
+  PITR. Pre-launch this is not material; post-launch it drives the Pro-upgrade timing.
 - **RTO** (Recovery Time Objective — max time to restore): committed at **4 hours** from
   incident detection during the launch phase.
 
@@ -246,6 +249,149 @@ point of failure for misclicks, this is the most likely incident — and the
    Each writes a new audit row capturing the reversal.
 3. Notify the affected user with a courtesy message explaining the error.
 
+### Nightly encrypted backup (PR #367)
+
+Supabase Free keeps no backups, so a scheduled job makes one every night. It runs in the
+**private** repo `Servyou-tn/servyou-backups`, never in this one: this repo is public, and so
+are its Actions logs and artifacts. That repo's README is the source of truth for the scripts;
+this section is the runbook. Plan approved by the architect on 2026-11-13 (decisions D1–D7).
+
+**What runs, every night at 01:41 UTC** (96 minutes before the 03:17 purge job):
+
+1. Dump the database through the session pooler as `servyou_backup`, a read-only role
+   (migration #133, `20261113150840_backup_role`).
+2. Download the public Storage files.
+3. Pack everything, encrypt it with [age](https://age-encryption.org), and upload one file to
+   Backblaze B2 (EU). A second copy is kept for 7 days as an Actions artifact of the private repo.
+4. Restore the bundle into a throwaway Supabase Postgres 17 on the runner, held in memory only,
+   and compare the row counts (D4). A mismatch fails the run.
+
+**What a bundle holds:** one file per night, `servyou-YYYY-MM-DD.tar.gz.age`. It's gzip, not zstd,
+so Windows' built-in `tar` can open it during a drill.
+
+- `roles.sql`, `schema.sql`, `data.sql`: Supabase's official three-file backup. It uses the same
+  `pg_dumpall` / `pg_dump` flags as `supabase db dump` (CLI 3.1.0), run with a pinned PostgreSQL 17
+  client but without the CLI's `--role postgres`, which the read-only role cannot use.
+  - `data.sql` includes `auth.users` and `auth.identities` (with password hashes), the
+    `storage.objects` and `storage.buckets` rows, and `cron.job`.
+  - It leaves out `auth.sessions` and `auth.refresh_tokens` (D7), so everyone signs in again
+    after a restore.
+- `extras.sql`: our own objects inside schemas Supabase manages. The official schema dump skips
+  those schemas entirely, so these are generated from the live catalog. Today that means:
+  - the 2 triggers on `auth.users`, `on_auth_user_created` and `on_auth_user_email_changed`.
+    Without the first, sign-ups after a restore get no profile.
+  - the 11 policies on `storage.objects`.
+- `migrations.sql`: the applied-migrations history (D2). It's a record to read, not something to
+  restore; `db/migrations/` in git holds the same SQL.
+- `files/`: the public buckets (`avatars`, `product-images`, `shop-assets`, `portfolio-media`),
+  downloaded from their public URLs.
+  - The run fails as soon as the private `verifications` bucket holds a file (D5). That bucket
+    will then need Storage S3 keys (see `docs/follow-ups/nightly-backup.md`).
+- `counts.tsv` and `counts.sql`: exact row counts of the main tables, taken in the same snapshot
+  as `data.sql`, and the query that produced them.
+
+**Not in a bundle.** Re-create these by hand after a disaster:
+
+- Auth settings, email templates, redirect URLs and CAPTCHA
+  (`docs/operations/supabase-auth-config.md`);
+- API keys, Vercel environment variables and the custom roles' passwords;
+- the `pg_cron` extension: enable it before loading `data.sql`, which writes `cron.job`. The
+  other extensions are preinstalled on Supabase or created by `schema.sql`;
+- the Vault key. The vault is empty today.
+
+**Retention:**
+
+- `daily/` keeps 30 days and `monthly/` (the copy from the 1st) keeps 365 days, through B2
+  lifecycle rules.
+- Object Lock in governance mode, 30 days (D3): nothing deletes a bundle before 30 days.
+- A bundle is about 3 MB today.
+
+**Who can read or delete what:**
+
+- **Database:** `servyou_backup` reads everything a backup holds and writes nothing. Its
+  password exists only in the private repo's secret `BACKUP_DB_URL`. The connection goes through
+  the session pooler, port 5432, as user `servyou_backup.xggomcitqrkaylqezjjz`. It can't use the
+  direct host (IPv6 only, and GitHub runners are IPv4 only) or port 6543 (transaction mode, which
+  `pg_dump` doesn't support).
+- **Encryption:** the age public key is the private repo's variable `AGE_RECIPIENT`. The private
+  key exists only on the founder's PC, plus two offline copies. **Lose it and every backup is
+  unreadable.**
+- **Plaintext:** it exists only in the runner's `$RUNNER_TEMP`, is deleted at the end of the run,
+  and is never printed to a log.
+- **B2:**
+  - the upload key is restricted to the bucket and holds only `listFiles` and `writeFiles`, so it
+    can't delete or shorten a lock;
+  - the account's master key, which can override governance, stays offline;
+  - the account has 2FA.
+
+**Alerts:**
+
+- GitHub emails the founder when a run fails.
+- The Sentry cron monitor `nightly-backup` (check-ins `in_progress` / `ok` / `error`, a 90-minute
+  margin, a 30-minute maximum run time) also catches a run that never starts: a disabled
+  workflow, an exhausted minutes quota, or a skipped schedule.
+
+#### Setup (founder, once, one action each)
+
+1. Install age: `winget install FiloSottile.age`.
+2. Generate the key pair outside OneDrive and outside the repo:
+   `age-keygen -o C:\servyou-keys\backup.key`. It prints the public key (`age1…`); send only
+   that line.
+3. Store two offline copies of `backup.key`, for example in a password manager and on a USB
+   key.
+4. Create a Backblaze B2 account, choosing the EU region at sign-up.
+5. Turn on 2FA on the Backblaze account.
+6. Create a private bucket `servyou-backups-eu` with Object Lock enabled. Object Lock can only
+   be turned on when the bucket is created.
+7. Set the bucket's default retention: governance mode, 30 days.
+8. Add two lifecycle rules: `daily/` hidden after 30 days and `monthly/` hidden after 365 days,
+   each deleted 1 day after hiding.
+9. Create an application key restricted to `servyou-backups-eu` with `listFiles` and
+   `writeFiles` only: no `deleteFiles`, `bypassGovernance` or `writeFileRetentions`. If the
+   web form offers only presets, stop there and ask for the exact command.
+10. Leave the master application key unused, and keep it out of GitHub.
+11. Create the empty private repo `Servyou-tn/servyou-backups`.
+12. Set the role's password (below).
+13. In the private repo, add:
+    - the secrets `BACKUP_DB_URL`, `B2_KEY_ID`, `B2_APP_KEY` and `SENTRY_CRON_URL` (its value
+      is given when the repo is built);
+    - the variables `AGE_RECIPIENT` (the `age1…` line) and `B2_BUCKET`.
+14. In GitHub notification settings, turn on email for failed Actions workflows.
+15. Install Docker Desktop. The restore drill needs it.
+
+#### Setting the role's password (setup step 12)
+
+`log_statement` is `ddl` on this project, and `pg_stat_statements` keeps statements. So a
+plaintext `alter role … password '…'` would be stored in both. Instead, compute a SCRAM-SHA-256
+verifier on your PC; Postgres stores a value already in that format as is. Paste this whole
+block into PowerShell (Node is installed). The password is generated inside it, so it never
+reaches the command history:
+
+```powershell
+@'
+import { randomBytes, pbkdf2Sync, createHmac, createHash } from 'node:crypto'
+const password = randomBytes(32).toString('base64url')
+const salt = randomBytes(16)
+const salted = pbkdf2Sync(password, salt, 4096, 32, 'sha256')
+const hmac = (key, text) => createHmac('sha256', key).update(text).digest()
+const storedKey = createHash('sha256').update(hmac(salted, 'Client Key')).digest()
+const serverKey = hmac(salted, 'Server Key')
+const verifier = `SCRAM-SHA-256$4096:${salt.toString('base64')}$${storedKey.toString('base64')}:${serverKey.toString('base64')}`
+console.log(`Password, for BACKUP_DB_URL only: ${password}`)
+console.log(`SQL editor: alter role servyou_backup with password '${verifier}';`)
+'@ | node --input-type=module -
+```
+
+1. Run the printed `alter role` line in the Supabase SQL editor.
+2. Build the secret `BACKUP_DB_URL` from the printed password:
+   `postgresql://servyou_backup.xggomcitqrkaylqezjjz:<password>@<session pooler host>:5432/postgres?sslmode=require`.
+   Copy the host from Dashboard → Connect → Session pooler.
+3. Clear the PowerShell window (`Clear-Host`). The password now exists only in the secret.
+
+If the first connection fails with an authentication error right after the change, wait a
+few minutes: the pooler can briefly cache the old state. To rotate the password, run the block
+again and replace the secret.
+
 ### Manual backup procedure (belt-and-suspenders)
 
 Before any high-risk operation (a migration that might corrupt data, or a large bulk
@@ -253,8 +399,14 @@ operation), take a manual logical backup. Requires `pg_dump` installed locally �
 with the Postgres client tools (https://www.postgresql.org/download/). *(Not yet installed
 on the founder's machine as of this writing; install before the first drill.)*
 
+The simplest manual backup is the nightly workflow run by hand: private repo → Actions →
+nightly backup → Run workflow. The command below is the fallback. It needs a PostgreSQL 17
+`pg_dump`, and it connects through the **session** pooler, port 5432: the transaction pooler,
+port 6543, doesn't support `pg_dump`. Copy the exact host from Dashboard → Connect → Session
+pooler.
+
 ```bash
-pg_dump "postgresql://postgres.xggomcitqrkaylqezjjz:[DB_PASSWORD]@aws-0-eu-central-1.pooler.supabase.com:6543/postgres" \
+pg_dump "postgresql://postgres.xggomcitqrkaylqezjjz:[DB_PASSWORD]@aws-0-eu-central-1.pooler.supabase.com:5432/postgres" \
   --format=custom \
   --no-owner \
   --no-privileges \
@@ -273,8 +425,11 @@ for 90 days post-launch.
 
 - **Monthly:** confirm the latest automated backup exists in the Supabase dashboard; record
   the timestamp in the verification log below.
+- **Monthly (Free plan, since PR #367):** check that B2 holds last night's bundle and that the
+  Sentry monitor `nightly-backup` is green; record it in the verification log below.
 - **Quarterly:** execute the restore drill below.
-- **Before any high-risk migration:** take a manual `pg_dump`.
+- **Before any high-risk migration:** take a manual `pg_dump`, or run the nightly workflow by
+  hand.
 - **First mandatory drill:** scheduled for the week before public launch (estimated late
   July to mid-August 2026), when real data exists and tooling is in place. It verifies that
   these procedures actually work.
@@ -283,34 +438,74 @@ for 90 days post-launch.
 
 What to execute when running the quarterly drill (the first runs the week before launch):
 
-1. Take a fresh manual `pg_dump` (procedure above).
-2. Provision a throwaway Postgres instance — either local Docker:
-   ```bash
-   docker run --name servyou-restore-test -e POSTGRES_PASSWORD=test -p 5433:5432 -d postgres:17
+Since PR #367 the drill restores last night's encrypted bundle, which tests the whole nightly
+chain end to end: download, decrypt, restore, compare. It runs on the founder's PC (Docker
+Desktop, setup step 15), in a folder **outside OneDrive**, because the unpacked files hold
+password hashes and phone numbers in plaintext. In a real disaster, restore the same files into
+a new Supabase project instead, following Supabase's guide
+(https://supabase.com/docs/guides/platform/migrating-within-supabase/backup-restore), then
+re-create what "Not in a bundle" lists.
+
+1. Download last night's bundle from B2 (Browse Files → `daily/`) into `C:\servyou-restore`,
+   then decrypt and unpack it:
+   ```powershell
+   cd C:\servyou-restore
+   age -d -i C:\servyou-keys\backup.key -o bundle.tar.gz servyou-YYYY-MM-DD.tar.gz.age
+   tar -xzf bundle.tar.gz
    ```
-   or a Supabase branch (`create_branch` via MCP after `confirm_cost`; ~$0.32/day —
-   **destroy it when done**).
-3. Restore the dump:
-   ```bash
-   pg_restore --no-owner --no-privileges \
-     --dbname=postgresql://postgres:test@localhost:5433/postgres \
-     servyou-backup-<date>.dump
+2. Provision a throwaway **Supabase** Postgres 17, not plain `postgres:17`: `data.sql` writes
+   into `auth`, `storage` and `cron`, which only a Supabase database has. In an empty folder,
+   with Docker Desktop running:
+   ```powershell
+   npx supabase@3.1.0 init
+   npx supabase@3.1.0 start -x realtime,imgproxy,kong,mailpit,postgrest,postgres-meta,studio,edge-runtime,logflare,vector,supavisor
    ```
-4. Verify schema: `psql ... -c "\dt"` against the restored DB shows the expected tables
-   (all 33+ migrations' objects).
-5. Verify RLS posture: run `npm run rls-smoke` against the restored DB (temporarily swap
-   the `NEXT_PUBLIC_SUPABASE_*` / `SUPABASE_SERVICE_ROLE_KEY` env vars to point at the
-   restore target; record the swapped values used so the next drill is repeatable).
+   - Auth (`gotrue`) and Storage (`storage-api`) still start, and their migrations create the
+     `auth` and `storage` tables.
+   - Check that `supabase/config.toml` says `major_version = 17`.
+   - If a health check fails on an excluded service, add `--ignore-health-check`.
+
+   Alternatively, use a Supabase branch (`create_branch` via MCP after `confirm_cost`;
+   ~$0.32/day — **destroy it when done**).
+3. Restore, in Supabase's documented order, in one transaction that stops at the first error.
+   The job has already made the file edits Supabase's guide lists, so the files restore as they
+   are. `docker ps` shows the database container's name (`supabase_db_<folder name>`):
+   ```powershell
+   docker cp .\bundle supabase_db_<name>:/tmp/bundle
+   docker exec -e PGPASSWORD=postgres supabase_db_<name> psql -h localhost -U postgres -d postgres `
+     --single-transaction -v ON_ERROR_STOP=1 `
+     -c "create extension if not exists pg_cron with schema pg_catalog" `
+     -f /tmp/bundle/roles.sql -f /tmp/bundle/schema.sql `
+     -c "set session_replication_role = replica" -f /tmp/bundle/data.sql `
+     -f /tmp/bundle/extras.sql
+   ```
+4. Verify the schema: the expected public tables (32 today) are there.
+   ```powershell
+   docker exec -e PGPASSWORD=postgres supabase_db_<name> psql -h localhost -U postgres -c "\dt public.*"
+   ```
+5. Verify the data: run the bundle's count query against the restored database and compare it
+   with the counts taken at dump time. `counts.sql` also counts the triggers and policies from
+   `extras.sql`.
+   ```powershell
+   docker exec -e PGPASSWORD=postgres supabase_db_<name> psql -h localhost -U postgres -At -F "`t" -f /tmp/bundle/counts.sql > restored-counts.tsv
+   Compare-Object (Get-Content .\bundle\counts.tsv) (Get-Content .\restored-counts.tsv)
+   ```
+   No output means every count matches. This replaces the old « run `npm run rls-smoke` »
+   step: CLAUDE.md forbids that script, because it deletes every test-domain user on
+   production.
 6. Verify sample data integrity: spot-check a few critical rows match production.
 7. Capture timing: how long from "I need to restore" to "verified working schema"?
 8. Update the verification log with the date, outcome, and any issues found — **we want to
    find issues during drills, not incidents.**
-9. Destroy the throwaway DB (Docker `rm -f`, or `delete_branch`).
+9. Destroy the throwaway database and the plaintext:
+   - `npx supabase@3.1.0 stop --no-backup` (or `delete_branch`);
+   - then `Remove-Item -Recurse -Force C:\servyou-restore`.
 
 ### Verification log
 
 | Date | Type | Outcome | Time taken | Notes |
 |------|------|---------|------------|-------|
 | 2026-06-09 | Runbook authored | — | — | Pre-launch documentation. Org confirmed on Supabase **Free** plan; Pro upgrade + first verified restore drill scheduled for the week before launch. |
+| 2026-11-13 | Nightly backup: read-only role | Applied | — | `servyou_backup` (migration #133, PR #367). The private repo, the first nightly run and the first drill follow the founder's setup steps. |
 
 Append a new row for each future verification.

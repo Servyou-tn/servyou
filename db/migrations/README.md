@@ -1395,6 +1395,33 @@ both on 2026-10-28.
       0; RLS on for every public table; `multiple_permissive_policies` unchanged at 33 (the merges are PR 15b).
     - Rollback: the commented ALTER block at the end of the file (each policy back to its « -- old » definition).
 
+133. **20261113150840_backup_role** — nightly encrypted backup (audit gap: no backups on the Free plan), PR #367; plan
+    approved by the architect 2026-11-13 (D1–D7); applied by the architect.
+    - Role `servyou_backup` for the backup job in the private repo `Servyou-tn/servyou-backups`:
+      - LOGIN, BYPASSRLS, INHERIT; no superuser, CREATEDB, CREATEROLE or REPLICATION; no password, no VALID UNTIL;
+      - a member of `pg_read_all_data` only: SELECT on every table, view and sequence, USAGE on every schema, no
+        write, no EXECUTE;
+      - session defaults `default_transaction_read_only = on` and `statement_timeout = 10min`. A seat belt only: a
+        session can reset them, and pg_dump sets the timeout to 0. The boundary is the missing write grants.
+    - Why not narrower: postgres cannot grant SELECT on 12 `auth` tables nor USAGE on schema `auth`, and pg_dump needs
+      BYPASSRLS. Why not `supabase db dump` as is: CLI 3.1.0 runs every dump with `--role postgres` (SET ROLE
+      postgres), so the job runs the same pg_dump commands without it.
+    - The password is set by the founder as a SCRAM-SHA-256 verifier, never in plaintext (`log_statement` is `ddl`,
+      `pg_stat_statements.track_utility` is on). Command: `docs/operations.md`, « Nightly encrypted backup ».
+    - Pre-apply check (architect, all schemas, PUBLIC rights outside SELECT):
+      - SECURITY DEFINER functions PUBLIC may run: only `is_admin()` and `get_completed_service_order_count(uuid)`,
+        both STABLE;
+      - table writes: `pg_catalog.pg_settings` UPDATE (the standard SET mechanism) and `cron.job_run_details` DELETE.
+        With BYPASSRLS the role could delete pg_cron's run history: LOW, `docs/follow-ups/nightly-backup.md`.
+    - The self-check DO block passed on apply. Checked after the apply: the attributes above, member of
+      `{pg_read_all_data}` only, owns 0 objects, the two session defaults.
+    - No grant to anon / authenticated / PUBLIC (allow-list untouched). No type change: roles are not in
+      `database.types.ts`.
+    - The recorded statement is this whole file (md5 `c4ee50b68755035dee934f9c4587b1a8`, no trailing newline): the
+      PENDING file with its header condensed to one line and the other comments removed, code identical. The full
+      discovery header: `git show 1c1ba9e:db/migrations/PENDING_backup_role.sql`.
+    - Rollback: `drop role servyou_backup;` (it owns nothing; its membership goes with it).
+
 ## Rollback paths
 
 Each migration in this folder represents work that has already been applied to production. Rollback is therefore reverse migration work, not file deletion. If a rollback is ever needed, write a new dated migration that reverses the relevant changes — never delete history from this folder.
