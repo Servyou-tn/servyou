@@ -18,9 +18,9 @@ import vm from 'node:vm'
 
 const ROOT = process.cwd()
 const NEXT = join(ROOT, '.next')
-// A real page here is ~250 KB or more: the shared framework alone is well above this floor. A total below it means the
-// manifests no longer list what this script expects (a Next.js upgrade renamed them) — fail rather than pass on nothing.
-const PLAUSIBLE_MIN_KB = 60
+// Every public page measured 450–540 KB (2026-11-13) and the root main files alone are ~130 KB. A total below this floor
+// means the manifests no longer list what this script expects (a Next.js upgrade renamed them) — fail rather than pass.
+const PLAUSIBLE_MIN_KB = 250
 
 const errors = []
 const fail = (message) => errors.push(message)
@@ -41,7 +41,10 @@ function rootMainFiles() {
   return files
 }
 
-/** 'marche/services/page.tsx' → the JS files its client reference manifest lists, or null when the manifest is missing. */
+/**
+ * 'marche/services/page.tsx' → the JS files its client reference manifest lists, or null when the manifest is missing or
+ * does not list the page's own entry (an empty `entryJSFiles` would otherwise measure the root files only and pass).
+ */
 function routeEntryFiles(pageFile) {
   const dir = pageFile.replace(/(^|\/)page\.tsx$/, '')
   const manifestFile = join(NEXT, 'server/app', dir, 'page_client-reference-manifest.js')
@@ -49,9 +52,10 @@ function routeEntryFiles(pageFile) {
   const context = {}
   vm.createContext(context)
   vm.runInContext(readFileSync(manifestFile, 'utf8'), context)
-  const manifest = context.__RSC_MANIFEST?.[dir ? `/${dir}/page` : '/page']
-  if (!manifest?.entryJSFiles) return null
-  return Object.values(manifest.entryJSFiles).flat()
+  const entries = context.__RSC_MANIFEST?.[dir ? `/${dir}/page` : '/page']?.entryJSFiles
+  const pageEntry = entries?.[`[project]/src/app/${dir ? `${dir}/` : ''}page`]
+  if (!Array.isArray(pageEntry) || pageEntry.length === 0) return null
+  return Object.values(entries).flat()
 }
 
 const gzipCache = new Map()
@@ -72,7 +76,7 @@ const rows = []
 for (const page of pages) {
   const entries = routeEntryFiles(page)
   if (!entries) {
-    fail(`${page}: no client reference manifest in .next/server/app (was the page built?)`)
+    fail(`${page}: no client reference manifest listing the page's own entry in .next/server/app (was the page built?)`)
     continue
   }
   const files = new Set([...shared, ...entries])

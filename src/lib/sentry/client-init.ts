@@ -34,5 +34,9 @@ export function initClientSentry(dsn: string, queue: EarlyErrorQueue): void {
     },
   })
   // Same task as init: Sentry's global handlers are now installed, so the queue hands over with no gap and no duplicate.
-  queue.drain((error) => Sentry.captureException(error, { mechanism: { type: 'onerror', handled: false } }))
+  // The mechanism types Sentry's own GlobalHandlers use (@sentry/browser 10, globalhandlers.js), so replayed errors group
+  // and filter exactly like live ones.
+  queue.drain((error, kind) =>
+    Sentry.captureException(error, { mechanism: { type: `auto.browser.global_handlers.${kind}`, handled: false } }),
+  )
 }

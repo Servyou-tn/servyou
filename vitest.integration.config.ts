@@ -22,6 +22,8 @@ export default defineConfig(({ mode }) => ({
   resolve: {
     alias: {
       '@': resolve(__dirname, './src'),
+      // Same as vitest.config.ts: Next's own no-op for `import 'server-only'` on the server side.
+      'server-only': resolve(__dirname, './node_modules/next/dist/compiled/server-only/empty.js'),
     },
   },
 }))

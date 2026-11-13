@@ -30,9 +30,13 @@ describe('startEarlyErrorQueue', () => {
     win.fire('unhandledrejection', { reason: 'rejected' })
 
     const captured: unknown[] = []
-    queue.drain((error) => captured.push(error))
+    queue.drain((error, kind) => captured.push([error, kind]))
 
-    expect(captured).toEqual([boom, 'rejected'])
+    // Each keeps the event it came from, so Sentry sees the same mechanism as for a live error / rejection.
+    expect(captured).toEqual([
+      [boom, 'onerror'],
+      ['rejected', 'onunhandledrejection'],
+    ])
   })
 
   it('keeps the message when the browser gives no error object (cross-origin « Script error. »)', () => {

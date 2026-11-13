@@ -44,8 +44,13 @@ jobs:
             nextjs-${{ runner.os }}-${{ hashFiles('package-lock.json') }}-
             nextjs-${{ runner.os }}-
 
+      # A placeholder DSN (fake key, Sentry org 0 — nothing is ever accepted) so CI builds the same browser code as
+      # production: without one, src/instrumentation-client.ts's `if (dsn)` branch is compiled out, and the budget below
+      # could not see Sentry code coming back into the first load (speed PR-1 review).
       - name: Build
         run: npm run build
+        env:
+          NEXT_PUBLIC_SENTRY_DSN: https://00000000000000000000000000000000@o0.ingest.sentry.io/0
 
       # Speed PR-1 (audit M8): each public page's first-load JavaScript must stay under its budget
       # (scripts/perf/first-load-budget.json). The table it prints is the number to quote when a budget has to move.
