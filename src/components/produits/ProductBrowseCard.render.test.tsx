@@ -98,7 +98,7 @@ describe('ProductBrowseCard (m375-c1-produits)', () => {
     expect(container.querySelector('img')).not.toBeNull()
     rerender(
       <LangProvider lang="fr">
-        <ProductBrowseCard product={product} sizes="(max-width: 1024px) 50vw, 25vw" />
+        <ProductBrowseCard product={product} sizes="(max-width: 1023px) 50vw, 25vw" />
       </LangProvider>,
     )
     expect(container.querySelector('img')).not.toBeNull()

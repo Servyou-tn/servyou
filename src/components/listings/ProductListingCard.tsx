@@ -43,7 +43,7 @@ export function ProductListingCard({ product }: { product: ProductListing }) {
               src={product.image_url}
               alt={product.title}
               fill
-              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
+              sizes="(max-width: 639px) 100vw, (max-width: 1023px) 50vw, 25vw"
               className="object-cover"
             />
           ) : (

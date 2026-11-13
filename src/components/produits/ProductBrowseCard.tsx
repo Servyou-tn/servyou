@@ -26,7 +26,7 @@ import { localName } from '@/lib/i18n/local-name'
 
 // `sizes` is the cover's responsive hint: the default is a SINGLE column below `sm` (shop page, favourites, related products); /marche/produits lays
 // two across from 375 and says so.
-const DEFAULT_SIZES = '(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw'
+const DEFAULT_SIZES = '(max-width: 639px) 100vw, (max-width: 1023px) 50vw, 25vw'
 
 export function ProductBrowseCard({ product, sizes = DEFAULT_SIZES }: { product: ProductListing; sizes?: string }) {
   const lang = useLang()
