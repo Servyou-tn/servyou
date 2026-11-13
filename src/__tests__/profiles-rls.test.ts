@@ -61,37 +61,61 @@ async function createUser(phone?: string): Promise<{ id: string; email: string; 
   if (error || !data.user) throw new Error(`createUser: ${error?.message}`)
   testUserIds.push(data.user.id)
   if (phone) {
-    await admin.from('profiles').update({ phone }).eq('id', data.user.id)
+    const { error: phoneErr } = await admin.from('profiles').update({ phone }).eq('id', data.user.id)
+    if (phoneErr) throw new Error(`phone seed failed: ${phoneErr.message}`)
   }
   return { id: data.user.id, email, password }
 }
+
+const CONSUMER_PHONE = '+21698888888'
+const FREELANCER_PHONE = '+21697777777'
 
 let userA: { id: string; email: string; password: string }
 let userB: { id: string; email: string; password: string }
 let consumer: { id: string; email: string; password: string }
 let freelancer: { id: string; email: string; password: string }
 let clientA: SupabaseClient
+let clientConsumer: SupabaseClient
 let clientFreelancer: SupabaseClient
 
 beforeAll(async () => {
   if (!hasCreds) return
   userA = await createUser()
   userB = await createUser('+21698765432')
-  consumer = await createUser('+21698888888')
-  freelancer = await createUser()
+  consumer = await createUser(CONSUMER_PHONE)
+  freelancer = await createUser(FREELANCER_PHONE)
 
   clientA = await signIn(userA.email)
+  clientConsumer = await signIn(consumer.email)
   clientFreelancer = await signIn(freelancer.email)
 }, 60000)
 
+// Every step runs even when an earlier one fails (one failed delete must not leave the other users behind); the errors
+// are collected and thrown together, then this run's own rows are counted: anything left fails the suite.
 afterAll(async () => {
   if (!hasCreds) return
+  const failures: string[] = []
   if (testPostIds.length > 0) {
-    await admin.from('job_responses').delete().in('job_post_id', testPostIds)
-    await admin.from('job_posts').delete().in('id', testPostIds)
+    const { error: responsesErr } = await admin.from('job_responses').delete().in('job_post_id', testPostIds)
+    if (responsesErr) failures.push(`job_responses cleanup: ${responsesErr.message}`)
+    const { error: postsErr } = await admin.from('job_posts').delete().in('id', testPostIds)
+    if (postsErr) failures.push(`job_posts cleanup: ${postsErr.message}`)
   }
   for (const uid of testUserIds) {
-    await admin.auth.admin.deleteUser(uid)
+    const { error: userErr } = await admin.auth.admin.deleteUser(uid)
+    if (userErr) failures.push(`deleteUser ${uid}: ${userErr.message}`)
+  }
+  if (failures.length > 0) throw new Error(`profiles-rls teardown failed:\n${failures.join('\n')}`)
+
+  const { count: profilesLeft, error: profilesErr } = await admin
+    .from('profiles').select('id', { count: 'exact', head: true }).in('id', testUserIds)
+  if (profilesErr) throw new Error(`cleanup check (profiles) failed: ${profilesErr.message}`)
+  if ((profilesLeft ?? 0) !== 0) throw new Error(`teardown left ${profilesLeft} profiles`)
+  if (testPostIds.length > 0) {
+    const { count: postsLeft, error: postsLeftErr } = await admin
+      .from('job_posts').select('id', { count: 'exact', head: true }).in('id', testPostIds)
+    if (postsLeftErr) throw new Error(`cleanup check (job_posts) failed: ${postsLeftErr.message}`)
+    if ((postsLeft ?? 0) !== 0) throw new Error(`teardown left ${postsLeft} job_posts`)
   }
 }, 60000)
 
@@ -149,26 +173,47 @@ describe.skipIf(!hasCreds)('get_contact_phone: relationship-gated access', () =>
     expect(data).toBeNull()
   })
 
-  it('returns phone after job_responses link exists', async () => {
-    const { data: post, error: postErr } = await admin
-      .from('job_posts').insert({
-        consumer_id: consumer.id,
-        title: 'RLS test mission',
-        description: 'RLS test',
-        status: 'open',
-      }).select('id').single()
-    expect(postErr).toBeNull()
-    testPostIds.push(post!.id)
+  // Phone reveal rule (migration 20261101181237, founder decision D7): a mission reveals a phone owner → freelancer
+  // only — « freelancer → client: never through a mission ». The same proposal is checked both ways, so the NULL for
+  // the freelancer is the rule, not a function that always returns NULL.
+  describe('after a job_responses link: post owner → freelancer only', () => {
+    beforeAll(async () => {
+      if (!hasCreds) return
+      const { data: post, error: postErr } = await admin
+        .from('job_posts').insert({
+          consumer_id: consumer.id,
+          title: 'RLS test mission',
+          description: 'RLS test',
+          status: 'open',
+        }).select('id').single()
+      if (postErr || !post) throw new Error(`job_posts seed failed: ${postErr?.message}`)
+      testPostIds.push(post.id)
 
-    await admin.from('job_responses').insert({
-      job_post_id: post!.id,
-      freelancer_id: freelancer.id,
-      proposal_message: 'RLS test proposal for profiles',
+      const { error: responseErr } = await admin.from('job_responses').insert({
+        job_post_id: post.id,
+        freelancer_id: freelancer.id,
+        proposal_message: 'RLS test proposal for profiles',
+      })
+      if (responseErr) throw new Error(`job_responses seed failed: ${responseErr.message}`)
+    }, 30000)
+
+    it('freelancer → client: returns null, though the client has a phone', async () => {
+      const { data: phone, error } = await clientFreelancer
+        .rpc('get_contact_phone', { target: consumer.id })
+      expect(error).toBeNull()
+      expect(phone).toBeNull()
+      // The phone exists: the NULL above is the rule, not a missing fixture (the client reads their own row).
+      const { data: seeded, error: seededErr } = await clientConsumer
+        .from('profiles').select('phone').eq('id', consumer.id).single()
+      expect(seededErr).toBeNull()
+      expect(seeded?.phone).toBe(CONSUMER_PHONE)
     })
 
-    const { data: phone, error } = await clientFreelancer
-      .rpc('get_contact_phone', { target: consumer.id })
-    expect(error).toBeNull()
-    expect(phone).toBe('+21698888888')
+    it('post owner → freelancer: returns the freelancer’s phone', async () => {
+      const { data: phone, error } = await clientConsumer
+        .rpc('get_contact_phone', { target: freelancer.id })
+      expect(error).toBeNull()
+      expect(phone).toBe(FREELANCER_PHONE)
+    })
   })
 })

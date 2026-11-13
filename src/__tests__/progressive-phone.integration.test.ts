@@ -3,8 +3,11 @@
  *
  *   DB (1) — no-phone user updates their profile.phone then creates a job_post;
  *             both succeed via an authenticated client (mirrors the form flow)
- *   DB (4) — get_contact_phone returns the consumer's phone for a freelancer who
- *             responded to one of their posts, end-to-end
+ *   DB (4) — get_contact_phone after a freelancer responded to one of the consumer's
+ *             posts, end-to-end, per the phone reveal rule (migration
+ *             20261101181237, founder decision D7): the post owner reads the
+ *             freelancer's phone; the freelancer never reads the client's through a
+ *             mission
  *
  * The pure isValidPhone/normalizePhone unit tests live in progressive-phone.test.ts.
  *
@@ -60,10 +63,14 @@ async function createUser(phone?: string): Promise<{ id: string; email: string; 
   if (error || !data.user) throw new Error(`createUser: ${error?.message}`)
   testUserIds.push(data.user.id)
   if (phone) {
-    await admin.from('profiles').update({ phone }).eq('id', data.user.id)
+    const { error: phoneErr } = await admin.from('profiles').update({ phone }).eq('id', data.user.id)
+    if (phoneErr) throw new Error(`phone seed failed: ${phoneErr.message}`)
   }
   return { id: data.user.id, email, password }
 }
+
+const CONSUMER_PHONE = '+21620000099'
+const FREELANCER_PHONE = '+21620000088'
 
 let consumer: { id: string; email: string; password: string }
 let freelancer: { id: string; email: string; password: string }
@@ -72,8 +79,8 @@ let clientFreelancer: SupabaseClient
 
 beforeAll(async () => {
   if (!hasCreds) return
-  consumer  = await createUser()           // no phone
-  freelancer = await createUser()          // no phone
+  consumer  = await createUser()           // no phone: test (1) adds it through the form's write
+  freelancer = await createUser(FREELANCER_PHONE)
   clientConsumer  = await signIn(consumer.email)
   clientFreelancer = await signIn(freelancer.email)
 }, 60000)
@@ -101,7 +108,7 @@ describe.skipIf(!hasCreds)('Progressive phone: poster-mission flow (DB)', () => 
     // Step 1: authenticated client updates own phone (mirrors the form's phone-first write)
     const { error: phoneErr } = await clientConsumer
       .from('profiles')
-      .update({ phone: '+21620000099' })
+      .update({ phone: CONSUMER_PHONE })
       .eq('id', consumer.id)
     expect(phoneErr).toBeNull()
 
@@ -123,10 +130,13 @@ describe.skipIf(!hasCreds)('Progressive phone: poster-mission flow (DB)', () => 
     // Verify profile.phone is now set
     const { data: after } = await admin
       .from('profiles').select('phone').eq('id', consumer.id).single()
-    expect(after?.phone).toBe('+21620000099')
+    expect(after?.phone).toBe(CONSUMER_PHONE)
   })
 
-  it('(4) get_contact_phone returns consumer phone end-to-end after job_response link', async () => {
+  // Phone reveal rule (migration 20261101181237, founder decision D7): a mission reveals a phone post owner → freelancer
+  // only. The same response is checked both ways, so the NULL for the freelancer is the rule, not a function that
+  // always returns NULL.
+  it('(4) after a job_response link: the post owner reads the freelancer’s phone; the freelancer does not read the client’s', async () => {
     // Use the post created in test (1) — consumer now has a phone
     const postId = testPostIds[0]
     expect(postId).toBeDefined()
@@ -139,15 +149,20 @@ describe.skipIf(!hasCreds)('Progressive phone: poster-mission flow (DB)', () => 
     })
     expect(respErr).toBeNull()
 
-    // Freelancer can now get the consumer's phone via get_contact_phone
+    // Freelancer → client: NULL, though the client's phone is set (the client reads their own row).
     const { data: phone, error } = await clientFreelancer
       .rpc('get_contact_phone', { target: consumer.id })
     expect(error).toBeNull()
-    expect(phone).toBe('+21620000099')
+    expect(phone).toBeNull()
+    const { data: seeded, error: seededErr } = await clientConsumer
+      .from('profiles').select('phone').eq('id', consumer.id).single()
+    expect(seededErr).toBeNull()
+    expect(seeded?.phone).toBe(CONSUMER_PHONE)
 
-    // Consumer can get the freelancer's phone — but freelancer has no phone yet, so NULL
-    const { data: phoneRev } = await clientConsumer
+    // Post owner → freelancer: the freelancer's phone.
+    const { data: phoneRev, error: revErr } = await clientConsumer
       .rpc('get_contact_phone', { target: freelancer.id })
-    expect(phoneRev).toBeNull()
+    expect(revErr).toBeNull()
+    expect(phoneRev).toBe(FREELANCER_PHONE)
   })
 })
