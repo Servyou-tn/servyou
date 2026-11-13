@@ -107,6 +107,9 @@ export default defineConfig(({ mode }) => ({
   resolve: {
     alias: {
       '@': resolve(__dirname, './src'),
+      // `import 'server-only'` (src/lib/favorites/set-favorite-input.ts): Next resolves it to its own compiled copy, which is
+      // not an npm package here. Tests run on the server side, so they get Next's server-side no-op.
+      'server-only': resolve(__dirname, './node_modules/next/dist/compiled/server-only/empty.js'),
     },
   },
 }))

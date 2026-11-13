@@ -46,3 +46,8 @@ jobs:
 
       - name: Build
         run: npm run build
+
+      # Speed PR-1 (audit M8): each public page's first-load JavaScript must stay under its budget
+      # (scripts/perf/first-load-budget.json). The table it prints is the number to quote when a budget has to move.
+      - name: First-load JS budget (public pages)
+        run: node scripts/perf/first-load-js.mjs
