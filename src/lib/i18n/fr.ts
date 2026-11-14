@@ -3484,6 +3484,7 @@ export const fr: Record<string, string> = {
 
   // ─── /confidentialite ────────────────────────────────────────────────────────
   'legal.privacy.title':   "Politique de confidentialité",
+  'legal.privacy.updatedDate': "14 novembre 2026",
   'legal.privacy.intro':   "Vos données vous appartiennent. La Constitution tunisienne le garantit dans son article 24, la loi tunisienne le protège dans la Loi 2004-63, et nous l'appliquons à la lettre. Voici comment, en clair.",
   'legal.privacy.summary': "Nous collectons seulement ce qui est nécessaire au service.\nVos données sont hébergées sur des serveurs européens, sous protection RGPD.\nNous ne vendons jamais vos données à des tiers. Jamais.\nAucun outil de pistage publicitaire (Google Analytics, Facebook Pixel, etc.) n'est embarqué dans la plateforme.\nVous avez 6 droits clairs sur vos données. Voir ci-dessous.\nPour exercer vos droits : bonjour@servyou.tn — réponse sous 30 jours maximum (Loi 2004-63).",
   'legal.privacy.rights':  "Droit d'accès — Obtenir une copie de toutes vos données\nDroit de rectification — Corriger des données inexactes\nDroit à l'effacement — Supprimer vos données\nDroit à la portabilité — Recevoir vos données dans un format structuré\nDroit d'opposition — Refuser certains traitements\nDroit de retirer votre consentement — À tout moment",

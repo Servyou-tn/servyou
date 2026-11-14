@@ -140,17 +140,35 @@ describe('no query string or hash ever leaves the site', () => {
 })
 
 describe('before-send filter', () => {
-  const page = (path: string, referrer = '') => ({ website: UMAMI_WEBSITE_ID, url: `https://servyou.vercel.app${path}`, referrer })
+  // What the tracker hands over (document.title included) …
+  const page = (path: string, referrer = '') => ({
+    website: UMAMI_WEBSITE_ID,
+    title: 'Amira Ben Salah — Graphiste | ServYou',
+    url: `https://servyou.vercel.app${path}`,
+    referrer,
+  })
+  // … and what may leave the site: the same, with the title blanked.
+  const sent = (path: string, referrer = '') => ({ ...page(path, referrer), title: '' })
 
-  it('passes a public page through unchanged after a « yes »', () => {
+  it('passes a public page through after a « yes » — only the title is blanked', () => {
     const payload = page('/produits/42', 'https://www.google.com/')
-    expect(filterUmamiPayload(payload, `servyou_lang=ar; ${YES}`)).toEqual(payload)
+    expect(filterUmamiPayload(payload, `servyou_lang=ar; ${YES}`)).toEqual(sent('/produits/42', 'https://www.google.com/'))
+  })
+
+  it('never sends the page title: a public freelancer profile is titled with the person\'s full name (D3)', () => {
+    for (const path of ['/freelance/0c9a5e2e', '/boutique/12', '/', '/confidentialite']) {
+      const out = filterUmamiPayload(page(path), YES)
+      expect(out?.title).toBe('')
+      expect(JSON.stringify(out)).not.toContain('Amira')
+    }
+    // A payload without a title gets an empty one too, never the tracker's.
+    expect(filterUmamiPayload({ url: 'https://servyou.vercel.app/' }, YES)).toEqual({ url: 'https://servyou.vercel.app/', title: '' })
   })
 
   it('cuts the query string and hash itself — from the URL and the referrer — whatever the live tracker script does', () => {
     const payload = page('/nouveau-mot-de-passe?code=s3cr3t#top', '/verifier-email?token_hash=abc')
-    expect(filterUmamiPayload(payload, YES)).toEqual(page('/nouveau-mot-de-passe', '/verifier-email'))
-    expect(filterUmamiPayload(page('/', 'https://mail.example.com/inbox?token=1#m'), YES)).toEqual(page('/', 'https://mail.example.com/inbox'))
+    expect(filterUmamiPayload(payload, YES)).toEqual(sent('/nouveau-mot-de-passe', '/verifier-email'))
+    expect(filterUmamiPayload(page('/', 'https://mail.example.com/inbox?token=1#m'), YES)).toEqual(sent('/', 'https://mail.example.com/inbox'))
   })
 
   it('drops everything once consent is withdrawn, absent, expired or forged', () => {
@@ -170,11 +188,11 @@ describe('before-send filter', () => {
   })
 
   it('blanks an admin page given as the same-site referrer — a path, or a full URL from another production hostname', () => {
-    expect(filterUmamiPayload(page('/', '/admin/utilisateurs/0c9a5e2e'), YES)).toEqual(page('/', ''))
-    expect(filterUmamiPayload(page('/', 'https://www.servyou.tn/admin/litiges/1'), YES)).toEqual(page('/', ''))
-    expect(filterUmamiPayload(page('/', '/marche'), YES)).toEqual(page('/', '/marche'))
+    expect(filterUmamiPayload(page('/', '/admin/utilisateurs/0c9a5e2e'), YES)).toEqual(sent('/', ''))
+    expect(filterUmamiPayload(page('/', 'https://www.servyou.tn/admin/litiges/1'), YES)).toEqual(sent('/', ''))
+    expect(filterUmamiPayload(page('/', '/marche'), YES)).toEqual(sent('/', '/marche'))
     // Another site's /admin is not ours: kept.
-    expect(filterUmamiPayload(page('/', 'https://example.com/admin'), YES)).toEqual(page('/', 'https://example.com/admin'))
+    expect(filterUmamiPayload(page('/', 'https://example.com/admin'), YES)).toEqual(sent('/', 'https://example.com/admin'))
   })
 
   it('is installed at MODULE scope — on import, before any render — and reads the live cookie', async () => {
@@ -187,7 +205,7 @@ describe('before-send filter', () => {
     const send = globals[UMAMI_BEFORE_SEND] as (type: string, payload: object) => object | null
     expect(send('event', page('/'))).toBeNull()
     document.cookie = `${YES}; Path=/`
-    expect(send('event', page('/'))).toEqual(page('/'))
+    expect(send('event', page('/'))).toEqual(sent('/'))
     expect(send('event', page('/admin'))).toBeNull()
   })
 

@@ -1166,6 +1166,7 @@ export const strings: Record<string, string> = {
   "legal.terms.s14.opener": "A question? Write to us.",
   "legal.terms.s14.body": "For any question about these terms, write to bonjour@servyou.tn. A human being reads every message.",
   "legal.privacy.title": "Privacy policy",
+  "legal.privacy.updatedDate": "14 November 2026",
   "legal.privacy.intro": "Your data belongs to you. The Tunisian Constitution guarantees it in its article 24, Tunisian law protects it in Law 2004-63, and we apply it to the letter. Here is how, in plain words.",
   "legal.privacy.summary": "We only collect what the service needs.\nYour data is hosted on European servers, protected by the GDPR.\nWe never sell your data to third parties. Never.\nNo advertising tracking tool (Google Analytics, Facebook Pixel, etc.) is built into the platform.\nYou have 6 clear rights over your data. See below.\nTo use your rights: bonjour@servyou.tn — answer within 30 days at most (Law 2004-63).",
   "legal.privacy.rights": "Right of access — Get a copy of all your data\nRight to rectification — Correct inaccurate data\nRight to erasure — Delete your data\nRight to data portability — Receive your data in a structured format\nRight to object — Refuse some processing\nRight to withdraw your consent — At any time",

@@ -9,7 +9,8 @@
 //   3. NEVER ON ADMIN PAGES — the script is not rendered on an excluded path AND `filterUmamiPayload` drops any event for one: once
 //      loaded on a public page, the tracker follows client-side navigation (it wraps history.pushState) into /admin on its own.
 //   4. NO QUERY STRING OR HASH LEAVES THE SITE — reset / confirm codes and tokens ride in query strings. With data-exclude-search and
-//      data-exclude-hash the tracker strips both from the page URL AND from the referrer before it builds the payload.
+//      data-exclude-hash the tracker strips both from the page URL AND from the referrer before it builds the payload; the filter
+//      strips them again, and blanks the page title (a public profile's title is a person's name).
 // data-domains is a second net against preview noise: the tracker sends nothing at all from a hostname not in the list.
 //
 // The CSP hosts (script origin + the host events are POSTed to) live in lib/security/headers.ts with the other origins.
@@ -88,13 +89,16 @@ function isSameSite(url: URL): boolean {
  *   • null for an excluded (admin) page, or a payload whose URL cannot be read (fail closed);
  *   • an admin page as the same-site referrer is blanked, so leaving the back office leaves no trace either;
  *   • the query string and hash are cut from `url` and `referrer` HERE too. data-exclude-search / data-exclude-hash already make
- *     the tracker do it, but the tracker is Umami's live CDN script, not a pinned copy — the guarantee must not rest on it alone.
+ *     the tracker do it, but the tracker is Umami's live CDN script, not a pinned copy — the guarantee must not rest on it alone;
+ *   • the page title is blanked: the tracker sends document.title as-is, and a public freelancer profile is titled with the
+ *     person's full name. The privacy policy says « aucune donnée personnelle » — founder ruling D3 on #371 (pages are still
+ *     told apart by their URL).
  */
 export function filterUmamiPayload<P extends UmamiPayload>(payload: P, cookies: string): P | null {
   if (!hasConsent(consentFromCookieString(cookies), 'audience')) return null
   const page = typeof payload.url === 'string' ? parse(payload.url) : null
   if (page === null || isExcludedPath(page.pathname)) return null
-  const cleaned: P = { ...payload, url: withoutSearchAndHash(payload.url as string, page) }
+  const cleaned: P = { ...payload, url: withoutSearchAndHash(payload.url as string, page), title: '' }
   if (typeof payload.referrer === 'string' && payload.referrer !== '') {
     const referrer = parse(payload.referrer)
     if (referrer === null || (isSameSite(referrer) && isExcludedPath(referrer.pathname))) return { ...cleaned, referrer: '' }

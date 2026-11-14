@@ -16,6 +16,9 @@ and must change in the same PR as the flip.
 
 ## Legal pages' « Mise à jour » date not bumped
 
+✅ CLOSED — #371 commit 3 (founder D4): the privacy policy got its own date key, `legal.privacy.updatedDate`, set to the merge
+date; the terms, cookie and accessibility pages keep the shared `legal.updatedDate`.
+
 **What:** the privacy policy gained a paragraph, but `legal.updatedDate` (« 17 juin 2026 ») is one key shared by all four legal
 documents, so bumping it would date the terms, cookie and accessibility pages too.
 **Why deferred:** a shared-key, all-documents change; the documents are still marked draft (pending legal review).

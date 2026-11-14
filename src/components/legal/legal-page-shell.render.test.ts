@@ -3,6 +3,7 @@ import { renderToString } from 'react-dom/server'
 import { createElement } from 'react'
 import { LegalPageShell } from './LegalPageShell'
 import { LEGAL_DOCS } from '@/lib/legal/legal-structure'
+import { t } from '@/lib/i18n'
 
 // LegalPageShell takes lang as a prop and uses no client hooks / next APIs, so it renders
 // straight through renderToString.
@@ -20,6 +21,18 @@ describe('LegalPageShell render smoke', () => {
     expect(out).toContain('Acceptation') // first section title
     expect(out).toContain('Droit applicable') // a later section title
     expect(out).toContain('Parlez-nous') // closing contact heading
+  })
+
+  it('the privacy policy shows its own « Mise à jour » date; the other three docs keep the shared one', () => {
+    const own = t('legal.privacy.updatedDate', 'fr')
+    const shared = t('legal.updatedDate', 'fr')
+    expect(own).not.toBe(shared)
+    expect(html('confidentialite')).toContain(own)
+    expect(html('confidentialite')).not.toContain(shared)
+    for (const slug of ['conditions', 'cookies', 'accessibilite'] as const) {
+      expect(html(slug)).toContain(shared)
+      expect(html(slug)).not.toContain(own)
+    }
   })
 
   it('renders the privacy "Vos droits" featured block only on /confidentialite', () => {
