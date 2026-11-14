@@ -47,7 +47,18 @@ afterEach(() => {
   document.cookie = `${CONSENT_COOKIE}=; Max-Age=0; Path=/`
 })
 
-const ADMIN_PATHS = ['/admin', '/admin/', '/admin/utilisateurs', '/admin/litiges/0c9a5e2e', '/verification-admin', '/verification-admin/code']
+const ADMIN_PATHS = [
+  '/admin',
+  '/admin/',
+  '/admin/utilisateurs',
+  '/admin/litiges/0c9a5e2e',
+  '/verification-admin',
+  '/verification-admin/code',
+  // Spellings that may still route to the back office: percent-encoded, doubled slash, upper case.
+  '/%61dmin',
+  '//admin/journal',
+  '/ADMIN/statistiques',
+]
 const PUBLIC_PATHS = ['/', '/connexion', '/nouveau-mot-de-passe', '/produits/42', '/administrateur', '/admins', '/marche/admin']
 
 const cookieFor = (consent: Consent) => `${CONSENT_COOKIE}=${encodeURIComponent(JSON.stringify(consent))}`
@@ -133,7 +144,13 @@ describe('before-send filter', () => {
 
   it('passes a public page through unchanged after a « yes »', () => {
     const payload = page('/produits/42', 'https://www.google.com/')
-    expect(filterUmamiPayload(payload, `servyou_lang=ar; ${YES}`)).toBe(payload)
+    expect(filterUmamiPayload(payload, `servyou_lang=ar; ${YES}`)).toEqual(payload)
+  })
+
+  it('cuts the query string and hash itself — from the URL and the referrer — whatever the live tracker script does', () => {
+    const payload = page('/nouveau-mot-de-passe?code=s3cr3t#top', '/verifier-email?token_hash=abc')
+    expect(filterUmamiPayload(payload, YES)).toEqual(page('/nouveau-mot-de-passe', '/verifier-email'))
+    expect(filterUmamiPayload(page('/', 'https://mail.example.com/inbox?token=1#m'), YES)).toEqual(page('/', 'https://mail.example.com/inbox'))
   })
 
   it('drops everything once consent is withdrawn, absent, expired or forged', () => {
@@ -152,16 +169,22 @@ describe('before-send filter', () => {
     expect(filterUmamiPayload({ url: 42 }, YES)).toBeNull()
   })
 
-  it('blanks an admin page given as the same-site referrer, keeps any other referrer', () => {
+  it('blanks an admin page given as the same-site referrer — a path, or a full URL from another production hostname', () => {
     expect(filterUmamiPayload(page('/', '/admin/utilisateurs/0c9a5e2e'), YES)).toEqual(page('/', ''))
+    expect(filterUmamiPayload(page('/', 'https://www.servyou.tn/admin/litiges/1'), YES)).toEqual(page('/', ''))
     expect(filterUmamiPayload(page('/', '/marche'), YES)).toEqual(page('/', '/marche'))
+    // Another site's /admin is not ours: kept.
+    expect(filterUmamiPayload(page('/', 'https://example.com/admin'), YES)).toEqual(page('/', 'https://example.com/admin'))
   })
 
-  it('is installed on window under the data-before-send name and reads the live cookie', async () => {
+  it('is installed at MODULE scope — on import, before any render — and reads the live cookie', async () => {
+    // A fresh module graph and no render: moving the install into an effect or the component body fails here.
+    const globals = window as unknown as Record<string, unknown>
+    delete globals[UMAMI_BEFORE_SEND]
+    vi.resetModules()
     await import('@/components/analytics/UmamiScript')
-    const beforeSend = (window as unknown as Record<string, unknown>)[UMAMI_BEFORE_SEND]
-    expect(typeof beforeSend).toBe('function')
-    const send = beforeSend as (type: string, payload: object) => object | null
+    expect(typeof globals[UMAMI_BEFORE_SEND]).toBe('function')
+    const send = globals[UMAMI_BEFORE_SEND] as (type: string, payload: object) => object | null
     expect(send('event', page('/'))).toBeNull()
     document.cookie = `${YES}; Path=/`
     expect(send('event', page('/'))).toEqual(page('/'))

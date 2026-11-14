@@ -32,9 +32,21 @@ export function umamiEnabled(vercelEnv: string | undefined): boolean {
   return vercelEnv === 'production'
 }
 
+/** Percent-decoded, lower-cased, repeated slashes collapsed — so `/%61dmin`, `//admin` or `/ADMIN` cannot slip past the prefix check. */
+function normalizePath(pathname: string): string {
+  let decoded = pathname
+  try {
+    decoded = decodeURIComponent(pathname)
+  } catch {
+    // A malformed escape: match on the raw text.
+  }
+  return decoded.replace(/\/{2,}/g, '/').toLowerCase()
+}
+
 /** `/admin` and everything under `/admin/`, same for `/verification-admin` — but not a look-alike such as `/administrateur`. */
 export function isExcludedPath(pathname: string): boolean {
-  return UMAMI_EXCLUDED_PATH_PREFIXES.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`))
+  const path = normalizePath(pathname)
+  return UMAMI_EXCLUDED_PATH_PREFIXES.some((prefix) => path === prefix || path.startsWith(`${prefix}/`))
 }
 
 export function umamiScriptAttributes() {
@@ -50,27 +62,43 @@ export function umamiScriptAttributes() {
 /** What the tracker hands to before-send: `url` is the full page URL, `referrer` a path for same-site referrers. */
 export type UmamiPayload = Record<string, unknown> & { url?: unknown; referrer?: unknown }
 
-function pathnameOf(value: string): string | null {
+const RELATIVE_BASE = 'https://servyou.invalid'
+
+function parse(value: string): URL | null {
   try {
-    return new URL(value, 'https://servyou.invalid').pathname
+    return new URL(value, RELATIVE_BASE)
   } catch {
     return null
   }
+}
+
+/** The value without its query string and hash, in the same form it came in (a path stays a path, a full URL stays a full URL). */
+function withoutSearchAndHash(value: string, url: URL): string {
+  return url.origin === RELATIVE_BASE ? url.pathname : `${url.origin}${url.pathname}`
+}
+
+/** Same site: a path, or a full URL on one of the production hostnames (www.servyou.tn → servyou.tn arrives as a full URL). */
+function isSameSite(url: URL): boolean {
+  return url.origin === RELATIVE_BASE || (UMAMI_DOMAINS as readonly string[]).includes(url.hostname)
 }
 
 /**
  * The before-send filter. Returns the payload to send, or null to send nothing:
  *   • null without a valid « yes » to audience measurement in `cookies` (the live `document.cookie`);
  *   • null for an excluded (admin) page, or a payload whose URL cannot be read (fail closed);
- *   • an admin page as the same-site referrer is blanked, so leaving the back office leaves no trace either.
+ *   • an admin page as the same-site referrer is blanked, so leaving the back office leaves no trace either;
+ *   • the query string and hash are cut from `url` and `referrer` HERE too. data-exclude-search / data-exclude-hash already make
+ *     the tracker do it, but the tracker is Umami's live CDN script, not a pinned copy — the guarantee must not rest on it alone.
  */
 export function filterUmamiPayload<P extends UmamiPayload>(payload: P, cookies: string): P | null {
   if (!hasConsent(consentFromCookieString(cookies), 'audience')) return null
-  const path = typeof payload.url === 'string' ? pathnameOf(payload.url) : null
-  if (path === null || isExcludedPath(path)) return null
-  const referrer = payload.referrer
-  if (typeof referrer === 'string' && referrer.startsWith('/') && isExcludedPath(pathnameOf(referrer) ?? '/')) {
-    return { ...payload, referrer: '' }
+  const page = typeof payload.url === 'string' ? parse(payload.url) : null
+  if (page === null || isExcludedPath(page.pathname)) return null
+  const cleaned: P = { ...payload, url: withoutSearchAndHash(payload.url as string, page) }
+  if (typeof payload.referrer === 'string' && payload.referrer !== '') {
+    const referrer = parse(payload.referrer)
+    if (referrer === null || (isSameSite(referrer) && isExcludedPath(referrer.pathname))) return { ...cleaned, referrer: '' }
+    return { ...cleaned, referrer: withoutSearchAndHash(payload.referrer, referrer) }
   }
-  return payload
+  return cleaned
 }
