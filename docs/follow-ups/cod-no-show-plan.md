@@ -6,7 +6,7 @@ founder must decide (« Questions for the founder », at the end). Discovery was
 (`execute_sql` SELECTs, 2026-11-14).
 
 **The rule, as decided:**
-- the seller marks an order « Refusé à la livraison » (the buyer refused it or never collected it);
+- the seller marks an order « Refusée à la livraison » (the buyer refused it or never collected it; label per decision 9);
 - 2 refusals of the same buyer within 90 days → that buyer may have only 1 open order at a time, and the seller sees a
   warning on that buyer's orders;
 - 3 refusals within 90 days → COD blocked for that buyer for 30 days. COD is the only payment at launch, so this means
@@ -15,6 +15,26 @@ founder must decide (« Questions for the founder », at the end). Discovery was
 
 This pulls forward part of the post-launch « buyer rating and reputation » work (product.md, « The COD friction
 reduction features », L125-135; roadmap.md L92-95; data-model.md L199-201: « No buyer-reputation aggregate »).
+
+## Founder decisions (2026-11-14): all 10 recommendations accepted
+
+These answer « Questions for the founder », at the end. Where the sections below give options, these decisions win.
+
+1. **How a refusal is recorded:** a seller cancellation after dispatch, plus a refusal marker (Option B). No new
+   status, 1 DB PR.
+2. **Scope:** product orders only. Service requests are neither capped nor blocked.
+3. **« Open », for the 1-order cap:** any product order from « en attente » (`pending`) to « arrivée » (`arrived`).
+4. **The seller's reasons:** refused the parcel, not collected, unreachable. All three count.
+5. **The counting unit:** the same seller, the same buyer and the same day (Africa/Tunis) count once.
+6. **The seller's warning:** computed live on all of that buyer's open orders. Yes / no only: no count, dates or other
+   sellers.
+7. **The contest:** the buyer opens a dispute within 14 days of the refusal, and an admin voids the refusal
+   explicitly. The FAQ becomes « refusez, puis contestez ».
+8. **An admin lift resets the refusal count** (a clean slate).
+9. **The label:** « Refusée à la livraison » (feminine, agreeing with « commande »), locked in design system §6.2.
+10. **Users are told:** one paragraph in the CGU and one line in the privacy policy (Agent A's UI PRs).
+
+Next: DB-1 (section 6), on its own branch.
 
 ---
 
