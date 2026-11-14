@@ -9,8 +9,7 @@ import { HitArea } from '@/components/ui/interactive-surface'
 
 // The navy site footer — shared by the landing page (via FinalCtaFooter) and every
 // (marketing) content page (via MarketingShell). Link targets are the real routes/
-// anchors that exist today; pages still pending (the four legal docs) point to "#" —
-// honest over broken. /a-propos, /contact, /faq are now real routes.
+// anchors that exist today. /a-propos, /contact, /faq and the five legal documents are real routes.
 
 // Walk 2026-11-02 #1 / #3: Boutiques / Freelances open the marketplace lenses (as the header); « Catégories » lands on the landing's
 // ten category tiles (each opens its /categories/[slug] page) — it used to open the search page.
@@ -33,6 +32,7 @@ const legalLinks = [
   { key: 'landing.footer.legal_privacy', href: '/confidentialite' },
   { key: 'landing.footer.legal_cookies', href: '/cookies' },
   { key: 'landing.footer.legal_accessibility', href: '/accessibilite' },
+  { key: 'landing.footer.legal_mentions', href: '/mentions-legales' },
 ] as const
 
 function FooterColumn({

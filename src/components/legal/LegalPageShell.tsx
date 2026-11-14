@@ -1,13 +1,41 @@
+import { Fragment } from 'react'
+import Link from 'next/link'
 import { AlertTriangle, Check } from 'lucide-react'
 import { t } from '@/lib/i18n'
 import type { Lang } from '@/lib/i18n'
 import { FOCUS_RING } from '@/components/layout/styles'
-import { type LegalDocStructure, parseLegalBody, splitLines } from '@/lib/legal/legal-structure'
+import { type LegalDocStructure, parseLegalBody, parseLegalInline, splitLines } from '@/lib/legal/legal-structure'
 
 // Renders one legal document from its key structure: draft banner → title + date → intro
 // ("Pourquoi cette page existe") → one-minute summary → optional rights featured block
 // (privacy) → sticky TOC + human-opened sections → closing "Parlez-nous". Section bodies
-// are parsed from the i18n string convention (blank-line paragraphs; "- " bullet blocks).
+// are parsed from the i18n string convention (blank-line paragraphs; "- " bullet blocks;
+// inline "[label](href)" links and "`text`" left-to-right islands).
+
+// In-text links stay underlined: colour alone must not carry the link (WCAG 1.4.1).
+const INLINE_LINK = `rounded font-medium text-brand-blue-600 underline underline-offset-2 hover:text-brand-blue-700 ${FOCUS_RING}`
+
+function InlineText({ text }: { text: string }) {
+  return (
+    <>
+      {parseLegalInline(text).map((part, i) => {
+        if (part.type === 'text') return <Fragment key={i}>{part.text}</Fragment>
+        // An e-mail address or a Latin name is LTR text even inside an RTL page.
+        if (part.type === 'ltr') return <bdi key={i} dir="ltr">{part.text}</bdi>
+        const label = <bdi>{part.label}</bdi>
+        return part.href.startsWith('/') ? (
+          <Link key={i} href={part.href} className={INLINE_LINK}>
+            {label}
+          </Link>
+        ) : (
+          <a key={i} href={part.href} className={INLINE_LINK}>
+            {label}
+          </a>
+        )
+      })}
+    </>
+  )
+}
 
 function BodyBlocks({ body }: { body: string }) {
   return (
@@ -16,12 +44,14 @@ function BodyBlocks({ body }: { body: string }) {
         block.type === 'ul' ? (
           <ul key={i} className="my-3 list-disc space-y-1.5 ps-5 text-body leading-relaxed text-text-primary">
             {block.items.map((item, j) => (
-              <li key={j}>{item}</li>
+              <li key={j}>
+                <InlineText text={item} />
+              </li>
             ))}
           </ul>
         ) : (
           <p key={i} className="my-3 text-body leading-relaxed text-text-primary">
-            {block.text}
+            <InlineText text={block.text} />
           </p>
         ),
       )}

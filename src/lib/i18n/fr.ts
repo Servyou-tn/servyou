@@ -309,6 +309,7 @@ export const fr: Record<string, string> = {
   'lp.footer.contact': "Contact",
   'lp.footer.terms': "Conditions d’utilisation",
   'lp.footer.privacy': "Politique de confidentialité",
+  'lp.footer.mentions': "Mentions légales",
   'lp.footer.copyright': "© 2026 ServYou. Tous droits réservés.",
   'lp.footer.made': "Fait en Tunisie",
   'lp.footer.lang_label': "Langue",
@@ -324,6 +325,7 @@ export const fr: Record<string, string> = {
   'landing.footer.legal_privacy':       "Confidentialité",
   'landing.footer.legal_cookies':       "Cookies",
   'landing.footer.legal_accessibility': "Accessibilité",
+  'landing.footer.legal_mentions': "Mentions légales",
   'landing.footer.copyright':           "© 2026 Servyou. Tous droits réservés.",
 
   // Language names stay in their own language by accessibility convention (a
@@ -3490,7 +3492,7 @@ export const fr: Record<string, string> = {
   'legal.privacy.rights':  "Droit d'accès — Obtenir une copie de toutes vos données\nDroit de rectification — Corriger des données inexactes\nDroit à l'effacement — Supprimer vos données\nDroit à la portabilité — Recevoir vos données dans un format structuré\nDroit d'opposition — Refuser certains traitements\nDroit de retirer votre consentement — À tout moment",
   'legal.privacy.s1.title':  "Notre engagement",
   'legal.privacy.s1.opener': "Nous suivons le standard le plus protecteur en usage généralisé, parce que vous le méritez.",
-  'legal.privacy.s1.body':   "Servyou s'engage à protéger vos données personnelles. Nous suivons la posture du Règlement Général sur la Protection des Données européen (RGPD) — même pour nos utilisateurs tunisiens — parce que c'est le standard de protection le plus élevé en usage généralisé.\n\nCette posture s'aligne avec la loi tunisienne (Loi 2004-63) et avec la Convention 108 du Conseil de l'Europe, à laquelle la Tunisie a adhéré.",
+  'legal.privacy.s1.body':   "Servyou s'engage à protéger vos données personnelles. Nous suivons la posture du Règlement Général sur la Protection des Données européen (RGPD) — même pour nos utilisateurs tunisiens — parce que c'est le standard de protection le plus élevé en usage généralisé.\n\nCette posture s'aligne avec la loi tunisienne (Loi 2004-63) et avec la Convention 108 du Conseil de l'Europe, à laquelle la Tunisie a adhéré.\n\nResponsable du traitement : `Moatez Sahbeni` (personne physique), Ariana, Tunisie — [bonjour@servyou.tn](mailto:bonjour@servyou.tn)",
   'legal.privacy.s2.title':  "Quelles données nous collectons",
   'legal.privacy.s2.opener': "Le strict minimum. Pas un octet de plus.",
   'legal.privacy.s2.body':   "Pour tous les utilisateurs :\n\n- Nom complet\n- Adresse email\n- Mot de passe (chiffré, jamais visible en clair par nous ni par personne)\n- Date de naissance (uniquement pour vérifier la règle d'âge)\n- Ville ou gouvernorat\n- Préférence de langue\n\nSi vous le choisissez :\n\n- Photo de profil\n- Biographie ou présentation\n- Compétences (pour les freelances)\n- Description et photos de boutique (pour les vendeurs)\n- Photos de portfolio (pour les freelances)\n\nAu moment d'une transaction :\n\n- Numéro de téléphone (uniquement pour les livraisons en espèces)\n- Adresse de livraison",
@@ -3573,6 +3575,29 @@ export const fr: Record<string, string> = {
   'legal.accessibility.s6.title':  "Mise à jour",
   'legal.accessibility.s6.opener': "Cette déclaration n'est pas figée.",
   'legal.accessibility.s6.body':   "Cette déclaration est révisée régulièrement pour refléter l'état actuel de notre accessibilité. La date de dernière mise à jour figure en haut de cette page.",
+
+  // ─── /mentions-legales ───────────────────────────────────────────────────────
+  // Founder decisions 2026-11-14: operated by Moatez Sahbeni personally; city only, no phone, no street address yet
+  // (domiciliation address before public launch — docs/follow-ups/mentions-legales.md). Hosts: each provider's own legal page.
+  'legal.mentions.title': "Mentions légales",
+  'legal.mentions.updatedDate': "14 novembre 2026",
+  'legal.mentions.intro': "Qui édite Servyou, qui l'héberge et à qui vous adresser : tout est réuni ici, en clair.",
+  'legal.mentions.summary': "Servyou est édité par Moatez Sahbeni, personne physique, à Ariana (Tunisie).\nMoatez Sahbeni est aussi directeur de la publication et responsable du traitement de vos données.\nLe site est hébergé par Vercel (fonctions serveur à Francfort), ses données par Supabase (Francfort, Allemagne).\nPour nous écrire : bonjour@servyou.tn ou le formulaire de contact.",
+  'legal.mentions.s1.title': "Éditeur du site",
+  'legal.mentions.s1.opener': "Une personne, pas une société : voici qui est derrière Servyou.",
+  'legal.mentions.s1.body': "Le site Servyou est édité par :\n\n- `Moatez Sahbeni`, personne physique\n- Ariana, Tunisie\n- E-mail : [bonjour@servyou.tn](mailto:bonjour@servyou.tn)\n- Ou écrivez-nous depuis le [formulaire de contact](/contact)",
+  'legal.mentions.s2.title': "Directeur de la publication",
+  'legal.mentions.s2.opener': "Qui veille sur les contenus que Servyou publie.",
+  'legal.mentions.s2.body': "Le directeur de la publication est `Moatez Sahbeni`.",
+  'legal.mentions.s3.title': "Responsable du traitement des données personnelles",
+  'legal.mentions.s3.opener': "À qui vous adresser pour tout ce qui touche à vos données.",
+  'legal.mentions.s3.body': "Le responsable du traitement de vos données personnelles est `Moatez Sahbeni` (personne physique), Ariana, Tunisie — [bonjour@servyou.tn](mailto:bonjour@servyou.tn).\n\nQuelles données nous collectons, pourquoi, combien de temps nous les gardons et comment exercer vos droits : tout est expliqué dans notre [Politique de confidentialité](/confidentialite).",
+  'legal.mentions.s4.title': "Hébergement",
+  'legal.mentions.s4.opener': "Où tourne Servyou, et chez qui.",
+  'legal.mentions.s4.body': "L'application (le site et ses fonctions serveur) est hébergée par :\n\n- `Vercel Inc.`\n- `440 N Barranca Ave #4133, Covina, CA 91723`, États-Unis\n- Fonctions serveur exécutées dans la région de Francfort (Allemagne)\n\nLa base de données et les fichiers (comme les photos) sont hébergés par :\n\n- `Supabase Pte. Ltd.`\n- `65 Chulia Street #38-02/03, OCBC Centre, Singapore 049513`\n- Région de Francfort (Allemagne)",
+  'legal.mentions.s5.title': "Propriété intellectuelle",
+  'legal.mentions.s5.opener': "Ce qui est à Servyou reste à Servyou. Ce qui est à vous reste à vous.",
+  'legal.mentions.s5.body': "Servyou est une marque exploitée par son éditeur, `Moatez Sahbeni`. Le nom et le logo Servyou, l'interface et les contenus que l'éditeur publie sur le site lui appartiennent : vous ne pouvez pas les copier, les reproduire ni les diffuser sans son autorisation écrite.\n\nLe contenu que vous publiez (descriptions, photos, profils, messages) reste le vôtre, comme le prévoient nos [Conditions générales d'utilisation](/conditions#s8).",
 
   // ─── System pages (404 / 500) ────────────────────────────────────────────────
   // A9 / A10 — 404 and 500 (Figma 1478:35813 / 1478:35837), same shell-less card as K1–K4.
@@ -3722,6 +3747,7 @@ export const fr: Record<string, string> = {
   'aide.legal.privacy': "Politique de confidentialité",
   'aide.legal.cookies': "Politique de cookies",
   'aide.legal.accessibility': "Déclaration d'accessibilité",
+  'aide.legal.mentions': "Mentions légales",
   'aide.g.profil.title': "Mon profil freelance",
   'aide.g.profil.q1': "Que faut-il pour publier mon profil ?",
   'aide.g.profil.a1': "Dans « Modifier mon profil », remplissez trois choses : un titre professionnel, une bio d'au moins 100 caractères et entre 3 et 15 compétences. Quand c'est fait, le bouton « Publier mon profil » confirme que votre profil est complet.\n\nMais votre profil n'est visible du public qu'à partir du moment où au moins un de vos services est actif : publiez votre premier service pour apparaître.",
@@ -4649,6 +4675,7 @@ export const fr: Record<string, string> = {
   'meta.privacy': "Politique de confidentialité",
   'meta.contact': "Contact",
   'meta.cookies': "Politique de cookies",
+  'meta.mentions': "Mentions légales",
   'meta.faq': "Questions fréquentes",
   'meta.goodbye': "À bientôt",
   'meta.help': "Aide",
@@ -4710,6 +4737,7 @@ export const fr: Record<string, string> = {
   'seo.desc.privacy': "Comment ServYou collecte, utilise et protège vos données personnelles, et comment exercer vos droits.",
   'seo.desc.contact': "Une question ? Écrivez à l'équipe ServYou : une personne lit chaque message et vous répond sous 24 à 48 heures.",
   'seo.desc.cookies': "Les cookies utilisés par ServYou, à quoi ils servent et comment gérer vos choix.",
+  'seo.desc.mentions': "Qui édite et héberge ServYou : l'éditeur, le directeur de la publication, le responsable du traitement des données et les hébergeurs.",
   'seo.desc.faq': "Les réponses aux questions fréquentes sur ServYou : acheter, vendre, proposer ses services, payer et utiliser la plateforme en sécurité.",
   'seo.desc.services': "Parcourez les services des freelances tunisiens, comparez les offres et contactez le bon pro.",
   'seo.desc.products': "Achetez auprès des boutiques tunisiennes : parcourez les produits, commandez en ligne et payez à la livraison.",

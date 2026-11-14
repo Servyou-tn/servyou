@@ -344,6 +344,7 @@ export const ar: Record<string, string> = {
   'lp.footer.contact': "اتصل بنا",
   'lp.footer.terms': "شروط الاستخدام",
   'lp.footer.privacy': "سياسة الخصوصية",
+  'lp.footer.mentions': "الإشعارات القانونية", // REVIEW_AR_TRANSLATION
   'lp.footer.copyright': "© 2026 ServYou. جميع الحقوق محفوظة.",
   'lp.footer.made': "صُنع في تونس",
   'lp.footer.lang_label': "اللغة",
@@ -359,6 +360,7 @@ export const ar: Record<string, string> = {
   'landing.footer.legal_privacy':       "الخصوصية",
   'landing.footer.legal_cookies':       "ملفات تعريف الارتباط",
   'landing.footer.legal_accessibility': "إمكانية الوصول",
+  'landing.footer.legal_mentions': "الإشعارات القانونية", // REVIEW_AR_TRANSLATION
   'landing.footer.copyright':           "© 2026 Servyou. جميع الحقوق محفوظة.",
 
   // Language names stay native (identical to fr.ts) by accessibility convention.
@@ -3429,7 +3431,7 @@ export const ar: Record<string, string> = {
   'legal.privacy.rights':  "حق الاطلاع — الحصول على نسخة من كل بياناتك\nحق التصحيح — تصحيح بيانات غير دقيقة\nحق المحو — حذف بياناتك\nحق النقل — استلام بياناتك بصيغة منظمة\nحق الاعتراض — رفض بعض المعالجات\nحق سحب موافقتك — في أي وقت",
   'legal.privacy.s1.title':  "التزامنا",
   'legal.privacy.s1.opener': "نتبع المعيار الأكثر حماية والشائع الاستعمال، لأنك تستحق ذلك.",
-  'legal.privacy.s1.body':   "يلتزم Servyou بحماية بياناتك الشخصية. نتبع نهج اللائحة العامة الأوروبية لحماية البيانات (RGPD) — حتى لمستخدمينا التونسيين — لأنه أعلى معيار حماية شائع الاستعمال.\n\nيتوافق هذا النهج مع القانون التونسي (القانون 2004-63) ومع الاتفاقية 108 لمجلس أوروبا التي انضمت إليها تونس.",
+  'legal.privacy.s1.body':   "يلتزم Servyou بحماية بياناتك الشخصية. نتبع نهج اللائحة العامة الأوروبية لحماية البيانات (RGPD) — حتى لمستخدمينا التونسيين — لأنه أعلى معيار حماية شائع الاستعمال.\n\nيتوافق هذا النهج مع القانون التونسي (القانون 2004-63) ومع الاتفاقية 108 لمجلس أوروبا التي انضمت إليها تونس.\n\nالمسؤول عن المعالجة: `Moatez Sahbeni` (شخص طبيعي)، أريانة، تونس — [bonjour@servyou.tn](mailto:bonjour@servyou.tn)",
   'legal.privacy.s2.title':  "ما البيانات التي نجمعها",
   'legal.privacy.s2.opener': "الحد الأدنى الصارم. ولا بايت زيادة.",
   'legal.privacy.s2.body':   "لجميع المستخدمين:\n\n- الاسم الكامل\n- عنوان البريد الإلكتروني\n- كلمة المرور (مشفرة، لا نراها نحن ولا أحد بصيغة واضحة)\n- تاريخ الميلاد (فقط للتحقق من قاعدة السن)\n- المدينة أو الولاية\n- تفضيل اللغة\n\nإن اخترت ذلك:\n\n- صورة الملف الشخصي\n- نبذة أو تعريف\n- المهارات (للمستقلين)\n- وصف المتجر وصوره (للبائعين)\n- صور أعمال سابقة (للمستقلين)\n\nعند المعاملة:\n\n- رقم الهاتف (فقط للتسليم نقدا)\n- عنوان التسليم",
@@ -3512,6 +3514,28 @@ export const ar: Record<string, string> = {
   'legal.accessibility.s6.title':  "التحديث",
   'legal.accessibility.s6.opener': "هذا البيان غير جامد.",
   'legal.accessibility.s6.body':   "يُراجع هذا البيان بانتظام ليعكس الحالة الراهنة لإمكانية وصولنا. ويظهر تاريخ آخر تحديث في أعلى هذه الصفحة.",
+
+  // ─── /mentions-legales ───────────────────────────────────────────────────────
+  // REVIEW_AR_TRANSLATION — legal notice: draft, to check by a Tunisian speaker. Names and postal addresses stay in Latin script.
+  'legal.mentions.title': "الإشعارات القانونية",
+  'legal.mentions.updatedDate': "14 نوفمبر 2026",
+  'legal.mentions.intro': "من ينشر Servyou، ومن يستضيفه، وبمن تتصل: كل ذلك هنا، بوضوح.",
+  'legal.mentions.summary': "ناشر موقع Servyou شخص طبيعي: Moatez Sahbeni، من أريانة (تونس).\nالشخص نفسه هو مدير النشر والمسؤول عن معالجة بياناتك الشخصية.\nيستضيف Vercel الموقع (وظائف الخادم في فرانكفورت)، ويستضيف Supabase بياناته (فرانكفورت، ألمانيا).\nلمراسلتنا: bonjour@servyou.tn أو استمارة الاتصال.",
+  'legal.mentions.s1.title': "ناشر الموقع",
+  'legal.mentions.s1.opener': "شخص، لا شركة: هذا من يقف وراء Servyou.",
+  'legal.mentions.s1.body': "ناشر موقع Servyou:\n\n- `Moatez Sahbeni`، شخص طبيعي\n- أريانة، تونس\n- البريد الإلكتروني: [bonjour@servyou.tn](mailto:bonjour@servyou.tn)\n- أو راسلنا عبر [استمارة الاتصال](/contact)",
+  'legal.mentions.s2.title': "مدير النشر",
+  'legal.mentions.s2.opener': "من يسهر على المحتوى الذي ينشره Servyou.",
+  'legal.mentions.s2.body': "مدير النشر: `Moatez Sahbeni`.",
+  'legal.mentions.s3.title': "المسؤول عن معالجة المعطيات الشخصية",
+  'legal.mentions.s3.opener': "لمن تتوجه في كل ما يتعلق ببياناتك.",
+  'legal.mentions.s3.body': "المسؤول عن معالجة معطياتك الشخصية: `Moatez Sahbeni` (شخص طبيعي)، أريانة، تونس — [bonjour@servyou.tn](mailto:bonjour@servyou.tn).\n\nما البيانات التي نجمعها، ولماذا، وكم من الوقت نحتفظ بها، وكيف تمارس حقوقك: كل ذلك مشروح في [سياسة الخصوصية](/confidentialite).",
+  'legal.mentions.s4.title': "الاستضافة",
+  'legal.mentions.s4.opener': "أين يعمل Servyou، ولدى من.",
+  'legal.mentions.s4.body': "مستضيف التطبيق (الموقع ووظائف الخادم):\n\n- `Vercel Inc.`\n- `440 N Barranca Ave #4133, Covina, CA 91723`، الولايات المتحدة\n- تعمل وظائف الخادم في منطقة فرانكفورت (ألمانيا)\n\nمستضيف قاعدة البيانات والملفات (مثل الصور):\n\n- `Supabase Pte. Ltd.`\n- `65 Chulia Street #38-02/03, OCBC Centre, Singapore 049513`\n- منطقة فرانكفورت (ألمانيا)",
+  'legal.mentions.s5.title': "الملكية الفكرية",
+  'legal.mentions.s5.opener': "ما يخص Servyou يبقى لـ Servyou، وما يخصك يبقى لك.",
+  'legal.mentions.s5.body': "Servyou علامة يستغلها ناشرها، `Moatez Sahbeni`. اسم Servyou وشعاره والواجهة والمحتويات التي ينشرها الناشر على الموقع ملك له: لا يمكنك نسخها ولا إعادة إنتاجها ولا توزيعها دون إذن كتابي منه.\n\nالمحتوى الذي تنشره (الأوصاف والصور والملفات والرسائل) يبقى ملكك، كما تنص على ذلك [الشروط العامة للاستخدام](/conditions#s8).",
 
   // ─── System pages (404 / 500) ────────────────────────────────────────────────
   // REVIEW_AR_TRANSLATION — A9 / A10, 404 and 500: drafts.
@@ -3659,6 +3683,7 @@ export const ar: Record<string, string> = {
   'aide.legal.privacy': "سياسة الخصوصية",
   'aide.legal.cookies': "سياسة الكوكيز",
   'aide.legal.accessibility': "بيان إمكانية الوصول",
+  'aide.legal.mentions': "الإشعارات القانونية", // REVIEW_AR_TRANSLATION
   'aide.g.profil.title': "ملفي كمستقل",
   'aide.g.profil.q1': "ما الذي أحتاجه لنشر ملفي الشخصي؟",
   'aide.g.profil.a1': "من «تعديل ملفي الشخصي»، أكمل ثلاثة أشياء: عنوانا مهنيا، ونبذة لا تقل عن 100 حرف، ومن 3 إلى 15 مهارة. عندما تنتهي، يؤكد لك زر «نشر ملفي الشخصي» أن ملفك مكتمل.\n\nلكن ملفك لا يظهر للجمهور إلا عندما تكون إحدى خدماتك على الأقل نشطة: انشر خدمتك الأولى لتظهر.",
@@ -4546,6 +4571,7 @@ export const ar: Record<string, string> = {
   'meta.privacy': "سياسة الخصوصية",
   'meta.contact': "اتصل بنا",
   'meta.cookies': "سياسة ملفات تعريف الارتباط",
+  'meta.mentions': "الإشعارات القانونية", // REVIEW_AR_TRANSLATION
   'meta.faq': "الأسئلة الشائعة",
   'meta.goodbye': "إلى اللقاء",
   'meta.help': "المساعدة",
@@ -4607,6 +4633,7 @@ export const ar: Record<string, string> = {
   'seo.desc.privacy': "كيف تجمع ServYou بياناتك الشخصية وتستخدمها وتحميها، وكيف تمارس حقوقك.",
   'seo.desc.contact': "لديك سؤال؟ اكتب إلى فريق ServYou: يقرأ شخص كل رسالة ويرد عليك في غضون 24 إلى 48 ساعة.",
   'seo.desc.cookies': "ملفات تعريف الارتباط التي تستخدمها ServYou، والغرض منها، وكيفية إدارة اختياراتك.",
+  'seo.desc.mentions': "من ينشر ServYou ومن يستضيفه: الناشر، ومدير النشر، والمسؤول عن معالجة المعطيات الشخصية، والمستضيفون.", // REVIEW_AR_TRANSLATION
   'seo.desc.faq': "إجابات عن الأسئلة الشائعة حول ServYou: الشراء والبيع وعرض الخدمات والدفع واستخدام المنصة بأمان.",
   'seo.desc.services': "تصفح خدمات المستقلين التونسيين، وقارن العروض، وتواصل مع المحترف المناسب.",
   'seo.desc.products': "تسوق من المتاجر التونسية: تصفح المنتجات، واطلب عبر الإنترنت، وادفع عند الاستلام.",

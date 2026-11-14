@@ -40,6 +40,7 @@ const COLUMNS = [
       { href: '/contact', key: 'lp.footer.contact' },
       { href: '/conditions', key: 'lp.footer.terms' },
       { href: '/confidentialite', key: 'lp.footer.privacy' },
+      { href: '/mentions-legales', key: 'lp.footer.mentions' },
     ],
   },
 ]
