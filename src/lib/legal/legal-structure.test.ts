@@ -72,7 +72,7 @@ describe('safeLegalHref — what a legal string may link to', () => {
     'https://servyou.tn/contact', // absolute URLs are refused too: same-site paths only
     'data:text/html,hi',
     'mailto:', // no address
-    'mailto:a@b.tn?bcc=x@y.tn/', // no smuggled path / query trick with a slash
+    'mailto:a@b.tn?bcc=x@y.tn/', // one address only: a second "@" (and any "/" or "\") is refused
     'contact', // relative, no leading slash
     '',
   ])('refuses %s', (href) => {
@@ -112,11 +112,15 @@ describe('legal strings — links and LTR islands match across languages', () =>
   // The parity test compares {placeholders} only: an Arabic link to the wrong page, or a postal address typed
   // differently in one language, would pass it. Every legal string must carry the same hrefs and the same
   // `islands` (names, legal entity names, postal addresses — never translated) in French, Arabic and English.
+  // Compared as sets: a language may repeat a name in a sentence the other phrases without it.
   const tokensOf = (s: string) =>
-    parseLegalInline(s)
-      .filter((p) => p.type !== 'text')
-      .map((p) => (p.type === 'link' ? `link:${p.href}` : p.type === 'ltr' ? `ltr:${p.text}` : ''))
-      .sort()
+    [
+      ...new Set(
+        parseLegalInline(s)
+          .filter((p) => p.type !== 'text')
+          .map((p) => (p.type === 'link' ? `link:${p.href}` : p.type === 'ltr' ? `ltr:${p.text}` : '')),
+      ),
+    ].sort()
 
   it('same hrefs and islands in fr, ar and en (en falls back to fr)', () => {
     const legalKeys = Object.keys(fr).filter((k) => k.startsWith('legal.'))
@@ -127,12 +131,27 @@ describe('legal strings — links and LTR islands match across languages', () =>
     }
   })
 
-  it('no legal string carries a link the parser would refuse', () => {
+  it('no legal string keeps a token the parser leaves as raw text (a refused link or a stray backtick)', () => {
     for (const dict of [fr, ar, en]) {
       for (const [key, value] of Object.entries(dict)) {
         if (!key.startsWith('legal.')) continue
-        for (const m of value.matchAll(/\[[^\]\n]+\]\(([^)\s]+)\)/g)) {
-          expect(safeLegalHref(m[1]), `${key}: ${m[1]}`).not.toBeNull()
+        for (const line of value.split('\n')) {
+          const leftover = parseLegalInline(line)
+            .filter((p) => p.type === 'text')
+            .map((p) => (p.type === 'text' ? p.text : ''))
+            .join('')
+          expect(leftover, `${key}: ${line}`).not.toMatch(/\]\(|`/)
+        }
+      }
+    }
+  })
+
+  it('titles, intros and openers carry no inline token (the shell renders them as plain text)', () => {
+    for (const doc of Object.values(LEGAL_DOCS)) {
+      const plainKeys = [doc.titleKey, doc.introKey, ...doc.sections.flatMap((s) => [s.titleKey, s.openerKey])]
+      for (const key of plainKeys) {
+        for (const value of [fr[key], ar[key], en[key] ?? fr[key]]) {
+          expect(value, key).not.toMatch(/\]\(|`/)
         }
       }
     }

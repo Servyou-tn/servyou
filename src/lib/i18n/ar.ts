@@ -3520,7 +3520,7 @@ export const ar: Record<string, string> = {
   'legal.mentions.title': "الإشعارات القانونية",
   'legal.mentions.updatedDate': "14 نوفمبر 2026",
   'legal.mentions.intro': "من ينشر Servyou، ومن يستضيفه، وبمن تتصل: كل ذلك هنا، بوضوح.",
-  'legal.mentions.summary': "ناشر موقع Servyou شخص طبيعي: Moatez Sahbeni، من أريانة (تونس).\nالشخص نفسه هو مدير النشر والمسؤول عن معالجة بياناتك الشخصية.\nيستضيف Vercel الموقع (وظائف الخادم في فرانكفورت)، ويستضيف Supabase بياناته (فرانكفورت، ألمانيا).\nلمراسلتنا: bonjour@servyou.tn أو استمارة الاتصال.",
+  'legal.mentions.summary': "ناشر موقع Servyou شخص طبيعي: `Moatez Sahbeni`، من أريانة (تونس).\nالشخص نفسه هو مدير النشر والمسؤول عن معالجة بياناتك الشخصية.\nيستضيف Vercel الموقع (وظائف الخادم في فرانكفورت)، ويستضيف Supabase بياناته (فرانكفورت، ألمانيا).\nلمراسلتنا: [bonjour@servyou.tn](mailto:bonjour@servyou.tn) أو [استمارة الاتصال](/contact).",
   'legal.mentions.s1.title': "ناشر الموقع",
   'legal.mentions.s1.opener': "شخص، لا شركة: هذا من يقف وراء Servyou.",
   'legal.mentions.s1.body': "ناشر موقع Servyou:\n\n- `Moatez Sahbeni`، شخص طبيعي\n- أريانة، تونس\n- البريد الإلكتروني: [bonjour@servyou.tn](mailto:bonjour@servyou.tn)\n- أو راسلنا عبر [استمارة الاتصال](/contact)",
@@ -3534,8 +3534,8 @@ export const ar: Record<string, string> = {
   'legal.mentions.s4.opener': "أين يعمل Servyou، ولدى من.",
   'legal.mentions.s4.body': "مستضيف التطبيق (الموقع ووظائف الخادم):\n\n- `Vercel Inc.`\n- `440 N Barranca Ave #4133, Covina, CA 91723`، الولايات المتحدة\n- تعمل وظائف الخادم في منطقة فرانكفورت (ألمانيا)\n\nمستضيف قاعدة البيانات والملفات (مثل الصور):\n\n- `Supabase Pte. Ltd.`\n- `65 Chulia Street #38-02/03, OCBC Centre, Singapore 049513`\n- منطقة فرانكفورت (ألمانيا)",
   'legal.mentions.s5.title': "الملكية الفكرية",
-  'legal.mentions.s5.opener': "ما يخص Servyou يبقى لـ Servyou، وما يخصك يبقى لك.",
-  'legal.mentions.s5.body': "Servyou علامة يستغلها ناشرها، `Moatez Sahbeni`. اسم Servyou وشعاره والواجهة والمحتويات التي ينشرها الناشر على الموقع ملك له: لا يمكنك نسخها ولا إعادة إنتاجها ولا توزيعها دون إذن كتابي منه.\n\nالمحتوى الذي تنشره (الأوصاف والصور والملفات والرسائل) يبقى ملكك، كما تنص على ذلك [الشروط العامة للاستخدام](/conditions#s8).",
+  'legal.mentions.s5.opener': "ما يملكه الناشر لا يُنسخ، وما يخصك يبقى لك.",
+  'legal.mentions.s5.body': "Servyou علامة يستغلها ناشرها، `Moatez Sahbeni`. اسم Servyou وشعاره والواجهة والشيفرة المصدرية والمحتويات التي ينشرها الناشر على الموقع ملك له: لا يمكنك نسخها ولا إعادة إنتاجها ولا توزيعها دون إذن كتابي منه.\n\nالمحتوى الذي تنشره (الأوصاف والصور والملفات والرسائل) يبقى ملكك. وبنشره، تمنحنا رخصة غير حصرية لعرضه في إطار الخدمة، كما تنص على ذلك [الشروط العامة للاستخدام](/conditions#s8).",
 
   // ─── System pages (404 / 500) ────────────────────────────────────────────────
   // REVIEW_AR_TRANSLATION — A9 / A10, 404 and 500: drafts.

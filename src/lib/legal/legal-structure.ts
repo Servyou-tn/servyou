@@ -3,8 +3,8 @@
 // → LegalPageShell. Same pattern as faq-content.ts. Section bodies are single i18n strings
 // using a tiny convention (paragraphs split on a blank line; a block whose lines all start
 // with "- " becomes a bullet list) — see parseLegalBody. Inside a body paragraph or bullet,
-// "[label](href)" is a link and "`text`" is a left-to-right island (names, postal addresses)
-// — see parseLegalInline.
+// a summary line or a rights line, "[label](href)" is a link and "`text`" is a left-to-right
+// island (names, postal addresses) — see parseLegalInline. Titles, intros and openers are plain.
 
 export type LegalSectionKeys = { id: string; titleKey: string; openerKey: string; bodyKey: string }
 

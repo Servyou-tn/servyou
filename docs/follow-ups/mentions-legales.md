@@ -18,6 +18,24 @@ bump both dates (`legal.mentions.updatedDate`, `legal.privacy.updatedDate`) to t
 controller line — update their expected text with it.
 **Trigger:** the domiciliation contract is signed — and in any case before public launch.
 
+## 🟠 SPEED — the legal text ships in every public page's first-load JavaScript
+
+**What:** this PR added +3.0 KB gzip to the first load of **every** public page (CI's budget table: `/` 426.0 → 429.0 KB,
+the 7 marketing pages 389.9 → 393.0, the heart pages +3.0–3.1) — although the legal notice is read on one page and
+rendered on the server. The reason: `src/lib/i18n/index.ts` puts the three dictionaries (`fr`, `ar`, `en`) in one object,
+and client components import `t()`, so every string of every language reaches every page's client bundle. Rough sizes
+(gzip of the TS source, approximate): all `legal.*` strings in the three languages ≈ 25 KB; the three dictionary files ≈
+215 KB — about half of a marketing page's ~393 KB first load. The PR raised all 18 budgets by exactly +3 KB (each page
+keeps the headroom it had on main) and gave `/mentions-legales` 394 KB, per the budget file's rule.
+**Candidate fixes (a speed PR, founder's call):** (a) resolve the legal documents' strings on the server only — the five
+legal pages are Server Components, so `legal.*` (~25 KB) could leave the client dictionary; (b) ship only the visitor's
+language to the client (the language is a cookie read on the server), which removes roughly two thirds of the dictionary
+weight. Lower the 18 budgets in the same PR.
+**Why deferred:** a change to how every page gets its strings (`t()` / `dicts` in `src/lib/i18n/index.ts`, the five legal
+pages, the parity tests) — not this PR's focus.
+**Where it lives:** `src/lib/i18n/index.ts` (`dicts`), `src/lib/i18n/fr.ts` / `ar.ts` / `en/`, `scripts/perf/first-load-budget.json`.
+**Trigger:** the next speed PR, or the next PR that needs to raise the budgets again.
+
 ## Lawyer: the privacy policy says « no transfer », the legal notice names a US and a Singapore host
 
 **What:** `legal.privacy.s4.body` says the data is hosted in Europe and « Nous n'effectuons aucun transfert vers des

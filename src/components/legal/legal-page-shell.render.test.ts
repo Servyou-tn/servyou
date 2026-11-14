@@ -54,11 +54,22 @@ describe('LegalPageShell render smoke', () => {
     }
   })
 
-  it('the privacy policy shows the controller line as text plus a mailto link, no raw markup', () => {
+  it('the privacy policy shows the controller line as text plus a mailto link', () => {
     const out = html('confidentialite')
     expect(out).toContain('Responsable du traitement : <bdi dir="ltr">Moatez Sahbeni</bdi> (personne physique), Ariana, Tunisie')
     expect(out).toContain('href="mailto:bonjour@servyou.tn"')
-    expect(out).not.toContain('`')
+  })
+
+  it('no legal page shows raw markup (a backtick or "](") in any language — summaries included', () => {
+    for (const slug of Object.keys(LEGAL_DOCS) as (keyof typeof LEGAL_DOCS)[]) {
+      for (const lang of ['fr', 'ar', 'en'] as const) {
+        const out = html(slug, lang)
+        expect(out, `${slug} ${lang}`).not.toContain('`')
+        expect(out, `${slug} ${lang}`).not.toContain('](')
+      }
+    }
+    // the legal notice's summary links render as links too
+    expect(html('mentions-legales')).toMatch(/Pour nous écrire : <a [^>]*href="mailto:bonjour@servyou.tn"/)
   })
 
   it('renders the privacy "Vos droits" featured block only on /confidentialite', () => {

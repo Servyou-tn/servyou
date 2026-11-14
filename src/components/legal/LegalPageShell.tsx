@@ -10,7 +10,8 @@ import { type LegalDocStructure, parseLegalBody, parseLegalInline, splitLines } 
 // ("Pourquoi cette page existe") → one-minute summary → optional rights featured block
 // (privacy) → sticky TOC + human-opened sections → closing "Parlez-nous". Section bodies
 // are parsed from the i18n string convention (blank-line paragraphs; "- " bullet blocks;
-// inline "[label](href)" links and "`text`" left-to-right islands).
+// inline "[label](href)" links and "`text`" left-to-right islands). Inline tokens work in the
+// section bodies, the summary and the rights lines — NOT in the title, intro or openers.
 
 // In-text links stay underlined: colour alone must not carry the link (WCAG 1.4.1).
 const INLINE_LINK = `rounded font-medium text-brand-blue-600 underline underline-offset-2 hover:text-brand-blue-700 ${FOCUS_RING}`
@@ -97,7 +98,9 @@ export function LegalPageShell({ doc, lang }: { doc: LegalDocStructure; lang: La
               <span aria-hidden="true" className="text-brand-blue-600">
                 •
               </span>
-              <span>{line}</span>
+              <span>
+                <InlineText text={line} />
+              </span>
             </li>
           ))}
         </ul>
@@ -111,7 +114,9 @@ export function LegalPageShell({ doc, lang }: { doc: LegalDocStructure; lang: La
             {rightsLines.map((line, i) => (
               <li key={i} className="flex gap-2 text-sm text-text-primary">
                 <Check className="mt-0.5 h-4 w-4 shrink-0 text-brand-blue-600" aria-hidden="true" />
-                <span>{line}</span>
+                <span>
+                  <InlineText text={line} />
+                </span>
               </li>
             ))}
           </ul>

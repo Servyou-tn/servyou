@@ -3582,7 +3582,7 @@ export const fr: Record<string, string> = {
   'legal.mentions.title': "Mentions légales",
   'legal.mentions.updatedDate': "14 novembre 2026",
   'legal.mentions.intro': "Qui édite Servyou, qui l'héberge et à qui vous adresser : tout est réuni ici, en clair.",
-  'legal.mentions.summary': "Servyou est édité par Moatez Sahbeni, personne physique, à Ariana (Tunisie).\nMoatez Sahbeni est aussi directeur de la publication et responsable du traitement de vos données.\nLe site est hébergé par Vercel (fonctions serveur à Francfort), ses données par Supabase (Francfort, Allemagne).\nPour nous écrire : bonjour@servyou.tn ou le formulaire de contact.",
+  'legal.mentions.summary': "Servyou est édité par `Moatez Sahbeni`, personne physique, à Ariana (Tunisie).\n`Moatez Sahbeni` est aussi directeur de la publication et responsable du traitement de vos données.\nLe site est hébergé par Vercel (fonctions serveur à Francfort), ses données par Supabase (Francfort, Allemagne).\nPour nous écrire : [bonjour@servyou.tn](mailto:bonjour@servyou.tn) ou le [formulaire de contact](/contact).",
   'legal.mentions.s1.title': "Éditeur du site",
   'legal.mentions.s1.opener': "Une personne, pas une société : voici qui est derrière Servyou.",
   'legal.mentions.s1.body': "Le site Servyou est édité par :\n\n- `Moatez Sahbeni`, personne physique\n- Ariana, Tunisie\n- E-mail : [bonjour@servyou.tn](mailto:bonjour@servyou.tn)\n- Ou écrivez-nous depuis le [formulaire de contact](/contact)",
@@ -3596,8 +3596,8 @@ export const fr: Record<string, string> = {
   'legal.mentions.s4.opener': "Où tourne Servyou, et chez qui.",
   'legal.mentions.s4.body': "L'application (le site et ses fonctions serveur) est hébergée par :\n\n- `Vercel Inc.`\n- `440 N Barranca Ave #4133, Covina, CA 91723`, États-Unis\n- Fonctions serveur exécutées dans la région de Francfort (Allemagne)\n\nLa base de données et les fichiers (comme les photos) sont hébergés par :\n\n- `Supabase Pte. Ltd.`\n- `65 Chulia Street #38-02/03, OCBC Centre, Singapore 049513`\n- Région de Francfort (Allemagne)",
   'legal.mentions.s5.title': "Propriété intellectuelle",
-  'legal.mentions.s5.opener': "Ce qui est à Servyou reste à Servyou. Ce qui est à vous reste à vous.",
-  'legal.mentions.s5.body': "Servyou est une marque exploitée par son éditeur, `Moatez Sahbeni`. Le nom et le logo Servyou, l'interface et les contenus que l'éditeur publie sur le site lui appartiennent : vous ne pouvez pas les copier, les reproduire ni les diffuser sans son autorisation écrite.\n\nLe contenu que vous publiez (descriptions, photos, profils, messages) reste le vôtre, comme le prévoient nos [Conditions générales d'utilisation](/conditions#s8).",
+  'legal.mentions.s5.opener': "Ce qui appartient à l'éditeur ne se copie pas. Ce qui est à vous reste à vous.",
+  'legal.mentions.s5.body': "Servyou est une marque exploitée par son éditeur, `Moatez Sahbeni`. Le nom et le logo Servyou, l'interface, le code source et les contenus que l'éditeur publie sur le site lui appartiennent : vous ne pouvez pas les copier, les reproduire ni les diffuser sans son autorisation écrite.\n\nLe contenu que vous publiez (descriptions, photos, profils, messages) reste le vôtre. En le publiant, vous nous accordez une licence non exclusive pour l'afficher dans le cadre du service, comme le prévoient nos [Conditions générales d'utilisation](/conditions#s8).",
 
   // ─── System pages (404 / 500) ────────────────────────────────────────────────
   // A9 / A10 — 404 and 500 (Figma 1478:35813 / 1478:35837), same shell-less card as K1–K4.
