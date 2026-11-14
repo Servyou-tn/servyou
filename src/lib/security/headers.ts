@@ -19,6 +19,10 @@
 //     nonce-based policy; `next dev` also needs 'unsafe-eval' (React refresh), never in a production build.
 //   • Cloudflare Turnstile (src/components/security/Turnstile.tsx) — its script and challenge iframe come from
 //     challenges.cloudflare.com (script-src + frame-src, per Cloudflare's CSP reference); siteverify is server-side.
+//   • Umami (lib/analytics/umami.ts, production + audience consent only) — the tracker script from cloud.umami.is (script-src) and its
+//     event POSTs to gateway.umami.is/api/send (connect-src). The second host was OBSERVED on 2026-11-14, not guessed: a production
+//     build with cloud.umami.is allowed and no connect-src entry blocked exactly `https://gateway.umami.is/api/send` (the script's
+//     default endpoint, no data-host-url set); the endpoint answers directly, no redirect. Two exact origins, no wildcard.
 //
 // VIOLATION REPORTING (follow-up 1 of docs/follow-ups/security-headers.md): the policy carries `report-uri` (every browser) and
 // `report-to` + a `Reporting-Endpoints` header (Reporting API browsers) pointing at Sentry's SECURITY endpoint, so a blocked
@@ -28,6 +32,10 @@
 
 export const SUPABASE_ORIGIN = 'https://xggomcitqrkaylqezjjz.supabase.co'
 export const TURNSTILE_ORIGIN = 'https://challenges.cloudflare.com'
+/** Umami Cloud — where the tracker script is served from (lib/analytics/umami.ts UMAMI_SCRIPT_URL). */
+export const UMAMI_SCRIPT_ORIGIN = 'https://cloud.umami.is'
+/** Umami Cloud — where that script POSTs its events (`/api/send`). Observed, not guessed: see the comment above. */
+export const UMAMI_COLLECT_ORIGIN = 'https://gateway.umami.is'
 
 /** Name of the Reporting API endpoint group (`report-to` directive ↔ `Reporting-Endpoints` header). */
 export const CSP_REPORT_GROUP = 'csp-endpoint'
@@ -63,7 +71,7 @@ export function cspReportUrl(dsn: string | null | undefined, environment?: strin
 export function contentSecurityPolicy(isDev: boolean, reportUrl: string | null = null): string {
   const directives: Record<string, string[]> = {
     'default-src': ["'self'"],
-    'script-src': ["'self'", "'unsafe-inline'", ...(isDev ? ["'unsafe-eval'"] : []), 'https://vercel.live', TURNSTILE_ORIGIN],
+    'script-src': ["'self'", "'unsafe-inline'", ...(isDev ? ["'unsafe-eval'"] : []), 'https://vercel.live', TURNSTILE_ORIGIN, UMAMI_SCRIPT_ORIGIN],
     'style-src': ["'self'", "'unsafe-inline'", 'https://vercel.live'],
     'img-src': ["'self'", 'data:', 'blob:', SUPABASE_ORIGIN, 'https://vercel.live', 'https://vercel.com'],
     'font-src': ["'self'", 'data:', 'https://vercel.live', 'https://assets.vercel.com'],
@@ -76,6 +84,7 @@ export function contentSecurityPolicy(isDev: boolean, reportUrl: string | null =
       'https://*.ingest.us.sentry.io',
       'https://vercel.live',
       'wss://ws-us3.pusher.com',
+      UMAMI_COLLECT_ORIGIN,
     ],
     'frame-src': ['https://vercel.live', TURNSTILE_ORIGIN],
     'worker-src': ["'self'", 'blob:'],

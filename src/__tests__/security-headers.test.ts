@@ -9,7 +9,17 @@
  */
 
 import { describe, it, expect } from 'vitest'
-import { contentSecurityPolicy, cspReportUrl, securityHeaders, CSP_REPORT_GROUP, SUPABASE_ORIGIN, TURNSTILE_ORIGIN } from '@/lib/security/headers'
+import {
+  contentSecurityPolicy,
+  cspReportUrl,
+  securityHeaders,
+  CSP_REPORT_GROUP,
+  SUPABASE_ORIGIN,
+  TURNSTILE_ORIGIN,
+  UMAMI_COLLECT_ORIGIN,
+  UMAMI_SCRIPT_ORIGIN,
+} from '@/lib/security/headers'
+import { UMAMI_SCRIPT_URL } from '@/lib/analytics/umami'
 import nextConfig from '../../next.config'
 
 const byKey = (isDev: boolean) => Object.fromEntries(securityHeaders(isDev).map((h) => [h.key, h.value]))
@@ -59,6 +69,16 @@ describe('enforced CSP', () => {
     expect(directive(prod, 'script-src')).toContain(TURNSTILE_ORIGIN)
     expect(directive(prod, 'frame-src')).toEqual(['https://vercel.live', TURNSTILE_ORIGIN])
     expect(directive(prod, 'connect-src')).not.toContain(TURNSTILE_ORIGIN)
+  })
+
+  it('allows Umami by two exact origins — the script host and the observed event host — and no wildcard', () => {
+    expect(UMAMI_SCRIPT_ORIGIN).toBe(new URL(UMAMI_SCRIPT_URL).origin)
+    expect(UMAMI_COLLECT_ORIGIN).toBe('https://gateway.umami.is')
+    expect(directive(prod, 'script-src')).toContain(UMAMI_SCRIPT_ORIGIN)
+    expect(directive(prod, 'connect-src')).toContain(UMAMI_COLLECT_ORIGIN)
+    expect(directive(prod, 'script-src')).not.toContain(UMAMI_COLLECT_ORIGIN)
+    expect(directive(prod, 'connect-src')).not.toContain(UMAMI_SCRIPT_ORIGIN)
+    expect(prod.split(/[\s;]+/).filter((source) => source.includes('umami'))).toEqual([UMAMI_SCRIPT_ORIGIN, UMAMI_COLLECT_ORIGIN])
   })
 
   it('locks the dangerous directives', () => {

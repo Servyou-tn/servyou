@@ -5,8 +5,9 @@
 // well as by Max-Age — a cookie is client-controlled input, so a forged or stale value reads as « no consent », never as a grant.
 //
 // Categories: `essential` (Supabase auth, Turnstile) and `preferences` (servyou_lang, written only when the visitor picks a language) are
-// necessary and always on; `audience` is the only optional one and is OFF unless the visitor said yes. Nothing reads it today — a future
-// analytics script must load only behind `hasConsent(consent, 'audience')` (server: lib/consent/server.ts, client: useConsent()).
+// necessary and always on; `audience` is the only optional one and is OFF unless the visitor said yes. Analytics loads only behind
+// `hasConsent(consent, 'audience')` (server: lib/consent/server.ts, client: useConsent()) — today that is Umami (lib/analytics/umami.ts),
+// which also re-reads the live cookie before every send (consentFromCookieString) so a withdrawal stops it without a reload.
 
 export const CONSENT_COOKIE = 'servyou_consent'
 export const CONSENT_VERSION = 1
@@ -43,6 +44,22 @@ export function parseConsent(raw: string | null | undefined, now: number = Date.
 
 export function makeConsent(audience: boolean, now: number = Date.now()): Consent {
   return { v: CONSENT_VERSION, audience, ts: now }
+}
+
+/** The valid consent stored in a `document.cookie` string, or null. The value is URI-encoded JSON (consentCookieString). */
+export function consentFromCookieString(cookies: string, now: number = Date.now()): Consent | null {
+  const prefix = `${CONSENT_COOKIE}=`
+  const raw = cookies
+    .split(';')
+    .map((part) => part.trim())
+    .find((part) => part.startsWith(prefix))
+    ?.slice(prefix.length)
+  if (!raw) return null
+  try {
+    return parseConsent(decodeURIComponent(raw), now)
+  } catch {
+    return null
+  }
 }
 
 /** True only for a valid, explicit « yes » to that category. No consent at all (null) is « no ». */
