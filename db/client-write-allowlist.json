@@ -68,7 +68,7 @@
     "orders": {
       "authenticated": {
         "INSERT": "*",
-        "UPDATE": ["cancellation_reason", "cancelled_by", "carrier", "status", "tracking_number"]
+        "UPDATE": ["cancellation_reason", "cancelled_by", "carrier", "refusal_reason", "status", "tracking_number"]
       }
     },
     "product_images": { "authenticated": { "DELETE": "*", "INSERT": "*" } },

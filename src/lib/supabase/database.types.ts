@@ -114,6 +114,59 @@ export type Database = {
           },
         ]
       }
+      cod_block_lifts: {
+        Row: {
+          buyer_id: string
+          id: string
+          lifted_at: string
+          lifted_by: string | null
+          note: string
+        }
+        Insert: {
+          buyer_id: string
+          id?: string
+          lifted_at?: string
+          lifted_by?: string | null
+          note: string
+        }
+        Update: {
+          buyer_id?: string
+          id?: string
+          lifted_at?: string
+          lifted_by?: string | null
+          note?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cod_block_lifts_buyer_id_fkey"
+            columns: ["buyer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cod_block_lifts_buyer_id_fkey"
+            columns: ["buyer_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cod_block_lifts_lifted_by_fkey"
+            columns: ["lifted_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cod_block_lifts_lifted_by_fkey"
+            columns: ["lifted_by"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       contact_messages: {
         Row: {
           created_at: string
@@ -970,6 +1023,8 @@ export type Database = {
           product_id: string | null
           quantity: number
           received_at: string | null
+          refusal_reason: string | null
+          refusal_voided_at: string | null
           seller_id: string
           service_listing_id: string | null
           status: string
@@ -995,6 +1050,8 @@ export type Database = {
           product_id?: string | null
           quantity?: number
           received_at?: string | null
+          refusal_reason?: string | null
+          refusal_voided_at?: string | null
           seller_id: string
           service_listing_id?: string | null
           status?: string
@@ -1020,6 +1077,8 @@ export type Database = {
           product_id?: string | null
           quantity?: number
           received_at?: string | null
+          refusal_reason?: string | null
+          refusal_voided_at?: string | null
           seller_id?: string
           service_listing_id?: string | null
           status?: string
@@ -1639,8 +1698,21 @@ export type Database = {
         }[]
       }
       admin_dashboard_stats: { Args: { p_days?: number }; Returns: Json }
+      admin_get_cod_standing: {
+        Args: { p_buyer: string }
+        Returns: {
+          blocked_until: string
+          last_lift_at: string
+          open_order_cap: boolean
+          refusals_90d: number
+        }[]
+      }
       admin_hide_content: {
         Args: { reason: string; target_id: string; target_type: string }
+        Returns: undefined
+      }
+      admin_lift_cod_block: {
+        Args: { p_buyer: string; p_note: string }
         Returns: undefined
       }
       admin_list_audit_log: {
@@ -1782,6 +1854,10 @@ export type Database = {
         Args: { target_user_id: string }
         Returns: undefined
       }
+      admin_void_refusal: {
+        Args: { p_note: string; p_order: string }
+        Returns: undefined
+      }
       choose_job_response: { Args: { p_response_id: string }; Returns: string }
       client_write_grants: {
         Args: never
@@ -1807,6 +1883,13 @@ export type Database = {
         Args: { target_id: string; target_type: string }
         Returns: string
       }
+      get_my_cod_standing: {
+        Args: never
+        Returns: {
+          blocked_until: string
+          open_order_cap: boolean
+        }[]
+      }
       has_responded: { Args: { p_job_post_id: string }; Returns: boolean }
       is_active_user: { Args: never; Returns: boolean }
       is_admin: { Args: never; Returns: boolean }
@@ -1822,6 +1905,10 @@ export type Database = {
         Returns: string
       }
       purge_unconfirmed_signups: { Args: never; Returns: number }
+      seller_buyer_cod_warnings: {
+        Args: { p_order_ids: string[] }
+        Returns: string[]
+      }
       service_listing_publish_problems: {
         Args: { r: Database["public"]["Tables"]["service_listings"]["Row"] }
         Returns: string[]

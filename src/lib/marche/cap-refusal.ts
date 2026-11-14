@@ -4,9 +4,13 @@
 
 type DbError = { code?: string | null; hint?: string | null }
 
+// The COD no-show rule (db/migrations/PENDING_cod_no_show.sql, enforce_cod_no_show_rule) raises the same way. Its
+// block message takes the block's end date, which the action reads with get_my_cod_standing (not the raw DB text).
 const ORDER_CAP_KEYS = {
   order_cap_seller: 'demander.error.cap_seller',
   order_cap_daily: 'demander.error.cap_daily',
+  cod_open_order_cap: 'demander.error.cod_open_order_cap',
+  cod_blocked: 'demander.error.cod_blocked',
 } as const
 
 const JOB_POST_CAP_KEYS = {

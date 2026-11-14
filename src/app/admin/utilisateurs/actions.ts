@@ -5,6 +5,7 @@ import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
 import { checkAdmin, adminRejectionError } from '@/lib/auth/require-admin'
 import { syncAuthBan, isSuspensionAlreadyApplied } from '@/lib/auth/auth-ban'
+import { checkCodNote, codAdminErrorKey } from '@/lib/admin/cod-rpc-error'
 
 export type UserActionResult = { success: boolean; error?: string }
 
@@ -102,5 +103,34 @@ export async function unsuspendUser(targetUserId: string): Promise<UserActionRes
   revalidatePath('/admin/utilisateurs/' + targetUserId)
   // A concurrent suspend committed between the RPC and the sync: the account, and so its ban, is suspended.
   if (sync.suspended) return { success: false, error: 'admin.users.error_already_suspended' }
+  return { success: true }
+}
+
+// ── COD no-show rule: lift a buyer's block (founder decision 8: a lift is a clean slate) ────────────
+//
+// admin_lift_cod_block (db/migrations/PENDING_cod_no_show.sql) checks is_admin(), refuses a buyer who is not blocked
+// and an empty note, records the lift in cod_block_lifts and writes the journal row (« lift_cod_block ») in the same
+// transaction: a null error means the lift and its log both committed.
+export async function liftCodBlock(buyerId: string, note: string): Promise<UserActionResult> {
+  if (!TargetUserId.safeParse(buyerId).success) return { success: false, error: 'common.error_generic' }
+
+  const supabase = await createClient()
+  const admin = await checkAdmin(supabase)
+  if (!admin.ok) {
+    console.error(`[admin/utilisateurs] liftCodBlock rejected: ${admin.reason}`)
+    return { success: false, error: adminRejectionError(admin.reason, 'admin.users.error_forbidden') }
+  }
+
+  const checked = checkCodNote(note)
+  if (!checked.ok) return { success: false, error: checked.error }
+
+  const { error } = await supabase.rpc('admin_lift_cod_block', { p_buyer: buyerId, p_note: checked.note })
+  if (error) {
+    console.error('[admin/utilisateurs] liftCodBlock error:', error.message, error.code, error.hint)
+    return { success: false, error: codAdminErrorKey(error) }
+  }
+
+  revalidatePath('/admin/utilisateurs/' + buyerId)
+  revalidatePath('/admin/journal')
   return { success: true }
 }

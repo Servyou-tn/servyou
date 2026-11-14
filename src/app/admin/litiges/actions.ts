@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/server'
 import { checkAdmin, adminRejectionError } from '@/lib/auth/require-admin'
 import type { DisputeOutcome } from '@/lib/types/dispute'
 import { ADMIN_TEXT_MAX, isUuid } from '@/lib/admin/action-input'
+import { checkCodNote, codAdminErrorKey } from '@/lib/admin/cod-rpc-error'
 
 export type DisputeActionResult = { success: boolean; error?: string }
 
@@ -197,5 +198,39 @@ export async function dismissDispute(disputeId: string, adminNote: string): Prom
 
   revalidatePath('/admin/litiges')
   revalidatePath('/admin/litiges/' + disputeId)
+  return { success: true }
+}
+
+// ── COD no-show rule: void a contested refusal (founder decision 7: an explicit admin act) ───────────
+//
+// Not the best-effort log of the dispute actions above: admin_void_refusal (db/migrations/PENDING_cod_no_show.sql)
+// checks is_admin(), refuses an order that is no refusal or is already voided and an empty note, sets
+// orders.refusal_voided_at (never the status) and writes the journal row (« void_refusal ») in the same transaction.
+// The refusal stops counting at once: the standing is computed live. The dispute itself is closed separately
+// (resolveDispute), so the admin decides both, in that order or the other.
+export async function voidRefusal(orderId: string, note: string, disputeId?: string): Promise<DisputeActionResult> {
+  if (!isUuid(orderId) || (disputeId !== undefined && !isUuid(disputeId))) {
+    return { success: false, error: 'common.error_generic' }
+  }
+
+  const supabase = await createClient()
+  const admin = await checkAdmin(supabase)
+  if (!admin.ok) {
+    console.error(`[admin/litiges] voidRefusal rejected: ${admin.reason}`)
+    return { success: false, error: adminRejectionError(admin.reason, FORBIDDEN) }
+  }
+
+  const checked = checkCodNote(note)
+  if (!checked.ok) return { success: false, error: checked.error }
+
+  const { error } = await supabase.rpc('admin_void_refusal', { p_order: orderId, p_note: checked.note })
+  if (error) {
+    console.error('[admin/litiges] voidRefusal error:', error.message, error.code, error.hint)
+    return { success: false, error: codAdminErrorKey(error) }
+  }
+
+  revalidatePath('/admin/litiges')
+  if (disputeId) revalidatePath('/admin/litiges/' + disputeId)
+  revalidatePath('/admin/journal')
   return { success: true }
 }
