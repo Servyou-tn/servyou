@@ -24,6 +24,7 @@ const LEGAL: { href: string; key: string }[] = [
   { href: '/confidentialite', key: 'aide.legal.privacy' },
   { href: '/cookies', key: 'aide.legal.cookies' },
   { href: '/accessibilite', key: 'aide.legal.accessibility' },
+  { href: '/mentions-legales', key: 'aide.legal.mentions' },
 ]
 
 export function ContactPanel({ lang }: { lang: Lang }) {

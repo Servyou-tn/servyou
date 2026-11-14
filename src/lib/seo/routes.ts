@@ -19,6 +19,7 @@ export const PUBLIC_STATIC_PATHS = [
   '/confidentialite',
   '/cookies',
   '/accessibilite',
+  '/mentions-legales',
 ] as const
 
 /** The public page FILES (src/app/…/page.tsx) that must call publicMetadata — checked by seo-routes.test.ts. */
@@ -36,6 +37,7 @@ export const PUBLIC_PAGE_FILES = [
   '(marketing)/confidentialite/page.tsx',
   '(marketing)/cookies/page.tsx',
   '(marketing)/accessibilite/page.tsx',
+  '(marketing)/mentions-legales/page.tsx',
   'categories/[slug]/page.tsx',
   'freelance/[id]/page.tsx',
   'boutique/[id]/page.tsx',

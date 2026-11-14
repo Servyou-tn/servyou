@@ -7,8 +7,8 @@ import { t } from '@/lib/i18n'
 
 // LegalPageShell takes lang as a prop and uses no client hooks / next APIs, so it renders
 // straight through renderToString.
-function html(slug: keyof typeof LEGAL_DOCS): string {
-  return renderToString(createElement(LegalPageShell, { doc: LEGAL_DOCS[slug], lang: 'fr' }))
+function html(slug: keyof typeof LEGAL_DOCS, lang: 'fr' | 'ar' | 'en' = 'fr'): string {
+  return renderToString(createElement(LegalPageShell, { doc: LEGAL_DOCS[slug], lang }))
 }
 
 describe('LegalPageShell render smoke', () => {
@@ -33,6 +33,43 @@ describe('LegalPageShell render smoke', () => {
       expect(html(slug)).toContain(shared)
       expect(html(slug)).not.toContain(own)
     }
+  })
+
+  it('/mentions-legales: its own date, the editor, the links and the hosts kept left-to-right — in every language', () => {
+    expect(html('mentions-legales')).toContain(t('legal.mentions.updatedDate', 'fr'))
+    for (const lang of ['fr', 'ar', 'en'] as const) {
+      const out = html('mentions-legales', lang)
+      expect(out, lang).toContain('href="/contact"')
+      expect(out, lang).toContain('href="/confidentialite"')
+      expect(out, lang).toContain('href="/conditions#s8"')
+      expect(out, lang).toContain('href="mailto:bonjour@servyou.tn"')
+      expect(out, lang).toContain('<bdi dir="ltr">Moatez Sahbeni</bdi>')
+      expect(out, lang).toContain('<bdi dir="ltr">Vercel Inc.</bdi>')
+      expect(out, lang).toContain('<bdi dir="ltr">440 N Barranca Ave #4133, Covina, CA 91723</bdi>')
+      expect(out, lang).toContain('<bdi dir="ltr">Supabase Pte. Ltd.</bdi>')
+      expect(out, lang).toContain('<bdi dir="ltr">65 Chulia Street #38-02/03, OCBC Centre, Singapore 049513</bdi>')
+      // no raw markup reaches the page
+      expect(out, lang).not.toContain('`')
+      expect(out, lang).not.toContain('](')
+    }
+  })
+
+  it('the privacy policy shows the controller line as text plus a mailto link', () => {
+    const out = html('confidentialite')
+    expect(out).toContain('Responsable du traitement : <bdi dir="ltr">Moatez Sahbeni</bdi> (personne physique), Ariana, Tunisie')
+    expect(out).toContain('href="mailto:bonjour@servyou.tn"')
+  })
+
+  it('no legal page shows raw markup (a backtick or "](") in any language — summaries included', () => {
+    for (const slug of Object.keys(LEGAL_DOCS) as (keyof typeof LEGAL_DOCS)[]) {
+      for (const lang of ['fr', 'ar', 'en'] as const) {
+        const out = html(slug, lang)
+        expect(out, `${slug} ${lang}`).not.toContain('`')
+        expect(out, `${slug} ${lang}`).not.toContain('](')
+      }
+    }
+    // the legal notice's summary links render as links too
+    expect(html('mentions-legales')).toMatch(/Pour nous écrire : <a [^>]*href="mailto:bonjour@servyou.tn"/)
   })
 
   it('renders the privacy "Vos droits" featured block only on /confidentialite', () => {
