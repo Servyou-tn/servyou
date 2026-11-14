@@ -1,102 +1,14 @@
-// Vercel « Ignored Build Step » — vercel.json `ignoreCommand`. Skips a deployment when the push changes nothing but
-// documentation, to save Vercel Hobby build output (Functions Storage) on agents' docs-only pushes.
+// The command Vercel runs as the Ignored Build Step (vercel.json `ignoreCommand`). The logic is in
+// ./vercel-ignore-build-lib.mjs (tested by src/__tests__/vercel-ignore-build.test.ts).
 //
-// THE EXIT CODE IS REVERSED (Vercel's rule): exit 0 = SKIP — the build is aborted and the deployment is CANCELED;
-// exit 1 = BUILD. https://vercel.com/docs/project-configuration/project-settings#ignored-build-step
-// Vercel runs this before `npm install`, in the Root Directory, on a shallow clone (depth 10): Node built-ins only.
-//
-// Skip only when every path that differs from the last SUCCESSFULLY deployed tree is documentation: anything under
-// docs/, or a Markdown file at the repository root (README.md, AGENTS.md). Everything else builds — src, public, configs,
-// package files, db, .github, .claude, scripts. Any doubt builds: no usable base, a git error, or no difference at all
-// (a redeploy). Every run prints one « [ignore-build] » line in the build log saying what it compared and why.
+// REVERSED EXIT CODES (Vercel's rule): exit 0 = SKIP the deployment, exit 1 = BUILD.
+// https://vercel.com/docs/project-configuration/project-settings#ignored-build-step
+// This file always runs and always exits explicitly. Falling off the end exits 0 — a SKIP — so there is deliberately
+// no « is this the main module? » guard here: a guard that misfires would silently cancel every deployment. If the
+// import below fails, Node exits 1 — a BUILD.
 
-import { execFileSync } from 'node:child_process'
-import { pathToFileURL } from 'node:url'
+import { decide } from './vercel-ignore-build-lib.mjs'
 
-/** A path that cannot change what the app builds or serves (repository-relative, forward slashes). */
-export function isDocsPath(path) {
-  if (path.startsWith('docs/')) return true
-  return !path.includes('/') && path.toLowerCase().endsWith('.md')
-}
-
-/** true = build. No difference at all (a redeploy of the same commit) builds too — never guess. */
-export function shouldBuild(paths) {
-  return paths.length === 0 || paths.some((path) => !isDocsPath(path))
-}
-
-function git(args, cwd) {
-  return execFileSync('git', args, { cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] })
-}
-
-function parentsOf(rev, cwd) {
-  return git(['rev-list', '--parents', '-n', '1', rev], cwd).trim().split(/\s+/).slice(1)
-}
-
-function commitExists(sha, cwd) {
-  try {
-    git(['cat-file', '-e', `${sha}^{commit}`], cwd)
-    return true
-  } catch {
-    return false
-  }
-}
-
-/**
- * The commit whose tree HEAD is compared with — { sha, how } — or null (no safe base: build).
- * 1. VERCEL_GIT_PREVIOUS_SHA, the last SUCCESSFUL deployment of this branch, when the shallow clone has it. Comparing
- *    trees (not HEAD^) judges everything since that deployment: a push with a src commit then a docs commit builds.
- * 2. HEAD is a merge commit (a pull request merged into main): its first parent, i.e. everything the PR brings.
- * 3. A branch's first deployment (no previous SHA): walk first parents back to the first merge commit — main only
- *    receives merge commits, so that is where the branch left main. A root commit or the edge of the shallow clone
- *    (a commit that shows no parent) before any merge → null.
- */
-export function pickBase({ previousSha, cwd, maxWalk = 50 }) {
-  if (previousSha && commitExists(previousSha, cwd)) return { sha: previousSha, how: 'last successful deployment' }
-  const headParents = parentsOf('HEAD', cwd)
-  if (headParents.length > 1) return { sha: headParents[0], how: 'merge commit, first parent' }
-  let rev = 'HEAD'
-  for (let i = 0; i < maxWalk; i++) {
-    const parents = parentsOf(rev, cwd)
-    if (parents.length === 0) return null
-    const parent = parents[0]
-    if (parentsOf(parent, cwd).length > 1) return { sha: parent, how: 'branch point (first merge commit below HEAD)' }
-    rev = parent
-  }
-  return null
-}
-
-/** Paths that differ between two trees. --no-renames lists BOTH sides of a rename (src/x → docs/x must build);
- *  -z with core.quotePath=false keeps accented names unquoted. */
-export function changedPaths(base, cwd) {
-  const out = git(['-c', 'core.quotePath=false', 'diff', '--name-only', '--no-renames', '-z', base, 'HEAD'], cwd)
-  return out.split('\0').filter(Boolean)
-}
-
-const short = (sha) => sha.slice(0, 7)
-
-/** The decision and its log line. Never throws: any failure builds. */
-export function decide({ previousSha, cwd }) {
-  try {
-    const base = pickBase({ previousSha, cwd })
-    if (!base) {
-      const why = previousSha ? `previous deployment ${short(previousSha)} is not in the shallow clone` : 'no previous deployment on this branch'
-      return { build: true, line: `BUILD — no base to compare with (${why}, and no merge commit within reach)` }
-    }
-    const paths = changedPaths(base.sha, cwd)
-    const from = `${short(base.sha)} (${base.how})`
-    if (paths.length === 0) return { build: true, line: `BUILD — nothing differs from ${from}: a redeploy` }
-    const firstApp = paths.find((path) => !isDocsPath(path))
-    if (firstApp) return { build: true, line: `BUILD — ${paths.length} path(s) differ from ${from}; first non-docs path: ${firstApp}` }
-    const sample = paths.slice(0, 3).join(', ') + (paths.length > 3 ? ', …' : '')
-    return { build: false, line: `SKIP — the ${paths.length} path(s) that differ from ${from} are all docs: ${sample}` }
-  } catch (error) {
-    const message = error instanceof Error ? error.message.split('\n')[0] : String(error)
-    return { build: true, line: `BUILD — the check failed (${message}); building to be safe` }
-  }
-}
-
-if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
-  const { build, line } = decide({ previousSha: process.env.VERCEL_GIT_PREVIOUS_SHA || '', cwd: process.cwd() })
-  console.log(`[ignore-build] ${line}`)
-  process.exit(build ? 1 : 0)
-}
+const { build, line } = decide({ previousSha: process.env.VERCEL_GIT_PREVIOUS_SHA || '', cwd: process.cwd() })
+console.log(`[ignore-build] ${line}`)
+process.exit(build ? 1 : 0)

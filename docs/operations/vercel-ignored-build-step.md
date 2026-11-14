@@ -14,15 +14,21 @@ Everything else builds: `src/`, `public/`, `scripts/`, `db/`, `.github/`, `.clau
 
 ## How it decides
 
-`vercel.json` → `"ignoreCommand": "node scripts/vercel-ignore-build.mjs"`. Vercel runs it after cloning, before
+`vercel.json` → `"ignoreCommand": "node scripts/vercel-ignore-build.mjs"` (the logic is in
+`scripts/vercel-ignore-build-lib.mjs`, tested by `src/__tests__/vercel-ignore-build.test.ts`). Vercel runs it after cloning, before
 `npm install`. **Exit 0 = skip** (the deployment ends as CANCELED), **exit 1 = build** — Vercel's rule, the reverse of the
 usual shell meaning ([Vercel docs](https://vercel.com/docs/project-configuration/project-settings#ignored-build-step)).
 
 It compares the files of the commit being deployed with the files of the **last successful deployment of the same
 branch** (`VERCEL_GIT_PREVIOUS_SHA`) — so a push carrying a code commit and then a docs commit still builds.
-Without one (a branch's first deployment), it compares with the merge commit `main` was at when the branch was cut.
-A merge into `main` is compared with `main` before the merge. When it cannot tell — no base in Vercel's shallow clone,
-a git error, or nothing changed at all (a redeploy) — it builds.
+Without one (a branch's first deployment), it compares with the merge commit `main` was at when the branch was cut;
+a merge into `main` with no previous deployment is compared with `main` before the merge. When it cannot tell, it
+builds: the last successful deployment is older than Vercel's shallow clone (10 commits), no base at all, a git error,
+or nothing changed (a redeploy).
+
+Nothing in the app reads `docs/` or the root Markdown files. The one indirect link: Tailwind scans every non-ignored file,
+`docs/` included, for class names — a docs change can only add unused CSS (or, with raw design-tool code pasted into
+`docs/`, break the build — which GitHub CI's `next build` still catches on every push).
 
 ## Reading the decision
 

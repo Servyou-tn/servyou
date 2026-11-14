@@ -1,12 +1,13 @@
 import { afterAll, describe, expect, it, vi } from 'vitest'
 import { execFileSync, spawnSync } from 'node:child_process'
-import { mkdirSync, mkdtempSync, renameSync, rmSync, writeFileSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, readFileSync, renameSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
-import { changedPaths, decide, isDocsPath, pickBase, shouldBuild } from '../../scripts/vercel-ignore-build.mjs'
+import { changedPaths, decide, isDocsPath, pickBase, shouldBuild } from '../../scripts/vercel-ignore-build-lib.mjs'
 
-// The Vercel Ignored Build Step (vercel.json ignoreCommand → scripts/vercel-ignore-build.mjs). Exit 0 SKIPS a deployment,
+// The Vercel Ignored Build Step (vercel.json ignoreCommand → scripts/vercel-ignore-build.mjs, logic in
+// scripts/vercel-ignore-build-lib.mjs). Exit 0 SKIPS a deployment,
 // exit 1 BUILDS — so a wrong « skip » means app code never reaches a preview or production. Every case below runs the
 // real git plumbing on a throwaway repository: what Vercel's shallow clone sees, rebuilt in a temp folder.
 
@@ -128,6 +129,15 @@ describe('decide — with the last successful deployment (VERCEL_GIT_PREVIOUS_SH
     expect(decide({ previousSha: deployed, cwd: dir }).build).toBe(true)
   })
 
+  it('deleting a src file alongside a docs change → BUILD', () => {
+    const dir = repo()
+    const deployed = mainWithMergedPr(dir)
+    rmSync(join(dir, 'src/old.ts'))
+    commit(dir, { 'docs/why.md': 'removed old.ts\n' })
+    expect(changedPaths(deployed, dir).sort()).toEqual(['docs/why.md', 'src/old.ts'])
+    expect(decide({ previousSha: deployed, cwd: dir }).build).toBe(true)
+  })
+
   it('an accented docs file name still counts as docs (no quoted path) → SKIP', () => {
     const dir = repo()
     const deployed = mainWithMergedPr(dir)
@@ -192,14 +202,20 @@ describe('decide — without a usable previous deployment', () => {
     expect(decide({ previousSha: deployed, cwd: dir }).line).toContain('first non-docs path: package.json')
   })
 
-  it('a previous SHA missing from the clone falls back to the merge-commit walk', () => {
+  it('a previous deployment missing from the shallow clone → BUILD, never a guess from a shorter range', () => {
+    // On main: a code PR merged, its production build failed, then a docs-only PR merged more than 10 commits later.
+    // The merge-commit fallback would judge the docs PR alone and skip — production would never get the code.
     const dir = repo()
-    const branchPoint = mainWithMergedPr(dir)
-    git(dir, 'checkout', '-q', '-b', 'docs/x')
+    mainWithMergedPr(dir)
+    git(dir, 'checkout', '-q', '-b', 'docs/only')
     commit(dir, { 'docs/x.md': 'x\n' })
+    git(dir, 'checkout', '-q', 'main')
+    git(dir, 'merge', '-q', '--no-ff', 'docs/only', '-m', 'Merge pull request #5')
     const gone = 'f'.repeat(40)
-    expect(pickBase({ previousSha: gone, cwd: dir })).toEqual({ sha: branchPoint, how: 'branch point (first merge commit below HEAD)' })
-    expect(decide({ previousSha: gone, cwd: dir }).build).toBe(false)
+    expect(pickBase({ previousSha: gone, cwd: dir })).toBeNull()
+    const result = decide({ previousSha: gone, cwd: dir })
+    expect(result.build).toBe(true)
+    expect(result.line).toBe('BUILD — no base to compare with (the last successful deployment fffffff is not in the shallow clone)')
   })
 
   it('no merge commit within reach (linear history, or the edge of a shallow clone) → BUILD', () => {
@@ -226,9 +242,17 @@ describe('decide — without a usable previous deployment', () => {
   it('any failure builds (not a git repository)', () => {
     const notRepo = mkdtempSync(join(tmpdir(), 'ignore-build-none-'))
     ROOTS.push(notRepo)
-    const result = decide({ previousSha: '', cwd: notRepo })
-    expect(result.build).toBe(true)
-    expect(result.line).toMatch(/^BUILD — the check failed/)
+    // git must not find a repository ABOVE the temp folder either
+    const ceiling = process.env.GIT_CEILING_DIRECTORIES
+    process.env.GIT_CEILING_DIRECTORIES = dirname(notRepo)
+    try {
+      const result = decide({ previousSha: '', cwd: notRepo })
+      expect(result.build).toBe(true)
+      expect(result.line).toMatch(/^BUILD — the check failed/)
+    } finally {
+      if (ceiling === undefined) delete process.env.GIT_CEILING_DIRECTORIES
+      else process.env.GIT_CEILING_DIRECTORIES = ceiling
+    }
   })
 })
 
@@ -248,5 +272,26 @@ describe('the command Vercel runs (node scripts/vercel-ignore-build.mjs)', () =>
     const build = run(dir, deployed)
     expect(build.status).toBe(1)
     expect(build.stdout).toMatch(/^\[ignore-build\] BUILD — .*first non-docs path: src\/app\.ts/)
+  })
+
+  it("a branch's first deployment (empty VERCEL_GIT_PREVIOUS_SHA): docs-only exits 0, a missing previous SHA exits 1", () => {
+    const dir = repo()
+    mainWithMergedPr(dir)
+    git(dir, 'checkout', '-q', '-b', 'docs/first')
+    commit(dir, { 'docs/first.md': 'first\n' })
+    const first = run(dir, '')
+    expect(first.status).toBe(0)
+    expect(first.stdout).toContain('(branch point (first merge commit below HEAD))')
+    const missing = run(dir, 'f'.repeat(40))
+    expect(missing.status).toBe(1)
+    expect(missing.stdout).toContain('is not in the shallow clone')
+  })
+
+  it('the command has no main-module guard: it always decides and always exits explicitly', () => {
+    // Falling off the end of the script exits 0 = SKIP. A guard that misfired (symlinked path, drive-letter case)
+    // would cancel every deployment without a log line — so the command file must not have one.
+    const source = readFileSync(SCRIPT, 'utf8')
+    expect(source).not.toMatch(/import\.meta\.url|process\.argv/)
+    expect(source).toMatch(/process\.exit\(build \? 1 : 0\)/)
   })
 })
