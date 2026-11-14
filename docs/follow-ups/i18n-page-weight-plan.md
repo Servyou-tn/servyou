@@ -78,6 +78,8 @@ plan's safety net (§5.3) exists for exactly this gap.
 
 ## 4. How strings reach the client today
 
+Every file is listed in Appendix E, with its key count, dynamic calls and hooks.
+
 | | Count |
 |---|---:|
 | Client files (`'use client'`) that call `t()` / `tn()` | **150** (of 198 client files) |
@@ -147,6 +149,7 @@ switching C → A later is a one-line change in what the provider receives. B is
 - `<Messages>` is a Server Component. It renders a client provider that **merges** its messages into the parent context.
 - The server builds each message set in the visitor's language. For EN it merges in the French fallback for missing keys and the plural variants (`tn`, AR's several forms). The browser therefore never needs a second language.
 - **Soft navigation re-sends that page's messages** (1–25 KB, in the RSC payload). Layout messages are not re-sent.
+- The 1–25 KB figures are the gzip of plain JSON. The RSC payload embeds them as escaped strings, so treat them as approximate until PR-1's message-size check measures the real thing.
 - **The language switch** (`router.refresh()` after the cookie is set) re-renders the server tree, so every provider sends the new language. Client state survives, as today, because state holds keys and not text.
 - **`global-error.tsx`** gets a tiny embedded French dictionary (its 6 strings).
 
@@ -154,7 +157,7 @@ switching C → A later is a one-line change in what the provider receives. B is
 1. **Source test:** for every route, every key reachable from its client graph belongs to a namespace that route declares. This is §3.4's walk, run from the source in vitest, with no build.
 2. **At runtime, `useT` never fails silently:**
    - in development it logs the key, the route and the missing namespace;
-   - in production it reports to Sentry (the key and the route, nothing personal) and renders the key, as `t()` does today for a missing key.
+   - in production it reports to Sentry (the key and the route **pattern**, e.g. `/mes-commandes/[id]`, never the concrete URL, so no ids reach Sentry) and renders the key, as `t()` does today for a missing key.
 3. **A crawl of every route in FR, AR and EN** (Playwright) fails on any miss. The pages behind sign-in need test sessions: consumer, freelancer, shop owner, and admin for `/admin/*`.
 4. **`roles.ts`** labels move to their own namespace so `admin` stays on admin pages.
 
@@ -171,7 +174,7 @@ Each PR measures with `node scripts/perf/first-load-js.mjs` and **lowers the bud
 
 | PR | Content | First-load JS saved |
 |---|---|---|
-| **PR-1 — foundation** | `useT()`, `<Messages>`, `pick()` (active language, EN merged with the French fallback, plurals), the constants module, the global-error dictionary, the Storybook decorator, a test helper for the 32 render tests, and the source-side namespace test (warn-only at first). Proves whether importing a constant pulls the dictionaries. | **0 KB** — every route still imports the dictionaries |
+| **PR-1 — foundation** | `useT()`, `<Messages>`, `pick()` (active language, EN merged with the French fallback, plurals), the constants module, the global-error dictionary, the Storybook decorator, a test helper for the 32 render tests, and the source-side namespace test (warn-only at first). Also a **per-route message-size check**: gzip of what the server sends per route and language, with its own budget. `first-load-js.mjs` sees only JS, so without it a route declaring too many namespaces would look like a pure win. Proves whether importing a constant pulls the dictionaries. | **0 KB** — every route still imports the dictionaries |
 | **PR-2 — shell + marketing** | Migrate the shared shell (consent, toasts, language switch, navy header/footer, error boundary) and the 9 `(marketing)` pages, plus `/` (landing) if its client tree fits. The namespace test becomes blocking for the migrated routes. | **JS 393 → ~187 KB on the 9 marketing pages** (+11–13 KB of strings in the page), and on `/` if included. The first real number. |
 | **PR-3 — marketplace (public)** | `/marche/*`, `/categories/[slug]`, `/recherche`, the detail pages (`/freelance`, `/boutique`, `/produits`, `/services`), `/devenir-vendeur/*`, auth pages | JS −206 KB on each, +4–23 KB of strings (the public pages fully done) |
 | **PR-4 — seller & freelancer areas** | `mon-profil-freelance`, `mes-services`, `ma-boutique`, `mes-produits`, `commandes-recues`, `tableau-de-bord*`, missions | JS −206 KB on each, +11–25 KB of strings |
@@ -380,3 +383,164 @@ Each PR measures with `node scripts/perf/first-load-js.mjs` and **lowers the bud
 5. **Namespace weights:** the gzip of each namespace's source lines per language. Compressing namespaces separately slightly overestimates them.
 
 The scripts were throwaway analysis, not committed. PR-1's source-side namespace test (§5.3) re-implements step 4 as a real test.
+
+## Appendix E — every client file that calls `t()` / `tn()` (150)
+
+- Sorted by keys, most first.
+- « Keys » = dictionary keys written in the file (lower bound: keys arriving as props are not counted).
+- « Dynamic » = at least one `t(variable)` or template call.
+- « Hooks » = uses React state, effects or the router.
+- Files with **≤ 3 keys** are the natural candidates to receive their strings as props from a Server Component; the hook-free ones could become Server Components outright (Appendix C).
+
+| File | Keys | Dynamic | Hooks | Namespaces |
+|---|---:|:---:|:---:|---|
+| `app/missions/[id]/proposer/_components/ProposalForm.tsx` | 45 | yes | yes | annonce, missiondetail, proposal |
+| `components/marche/AnnonceForm.tsx` | 45 | yes | yes | annonce |
+| `app/mes-produits/[id]/modifier/_components/EditProductForm.tsx` | 44 | yes | yes | common, owner, product |
+| `components/marche/AnnonceDetail.tsx` | 42 | yes | yes | annonce, annonces, common, mesannonces |
+| `app/mon-profil-freelance/modifier/_components/ProfileEditForm.tsx` | 41 |  | yes | freelance |
+| `components/produits/ProductForm.tsx` | 34 | yes | yes | product |
+| `app/inscription/components/SignupForm.tsx` | 32 | yes | yes | common, signup |
+| `app/demander/[id]/_components/ProductRequestForm.tsx` | 31 |  | yes | demander |
+| `app/mon-profil-freelance/creer/_components/CreateFreelancerProfileForm.tsx` | 31 |  | yes | common, freelance, monCompte, seller |
+| `app/ma-boutique/creer/_components/CreateShopForm.tsx` | 27 |  | yes | common, monCompte, seller, shop |
+| `app/ma-boutique/creer/configuration/_components/ConfigurationForm.tsx` | 26 | yes | yes | boutique, common, shop |
+| `app/mon-profil-freelance/creer/competences/_components/CompetencesForm.tsx` | 26 |  | yes | common, freelance |
+| `app/demander/[id]/_components/ServiceRequestForm.tsx` | 24 | yes | yes | demander, product |
+| `app/mes-commandes/[id]/_components/BuyerOrderActions.tsx` | 24 | yes | yes | buyerOrder, mesCommandes, seller |
+| `app/mon-profil-freelance/creer/details/_components/DetailsForm.tsx` | 24 |  | yes | common, freelance |
+| `app/ma-boutique/modifier/_components/EditShopForm.tsx` | 23 |  | yes | common, shop |
+| `components/auth/VerifyEmailFlow.tsx` | 23 |  | yes | common, signup, verifyEmail |
+| `app/mon-compte/_components/MonCompteForm.tsx` | 21 | yes | yes | monCompte |
+| `components/auth/NewPasswordForm.tsx` | 21 |  | yes | common, newPassword |
+| `components/landing/LandingFooter.tsx` | 21 | yes |  | lp, nav |
+| `app/admin/demandes/_components/RequestActions.tsx` | 18 | yes | yes | admin, common |
+| `components/AdminSidebar.tsx` | 18 | yes | yes | admin, shell |
+| `app/mes-annonces/_components/AnnonceRowActions.tsx` | 17 | yes | yes | annonces, common, mesannonces |
+| `components/marche/AnnonceResponseCard.tsx` | 17 | yes | yes | annonce, annonces |
+| `app/(marketing)/contact/ContactForm.tsx` | 15 | yes | yes | common, contact |
+| `app/admin/signalements/[id]/DecisionPanel.tsx` | 15 | yes | yes | admin, common |
+| `app/mes-produits/_components/ProductRow.tsx` | 15 | yes | yes | common, owner, product |
+| `app/mes-services/creer/_components/StepMetier.tsx` | 15 | yes |  | service |
+| `app/connexion/components/SigninForm.tsx` | 14 |  | yes | common, signin, signup |
+| `components/marche/ProduitsFilterBar.tsx` | 14 | yes | yes | produits, search |
+| `components/marche/ServicesFilterBar.tsx` | 14 | yes | yes | search, services |
+| `components/orders/CancelOrderButton.tsx` | 14 | yes | yes | buyerOrder, common, seller |
+| `components/recherche/SearchFilters.tsx` | 14 | yes | yes | produits, search, services |
+| `app/mes-favoris/_components/FavorisTabs.tsx` | 13 |  | yes | mesfavoris |
+| `app/mes-propositions/_components/ProposalActions.tsx` | 12 | yes | yes | common, propositions |
+| `app/mes-services/creer/_components/StepPublication.tsx` | 12 | yes |  | service |
+| `app/mon-profil-freelance/creer/details/_components/EducationRepeater.tsx` | 12 |  |  | freelance |
+| `components/landing/TopBar.tsx` | 12 | yes | yes | lp, nav |
+| `components/parametres/ConfidentialiteTab.tsx` | 12 |  | yes | cookies, marche, parametres |
+| `components/parametres/LangueRegionTab.tsx` | 12 |  |  | parametres |
+| `app/mes-commandes/_components/ProductOrdersList.tsx` | 11 | yes | yes | buyerOrder, mesCommandes |
+| `components/consent/CookieSettingsModal.tsx` | 11 |  | yes | cookies |
+| `components/orders/ReportProblemDialog.tsx` | 11 | yes | yes | buyerOrder, dispute |
+| `components/parametres/ParametresShell.tsx` | 11 | yes | yes | parametres |
+| `app/admin/litiges/[id]/DisputeDecisionPanel.tsx` | 10 | yes | yes | admin, common |
+| `app/boutique/[id]/_components/ShopReportModal.tsx` | 10 |  | yes | boutique, report |
+| `app/freelance/[id]/_components/FreelancerReportModal.tsx` | 10 |  | yes | freelance, report |
+| `app/ma-boutique/modifier/_components/SocialLinksSection.tsx` | 10 | yes | yes | boutique, shop |
+| `app/mes-commandes/_components/OrdersList.tsx` | 10 | yes | yes | buyerOrder, common, mesCommandes |
+| `app/mes-produits/[id]/modifier/_components/EditImageGallery.tsx` | 10 |  | yes | product |
+| `app/mes-produits/_components/ProductsList.tsx` | 10 |  | yes | common, product |
+| `app/mes-services/_components/ServiceRow.tsx` | 10 |  | yes | common, owner, service |
+| `app/mon-compte/_components/ChangePasswordModal.tsx` | 10 | yes | yes | monCompte |
+| `app/mon-profil-freelance/creer/details/_components/CertificationRepeater.tsx` | 10 |  |  | freelance |
+| `app/mon-profil-freelance/modifier/_components/CertificationRepeater.tsx` | 10 |  |  | freelance |
+| `components/auth/ForgotPasswordForm.tsx` | 10 |  | yes | common, forgotPassword, signup |
+| `components/produits/ImageUploadGrid.tsx` | 10 |  | yes | product |
+| `app/admin/contenu/_components/ModerationButtons.tsx` | 9 | yes | yes | admin, common |
+| `app/mon-compte/_components/AvatarUploadCard.tsx` | 9 |  | yes | monCompte |
+| `app/mon-profil-freelance/modifier/_components/EducationRepeater.tsx` | 9 |  |  | freelance |
+| `components/DisputeCreateModal.tsx` | 9 | yes | yes | common, dispute |
+| `components/marche/ProfileAvatarMenu.tsx` | 9 |  | yes | marche, nav, profileMenu |
+| `components/parametres/ExportDataModal.tsx` | 9 |  | yes | parametres |
+| `components/parametres/NotificationsTab.tsx` | 9 |  | yes | marche, parametres, system |
+| `app/marche/produits/_components/BoutiquesFilterBar.tsx` | 8 |  | yes | boutiques, produits |
+| `app/mes-services/creer/_components/StepPrestation.tsx` | 8 | yes |  | service |
+| `app/mes-services/creer/_components/StepTarif.tsx` | 8 | yes |  | product, service |
+| `app/mes-services/creer/_components/WizardFooter.tsx` | 8 | yes |  | common, service |
+| `app/mon-compte/_components/DeleteAccountModal.tsx` | 8 |  | yes | monCompte |
+| `app/mon-profil-freelance/modifier/_components/PortfolioRepeater.tsx` | 8 |  | yes | freelance, product |
+| `components/report/ReportListingModal.tsx` | 8 | yes | yes | product, report, serviceDetail |
+| `components/shell/TopbarUserMenu.tsx` | 8 | yes | yes | nav, shell |
+| `app/admin/utilisateurs/[id]/SuspendForm.tsx` | 7 | yes | yes | admin, common |
+| `app/mes-services/creer/_components/ServiceWizard.tsx` | 7 |  | yes | service |
+| `components/aide/AideCenter.tsx` | 7 |  | yes | aide |
+| `app/error.tsx` | 6 |  | yes | system |
+| `app/global-error.tsx` | 6 |  | yes | system |
+| `app/mes-services/_components/DeleteServiceModal.tsx` | 6 |  | yes | common, service |
+| `app/mes-services/creer/_components/StepDescription.tsx` | 6 | yes |  | service |
+| `app/mon-profil-freelance/creer/_components/AvatarField.tsx` | 6 |  | yes | freelance, monCompte |
+| `app/mon-profil-freelance/creer/competences/_components/LanguageRepeater.tsx` | 6 |  |  | freelance |
+| `app/mon-profil-freelance/modifier/_components/AvatarField.tsx` | 6 |  | yes | freelance, monCompte |
+| `app/mon-profil-freelance/modifier/_components/StickyFooter.tsx` | 6 | yes |  | freelance |
+| `components/consent/CookieBanner.tsx` | 6 |  | yes | cookies |
+| `components/landing/HowItWorks.tsx` | 6 | yes | yes | lp |
+| `components/layout/MobileMenu.tsx` | 6 | yes | yes | nav |
+| `components/produits/DeleteProductModal.tsx` | 6 |  | yes | common, product |
+| `components/shell/Sidebar.tsx` | 6 | yes | yes | nav, shell |
+| `app/admin/AdminShell.tsx` | 5 |  | yes | admin, shell |
+| `app/commandes-recues/_components/TrackingNumberForm.tsx` | 5 |  | yes | seller |
+| `app/mes-engagements/_components/EngagementActions.tsx` | 5 |  | yes | engagements |
+| `components/FavoriteButton.tsx` | 5 |  | yes | common, favorites |
+| `components/OrderLifecycleStepper.tsx` | 5 | yes |  | common |
+| `components/ReceiptConfirmButton.tsx` | 5 |  | yes | common |
+| `components/orders/ConfirmReceiptDialog.tsx` | 5 |  |  | buyerOrder, receipt |
+| `components/produits/ProductGallery.tsx` | 5 |  | yes | product |
+| `components/shared/Pagination.tsx` | 5 |  | yes | search |
+| `app/ma-boutique/creer/_components/BannerField.tsx` | 4 |  | yes | shop |
+| `app/mon-profil-freelance/modifier/_components/LanguageRepeater.tsx` | 4 |  |  | freelance |
+| `components/favorites/FavoriteHeart.tsx` | 4 | yes | yes | common, favorites |
+| `components/layout/Header.tsx` | 4 | yes | yes | nav |
+| `components/social/LinksEditor.tsx` | 4 |  | yes | freelance, links |
+| `app/(marketing)/faq/FaqView.tsx` | 3 |  | yes | faq |
+| `app/admin/signalements/[id]/UnhideButton.tsx` | 3 | yes | yes | admin, common |
+| `app/admin/signalements/[id]/UnsuspendReportedUserButton.tsx` | 3 | yes | yes | admin, common |
+| `app/admin/utilisateurs/[id]/UnsuspendButton.tsx` | 3 | yes | yes | admin, common |
+| `app/boutique/[id]/_components/ShopShareButton.tsx` | 3 |  | yes | boutique, common |
+| `app/connexion/components/SuspendedBanner.tsx` | 3 |  | yes | signin |
+| `app/freelance/[id]/_components/FreelancerShareButton.tsx` | 3 |  | yes | common, freelance |
+| `app/ma-boutique/creer/_components/LogoField.tsx` | 3 | yes | yes | shop |
+| `app/mes-services/_components/ServiceFiltersBar.tsx` | 3 |  | yes | service |
+| `components/landing/Faq.tsx` | 3 |  | yes | lp |
+| `components/marche/HelpDropdown.tsx` | 3 |  |  | help |
+| `components/parametres/ComptesConnectesTab.tsx` | 3 |  |  | parametres |
+| `components/produits/ShareLinkButton.tsx` | 3 |  | yes | common, product |
+| `components/shell/TopbarNotifications.tsx` | 3 |  |  | shell |
+| `app/admin/litiges/[id]/ClaimDisputeButton.tsx` | 2 | yes | yes | admin |
+| `app/admin/signalements/[id]/ClaimButton.tsx` | 2 | yes | yes | admin |
+| `app/ma-boutique/creer/configuration/_components/AccordionSection.tsx` | 2 | yes |  | boutique |
+| `app/mes-commandes/_components/OrderAccordionRow.tsx` | 2 | yes |  | mesCommandes |
+| `app/mes-commandes/_components/OrdersFilterBar.tsx` | 2 | yes | yes | mesCommandes |
+| `app/mes-services/_components/CascadeWarningModal.tsx` | 2 |  |  | common, service |
+| `app/mon-profil-freelance/modifier/_components/AccordionSection.tsx` | 2 | yes |  | freelance |
+| `components/account/TunisianPhoneInput.tsx` | 2 |  |  | monCompte |
+| `components/listings/ServiceListingCard.tsx` | 2 |  |  | listing |
+| `components/marche/NavTextLinks.tsx` | 2 |  |  | marche |
+| `components/marche/ServiceDescription.tsx` | 2 | yes | yes | serviceDetail |
+| `components/orders/PhoneRequiredError.tsx` | 2 |  |  | seller |
+| `components/orders/WhatsAppContactButton.tsx` | 2 | yes | yes | seller |
+| `components/produits/ProductDescription.tsx` | 2 | yes | yes | product |
+| `components/recherche/SearchFiltersSheet.tsx` | 2 |  | yes | search |
+| `components/recherche/SearchQueryInput.tsx` | 2 | yes | yes | produits, services |
+| `components/social/RecommendedPlatforms.tsx` | 2 |  |  | links |
+| `components/ui/password-reveal.tsx` | 2 | yes | yes | signup |
+| `app/(marketing)/contact/CopyableEmail.tsx` | 1 |  | yes | contact |
+| `app/admin/signalements/_components/ReportSearch.tsx` | 1 |  | yes | admin |
+| `app/mes-annonces/_components/AnnonceSearch.tsx` | 1 |  | yes | mesannonces |
+| `app/mes-engagements/_components/EngagementSearch.tsx` | 1 |  | yes | engagements |
+| `app/mes-propositions/_components/ProposalSearch.tsx` | 1 |  | yes | propositions |
+| `app/mon-profil-freelance/modifier/_components/ValidationBanner.tsx` | 1 | yes |  | freelance |
+| `components/auth/PasswordField.tsx` | 1 |  |  | signup |
+| `components/consent/ManageCookiesButton.tsx` | 1 |  |  | cookies |
+| `components/layout/AccountMenu.tsx` | 1 | yes | yes | nav |
+| `components/layout/LanguageToggle.tsx` | 1 |  | yes | nav |
+| `components/shell/AppShellClient.tsx` | 1 |  | yes | nav |
+| `components/shell/Topbar.tsx` | 1 |  |  | shell |
+| `components/ModerationBanner.tsx` | 0 |  |  |  |
+| `components/devenir/DevenirFreelanceContent.tsx` | 0 |  |  |  |
+| `components/devenir/DevenirVendeurContent.tsx` | 0 |  |  |  |
+| `components/shell/TopbarSearch.tsx` | 0 | yes | yes |  |
