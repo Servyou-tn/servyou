@@ -49,7 +49,7 @@ export function LegalPageShell({ doc, lang }: { doc: LegalDocStructure; lang: La
         {t(doc.titleKey, lang)}
       </h1>
       <p className="mt-2 text-body-sm text-text-muted">
-        {t('legal.updatedLabel', lang)} {t('legal.updatedDate', lang)}
+        {t('legal.updatedLabel', lang)} {t(doc.updatedDateKey ?? 'legal.updatedDate', lang)}
       </p>
 
       {/* Pourquoi cette page existe */}

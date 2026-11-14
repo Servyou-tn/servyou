@@ -12,6 +12,8 @@ export type LegalDocStructure = {
   introKey: string
   summaryKey: string
   rightsKey?: string // privacy only — the "Vos droits en un coup d'œil" featured block
+  /** Its own « Mise à jour » date; without one the doc shows the shared `legal.updatedDate`. */
+  updatedDateKey?: string
   sections: LegalSectionKeys[]
 }
 
@@ -36,6 +38,8 @@ export const LEGAL_DOCS: Record<string, LegalDocStructure> = {
     introKey: 'legal.privacy.intro',
     summaryKey: 'legal.privacy.summary',
     rightsKey: 'legal.privacy.rights',
+    // Its own date since the Umami paragraph (#371, founder D4); the other three docs keep the shared one.
+    updatedDateKey: 'legal.privacy.updatedDate',
     sections: sections('legal.privacy', 13),
   },
   cookies: {

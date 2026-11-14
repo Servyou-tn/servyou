@@ -9,6 +9,8 @@ import { SITE_NAME, TITLE_TEMPLATE, OG_LOCALE } from "@/lib/seo/metadata"
 import { LangProvider } from "@/components/LangProvider"
 import { CookieConsentProvider } from "@/components/consent/CookieConsent"
 import { getConsent } from "@/lib/consent/server"
+import { UmamiScript } from "@/components/analytics/UmamiScript"
+import { umamiEnabled } from "@/lib/analytics/umami"
 
 // Self-hosted (src/fonts/README.md): the exact files next/font/google used to download, so the
 // build never touches the network. Each call mirrors the @font-face set Google returned (same
@@ -105,6 +107,9 @@ export default async function RootLayout({
             {children}
             {/* App-wide toast portal — single source for success/error feedback. */}
             <Toaster position="top-center" richColors />
+            {/* Umami visit statistics — production deploys only (VERCEL_ENV is read here, on the server: it is not NEXT_PUBLIC_).
+                Inside the consent provider: the script also waits for « Mesure d'audience » and skips admin pages. */}
+            {umamiEnabled(process.env.VERCEL_ENV) && <UmamiScript />}
           </CookieConsentProvider>
         </LangProvider>
       </body>
