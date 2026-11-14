@@ -65,3 +65,17 @@ and only GitHub-owned actions are allowed.
 **Why deferred:** after the first green run, so a failure has a single cause.
 **Where it lives:** `Servyou-tn/servyou-backups`.
 **Trigger:** the first green run.
+
+## 7. LOW — GitHub's schedule ran 6 hours late, after the purge job
+
+**What:** the first scheduled run (2026-11-14) was set for 01:41 UTC and started at 07:58 UTC. GitHub only promises
+best effort for `schedule` events. Two effects:
+- Sentry's check-in margin is 90 minutes, so it marked the night missed at 03:11 before the late run reported `error`.
+- The run came after the 03:17 `purge-unconfirmed-signups` job, not 96 minutes before it as the schedule intends.
+  The bundle itself is still consistent: it reads one snapshot.
+
+**Why deferred:** one late night is not a pattern yet. The fixes (a wider margin, another slot, or accepting it) are the
+architect's call.
+**Where it lives:** the private repo's workflow (`cron` line and the Sentry monitor config); `docs/operations.md`,
+« What runs, every night at 01:41 UTC ».
+**Trigger:** a second scheduled run that starts more than 90 minutes late.
