@@ -277,7 +277,8 @@ this section is the runbook. Plan approved by the architect on 2026-11-13 (decis
 3. Pack everything, encrypt it with [age](https://age-encryption.org), and upload one file to
    Backblaze B2 (EU). A second copy is kept for 7 days as an Actions artifact of the private repo.
 4. Restore the bundle into a throwaway Supabase Postgres 17 on the runner, held in memory only,
-   and compare the row counts (D4). A mismatch fails the run.
+   and compare the row counts (D4). Since servyou-backups PR #4, every privilege list in `public`
+   and `private` is compared with production's too. Any mismatch fails the run.
    - « In memory only »: the throwaway database's data folder is a Docker volume bound to a
      folder on the runner's tmpfs, with swap off. The CLI treats that empty volume as a new
      database, and the job then checks that Postgres really wrote its files there.
@@ -313,6 +314,13 @@ so Windows' built-in `tar` can open it during a drill.
   - the event trigger `ensure_rls`, which turns RLS on for every new table. The official dump
     deletes every event trigger.
   - the pg_cron job `purge-unconfirmed-signups`, through `cron.schedule_in_database`.
+- `privileges.sql` (since servyou-backups PR #4): production's exact privileges, as REVOKE and
+  GRANT statements generated from the live catalog. It covers our schemas `public` and
+  `private`, every table, view, sequence, column grant and function in them, and the default
+  privileges of `postgres`. A Supabase target creates restored objects with its own broad
+  defaults (`anon` and `authenticated`: everything on new tables, EXECUTE on new functions), and
+  `schema.sql`'s GRANTs only add to them. So `privileges.sql` resets each list, then sets it to
+  production's. Restore it last.
 - `migrations.sql`: the applied-migrations history (D2). It's a record to read, not something to
   restore; `db/migrations/` in git holds the same SQL.
 - `files/`: the public buckets (`avatars`, `product-images`, `shop-assets`, `portfolio-media`),
@@ -606,8 +614,12 @@ re-create what "Not in a bundle" lists.
      -c "create extension if not exists pg_cron with schema pg_catalog" `
      -f /tmp/bundle/roles.sql -f /tmp/bundle/schema.sql `
      -c "set session_replication_role = replica" -f /tmp/bundle/data.sql `
-     -f /tmp/bundle/extras.sql
+     -f /tmp/bundle/extras.sql -f /tmp/bundle/privileges.sql
    ```
+   `privileges.sql` must come last: it resets every privilege to production's (« What a bundle
+   holds »). A bundle made before servyou-backups PR #4 has no such file. Restored as it is, it
+   comes back with wider grants than production, so see `docs/follow-ups/nightly-backup-run4.md`,
+   item 1, first.
 4. Verify the schema: the expected public tables (32 today) are there.
    ```powershell
    docker exec -e PGPASSWORD=postgres supabase_db_servyou-drill psql -h localhost -U postgres -c "\dt public.*"
