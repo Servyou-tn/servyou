@@ -1,7 +1,7 @@
 // Generated from the live Supabase schema (project xggomcitqrkaylqezjjz) — DO NOT EDIT BY HAND.
 // Regenerate after every applied migration: Supabase MCP generate_typescript_types (or
 // `npx supabase gen types typescript --project-id xggomcitqrkaylqezjjz`), then commit.
-// Generated 2026-11-15 after migration 20261115182353 cod_no_show.
+// Generated 2026-11-15 after migration 20261115182353 cod_no_show; hand-edited for PENDING_two_step_signup.sql (regenerate after the apply).
 
 export type Json =
   | string
@@ -1254,8 +1254,9 @@ export type Database = {
         Row: {
           avatar_url: string | null
           city: string | null
+          completed_at: string | null
           created_at: string
-          date_of_birth: string
+          date_of_birth: string | null
           email: string
           full_name: string
           id: string
@@ -1265,13 +1266,16 @@ export type Database = {
           seller_type: string | null
           suspended_at: string | null
           suspended_reason: string | null
+          terms_accepted_at: string | null
+          terms_version: string | null
           updated_at: string
         }
         Insert: {
           avatar_url?: string | null
           city?: string | null
+          completed_at?: string | null
           created_at?: string
-          date_of_birth: string
+          date_of_birth?: string | null
           email: string
           full_name: string
           id: string
@@ -1281,13 +1285,16 @@ export type Database = {
           seller_type?: string | null
           suspended_at?: string | null
           suspended_reason?: string | null
+          terms_accepted_at?: string | null
+          terms_version?: string | null
           updated_at?: string
         }
         Update: {
           avatar_url?: string | null
           city?: string | null
+          completed_at?: string | null
           created_at?: string
-          date_of_birth?: string
+          date_of_birth?: string | null
           email?: string
           full_name?: string
           id?: string
@@ -1297,6 +1304,8 @@ export type Database = {
           seller_type?: string | null
           suspended_at?: string | null
           suspended_reason?: string | null
+          terms_accepted_at?: string | null
+          terms_version?: string | null
           updated_at?: string
         }
         Relationships: []
@@ -1867,6 +1876,15 @@ export type Database = {
           privilege: string
           relation: string
         }[]
+      }
+      complete_my_account: {
+        Args: {
+          p_city: string
+          p_date_of_birth: string
+          p_full_name: string
+          p_terms_version: string
+        }
+        Returns: undefined
       }
       erase_oauth_identities: { Args: { p_user_id: string }; Returns: number }
       f_unaccent: { Args: { "": string }; Returns: string }
