@@ -353,7 +353,7 @@ export const ar: Record<string, string> = {
   'lp.footer.lang_label': "اللغة",
 
   'landing.footer.tagline':             "بع، اشتر، اعمل — بالطريقة التونسية.",
-  'landing.footer.founder_credit':      "صُنع في تونس على يد Moatez Sahbeni", // REVIEW_AR_TRANSLATION
+  'landing.footer.founder_credit':      "صُنع في تونس على يد Moatez Sahbeni",
   'landing.footer.col_discover':        "اكتشف",
   'landing.footer.col_servyou':         "Servyou",
   'landing.footer.col_legal':           "قانوني",
@@ -3287,7 +3287,7 @@ export const ar: Record<string, string> = {
   // ─── About page (/a-propos) ──────────────────────────────────────────────────
   'about.headline':   "بيت حقيقي للاقتصاد التونسي",
   'about.subtitle':   "قصة Servyou، بقلم مؤسسها.",
-  'about.story.p1':   "اسمي Moatez Sahbeni. أنا تونسي، وقد بنيتُ Servyou وحدي، أتعلم البرمجة وأنا أبنيه. استعنتُ بالذكاء الاصطناعي ليساعدني — من الصدق أن أقول ذلك، وهو ما مكنني من إطلاق منصة بحجم طموحاتي دون فريق من المهندسين.", // REVIEW_AR_TRANSLATION (the name in Latin letters, as on the legal pages)
+  'about.story.p1':   "اسمي Moatez Sahbeni. أنا تونسي، وقد بنيتُ Servyou وحدي، أتعلم البرمجة وأنا أبنيه. استعنتُ بالذكاء الاصطناعي ليساعدني — من الصدق أن أقول ذلك، وهو ما مكنني من إطلاق منصة بحجم طموحاتي دون فريق من المهندسين.",
   'about.story.p2':   "في تونس، أولئك الذين يُديرون الاقتصاد الرقمي — المستقلون، المتاجر الصغيرة، التجار — ليس لديهم بيت حقيقي. يبيعون على إنستغرام بلقطات شاشة لتحويلات بنكية. يتلقون طلبات على واتساب تضيع. لم تكن هناك منصة مبنية لتونس، بالدينار التونسي، بإشارات الثقة التي تحتاجها التجارة الحقيقية. وُجد Servyou لسد هذا الفراغ.",
   'about.story.p3':   "أدركتُ أن الحل ليس نسخة من Fiverr أو Etsy أو Amazon مترجمة إلى الفرنسية. تستحق تونس منصة مصممة منذ البداية لواقعها — الدفع عند الاستلام، الولايات الأربع والعشرون، اللغات التي نتحدثها فعلا، والعادات التي نملكها أصلا. Servyou هو هذه المنصة.",
   'about.story.p4':   "Servyou في مرحلة النسخة التجريبية الأولى. أتعلم من كل مستخدم. إن كلمتني، أقرأ رسالتك بنفسي. وإن وجدت مشكلة، أُصلحها. هذا القرب سيتلاشى مع نمو المنصة، وهذا أمر جيد — لكن اليوم، هذا وعدي.",
@@ -3673,7 +3673,7 @@ export const ar: Record<string, string> = {
 
   // ─── Aide (/aide) — REVIEW_AR_TRANSLATION: the whole block is a draft, needs a native read (feat/aide-rebuild) ───
   'aide.title': "المساعدة",
-  'aide.subtitle': "ابحث عن إجابة، أو راسلنا مباشرة عبر واتساب.",
+  'aide.subtitle': "ابحث عن إجابة، أو راسلنا.", // REVIEW_AR_TRANSLATION
   'aide.breadcrumb.home': "الرئيسية",
   'aide.writeUs': "راسلنا",
   'aide.breadcrumb.label': "مسار التنقل",
@@ -3687,7 +3687,7 @@ export const ar: Record<string, string> = {
   'aide.empty.body': "هذا السؤال غير مغطى بعد. راسلنا — هكذا تتحسن هذه الصفحة.",
   'aide.contact.title': "لم تجد ما تبحث عنه؟",
   'aide.contact.subtitle': "راسلنا. سيردّ عليك شخص حقيقي.",
-  'aide.contact.whatsapp': "راسلنا عبر واتساب",
+  'aide.contact.write': "راسلنا", // REVIEW_AR_TRANSLATION
   'aide.contact.responseTime': "الرد خلال 24-48 ساعة",
   'aide.contact.email': "إرسال بريد إلكتروني",
   'aide.legal.title': "معلومات قانونية",

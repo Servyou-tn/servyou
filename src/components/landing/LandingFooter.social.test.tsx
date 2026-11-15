@@ -18,8 +18,11 @@ vi.mock('./useLangSwitch', () => ({ useLangSwitch: () => ({ lang: lang.current, 
 afterEach(cleanup)
 
 describe('SOCIAL_ACCOUNTS', () => {
-  it('Instagram is the founder\'s address; every account is an https link on its own platform; no WhatsApp', () => {
-    expect(SOCIAL_ACCOUNTS.find((a) => a.platform === 'instagram')?.url).toBe('https://www.instagram.com/servyou.tn/')
+  it('Facebook then Instagram, the founder\'s addresses; every account is an https link on its own platform; no WhatsApp', () => {
+    expect(SOCIAL_ACCOUNTS.map((a) => [a.platform, a.url])).toEqual([
+      ['facebook', 'https://www.facebook.com/profile.php?id=61568691241876'],
+      ['instagram', 'https://www.instagram.com/servyou.tn/'],
+    ])
     for (const account of SOCIAL_ACCOUNTS) {
       const url = new URL(account.url)
       expect(url.protocol).toBe('https:')

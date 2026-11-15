@@ -3737,7 +3737,7 @@ export const fr: Record<string, string> = {
   // ─── Aide (/aide) — rebuilt from Figma I-Aide 449:17900 / 558:38359 / 449:18408 (feat/aide-rebuild) ───
   // Answers describe what is BUILT (verified against the code 2026-10-28), not the Figma specimens where they differ.
   'aide.title': "Aide",
-  'aide.subtitle': "Trouvez une réponse, ou écrivez-nous directement sur WhatsApp.",
+  'aide.subtitle': "Trouvez une réponse, ou écrivez-nous.",
   'aide.breadcrumb.home': "Accueil",
   'aide.writeUs': "Nous écrire",
   'aide.breadcrumb.label': "Fil d'Ariane",
@@ -3751,7 +3751,7 @@ export const fr: Record<string, string> = {
   'aide.empty.body': "Cette question n'est pas encore couverte. Écrivez-nous — c'est comme ça que cette page s'améliore.",
   'aide.contact.title': "Vous n'avez pas trouvé ?",
   'aide.contact.subtitle': "Écrivez-nous. Une vraie personne vous répond.",
-  'aide.contact.whatsapp': "Écrire sur WhatsApp",
+  'aide.contact.write': "Écrivez-nous",
   'aide.contact.responseTime': "Réponse sous 24 à 48 h",
   'aide.contact.email': "Envoyer un e-mail",
   'aide.legal.title': "Informations légales",

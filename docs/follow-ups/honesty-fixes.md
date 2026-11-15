@@ -16,6 +16,9 @@
 
 ## /aide still offers a « WhatsApp » button that leads to /contact, where WhatsApp is gone
 
+✅ CLOSED — #382 commit 3 (2026-11-15). Founder answer 4: the button became « Écrivez-nous » → /contact (primary button,
+`MessageSquare` icon), in the contact panel and the no-result state; `SUPPORT_WHATSAPP_HREF` is now `SUPPORT_CONTACT_HREF`.
+
 - **What:** the help centre's contact panel (`src/components/aide/ContactPanel.tsx`) and its no-result state
   (`src/components/aide/AideCenter.tsx`) show a green WhatsApp CTA (`aide.contact.whatsapp` + `WhatsAppGlyph`) whose
   href is `SUPPORT_WHATSAPP_HREF = '/contact'`. Since this PR, /contact has no WhatsApp channel, so the button promises a

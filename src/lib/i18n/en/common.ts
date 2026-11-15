@@ -1358,7 +1358,7 @@ export const strings: Record<string, string> = {
   "placeholders.comingSoon.request": "Online requests are coming soon",
   // aide
   "aide.title": "Help",
-  "aide.subtitle": "Find an answer, or write to us directly on WhatsApp.",
+  "aide.subtitle": "Find an answer, or write to us.",
   "aide.breadcrumb.home": "Home",
   "aide.writeUs": "Write to us",
   "aide.breadcrumb.label": "Breadcrumb",
@@ -1372,7 +1372,7 @@ export const strings: Record<string, string> = {
   "aide.empty.body": "This question isn't covered yet. Write to us — that's how this page gets better.",
   "aide.contact.title": "Didn't find it?",
   "aide.contact.subtitle": "Write to us. A real person answers.",
-  "aide.contact.whatsapp": "Write on WhatsApp",
+  "aide.contact.write": "Write to us",
   "aide.contact.responseTime": "Answer within 24 to 48 h",
   "aide.contact.email": "Send an email",
   "aide.legal.title": "Legal information",
