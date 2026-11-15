@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
 import { withSentryConfig } from "@sentry/nextjs";
 import { cspReportUrl, securityHeaders } from "./src/lib/security/headers";
+import { SENTRY_TUNNEL_ROUTE, sentryTunnelRedirects } from "./src/lib/security/sentry-tunnel";
 
 const nextConfig: NextConfig = {
   // Hide the Next.js dev-tools indicator — the floating circle with the Next "N"
@@ -17,7 +18,9 @@ const nextConfig: NextConfig = {
   async headers() {
     // Violation reports go to Sentry's security endpoint, derived from the DSN (null without one → no reporting).
     const reportUrl = cspReportUrl(process.env.NEXT_PUBLIC_SENTRY_DSN, process.env.VERCEL_ENV ?? process.env.NODE_ENV)
-    return [{ source: '/:path*', headers: securityHeaders(process.env.NODE_ENV !== 'production', reportUrl) }]
+    // The Vercel toolbar's hosts are allowed on Vercel PREVIEW deployments only, never in production (audit M7, PR 16).
+    const allowVercelToolbar = process.env.VERCEL_ENV === 'preview'
+    return [{ source: '/:path*', headers: securityHeaders(process.env.NODE_ENV !== 'production', reportUrl, allowVercelToolbar) }]
   },
 
   // Server Actions default to a 1 MB request body. The avatar upload sends a real photo through an
@@ -120,6 +123,9 @@ const nextConfig: NextConfig = {
   // pick their role and no real bookmarks exist pre-launch.
   async redirects() {
     return [
+      // The Sentry tunnel only forwards to OUR project: any other org or project is refused before Sentry's rewrite
+      // runs (audit M7, PR 16; src/lib/security/sentry-tunnel.ts).
+      ...sentryTunnelRedirects(process.env.NEXT_PUBLIC_SENTRY_DSN),
       { source: '/login', destination: '/connexion', permanent: true },
       { source: '/signup', destination: '/inscription', permanent: true },
       { source: '/forgot-password', destination: '/mot-de-passe-oublie', permanent: true },
@@ -143,8 +149,9 @@ export default withSentryConfig(nextConfig, {
   authToken: process.env.SENTRY_AUTH_TOKEN,
   widenClientFileUpload: true,
   // Proxy Sentry events through the app to dodge ad blockers. /monitoring is explicitly
-  // excluded from src/middleware.ts's matcher, so the tunnel is unobstructed.
-  tunnelRoute: "/monitoring",
+  // excluded from src/middleware.ts's matcher, so the tunnel is unobstructed. It forwards to OUR project only: the
+  // redirects() above refuse any other org or project (src/lib/security/sentry-tunnel.ts).
+  tunnelRoute: SENTRY_TUNNEL_ROUTE,
   // Tree-shakes Sentry's internal debug logging from bundles. Emits a deprecation
   // notice under Turbopack (the webpack.* replacement isn't Turbopack-compatible yet);
   // benign and the only way to get this behavior today. automaticVercelMonitors is left
