@@ -12,6 +12,7 @@ import { sidebarSectionsForRole, type ShellRole } from './sidebar-items'
 import { isActiveRoute, isItemActive } from './active-route'
 import { SidebarSection } from './SidebarSection'
 import { SidebarItem } from './SidebarItem'
+import { LanguageToggle } from '@/components/layout/LanguageToggle'
 import { HitArea } from '@/components/ui/interactive-surface'
 
 // The app-shell sidebar (design system Sections 3.1/3.2): a full-height dark-navy column, 240px
@@ -151,6 +152,18 @@ export function Sidebar({
           </SidebarSection>
         ))}
       </nav>
+
+      {/* Phones only (below sm): the FR / EN / AR switch, moved here from the topbar so the signed-in header fits 360px
+          (journey walk S1 + J9). From sm up the topbar keeps it, so the drawer does not repeat it. */}
+      {inDrawer ? (
+        <div className="shrink-0 border-t border-white/10 pt-1 sm:hidden">
+          <SidebarSection label={t('shell.sidebar.section.language', lang)}>
+            <div className="px-3 pt-2">
+              <LanguageToggle />
+            </div>
+          </SidebarSection>
+        </div>
+      ) : null}
     </div>
   )
 }

@@ -3692,6 +3692,7 @@ export const fr: Record<string, string> = {
   'shell.sidebar.section.activities':     "Mes activités",
   'shell.sidebar.section.discover':       "Découvrir & achats",
   'shell.sidebar.section.tools':          "Outils & compte",
+  'shell.sidebar.section.language':          "Langue",
   'shell.sidebar.dashboard':              "Tableau de bord",
   'shell.sidebar.products':               "Mes produits",
   'shell.sidebar.receivedOrders':         "Commandes reçues",

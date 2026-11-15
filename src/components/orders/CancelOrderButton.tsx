@@ -261,7 +261,7 @@ export function CancelOrderButton({
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className={`w-full rounded text-center text-body-sm text-danger-500 hover:underline ${FOCUS_RING}`}
+        className={`w-full rounded text-center text-body-sm text-danger-700 hover:underline ${FOCUS_RING}`}
       >
         {t('seller.orderDetail.cancel_link', lang)}
       </button>

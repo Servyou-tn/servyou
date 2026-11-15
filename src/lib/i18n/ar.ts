@@ -3629,6 +3629,7 @@ export const ar: Record<string, string> = {
   'shell.sidebar.section.activities':     "أنشطتي",
   'shell.sidebar.section.discover':       "اكتشف وتسوق",
   'shell.sidebar.section.tools':          "أدوات وحساب",
+  'shell.sidebar.section.language':          "اللغة", // REVIEW_AR_TRANSLATION
   'shell.sidebar.dashboard':              "لوحة التحكم",
   'shell.sidebar.products':               "منتجاتي",
   'shell.sidebar.receivedOrders':         "الطلبات الواردة",
