@@ -62,23 +62,44 @@ describe('INTEGRATION_GLOBS keeps every live-DB suite out of the default run', (
 
 // A live run that passes must have run its tests. Missing credentials can no longer skip anything (the integration
 // config refuses to start, vitest.live-env.ts), so a live suite may skip on nothing else: no .skip / .todo / .only /
-// .runIf, and a skipIf only on the credentials gate. Comments are left out of the scan (a « .only » in prose is fine).
-const SILENT_SKIP = /\.(?:skip|todo|only|runIf)\b|\.skipIf\s*\((?!!hasCreds\))/g
-const withoutComments = (source: string) => source.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:])\/\/.*$/gm, '$1')
+// .runIf / xit / xdescribe / xtest, and a skipIf only on the credentials gate.
+const SILENT_SKIP = /\.(?:skip|todo|only|runIf)\b|\.skipIf\s*\((?!!hasCreds\))|\bx(?:it|describe|test)\s*\(/g
+// Comments are left out of the scan (a « .only » in prose is fine). One left-to-right pass, so a `/*` inside a line
+// comment or a string never opens a « comment » that would hide the code after it; string literals are kept.
+const COMMENT_OR_STRING = /('(?:\\.|[^'\\\n])*'|"(?:\\.|[^"\\\n])*"|`(?:\\.|[^`\\])*`)|\/\*[\s\S]*?\*\/|\/\/[^\n]*/g
+const withoutComments = (source: string) => source.replace(COMMENT_OR_STRING, (_match, literal?: string) => literal ?? '')
+
+// Every suite INTEGRATION_GLOBS lists, plus any test file that reads the service-role key (the same set once the check
+// above passes; the three phone-reveal suites get their key through a fixture module, so only the list finds them).
+const liveRunFiles = [...new Set([...allTests.filter((path) => listed.includes(basename(path))), ...liveSuites])]
 
 describe('a live suite cannot pass without running its tests', () => {
+  it('scans every listed suite, including the ones that get their key from a fixture module', () => {
+    const names = liveRunFiles.map((path) => basename(path))
+    expect(names).toContain('phone-reveal-buyer-live.test.ts')
+    expect(names.length).toBe(new Set([...listed, ...liveSuites.map((path) => basename(path))]).size)
+  })
+
   it('skips only on the credentials gate', () => {
-    const found = liveSuites.flatMap((path) =>
+    const found = liveRunFiles.flatMap((path) =>
       [...withoutComments(readFileSync(path, 'utf8')).matchAll(SILENT_SKIP)].map((m) => `${relative(ROOT, path)}: ${m[0]}`),
     )
     expect(found).toEqual([])
   })
 
   it('the pattern catches the forms it forbids, and lets the credentials gate through', () => {
-    const hits = (code: string) => [...code.matchAll(SILENT_SKIP)].length
+    const hits = (code: string) => [...withoutComments(code).matchAll(SILENT_SKIP)].length
     expect(hits('describe.skipIf(!hasCreds)("x", () => {})')).toBe(0)
     expect(hits('describe.skipIf(!process.env.X)("x", () => {})')).toBe(1)
     expect(hits('it.skip("x", () => {}); test.todo("y"); describe.only("z", () => {}); it.runIf(ok)("w", () => {})')).toBe(4)
-    expect(hits(withoutComments('// never run a case alone (-t / .only)\n/* it.skip */ const a = 1'))).toBe(0)
+    expect(hits('xit("a", f); xdescribe("b", f); xtest("c", f)')).toBe(3)
+    expect(hits('// never run a case alone (-t / .only)\n/* it.skip */ const a = 1')).toBe(0)
+  })
+
+  it('a comment marker inside a line comment or a string hides no code', () => {
+    const hits = (code: string) => [...withoutComments(code).matchAll(SILENT_SKIP)].length
+    expect(hits('// see db/migrations/*_x.sql\nit.skip("x", f)\n/** doc */')).toBe(1)
+    expect(hits('const url = "https://a.example/*"\nit.skip("x", f) // */')).toBe(1)
+    expect(hits("const p = 'a//b'; it.only('x', f)")).toBe(1)
   })
 })

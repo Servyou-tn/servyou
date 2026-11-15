@@ -13,7 +13,7 @@
  */
 
 import { describe, it, expect, beforeAll, afterAll } from 'vitest'
-import { spawnSync } from 'node:child_process'
+import { spawn } from 'node:child_process'
 import { mkdtempSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
@@ -43,21 +43,27 @@ afterAll(() => {
   }
 })
 
-// The integration config, run the way an agent runs a live suite, from a directory with no .env files.
-function runIntegrationConfig(liveValues: Record<string, string>): { status: number | null; output: string } {
+// The integration config, run the way an agent runs a live suite, from a directory with no .env files. Asynchronous,
+// so the worker's event loop stays free during the nested vitest start-up.
+function runIntegrationConfig(liveValues: Record<string, string>): Promise<{ status: number | null; output: string }> {
   const env: NodeJS.ProcessEnv = { ...process.env, NO_COLOR: '1', FORCE_COLOR: '0' }
   for (const key of Object.keys(env)) {
     // Not the live values (the unit run's own env may hold the real ones), nor the parent run's VITEST_* markers.
     if ((LIVE_ENV_KEYS as readonly string[]).includes(key) || key.startsWith('VITEST')) delete env[key]
   }
   Object.assign(env, liveValues)
-  const run = spawnSync(process.execPath, [VITEST, 'run', '--config', INTEGRATION_CONFIG, '--root', ROOT, NO_SUCH_SUITE], {
-    cwd: emptyDir,
-    env,
-    encoding: 'utf8',
-    timeout: 90_000,
+  return new Promise((done, fail) => {
+    const child = spawn(process.execPath, [VITEST, 'run', '--config', INTEGRATION_CONFIG, '--root', ROOT, NO_SUCH_SUITE], {
+      cwd: emptyDir,
+      env,
+      timeout: 90_000,
+    })
+    let output = ''
+    child.stdout.on('data', (chunk: Buffer) => (output += chunk.toString('utf8')))
+    child.stderr.on('data', (chunk: Buffer) => (output += chunk.toString('utf8')))
+    child.on('error', fail)
+    child.on('close', (status) => done({ status, output }))
   })
-  return { status: run.status, output: `${run.stdout}\n${run.stderr}` }
 }
 
 describe('missingLiveEnv', () => {
@@ -83,15 +89,15 @@ describe('missingLiveEnv', () => {
 })
 
 describe('vitest.integration.config.ts refuses to run without the values', () => {
-  it('fails before collecting anything when they are missing', { timeout: 120_000 }, () => {
-    const { status, output } = runIntegrationConfig({})
+  it('fails before collecting anything when they are missing', { timeout: 120_000 }, async () => {
+    const { status, output } = await runIntegrationConfig({})
     expect(status).not.toBe(0)
     expect(output).toContain(`${REFUSED}: ${LIVE_ENV_KEYS.join(', ')} are missing or blank.`)
     expect(output).not.toContain('No test files found')
   })
 
-  it('gets past the check when they are set (fake values, a filter that matches no suite)', { timeout: 120_000 }, () => {
-    const { status, output } = runIntegrationConfig(FULL)
+  it('gets past the check when they are set (fake values, a filter that matches no suite)', { timeout: 120_000 }, async () => {
+    const { status, output } = await runIntegrationConfig(FULL)
     expect(output).not.toContain(REFUSED)
     expect(output).toContain('No test files found')
     expect(status).not.toBe(0)
