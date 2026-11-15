@@ -92,6 +92,9 @@ gstack-investigate (root cause) · gstack-review (before every report).
     and burned the budget (2026-10-30). Stop runners with `taskkill /PID <pid> /T /F`, and before any live run
     confirm no `vitest` / runner process is alive (`Get-CimInstance Win32_Process` on the command line).
   · Run a batch: `npx vitest run --config vitest.integration.config.ts --no-file-parallelism <files>`.
+    Without NEXT_PUBLIC_SUPABASE_URL / NEXT_PUBLIC_SUPABASE_ANON_KEY / SUPABASE_SERVICE_ROLE_KEY (shell or `.env.local`;
+    a worktree has none of its own) the config refuses to start (`vitest.live-env.ts`): a live run runs or fails,
+    never « all skipped, exit 0 ». Report pass counts, not just the exit code.
   · Who is spending the budget (Supabase `query_logs`, times in UTC): `select toStartOfMinute(timestamp) as m,
     log_attributes['response.status_code'] as status, count() as n from logs where source = 'edge_logs' and
     log_attributes['request.path'] like '%/auth/v1/verify%' group by m, status order by m` — calls in minutes
