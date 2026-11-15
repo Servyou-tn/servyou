@@ -3,9 +3,8 @@
 // The only support e-mail in the product (contact page, legal pages, FAQ all use it).
 export const SUPPORT_EMAIL = 'bonjour@servyou.tn'
 
-// ⚑ LAUNCH BLOCKER — the real support WhatsApp number is not confirmed anywhere in the repo: the /contact
-// page still carries the placeholder `https://wa.me/216XXXXXXXX` (src/app/(marketing)/contact/page.tsx) and
-// the number shown there is « +216 XX XXX XXX ». Until it is confirmed this points to /contact (an existing
-// page that lists the channels) instead of a dead or invented wa.me link — the same interim the old /aide used.
-// When the number lands, change it HERE and in the contact page: `https://wa.me/216XXXXXXXX`.
+// There is no public support WhatsApp number: the /contact page no longer shows a WhatsApp channel at all
+// (founder decision 2026-11-15 — its placeholder `wa.me/216XXXXXXXX` and « +216 XX XXX XXX » are gone). So this
+// points to /contact (the e-mail, the form and the social accounts) instead of a dead or invented wa.me link.
+// If a number is confirmed one day, change it HERE (`https://wa.me/216…`) and add the channel back to /contact.
 export const SUPPORT_WHATSAPP_HREF = '/contact'
