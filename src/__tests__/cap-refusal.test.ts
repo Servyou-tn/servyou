@@ -14,7 +14,7 @@ describe('orderCapKey', () => {
     expect(orderCapKey({ code: '23514', hint: 'order_cap_daily' })).toBe('demander.error.cap_daily')
   })
 
-  it('maps the two COD no-show refusals (PENDING_cod_no_show.sql)', () => {
+  it('maps the two COD no-show refusals (20261115182353_cod_no_show.sql)', () => {
     expect(orderCapKey({ code: '23514', hint: 'cod_open_order_cap' })).toBe('demander.error.cod_open_order_cap')
     expect(orderCapKey({ code: '23514', hint: 'cod_blocked' })).toBe('demander.error.cod_blocked')
     expect(orderCapKey({ code: 'P0001', hint: 'cod_blocked' })).toBeNull()

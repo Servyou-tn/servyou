@@ -1,4 +1,4 @@
-// The buyer's own COD standing (db/migrations/PENDING_cod_no_show.sql, get_my_cod_standing): the caller's 1-order cap
+// The buyer's own COD standing (db/migrations/20261115182353_cod_no_show.sql, get_my_cod_standing): the caller's 1-order cap
 // and the end of an active block, never the refusal count. Server-side only: it takes the request's Supabase client.
 
 import type { SupabaseClient } from '@supabase/supabase-js'

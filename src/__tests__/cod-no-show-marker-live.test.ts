@@ -1,5 +1,5 @@
 /**
- * Live-DB proof of the refusal marker and the contest (db/migrations/PENDING_cod_no_show.sql; founder decisions
+ * Live-DB proof of the refusal marker and the contest (db/migrations/20261115182353_cod_no_show.sql; founder decisions
  * 2026-11-14). Written while the migration is PENDING: red until the architect applies it.
  *
  *   marker   — the seller refuses from dispatched, in_delivery and arrived (the real client UPDATE: status cancelled,
@@ -11,7 +11,7 @@
  *   contest  — the buyer's dispute refusal_contested is filed within 14 days (13 days: yes) and refused after
  *              (15 days: contest_window_closed); on a cancellation that is no refusal (contest_not_refusal); by the
  *              seller (contest_buyer_only); a second active contest on the same order (23505); a seller's own
- *              dispute does not block the buyer's contest (decision 2 of the PENDING file).
+ *              dispute does not block the buyer's contest (decision 2 of the migration).
  *
  * Orders are seeded by the service role at the status a test needs (the insert triggers let a NULL caller through);
  * every write under test is made by a signed-in fixture. Backdated refusals: cancelled_at at noon in Africa/Tunis.

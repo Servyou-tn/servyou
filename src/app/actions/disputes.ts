@@ -15,7 +15,7 @@ const VALID_REASONS: DisputeReason[] = [
   'not_delivered', 'wrong_item', 'damaged', 'payment_refused', 'buyer_unreachable', 'other', 'refusal_contested',
 ]
 
-// A contest of a refused delivery (COD no-show rule, enforce_refusal_contest in db/migrations/PENDING_cod_no_show.sql)
+// A contest of a refused delivery (COD no-show rule, enforce_refusal_contest in db/migrations/20261115182353_cod_no_show.sql)
 // is refused with 23514 and a stable hint. Each maps to its own key; the raw French text never reaches the client.
 const CONTEST_ERROR_KEYS: Record<string, string> = {
   contest_window_closed: 'dispute.error_contest_window_closed',

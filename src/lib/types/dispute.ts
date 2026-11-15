@@ -30,7 +30,7 @@ export type DisputeReason =
   | 'buyer_unreachable'
   | 'other'
   // The buyer contests a refused delivery (COD no-show rule): buyer only, within 14 days of the refusal
-  // (enforce_refusal_contest, db/migrations/PENDING_cod_no_show.sql).
+  // (enforce_refusal_contest, db/migrations/20261115182353_cod_no_show.sql).
   | 'refusal_contested'
 
 // A full disputes row as returned by select(). Mirrors the table columns

@@ -108,7 +108,7 @@ export async function unsuspendUser(targetUserId: string): Promise<UserActionRes
 
 // ── COD no-show rule: lift a buyer's block (founder decision 8: a lift is a clean slate) ────────────
 //
-// admin_lift_cod_block (db/migrations/PENDING_cod_no_show.sql) checks is_admin(), refuses a buyer who is not blocked
+// admin_lift_cod_block (db/migrations/20261115182353_cod_no_show.sql) checks is_admin(), refuses a buyer who is not blocked
 // and an empty note, records the lift in cod_block_lifts and writes the journal row (« lift_cod_block ») in the same
 // transaction: a null error means the lift and its log both committed.
 export async function liftCodBlock(buyerId: string, note: string): Promise<UserActionResult> {

@@ -1,4 +1,4 @@
-// The COD no-show admin RPCs (admin_lift_cod_block, admin_void_refusal; db/migrations/PENDING_cod_no_show.sql) raise
+// The COD no-show admin RPCs (admin_lift_cod_block, admin_void_refusal; db/migrations/20261115182353_cod_no_show.sql) raise
 // on every failure with a stable code + hint, and log to the admin journal in the same transaction (the
 // admin_suspend_user pattern). This maps a refusal to the i18n key the admin action answers with. A plain module
 // (not 'use server'), so it is not itself a callable endpoint.

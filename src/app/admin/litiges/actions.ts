@@ -203,7 +203,7 @@ export async function dismissDispute(disputeId: string, adminNote: string): Prom
 
 // ── COD no-show rule: void a contested refusal (founder decision 7: an explicit admin act) ───────────
 //
-// Not the best-effort log of the dispute actions above: admin_void_refusal (db/migrations/PENDING_cod_no_show.sql)
+// Not the best-effort log of the dispute actions above: admin_void_refusal (db/migrations/20261115182353_cod_no_show.sql)
 // checks is_admin(), refuses an order that is no refusal or is already voided and an empty note, sets
 // orders.refusal_voided_at (never the status) and writes the journal row (« void_refusal ») in the same transaction.
 // The refusal stops counting at once: the standing is computed live. The dispute itself is closed separately

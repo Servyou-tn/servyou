@@ -1,5 +1,5 @@
 // The COD no-show rule (founder decisions 2026-11-14, docs/follow-ups/cod-no-show-plan.md; migration
-// db/migrations/PENDING_cod_no_show.sql). A refusal is a SELLER cancellation of a PRODUCT order coming from
+// db/migrations/20261115182353_cod_no_show.sql). A refusal is a SELLER cancellation of a PRODUCT order coming from
 // dispatched / in_delivery / arrived, carrying a refusal_reason. The database is the authority
 // (enforce_refusal_marker, the orders_refusal_* CHECKs); these mirror it so the action answers before the round trip.
 

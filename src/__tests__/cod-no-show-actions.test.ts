@@ -1,6 +1,6 @@
 /**
  * The COD no-show rule, app side (mocked; the live proof is cod-no-show-*-live.test.ts after the architect applies
- * db/migrations/PENDING_cod_no_show.sql). Covers:
+ * db/migrations/20261115182353_cod_no_show.sql). Covers:
  *   1. the pure helpers: isRefusable, refusalErrorKey, codAdminErrorKey, checkCodNote;
  *   2. every new i18n key exists in FR and AR, and in EN unless it is an admin key (admin stays French by convention);
  *   3. refuseDeliveryAction: seller only, from dispatched / in_delivery / arrived, product only, writes only granted

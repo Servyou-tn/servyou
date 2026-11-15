@@ -1,5 +1,5 @@
 /**
- * Live-DB proof of the COD no-show rule's counting and enforcement (db/migrations/PENDING_cod_no_show.sql; founder
+ * Live-DB proof of the COD no-show rule's counting and enforcement (db/migrations/20261115182353_cod_no_show.sql; founder
  * decisions 2026-11-14, docs/follow-ups/cod-no-show-plan.md). Written while the migration is PENDING: red until the
  * architect applies it.
  *

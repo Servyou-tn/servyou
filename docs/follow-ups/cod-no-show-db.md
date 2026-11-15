@@ -1,7 +1,8 @@
 # COD no-show rule, DB PR: follow-ups (`feat/cod-no-show-db`, 2026-11-14)
 
 The DB side of the COD no-show rule (plan and founder decisions: `docs/follow-ups/cod-no-show-plan.md`, PR #375). This
-PR ships the migration (PENDING until the architect applies it), the server actions and the tests. Nothing here is
+PR ships the migration (applied by the architect on 2026-11-15 as `20261115182353_cod_no_show`), the server actions
+and the tests. Nothing here is
 visible yet: no page calls the new actions or RPCs. These are the items it leaves to others, ranked.
 
 ## 1. UI-1 (Agent A): the seller's « Refusée à la livraison » and the refused order everywhere
@@ -21,7 +22,7 @@ visible yet: no page calls the new actions or RPCs. These are the items it leave
   - The new dispute keys already exist: `dispute.reason_refusal_contested`, `dispute.error_contest_*`.
   - **Don't gate the button on `hasActiveDispute()`** (`src/lib/marche/order-detail.ts`). It answers true for ANY
     active dispute, so a seller's own `payment_refused` dispute would hide the buyer's contest until the 14 days run
-    out. The database lets the two coexist (the split index, decision 2 of the PENDING file). The button needs a
+    out. The database lets the two coexist (the split index, decision 2 of the migration). The button needs a
     contest-aware check: an active dispute with `reason = 'refusal_contested'`.
 - **Text rewrites:**
   - `aide.g.commandes.a3`, which says there is no « Refusée » status;
@@ -31,7 +32,8 @@ visible yet: no page calls the new actions or RPCs. These are the items it leave
 
 **Why deferred:** UI work, Agent A's PRs (plan section 6).
 **Where it lives:** the files named above; plan section 5 has the proposed strings.
-**Trigger:** the architect applies the migration.
+**Trigger:** met. The migration is applied (`20261115182353_cod_no_show`, README #134, 2026-11-15); start once PR #378
+merges.
 
 ## 2. UI-2 (Agent A): the buyer's banner, the seller's warning, the admin controls
 
@@ -53,22 +55,16 @@ visible yet: no page calls the new actions or RPCs. These are the items it leave
 
 **Why deferred:** UI work, Agent A's PRs.
 **Where it lives:** the files named above.
-**Trigger:** the architect applies the migration (it can run beside UI-1).
+**Trigger:** met, as for UI-1 (it can run beside UI-1).
 
-## 3. LOW: data-model.md, the orders section
+## 3. LOW: data-model.md, the orders table still omits the snapshot columns
 
-**What:**
-- The section must describe the refusal marker, `cod_block_lifts` and the rule.
-- Fix the drift logged in the plan, section 7:
-  - L121: `delivery_*` is set by service requests too;
-  - L136: there is no admin status override;
-  - L144: DB messages are mapped, not shown raw;
-  - L187: the column grant list.
-
-**Why deferred:** the docs describe what is applied: they change with the migration's rename, in this PR's second
-commit.
+**What:** the orders section was updated in this PR's third commit, after the apply (the refusal marker,
+`cod_block_lifts`, the rule, and the plan's drift at L121 / L136 / L144 / L187). Its column table still omits
+`unit_price_tnd`, `item_title` and `delivery_fee_tnd` (live since earlier migrations; the order snapshot).
+**Why deferred:** outside the drift the plan listed (one PR, one focus).
 **Where it lives:** docs/data-model.md, « Orders: the lifecycle table ».
-**Trigger:** the architect applies the migration.
+**Trigger:** the next PR that edits the orders section.
 
 ## 4. INFO: `buyer_cancellation_history` still does not see refusals
 

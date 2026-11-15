@@ -286,7 +286,7 @@ export async function cancelOrderAction(input: unknown): Promise<ActionResult> {
 // ── Seller: « Refusée à la livraison » (the COD no-show rule) ───────────────────────────────────
 //
 // A refusal is a seller cancellation after dispatch carrying a refusal_reason (founder decision 1, 2026-11-14;
-// db/migrations/PENDING_cod_no_show.sql). Same three layers as the cancel above, and the database is the authority:
+// db/migrations/20261115182353_cod_no_show.sql). Same three layers as the cancel above, and the database is the authority:
 // enforce_refusal_marker (seller only, product only, from dispatched / in_delivery / arrived, set once) and
 // check_order_status_transition (role match, terminal lock). cancellation_reason, which the trigger requires after
 // dispatch, gets the reason's label in the seller's language, as the cancel presets do. Only granted columns are

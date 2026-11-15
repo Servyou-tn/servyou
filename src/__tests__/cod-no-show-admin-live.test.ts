@@ -1,5 +1,5 @@
 /**
- * Live-DB proof of the COD no-show rule's admin side (db/migrations/PENDING_cod_no_show.sql; founder decisions 7 and 8,
+ * Live-DB proof of the COD no-show rule's admin side (db/migrations/20261115182353_cod_no_show.sql; founder decisions 7 and 8,
  * 2026-11-14). Written while the migration is PENDING: red until the architect applies it.
  *
  *   gates    — admin_get_cod_standing, admin_lift_cod_block, admin_void_refusal refuse a non-admin (42501).
