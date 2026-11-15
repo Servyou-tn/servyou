@@ -1422,6 +1422,47 @@ both on 2026-10-28.
       discovery header: `git show 1c1ba9e:db/migrations/PENDING_backup_role.sql`.
     - Rollback: `drop role servyou_backup;` (it owns nothing; its membership goes with it).
 
+134. **20261115182353_cod_no_show** — the COD no-show rule (refused deliveries), DB side, PR #378; founder decisions
+    of 2026-11-14 (`docs/follow-ups/cod-no-show-plan.md`, PR #375). Written by db-guardian; reviewed and applied by
+    the architect.
+    - **The marker on `orders`:**
+      - `refusal_reason` (`refused_parcel` / `not_collected` / `unreachable`) and `refusal_voided_at`; 3 CHECKs (a
+        refusal is a seller cancellation of a product order; a void needs a refusal); partial index
+        `orders_refusals_by_buyer_idx`.
+      - `grant update (refusal_reason)` to authenticated (decision 1: the seller's own cancelling UPDATE, no seller
+        RPC; allow-list entry in the same PR).
+      - Guard trigger `trg_enforce_refusal_marker`: nothing preset on insert (42501); the reason set once, by the
+        order's seller, on a product order going from `dispatched` / `in_delivery` / `arrived` to `cancelled` (23514
+        `refusal_not_product` / `refusal_status`); the void by an admin only, once.
+    - **The rule, computed live** in `private.buyer_cod_standing(uuid)` (nothing stored; no client EXECUTE): a refusal
+      counts once per seller, buyer and Africa/Tunis day, if not voided and newer than the buyer's last lift. 2 in 90
+      days, or an active block: one open product order at a time. A refusal that reaches 3 in 90 days blocks new
+      product orders for 30 days from that refusal (a 4th restarts it). Service requests are never gated.
+    - **Enforcement:** `trg_limit_orders_cod` (BEFORE INSERT on `orders`, SECURITY DEFINER) takes the rate limit's
+      `orders.rate:<buyer>` advisory lock before any read; 23514 `cod_blocked` (with the date) / `cod_open_order_cap`.
+    - **`cod_block_lifts`:** RLS on in the same migration; admin read only, no client write, no anon read. A lift is
+      a clean slate.
+    - **Contest:** disputes reason `refusal_contested`; `trg_enforce_refusal_contest` (buyer only, own order only,
+      within 14 days, on a non-voided refusal; 23514 `contest_buyer_only` / `contest_not_refusal` /
+      `contest_window_closed`). Decision 2: the one-active-dispute index is split, so a contest can sit beside a
+      seller's dispute on the same order (`disputes_one_active_per_order` + `disputes_one_active_contest_per_order`).
+    - **5 RPCs** (SECURITY DEFINER, `search_path ''`, EXECUTE for authenticated only): `get_my_cod_standing`,
+      `seller_buyer_cod_warnings` (ids only, the caller's own open orders, first 200), `admin_get_cod_standing`,
+      `admin_lift_cod_block` (decision 3: refuses a buyer who is not blocked) and `admin_void_refusal`, both logged
+      in `admin_audit_log` (`lift_cod_block` / `void_refusal`).
+    - No row changed: 0 seller cancellations after dispatch and 0 disputes at discovery.
+    - Checked after the apply: the 3 triggers enabled; the 5 RPCs EXECUTE for authenticated (not anon); the trigger
+      functions and `private.buyer_cod_standing` with no client EXECUTE; `cod_block_lifts` RLS on, authenticated
+      SELECT only; the split indexes and the 5 constraints as written.
+    - Types regenerated: identical to the hand edit of f87a2ba (zero diff). Live, one at a time:
+      `cod-no-show-rule-live` 15/15, `cod-no-show-marker-live` 17/17, `cod-no-show-admin-live` 6/6,
+      `client-write-grants-live` 3/3; cleanup verified (0 fixture users, orders, lifts, disputes or admins left).
+    - The recorded statement is this whole file, byte-identical to the reviewed PENDING file of bd8e821 (sha256
+      `fb7d5945…`, md5 `af3f0d9b2c1e1117020f287fc587c455` with its trailing newline). So its header still reads
+      « PENDING ».
+    - Rollback: the commented block at the end of the file (one transaction; close one of two active disputes on the
+      same order before restoring the single index).
+
 ## Rollback paths
 
 Each migration in this folder represents work that has already been applied to production. Rollback is therefore reverse migration work, not file deletion. If a rollback is ever needed, write a new dated migration that reverses the relevant changes — never delete history from this folder.
