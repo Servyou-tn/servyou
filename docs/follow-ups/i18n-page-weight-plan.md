@@ -158,7 +158,7 @@ switching C → A later is a one-line change in what the provider receives. B is
 2. **At runtime, `useT` never fails silently:**
    - in development it logs the key, the route and the missing namespace;
    - in production it reports to Sentry (the key and the route **pattern**, e.g. `/mes-commandes/[id]`, never the concrete URL, so no ids reach Sentry) and renders the key, as `t()` does today for a missing key.
-3. **A crawl of every route in FR, AR and EN** (Playwright) fails on any miss. The pages behind sign-in need test sessions: consumer, freelancer, shop owner, and admin for `/admin/*`.
+3. **A crawl of every public page in FR, AR and EN** (Playwright) fails on any miss. The signed-in areas are not crawled (no test sessions); they are checked by hand in each area's PR (founder decision 3, §8).
 4. **`roles.ts`** labels move to their own namespace so `admin` stays on admin pages.
 
 ### 5.4 What it does not change
@@ -179,17 +179,16 @@ Each PR measures with `node scripts/perf/first-load-js.mjs` and **lowers the bud
 | **PR-3 — marketplace (public)** | `/marche/*`, `/categories/[slug]`, `/recherche`, the detail pages (`/freelance`, `/boutique`, `/produits`, `/services`), `/devenir-vendeur/*`, auth pages | JS −206 KB on each, +4–23 KB of strings (the public pages fully done) |
 | **PR-4 — seller & freelancer areas** | `mon-profil-freelance`, `mes-services`, `ma-boutique`, `mes-produits`, `commandes-recues`, `tableau-de-bord*`, missions | JS −206 KB on each, +11–25 KB of strings |
 | **PR-5 — buyer & account** | `mes-commandes`, `mes-annonces`, `mes-engagements`, `mes-favoris`, `mon-compte`, `parametres`, `demander` | JS −206 KB on each, +11–21 KB of strings |
-| **PR-6 — admin + close** | `/admin/*`, `roles.ts` labels, delete the static client import path (a lint rule forbids `import { t } from '@/lib/i18n'` in `'use client'` files), and the Playwright crawl in FR / AR / EN | the rest; the chunk no longer exists |
+| **PR-6 — admin + close** | `/admin/*`, `roles.ts` labels, delete the static client import path (a lint rule forbids `import { t } from '@/lib/i18n'` in `'use client'` files), and the Playwright crawl of the public pages in FR / AR / EN | the rest; the chunk no longer exists |
 
-- **Optional stopgap D** before PR-2: move proven server-only namespaces (`legal`, `meta`, `seo`, `about` first: ~35 KB) out of the client
-  dictionary. That is worth it only if PR-2 is more than a few weeks away, because C makes it redundant.
+- **No stopgap D** (founder decision 2, §8): C starts directly with PR-1.
 - Order: public pages first (PR-2, PR-3), because they are what first-time visitors and search engines load.
 
 ## 7. Risks
 
 | Risk | Where | Mitigation |
 |---|---|---|
-| A key shown raw because its namespace was not declared | props carrying keys from Server Components (67 files with dynamic calls) | §5.3 safety net: source test, Sentry report, three-language crawl |
+| A key shown raw because its namespace was not declared | props carrying keys from Server Components (67 files with dynamic calls) | §5.3 safety net: source test, Sentry report, three-language crawl of the public pages, hand check of the signed-in areas |
 | Helpers calling `t()` outside components | unknown count | pass `t` in; caught by `tsc` once `t` loses its `lang` argument on the client |
 | More bytes on repeat full loads | HTML / RSC payload, +1–25 KB a page | far below the 205.8 KB saved; soft navigations only add the page's namespaces |
 | Language switch shows stale strings | providers that cache messages client-side | providers keep no state of their own; covered by a test that switches FR → AR → EN |
@@ -197,10 +196,17 @@ Each PR measures with `node scripts/perf/first-load-js.mjs` and **lowers the bud
 | 32 render tests break | tests rendering client `t()` components | the PR-1 test helper; migrate them with each area |
 | A route left half-migrated still ships the chunk | any client file still importing `@/lib/i18n` | the budget script shows it; the PR-6 lint rule makes it impossible |
 
-## 8. Questions for the founder
+## 8. Founder decisions (2026-11-15)
 
-1. **C (namespaces: JS −206 KB, +1–25 KB of strings per page) or A (whole active language: JS −206 KB, +65–75 KB of strings per full page load, no risk of a missing key)?** Recommended: C.
-2. **The stopgap D (~35 KB now) before PR-2?** Worth it only if PR-2 is more than a few weeks away.
+1. **Plan C** (namespaces: JS −206 KB, +1–25 KB of strings per page), not A (whole active language, +65–75 KB of strings per full page load).
+2. **No stopgap D.** The ~35 KB move of server-only namespaces is skipped; C makes it redundant.
+3. **The three-language crawl covers the public pages only.** No test accounts are created for it; the signed-in areas
+   (consumer, freelancer, shop owner, admin) are checked by hand in each area's PR.
+
+The questions as they were asked, for the record:
+
+1. C (namespaces) or A (whole active language, no risk of a missing key)? Recommended: C.
+2. The stopgap D (~35 KB now) before PR-2? Worth it only if PR-2 is more than a few weeks away.
 3. The Playwright crawl behind sign-in needs four test sessions (consumer, freelancer, shop owner, admin). OK to create
    dedicated test accounts, or should the crawl cover public pages only and the signed-in areas be checked by hand?
 
