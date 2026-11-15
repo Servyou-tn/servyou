@@ -31,14 +31,36 @@ One central `profiles` table holds the universal identity every user shares, sin
 | id | uuid | PK, FK to `auth.users(id)` ON DELETE CASCADE |
 | full_name | text | required |
 | email | text | required, unique |
-| date_of_birth | date | required, used for the 16+/18+ age rule |
+| date_of_birth | date | nullable until the account is complete (two-step sign-up, below); required once complete; used for the 16+/18+ age rules; never client-writable |
 | city | text | nullable |
-| language | text | `'fr'` or `'ar'`, default `'fr'` |
+| language | text | `'fr'`, `'ar'` or `'en'`, default `'fr'` |
+| completed_at | timestamptz | nullable; set when the account is complete (step 2, or at creation for a sign-up that carries the full profile) |
+| terms_accepted_at, terms_version | timestamptz, text | the terms and privacy policy accepted, and which version; « avant 2026-11 » for accounts created before the checkbox |
 | phone | text | nullable, progressively collected |
 | seller_type | text | nullable, `'freelancer'` or `'shop_owner'` |
 | is_admin | boolean | default false, separate protected flag |
 | created_at | timestamptz | auto |
 | updated_at | timestamptz | auto via `handle_updated_at` trigger |
+
+**The two-step sign-up** (migration `20261115222457_two_step_signup`; plan and founder decisions:
+`docs/follow-ups/two-step-signup-plan.md`). Sign-up asks for the name and the e-mail; the e-mail link opens
+« Finalisez votre compte » (password, birth date, city, terms).
+- `handle_new_user` (AFTER INSERT on `auth.users`) creates every profile from the sign-up metadata, with or without a
+  birth date. A profile without one is incomplete (`completed_at` null).
+- A CHECK requires the birth date and the terms once `completed_at` is set. The city is not covered: the deletion
+  tombstone clears it, and the owner may edit it.
+- `complete_my_account(full_name, date_of_birth, city, terms_version)` (SECURITY DEFINER, authenticated only) completes
+  it. It requires all of these:
+  - a session opened by an e-mailed link or code (JWT `amr` `otp`; a password sign-in never qualifies);
+  - no other session of the account alive;
+  - a password set during this session (`private.account_password_set`, written by the `on_auth_user_password_set`
+    trigger on `auth.users`). A password chosen when someone else created the account never counts;
+  - 16+, a name and a city;
+  - the current `private.current_terms_version()`.
+- This is what makes a squatted sign-up harmless (pre-launch audit H1).
+- **Transitional (DB-1):** a sign-up that carries the full profile is still complete at creation, and an incomplete
+  account is not yet refused anything. DB-2 adds the write gate, the 7-day purge of incomplete accounts and the
+  confirmed-at-insert rule (`docs/follow-ups/two-step-signup-db.md`).
 
 A single `seller_type` field expresses the optional seller capability: empty for a pure consumer; `'freelancer'` or `'shop_owner'` once upgraded; never both at once. Future branched roles (such as `'liberal_professional'`, `'small_company'`) are added as new accepted values plus their own child tables. Admin status is a separate boolean, kept out of `seller_type` to preserve the developer/admin separation.
 
@@ -199,7 +221,7 @@ The admin layer (Phase 9) adds moderation, dispute resolution, user suspension, 
 
 RLS gates rows, not columns — so on owner-writable tables, privileged columns must be protected at the column-privilege and trigger layers as well. A column-level `REVOKE` does **not** subtract from a pre-existing table-level grant in PostgreSQL, so the pattern is an allow-list inversion: revoke table `UPDATE`, then grant back only the columns the app legitimately edits. Two tables carry these locks (added in PR-Z to close the 2026-06-09 audit's CRIT-1 and IMP-1):
 
-- **`profiles`.** `authenticated` holds `UPDATE` only on `full_name, city, language, phone, seller_type`. `is_admin`, `suspended_at`, `suspended_reason`, `date_of_birth`, and `email` are not authenticated-writable — they change only through the admin SECURITY DEFINER RPCs (running as owner) or the service role. `enforce_profile_admin_marker_lock` is the defense-in-depth trigger; `enforce_seller_type_age_gate` enforces the 18+ rule at the DB layer when `seller_type` is set.
+- **`profiles`.** `authenticated` holds `UPDATE` only on `avatar_url, full_name, city, language, phone, seller_type`. `is_admin`, `suspended_at`, `suspended_reason`, `date_of_birth`, `email`, `completed_at`, `terms_accepted_at` and `terms_version` are not authenticated-writable — they change only through SECURITY DEFINER RPCs running as owner (the admin RPCs; `complete_my_account` for the birth date, the completion and the terms) or the service role. `enforce_profile_admin_marker_lock` is the defense-in-depth trigger; `enforce_seller_type_age_gate` enforces the 18+ rule at the DB layer when `seller_type` is set.
 - **`orders`.** `authenticated` holds `UPDATE` only on `status, cancelled_by, cancellation_reason, carrier, tracking_number, refusal_reason`; `received_at` and `cancelled_at` are stamped by the database (the `received_at` grant was revoked by `20261028194721`), and `refusal_voided_at` is written by `admin_void_refusal` only. The identity columns (`buyer_id, seller_id, product_id, service_listing_id, order_type, quantity, buyer_note, delivery_*`) are frozen after creation (column grant + `enforce_order_identity_lock`). The role-gating trigger continues to govern status transitions.
 
 The trigger bypass cascade for all three locks is: `auth.uid() IS NULL` (service-role / SQL-editor / cron) → allow; `is_admin()` (admin RPC paths) → allow; otherwise a protected-column change raises `42501`. These locks are exercised by `scripts/rls-smoke.mjs` section F.
