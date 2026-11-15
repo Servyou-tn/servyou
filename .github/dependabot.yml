@@ -1,0 +1,38 @@
+# Dependabot (audit PR 17). Two kinds of pull request, both grouped so each run opens at most one PR per ecosystem:
+#   - github-actions, weekly: keeps the commit-pinned actions in .github/workflows/ up to date (a pin never moves on its
+#     own, so without this a security fix in an action would never reach CI).
+#   - npm, monthly: minor and patch updates of the dependencies in one PR. Major versions (Next.js, React, Supabase…)
+#     are never proposed here: a major upgrade is planned work, done in its own PR.
+# Security alerts and Dependabot security updates are separate repository settings (Settings › Code security).
+# Every Dependabot PR runs the full CI like any other PR, and the founder merges it by hand.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: Africa/Tunis
+    open-pull-requests-limit: 1
+    groups:
+      actions:
+        patterns: ["*"]
+    commit-message:
+      prefix: chore
+
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: monthly
+      time: "06:00"
+      timezone: Africa/Tunis
+    open-pull-requests-limit: 1
+    groups:
+      minor-and-patch:
+        update-types: [minor, patch]
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
+    commit-message:
+      prefix: chore
