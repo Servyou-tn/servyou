@@ -52,9 +52,9 @@ export function FreelancerCard({
       <div className="flex min-w-0 flex-1 flex-col gap-3">
         <div className="flex items-start justify-between">
           <div className="flex min-w-0 flex-1 flex-col gap-1">
-            <h3 className="truncate text-base font-semibold leading-[19px] text-brand-blue-800">
+            <h3 dir="auto" className="truncate rtl:max-w-full rtl:self-start text-base font-semibold leading-[19px] text-brand-blue-800">
               <Link href={href} className={`rounded after:absolute after:inset-0 after:rounded-xl ${FOCUS_RING}`}>
-                <bdi>{freelancer.name}</bdi>
+                {freelancer.name}
               </Link>
             </h3>
             {/* The title box is FIXED 42 in the component (two 21 lines): it keeps its height when the title is short or missing. */}

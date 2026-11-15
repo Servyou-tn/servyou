@@ -68,7 +68,7 @@ export function OrderActionRow({
           <ImageIcon className="h-[22px] w-[22px] text-icon-muted" aria-hidden="true" />
         </span>
         <div className="flex min-w-0 flex-1 flex-col gap-1 max-lg:w-full">
-          <p className="truncate text-body font-semibold text-text-primary"><bdi>{order.title}</bdi></p>
+          <p dir="auto" className="truncate rtl:max-w-full rtl:self-start text-body font-semibold text-text-primary">{order.title}</p>
           <div className="flex items-center gap-2">
             <MapPin className="h-3.5 w-3.5 shrink-0 text-text-secondary" aria-hidden="true" />
             <p className="truncate text-body-sm text-text-secondary">

@@ -65,8 +65,8 @@ export function ProductListingCard({
         </div>
 
         <div className="space-y-2 p-5">
-          <p className="line-clamp-1 text-base font-semibold leading-tight text-text-primary">
-            <bdi>{product.title}</bdi>
+          <p dir="auto" className="line-clamp-1 rtl:w-fit rtl:max-w-full text-base font-semibold leading-tight text-text-primary">
+            {product.title}
           </p>
           <p dir="auto" className="line-clamp-2 min-h-[40px] text-body-sm leading-[1.5] text-text-muted">
             {product.description}

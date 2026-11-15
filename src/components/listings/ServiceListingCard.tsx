@@ -109,8 +109,8 @@ export function ServiceListingCard({ service }: { service: ServiceListing }) {
           <div className="flex min-w-0 items-center gap-2">
             <Avatar size="sm" />
             {service.freelancer.full_name && (
-              <span className="max-w-[120px] truncate text-body-sm text-brand-blue-800">
-                <bdi>{service.freelancer.full_name}</bdi>
+              <span dir="auto" className="max-w-[120px] truncate text-body-sm text-brand-blue-800">
+                {service.freelancer.full_name}
               </span>
             )}
           </div>

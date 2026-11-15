@@ -118,9 +118,9 @@ export function ServiceDetail({
           >
             <Avatar size="md" src={service.freelancer.avatarUrl} name={service.freelancer.name} />
             <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-              <p className="truncate text-sm font-semibold leading-[17px] text-brand-blue-800"><bdi>{service.freelancer.name}</bdi></p>
+              <p dir="auto" className="truncate rtl:max-w-full rtl:self-start text-sm font-semibold leading-[17px] text-brand-blue-800">{service.freelancer.name}</p>
               {service.freelancer.headline && (
-                <p className="truncate text-xs leading-4 text-text-muted"><bdi>{service.freelancer.headline}</bdi></p>
+                <p dir="auto" className="truncate rtl:max-w-full rtl:self-start text-xs leading-4 text-text-muted">{service.freelancer.headline}</p>
               )}
             </div>
             <ChevronRight className="size-[18px] shrink-0 text-text-muted rtl:rotate-180" aria-hidden="true" />
@@ -129,9 +129,9 @@ export function ServiceDetail({
           <div className="flex items-center gap-3 rounded-xl bg-surface-subtle p-3 lg:hidden">
             <Avatar size="md" src={service.freelancer.avatarUrl} name={service.freelancer.name} />
             <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-              <p className="truncate text-sm font-semibold leading-[17px] text-brand-blue-800"><bdi>{service.freelancer.name}</bdi></p>
+              <p dir="auto" className="truncate rtl:max-w-full rtl:self-start text-sm font-semibold leading-[17px] text-brand-blue-800">{service.freelancer.name}</p>
               {service.freelancer.headline && (
-                <p className="truncate text-xs leading-4 text-text-muted"><bdi>{service.freelancer.headline}</bdi></p>
+                <p dir="auto" className="truncate rtl:max-w-full rtl:self-start text-xs leading-4 text-text-muted">{service.freelancer.headline}</p>
               )}
             </div>
           </div>
@@ -152,8 +152,8 @@ export function ServiceDetail({
           <div className="flex items-center gap-3">
             <Avatar size="md" src={service.freelancer.avatarUrl} name={service.freelancer.name} initials={getInitials(service.freelancer.name)} className="lg:size-14" />
             <div className="flex min-w-0 flex-col gap-0.5">
-              <p className="truncate text-body-sm font-semibold text-brand-blue-800 lg:text-[15px]">
-                <bdi>{service.freelancer.name}</bdi>
+              <p dir="auto" className="truncate rtl:max-w-full rtl:self-start text-body-sm font-semibold text-brand-blue-800 lg:text-[15px]">
+                {service.freelancer.name}
               </p>
               {service.freelancer.headline && (
                 <p className="text-caption text-text-muted lg:text-[13px]"><bdi>{service.freelancer.headline}</bdi></p>
