@@ -2,7 +2,7 @@
  * Live proof of the Supabase Auth behaviour the two-step sign-up relies on (docs/follow-ups/two-step-signup-plan.md,
  * section 6; founder decisions of 2026-11-15). Runs against production Auth with « Confirm email », CAPTCHA, « Secure
  * password change » and « Require current password » all ON (decision 9). If Supabase changes any of this, the
- * completion RPC (db/migrations/PENDING_two_step_signup.sql) must be revisited: this suite says what it relies on.
+ * completion RPC (db/migrations/20261115222457_two_step_signup.sql) must be revisited: this suite says what it relies on.
  *
  * No mail is sent: every link is minted with the admin API (generateLink), then redeemed by the fixture's own anon
  * client with verifyOtp, exactly what clicking the e-mailed link does (POST /verify, not CAPTCHA-checked). The custom

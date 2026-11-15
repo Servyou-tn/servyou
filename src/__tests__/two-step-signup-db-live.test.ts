@@ -1,6 +1,6 @@
 /**
- * Live proof of the two-step sign-up's database side, DB-1 (db/migrations/PENDING_two_step_signup.sql; founder decisions
- * of 2026-11-15 in docs/follow-ups/two-step-signup-plan.md). RED until the architect applies the migration.
+ * Live proof of the two-step sign-up's database side, DB-1 (db/migrations/20261115222457_two_step_signup.sql; founder decisions
+ * of 2026-11-15 in docs/follow-ups/two-step-signup-plan.md). Applied 2026-11-15 (README #135).
  *
  * Covered:
  *   - a sign-up without a birth date now creates an INCOMPLETE profile (it used to fail the whole Auth insert);
@@ -164,14 +164,15 @@ describe.skipIf(!hasCreds)('complete_my_account', () => {
     expect(error?.hint).toBe('other_sessions')
   })
 
-  it('a session ended by signOut (others) can neither refresh nor complete', async () => {
+  it('a session ended by signOut (others) can neither complete nor refresh', async () => {
     const { error: outErr } = await fresh.auth.signOut({ scope: 'others' })
     expect(outErr).toBeNull()
-    const { error: refreshErr } = await freshOther.auth.refreshSession()
-    expect(refreshErr).not.toBeNull()
-    // Its access token is still a valid JWT, but its session row is gone.
+    // Its access token is still a valid JWT, but its session row is gone. Call first: a failed refresh makes supabase-js
+    // drop the session, and the next call would go out as anon (a plain 42501, no hint).
     const { error } = await complete(freshOther)
     expect(error?.hint).toBe('session_unknown')
+    const { error: refreshErr } = await freshOther.auth.refreshSession()
+    expect(refreshErr).not.toBeNull()
   })
 
   it('refuses before a password was set in the session', async () => {

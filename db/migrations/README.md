@@ -1463,6 +1463,51 @@ both on 2026-10-28.
     - Rollback: the commented block at the end of the file (one transaction; close one of two active disputes on the
       same order before restoring the single index).
 
+135. **20261115222457_two_step_signup** — the two-step sign-up, DB-1 of DB-1 → UI-1 → DB-2 (pre-launch audit H1,
+    part 2), PR #384. Plan and founder decisions of 2026-11-15: `docs/follow-ups/two-step-signup-plan.md` (#381).
+    Written by db-guardian; reviewed and applied by the architect with the founder's OK.
+    - **`profiles`:**
+      - `completed_at`, `terms_accepted_at`, `terms_version`; `date_of_birth` is now nullable;
+      - CHECK `profiles_completion_requires_birth_date_and_terms`, and `profiles_terms_version_check` (1 to 100
+        characters). The city is not covered: the deletion tombstone clears it;
+      - all 14 profiles were backfilled as complete, terms accepted at `created_at` under « avant 2026-11 »
+        (decision 3). Their `updated_at` moved to the apply time.
+    - **`handle_new_user`** (`search_path ''`) creates every profile, even without a birth date.
+      - **Transitional:** a sign-up that carries the full profile is complete at creation.
+      - DB-2 narrows that to accounts confirmed at insert and adds the write gate. H1 closes with DB-2.
+    - **`private.account_password_set`** (RLS on, no client access) and the trigger **`on_auth_user_password_set`**
+      (AFTER UPDATE on `auth.users`, firing only when `encrypted_password` really changes) record when a password was
+      last set. A password set at insert writes nothing.
+    - **`private.current_terms_version()`** = `cgu-2026-06-17+confidentialite-2026-11-14`.
+    - **`complete_my_account(p_full_name, p_date_of_birth, p_city, p_terms_version)`**:
+      - SECURITY DEFINER, `search_path ''`, EXECUTE for authenticated only;
+      - refuses, by hint: `email_link_required` (JWT `amr` must hold `otp`), `session_unknown`, `other_sessions`,
+        `password_required` (a password set during this session, ± 5 s), `name_invalid`, `city_required`,
+        `birth_date_invalid`, `too_young` (16+, Africa/Tunis date), `terms_required`, `terms_outdated`,
+        `already_complete`;
+      - then completes the profile and records the terms.
+    - **Dependencies** (the founder confirmed them in the dashboard): Confirm email ON, Secure email change ON,
+      anonymous sign-ins OFF, phone sign-in OFF.
+    - **Checked after the apply (architect):**
+      - the catalog: the 3 columns, the nullable birth date, both CHECKs, the trigger, RLS on the private table;
+      - EXECUTE: `complete_my_account` for authenticated only; none for clients on `track_password_set` or
+        `current_terms_version`;
+      - the counts: 14 profiles, 14 complete under « avant 2026-11 », 0 incomplete;
+      - the file's rolled-back check passed: an incomplete profile is created, and a password session is refused with
+        `email_link_required`. Nothing persisted;
+      - the security advisor shows only the expected new items.
+    - **Live, one at a time (db-guardian):** `two-step-signup-db-live` 11/11, `two-step-signup-auth-live` 3/3,
+      `admin-requests-live` 25/25 (the deletion tombstone under the new CHECK), `client-write-grants-live` 3/3. Cleanup
+      verified: 0 test-domain users, profiles or password rows.
+    - **Types regenerated:** identical to the hand edit of d85874d (zero diff). Spike point 4 (24 hours) was not run,
+      by decision: no writes to `auth.sessions` on production.
+    - **The recorded statement** (md5 `44c99d544aefa7e8364ced9adf2fc3d7`) is this file's executable SQL,
+      byte-identical: the column-0 `--` lines are removed, blank runs collapsed to one, trimmed, with one trailing
+      newline. The repo file keeps its comments (the header, the rolled-back check, the rollback block), so its header
+      still reads « PENDING ».
+    - **Rollback:** the commented block at the end of the file. Setting `date_of_birth` back to NOT NULL fails while an
+      incomplete profile exists.
+
 ## Rollback paths
 
 Each migration in this folder represents work that has already been applied to production. Rollback is therefore reverse migration work, not file deletion. If a rollback is ever needed, write a new dated migration that reverses the relevant changes — never delete history from this folder.

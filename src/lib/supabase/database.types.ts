@@ -1,7 +1,7 @@
 // Generated from the live Supabase schema (project xggomcitqrkaylqezjjz) — DO NOT EDIT BY HAND.
 // Regenerate after every applied migration: Supabase MCP generate_typescript_types (or
 // `npx supabase gen types typescript --project-id xggomcitqrkaylqezjjz`), then commit.
-// Generated 2026-11-15 after migration 20261115182353 cod_no_show; hand-edited for PENDING_two_step_signup.sql (regenerate after the apply).
+// Generated 2026-11-15 after migration 20261115222457 two_step_signup.
 
 export type Json =
   | string

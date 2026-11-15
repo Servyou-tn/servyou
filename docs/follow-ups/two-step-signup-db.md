@@ -1,7 +1,7 @@
 # Two-step sign-up, DB-1: follow-ups (`feat/two-step-signup-db`, 2026-11-15)
 
 DB-1 of DB-1 → UI-1 → DB-2 (plan and founder decisions: `docs/follow-ups/two-step-signup-plan.md`, PR #381). This PR
-ships the spike suite, `db/migrations/PENDING_two_step_signup.sql` (not applied) and its live suite. These are the items
+ships the spike suite, `db/migrations/20261115222457_two_step_signup.sql` (applied 2026-11-15, README #135) and its live suite. These are the items
 it leaves, ranked.
 
 ## 1. MEDIUM: spike point 4 was not run (a first password more than 24 hours after the link)
@@ -13,7 +13,8 @@ session would hit it in step 2.
 needs the architect's OK. Its effect is UI only: the database refuses nothing extra.
 **Where it lives:** UI-1's step-2 server action. It maps GoTrue's reauthentication error to « Recevoir un nouveau
 lien »; a new link opens a fresh session.
-**Trigger:** UI-1. Run the forced-age check then only if the architect agrees.
+**Trigger:** UI-1. Decided (architect, 2026-11-15): the check is NOT run; no writes to `auth.sessions` on
+production. UI-1 handles the case on the page.
 
 ## 2. MEDIUM (UI-1): what step 2 must do with the database
 
@@ -42,7 +43,7 @@ lien »; a new link opens a fresh session.
 
 **Why deferred:** pages are Agent A's (plan section 7).
 **Where it lives:** the plan's sections 4 and 7; this PR's live suite shows each refusal.
-**Trigger:** DB-1 applied.
+**Trigger:** met: DB-1 applied 2026-11-15 (`20261115222457`, README #135).
 
 ## 3. MEDIUM (DB-2): the gate, the end of the transitional rule, the purge
 
@@ -64,7 +65,7 @@ lien »; a new link opens a fresh session.
 **Where it lives:** `public.enforce_active_user()`, `public.handle_new_user()`, `purge_unconfirmed_signups()`.
 **Trigger:** UI-1 deployed.
 
-## 4. MEDIUM (founder): two Auth settings the design now depends on
+## 4. ✅ CLOSED (2026-11-15): two Auth settings the design now depends on
 
 **What:**
 - **« Secure email change » must be ON** (review M2). Otherwise a squatter's password session could move the account
@@ -75,7 +76,8 @@ lien »; a new link opens a fresh session.
 **Why deferred:** decision 9 did not list them. Only the founder can read the dashboard.
 **Where it lives:** Supabase dashboard › Authentication › Providers › Email (« Secure email change ») and › Settings
 (« Allow anonymous sign-ins »). Both are listed in the PENDING file's DEPENDENCIES.
-**Trigger:** before the apply.
+**Trigger:** met. The founder confirmed in the dashboard before the apply: « Secure email change » ON, anonymous
+sign-ins OFF.
 
 ## 5. LOW: the spike uses admin-generated links, not the browser's `signInWithOtp`
 
