@@ -9,7 +9,7 @@
  */
 
 import type { IncomingMessage } from 'http'
-import { stringify } from 'querystring'
+import { parse, stringify } from 'querystring'
 import { describe, it, expect } from 'vitest'
 import { getPathMatch } from 'next/dist/shared/lib/router/utils/path-match'
 import { matchHas, prepareDestination } from 'next/dist/shared/lib/router/utils/prepare-destination'
@@ -26,8 +26,9 @@ async function redirectRules() {
 
 /** What Next answers for `url` on `host`: the first matching redirect's status and Location, or null (no redirect). */
 async function resolveRedirect(host: string, url: string): Promise<{ status: number; location: string } | null> {
-  const { pathname, searchParams } = new URL(url, 'http://unused.invalid')
-  const query = Object.fromEntries(searchParams)
+  const { pathname, search } = new URL(url, 'http://unused.invalid')
+  // Parsed as Next's router parses it (querystring): a repeated key stays an array.
+  const query = parse(search.slice(1))
   const req = { headers: { host } } as unknown as IncomingMessage
   for (const rule of await redirectRules()) {
     // Built as Next's router builds a redirect matcher (server/lib/router-utils/filesystem.js buildCustomRoute).
@@ -86,6 +87,7 @@ describe('servyou.vercel.app → https://servyou.tn, same path and query', () =>
     ['/produits/42', 'https://servyou.tn/produits/42'],
     ['/produits/42?ref=wa&x=1', 'https://servyou.tn/produits/42?ref=wa&x=1'],
     ['/connexion?next=%2Fmon-compte', 'https://servyou.tn/connexion?next=%2Fmon-compte'],
+    ['/recherche?ville=sfax&ville=tunis&page=2', 'https://servyou.tn/recherche?ville=sfax&ville=tunis&page=2'],
     ['/recherche?q=%D8%AE%D8%AF%D9%85%D8%A9', 'https://servyou.tn/recherche?q=%D8%AE%D8%AF%D9%85%D8%A9'],
     ['/categories/design-graphique/logo', 'https://servyou.tn/categories/design-graphique/logo'],
     // The host rule comes first: an old /login link reaches the new host in one hop (servyou.tn then sends it on to /connexion).
