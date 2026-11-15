@@ -3916,7 +3916,6 @@ export const fr: Record<string, string> = {
   // orders.count migrated to tn() — see src/lib/i18n/plurals.ts.
   'seller.orders.sort.recent':            "Plus récentes",
   'seller.orders.sort.oldest':            "Plus anciennes",
-  'seller.orders.waiting':                "· il y a {hours} h",
   'seller.orders.awaiting_buyer':         "En attente de confirmation acheteur",
   'seller.orders.view_detail':            "Voir détails",
   'seller.orders.cancelled_reason':       "Motif : {reason}",

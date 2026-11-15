@@ -4,6 +4,7 @@ import { StatusPill } from '@/components/ui/status-pill'
 import { statusPillFor } from '@/lib/orders/order-status'
 import { nextSellerStatus, isCancellable, type OrderStatus } from '@/lib/types/order-status'
 import { t, type Lang } from '@/lib/i18n'
+import { waitingLabel } from '@/lib/relative-time'
 import { FOCUS_RING } from '@/components/layout/styles'
 import type { SellerOrder } from '@/lib/marche/seller-orders'
 import { shortRef } from '@/lib/orders/order-status'
@@ -78,7 +79,7 @@ export function OrderActionRow({
             {/* Wait time is pending-only — see SellerOrder.waitingHours for why. */}
             {order.waitingHours != null ? (
               <p className="shrink-0 text-body-sm text-text-muted">
-                {t('seller.orders.waiting', lang, { hours: order.waitingHours })}
+                {waitingLabel(order.waitingHours, lang)}
               </p>
             ) : null}
           </div>

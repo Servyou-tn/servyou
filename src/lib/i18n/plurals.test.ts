@@ -22,15 +22,16 @@ describe('pluralCategory() — selection table', () => {
     expect(pluralCategory('fr', 100)).toBe('other')
   })
 
-  it('Arabic: real zero/one/two, with few (3-10) and many (11-99) folded into other', () => {
+  it('Arabic: all six CLDR categories — zero, one, two, few (3-10), many (11-99), other (100-102)', () => {
     expect(pluralCategory('ar', 0)).toBe('zero')
     expect(pluralCategory('ar', 1)).toBe('one')
     expect(pluralCategory('ar', 2)).toBe('two')
-    expect(pluralCategory('ar', 3)).toBe('other')   // few, folded
-    expect(pluralCategory('ar', 10)).toBe('other')  // few, folded
-    expect(pluralCategory('ar', 11)).toBe('other')  // many, folded
-    expect(pluralCategory('ar', 99)).toBe('other')  // many, folded
+    expect(pluralCategory('ar', 3)).toBe('few')
+    expect(pluralCategory('ar', 10)).toBe('few')
+    expect(pluralCategory('ar', 11)).toBe('many')
+    expect(pluralCategory('ar', 99)).toBe('many')
     expect(pluralCategory('ar', 100)).toBe('other')
+    expect(pluralCategory('ar', 112)).toBe('many')
   })
 })
 
@@ -61,7 +62,25 @@ describe('tn() — Arabic', () => {
     expect(tn('mesannonces.count', 'ar', 1)).toBe('1 إعلان')
     expect(tn('mesannonces.count', 'ar', 2)).toBe('2 إعلانان')
     expect(tn('mesannonces.count', 'ar', 3)).toBe('3 إعلانات')
-    expect(tn('mesannonces.count', 'ar', 11)).toBe('11 إعلانات')
+    expect(tn('mesannonces.count', 'ar', 10)).toBe('10 إعلانات')
+  })
+
+  it('11-99 take the accusative singular (audit F5): « 18 يومًا », never « 18 أيام »', () => {
+    expect(tn('mesannonces.count', 'ar', 11)).toBe('11 إعلانًا')
+    expect(tn('activite.time_ago_days', 'ar', 18)).toBe('منذ 18 يومًا')
+    expect(tn('activite.time_ago_days', 'ar', 112)).toBe('منذ 112 يومًا')
+    expect(tn('admin.home.q_orders_blocked', 'ar', 12)).toBe('12 طلبيةً عالقةً')
+  })
+
+  it('a singular `other` gets a real plural at 3-10 (`few`): « منذ 5 ساعات », not « منذ 5 ساعة »', () => {
+    expect(tn('admin.dash.ago_hours', 'ar', 5)).toBe('منذ 5 ساعات')
+    expect(tn('admin.dash.ago_hours', 'ar', 15)).toBe('منذ 15 ساعةً')
+    expect(tn('admin.dash.ago_hours', 'ar', 100)).toBe('منذ 100 ساعة')
+  })
+
+  it('an entry without `few` / `many` falls back to `other` (implied-noun counts kept as they were)', () => {
+    expect(tn('admin.users.tile_visible', 'ar', 5)).toBe('5 ظاهرة')
+    expect(tn('admin.users.tile_visible', 'ar', 15)).toBe('15 ظاهرة')
   })
 
   it('falls back to `other` at zero when no zero variant is supplied', () => {
@@ -103,11 +122,11 @@ describe('tn() — category header over service results', () => {
     expect(tn('page_header.categories.subtitle_service', 'fr', 1, vars)).toBe('1 service dans Beauté')
     expect(tn('page_header.categories.subtitle_service', 'fr', 5, vars)).toBe('5 services dans Beauté')
   })
-  it('Arabic: one / two / other (خدمة / خدمتان / خدمات)', () => {
+  it('Arabic: one / two / few / many (خدمة / خدمتان / خدمات / خدمةً)', () => {
     expect(tn('page_header.categories.emphasis_service', 'ar', 1)).toBe('1 خدمة')
     expect(tn('page_header.categories.emphasis_service', 'ar', 2)).toBe('2 خدمتان')
     expect(tn('page_header.categories.emphasis_service', 'ar', 3)).toBe('3 خدمات')
-    expect(tn('page_header.categories.emphasis_service', 'ar', 11)).toBe('11 خدمات')
+    expect(tn('page_header.categories.emphasis_service', 'ar', 11)).toBe('11 خدمةً')
     expect(tn('page_header.categories.subtitle_service', 'ar', 2, vars)).toBe('2 خدمتان في Beauté')
   })
   it('the product pair is untouched', () => {
