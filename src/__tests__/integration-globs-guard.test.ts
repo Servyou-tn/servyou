@@ -59,3 +59,26 @@ describe('INTEGRATION_GLOBS keeps every live-DB suite out of the default run', (
     expect(listed.filter((name) => !names.has(name))).toEqual([])
   })
 })
+
+// A live run that passes must have run its tests. Missing credentials can no longer skip anything (the integration
+// config refuses to start, vitest.live-env.ts), so a live suite may skip on nothing else: no .skip / .todo / .only /
+// .runIf, and a skipIf only on the credentials gate. Comments are left out of the scan (a « .only » in prose is fine).
+const SILENT_SKIP = /\.(?:skip|todo|only|runIf)\b|\.skipIf\s*\((?!!hasCreds\))/g
+const withoutComments = (source: string) => source.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:])\/\/.*$/gm, '$1')
+
+describe('a live suite cannot pass without running its tests', () => {
+  it('skips only on the credentials gate', () => {
+    const found = liveSuites.flatMap((path) =>
+      [...withoutComments(readFileSync(path, 'utf8')).matchAll(SILENT_SKIP)].map((m) => `${relative(ROOT, path)}: ${m[0]}`),
+    )
+    expect(found).toEqual([])
+  })
+
+  it('the pattern catches the forms it forbids, and lets the credentials gate through', () => {
+    const hits = (code: string) => [...code.matchAll(SILENT_SKIP)].length
+    expect(hits('describe.skipIf(!hasCreds)("x", () => {})')).toBe(0)
+    expect(hits('describe.skipIf(!process.env.X)("x", () => {})')).toBe(1)
+    expect(hits('it.skip("x", () => {}); test.todo("y"); describe.only("z", () => {}); it.runIf(ok)("w", () => {})')).toBe(4)
+    expect(hits(withoutComments('// never run a case alone (-t / .only)\n/* it.skip */ const a = 1'))).toBe(0)
+  })
+})
