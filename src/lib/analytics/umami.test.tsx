@@ -144,7 +144,7 @@ describe('before-send filter', () => {
   const page = (path: string, referrer = '') => ({
     website: UMAMI_WEBSITE_ID,
     title: 'Amira Ben Salah — Graphiste | ServYou',
-    url: `https://servyou.vercel.app${path}`,
+    url: `https://servyou.tn${path}`,
     referrer,
   })
   // … and what may leave the site: the same, with the title blanked.
@@ -162,7 +162,7 @@ describe('before-send filter', () => {
       expect(JSON.stringify(out)).not.toContain('Amira')
     }
     // A payload without a title gets an empty one too, never the tracker's.
-    expect(filterUmamiPayload({ url: 'https://servyou.vercel.app/' }, YES)).toEqual({ url: 'https://servyou.vercel.app/', title: '' })
+    expect(filterUmamiPayload({ url: 'https://servyou.tn/' }, YES)).toEqual({ url: 'https://servyou.tn/', title: '' })
   })
 
   it('cuts the query string and hash itself — from the URL and the referrer — whatever the live tracker script does', () => {

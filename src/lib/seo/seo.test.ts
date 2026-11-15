@@ -49,15 +49,21 @@ import { en } from '@/lib/i18n/en'
 const isDisallowed = (path: string) => DISALLOWED_PREFIXES.some((p) => path.startsWith(p))
 
 describe('siteUrl — one site address', () => {
+  it('the default is the own domain', () => {
+    expect(DEFAULT_SITE_URL).toBe('https://servyou.tn')
+  })
+
+  // The override cases use origins OTHER than the default, so a siteUrl() that ignored its input would fail them.
   it.each([
     [undefined, DEFAULT_SITE_URL],
     ['', DEFAULT_SITE_URL],
     ['   ', DEFAULT_SITE_URL],
-    ['https://servyou.tn', 'https://servyou.tn'],
-    ['https://servyou.tn/', 'https://servyou.tn'],
-    ['https://servyou.tn/some/path?x=1', 'https://servyou.tn'],
+    ['https://example.tn', 'https://example.tn'],
+    ['https://example.tn/', 'https://example.tn'],
+    ['https://example.tn/some/path?x=1', 'https://example.tn'],
+    ['http://localhost:3000', 'http://localhost:3000'],
     ['not a url', DEFAULT_SITE_URL],
-    ['ftp://servyou.tn', DEFAULT_SITE_URL],
+    ['ftp://example.tn', DEFAULT_SITE_URL],
   ])('%j → %s', (raw, expected) => {
     expect(siteUrl(raw)).toBe(expected)
   })

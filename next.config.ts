@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
 import { withSentryConfig } from "@sentry/nextjs";
 import { cspReportUrl, securityHeaders } from "./src/lib/security/headers";
+import { DEFAULT_SITE_URL } from "./src/lib/seo/site-url";
 
 const nextConfig: NextConfig = {
   // Hide the Next.js dev-tools indicator — the floating circle with the Next "N"
@@ -120,6 +121,18 @@ const nextConfig: NextConfig = {
   // pick their role and no real bookmarks exist pre-launch.
   async redirects() {
     return [
+      // The domain switch: the old production host sends every request to the own domain, same path and same query
+      // string (a redirect passes the query through). The host is a regex matched against the WHOLE hostname (Next and
+      // Vercel both anchor it; dots escaped as in Vercel's docs for this exact case), so the preview and deployment URLs
+      // (servyou-git-*.vercel.app, servyou-*-servyou-s-projects.vercel.app) keep serving the app. First in the list, so an
+      // old /login link reaches the new host in one hop. Redirects run before src/middleware.ts (headers → redirects →
+      // middleware), so maintenance mode, K2 and K3 never answer on the old host. Pinned by src/__tests__/domain-redirect.test.ts.
+      {
+        source: '/:path*',
+        has: [{ type: 'host', value: 'servyou\\.vercel\\.app' }],
+        destination: `${DEFAULT_SITE_URL}/:path*`,
+        permanent: true,
+      },
       { source: '/login', destination: '/connexion', permanent: true },
       { source: '/signup', destination: '/inscription', permanent: true },
       { source: '/forgot-password', destination: '/mot-de-passe-oublie', permanent: true },

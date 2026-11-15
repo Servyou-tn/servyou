@@ -7,7 +7,7 @@
 
 - **Framework:** Next.js 16 (App Router, Server Components default) + TypeScript strict + Tailwind v4.3
 - **Database:** Supabase, project `xggomcitqrkaylqezjjz`, region `eu-central-1` Frankfurt
-- **Deploy:** Vercel Hobby (production at https://servyou.vercel.app)
+- **Deploy:** Vercel Hobby (production at https://servyou.tn; the old servyou.vercel.app host 308-redirects there)
 - **Repo:** github.com/Servyou-tn/servyou
 - **i18n:** Bilingual French + Arabic — `src/lib/i18n/fr.ts` + `src/lib/i18n/ar.ts`
 - **Icons:** lucide-react
