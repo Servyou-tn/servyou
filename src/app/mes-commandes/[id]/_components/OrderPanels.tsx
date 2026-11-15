@@ -150,7 +150,7 @@ export function SellerPanel({ order, phone, lang }: { order: OrderDetail; phone:
   return (
     <Panel title={t(isProduct ? 'buyerOrder.panel.seller_shop' : 'buyerOrder.panel.seller_freelancer', lang)}>
       <div className="flex flex-col gap-1">
-        <p className="text-body font-semibold text-text-primary max-lg:leading-[25px]">{seller.name}</p>
+        <p className="text-body font-semibold text-text-primary max-lg:leading-[25px]"><bdi>{seller.name}</bdi></p>
         {subline ? <p className="text-body-sm text-text-muted">{subline}</p> : null}
       </div>
 

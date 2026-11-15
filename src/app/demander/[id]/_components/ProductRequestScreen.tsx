@@ -54,7 +54,7 @@ export function ProductRequestScreen({
         )}
         <ChevronRight className="h-3.5 w-3.5 shrink-0 rtl:rotate-180 max-lg:hidden" aria-hidden="true" />
         <Link href={`/produits/${product.id}`} className={`rounded-sm hover:text-text-secondary max-lg:hidden ${FOCUS_RING}`}>
-          {product.title}
+          <bdi>{product.title}</bdi>
         </Link>
         <ChevronRight className="h-3.5 w-3.5 shrink-0 rtl:rotate-180 max-lg:size-3" aria-hidden="true" />
         <span className="text-text-secondary">{t('demander.breadcrumb.request', lang)}</span>

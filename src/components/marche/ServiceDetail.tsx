@@ -118,9 +118,9 @@ export function ServiceDetail({
           >
             <Avatar size="md" src={service.freelancer.avatarUrl} name={service.freelancer.name} />
             <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-              <p className="truncate text-sm font-semibold leading-[17px] text-brand-blue-800">{service.freelancer.name}</p>
+              <p className="truncate text-sm font-semibold leading-[17px] text-brand-blue-800"><bdi>{service.freelancer.name}</bdi></p>
               {service.freelancer.headline && (
-                <p className="truncate text-xs leading-4 text-text-muted">{service.freelancer.headline}</p>
+                <p className="truncate text-xs leading-4 text-text-muted"><bdi>{service.freelancer.headline}</bdi></p>
               )}
             </div>
             <ChevronRight className="size-[18px] shrink-0 text-text-muted rtl:rotate-180" aria-hidden="true" />
@@ -129,9 +129,9 @@ export function ServiceDetail({
           <div className="flex items-center gap-3 rounded-xl bg-surface-subtle p-3 lg:hidden">
             <Avatar size="md" src={service.freelancer.avatarUrl} name={service.freelancer.name} />
             <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-              <p className="truncate text-sm font-semibold leading-[17px] text-brand-blue-800">{service.freelancer.name}</p>
+              <p className="truncate text-sm font-semibold leading-[17px] text-brand-blue-800"><bdi>{service.freelancer.name}</bdi></p>
               {service.freelancer.headline && (
-                <p className="truncate text-xs leading-4 text-text-muted">{service.freelancer.headline}</p>
+                <p className="truncate text-xs leading-4 text-text-muted"><bdi>{service.freelancer.headline}</bdi></p>
               )}
             </div>
           </div>
@@ -153,10 +153,10 @@ export function ServiceDetail({
             <Avatar size="md" src={service.freelancer.avatarUrl} name={service.freelancer.name} initials={getInitials(service.freelancer.name)} className="lg:size-14" />
             <div className="flex min-w-0 flex-col gap-0.5">
               <p className="truncate text-body-sm font-semibold text-brand-blue-800 lg:text-[15px]">
-                {service.freelancer.name}
+                <bdi>{service.freelancer.name}</bdi>
               </p>
               {service.freelancer.headline && (
-                <p className="text-caption text-text-muted lg:text-[13px]">{service.freelancer.headline}</p>
+                <p className="text-caption text-text-muted lg:text-[13px]"><bdi>{service.freelancer.headline}</bdi></p>
               )}
               {service.freelancer.city && (
                 <p className="flex items-center gap-1 text-caption text-text-muted">
@@ -216,8 +216,11 @@ export function ServiceDetail({
           cannot shrink, so every pixel lost below 1440 came out of the panel: 354 → 280 at 1366
           (where the CTA label wrapped to two lines inside its fixed h-12), → 194 at 1280, → 52 at
           1100, all inside the lg range. Pinning the panel and letting MAIN reflow keeps 750/354
-          exact at 1440 and keeps the panel intact everywhere below it. */}
-      <div className="flex flex-col gap-5 lg:grid lg:grid-cols-[minmax(0,750px)_354px] lg:items-start lg:gap-8">
+          exact at 1440 and keeps the panel intact everywhere below it.
+          Rows are auto + 1fr (walk J2): the buy box spans both rows, and with two auto rows the grid spread its extra height over
+          BOTH, so a short body (no deliverables, no mode) left a tall empty band under the title. A spanning item's extra height
+          goes to the flexible track first, so row 1 now hugs the title and only row 2 grows. */}
+      <div className="flex flex-col gap-5 lg:grid lg:grid-cols-[minmax(0,750px)_354px] lg:grid-rows-[auto_1fr] lg:items-start lg:gap-8">
         {/* titleBlock — 28/36 on desktop, 22/28 on mobile, brand-blue-800. */}
         <div className="order-1 flex flex-col gap-3 lg:order-none lg:col-start-1 lg:row-start-1">
           <h1 className="text-[22px] font-semibold leading-7 text-brand-blue-800 lg:text-[28px] lg:leading-9">
@@ -251,7 +254,7 @@ export function ServiceDetail({
                     {/* 375: icon-check-circle 18 blue-600, text 14/17 (m375-d2-service); desktop keeps the bare check. */}
                     <CircleCheck className="h-[18px] w-[18px] shrink-0 text-brand-blue-600 lg:hidden" aria-hidden="true" />
                     <Check className="mt-1 hidden h-[18px] w-[18px] shrink-0 text-brand-blue-600 lg:block" aria-hidden="true" />
-                    {item}
+                    <bdi>{item}</bdi>
                   </li>
                 ))}
               </ul>

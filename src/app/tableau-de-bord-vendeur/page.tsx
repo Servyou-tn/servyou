@@ -234,7 +234,7 @@ export default async function TableauDeBordVendeurPage() {
                         <StatusPill status={pillFor(order.status)} className="max-sm:hidden">
                           {t(`common.status_${order.status}`, lang)}
                         </StatusPill>
-                        <p className="truncate text-body text-text-primary max-sm:font-semibold">{order.title}</p>
+                        <p className="truncate text-body text-text-primary max-sm:font-semibold"><bdi>{order.title}</bdi></p>
                       </div>
                       <p className="text-body-sm text-text-secondary max-sm:flex max-sm:items-center max-sm:gap-2">
                         <MapPin className="size-3.5 shrink-0 sm:hidden" aria-hidden="true" />
@@ -298,7 +298,7 @@ export default async function TableauDeBordVendeurPage() {
                   >
                     <div className="flex min-w-0 flex-1 flex-col gap-1 max-sm:gap-2">
                       <div className="flex min-w-0 items-center gap-2">
-                        <p className="truncate text-body text-text-primary max-sm:font-semibold">{order.title}</p>
+                        <p className="truncate text-body text-text-primary max-sm:font-semibold"><bdi>{order.title}</bdi></p>
                         <StatusPill status={pillFor(order.status)} className="shrink-0 sm:hidden">
                           {t(`common.status_${order.status}`, lang)}
                         </StatusPill>
@@ -339,7 +339,7 @@ export default async function TableauDeBordVendeurPage() {
                         <Package className="h-5 w-5 text-icon-muted" aria-hidden="true" />
                       </span>
                       <div className="flex min-w-0 flex-1 flex-col gap-1">
-                        <p className="truncate text-body text-text-primary">{p.title}</p>
+                        <p className="truncate text-body text-text-primary"><bdi>{p.title}</bdi></p>
                         <p className="text-body-sm text-warning-700">
                           {t('seller.dashboard.lowstock.remaining', lang, { count: p.stockCount })}
                         </p>

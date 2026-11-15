@@ -40,8 +40,8 @@ export function PublicServiceCard({
           <Briefcase className="size-9 text-brand-blue-300" strokeWidth={1.5} aria-hidden="true" />
         </div>
         <div className="flex flex-col gap-2.5 p-3.75">
-          <h3 className="line-clamp-2 text-lg font-semibold leading-[22px] text-text-primary">{service.title}</h3>
-          {summary && <p className="truncate text-body-sm leading-[17px] text-text-muted">{summary}</p>}
+          <h3 className="line-clamp-2 text-lg font-semibold leading-[22px] text-text-primary"><bdi>{service.title}</bdi></h3>
+          {summary && <p className="truncate text-body-sm leading-[17px] text-text-muted"><bdi>{summary}</bdi></p>}
           {category && (
             <span className="w-fit rounded-md bg-surface-sunken px-3 py-1 text-body-sm font-medium text-text-secondary">{category}</span>
           )}

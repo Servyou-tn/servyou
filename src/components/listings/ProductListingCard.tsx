@@ -66,9 +66,9 @@ export function ProductListingCard({
 
         <div className="space-y-2 p-5">
           <p className="line-clamp-1 text-base font-semibold leading-tight text-text-primary">
-            {product.title}
+            <bdi>{product.title}</bdi>
           </p>
-          <p className="line-clamp-2 min-h-[40px] text-body-sm leading-[1.5] text-text-muted">
+          <p dir="auto" className="line-clamp-2 min-h-[40px] text-body-sm leading-[1.5] text-text-muted">
             {product.description}
           </p>
           {meta && <p className="line-clamp-1 text-xs font-medium text-text-muted">{meta}</p>}
