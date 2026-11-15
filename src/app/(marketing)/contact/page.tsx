@@ -1,11 +1,12 @@
 import type { Metadata } from 'next'
 import { publicMetadata } from '@/lib/seo/metadata'
-import { Mail, MessageCircle, Globe } from 'lucide-react'
+import { Mail, Globe } from 'lucide-react'
 import { getLang } from '@/lib/i18n/server'
 import { t } from '@/lib/i18n'
 import { ContactForm } from './ContactForm'
 import { CopyableEmail } from './CopyableEmail'
 import { HitArea } from '@/components/ui/interactive-surface'
+import { SOCIAL_ACCOUNTS } from '@/lib/contact/social-accounts'
 
 export async function generateMetadata(): Promise<Metadata> {
   return publicMetadata('meta.contact', 'seo.desc.contact', '/contact')
@@ -29,7 +30,7 @@ export default async function ContactPage() {
       </div>
 
       {/* Contact methods */}
-      <div className="mt-12 grid gap-6 md:grid-cols-3">
+      <div className="mt-12 grid gap-6 md:grid-cols-2">
         {/* Email */}
         <div className={cardClass}>
           <div className={iconWrap}>
@@ -42,28 +43,28 @@ export default async function ContactPage() {
           <p className="mt-2 text-xs text-text-muted">{t('contact.methods.email.response', lang)}</p>
         </div>
 
-        {/* WhatsApp — TODO: Moatez to confirm public WhatsApp number (value + wa.me digits). */}
-        <div className={cardClass}>
-          <div className={iconWrap}>
-            <MessageCircle className="h-5 w-5" aria-hidden="true" />
-          </div>
-          <p className="mt-3 text-sm font-bold text-text-primary">{t('contact.methods.whatsapp.label', lang)}</p>
-          <a
-            href="https://wa.me/216XXXXXXXX"
-            className="mt-2 inline-block text-sm font-medium text-brand-blue-600 hover:underline max-lg:relative"
-          >
-            {t('contact.methods.whatsapp.value', lang)}
-            <HitArea size={20} axis="y" />
-          </a>
-        </div>
-
-        {/* Réseaux sociaux — no live Servyou accounts yet → "Bientôt disponible". */}
+        {/* Réseaux sociaux — ServYou's own accounts (lib/contact/social-accounts.ts: only the ones with a real address). */}
         <div className={cardClass}>
           <div className={iconWrap}>
             <Globe className="h-5 w-5" aria-hidden="true" />
           </div>
           <p className="mt-3 text-sm font-bold text-text-primary">{t('contact.methods.social.label', lang)}</p>
-          <p className="mt-2 text-sm text-text-muted">{t('contact.methods.social.soon', lang)}</p>
+          <ul className="mt-2 flex flex-wrap justify-center gap-x-4">
+            {SOCIAL_ACCOUNTS.map((account) => (
+              <li key={account.platform}>
+                <a
+                  href={account.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={t('contact.methods.social.link_aria', lang, { platform: account.name })}
+                  className="inline-block text-sm font-medium text-brand-blue-600 hover:underline max-lg:relative"
+                >
+                  {account.name}
+                  <HitArea size={20} axis="y" />
+                </a>
+              </li>
+            ))}
+          </ul>
         </div>
       </div>
 

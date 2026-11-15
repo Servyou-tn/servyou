@@ -7,7 +7,6 @@ export const strings: Record<string, string> = {
   // freelance
   'freelance.public.member_since': "Member since {date}",
   'freelance.public.new_badge': "New on Servyou",
-  'freelance.public.no_reviews_yet': "No reviews yet",
   'freelance.public.projects_delivered': "Projects delivered",
   'freelance.public.years_value': "{years} years",
   'freelance.public.years_experience': "Of experience",

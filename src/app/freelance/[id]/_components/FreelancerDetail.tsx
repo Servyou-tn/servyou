@@ -110,13 +110,13 @@ export function FreelancerDetail({
             </div>
           </div>
 
-          {/* trust-row — "nouveau" state only (founder ruling), + carried-over links segment */}
+          {/* trust-row — "nouveau" state only (founder ruling), + carried-over links segment. No « Pas encore d'avis » line:
+              reviews are Phase 3, so the profile does not mention them (founder decision 2026-11-15). */}
           <div className="flex flex-wrap items-center gap-6 rounded-lg border border-border-subtle bg-surface-base p-4 max-lg:gap-y-3 max-lg:rounded-[10px] max-lg:px-5.75 max-lg:py-3.75">
             <div className="flex flex-col gap-1">
               <span className="w-fit rounded-full bg-brand-blue-50 px-3 py-1 text-caption font-semibold text-brand-blue-700">
                 {t('freelance.public.new_badge', lang)}
               </span>
-              <span className="text-caption text-text-muted max-lg:font-medium">{t('freelance.public.no_reviews_yet', lang)}</span>
             </div>
             {/* null = the count failed to load: hidden rather than a false « 0 » (loader-error-surfacing ruling 6) */}
             {completedProjectCount !== null && (
