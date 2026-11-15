@@ -80,7 +80,7 @@ export function ServiceRequestScreen({
         <Avatar size="sm" initials={getInitials(service.freelancer.name)} className="lg:size-10" />
         <div className="flex min-w-0 flex-wrap items-center gap-x-1 lg:flex-col lg:items-start lg:gap-0.5">
           <p className="truncate text-body-sm font-semibold text-text-primary lg:text-[15px] lg:text-brand-blue-800">
-            {service.freelancer.name}
+            <bdi>{service.freelancer.name}</bdi>
           </p>
           {service.freelancer.city && (
             <>

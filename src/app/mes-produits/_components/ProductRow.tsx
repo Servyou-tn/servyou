@@ -81,7 +81,7 @@ export function ProductRow({
           )}
         </span>
         <div className="flex min-w-0 flex-1 flex-col gap-1.5 max-lg:basis-full max-lg:flex-row max-lg:items-start max-lg:gap-2">
-          <p className="truncate text-body font-semibold text-text-primary max-lg:min-w-0 max-lg:flex-1 max-lg:whitespace-normal">{product.title}</p>
+          <p dir="auto" className="truncate rtl:max-w-full rtl:self-start text-body font-semibold text-text-primary max-lg:min-w-0 max-lg:flex-1 max-lg:whitespace-normal">{product.title}</p>
           <div className="flex flex-wrap items-center gap-1.5 max-lg:shrink-0">
             <StatusPill status={product.status === 'active' ? 'active' : 'masqué'}>
               {t(product.status === 'active' ? 'common.status_active' : 'common.status_hidden', lang)}

@@ -134,7 +134,7 @@ describe('ProductDetail — the 375 column', () => {
   })
 })
 
-describe('ProductDescription — 375 « Voir plus » only when the text overflows its 5-line clamp; desktop unchanged', () => {
+describe('ProductDescription — « Voir plus » only when the text overflows its clamp (5 lines at 375, 3 from lg), at every width (walk J5)', () => {
   let scrollHeight = 120
   beforeEach(() => {
     scrollHeight = 120
@@ -142,15 +142,20 @@ describe('ProductDescription — 375 « Voir plus » only when the text overflow
     Object.defineProperty(HTMLElement.prototype, 'clientHeight', { configurable: true, get: () => 120 })
   })
   const measure = () => act(() => h.observers.forEach((o) => o.cb()))
+  // `hidden` as a whole class (display: none at every width) — not a breakpoint variant such as `max-lg:hidden`.
+  const hiddenEverywhere = (el: HTMLElement) => el.className.split(/\s+/).includes('hidden')
 
-  it('a short text: the button is hidden below lg (still shown from lg, as before) — 8 px of mixed-script slack is not an overflow', () => {
+  it('a short text: no « Voir plus » at any width — 8 px of mixed-script slack is not an overflow', () => {
     render(<ProductDescription description="Court." />)
+    expect(hiddenEverywhere(screen.getByRole('button', { name: 'Voir plus', hidden: true }))).toBe(true)
     scrollHeight = 168
     measure()
-    expect(screen.getByRole('button', { name: 'Voir plus' }).className).not.toContain('max-lg:hidden')
+    expect(hiddenEverywhere(screen.getByRole('button', { name: 'Voir plus' }))).toBe(false)
     scrollHeight = 128 // the text got shorter (or the box wider): 8 px over the clamp
     measure()
-    expect(screen.getByRole('button', { name: 'Voir plus' }).className).toContain('max-lg:hidden')
+    const button = screen.getByRole('button', { name: 'Voir plus', hidden: true })
+    expect(hiddenEverywhere(button)).toBe(true)
+    expect(button.className).not.toContain('max-lg:hidden')
   })
 
   it('once expanded, a re-measure (resize, late font) does not hide « Voir moins »', () => {
@@ -160,7 +165,7 @@ describe('ProductDescription — 375 « Voir plus » only when the text overflow
     fireEvent.click(screen.getByRole('button', { name: 'Voir plus' }))
     scrollHeight = 120 // unclamped: scrollHeight == clientHeight
     measure()
-    expect(screen.getByRole('button', { name: 'Voir moins' }).className).not.toContain('max-lg:hidden')
+    expect(hiddenEverywhere(screen.getByRole('button', { name: 'Voir moins' }))).toBe(false)
   })
 
   it('the 375 link has a ≥ 44 px touch target that does not move the layout', () => {
@@ -175,7 +180,7 @@ describe('ProductDescription — 375 « Voir plus » only when the text overflow
     scrollHeight = 168
     measure()
     const button = screen.getByRole('button', { name: 'Voir plus' })
-    expect(button.className).not.toContain('max-lg:hidden')
+    expect(hiddenEverywhere(button)).toBe(false)
     const text = document.getElementById('product-description') as HTMLElement
     expect(text.className).toContain('max-lg:line-clamp-5')
     expect(text.className).toContain('line-clamp-3')

@@ -49,7 +49,7 @@ export function ShopCard({
         <div className="flex flex-col gap-2">
           <h3 className="text-h3 font-semibold text-text-primary">
             <Link href={href} className={`rounded after:absolute after:inset-0 after:rounded-xl ${FOCUS_RING}`}>
-              {shop.name}
+              <bdi>{shop.name}</bdi>
             </Link>
           </h3>
           <p className="flex flex-wrap items-center gap-2 text-body-sm text-text-muted">
