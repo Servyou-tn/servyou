@@ -87,7 +87,7 @@ export const INTEGRATION_GLOBS = [
   '**/cod-no-show-rule-live.test.ts',
   '**/cod-no-show-marker-live.test.ts',
   '**/cod-no-show-admin-live.test.ts',
-  // Two-step sign-up: the Auth behaviour it relies on (amr per e-mail path, the squatted-account password): 6 verifications.
+  // Two-step sign-up: the Auth behaviour it relies on (amr per e-mail path, the squatted-account password): 5 verifications.
   '**/two-step-signup-auth-live.test.ts',
   // Two-step sign-up DB-1: incomplete profiles + complete_my_account (red until the migration is applied): 3 verifications.
   '**/two-step-signup-db-live.test.ts',

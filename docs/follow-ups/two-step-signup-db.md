@@ -18,10 +18,15 @@ lien »; a new link opens a fresh session.
 ## 2. MEDIUM (UI-1): what step 2 must do with the database
 
 **What:**
-- **Call order:** the server action calls `updateUser({ password })`, then `complete_my_account(p_full_name,
-  p_date_of_birth, p_city, p_terms_version)`. The password must change during the same session (`password_required`
-  otherwise).
+- **Call order** (review M1):
+  1. `signOut({ scope: 'others' })`;
+  2. `updateUser({ password })`;
+  3. `complete_my_account(p_full_name, p_date_of_birth, p_city, p_terms_version)`.
+
+  The RPC refuses while another session of the account is alive (`other_sessions`: run the sequence again). The
+  password must change during the same session (`password_required` otherwise).
 - **Hints to map** to i18n keys, never the raw French text:
+  - `other_sessions` → repeat the sequence once, then the « new link » path;
   - `password_required`, `email_link_required`, `session_unknown` → the « new link » path;
   - `name_invalid`, `city_required`, `birth_date_invalid`, `too_young`;
   - `terms_required`, `terms_outdated` (reload the page);
@@ -47,14 +52,32 @@ lien »; a new link opens a fresh session.
 - `handle_new_user` is complete at creation only when `new.email_confirmed_at is not null` at insert (the service
   role's fixtures and seeds). Revisit the « avant 2026-11 » label for those.
 - Purge confirmed-but-incomplete accounts after 7 days, with today's exclusions (decision 5).
-- Optional: refuse writes whose JWT `session_id` no longer exists in `auth.sessions`, so a revoked session's access
-  token stops before it expires.
+- **Required, not optional** (review M4): refuse EVERY write whose JWT `session_id` no longer exists in
+  `auth.sessions`, not only an incomplete account's.
+  - Otherwise a squatter's already-issued access token keeps writing for up to an hour after the owner completes.
+  - The cost is one indexed lookup per write statement.
+- The 16+ rule at creation too (review L6). The 15-year-old « minor » fixtures of `job-responses-integrity`,
+  `prelaunch-acl-hardening` and `seller-capability-integrity` move to 17 (still under 18), or they would become
+  incomplete and their 18+ refusals would turn into the gate's.
 
 **Why deferred:** DB-2 ships the same day UI-1 goes live (decision 10). Until then H1 stays open, as decided.
 **Where it lives:** `public.enforce_active_user()`, `public.handle_new_user()`, `purge_unconfirmed_signups()`.
 **Trigger:** UI-1 deployed.
 
-## 4. LOW: the spike uses admin-generated links, not the browser's `signInWithOtp`
+## 4. MEDIUM (founder): two Auth settings the design now depends on
+
+**What:**
+- **« Secure email change » must be ON** (review M2). Otherwise a squatter's password session could move the account
+  to the squatter's own address before the owner completes; an e-mail-change link also yields an `otp` session.
+- **Anonymous sign-ins must be OFF** (review L5). `handle_new_user` no longer fails without a birth date, so every
+  `auth.users` insert now gets a profile.
+
+**Why deferred:** decision 9 did not list them. Only the founder can read the dashboard.
+**Where it lives:** Supabase dashboard › Authentication › Providers › Email (« Secure email change ») and › Settings
+(« Allow anonymous sign-ins »). Both are listed in the PENDING file's DEPENDENCIES.
+**Trigger:** before the apply.
+
+## 5. LOW: the spike uses admin-generated links, not the browser's `signInWithOtp`
 
 **What:** the browser's call (CAPTCHA, the e-mail, the « Confirm signup » or « Magic Link » template) cannot run from a
 test, and no outside address receives mail before Brevo. `generateLink` creates the same account and link types, and
@@ -63,7 +86,7 @@ test, and no outside address receives mail before Brevo. `generateLink` creates 
 **Where it lives:** `src/__tests__/two-step-signup-auth-live.test.ts`.
 **Trigger:** domain day (Brevo live). Check one real sign-up end to end, and the two templates' wording.
 
-## 5. INFO: transient connect timeouts from the dev PC
+## 6. INFO: transient connect timeouts from the dev PC
 
 **What:** two live runs on 2026-11-15 failed an admin call with `fetch failed` / `ETIMEDOUT`: once in a `beforeAll`,
 once in an `afterAll`. The second left one fixture, which was deleted through the admin API and counted (0 left).

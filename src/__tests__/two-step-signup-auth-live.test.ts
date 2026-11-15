@@ -18,9 +18,10 @@
  *      ON. No lockout;
  *   3. a new account's link is a `signup` link (the « Confirm signup » template), an existing account's a `magiclink`
  *      link (the « Magic Link » template); verifyOtp type 'email' redeems both;
- *   plus a new passwordless account sets its first password from its link session.
+ *   plus a new passwordless account sets its first password from its link session, and signOut({ scope: 'others' })
+ *   from a link session ends the account's other sessions while keeping the caller's (step 2 does that first).
  *
- * Fixtures (`tssa-`, test domain, random passwords): three users, deleted in afterAll, then counted. 6 fixture
+ * Fixtures (`tssa-`, test domain, random passwords): three users, deleted in afterAll, then counted. 5 fixture
  * verifications (the sign-in budget counts /verify calls).
  *
  * Run: npx vitest run --config vitest.integration.config.ts src/__tests__/two-step-signup-auth-live.test.ts
@@ -64,7 +65,7 @@ async function redeem(client: SupabaseClient, params: Parameters<SupabaseClient[
 }
 
 async function teardown(): Promise<void> {
-  const { data, error } = await admin!.from('profiles').select('id').like('email', `${PREFIX}%`)
+  const { data, error } = await admin!.from('profiles').select('id').like('email', `${PREFIX}%@rls-smoke.servyou.invalid`)
   if (error) throw new Error(`teardown lookup failed: ${error.message} (${error.code})`)
   for (const { id } of data ?? []) {
     const { error: delErr } = await admin!.auth.admin.deleteUser(id)
@@ -87,7 +88,7 @@ beforeAll(async () => {
 afterAll(async () => {
   if (!hasCreds) return
   await teardown()
-  const { count, error } = await admin!.from('profiles').select('id', { count: 'exact', head: true }).like('email', `${PREFIX}%`)
+  const { count, error } = await admin!.from('profiles').select('id', { count: 'exact', head: true }).like('email', `${PREFIX}%@rls-smoke.servyou.invalid`)
   if (error) throw new Error(`cleanup check failed: ${error.message} (${error.code})`)
   if ((count ?? 0) !== 0) throw new Error(`teardown left ${count} ${PREFIX} profiles`)
 }, 60000)
@@ -128,17 +129,28 @@ describe.skipIf(!hasCreds)('two-step sign-up: the Auth behaviour it relies on', 
   })
 
   it('an existing account: a sign-in link, an e-mail code and a reset link all record amr otp', async () => {
+    const viaLink = anon()
+    const viaCode = anon()
+    const viaReset = anon()
     const { data: magic, error: magicErr } = await admin!.auth.admin.generateLink({ type: 'magiclink', email: EXISTING })
     expect(magicErr).toBeNull()
     expect(magic?.properties?.verification_type).toBe('magiclink')
-    expect(await redeem(anon(), { type: 'email', token_hash: magic!.properties!.hashed_token })).toEqual(['otp'])
+    expect(await redeem(viaLink, { type: 'email', token_hash: magic!.properties!.hashed_token })).toEqual(['otp'])
 
     const { data: code, error: codeErr } = await admin!.auth.admin.generateLink({ type: 'magiclink', email: EXISTING })
     expect(codeErr).toBeNull()
-    expect(await redeem(anon(), { type: 'email', email: EXISTING, token: code!.properties!.email_otp })).toEqual(['otp'])
+    expect(await redeem(viaCode, { type: 'email', email: EXISTING, token: code!.properties!.email_otp })).toEqual(['otp'])
 
     const { data: recovery, error: recoveryErr } = await admin!.auth.admin.generateLink({ type: 'recovery', email: EXISTING })
     expect(recoveryErr).toBeNull()
-    expect(await redeem(anon(), { type: 'recovery', token_hash: recovery!.properties!.hashed_token })).toEqual(['otp'])
+    expect(await redeem(viaReset, { type: 'recovery', token_hash: recovery!.properties!.hashed_token })).toEqual(['otp'])
+
+    // Step 2 first ends the account's other sessions (complete_my_account refuses while one is alive): GoTrue's
+    // signOut with scope 'others' does it from a link session, and the caller keeps its own.
+    const { error: outErr } = await viaLink.auth.signOut({ scope: 'others' })
+    expect(outErr).toBeNull()
+    expect((await viaCode.auth.refreshSession()).error).not.toBeNull()
+    expect((await viaReset.auth.refreshSession()).error).not.toBeNull()
+    expect((await viaLink.auth.refreshSession()).error).toBeNull()
   })
 })

@@ -6,11 +6,13 @@
  *   - a sign-up without a birth date now creates an INCOMPLETE profile (it used to fail the whole Auth insert);
  *   - a sign-up with the full profile, and a service-role fixture, are complete at creation (the transitional rule),
  *     terms « avant 2026-11 »;
- *   - complete_my_account, from a session opened by an e-mailed link (amr otp):
+ *   - complete_my_account, from a session opened by an e-mailed link (amr otp), in the order step 2 runs:
+ *       · refuses while another session of the account is alive (other_sessions); once signOut({ scope: 'others' })
+ *         ended it, that session can neither refresh nor complete (session_unknown, though its JWT is still valid);
  *       · refuses until a password was set during that session; a password set when the account was created (the
  *         squatter's, through /signup) never counts;
  *       · refuses under 16, an invalid birth date, a blank name or city, missing or outdated terms;
- *       · completes the profile, records the terms, and ends the account's other sessions;
+ *       · completes the profile and records the terms; the caller's own session survives;
  *       · refuses a second time (already complete);
  *   - the client can write none of the completion columns, nor the birth date; anon cannot call the RPC.
  * Not here: a PASSWORD session is refused. A test cannot sign in with a password while CAPTCHA is ON, so the PENDING
@@ -80,7 +82,7 @@ async function complete(client: SupabaseClient, overrides: Partial<typeof VALID>
 }
 
 async function teardown(): Promise<void> {
-  const { data, error } = await admin!.from('profiles').select('id').like('email', `${PREFIX}%`)
+  const { data, error } = await admin!.from('profiles').select('id').like('email', `${PREFIX}%@rls-smoke.servyou.invalid`)
   if (error) throw new Error(`teardown lookup failed: ${error.message} (${error.code})`)
   for (const { id } of data ?? []) {
     const { error: delErr } = await admin!.auth.admin.deleteUser(id)
@@ -131,7 +133,7 @@ beforeAll(async () => {
 afterAll(async () => {
   if (!hasCreds) return
   await teardown()
-  const { count, error } = await admin!.from('profiles').select('id', { count: 'exact', head: true }).like('email', `${PREFIX}%`)
+  const { count, error } = await admin!.from('profiles').select('id', { count: 'exact', head: true }).like('email', `${PREFIX}%@rls-smoke.servyou.invalid`)
   if (error) throw new Error(`cleanup check failed: ${error.message} (${error.code})`)
   if ((count ?? 0) !== 0) throw new Error(`teardown left ${count} ${PREFIX} profiles`)
 }, 60000)
@@ -155,7 +157,23 @@ describe.skipIf(!hasCreds)('profile creation (handle_new_user)', () => {
   })
 })
 
+// The tests below run in order on the same accounts (the flow of one step 2).
 describe.skipIf(!hasCreds)('complete_my_account', () => {
+  it('refuses while another session of the account is alive', async () => {
+    const { error } = await complete(fresh)
+    expect(error?.hint).toBe('other_sessions')
+  })
+
+  it('a session ended by signOut (others) can neither refresh nor complete', async () => {
+    const { error: outErr } = await fresh.auth.signOut({ scope: 'others' })
+    expect(outErr).toBeNull()
+    const { error: refreshErr } = await freshOther.auth.refreshSession()
+    expect(refreshErr).not.toBeNull()
+    // Its access token is still a valid JWT, but its session row is gone.
+    const { error } = await complete(freshOther)
+    expect(error?.hint).toBe('session_unknown')
+  })
+
   it('refuses before a password was set in the session', async () => {
     const { error } = await complete(fresh)
     expect(error?.hint).toBe('password_required')
@@ -199,7 +217,7 @@ describe.skipIf(!hasCreds)('complete_my_account', () => {
     }
   })
 
-  it('completes the profile, records the terms, and ends the other sessions', async () => {
+  it('completes the profile and records the terms; the caller keeps its own session', async () => {
     const { error } = await complete(fresh)
     expect(error).toBeNull()
     const profile = await profileOf(FRESH)
@@ -210,9 +228,8 @@ describe.skipIf(!hasCreds)('complete_my_account', () => {
     expect(profile.city).toBe(VALID.p_city)
     expect(profile.full_name).toBe(VALID.p_full_name)
 
-    // The account's other session (opened by a second link) can no longer refresh.
-    const { error: refreshErr } = await freshOther.auth.refreshSession()
-    expect(refreshErr).not.toBeNull()
+    const { error: refreshErr } = await fresh.auth.refreshSession()
+    expect(refreshErr).toBeNull()
   })
 
   it('refuses a second completion', async () => {

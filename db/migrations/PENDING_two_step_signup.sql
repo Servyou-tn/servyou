@@ -11,8 +11,8 @@
 --     already e-mail-confirmed at insert and adds the write gate for incomplete accounts; H1 closes with DB-2.
 --   - private.account_password_set + trigger on auth.users: when the account's password was last set.
 --   - complete_my_account(): step 2 (« Finalisez votre compte »). It refuses unless the session came from an e-mailed
---     link or code (amr otp), a password was set during that session, and the person is 16+ (decision 4). Then it
---     completes the profile and ends every other session of the account (a squatter's included).
+--     link or code (amr otp), no other session of the account is alive, a password was set during that session, and
+--     the person is 16+ (decision 4). Then it completes the profile and records the terms.
 --
 -- SPIKE (live on production Auth, 2026-11-15, src/__tests__/two-step-signup-auth-live.test.ts, green), with Confirm
 -- email, CAPTCHA, Secure password change and Require current password all ON (decision 9). Links minted by the admin
@@ -53,9 +53,10 @@
 --      so what is stored is what the page showed; a migration bumps it when either document changes.
 --   2. An account complete at creation (transitional sign-ups, fixtures, seeds) records terms_version « avant 2026-11 »
 --      (the sign-up notice, decision 3). DB-2 revisits the label for service-role creations.
---   3. « A password set during this session » = account_password_set.set_at >= the session's created_at minus one
---      minute (GoTrue's clock vs the database's). Safe: an unconfirmed account cannot hold a session, so no password
---      change can happen before the owner's link session; a password set at insert writes no row at all.
+--   3. « A password set during this session » = account_password_set.set_at >= the session's created_at minus five
+--      seconds (GoTrue's clock vs the database's). The trigger cannot see which session changed the password, so the
+--      RPC also refuses while any other session of the account is alive (other_sessions; review M1): the page ends
+--      them, sets the password, then completes. A password set at insert writes no row at all.
 --   4. The city at completion: not blank, at most 100 characters; not checked against the 24 governorates (« Mon
 --      compte » does not either). A list check would be its own change.
 --   5. The backfill moves the 14 profiles' updated_at to the apply time (profiles_set_updated_at).
@@ -65,6 +66,10 @@
 -- DEPENDENCIES
 --   - « Confirm email » ON (DB-2's narrowed rule relies on it: a public sign-up is never confirmed at insert).
 --   - amr `otp` = « proved control of the inbox » only while phone / SMS sign-in stays OFF.
+--   - « Secure email change » ON (to confirm, review M2): otherwise a squatter's password session could move the
+--     account to the squatter's own address before completion, and an e-mail-change link also yields an otp session.
+--   - Anonymous sign-ins OFF (review L5): handle_new_user no longer fails without a birth date, so every auth.users
+--     insert now gets a profile; profiles.email stays NOT NULL, so an e-mail-less user still fails.
 --   - The new foreign key into auth.users is ON DELETE CASCADE, so purge_unconfirmed_signups' exclusions need no change.
 --
 -- AFTER THE APPLY (db-guardian, then commit 3)
@@ -73,7 +78,7 @@
 --   - Counts: 14 profiles, 14 complete, terms_version « avant 2026-11 » on 14, 0 incomplete.
 --   - The ROLLED-BACK CHECK at the end of this file (a password session is refused: a live test cannot sign in with a
 --     password while CAPTCHA is ON).
---   - Live, one at a time: two-step-signup-db-live (3 verifications), two-step-signup-auth-live (6),
+--   - Live, one at a time: two-step-signup-db-live (3 verifications), two-step-signup-auth-live (5),
 --     admin-requests-live (the deletion tombstone under the new CHECK, 2), client-write-grants-live (no change, 1).
 --   - Then: rename to the recorded version, README entry, regenerate the types (expect a zero diff), data-model.md.
 
@@ -173,7 +178,8 @@ declare
   v_complete boolean;
 begin
   -- TRANSITIONAL (DB-1): a sign-up that carries the full profile is complete at creation, as today's form is. DB-2 adds
-  -- « and new.email_confirmed_at is not null » (the service role's fixtures and seeds only).
+  -- « and new.email_confirmed_at is not null » (the service role's fixtures and seeds only) and the 16+ rule here too
+  -- (review L6; three suites' 15-year-old « minor » fixtures move to 17 then, still under 18).
   v_complete := v_dob is not null
                 and nullif(btrim(coalesce(v_meta ->> 'city', '')), '') is not null
                 and btrim(coalesce(v_meta ->> 'full_name', '')) <> '';
@@ -245,11 +251,19 @@ begin
       using errcode = '42501', hint = 'session_unknown';
   end if;
 
-  -- A password set during THIS session (decision 3: one minute for the two clocks). A password chosen when the account
+  -- No other session may be alive: a squatter's password session could otherwise have changed the password, and the
+  -- password check below cannot tell who did (review M1). The page ends them first (signOut({ scope: 'others' })), then
+  -- sets the password, then calls this. From then on « Require current password » needs the owner's new password.
+  if exists (select 1 from auth.sessions s where s.user_id = v_uid and s.id <> v_session) then
+    raise exception 'D''autres sessions sont ouvertes sur ce compte : elles doivent être fermées pour le finaliser.'
+      using errcode = '23514', hint = 'other_sessions';
+  end if;
+
+  -- A password set during THIS session (decision 3: five seconds for the two clocks). A password chosen when the account
   -- was created (a squatter's, through /signup) is never recorded, so it can never be the one an account completes with.
   if not exists (
     select 1 from private.account_password_set a
-     where a.user_id = v_uid and a.set_at >= v_session_start - interval '1 minute'
+     where a.user_id = v_uid and a.set_at >= v_session_start - interval '5 seconds'
   ) then
     raise exception 'Choisissez votre mot de passe pour finaliser votre compte.'
       using errcode = '23514', hint = 'password_required';
@@ -285,8 +299,8 @@ begin
          terms_version = p_terms_version
    where id = v_uid;
 
-  -- Every other session of the account ends, a squatter's included (refresh tokens and amr claims cascade). An access
-  -- token already issued stays valid until it expires; DB-2 may also check the JWT's session_id on writes.
+  -- Belt and braces: a session opened since the check above ends too (refresh tokens and amr claims cascade). An access
+  -- token already issued stays valid until it expires (one hour): DB-2 checks the JWT's session_id on every write.
   delete from auth.sessions s where s.user_id = v_uid and s.id <> v_session;
 end;
 $$;
@@ -295,18 +309,25 @@ revoke all on function public.complete_my_account(text, date, text, text) from p
 grant execute on function public.complete_my_account(text, date, text, text) to authenticated;
 
 comment on function public.complete_my_account(text, date, text, text) is
-  'Two-step sign-up, step 2 (« Finalisez votre compte »): from a session opened by an e-mailed link or code, after a password was set in it, 16+. Completes the profile, records the terms, ends the other sessions.';
+  'Two-step sign-up, step 2 (« Finalisez votre compte »): from a session opened by an e-mailed link or code, with no other session alive, after a password was set in it, 16+. Completes the profile and records the terms.';
 
 -- ─── ROLLED-BACK CHECK (after the apply; run as one block, nothing persists) ───────────────────────
 -- A password session cannot complete an account. A live test cannot create one (CAPTCHA guards the password grant),
 -- so this simulates its claims. It checks the HINT, not only the SQLSTATE: « permission denied » is 42501 too.
 --
+-- Any FAIL raises (the whole block errors); success ends on a visible row « PASS ».
+--
 -- begin;
 -- insert into auth.users (id, instance_id, aud, role, email, raw_user_meta_data, created_at, updated_at)
 -- values ('7f000000-0000-4000-8000-000000000001', '00000000-0000-0000-0000-000000000000', 'authenticated',
 --         'authenticated', 'tsdb-rollback@rls-smoke.servyou.invalid', '{"full_name":"Rollback Check"}', now(), now());
--- select completed_at is null and date_of_birth is null as incomplete_profile_created
---   from public.profiles where id = '7f000000-0000-4000-8000-000000000001';
+-- do $$
+-- begin
+--   if not exists (select 1 from public.profiles
+--                   where id = '7f000000-0000-4000-8000-000000000001' and completed_at is null and date_of_birth is null) then
+--     raise exception 'FAIL: a sign-up without a birth date did not create an incomplete profile';
+--   end if;
+-- end $$;
 -- select set_config('request.jwt.claims',
 --   '{"sub":"7f000000-0000-4000-8000-000000000001","role":"authenticated","session_id":"7f000000-0000-4000-8000-000000000002","amr":[{"method":"password","timestamp":1}]}',
 --   true);
@@ -319,8 +340,8 @@ comment on function public.complete_my_account(text, date, text, text) is
 -- exception when sqlstate '42501' then
 --   get stacked diagnostics v_hint = pg_exception_hint;
 --   if v_hint is distinct from 'email_link_required' then raise exception 'FAIL: wrong refusal (hint %)', v_hint; end if;
---   raise notice 'PASS: a password session is refused (email_link_required)';
 -- end $$;
+-- select 'PASS: an incomplete profile is created, and a password session is refused (email_link_required)' as result;
 -- rollback;
 
 -- ─── ROLLBACK (one transaction) ─────────────────────────────────────────────────────────────────────
