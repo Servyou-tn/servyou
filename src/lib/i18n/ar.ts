@@ -3847,7 +3847,6 @@ export const ar: Record<string, string> = {
   // orders.count migrated to tn() — see src/lib/i18n/plurals.ts.
   'seller.orders.sort.recent':            "الأحدث",
   'seller.orders.sort.oldest':            "الأقدم",
-  'seller.orders.waiting':                "· منذ {hours} ساعة",
   'seller.orders.awaiting_buyer':         "في انتظار تأكيد المشتري",
   'seller.orders.view_detail':            "عرض التفاصيل",
   'seller.orders.cancelled_reason':       "السبب: {reason}",

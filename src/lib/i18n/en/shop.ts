@@ -593,7 +593,6 @@ export const strings: Record<string, string> = {
   'seller.orders.sort_aria': "Sort orders",
   'seller.orders.sort.recent': "Newest",
   'seller.orders.sort.oldest': "Oldest",
-  'seller.orders.waiting': "· {hours} h ago",
   'seller.orders.awaiting_buyer': "Awaiting buyer’s confirmation",
   'seller.orders.view_detail': "View details",
   'seller.orders.cancelled_reason': "Reason: {reason}",
@@ -775,6 +774,8 @@ export const strings: Record<string, string> = {
 export const plurals: Record<string, PluralVariants> = {
   'boutique.public.products_count': { one: "{count} product", other: "{count} products" },
   'seller.orders.count': { one: "{count} order", other: "{count} orders" },
+  'seller.orders.waiting_hours': { one: "· {count} h ago", other: "· {count} h ago" },
+  'seller.orders.waiting_days': { one: "· {count} day ago", other: "· {count} days ago" },
   'seller.dashboard.tile.profit_sub': { one: "Based on {count} delivered order", other: "Based on {count} delivered orders" },
   'product.bulk.selected_count': { one: "{count} selected", other: "{count} selected" },
   'product.bulk.confirm_delete': { one: "Delete {count} selected product? This can’t be undone.", other: "Delete {count} selected products? This can’t be undone." },
