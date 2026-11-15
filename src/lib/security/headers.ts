@@ -13,8 +13,9 @@
 //     either through /_next/image (self) or straight from the public storage path;
 //   • Sentry — events go through the same-origin `/monitoring` tunnel (next.config.ts tunnelRoute); the ingest
 //     hosts are listed anyway for any path that bypasses it;
-//   • Vercel — the preview-deployment toolbar (`vercel.live`, its fonts / images, and its pusher websocket). No
-//     @vercel/analytics or speed-insights is installed;
+//   • Vercel — the preview-deployment toolbar (`vercel.live`, its fonts / images, and its pusher websocket), on PREVIEW
+//     deployments only (`allowVercelToolbar`, from VERCEL_ENV in next.config.ts): production, and any host that is not a
+//     Vercel preview, never allows it (audit M7, PR 16). No @vercel/analytics or speed-insights is installed;
 //   • Next.js App Router inline scripts (`self.__next_f.push`) and React inline styles → 'unsafe-inline' until a
 //     nonce-based policy; `next dev` also needs 'unsafe-eval' (React refresh), never in a production build.
 //   • Cloudflare Turnstile (src/components/security/Turnstile.tsx) — its script and challenge iframe come from
@@ -29,6 +30,14 @@
 // load in real traffic shows up in Sentry. The URL is DERIVED from the Sentry DSN the app already ships to the browser
 // (NEXT_PUBLIC_SENTRY_DSN) — the DSN's key is a public ingest key, not a secret, and nothing new is added to the repo.
 // No DSN (dev, CI, an unconfigured preview) → no reporting, exactly like Sentry itself.
+//
+// TRANSPORT AND WINDOW ISOLATION (audit M7, PR 16): Strict-Transport-Security is sent by the app itself, not left to the
+// host (Vercel adds one today; the planned server behind Cloudflare would not), two years with subdomains and no `preload`
+// (the preload list is hard to leave, so it waits until servyou.tn is settled). Browsers ignore it on plain http, so
+// `next dev` is unaffected. Cross-Origin-Opener-Policy: same-origin cuts the link to any cross-origin window that opens
+// one of our pages (or that we open), so another site cannot script or navigate it; the app opens no cross-origin popup
+// that needs `window.opener` (sign-in is a redirect, WhatsApp links open with noopener, Turnstile is an iframe).
+// The nonce-based CSP that would drop 'unsafe-inline' is decided together with page caching (audit M7/M8), not here.
 
 export const SUPABASE_ORIGIN = 'https://xggomcitqrkaylqezjjz.supabase.co'
 export const TURNSTILE_ORIGIN = 'https://challenges.cloudflare.com'
@@ -68,13 +77,18 @@ export function cspReportUrl(dsn: string | null | undefined, environment?: strin
   return `https://${url.host}${prefix}/api/${projectId}/security/?sentry_key=${encodeURIComponent(key)}${env}`
 }
 
-export function contentSecurityPolicy(isDev: boolean, reportUrl: string | null = null): string {
+/**
+ * The CSP. `allowVercelToolbar` adds the Vercel toolbar's hosts: true on Vercel PREVIEW deployments only (next.config.ts),
+ * false everywhere else, which is the default.
+ */
+export function contentSecurityPolicy(isDev: boolean, reportUrl: string | null = null, allowVercelToolbar = false): string {
+  const toolbar = (...sources: string[]) => (allowVercelToolbar ? sources : [])
   const directives: Record<string, string[]> = {
     'default-src': ["'self'"],
-    'script-src': ["'self'", "'unsafe-inline'", ...(isDev ? ["'unsafe-eval'"] : []), 'https://vercel.live', TURNSTILE_ORIGIN, UMAMI_SCRIPT_ORIGIN],
-    'style-src': ["'self'", "'unsafe-inline'", 'https://vercel.live'],
-    'img-src': ["'self'", 'data:', 'blob:', SUPABASE_ORIGIN, 'https://vercel.live', 'https://vercel.com'],
-    'font-src': ["'self'", 'data:', 'https://vercel.live', 'https://assets.vercel.com'],
+    'script-src': ["'self'", "'unsafe-inline'", ...(isDev ? ["'unsafe-eval'"] : []), ...toolbar('https://vercel.live'), TURNSTILE_ORIGIN, UMAMI_SCRIPT_ORIGIN],
+    'style-src': ["'self'", "'unsafe-inline'", ...toolbar('https://vercel.live')],
+    'img-src': ["'self'", 'data:', 'blob:', SUPABASE_ORIGIN, ...toolbar('https://vercel.live', 'https://vercel.com')],
+    'font-src': ["'self'", 'data:', ...toolbar('https://vercel.live', 'https://assets.vercel.com')],
     'connect-src': [
       "'self'",
       SUPABASE_ORIGIN,
@@ -82,11 +96,10 @@ export function contentSecurityPolicy(isDev: boolean, reportUrl: string | null =
       'https://*.ingest.sentry.io',
       'https://*.ingest.de.sentry.io',
       'https://*.ingest.us.sentry.io',
-      'https://vercel.live',
-      'wss://ws-us3.pusher.com',
+      ...toolbar('https://vercel.live', 'wss://ws-us3.pusher.com'),
       UMAMI_COLLECT_ORIGIN,
     ],
-    'frame-src': ['https://vercel.live', TURNSTILE_ORIGIN],
+    'frame-src': [...toolbar('https://vercel.live'), TURNSTILE_ORIGIN],
     'worker-src': ["'self'", 'blob:'],
     'media-src': ["'self'", 'blob:', SUPABASE_ORIGIN],
     'object-src': ["'none'"],
@@ -100,10 +113,19 @@ export function contentSecurityPolicy(isDev: boolean, reportUrl: string | null =
   return reportUrl ? `${policy}; report-uri ${reportUrl}; report-to ${CSP_REPORT_GROUP}` : policy
 }
 
-export function securityHeaders(isDev: boolean, reportUrl: string | null = null): { key: string; value: string }[] {
+/** Two years, subdomains included, no `preload` (see TRANSPORT AND WINDOW ISOLATION above). */
+export const HSTS_VALUE = 'max-age=63072000; includeSubDomains'
+
+export function securityHeaders(
+  isDev: boolean,
+  reportUrl: string | null = null,
+  allowVercelToolbar = false,
+): { key: string; value: string }[] {
   return [
+    { key: 'Strict-Transport-Security', value: HSTS_VALUE },
+    { key: 'Cross-Origin-Opener-Policy', value: 'same-origin' },
     { key: 'X-Frame-Options', value: 'DENY' },
-    { key: 'Content-Security-Policy', value: contentSecurityPolicy(isDev, reportUrl) },
+    { key: 'Content-Security-Policy', value: contentSecurityPolicy(isDev, reportUrl, allowVercelToolbar) },
     ...(reportUrl ? [{ key: 'Reporting-Endpoints', value: `${CSP_REPORT_GROUP}="${reportUrl}"` }] : []),
     { key: 'X-Content-Type-Options', value: 'nosniff' },
     { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
