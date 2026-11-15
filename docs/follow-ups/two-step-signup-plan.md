@@ -3,8 +3,8 @@
 Phase 1 only: discovery and a proposed design. **No migration file and no code exist yet.** The founder said yes on
 2026-11-15 (pre-launch audit H1, part 2); this plan settles how it works and lists what the founder decides (« Questions
 for the founder », at the end). Discovery was read-only on production (`execute_sql` SELECTs, 2026-11-15) plus the
-Supabase docs. The Supabase MCP cannot read Auth settings, so every dashboard setting below is marked **confirm in the
-dashboard**.
+Supabase docs. The Supabase MCP cannot read Auth settings, so every dashboard setting below was marked **confirm in the
+dashboard**; the founder confirmed them on 2026-11-15 (decision 9).
 
 **The target, as decided:**
 - sign-up asks only for the name and the e-mail;
@@ -15,6 +15,44 @@ dashboard**.
 **Why (H1):** today anyone can create an account for someone else's e-mail with a password they choose. If the owner
 later confirms that e-mail, the creator's password opens the account. Fix 1 (#361) limits the window to 24 hours by
 purging unconfirmed sign-ups; this is fix 2: a password is accepted only from someone who proved they read that inbox.
+
+## Founder decisions (2026-11-15): all 10 questions answered
+
+They override anything below that says « proposed », « default » or « question N ».
+
+1. **Step 1 = Option A:** the passwordless e-mail link (`signInWithOtp`), its `token_hash` verified on the server at
+   `/auth/confirm`.
+2. **Yes:** an existing account that types its e-mail on the sign-up page gets a sign-in link. The « Magic Link » mail
+   says « vous avez déjà un compte ».
+3. **Terms:**
+   - Step 2 has an explicit checkbox; the version and the time are stored.
+   - The existing accounts are recorded as accepted at their sign-up date, under version « avant 2026-11 ».
+   - Implementation note: this covers all 14 existing profiles. Every complete profile must carry its terms (the CHECK
+     in section 4). The 7 seeded demo accounts get the same version, and the pre-launch wipe (#297) removes them.
+4. **Yes:** 16+ is enforced in the database at completion. 18+ stays at the seller switch.
+5. **Incomplete accounts** (confirmed, step 2 not done):
+   - they are purged after **7 days**, with the same exclusions as today's 24-hour purge;
+   - meanwhile their deletion and export requests are blocked, like every other write.
+6. **Step 2** = password, birth date, city, terms, and the name, prefilled and editable. The language follows the
+   interface.
+7. **The page:**
+   - route `/finaliser-mon-compte`, title « Finalisez votre compte »;
+   - UI-1 adds the title to the vocabulary lock: `.claude/skills/servyou-i18n-vocabulary-lock/SKILL.md` and design
+     system §6;
+   - the brand is spelled **« ServYou »** in every string of this flow and in both e-mail subjects (section 8).
+8. **Agreed:** the founder pastes the two templates and adds `/auth/confirm` to Redirect URLs when UI-1 deploys. After
+   domain day these use `servyou.tn`.
+9. **Settings today** (they replace the « confirm in the dashboard » marks in section 1):
+   - Confirm email ON; CAPTCHA ON;
+   - Secure password change ON; Require current password ON (since 2026-11-12);
+   - minimum password: 8 characters, a letter and a digit;
+   - leaked-password protection comes with Supabase Pro at launch;
+   - custom SMTP = Brevo on `servyou.tn`, set on domain day (runbook steps 2-3). Real outside sign-ups can be tested
+     only after that, so DB-1's spike uses admin-generated links, not delivered mail.
+10. **Accepted:** DB-1 → UI-1 → DB-2, with DB-2 applied the same day UI-1 goes live.
+
+Because Require current password is ON, section 6's point 2 (the squatted-account lockout) is a real risk. DB-1 runs it
+first and stops before writing the RPC if it fails.
 
 ## 1. Today (live, 2026-11-15)
 
@@ -81,7 +119,7 @@ identity row (all `email`).
 - Every one passes `email_confirm: true` and the full metadata.
 - They sign in through `fixtureSignIn()` (an admin recovery link, then `verifyOtp`), not the password grant.
 
-**Supabase Auth settings the code depends on** (confirm in the dashboard):
+**Supabase Auth settings the code depends on** (confirmed by the founder, decision 9):
 
 | Setting | Needed state | Why |
 |---|---|---|
@@ -90,9 +128,9 @@ identity row (all `email`).
 | CAPTCHA (Turnstile) | ON | Guards `/otp` and `/signup` |
 | Site URL / Redirect URLs | prod origin; add `<origin>/auth/confirm` (prod, localhost, servyou.tn on domain day) | The new link target |
 | E-mail templates « Confirm signup » + « Magic Link » | rewritten to a `token_hash` link (section 3) | Links that work on any device |
-| Secure password change, Require current password | founder to confirm their state (#358 asked to turn both ON) | The first password is set from the link session (section 6) |
-| Minimum password rules | match the app (8+, a letter and a digit) | Audit pass 3 A3 |
-| **Custom SMTP** | **needed before launch, for any e-mail sign-up** | The built-in sender delivers only to the project team's own addresses, with a small hourly cap |
+| Secure password change, Require current password | both ON (Require current password since 2026-11-12) | The first password is set from the link session (section 6) |
+| Minimum password rules | 8+, a letter and a digit (set, matches the app) | Audit pass 3 A3 |
+| **Custom SMTP** | **Brevo on `servyou.tn`, set on domain day** | The built-in sender delivers only to the project team's own addresses, with a small hourly cap |
 
 ## 2. The attack this closes, step by step
 
@@ -123,7 +161,7 @@ owner has set the password. Section 4 does that; section 7 says when it takes ef
 - **Against:**
   - `signInWithOtp` is also a sign-in method. Someone who already has an account and types their e-mail on the sign-up
     page receives a sign-in link instead of an error. That is no weaker than today's reset link: the inbox already
-    resets the password. It is still a second way in (question 2).
+    resets the password. It is still a second way in (accepted, decision 2).
   - The two e-mail templates must change (founder pastes them; strings in section 8).
 
 **Option B: keep `signUp` with a random throwaway password, then replace it in step 2.**
@@ -156,7 +194,8 @@ check.**
 - Add three columns to `profiles`: `completed_at` (null = incomplete), `terms_accepted_at` and `terms_version`.
 - `date_of_birth` becomes nullable. A CHECK requires a birth date, a city, a name and the terms once `completed_at` is
   set.
-- Backfill all 14 existing profiles as complete (`completed_at = created_at`); terms per question 3.
+- Backfill all 14 existing profiles as complete (`completed_at = created_at`), with terms accepted at `created_at`
+  under version « avant 2026-11 » (decision 3).
 
 **`handle_new_user`, rewritten** (and moved to `search_path ''`):
 - Every profile is created, even with no birth date.
@@ -177,7 +216,7 @@ authenticated). It refuses unless:
    UPDATE OF `encrypted_password` trigger on `auth.users` stores the time. It only reads GoTrue's columns, like
    today's e-mail sync trigger. So a password the squatter set before confirmation can never be the one an account
    completes with;
-4. the person is 16 or older, with a plausible date (question 4); the city and name are not blank.
+4. the person is 16 or older, with a plausible date (decision 4); the city and name are not blank.
 
 It then:
 - sets the fields, `completed_at` and the terms;
@@ -188,8 +227,8 @@ It then:
 - `trg_enforce_active_user` (28 tables) also refuses an incomplete account's writes, with a distinct message and hint
   so the app can send the user to step 2. The RPC's own write to `profiles` gets through.
 - Reads are unchanged: an incomplete account sees what a visitor sees.
-- **Default:** `deletion_requests` and `data_exports` are blocked too, and the incomplete-account purge removes such
-  accounts instead (question 5).
+- **Decided (5):** `deletion_requests` and `data_exports` are blocked too; the incomplete-account purge removes such
+  accounts after 7 days instead.
 - **Residual window:** an access token the squatter already holds stays valid until it expires (one hour by default).
   DB-2 can close that too: the gate checks that the JWT's `session_id` still exists in `auth.sessions`, one indexed
   lookup per write.
@@ -234,7 +273,9 @@ Each is a small live check with fixture accounts, run before the RPC is written:
    - If that session is not exempt from « current password », the owner is locked out. That would reverse the
      recommendation: Option C, or a server-side reset path.
 3. **Which template a new account gets** from `signInWithOtp` (« Confirm signup » or « Magic Link »), and that
-   `verifyOtp({ type: 'email', token_hash })` accepts both.
+   `verifyOtp({ type: 'email', token_hash })` accepts both. Until Brevo is live (decision 9) no mail reaches an
+   outside address. The spike reads the flow from the admin link's `verification_type`; the mail itself is checked on
+   domain day.
 4. **A first password set more than 24 hours** after the link session began, under « Secure password change ». The
    page may need to ask for a new link instead.
 5. **The RPC can delete the user's other `auth.sessions` rows** as its definer. The purge already deletes `auth.users`
@@ -256,17 +297,20 @@ Each is a small live check with fixture accounts, run before the RPC is written:
 **UI-1 (Agent A, the page builder):**
 - Step 1 (name, e-mail, Turnstile), the « check your e-mail » state with resend, and `/auth/confirm`.
 - The step-2 page and its server action, the « new link » path, and the middleware redirect.
-- Null-safe birth-date display, and the strings in FR, AR and EN.
+- Null-safe birth-date display, and the strings in FR, AR and EN, with the brand spelled « ServYou » (decision 7).
+- « Finalisez votre compte » added to the vocabulary lock (decision 7).
 - Must-tests: the server action (updateUser, then the RPC; mapped errors); `/auth/confirm` (the `next` validation, a
   bad hash).
-- **Founder, at deploy time:**
+- A real outside sign-up can be tested only once Brevo is live on domain day (decision 9).
+- **Founder, at deploy time** (on `servyou.tn` after domain day):
   - paste the two templates;
   - add `/auth/confirm` to Redirect URLs.
 
 **DB-2 (db-guardian), applied the same day UI-1 is live:**
 - The write gate for incomplete accounts, and the end of the transitional rule (only confirmed-at-insert accounts are
   complete).
-- The purge of confirmed-but-incomplete accounts after N days (question 5), and optionally the `session_id` check.
+- The purge of confirmed-but-incomplete accounts after 7 days, with today's exclusions (decision 5), and optionally
+  the `session_id` check.
 - Must-tests (live): an incomplete account's writes refused on a sample of the 28 tables; the RPC still passes; the
   purge's rolled-back dry run.
 
@@ -277,8 +321,8 @@ Order: DB-1 → UI-1 → DB-2. That is 3 PRs, plus a later Google PR.
 
 ## 8. Strings (FR / AR / EN), proposed
 
-The AR lines are a first draft and need review, as every AR line in this project does. Lock the step-2 title in
-design system §6 once chosen.
+The AR lines are a first draft and need review, as every AR line in this project does. The step-2 title is decided
+(decision 7) and goes into the vocabulary lock with UI-1.
 
 | Use | FR | AR | EN |
 |---|---|---|---|
@@ -292,8 +336,8 @@ design system §6 once chosen.
 
 **E-mail templates (the founder pastes them).** Both send `{{ .RedirectTo }}` with `token_hash={{ .TokenHash }}` and
 `type=email` added:
-- « Confirm signup »: « Finalisez votre inscription à Servyou ».
-- « Magic Link »: « Votre lien de connexion Servyou ».
+- « Confirm signup »: « Finalisez votre inscription à ServYou ».
+- « Magic Link »: « Votre lien de connexion ServYou ». Its body says « vous avez déjà un compte » (decision 2).
 
 ## 9. Logged, not fixed (one PR, one focus)
 
@@ -302,8 +346,11 @@ design system §6 once chosen.
 - `/auth/callback` does not exist, but `SignupForm`'s Google branch points at it. It belongs to the Google PR.
 - `enforce_seller_type_age_gate` still uses `search_path` `public` (LOW). `handle_new_user` gets `''` in DB-1.
 - `/verifier-email`'s `?code=` path is removed once the last links sent before UI-1 have expired (one day at most).
+- **The brand spelling is mixed across the repo.** The i18n files hold about 360 « Servyou » and 97 « ServYou »
+  (comments included). Decision 7 applies « ServYou » to this flow; a repo-wide pass is its own PR, once the founder
+  confirms the scope.
 
-## Questions for the founder
+## Questions for the founder (answered 2026-11-15: see « Founder decisions » at the top)
 
 1. **Step 1:** Option A, a passwordless e-mail link (recommended), B (a throwaway password) or C (the server invites;
    sign-ups OFF at Supabase)?
