@@ -81,8 +81,8 @@ export type Engagement = {
 // ── Stat tiles ───────────────────────────────────────────────────────────────────────────────────
 // Frame order: En cours · (À livrer → « À traiter », ruling D4) · Terminés · Total.
 //
-// « En cours » is `accepted` ONLY (ruling D9), matching its tab. H4's « Engagements actifs » counts every
-// non-terminal status, pending included — a known mismatch, logged in docs/follow-ups.md, not edited here.
+// « En cours » is `accepted` ONLY (ruling D9), matching its tab. H4's « Engagements actifs » counts accepted + arrived,
+// i.e. this page's « En cours » + « Livrés » (journey walk F2, 2026-11-15).
 export type EngagementStats = {
   /** accepted — work under way. */
   inProgress: number

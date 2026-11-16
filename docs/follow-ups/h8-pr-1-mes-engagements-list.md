@@ -2,6 +2,8 @@
 
 ## H4 « Engagements actifs » and H8 « En cours » count different things (ruling D9)
 
+✅ CLOSED — `fix/honest-numbers-visitors`, 2026-11-16: « Engagements actifs » = accepted + arrived (journey walk F2).
+
 - H4's tile (`activeOrderCounts` in `freelancer-dashboard.ts`) counts every non-terminal status, `pending`
   included. H8's « En cours » tile and tab are `accepted` ONLY, with pending carried by « À traiter ». A freelancer
   with 2 pending + 3 accepted sees « 5 » on the dashboard and « 3 » here. Not edited (H4 is shipped and out of

@@ -1327,6 +1327,7 @@ export const strings: Record<string, string> = {
   "shell.sidebar.favorites": "Saved items",
   "shell.sidebar.statistics": "Analytics",
   "shell.sidebar.listings": "My job posts",
+  "shell.sidebar.guest.body": "Sign in to find your orders, saved items and job posts.",
   "shell.sidebar.settings": "Settings",
   "shell.sidebar.help": "Help",
   "shell.sidebar.sellerCta.title": "Become a seller",

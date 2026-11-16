@@ -3703,6 +3703,7 @@ export const fr: Record<string, string> = {
   'shell.sidebar.favorites':              "Mes favoris",
   'shell.sidebar.statistics':             "Statistiques",
   'shell.sidebar.listings':               "Mes annonces",
+  'shell.sidebar.guest.body':             "Connectez-vous pour retrouver vos commandes, vos favoris et vos annonces.",
   'shell.sidebar.settings':               "Paramètres",
   'shell.sidebar.help':                   "Aide",
   'shell.sidebar.sellerCta.title':        "Devenir vendeur",
@@ -4006,7 +4007,7 @@ export const fr: Record<string, string> = {
   'seller.orders.whatsapp_none':          "Numéro indisponible pour cette commande.",
 
   // H4 — Tableau de bord freelance (Figma 166:12086). Provenance: docs/design/h4-discovery.md.
-  // `tile.views` and every `forceProfil.item_*` are 📐 MEASURED exact copy — do not reword.
+  // Every `forceProfil.item_*` is 📐 MEASURED exact copy — do not reword. (`tile.views` is gone: journey walk F1.)
   // Everything else on this page (subtitles, panel titles, empty-state copy) has no measured
   // text and is INFERRED, same treatment as the Demandes-en-attente status mapping.
   // 📐 MEASURED (167:12236/167:12237, h4-discovery.md §9). {firstName} interpolates
@@ -4027,7 +4028,6 @@ export const fr: Record<string, string> = {
   'freelance.dashboard.tile.pending_sub':  "En attente de votre réponse",
   // 📐 MEASURED (167:12280) — period folded into the label, no separate sub-label node. Ruling 1:
   // renders 0, no delta, nothing seeded.
-  'freelance.dashboard.tile.views':        "Vues du profil · 30 jours",
 
   // 📐 MEASURED (232:7599) — "pour vous" is part of the literal title, not dropped.
   'freelance.dashboard.missions.title':      "Missions récentes pour vous",

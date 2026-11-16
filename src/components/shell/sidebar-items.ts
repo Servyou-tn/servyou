@@ -121,6 +121,18 @@ const SHOP_ACTIVITIES: SidebarSectionDef = {
   ],
 }
 
+// Member-only destinations: each one sends a signed-out visitor to /connexion. The visitor's sidebar leaves them out
+// and shows a « Se connecter / Créer un compte » block in their place (journey walk J1, 2026-11-15).
+export const MEMBER_ONLY_HREFS: ReadonlySet<string> = new Set(['/mes-commandes', '/mes-favoris', '/mes-annonces', '/parametres'])
+
+/** A signed-out visitor: the consumer IA without the member-only items (Marketplace and Aide stay). */
+export function sidebarSectionsForVisitor(): SidebarSectionDef[] {
+  return [DISCOVER, TOOLS].map((section) => ({
+    ...section,
+    items: section.items.filter((item) => !MEMBER_ONLY_HREFS.has(item.href)),
+  }))
+}
+
 export function sidebarSectionsForRole(role: ShellRole): SidebarSectionDef[] {
   if (role === 'freelancer') return [ACTIVITIES, DISCOVER, TOOLS]
   if (role === 'shop_owner') return [SHOP_ACTIVITIES, DISCOVER, TOOLS]

@@ -3640,6 +3640,8 @@ export const ar: Record<string, string> = {
   'shell.sidebar.favorites':              "المحفوظات",
   'shell.sidebar.statistics':             "الإحصائيات",
   'shell.sidebar.listings':               "إعلاناتي",
+  // REVIEW_AR_TRANSLATION — the signed-out sidebar block (journey walk J1); nouns as the items it replaces.
+  'shell.sidebar.guest.body':             "سجّل الدخول لتجد مشترياتك ومحفوظاتك وإعلاناتك.",
   'shell.sidebar.settings':               "الإعدادات",
   'shell.sidebar.help':                   "المساعدة",
   'shell.sidebar.sellerCta.title':        "كن بائعا",
@@ -3941,7 +3943,6 @@ export const ar: Record<string, string> = {
   'freelance.dashboard.tile.engagements_sub': "قيد التنفيذ",
   'freelance.dashboard.tile.pending':      "الطلبات المعلقة",
   'freelance.dashboard.tile.pending_sub':  "بانتظار ردك",
-  'freelance.dashboard.tile.views':        "مشاهدات الملف الشخصي · 30 يوما",
 
   'freelance.dashboard.missions.title':      "مهام حديثة لك",
   'freelance.dashboard.missions.link':       "عرض كل المهام ←",

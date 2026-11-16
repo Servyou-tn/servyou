@@ -13,7 +13,7 @@ import {
 } from './freelancer-dashboard'
 
 describe('activePurchaseCount', () => {
-  it('excludes only the two terminal statuses, same rule as activeOrderCounts', () => {
+  it('excludes only the two terminal statuses (a buyer\'s open orders, pending included)', () => {
     const orders = [{ status: 'pending' }, { status: 'accepted' }, { status: 'received' }, { status: 'cancelled' }]
     expect(activePurchaseCount(orders)).toBe(2)
   })
@@ -24,7 +24,7 @@ describe('activePurchaseCount', () => {
 })
 
 describe('activeOrderCounts', () => {
-  it('excludes only the two terminal statuses from "actifs"', () => {
+  it('« actifs » = accepted + arrived (Mes engagements\' En cours + Livrés); pending only in « en attente » (walk F2)', () => {
     const orders = [
       { status: 'pending' },
       { status: 'accepted' },
@@ -32,7 +32,11 @@ describe('activeOrderCounts', () => {
       { status: 'received' },
       { status: 'cancelled' },
     ]
-    expect(activeOrderCounts(orders)).toEqual({ engagementsActifs: 3, demandesEnAttente: 1 })
+    expect(activeOrderCounts(orders)).toEqual({ engagementsActifs: 2, demandesEnAttente: 1 })
+  })
+
+  it('a freelancer with only pending requests has no active engagement', () => {
+    expect(activeOrderCounts([{ status: 'pending' }, { status: 'pending' }])).toEqual({ engagementsActifs: 0, demandesEnAttente: 2 })
   })
 
   it('is zero/zero on an empty order list — a brand-new freelancer', () => {

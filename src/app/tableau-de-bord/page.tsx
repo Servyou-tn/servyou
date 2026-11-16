@@ -5,7 +5,6 @@ import {
   Briefcase,
   FileCheck2,
   Package,
-  Eye,
   Users,
   Store as StoreIcon,
   Search,
@@ -16,7 +15,7 @@ import {
 } from 'lucide-react'
 import { AppShell } from '@/components/shell/AppShell'
 import { requireFreelancer } from '@/lib/auth/require-seller'
-import { getFreelancerDashboard, VUES_DU_PROFIL } from '@/lib/marche/freelancer-dashboard'
+import { getFreelancerDashboard } from '@/lib/marche/freelancer-dashboard'
 import { getLang } from '@/lib/i18n/server'
 import { t, tn } from '@/lib/i18n'
 import { FOCUS_RING } from '@/components/layout/styles'
@@ -115,10 +114,13 @@ export default async function TableauDeBordPage() {
         ) : null}
 
         {/* ── Stat row — 272×159, pad 20, gap 12 (StatTile.tsx). Icon/colour per tile is
-            📐 MEASURED (h4-discovery.md §9): services=blue, engagements=success, pending=warning,
-            views=blue. None carry a delta. Two lines per tile, not three — Pass 4 (167:1225x,
-            figma-cli Safe Mode read): the frame has no subtitle text node; see StatTile.tsx. ── */}
-        <div className="grid grid-cols-1 gap-4 max-sm:grid-cols-2 max-sm:gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            📐 MEASURED (h4-discovery.md §9): services=blue, engagements=success, pending=warning.
+            None carry a delta. Two lines per tile, not three — Pass 4 (167:1225x,
+            figma-cli Safe Mode read): the frame has no subtitle text node; see StatTile.tsx.
+            The frame's 4th tile, « Vues du profil · 30 jours », is GONE (journey walk F1, 2026-11-15): nothing records
+            a profile view, so it could only ever show a 0. Three tiles: 3 across from sm; on phones 2, with the third
+            spanning the row. ── */}
+        <div className="grid grid-cols-1 gap-4 max-sm:grid-cols-2 max-sm:gap-3 sm:grid-cols-3">
           <StatTile
             label={t('freelance.dashboard.tile.services', lang)}
             value={String(data.servicesActifs)}
@@ -131,22 +133,14 @@ export default async function TableauDeBordPage() {
             icon={FileCheck2}
             accent="success"
           />
-          <StatTile
-            label={t('freelance.dashboard.tile.pending', lang)}
-            value={String(data.demandesEnAttente)}
-            icon={Package}
-            accent="warning"
-          />
-          {/* Vues du profil — Ruling 1: renders 0, no delta, no table, no write path, nothing
-              seeded, regardless of the frame's own 342/↑18% seed. `muted` so the "0" reads as an
-              honest unmeasured state, not a fact. */}
-          <StatTile
-            label={t('freelance.dashboard.tile.views', lang)}
-            value={String(VUES_DU_PROFIL)}
-            icon={Eye}
-            accent="blue"
-            muted
-          />
+          <div className="flex max-sm:col-span-2">
+            <StatTile
+              label={t('freelance.dashboard.tile.pending', lang)}
+              value={String(data.demandesEnAttente)}
+              icon={Package}
+              accent="warning"
+            />
+          </div>
         </div>
 
         {/* ── Ecosystem widget — ONE outer panel (1136×251, 20px padding) wrapping a row of
