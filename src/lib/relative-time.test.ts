@@ -25,6 +25,12 @@ describe('timeBand — the one rule (journey walk S4 + F5): minutes → hours (<
     expect(timeBand(ago(ms), NOW)).toEqual({ band, count })
   })
 
+  it('an unparseable time never throws — it renders « Invalid Date » like formatTunisDate', () => {
+    expect(() => relativeTimeLabel('not-a-date', 'fr', NOW)).not.toThrow()
+    expect(relativeTimeLabel('not-a-date', 'fr', NOW)).toBe('Invalid Date')
+    expect(() => relativeTimeInSentence('not-a-date', 'ar', NOW)).not.toThrow()
+  })
+
   it('a time in the future (clock skew between the DB and the server) is « now », never negative', () => {
     expect(timeBand(new Date(NOW + 5 * MIN).toISOString(), NOW)).toEqual({ band: 'now', count: 0 })
   })

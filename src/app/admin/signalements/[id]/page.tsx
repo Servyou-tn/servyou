@@ -4,7 +4,7 @@ import { LOCALES, t, tn, type Lang } from '@/lib/i18n'
 import { createClient } from '@/lib/supabase/server'
 import { requireAdmin } from '@/lib/auth/require-admin'
 import { failQuery, isNoRowLike, reportQueryError } from '@/lib/supabase/query-error'
-import { relativeTimeLabel } from '@/lib/relative-time'
+import { relativeTimeInSentence, relativeTimeLabel } from '@/lib/relative-time'
 import { getInitials } from '@/components/ui/initials'
 import { tndPrice } from '@/components/listings/listing-utils'
 import { isModerationTargetType } from '@/lib/admin/action-input'
@@ -197,7 +197,8 @@ export default async function ReportDetailPage({ params }: Props) {
       lang={lang}
       refLabel={reportRef(r.id)}
       subtitle={t('admin.reports.detail_subtitle', lang, {
-        time: relativeTimeLabel(r.created_at, lang, now),
+        // Mid-sentence (« Reçu {time} · motif : … »): « Reçu hier », « Reçu le 14 juil. ».
+        time: relativeTimeInSentence(r.created_at, lang, now),
         reason: lang === 'fr' ? reasonLabel.toLocaleLowerCase('fr') : reasonLabel,
       })}
       status={r.status}

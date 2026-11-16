@@ -51,8 +51,11 @@ export function timeBand(iso: string, now: number): { band: TimeBand; count: num
   return { band: 'date', count: days }
 }
 
+// toLocaleDateString, not Intl.DateTimeFormat#format: an unparseable value prints « Invalid Date » instead of throwing a
+// RangeError that would take a whole server page down (the rule src/lib/datetime.ts is built on). Such a value lands in
+// the date band (NaN fails every comparison) and renders formatTunisDate's « Invalid Date ».
 const tunisYear = (value: string | number) =>
-  new Intl.DateTimeFormat('en', { year: 'numeric', timeZone: TUNIS_TZ }).format(new Date(value))
+  new Date(value).toLocaleDateString('en', { year: 'numeric', timeZone: TUNIS_TZ })
 
 /** « 14 juil. » this year, « 14 juil. 2025 » before it — Tunis calendar. */
 function dateLabel(iso: string, lang: Lang, now: number): string {
