@@ -4,7 +4,7 @@ import { LOCALES, t, tn, type Lang } from '@/lib/i18n'
 import { createClient } from '@/lib/supabase/server'
 import { requireAdmin } from '@/lib/auth/require-admin'
 import { failQuery, isNoRowLike, reportQueryError } from '@/lib/supabase/query-error'
-import { relativeTimeLabel } from '@/lib/relative-time'
+import { relativeTimeInSentence, relativeTimeLabel } from '@/lib/relative-time'
 import { getInitials } from '@/components/ui/initials'
 import { tndPrice } from '@/components/listings/listing-utils'
 import { isModerationTargetType } from '@/lib/admin/action-input'
@@ -41,11 +41,6 @@ function shortDate(iso: string, lang: Lang): string {
 
 function fullDate(iso: string, lang: Lang): string {
   return new Date(iso).toLocaleDateString(LOCALES[lang], { day: '2-digit', month: 'short', year: 'numeric' })
-}
-
-// « Quand » in « Autres signalements »: relative up to yesterday, then the short date (« 2 nov. »).
-function whenLabel(iso: string, lang: Lang, now: number): string {
-  return now - new Date(iso).getTime() < 2 * 86_400_000 ? relativeTimeLabel(iso, lang, now) : shortDate(iso, lang)
 }
 
 function personLine(p: AdminProfile | undefined, lang: Lang, joined: boolean): string | null {
@@ -165,7 +160,8 @@ export default async function ReportDetailPage({ params }: Props) {
     id: o.id,
     reasonLabel: t(`admin.reports.reason_${o.reason}`, lang),
     by: profiles.get(o.reporter_id)?.full_name ?? '—',
-    when: whenLabel(o.created_at, lang, now),
+    // « Quand » in « Autres signalements »: the app's one rule — relative under 7 days, then the date.
+    when: relativeTimeLabel(o.created_at, lang, now),
     status: o.status,
   }))
 
@@ -201,7 +197,8 @@ export default async function ReportDetailPage({ params }: Props) {
       lang={lang}
       refLabel={reportRef(r.id)}
       subtitle={t('admin.reports.detail_subtitle', lang, {
-        time: relativeTimeLabel(r.created_at, lang, now),
+        // Mid-sentence (« Reçu {time} · motif : … »): « Reçu hier », « Reçu le 14 juil. ».
+        time: relativeTimeInSentence(r.created_at, lang, now),
         reason: lang === 'fr' ? reasonLabel.toLocaleLowerCase('fr') : reasonLabel,
       })}
       status={r.status}

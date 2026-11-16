@@ -3975,6 +3975,8 @@ export const ar: Record<string, string> = {
   'activite.engagement_status': "المهمة الجارية: {status}",
   'activite.time_ago_just_now': "الآن",
   'activite.time_ago_yesterday': "أمس",
+  // REVIEW_AR_TRANSLATION — a date inside a sentence (« نُشرت في 14 جويلية »).
+  'activite.on_date': "في {date}",
 
   // H4 rebuild pass — mirrors fr.ts's block exactly, same measured provenance (h4-discovery.md §9).
   'freelance.dashboard.createService':     "إنشاء خدمة",

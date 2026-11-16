@@ -14,7 +14,7 @@ import { SkillChip } from '@/components/missions/MissionChips'
 import { PlatformIcon } from '@/components/social/PlatformIcon'
 import { detectPlatform } from '@/lib/social/platforms'
 import { tndAmount } from '@/components/listings/listing-utils'
-import { relativeTimeLabel } from '@/lib/relative-time'
+import { relativeTimeInSentence } from '@/lib/relative-time'
 import type { AnnonceResponse } from '@/lib/marche/annonce-detail'
 
 /** Above this many characters the message is clamped to 3 lines with a « Lire la suite » toggle (F4 draws an excerpt). */
@@ -68,7 +68,7 @@ export function AnnonceResponseCard({
     <div className="flex flex-col gap-3 rounded-xl border border-border-subtle bg-surface-base px-[15px] py-[19px] sm:p-5">
       <div className="flex items-center justify-between gap-2">
         <p className="text-caption font-medium text-text-muted max-lg:leading-[15px]">
-          {t('annonces.detail.received_ago', lang, { when: midSentence(relativeTimeLabel(response.createdAt, lang, now), lang) })}
+          {t('annonces.detail.received_ago', lang, { when: relativeTimeInSentence(response.createdAt, lang, now) })}
         </p>
         {response.status !== 'pending' ? (
           <StatusPill status={OUTCOME_PILL[response.status].status}>{t(OUTCOME_PILL[response.status].labelKey, lang)}</StatusPill>
@@ -168,11 +168,6 @@ export function AnnonceResponseCard({
       </div>
     </div>
   )
-}
-
-// relativeTimeLabel's « Hier » / « À l'instant » are standalone capitalised strings; after « Proposition reçue » they read mid-sentence.
-function midSentence(s: string, lang: Lang): string {
-  return lang !== 'ar' ? s.charAt(0).toLowerCase() + s.slice(1) : s
 }
 
 function hostOf(url: string): string {

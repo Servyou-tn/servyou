@@ -9,7 +9,7 @@ import { ANNONCE_STATUS_PILL, isAnnoncePastExpiry } from '@/lib/marche/annonce-s
 import { formatJobBudget, hasJobBudget } from '@/lib/marche/format-job-budget'
 import type { MyAnnonce } from '@/lib/marche/my-data'
 import { shortDate } from '@/lib/orders/order-status'
-import { relativeTimeLabel } from '@/lib/relative-time'
+import { recentTimeLabel } from '@/lib/relative-time'
 import { annonceEditBlock } from '@/lib/marche/annonce-edit-rules'
 import { AnnonceRowActions } from './AnnonceRowActions'
 import { COL } from './annonce-columns'
@@ -38,6 +38,8 @@ export function AnnonceRow({ annonce: a, lang }: { annonce: MyAnnonce; lang: Lan
   const note = annonceProposalsNote(a)
   const hasBudget = hasJobBudget(a.budget_min, a.budget_max)
   const countdownDays = a.display_status === 'open' ? getExpiryCountdownDays(a.created_at) : null
+  // From 7 days the app's one rule answers with a date — the line above already shows it, so no second line.
+  const publishedAgo = recentTimeLabel(a.created_at, lang)
   const canClose = a.display_status === 'open'
   // Mirrors reopenMissionAction: only a filled post still inside its 30 days (the server action re-checks).
   const canReopen = a.status === 'filled' && !isAnnoncePastExpiry(a.created_at)
@@ -108,7 +110,7 @@ export function AnnonceRow({ annonce: a, lang }: { annonce: MyAnnonce; lang: Lan
       {/* publiée le */}
       <div className={`flex min-w-0 flex-col gap-0.5 ${COL.publishedOn}`}>
         <p className="truncate text-body-sm leading-5 text-text-muted">{shortDate(a.created_at, lang)}</p>
-        <p className="truncate text-[13px] leading-5 text-text-muted">{relativeTimeLabel(a.created_at, lang)}</p>
+        {publishedAgo ? <p className="truncate text-[13px] leading-5 text-text-muted">{publishedAgo}</p> : null}
       </div>
 
       <div className={COL.actions}>

@@ -6,7 +6,7 @@ import { FOCUS_RING } from '@/components/layout/styles'
 import { t, type Lang } from '@/lib/i18n'
 import { MAX_ACTIVE_RESPONSES_PER_FREELANCER, MAX_RESPONSES_PER_POST } from '@/lib/job-constants'
 import type { MissionCtaState } from '@/lib/marche/mission-cta'
-import { relativeTimeLabel } from '@/lib/relative-time'
+import { relativeTimeInSentence } from '@/lib/relative-time'
 
 // H10 CTA block (docs/design/h9-h13-measurements.md §2.1 node 323:11866 + §2.2 specimens 331:11979 / 331:12001).
 // The page is read-and-decide, so the CTA states WHY a freelancer cannot respond before they open the form.
@@ -60,7 +60,7 @@ export function MissionCta({ state, missionId, answeredAt, lang }: { state: Miss
         </ButtonLink>
         {answeredAt ? (
           <p className="text-center text-caption text-text-muted">
-            {t('missiondetail.cta.answered_at', lang, { when: lang !== 'ar' ? lowerFirst(relativeTimeLabel(answeredAt, lang)) : relativeTimeLabel(answeredAt, lang) })}
+            {t('missiondetail.cta.answered_at', lang, { when: relativeTimeInSentence(answeredAt, lang) })}
           </p>
         ) : null}
       </div>
@@ -118,9 +118,5 @@ export function MissionCta({ state, missionId, answeredAt, lang }: { state: Miss
         </div>
       )
   }
-}
-
-function lowerFirst(s: string): string {
-  return s.charAt(0).toLocaleLowerCase() + s.slice(1)
 }
 

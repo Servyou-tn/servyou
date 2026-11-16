@@ -17,7 +17,7 @@ import { getLang } from '@/lib/i18n/server'
 import { t, tn } from '@/lib/i18n'
 import { localizeCity } from '@/lib/marche/missions'
 import { getMissionDetail, type MissionViewer } from '@/lib/marche/mission-detail-query'
-import { relativeTimeLabel } from '@/lib/relative-time'
+import { relativeTimeInSentence } from '@/lib/relative-time'
 import { MissionCta } from './_components/MissionCta'
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -57,7 +57,7 @@ export default async function MissionDetailPage({ params }: { params: Promise<{ 
   const mission = await getMissionDetail(id, viewer)
   if (!mission) notFound()
 
-  const published = relativeTimeLabel(mission.createdAt, lang)
+  const published = relativeTimeInSentence(mission.createdAt, lang)
   const place = mission.isRemote ? t('missioncard.remote', lang) : localizeCity(mission.city, lang)
 
   return (
@@ -88,7 +88,7 @@ export default async function MissionDetailPage({ params }: { params: Promise<{ 
           <ul className="flex flex-wrap items-center gap-x-4 gap-y-1 text-body-sm font-medium text-text-muted">
             <li className="inline-flex items-center gap-1.5">
               <Clock className="size-4 shrink-0" aria-hidden="true" />
-              {t('missiondetail.published', lang, { when: lang !== 'ar' ? lowerFirst(published) : published })}
+              {t('missiondetail.published', lang, { when: published })}
             </li>
             {place ? (
               <li className="inline-flex items-center gap-1.5">
@@ -123,8 +123,4 @@ export default async function MissionDetailPage({ params }: { params: Promise<{ 
       </div>
     </AppShell>
   )
-}
-
-function lowerFirst(s: string): string {
-  return s.charAt(0).toLocaleLowerCase() + s.slice(1)
 }

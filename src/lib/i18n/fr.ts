@@ -4071,6 +4071,8 @@ export const fr: Record<string, string> = {
   'activite.engagement_status': "Engagement {status}",
   'activite.time_ago_just_now': "À l'instant",
   'activite.time_ago_yesterday': "Hier",
+  // A date inside a sentence (« Publié le 14 juil. ») — relativeTimeInSentence, 7 days and more.
+  'activite.on_date': "le {date}",
 
   // H4 rebuild pass — 📐 MEASURED against the figma-cli CDP re-read, h4-discovery.md §9, except
   // where noted. "Créer un service" / buyProducts / myOrders labels are 📐 measured literal.

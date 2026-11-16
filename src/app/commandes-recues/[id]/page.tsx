@@ -8,12 +8,13 @@ import { StatusPill } from '@/components/ui/status-pill'
 import { OrderRail } from '@/components/orders/OrderRail'
 import { WhatsAppContactButton } from '@/components/orders/WhatsAppContactButton'
 import { requireShopOwner } from '@/lib/auth/require-seller'
-import { getSellerOrderDetail, type OrderEvent } from '@/lib/marche/seller-order-detail'
+import { getSellerOrderDetail, type OrderEvent, type SellerOrderDetail } from '@/lib/marche/seller-order-detail'
 import { statusPillFor, shortRef, longDate, shortDate, shortDateTime, stageTimestamps } from '@/lib/orders/order-status'
 import { priceBreakdownFor } from '@/lib/orders/price-breakdown'
 import {
   nextSellerStatus,
   isCancellable,
+  acceptsTrackingNumber,
   lifecycleFor,
   statusLabelKey,
   type OrderStatus,
@@ -82,6 +83,74 @@ function eventLabel(event: OrderEvent, orderType: OrderType, lang: Lang): string
   })
 }
 
+/**
+ * panel-action — « Prochaine étape » (Figma 497:26458 for the button). Rendered twice by the page: in the rail from lg,
+ * and right under the status below lg (journey walk S3: on a phone it sat last, under every panel, so « Accepter » took
+ * a long scroll to find). Each copy hides at the other breakpoint. CancelOrderButton mounts its dialog only while open,
+ * so the two copies never put duplicate ids in the DOM.
+ */
+function NextStepPanel({
+  order,
+  next,
+  lang,
+  className,
+}: {
+  order: SellerOrderDetail
+  next: OrderStatus | null
+  lang: Lang
+  className: string
+}) {
+  return (
+    <section className={`flex flex-col gap-4 rounded-xl border border-border-subtle bg-surface-base p-6 max-lg:px-[15px] max-lg:py-[23px] ${className}`}>
+      <h2 className="text-h3 text-text-primary max-lg:leading-[26px]">
+        {t('seller.orderDetail.next_step', lang)}
+      </h2>
+
+      {next ? (
+        <>
+          {/* Figma 497:26458 — Button 312×48, full width, filled primary. It and the
+              WhatsApp button above are the same rank in the frame, so they are the same
+              size here. `variant`/`fullWidth` keep the row's compact secondary intact. */}
+          <AdvanceOrderButton
+            orderId={order.id}
+            label={t(`seller.orders.advance.${next}`, lang)}
+            variant="primary"
+            size="lg"
+            fullWidth
+          />
+          <p className="text-body-sm text-text-muted">
+            {t(
+              order.status === 'pending'
+                ? 'seller.orderDetail.hint_pending'
+                : 'seller.orderDetail.hint_generic',
+              lang,
+            )}
+          </p>
+        </>
+      ) : (
+        <p className="text-body-sm text-text-muted">
+          {t(
+            order.status === 'arrived'
+              ? 'seller.orders.awaiting_buyer'
+              : 'seller.orderDetail.no_action',
+            lang,
+          )}
+        </p>
+      )}
+
+      {isCancellable(order.status) ? (
+        <CancelOrderButton
+          orderId={order.id}
+          status={order.status}
+          orderType={order.orderType}
+          lang={lang}
+          asLink
+        />
+      ) : null}
+    </section>
+  )
+}
+
 export default async function OrderDetailPage({
   params,
 }: {
@@ -119,7 +188,8 @@ export default async function OrderDetailPage({
   return (
     <AppShell user={topBarUser}>
       {/* 375: measured against m375-g9-commande (docs/design/m375-g9-g5-deltas.md) — blocks 20 apart, the crumb 12 above the title and the
-          stepper 24 under the date, the pill on its own full-width row, every panel's stroke inside pad 24 / 16 (content 311), titles 26.
+          stepper 24 under the date, every panel's stroke inside pad 24 / 16 (content 311), titles 26. Since the 2026-11-15 journey
+          walk the pill is inline (S7) and « Prochaine étape » sits under the status (S3) — both deliberate departures from that frame.
           The horizontal rail overflowed the page by 58 px at 375; below lg it is the shared rail's vertical look. Below lg only. */}
       <div className="flex flex-col gap-6 max-lg:gap-5">
         {/* ── topGroup: breadcrumb · title + pill · date ── */}
@@ -142,13 +212,15 @@ export default async function OrderDetailPage({
 
           {/* derived: stacks below-lg. Measured desktop is a space-between row. */}
           <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-            <div className="flex items-center gap-3 max-lg:flex-col max-lg:items-start">
+            {/* The pill sits beside the title and wraps under it at its own width when the title is too long
+                (journey walk S7, 2026-11-15) — it was a full-width bar on its own row below lg. */}
+            <div className="flex flex-wrap items-center gap-3">
               <h1 className="text-h1 text-text-primary max-lg:leading-[38px]">
                 {/* AR: « #551768 » isolated LTR inside the sentence (walk #29: it read « 551768# الطلب »). */}
                 {t('seller.orderDetail.title', lang, { ref: lang === 'ar' ? `\u2066${ref}\u2069` : ref })}
               </h1>
               {pill ? (
-                <StatusPill status={pill.pill} className="max-lg:w-full">{t(pill.labelKey, lang)}</StatusPill>
+                <StatusPill status={pill.pill}>{t(pill.labelKey, lang)}</StatusPill>
               ) : null}
             </div>
             <p className="text-body-sm text-text-secondary">
@@ -157,6 +229,9 @@ export default async function OrderDetailPage({
                 : t('seller.orderDetail.created_on', lang, { date: longDate(order.createdAt, lang) })}
             </p>
           </div>
+
+          {/* Below lg: the next action right under the status (journey walk S3); 20 above it like the page's other blocks. */}
+          <NextStepPanel order={order} next={next} lang={lang} className="max-lg:mt-2 lg:hidden" />
 
           <section className="rounded-xl border border-border-subtle bg-surface-base p-6 max-lg:mt-3 max-lg:flex max-lg:justify-center max-lg:px-[15px] max-lg:py-[23px]">
             {/* The SELLER's chain — 7 steps for a product, 4 for a service. Deliberately not
@@ -400,10 +475,10 @@ export default async function OrderDetailPage({
                 no parcel, so a carrier or a tracking number on one is meaningless data. The panel is
                 absent entirely on a service order rather than rendered empty.
 
-                Also absent on a TERMINAL order: enforce_order_identity_lock refuses shipment edits
+                No INPUT on a TERMINAL order: enforce_order_identity_lock refuses shipment edits
                 once status is received/cancelled, so the input would be dead. A delivered order's
                 tracking number is still shown — as read-only text via the carrier/tracking rows —
-                but there is nothing left to enter. */}
+                but there is nothing left to enter. Nor before « Préparée » (acceptsTrackingNumber). */}
             {order.orderType === 'product' ? (
               <section className="flex flex-col gap-4 rounded-xl border border-border-subtle bg-surface-base p-6 max-lg:px-[15px] max-lg:py-[23px]">
                 <h2 className="text-h3 text-text-primary max-lg:leading-[26px]">
@@ -428,20 +503,22 @@ export default async function OrderDetailPage({
                   <p className="text-body text-text-primary">{order.carrier ?? '—'}</p>
                 </div>
 
-                {isTerminal ? (
+                {/* The input opens at « Préparée » (journey walk S7): before that there is no parcel to track. A number
+                    that already exists still shows, read-only; a closed order shows its number or « — » as before. */}
+                {acceptsTrackingNumber(order.status) ? (
+                  <TrackingNumberForm
+                    orderId={order.id}
+                    initialValue={order.trackingNumber}
+                    lang={lang}
+                  />
+                ) : isTerminal || order.trackingNumber ? (
                   <div className="flex flex-col gap-1">
                     <p className="text-body-sm text-text-muted">
                       {t('seller.orderDetail.tracking_label', lang)}
                     </p>
                     <p className="text-body text-text-primary">{order.trackingNumber ?? '—'}</p>
                   </div>
-                ) : (
-                  <TrackingNumberForm
-                    orderId={order.id}
-                    initialValue={order.trackingNumber}
-                    lang={lang}
-                  />
-                )}
+                ) : null}
               </section>
             ) : null}
 
@@ -538,54 +615,10 @@ export default async function OrderDetailPage({
               />
             </section>
 
-            {/* panel-action — "Prochaine étape" */}
-            <section className="flex flex-col gap-4 rounded-xl border border-border-subtle bg-surface-base p-6 max-lg:px-[15px] max-lg:py-[23px]">
-              <h2 className="text-h3 text-text-primary max-lg:leading-[26px]">
-                {t('seller.orderDetail.next_step', lang)}
-              </h2>
-
-              {next ? (
-                <>
-                  {/* Figma 497:26458 — Button 312×48, full width, filled primary. It and the
-                      WhatsApp button above are the same rank in the frame, so they are the same
-                      size here. `variant`/`fullWidth` keep the row's compact secondary intact. */}
-                  <AdvanceOrderButton
-                    orderId={order.id}
-                    label={t(`seller.orders.advance.${next}`, lang)}
-                    variant="primary"
-                    size="lg"
-                    fullWidth
-                  />
-                  <p className="text-body-sm text-text-muted">
-                    {t(
-                      order.status === 'pending'
-                        ? 'seller.orderDetail.hint_pending'
-                        : 'seller.orderDetail.hint_generic',
-                      lang,
-                    )}
-                  </p>
-                </>
-              ) : (
-                <p className="text-body-sm text-text-muted">
-                  {t(
-                    order.status === 'arrived'
-                      ? 'seller.orders.awaiting_buyer'
-                      : 'seller.orderDetail.no_action',
-                    lang,
-                  )}
-                </p>
-              )}
-
-              {isCancellable(order.status) ? (
-                <CancelOrderButton
-                  orderId={order.id}
-                  status={order.status}
-                  orderType={order.orderType}
-                  lang={lang}
-                  asLink
-                />
-              ) : null}
-            </section>
+            {/* panel-action — "Prochaine étape". Desktop: here, last in the rail. Below lg it renders under the status
+                instead (see the topGroup) — this copy is display:none there, so it is out of the tab order and the
+                accessibility tree. */}
+            <NextStepPanel order={order} next={next} lang={lang} className="max-lg:hidden" />
           </div>
         </div>
       </div>

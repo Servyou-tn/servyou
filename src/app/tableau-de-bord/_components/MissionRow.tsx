@@ -64,7 +64,7 @@ export function MissionRow({ mission, lang }: { mission: MissionMatch; lang: Lan
       <div className="flex shrink-0 items-center gap-6 max-sm:justify-start">
         {/* ltr on Budget only — reference_rtl_numeric_run_reversal: a bidi-neutral-separated
             number pair ("800 – 1500") visually reorders in AR unless pinned. "Publié" is a full
-            relative-time PHRASE (Arabic prose in AR mode, e.g. "منذ 39 يومًا") — forcing ltr on
+            relative-time PHRASE (Arabic prose in AR mode, e.g. "منذ 3 أيام"; a date from 7 days) — forcing ltr on
             that would flip real RTL text backwards, so it stays unpinned. */}
         <MetaCol label={t('mission.col_budget', lang)} value={budget ?? '—'} ltr />
         <MetaCol

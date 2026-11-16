@@ -37,9 +37,15 @@ export default async function DemanderPage({ params }: Props) {
   const initialPhone = profilePhone ? profilePhone.replace(/^\+216/, '') : ''
 
   if (target.type === 'product') {
+    // The recipient name starts as the buyer's own (journey walk B2), from the profile the shell already read.
     return (
       <AppShell user={shell.topBarUser}>
-        <ProductRequestScreen product={target.data} initialPhone={initialPhone} lang={lang} />
+        <ProductRequestScreen
+          product={target.data}
+          initialName={shell.topBarUser.full_name ?? ''}
+          initialPhone={initialPhone}
+          lang={lang}
+        />
       </AppShell>
     )
   }

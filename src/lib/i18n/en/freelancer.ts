@@ -981,6 +981,7 @@ export const strings: Record<string, string> = {
   'activite.engagement_status': "Project {status}",
   'activite.time_ago_just_now': "Just now",
   'activite.time_ago_yesterday': "Yesterday",
+  'activite.on_date': "on {date}",
   // ecosysteme
   'ecosysteme.consumers_sub': "who have used your services",
   'ecosysteme.consumers_link': "View requests →",
@@ -1264,6 +1265,7 @@ export const plurals: Record<string, PluralVariants> = {
   // propositions
   'propositions.count': { one: "{count} proposal", other: "{count} proposals" },
   // activite
+  'activite.time_ago_minutes': { one: "{count} min ago", other: "{count} min ago" },
   'activite.time_ago_hours': { one: "{count}h ago", other: "{count}h ago" },
   'activite.time_ago_days': { one: "{count} day ago", other: "{count} days ago" },
   // ecosysteme
