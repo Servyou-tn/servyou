@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
 import { withSentryConfig } from "@sentry/nextjs";
 import { cspReportUrl, securityHeaders } from "./src/lib/security/headers";
+import { indexingHeaders } from "./src/lib/seo/indexing";
 import { SENTRY_TUNNEL_ROUTE, sentryTunnelRedirects } from "./src/lib/security/sentry-tunnel";
 
 const nextConfig: NextConfig = {
@@ -20,7 +21,11 @@ const nextConfig: NextConfig = {
     const reportUrl = cspReportUrl(process.env.NEXT_PUBLIC_SENTRY_DSN, process.env.VERCEL_ENV ?? process.env.NODE_ENV)
     // The Vercel toolbar's hosts are allowed on Vercel PREVIEW deployments only, never in production (audit M7, PR 16).
     const allowVercelToolbar = process.env.VERCEL_ENV === 'preview'
-    return [{ source: '/:path*', headers: securityHeaders(process.env.NODE_ENV !== 'production', reportUrl, allowVercelToolbar) }]
+    // Until the public launch every response also says `X-Robots-Tag: noindex, nofollow` (src/lib/seo/indexing.ts).
+    return [{
+      source: '/:path*',
+      headers: [...securityHeaders(process.env.NODE_ENV !== 'production', reportUrl, allowVercelToolbar), ...indexingHeaders()],
+    }]
   },
 
   // Server Actions default to a 1 MB request body. The avatar upload sends a real photo through an
