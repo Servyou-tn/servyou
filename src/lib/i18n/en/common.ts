@@ -1313,6 +1313,7 @@ export const strings: Record<string, string> = {
   "shell.sidebar.section.activities": "My activities",
   "shell.sidebar.section.discover": "Discover & shop",
   "shell.sidebar.section.tools": "Tools & account",
+  "shell.sidebar.section.language": "Language",
   "shell.sidebar.dashboard": "Dashboard",
   "shell.sidebar.products": "My products",
   "shell.sidebar.receivedOrders": "Orders received",

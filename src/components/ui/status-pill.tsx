@@ -28,16 +28,21 @@ type StatusTone =
 
 // Tone → tokens (Figma bindings: $success/$warning/$indigo/$blue/$danger/100+500, $surface/sunken,
 // $text/secondary+muted+inverse+primary, $rating-yellow).
-const TONE: Record<StatusTone, string> = {
-  success: 'bg-success-100 text-success-500',
-  warning: 'bg-warning-100 text-warning-500',
-  info: 'bg-brand-blue-100 text-brand-blue-600',
+// Every tone's text is ≥ 4.5:1 on its own fill (WCAG 2.2 AA, 1.4.3 — the pill text is 12px, not « large »; journey walk S2).
+// The fills are unchanged; the TEXT takes the scale's 700 step (or text-secondary), which already exists in the Figma tokens:
+//   warning 1.93 → 6.37 · success 3.00 → 6.49 · info 4.44 → 6.29 · accent 3.85 → 6.88 · muted 4.34 → 6.92 ·
+//   danger 3.26 → 6.21 · solid-success (white on green) 3.30 → 7.13.
+// One map, so every pill on every page moves together — no per-page override.
+export const TONE: Record<StatusTone, string> = {
+  success: 'bg-success-100 text-success-700',
+  warning: 'bg-warning-100 text-warning-700',
+  info: 'bg-brand-blue-100 text-brand-blue-700',
   'info-strong': 'bg-brand-blue-100 text-brand-blue-700',
-  accent: 'bg-brand-indigo-100 text-brand-indigo-500',
+  accent: 'bg-brand-indigo-100 text-brand-indigo-700',
   neutral: 'bg-surface-sunken text-text-secondary',
-  muted: 'bg-surface-sunken text-text-muted',
-  danger: 'bg-danger-100 text-danger-500',
-  'solid-success': 'bg-success-500 text-text-inverse',
+  muted: 'bg-surface-sunken text-text-secondary',
+  danger: 'bg-danger-100 text-danger-700',
+  'solid-success': 'bg-success-700 text-text-inverse',
   'solid-accent': 'bg-brand-indigo-500 text-text-inverse',
   highlight: 'bg-rating-yellow text-text-primary',
 }

@@ -82,7 +82,7 @@ export function SidebarItem({
       {expanded !== undefined && (
         <ChevronDown
           className={cn(
-            'h-4 w-4 shrink-0 rtl:-scale-x-100',
+            'ms-auto h-4 w-4 shrink-0 rtl:-scale-x-100',
             expanded && 'rotate-180',
             active ? 'text-white' : 'text-brand-blue-300',
           )}
@@ -99,13 +99,11 @@ export function SidebarItem({
   // icon + the gap is all that stands between the label and its box. At gap-3 the label got 152px
   // and the longest locked label, "Commandes reçues", needs 153 — a 1px shortfall that still
   // renders an ellipsis. 10px gives it 154 and every label in every role now fits whole.
-  // justify-between only when a chevron is present (the Marketplace parent row) — every other
-  // row is untouched, so this can't shift the truncation math the measured comment above depends
-  // on for the rest of the sidebar.
-  const base = cn(
-    'flex h-11 items-center gap-2.5 rounded-[10px] px-3 transition-colors',
-    expanded !== undefined && 'justify-between',
-  )
+  // The Marketplace parent row (the only one with a chevron) keeps the same icon → label rhythm as every other row; only
+  // its chevron is pushed to the end (`ms-auto` on it). It used `justify-between`, which spread the THREE children and
+  // floated the label ~22px off the other labels' start line (journey walk S10). Every other row is untouched, so the
+  // truncation math above still holds.
+  const base = 'flex h-11 items-center gap-2.5 rounded-[10px] px-3 transition-colors'
 
   if (disabled) {
     return (

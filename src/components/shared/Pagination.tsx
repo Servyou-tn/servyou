@@ -120,14 +120,16 @@ export function Pagination({
         className="flex items-center justify-center gap-1"
       >
         {/* Prev/next are icon-only in Figma — the visible text label is gone, so aria-label is
-            now the sole accessible name (it already was on mobile, where the label was hidden). */}
+            now the sole accessible name (it already was on mobile, where the label was hidden). 
+            In RTL the row runs right → left, so both chevrons turn (rtl:rotate-180): « précédent » points back toward the
+            start side (journey walk S9). */}
         {prevDisabled ? (
           <span className={arrowDisabled} aria-disabled="true" aria-label={t('search.pagination.prev', lang)}>
-            <ChevronLeft className="h-4 w-4" aria-hidden="true" />
+            <ChevronLeft className="h-4 w-4 rtl:rotate-180" aria-hidden="true" />
           </span>
         ) : (
           <Link href={hrefFor(current - 1)} rel="prev" className={arrowEnabled} aria-label={t('search.pagination.prev', lang)}>
-            <ChevronLeft className="h-4 w-4" aria-hidden="true" />
+            <ChevronLeft className="h-4 w-4 rtl:rotate-180" aria-hidden="true" />
             <span aria-hidden="true" className={PAGE_HIT} />
           </Link>
         )}
@@ -138,11 +140,11 @@ export function Pagination({
 
         {nextDisabled ? (
           <span className={arrowDisabled} aria-disabled="true" aria-label={t('search.pagination.next', lang)}>
-            <ChevronRight className="h-4 w-4" aria-hidden="true" />
+            <ChevronRight className="h-4 w-4 rtl:rotate-180" aria-hidden="true" />
           </span>
         ) : (
           <Link href={hrefFor(current + 1)} rel="next" className={arrowEnabled} aria-label={t('search.pagination.next', lang)}>
-            <ChevronRight className="h-4 w-4" aria-hidden="true" />
+            <ChevronRight className="h-4 w-4 rtl:rotate-180" aria-hidden="true" />
             <span aria-hidden="true" className={PAGE_HIT} />
           </Link>
         )}

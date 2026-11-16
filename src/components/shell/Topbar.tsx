@@ -91,7 +91,11 @@ export function Topbar({
             there — part of the same 375px fix as the logo swap above, not a Figma deviation
             (no mobile frame exists for this topbar). */}
         <div className="flex shrink-0 items-center gap-2 md:gap-4">
-          <LanguageToggle />
+          {/* Below sm (phones) the FR / EN / AR switch lives in the menu drawer (Sidebar), not here: with the bell and the
+              avatar it pushed the signed-in row 4px past 375 and 19px past 360, cutting the avatar (journey walk S1 + J9). */}
+          <div className="max-sm:hidden">
+            <LanguageToggle />
+          </div>
           {user ? <TopbarNotifications /> : null}
           <TopbarUserMenu user={user} role={role} />
         </div>
