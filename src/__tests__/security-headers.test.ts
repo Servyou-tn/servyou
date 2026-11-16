@@ -21,6 +21,7 @@ import {
   UMAMI_SCRIPT_ORIGIN,
 } from '@/lib/security/headers'
 import { UMAMI_SCRIPT_URL } from '@/lib/analytics/umami'
+import { indexingHeaders } from '@/lib/seo/indexing'
 import nextConfig from '../../next.config'
 
 const byKey = (isDev: boolean) => Object.fromEntries(securityHeaders(isDev).map((h) => [h.key, h.value]))
@@ -183,6 +184,6 @@ describe('next.config.ts', () => {
     const rules = await nextConfig.headers!()
     expect(rules).toHaveLength(1)
     expect(rules[0].source).toBe('/:path*')
-    expect(rules[0].headers.map((x) => x.key)).toEqual(securityHeaders(false).map((x) => x.key))
+    expect(rules[0].headers.map((x) => x.key)).toEqual([...securityHeaders(false), ...indexingHeaders()].map((x) => x.key))
   })
 })
