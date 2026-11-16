@@ -120,7 +120,7 @@ export function Pagination({
         className="flex items-center justify-center gap-1"
       >
         {/* Prev/next are icon-only in Figma — the visible text label is gone, so aria-label is
-            now the sole accessible name (it already was on mobile, where the label was hidden). 
+            now the sole accessible name (it already was on mobile, where the label was hidden).
             In RTL the row runs right → left, so both chevrons turn (rtl:rotate-180): « précédent » points back toward the
             start side (journey walk S9). */}
         {prevDisabled ? (

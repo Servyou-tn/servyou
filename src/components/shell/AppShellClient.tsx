@@ -59,13 +59,15 @@ export function AppShellClient({
     if (drawerOpen) closeRef.current?.focus()
   }, [drawerOpen])
 
-  // Keep Tab focus inside the open drawer (aria-modal).
+  // Keep Tab focus inside the open drawer (aria-modal). Only RENDERED controls count: the drawer's language block is
+  // `sm:hidden`, so from sm to lg its buttons are in the DOM but display:none — counted, the « last » one could not take
+  // focus, Tab escaped the modal and Shift+Tab stuck on the close button (review of the S1 change).
   function onPanelKeyDown(e: React.KeyboardEvent) {
     if (e.key !== 'Tab') return
-    const focusables = panelRef.current?.querySelectorAll<HTMLElement>(
-      'a[href], button:not([disabled])',
-    )
-    if (!focusables || focusables.length === 0) return
+    const focusables = Array.from(
+      panelRef.current?.querySelectorAll<HTMLElement>('a[href], button:not([disabled])') ?? [],
+    ).filter((el) => el.getClientRects().length > 0)
+    if (focusables.length === 0) return
     const first = focusables[0]
     const last = focusables[focusables.length - 1]
     if (e.shiftKey && document.activeElement === first) {
