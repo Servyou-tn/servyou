@@ -10,8 +10,11 @@
 --     - the seller accepts / prepares / ships / … / cancels -> the buyer is notified; the seller gets nothing.
 --   Enforced in the database: the trigger compares auth.uid() with the order's buyer_id and seller_id and writes one row
 --   for the other party only. The CHECK notifications_never_self makes a row whose recipient is its own actor impossible.
+--   The bell never fails an order write (architect, 2026-11-16): the no-actor / not-a-party / self branches skip, and
+--   the INSERT sits in its own block whose handler turns any unexpected error (FK, CHECK, anything) into a WARNING and
+--   no row, so the buyer's order or the status change always commits.
 --
--- OPEN QUESTION 1 (founder): an order event with no signed-in party. PROVISIONAL DEFAULT in this file: no row.
+-- OPEN QUESTION 1 — DECIDED (founder, 2026-11-16): an order event with no signed-in party writes no row.
 --   - Status changes: none can happen today. check_order_status_transition (BEFORE UPDATE, enabled) raises unless
 --     auth.uid() is the order's buyer or seller. A NULL caller (service role, SQL editor, a cron job) and an admin who is
 --     not a party are both refused (« Vous n'êtes pas autorisé à modifier cette commande. »). There is no expiry job
@@ -43,12 +46,12 @@
 --   - Account deletion (admin_process_deletion_request) deletes the person's favorites and notification_preferences but
 --     would keep their bell rows (DECISION 1). It refuses while an order is still open.
 --
--- DECISIONS FOR THE FOUNDER (recommendations only; nothing below is decided)
---   1. Account deletion: add `delete from public.notifications where recipient_id = <target>` to
---      admin_process_deletion_request. Recommended: in a separate small DB PR before launch (re-creating that long
---      function deserves its own review), not in this file.
---   2. Retention: none in v1. Recommended later: a pg_cron job deleting read rows older than 90 days.
---   3. Realtime: not added. The badge is counted on each page load; live updates are a later phase.
+-- FOUNDER DECISIONS (2026-11-16)
+--   1. Account deletion also deletes the person's notifications: a separate small DB PR before launch
+--      (admin_process_deletion_request), not in this file.
+--   2. No retention in v1. Later: a pg_cron job deleting read rows older than 90 days.
+--   3. No Realtime in v1: the badge count refreshes on page load.
+--   4. (UI-1) A row is read when it is opened, plus « Tout marquer comme lu » (mark_my_notifications_read).
 
 -- ─── 1. The table ───────────────────────────────────────────────────────────────────────────────────
 
@@ -119,7 +122,7 @@ begin
     v_from := null;
   end if;
 
-  -- OPEN QUESTION 1, provisional default: no signed-in actor (service role, seeds, fixtures) -> no row.
+  -- Open question 1, decided (founder 2026-11-16): no signed-in actor (service role, seeds, fixtures) -> no row.
   if v_actor is null then
     return null;
   end if;
@@ -130,7 +133,7 @@ begin
   elsif v_actor = new.seller_id then
     v_recipient := new.buyer_id;
   else
-    -- Signed in but not a party (an admin on someone else's order): unreachable today; OPEN QUESTION 1.
+    -- Signed in but not a party (an admin on someone else's order): unreachable today; no row (open question 1).
     return null;
   end if;
 
@@ -139,8 +142,13 @@ begin
     return null;
   end if;
 
-  insert into public.notifications (recipient_id, actor_id, order_id, kind, from_status, to_status)
-  values (v_recipient, v_actor, new.id, v_kind, v_from, new.status);
+  -- The bell never fails the order write: any unexpected error (FK, CHECK, anything) becomes a WARNING and no row.
+  begin
+    insert into public.notifications (recipient_id, actor_id, order_id, kind, from_status, to_status)
+    values (v_recipient, v_actor, new.id, v_kind, v_from, new.status);
+  exception when others then
+    raise warning 'bell: no notification for order %: % (%)', new.id, sqlerrm, sqlstate;
+  end;
 
   return null;  -- AFTER trigger: the return value is ignored
 end;
@@ -160,7 +168,7 @@ create trigger trg_notify_order_status_changed
 revoke all on function public.notify_order_counterparty() from public, anon, authenticated;
 
 comment on function public.notify_order_counterparty() is
-  'AFTER INSERT / status-change trigger on orders: writes one notifications row for the party who did not act (auth.uid() compared with buyer_id / seller_id). No row when no party is signed in (open question 1, provisional).';
+  'AFTER INSERT / status-change trigger on orders: writes one notifications row for the party who did not act (auth.uid() compared with buyer_id / seller_id). No row when no party is signed in (founder 2026-11-16). Never fails the order write: an insert error becomes a WARNING.';
 
 -- ─── 3. Marking as read ─────────────────────────────────────────────────────────────────────────────
 
