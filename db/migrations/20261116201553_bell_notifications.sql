@@ -1,7 +1,7 @@
--- PENDING (db-guardian, 2026-11-16): bell notifications v1 — the order notifications. Migration number: the architect's.
+-- Applied 2026-11-16 as 20261116201553 (README #136). Written by db-guardian: bell notifications v1 — the order notifications.
 -- Founder decisions: the scope (2026-11-15: v1 = new orders + order status changes) and the actor rule (2026-11-16).
 -- Plan: docs/follow-ups/bell-notifications-plan.md (branch docs/bell-notifications-plan).
--- Written for review, NOT applied. The architect reviews it, applies it after the founder's OK, and gives the version.
+-- Reviewed and applied by the architect after the founder's OK (PR #393).
 --
 -- THE RULE (founder, 2026-11-16)
 --   Every order event notifies the OTHER party, never the person who made it:

@@ -1,7 +1,7 @@
 // Generated from the live Supabase schema (project xggomcitqrkaylqezjjz) — DO NOT EDIT BY HAND.
 // Regenerate after every applied migration: Supabase MCP generate_typescript_types (or
 // `npx supabase gen types typescript --project-id xggomcitqrkaylqezjjz`), then commit.
-// Generated 2026-11-15 after migration 20261115222457 two_step_signup.
+// Generated 2026-11-16 after migration 20261116201553 bell_notifications.
 
 export type Json =
   | string
@@ -941,6 +941,78 @@ export type Database = {
             foreignKeyName: "notification_preferences_profile_id_fkey"
             columns: ["profile_id"]
             isOneToOne: true
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notifications: {
+        Row: {
+          actor_id: string
+          created_at: string
+          from_status: string | null
+          id: string
+          kind: string
+          order_id: string
+          read_at: string | null
+          recipient_id: string
+          to_status: string
+        }
+        Insert: {
+          actor_id: string
+          created_at?: string
+          from_status?: string | null
+          id?: string
+          kind: string
+          order_id: string
+          read_at?: string | null
+          recipient_id: string
+          to_status: string
+        }
+        Update: {
+          actor_id?: string
+          created_at?: string
+          from_status?: string | null
+          id?: string
+          kind?: string
+          order_id?: string
+          read_at?: string | null
+          recipient_id?: string
+          to_status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_actor_id_fkey"
+            columns: ["actor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notifications_actor_id_fkey"
+            columns: ["actor_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notifications_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notifications_recipient_id_fkey"
+            columns: ["recipient_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notifications_recipient_id_fkey"
+            columns: ["recipient_id"]
+            isOneToOne: false
             referencedRelation: "public_profiles"
             referencedColumns: ["id"]
           },
@@ -1921,6 +1993,10 @@ export type Database = {
           p_target_type: string
         }
         Returns: string
+      }
+      mark_my_notifications_read: {
+        Args: { p_ids?: string[] }
+        Returns: number
       }
       purge_unconfirmed_signups: { Args: never; Returns: number }
       seller_buyer_cod_warnings: {
