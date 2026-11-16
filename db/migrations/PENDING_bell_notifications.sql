@@ -207,10 +207,16 @@ comment on function public.mark_my_notifications_read(uuid[]) is
 -- select has_function_privilege('anon', 'public.mark_my_notifications_read(uuid[])', 'execute'),          -- false
 --        has_function_privilege('authenticated', 'public.mark_my_notifications_read(uuid[])', 'execute'), -- true
 --        has_function_privilege('authenticated', 'public.notify_order_counterparty()', 'execute');        -- false
--- select count(*) from public.notifications;                                           -- 0 (no backfill)
+-- select grantee, privilege_type from information_schema.role_table_grants
+--  where table_schema = 'public' and table_name = 'notifications'
+--    and grantee not in ('postgres', 'service_role', 'authenticated');                 -- 0 rows
+-- select count(*) from public.notifications;     -- 0 right after the apply (no backfill; live suites add rows later)
 --
 -- ─── ROLLED-BACK CHECK (optional, after the apply) ──────────────────────────────────────────────────
 -- One statement. The final RAISE rolls back everything, including the order change and its order_events row.
+-- It exercises the NULL-actor refusal and the buyer -> seller direction only; the seller -> buyer direction, the
+-- order_created row and the non-status edits are proven by the DB-1 live suite (plan §5).
+-- If the chosen order's buyer is suspended, the DO fails with that message (still rolled back): pick another order.
 -- Expected: ERROR  BELL CHECK: null_actor_refused=t seller_rows=1 buyer_rows=0 order_status_changed pending>cancelled
 -- do $$
 -- declare
@@ -236,16 +242,22 @@ comment on function public.mark_my_notifications_read(uuid[]) is
 --   perform set_config('request.jwt.claims',
 --     json_build_object('sub', v_order.buyer_id, 'role', 'authenticated')::text, true);
 --   update public.orders set status = 'cancelled', cancelled_by = 'buyer' where id = v_order.id;
---   select count(*) into v_seller from public.notifications where order_id = v_order.id and recipient_id = v_order.seller_id;
---   select count(*) into v_buyer from public.notifications where order_id = v_order.id and recipient_id = v_order.buyer_id;
---   select * into v_n from public.notifications where order_id = v_order.id limit 1;
+--   select count(*) into v_seller from public.notifications
+--    where order_id = v_order.id and kind = 'order_status_changed' and recipient_id = v_order.seller_id;
+--   select count(*) into v_buyer from public.notifications
+--    where order_id = v_order.id and kind = 'order_status_changed' and recipient_id = v_order.buyer_id;
+--   select * into v_n from public.notifications
+--    where order_id = v_order.id and kind = 'order_status_changed' order by created_at desc limit 1;
 --   raise exception 'BELL CHECK: null_actor_refused=% seller_rows=% buyer_rows=% % %>%',
 --     v_null_refused, v_seller, v_buyer, v_n.kind, v_n.from_status, v_n.to_status;
 -- end $$;
 --
--- ─── ROLLBACK (run as one transaction; no pre-existing row changes) ─────────────────────────────────
+-- ─── ROLLBACK (no pre-existing row changes; deletes every bell row) ─────────────────────────────────
+-- begin;
 -- drop trigger trg_notify_order_status_changed on public.orders;
 -- drop trigger trg_notify_order_created on public.orders;
 -- drop function public.notify_order_counterparty();
 -- drop function public.mark_my_notifications_read(uuid[]);
 -- drop table public.notifications;
+-- commit;
+-- Then regenerate src/lib/supabase/database.types.ts and record the rollback as its own dated migration.
