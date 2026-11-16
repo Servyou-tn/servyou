@@ -5,7 +5,7 @@ earlier version to update. It records the founder's scope (2026-11-15) and actor
 read-only on production (`execute_sql` SELECTs, 2026-11-16).
 
 DB-1 is drafted, NOT applied: `db/migrations/PENDING_bell_notifications.sql` on `feat/bell-notifications-db`. Its
-header carries the full discovery, the provisional default for open question 1 and the post-apply checks.
+header carries the full discovery, the founder decisions and the post-apply checks.
 
 ## Founder decisions
 
@@ -17,6 +17,16 @@ header carries the full discovery, the provisional default for open question 1 a
    - The seller accepts, ships or cancels → the buyer is notified; the seller gets nothing.
    - Enforced in the database: the trigger compares `auth.uid()` with the order's `buyer_id` / `seller_id`, not app
      code. A CHECK (`recipient_id <> actor_id`) makes a self-notification impossible even if the trigger is changed.
+3. **Open question 1 (2026-11-16):** no signed-in party → no row (the default is kept).
+4. **D1 (2026-11-16):** yes. Account deletion also deletes the person's notifications, in a separate small DB PR
+   before launch (DB-2).
+5. **D2 (2026-11-16):** no retention in v1. Later: a `pg_cron` job deleting read rows older than 90 days.
+6. **D3 (2026-11-16):** no Realtime in v1. The badge count refreshes on page load.
+7. **D4 (2026-11-16):** a notification is read when it is opened, plus « Tout marquer comme lu ».
+
+**Architect review of DB-1 (2026-11-16):** discovery re-checked on production, all correct. One fix: the trigger's
+INSERT sits in its own block, and any unexpected error becomes a WARNING and no row, so the bell never rolls back an
+order (§4).
 
 ## 1. Who is told what (v1)
 
@@ -37,9 +47,10 @@ Rows store keys, never text (`kind`, `from_status`, `to_status`). The UI renders
 language at read time, and the item title comes from the order (`item_title` snapshot), which the recipient can
 already read as a party.
 
-## 2. OPEN QUESTION 1: transitions with no signed-in actor
+## 2. Open question 1: transitions with no signed-in actor — DECIDED: no row
 
-The founder asked for these to be listed, not decided. What production does today:
+The founder asked for these to be listed first; the answer (2026-11-16) is no row in every case below. What production
+does today:
 
 1. **Status changes with no signed-in party: none can happen today.**
    - `check_order_status_transition` (BEFORE UPDATE, enabled) raises unless `auth.uid()` is the order's buyer or
@@ -55,23 +66,20 @@ The founder asked for these to be listed, not decided. What production does toda
 3. **An admin who is signed in but not a party:** unreachable for both inserts and status changes today (RLS and the
    transition trigger).
 
-**Provisional default in DB-1 — to confirm, not a ruling:** no row is written when the actor is not the buyer or the
-seller. It only affects case 2 today. The DB-1 live suite proves that a service-role status change is refused, so the
-day that changes, a test fails and the question becomes live.
+**Decided (founder, 2026-11-16):** no row is written when the actor is not the buyer or the seller. It only affects
+case 2 today. The DB-1 live suite proves that a service-role status change is refused, so the day a future PR adds a
+no-actor status change, a test fails and that PR has to come back to the founder.
 
-## 3. Decisions for the founder (recommendations)
+## 3. Decisions (founder, 2026-11-16: all four recommendations accepted)
 
-1. **Account deletion.** `admin_process_deletion_request` deletes the person's favorites and e-mail preferences but
-   would keep their bell rows.
-   - Recommended: a one-line delete in that function, in a separate small DB PR before launch.
-   - Re-creating that long function deserves its own review, so it is not in DB-1.
-2. **Retention.** None in v1 (volumes are tiny: 16 orders).
-   - Recommended later: a `pg_cron` job (installed) deleting read rows older than 90 days.
-3. **Live updates.** The Realtime publication is empty today, and DB-1 does not add the table.
-   - Recommended v1: the badge is counted on each page load (server-rendered) and refreshed when the bell opens.
-   - Realtime is a later phase.
-4. **When a row counts as read** (UI-1).
-   - Recommended: opening an item marks it read, plus « Tout marquer comme lu ».
+1. **Account deletion: yes.** `admin_process_deletion_request` deletes the person's favorites and e-mail preferences,
+   and will also delete their bell rows.
+   - In a separate small DB PR before launch (DB-2), because re-creating that long function deserves its own review.
+2. **Retention: none in v1** (volumes are tiny: 16 orders).
+   - Later: a `pg_cron` job (installed) deleting read rows older than 90 days.
+3. **No Realtime in v1.** The Realtime publication is empty today, and DB-1 does not add the table.
+   - The badge count refreshes on page load (server-rendered).
+4. **Read on open** (UI-1): opening an item marks it read, plus « Tout marquer comme lu ».
    - Opening the dropdown alone marks nothing.
 
 ## 4. DB-1 (`feat/bell-notifications-db`): what the migration does
@@ -89,8 +97,10 @@ day that changes, a test fails and the question becomes live.
   - SECURITY DEFINER, `search_path ''`, no client EXECUTE;
   - fires AFTER INSERT, and AFTER UPDATE when the status really changed;
   - the actor is `auth.uid()`; the recipient is the other party;
-  - no row when there is no party actor (open question 1) or when the recipient would be the actor. It skips rather
-    than raises, so the bell can never fail an order write;
+  - no row when there is no party actor (open question 1) or when the recipient would be the actor: it skips;
+  - the INSERT sits in its own block: any unexpected error (FK, CHECK, anything) becomes a WARNING
+    (`bell: no notification for order …`) and no row, so the bell never rolls back an order or a status change
+    (architect, 2026-11-16);
   - `emit_order_event` / `order_events` are untouched.
 - **RPC `mark_my_notifications_read(p_ids uuid[] default null)`:**
   - acts on the caller's own unread rows only (all of them when `p_ids` is null, otherwise the first 200 ids);
@@ -102,8 +112,10 @@ day that changes, a test fails and the question becomes live.
 
 ## 5. Must-tests (DB-1 live suite, run after the apply)
 
-3 sign-ins (buyer, seller, outsider), one suite, unique fixtures, verified cleanup. For each row of the matrix: the
-other party gets exactly 1 row with the right `kind` / `from_status` / `to_status`, and **the actor gets 0**:
+3 sign-ins (buyer, seller, outsider), one suite, unique fixtures, verified cleanup. Because an insert error now becomes
+a warning, a broken trigger shows up only as a missing row: every positive case asserts **exactly 1** row. For each row
+of the matrix: the other party gets exactly 1 row with the right `kind` / `from_status` / `to_status`, and **the actor
+gets 0**:
 - the buyer's order → the seller;
 - each seller step: 5 product steps and 2 service steps;
 - a seller cancel, and a seller refusal;
@@ -112,7 +124,7 @@ other party gets exactly 1 row with the right `kind` / `from_status` / `to_statu
 Then:
 - a tracking-number edit adds 0 rows;
 - **a service-role status update is refused** (pins open question 1);
-- a service-role insert adds 0 rows (the provisional default);
+- a service-role insert adds 0 rows (open question 1, decided);
 - the outsider and anon read nothing;
 - direct client INSERT / UPDATE / DELETE fail;
 - `mark_my_notifications_read` cannot touch another user's row, and is refused for anon;
@@ -120,9 +132,10 @@ Then:
 
 ## 6. PRs
 
-1. **DB-1** (`feat/bell-notifications-db`).
-   - Commit 1: the PENDING migration (this review).
-   - After the architect's apply:
+1. **DB-1** (`feat/bell-notifications-db`, PR #393).
+   - Commit 1: the PENDING migration. Commit 2: the Sonnet review fixes (comments only). Commit 3: the architect's
+     fix (the INSERT block) and these decisions in the header.
+   - Commit 4 (architect OK, 2026-11-16), after the apply:
      - the file renamed to the recorded version, plus its README entry;
      - `database.types.ts` regenerated;
      - `data-model.md`: its line « No notifications table » (L217) replaced;
@@ -135,7 +148,7 @@ Then:
    - The Paramètres line « Les notifications en temps réel dans la plateforme (cloche + tiroir) arriveront dans une
      prochaine mise à jour. » is updated.
    - New strings in FR / AR / EN, submitted for the founder's approval.
-3. **DB-2**, only if decision 1 is accepted: the deletion line.
+3. **DB-2** (decision 1, accepted), before launch: account deletion also deletes the person's notifications.
 
 ## 7. Later phases (out of v1; listed only)
 
