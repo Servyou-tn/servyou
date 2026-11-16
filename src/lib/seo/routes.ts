@@ -81,7 +81,6 @@ export const DISALLOWED_PREFIXES = [
   '/mes-', // /mes-annonces, /mes-commandes, /mes-engagements, /mes-favoris, /mes-produits, /mes-propositions, /mes-services
   '/ma-boutique',
   '/commandes-recues',
-  '/statistiques',
   '/parametres',
   '/profil',
   '/missions',

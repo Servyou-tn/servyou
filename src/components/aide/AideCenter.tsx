@@ -9,6 +9,7 @@ import {
   Inbox,
   Layers,
   Megaphone,
+  MessageSquare,
   Package,
   Search,
   SearchX,
@@ -27,8 +28,8 @@ import { t, tn } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
 import type { AideIcon } from '@/lib/aide/groups'
 import { countAideItems, filterAideGroups, type AideGroupView } from '@/lib/aide/search'
-import { SUPPORT_WHATSAPP_HREF } from './support'
-import { WhatsAppGlyph } from './WhatsAppGlyph'
+import { VARIANT_BASE, VARIANT_STATE } from '@/components/ui/button'
+import { SUPPORT_CONTACT_HREF } from './support'
 import { HitArea } from '@/components/ui/interactive-surface'
 
 // /aide — the interactive half: the search, the accordion groups, the no-result state. Figma I-Aide
@@ -246,7 +247,8 @@ function AccordionItem({
 }
 
 // 449:18375 — Empty State r16 (440 wide, 112px sunken circle + 64px glyph, 20/Semi Bold title, 16 body) with
-// the WhatsApp CTA: an unanswered question is exactly what support wants to hear about.
+// the contact CTA (« Écrivez-nous » → /contact, primary button — founder decision 2026-11-15): an unanswered question is
+// exactly what support wants to hear about.
 function NoResult({ query }: { query: string }) {
   const lang = useLang()
   return (
@@ -260,14 +262,16 @@ function NoResult({ query }: { query: string }) {
         <h2 className="min-w-0 max-w-full break-words text-xl font-semibold text-text-primary">{t('aide.empty.title', lang, { q: query })}</h2>
         <p className="text-base text-text-muted">{t('aide.empty.body', lang)}</p>
         <Link
-          href={SUPPORT_WHATSAPP_HREF}
+          href={SUPPORT_CONTACT_HREF}
           className={cn(
-            'max-lg:relative inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-wa-brand px-5 text-base font-semibold text-text-primary transition-colors hover:bg-wa-brand-hover motion-reduce:transition-none',
+            'max-lg:relative inline-flex h-10 items-center justify-center gap-2 rounded-lg px-5 text-base font-semibold transition-colors motion-reduce:transition-none',
+            VARIANT_BASE.primary,
+            VARIANT_STATE.primary,
             FOCUS_RING,
           )}
         >
-          <WhatsAppGlyph />
-          {t('aide.contact.whatsapp', lang)}
+          <MessageSquare className="size-5 shrink-0" aria-hidden="true" />
+          {t('aide.contact.write', lang)}
           <HitArea size={40} axis="y" />
         </Link>
       </div>

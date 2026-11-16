@@ -41,21 +41,23 @@ export function notifVariant(role: Role): NotifVariant {
 
 /**
  * The rows each role sees, in the frame's order.
- *   shop_owner (558:38878): commandes · propositions · avis · sécurité · stock faible · newsletter
- *   freelancer (424:17442): commandes · propositions · avis · sécurité · missions correspondant à mes compétences · newsletter
+ *   shop_owner (558:38878): commandes · propositions · sécurité · stock faible · newsletter
+ *   freelancer (424:17442): commandes · propositions · sécurité · missions correspondant à mes compétences · newsletter
  *   consumer   (no frame — derived): propositions · sécurité · newsletter. A buyer receives no orders, reviews or stock alerts.
+ * « Avis » (email_reviews) is drawn in both frames but HIDDEN: reviews are Phase 3 (founder decision 2026-11-15, frontend audit),
+ * so no toggle promises an e-mail that cannot exist yet. The column and its copy stay; as `keysForRole` follows these rows, a
+ * save never sends it and the stored value is left as it is.
  */
 export function rowsForRole(role: Role): NotifRow[] {
   const security: NotifRow = { kind: 'locked' }
   const row = (key: NotifKey): NotifRow => ({ kind: 'toggle', key })
   switch (role) {
     case 'shop_owner':
-      return [row('email_new_orders'), row('email_proposals'), row('email_reviews'), security, row('email_low_stock'), row('email_newsletter')]
+      return [row('email_new_orders'), row('email_proposals'), security, row('email_low_stock'), row('email_newsletter')]
     case 'freelancer':
       return [
         row('email_new_orders'),
         row('email_proposals'),
-        row('email_reviews'),
         security,
         row('email_missions_matching'),
         row('email_newsletter'),

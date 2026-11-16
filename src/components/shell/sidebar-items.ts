@@ -81,8 +81,8 @@ const DISCOVER: SidebarSectionDef = {
 }
 
 // ── Outils & compte — shared by every role. "Statistiques" removed: absent from the Figma
-//    frame (611:45637). The /statistiques route still exists but is no longer linked from the
-//    shell (its only nav entry) — reachable by URL until it gets its own IA decision. ──
+//    frame (611:45637). Its « coming soon » page /statistiques is deleted too (founder decision
+//    2026-11-15); the admin statistics at /admin/statistiques are a different page. ──
 const TOOLS: SidebarSectionDef = {
   labelKey: 'shell.sidebar.section.tools',
   items: [

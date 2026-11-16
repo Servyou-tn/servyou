@@ -12,22 +12,29 @@ describe('rowsForRole — which e-mail rows each role sees (Figma 558:38878 / 42
   const names = (role: Parameters<typeof rowsForRole>[0]) =>
     rowsForRole(role).map((r) => (r.kind === 'locked' ? 'security' : r.key))
 
-  it('shop_owner: orders · proposals · reviews · security · low stock · newsletter', () => {
+  it('shop_owner: orders · proposals · security · low stock · newsletter', () => {
     expect(names('shop_owner')).toEqual([
       'email_new_orders',
       'email_proposals',
-      'email_reviews',
       'security',
       'email_low_stock',
       'email_newsletter',
     ])
   })
 
+  it('reviews are Phase 3: no role sees the « Avis » row, and a save never sends email_reviews (the stored value stays)', () => {
+    for (const role of ['shop_owner', 'freelancer', null] as const) {
+      expect(names(role)).not.toContain('email_reviews')
+      expect(keysForRole(role)).not.toContain('email_reviews')
+      // A stored value that differs from the defaults is never reported as a change, so it is never written.
+      expect(changedKeys(role, { ...DEFAULT_NOTIF_PREFS, email_reviews: false }, DEFAULT_NOTIF_PREFS)).toEqual([])
+    }
+  })
+
   it('freelancer: no low-stock row (nothing to restock) but the missions-matching row, between security and the newsletter', () => {
     expect(names('freelancer')).toEqual([
       'email_new_orders',
       'email_proposals',
-      'email_reviews',
       'security',
       'email_missions_matching',
       'email_newsletter',

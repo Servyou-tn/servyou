@@ -1,19 +1,19 @@
 import Link from 'next/link'
-import { Mail } from 'lucide-react'
+import { Mail, MessageSquare } from 'lucide-react'
 import { VARIANT_BASE, VARIANT_STATE } from '@/components/ui/button'
 import { FOCUS_RING } from '@/components/layout/styles'
 import { t, type Lang } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
-import { SUPPORT_EMAIL, SUPPORT_WHATSAPP_HREF } from './support'
-import { WhatsAppGlyph } from './WhatsAppGlyph'
+import { SUPPORT_CONTACT_HREF, SUPPORT_EMAIL } from './support'
 
 // « Vous n'avez pas trouvé ? » — Figma contact panel 449:18512 (368 wide, surface/base, border-subtle, r12,
-// padding 24, gap 24): heading + subline · two channels (WhatsApp lg CTA + « Réponse sous 24 h », e-mail
+// padding 24, gap 24): heading + subline · two channels (contact lg CTA + « Réponse sous 24 h », e-mail
 // secondary button + the address) · divider · legal links. Static — a server component.
 //
-// WhatsApp CTA = the WhatsApp Button lg (134:8027): wa-brand fill with text-primary (dark on green passes AA;
-// white fails). The e-mail button reuses the secondary Button's variant classes. Both are composed WITHOUT
-// Button's BASE: it forces every child svg to 16px (`[&_svg]:size-4`), and the frame's glyphs are 20px.
+// Contact CTA: the frame's WhatsApp Button lg (134:8027) became « Écrivez-nous » → /contact (founder decision 2026-11-15:
+// no WhatsApp channel), so it takes the primary Button's variant classes instead of the WhatsApp green. The e-mail button
+// reuses the secondary Button's. Both are composed WITHOUT Button's BASE: it forces every child svg to 16px
+// (`[&_svg]:size-4`), and the frame's glyphs are 20px.
 const LINK_BUTTON = cn(
   'inline-flex h-12 w-full items-center justify-center gap-2 rounded-lg px-5 text-base transition-colors motion-reduce:transition-none',
   FOCUS_RING,
@@ -43,12 +43,9 @@ export function ContactPanel({ lang }: { lang: Lang }) {
 
       <div className="flex flex-col gap-4">
         <div className="flex flex-col gap-2">
-          <Link
-            href={SUPPORT_WHATSAPP_HREF}
-            className={cn(LINK_BUTTON, 'bg-wa-brand font-semibold text-text-primary hover:bg-wa-brand-hover')}
-          >
-            <WhatsAppGlyph />
-            {t('aide.contact.whatsapp', lang)}
+          <Link href={SUPPORT_CONTACT_HREF} className={cn(LINK_BUTTON, 'font-semibold', VARIANT_BASE.primary, VARIANT_STATE.primary)}>
+            <MessageSquare className="size-5 shrink-0" aria-hidden="true" />
+            {t('aide.contact.write', lang)}
           </Link>
           <p className="text-caption font-medium text-text-muted">{t('aide.contact.responseTime', lang)}</p>
         </div>
