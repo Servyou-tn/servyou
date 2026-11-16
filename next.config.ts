@@ -1,7 +1,9 @@
 import type { NextConfig } from "next";
 import { withSentryConfig } from "@sentry/nextjs";
 import { cspReportUrl, securityHeaders } from "./src/lib/security/headers";
+import { indexingHeaders } from "./src/lib/seo/indexing";
 import { DEFAULT_SITE_URL } from "./src/lib/seo/site-url";
+import { SENTRY_TUNNEL_ROUTE, sentryTunnelRedirects } from "./src/lib/security/sentry-tunnel";
 
 const nextConfig: NextConfig = {
   // Hide the Next.js dev-tools indicator — the floating circle with the Next "N"
@@ -18,7 +20,13 @@ const nextConfig: NextConfig = {
   async headers() {
     // Violation reports go to Sentry's security endpoint, derived from the DSN (null without one → no reporting).
     const reportUrl = cspReportUrl(process.env.NEXT_PUBLIC_SENTRY_DSN, process.env.VERCEL_ENV ?? process.env.NODE_ENV)
-    return [{ source: '/:path*', headers: securityHeaders(process.env.NODE_ENV !== 'production', reportUrl) }]
+    // The Vercel toolbar's hosts are allowed on Vercel PREVIEW deployments only, never in production (audit M7, PR 16).
+    const allowVercelToolbar = process.env.VERCEL_ENV === 'preview'
+    // Until the public launch every response also says `X-Robots-Tag: noindex, nofollow` (src/lib/seo/indexing.ts).
+    return [{
+      source: '/:path*',
+      headers: [...securityHeaders(process.env.NODE_ENV !== 'production', reportUrl, allowVercelToolbar), ...indexingHeaders()],
+    }]
   },
 
   // Server Actions default to a 1 MB request body. The avatar upload sends a real photo through an
@@ -121,11 +129,15 @@ const nextConfig: NextConfig = {
   // pick their role and no real bookmarks exist pre-launch.
   async redirects() {
     return [
+      // The Sentry tunnel only forwards to OUR project: any other org or project is refused before Sentry's rewrite
+      // runs (audit M7, PR 16; src/lib/security/sentry-tunnel.ts).
+      ...sentryTunnelRedirects(process.env.NEXT_PUBLIC_SENTRY_DSN),
       // The domain switch: the old production host sends every request to the own domain, same path and same query
       // string (a redirect passes the query through). The host is a regex matched against the WHOLE hostname (Next and
       // Vercel both anchor it; dots escaped as in Vercel's docs for this exact case), so the preview and deployment URLs
-      // (servyou-git-*.vercel.app, servyou-*-servyou-s-projects.vercel.app) keep serving the app. First in the list, so an
-      // old /login link reaches the new host in one hop. Redirects run before src/middleware.ts (headers → redirects →
+      // (servyou-git-*.vercel.app, servyou-*-servyou-s-projects.vercel.app) keep serving the app. Right after the Sentry
+      // tunnel guard (it only matches /monitoring without our org and project) and before every path redirect, so an old
+      // /login link reaches the new host in one hop. Redirects run before src/middleware.ts (headers → redirects →
       // middleware), so maintenance mode, K2 and K3 never answer on the old host. Pinned by src/__tests__/domain-redirect.test.ts.
       {
         source: '/:path*',
@@ -156,8 +168,9 @@ export default withSentryConfig(nextConfig, {
   authToken: process.env.SENTRY_AUTH_TOKEN,
   widenClientFileUpload: true,
   // Proxy Sentry events through the app to dodge ad blockers. /monitoring is explicitly
-  // excluded from src/middleware.ts's matcher, so the tunnel is unobstructed.
-  tunnelRoute: "/monitoring",
+  // excluded from src/middleware.ts's matcher, so the tunnel is unobstructed. It forwards to OUR project only: the
+  // redirects() above refuse any other org or project (src/lib/security/sentry-tunnel.ts).
+  tunnelRoute: SENTRY_TUNNEL_ROUTE,
   // Tree-shakes Sentry's internal debug logging from bundles. Emits a deprecation
   // notice under Turbopack (the webpack.* replacement isn't Turbopack-compatible yet);
   // benign and the only way to get this behavior today. automaticVercelMonitors is left

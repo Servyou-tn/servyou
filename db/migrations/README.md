@@ -1422,6 +1422,92 @@ both on 2026-10-28.
       discovery header: `git show 1c1ba9e:db/migrations/PENDING_backup_role.sql`.
     - Rollback: `drop role servyou_backup;` (it owns nothing; its membership goes with it).
 
+134. **20261115182353_cod_no_show** — the COD no-show rule (refused deliveries), DB side, PR #378; founder decisions
+    of 2026-11-14 (`docs/follow-ups/cod-no-show-plan.md`, PR #375). Written by db-guardian; reviewed and applied by
+    the architect.
+    - **The marker on `orders`:**
+      - `refusal_reason` (`refused_parcel` / `not_collected` / `unreachable`) and `refusal_voided_at`; 3 CHECKs (a
+        refusal is a seller cancellation of a product order; a void needs a refusal); partial index
+        `orders_refusals_by_buyer_idx`.
+      - `grant update (refusal_reason)` to authenticated (decision 1: the seller's own cancelling UPDATE, no seller
+        RPC; allow-list entry in the same PR).
+      - Guard trigger `trg_enforce_refusal_marker`: nothing preset on insert (42501); the reason set once, by the
+        order's seller, on a product order going from `dispatched` / `in_delivery` / `arrived` to `cancelled` (23514
+        `refusal_not_product` / `refusal_status`); the void by an admin only, once.
+    - **The rule, computed live** in `private.buyer_cod_standing(uuid)` (nothing stored; no client EXECUTE): a refusal
+      counts once per seller, buyer and Africa/Tunis day, if not voided and newer than the buyer's last lift. 2 in 90
+      days, or an active block: one open product order at a time. A refusal that reaches 3 in 90 days blocks new
+      product orders for 30 days from that refusal (a 4th restarts it). Service requests are never gated.
+    - **Enforcement:** `trg_limit_orders_cod` (BEFORE INSERT on `orders`, SECURITY DEFINER) takes the rate limit's
+      `orders.rate:<buyer>` advisory lock before any read; 23514 `cod_blocked` (with the date) / `cod_open_order_cap`.
+    - **`cod_block_lifts`:** RLS on in the same migration; admin read only, no client write, no anon read. A lift is
+      a clean slate.
+    - **Contest:** disputes reason `refusal_contested`; `trg_enforce_refusal_contest` (buyer only, own order only,
+      within 14 days, on a non-voided refusal; 23514 `contest_buyer_only` / `contest_not_refusal` /
+      `contest_window_closed`). Decision 2: the one-active-dispute index is split, so a contest can sit beside a
+      seller's dispute on the same order (`disputes_one_active_per_order` + `disputes_one_active_contest_per_order`).
+    - **5 RPCs** (SECURITY DEFINER, `search_path ''`, EXECUTE for authenticated only): `get_my_cod_standing`,
+      `seller_buyer_cod_warnings` (ids only, the caller's own open orders, first 200), `admin_get_cod_standing`,
+      `admin_lift_cod_block` (decision 3: refuses a buyer who is not blocked) and `admin_void_refusal`, both logged
+      in `admin_audit_log` (`lift_cod_block` / `void_refusal`).
+    - No row changed: 0 seller cancellations after dispatch and 0 disputes at discovery.
+    - Checked after the apply: the 3 triggers enabled; the 5 RPCs EXECUTE for authenticated (not anon); the trigger
+      functions and `private.buyer_cod_standing` with no client EXECUTE; `cod_block_lifts` RLS on, authenticated
+      SELECT only; the split indexes and the 5 constraints as written.
+    - Types regenerated: identical to the hand edit of f87a2ba (zero diff). Live, one at a time:
+      `cod-no-show-rule-live` 15/15, `cod-no-show-marker-live` 17/17, `cod-no-show-admin-live` 6/6,
+      `client-write-grants-live` 3/3; cleanup verified (0 fixture users, orders, lifts, disputes or admins left).
+    - The recorded statement is this whole file, byte-identical to the reviewed PENDING file of bd8e821 (sha256
+      `fb7d5945…`, md5 `af3f0d9b2c1e1117020f287fc587c455` with its trailing newline). So its header still reads
+      « PENDING ».
+    - Rollback: the commented block at the end of the file (one transaction; close one of two active disputes on the
+      same order before restoring the single index).
+
+135. **20261115222457_two_step_signup** — the two-step sign-up, DB-1 of DB-1 → UI-1 → DB-2 (pre-launch audit H1,
+    part 2), PR #384. Plan and founder decisions of 2026-11-15: `docs/follow-ups/two-step-signup-plan.md` (#381).
+    Written by db-guardian; reviewed and applied by the architect with the founder's OK.
+    - **`profiles`:**
+      - `completed_at`, `terms_accepted_at`, `terms_version`; `date_of_birth` is now nullable;
+      - CHECK `profiles_completion_requires_birth_date_and_terms`, and `profiles_terms_version_check` (1 to 100
+        characters). The city is not covered: the deletion tombstone clears it;
+      - all 14 profiles were backfilled as complete, terms accepted at `created_at` under « avant 2026-11 »
+        (decision 3). Their `updated_at` moved to the apply time.
+    - **`handle_new_user`** (`search_path ''`) creates every profile, even without a birth date.
+      - **Transitional:** a sign-up that carries the full profile is complete at creation.
+      - DB-2 narrows that to accounts confirmed at insert and adds the write gate. H1 closes with DB-2.
+    - **`private.account_password_set`** (RLS on, no client access) and the trigger **`on_auth_user_password_set`**
+      (AFTER UPDATE on `auth.users`, firing only when `encrypted_password` really changes) record when a password was
+      last set. A password set at insert writes nothing.
+    - **`private.current_terms_version()`** = `cgu-2026-06-17+confidentialite-2026-11-14`.
+    - **`complete_my_account(p_full_name, p_date_of_birth, p_city, p_terms_version)`**:
+      - SECURITY DEFINER, `search_path ''`, EXECUTE for authenticated only;
+      - refuses, by hint: `email_link_required` (JWT `amr` must hold `otp`), `session_unknown`, `other_sessions`,
+        `password_required` (a password set during this session, ± 5 s), `name_invalid`, `city_required`,
+        `birth_date_invalid`, `too_young` (16+, Africa/Tunis date), `terms_required`, `terms_outdated`,
+        `already_complete`;
+      - then completes the profile and records the terms.
+    - **Dependencies** (the founder confirmed them in the dashboard): Confirm email ON, Secure email change ON,
+      anonymous sign-ins OFF, phone sign-in OFF.
+    - **Checked after the apply (architect):**
+      - the catalog: the 3 columns, the nullable birth date, both CHECKs, the trigger, RLS on the private table;
+      - EXECUTE: `complete_my_account` for authenticated only; none for clients on `track_password_set` or
+        `current_terms_version`;
+      - the counts: 14 profiles, 14 complete under « avant 2026-11 », 0 incomplete;
+      - the file's rolled-back check passed: an incomplete profile is created, and a password session is refused with
+        `email_link_required`. Nothing persisted;
+      - the security advisor shows only the expected new items.
+    - **Live, one at a time (db-guardian):** `two-step-signup-db-live` 11/11, `two-step-signup-auth-live` 3/3,
+      `admin-requests-live` 25/25 (the deletion tombstone under the new CHECK), `client-write-grants-live` 3/3. Cleanup
+      verified: 0 test-domain users, profiles or password rows.
+    - **Types regenerated:** identical to the hand edit of d85874d (zero diff). Spike point 4 (24 hours) was not run,
+      by decision: no writes to `auth.sessions` on production.
+    - **The recorded statement** (md5 `44c99d544aefa7e8364ced9adf2fc3d7`) is this file's executable SQL,
+      byte-identical: the column-0 `--` lines are removed, blank runs collapsed to one, trimmed, with one trailing
+      newline. The repo file keeps its comments (the header, the rolled-back check, the rollback block), so its header
+      still reads « PENDING ».
+    - **Rollback:** the commented block at the end of the file. Setting `date_of_birth` back to NOT NULL fails while an
+      incomplete profile exists.
+
 ## Rollback paths
 
 Each migration in this folder represents work that has already been applied to production. Rollback is therefore reverse migration work, not file deletion. If a rollback is ever needed, write a new dated migration that reverses the relevant changes — never delete history from this folder.

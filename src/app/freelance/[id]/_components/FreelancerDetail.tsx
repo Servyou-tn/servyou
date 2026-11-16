@@ -93,8 +93,8 @@ export function FreelancerDetail({
           <div className="flex flex-col gap-2 max-lg:gap-4">
             {/* name + headline are one group (name-grp, gap 6 at 375); the meta row sits 16 below it */}
             <div className="flex flex-col gap-2 max-lg:gap-1.5">
-              <h1 className="text-3xl font-bold leading-[38px] tracking-[-0.64px] text-text-primary max-lg:text-h1 max-lg:leading-[38px]">{freelancer.fullName}</h1>
-              {freelancer.headline && <p className="text-lg text-text-secondary">{freelancer.headline}</p>}
+              <h1 className="text-3xl font-bold leading-[38px] tracking-[-0.64px] text-text-primary max-lg:text-h1 max-lg:leading-[38px]"><bdi>{freelancer.fullName}</bdi></h1>
+              {freelancer.headline && <p className="text-lg text-text-secondary"><bdi>{freelancer.headline}</bdi></p>}
             </div>
             <div className="flex flex-wrap gap-5 pt-1 max-lg:pt-0">
               {freelancer.city && (
@@ -110,13 +110,13 @@ export function FreelancerDetail({
             </div>
           </div>
 
-          {/* trust-row — "nouveau" state only (founder ruling), + carried-over links segment */}
+          {/* trust-row — "nouveau" state only (founder ruling), + carried-over links segment. No « Pas encore d'avis » line:
+              reviews are Phase 3, so the profile does not mention them (founder decision 2026-11-15). */}
           <div className="flex flex-wrap items-center gap-6 rounded-lg border border-border-subtle bg-surface-base p-4 max-lg:gap-y-3 max-lg:rounded-[10px] max-lg:px-5.75 max-lg:py-3.75">
             <div className="flex flex-col gap-1">
               <span className="w-fit rounded-full bg-brand-blue-50 px-3 py-1 text-caption font-semibold text-brand-blue-700">
                 {t('freelance.public.new_badge', lang)}
               </span>
-              <span className="text-caption text-text-muted max-lg:font-medium">{t('freelance.public.no_reviews_yet', lang)}</span>
             </div>
             {/* null = the count failed to load: hidden rather than a false « 0 » (loader-error-surfacing ruling 6) */}
             {completedProjectCount !== null && (
@@ -185,7 +185,7 @@ export function FreelancerDetail({
               blank line stays as a leading newline of the next paragraph and pre-line still draws it, so the desktop text is unchanged. */}
           <div className="flex max-w-[760px] flex-col gap-3.5 lg:gap-[26px]">
             {(freelancer.bio ?? '').replace(/\r\n?/g, '\n').split('\n\n').map((paragraph, i) => (
-              <p key={i} className="whitespace-pre-line text-base leading-[26px] text-text-secondary max-lg:leading-[27px]">{paragraph}</p>
+              <p key={i} dir="auto" className="whitespace-pre-line text-base leading-[26px] text-text-secondary max-lg:leading-[27px]">{paragraph}</p>
             ))}
           </div>
         </section>
@@ -258,8 +258,8 @@ export function FreelancerDetail({
                     <Image src={item.imageUrl} alt="" fill sizes="(max-width: 639px) 100vw, (max-width: 1023px) 50vw, 360px" className="object-cover" />
                   </div>
                   <div className="flex flex-col gap-1 p-4 max-lg:contents">
-                    {item.title && <h3 className="text-base font-semibold text-text-primary max-lg:leading-[22px]">{item.title}</h3>}
-                    {item.description && <p className="line-clamp-3 text-body-sm text-text-secondary max-lg:text-text-muted">{item.description}</p>}
+                    {item.title && <h3 className="text-base font-semibold text-text-primary max-lg:leading-[22px]"><bdi>{item.title}</bdi></h3>}
+                    {item.description && <p dir="auto" className="line-clamp-3 text-body-sm text-text-secondary max-lg:text-text-muted">{item.description}</p>}
                     {item.url && (
                       <a
                         href={item.url}
@@ -348,7 +348,7 @@ export function FreelancerDetail({
                   <div className="flex items-start gap-3">
                     <Award className="mt-0.5 size-5 shrink-0 text-text-muted max-lg:hidden" aria-hidden="true" />
                     <div className="flex flex-col gap-0.5">
-                      <span className="text-base font-semibold text-text-primary max-lg:leading-[22px]">{row.name}</span>
+                      <span className="text-base font-semibold text-text-primary max-lg:leading-[22px]"><bdi>{row.name}</bdi></span>
                       <span className="text-body-sm text-text-secondary max-lg:text-text-muted">
                         {[row.issuingOrg, row.yearObtained ? String(row.yearObtained) : null].filter(Boolean).join(' · ')}
                       </span>

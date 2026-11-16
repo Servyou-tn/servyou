@@ -17,11 +17,19 @@ import loadCustomRoutes from 'next/dist/lib/load-custom-routes'
 import { modifyRouteRegex } from 'next/dist/lib/redirect-status'
 import nextConfig from '../../next.config'
 import { DEFAULT_SITE_URL } from '@/lib/seo/site-url'
+import { sentryTunnelRedirects } from '@/lib/security/sentry-tunnel'
 
 const OLD_HOST = 'servyou.vercel.app'
 
 async function redirectRules() {
   return nextConfig.redirects!()
+}
+
+/** The domain-switch rule: the one redirect keyed on a host. */
+async function hostRule() {
+  const rule = (await redirectRules()).find((r) => r.has?.some((h) => h.type === 'host'))
+  if (!rule) throw new Error('no host redirect in next.config.ts')
+  return rule
 }
 
 /** What Next answers for `url` on `host`: the first matching redirect's status and Location, or null (no redirect). */
@@ -58,8 +66,17 @@ async function resolveRedirect(host: string, url: string): Promise<{ status: num
 }
 
 describe('the rule', () => {
-  it('is the FIRST redirect: permanent, every path, the old host only, to the site address', async () => {
-    const [first] = await redirectRules()
+  it('comes right after the Sentry tunnel guard, before every path redirect', async () => {
+    // The guard (#387) stays first; it only matches /monitoring without our org and project. Every path redirect
+    // (/login, /signup, …) comes after the host rule, so an old link reaches the new host in one hop.
+    const rules = await redirectRules()
+    const guard = sentryTunnelRedirects(process.env.NEXT_PUBLIC_SENTRY_DSN)
+    expect(rules.slice(0, guard.length)).toEqual(guard)
+    expect(rules.findIndex((r) => r.has?.some((h) => h.type === 'host'))).toBe(guard.length)
+  })
+
+  it('is permanent, every path, the old host only, to the site address', async () => {
+    const first = await hostRule()
     expect(first).toEqual({
       source: '/:path*',
       has: [{ type: 'host', value: 'servyou\\.vercel\\.app' }],
@@ -90,7 +107,7 @@ describe('servyou.vercel.app → https://servyou.tn, same path and query', () =>
     ['/recherche?ville=sfax&ville=tunis&page=2', 'https://servyou.tn/recherche?ville=sfax&ville=tunis&page=2'],
     ['/recherche?q=%D8%AE%D8%AF%D9%85%D8%A9', 'https://servyou.tn/recherche?q=%D8%AE%D8%AF%D9%85%D8%A9'],
     ['/categories/design-graphique/logo', 'https://servyou.tn/categories/design-graphique/logo'],
-    // The host rule comes first: an old /login link reaches the new host in one hop (servyou.tn then sends it on to /connexion).
+    // The host rule comes before the path redirects: an old /login link reaches the new host in one hop (servyou.tn then sends it on to /connexion).
     ['/login', 'https://servyou.tn/login'],
   ])('%s → %s (308)', async (url, location) => {
     expect(await resolveRedirect(OLD_HOST, url)).toEqual({ status: 308, location })
@@ -129,7 +146,7 @@ describe('every other host keeps serving the app', () => {
   })
 
   it.each(PREVIEW_HOSTS)('%s: not matched even by an UNanchored reading of the host pattern', async (host) => {
-    const [first] = await redirectRules()
+    const first = await hostRule()
     expect(new RegExp(first.has![0].value!).test(host)).toBe(false)
   })
 })

@@ -10,6 +10,7 @@ import { normalizePhone } from '@/lib/phone'
 import { encodeDeliveryAddress } from '@/lib/marche/order-detail'
 import { asOrderInsert } from '@/lib/supabase/insert-drafts'
 import { orderCapKey } from '@/lib/marche/cap-refusal'
+import { codBlockedMessage } from '@/lib/orders/cod-standing'
 import { ProductRequestSchema, ServiceRequestSchema } from './schema'
 
 // Both actions create an order with status='pending'. RLS enforces buyer_id = auth.uid()
@@ -119,6 +120,8 @@ export async function submitProductRequest(input: ProductRequestInput, turnstile
     const cap = orderCapKey(insErr)
     if (cap) {
       console.warn('[submitProductRequest] refused:', insErr?.code, insErr?.hint)
+      // The COD block's message carries its end date, read from the buyer's own standing.
+      if (cap === 'demander.error.cod_blocked') return { ok: false, error: await codBlockedMessage(supabase, lang) }
       return { ok: false, error: t(cap, lang) }
     }
     console.error('[submitProductRequest] insert error:', insErr?.message, insErr?.code, insErr?.details)

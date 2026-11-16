@@ -18,3 +18,10 @@ export function relativeTimeLabel(iso: string, lang: Lang, now = Date.now()): st
   if (days === 1) return t('activite.time_ago_yesterday', lang)
   return tn('activite.time_ago_days', lang, days)
 }
+
+// How long a « en attente » order has waited, on the seller's order list (audit S4, 2026-11-15): whole hours
+// under a day, whole days from 24 h — a raw hour count read « il y a 2335 h ».
+export function waitingLabel(hours: number, lang: Lang): string {
+  if (hours < 24) return tn('seller.orders.waiting_hours', lang, hours)
+  return tn('seller.orders.waiting_days', lang, Math.floor(hours / 24))
+}

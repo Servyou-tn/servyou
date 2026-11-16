@@ -14,12 +14,14 @@ import {
   cspReportUrl,
   securityHeaders,
   CSP_REPORT_GROUP,
+  HSTS_VALUE,
   SUPABASE_ORIGIN,
   TURNSTILE_ORIGIN,
   UMAMI_COLLECT_ORIGIN,
   UMAMI_SCRIPT_ORIGIN,
 } from '@/lib/security/headers'
 import { UMAMI_SCRIPT_URL } from '@/lib/analytics/umami'
+import { indexingHeaders } from '@/lib/seo/indexing'
 import nextConfig from '../../next.config'
 
 const byKey = (isDev: boolean) => Object.fromEntries(securityHeaders(isDev).map((h) => [h.key, h.value]))
@@ -40,6 +42,16 @@ describe('enforced headers', () => {
     expect(h['Referrer-Policy']).toBe('strict-origin-when-cross-origin')
     expect(h['Permissions-Policy']).toBe('camera=(), microphone=(), geolocation=(), payment=()')
   })
+
+  it('HSTS from the app itself: two years, subdomains, no preload (audit M7, PR 16)', () => {
+    expect(h['Strict-Transport-Security']).toBe('max-age=63072000; includeSubDomains')
+    expect(HSTS_VALUE).not.toContain('preload')
+    expect(byKey(true)['Strict-Transport-Security']).toBe(HSTS_VALUE) // ignored by browsers on plain http
+  })
+
+  it('COOP same-origin isolates our windows from cross-origin openers and popups (audit M7, PR 16)', () => {
+    expect(h['Cross-Origin-Opener-Policy']).toBe('same-origin')
+  })
 })
 
 describe('enforced CSP', () => {
@@ -58,16 +70,36 @@ describe('enforced CSP', () => {
     expect(directive(prod, 'img-src')).toContain(SUPABASE_ORIGIN)
   })
 
-  it('allows Sentry ingest and the Vercel preview toolbar', () => {
-    expect(directive(prod, 'connect-src')).toEqual(expect.arrayContaining(['https://*.ingest.sentry.io', 'https://vercel.live']))
-    expect(directive(prod, 'script-src')).toContain('https://vercel.live')
-    expect(directive(prod, 'frame-src')).toContain('https://vercel.live')
+  it('allows Sentry ingest', () => {
+    expect(directive(prod, 'connect-src')).toEqual(expect.arrayContaining(['https://*.ingest.sentry.io']))
+  })
+
+  it('production allows no Vercel toolbar host at all (audit M7, PR 16)', () => {
+    for (const host of ['vercel.live', 'vercel.com', 'pusher.com']) expect(prod).not.toContain(host)
+    expect(byKey(false)['Content-Security-Policy']).not.toContain('vercel.live')
+  })
+
+  it('a Vercel PREVIEW allows the toolbar: script, style, frame, images, fonts and its websocket', () => {
+    const preview = contentSecurityPolicy(false, null, true)
+    expect(directive(preview, 'script-src')).toContain('https://vercel.live')
+    expect(directive(preview, 'style-src')).toContain('https://vercel.live')
+    expect(directive(preview, 'frame-src')).toEqual(['https://vercel.live', TURNSTILE_ORIGIN])
+    expect(directive(preview, 'img-src')).toEqual(expect.arrayContaining(['https://vercel.live', 'https://vercel.com']))
+    expect(directive(preview, 'font-src')).toEqual(expect.arrayContaining(['https://vercel.live', 'https://assets.vercel.com']))
+    expect(directive(preview, 'connect-src')).toEqual(expect.arrayContaining(['https://vercel.live', 'wss://ws-us3.pusher.com']))
+    expect(securityHeaders(false, null, true).find((x) => x.key === 'Content-Security-Policy')!.value).toBe(preview)
+  })
+
+  it('the toolbar flag changes nothing but the toolbar hosts', () => {
+    const preview = contentSecurityPolicy(false, null, true)
+    const strip = (csp: string) => csp.replace(/ (https:\/\/vercel\.live|https:\/\/vercel\.com|https:\/\/assets\.vercel\.com|wss:\/\/ws-us3\.pusher\.com)/g, '')
+    expect(strip(preview)).toBe(prod)
   })
 
   it('allows the Cloudflare Turnstile script and challenge iframe, and nothing else from Cloudflare', () => {
     expect(TURNSTILE_ORIGIN).toBe('https://challenges.cloudflare.com')
     expect(directive(prod, 'script-src')).toContain(TURNSTILE_ORIGIN)
-    expect(directive(prod, 'frame-src')).toEqual(['https://vercel.live', TURNSTILE_ORIGIN])
+    expect(directive(prod, 'frame-src')).toEqual([TURNSTILE_ORIGIN])
     expect(directive(prod, 'connect-src')).not.toContain(TURNSTILE_ORIGIN)
   })
 
@@ -152,6 +184,6 @@ describe('next.config.ts', () => {
     const rules = await nextConfig.headers!()
     expect(rules).toHaveLength(1)
     expect(rules[0].source).toBe('/:path*')
-    expect(rules[0].headers.map((x) => x.key)).toEqual(securityHeaders(false).map((x) => x.key))
+    expect(rules[0].headers.map((x) => x.key)).toEqual([...securityHeaders(false), ...indexingHeaders()].map((x) => x.key))
   })
 })

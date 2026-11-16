@@ -84,8 +84,8 @@ export function ServiceListingCard({ service }: { service: ServiceListing }) {
           {/* topGroup — gap 12. */}
           <div className="flex flex-col gap-3">
             {/* title: 16/Semi Bold, 2-line clamp; pe-8 clears the corner heart. */}
-            <h3 className="line-clamp-2 h-11 pe-8 text-h4 leading-[22px] text-brand-blue-800">{service.title}</h3>
-            <p className="line-clamp-3 h-[63px] text-body-sm text-text-secondary">{summary}</p>
+            <h3 className="line-clamp-2 h-11 pe-8 text-h4 leading-[22px] text-brand-blue-800"><bdi>{service.title}</bdi></h3>
+            <p dir="auto" className="line-clamp-3 h-[63px] text-body-sm text-text-secondary">{summary}</p>
           </div>
           {/* skillChips — up to 3 skill tags (v3.7 frame 611:45637), category label as the
               fallback. Pinned to the bottom of colorBlock by SPACE_BETWEEN. */}
@@ -109,7 +109,7 @@ export function ServiceListingCard({ service }: { service: ServiceListing }) {
           <div className="flex min-w-0 items-center gap-2">
             <Avatar size="sm" />
             {service.freelancer.full_name && (
-              <span className="max-w-[120px] truncate text-body-sm text-brand-blue-800">
+              <span dir="auto" className="max-w-[120px] truncate text-body-sm text-brand-blue-800">
                 {service.freelancer.full_name}
               </span>
             )}

@@ -12,8 +12,16 @@ export type CreateDisputeResult =
   | { success: false; error: string }
 
 const VALID_REASONS: DisputeReason[] = [
-  'not_delivered', 'wrong_item', 'damaged', 'payment_refused', 'buyer_unreachable', 'other',
+  'not_delivered', 'wrong_item', 'damaged', 'payment_refused', 'buyer_unreachable', 'other', 'refusal_contested',
 ]
+
+// A contest of a refused delivery (COD no-show rule, enforce_refusal_contest in db/migrations/20261115182353_cod_no_show.sql)
+// is refused with 23514 and a stable hint. Each maps to its own key; the raw French text never reaches the client.
+const CONTEST_ERROR_KEYS: Record<string, string> = {
+  contest_window_closed: 'dispute.error_contest_window_closed',
+  contest_not_refusal: 'dispute.error_contest_not_refusal',
+  contest_buyer_only: 'dispute.error_contest_buyer_only',
+}
 
 // Party-facing dispute creation. The role is inferred server-side from the order's
 // buyer_id / seller_id against auth.uid — never trusted from the client. RLS re-validates
@@ -86,6 +94,10 @@ export async function createDispute(
   if (order.status === 'pending') {
     return { success: false, error: 'dispute.error_order_not_eligible' }
   }
+  // Only the buyer contests a refusal (the trigger says so too; this answers before the round trip).
+  if (reason === 'refusal_contested' && role !== 'buyer') {
+    return { success: false, error: 'dispute.error_contest_buyer_only' }
+  }
 
   // 3. Insert. RLS INSERT policy re-validates (party + role match + order != pending);
   //    the partial unique index raises 23505 on a second active dispute.
@@ -102,6 +114,9 @@ export async function createDispute(
   if (insertError) {
     if (insertError.code === '23505') {
       return { success: false, error: 'dispute.error_already_active' }
+    }
+    if (insertError.code === '23514' && insertError.hint && Object.hasOwn(CONTEST_ERROR_KEYS, insertError.hint)) {
+      return { success: false, error: CONTEST_ERROR_KEYS[insertError.hint] }
     }
     console.error('[createDispute] insert error:', insertError.message, insertError.code, insertError.details)
     return { success: false, error: 'dispute.error_generic' }

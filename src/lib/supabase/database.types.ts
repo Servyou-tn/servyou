@@ -1,7 +1,7 @@
 // Generated from the live Supabase schema (project xggomcitqrkaylqezjjz) — DO NOT EDIT BY HAND.
 // Regenerate after every applied migration: Supabase MCP generate_typescript_types (or
 // `npx supabase gen types typescript --project-id xggomcitqrkaylqezjjz`), then commit.
-// Generated 2026-11-12 after migration 20261112204634 purge_unconfirmed_signups.
+// Generated 2026-11-15 after migration 20261115222457 two_step_signup.
 
 export type Json =
   | string
@@ -110,6 +110,59 @@ export type Database = {
             columns: ["parent_id"]
             isOneToOne: false
             referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cod_block_lifts: {
+        Row: {
+          buyer_id: string
+          id: string
+          lifted_at: string
+          lifted_by: string | null
+          note: string
+        }
+        Insert: {
+          buyer_id: string
+          id?: string
+          lifted_at?: string
+          lifted_by?: string | null
+          note: string
+        }
+        Update: {
+          buyer_id?: string
+          id?: string
+          lifted_at?: string
+          lifted_by?: string | null
+          note?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cod_block_lifts_buyer_id_fkey"
+            columns: ["buyer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cod_block_lifts_buyer_id_fkey"
+            columns: ["buyer_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cod_block_lifts_lifted_by_fkey"
+            columns: ["lifted_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cod_block_lifts_lifted_by_fkey"
+            columns: ["lifted_by"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -970,6 +1023,8 @@ export type Database = {
           product_id: string | null
           quantity: number
           received_at: string | null
+          refusal_reason: string | null
+          refusal_voided_at: string | null
           seller_id: string
           service_listing_id: string | null
           status: string
@@ -995,6 +1050,8 @@ export type Database = {
           product_id?: string | null
           quantity?: number
           received_at?: string | null
+          refusal_reason?: string | null
+          refusal_voided_at?: string | null
           seller_id: string
           service_listing_id?: string | null
           status?: string
@@ -1020,6 +1077,8 @@ export type Database = {
           product_id?: string | null
           quantity?: number
           received_at?: string | null
+          refusal_reason?: string | null
+          refusal_voided_at?: string | null
           seller_id?: string
           service_listing_id?: string | null
           status?: string
@@ -1195,8 +1254,9 @@ export type Database = {
         Row: {
           avatar_url: string | null
           city: string | null
+          completed_at: string | null
           created_at: string
-          date_of_birth: string
+          date_of_birth: string | null
           email: string
           full_name: string
           id: string
@@ -1206,13 +1266,16 @@ export type Database = {
           seller_type: string | null
           suspended_at: string | null
           suspended_reason: string | null
+          terms_accepted_at: string | null
+          terms_version: string | null
           updated_at: string
         }
         Insert: {
           avatar_url?: string | null
           city?: string | null
+          completed_at?: string | null
           created_at?: string
-          date_of_birth: string
+          date_of_birth?: string | null
           email: string
           full_name: string
           id: string
@@ -1222,13 +1285,16 @@ export type Database = {
           seller_type?: string | null
           suspended_at?: string | null
           suspended_reason?: string | null
+          terms_accepted_at?: string | null
+          terms_version?: string | null
           updated_at?: string
         }
         Update: {
           avatar_url?: string | null
           city?: string | null
+          completed_at?: string | null
           created_at?: string
-          date_of_birth?: string
+          date_of_birth?: string | null
           email?: string
           full_name?: string
           id?: string
@@ -1238,6 +1304,8 @@ export type Database = {
           seller_type?: string | null
           suspended_at?: string | null
           suspended_reason?: string | null
+          terms_accepted_at?: string | null
+          terms_version?: string | null
           updated_at?: string
         }
         Relationships: []
@@ -1639,8 +1707,21 @@ export type Database = {
         }[]
       }
       admin_dashboard_stats: { Args: { p_days?: number }; Returns: Json }
+      admin_get_cod_standing: {
+        Args: { p_buyer: string }
+        Returns: {
+          blocked_until: string
+          last_lift_at: string
+          open_order_cap: boolean
+          refusals_90d: number
+        }[]
+      }
       admin_hide_content: {
         Args: { reason: string; target_id: string; target_type: string }
+        Returns: undefined
+      }
+      admin_lift_cod_block: {
+        Args: { p_buyer: string; p_note: string }
         Returns: undefined
       }
       admin_list_audit_log: {
@@ -1782,6 +1863,10 @@ export type Database = {
         Args: { target_user_id: string }
         Returns: undefined
       }
+      admin_void_refusal: {
+        Args: { p_note: string; p_order: string }
+        Returns: undefined
+      }
       choose_job_response: { Args: { p_response_id: string }; Returns: string }
       client_write_grants: {
         Args: never
@@ -1791,6 +1876,15 @@ export type Database = {
           privilege: string
           relation: string
         }[]
+      }
+      complete_my_account: {
+        Args: {
+          p_city: string
+          p_date_of_birth: string
+          p_full_name: string
+          p_terms_version: string
+        }
+        Returns: undefined
       }
       erase_oauth_identities: { Args: { p_user_id: string }; Returns: number }
       f_unaccent: { Args: { "": string }; Returns: string }
@@ -1807,6 +1901,13 @@ export type Database = {
         Args: { target_id: string; target_type: string }
         Returns: string
       }
+      get_my_cod_standing: {
+        Args: never
+        Returns: {
+          blocked_until: string
+          open_order_cap: boolean
+        }[]
+      }
       has_responded: { Args: { p_job_post_id: string }; Returns: boolean }
       is_active_user: { Args: never; Returns: boolean }
       is_admin: { Args: never; Returns: boolean }
@@ -1822,6 +1923,10 @@ export type Database = {
         Returns: string
       }
       purge_unconfirmed_signups: { Args: never; Returns: number }
+      seller_buyer_cod_warnings: {
+        Args: { p_order_ids: string[] }
+        Returns: string[]
+      }
       service_listing_publish_problems: {
         Args: { r: Database["public"]["Tables"]["service_listings"]["Row"] }
         Returns: string[]

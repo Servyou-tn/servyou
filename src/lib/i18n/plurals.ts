@@ -1,14 +1,19 @@
 import type { Lang } from './index'
 import { enPlurals } from './en'
 
-// CLDR distinguishes six categories (zero/one/two/few/many/other), but Intl.PluralRules only ever
-// returns 'few'/'many' for Arabic 3-10 / 11-99 — this app folds both into `other` (see
-// selectCategory), so a variants object only ever needs zero/one/two/other. French never produces
-// 'two', 'few', or 'many' at all — it only needs one/other.
+// CLDR distinguishes six categories (zero/one/two/few/many/other). French only needs one/other.
+// Arabic counts change their noun with the number: 3-10 take the plural (`few`: « 7 أيام »), 11-99
+// the accusative singular (`many`: « 18 يومًا », never « 18 أيام » — frontend audit F5, 2026-11-15),
+// 100-102 the singular (`other`). A variants object may leave `few` / `many` out: the missing one
+// falls back to `other`, so an entry written as one/two/other keeps working unchanged.
+export type PluralCategory = 'zero' | 'one' | 'two' | 'few' | 'many' | 'other'
+
 export type PluralVariants = {
   zero?: string
   one?: string
   two?: string
+  few?: string
+  many?: string
   other: string
 }
 
@@ -25,13 +30,12 @@ const RULES: Record<Lang, Intl.PluralRules> = {
  * (Intl.PluralRules('fr').select(0) === 'one'), which would print "0 produit". Every French
  * commerce site prints "0 produits" instead, so n=0 is forced to `other` for French. Arabic keeps
  * its own real `zero` category (CLDR gives it a distinct bucket) for any string that supplies a
- * `zero` variant; strings that don't fall back to `other`.
+ * `zero` variant; strings that don't fall back to `other`. The same fallback covers `few` / `many`
+ * (pickVariant below).
  */
-export function pluralCategory(lang: Lang, count: number): 'zero' | 'one' | 'two' | 'other' {
+export function pluralCategory(lang: Lang, count: number): PluralCategory {
   if (lang === 'fr' && count === 0) return 'other'
-  const raw = RULES[lang].select(count)
-  if (raw === 'few' || raw === 'many') return 'other'
-  return raw
+  return RULES[lang].select(count)
 }
 
 function pickVariant(variants: PluralVariants, lang: Lang, count: number): string {
@@ -113,6 +117,9 @@ export const frPlurals: Record<string, PluralVariants> = {
   'freelance.public.portfolio_count':      { one: '{count} réalisation', other: '{count} réalisations' },
 
   'seller.orders.count':                   { one: '{count} commande', other: '{count} commandes' },
+  // Seller order list « en attente » wait (audit S4, 2026-11-15): hours under a day, then days — never « 2335 h ».
+  'seller.orders.waiting_hours':           { one: '· il y a {count} h', other: '· il y a {count} h' },
+  'seller.orders.waiting_days':            { one: '· il y a {count} jour', other: '· il y a {count} jours' },
   'engagements.count':                     { one: '{count} engagement', other: '{count} engagements' },
   'propositions.count':                    { one: '{count} proposition', other: '{count} propositions' },
   // H9/H10 (PR-1). `count` is the number the noun agrees with.
@@ -162,102 +169,111 @@ export const frPlurals: Record<string, PluralVariants> = {
 }
 
 const arPlurals: Record<string, PluralVariants> = {
+  // REVIEW_AR_TRANSLATION — every `many` (11-99) and `few` (3-10) form in this table was added on 2026-11-15 (audit F5):
+  // 11-99 take the accusative singular (tamyiz) and their adjectives agree with it (« 12 طلبيةً عالقةً »).
   // REVIEW_AR_TRANSLATION — admin J1 / J8 / J9 — PR-5 block.
-  'admin.dash.ago_minutes': { one: "منذ دقيقة", two: "منذ دقيقتين", other: "منذ {count} دقيقة" },
-  'admin.dash.ago_hours': { one: "منذ ساعة", two: "منذ ساعتين", other: "منذ {count} ساعة" },
-  'admin.dash.ago_days': { one: "منذ يوم", two: "منذ يومين", other: "منذ {count} أيام" },
-  'admin.home.q_fake_scam': { one: "بلاغ خطير: احتيال", two: "بلاغان خطيران: احتيال", other: "{count} بلاغات خطيرة: احتيال" },
-  'admin.home.q_reports': { one: "بلاغ واحد مفتوح", two: "بلاغان مفتوحان", other: "{count} بلاغات مفتوحة" },
-  'admin.home.q_disputes': { one: "نزاع واحد قيد الانتظار", two: "نزاعان قيد الانتظار", other: "{count} نزاعات قيد الانتظار" },
-  'admin.home.q_orders_blocked': { one: "طلبية واحدة عالقة", two: "طلبيتان عالقتان", other: "{count} طلبيات عالقة" },
-  'admin.home.q_deletions': { one: "طلب حذف حساب واحد", two: "طلبا حذف حساب", other: "{count} طلبات حذف حساب" },
-  'admin.home.q_exports': { one: "طلب تصدير بيانات واحد", two: "طلبا تصدير بيانات", other: "{count} طلبات تصدير بيانات" },
-  'admin.home.q_contacts': { one: "رسالة تواصل واحدة", two: "رسالتا تواصل", other: "{count} رسائل تواصل" },
-  'admin.home.q_deletions_left': { one: "تُعالج خلال 48 ساعة · تبقى ساعة واحدة", two: "تُعالج خلال 48 ساعة · تبقى ساعتان", other: "تُعالج خلال 48 ساعة · تبقى {count} ساعة" },
-  'admin.home.q_deletions_late': { one: "تُعالج خلال 48 ساعة · متأخر بساعة واحدة", two: "تُعالج خلال 48 ساعة · متأخر بساعتين", other: "تُعالج خلال 48 ساعة · متأخر بـ {count} ساعة" },
-  'admin.home.kpi_cancel_sub': { one: "{part} من طلبية واحدة", two: "{part} من طلبيتين", other: "{part} من {count} طلبيات" },
-  'admin.home.city_sellers': { one: "بائع واحد", two: "بائعان", other: "{count} بائعين" },
-  'admin.home.city_orders': { one: "طلبية واحدة", two: "طلبيتان", other: "{count} طلبيات" },
-  'admin.stats.drop_pending': { one: "أكبر خسارة: طلبية واحدة بقيت « قيد الانتظار » (لم يردّ البائع).", two: "أكبر خسارة: طلبيتان بقيتا « قيد الانتظار » (لم يردّ البائع).", other: "أكبر خسارة: {count} طلبيات بقيت « قيد الانتظار » (لم يردّ البائع)." },
-  'admin.stats.drop_step': { one: "أكبر خسارة: طلبية واحدة بين « {from} » و« {to} ».", two: "أكبر خسارة: طلبيتان بين « {from} » و« {to} ».", other: "أكبر خسارة: {count} طلبيات بين « {from} » و« {to} »." },
-  'admin.orders.blocked_title': { one: "طلبية واحدة عالقة", two: "طلبيتان عالقتان", other: "{count} طلبيات عالقة" },
-  'admin.nav.blocked_count': { one: "طلبية واحدة عالقة", two: "طلبيتان عالقتان", other: "{count} طلبيات عالقة" },
-  'admin.nav.to_handle_count': { one: "طلب واحد للمعالجة", two: "طلبان للمعالجة", other: "{count} طلبات للمعالجة" },
+  'admin.dash.ago_minutes': { one: "منذ دقيقة", two: "منذ دقيقتين", few: 'منذ {count} دقائق', many: 'منذ {count} دقيقةً', other: "منذ {count} دقيقة" },
+  'admin.dash.ago_hours': { one: "منذ ساعة", two: "منذ ساعتين", few: 'منذ {count} ساعات', many: 'منذ {count} ساعةً', other: "منذ {count} ساعة" },
+  'admin.dash.ago_days': { one: "منذ يوم", two: "منذ يومين", many: 'منذ {count} يومًا', other: "منذ {count} أيام" },
+  'admin.home.q_fake_scam': { one: "بلاغ خطير: احتيال", two: "بلاغان خطيران: احتيال", many: '{count} بلاغًا خطيرًا: احتيال', other: "{count} بلاغات خطيرة: احتيال" },
+  'admin.home.q_reports': { one: "بلاغ واحد مفتوح", two: "بلاغان مفتوحان", many: '{count} بلاغًا مفتوحًا', other: "{count} بلاغات مفتوحة" },
+  'admin.home.q_disputes': { one: "نزاع واحد قيد الانتظار", two: "نزاعان قيد الانتظار", many: '{count} نزاعًا قيد الانتظار', other: "{count} نزاعات قيد الانتظار" },
+  'admin.home.q_orders_blocked': { one: "طلبية واحدة عالقة", two: "طلبيتان عالقتان", many: '{count} طلبيةً عالقةً', other: "{count} طلبيات عالقة" },
+  'admin.home.q_deletions': { one: "طلب حذف حساب واحد", two: "طلبا حذف حساب", many: '{count} طلبَ حذف حساب', other: "{count} طلبات حذف حساب" },
+  'admin.home.q_exports': { one: "طلب تصدير بيانات واحد", two: "طلبا تصدير بيانات", many: '{count} طلبَ تصدير بيانات', other: "{count} طلبات تصدير بيانات" },
+  'admin.home.q_contacts': { one: "رسالة تواصل واحدة", two: "رسالتا تواصل", many: '{count} رسالةَ تواصل', other: "{count} رسائل تواصل" },
+  'admin.home.q_deletions_left': { one: "تُعالج خلال 48 ساعة · تبقى ساعة واحدة", two: "تُعالج خلال 48 ساعة · تبقى ساعتان", few: 'تُعالج خلال 48 ساعة · تبقى {count} ساعات', many: 'تُعالج خلال 48 ساعة · تبقى {count} ساعةً', other: "تُعالج خلال 48 ساعة · تبقى {count} ساعة" },
+  'admin.home.q_deletions_late': { one: "تُعالج خلال 48 ساعة · متأخر بساعة واحدة", two: "تُعالج خلال 48 ساعة · متأخر بساعتين", few: 'تُعالج خلال 48 ساعة · متأخر بـ {count} ساعات', many: 'تُعالج خلال 48 ساعة · متأخر بـ {count} ساعةً', other: "تُعالج خلال 48 ساعة · متأخر بـ {count} ساعة" },
+  'admin.home.kpi_cancel_sub': { one: "{part} من طلبية واحدة", two: "{part} من طلبيتين", many: '{part} من {count} طلبيةً', other: "{part} من {count} طلبيات" },
+  'admin.home.city_sellers': { one: "بائع واحد", two: "بائعان", many: '{count} بائعًا', other: "{count} بائعين" },
+  'admin.home.city_orders': { one: "طلبية واحدة", two: "طلبيتان", many: '{count} طلبيةً', other: "{count} طلبيات" },
+  'admin.stats.drop_pending': { one: "أكبر خسارة: طلبية واحدة بقيت « قيد الانتظار » (لم يردّ البائع).", two: "أكبر خسارة: طلبيتان بقيتا « قيد الانتظار » (لم يردّ البائع).", many: 'أكبر خسارة: {count} طلبيةً بقيت « قيد الانتظار » (لم يردّ البائع).', other: "أكبر خسارة: {count} طلبيات بقيت « قيد الانتظار » (لم يردّ البائع)." },
+  'admin.stats.drop_step': { one: "أكبر خسارة: طلبية واحدة بين « {from} » و« {to} ».", two: "أكبر خسارة: طلبيتان بين « {from} » و« {to} ».", many: 'أكبر خسارة: {count} طلبيةً بين « {from} » و« {to} ».', other: "أكبر خسارة: {count} طلبيات بين « {from} » و« {to} »." },
+  'admin.orders.blocked_title': { one: "طلبية واحدة عالقة", two: "طلبيتان عالقتان", many: '{count} طلبيةً عالقةً', other: "{count} طلبيات عالقة" },
+  'admin.nav.blocked_count': { one: "طلبية واحدة عالقة", two: "طلبيتان عالقتان", many: '{count} طلبيةً عالقةً', other: "{count} طلبيات عالقة" },
+  'admin.nav.to_handle_count': { one: "طلب واحد للمعالجة", two: "طلبان للمعالجة", many: '{count} طلبًا للمعالجة', other: "{count} طلبات للمعالجة" },
   // REVIEW_AR_TRANSLATION — admin J2 / J3 — PR-2 block. Non-human plurals: feminine-singular agreement.
-  'admin.users.orders_count':              { one: 'طلبية واحدة', two: 'طلبيتان', other: '{count} طلبيات' },
-  'admin.users.summary_accounts':          { one: 'حساب واحد', two: 'حسابان', other: '{count} حسابات' },
-  'admin.users.summary_consumers':         { one: 'مشترٍ واحد', two: 'مشتريان', other: '{count} مشترين' },
-  'admin.users.summary_freelancers':       { one: 'مستقل واحد', two: 'مستقلان', other: '{count} مستقلين' },
-  'admin.users.summary_shops':             { one: 'متجر واحد', two: 'متجران', other: '{count} متاجر' },
+  'admin.users.orders_count':              { one: 'طلبية واحدة', two: 'طلبيتان', many: '{count} طلبيةً', other: '{count} طلبيات' },
+  'admin.users.summary_accounts':          { one: 'حساب واحد', two: 'حسابان', many: '{count} حسابًا', other: '{count} حسابات' },
+  'admin.users.summary_consumers':         { one: 'مشترٍ واحد', two: 'مشتريان', many: '{count} مشتريًا', other: '{count} مشترين' },
+  'admin.users.summary_freelancers':       { one: 'مستقل واحد', two: 'مستقلان', many: '{count} مستقلًا', other: '{count} مستقلين' },
+  'admin.users.summary_shops':             { one: 'متجر واحد', two: 'متجران', many: '{count} متجرًا', other: '{count} متاجر' },
   'admin.users.tile_visible':              { one: '{count} ظاهر', two: '{count} ظاهران', other: '{count} ظاهرة' },
   'admin.users.tile_hidden':               { one: '{count} مخفي', two: '{count} مخفيان', other: '{count} مخفية' },
   'admin.users.tile_open_reports':         { one: '{count} مفتوح', two: '{count} مفتوحان', other: '{count} مفتوحة' },
-  'admin.users.info_products':             { one: 'منتج واحد', two: 'منتجان', other: '{count} منتجات' },
+  'admin.users.info_products':             { one: 'منتج واحد', two: 'منتجان', many: '{count} منتجًا', other: '{count} منتجات' },
   // REVIEW_AR_TRANSLATION — admin J4 — PR-3 block.
-  'admin.content.reports_count':           { one: 'بلاغ واحد', two: 'بلاغان', other: '{count} بلاغات' },
+  'admin.content.reports_count':           { one: 'بلاغ واحد', two: 'بلاغان', many: '{count} بلاغًا', other: '{count} بلاغات' },
   // REVIEW_AR_TRANSLATION — admin J10 — PR-4 block.
-  'admin.requests.hours_left': { one: 'تبقى ساعة واحدة', two: 'تبقى ساعتان', other: 'تبقى {count} ساعة' },
-  'admin.requests.hours_left_long': { one: 'تبقى ساعة واحدة للمعالجة', two: 'تبقى ساعتان للمعالجة', other: 'تبقى {count} ساعة للمعالجة' },
-  'admin.requests.overdue': { one: 'متأخر بساعة واحدة', two: 'متأخر بساعتين', other: 'متأخر بـ {count} ساعة' },
-  'admin.requests.m_services': { one: 'خدمة نشطة واحدة', two: 'خدمتان نشطتان', other: '{count} خدمات نشطة' },
-  'admin.requests.m_products': { one: 'منتج نشط واحد', two: 'منتجان نشطان', other: '{count} منتجات نشطة' },
-  'admin.requests.m_open_orders': { one: 'طلبية جارية واحدة', two: 'طلبيتان جاريتان', other: '{count} طلبيات جارية' },
+  'admin.requests.hours_left': { one: 'تبقى ساعة واحدة', two: 'تبقى ساعتان', few: 'تبقى {count} ساعات', many: 'تبقى {count} ساعةً', other: 'تبقى {count} ساعة' },
+  'admin.requests.hours_left_long': { one: 'تبقى ساعة واحدة للمعالجة', two: 'تبقى ساعتان للمعالجة', few: 'تبقى {count} ساعات للمعالجة', many: 'تبقى {count} ساعةً للمعالجة', other: 'تبقى {count} ساعة للمعالجة' },
+  'admin.requests.overdue': { one: 'متأخر بساعة واحدة', two: 'متأخر بساعتين', few: 'متأخر بـ {count} ساعات', many: 'متأخر بـ {count} ساعةً', other: 'متأخر بـ {count} ساعة' },
+  'admin.requests.m_services': { one: 'خدمة نشطة واحدة', two: 'خدمتان نشطتان', many: '{count} خدمةً نشطةً', other: '{count} خدمات نشطة' },
+  'admin.requests.m_products': { one: 'منتج نشط واحد', two: 'منتجان نشطان', many: '{count} منتجًا نشطًا', other: '{count} منتجات نشطة' },
+  'admin.requests.m_open_orders': { one: 'طلبية جارية واحدة', two: 'طلبيتان جاريتان', many: '{count} طلبيةً جاريةً', other: '{count} طلبيات جارية' },
   'admin.requests.m_done_orders': { one: 'واحدة منتهية (محفوظة ومجهولة الهوية)', two: 'اثنتان منتهيتان (محفوظتان ومجهولتا الهوية)', other: '{count} منتهية (محفوظة ومجهولة الهوية)' },
-  'admin.requests.open_orders_warning': { one: 'طلبية واحدة ما زالت جارية: أبلغ العميل قبل الحذف.', two: 'طلبيتان ما زالتا جاريتين: أبلغ العملاء قبل الحذف.', other: '{count} طلبيات ما زالت جارية: أبلغ العملاء قبل الحذف.' },
+  'admin.requests.open_orders_warning': { one: 'طلبية واحدة ما زالت جارية: أبلغ العميل قبل الحذف.', two: 'طلبيتان ما زالتا جاريتين: أبلغ العملاء قبل الحذف.', many: '{count} طلبيةً ما زالت جارية: أبلغ العملاء قبل الحذف.', other: '{count} طلبيات ما زالت جارية: أبلغ العملاء قبل الحذف.' },
   // REVIEW_AR_TRANSLATION — admin J5 / J6. Non-human plurals take feminine-singular agreement (بلاغات مرسلة).
   'admin.nav.pending_count':               { one: '{count} قيد الانتظار', two: '{count} قيد الانتظار', other: '{count} قيد الانتظار' },
-  'admin.reports.sent_count':              { one: 'بلاغ واحد مُرسل', two: 'بلاغان مُرسلان', other: '{count} بلاغات مُرسلة' },
+  'admin.reports.sent_count':              { one: 'بلاغ واحد مُرسل', two: 'بلاغان مُرسلان', many: '{count} بلاغًا مُرسلًا', other: '{count} بلاغات مُرسلة' },
   'admin.reports.dismissed_count':         { one: 'واحد مرفوض', two: 'اثنان مرفوضان', other: '{count} مرفوضة' },
-  'admin.reports.card_by_count':           { one: 'أبلغ عنه {name} · {time}', two: 'أبلغ عنه {name} (بلاغان) · {time}', other: 'أبلغ عنه {name} ({count} بلاغات) · {time}' },
-  'mesannonces.count':                     { one: '{count} إعلان', two: '{count} إعلانان', other: '{count} إعلانات' },
+  'admin.reports.card_by_count':           { one: 'أبلغ عنه {name} · {time}', two: 'أبلغ عنه {name} (بلاغان) · {time}', many: 'أبلغ عنه {name} ({count} بلاغًا) · {time}', other: 'أبلغ عنه {name} ({count} بلاغات) · {time}' },
+  'mesannonces.count':                     { one: '{count} إعلان', two: '{count} إعلانان', many: '{count} إعلانًا', other: '{count} إعلانات' },
   // REVIEW_AR_TRANSLATION
-  'mesannonces.row.proposals':             { one: 'عرض واحد', two: 'عرضان', other: '{count} عروض' },
-  'mesfavoris.count':                      { one: '{count} مفضلة', two: '{count} مفضلتان', other: '{count} مفضلات' },
+  'mesannonces.row.proposals':             { one: 'عرض واحد', two: 'عرضان', many: '{count} عرضًا', other: '{count} عروض' },
+  'mesfavoris.count':                      { one: '{count} مفضلة', two: '{count} مفضلتان', many: '{count} مفضلةً', other: '{count} مفضلات' },
 
   'page_header.recherche.subtitle':        {
     one:   '{count} نتيجة عن « {query} »',
     two:   '{count} نتيجتان عن « {query} »',
+    many:  '{count} نتيجةً عن « {query} »',
     other: '{count} نتائج عن « {query} »',
   },
-  'page_header.recherche.emphasis':        { one: '{count} نتيجة', two: '{count} نتيجتان', other: '{count} نتائج' },
+  'page_header.recherche.emphasis':        { one: '{count} نتيجة', two: '{count} نتيجتان', many: '{count} نتيجةً', other: '{count} نتائج' },
   'page_header.categories.subtitle':       {
     one:   '{count} منتج في {category}',
     two:   '{count} منتجان في {category}',
+    many:  '{count} منتجًا في {category}',
     other: '{count} منتجات في {category}',
   },
-  'page_header.categories.emphasis':       { one: '{count} منتج', two: '{count} منتجان', other: '{count} منتجات' },
+  'page_header.categories.emphasis':       { one: '{count} منتج', two: '{count} منتجان', many: '{count} منتجًا', other: '{count} منتجات' },
   // REVIEW_AR_TRANSLATION — service-result header: same shape as the product pair above, and the
   // خدمة/خدمتان/خدمات forms match freelance.public.services_count.
   'page_header.categories.subtitle_service': {
     one:   '{count} خدمة في {category}',
     two:   '{count} خدمتان في {category}',
+    many:  '{count} خدمةً في {category}',
     other: '{count} خدمات في {category}',
   },
-  'page_header.categories.emphasis_service': { one: '{count} خدمة', two: '{count} خدمتان', other: '{count} خدمات' },
-  'boutique.public.products_count':       { one: '{count} منتج', two: '{count} منتجان', other: '{count} منتجات' },
-  'freelance.public.services_count':       { one: '{count} خدمة', two: '{count} خدمتان', other: '{count} خدمات' },
-  'freelancerCard.services':               { one: '{count} خدمة مقدّمة', two: '{count} خدمتان مقدّمتان', other: '{count} خدمات مقدّمة' },
+  'page_header.categories.emphasis_service': { one: '{count} خدمة', two: '{count} خدمتان', many: '{count} خدمةً', other: '{count} خدمات' },
+  'boutique.public.products_count':       { one: '{count} منتج', two: '{count} منتجان', many: '{count} منتجًا', other: '{count} منتجات' },
+  'freelance.public.services_count':       { one: '{count} خدمة', two: '{count} خدمتان', many: '{count} خدمةً', other: '{count} خدمات' },
+  'freelancerCard.services':               { one: '{count} خدمة مقدّمة', two: '{count} خدمتان مقدّمتان', many: '{count} خدمةً مقدّمةً', other: '{count} خدمات مقدّمة' },
   // REVIEW_AR_TRANSLATION — the short form of the 375 frame.
-  'freelancerCard.services_short':         { one: '{count} خدمة', two: '{count} خدمتان', other: '{count} خدمات' },
-  'freelance.public.portfolio_count':      { one: '{count} إنجاز', two: '{count} إنجازان', other: '{count} إنجازات' },
+  'freelancerCard.services_short':         { one: '{count} خدمة', two: '{count} خدمتان', many: '{count} خدمةً', other: '{count} خدمات' },
+  'freelance.public.portfolio_count':      { one: '{count} إنجاز', two: '{count} إنجازان', many: '{count} إنجازًا', other: '{count} إنجازات' },
 
-  'seller.orders.count':                   { one: '{count} طلب', two: '{count} طلبان', other: '{count} طلبات' },
-  'engagements.count':                     { one: '{count} مهمة', two: '{count} مهمتان', other: '{count} مهام' },
-  'propositions.count':                    { one: '{count} عرض', two: '{count} عرضان', other: '{count} عروض' },
+  'seller.orders.count':                   { one: '{count} طلب', two: '{count} طلبان', many: '{count} طلبًا', other: '{count} طلبات' },
+  // REVIEW_AR_TRANSLATION — seller order wait (audit S4). « منذ » governs the oblique dual (ساعتين، يومين).
+  'seller.orders.waiting_hours':           { one: '· منذ {count} ساعة', two: '· منذ {count} ساعتين', few: '· منذ {count} ساعات', many: '· منذ {count} ساعةً', other: '· منذ {count} ساعة' },
+  'seller.orders.waiting_days':            { one: '· منذ {count} يوم', two: '· منذ {count} يومين', few: '· منذ {count} أيام', many: '· منذ {count} يومًا', other: '· منذ {count} يوم' },
+  'engagements.count':                     { one: '{count} مهمة', two: '{count} مهمتان', many: '{count} مهمةً', other: '{count} مهام' },
+  'propositions.count':                    { one: '{count} عرض', two: '{count} عرضان', many: '{count} عرضًا', other: '{count} عروض' },
   // REVIEW_AR_TRANSLATION (H9/H10 PR-1 drafts). "منذ/خلال" govern the oblique dual (يومين).
-  'missionboard.count':                    { one: '{count} مهمة متاحة', two: '{count} مهمتان متاحتان', other: '{count} مهام متاحة' },
-  'missionboard.awareness':                { one: 'لديك {count} عرض نشط من أصل {max}', two: 'لديك {count} عرضان نشطان من أصل {max}', other: 'لديك {count} عروض نشطة من أصل {max}' },
-  'missioncard.expires':                   { one: 'تنتهي خلال {count} يوم', two: 'تنتهي خلال {count} يومين', other: 'تنتهي خلال {count} أيام' },
-  'missiondetail.expires':                 { one: 'تنتهي خلال {count} يوم', two: 'تنتهي خلال {count} يومين', other: 'تنتهي خلال {count} أيام' },
-  'missiondetail.expires_value':           { one: '{count} يوم', two: '{count} يومين', other: '{count} أيام' },
-  'proposal.form.skills_selected':         { one: 'تم اختيار {count} مهارة', two: 'تم اختيار {count} مهارتين', other: 'تم اختيار {count} مهارات' },
-  'annonce.form.skills_selected':          { one: '{count} مهارة', two: '{count} مهارتان', other: '{count} مهارات' },
-  'proposal.sent.step3':                   { one: 'رد {count} مستقل آخر على هذه المهمة.', two: 'رد {count} مستقلان آخران على هذه المهمة.', other: 'رد {count} مستقلين آخرين على هذه المهمة.' },
+  'missionboard.count':                    { one: '{count} مهمة متاحة', two: '{count} مهمتان متاحتان', many: '{count} مهمةً متاحةً', other: '{count} مهام متاحة' },
+  'missionboard.awareness':                { one: 'لديك {count} عرض نشط من أصل {max}', two: 'لديك {count} عرضان نشطان من أصل {max}', many: 'لديك {count} عرضًا نشطًا من أصل {max}', other: 'لديك {count} عروض نشطة من أصل {max}' },
+  'missioncard.expires':                   { one: 'تنتهي خلال {count} يوم', two: 'تنتهي خلال {count} يومين', many: 'تنتهي خلال {count} يومًا', other: 'تنتهي خلال {count} أيام' },
+  'missiondetail.expires':                 { one: 'تنتهي خلال {count} يوم', two: 'تنتهي خلال {count} يومين', many: 'تنتهي خلال {count} يومًا', other: 'تنتهي خلال {count} أيام' },
+  'missiondetail.expires_value':           { one: '{count} يوم', two: '{count} يومين', many: '{count} يومًا', other: '{count} أيام' },
+  'proposal.form.skills_selected':         { one: 'تم اختيار {count} مهارة', two: 'تم اختيار {count} مهارتين', many: 'تم اختيار {count} مهارةً', other: 'تم اختيار {count} مهارات' },
+  'annonce.form.skills_selected':          { one: '{count} مهارة', two: '{count} مهارتان', many: '{count} مهارةً', other: '{count} مهارات' },
+  'proposal.sent.step3':                   { one: 'رد {count} مستقل آخر على هذه المهمة.', two: 'رد {count} مستقلان آخران على هذه المهمة.', many: 'رد {count} مستقلًا آخر على هذه المهمة.', other: 'رد {count} مستقلين آخرين على هذه المهمة.' },
   // Preceded by "من" (from) → dual takes the oblique form (طلبين, not طلبان). Non-human plural
   // "طلبات" takes feminine-singular adjective agreement ("مُستلَمة", not "مُستلَمين").
   'seller.dashboard.tile.profit_sub':      {
     one:   'من {count} طلب مستلم',
     two:   'من {count} طلبين مستلمين',
+    many:  'من {count} طلبًا مستلمًا',
     other: 'من {count} طلبات مستلمة',
   },
 
@@ -270,20 +286,21 @@ const arPlurals: Record<string, PluralVariants> = {
   'product.bulk.confirm_delete':           {
     one:   'حذف {count} منتج محدد؟ هذا الإجراء لا يمكن التراجع عنه.',
     two:   'حذف {count} منتجين محددين؟ هذا الإجراء لا يمكن التراجع عنه.',
+    many:  'حذف {count} منتجًا محددًا؟ هذا الإجراء لا يمكن التراجع عنه.',
     other: 'حذف {count} منتجات محددة؟ هذا الإجراء لا يمكن التراجع عنه.',
   },
 
   // Preceded by "خلال"/"منذ" → dual takes the oblique form (يومين, not يومان).
-  'mesannonces.expiry_countdown':          { one: 'تنتهي خلال {count} يوم', two: 'تنتهي خلال {count} يومين', other: 'تنتهي خلال {count} أيام' },
+  'mesannonces.expiry_countdown':          { one: 'تنتهي خلال {count} يوم', two: 'تنتهي خلال {count} يومين', many: 'تنتهي خلال {count} يومًا', other: 'تنتهي خلال {count} أيام' },
   // Preceded by « تنتهي خلال » → the dual takes the oblique form (يومين). REVIEW_AR_TRANSLATION.
-  'annonces.detail.days':                  { one: '{count} يوم', two: '{count} يومين', other: '{count} أيام' },
-  'annonces.detail.competition':           { one: 'عرض واحد مستلم', two: 'عرضان مستلمان', other: '{count} عروض مستلمة' },
-  'annonces.detail.slots_left':            { one: 'بقي مكان واحد', two: 'بقي مكانان', other: 'بقيت {count} أماكن' },
-  'annonces.detail.proposals_more':        { one: '+ عرض آخر', two: '+ عرضان آخران', other: '+ {count} عروض أخرى' },
+  'annonces.detail.days':                  { one: '{count} يوم', two: '{count} يومين', many: '{count} يومًا', other: '{count} أيام' },
+  'annonces.detail.competition':           { one: 'عرض واحد مستلم', two: 'عرضان مستلمان', many: '{count} عرضًا مستلمًا', other: '{count} عروض مستلمة' },
+  'annonces.detail.slots_left':            { one: 'بقي مكان واحد', two: 'بقي مكانان', many: 'بقي {count} مكانًا', other: 'بقيت {count} أماكن' },
+  'annonces.detail.proposals_more':        { one: '+ عرض آخر', two: '+ عرضان آخران', many: '+ {count} عرضًا آخر', other: '+ {count} عروض أخرى' },
 
   // "قيد التنفيذ" (in progress) is an invariant prepositional phrase — it doesn't take number
   // agreement, so only the noun changes across categories.
-  'consumer.dashboard.orders.count':       { one: '{count} طلب قيد التنفيذ', two: '{count} طلبان قيد التنفيذ', other: '{count} طلبات قيد التنفيذ' },
+  'consumer.dashboard.orders.count':       { one: '{count} طلب قيد التنفيذ', two: '{count} طلبان قيد التنفيذ', many: '{count} طلبًا قيد التنفيذ', other: '{count} طلبات قيد التنفيذ' },
 
   // H4 Ecosystem widget. Both nouns are human/rational (مستهلك) or place (متجر) — sound masculine
   // plural for the former, broken plural for the latter, same split the glossary already uses
@@ -291,17 +308,17 @@ const arPlurals: Record<string, PluralVariants> = {
   // nominative dual/plural, not the oblique forms used after "من"/"منذ"/"خلال".
   // REVIEW_AR_TRANSLATION: "مستهلك" (consumer) is not in the locked glossary (ar.ts:5-23) — best-
   // effort MSA, no native pass yet.
-  'ecosysteme.consumers_count':            { one: '{count} مستهلك', two: '{count} مستهلكان', other: '{count} مستهلكون' },
-  'ecosysteme.shops_count':                { one: '{count} متجر', two: '{count} متجران', other: '{count} متاجر' },
+  'ecosysteme.consumers_count':            { one: '{count} مستهلك', two: '{count} مستهلكان', many: '{count} مستهلكًا', other: '{count} مستهلكون' },
+  'ecosysteme.shops_count':                { one: '{count} متجر', two: '{count} متجران', many: '{count} متجرًا', other: '{count} متاجر' },
 
   // H4 Activité récente relative timestamps (Ruling 8). Not preceded by a preposition here
   // ("منذ" IS the preposition itself, not a modifier of it) — but "منذ" still governs an oblique
   // dual by the same rule as the "خلال"/"منذ" pair above (يومين/ساعتين, not يومان/ساعتان).
-  'activite.time_ago_hours':               { one: 'منذ {count} ساعة', two: 'منذ {count} ساعتين', other: 'منذ {count} ساعات' },
-  'activite.time_ago_days':                { one: 'منذ {count} يوم', two: 'منذ {count} يومين', other: 'منذ {count} أيام' },
+  'activite.time_ago_hours':               { one: 'منذ {count} ساعة', two: 'منذ {count} ساعتين', many: 'منذ {count} ساعةً', other: 'منذ {count} ساعات' },
+  'activite.time_ago_days':                { one: 'منذ {count} يوم', two: 'منذ {count} يومين', many: 'منذ {count} يومًا', other: 'منذ {count} أيام' },
 
-  // REVIEW_AR_TRANSLATION — /aide search caption. Like the other counts here, 11+ folds into `other`.
-  'aide.search.count':                     { one: 'سؤال واحد يطابق «{q}»', two: 'سؤالان يطابقان «{q}»', other: '{count} أسئلة تطابق «{q}»' },
+  // REVIEW_AR_TRANSLATION — /aide search caption. 11-99 take the accusative singular (`many`), like the other counts here.
+  'aide.search.count':                     { one: 'سؤال واحد يطابق «{q}»', two: 'سؤالان يطابقان «{q}»', many: '{count} سؤالًا يطابق «{q}»', other: '{count} أسئلة تطابق «{q}»' },
 }
 
 const pluralDicts: Record<Lang, Record<string, PluralVariants>> = { fr: frPlurals, ar: arPlurals, en: enPlurals }

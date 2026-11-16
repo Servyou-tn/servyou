@@ -8,6 +8,7 @@ import { SELLER_ORDER_PATHS } from '@/lib/orders/seller-paths'
 import { t } from '@/lib/i18n'
 import { cancelErrorKey } from '@/lib/orders/cancel-error'
 import { advanceErrorKey, trackingErrorKey } from '@/lib/orders/order-write-error'
+import { REFUSAL_REASONS, isRefusable, refusalErrorKey, refusalReasonKey } from '@/lib/orders/refusal'
 import {
   nextSellerStatus,
   isCancellable,
@@ -279,6 +280,70 @@ export async function cancelOrderAction(input: unknown): Promise<ActionResult> {
   // The buyer's own list is a fixed route derived from the caller's role (never from the client); the seller
   // side keeps the allow-listed `revalidate` it always had.
   revalidatePath(role === 'buyer' ? '/mes-commandes' : (parsed.data.revalidate ?? '/commandes-recues'))
+  return { ok: true }
+}
+
+// ── Seller: « Refusée à la livraison » (the COD no-show rule) ───────────────────────────────────
+//
+// A refusal is a seller cancellation after dispatch carrying a refusal_reason (founder decision 1, 2026-11-14;
+// db/migrations/20261115182353_cod_no_show.sql). Same three layers as the cancel above, and the database is the authority:
+// enforce_refusal_marker (seller only, product only, from dispatched / in_delivery / arrived, set once) and
+// check_order_status_transition (role match, terminal lock). cancellation_reason, which the trigger requires after
+// dispatch, gets the reason's label in the seller's language, as the cancel presets do. Only granted columns are
+// named (cancelled_at is stamped by the database, see cancelOrderAction).
+
+const RefuseDeliveryInput = z.object({
+  orderId: z.string().uuid(),
+  reason: z.enum(REFUSAL_REASONS),
+  revalidate: z.enum(SELLER_PATHS).optional(),
+})
+
+export async function refuseDeliveryAction(input: unknown): Promise<ActionResult> {
+  const lang = await getLang()
+  const parsed = RefuseDeliveryInput.safeParse(input)
+  if (!parsed.success) return { ok: false, error: t('common.error_generic', lang) }
+
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return { ok: false, error: t('common.error_generic', lang) }
+
+  const { data: order, error: readError } = await supabase
+    .from('orders')
+    .select('id, seller_id, status, order_type')
+    .eq('id', parsed.data.orderId)
+    .maybeSingle()
+
+  if (readError) {
+    console.error('[refuseDelivery] read error:', readError.message, readError.code, readError.details)
+    return { ok: false, error: t('common.error_generic', lang) }
+  }
+  // Not found, or the caller is not the seller (the buyer can read the order too): one generic answer, no probing.
+  if (!order || order.seller_id !== user.id) return { ok: false, error: t('common.error_generic', lang) }
+
+  if (!isRefusable(order.status as OrderStatus, order.order_type as OrderType)) {
+    return { ok: false, error: t('seller.orders.error_refusal_status', lang) }
+  }
+
+  const { data: updated, error: updateError } = await supabase
+    .from('orders')
+    .update({
+      status: 'cancelled',
+      cancelled_by: 'seller',
+      cancellation_reason: t(refusalReasonKey(parsed.data.reason), lang),
+      refusal_reason: parsed.data.reason,
+    })
+    .eq('id', order.id)
+    .select('id')
+
+  if (updateError) {
+    console.error('[refuseDelivery] update error:', updateError.message, updateError.code, updateError.hint)
+    return { ok: false, error: t(refusalErrorKey(updateError), lang) }
+  }
+  if (!updated || updated.length === 0) return { ok: false, error: t('common.error_generic', lang) }
+
+  revalidatePath(parsed.data.revalidate ?? '/commandes-recues')
   return { ok: true }
 }
 

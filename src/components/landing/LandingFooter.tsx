@@ -6,13 +6,15 @@ import { Mail } from 'lucide-react'
 import { t } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
 import { FOCUS_RING } from '@/components/layout/styles'
+import { HitArea } from '@/components/ui/interactive-surface'
+import { SOCIAL_ACCOUNTS } from '@/lib/contact/social-accounts'
 import { Lockup } from './ui'
 import { useLangSwitch } from './useLangSwitch'
 
 // Footer — Figma 1729:51925 / 1729:51976. Rounded box (hero-box shape), surface-sunken → border-subtle
 // gradient (a step darker than the FAQ box), brand column + 3 link columns, divider, bottom bar with the
-// FR | EN | العربية switch. The social logos are shown but not linked yet: the real ServYou account URLs are
-// still to be provided (logged as a follow-up).
+// FR | EN | العربية switch. The social logos link to ServYou's own accounts in a new tab — only the accounts that have a
+// real address (lib/contact/social-accounts.ts); WhatsApp is gone (founder decision 2026-11-15).
 const COLUMNS = [
   {
     key: 'lp.footer.col.platform',
@@ -44,7 +46,6 @@ const COLUMNS = [
     ],
   },
 ]
-const SOCIAL = ['facebook', 'instagram', 'whatsapp'] as const
 const LINK = 'rounded-sm text-sm leading-[21px] text-text-secondary hover:text-text-primary'
 
 export function LandingFooter() {
@@ -78,10 +79,20 @@ export function LandingFooter() {
             <Mail className="size-4" aria-hidden="true" />
             contact@servyou.tn
           </a>
-          <ul className="flex gap-2.5" aria-label="Facebook, Instagram, WhatsApp">
-            {SOCIAL.map(s => (
-              <li key={s} className="flex size-9 items-center justify-center rounded-full border border-border-subtle bg-surface-base">
-                <Image src={`/brand/landing/${s}.webp`} alt={s} width={22} height={22} className="size-[22px]" />
+          {/* 36 px circles 10 px apart: the 44 px tap target (HitArea 36) adds 5 px a side, so neighbours never overlap. */}
+          <ul className="flex gap-2.5" aria-label={t('contact.methods.social.label', lang)}>
+            {SOCIAL_ACCOUNTS.map(account => (
+              <li key={account.platform}>
+                <a
+                  href={account.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={t('contact.methods.social.link_aria', lang, { platform: account.name })}
+                  className={cn('relative flex size-9 items-center justify-center rounded-full border border-border-subtle bg-surface-base hover:border-border-strong', FOCUS_RING)}
+                >
+                  <Image src={`/brand/landing/${account.platform}.webp`} alt="" width={22} height={22} className="size-[22px]" />
+                  <HitArea size={36} />
+                </a>
               </li>
             ))}
           </ul>

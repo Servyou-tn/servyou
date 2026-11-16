@@ -12,7 +12,7 @@
  * The pure isValidPhone/normalizePhone unit tests live in progressive-phone.test.ts.
  *
  * Run: `npm run test:integration` (needs Supabase creds in .env.local). When creds
- * are absent the suite skips cleanly (describe.skipIf) — no throw.
+ * are absent the integration config refuses to start (vitest.live-env.ts).
  */
 
 import { describe, it, expect, beforeAll, afterAll } from 'vitest'

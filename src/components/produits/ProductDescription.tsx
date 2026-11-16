@@ -9,20 +9,17 @@ import { t } from '@/lib/i18n'
 // « Voir plus » 21. The body's 78 is exactly three lines at the 26 leading derived from the frame's
 // row heights, which is what identifies the clamp as 3 rather than a coincidence of copy length.
 //
-// ⚑ The toggle is rendered ONLY when the text actually overflows three lines — and that question
-// cannot be answered on the server, because it depends on the rendered box width and the font. So
-// the button ships unconditionally when there is a description and `line-clamp-3` does the visual
-// work; a short description simply shows a « Voir plus » that expands nothing visible. That is the
-// honest trade for not measuring the DOM: the alternative is a layout-effect that reads
-// scrollHeight on mount and causes a flash of the wrong state on every navigation.
+// ⚑ « Voir plus » shows ONLY when the text really overflows its clamp, at every width (walk J5: from `lg` it used to show
+// unconditionally, a dead link under every short description). Overflow depends on the box width and the font, so it is
+// measured on the client (ResizeObserver, below) — the same mechanism the 375 layout already used.
 //
 // `whitespace-pre-line` preserves the seller's own line breaks — G6's textarea accepts them and a
 // product description written as a spec list reads as one paragraph without it.
 //
 // 375 (m375-d1-produit, `descSection`), `max-lg:` only: 15/24 text/secondary, gap 8, « Voir plus » 14 Regular blue-600 (17). The clamp is 5 lines —
-// INFERRED: the frame's specimen text is exactly 5 lines with the link under it. Below `lg` the link is measured, like D2's ServiceDescription
-// (ResizeObserver, before paint): it shows only when the text really overflows, so the short descriptions most products have get no dead link.
-// From `lg` everything above holds unchanged (clamp 3, link always there).
+// INFERRED: the frame's specimen text is exactly 5 lines with the link under it. From `lg` the clamp is 3. At both widths the link is
+// measured, like D2's ServiceDescription: it shows only when the text really overflows, so the short descriptions most products have
+// get no dead link. Crossing `lg` changes the clamp, which resizes the box, so the observer re-measures.
 export function ProductDescription({ description }: { description: string }) {
   const lang = useLang()
   const ref = useRef<HTMLParagraphElement>(null)
@@ -69,7 +66,7 @@ export function ProductDescription({ description }: { description: string }) {
         aria-controls="product-description"
         // max-lg py / -my 3.5: a 45 px touch target around the 17 px line (≥ 44 on mobile) without moving the layout.
         className={`w-fit rounded-md text-[15px] font-medium text-brand-blue-600 transition-colors hover:text-brand-blue-700 max-lg:-my-3.5 max-lg:py-3.5 max-lg:text-sm max-lg:font-normal max-lg:leading-[17px] ${
-          overflows || expanded ? '' : 'max-lg:hidden'
+          overflows || expanded ? '' : 'hidden'
         } ${FOCUS_RING}`}
       >
         {t(expanded ? 'product.detail.see_less' : 'product.detail.see_more', lang)}

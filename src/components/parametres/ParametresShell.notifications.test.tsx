@@ -41,8 +41,8 @@ describe('ParametresShell — Notifications tab', () => {
     const { rerender } = render(shell(null))
     expect(screen.queryAllByRole('switch')).toHaveLength(0)
     rerender(shell(DEFAULT_NOTIF_PREFS))
-    // shop_owner: 5 toggles + the locked security switch
-    expect(screen.getAllByRole('switch')).toHaveLength(6)
+    // shop_owner: 4 toggles + the locked security switch (no « Avis » row: reviews are Phase 3)
+    expect(screen.getAllByRole('switch')).toHaveLength(5)
     expect(screen.queryByRole('alert')).toBeNull()
   })
 
@@ -50,6 +50,13 @@ describe('ParametresShell — Notifications tab', () => {
     render(shell(DEFAULT_NOTIF_PREFS))
     expect(screen.getByRole('switch', { name: t('parametres.notifications.email_low_stock.label', 'fr') })).toHaveAttribute('aria-checked', 'false')
     expect(screen.getByRole('switch', { name: t('parametres.notifications.email_new_orders.shop_owner.label', 'fr') })).toHaveAttribute('aria-checked', 'true')
+  })
+  it('no role sees the « Avis » (reviews) toggle: reviews are Phase 3', () => {
+    for (const role of ['shop_owner', 'freelancer'] as const) {
+      render(shell(DEFAULT_NOTIF_PREFS, role))
+      expect(screen.queryByRole('switch', { name: t(`parametres.notifications.email_reviews.${role}.label`, 'fr') })).toBeNull()
+      cleanup()
+    }
   })
   it('a freelancer sees the missions-matching row (ON by default); a shop owner and a buyer do not', () => {
     const name = t('parametres.notifications.email_missions_matching.label', 'fr')

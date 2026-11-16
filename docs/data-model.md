@@ -31,14 +31,36 @@ One central `profiles` table holds the universal identity every user shares, sin
 | id | uuid | PK, FK to `auth.users(id)` ON DELETE CASCADE |
 | full_name | text | required |
 | email | text | required, unique |
-| date_of_birth | date | required, used for the 16+/18+ age rule |
+| date_of_birth | date | nullable until the account is complete (two-step sign-up, below); required once complete; used for the 16+/18+ age rules; never client-writable |
 | city | text | nullable |
-| language | text | `'fr'` or `'ar'`, default `'fr'` |
+| language | text | `'fr'`, `'ar'` or `'en'`, default `'fr'` |
+| completed_at | timestamptz | nullable; set when the account is complete (step 2, or at creation for a sign-up that carries the full profile) |
+| terms_accepted_at, terms_version | timestamptz, text | the terms and privacy policy accepted, and which version; « avant 2026-11 » for accounts created before the checkbox |
 | phone | text | nullable, progressively collected |
 | seller_type | text | nullable, `'freelancer'` or `'shop_owner'` |
 | is_admin | boolean | default false, separate protected flag |
 | created_at | timestamptz | auto |
 | updated_at | timestamptz | auto via `handle_updated_at` trigger |
+
+**The two-step sign-up** (migration `20261115222457_two_step_signup`; plan and founder decisions:
+`docs/follow-ups/two-step-signup-plan.md`). Sign-up asks for the name and the e-mail; the e-mail link opens
+« Finalisez votre compte » (password, birth date, city, terms).
+- `handle_new_user` (AFTER INSERT on `auth.users`) creates every profile from the sign-up metadata, with or without a
+  birth date. A profile without one is incomplete (`completed_at` null).
+- A CHECK requires the birth date and the terms once `completed_at` is set. The city is not covered: the deletion
+  tombstone clears it, and the owner may edit it.
+- `complete_my_account(full_name, date_of_birth, city, terms_version)` (SECURITY DEFINER, authenticated only) completes
+  it. It requires all of these:
+  - a session opened by an e-mailed link or code (JWT `amr` `otp`; a password sign-in never qualifies);
+  - no other session of the account alive;
+  - a password set during this session (`private.account_password_set`, written by the `on_auth_user_password_set`
+    trigger on `auth.users`). A password chosen when someone else created the account never counts;
+  - 16+, a name and a city;
+  - the current `private.current_terms_version()`.
+- This is what makes a squatted sign-up harmless (pre-launch audit H1).
+- **Transitional (DB-1):** a sign-up that carries the full profile is still complete at creation, and an incomplete
+  account is not yet refused anything. DB-2 adds the write gate, the 7-day purge of incomplete accounts and the
+  confirmed-at-insert rule (`docs/follow-ups/two-step-signup-db.md`).
 
 A single `seller_type` field expresses the optional seller capability: empty for a pure consumer; `'freelancer'` or `'shop_owner'` once upgraded; never both at once. Future branched roles (such as `'liberal_professional'`, `'small_company'`) are added as new accepted values plus their own child tables. Admin status is a separate boolean, kept out of `seller_type` to preserve the developer/admin separation.
 
@@ -118,13 +140,17 @@ A single `orders` table holds both product and service requests, so the buyer's 
 | order_type | text | `'product'` or `'service'` |
 | product_id | uuid | nullable, FK to products |
 | service_listing_id | uuid | nullable, FK to service_listings |
-| delivery_name, delivery_address, delivery_phone | text | nullable, set for product orders only |
+| delivery_name, delivery_address, delivery_phone | text | nullable; name and address for product orders only, `delivery_phone` for both (on a service request it carries the buyer's contact number) |
 | buyer_note | text | nullable |
 | quantity | integer | default 1, CHECK ≥ 1 |
 | status | text | the 8-value lifecycle below |
 | cancelled_by | text | nullable, `'buyer'` or `'seller'` |
 | cancellation_reason | text | nullable |
-| received_at | timestamptz | nullable, set when status reaches `'received'` |
+| received_at | timestamptz | nullable, stamped by the database when status reaches `'received'` |
+| cancelled_at | timestamptz | nullable, stamped by the database (`trg_set_cancelled_at_on_transition`) when status reaches `'cancelled'` |
+| carrier, tracking_number | text | nullable, the seller's delivery details on a product order |
+| refusal_reason | text | nullable, the COD no-show marker: `'refused_parcel'`, `'not_collected'` or `'unreachable'` (see below) |
+| refusal_voided_at | timestamptz | nullable, set by `admin_void_refusal` only: the refusal stops counting |
 | created_at, updated_at | timestamptz | auto |
 
 A CHECK constraint enforces that exactly one of `product_id` / `service_listing_id` is filled, matching `order_type`.
@@ -133,15 +159,27 @@ A CHECK constraint enforces that exactly one of `product_id` / `service_listing_
 
 **The role-gating trigger** (`check_order_status_transition`, BEFORE UPDATE on orders) is the load-bearing enforcement. The trigger enforces, in order:
 
-1. Admin override: `is_admin()` calls always pass.
-2. Non-status edits (buyer_note, delivery_phone, etc.) sail through.
-3. Caller role resolution: caller must be `OLD.buyer_id` (resolves to `'buyer'`) or `OLD.seller_id` (resolves to `'seller'`); otherwise rejected.
-4. Terminal lock: orders in `'received'` or `'cancelled'` cannot transition out.
-5. Cancellation path: `NEW.cancelled_by` must be non-null and match caller role; post-pivot cancellation (product: `dispatched`+; service: `accepted`+) requires `cancellation_reason`.
-6. Buyer-only `'received'`: only the buyer can move `arrived` → `received`.
-7. Seller-only chain advancement: only the seller can advance through the chain, with strict adjacency per order type (product chain: pending→accepted→prepared→dispatched→in_delivery→arrived; service chain: pending→accepted→arrived).
+1. Non-status edits (buyer_note, delivery_phone, etc.) sail through.
+2. Caller role resolution: caller must be `OLD.buyer_id` (resolves to `'buyer'`) or `OLD.seller_id` (resolves to `'seller'`); otherwise rejected.
+3. Terminal lock: orders in `'received'` or `'cancelled'` cannot transition out.
+4. Cancellation path: `NEW.cancelled_by` must be non-null and match caller role; post-pivot cancellation (product: `dispatched`+; service: `accepted`+) requires `cancellation_reason`.
+5. Buyer-only `'received'`: only the buyer can move `arrived` → `received`.
+6. Seller-only chain advancement: only the seller can advance through the chain, with strict adjacency per order type (product chain: pending→accepted→prepared→dispatched→in_delivery→arrived; service chain: pending→accepted→arrived).
 
-The trigger uses `RAISE EXCEPTION` with French error messages, which surface to the user directly. The RLS UPDATE policy above the trigger is intentionally wide (`buyer_id = auth.uid() OR seller_id = auth.uid()`) — narrow gating belongs in the trigger because it depends on the diff between OLD and NEW.
+There is no admin override of the status: the trigger has no `is_admin()` branch and `orders` has no admin UPDATE policy. The one admin write on an order is `admin_void_refusal` (below), which never touches the status.
+
+The triggers raise French messages, some with a hint. The server actions never show that text, which is French-only and can name the other party's role: they map it to an i18n key (`src/lib/orders/cancel-error.ts`, `order-write-error.ts`, `refusal.ts`; `src/lib/marche/cap-refusal.ts` on insert) and fall back to a generic error. The RLS UPDATE policy above the trigger is intentionally wide (`buyer_id = auth.uid() OR seller_id = auth.uid()`) — narrow gating belongs in the trigger because it depends on the diff between OLD and NEW.
+
+**The COD no-show rule** (migration `20261115182353_cod_no_show`, founder decisions of 2026-11-14 in `docs/follow-ups/cod-no-show-plan.md`). It protects sellers from buyers who order cash on delivery and then refuse the parcel.
+
+- *A refusal* is a seller cancellation of a product order coming from `dispatched` / `in_delivery` / `arrived`, made with a `refusal_reason`. There is no new status: the order is `'cancelled'`, and the UI shows « Refusée à la livraison » when the marker is set. `trg_enforce_refusal_marker` lets only the order's seller set the reason, once, in that cancelling update; nothing is preset on insert, and only an admin sets `refusal_voided_at`, once.
+- *What counts*: a refusal counts once per seller, per buyer, per Africa/Tunis day, if it is not voided and is newer than the buyer's last block lift. The standing is computed live by `private.buyer_cod_standing(buyer)`; nothing is stored, and the schema is not exposed by the API.
+- *2 counted refusals in 90 days* (or an active block): one open product order (`pending` … `arrived`) at a time, and the seller sees a yes / no warning on that buyer's open orders (`seller_buyer_cod_warnings`, order ids only).
+- *A refusal that reaches 3 in 90 days* blocks new product orders until that refusal + 30 days; a 4th restarts the 30 days. Only new orders are gated, and service requests never are.
+- *Enforcement*: `trg_limit_orders_cod` (BEFORE INSERT) takes the rate limit's `orders.rate:<buyer>` advisory lock before reading, so two concurrent inserts can't both pass the cap. It raises 23514 `cod_blocked` (the message carries the end date) or `cod_open_order_cap`.
+- *Contest and admin*: the buyer contests through a dispute (reason `refusal_contested`, within 14 days, own order only). An admin voids a refusal (`admin_void_refusal`) or lifts a block (`admin_lift_cod_block`, which refuses a buyer who is not blocked). A lift is a clean slate: earlier refusals stop counting. Both RPCs log in the audit log in the same transaction.
+- `cod_block_lifts` holds one row per lift (`buyer_id`, `lifted_by`, `lifted_at`, `note`). RLS: admins read; no client writes, no anon read; written by `admin_lift_cod_block` only.
+- The buyer reads their own standing through `get_my_cod_standing()`: the cap yes / no and the block's end, never the count. `admin_get_cod_standing(buyer)` gives an admin the full standing.
 
 **The buyer-cancellation-history view** aggregates cancellations per buyer for the post-launch buyer-rating system. Read-only, built from the orders table, it stores no new data: one row per buyer with `buyer_id`, `total_orders`, `cancellations_total` (any initiator), `cancellations_by_buyer` (`cancelled_by='buyer'`), `cancellations_by_buyer_after_pivot` (buyer-initiated where a reason was required — the serial-refuser metric, using `cancellation_reason IS NOT NULL` as a proxy for post-pivot until per-transition timestamps ship), and `last_buyer_cancelled_at`. It is `security_invoker=true`, inheriting orders RLS: a buyer sees their own global stats, an admin sees all, a seller sees only the slice of orders they share with that buyer.
 
@@ -175,16 +213,16 @@ The admin layer (Phase 9) adds moderation, dispute resolution, user suspension, 
 
 **Content moderation.** `shops`, `products`, `service_listings`, `freelancer_profiles`, and `job_posts` each carry `admin_hidden_at` (nullable timestamptz) + `admin_hidden_reason` (nullable text), with a CHECK requiring a reason when set. Only admins set or clear the marker — enforced by `enforce_admin_moderation_lock` (products/service_listings, which also have a seller `status='hidden'`) and `enforce_admin_marker_lock` (shops/freelancer_profiles/job_posts). `admin_hide_content` / `admin_unhide_content` SECURITY DEFINER RPCs are the only write path; public surfaces filter `admin_hidden_at IS NULL` at the application layer.
 
-**Disputes.** The `disputes` table is a report scoped to a specific order: `order_id` (FK → orders ON DELETE CASCADE), `created_by_role` (`'buyer'`/`'seller'`), `reason` (enum: `not_delivered`/`wrong_item`/`damaged`/`payment_refused`/`buyer_unreachable`/`other`), `description`, `status` (`open`/`under_review`/`resolved`/`dismissed`), `outcome` (`sided_buyer`/`sided_seller`/`compromise`, set iff resolved), `admin_note` (required on a terminal state), and timestamps. A partial unique index permits one active dispute per order. RLS: the order's parties and admins read; a party creates (role matching their identity on the order, order past `pending`); admin updates. Resolution is informational at MVP (no payment rail, no money movement).
+**Disputes.** The `disputes` table is a report scoped to a specific order: `order_id` (FK → orders ON DELETE CASCADE), `created_by_role` (`'buyer'`/`'seller'`), `reason` (enum: `not_delivered`/`wrong_item`/`damaged`/`payment_refused`/`buyer_unreachable`/`other`/`refusal_contested`), `description`, `status` (`open`/`under_review`/`resolved`/`dismissed`), `outcome` (`sided_buyer`/`sided_seller`/`compromise`, set iff resolved), `admin_note` (required on a terminal state), and timestamps. Two partial unique indexes permit one active `refusal_contested` dispute and one other active dispute per order, so a seller's dispute never blocks the buyer's contest of a refused delivery. `trg_enforce_refusal_contest` accepts a contest only from the buyer, on their own order, within 14 days of a refusal that is not voided. RLS: the order's parties and admins read; a party creates (role matching their identity on the order, order past `pending`); admin updates. Resolution is informational at MVP (no payment rail, no money movement).
 
-**Audit log.** `admin_audit_log` is the immutable forensic record of every state-changing admin action: `admin_id` (FK → profiles ON DELETE RESTRICT), `action` + `target_type` (free text), `target_id`, `before_state` / `after_state` (jsonb), `note`, `created_at`. RLS: admin-only SELECT; INSERT gated by `is_admin() AND admin_id = auth.uid()`; **no UPDATE and no DELETE policy** — entries are permanent. The `log_admin_action(...)` SECURITY DEFINER RPC is the write path; the four admin content/user RPCs log in-transaction, while the report/dispute server actions log best-effort after their UPDATE commits.
+**Audit log.** `admin_audit_log` is the immutable forensic record of every state-changing admin action: `admin_id` (FK → profiles ON DELETE RESTRICT), `action` + `target_type` (free text), `target_id`, `before_state` / `after_state` (jsonb), `note`, `created_at`. RLS: admin-only SELECT; INSERT gated by `is_admin() AND admin_id = auth.uid()`; **no UPDATE and no DELETE policy** — entries are permanent. The `log_admin_action(...)` SECURITY DEFINER RPC is the write path; the four admin content/user RPCs and the two COD no-show RPCs (`admin_lift_cod_block`, `admin_void_refusal`) log in-transaction, while the report/dispute server actions log best-effort after their UPDATE commits.
 
 ## Column-level write protection (the privileged-column locks)
 
 RLS gates rows, not columns — so on owner-writable tables, privileged columns must be protected at the column-privilege and trigger layers as well. A column-level `REVOKE` does **not** subtract from a pre-existing table-level grant in PostgreSQL, so the pattern is an allow-list inversion: revoke table `UPDATE`, then grant back only the columns the app legitimately edits. Two tables carry these locks (added in PR-Z to close the 2026-06-09 audit's CRIT-1 and IMP-1):
 
-- **`profiles`.** `authenticated` holds `UPDATE` only on `full_name, city, language, phone, seller_type`. `is_admin`, `suspended_at`, `suspended_reason`, `date_of_birth`, and `email` are not authenticated-writable — they change only through the admin SECURITY DEFINER RPCs (running as owner) or the service role. `enforce_profile_admin_marker_lock` is the defense-in-depth trigger; `enforce_seller_type_age_gate` enforces the 18+ rule at the DB layer when `seller_type` is set.
-- **`orders`.** `authenticated` holds `UPDATE` only on the lifecycle columns `status, cancelled_by, cancellation_reason, received_at`; the identity columns (`buyer_id, seller_id, product_id, service_listing_id, order_type, quantity, buyer_note, delivery_*`) are frozen after creation (column grant + `enforce_order_identity_lock`). The role-gating trigger continues to govern status transitions.
+- **`profiles`.** `authenticated` holds `UPDATE` only on `avatar_url, full_name, city, language, phone, seller_type`. `is_admin`, `suspended_at`, `suspended_reason`, `date_of_birth`, `email`, `completed_at`, `terms_accepted_at` and `terms_version` are not authenticated-writable — they change only through SECURITY DEFINER RPCs running as owner (the admin RPCs; `complete_my_account` for the birth date, the completion and the terms) or the service role. `enforce_profile_admin_marker_lock` is the defense-in-depth trigger; `enforce_seller_type_age_gate` enforces the 18+ rule at the DB layer when `seller_type` is set.
+- **`orders`.** `authenticated` holds `UPDATE` only on `status, cancelled_by, cancellation_reason, carrier, tracking_number, refusal_reason`; `received_at` and `cancelled_at` are stamped by the database (the `received_at` grant was revoked by `20261028194721`), and `refusal_voided_at` is written by `admin_void_refusal` only. The identity columns (`buyer_id, seller_id, product_id, service_listing_id, order_type, quantity, buyer_note, delivery_*`) are frozen after creation (column grant + `enforce_order_identity_lock`). The role-gating trigger continues to govern status transitions.
 
 The trigger bypass cascade for all three locks is: `auth.uid() IS NULL` (service-role / SQL-editor / cron) → allow; `is_admin()` (admin RPC paths) → allow; otherwise a protected-column change raises `42501`. These locks are exercised by `scripts/rls-smoke.mjs` section F.
 

@@ -127,7 +127,7 @@ export function BuyerOrderActions({
         <button
           type="button"
           onClick={() => setDialog('cancel')}
-          className={`w-full rounded text-center text-body-sm text-danger-500 hover:underline max-lg:order-2 ${FOCUS_RING}`}
+          className={`w-full rounded text-center text-body-sm text-danger-700 hover:underline max-lg:order-2 ${FOCUS_RING}`}
         >
           {t('seller.orderDetail.cancel_link', lang)}
         </button>

@@ -75,9 +75,9 @@ export function ServiceRow({ service, lang }: { service: SellerServiceRow; lang:
           <CategoryIcon className="size-5 text-brand-blue-600" aria-hidden="true" />
         </span>
         <div className="flex min-w-0 flex-1 flex-col gap-1 max-lg:self-stretch">
-          <p className="truncate text-body font-semibold text-text-primary">{service.title}</p>
+          <p dir="auto" className="truncate rtl:max-w-full rtl:self-start text-body font-semibold text-text-primary">{service.title}</p>
           {service.description ? (
-            <p className="truncate text-body-sm text-text-secondary">{service.description}</p>
+            <p dir="auto" className="truncate rtl:max-w-full rtl:self-start text-body-sm text-text-secondary">{service.description}</p>
           ) : null}
         </div>
       </div>

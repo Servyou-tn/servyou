@@ -40,7 +40,9 @@ export const VARIANT_BASE: Record<ButtonVariant, string> = {
   primary: 'bg-brand-blue-600 text-text-inverse',
   secondary: 'bg-surface-base border border-border-strong text-text-primary',
   ghost: 'text-brand-blue-600',
-  danger: 'bg-danger-500 text-text-inverse',
+  // danger-700, not 500: white on danger-500 is 3.91:1, under WCAG AA's 4.5 for 14–16px labels (journey walk S2, « Annuler
+  // la commande »); white on danger-700 is 7.44. 700 is the scale's darkest red, so hover / pressed darken with a filter.
+  danger: 'bg-danger-700 text-text-inverse',
   link: 'text-brand-blue-600',
 }
 
@@ -50,7 +52,7 @@ export const VARIANT_STATE: Record<ButtonVariant, string> = {
   primary: 'hover:bg-brand-blue-700 active:bg-brand-blue-800',
   secondary: 'hover:bg-surface-subtle active:bg-surface-sunken',
   ghost: 'hover:bg-brand-blue-50 active:bg-brand-blue-100',
-  danger: 'hover:bg-danger-700 active:bg-danger-700', // Figma renders #808080 grey — see follow-ups
+  danger: 'hover:brightness-90 active:brightness-75', // Figma renders #808080 grey — see follow-ups
   link: 'hover:underline active:text-brand-blue-800', // link has no Figma hover treatment
 }
 

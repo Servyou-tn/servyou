@@ -111,6 +111,9 @@ export const ar: Record<string, string> = {
   'common.cancel_reason_seller_out_of_stock':    "المنتج غير متوفر في المخزون",
   'common.cancel_reason_seller_invalid_address': "عنوان التوصيل غير صالح",
   'common.cancel_reason_seller_unreachable':     "تعذر الوصول إلى العميل",
+  'common.refusal_reason_refused_parcel': "رفض العميل الطرد", // REVIEW_AR_TRANSLATION (COD no-show rule)
+  'common.refusal_reason_not_collected': "لم يتم استلام الطرد", // REVIEW_AR_TRANSLATION (COD no-show rule)
+  'common.refusal_reason_unreachable': "تعذر الوصول إلى العميل عند التسليم", // REVIEW_AR_TRANSLATION (COD no-show rule)
   'common.cancel_reason_seller_product_error':   "خطأ في بطاقة المنتج",
   'common.cancel_reason_seller_other':           "سبب آخر",
   // Listing statuses (products + services)
@@ -247,7 +250,7 @@ export const ar: Record<string, string> = {
   'lp.mission.p3': "نحمي مستخدمينا، ونتعامل بشفافية في كل ما يخص المال، ونبقى تونسيين في كل التفاصيل.",
   'lp.mission.p4': "اليوم، المستقلون والمتاجر وزبائنهم. وغدا، المهن الحرة والمؤسسات الصغرى.",
   'lp.mission.ambition': "طموحنا: أن نساعد كل واحد على العيش من عمله بشكل أفضل، وأن نساعد تونس على إعادة بناء اقتصادها، وأن نفتح السوق التونسية على كامل المغرب العربي.",
-  'lp.mission.name': "معتز",
+  'lp.mission.name': "Moatez Sahbeni",
   'lp.mission.role': "مؤسس ServYou",
   'lp.how.eyebrow': "كيف تعمل المنصة",
   'lp.how.title': "بسيطة للجميع",
@@ -350,7 +353,7 @@ export const ar: Record<string, string> = {
   'lp.footer.lang_label': "اللغة",
 
   'landing.footer.tagline':             "بع، اشتر، اعمل — بالطريقة التونسية.",
-  'landing.footer.founder_credit':      "صُنع في تونس على يد معتز ز.",
+  'landing.footer.founder_credit':      "صُنع في تونس على يد Moatez Sahbeni",
   'landing.footer.col_discover':        "اكتشف",
   'landing.footer.col_servyou':         "Servyou",
   'landing.footer.col_legal':           "قانوني",
@@ -738,7 +741,6 @@ export const ar: Record<string, string> = {
   // ─── D4 — Public freelancer profile (/freelance/[id]) ─────────────────────────
   'freelance.public.member_since':      "عضو منذ {date}",
   'freelance.public.new_badge':         "جديد في Servyou",
-  'freelance.public.no_reviews_yet':    "لا توجد تقييمات بعد",
   'freelance.public.projects_delivered':"مشاريع منجزة",
   'freelance.public.years_value':       "{years} سنوات",
   'freelance.public.years_experience':  "من الخبرة",
@@ -1140,6 +1142,9 @@ export const ar: Record<string, string> = {
   // Order anti-abuse caps (orders rate-limit migration).
   'demander.error.cap_seller':     "لديك بالفعل 5 طلبات قيد الانتظار لدى هذا البائع. انتظر حتى يعالج أحدها، أو ألغِ أحدها، قبل تقديم طلب آخر.",
   'demander.error.cap_daily':      "لقد بلغت الحد الأقصى وهو 20 طلبًا خلال 24 ساعة. حاول مرة أخرى لاحقًا.",
+  'demander.error.cod_open_order_cap': "تم رفض عدة طلبات لك عند التسليم خلال آخر 90 يومًا: يمكنك أن يكون لديك طلب واحد جارٍ فقط في كل مرة. يجب استلامه أو إلغاؤه قبل تقديم طلب آخر.", // REVIEW_AR_TRANSLATION (COD no-show rule)
+  'demander.error.cod_blocked': "بعد رفض 3 طلبات عند التسليم خلال 90 يومًا، تم إيقاف الطلبات بالدفع عند الاستلام لحسابك حتى {date}. إذا كان ذلك خطأ، اعترض على الرفض من صفحة الطلب المعني.", // REVIEW_AR_TRANSLATION (COD no-show rule)
+  'demander.error.cod_blocked_generic': "بعد رفض 3 طلبات عند التسليم خلال 90 يومًا، تم إيقاف الطلبات بالدفع عند الاستلام لحسابك لمدة 30 يومًا. إذا كان ذلك خطأ، اعترض على الرفض من صفحة الطلب المعني.", // REVIEW_AR_TRANSLATION (COD no-show rule)
   'demander.submit.product':       "تأكيد الطلب",
   'demander.submit.service':       "إرسال الطلب",
   'demander.submit.loading':       "جار الإرسال…",
@@ -2823,6 +2828,11 @@ export const ar: Record<string, string> = {
   'admin.users.error_not_found':                  "المستخدم غير موجود.",
   'admin.users.error_already_suspended':          "هذا المستخدم معلق بالفعل.",
   'admin.users.error_not_suspended':              "هذا المستخدم غير معلق.",
+  'admin.cod.error_note_required': "يرجى ذكر السبب.", // REVIEW_AR_TRANSLATION (COD no-show rule)
+  'admin.cod.error_note_too_long': "الملاحظة طويلة جدًا (500 حرف كحد أقصى).", // REVIEW_AR_TRANSLATION (COD no-show rule)
+  'admin.cod.error_not_blocked': "هذا الحساب غير محظور.", // REVIEW_AR_TRANSLATION (COD no-show rule)
+  'admin.cod.error_not_a_refusal': "لا يوجد رفض تسليم في هذا الطلب.", // REVIEW_AR_TRANSLATION (COD no-show rule)
+  'admin.cod.error_already_voided': "تم إلغاء رفض التسليم هذا بالفعل.", // REVIEW_AR_TRANSLATION (COD no-show rule)
   'admin.users.error_self_suspend':               "لا يمكنك تعليق نفسك.",
   'admin.users.error_ban_failed':                 "تم تسجيل التعليق، لكن تعذر منع الحساب من تسجيل الدخول. أعد المحاولة.",
   'admin.users.error_unban_failed':               "تم رفع التعليق، لكن تعذرت إعادة تمكين تسجيل الدخول إلى الحساب. أعد المحاولة.",
@@ -2975,6 +2985,7 @@ export const ar: Record<string, string> = {
   'admin.disputes.reason_payment_refused':    "رفض الدفع",
   'admin.disputes.reason_buyer_unreachable':  "تعذر الوصول إلى المشتري",
   'admin.disputes.reason_other':              "أخرى",
+  'admin.disputes.reason_refusal_contested': "اعتراض على رفض التسليم", // REVIEW_AR_TRANSLATION (COD no-show rule)
   'admin.disputes.role_buyer':                "مشتر",
   'admin.disputes.role_seller':               "بائع",
   'admin.disputes.section_info':              "معلومات النزاع",
@@ -3276,7 +3287,7 @@ export const ar: Record<string, string> = {
   // ─── About page (/a-propos) ──────────────────────────────────────────────────
   'about.headline':   "بيت حقيقي للاقتصاد التونسي",
   'about.subtitle':   "قصة Servyou، بقلم مؤسسها.",
-  'about.story.p1':   "اسمي معتز ز. أنا تونسي، وقد بنيتُ Servyou وحدي، أتعلم البرمجة وأنا أبنيه. استعنتُ بالذكاء الاصطناعي ليساعدني — من الصدق أن أقول ذلك، وهو ما مكنني من إطلاق منصة بحجم طموحاتي دون فريق من المهندسين.",
+  'about.story.p1':   "اسمي Moatez Sahbeni. أنا تونسي، وقد بنيتُ Servyou وحدي، أتعلم البرمجة وأنا أبنيه. استعنتُ بالذكاء الاصطناعي ليساعدني — من الصدق أن أقول ذلك، وهو ما مكنني من إطلاق منصة بحجم طموحاتي دون فريق من المهندسين.",
   'about.story.p2':   "في تونس، أولئك الذين يُديرون الاقتصاد الرقمي — المستقلون، المتاجر الصغيرة، التجار — ليس لديهم بيت حقيقي. يبيعون على إنستغرام بلقطات شاشة لتحويلات بنكية. يتلقون طلبات على واتساب تضيع. لم تكن هناك منصة مبنية لتونس، بالدينار التونسي، بإشارات الثقة التي تحتاجها التجارة الحقيقية. وُجد Servyou لسد هذا الفراغ.",
   'about.story.p3':   "أدركتُ أن الحل ليس نسخة من Fiverr أو Etsy أو Amazon مترجمة إلى الفرنسية. تستحق تونس منصة مصممة منذ البداية لواقعها — الدفع عند الاستلام، الولايات الأربع والعشرون، اللغات التي نتحدثها فعلا، والعادات التي نملكها أصلا. Servyou هو هذه المنصة.",
   'about.story.p4':   "Servyou في مرحلة النسخة التجريبية الأولى. أتعلم من كل مستخدم. إن كلمتني، أقرأ رسالتك بنفسي. وإن وجدت مشكلة، أُصلحها. هذا القرب سيتلاشى مع نمو المنصة، وهذا أمر جيد — لكن اليوم، هذا وعدي.",
@@ -3298,10 +3309,8 @@ export const ar: Record<string, string> = {
   'contact.methods.email.value':     "bonjour@servyou.tn",
   'contact.methods.email.response':  "الرد خلال 24-48 ساعة",
   'contact.methods.email.copied':    "تم النسخ!",
-  'contact.methods.whatsapp.label':  "واتساب",
-  'contact.methods.whatsapp.value':  "+216 XX XXX XXX",
   'contact.methods.social.label':    "وسائل التواصل الاجتماعي",
-  'contact.methods.social.soon':     "قريبا",
+  'contact.methods.social.link_aria':    "ServYou على {platform} (علامة تبويب جديدة)", // REVIEW_AR_TRANSLATION
   'contact.form.heading':       "أو أرسل لنا رسالة",
   'contact.form.name':          "الاسم",
   'contact.form.email':         "البريد الإلكتروني",
@@ -3588,6 +3597,7 @@ export const ar: Record<string, string> = {
   'dispute.reason_payment_refused':       "رفض الدفع",
   'dispute.reason_buyer_unreachable':     "تعذر الوصول إلى المشتري",
   'dispute.reason_other':                 "أخرى",
+  'dispute.reason_refusal_contested': "اعتراض على رفض التسليم", // REVIEW_AR_TRANSLATION (COD no-show rule)
   'dispute.action_submit':                "إرسال النزاع",
   'dispute.action_cancel':                "إلغاء",
   'dispute.status_open':                  "في انتظار المراجعة",
@@ -3603,6 +3613,9 @@ export const ar: Record<string, string> = {
   'dispute.error_reason_required':        "السبب مطلوب.",
   'dispute.error_description_required':   "الوصف مطلوب عند اختيار السبب «أخرى».",
   'dispute.error_already_active':         "هناك نزاع جار بالفعل على هذا الطلب.",
+  'dispute.error_contest_window_closed': "انتهت مهلة 14 يومًا للاعتراض على رفض التسليم هذا.", // REVIEW_AR_TRANSLATION (COD no-show rule)
+  'dispute.error_contest_not_refusal': "لا يوجد رفض تسليم للاعتراض عليه في هذا الطلب.", // REVIEW_AR_TRANSLATION (COD no-show rule)
+  'dispute.error_contest_buyer_only': "يمكن للمشتري فقط الاعتراض على رفض التسليم.", // REVIEW_AR_TRANSLATION (COD no-show rule)
   'dispute.error_order_not_eligible':     "هذا الطلب غير مؤهل لفتح نزاع.",
   'dispute.error_not_authorized':         "لا يحق لك فتح نزاع على هذا الطلب.",
   'dispute.error_generic':                "تعذر فتح النزاع. حاول مرة أخرى.",
@@ -3613,6 +3626,7 @@ export const ar: Record<string, string> = {
   'shell.sidebar.section.activities':     "أنشطتي",
   'shell.sidebar.section.discover':       "اكتشف وتسوق",
   'shell.sidebar.section.tools':          "أدوات وحساب",
+  'shell.sidebar.section.language':          "اللغة", // REVIEW_AR_TRANSLATION
   'shell.sidebar.dashboard':              "لوحة التحكم",
   'shell.sidebar.products':               "منتجاتي",
   'shell.sidebar.receivedOrders':         "الطلبات الواردة",
@@ -3652,7 +3666,6 @@ export const ar: Record<string, string> = {
   // ─── Placeholder (coming-soon) pages (PR-DS-2) ──────────────────────────────
   'placeholders.comingSoon.title':              "قريبا",
   'placeholders.comingSoon.freelanceWorkspace': "مساحة المستقل قادمة قريبا",
-  'placeholders.comingSoon.statistics':         "لوحة الأداء قادمة قريبا",
   'placeholders.comingSoon.marketplace':        "السوق قادم قريبا",
   'placeholders.comingSoon.orders':             "طلباتك قادمة قريبا",
   'placeholders.comingSoon.favorites':          "مفضلاتك قادمة قريبا",
@@ -3661,7 +3674,7 @@ export const ar: Record<string, string> = {
 
   // ─── Aide (/aide) — REVIEW_AR_TRANSLATION: the whole block is a draft, needs a native read (feat/aide-rebuild) ───
   'aide.title': "المساعدة",
-  'aide.subtitle': "ابحث عن إجابة، أو راسلنا مباشرة عبر واتساب.",
+  'aide.subtitle': "ابحث عن إجابة، أو راسلنا.", // REVIEW_AR_TRANSLATION
   'aide.breadcrumb.home': "الرئيسية",
   'aide.writeUs': "راسلنا",
   'aide.breadcrumb.label': "مسار التنقل",
@@ -3675,7 +3688,7 @@ export const ar: Record<string, string> = {
   'aide.empty.body': "هذا السؤال غير مغطى بعد. راسلنا — هكذا تتحسن هذه الصفحة.",
   'aide.contact.title': "لم تجد ما تبحث عنه؟",
   'aide.contact.subtitle': "راسلنا. سيردّ عليك شخص حقيقي.",
-  'aide.contact.whatsapp': "راسلنا عبر واتساب",
+  'aide.contact.write': "راسلنا", // REVIEW_AR_TRANSLATION
   'aide.contact.responseTime': "الرد خلال 24-48 ساعة",
   'aide.contact.email': "إرسال بريد إلكتروني",
   'aide.legal.title': "معلومات قانونية",
@@ -3831,7 +3844,6 @@ export const ar: Record<string, string> = {
   // orders.count migrated to tn() — see src/lib/i18n/plurals.ts.
   'seller.orders.sort.recent':            "الأحدث",
   'seller.orders.sort.oldest':            "الأقدم",
-  'seller.orders.waiting':                "· منذ {hours} ساعة",
   'seller.orders.awaiting_buyer':         "في انتظار تأكيد المشتري",
   'seller.orders.view_detail':            "عرض التفاصيل",
   'seller.orders.cancelled_reason':       "السبب: {reason}",
@@ -3847,6 +3859,7 @@ export const ar: Record<string, string> = {
   'seller.orders.cancel_reason_legend':   "سبب الإلغاء",
   'seller.orders.cancel_confirm':         "إلغاء الطلب",
   'seller.orders.error_not_cancellable':  "هذا الطلب مكتمل ولا يمكن إلغاؤه.",
+  'seller.orders.error_refusal_status': "لا يمكن تحديد الطلب كمرفوض عند التسليم إلا بعد إرساله.", // REVIEW_AR_TRANSLATION (COD no-show rule)
   'seller.orders.error_reason_required':  "السبب مطلوب في هذه المرحلة.",
   'seller.orders.empty_title':            "لا توجد طلبات",
   'seller.orders.empty_body':             "ستظهر هنا طلبات عملائك.",
@@ -4610,7 +4623,6 @@ export const ar: Record<string, string> = {
   'meta.freelance_edit': "تعديل ملفي الشخصي",
   'meta.settings': "الإعدادات",
   'meta.session_expired': "انتهت الجلسة",
-  'meta.statistics': "الإحصائيات",
   'meta.dashboard': "لوحة التحكم",
   'meta.dashboard_seller': "لوحة التحكم",
   'meta.find_missions': "البحث عن مهام",

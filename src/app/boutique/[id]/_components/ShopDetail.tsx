@@ -89,7 +89,7 @@ export function ShopDetail({
         <div className="flex w-full flex-col gap-6 px-6 pb-6 pt-[76px] max-lg:px-4 max-lg:pt-16">
           <div className="flex flex-col gap-4">
             <div className="flex flex-col gap-2">
-              <h1 className="text-3xl font-bold leading-[38px] tracking-[-0.64px] text-text-primary max-lg:text-h1 max-lg:leading-[38px]">{shop.name}</h1>
+              <h1 className="text-3xl font-bold leading-[38px] tracking-[-0.64px] text-text-primary max-lg:text-h1 max-lg:leading-[38px]"><bdi>{shop.name}</bdi></h1>
               <div className="flex flex-col gap-1.5">
                 <div className="flex flex-wrap gap-5 max-lg:gap-y-1.5">
                   {shop.city && (
@@ -140,7 +140,7 @@ export function ShopDetail({
             )}
 
             {shop.description && (
-              <p className="max-w-[760px] text-base leading-[26px] text-text-secondary">{shop.description}</p>
+              <p dir="auto" className="max-w-[760px] text-base leading-[26px] text-text-secondary">{shop.description}</p>
             )}
 
             {(shop.paymentMethods.length > 0 || shop.categories.length > 0) && (

@@ -52,13 +52,13 @@ export function FreelancerCard({
       <div className="flex min-w-0 flex-1 flex-col gap-3">
         <div className="flex items-start justify-between">
           <div className="flex min-w-0 flex-1 flex-col gap-1">
-            <h3 className="truncate text-base font-semibold leading-[19px] text-brand-blue-800">
+            <h3 dir="auto" className="truncate rtl:max-w-full rtl:self-start text-base font-semibold leading-[19px] text-brand-blue-800">
               <Link href={href} className={`rounded after:absolute after:inset-0 after:rounded-xl ${FOCUS_RING}`}>
                 {freelancer.name}
               </Link>
             </h3>
             {/* The title box is FIXED 42 in the component (two 21 lines): it keeps its height when the title is short or missing. */}
-            <p className="line-clamp-2 min-h-[42px] text-sm text-text-muted">{freelancer.headline}</p>
+            <p className="line-clamp-2 min-h-[42px] text-sm text-text-muted"><bdi>{freelancer.headline}</bdi></p>
             {freelancer.city ? (
               <p className="inline-flex items-center gap-1 text-xs leading-[15px] text-text-muted">
                 <MapPin className="size-3.5 shrink-0" aria-hidden="true" />
