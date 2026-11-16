@@ -14,7 +14,7 @@ export const strings: Record<string, string> = {
   'seller.choose_type': "Choose your seller account type:",
   'seller.already_shop': "You are already registered as a shop owner.",
   'seller.already_free': "You are already registered as a freelancer.",
-  'seller.min_age': "You must be at least 18 to sell on Servyou. We hope to welcome you as a seller soon!",
+  'seller.min_age': "You must be at least 18 to sell on ServYou. We hope to welcome you as a seller soon!",
   'seller.become_shop': "🛍️ Become a seller (shop)",
   'seller.become_free': "💼 Become a freelancer",
 
@@ -276,7 +276,7 @@ export const strings: Record<string, string> = {
   'product.error_phone': "The phone number is required.",
   'product.error_quantity': "The quantity must be at least 1.",
   'product.order_error_send': "Something went wrong while sending your request. Please try again.",
-  'product.whatsapp_buy_message': "Hello, I’m interested in your product “{title}” on Servyou. I’d like to place an order with cash on delivery.",
+  'product.whatsapp_buy_message': "Hello, I’m interested in your product “{title}” on ServYou. I’d like to place an order with cash on delivery.",
 
   // seller
   'seller.phone.helper': "Clients contact you on WhatsApp at this number.",
@@ -288,7 +288,7 @@ export const strings: Record<string, string> = {
 
   // devenir
   'devenir.vendeur.hero.eyebrow': "Become a seller",
-  'devenir.vendeur.hero.headline': "Sell your products on Servyou",
+  'devenir.vendeur.hero.headline': "Sell your products on ServYou",
   'devenir.vendeur.hero.subheadline': "Do you make, resell or create? Open your online shop and sell across Tunisia, with cash on delivery.",
   'devenir.vendeur.hero.primaryCta': "Create my shop",
   'devenir.vendeur.hero.secondaryCta': "Browse shops",
@@ -336,7 +336,7 @@ export const strings: Record<string, string> = {
   'shop.create.error.desc_min': "The description must be at least {min} characters long.",
   'shop.create.error.desc_max': "The description can’t be longer than {max} characters.",
   'shop.create.error.age_gate': "You must be 18 or older to become a seller.",
-  'shop.create.freelancerBlocked.headline': "You are already a freelancer on Servyou",
+  'shop.create.freelancerBlocked.headline': "You are already a freelancer on ServYou",
   'shop.create.freelancerBlocked.subheadline': "Switching from freelancer to seller isn’t available yet. Contact us if you need it.",
   'shop.create.freelancerBlocked.manage': "Manage my freelancer profile",
 
@@ -353,7 +353,7 @@ export const strings: Record<string, string> = {
 
   // shop
   'shop.create.succes.title': "Your shop is created!",
-  'shop.create.succes.subline': "Welcome to Servyou. Add your first product to start selling.",
+  'shop.create.succes.subline': "Welcome to ServYou. Add your first product to start selling.",
   'shop.create.succes.cta_dashboard': "Go to my dashboard",
   'shop.edit.page_title': "Edit my shop",
   'shop.edit.page_subtitle': "Update your shop’s details.",
@@ -403,7 +403,7 @@ export const strings: Record<string, string> = {
   'mesCommandes.priceFrom': "From",
   'mesCommandes.ref': "Order {ref} · Placed on {date}",
   'mesCommandes.whatsapp': "Contact on WhatsApp",
-  'mesCommandes.whatsapp.message': "Hello, I’m contacting you about my order “{service}” on Servyou.",
+  'mesCommandes.whatsapp.message': "Hello, I’m contacting you about my order “{service}” on ServYou.",
   'mesCommandes.whatsapp.none': "This freelancer hasn’t added a WhatsApp number yet.",
   'mesCommandes.whatsapp.error': "Couldn’t retrieve the number. Try again.",
   'mesCommandes.confirmError': "The confirmation failed. Try again.",
@@ -415,7 +415,7 @@ export const strings: Record<string, string> = {
   'mesCommandes.empty.produits.subtitle': "Your product orders will appear here as soon as you place one.",
   'mesCommandes.empty.produits.cta': "Browse products",
   'mesCommandes.untitled.product': "Product unavailable",
-  'mesCommandes.whatsapp.message_product': "Hello, I’m contacting you about my order {ref} “{product}” on Servyou.",
+  'mesCommandes.whatsapp.message_product': "Hello, I’m contacting you about my order {ref} “{product}” on ServYou.",
   'mesCommandes.whatsapp.none_shop': "This seller hasn’t added a WhatsApp number yet.",
   'mesCommandes.cancel.body': "This is final. The seller will be notified.",
 
@@ -479,7 +479,7 @@ export const strings: Record<string, string> = {
   'orders.status_msg_cancelled': "This order was cancelled on {date}.",
   'orders.phone_reveal_error': "Couldn’t retrieve the seller’s number. Please try again.",
   'orders.receive_error': "The confirmation failed. Please try again.",
-  'orders.receive_success': "Receipt confirmed. Thank you for using Servyou.",
+  'orders.receive_success': "Receipt confirmed. Thank you for using ServYou.",
   'orders.cancel_error': "The cancellation failed. Please try again.",
   'orders.cancel_success': "Order cancelled.",
 

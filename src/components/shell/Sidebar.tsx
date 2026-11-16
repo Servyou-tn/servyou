@@ -54,7 +54,7 @@ export function Sidebar({
         <Link
           href="/"
           onClick={onNavigate}
-          aria-label="Servyou"
+          aria-label="ServYou"
           className={`flex items-center gap-2 rounded-pill ${FOCUS_RING}`}
         >
           <Image

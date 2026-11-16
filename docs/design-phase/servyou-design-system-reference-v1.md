@@ -1105,6 +1105,14 @@ The agency used "Projects" but in Servyou's data model, projects overlap with se
 - Arabic context: `٢٬٤٥٠ د.ت` (Arabic numerals with thousands separator, Tunisian Dinar abbreviation `د.ت`)
 - **Exception:** Most Tunisian users use Western Arabic numerals (0-9) even when reading Arabic. Acceptable: `2,450 د.ت` in AR mode.
 
+### 6.6 — Brand name (locked, founder 2026-11-15)
+
+The brand is written **ServYou** (capital S, capital Y) in every user-visible string, in FR, AR and EN alike. In Arabic
+text it stays in Latin letters (« مرحبا بك في ServYou »), never transliterated. Never « Servyou », « SERVYOU » or « Serv You ».
+
+Stays lowercase, because it is not prose: the domains (`servyou.tn`, `servyou.vercel.app`), e-mail addresses, code
+identifiers, file paths, i18n key names and the repository name (`Servyou-tn/servyou`).
+
 ---
 
 ## Section 7 — Per-page reference <a name="section-7"></a>
