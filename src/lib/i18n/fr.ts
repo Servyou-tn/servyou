@@ -4026,8 +4026,6 @@ export const fr: Record<string, string> = {
   'freelance.dashboard.tile.engagements_sub': "En cours",
   'freelance.dashboard.tile.pending':      "Demandes en attente",
   'freelance.dashboard.tile.pending_sub':  "En attente de votre réponse",
-  // 📐 MEASURED (167:12280) — period folded into the label, no separate sub-label node. Ruling 1:
-  // renders 0, no delta, nothing seeded.
 
   // 📐 MEASURED (232:7599) — "pour vous" is part of the literal title, not dropped.
   'freelance.dashboard.missions.title':      "Missions récentes pour vous",
