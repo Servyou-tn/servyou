@@ -3,7 +3,7 @@ import { formatTunisDate, formatTunisTime } from '@/lib/datetime'
 import { hoursLeft } from '../demandes/_lib/view'
 import { logActionKey } from '../journal/_lib/log'
 import { formatCount, formatPercent, pctDelta, queueItems, rate, type DashboardStats, type QueueItem } from './dashboard'
-import { agoText, auditTargetText, cityLabel, kpiDelta, medianText, sinceText, type AdminAuditRow, type AdminOrderRow } from './format'
+import { agoInSentence, agoText, auditTargetText, cityLabel, kpiDelta, medianText, sinceText, type AdminAuditRow, type AdminOrderRow } from './format'
 import type { ActionVM, CityVM, QueueRowVM, RecentOrderVM, TileVM } from '../_components/OverviewView'
 
 // J1 / M1 view-model: RPC rows → the strings OverviewView draws. Kept out of page.tsx so the page stays a thin loader.
@@ -101,7 +101,7 @@ export function buildOverview({ stats, orders, log, now, lang }: { stats: Dashbo
     sub: `${auditTargetText(r, lang)} · ${agoText(r.created_at, now, lang)}`,
   }))
   const stamp = stats ? `${formatTunisDate(stats.generated_at, lang, 'medium')}, ${formatTunisTime(stats.generated_at, lang)}` : ''
-  const ago = stats ? agoText(stats.generated_at, now, lang) : ''
+  const ago = stats ? agoInSentence(stats.generated_at, now, lang) : ''
   return {
     updated: stats ? t('admin.home.updated', lang, { ago, stamp }) : t('admin.home.updated_failed', lang),
     updatedShort: stats ? t('admin.home.updated_short', lang, { ago }) : t('admin.home.updated_failed', lang),

@@ -7,7 +7,7 @@ import { localizeCity } from '@/lib/marche/missions'
 import type { Proposal } from '@/lib/marche/proposals'
 import { formatServicePrice, servicePriceLabel } from '@/lib/freelance/service-price'
 import { shortDate } from '@/lib/orders/order-status'
-import { relativeTimeLabel } from '@/lib/relative-time'
+import { recentTimeLabel } from '@/lib/relative-time'
 import { ProposalActions } from './ProposalActions'
 import { COL } from './proposal-columns'
 
@@ -40,6 +40,8 @@ const OUTCOME_PILL = {
 } as const
 
 export function ProposalRow({ proposal: p, lang }: { proposal: Proposal; lang: Lang }) {
+  // From 7 days the app's one rule answers with a date — the line above already shows it, so no second line.
+  const sentAgo = recentTimeLabel(p.createdAt, lang)
   const pill = OUTCOME_PILL[p.outcome]
   const gone = p.state === 'unavailable'
   const title = p.title ?? t('propositions.mission_unavailable', lang)
@@ -117,7 +119,7 @@ export function ProposalRow({ proposal: p, lang }: { proposal: Proposal; lang: L
         <div className={`flex min-w-0 flex-col gap-0.5 max-lg:order-2 ${COL.sentOn}`}>
           <p className="text-caption text-text-muted xl:hidden">{t('propositions.col.sent_on', lang)}</p>
           <p className="truncate text-body-sm leading-5 text-text-muted">{shortDate(p.createdAt, lang)}</p>
-          <p className="truncate text-[13px] leading-5 text-text-muted">{relativeTimeLabel(p.createdAt, lang)}</p>
+          {sentAgo ? <p className="truncate text-[13px] leading-5 text-text-muted">{sentAgo}</p> : null}
         </div>
       </div>
 

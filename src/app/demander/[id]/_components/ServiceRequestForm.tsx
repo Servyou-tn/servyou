@@ -226,6 +226,7 @@ export function ServiceRequestForm({
           required
           type="tel"
           inputMode="tel"
+          autoComplete="tel-national"
           dir="ltr"
           maxLength={PHONE_INPUT_MAX}
           value={phone}

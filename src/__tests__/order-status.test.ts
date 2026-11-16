@@ -14,6 +14,7 @@ import {
   SERVICE_LIFECYCLE,
   nextStatus,
   isCancellable,
+  acceptsTrackingNumber,
   requiresCancellationReason,
   canConfirmReceipt,
   canTransition,
@@ -67,6 +68,25 @@ describe('isCancellable — any non-terminal state', () => {
   it('is false for the terminal states', () => {
     expect(isCancellable('received')).toBe(false)
     expect(isCancellable('cancelled')).toBe(false)
+  })
+})
+
+describe('acceptsTrackingNumber — from « Préparée » until the order closes (walk S7)', () => {
+  it('is false before the parcel exists', () => {
+    expect(acceptsTrackingNumber('pending')).toBe(false)
+    expect(acceptsTrackingNumber('accepted')).toBe(false)
+  })
+
+  it('is true from prepared through arrived', () => {
+    expect(acceptsTrackingNumber('prepared')).toBe(true)
+    expect(acceptsTrackingNumber('dispatched')).toBe(true)
+    expect(acceptsTrackingNumber('in_delivery')).toBe(true)
+    expect(acceptsTrackingNumber('arrived')).toBe(true)
+  })
+
+  it('is false once the order is closed (the DB refuses shipment edits)', () => {
+    expect(acceptsTrackingNumber('received')).toBe(false)
+    expect(acceptsTrackingNumber('cancelled')).toBe(false)
   })
 })
 

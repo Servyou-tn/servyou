@@ -61,6 +61,13 @@ export function isCancellable(status: OrderStatus): boolean {
   return status !== 'received' && status !== 'cancelled'
 }
 
+// Whether the seller can type a tracking number (product orders): from « Préparée », when a parcel exists, until the
+// order closes (journey walk S7, 2026-11-15). Before that there is nothing to track; at received/cancelled
+// enforce_order_identity_lock refuses shipment edits. Cancelled is off the chain (index -1), so it is excluded too.
+export function acceptsTrackingNumber(status: OrderStatus): boolean {
+  return PRODUCT_LIFECYCLE.indexOf(status) >= PRODUCT_LIFECYCLE.indexOf('prepared') && status !== 'received'
+}
+
 // Whether a cancellation from this state must carry a reason — mirrors the
 // post-pivot rule the DB trigger enforces. Products pivot at dispatch
 // (dispatched/in_delivery/arrived); services pivot at acceptance

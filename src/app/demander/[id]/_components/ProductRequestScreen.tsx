@@ -21,10 +21,12 @@ import { localName } from '@/lib/i18n/local-name'
 
 export function ProductRequestScreen({
   product,
+  initialName,
   initialPhone,
   lang,
 }: {
   product: ProductRequestTarget
+  initialName: string
   initialPhone: string
   lang: Lang
 }) {
@@ -73,6 +75,7 @@ export function ProductRequestScreen({
         deliveryFee={product.deliveryFee}
         imageUrl={product.imageUrl}
         shopName={product.shop.name}
+        initialName={initialName}
         initialPhone={initialPhone}
         tracksStock={product.tracksStock}
         stockCount={product.stockCount}

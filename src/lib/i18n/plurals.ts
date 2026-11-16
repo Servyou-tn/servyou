@@ -161,6 +161,7 @@ export const frPlurals: Record<string, PluralVariants> = {
   // SPELLED OUT ("il y a 2 jours", WITH a space) — that half is still 🔨 founder-ruled copy
   // (Ruling 8), Missions récentes' own frame never seeds a days-old post to confirm it, and
   // there's no reason to assume the same no-space treatment carries over to a different unit.
+  'activite.time_ago_minutes':             { one: 'il y a {count} min', other: 'il y a {count} min' },
   'activite.time_ago_hours':               { one: 'il y a {count}h', other: 'il y a {count}h' },
   'activite.time_ago_days':                { one: 'il y a {count} jour', other: 'il y a {count} jours' },
 
@@ -314,6 +315,8 @@ const arPlurals: Record<string, PluralVariants> = {
   // H4 Activité récente relative timestamps (Ruling 8). Not preceded by a preposition here
   // ("منذ" IS the preposition itself, not a modifier of it) — but "منذ" still governs an oblique
   // dual by the same rule as the "خلال"/"منذ" pair above (يومين/ساعتين, not يومان/ساعتان).
+  // REVIEW_AR_TRANSLATION — minutes band (journey walk S4 + F5): the hours row's shape, the admin minute forms.
+  'activite.time_ago_minutes':             { one: 'منذ {count} دقيقة', two: 'منذ {count} دقيقتين', few: 'منذ {count} دقائق', many: 'منذ {count} دقيقةً', other: 'منذ {count} دقيقة' },
   'activite.time_ago_hours':               { one: 'منذ {count} ساعة', two: 'منذ {count} ساعتين', many: 'منذ {count} ساعةً', other: 'منذ {count} ساعات' },
   'activite.time_ago_days':                { one: 'منذ {count} يوم', two: 'منذ {count} يومين', many: 'منذ {count} يومًا', other: 'منذ {count} أيام' },
 

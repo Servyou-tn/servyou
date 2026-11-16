@@ -111,8 +111,15 @@ describe('AnnonceResponseCard — F4 anatomy (PR-2)', () => {
     view({ createdAt: new Date(NOW - 30 * 3_600_000).toISOString() })
     expect(screen.getByText('Proposition reçue hier')).toBeInTheDocument()
     cleanup()
-    view({ createdAt: new Date(NOW - 60_000).toISOString() })
+    view({ createdAt: new Date(NOW - 30_000).toISOString() })
     expect(screen.getByText("Proposition reçue à l'instant")).toBeInTheDocument()
+    cleanup()
+    // The app's one relative-time rule (journey walk S4 + F5): minutes, then from 7 days « le {date} ».
+    view({ createdAt: new Date(NOW - 5 * 60_000).toISOString() })
+    expect(screen.getByText('Proposition reçue il y a 5 min')).toBeInTheDocument()
+    cleanup()
+    view({ createdAt: new Date(NOW - 10 * 86_400_000).toISOString() })
+    expect(screen.getByText('Proposition reçue le 20 oct.')).toBeInTheDocument()
   })
 
   it('« Voir le profil » goes to /freelance/<freelancer_profiles.id> — never the profiles.id the response stores', () => {

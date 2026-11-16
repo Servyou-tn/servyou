@@ -43,11 +43,6 @@ function fullDate(iso: string, lang: Lang): string {
   return new Date(iso).toLocaleDateString(LOCALES[lang], { day: '2-digit', month: 'short', year: 'numeric' })
 }
 
-// « Quand » in « Autres signalements »: relative up to yesterday, then the short date (« 2 nov. »).
-function whenLabel(iso: string, lang: Lang, now: number): string {
-  return now - new Date(iso).getTime() < 2 * 86_400_000 ? relativeTimeLabel(iso, lang, now) : shortDate(iso, lang)
-}
-
 function personLine(p: AdminProfile | undefined, lang: Lang, joined: boolean): string | null {
   if (!p) return null
   const parts = [
@@ -165,7 +160,8 @@ export default async function ReportDetailPage({ params }: Props) {
     id: o.id,
     reasonLabel: t(`admin.reports.reason_${o.reason}`, lang),
     by: profiles.get(o.reporter_id)?.full_name ?? '—',
-    when: whenLabel(o.created_at, lang, now),
+    // « Quand » in « Autres signalements »: the app's one rule — relative under 7 days, then the date.
+    when: relativeTimeLabel(o.created_at, lang, now),
     status: o.status,
   }))
 

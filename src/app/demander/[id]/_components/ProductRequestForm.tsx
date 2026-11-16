@@ -73,6 +73,7 @@ export function ProductRequestForm({
   deliveryFee,
   imageUrl,
   shopName,
+  initialName,
   initialPhone,
   tracksStock,
   stockCount,
@@ -84,6 +85,8 @@ export function ProductRequestForm({
   deliveryFee: number
   imageUrl: string | null
   shopName: string
+  /** profiles.full_name, or '' when the buyer has none — the recipient starts as the buyer, like the phone (journey walk B2). */
+  initialName: string
   /** profiles.phone in local form (8 digits), or '' when the buyer has never set one. */
   initialPhone: string
   tracksStock: boolean
@@ -92,7 +95,8 @@ export function ProductRequestForm({
 }) {
   const router = useRouter()
   const turnstile = React.useRef<TurnstileHandle>(null)
-  const [fullName, setFullName] = React.useState('')
+  // Prefilled from the profile and still editable (« Modifiable si la commande est livrée à quelqu'un d'autre »).
+  const [fullName, setFullName] = React.useState(() => initialName.slice(0, DELIVERY_NAME_MAX))
   const [street, setStreet] = React.useState('')
   const [quartier, setQuartier] = React.useState('')
   const [ville, setVille] = React.useState('')
@@ -182,6 +186,7 @@ export function ProductRequestForm({
             error={errors.fullName}
             required
             maxLength={DELIVERY_NAME_MAX}
+            autoComplete="name"
             value={fullName}
             onChange={(e) => setFullName(e.target.value)}
           />
@@ -196,6 +201,7 @@ export function ProductRequestForm({
             required
             type="tel"
             inputMode="tel"
+            autoComplete="tel-national"
             dir="ltr"
             maxLength={PHONE_INPUT_MAX}
             value={phone}
@@ -219,6 +225,7 @@ export function ProductRequestForm({
             error={errors.street}
             required
             maxLength={DELIVERY_STREET_MAX}
+            autoComplete="address-line1"
             value={street}
             onChange={(e) => setStreet(e.target.value)}
           />
@@ -229,6 +236,7 @@ export function ProductRequestForm({
             error={errors.quartier}
             required
             maxLength={QUARTIER_MAX}
+            autoComplete="address-line2"
             value={quartier}
             onChange={(e) => setQuartier(e.target.value)}
           />
@@ -236,18 +244,9 @@ export function ProductRequestForm({
           {/* Ville — free text, required. No reference dataset exists for Tunisian villes
               (founder's ruling): filter-cities.ts is the SELLER's shop-city list, a browse-filter
               concept, not a buyer delivery-address one. Gouvernorat stays the canonical Select.
-              Reuses ProductForm.tsx's own half-width-pair shape verbatim. */}
+              Reuses ProductForm.tsx's own half-width-pair shape verbatim. Gouvernorat comes FIRST (journey walk B3): the
+              region narrows the town, as on a Tunisian address. */}
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Input
-              label={t('demander.field.ville', lang)}
-              placeholder={t('demander.field.ville_ph', lang)}
-              error={errors.ville}
-              required
-              maxLength={VILLE_MAX}
-              value={ville}
-              onChange={(e) => setVille(e.target.value)}
-            />
-
             <div className="flex flex-col gap-2">
               <label htmlFor="product-governorate" className="text-sm font-medium text-text-secondary">
                 {t('demander.field.governorate', lang)}
@@ -255,6 +254,7 @@ export function ProductRequestForm({
               </label>
               <select
                 id="product-governorate"
+                autoComplete="address-level1"
                 aria-required="true"
                 aria-invalid={errors.governorate ? true : undefined}
                 aria-describedby={errors.governorate ? 'product-governorate-error' : undefined}
@@ -275,6 +275,17 @@ export function ProductRequestForm({
                 </p>
               )}
             </div>
+
+            <Input
+              label={t('demander.field.ville', lang)}
+              placeholder={t('demander.field.ville_ph', lang)}
+              error={errors.ville}
+              required
+              maxLength={VILLE_MAX}
+              autoComplete="address-level2"
+              value={ville}
+              onChange={(e) => setVille(e.target.value)}
+            />
           </div>
 
           <Textarea
@@ -317,7 +328,7 @@ export function ProductRequestForm({
           (m375-e1-produit) draws it last, under the quantity, so the reading and tab order follow the screen; from lg to xl
           order-first keeps it above the form as before, and xl repositions it to column 2. */}
       <aside className="flex flex-col gap-4 rounded-card border-2 border-brand-blue-600 bg-surface-base p-6 xl:col-start-2 xl:row-start-1 lg:max-xl:order-first max-lg:border max-lg:border-border-subtle max-lg:px-[15px] max-lg:py-[23px]">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 max-lg:-order-2">
           <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-lg bg-surface-sunken">
             <ProductCoverImage src={imageUrl} alt={title} sizes="64px" />
           </div>
@@ -329,7 +340,7 @@ export function ProductRequestForm({
           </div>
         </div>
 
-        <div className="h-px bg-border-subtle" aria-hidden="true" />
+        <div className="h-px bg-border-subtle max-lg:-order-2" aria-hidden="true" />
 
         {/* Prices: tndPrice(value, lang) inside a <bdi> (walk #25) — « 120 TND » LTR in FR, « 120 د.ت » RTL in AR (the seller dashboard's
             notation and reading order), isolated so the digits never swap with the label beside them. */}
@@ -355,7 +366,10 @@ export function ProductRequestForm({
           </div>
         </div>
 
-        <p className="text-caption leading-[18px] text-text-muted max-lg:rounded-[8px] max-lg:bg-brand-blue-50 max-lg:p-3 max-lg:text-body-sm max-lg:leading-[21px] max-lg:text-text-secondary">
+        {/* Below lg the note is drawn ABOVE the price rows (order -1 vs the rows' 0 — the product row and its rule sit at -2),
+            so the one-line « Total à payer » is the last thing before the button (journey walk B3). DOM order is unchanged:
+            the desktop frame (589:43997) keeps the note under the total. */}
+        <p className="text-caption leading-[18px] text-text-muted max-lg:-order-1 max-lg:rounded-[8px] max-lg:bg-brand-blue-50 max-lg:p-3 max-lg:text-body-sm max-lg:leading-[21px] max-lg:text-text-secondary">
           {t('demander.subtitle.product', lang)}
         </p>
 

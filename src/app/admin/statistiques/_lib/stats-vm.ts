@@ -13,7 +13,7 @@ import {
   type DashboardStats,
   type StatPeriod,
 } from '../../_lib/dashboard'
-import { agoText, amountText, cityLabel, kpiDelta, medianText } from '../../_lib/format'
+import { agoInSentence, amountText, cityLabel, kpiDelta, medianText } from '../../_lib/format'
 import type { TileVM } from '../../_components/OverviewView'
 import type { CategoryVM, CityRowVM, FunnelVM, PeriodVM, WeekVM } from '../_components/StatsView'
 
@@ -60,7 +60,7 @@ export function buildStats({ stats, period, now, lang, route }: { stats: Dashboa
     href: days === 7 ? route : `${route}?periode=${days}`,
     active: days === period,
   }))
-  const subtitle = stats ? t('admin.stats.subtitle', lang, { ago: agoText(stats.generated_at, now, lang) }) : t('admin.stats.subtitle_failed', lang)
+  const subtitle = stats ? t('admin.stats.subtitle', lang, { ago: agoInSentence(stats.generated_at, now, lang) }) : t('admin.stats.subtitle_failed', lang)
   if (!stats) {
     return { subtitle, periods, failed: true, tiles: [], tiles2: [], weeks: [], funnel: [], funnelEmpty: true, drop: null, categories: [], cities: [] }
   }

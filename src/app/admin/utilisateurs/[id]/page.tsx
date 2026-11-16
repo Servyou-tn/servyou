@@ -46,10 +46,6 @@ function shortDate(iso: string, lang: Lang): string {
 function fullDate(iso: string, lang: Lang): string {
   return new Date(iso).toLocaleDateString(LOCALES[lang], { day: 'numeric', month: 'short', year: 'numeric' })
 }
-// Relative up to yesterday, then the short date (« il y a 3h · Moatez », « 2 nov. · Moatez »).
-function whenLabel(iso: string, lang: Lang, now: number): string {
-  return now - new Date(iso).getTime() < 2 * 86_400_000 ? relativeTimeLabel(iso, lang, now) : shortDate(iso, lang)
-}
 
 type ContentItem = { id: string; type: 'product' | 'service' | 'job_post'; title: string; status: string; hidden: boolean }
 
@@ -221,7 +217,8 @@ export default async function UserDetailPage({ params, searchParams }: Props) {
     return {
       id: j.id,
       title: [t(journalActionKey(j.action), lang), target].filter(Boolean).join(' · '),
-      sub: [whenLabel(j.created_at, lang, now), names.get(j.admin_id)].filter(Boolean).join(' · '),
+      // « il y a 3h · Moatez », « 2 nov. · Moatez » — the app's one rule (relative under 7 days, then the date).
+      sub: [relativeTimeLabel(j.created_at, lang, now), names.get(j.admin_id)].filter(Boolean).join(' · '),
     }
   })
 

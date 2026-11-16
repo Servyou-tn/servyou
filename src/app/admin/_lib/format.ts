@@ -1,4 +1,5 @@
-import { t, tn, type Lang } from '@/lib/i18n'
+import { t, type Lang } from '@/lib/i18n'
+import { relativeTimeInSentence, relativeTimeLabel } from '@/lib/relative-time'
 import { tndPriceGrouped } from '@/components/listings/listing-utils'
 import { GOVERNORATES } from '@/lib/tunisia-governorates'
 import type { KpiDelta } from '../_components/KpiTile'
@@ -38,17 +39,14 @@ export function kpiDelta(d: Delta | null, unit: DeltaUnit, lang: Lang, polarity:
   return { direction: d.direction, tone: deltaTone(d, polarity), text, label: t(key, lang, { value: text }) }
 }
 
-/** « il y a 2 h » / « hier » / « il y a 3 jours » — the app's relative-time bands, admin wording. */
+/** « il y a 2 h » / « hier » / « il y a 3 jours » / « 14 juil. » — the app's one relative-time rule, admin wording. */
 export function agoText(iso: string, now: number, lang: Lang): string {
-  const ms = Math.max(0, now - new Date(iso).getTime())
-  const minutes = Math.floor(ms / 60_000)
-  const hours = Math.floor(ms / 3_600_000)
-  const days = Math.floor(ms / 86_400_000)
-  if (minutes < 1) return t('admin.dash.ago_now', lang)
-  if (hours < 1) return tn('admin.dash.ago_minutes', lang, minutes)
-  if (hours < 24) return tn('admin.dash.ago_hours', lang, hours)
-  if (days === 1) return t('admin.dash.ago_yesterday', lang)
-  return tn('admin.dash.ago_days', lang, days)
+  return relativeTimeLabel(iso, lang, now, 'admin')
+}
+
+/** The same inside a sentence (« Mis à jour {ago} »): from 7 days it reads « le 14 juil. », not a bare date. */
+export function agoInSentence(iso: string, now: number, lang: Lang): string {
+  return relativeTimeInSentence(iso, lang, now, 'admin')
 }
 
 // p_days = null is the RPCs' documented « no date filter » (admin_list_orders / admin_count_orders /
