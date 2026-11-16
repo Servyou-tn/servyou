@@ -18,10 +18,10 @@ describe('roleConfig — age gates and destinations', () => {
 })
 
 describe('roleConfig — i18n keys resolve (catch a missing/typo key)', () => {
-  it('every role title/helper/error key resolves in both fr and ar', () => {
+  it('every role title key resolves in both fr and ar', () => {
     for (const role of ['consumer', 'shopOwner', 'freelancer'] as const) {
       const c = ROLE_CONFIG[role]
-      for (const key of [c.titleKey, c.ageHelperKey, c.ageErrorKey]) {
+      for (const key of [c.titleKey]) {
         // t() returns the raw key when the key is missing — assert it resolved.
         expect(t(key, 'fr')).not.toBe(key)
         expect(t(key, 'ar')).not.toBe(key)

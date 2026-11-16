@@ -28,37 +28,28 @@ export interface RoleConfig {
   minAge: number
   /** i18n key for the role-branded Step-2 title. */
   titleKey: string
-  /** i18n key for the date-of-birth helper text. */
-  ageHelperKey: string
-  /** i18n key for the under-age error. */
-  ageErrorKey: string
   /** Post-verification (and OAuth) redirect. */
   destination: string
 }
 
-// Per-role config. minAge follows product.md: a 17-year-old who picks "Vendre" is
-// blocked at signup rather than signing up then failing the 18+ check later at
-// /devenir-vendeur. seller_type is still null at signup regardless of role.
+// Per-role config. minAge follows product.md (consumers 16+, sellers 18+). Since the two-step sign-up the birth date is
+// asked at « Finalisez votre compte » (16+ for everyone, decision 4), and 18+ is checked at the seller switch
+// (/devenir-vendeur, enforced in the database): the per-role age helper and error strings went with step 1's field.
+// seller_type is still null at signup regardless of role.
 export const ROLE_CONFIG: Record<SignupRole, RoleConfig> = {
   consumer: {
     minAge: MIN_SIGNUP_AGE,
     titleKey: 'signup.form.titles.consumer',
-    ageHelperKey: 'signup.form.fields.dateOfBirth.helper.consumer',
-    ageErrorKey: 'signup.form.errors.tooYoung.consumer',
     destination: '/',
   },
   shopOwner: {
     minAge: MIN_SELLER_AGE,
     titleKey: 'signup.form.titles.shopOwner',
-    ageHelperKey: 'signup.form.fields.dateOfBirth.helper.shopOwner',
-    ageErrorKey: 'signup.form.errors.tooYoung.shopOwner',
     destination: '/devenir-vendeur/boutique',
   },
   freelancer: {
     minAge: MIN_SELLER_AGE,
     titleKey: 'signup.form.titles.freelancer',
-    ageHelperKey: 'signup.form.fields.dateOfBirth.helper.freelancer',
-    ageErrorKey: 'signup.form.errors.tooYoung.freelancer',
     destination: '/devenir-vendeur/freelance',
   },
 }
