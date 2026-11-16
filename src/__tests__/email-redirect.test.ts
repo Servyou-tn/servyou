@@ -9,12 +9,12 @@ import { verifyEmailRedirectUrl, VERIFY_EMAIL_PATH } from '@/lib/auth/email-redi
 
 describe('verifyEmailRedirectUrl', () => {
   it('is <origin>/verifier-email for production and local dev (the two allow-listed origins)', () => {
-    expect(verifyEmailRedirectUrl('https://servyou.vercel.app')).toBe('https://servyou.vercel.app/verifier-email')
+    expect(verifyEmailRedirectUrl('https://servyou.tn')).toBe('https://servyou.tn/verifier-email')
     expect(verifyEmailRedirectUrl('http://localhost:3000')).toBe('http://localhost:3000/verifier-email')
   })
 
   it('never doubles the slash', () => {
-    expect(verifyEmailRedirectUrl('https://servyou.vercel.app/')).toBe('https://servyou.vercel.app/verifier-email')
+    expect(verifyEmailRedirectUrl('https://servyou.tn/')).toBe('https://servyou.tn/verifier-email')
   })
 
   it('targets the route that exchanges the confirmation code', () => {

@@ -22,5 +22,5 @@ so a person does it). About 5 minutes. Desktop Chrome or Edge, a normal (not pri
 - **Pass:** step 3 shows Secure ✓ on every `sb-` cookie, and steps 4–7 behave as written.
 - **Fail:** anything else — don't merge; send a screenshot of the DevTools cookie table.
 
-After the merge, steps 1–3 on https://servyou.vercel.app confirm production (an existing session keeps its old,
+After the merge, steps 1–3 on https://servyou.tn confirm production (an existing session keeps its old,
 non-Secure cookies until its next refresh or sign-in rewrites them).

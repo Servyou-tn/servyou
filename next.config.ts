@@ -2,6 +2,7 @@ import type { NextConfig } from "next";
 import { withSentryConfig } from "@sentry/nextjs";
 import { cspReportUrl, securityHeaders } from "./src/lib/security/headers";
 import { indexingHeaders } from "./src/lib/seo/indexing";
+import { DEFAULT_SITE_URL } from "./src/lib/seo/site-url";
 import { SENTRY_TUNNEL_ROUTE, sentryTunnelRedirects } from "./src/lib/security/sentry-tunnel";
 
 const nextConfig: NextConfig = {
@@ -131,6 +132,19 @@ const nextConfig: NextConfig = {
       // The Sentry tunnel only forwards to OUR project: any other org or project is refused before Sentry's rewrite
       // runs (audit M7, PR 16; src/lib/security/sentry-tunnel.ts).
       ...sentryTunnelRedirects(process.env.NEXT_PUBLIC_SENTRY_DSN),
+      // The domain switch: the old production host sends every request to the own domain, same path and same query
+      // string (a redirect passes the query through). The host is a regex matched against the WHOLE hostname (Next and
+      // Vercel both anchor it; dots escaped as in Vercel's docs for this exact case), so the preview and deployment URLs
+      // (servyou-git-*.vercel.app, servyou-*-servyou-s-projects.vercel.app) keep serving the app. Right after the Sentry
+      // tunnel guard (it only matches /monitoring without our org and project) and before every path redirect, so an old
+      // /login link reaches the new host in one hop. Redirects run before src/middleware.ts (headers → redirects →
+      // middleware), so maintenance mode, K2 and K3 never answer on the old host. Pinned by src/__tests__/domain-redirect.test.ts.
+      {
+        source: '/:path*',
+        has: [{ type: 'host', value: 'servyou\\.vercel\\.app' }],
+        destination: `${DEFAULT_SITE_URL}/:path*`,
+        permanent: true,
+      },
       { source: '/login', destination: '/connexion', permanent: true },
       { source: '/signup', destination: '/inscription', permanent: true },
       { source: '/forgot-password', destination: '/mot-de-passe-oublie', permanent: true },

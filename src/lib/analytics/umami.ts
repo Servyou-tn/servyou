@@ -20,7 +20,7 @@ import { consentFromCookieString, hasConsent } from '../consent/consent'
 export const UMAMI_WEBSITE_ID = '65413837-a167-435c-8ac9-460c5e66de05'
 export const UMAMI_SCRIPT_URL = 'https://cloud.umami.is/script.js'
 
-/** Hostnames the tracker may send from — production's vercel.app address and the future own domain. */
+/** Hostnames the tracker may send from — the own domain (production), its www form, and the old vercel.app address (now redirected to servyou.tn). */
 export const UMAMI_DOMAINS = ['servyou.vercel.app', 'servyou.tn', 'www.servyou.tn'] as const
 
 /** Name of the global the tracker calls before each send (`data-before-send`). */

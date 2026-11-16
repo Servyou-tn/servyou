@@ -124,12 +124,12 @@ describe('scrubPII — value patterns in strings', () => {
 
   it('applies to the request url, query string, exception values, contexts and tags', () => {
     const out = scrub({
-      request: { url: 'https://servyou.vercel.app/verifier-email?email=a%40b.tn', query_string: 'email=a%40b.tn' },
+      request: { url: 'https://servyou.tn/verifier-email?email=a%40b.tn', query_string: 'email=a%40b.tn' },
       exception: { values: [{ type: 'Error', value: 'duplicate key: (email)=(a@b.tn)' }] },
       contexts: { nextjs: { request_path: '/verifier-email?email=a%40b.tn' } },
       tags: { where: 'signup', who: 'a@b.tn' },
     })
-    expect(out.request?.url).toBe('https://servyou.vercel.app/verifier-email?email=[REDACTED]')
+    expect(out.request?.url).toBe('https://servyou.tn/verifier-email?email=[REDACTED]')
     expect(out.request?.query_string).toBe('email=[REDACTED]')
     expect(out.exception?.values?.[0].value).toBe('duplicate key: (email)=([REDACTED])')
     expect((out.contexts as Record<string, Record<string, unknown>>).nextjs.request_path).toBe('/verifier-email?email=[REDACTED]')
@@ -245,8 +245,8 @@ describe('scrubPII — spans, user, env, JSON bodies, console objects', () => {
 // « Continuer », so every place a URL can travel must lose the VALUE (the name and `type` stay). Neutral key names
 // (url, href, from, to, path) so each case proves the pattern, not the sensitive-key rule.
 describe('scrubPII — one-time codes and tokens in URLs (audit H5)', () => {
-  const RESET = 'https://servyou.vercel.app/nouveau-mot-de-passe?token_hash=abc&type=recovery'
-  const RESET_OUT = 'https://servyou.vercel.app/nouveau-mot-de-passe?token_hash=[Filtered]&type=recovery'
+  const RESET = 'https://servyou.tn/nouveau-mot-de-passe?token_hash=abc&type=recovery'
+  const RESET_OUT = 'https://servyou.tn/nouveau-mot-de-passe?token_hash=[Filtered]&type=recovery'
 
   it('the goal case: token_hash is filtered, type=recovery is kept', () => {
     expect(scrub({ message: '/nouveau-mot-de-passe?token_hash=abc&type=recovery' }).message).toBe(

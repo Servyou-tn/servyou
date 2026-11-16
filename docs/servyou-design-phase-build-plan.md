@@ -14,7 +14,7 @@ No design happens in Phase 1. The principle is older than design systems: you ca
 
 ### Step 1.1 — Full UI inventory
 
-Walk through every page on the production site (`https://servyou.vercel.app`) and capture a screenshot of each one at desktop width and mobile width. Group the screenshots by zone (public marketing, auth flow, consumer marketplace, shop owner workspace, freelancer workspace, admin workspace, settings, legal). The inventory is not analysis yet — it is just the visual baseline that everything downstream measures against.
+Walk through every page on the production site (`https://servyou.tn`) and capture a screenshot of each one at desktop width and mobile width. Group the screenshots by zone (public marketing, auth flow, consumer marketplace, shop owner workspace, freelancer workspace, admin workspace, settings, legal). The inventory is not analysis yet — it is just the visual baseline that everything downstream measures against.
 
 **Deliverable:** `docs/design-phase/01-ui-inventory.md` with one section per zone, embedded screenshots, and a page count per zone.
 **Done when:** Every production page has at least one desktop and one mobile screenshot in the document.
