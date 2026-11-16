@@ -4,8 +4,9 @@ import { withNext } from './next-param'
 // The app half of the two-step sign-up gate (plan §4 « The app side »): a signed-in account whose profile is not complete
 // (completed_at null: the e-mail link was used, « Finalisez votre compte » not done) is sent to that page on every page
 // navigation. The database half (DB-2) refuses its writes. The middleware's matcher already skips the auth pages and
-// /auth/signout; these stay reachable too: the page itself, and what its form links to.
-const OPEN_WHILE_INCOMPLETE = /^\/(finaliser-mon-compte|conditions|confidentialite|contact)(\/|$)/
+// /auth/signout; these stay reachable too: the page itself, the two legal pages its form links to, and the other legal
+// and help pages a footer offers (contact, legal notice, cookies, accessibility).
+const OPEN_WHILE_INCOMPLETE = /^\/(finaliser-mon-compte|conditions|confidentialite|contact|mentions-legales|cookies|accessibilite)(\/|$)/
 
 export type GateRequest = {
   pathname: string

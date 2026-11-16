@@ -95,13 +95,34 @@ describe('completeAccount — the call order', () => {
     expect(h.calls).toEqual(['signOut', 'updateUser', 'rpc'])
   })
 
-  it('a refused password stops before the RPC', async () => {
+  it('a weak password stops before the RPC', async () => {
+    h.updateUser.mockResolvedValue({ data: { user: null }, error: { message: 'x', code: 'weak_password', status: 422 } })
+    expect(await completeAccount(VALID)).toEqual({
+      ok: false,
+      outcome: { kind: 'field', field: 'password', key: 'signup.form.errors.passwordWeak' },
+    })
+    expect(h.calls).toEqual(['signOut', 'updateUser'])
+  })
+
+  it('same_password on a resubmit (THIS session set it, the RPC failed last time): the RPC decides and completes', async () => {
     h.updateUser.mockResolvedValue({ data: { user: null }, error: { message: 'x', code: 'same_password', status: 422 } })
+    expect(await completeAccount(VALID)).toEqual({ ok: true, destination: '/devenir-vendeur/boutique' })
+    expect(h.calls).toEqual(['signOut', 'updateUser', 'rpc'])
+  })
+
+  it('same_password and the RPC says no password was set in this session: « choose a different password »', async () => {
+    h.updateUser.mockResolvedValue({ data: { user: null }, error: { message: 'x', code: 'same_password', status: 422 } })
+    h.rpc.mockResolvedValue(rpcError('password_required'))
     expect(await completeAccount(VALID)).toEqual({
       ok: false,
       outcome: { kind: 'field', field: 'password', key: 'completeAccount.errors.samePassword' },
     })
-    expect(h.calls).toEqual(['signOut', 'updateUser'])
+  })
+
+  it('same_password and the account was already complete (a double submit): success', async () => {
+    h.updateUser.mockResolvedValue({ data: { user: null }, error: { message: 'x', code: 'same_password', status: 422 } })
+    h.rpc.mockResolvedValue(rpcError('already_complete'))
+    expect(await completeAccount(VALID)).toEqual({ ok: true, destination: '/devenir-vendeur/boutique' })
   })
 
   it('a session older than 24 hours (reauthentication_needed) → « Recevoir un nouveau lien »', async () => {

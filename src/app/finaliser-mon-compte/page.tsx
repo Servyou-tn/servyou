@@ -8,6 +8,7 @@ import { AuthFunnelLayout } from '@/components/auth/AuthFunnelLayout'
 import { readNext } from '@/lib/auth/next-param'
 import { newLinkPath } from '@/lib/auth/confirm-link'
 import { TERMS_VERSION } from '@/lib/legal/terms-version'
+import { MIN_SIGNUP_AGE } from '@/lib/signup-validation'
 import { CompleteAccountForm } from './_components/CompleteAccountForm'
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -46,6 +47,10 @@ export default async function FinaliserMonComptePage({
   const { data: claims } = await supabase.auth.getClaims()
   const amr = claims?.claims.amr ?? []
   const fromEmailLink = amr.some((entry) => (typeof entry === 'string' ? entry : entry.method) === 'otp')
+  // The birth-date picker's max (16+), computed once here so the server and the browser draw the same attribute.
+  const maxBirthDate = new Date(Date.UTC(new Date().getUTCFullYear() - MIN_SIGNUP_AGE, new Date().getUTCMonth(), new Date().getUTCDate()))
+    .toISOString()
+    .slice(0, 10)
 
   return (
     <AuthFunnelLayout
@@ -57,7 +62,7 @@ export default async function FinaliserMonComptePage({
       footer={
         // A way out that is not « finish »: the step-2 gate covers every other page.
         <form action="/auth/signout" method="post">
-          <button type="submit" className="font-semibold text-[var(--brand-blue-600)] hover:underline">
+          <button type="submit" className="inline-flex min-h-11 items-center font-semibold text-[var(--brand-blue-600)] hover:underline">
             {t('nav.logout', lang)}
           </button>
         </form>
@@ -68,6 +73,7 @@ export default async function FinaliserMonComptePage({
         email={user.email ?? ''}
         next={next}
         termsVersion={TERMS_VERSION}
+        maxBirthDate={maxBirthDate}
         fromEmailLink={fromEmailLink}
       />
     </AuthFunnelLayout>

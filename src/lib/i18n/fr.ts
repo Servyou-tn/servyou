@@ -458,6 +458,9 @@ export const fr: Record<string, string> = {
   'completeAccount.errors.termsOutdated': "Les conditions ont changé : rechargez la page pour les relire.",
   'completeAccount.errors.samePassword': "Choisissez un mot de passe différent du précédent.",
   'completeAccount.errors.nameInvalid': "Indiquez votre nom (2 à 100 caractères).",
+  'confirmLink.title': "Votre lien ServYou",
+  'confirmLink.subtitle': "Appuyez sur Continuer pour ouvrir votre session.",
+  'completeAccount.signedInAs': "Connecté en tant que {email}",
   'signup.form.errors.googleFailed':        "La connexion avec Google a échoué. Veuillez réessayer.",
 
   // ─── Sign in (/connexion) ───────────────────────────────────────────────────

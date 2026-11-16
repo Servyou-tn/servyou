@@ -24,7 +24,7 @@ describe('completionRedirect', () => {
   })
 
   it('keeps the step-2 page and the two legal pages its form links to reachable', () => {
-    for (const path of ['/finaliser-mon-compte', '/conditions', '/confidentialite', '/contact']) {
+    for (const path of ['/finaliser-mon-compte', '/conditions', '/confidentialite', '/contact', '/mentions-legales', '/cookies', '/accessibilite']) {
       expect(completionRedirect(nav(path), null), path).toBeNull()
     }
     // Anchored: a lookalike path is still gated.

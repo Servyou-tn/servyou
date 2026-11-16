@@ -24,7 +24,8 @@ export type VerifyInitialView = 'pending' | 'loading' | 'failed'
 type View = VerifyInitialView | 'verified'
 
 const AUTO_REDIRECT_SECONDS = 3
-const RESEND_COOLDOWN_SECONDS = 30
+// 60 s: GoTrue sends one link per address per 60 s; a shorter wait only produced an error.
+const RESEND_COOLDOWN_SECONDS = 60
 
 // Resend-with-cooldown: shared by State 1 and State 3. Starts the 30s cooldown on
 // every attempt (spam-resistant even on error) and auto-hides success after 5s.

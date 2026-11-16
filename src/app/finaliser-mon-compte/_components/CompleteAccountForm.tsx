@@ -1,12 +1,11 @@
 'use client'
 
-import { useMemo, useState, type FormEvent, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react'
 import Link from 'next/link'
 import { useLang } from '@/components/LangProvider'
 import { t } from '@/lib/i18n'
 import { GOVERNORATES } from '@/lib/tunisia-governorates'
 import { pickLabel } from '@/lib/i18n/pick-label'
-import { MIN_SIGNUP_AGE } from '@/lib/signup-validation'
 import { completeAccountFieldErrors, type CompleteAccountField, type FieldErrors } from '@/lib/auth/complete-account'
 import { PasswordField } from '@/components/auth/PasswordField'
 import { concealPasswords } from '@/components/ui/password-reveal'
@@ -42,9 +41,14 @@ function Field({ id, label, error, help, children }: { id: string; label: string
 /** « Recevoir un nouveau lien » in place of the form: this session cannot finish the account. */
 function StuckPanel({ email, next }: { email: string; next: string | null }) {
   const lang = useLang()
+  // The form it replaces held the focus (its submit button): move it here, so keyboard and screen-reader users follow.
+  const messageRef = useRef<HTMLParagraphElement>(null)
+  useEffect(() => messageRef.current?.focus(), [])
   return (
     <div className="space-y-5">
-      <p className="text-body leading-relaxed text-white">{t('completeAccount.stuck', lang)}</p>
+      <p ref={messageRef} tabIndex={-1} className="text-body leading-relaxed text-white outline-none">
+        {t('completeAccount.stuck', lang)}
+      </p>
       <EmailLinkForm withName={false} next={next} initialEmail={email} submitKey="newLink.submit" />
     </div>
   )
@@ -55,10 +59,13 @@ export function CompleteAccountForm({
   email,
   next,
   termsVersion,
+  maxBirthDate,
   fromEmailLink,
 }: {
   initialName: string
   email: string
+  /** Today minus 16 years, computed by the server (no SSR / hydration mismatch); the native picker's max. */
+  maxBirthDate: string
   next: string | null
   /** The version the page shows; complete_my_account refuses a stale one (terms_outdated). */
   termsVersion: string
@@ -76,13 +83,6 @@ export function CompleteAccountForm({
   const [reloadKey, setReloadKey] = useState<string | null>(null)
   const [stuck, setStuck] = useState(!fromEmailLink)
   const [loading, setLoading] = useState(false)
-
-  // The native picker nudges toward the 16+ rule (the database enforces it in the Tunis calendar).
-  const maxDob = useMemo(() => {
-    const d = new Date()
-    d.setFullYear(d.getFullYear() - MIN_SIGNUP_AGE)
-    return d.toISOString().slice(0, 10)
-  }, [])
 
   if (stuck) return <StuckPanel email={email} next={next} />
 
@@ -112,7 +112,16 @@ export function CompleteAccountForm({
     concealPasswords(ev.currentTarget)
     setFieldErrors({})
     setLoading(true)
-    const result = await completeAccount({ ...values, termsVersion, next })
+    let result: Awaited<ReturnType<typeof completeAccount>>
+    try {
+      result = await completeAccount({ ...values, termsVersion, next })
+    } catch (e) {
+      // A network drop or a server error: never a button stuck on its spinner.
+      console.error('[CompleteAccountForm] completeAccount threw:', e instanceof Error ? e.message : String(e))
+      setLoading(false)
+      setFormErrorKey('signup.form.errors.generic')
+      return
+    }
     if (result.ok) {
       // A full load: the middleware and every Server Component then read the completed profile.
       window.location.assign(result.destination)
@@ -148,8 +157,18 @@ export function CompleteAccountForm({
       ),
     )
 
+  // « Connecté en tant que {email} »: a person who opened someone else's link (or was sent one) sees whose account this is.
+  const signedInAs = t('completeAccount.signedInAs', lang).split('{email}')
+
   return (
     <form onSubmit={handleSubmit} noValidate className="space-y-4">
+      <p className="text-body-sm text-brand-blue-200">
+        {signedInAs[0]}
+        <bdi dir="ltr" className="font-semibold text-white">
+          {email}
+        </bdi>
+        {signedInAs[1] ?? ''}
+      </p>
       <Field id="fullName" label={t('signup.form.fields.fullName.label', lang)} error={err('fullName')}>
         <input
           id="fullName"
@@ -180,7 +199,7 @@ export function CompleteAccountForm({
           id="dateOfBirth"
           type="date"
           autoComplete="bday"
-          max={maxDob}
+          max={maxBirthDate}
           value={dateOfBirth}
           onChange={(e) => setDateOfBirth(e.target.value)}
           aria-invalid={!!fieldErrors.dateOfBirth}
@@ -231,7 +250,7 @@ export function CompleteAccountForm({
       {reloadKey ? (
         <div role="alert" className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
           <p>{t(reloadKey, lang)}</p>
-          <button type="button" onClick={() => window.location.reload()} className={`mt-2 font-semibold underline ${FOCUS_RING}`}>
+          <button type="button" onClick={() => window.location.reload()} className={`mt-1 inline-flex min-h-11 items-center font-semibold underline ${FOCUS_RING}`}>
             {t('completeAccount.reload', lang)}
           </button>
         </div>

@@ -493,6 +493,9 @@ export const ar: Record<string, string> = {
   'completeAccount.errors.termsOutdated': "تغيّرت الشروط: أعد تحميل الصفحة لقراءتها من جديد.",
   'completeAccount.errors.samePassword': "اختر كلمة مرور مختلفة عن السابقة.",
   'completeAccount.errors.nameInvalid': "أدخل اسمك (من 2 إلى 100 حرف).",
+  'confirmLink.title': "رابطك في ServYou",
+  'confirmLink.subtitle': "اضغط على متابعة لفتح جلستك.",
+  'completeAccount.signedInAs': "متصل بالحساب {email}",
   'signup.form.errors.googleFailed':        "فشل تسجيل الدخول عبر Google. يرجى المحاولة مرة أخرى.",
 
   // ─── Sign in (/connexion) ───────────────────────────────────────────────────

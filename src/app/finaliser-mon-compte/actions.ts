@@ -20,6 +20,10 @@ import {
 //   3. complete_my_account(name, birth date, city, terms version).
 // On `other_sessions` (a session opened between 1 and 3) it ends them again and retries the RPC once, WITHOUT a second
 // updateUser: the password is already set in this session, and GoTrue would refuse the same one (same_password).
+//
+// `same_password` itself is not a stop: a resubmit after an RPC failure (a timeout, terms_outdated, a double submit) meets
+// it because THIS session already set that password. The RPC decides: if the password was set in this session it
+// completes; if not (password_required: someone retyping an older password) the field asks for a different one.
 
 const Input = z.object({
   fullName: z.string().max(200),
@@ -57,9 +61,11 @@ export async function completeAccount(raw: unknown): Promise<CompleteAccountResu
       console.error('[completeAccount] signOut(others) error:', signOutError.message, signOutError.code, signOutError.status)
     }
 
+    let passwordUnchanged = false
     if (setPassword) {
       const { error: passwordError } = await supabase.auth.updateUser({ password: input.password })
-      if (passwordError) {
+      if (passwordError?.code === 'same_password') passwordUnchanged = true
+      else if (passwordError) {
         console.error('[completeAccount] updateUser error:', passwordError.message, passwordError.code, passwordError.status)
         return outcomeForPasswordError(passwordError.code)
       }
@@ -73,6 +79,7 @@ export async function completeAccount(raw: unknown): Promise<CompleteAccountResu
     })
     if (!error) return { kind: 'done' }
     console.error('[completeAccount] complete_my_account error:', error.message, error.code, error.details, error.hint)
+    if (passwordUnchanged && error.hint === 'password_required') return outcomeForPasswordError('same_password')
     return outcomeForRpcHint(error.hint)
   }
 

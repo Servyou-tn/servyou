@@ -427,6 +427,9 @@ export const strings: Record<string, string> = {
   "completeAccount.errors.termsOutdated": "The terms have changed: reload the page to read them again.",
   "completeAccount.errors.samePassword": "Choose a password different from your previous one.",
   "completeAccount.errors.nameInvalid": "Enter your name (2 to 100 characters).",
+  "confirmLink.title": "Your ServYou link",
+  "confirmLink.subtitle": "Press Continue to open your session.",
+  "completeAccount.signedInAs": "Signed in as {email}",
   "signup.form.errors.googleFailed": "Signing in with Google failed. Please try again.",
   // signin
   "signin.title": "Welcome back.",

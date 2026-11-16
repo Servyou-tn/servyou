@@ -42,6 +42,8 @@ export function reasonForAuthError(code: string | undefined): NewLinkReason {
 }
 
 export const NEW_LINK_PATH = '/inscription/nouveau-lien'
+/** The « Continuer » page a template link passes through, so only a person's click spends it (route.ts). */
+export const CONTINUE_PATH = '/inscription/confirmer'
 export const COMPLETE_ACCOUNT_PATH = '/finaliser-mon-compte'
 
 /** « Recevoir un nouveau lien », with why and the funnel's next. */

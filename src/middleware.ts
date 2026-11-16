@@ -171,8 +171,18 @@ export async function middleware(request: NextRequest) {
     { pathname: request.nextUrl.pathname, search: request.nextUrl.search, method: request.method, isNavigation: isNavigation(request) },
     profile ? profile.completed_at : undefined,
   )
-  if (step2) return NextResponse.redirect(new URL(step2, request.url))
+  if (step2) return redirectKeepingSession(pass(), new URL(step2, request.url))
   return pass()
+}
+
+// A redirect that keeps what this run wrote: getUser() may just have rotated the session (refresh tokens rotate), and a
+// bare redirect would drop the new cookies — the browser would keep a refresh token GoTrue already spent.
+function redirectKeepingSession(passed: NextResponse, url: URL): NextResponse {
+  const response = NextResponse.redirect(url)
+  passed.cookies.getAll().forEach((cookie) => response.cookies.set(cookie))
+  const cacheControl = passed.headers.get('cache-control')
+  if (cacheControl) response.headers.set('cache-control', cacheControl)
+  return response
 }
 
 // A page navigation (HTML or an RSC fetch): a JSON/fetch GET keeps getting its own answer instead of an HTML redirect.

@@ -32,10 +32,16 @@ The Supabase dashboard holds these; the founder sets them (the Supabase MCP cann
 - **Redirect URLs:**
   - `https://servyou.tn/**` (production: `/auth/confirm` for the sign-up and sign-in links, `/nouveau-mot-de-passe` for
     the reset link, `/verifier-email` for links sent before the two-step sign-up);
-  - `http://localhost:*/**` (local development, any port; each worktree runs its own);
-  - `https://*-servyou-s-projects.vercel.app/**` (Vercel previews: `servyou-git-<branch>-…` and `servyou-<hash>-…`).
+  - `http://localhost:*/**` (local development, any port; each worktree runs its own).
 
 In a pattern, `*` matches anything but `.` and `/`, and `**` matches anything (query strings included).
+
+**No wildcard for the Vercel previews — on purpose.** The sign-up and sign-in links now carry their one-time token
+straight to the Redirect URL. Anyone can ask Supabase for a link to any address and pick any allow-listed redirect, so a
+pattern like `https://*-servyou-s-projects.vercel.app/**` would let someone who obtains a matching Vercel host (a team or
+project slug ending that way) receive a victim's token and sign in as them. A preview is not on the list, so its links
+fall back to the Site URL: the templates' `{{ if }}` then builds the production link, and the account opens on
+production. Add an EXACT preview URL only for a short test, and remove it after.
 
 ## The e-mail templates (two-step sign-up)
 
