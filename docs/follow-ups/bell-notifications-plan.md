@@ -19,7 +19,7 @@ header carries the full discovery, the founder decisions and the post-apply chec
      code. A CHECK (`recipient_id <> actor_id`) makes a self-notification impossible even if the trigger is changed.
 3. **Open question 1 (2026-11-16):** no signed-in party → no row (the default is kept).
 4. **D1 (2026-11-16):** yes. Account deletion also deletes the person's notifications, in a separate small DB PR
-   before launch (DB-2).
+   before launch (#398).
 5. **D2 (2026-11-16):** no retention in v1. Later: a `pg_cron` job deleting read rows older than 90 days.
 6. **D3 (2026-11-16):** no Realtime in v1. The badge count refreshes on page load.
 7. **D4 (2026-11-16):** a notification is read when it is opened, plus « Tout marquer comme lu ».
@@ -74,7 +74,7 @@ no-actor status change, a test fails and that PR has to come back to the founder
 
 1. **Account deletion: yes.** `admin_process_deletion_request` deletes the person's favorites and e-mail preferences,
    and will also delete their bell rows.
-   - In a separate small DB PR before launch (DB-2), because re-creating that long function deserves its own review.
+   - In a separate small DB PR before launch (#398), because re-creating that long function deserves its own review.
 2. **Retention: none in v1** (volumes are tiny: 16 orders).
    - Later: a `pg_cron` job (installed) deleting read rows older than 90 days.
 3. **No Realtime in v1.** The Realtime publication is empty today, and DB-1 does not add the table.
@@ -135,11 +135,11 @@ Then:
 1. **DB-1** (`feat/bell-notifications-db`, PR #393).
    - Commit 1: the PENDING migration. Commit 2: the Sonnet review fixes (comments only). Commit 3: the architect's
      fix (the INSERT block) and these decisions in the header.
-   - Commit 4 (architect OK, 2026-11-16), after the apply:
-     - the file renamed to the recorded version, plus its README entry;
-     - `database.types.ts` regenerated;
-     - `data-model.md`: its line « No notifications table » (L217) replaced;
-     - the live suite.
+   - Applied 2026-11-16 as `20261116201553_bell_notifications` (README #136). The post-apply record is commits 4 + 5
+     (architect OK for both):
+     - commit 4 (`07abd68`) holds the rename only: its `git add` aborted on the already-moved `PENDING_` path;
+     - commit 5 (`6737108`) holds the rest: the header lines, README entry 136, `database.types.ts` regenerated,
+       `data-model.md` (« No notifications table » replaced) and the live suite `bell-notifications-live` (21/21).
 2. **UI-1** (page-builder, from the Figma bell / notification panel).
    - `TopbarNotifications.tsx` is today an honest empty state with no count. It gets:
      - the unread badge;
@@ -148,7 +148,8 @@ Then:
    - The Paramètres line « Les notifications en temps réel dans la plateforme (cloche + tiroir) arriveront dans une
      prochaine mise à jour. » is updated.
    - New strings in FR / AR / EN, submitted for the founder's approval.
-3. **DB-2** (decision 1, accepted), before launch: account deletion also deletes the person's notifications.
+3. **The deletion PR, #398** (`feat/bell-deletion-cleanup`; decision 1, accepted), before launch: account deletion
+   also deletes the notifications the person received. Rows they caused for someone else (`actor_id`) stay.
 
 ## 7. Later phases (out of v1; listed only)
 
