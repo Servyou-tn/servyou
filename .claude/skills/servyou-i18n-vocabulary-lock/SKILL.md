@@ -60,6 +60,10 @@ From design system Section 6.1 — sidebar items:
 
 Status pills (Section 6.2) and action labels (Section 6.3) — full tables in the design system doc. Do not translate these independently.
 
+**Brand name (Section 6.6):** write **ServYou** (capital S, capital Y) in every user-visible string — FR, AR (Latin
+letters inside the Arabic sentence, never transliterated) and EN, including `aria-label` / `alt`. Never « Servyou ». Lowercase
+stays only where it is not prose: domains (`servyou.tn`), e-mail addresses, identifiers, paths, key names, the repo name.
+
 ## Red flags — refuse these
 
 ❌ **Hardcoded strings in JSX** — `<h1>My Services</h1>`. Use `<h1>{t('freelance.services.heading')}</h1>`.

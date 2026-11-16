@@ -128,7 +128,7 @@ export function AdminSidebar({
     <div className="flex h-full w-full flex-col bg-brand-blue-950 px-4 pb-6 text-text-inverse">
       {/* Logo band — 72 tall, start-pad 12 (S-mark band 208×72 → Lockup 123×32, gap 8). */}
       <div className="flex h-[72px] shrink-0 items-center justify-between ps-3">
-        <Link href="/admin" onClick={onNavigate} aria-label="Servyou" className={cn('flex items-center gap-2 rounded-pill', FOCUS_RING)}>
+        <Link href="/admin" onClick={onNavigate} aria-label="ServYou" className={cn('flex items-center gap-2 rounded-pill', FOCUS_RING)}>
           <Image src="/brand/logo/servyou-s-mark.png" alt="" width={32} height={32} className="h-8 w-8 shrink-0" />
           <span className="text-xl font-bold text-white">ServYou</span>
         </Link>
