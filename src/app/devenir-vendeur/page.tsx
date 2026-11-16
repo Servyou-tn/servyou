@@ -19,8 +19,9 @@ export async function generateMetadata(): Promise<Metadata> {
 // The shared seller entry (Figma 469:20560, founder-confirmed as a NEW page, not a
 // redesign of the old /devenir-vendeur pitch). Runs BOTH gates once, before either role
 // pitch is offered:
-//   AGE  — date_of_birth is a display field (NOT NULL, populated for every real profile).
-//          Under 18 swaps the whole cards+age-gate region for the refusal card (555:37196).
+//   AGE  — date_of_birth is a display field, populated on every complete profile. Null on an incomplete account (two-step
+//          sign-up), which the middleware sends to « Finalisez votre compte » first: neither age card shows then — a
+//          missing date is not a pass. Under 18 swaps the whole cards+age-gate region for the refusal card (555:37196).
 //          The DB trigger (23514) stays as the last line of defence, now unreachable via UI.
 //   ROLE — a user who already holds one role sees the OTHER card unavailable with a short
 //          explanation, never hidden. Their OWN matching card stays a plain link to its
@@ -35,14 +36,15 @@ export default async function DevenirVendeurChoicePage() {
   const lang = await getLang()
   const profile = shell ? await getCurrentProfile() : null
   const role = resolveRole(profile)
-  const isUnderage = profile ? !isOldEnoughToSignup(profile.date_of_birth, MIN_SELLER_AGE) : false
+  const dateOfBirth = profile?.date_of_birth ?? null
+  const isUnderage = dateOfBirth ? !isOldEnoughToSignup(dateOfBirth, MIN_SELLER_AGE) : false
 
   return (
     <AppShell user={shell?.topBarUser ?? null}>
       {/* 375 (m375-g1-devenir-vendeur): the column spans the shell's 343, hero gap 8, H1 / 38, sub 18 / 28, cards 32 under. */}
       <div className="mx-auto max-w-[720px] px-4 py-10 sm:px-6 lg:px-0 max-sm:px-0 max-lg:py-0">
-        {profile && isUnderage ? (
-          <AgeGateRefusalCard dateOfBirth={profile.date_of_birth} lang={lang} />
+        {dateOfBirth && isUnderage ? (
+          <AgeGateRefusalCard dateOfBirth={dateOfBirth} lang={lang} />
         ) : (
           <>
             <div className="text-center">
@@ -86,7 +88,7 @@ export default async function DevenirVendeurChoicePage() {
               />
             </div>
 
-            {profile && <AgeGateCard dateOfBirth={profile.date_of_birth} lang={lang} />}
+            {dateOfBirth ? <AgeGateCard dateOfBirth={dateOfBirth} lang={lang} /> : null}
           </>
         )}
       </div>

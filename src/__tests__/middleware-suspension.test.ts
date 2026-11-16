@@ -24,13 +24,15 @@ const h = vi.hoisted(() => ({
   getSession: vi.fn(async () => ({ data: { session: null }, error: null })),
   maybeSingle: vi.fn(),
   eq: vi.fn(),
+  select: vi.fn(),
 }))
 
 vi.mock('@supabase/ssr', () => ({
   createServerClient: vi.fn(() => ({
     auth: { getUser: h.getUser, getSession: h.getSession },
     from: vi.fn(() => ({
-      select: vi.fn(() => ({
+      select: vi.fn((...selectArgs: unknown[]) => ({
+        _: h.select(...selectArgs),
         eq: (...args: unknown[]) => {
           h.eq(...args)
           return { maybeSingle: h.maybeSingle }
@@ -200,6 +202,63 @@ describe('handler', () => {
 })
 
 // K2 — an expired session. Only a present auth cookie + a "session is gone" code + a GET may redirect.
+describe('two-step sign-up — an incomplete account is sent to « Finalisez votre compte »', () => {
+  const page = (path: string, init: { method?: string; headers?: Record<string, string> } = {}) =>
+    request(path, { ...init, headers: { accept: 'text/html', ...init.headers } })
+
+  beforeEach(() => {
+    h.getUser.mockResolvedValue({ data: { user: { id: 'u1' } }, error: null })
+    h.maybeSingle.mockResolvedValue({ data: { suspended_at: null, completed_at: null }, error: null })
+  })
+
+  it('reads completed_at in the same one-row query as suspended_at', async () => {
+    await middleware(page('/mes-commandes'))
+    expect(h.select).toHaveBeenCalledWith('suspended_at, completed_at')
+    expect(h.maybeSingle).toHaveBeenCalledTimes(1)
+  })
+
+  it('redirects a page navigation to step 2, keeping where it was going', async () => {
+    const res = await middleware(page('/mes-commandes?statut=en-cours'))
+    expect(res.status).toBe(307)
+    expect(res.headers.get('location')).toBe('http://localhost/finaliser-mon-compte?next=%2Fmes-commandes%3Fstatut%3Den-cours')
+  })
+
+  it('an RSC navigation fetch too', async () => {
+    const res = await middleware(request('/marche/produits', { headers: { rsc: '1' } }))
+    expect(res.headers.get('location')).toBe('http://localhost/finaliser-mon-compte?next=%2Fmarche%2Fproduits')
+  })
+
+  it('lets the step-2 page and the legal pages its form links to through', async () => {
+    for (const path of ['/finaliser-mon-compte', '/conditions', '/confidentialite', '/contact']) {
+      expect(passedThrough(await middleware(page(path))), path).toBe(true)
+    }
+  })
+
+  it('never redirects a server action POST or a JSON GET', async () => {
+    expect(passedThrough(await middleware(page('/mes-commandes', { method: 'POST' })))).toBe(true)
+    expect(passedThrough(await middleware(request('/api/x', { headers: { accept: 'application/json' } })))).toBe(true)
+  })
+
+  it('lets a complete account through, and fails open when the profile cannot be read', async () => {
+    h.maybeSingle.mockResolvedValueOnce({ data: { suspended_at: null, completed_at: '2026-11-16T10:00:00Z' }, error: null })
+    expect(passedThrough(await middleware(page('/mes-commandes')))).toBe(true)
+    vi.spyOn(console, 'error').mockImplementation(() => {})
+    h.maybeSingle.mockResolvedValueOnce({ data: null, error: { message: 'timeout', code: '57014', details: null } })
+    expect(passedThrough(await middleware(page('/mes-commandes')))).toBe(true)
+  })
+
+  it('a suspension still wins over an incomplete profile', async () => {
+    h.maybeSingle.mockResolvedValue({ data: { suspended_at: '2026-10-24T19:00:00Z', completed_at: null }, error: null })
+    expectSignedOut(await middleware(page('/mes-commandes')))
+  })
+
+  it('a link prefetch is never redirected (no profile read)', async () => {
+    h.getSession.mockResolvedValue({ data: { session: null }, error: null })
+    expect(passedThrough(await middleware(page('/mes-commandes', { headers: { 'next-router-prefetch': '1' } })))).toBe(true)
+    expect(h.maybeSingle).not.toHaveBeenCalled()
+  })
+})
+
 describe('K2 — expired session', () => {
   const gone = (code: string) => ({ data: { user: null }, error: { code, status: 400, message: code } })
 

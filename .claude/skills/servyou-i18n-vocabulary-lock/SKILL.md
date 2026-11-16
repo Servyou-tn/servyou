@@ -57,6 +57,7 @@ From design system Section 6.1 — sidebar items:
 | Orders | **Mes commandes** | **مشترياتي** |
 | Saved Items | **Mes favoris** | **المحفوظات** |
 | Settings | **Paramètres** | **الإعدادات** |
+| Finish your account (sign-up step 2, `/finaliser-mon-compte`) | **Finalisez votre compte** | **أكمل حسابك** |
 
 Status pills (Section 6.2) and action labels (Section 6.3) — full tables in the design system doc. Do not translate these independently.
 

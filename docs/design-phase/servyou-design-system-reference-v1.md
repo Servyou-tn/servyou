@@ -1113,6 +1113,15 @@ text it stays in Latin letters (« مرحبا بك في ServYou »), never trans
 Stays lowercase, because it is not prose: the domains (`servyou.tn`, `servyou.vercel.app`), e-mail addresses, code
 identifiers, file paths, i18n key names and the repository name (`Servyou-tn/servyou`).
 
+### 6.7 — Sign-up step 2 (locked, founder 2026-11-15, decision 7)
+
+| English | French (locked) | Arabic | Route |
+|---|---|---|---|
+| Finish your account | **Finalisez votre compte** | **أكمل حسابك** | `/finaliser-mon-compte` |
+
+The page title of the two-step sign-up's second step (password, birth date, city, terms). The e-mails and every string of
+this flow spell the brand « ServYou » (6.6).
+
 ---
 
 ## Section 7 — Per-page reference <a name="section-7"></a>

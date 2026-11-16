@@ -5,9 +5,9 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { useLang } from '@/components/LangProvider'
-import { t } from '@/lib/i18n'
+import { t, type Lang } from '@/lib/i18n'
 import { isValidEmail } from '@/lib/signup-validation'
-import { verifyEmailRedirectUrl } from '@/lib/auth/email-redirect'
+import { sendEmailLink } from '@/lib/auth/email-link'
 import { SIGNUP_NEXT_KEY, SIGNUP_ROLE_KEY, asSignupRole } from '@/lib/signup-role'
 import { nextDestinationAfterVerify } from '@/lib/verify-email'
 import { resolveRole } from '@/lib/roles'
@@ -28,7 +28,11 @@ const RESEND_COOLDOWN_SECONDS = 30
 
 // Resend-with-cooldown: shared by State 1 and State 3. Starts the 30s cooldown on
 // every attempt (spam-resistant even on error) and auto-hides success after 5s.
-function useResend(getCaptchaToken: () => Promise<string | undefined>) {
+//
+// Two-step sign-up: this page now only serves links sent BEFORE it (their ?code= is still exchanged below, plan §5).
+// A resend sends the NEW link (/auth/confirm, src/lib/auth/email-link.ts), never resend({ type: 'signup' }) to here:
+// once the two e-mail templates are pasted, that link would come out broken.
+function useResend(getCaptchaToken: () => Promise<string | undefined>, lang: Lang) {
   const supabase = createClient()
   const [cooldown, setCooldown] = useState(0)
   const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle')
@@ -54,19 +58,15 @@ function useResend(getCaptchaToken: () => Promise<string | undefined>) {
     setCooldown(RESEND_COOLDOWN_SECONDS)
     // Turnstile token for Supabase Auth's CAPTCHA check (/resend is CAPTCHA-guarded once it is enabled).
     const captchaToken = await getCaptchaToken()
-    const { error } = await supabase.auth.resend({
-      type: 'signup',
-      email: email.trim().toLowerCase(),
-      // Same target as the first email (SignupForm): /verifier-email of this origin.
-      options: { emailRedirectTo: verifyEmailRedirectUrl(window.location.origin), ...(captchaToken ? { captchaToken } : {}) },
+    const errorKey = await sendEmailLink(supabase, {
+      email,
+      lang,
+      next: null,
+      origin: window.location.origin,
+      captchaToken,
     })
     inFlight.current = false
-    if (error) {
-      console.error('[VerifyEmail] resend error:', error.message, error.code, error.status)
-      setStatus('error')
-      return
-    }
-    setStatus('success')
+    setStatus(errorKey ? 'error' : 'success')
   }
 
   return { cooldown, status, resend }
@@ -94,7 +94,7 @@ export function VerifyEmailFlow({
   const [resendEmail, setResendEmail] = useState(initialEmail)
   const [resendEmailError, setResendEmailError] = useState('')
   const turnstile = useRef<TurnstileHandle>(null)
-  const resend = useResend(async () => turnstile.current?.getToken())
+  const resend = useResend(async () => turnstile.current?.getToken(), lang)
 
   const emailDisplay = initialEmail || t('verifyEmail.state1.emailFallback', lang)
 
