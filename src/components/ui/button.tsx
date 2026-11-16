@@ -22,8 +22,9 @@ import { HitArea } from './interactive-surface'
 //     no fontWeight/fontStyle variable bound on any of the 42 labels), inconsistent with StatusPill
 //     (Semi Bold) and the ~40 call sites (medium/semibold). Corrected to Semi Bold in the Figma
 //     SOURCE first (all 42 labels), then built here — source completes before code reads it.
-//   • danger hover/pressed use danger-700 (Figma renders #808080 grey there — an authoring gap; see
-//     docs/follow-ups.md). link has no Figma hover, so we add underline.
+//   • danger's fill is danger-700, not Figma's danger-500: a white label on danger-500 is 3.91:1, under AA (journey walk
+//     S2). 700 is the darkest red, so hover/pressed darken with a brightness filter (Figma's own hover is #808080 grey —
+//     an authoring gap; see docs/follow-ups.md). link has no Figma hover, so we add underline.
 //   • Touch target: md is 40px (desktop size). On mobile it must offer a ≥44px hit area WITHOUT
 //     changing the rendered 40px box (else it would fight the VRT baseline). The boundary lint forbids
 //     the arbitrary `content-['']` a real ::before needs, so the hit area is an invisible, aria-hidden
@@ -52,7 +53,7 @@ export const VARIANT_STATE: Record<ButtonVariant, string> = {
   primary: 'hover:bg-brand-blue-700 active:bg-brand-blue-800',
   secondary: 'hover:bg-surface-subtle active:bg-surface-sunken',
   ghost: 'hover:bg-brand-blue-50 active:bg-brand-blue-100',
-  danger: 'hover:brightness-90 active:brightness-75', // Figma renders #808080 grey — see follow-ups
+  danger: 'transition hover:brightness-90 active:brightness-75', // `transition` (twMerge drops BASE's transition-colors) also eases the filter: 700 is the darkest red
   link: 'hover:underline active:text-brand-blue-800', // link has no Figma hover treatment
 }
 
