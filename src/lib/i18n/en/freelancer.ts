@@ -370,7 +370,6 @@ export const strings: Record<string, string> = {
   'freelance.dashboard.tile.engagements_sub': "In progress",
   'freelance.dashboard.tile.pending': "Pending requests",
   'freelance.dashboard.tile.pending_sub': "Waiting for your reply",
-  'freelance.dashboard.tile.views': "Profile views · 30 days",
   'freelance.dashboard.missions.title': "Recent jobs for you",
   'freelance.dashboard.missions.link': "View all jobs →",
   'freelance.dashboard.missions.empty_title': "No job matches your skills",

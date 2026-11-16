@@ -51,6 +51,9 @@ export type SidebarItemDef = {
   // under a different segment: « Trouver des missions » is /trouver-des-missions but its detail, proposal form
   // and confirmation are /missions/[id]/… (Figma H10/H12/H13 all keep it active).
   activeOn?: string[]
+  // A destination that only sends a signed-out visitor to /connexion. The visitor's sidebar leaves it out and shows the
+  // « Se connecter / Créer un compte » block instead (journey walk J1). Set it on the item, so a new one can't leak.
+  memberOnly?: boolean
 }
 export type SidebarSectionDef = { labelKey: string; items: SidebarItemDef[] }
 
@@ -71,12 +74,12 @@ const DISCOVER: SidebarSectionDef = {
         { key: 'common.services_section', href: MARCHE_ENGINE_PATHS.service },
       ],
     },
-    { key: 'shell.sidebar.orders', href: '/mes-commandes', icon: Package },
-    { key: 'shell.sidebar.favorites', href: '/mes-favoris', icon: Heart },
+    { key: 'shell.sidebar.orders', href: '/mes-commandes', icon: Package, memberOnly: true },
+    { key: 'shell.sidebar.favorites', href: '/mes-favoris', icon: Heart, memberOnly: true },
     // "Mes annonces" per Figma 611:45637 (110:3863). VOCAB DRIFT resolved (feat/annonces-vocab-
     // rename): the route and every string behind it now say "annonce" too — /mes-missions
     // permanently redirects here (next.config.ts).
-    { key: 'shell.sidebar.listings', href: '/mes-annonces', icon: Megaphone },
+    { key: 'shell.sidebar.listings', href: '/mes-annonces', icon: Megaphone, memberOnly: true },
   ],
 }
 
@@ -86,7 +89,7 @@ const DISCOVER: SidebarSectionDef = {
 const TOOLS: SidebarSectionDef = {
   labelKey: 'shell.sidebar.section.tools',
   items: [
-    { key: 'shell.sidebar.settings', href: '/parametres', icon: Settings },
+    { key: 'shell.sidebar.settings', href: '/parametres', icon: Settings, memberOnly: true },
     { key: 'shell.sidebar.help', href: '/aide', icon: HelpCircle },
   ],
 }
@@ -119,6 +122,15 @@ const SHOP_ACTIVITIES: SidebarSectionDef = {
     { key: 'shell.sidebar.products', href: '/mes-produits', icon: Package },
     { key: 'shell.sidebar.receivedOrders', href: '/commandes-recues', icon: Inbox },
   ],
+}
+
+/** A signed-out visitor (journey walk J1, 2026-11-15): the consumer IA without its `memberOnly` items — Marketplace and
+ *  Aide stay; the sidebar shows the « Se connecter / Créer un compte » block in their place. */
+export function sidebarSectionsForVisitor(): SidebarSectionDef[] {
+  return [DISCOVER, TOOLS].map((section) => ({
+    ...section,
+    items: section.items.filter((item) => !item.memberOnly),
+  }))
 }
 
 export function sidebarSectionsForRole(role: ShellRole): SidebarSectionDef[] {

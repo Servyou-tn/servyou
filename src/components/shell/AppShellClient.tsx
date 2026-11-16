@@ -83,7 +83,7 @@ export function AppShellClient({
     <div className="flex min-h-screen bg-surface-subtle">
       {/* Persistent sidebar (lg+). */}
       <aside className="sticky top-0 hidden h-screen w-60 shrink-0 lg:block">
-        <Sidebar role={role} />
+        <Sidebar role={role} signedIn={user !== null} />
       </aside>
 
       {/* Right region: topbar, optional relocated filter toolbar, then content. */}
@@ -137,6 +137,7 @@ export function AppShellClient({
           >
             <Sidebar
               role={role}
+              signedIn={user !== null}
               inDrawer
               closeRef={closeRef}
               onClose={closeDrawer}

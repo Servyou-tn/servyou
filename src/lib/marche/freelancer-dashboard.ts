@@ -54,10 +54,6 @@ export type FreelancerDashboard = {
   activePurchasesCount: number
 }
 
-/** Ruling 1: no profile_views table, no write path, nothing seeded. A named constant so the "0"
- *  in the stat tile reads as a documented decision, not a forgotten wire-up. */
-export const VUES_DU_PROFIL = 0
-
 // A SERVICE order only ever reaches 5 of the DB's 8 statuses (order-status.ts) — pending,
 // accepted, arrived, received, cancelled. "Active" excludes the two terminal ones.
 const TERMINAL_ORDER_STATUSES: readonly string[] = ['received', 'cancelled']
@@ -88,13 +84,17 @@ function titleOf(row: OrderRow): string {
 // ── Pure, exported for tests — business-rule logic is must-test per CLAUDE.md's testing
 // discipline, and every one of these is a rule from a founder ruling, not a mechanical mapping. ──
 
-/** Engagements actifs / Demandes en attente — Ruling: excludes only the two terminal statuses. */
+/**
+ * Engagements actifs / Demandes en attente. « Engagements actifs » = accepted + arrived (work under way + delivered,
+ * awaiting the buyer), the same orders as Mes engagements' « En cours » + « Livrés » tabs; pending lives only in
+ * « Demandes en attente » (journey walk F2, 2026-11-15 — it used to count every non-terminal status, pending included).
+ */
 export function activeOrderCounts(orders: readonly { status: string }[]): {
   engagementsActifs: number
   demandesEnAttente: number
 } {
   return {
-    engagementsActifs: orders.filter((o) => !TERMINAL_ORDER_STATUSES.includes(o.status)).length,
+    engagementsActifs: orders.filter((o) => o.status === 'accepted' || o.status === 'arrived').length,
     demandesEnAttente: orders.filter((o) => o.status === 'pending').length,
   }
 }
@@ -157,8 +157,8 @@ export function buildActivityFeed(
     .slice(0, limit)
 }
 
-/** Same "active" rule as activeOrderCounts, applied to the freelancer's OWN purchases (buyer_id),
- *  not their sales — backs the Actions rapides count badge (§9, h4-discovery.md). */
+/** The freelancer's OWN purchases (buyer_id) that are not yet terminal, pending included — backs the Actions rapides
+ *  count badge (§9, h4-discovery.md). A buyer's open orders, not a seller's workload, so F2 did not change it. */
 export function activePurchaseCount(orders: readonly { status: string }[]): number {
   return orders.filter((o) => !TERMINAL_ORDER_STATUSES.includes(o.status)).length
 }

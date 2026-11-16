@@ -8,7 +8,9 @@ import { Rocket, X } from 'lucide-react'
 import { useLang } from '@/components/LangProvider'
 import { t } from '@/lib/i18n'
 import { FOCUS_RING } from '@/components/layout/styles'
-import { sidebarSectionsForRole, type ShellRole } from './sidebar-items'
+import { sidebarSectionsForRole, sidebarSectionsForVisitor, type ShellRole } from './sidebar-items'
+import { signInHref } from '@/lib/favorites/targets'
+import { ButtonLink } from '@/components/ui/button'
 import { isActiveRoute, isItemActive } from './active-route'
 import { SidebarSection } from './SidebarSection'
 import { SidebarItem } from './SidebarItem'
@@ -21,12 +23,15 @@ import { HitArea } from '@/components/ui/interactive-surface'
 // closes the drawer when a link is followed.
 export function Sidebar({
   role,
+  signedIn,
   inDrawer = false,
   onNavigate,
   onClose,
   closeRef,
 }: {
   role: ShellRole
+  /** false = a signed-out visitor: no member-only items, a sign-in block instead (journey walk J1). */
+  signedIn: boolean
   inDrawer?: boolean
   onNavigate?: () => void
   onClose?: () => void
@@ -34,7 +39,9 @@ export function Sidebar({
 }) {
   const lang = useLang()
   const pathname = usePathname()
-  const sections = sidebarSectionsForRole(role)
+  const sections = signedIn ? sidebarSectionsForRole(role) : sidebarSectionsForVisitor()
+  // Back to this page after signing in, as the topbar's « Se connecter » does; the home page needs no ?next=.
+  const nextPath = pathname && pathname !== '/' ? pathname : null
 
   return (
     <div className="flex h-full w-full flex-col bg-brand-blue-950 px-4 pb-6 text-text-inverse">
@@ -134,6 +141,25 @@ export function Sidebar({
                 </div>
               )
             })}
+            {/* Signed-out visitor (journey walk J1): Mes commandes / Mes favoris / Mes annonces / Paramètres only bounce to
+                /connexion, so they give way to one block that says what signing in unlocks. No frame draws it: the shell's
+                own tokens — the promo card's radius and padding, a hairline instead of its fill, the standard buttons. */}
+            {!signedIn && section.labelKey === 'shell.sidebar.section.discover' && (
+              <div className="my-2 flex flex-col gap-3 rounded-xl border border-white/10 p-4">
+                <p className="text-body-sm leading-5 text-brand-blue-100">{t('shell.sidebar.guest.body', lang)}</p>
+                <ButtonLink href={nextPath ? signInHref(nextPath) : '/connexion'} onClick={onNavigate} className="w-full">
+                  {t('nav.login', lang)}
+                </ButtonLink>
+                <ButtonLink
+                  href={nextPath ? `/inscription?next=${encodeURIComponent(nextPath)}` : '/inscription'}
+                  onClick={onNavigate}
+                  variant="secondary"
+                  className="w-full"
+                >
+                  {t('nav.signup', lang)}
+                </ButtonLink>
+              </div>
+            )}
             {/* "Devenir vendeur" promo (Figma 611:45637 → 110:3874): only for a consumer
                 (seller_type null; role is 'consumer' logged-out too). Hidden for sellers. */}
             {role === 'consumer' && section.labelKey === 'shell.sidebar.section.discover' && (
