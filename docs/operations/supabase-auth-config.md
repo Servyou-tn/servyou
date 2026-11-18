@@ -122,8 +122,8 @@ the discipline of updating the whitelist before changing a route.
 ## Migration history
 
 - **2026-11-16** — Two-step sign-up (UI-1): sign-up and sign-in links go to `/auth/confirm`; the « Confirm signup » and
-  « Magic Link » templates are rewritten (above); localhost (any port) and the Vercel previews are added with wildcards.
-  `/verifier-email` keeps working for links sent before.
+  « Magic Link » templates are rewritten (above); localhost (any port) is added; the Vercel previews are deliberately
+  NOT added (see « No wildcard for the Vercel previews »). `/verifier-email` keeps working for links sent before.
 - **2026-06-14** — Redirect URL whitelist migrated from `/update-password` to
   `/nouveau-mot-de-passe` as part of the auth route migration (legacy auth routes
   rebranded to French names; old paths kept as permanent 308 redirects in
