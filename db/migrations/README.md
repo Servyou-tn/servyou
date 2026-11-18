@@ -1508,6 +1508,53 @@ both on 2026-10-28.
     - **Rollback:** the commented block at the end of the file. Setting `date_of_birth` back to NOT NULL fails while an
       incomplete profile exists.
 
+136. **20261116201553_bell_notifications** — bell notifications v1, the order events, DB-1, PR #393. Plan and founder
+    decisions of 2026-11-15 / 2026-11-16: `docs/follow-ups/bell-notifications-plan.md` (#392). Written by db-guardian;
+    reviewed and applied by the architect with the founder's OK.
+    - **The rule (founder, 2026-11-16):** every order event notifies the OTHER party, never the person who made it.
+      Enforced in the database, not in app code.
+    - **`notifications`:**
+      - columns: `recipient_id`, `actor_id`, `order_id` (FKs, `on delete cascade`), `kind` (`order_created` /
+        `order_status_changed`), `from_status`, `to_status`, `created_at`, `read_at`. It stores keys, never text;
+      - CHECKs `notifications_kind_check`, `notifications_kind_shape` and `notifications_never_self` (the recipient is
+        never the actor);
+      - RLS on in the same migration: the recipient reads their own rows (`to authenticated`, `(select auth.uid())`);
+      - grants: authenticated SELECT only. The default anon SELECT (migration 107) is revoked, and clients get no
+        INSERT, UPDATE or DELETE, so there is no allow-list entry;
+      - indexes: `(recipient_id, created_at desc)`, the partial `(recipient_id) where read_at is null`, `actor_id`,
+        `order_id`.
+    - **`notify_order_counterparty()`** (SECURITY DEFINER, `search_path ''`, no client EXECUTE):
+      - fired by `trg_notify_order_created` (AFTER INSERT on `orders`) and `trg_notify_order_status_changed` (AFTER
+        UPDATE, `when (old.status is distinct from new.status)`);
+      - compares `auth.uid()` with `buyer_id` / `seller_id` and writes one row for the other party;
+      - no row when no party is signed in (founder decision, open question 1) or when the recipient would be the actor;
+      - the INSERT sits in its own block: any unexpected error becomes `WARNING bell: no notification for order …`
+        with no row, so the bell never rolls back an order (architect's fix, commit 2252dd8);
+      - `emit_order_event` / `order_events` are untouched.
+    - **`mark_my_notifications_read(p_ids uuid[] default null)`:** SECURITY DEFINER, EXECUTE for authenticated only.
+      It acts on the caller's own unread rows (all of them when `p_ids` is null, otherwise the first 200 ids), sets
+      `read_at = now()` once, and returns the count. Anon gets 42501.
+    - No row changed and nothing backfilled: 16 orders, 0 notifications at the apply.
+    - **Checked after the apply (architect):**
+      - RLS on, authenticated SELECT only, 0 other grants, 1 policy;
+      - both `trg_notify_order_*` triggers enabled (O);
+      - anon cannot execute `mark_my_notifications_read`, and authenticated cannot execute `notify_order_counterparty`;
+      - the file's rolled-back check printed « BELL CHECK: null_actor_refused=t seller_rows=1 buyer_rows=0
+        order_status_changed pending>cancelled ». Afterwards: 0 notifications, 16 orders.
+    - **Live, one at a time (db-guardian):** `bell-notifications-live` 21/21 and `client-write-grants-live` 3/3.
+      - The live suite covers both inserts, the 5 product steps and 2 service steps, a seller cancel, a refusal, a
+        buyer cancel and both receipts. Each asserts the order's whole list is exactly 1 row, for the other party.
+      - It also covers: a tracking edit and a service-role insert write no row; a service-role status change is
+        refused; the recipient-only reads; no client writes; mark-read on own rows only.
+      - Cleanup verified: 0 `bell-` users, profiles, shops or services; 0 notifications; 16 orders.
+    - **Types regenerated:** the `notifications` table and the `mark_my_notifications_read` function, nothing else.
+    - **The recorded statement** (md5 `f8d1a67b101c274cf594366da26d718e`) is the reviewed PENDING file of 2252dd8,
+      byte-identical, comments included. After the apply, at the architect's request, its first header line now reads
+      « Applied 2026-11-16 as 20261116201553 », and its 4th line (« Written for review, NOT applied ») now says it was
+      applied. Those 2 comment lines are the only difference from the recorded statement.
+    - **Rollback:** the commented block at the end of the file (`begin … commit`; it deletes every bell row), then
+      regenerate the types.
+
 ## Rollback paths
 
 Each migration in this folder represents work that has already been applied to production. Rollback is therefore reverse migration work, not file deletion. If a rollback is ever needed, write a new dated migration that reverses the relevant changes — never delete history from this folder.
