@@ -3662,6 +3662,12 @@ export const ar: Record<string, string> = {
   'shell.topbar.notifications.title':     "الإشعارات",
   'shell.topbar.notifications.empty':     "لا توجد إشعارات بعد",
   'shell.topbar.notifications.viewAll':   "عرض كل الإشعارات",
+  // REVIEW_AR_TRANSLATION — bell v1: the order events no existing label covers.
+  'shell.topbar.notifications.event.new_order_product': "طلب جديد",
+  'shell.topbar.notifications.event.prepared': "جهّزه المتجر",
+  'shell.topbar.notifications.event.in_delivery': "قيد التوصيل",
+  'shell.topbar.notifications.event.refused_on_delivery': "مرفوض عند التسليم",
+  'shell.topbar.notifications.event.updated': "تم تحديث الطلب",
   'shell.mobile.menu.open':               "فتح القائمة",
   'shell.mobile.menu.close':              "إغلاق القائمة",
 

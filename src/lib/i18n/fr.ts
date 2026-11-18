@@ -3724,6 +3724,13 @@ export const fr: Record<string, string> = {
   'shell.topbar.notifications.title':     "Notifications",
   'shell.topbar.notifications.empty':     "Aucune notification pour l'instant",
   'shell.topbar.notifications.viewAll':   "Voir toutes les notifications",
+  // Bell v1 (bell-notifications-plan.md §1): the order events no existing label covers. The others reuse
+  // buyerOrder.event.*, activite.request_title, common.cancelled_by_buyer and seller.orderDetail.event_status.
+  'shell.topbar.notifications.event.new_order_product': "Nouvelle commande",
+  'shell.topbar.notifications.event.prepared': "Préparée par la boutique",
+  'shell.topbar.notifications.event.in_delivery': "En cours de livraison",
+  'shell.topbar.notifications.event.refused_on_delivery': "Refusée à la livraison",
+  'shell.topbar.notifications.event.updated': "Commande mise à jour",
   'shell.mobile.menu.open':               "Ouvrir le menu",
   'shell.mobile.menu.close':              "Fermer le menu",
 

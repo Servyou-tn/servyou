@@ -1348,6 +1348,11 @@ export const strings: Record<string, string> = {
   "shell.topbar.notifications.title": "Notifications",
   "shell.topbar.notifications.empty": "No notifications yet",
   "shell.topbar.notifications.viewAll": "View all notifications",
+  "shell.topbar.notifications.event.new_order_product": "New order",
+  "shell.topbar.notifications.event.prepared": "Prepared by the shop",
+  "shell.topbar.notifications.event.in_delivery": "Out for delivery",
+  "shell.topbar.notifications.event.refused_on_delivery": "Refused on delivery",
+  "shell.topbar.notifications.event.updated": "Order updated",
   "shell.mobile.menu.open": "Open the menu",
   "shell.mobile.menu.close": "Close the menu",
   // placeholders
