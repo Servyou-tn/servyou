@@ -86,9 +86,7 @@ export function NotificationsTab({
       <section className="flex flex-col gap-2 rounded-xl border border-border-subtle bg-surface-subtle px-4 py-6 shadow-[0px_1px_1px_rgba(0,0,0,0.04)] lg:p-6 max-lg:px-[15px] max-lg:py-[23px]">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
           <h2 className="text-xl font-semibold text-text-secondary max-lg:leading-[26px]">{t('parametres.notifications.platform.title', lang)}</h2>
-          <span className="rounded-md bg-surface-sunken px-3 py-1 text-center text-sm font-medium text-text-secondary lg:text-start max-lg:leading-[21px]">
-            {t('marche.sidebar.coming_soon', lang)}
-          </span>
+          {/* The « Bientôt disponible » chip is gone: the bell shipped (bell v1, UI-1). */}
         </div>
         <p className="text-sm text-text-secondary max-lg:leading-[21px]">{t('parametres.notifications.platform.body', lang)}</p>
       </section>

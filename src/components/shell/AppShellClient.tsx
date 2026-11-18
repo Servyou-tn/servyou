@@ -17,12 +17,15 @@ export function AppShellClient({
   role,
   pageToolbar,
   rightRail,
+  notifications,
   children,
 }: {
   user: TopBarUser | null
   role: ShellRole
   pageToolbar?: ReactNode
   rightRail?: ReactNode
+  /** The topbar bell, rendered on the server (AppShell). */
+  notifications?: ReactNode
   children: ReactNode
 }) {
   const lang = useLang()
@@ -93,6 +96,7 @@ export function AppShellClient({
           role={role}
           onOpenDrawer={() => setDrawerOpen(true)}
           hamburgerRef={hamburgerRef}
+          notifications={notifications}
         />
 
         {/* Relocated page filter (e.g. Statut on /mes-commandes, Type on /mes-favoris) — the

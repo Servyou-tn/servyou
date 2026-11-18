@@ -167,6 +167,9 @@ export const frPlurals: Record<string, PluralVariants> = {
 
   // /aide search caption (the search term is user input — see the replacer note in tn()).
   'aide.search.count':                     { one: '{count} question correspond à « {q} »', other: '{count} questions correspondent à « {q} »' },
+
+  // Bell v1: the bell button's label when something is unread.
+  'shell.topbar.notifications.unreadAria':  { one: 'Notifications, {count} non lue', other: 'Notifications, {count} non lues' },
 }
 
 const arPlurals: Record<string, PluralVariants> = {
@@ -322,6 +325,9 @@ const arPlurals: Record<string, PluralVariants> = {
 
   // REVIEW_AR_TRANSLATION — /aide search caption. 11-99 take the accusative singular (`many`), like the other counts here.
   'aide.search.count':                     { one: 'سؤال واحد يطابق «{q}»', two: 'سؤالان يطابقان «{q}»', many: '{count} سؤالًا يطابق «{q}»', other: '{count} أسئلة تطابق «{q}»' },
+
+  // REVIEW_AR_TRANSLATION — bell v1: the count after a colon needs no noun agreement.
+  'shell.topbar.notifications.unreadAria':  { other: 'الإشعارات، غير المقروءة: {count}' },
 }
 
 const pluralDicts: Record<Lang, Record<string, PluralVariants>> = { fr: frPlurals, ar: arPlurals, en: enPlurals }
