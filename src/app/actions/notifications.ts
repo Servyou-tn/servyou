@@ -10,10 +10,11 @@ import { createClient } from '@/lib/supabase/server'
 // is a discriminated union: `one` ALWAYS sends [id], and only an explicit `all` sends no ids. A malformed id is refused
 // here and never reaches the RPC (it would otherwise be a 22P02, or worse, be read as « all »).
 // The RPC re-derives the owner itself (auth.uid(); only the caller's own unread rows), so a forged id of someone else's
-// notification marks nothing.
+// notification marks nothing. Both shapes are STRICT: an `all` that carries an id or ids is a caller bug (« meant one,
+// marked all »), refused rather than stripped.
 const MarkReadInput = z.discriminatedUnion('scope', [
-  z.object({ scope: z.literal('one'), id: z.string().uuid() }),
-  z.object({ scope: z.literal('all') }),
+  z.object({ scope: z.literal('one'), id: z.string().uuid() }).strict(),
+  z.object({ scope: z.literal('all') }).strict(),
 ])
 
 export type MarkReadInput = z.infer<typeof MarkReadInput>

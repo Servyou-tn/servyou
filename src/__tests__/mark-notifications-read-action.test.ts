@@ -50,6 +50,10 @@ describe('markNotificationsReadAction', () => {
       { scope: 'one', ids: [ID] },
       { id: ID },
       { scope: 'everything' },
+      // an `all` that carries ids is a caller bug — refused, never stripped into « mark everything »
+      { scope: 'all', id: ID },
+      { scope: 'all', ids: [ID] },
+      { scope: 'one', id: ID, all: true },
       null,
       'all',
     ]) {

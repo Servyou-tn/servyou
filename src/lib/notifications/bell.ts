@@ -84,37 +84,49 @@ export type BellEvent = {
   refused: boolean
 }
 
+/** The generic line for a known status the actor rule does not produce: « Statut : {status} » (the G9 timeline's). */
+export const BELL_STATUS_SENTENCE = 'seller.orderDetail.event_status'
+
 /**
  * The sentence key for one event, seen by the reader (founder rule 2026-11-16: the reader is always the party who did
- * NOT act). Keyed on the status reached, not on the from→to pair, so a skipped step still reads right. An event the
- * rule cannot produce (a seller told of their own step, a future status) falls back to a generic sentence instead of
- * an empty line.
+ * NOT act). The wording reuses the order timelines' labels where they fit (founder 2026-11-18): the buyer's
+ * `buyerOrder.event.*` (E4), the freelancer dashboard's « Nouvelle demande de service », « Annulée par l'acheteur »;
+ * `shell.topbar.notifications.event.*` holds only the events no label covered.
+ *
+ * Keyed on the status reached, not on the from→to pair, so a skipped step still reads right. An event the rule cannot
+ * produce (a seller told of their own step, a future status or kind) falls back to a generic line, never an empty one.
  */
 export function bellSentenceKey(e: BellEvent): string {
+  const product = e.orderType === 'product'
   if (e.kind === 'order_created') {
-    return e.role === 'seller' ? `${EVENT}new_order_${e.orderType}` : `${EVENT}status_changed`
+    if (e.role === 'buyer') return BELL_STATUS_SENTENCE
+    return product ? `${EVENT}new_order_product` : 'activite.request_title'
   }
   if (e.kind !== 'order_status_changed') return `${EVENT}updated`
 
   if (e.role === 'seller') {
     // The buyer acted: confirmed receipt, or cancelled (product orders only, enforced in the DB).
-    if (e.toStatus === 'received') return `${EVENT}received_${e.orderType}`
-    if (e.toStatus === 'cancelled') return `${EVENT}cancelled_by_buyer`
+    if (e.toStatus === 'received') return 'buyerOrder.event.received'
+    if (e.toStatus === 'cancelled') return 'common.cancelled_by_buyer'
   } else {
-    // The seller acted: each step of the chain, a cancel, or a delivery refusal (a seller cancel with refusal_reason).
+    // The seller acted: a step of the chain, a cancel, or a delivery refusal (a seller cancel with refusal_reason).
     switch (e.toStatus) {
       case 'accepted':
+        return product ? 'buyerOrder.event.accepted_shop' : 'buyerOrder.event.accepted_freelancer'
       case 'prepared':
+        return `${EVENT}prepared`
       case 'dispatched':
+        return 'buyerOrder.event.dispatched'
       case 'in_delivery':
-        return `${EVENT}${e.toStatus}`
+        return `${EVENT}in_delivery`
       case 'arrived':
-        return `${EVENT}arrived_${e.orderType}`
+        return product ? 'buyerOrder.event.arrived_product' : 'buyerOrder.event.arrived_service'
       case 'cancelled':
-        return e.refused ? `${EVENT}refused_on_delivery` : `${EVENT}cancelled_by_seller`
+        if (e.refused) return `${EVENT}refused_on_delivery`
+        return product ? 'buyerOrder.event.cancelled_shop' : 'buyerOrder.event.cancelled_freelancer'
     }
   }
-  return ORDER_STATUSES.includes(e.toStatus) ? `${EVENT}status_changed` : `${EVENT}updated`
+  return ORDER_STATUSES.includes(e.toStatus) ? BELL_STATUS_SENTENCE : `${EVENT}updated`
 }
 
 /** One row → one panel item, or null when its order is unreadable or the reader is not a party (both unreachable). */
@@ -163,10 +175,4 @@ export function applyBellAction(feed: BellFeed, action: BellOptimisticAction): B
     unreadCount: Math.max(0, feed.unreadCount - 1),
     items: feed.items.map((i) => (i.id === action.id ? { ...i, unread: false } : i)),
   }
-}
-
-/** The badge text: the count up to 9, then « 9+ » (the 16px circle holds two characters). */
-export function bellBadgeText(count: number): string | null {
-  if (count <= 0) return null
-  return count > 9 ? '9+' : String(count)
 }

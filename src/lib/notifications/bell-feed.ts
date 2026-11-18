@@ -37,8 +37,12 @@ export async function loadBellFeed(readerId: string): Promise<BellFeed> {
     return { ok: false }
   }
 
-  const items = (list.data as BellRow[])
-    .map((row) => toBellItem(row, readerId))
-    .filter((item): item is BellItem => item !== null)
+  const rows = list.data as BellRow[]
+  const items = rows.map((row) => toBellItem(row, readerId)).filter((item): item is BellItem => item !== null)
+  // Unreachable under RLS and the trigger (a row is always about an order its recipient is a party to), but a dropped
+  // row would leave the badge counting something the list does not show: say so instead of failing silently.
+  if (items.length < rows.length) {
+    reportQueryError('bell rows', new Error(`${rows.length - items.length} of ${rows.length} rows had no readable order`))
+  }
   return { ok: true, items, unreadCount: unread.count }
 }
