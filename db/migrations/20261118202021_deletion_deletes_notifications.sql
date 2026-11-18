@@ -1,8 +1,19 @@
--- PENDING (db-guardian, 2026-11-16): account deletion also deletes the person's bell notifications. Migration number: the architect's.
+-- Applied 2026-11-18 as 20261118202021 by the architect (README #137). Written by db-guardian (2026-11-16): account
+-- deletion also deletes the person's bell notifications.
 -- Founder decision D1 (2026-11-16, bell plan docs/follow-ups/bell-notifications-plan.md, PR #392): « account deletion
 -- also deletes the person's notifications », in a separate small DB PR before launch.
--- Depends on 20261116201553_bell_notifications (applied; PR #393, not merged yet).
--- Written for review, NOT applied. The architect reviews it, applies it after the founder's OK, and gives the version.
+-- Depends on 20261116201553_bell_notifications (README #136, PR #393, merged).
+-- Reviewed and applied by the architect after the founder's OK (PR #398).
+--
+-- POST-APPLY CHECKS (architect, 2026-11-18)
+--   - admin_process_deletion_request prosrc: 11 493 characters, md5 0e51c76fc7c2dcab0edb990d9db7343b, the value
+--     expected below;
+--   - prosecdef true; search_path ""; owner postgres; ACL unchanged (postgres, service_role, authenticated);
+--   - the two new lines sit right after the notification_preferences delete, before job_responses;
+--   - no rows touched at the apply.
+--   - Recorded statement (checked read-only by db-guardian): 1 statement, 1 350 characters, md5
+--     303a460e3c87953b584ec9af79f3811b. It is three comment lines the architect wrote, then this file's do block,
+--     byte-identical.
 --
 -- WHAT CHANGES
 --   admin_process_deletion_request, step « a. Personal lists », right after the notification_preferences delete:

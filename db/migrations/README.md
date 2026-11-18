@@ -1555,6 +1555,53 @@ both on 2026-10-28.
     - **Rollback:** the commented block at the end of the file (`begin … commit`; it deletes every bell row), then
       regenerate the types.
 
+137. **20261118202021_deletion_deletes_notifications** — account deletion also deletes the person's bell notifications,
+    PR #398. Founder decision D1 (2026-11-16, bell plan #392): « account deletion also deletes the person's
+    notifications », in a small DB PR before launch. Written by db-guardian; reviewed and applied by the architect on
+    2026-11-18 with the founder's OK.
+    - **What changes:** `admin_process_deletion_request`, step « a. Personal lists ». Two lines go right after the
+      `notification_preferences` delete:
+      - `delete from public.notifications where recipient_id = v_target.id`;
+      - its row count, added to the result as `counts.notifications`.
+      Nothing else changes.
+      - Deleted: the rows the person **received**.
+      - Kept: the rows the person **caused** for someone else (`actor_id`). They are the other party's order history, and
+        the tombstoned profile keeps the FK valid.
+    - **How:** the anchor-replace pattern of migration 121 (`20261106083409`). It reads the live definition, inserts
+      after one anchor line, and executes the result.
+      - Two guards raise and change nothing: the anchor must occur exactly once, and the function must not already
+        delete notifications.
+      - `CREATE OR REPLACE` keeps the owner, the grants, SECURITY DEFINER and `search_path ''`.
+    - **Discovery (2026-11-16):** the live prosrc (11 322 characters, md5 `7801c2a0…`) equalled the repo body of
+      `20261106074610` plus migration 121's replace, byte-identical. 0 notifications and 0 deletion requests, so there
+      was nothing to clean up retroactively.
+    - **App impact:** none.
+      - `ApprovedResult` (`src/lib/admin/requests.ts`) is a non-strict object of status / user_id / tombstone_email, so
+        it ignores `counts`.
+      - The return value and the audit `after_state` gain one key, `counts.notifications`.
+    - **Checked after the apply (architect):**
+      - prosrc 11 493 characters, md5 `0e51c76fc7c2dcab0edb990d9db7343b` (the expected value);
+      - prosecdef true; `search_path ""`; owner postgres;
+      - ACL unchanged (postgres, service_role, authenticated);
+      - the new lines sit right after the `notification_preferences` delete, before `job_responses`;
+      - no rows touched.
+    - **The recorded statement** (1 statement, 1 350 characters, md5 `303a460e3c87953b584ec9af79f3811b`): three comment
+      lines the architect wrote, then the file's `do` block, byte-identical (checked read-only by db-guardian). After the
+      apply, the file's header was rewritten from « PENDING » to « Applied » with these results. Only comments changed.
+    - **Live (db-guardian, 2026-11-18):** `admin-requests-live` 25/25, 3 sign-ins.
+      - The suite seeds two bell rows on the buyer's received order: one the buyer received (seller → buyer,
+        `pending → accepted`) and one the buyer caused (buyer → seller, `order_created`).
+      - Approving the buyer returns `counts.notifications = 1`. It leaves 0 rows with `recipient_id` = the buyer and
+        keeps the caused row unchanged.
+      - Approving the seller next deletes that row as the seller's own received row (`counts.notifications = 1`).
+      - Cleanup verified read-only: 0 `adm-req-` users, profiles, shops or contact messages; 0 test admins; 0
+        notifications; 0 deletion requests; 16 orders.
+    - **Types:** unchanged, because the signature is unchanged. Live: `(p_request_id uuid, p_decision text, p_note text
+      default null) → jsonb`, which equals the `database.types.ts` entry. This is the only migration since the last
+      regeneration (#393).
+    - **Rollback:** the commented `do $undo$` block at the end of the file (no row changes). Afterwards the prosrc md5 is
+      `7801c2a006546ecc99cdc7c995f56d69` again.
+
 ## Rollback paths
 
 Each migration in this folder represents work that has already been applied to production. Rollback is therefore reverse migration work, not file deletion. If a rollback is ever needed, write a new dated migration that reverses the relevant changes — never delete history from this folder.
