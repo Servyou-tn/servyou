@@ -204,11 +204,13 @@ Migration `20261116201553_bell_notifications`; plan and founder decisions in `do
 - **It never fails an order write.** The INSERT sits in its own block: an unexpected error becomes a WARNING and no row.
 - **Access.** RLS lets the recipient read their own rows: authenticated SELECT only, no anon. There are no client writes.
 - **Marking as read.** `mark_my_notifications_read(p_ids uuid[] default null)` acts on the caller's own unread rows: all of them when `p_ids` is null, otherwise the first 200 ids. It sets `now()` and returns the count.
+- **Account deletion** (migration `20261118202021_deletion_deletes_notifications`, founder decision D1).
+  - `admin_process_deletion_request` deletes the bell rows the person **received** and returns the number in `counts.notifications`.
+  - The rows the person **caused** for someone else stay: they are the other party's order history. The tombstoned profile keeps the FK valid.
 - **Not yet in place:**
   - no backfill;
   - no retention (later: read rows older than 90 days);
-  - no Realtime (the badge is counted on page load);
-  - account deletion does not yet delete the person's rows: a DB PR before launch (founder decision D1).
+  - no Realtime (the badge is counted on page load).
 
 ## Job posts, skills, responses
 
