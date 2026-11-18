@@ -87,7 +87,7 @@ describe('loadBellFeed — the server query', () => {
     ])
   })
 
-  it('maps the rows to items (sentence key, link for the reader’s side) and returns the server count', async () => {
+  it('maps the rows to items through their kind (sentence, icon, tone, link for the reader’s side) and returns the server count', async () => {
     state.list.data = [rowFor('n-1'), rowFor('n-2', { read_at: '2026-11-18T11:00:00Z' })]
     state.count.count = 31
     const feed = await loadBellFeed(READER)
@@ -95,7 +95,16 @@ describe('loadBellFeed — the server query', () => {
       ok: true,
       unreadCount: 31,
       items: [
-        { id: 'n-1', sentenceKey: 'buyerOrder.event.accepted_freelancer', href: `/mes-commandes/${ORDER}`, title: 'Logo', unread: true },
+        {
+          id: 'n-1',
+          kind: 'order_status_changed',
+          icon: 'package',
+          tone: 'info',
+          sentence: { key: 'buyerOrder.event.accepted_freelancer' },
+          href: `/mes-commandes/${ORDER}`,
+          title: 'Logo',
+          unread: true,
+        },
         { id: 'n-2', unread: false },
       ],
     })
@@ -103,6 +112,14 @@ describe('loadBellFeed — the server query', () => {
 
   it('drops a row whose order it cannot read, without failing the rest — and reports it (the badge would disagree)', async () => {
     state.list.data = [rowFor('n-1', { order: null }), rowFor('n-2')]
+    state.count.count = 2
+    const feed = await loadBellFeed(READER)
+    expect(feed.ok && feed.items.map((i) => i.id)).toEqual(['n-2'])
+    expect(reported.map(([where]) => where)).toEqual(['bell rows'])
+  })
+
+  it('drops a row of a kind this version does not map, and reports it', async () => {
+    state.list.data = [rowFor('n-1', { kind: 'proposal_received' }), rowFor('n-2')]
     state.count.count = 2
     const feed = await loadBellFeed(READER)
     expect(feed.ok && feed.items.map((i) => i.id)).toEqual(['n-2'])

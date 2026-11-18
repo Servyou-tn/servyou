@@ -22,8 +22,10 @@ import { useBellFeed, type OpenEvent } from './useBellFeed'
 
 const item = (id: string, unread: boolean): BellItem => ({
   id,
-  sentenceKey: 'buyerOrder.event.accepted_shop',
-  statusKey: 'common.status_accepted',
+  kind: 'order_status_changed',
+  icon: 'package',
+  tone: 'info',
+  sentence: { key: 'buyerOrder.event.accepted_shop', vars: { status: { key: 'common.status_accepted' } } },
   title: `Article ${id}`,
   ref: '#A4F729',
   href: `/mes-commandes/order-${id}`,

@@ -1,17 +1,10 @@
-import { shortRef } from '@/lib/orders/order-status'
-import { statusLabelKey, type OrderStatus, type OrderType } from '@/lib/types/order-status'
-
 // The bell, v1 (docs/follow-ups/bell-notifications-plan.md §1 and §3; migration 20261116201553_bell_notifications).
-// A notifications row stores keys, never text: `kind`, `from_status`, `to_status`. This module turns a row and its order
-// into what the panel shows — a sentence KEY (translated at render, in the reader's language), the order's item title,
-// and the order page for the reader's side of the order. Pure: no I/O, so every event of §1 is unit-tested.
-//
-// The reader's role comes from the ORDER (buyer_id / seller_id), never from seller_type: a freelancer who bought a
-// product is that order's buyer and opens it in « Mes commandes ».
+// A notifications row stores keys, never text: `kind`, `from_status`, `to_status`. This module is the PANEL'S CONTRACT:
+// the item it renders, whatever the kind, and the client-side helpers. Rows become items in ./bell-kinds.ts (server
+// side), the one place a later kind (plan §7: mission alerts, proposals, stock, moderation) is added. No imports, so the
+// client hook that reads this module never pulls the kind map into the browser bundle. Pure: no I/O.
 
-export type BellReaderRole = 'buyer' | 'seller'
-
-/** One notifications row with the columns of its order the bell needs, as the loader selects it. */
+/** One notifications row with the columns its kind needs, as the loader selects it. v1: the order the event is about. */
 export type BellRow = {
   id: string
   kind: string
@@ -29,16 +22,33 @@ export type BellRow = {
   } | null
 }
 
-/** What the client panel gets. Keys and data only: the text is resolved at render (a language switch re-translates). */
+/**
+ * Icon KEYS (lucide names, kebab-case). The panel maps them to lucide components: a Server → Client prop must stay
+ * serialisable (the AideIcon pattern, src/lib/aide/groups.ts). A new kind adds its key here, and the panel's
+ * `Record<BellIcon, LucideIcon>` then fails to type-check until the icon is mapped.
+ */
+export type BellIcon = 'package' | 'inbox' | 'handshake'
+
+/** Semantic tones. The panel maps them to tokens. */
+export type BellTone = 'info' | 'success' | 'warning' | 'danger' | 'neutral'
+
+/** A sentence variable: a KEY translated in the reader's language (a status label), or a plain value (a count). */
+export type BellVar = { key: string } | { value: string | number }
+
+/** A sentence key and its {variables}, translated at render (a language switch re-translates). */
+export type BellSentence = { key: string; vars?: Record<string, BellVar> }
+
+/** What the client panel gets, for every kind alike. Keys and data only: no text, no component. */
 export type BellItem = {
   id: string
-  sentenceKey: string
-  /** The {status} of the generic sentence: a status label KEY, or null. */
-  statusKey: string | null
-  /** The order's item title snapshot, or null (old orders): the panel then shows `ref`. */
+  kind: string
+  icon: BellIcon
+  tone: BellTone
+  sentence: BellSentence
+  /** What the event is about, as its owner wrote it (an order's item title snapshot), or null. Shown in an isolate. */
   title: string | null
-  /** « #A4F729 », the order reference. */
-  ref: string
+  /** A reference for when there is no title (an order's « #A4F729 »), or null for a kind that has none. */
+  ref: string | null
   href: string
   createdAt: string
   unread: boolean
@@ -49,112 +59,14 @@ export type BellFeed = { ok: true; items: BellItem[]; unreadCount: number } | { 
 
 export const BELL_LIMIT = 20
 
-const EVENT = 'shell.topbar.notifications.event.'
+type Translate = (key: string, vars?: Record<string, string | number>) => string
 
-const ORDER_STATUSES: readonly string[] = [
-  'pending', 'accepted', 'prepared', 'dispatched', 'in_delivery', 'arrived', 'received', 'cancelled',
-]
-
-function toOrderType(value: string): OrderType | null {
-  return value === 'product' || value === 'service' ? value : null
-}
-
-/** The reader's side of the order, or null when they are neither party (unreachable: the trigger writes parties only). */
-export function bellReaderRole(order: { buyer_id: string; seller_id: string }, readerId: string): BellReaderRole | null {
-  if (order.buyer_id === readerId) return 'buyer'
-  if (order.seller_id === readerId) return 'seller'
-  return null
-}
-
-/**
- * The order page for the reader's side: the buyer's « Mes commandes » for both order types, the shop owner's
- * « Commandes reçues » for a product, the freelancer's « Mes engagements » for a service.
- */
-export function bellHref(orderId: string, orderType: OrderType, role: BellReaderRole): string {
-  if (role === 'buyer') return `/mes-commandes/${orderId}`
-  return orderType === 'service' ? `/mes-engagements/${orderId}` : `/commandes-recues/${orderId}`
-}
-
-export type BellEvent = {
-  kind: string
-  toStatus: string
-  orderType: OrderType
-  role: BellReaderRole
-  /** The order carries a delivery refusal (refusal_reason): the seller recorded « Refusée à la livraison ». */
-  refused: boolean
-}
-
-/** The generic line for a known status the actor rule does not produce: « Statut : {status} » (the G9 timeline's). */
-export const BELL_STATUS_SENTENCE = 'seller.orderDetail.event_status'
-
-/**
- * The sentence key for one event, seen by the reader (founder rule 2026-11-16: the reader is always the party who did
- * NOT act). The wording reuses the order timelines' labels where they fit (founder 2026-11-18): the buyer's
- * `buyerOrder.event.*` (E4), the freelancer dashboard's « Nouvelle demande de service », « Annulée par l'acheteur »;
- * `shell.topbar.notifications.event.*` holds only the events no label covered.
- *
- * Keyed on the status reached, not on the from→to pair, so a skipped step still reads right. An event the rule cannot
- * produce (a seller told of their own step, a future status or kind) falls back to a generic line, never an empty one.
- */
-export function bellSentenceKey(e: BellEvent): string {
-  const product = e.orderType === 'product'
-  if (e.kind === 'order_created') {
-    if (e.role === 'buyer') return BELL_STATUS_SENTENCE
-    return product ? `${EVENT}new_order_product` : 'activite.request_title'
-  }
-  if (e.kind !== 'order_status_changed') return `${EVENT}updated`
-
-  if (e.role === 'seller') {
-    // The buyer acted: confirmed receipt, or cancelled (product orders only, enforced in the DB).
-    if (e.toStatus === 'received') return 'buyerOrder.event.received'
-    if (e.toStatus === 'cancelled') return 'common.cancelled_by_buyer'
-  } else {
-    // The seller acted: a step of the chain, a cancel, or a delivery refusal (a seller cancel with refusal_reason).
-    switch (e.toStatus) {
-      case 'accepted':
-        return product ? 'buyerOrder.event.accepted_shop' : 'buyerOrder.event.accepted_freelancer'
-      case 'prepared':
-        return `${EVENT}prepared`
-      case 'dispatched':
-        return 'buyerOrder.event.dispatched'
-      case 'in_delivery':
-        return `${EVENT}in_delivery`
-      case 'arrived':
-        return product ? 'buyerOrder.event.arrived_product' : 'buyerOrder.event.arrived_service'
-      case 'cancelled':
-        if (e.refused) return `${EVENT}refused_on_delivery`
-        return product ? 'buyerOrder.event.cancelled_shop' : 'buyerOrder.event.cancelled_freelancer'
-    }
-  }
-  return ORDER_STATUSES.includes(e.toStatus) ? BELL_STATUS_SENTENCE : `${EVENT}updated`
-}
-
-/** One row → one panel item, or null when its order is unreadable or the reader is not a party (both unreachable). */
-export function toBellItem(row: BellRow, readerId: string): BellItem | null {
-  const order = row.order
-  if (!order) return null
-  const orderType = toOrderType(order.order_type)
-  const role = bellReaderRole(order, readerId)
-  if (!orderType || !role) return null
-
-  const sentenceKey = bellSentenceKey({
-    kind: row.kind,
-    toStatus: row.to_status,
-    orderType,
-    role,
-    refused: order.refusal_reason != null,
-  })
-  const title = order.item_title?.trim() || null
-  return {
-    id: row.id,
-    sentenceKey,
-    statusKey: ORDER_STATUSES.includes(row.to_status) ? statusLabelKey(row.to_status as OrderStatus, orderType) : null,
-    title,
-    ref: shortRef(order.id),
-    href: bellHref(order.id, orderType, role),
-    createdAt: row.created_at,
-    unread: row.read_at === null,
-  }
+/** The item's line in the reader's language. The panel passes `(key, vars) => t(key, lang, vars)`. */
+export function bellSentenceText(sentence: BellSentence, tr: Translate): string {
+  if (!sentence.vars) return tr(sentence.key)
+  const vars: Record<string, string | number> = {}
+  for (const [name, v] of Object.entries(sentence.vars)) vars[name] = 'key' in v ? tr(v.key) : v.value
+  return tr(sentence.key, vars)
 }
 
 export type BellOptimisticAction = { type: 'read'; id: string } | { type: 'all' }
