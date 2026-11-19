@@ -185,6 +185,33 @@ The triggers raise French messages, some with a hint. The server actions never s
 
 RLS on orders: only the buyer and the seller of a given order can SELECT it (delivery data is private). Only the buyer can INSERT (buyer_id must equal auth.uid()). Either party can UPDATE (subject to trigger gating).
 
+## Notifications: the bell (v1, order events)
+
+Migration `20261116201553_bell_notifications`; plan and founder decisions in `docs/follow-ups/bell-notifications-plan.md`.
+
+- **`notifications`** holds one row per order event, for the party who did **not** make it.
+  - Columns: `recipient_id`, `actor_id`, `order_id` (FKs, `on delete cascade`), `kind` (`'order_created'` or `'order_status_changed'`), `from_status`, `to_status`, `created_at`, `read_at`.
+  - It stores keys, never text. The UI renders the sentence in the reader's language and reads the item title from the order.
+  - CHECKs: `notifications_never_self` (the recipient is never the actor) and the shape of each kind.
+- **Who writes it.** Only `notify_order_counterparty()` (SECURITY DEFINER), fired by two triggers on `orders`:
+  - `trg_notify_order_created`, AFTER INSERT;
+  - `trg_notify_order_status_changed`, AFTER UPDATE when the status really changed.
+- **Who is told.** The trigger compares `auth.uid()` with the order's buyer and seller.
+  - The buyer's new order, cancellation or receipt confirmation notifies the seller.
+  - Each seller step or cancellation notifies the buyer.
+  - No signed-in party (service role, seeds) writes no row (founder decision).
+  - Non-status edits (tracking, a refusal void, the deletion scrub) are not events.
+- **It never fails an order write.** The INSERT sits in its own block: an unexpected error becomes a WARNING and no row.
+- **Access.** RLS lets the recipient read their own rows: authenticated SELECT only, no anon. There are no client writes.
+- **Marking as read.** `mark_my_notifications_read(p_ids uuid[] default null)` acts on the caller's own unread rows: all of them when `p_ids` is null, otherwise the first 200 ids. It sets `now()` and returns the count.
+- **Account deletion** (migration `20261118202021_deletion_deletes_notifications`, founder decision D1).
+  - `admin_process_deletion_request` deletes the bell rows the person **received** and returns the number in `counts.notifications`.
+  - The rows the person **caused** for someone else stay: they are the other party's order history. The tombstoned profile keeps the FK valid.
+- **Not yet in place:**
+  - no backfill;
+  - no retention (later: read rows older than 90 days);
+  - no Realtime (the badge is counted on page load).
+
 ## Job posts, skills, responses
 
 The `job_posts` table holds one row per job a consumer posts: consumer_id, title, description, budget_min and budget_max in TND, category_id, city, is_remote boolean, deadline date, status enum (`'open'`, `'filled'`, `'expired'`, `'deleted'`).
@@ -236,7 +263,7 @@ For destructive operations (DROP, ALTER that removes columns or constraints), a 
 
 ## What the schema deliberately does not have at MVP
 
-No notifications table. No reviews or ratings table. No payment-records table. No buyer-reputation aggregate (the cancellation history view is the foundation but the rating system is post-launch). No per-transition timestamps on orders (`accepted_at`, `prepared_at`, `dispatched_at`, `arrived_at`) — these are useful analytics columns later but represent premature optimization without real data to analyze; sequenced for post-launch. No follow/follower relationships (Servyou is not a social network). No messaging table (WhatsApp is the messaging layer at MVP).
+Bell notifications for order events only (proposals, disputes, reports and admin events are later phases). No reviews or ratings table. No payment-records table. No buyer-reputation aggregate (the cancellation history view is the foundation but the rating system is post-launch). No per-transition timestamps on orders (`accepted_at`, `prepared_at`, `dispatched_at`, `arrived_at`) — these are useful analytics columns later but represent premature optimization without real data to analyze; sequenced for post-launch. No follow/follower relationships (Servyou is not a social network). No messaging table (WhatsApp is the messaging layer at MVP).
 
 Each of these is a deliberate deferral, not a forgotten requirement. They are added when the carriage is ready to carry them.
 

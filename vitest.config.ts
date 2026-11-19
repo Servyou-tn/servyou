@@ -91,6 +91,8 @@ export const INTEGRATION_GLOBS = [
   '**/two-step-signup-auth-live.test.ts',
   // Two-step sign-up DB-1: incomplete profiles + complete_my_account (red until the migration is applied): 3 verifications.
   '**/two-step-signup-db-live.test.ts',
+  // Bell notifications v1 (migration 20261116201553): the other-party rule, access, mark-read: 3 sign-ins.
+  '**/bell-notifications-live.test.ts',
 ]
 
 // Tooling artifacts that must never be scanned for tests: the headless-Chrome VRT profiles (a

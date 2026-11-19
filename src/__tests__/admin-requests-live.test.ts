@@ -10,7 +10,8 @@
  *   * deletion approve, three accounts:
  *       buyer      — favourite deleted; a post with a proposal closed (D8), a post without one deleted; the received
  *                    order keeps amounts / title / status but loses the delivery identity (D3); a pending export is
- *                    closed (D9); profile tombstoned + suspended (D1);
+ *                    closed (D9); profile tombstoned + suspended (D1); the bell row it RECEIVED deleted and the one it
+ *                    CAUSED for the seller kept, counts.notifications = 1 (migration 20261118202021, bell decision D1);
  *       seller(s)  — two shop owners in a row (each kept shop gets its own name, migration 20261106083409);
  *                    the product with no order deleted, the sold one and the reported one hidden (« Compte supprimé »);
  *                    the shop hidden and scrubbed, its payment methods deleted (c2); the order history intact;
@@ -27,7 +28,8 @@
  *     image row removed; a second run is a no-op; neither the old nor the tombstone e-mail can sign in.
  *
  * Fixtures (`adm-req-`, passwords random per run), written by the service role: an admin (signs in), a second admin, a
- * consumer (signs in), a buyer, two shop owners, a freelancer, five small webp files, plus one /contact message.
+ * consumer (signs in), a buyer, two shop owners, a freelancer, five small webp files, two bell rows on the buyer's order,
+ * plus one /contact message.
  * 3 fixture sign-ins (the third is the banned account's refused one).
  * Teardown finds the users through the auth admin API — by e-mail prefix, or by the `app_metadata.fixture` tag once the
  * erasure has replaced the e-mail — and removes their files before deleting them.
@@ -70,6 +72,7 @@ const req = {} as Record<'seller' | 'buyer' | 'freelancer' | 'admin2' | 'self' |
 const fx = {
   productImagePath: '', shop: '', productSold: '', productUnsold: '', productReported: '', openOrder: '', receivedOrder: '', shop2: '', product2: '',
   fp: '', serviceActive: '', serviceDraft: '', postWithProposal: '', postEmpty: '', buyerExport: '', message: '',
+  bellReceived: '', bellCaused: '',
 }
 
 let adminClient: Client
@@ -272,6 +275,15 @@ beforeAll(async () => {
   const { error: jrErr } = await admin.from('job_responses').insert({ job_post_id: fx.postWithProposal, freelancer_id: ids.freelancer, proposal_message: PROPOSAL })
   if (jrErr) throw new Error(`job_responses seed failed: ${jrErr.message}`)
   fx.buyerExport = await insertId('data_exports', { user_id: ids.buyer })
+  // Bell rows on the buyer's order (migration 20261118202021): one the buyer RECEIVED (the seller accepted it) and one the
+  // buyer CAUSED for the seller (the new order). Approving the buyer deletes the first and keeps the second, which is the
+  // seller's history. Seeded by the service role: the order trigger writes no row when no party is signed in.
+  fx.bellReceived = await insertId('notifications', {
+    recipient_id: ids.buyer, actor_id: ids.seller, order_id: fx.receivedOrder, kind: 'order_status_changed', from_status: 'pending', to_status: 'accepted',
+  })
+  fx.bellCaused = await insertId('notifications', {
+    recipient_id: ids.seller, actor_id: ids.buyer, order_id: fx.receivedOrder, kind: 'order_created', to_status: 'pending',
+  })
 
   // Deletion requests, one statement each so requested_at is strictly increasing in this order.
   req.seller = await insertId('deletion_requests', { user_id: ids.seller, reason: TITLE })
@@ -300,6 +312,11 @@ afterAll(async () => {
   if (tracked.length > 0) {
     const { count: profiles } = await admin.from('profiles').select('id', { count: 'exact', head: true }).in('id', tracked)
     if ((profiles ?? 0) !== 0) throw new Error(`teardown left ${profiles} fixture profiles`)
+  }
+  const bell = [fx.bellReceived, fx.bellCaused].filter(Boolean)
+  if (bell.length > 0) {
+    const { count: rows } = await admin.from('notifications').select('id', { count: 'exact', head: true }).in('id', bell)
+    if ((rows ?? 0) !== 0) throw new Error(`teardown left ${rows} fixture bell rows`)
   }
   await assertNoTestAdmin() // audit H6: no test-domain account may still be an admin
 }, 180000)
@@ -421,8 +438,15 @@ describe.skipIf(!hasCreds)('deletion — approve (tombstone)', () => {
     const tombstone = `supprime-${ids.buyer}@deleted.servyou.invalid`
     expect(data).toMatchObject({
       status: 'approved', user_id: ids.buyer, tombstone_email: tombstone,
-      counts: { favorites: 1, job_posts: 1, exports_closed: 1, orders_anonymised: 1 },
+      counts: { favorites: 1, job_posts: 1, exports_closed: 1, orders_anonymised: 1, notifications: 1 },
     })
+
+    // Bell (migration 20261118202021): the row the buyer received is gone, the row it caused for the seller stays.
+    expect(await count('notifications', 'recipient_id', ids.buyer)).toBe(0)
+    expect(await count('notifications', 'id', fx.bellReceived)).toBe(0)
+    const { data: caused, error: causedErr } = await admin.from('notifications').select('id, recipient_id, actor_id, order_id').eq('actor_id', ids.buyer)
+    expect(causedErr).toBeNull()
+    expect(caused).toEqual([{ id: fx.bellCaused, recipient_id: ids.seller, actor_id: ids.buyer, order_id: fx.receivedOrder }])
 
     expect(await count('favorites', 'user_id', ids.buyer)).toBe(0)
     expect(await count('job_posts', 'id', fx.postEmpty)).toBe(0)
@@ -465,7 +489,9 @@ describe.skipIf(!hasCreds)('deletion — approve (tombstone)', () => {
   it('seller: unsold product deleted, sold + reported hidden, shop hidden and scrubbed (c2), order history intact', async () => {
     const { data, error } = await decide(req.seller, 'approve')
     expect(error).toBeNull()
-    expect(data).toMatchObject({ counts: { products_deleted: 1, products_hidden: 2, shops_deleted: 0, shops_hidden: 1, orders_anonymised: 0 } })
+    // notifications: 1 is the row the buyer caused for the seller, which the buyer's approval kept: the seller received it.
+    expect(data).toMatchObject({ counts: { products_deleted: 1, products_hidden: 2, shops_deleted: 0, shops_hidden: 1, orders_anonymised: 0, notifications: 1 } })
+    expect(await count('notifications', 'id', fx.bellCaused)).toBe(0)
 
     expect(await count('products', 'id', fx.productUnsold)).toBe(0)
     for (const id of [fx.productSold, fx.productReported]) {
