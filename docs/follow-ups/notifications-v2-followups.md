@@ -60,6 +60,9 @@ PRs, and none of them is fixed here.
 
 ## 7. « Published » is not « can answer a mission »
 
+✅ CLOSED for mission alerts — 2026-11-19, founder Q3 (b): alerts go to everyone who can answer, published or not. The
+eligibility is shared through `private.can_answer_missions` (plan §4.1).
+
 - **What:** `freelancer_profiles.is_published` means « has an active service ». `enforce_job_responder_capability`
   lets any freelancer aged 18+, not suspended and not hidden answer a mission, published or not.
   - Wherever the app equates the two, a freelancer without a service is treated inconsistently.
@@ -68,3 +71,22 @@ PRs, and none of them is fixed here.
 - **Where it lives:** `sync_freelancer_is_published`, `freelancer_has_active_listing`,
   `enforce_job_responder_capability`.
 - **Trigger:** the founder's answer to Q3.
+
+## 8. PRODUCT QUESTION for the founder: when should an order lower the stock?
+
+- **What:** nothing lowers `products.stock_count`.
+  - Only the owner's product form writes it (`src/app/actions/products.ts`).
+  - Each order only checks quantity ≤ stock, in `enforce_order_insert_integrity` (Ruling 8) and in
+    `src/app/demander/[id]/actions.ts`.
+  - So a product with stock 1 can be ordered again and again: every order passes the same check against the same
+    unchanged count.
+  - The founder needs to decide:
+    - when an order lowers the stock: on request (`pending`), on `accepted`, or on delivery (`arrived` / `received`);
+    - when it gives the stock back: cancelled by either party, or refused at delivery;
+    - whether a product at 0 switches to `sold_out` by itself.
+- **Why deferred:** it is a product rule, outside the notifications plan. The plan only records its consequence: no
+  stock alerts for now (plan Q2, decided (a)). The architect asked for it to be logged here, 2026-11-19.
+- **Where it lives:** `enforce_order_insert_integrity`, `check_order_status_transition`, `products.stock_count` /
+  `tracks_stock` / `status`, `src/app/demander/[id]/actions.ts`.
+- **Trigger:** the founder's answer. The stock alerts (plan §5.3, D5 « 2 units or fewer ») can then be planned on top of
+  it.

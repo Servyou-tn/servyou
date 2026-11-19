@@ -10,88 +10,103 @@ matching rule, the delivery rules and 7 decisions. This plan turns that into sch
   DB PRs write the `PENDING_` files.
 - **Follow-ups** found on the way are in `docs/follow-ups/notifications-v2-followups.md`.
 
-## Decisions
+## Decisions (founder, 2026-11-19: all decided)
 
-### From the research: the working defaults, still open
+The architect approved the plan in substance on 2026-11-19, and the founder answered every question the same day. The
+rest of this document already follows these answers.
 
-The 7 recommended answers are this plan's working defaults. They are not yet confirmed.
+### From the research: confirmed as recommended
 
 1. **D1 (match rule):** at least one skill in common **or** an active service in the mission's category.
 2. **D2 (mission e-mail):** a daily digest at 09:00 by default, with weekly and off also available.
 3. **D3 (bell cap):** 10 mission alerts a day, then one grouped row.
 4. **D4 (skip):** freelancers already at 5 active proposals are skipped.
-5. **D5 (low stock):** 2 units or fewer. **This is blocked by Q2:** nothing lowers the stock today.
+5. **D5 (low stock):** 2 units or fewer. **It stays blocked:** Q2 decided no stock alerts for now.
 6. **D6 (buyer toggle):** a new « Suivi de mes commandes » toggle, on by default.
-7. **D7 (timing):** before launch, order e-mails and mission alerts; just after launch, stock, moderation and digest
-   polish.
+7. **D7 (timing):** before launch, order e-mails and mission alerts; just after launch, moderation and digest polish.
+   Stock is out until Q2 changes.
 
-### New questions from discovery
+### From discovery: decided
 
-Each question has a working default, which the plan uses until the founder answers. They are ranked by impact.
-
-1. **Q1 (Brevo plan):** the free plan sends 300 e-mails a day.
-   - After domain day the same Brevo account is also the Supabase Auth SMTP (sign-up and sign-in links; two-step sign-up
-     plan, decision 9).
-   - So a 09:00 digest could use up the day before a sign-up link goes out.
-   - *Default:* the sender keeps a daily budget (200, leaving 100 for Auth), and instant mail goes before digests.
-     *Recommended:* a paid Brevo plan before launch.
+1. **Q1 (Brevo quota):** the free plan sends 300 e-mails a day.
+   - Brevo **already** carries the Supabase Auth SMTP: the domain is authenticated, SPF / DKIM / DMARC pass, and the
+     first password-reset e-mail has gone out.
+   - So the 300 a day are shared **now** with sign-up and sign-in links, and a 09:00 digest could use up the day before
+     a sign-up link goes out.
+   - **Decided:**
+     - from the start, the sender keeps a daily budget of 200, leaving 100 for Auth;
+     - instant mail goes before digests;
+     - before launch, the founder moves Brevo to a paid plan (Starter, no daily cap). That is a founder action (§8).
 2. **Q2 (stock has no event):** nothing lowers `stock_count`.
    - Only the owner's product form writes it (`src/app/actions/products.ts`).
    - `enforce_order_insert_integrity` only refuses a quantity above the stock (Ruling 8). No order step lowers it.
-   - So « stock fell to 2 » can only come from the owner's own edit, which the never-self rule forbids notifying.
-   - Options:
-     - (a) no stock alerts until the founder sets a stock rule;
-     - (b) a daily reminder listing the shop's products at 2 or fewer, as a state, not an event;
-     - (c) decide now when orders lower stock (a product rule, outside this plan).
-   - *Default:* (a).
-3. **Q3 (who gets mission alerts):** the research says « a published profile ».
+   - So « stock fell to 2 » could only come from the owner's own edit, which the never-self rule forbids notifying.
+   - **Decided: (a), no stock alerts for now.**
+   - The wider question, when an order should lower the stock and when it should give it back, is logged for the founder
+     in `notifications-v2-followups.md` §8.
+3. **Q3 (who gets mission alerts):** the research said « a published profile ».
    - Live, `is_published` means « has at least one active service » (`sync_freelancer_is_published` →
      `freelancer_has_active_listing`).
-   - Answering a mission does NOT need that. `enforce_job_responder_capability` asks for:
+   - Answering a mission does not need that.
+   - **Decided: (b), everyone who can answer a mission.** That is the eligibility in
+     `enforce_job_responder_capability`:
      - a `freelancer` seller;
      - aged 18 or over;
      - not suspended;
-     - a freelancer profile that is not hidden.
-   - With (a), the skill rule only adds published freelancers who sell in another category. A freelancer with skills but
-     no service can answer missions yet is never alerted.
-   - Options: (a) published, as written; (b) everyone who can answer.
-   - *Default:* (a). *Recommended:* (b).
-4. **Q4 (« Retenu » toggle):** which toggle gates the instant « Retenu » e-mail? The research names none.
-   - *Default:* `email_proposals`.
+     - with a freelancer profile that is not hidden.
+   - Published or not: a freelancer with skills but no service is matched by skill.
+4. **Q4 (« Retenu » toggle):** **decided:** `email_proposals`.
    - Its label today is « Propositions reçues » (`rowsForRole`), which a freelancer would not read as « my proposal was
-     retained ». So V2-UI-1 rewords the label for the freelancer variant.
-5. **Q5 (suspended recipients):** *Default:* a deleted account (tombstone) never gets an e-mail. A suspended account gets
-   only moderation e-mails. Bell rows are still written.
-6. **Q6 (digest and the bell):** *Default:* an item already read in the bell is left out of the digest.
-7. **Q7 (weekly day):** *Default:* weekly digests go out on Monday at 09:00 (Tunis).
-8. **Q8 (events the research does not cover):** each gets no notification by default.
-   - a freelancer withdraws a pending proposal;
-   - a closed mission is re-opened (`not_chosen` → `pending`);
-   - a mission expires at 30 days (no status is written, see §1);
-   - content is un-hidden or an account un-suspended;
-   - a mission's skills are edited after it is published (this one re-runs the matching, §4.2).
-9. **Q9 (what an e-mail shows):** e-mails leave RLS.
-   - *Default:* the item or mission title, the status and a link to the page.
-   - Never a delivery address, a phone number or the other party's contact details.
-   - Anything richer is the founder's call.
-10. **Q10 (where the sender runs):** *Default:* a Supabase Edge Function (§3.3).
-11. **Q11 (retention):**
-    - *Default for e-mail rows:* sent or skipped rows are kept 30 days, failed rows 90 days.
-    - *Default for alerts:* mission-alert rows are kept 60 days.
-    - *Default for the bell:* read rows are kept 90 days. This is v1 D2's job, built here.
-12. **Q12 (title snapshot):** v2 bell rows about a mission store its title at the time of the event, like an order's
-    `item_title` snapshot.
-    - Without it, « mission supprimée » and « non retenu » become unreadable: a responder loses read access to a deleted
-      or hidden mission (§1).
-    - *Default:* yes.
-13. **Q13 (alert delay):** the research says mission alerts are « Instant » in the bell.
-    - Because the skills arrive in a second request (§4.2), the plan delivers them 2 to 3 minutes after publishing: a
-      2-minute queue delay, then the next minute's run.
-    - *Default:* accept that delay. It is a deviation from the research, recorded here.
+     retained ».
+   - So V2-UI-1 rewords the label for the freelancer variant.
+5. **Q5 (suspended recipients):** **decided:**
+   - a deleted account (tombstone) never gets an e-mail;
+   - a suspended account gets only moderation e-mails;
+   - bell rows are still written.
+6. **Q6 (digest and the bell):** **decided:** an item already read in the bell is left out of the digest. Overflow
+   missions are the exception (G2).
+7. **Q7 (weekly day):** **decided:** weekly digests go out on Monday at 09:00 (Tunis).
+8. **Q8 (events the research does not cover):** **decided:** none of these sends a notification.
+   - A freelancer withdraws a pending proposal.
+   - A closed mission is re-opened (`not_chosen` → `pending`).
+   - A mission expires at 30 days (no status is written, see §1).
+   - Content is un-hidden, or an account un-suspended.
+   - A mission's skills are edited after it is published. This one only re-runs the matching (§4.2).
+9. **Q9 (what an e-mail shows):** e-mails leave RLS. **Decided:**
+   - the item or mission title, the status and a link to the page;
+   - never a delivery address, a phone number or the other party's contact details.
+10. **Q10 (where the sender runs):** **decided:** a Supabase Edge Function (§3.3).
+11. **Q11 (retention):** **decided:**
+    - e-mail rows: sent or skipped kept 30 days, failed kept 90 days;
+    - mission-alert rows: kept 60 days;
+    - bell rows: read rows kept 90 days. This is v1 D2's job, built here.
+12. **Q12 (title snapshot):** **decided: yes.** v2 bell rows about a mission store its title at the time of the event,
+    like an order's `item_title` snapshot.
+    - Without it, « mission supprimée » and « non retenu » would become unreadable.
+    - The reason: a responder loses read access to a deleted or hidden mission (§1).
+13. **Q13 (alert delay):** **decided:** mission alerts reach the bell 2 to 3 minutes after publishing, not « Instant »
+    as in the research.
+    - The skills arrive in a second request (§4.2), hence a 2-minute queue delay, then the next minute's run.
 14. **Q14 (closing twice):** a poster can close a mission, re-open it and close it again.
     - Each close turns `pending` into `not_chosen`, while a re-open sends nothing (Q8).
-    - *Default:* « mission fermée » and « non retenu » are sent at most once per proposal, so a second close adds
-      nothing.
+    - **Decided:** « mission fermée » and « non retenu » are sent at most once per proposal. A second close adds nothing.
+15. **Q15 (digest length):** **decided:** 20 items per section, then « et N autres ».
+16. **Q16 (skill autocomplete):** **decided:**
+    - a spelling is suggested only once at least 2 different accounts use it;
+    - hidden, suspended and tombstone accounts never count.
+
+### Two rules written in at the end of review
+
+- **G1 (« first proposal »):** a proposal is the first on its mission when its insert of the dedupe key
+  `first_proposal:<job_post_id>` **really creates a row** (`on conflict do nothing returning`).
+  - Every other proposal becomes a digest item.
+  - Two tests are deliberately not used:
+    - `response_count = 1`: AFTER triggers fire in name order (§2), so it can read a stale count.
+    - « No other proposal exists »: after a withdrawal, proposal 2 would count as first. Its e-mail would then hit the
+      existing key, and it would also miss the digest.
+- **G2 (overflow missions):** every mission counted in a `mission_match_overflow` row always appears in the digest.
+  - Those missions have no bell row of their own, so reading the overflow row does not remove them (Q6 does not apply).
+  - The digest is the only place that lists them.
 
 ## 1. What is live today
 
@@ -114,7 +129,10 @@ Production state, read-only (2026-11-19):
 - **No e-mail sender exists in the app.**
   - No Brevo / SMTP client exists in `src/`.
   - `src/app/(marketing)/contact/actions.ts` says e-mailing the founder comes later.
-  - The Auth SMTP is planned as Brevo on `servyou.tn`, set on domain day (`docs/follow-ups/two-step-signup-plan.md`).
+  - **Brevo already carries the Supabase Auth SMTP** on `servyou.tn` (architect, 2026-11-19):
+    - the domain is authenticated, and SPF / DKIM / DMARC pass;
+    - the first password-reset e-mail has gone out.
+  - Production is `https://servyou.tn` since #379 (merged 16 Nov). `servyou.vercel.app` 308-redirects there.
 - **Platform:**
   - Supabase is on the **Free plan**, Postgres 17.6.
   - Extensions: `pg_cron` 1.6.4, `unaccent` (in `public`, with an IMMUTABLE wrapper `public.f_unaccent`) and
@@ -210,7 +228,7 @@ Production state, read-only (2026-11-19):
 | Matching mission | queued fan-out (§4) | matched freelancers | `mission_match` (max 10 a day), then `mission_match_overflow` | Digest (daily, weekly or off) |
 | Listing hidden, account suspended | **inside** `admin_hide_content` / `admin_suspend_user` | the owner | `content_hidden`, `account_suspended` | Instant, always on |
 | Report decided | `reports` AFTER UPDATE OF status → `resolved` / `dismissed` | the reporter | `report_decided` | — |
-| Low stock, sold out | Q2 | the shop | not built until Q2 | Digest (`email_low_stock`, default off) |
+| Low stock, sold out | not built: Q2 (a) | — | — | — |
 | Password or e-mail changed | Supabase Auth security notifications | the user | — | Instant, sent by Supabase Auth (§5.4) |
 
 ## 3. Order e-mails first (launch blocker 1)
@@ -312,7 +330,8 @@ preferences.
 - The shared secret that the cron call sends goes in Vault (for the job) and in the function secrets (for the check).
 - The function runs with `verify_jwt` off and compares the secret in constant time.
 
-**Sender:** `Servyou <no-reply@servyou.tn>`, with the brand spelling of `docs/follow-ups/brand-spelling-servyou.md`.
+**Sender:** `ServYou <no-reply@servyou.tn>`. The display name « ServYou » follows
+`docs/follow-ups/brand-spelling-servyou.md` and matches the Auth e-mails.
 
 ### 3.4 Templates and tooling
 
@@ -322,9 +341,19 @@ preferences.
   - FR / EN / AR, picked from `profiles.language`;
   - Arabic in `dir="rtl"`;
   - a subject, a text part and an HTML part.
-- Links are built from a `SITE_URL` function secret: `servyou.vercel.app` until domain day (#379), then `servyou.tn`.
+- Links are built from a `SITE_URL` function secret, `https://servyou.tn` from the start (production since #379).
 - The link rules copy `bellHref()`, with a parity test, because the function cannot import the app.
-- Digest e-mails carry a `List-Unsubscribe` link to Paramètres → Notifications.
+
+**Unsubscribe links (to confirm in E-SEND):**
+- Digest e-mails set **our own** `List-Unsubscribe`, pointing to Paramètres → Notifications.
+- **Brevo also adds its own `List-Unsubscribe` header** to the mail it relays; we saw it on our Auth e-mails.
+- What a click on Brevo's link does to transactional mail is **not yet known**. If it puts the address on Brevo's
+  transactional blocklist, a user who « unsubscribes » from a digest would stop receiving order e-mails **and**
+  sign-in links.
+- E-SEND must:
+  - find out what that click does;
+  - make sure a digest unsubscribe cannot block instant, order or Auth mail, or else document how to unblock an address;
+  - add a « Brevo blocked contacts » check to the runbook.
 
 **Tooling:**
 - `tsconfig.json` includes `**/*.ts`, so the function's Deno entry must be kept out of Next's `tsc`, eslint and vitest.
@@ -353,15 +382,17 @@ cannot drift apart:
 - `private.active_proposal_count(freelancer)`: the exact count from `check_job_response_limits`. That trigger is changed
   to call it.
 
-**Who is a candidate:** a freelancer who meets all of these.
-- Seller type is `freelancer`.
-- Not suspended.
-- Aged 18 or over.
-- Freelancer profile not hidden.
-- Published (Q3).
-- Not the poster.
-- Not a tombstone.
-- Not already alerted for this mission.
+**Who is a candidate:** everyone who can answer a mission (Q3 b), published or not.
+- The eligibility of `enforce_job_responder_capability` moves into `private.can_answer_missions(uuid)`, called by both
+  that trigger and the fan-out. It requires:
+  - seller type `freelancer`;
+  - not suspended;
+  - aged 18 or over;
+  - a freelancer profile that exists and is not hidden.
+- And also:
+  - not the poster;
+  - not a tombstone;
+  - not already alerted for this mission.
 
 **A match:** at least one shared `skill_key`, **or** an active, non-hidden service whose `category_id` is the mission's.
 A mission with neither a category nor skills alerts nobody: 2 of the 8 live missions have no category.
@@ -411,6 +442,8 @@ The skills arrive in a second request (§1), so a trigger on the mission insert 
 - After that, one `mission_match_overflow` row per day collects the count (`group_key = 'mission_overflow:<date>'`,
   `group_count`): « +N nouvelles missions pour vos compétences ».
 - Every alert still goes into `mission_alerts`, which the digest reads (§6).
+- `mission_alerts.notification_id` points to the alert's own bell row, and is null for an overflow alert. Overflow
+  alerts always reach the digest (G2).
 
 ### 4.4 Cost
 
@@ -445,6 +478,11 @@ The skills arrive in a second request (§1), so a trigger on the mission insert 
 **Where `mission_full` is caught:** on `job_posts` itself (§2), when `response_count` goes from below 10 to 10. That is
 the row `sync_job_post_response_count` writes, so its value is already final, whatever the trigger names.
 
+**The first proposal (G1):** the proposal trigger inserts `first_proposal:<job_post_id>` with
+`on conflict do nothing returning`.
+- **A row comes back:** this proposal is the first, so it gets the instant e-mail.
+- **Nothing comes back:** the proposal becomes a `digest_items` row.
+
 **Dedupe keys.** `response_count` goes down on a withdrawal, so « count = 1 » alone could fire twice.
 
 | What | Kept unique by |
@@ -477,10 +515,9 @@ and those freelancers get « mission fermée » with the admin as actor. That is
 
 ### 5.3 Stock
 
-Not built until Q2 is answered.
-- If (b) is chosen, the 09:00 job adds one row per product at 2 or fewer, once a day, digest only (`email_low_stock`,
-  default off).
-- Its bell kinds would be `stock_low` / `stock_out`, with a NULL actor.
+**Not built:** Q2 decided (a), no stock alerts for now.
+- The kinds `stock_low` / `stock_out` and the `email_low_stock` toggle (default off) stay reserved.
+- They come back when the founder sets when an order lowers the stock (`notifications-v2-followups.md` §8).
 
 ### 5.4 Security e-mails
 
@@ -505,10 +542,11 @@ notification email templates », [Auth e-mail templates](https://supabase.com/do
   - mission alerts (`mission_alerts.digested_at` null), according to the frequency: daily, or weekly on Q7's day;
   - further proposals: one `private.digest_items` row per proposal, written by the proposal trigger for every proposal
     after the first. Marking is per proposal, never on the grouped bell row, whose count keeps growing after a digest;
-  - stock items, if Q2 allows them.
+  - no stock items: Q2 (a) rules them out for now.
 - It drops items whose subject is no longer live: the mission closed, full, hidden or older than 30 days, or the proposal
   withdrawn.
-- It drops items already read in the bell (Q6).
+- It drops items whose own bell row was read (Q6). Overflow missions, which have no bell row of their own, always stay
+  (G2).
 - **One item or more:** one `digest` row goes into the outbox, at most 20 items per section plus « et N autres ».
   - The items are marked digested **in the same transaction**.
   - They are marked **only if that insert really created the row** (`on conflict do nothing returning id`).
@@ -547,7 +585,7 @@ notification email templates », [Auth e-mail templates](https://supabase.com/do
 - Proposals and missions: `proposal_received`, `mission_full`, `proposal_chosen`, `proposal_not_chosen`,
   `mission_closed`, `mission_match`, `mission_match_overflow`.
 - Moderation and reports: `content_hidden`, `account_suspended`, `report_decided`.
-- Stock, after Q2: `stock_low`, `stock_out`.
+- Stock: not added. `stock_low` / `stock_out` are reserved until the stock rule exists (Q2 a).
 
 **Indexes:**
 - `(recipient_id, last_event_at desc)` for the list, which now sorts on `last_event_at`;
@@ -585,8 +623,8 @@ All live in `private`, out of PostgREST, like `private.account_password_set`:
 - `private.mission_alerts`
 - `private.mission_fanout_queue`
 - `private.digest_items`: one row per digest-bound event other than a mission alert.
-  - Columns: `recipient_id`, `kind` (`proposal`, plus `stock` after Q2), `job_response_id` / `product_id` (FK, cascade),
-    `created_at`, `digested_at`.
+  - Columns: `recipient_id`, `kind` (`proposal` only, while Q2 rules stock out), `job_response_id` (FK, cascade),
+    `notification_id` (the grouped bell row it was counted in, for Q6), `created_at`, `digested_at`.
   - It is written by the emitting trigger, inside the same exception block.
 
 **Access:**
@@ -594,8 +632,8 @@ All live in `private`, out of PostgREST, like `private.account_password_set`:
 - Only SECURITY DEFINER functions write them.
 
 **`mission_alerts`:**
-- Columns: `job_post_id`, `freelancer_id` (FKs, cascade), `shared_skills`, `category_match`, `rank`, `created_at` and
-  `digested_at`.
+- Columns: `job_post_id`, `freelancer_id` (FKs, cascade), `notification_id` (FK, `on delete set null`; null for an
+  overflow alert), `shared_skills`, `category_match`, `rank`, `created_at` and `digested_at`.
 - Constraints: `unique (job_post_id, freelancer_id)`.
 - Index: a partial index on `freelancer_id` where `digested_at` is null.
 
@@ -607,7 +645,7 @@ All live in `private`, out of PostgREST, like `private.account_password_set`:
 - `claim_email_batch` / `settle_email`: EXECUTE for `service_role` only.
 - `suggest_skills(p_category, p_prefix)`: EXECUTE for authenticated, for the autocomplete.
   - It returns the platform's most used spellings in that category.
-  - *Working default:* a spelling appears only once at least 2 different accounts use it.
+  - A spelling appears only once at least 2 different accounts use it (Q16, decided).
   - Hidden, suspended and tombstone accounts never count.
   - So a suggestion never reveals one person's own wording. With today's 3 skill rows on 1 profile, it returns nothing.
 - All use `search_path ''`.
@@ -631,7 +669,7 @@ migration.
 ### 7.5 Account deletion
 
 `admin_process_deletion_request` gains, **at the end** (after the hide, close and suspend steps), deletes of the target's
-rows in four places:
+rows in five places:
 - `email_outbox`, all statuses;
 - `mission_alerts`, as the freelancer;
 - `digest_items`;
@@ -688,12 +726,21 @@ tombstone.
      - the daily budget and the priority;
      - Sentry counts;
      - the excludes from §3.4;
-     - a runbook for the secrets: `BREVO_API_KEY`, `SITE_URL` and the shared secret, set by the founder.
+     - our own `List-Unsubscribe` on digests;
+     - **Brevo's own `List-Unsubscribe` (§3.4):**
+       - find out what a click on it does to transactional mail;
+       - make sure a digest unsubscribe cannot block instant, order or Auth mail, or else document how to unblock an
+         address;
+     - a runbook for the secrets: `BREVO_API_KEY`, `SITE_URL` (`https://servyou.tn`) and the shared secret, set by the
+       founder;
+     - a « Brevo blocked contacts » check in the runbook.
      - The architect deploys it.
    - **Tests:**
      - unit tests of the retry classifier and the budget;
      - a mocked Brevo run: the key equals the outbox id, and neither the key nor an address appears in a log;
-     - after the deploy, one live send to a team address.
+     - a digest carries our `List-Unsubscribe`, and an order e-mail does not;
+     - after the deploy, one live send to a team address;
+     - one recorded check of what Brevo's unsubscribe link does, written into the runbook.
    - **This closes launch blocker 1.**
 4. **V2-DB-1 (Agent B):** the new notification shape, proposals, `mission_full`, the frequency column, `skill_key` and
    `suggest_skills`.
@@ -701,7 +748,7 @@ tombstone.
      - **v1 safety:** the v1 suite stays green; each kind's shape CHECK is enforced.
      - **Grouping:** 3 proposals within an hour give 1 row with count 3; a read row starts a new one.
      - **Dedupe:** the first-proposal e-mail goes out once per mission, even after a withdrawal and a new proposal.
-       `mission_full` fires once.
+       That later proposal becomes a digest item (G1). `mission_full` fires once.
      - **Decisions:** `chosen` gives a row and an e-mail row; the others get `proposal_not_chosen`. A close or a delete
        gives `mission_closed`.
      - **Close twice:** close → re-open → close gives each freelancer one `mission_closed`, not two (Q14).
@@ -727,12 +774,14 @@ tombstone.
      `0 8 * * *`.
    - **Must-tests:**
      - **Matching:** skill only, category only, both, neither, and accents and case.
+     - **Q3 (b):** a freelancer with no active service (unpublished) who can answer **is** alerted, by skill.
+     - **G2:** overflow missions reach the digest even after the overflow row is read.
      - **Skips:** each one is tested:
        - the poster;
        - a suspended account;
        - a hidden profile;
        - under 18;
-       - unpublished (Q3);
+       - no freelancer profile;
        - 5 active proposals;
        - a tombstone;
        - a full mission;
@@ -759,37 +808,42 @@ tombstone.
 
 **Just after launch (D7):**
 
-7. **V2-DB-3 (Agent B):** moderation and decided reports, plus stock if Q2 allows it.
+7. **V2-DB-3 (Agent B):** moderation and decided reports. No stock (Q2 a).
    - **Must-tests:**
      - each target type gives the owner 1 row and 1 e-mail row that ignores preferences;
      - a forced failure of the notification write still lets the hide or the suspension commit, with its audit log;
      - the deletion path writes nothing for the deleted account;
      - a decided report gives the reporter 1 row;
      - an admin moderating their own content gets nothing.
-8. **V2-UI-2 (Agent A):** the bell kinds and templates for moderation and reports (and stock).
+8. **V2-UI-2 (Agent A):** the bell kinds and templates for moderation and reports.
 
 **Founder actions:**
-- Choose the Brevo plan (Q1).
+- Move Brevo to a paid plan (Starter, no daily cap) before launch (Q1). Until then, the sender's daily budget protects
+  the Auth e-mails.
 - Turn on Supabase Auth's security notifications, with the FR text.
 - Set the function secrets.
-- Answer Q1–Q14.
+- Answer the stock product question (`notifications-v2-followups.md` §8). It is outside this plan.
 
 ## 9. Risks
 
 1. **Brevo quota:**
-   - Free is 300 a day, shared with Auth from domain day.
-   - Without the budget, a busy digest morning blocks sign-up links (Q1).
+   - Free is 300 a day, and it is **already** shared with the Auth e-mails: Brevo carries the Supabase Auth SMTP today.
+   - Without the budget, a busy digest morning would block sign-up and sign-in links. The budget ships from the start,
+     and the paid plan comes before launch (Q1).
 2. **Duplicates:** delivery is at least once; see §3.2 for the case that duplicates.
 3. **Skills are free text:**
    - Only 1 profile has skills today, so the category rule does almost all the matching.
-   - The autocomplete is the fix, and Q3 decides whether skills matter at all for unpublished freelancers.
+   - The autocomplete is the fix. With Q3 (b), a freelancer without a service is matched by skill alone.
 4. **The Edge Function is deployed outside CI:**
    - The deployed version can drift from the repo. E-SEND's runbook includes a check.
 5. **Supabase Free plan:** 500,000 invocations, 150 s and 2 s of CPU per call. Batches of 50, with a timeout on each
    Brevo call, keep a run well inside those limits.
-6. **Domain day:**
-   - `SITE_URL` and the Brevo sender change with #379.
-   - E-mails sent before then link to `servyou.vercel.app`.
+6. **Brevo's own unsubscribe link (to confirm):**
+   - Brevo adds its own `List-Unsubscribe` to relayed mail.
+   - If a click puts the address on Brevo's transactional blocklist, a digest « unsubscribe » would also stop order
+     e-mails and sign-in links.
+   - E-SEND checks this, keeps such a click from blocking that mail or documents the unblocking, and adds a « blocked
+     contacts » check to the runbook (§3.4).
 7. **Bulk-sender rules:** digests carry a one-click unsubscribe link (to Paramètres) from the start, even below the
    thresholds.
 8. **E-mails leave RLS:**
