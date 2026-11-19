@@ -67,6 +67,7 @@ export const AUTH_NOINDEX_PREFIXES = [
   '/mot-de-passe-oublie',
   '/nouveau-mot-de-passe',
   '/verifier-email',
+  '/finaliser-mon-compte', // two-step sign-up, step 2 (needs the e-mail link's session)
 ] as const
 
 /**

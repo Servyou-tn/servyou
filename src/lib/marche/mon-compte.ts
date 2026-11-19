@@ -11,7 +11,8 @@ export type CurrentProfile = {
   email: string
   phone: string | null
   city: string | null
-  date_of_birth: string
+  /** null on an incomplete account (two-step sign-up: the e-mail link used, « Finalisez votre compte » not done). */
+  date_of_birth: string | null
   language: string
   seller_type: string | null
   created_at: string
