@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
 import { AUTH_COOKIE_OPTIONS } from '@/lib/supabase/cookie-options'
+import { completionRedirect } from '@/lib/auth/completion-gate'
 
 // Platform-wide session layer: session-refresh persistence, maintenance mode (K4), suspension (K3) and
 // an expired session (K2), and nothing else. It does not duplicate the per-page login checks.
@@ -26,6 +27,11 @@ import { AUTH_COOKIE_OPTIONS } from '@/lib/supabase/cookie-options'
 // handle "is the user logged in" for their own contexts. This is the session layer; the database
 // refuses a suspended account's writes on its own (migration 20261024191215_suspension_enforcement),
 // and the auth ban (src/lib/auth/auth-ban.ts) stops it signing in or refreshing.
+//
+// Two-step sign-up — a signed-in account whose profile is not complete (completed_at null: the e-mail link was used,
+// « Finalisez votre compte » not done) is sent to /finaliser-mon-compte on every page navigation, except that page and
+// the two legal pages its form links to (src/lib/auth/completion-gate.ts). Read in the same profile query as
+// suspended_at; a failed read fails open. The database refuses an incomplete account's writes on its own (DB-2).
 //
 // K2 — a visitor who still carries a Supabase auth cookie whose session can no longer be validated
 // or refreshed is sent to /session-expiree?next=<page> with the cookies cleared. An expired ACCESS
@@ -141,8 +147,7 @@ export async function middleware(request: NextRequest) {
     const hasAuthCookie = request.cookies.getAll().some((c) => AUTH_COOKIE.test(c.name))
     // Page navigations only (HTML or an RSC fetch): a JSON/fetch GET keeps getting its own 401 instead
     // of an HTML redirect it cannot parse.
-    const isNavigation = (request.headers.get('accept') ?? '').includes('text/html') || request.headers.has('rsc')
-    if (hasAuthCookie && request.method === 'GET' && isNavigation && userError?.code && SESSION_GONE_CODES.has(userError.code)) {
+    if (hasAuthCookie && request.method === 'GET' && isNavigation(request) && userError?.code && SESSION_GONE_CODES.has(userError.code)) {
       return sessionExpired(request)
     }
     return pass()
@@ -153,15 +158,36 @@ export async function middleware(request: NextRequest) {
   // suspended_at bounces.
   const { data: profile, error: profileError } = await supabase
     .from('profiles')
-    .select('suspended_at')
+    .select('suspended_at, completed_at')
     .eq('id', user.id)
     .maybeSingle()
   if (profileError) {
     console.error('[middleware] suspended_at lookup error:', profileError.message, profileError.code, profileError.details)
   }
 
-  if (!profile || !profile.suspended_at) return pass()
-  return signOutSuspended(request)
+  if (profile?.suspended_at) return signOutSuspended(request)
+
+  const step2 = completionRedirect(
+    { pathname: request.nextUrl.pathname, search: request.nextUrl.search, method: request.method, isNavigation: isNavigation(request) },
+    profile ? profile.completed_at : undefined,
+  )
+  if (step2) return redirectKeepingSession(pass(), new URL(step2, request.url))
+  return pass()
+}
+
+// A redirect that keeps what this run wrote: getUser() may just have rotated the session (refresh tokens rotate), and a
+// bare redirect would drop the new cookies — the browser would keep a refresh token GoTrue already spent.
+function redirectKeepingSession(passed: NextResponse, url: URL): NextResponse {
+  const response = NextResponse.redirect(url)
+  passed.cookies.getAll().forEach((cookie) => response.cookies.set(cookie))
+  const cacheControl = passed.headers.get('cache-control')
+  if (cacheControl) response.headers.set('cache-control', cacheControl)
+  return response
+}
+
+// A page navigation (HTML or an RSC fetch): a JSON/fetch GET keeps getting its own answer instead of an HTML redirect.
+function isNavigation(request: NextRequest): boolean {
+  return (request.headers.get('accept') ?? '').includes('text/html') || request.headers.has('rsc')
 }
 
 function clearAuthCookies(request: NextRequest, response: NextResponse): NextResponse {

@@ -5,8 +5,9 @@ import { isValidInternalPath } from '@/lib/internal-path'
 // page's search params (validated with the open-redirect guard) and writes it back onto a funnel link. Pure, so the contract is unit-tested.
 
 // The funnel's own pages are never a useful destination: next=/connexion would sign the visitor in and land them back on a sign-in
-// form (a review finding on this PR). Same for sign-up, the auth routes, email verification and the two password pages.
-const FUNNEL_PATH = /^\/(connexion|inscription|auth|verifier-email|nouveau-mot-de-passe|mot-de-passe-oublie)(\/|\?|#|$)/
+// form (a review finding on this PR). Same for sign-up, the auth routes, email verification and the two password pages,
+// and « Finalisez votre compte » (two-step sign-up): it sends a finished account on to `next`, never back to itself.
+const FUNNEL_PATH = /^\/(connexion|inscription|auth|verifier-email|nouveau-mot-de-passe|mot-de-passe-oublie|finaliser-mon-compte)(\/|\?|#|$)/
 
 /** A safe internal path (open-redirect guard) that is not one of the funnel's own pages. */
 export function isUsefulNext(path: string | null | undefined): path is string {
