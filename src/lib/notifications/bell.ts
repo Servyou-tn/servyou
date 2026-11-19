@@ -71,6 +71,21 @@ export function bellBadgeText(unreadCount: number): string | null {
   return unreadCount > 9 ? '9+' : String(Math.floor(unreadCount))
 }
 
+/**
+ * Does this click on an item leave the panel for the item's page? A plain left click does (the link, or the hook after
+ * the mark), so the panel closes. A new-tab open (a modifier key, the middle button) or a right click keeps it open.
+ */
+export function bellClickLeaves(e: {
+  type: string
+  button: number
+  metaKey: boolean
+  ctrlKey: boolean
+  shiftKey: boolean
+  altKey: boolean
+}): boolean {
+  return e.type === 'click' && e.button === 0 && !e.metaKey && !e.ctrlKey && !e.shiftKey && !e.altKey
+}
+
 type Translate = (key: string, vars?: Record<string, string | number>) => string
 
 /** The item's line in the reader's language. The panel passes `(key, vars) => t(key, lang, vars)`. */

@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState, type ReactNode, type TouchEvent } from 'react'
+import { useEffect, useRef, useState, type ReactNode, type RefObject, type TouchEvent } from 'react'
 
 // The bell's mobile bottom sheet (< 1024) — Figma m375-fr / m375-en / m375-ar / m375-fr-empty (1778:32602 …). Mounted only
 // while open. A native <dialog> opened with showModal(), the app's modal pattern (src/components/shared/ModalDialog.tsx):
@@ -17,11 +17,14 @@ const SWIPE_CLOSE_PX = 80
 export function BellSheet({
   labelledBy,
   onClose,
+  returnFocusTo,
   header,
   children,
 }: {
   labelledBy: string
   onClose: () => void
+  /** The bell: focus goes back to it however the sheet closes (a click does not focus a button in every browser). */
+  returnFocusTo: RefObject<HTMLElement | null>
   /** The grabber + header: the swipe zone. */
   header: ReactNode
   children: ReactNode
@@ -29,36 +32,46 @@ export function BellSheet({
   const ref = useRef<HTMLDialogElement>(null)
   const pressStartedOnScrim = useRef(false)
   const touchStart = useRef<number | null>(null)
+  // The latest offset, for touchend: a fast flick can end before the last touchmove's re-render lands in `drag`.
+  const dragNow = useRef(0)
   const [drag, setDrag] = useState(0)
   const [dragging, setDragging] = useState(false)
 
   useEffect(() => {
     const dialog = ref.current
     if (!dialog) return
+    // The bell stays mounted while the sheet is open (it is the sheet's trigger): read it once, for the cleanup.
+    const bell = returnFocusTo.current
     if (!dialog.open) dialog.showModal()
-    const previous = document.body.style.overflow
     document.body.style.overflow = 'hidden'
     return () => {
-      document.body.style.overflow = previous
-      if (dialog.open) dialog.close()
+      // Never close() here (ModalDialog's rule): close() queues a `close` event, and under Strict Mode's re-run that
+      // event lands after the sheet re-opened and closes it for good. Unmounting takes the dialog out of the top layer.
+      // Focus goes back by hand: the browser only restores it on close(), and ✕ or an item unmounts a still-open sheet.
+      document.body.style.overflow = ''
+      if (bell?.isConnected) bell.focus()
     }
-  }, [])
+  }, [returnFocusTo])
 
   const aboveSheet = (clientY: number) => clientY < (ref.current?.getBoundingClientRect().top ?? 0)
 
+  function setOffset(px: number) {
+    dragNow.current = px
+    setDrag(px)
+  }
   function onTouchStart(e: TouchEvent) {
     touchStart.current = e.touches[0]?.clientY ?? null
     setDragging(true)
   }
   function onTouchMove(e: TouchEvent) {
     if (touchStart.current === null) return
-    setDrag(Math.max(0, (e.touches[0]?.clientY ?? touchStart.current) - touchStart.current))
+    setOffset(Math.max(0, (e.touches[0]?.clientY ?? touchStart.current) - touchStart.current))
   }
   function onTouchEnd() {
     touchStart.current = null
     setDragging(false)
-    if (drag > SWIPE_CLOSE_PX) ref.current?.close()
-    else setDrag(0)
+    if (dragNow.current > SWIPE_CLOSE_PX) ref.current?.close()
+    else setOffset(0)
   }
 
   return (
@@ -73,7 +86,7 @@ export function BellSheet({
         if (pressStartedOnScrim.current && e.target === e.currentTarget && aboveSheet(e.clientY)) e.currentTarget.close()
       }}
       style={drag > 0 ? { transform: `translateY(${drag}px)` } : undefined}
-      className={`m-0 mt-auto hidden max-h-[85dvh] w-full max-w-none flex-col overflow-hidden rounded-t-[20px] bg-surface-base p-0 pb-6 text-text-primary backdrop:bg-text-primary/45 open:flex motion-safe:animate-in motion-safe:slide-in-from-bottom motion-safe:duration-200 ${
+      className={`m-0 mt-auto hidden max-h-[85dvh] w-full max-w-none flex-col overflow-hidden rounded-t-[20px] bg-surface-base p-0 pb-[max(1.5rem,env(safe-area-inset-bottom))] text-text-primary backdrop:bg-text-primary/45 open:flex ${
         dragging ? '' : 'motion-safe:transition-transform'
       }`}
     >

@@ -1,12 +1,12 @@
 'use client'
 
-import { useId, useState, type MouseEvent } from 'react'
+import { useId, useRef, useState, type MouseEvent } from 'react'
 import { useLang } from '@/components/LangProvider'
 import { t, tn } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
 import { SURFACE_HOVER, FOCUS_RING } from '@/components/ui/interactive-surface'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { bellBadgeText, type BellFeed, type BellItem } from '@/lib/notifications/bell'
+import { bellBadgeText, bellClickLeaves, type BellFeed, type BellItem } from '@/lib/notifications/bell'
 import { useBellFeed } from './useBellFeed'
 import { BellButtonFace, BellPanelBody, BellPanelHeader } from './BellPanel'
 import { BellSheet } from './BellSheet'
@@ -34,6 +34,7 @@ const BELL_BUTTON = cn(
 export function TopbarNotifications({ feed }: { feed: BellFeed | null }) {
   const lang = useLang()
   const titleId = useId()
+  const bellRef = useRef<HTMLButtonElement>(null)
   const { view, openItem, markAll, markAllFailed } = useBellFeed(feed ?? NO_FEED)
   const [surface, setSurface] = useState<'menu' | 'sheet' | null>(null)
   const unread = view.ok ? view.unreadCount : 0
@@ -45,12 +46,9 @@ export function TopbarNotifications({ feed }: { feed: BellFeed | null }) {
   }
 
   function onOpenItem(event: MouseEvent<HTMLAnchorElement>, item: BellItem) {
-    const tookOver = openItem(event, item)
-    const plainClick =
-      event.type === 'click' && event.button === 0 && !event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey
     // A plain click leaves for the order (by the hook after the mark, or by the link itself for a read item): close.
     // A new-tab open keeps the panel where it is.
-    if (tookOver || plainClick) close()
+    if (openItem(event, item) || bellClickLeaves(event)) close()
   }
 
   const header = (variant: 'menu' | 'sheet') => (
@@ -70,6 +68,7 @@ export function TopbarNotifications({ feed }: { feed: BellFeed | null }) {
     <Popover open={surface === 'menu'} onOpenChange={onOpenChange}>
       <PopoverTrigger asChild>
         <button
+          ref={bellRef}
           type="button"
           aria-label={
             unread > 0 ? tn('shell.topbar.notifications.unreadAria', lang, unread) : t('shell.topbar.notifications.title', lang)
@@ -89,7 +88,7 @@ export function TopbarNotifications({ feed }: { feed: BellFeed | null }) {
         {body}
       </PopoverContent>
       {surface === 'sheet' ? (
-        <BellSheet labelledBy={titleId} onClose={close} header={header('sheet')}>
+        <BellSheet labelledBy={titleId} onClose={close} returnFocusTo={bellRef} header={header('sheet')}>
           {body}
         </BellSheet>
       ) : null}
@@ -97,12 +96,20 @@ export function TopbarNotifications({ feed }: { feed: BellFeed | null }) {
   )
 }
 
-/** The bell while its feed streams in (AppShell's Suspense fallback): the same box, no badge, nothing to open yet. */
+/**
+ * The bell while its feed streams in (AppShell's Suspense fallback): the same 40 px box and glyph, no badge. Not a
+ * button: there is nothing to open yet, and a focusable stand-in would drop the focus when the real bell replaces it.
+ */
 export function TopbarNotificationsFallback() {
   const lang = useLang()
   return (
-    <button type="button" aria-label={t('shell.topbar.notifications.title', lang)} aria-disabled="true" className={BELL_BUTTON}>
+    <span
+      role="img"
+      aria-label={t('shell.topbar.notifications.title', lang)}
+      data-bell-fallback=""
+      className="relative inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-[10px]"
+    >
       <BellButtonFace badge={null} />
-    </button>
+    </span>
   )
 }
