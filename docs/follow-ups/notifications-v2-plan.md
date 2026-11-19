@@ -56,8 +56,10 @@ Each question has a working default, which the plan uses until the founder answe
      no service can answer missions yet is never alerted.
    - Options: (a) published, as written; (b) everyone who can answer.
    - *Default:* (a). *Recommended:* (b).
-4. **Q4 (« Retenu » toggle):** which toggle gates the instant « Retenu » e-mail? The research names none. *Default:*
-   `email_proposals` (« Propositions »), the freelancer's proposal toggle.
+4. **Q4 (« Retenu » toggle):** which toggle gates the instant « Retenu » e-mail? The research names none.
+   - *Default:* `email_proposals`.
+   - Its label today is « Propositions reçues » (`rowsForRole`), which a freelancer would not read as « my proposal was
+     retained ». So V2-UI-1 rewords the label for the freelancer variant.
 5. **Q5 (suspended recipients):** *Default:* a deleted account (tombstone) never gets an e-mail. A suspended account gets
    only moderation e-mails. Bell rows are still written.
 6. **Q6 (digest and the bell):** *Default:* an item already read in the bell is left out of the digest.
@@ -82,6 +84,14 @@ Each question has a working default, which the plan uses until the founder answe
     - Without it, « mission supprimée » and « non retenu » become unreadable: a responder loses read access to a deleted
       or hidden mission (§1).
     - *Default:* yes.
+13. **Q13 (alert delay):** the research says mission alerts are « Instant » in the bell.
+    - Because the skills arrive in a second request (§4.2), the plan delivers them 2 to 3 minutes after publishing: a
+      2-minute queue delay, then the next minute's run.
+    - *Default:* accept that delay. It is a deviation from the research, recorded here.
+14. **Q14 (closing twice):** a poster can close a mission, re-open it and close it again.
+    - Each close turns `pending` into `not_chosen`, while a re-open sends nothing (Q8).
+    - *Default:* « mission fermée » and « non retenu » are sent at most once per proposal, so a second close adds
+      nothing.
 
 ## 1. What is live today
 
@@ -172,13 +182,28 @@ Production state, read-only (2026-11-19):
 **Rules for every event:**
 - The other person is told, never the actor (the v1 rule).
 - No signed-in actor means no row, except system events, whose actor is NULL by design (mission alerts, overflow rows).
-- A tombstone recipient gets no row in any table.
+- **A tombstone recipient gets no row in any table.**
+  - A tombstone is an account with an approved deletion request: `private.is_tombstone(uuid)` checks
+    `deletion_requests.status = 'approved'`.
+  - That is not the same as « suspended ». A tombstone is also suspended, but Q5 still mails suspended accounts their
+    moderation e-mails.
+- **Every emitter writes its rows inside its own `begin … exception when others` block**, with the bell row and the
+  e-mail row each in a separate block.
+  - Any error becomes a WARNING and no row (the v1 architect rule).
+  - This covers the order trigger, the proposal triggers and the code added inside `admin_hide_content` /
+    `admin_suspend_user`.
+  - So a notification never rolls back an order, a proposal, a choice or a moderation action (« never block the
+    action »).
+- **No v2 trigger may depend on another trigger having run first.**
+  - Postgres fires the AFTER triggers of one table in name order.
+  - A `trg_notify_*` trigger on `job_responses` would run before `trg_sync_job_post_response_count` and read the old
+    count.
 
 | Event | Where it is caught | Recipient | Bell kind | E-mail |
 |---|---|---|---|---|
 | New order, order status change (v1) | `notify_order_counterparty` (exists) | the other party | `order_created`, `order_status_changed` (v1) | Instant. The seller's events use `email_new_orders`: new order, receipt confirmed, buyer cancel. The buyer's use `email_order_updates` (new): accepted → arrived, cancelled or refused. |
 | New proposal | `job_responses` AFTER INSERT | the poster | `proposal_received`, grouped per mission within an hour | The first proposal on a mission is instant; the rest go to the digest (`email_proposals`) |
-| Mission reaches 10 proposals | the same trigger, when `response_count` reaches 10 | the poster | `mission_full`, once per mission | — |
+| Mission reaches 10 proposals | `job_posts` AFTER UPDATE OF `response_count`, when it goes from below 10 to 10 | the poster | `mission_full`, once per mission | — |
 | « Retenu » | `job_responses` AFTER UPDATE OF status, `pending → chosen` | the freelancer | `proposal_chosen` | Instant (Q4) |
 | « Non retenu » | `pending → not_chosen` while another proposal is `chosen` | the freelancer | `proposal_not_chosen` | — |
 | Mission closed or deleted | `pending → not_chosen` with no proposal chosen (closed, or `deleted`) | the freelancer | `mission_closed` | — |
@@ -196,7 +221,7 @@ Production state, read-only (2026-11-19):
    - It then writes the e-mail row in a **second, separate block**. Each block turns any error into a WARNING.
    - So a failed e-mail row never drops the bell row, and neither ever rolls back the order (the v1 rule).
 2. **After the commit, every minute:**
-   - a `pg_cron` job checks for due e-mail rows;
+   - a `pg_cron` job checks for due e-mail rows, or rows left in `sending` for more than 10 minutes (a crashed run);
    - only if some exist, it calls the sender through `pg_net` with a shared secret.
 3. **The sender (§3.3):**
    1. claims up to 50 rows;
@@ -210,7 +235,8 @@ Production state, read-only (2026-11-19):
 - `id uuid`: also Brevo's idempotency key;
 - `recipient_id` (FK `profiles`, cascade);
 - `template`: a CHECKed list;
-- `dedupe_key text unique`;
+- `dedupe_key text unique`. An order e-mail uses `notif:<notification_id>`, so there is one e-mail per bell row; the
+  other keys are in §5.1 and §6;
 - `notification_id` (FK, `on delete set null`);
 - `payload jsonb`: ids and keys only;
 - `priority smallint`: instant before digest;
@@ -233,7 +259,10 @@ preferences.
 **Who never gets mail:** a tombstone, always. A suspended account gets only moderation templates (Q5). One private helper,
 `private.is_tombstone(uuid)`, is used everywhere.
 
-**Claim and settle (public, SECURITY DEFINER, EXECUTE for `service_role` only):**
+**Claim and settle** live in `public`, so the Edge Function can reach them through PostgREST.
+- They are SECURITY DEFINER, with EXECUTE for `service_role` only.
+- The migration states `revoke execute … from public, anon, authenticated` explicitly. Default privileges are closed
+  since migration 68, but the line makes the intent checkable.
 
 - **`claim_email_batch(p_limit)`:**
   - takes due rows with `for update skip locked`, so two runs never take the same row;
@@ -348,7 +377,11 @@ A mission with neither a category nor skills alerts nobody: 2 of the 8 live miss
    function;
 4. then the profile id.
 
-**Top 50.**
+**Top 50 per mission, in total.**
+- A run first counts the mission's existing `mission_alerts` and adds at most `50 − that count`.
+- So a re-open, an unhide or a skill edit can fill the gap left by earlier runs, but can never alert more than 50
+  freelancers for one mission.
+- Without that count the cap would be per run, and closing and re-opening a mission would reach everyone.
 
 ### 4.2 Where it runs: a queue, not a trigger
 
@@ -390,8 +423,11 @@ The skills arrive in a second request (§1), so a trigger on the mission insert 
 - **A run:** at most one scan of the eligible freelancers, with indexed lookups on `skill_key`, services by category and
   the active-proposal count. That is milliseconds even at 100×.
 - **An empty minute:** one indexed SELECT.
-- **Abuse:** one poster can publish at most 10 missions per 24 h (`enforce_job_post_cap`), so at most 500 alerts a day
-  from one account. A recipient gets at most 10 rows plus 1 overflow row a day.
+- **Abuse:**
+  - One poster can publish at most 10 missions per 24 h (`enforce_job_post_cap`).
+  - Each mission alerts at most 50 freelancers in total (§4.1), however often it is re-opened or edited.
+  - So one account triggers at most 500 alerts a day.
+  - A recipient gets at most 10 rows plus 1 overflow row a day.
 - **The real cost is e-mail.** Digests number at most `min(freelancers, 50 × missions a day)`: at 100×, about 250 a
   day.
 - **At 100× in total**, about 50 order e-mails a day plus the digests reach the free Brevo cap (Q1).
@@ -406,6 +442,9 @@ The skills arrive in a second request (§1), so a trigger on the mission insert 
   `sync_job_responses_on_post_status`. It reads the mission to tell « non retenu » (another proposal was chosen) from
   « mission fermée » (no proposal chosen).
 
+**Where `mission_full` is caught:** on `job_posts` itself (§2), when `response_count` goes from below 10 to 10. That is
+the row `sync_job_post_response_count` writes, so its value is already final, whatever the trigger names.
+
 **Dedupe keys.** `response_count` goes down on a withdrawal, so « count = 1 » alone could fire twice.
 
 | What | Kept unique by |
@@ -413,6 +452,7 @@ The skills arrive in a second request (§1), so a trigger on the mission insert 
 | First-proposal e-mail | `first_proposal:<job_post_id>` |
 | `mission_full` | one row per mission |
 | « Retenu » e-mail | `chosen:<job_response_id>` |
+| `proposal_chosen`, `proposal_not_chosen`, `mission_closed` | `unique (job_response_id, kind)`, so each is sent at most once per proposal (Q14) |
 
 **Grouping:** proposals on the same mission within an hour become one row with a count, under a transaction advisory lock
 on `(recipient, group_key)`.
@@ -430,6 +470,8 @@ and those freelancers get « mission fermée » with the admin as actor. That is
   - `admin_process_deletion_request` writes those same columns (hide + suspend).
   - A column trigger would write fresh rows for the account being deleted.
   - An admin moderating their own content gets nothing (never-self).
+  - The new code in those functions sits in its own exception block (§2). Their audit-log call deliberately rolls back
+    the hide on failure; the notification must not.
 - **A decided report:** a trigger on `reports` status. The deletion path keeps the reports a person sent (D6) without
   touching their status. A report decided later for a tombstone reporter gets no row (`is_tombstone`).
 
@@ -461,17 +503,20 @@ notification email templates », [Auth e-mail templates](https://supabase.com/do
 **What `private.compose_digests()` does for each recipient:**
 - It gathers three kinds of item:
   - mission alerts (`mission_alerts.digested_at` null), according to the frequency: daily, or weekly on Q7's day;
-  - further proposals (`notifications.digest_pending`);
+  - further proposals: one `private.digest_items` row per proposal, written by the proposal trigger for every proposal
+    after the first. Marking is per proposal, never on the grouped bell row, whose count keeps growing after a digest;
   - stock items, if Q2 allows them.
 - It drops items whose subject is no longer live: the mission closed, full, hidden or older than 30 days, or the proposal
   withdrawn.
 - It drops items already read in the bell (Q6).
-- **One item or more:** one `digest` row goes into the outbox, at most 20 items per section plus « et N autres ». The
-  items are marked digested **in the same transaction**.
+- **One item or more:** one `digest` row goes into the outbox, at most 20 items per section plus « et N autres ».
+  - The items are marked digested **in the same transaction**.
+  - They are marked **only if that insert really created the row** (`on conflict do nothing returning id`).
 - **No item: no row, so no e-mail.**
 
 **Idempotent:** `dedupe_key = 'digest:<recipient>:<Tunis date>'`, and items marked once.
-- A second run the same day finds nothing new.
+- A second run the same day cannot insert a second row, so it marks nothing.
+- Items that arrived after 09:00 wait for the next day.
 - **Weekly:** items wait unmarked until the weekly run.
 - **Off:** items are marked without an e-mail, so turning it back on does not send a backlog.
 
@@ -491,7 +536,7 @@ notification email templates », [Auth e-mail templates](https://supabase.com/do
     (`enforce_moderated_row_no_delete`).
 - **New content:** `title_snapshot` (Q12).
 - **Grouping:** `group_key`, `group_count int default 1 check (>= 1)`, `last_event_at default now()`.
-- **Digest:** `digest_pending boolean default false`.
+- The digest's state is NOT kept here: it is in `private.digest_items` and `private.mission_alerts`.
 
 **CHECKs:**
 - `notifications_kind_check` and `notifications_kind_shape` become one shape CHECK per kind.
@@ -509,7 +554,13 @@ notification email templates », [Auth e-mail templates](https://supabase.com/do
 - `(recipient_id, group_key)` for grouping;
 - the new FKs.
 
-**Unchanged:** RLS and grants.
+**RLS and grants:**
+- The policy is unchanged: the recipient reads their own rows.
+- `authenticated` holds a **table-level** SELECT (`relacl`: `authenticated=r`), so the new columns are readable on the
+  recipient's own rows with no new grant. None of them is sensitive to the recipient.
+- `information_schema.column_privileges` lists the 9 v1 columns, but only because it expands the table grant.
+- Clients still get no INSERT / UPDATE / DELETE.
+- **Must-test:** each v2 kind is read by its recipient through PostgREST, with every new column, and by nobody else.
 
 **The badge** must count only rows the list can show.
 - UI-2's fix (D8 of #401) already leaves unknown kinds out.
@@ -533,6 +584,10 @@ All live in `private`, out of PostgREST, like `private.account_password_set`:
 - `private.email_outbox`
 - `private.mission_alerts`
 - `private.mission_fanout_queue`
+- `private.digest_items`: one row per digest-bound event other than a mission alert.
+  - Columns: `recipient_id`, `kind` (`proposal`, plus `stock` after Q2), `job_response_id` / `product_id` (FK, cascade),
+    `created_at`, `digested_at`.
+  - It is written by the emitting trigger, inside the same exception block.
 
 **Access:**
 - Each has RLS on in the creating migration, and no client grant.
@@ -550,8 +605,11 @@ All live in `private`, out of PostgREST, like `private.account_password_set`:
 - Private helpers: `job_post_is_live`, `active_proposal_count`, `is_tombstone`, `enqueue_email`, `run_mission_fanout`,
   `compose_digests`, `cleanup_notifications`.
 - `claim_email_batch` / `settle_email`: EXECUTE for `service_role` only.
-- `suggest_skills(p_category, p_prefix)`: EXECUTE for authenticated, for the autocomplete. It returns the platform's most
-  used spellings in that category.
+- `suggest_skills(p_category, p_prefix)`: EXECUTE for authenticated, for the autocomplete.
+  - It returns the platform's most used spellings in that category.
+  - *Working default:* a spelling appears only once at least 2 different accounts use it.
+  - Hidden, suspended and tombstone accounts never count.
+  - So a suggestion never reveals one person's own wording. With today's 3 skill rows on 1 profile, it returns nothing.
 - All use `search_path ''`.
 
 **Extension:** `create extension pg_net` (schema `extensions`).
@@ -575,7 +633,8 @@ migration.
 `admin_process_deletion_request` gains, **at the end** (after the hide, close and suspend steps), deletes of the target's
 rows in four places:
 - `email_outbox`, all statuses;
-- `mission_alerts`;
+- `mission_alerts`, as the freelancer;
+- `digest_items`;
 - `notifications`, as recipient, again;
 - the queue rows of their missions.
 
@@ -645,9 +704,19 @@ tombstone.
        `mission_full` fires once.
      - **Decisions:** `chosen` gives a row and an e-mail row; the others get `proposal_not_chosen`. A close or a delete
        gives `mission_closed`.
+     - **Close twice:** close → re-open → close gives each freelancer one `mission_closed`, not two (Q14).
+     - **`mission_full`:** exactly at the 10th proposal, with the real count, whatever the trigger order.
      - **Actors:** the actor gets 0 rows, and a service-role write gives 0 rows.
+     - **Failure isolation:** a forced failure of the notification write (for example a broken CHECK in a rolled-back
+       transaction) still lets the proposal insert and `choose_job_response` succeed.
+     - **Preferences:** `email_proposals` off means no first-proposal e-mail, no « Retenu » e-mail and no digest item.
+       Each is checked at enqueue and again at claim.
+     - **Concurrency:** two proposals arriving at once on the same mission still give one grouped row with count 2.
+     - **RLS and columns:** each new kind is read by its recipient through PostgREST, with every new column, and by
+       nobody else. `private.digest_items` cannot be reached by anon or authenticated.
      - **Keys:** SQL `skill_key` and `skillKey()` agree on the fixture list.
-     - **Deletion:** 0 rows for the target.
+     - **Deletion:** 0 rows for the target. A deleted poster's missions give the other responders `mission_closed` and
+       give the tombstone nothing.
 5. **V2-UI-1 (Agent A):**
    - the bell sentences, icons and tones for the proposal and mission kinds in `bell-kinds.ts`;
    - the « Retenu », first-proposal and digest templates;
@@ -665,26 +734,35 @@ tombstone.
        - under 18;
        - unpublished (Q3);
        - 5 active proposals;
+       - a tombstone;
        - a full mission;
        - a closed, hidden or expired mission;
        - a mission with no category and no skills.
-     - **Ranking and caps:** the ranking order and the cut at 50; 10 a day, then 1 overflow row with the right count.
+     - **Ranking and caps:**
+       - the ranking order;
+       - the cut at 50 **per mission in total**, across a re-open and a skill edit;
+       - 10 a day, then 1 overflow row with the right count;
+       - the day rolls over at Tunis midnight (23:00 UTC), not UTC midnight.
      - **Idempotency:** a re-run, a re-open, an unhide or a skill edit gives no second alert for the same pair, only new
        pairs.
+     - **Concurrency:** two fan-out runs at the same time never alert the same pair twice, and never exceed 50.
      - **The skills race:** skills inserted one request later are still matched.
+     - **Preferences:** frequency daily, weekly and off, and `email_missions_matching = false` counting as off.
+     - **RLS:** `mission_alerts` and the queue cannot be reached by anon or authenticated.
      - **Digest:**
        - nothing new means no outbox row;
        - items are marked once;
        - weekly items wait;
        - « off » marks without sending;
        - a second run the same day does nothing.
-     - **Deletion:** 0 rows for the target.
+     - **Deletion:** 0 rows for the target, including `mission_alerts` where they were the freelancer.
 
 **Just after launch (D7):**
 
 7. **V2-DB-3 (Agent B):** moderation and decided reports, plus stock if Q2 allows it.
    - **Must-tests:**
      - each target type gives the owner 1 row and 1 e-mail row that ignores preferences;
+     - a forced failure of the notification write still lets the hide or the suspension commit, with its audit log;
      - the deletion path writes nothing for the deleted account;
      - a decided report gives the reporter 1 row;
      - an admin moderating their own content gets nothing.
@@ -694,7 +772,7 @@ tombstone.
 - Choose the Brevo plan (Q1).
 - Turn on Supabase Auth's security notifications, with the FR text.
 - Set the function secrets.
-- Answer Q1–Q12.
+- Answer Q1–Q14.
 
 ## 9. Risks
 
