@@ -1602,6 +1602,38 @@ both on 2026-10-28.
     - **Rollback:** the commented `do $undo$` block at the end of the file (no row changes). Afterwards the prosrc md5 is
       `7801c2a006546ecc99cdc7c995f56d69` again.
 
+138 (number to confirm). **PENDING_two_step_signup_db2** — **NOT APPLIED.** The two-step sign-up, DB-2 of DB-1 → UI-1 →
+    DB-2. It closes pre-launch audit H1. PR on `feat/two-step-signup-db2`; plan `docs/follow-ups/two-step-signup-plan.md`
+    « DB-2 » and `docs/follow-ups/two-step-signup-db.md` §3. Written by db-guardian. The architect applies it only after
+    the founder's phone test passes and the founder says yes. After the apply: rename to the recorded version and
+    complete this entry.
+    - **The write gate** (`trg_enforce_active_user`, the same 28 tables, statement level): `enforce_active_user` calls
+      `private.write_refusal()` (SECURITY DEFINER, no arguments, EXECUTE for authenticated only). A signed-in write is
+      refused when:
+      - the account is suspended: message unchanged, no hint;
+      - the JWT's `session_id` is not in `auth.sessions`, or the claim is missing: hint `session_ended`;
+      - the account is incomplete: hint `account_incomplete`. That covers `deletion_requests` and `data_exports`
+        (decision 5).
+      The one exemption is `complete_my_account`'s own UPDATE of `profiles`, marked by a transaction-local setting that
+      names the caller.
+    - **Creation:** a profile is complete at creation only when the service role creates the account already confirmed,
+      with the full profile and 16+.
+      - GoTrue v2.198.0 inserts every user unconfirmed and confirms an admin creation with an UPDATE in the same
+        transaction.
+      - So `handle_new_user` marks a full-profile creation, and the new trigger `on_auth_user_confirmed_at_creation`
+        (AFTER UPDATE on `auth.users`, `email_confirmed_at` null → set) completes it under « cree-par-le-service » (D1).
+      - A public sign-up, confirmed later by its link, stays incomplete until step 2.
+    - **`private.purge_incomplete_accounts()`** and the cron job `purge-incomplete-accounts` (`27 3 * * *`):
+      confirmed-but-incomplete accounts are deleted 7 days after `created_at`, with `purge_unconfirmed_signups`'
+      exclusions verbatim.
+    - **D2:** accounts created the old way after UI-1 went live are turned incomplete. 0 rows on 2026-11-19.
+    - **Must-tests after the apply:**
+      - the file's rolled-back check;
+      - `two-step-signup-db2-live` (new, 3 verifications) and `two-step-signup-db-live` (LEGACY now incomplete);
+      - `two-step-signup-auth-live`, `suspension-enforcement`, and the 3 suites whose minor moved to 17;
+      - `client-write-grants-live` (no grant change).
+    - **Rollback:** the commented block at the end of the file. D2's statement is not undone.
+
 ## Rollback paths
 
 Each migration in this folder represents work that has already been applied to production. Rollback is therefore reverse migration work, not file deletion. If a rollback is ever needed, write a new dated migration that reverses the relevant changes — never delete history from this folder.

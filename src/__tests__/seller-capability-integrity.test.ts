@@ -17,7 +17,7 @@
  * The "à la fois" conjunct of Part 1 is unreachable through a user session once Part 2 is live
  * (that is the point of Part 2), so its two cases seed the mixed state with the service role.
  *
- * Fixtures (all `sel-cap-`): a consumer, a minor (15 years old on the day of the run), a freelancer,
+ * Fixtures (all `sel-cap-`): a consumer, a minor (17 years old on the day of the run), a freelancer,
  * a shop owner, an "orphan" (a freelancer profile on a seller_type-NULL account — the shape of the
  * one such row in prod, decision D2), two mixed accounts, a row-less shop_owner (the G2 race
  * leftover), a shop owner with no orders who switches, two onboarding users (G2, H2), a
@@ -55,10 +55,11 @@ const PASSWORD = `Sk-${randomUUID()}-Aa1!` // per run, never committed (audit H6
 const TITLE = 'Seller capability test'
 const RUN = randomUUID().slice(0, 8)
 
-// 15 years before today (UTC), so the minor stays under 18 whatever day the suite runs.
+// 17 years before today (UTC): under 18 whatever day the suite runs, and 16+ so the account is complete at creation
+// (two-step sign-up DB-2: a profile under 16 starts incomplete, and its writes would hit that gate instead).
 const MINOR_DOB = (() => {
   const d = new Date()
-  d.setUTCFullYear(d.getUTCFullYear() - 15)
+  d.setUTCFullYear(d.getUTCFullYear() - 17)
   return d.toISOString().slice(0, 10)
 })()
 
