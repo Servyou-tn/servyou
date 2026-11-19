@@ -1512,7 +1512,7 @@ export const strings: Record<string, string> = {
   "parametres.notifications.email_newsletter.consumer.label": "ServYou newsletter and news",
   "parametres.notifications.email_newsletter.consumer.desc": "New features, tips and opportunities. Sent once a month at most. No effect on your account.",
   "parametres.notifications.platform.title": "Notifications on the platform",
-  "parametres.notifications.platform.body": "The bell at the top of the screen tells you about new orders and every status change on your orders. It updates each time a page loads.",
+  "parametres.notifications.platform.body": "The bell at the top of the screen tells you about orders you receive and every status change on your orders. It updates each time a page loads.",
   "parametres.notifications.load_error": "We can't load your email preferences right now.",
   "parametres.notifications.error_save": "We couldn't save your preferences. Try again.",
   // favorites

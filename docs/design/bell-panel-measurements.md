@@ -72,7 +72,7 @@ unclear. The sentences in the frames are illustrative: the approved i18n keys of
 | Part | Figma | Code (`BellSheet.tsx`, `BellPanelHeader variant="sheet"`) |
 |---|---|---|
 | Sheet | full width, top radii 20, surface/base, bottom pad 24 | `w-full rounded-t-[20px] bg-surface-base pb-6`, `max-h-[85dvh]` |
-| Scrim | #0F172A at 0.45 | `backdrop:bg-text-primary/45` (text/primary is #0F172A) |
+| Scrim | #0F172A at 0.45 | `backdrop:bg-overlay-scrim`, the app's one scrim, as in ModalDialog (founder, #402 D14) |
 | Handle | pad 8 top / 4 bottom; grabber 36×4, radius 2, border/strong | `pt-2 pb-1`, `h-1 w-9 rounded-sm bg-border-strong` |
 | Header | pad 4 / 12 (end) / 4 / 20 (start), gap 8, 48 tall | `py-1 pe-3 ps-5 gap-2` |
 | Close | 40×40, radius 10, ✕ 20 at the end | `h-10 w-10 rounded-[10px]`, `X h-5 w-5` |

@@ -29,3 +29,15 @@
   width.
 - **Where it lives:** `onOpenChange` in `src/components/shell/TopbarNotifications.tsx`.
 - **Trigger:** a report of a sheet stuck open on a desktop-wide window, or the reverse.
+
+## Load the bell's panel on its first press
+
+- **What:** the 11 pages that render the AppShell carry the bell's panel in their first-load JS: the Radix Popover, the
+  item row and its icons, the mobile sheet and the read hook. CI measured +4.4 to +6.9 KB gzip over main (a3c3c40), and
+  every visitor gets it, signed in or not. The fix: keep the bell button and its server-rendered badge, and load the
+  panel and the sheet the first time the bell is pressed (prefetched on hover / focus). The estimate is about half the
+  weight back; that is not measured. Then lower the budgets in `scripts/perf/first-load-budget.json` again.
+- **Why deferred:** founder, #402 D19: ship as is.
+- **Where it lives:** `src/components/shell/TopbarNotifications.tsx` (static imports of `BellPanel`, `BellSheet`,
+  `@/components/ui/popover`).
+- **Trigger:** the next speed pass on the public pages, or a page that needs the budget headroom.

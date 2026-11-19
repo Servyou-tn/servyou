@@ -4468,7 +4468,7 @@ export const ar: Record<string, string> = {
   'parametres.notifications.email_newsletter.consumer.label':    "النشرة الإخبارية وأخبار ServYou",
   'parametres.notifications.email_newsletter.consumer.desc':     "ميزات جديدة ونصائح وفرص. تُرسل مرة واحدة في الشهر كحد أقصى. دون أي تأثير على حسابك.",
   'parametres.notifications.platform.title':                     "الإشعارات داخل المنصة",
-  'parametres.notifications.platform.body':                      "ينبّهك الجرس أعلى الشاشة إلى الطلبات الجديدة وإلى كل تغيير في حالة طلباتك. ويُحدَّث عند كل تحميل للصفحة.", // REVIEW_AR_TRANSLATION (bell panel)
+  'parametres.notifications.platform.body':                      "ينبّهك الجرس أعلى الشاشة إلى الطلبات التي تصلك وإلى كل تغيير في حالة طلباتك. ويُحدَّث عند كل تحميل للصفحة.", // founder wording (#402 D11)
   'parametres.notifications.load_error':                         "تعذّر تحميل تفضيلات البريد الإلكتروني حاليًا.",
   'parametres.notifications.error_save':                         "تعذّر حفظ تفضيلاتك. حاول مرة أخرى.",
 

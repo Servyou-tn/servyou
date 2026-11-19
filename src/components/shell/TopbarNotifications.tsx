@@ -82,6 +82,12 @@ export function TopbarNotifications({ feed }: { feed: BellFeed | null }) {
         align="end"
         sideOffset={8}
         aria-labelledby={titleId}
+        // Focus the panel itself, not its first button (Radix's default): « Tout marquer comme lu » would take it, and a
+        // keyboard user who opens the bell and presses Enter would mark everything read (#402 gate). Tab reaches it next.
+        onOpenAutoFocus={(e) => {
+          e.preventDefault()
+          ;(e.target as HTMLElement | null)?.focus({ preventScroll: true })
+        }}
         className="flex max-h-[min(520px,var(--radix-popover-content-available-height))] w-[400px] flex-col overflow-hidden rounded-2xl border border-border-subtle bg-surface-base p-0 shadow-[0_12px_32px_rgb(15_23_42/0.12)]"
       >
         {header('menu')}

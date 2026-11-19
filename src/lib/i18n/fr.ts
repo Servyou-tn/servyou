@@ -4570,7 +4570,8 @@ export const fr: Record<string, string> = {
   'parametres.notifications.email_newsletter.consumer.label':    "Newsletter et actualités ServYou",
   'parametres.notifications.email_newsletter.consumer.desc':     "Nouvelles fonctionnalités, conseils, et opportunités. Envoyé une fois par mois maximum. Aucun impact sur votre compte.",
   'parametres.notifications.platform.title':                     "Notifications sur la plateforme",
-  'parametres.notifications.platform.body':                      "La cloche en haut de l'écran vous signale les nouvelles commandes et chaque changement de statut de vos commandes. Elle se met à jour à chaque chargement de page.",
+  // Founder wording (#402 D11): one line for every role, true for a buyer too.
+  'parametres.notifications.platform.body':                      "La cloche en haut de l'écran vous signale les commandes que vous recevez et chaque changement de statut de vos commandes. Elle se met à jour à chaque chargement de page.",
   'parametres.notifications.load_error':                         "Impossible de charger vos préférences e-mail pour le moment.",
   'parametres.notifications.error_save':                         "Impossible d’enregistrer vos préférences. Réessayez.",
 

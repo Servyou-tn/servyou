@@ -86,7 +86,7 @@ export function BellSheet({
         if (pressStartedOnScrim.current && e.target === e.currentTarget && aboveSheet(e.clientY)) e.currentTarget.close()
       }}
       style={drag > 0 ? { transform: `translateY(${drag}px)` } : undefined}
-      className={`m-0 mt-auto hidden max-h-[85dvh] w-full max-w-none flex-col overflow-hidden rounded-t-[20px] bg-surface-base p-0 pb-[max(1.5rem,env(safe-area-inset-bottom))] text-text-primary backdrop:bg-text-primary/45 open:flex ${
+      className={`m-0 mt-auto hidden max-h-[85dvh] w-full max-w-none flex-col overflow-hidden rounded-t-[20px] bg-surface-base p-0 pb-[max(1.5rem,env(safe-area-inset-bottom))] text-text-primary backdrop:bg-overlay-scrim open:flex ${
         dragging ? '' : 'motion-safe:transition-transform'
       }`}
     >
