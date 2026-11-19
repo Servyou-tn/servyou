@@ -1608,14 +1608,17 @@ both on 2026-10-28.
     the founder's phone test passes and the founder says yes. After the apply: rename to the recorded version and
     complete this entry.
     - **The write gate** (`trg_enforce_active_user`, the same 28 tables, statement level): `enforce_active_user` calls
-      `private.write_refusal()` (SECURITY DEFINER, no arguments, EXECUTE for authenticated only). A signed-in write is
-      refused when:
+      `private.write_refusal(boolean)` (SECURITY DEFINER, describes only the caller, EXECUTE for authenticated only).
+      A signed-in write is refused when:
       - the account is suspended: message unchanged, no hint;
       - the JWT's `session_id` is not in `auth.sessions`, or the claim is missing: hint `session_ended`;
       - the account is incomplete: hint `account_incomplete`. That covers `deletion_requests` and `data_exports`
         (decision 5).
       The one exemption is `complete_my_account`'s own UPDATE of `profiles`, marked by a transaction-local setting that
       names the caller.
+      - The triggers on `data_exports`, `deletion_requests` and `disputes` now fire on INSERT too. Until now they fired
+        on UPDATE / DELETE only, under suspension D3 / D4.
+      - On those inserts only the suspension refusal is waived, so a suspended user can still file one.
     - **Creation:** a profile is complete at creation only when the service role creates the account already confirmed,
       with the full profile and 16+.
       - GoTrue v2.198.0 inserts every user unconfirmed and confirms an admin creation with an UPDATE in the same

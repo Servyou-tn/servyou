@@ -38,19 +38,22 @@ this PR's commit 3, after the apply.
 - **Trigger:** if the JWT lifetime is raised, or a security review asks for it. Shortening « JWT expiry » in Auth
   settings narrows the window without schema work.
 
-## 4. LOW: storage uploads and the bell are outside the 28-table gate
+## 4. MEDIUM: storage writes and the bell are outside the 28-table gate
 
 - **What:** two write paths do not go through the gate.
-  - **Storage:** the policies on `storage.objects` check « not suspended » (`is_active_user`), not completion or a live
-    session. An incomplete account, or an ended session, can still upload within the daily upload caps.
+  - **Storage:** the upload / update / delete policies on `storage.objects` check « not suspended »
+    (`is_active_user()`), not completion or a live session. So an incomplete account, or a token whose session has
+    ended, can still upload or delete its own objects, within the daily upload caps. That is the population this
+    migration targets (DB-2 review M2).
   - **The bell:** `notifications` is not one of the 28 tables. `mark_my_notifications_read` can still mark the caller's
     own rows as read.
-- **Why deferred:** the plan's gate is the 28 tables. An incomplete account has no listing to attach a file to, and
-  marking one's own notification as read is harmless.
+- **Why deferred:** the plan's gate is the 28 tables, and changing storage policies is its own review. An incomplete
+  account has no listing or profile row that could reference an upload. Marking one's own notification as read is
+  harmless.
 - **Where it lives:** the storage policies « Suspended accounts cannot upload / update / delete objects »; the
   `notifications` table.
-- **Trigger:** the next storage-policy change. It could call `private.write_refusal()`, which needs EXECUTE for the
-  storage role path.
+- **Trigger:** before launch, in a small DB PR. Add `and (select private.write_refusal()) is null` to the three storage
+  write policies. `authenticated` already has USAGE on `private` and EXECUTE on the function, so no new grant is needed.
 
 ## 5. INFO: « Confirm email » ON is now load-bearing for H1
 

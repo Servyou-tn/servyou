@@ -13,6 +13,10 @@
 --          no longer write;
 --        - the account is incomplete (profiles.completed_at null): hint account_incomplete. That covers deletion_requests
 --          and data_exports too (decision 5). The only exception is complete_my_account's own UPDATE of profiles.
+--      data_exports, deletion_requests and disputes were gated on UPDATE / DELETE only: suspension decisions D3 and D4
+--      (2026-10-24) let a SUSPENDED user still file them. Their trigger now also fires on INSERT. On an INSERT into
+--      those three, only the suspension refusal is waived (D3 / D4 kept); an ended session or an incomplete account is
+--      still refused (DB-2 review H1).
 --   2. The end of the transitional rule. A profile is complete at creation ONLY for an account the service role creates
 --      ALREADY CONFIRMED, with the full profile and 16+ (review L6): the fixtures and seeds. Everything else starts
 --      incomplete, including a direct /signup call that carries the full metadata. That closes the H1 attack.
@@ -45,9 +49,13 @@
 --     content, kept by the 24-hour purge, and removed by the pre-launch wipe (#297). Nothing here touches them. With no
 --     password and their inboxes not ours, the H1 path does not apply to them.
 --   - enforce_active_user is SECURITY INVOKER: it runs as the caller, which cannot read auth.sessions. Hence a SECURITY
---     DEFINER helper, private.write_refusal(), with no arguments and EXECUTE for authenticated. The gate keeps its
---     « auth.uid() is null » early return before the call, so anon never reaches it.
+--     DEFINER helper, private.write_refusal(boolean). It describes only the caller; its one argument is the D3 / D4
+--     waiver. EXECUTE for authenticated. The gate keeps its « auth.uid() is null » early return before the call, so anon
+--     never reaches it.
 --   - is_active_user() (« not suspended ») keeps its meaning. choose_job_response and the storage policies use it.
+--   - trg_enforce_active_user fires on INSERT / UPDATE / DELETE on 25 tables. On data_exports, deletion_requests and
+--     disputes it fires on UPDATE / DELETE only (20261024191215_suspension_enforcement.sql, D3 and D4). Clients INSERT
+--     into all three directly (column grants), and no SECURITY DEFINER function does.
 --   - No function in public or private calls set_config today, so the two transaction-local markers below
 --     (servyou.full_profile_created, servyou.completing_account) are set only here. PostgREST exposes no set_config
 --     to clients.
@@ -105,9 +113,14 @@
 --   under the current terms version, never d2_rows.
 --
 -- AFTER THE APPLY (db-guardian, then commit 3)
+--   - FIRST, as a canary: two-step-signup-db2-live, whose « service role creates confirmed » case must pass. GoTrue
+--     v2.198.0's adminUserCreate runs the INSERT and user.Confirm(tx) inside one db.Transaction (internal/api/admin.go,
+--     read at that tag). If that case fails, every service-role fixture starts incomplete. In that case, roll back at
+--     once, before any other suite runs.
 --   - Catalog:
---     - enforce_active_user calls private.write_refusal();
+--     - enforce_active_user calls private.write_refusal(boolean);
 --     - EXECUTE on write_refusal for authenticated (and owner) only;
+--     - trg_enforce_active_user on data_exports, deletion_requests and disputes: BEFORE INSERT OR UPDATE OR DELETE;
 --     - the trigger on_auth_user_confirmed_at_creation exists;
 --     - no client EXECUTE on complete_profile_confirmed_at_creation or purge_incomplete_accounts;
 --     - the cron job purge-incomplete-accounts exists.
@@ -126,10 +139,12 @@
 
 -- ─── 1. Why a write is refused (the gate's helper) ─────────────────────────────────────────────────
 
-create or replace function private.write_refusal()
+-- p_suspension_waived: true only for an INSERT into data_exports, deletion_requests or disputes (suspension D3 / D4).
+-- VOLATILE, so it reads auth.sessions as of the call, not as of an earlier snapshot in the statement.
+create or replace function private.write_refusal(p_suspension_waived boolean default false)
 returns text
 language plpgsql
-stable
+volatile
 security definer
 set search_path = ''
 as $$
@@ -149,8 +164,8 @@ begin
     from public.profiles p
    where p.id = v_uid;
 
-  -- 1. Suspension first, so a suspended account keeps its exact refusal.
-  if v_suspended is not null then
+  -- 1. Suspension first, so a suspended account keeps its exact refusal (except where D3 / D4 let it file a request).
+  if v_suspended is not null and not coalesce(p_suspension_waived, false) then
     return 'suspended';
   end if;
 
@@ -174,11 +189,11 @@ begin
 end;
 $$;
 
-revoke all on function private.write_refusal() from public, anon;
-grant execute on function private.write_refusal() to authenticated;
+revoke all on function private.write_refusal(boolean) from public, anon, service_role;
+grant execute on function private.write_refusal(boolean) to authenticated;
 
-comment on function private.write_refusal() is
-  'Two-step sign-up DB-2: why the caller may not write: suspended, session_ended (the JWT''s session_id is gone from auth.sessions) or account_incomplete; null = allowed. Called by enforce_active_user (SECURITY INVOKER), hence EXECUTE for authenticated. No arguments: it only ever describes the caller.';
+comment on function private.write_refusal(boolean) is
+  'Two-step sign-up DB-2: why the caller may not write: suspended (waived for the D3 / D4 inserts), session_ended (the JWT''s session_id is gone from auth.sessions) or account_incomplete; null = allowed. Called by enforce_active_user (SECURITY INVOKER), hence EXECUTE for authenticated. It only ever describes the caller.';
 
 -- ─── 2. The gate (trg_enforce_active_user, 28 tables, statement level; the triggers are unchanged) ───
 
@@ -195,7 +210,10 @@ begin
     return null;
   end if;
 
-  v_refusal := private.write_refusal();
+  -- Suspension D3 / D4 (2026-10-24): a suspended user may still file an export, a deletion request or a dispute.
+  v_refusal := private.write_refusal(
+    tg_op = 'INSERT' and tg_table_schema = 'public'
+    and tg_table_name in ('data_exports', 'deletion_requests', 'disputes'));
   if v_refusal is null then
     return null;
   end if;
@@ -222,6 +240,18 @@ begin
     using errcode = '42501', hint = 'account_incomplete';
 end;
 $$;
+
+-- The three tables gated on UPDATE / DELETE only (suspension D3 / D4) now gate INSERT too. The suspension waiver above
+-- keeps D3 / D4; an ended session or an incomplete account can no longer file one (decision 5; DB-2 review H1).
+drop trigger trg_enforce_active_user on public.data_exports;
+create trigger trg_enforce_active_user before insert or update or delete on public.data_exports
+  for each statement execute function public.enforce_active_user();
+drop trigger trg_enforce_active_user on public.deletion_requests;
+create trigger trg_enforce_active_user before insert or update or delete on public.deletion_requests
+  for each statement execute function public.enforce_active_user();
+drop trigger trg_enforce_active_user on public.disputes;
+create trigger trg_enforce_active_user before insert or update or delete on public.disputes
+  for each statement execute function public.enforce_active_user();
 
 -- ─── 3. Profile creation: complete only when the service role creates the account confirmed ─────────
 
@@ -296,7 +326,7 @@ begin
 end;
 $$;
 
-revoke all on function public.complete_profile_confirmed_at_creation() from public, anon, authenticated;
+revoke all on function public.complete_profile_confirmed_at_creation() from public, anon, authenticated, service_role;
 
 comment on function public.complete_profile_confirmed_at_creation() is
   'Two-step sign-up DB-2: completes a profile when its account is confirmed in the same transaction that created it with the full profile (the service role''s createUser with email_confirm: true). A public sign-up is confirmed by a later request and stays incomplete. SECURITY DEFINER in public: supabase_auth_admin fires it and has no USAGE on private.';
@@ -474,7 +504,8 @@ begin
 end;
 $$;
 
-revoke all on function private.purge_incomplete_accounts() from public, anon, authenticated;
+-- Like purge_unconfirmed_signups (ACL {postgres=X}): only the cron job, as postgres, runs it.
+revoke all on function private.purge_incomplete_accounts() from public, anon, authenticated, service_role;
 
 comment on function private.purge_incomplete_accounts() is
   'Two-step sign-up DB-2 (decision 5): deletes accounts that confirmed their e-mail but never finished « Finalisez votre compte », 7 days after auth.users.created_at, with purge_unconfirmed_signups'' exclusions. Profiles, sessions and password rows cascade.';
@@ -519,6 +550,11 @@ update public.profiles p
 --    jsonb_build_object('full_name', 'Db2 Young', 'city', 'Tunis', 'date_of_birth', ((now() at time zone 'Africa/Tunis')::date - interval '15 years')::date),
 --    now(), now());
 -- update auth.users set email_confirmed_at = now() where id = '7f000000-0000-4000-8000-0000000000a3';
+-- insert into auth.users (id, instance_id, aud, role, email, raw_user_meta_data, created_at, updated_at) values
+--   ('7f000000-0000-4000-8000-0000000000a4', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated',
+--    'tsdb2-suspended@rls-smoke.servyou.invalid', '{"full_name":"Db2 Suspended","date_of_birth":"1990-01-01","city":"Tunis"}', now(), now());
+-- update auth.users set email_confirmed_at = now() where id = '7f000000-0000-4000-8000-0000000000a4';
+-- update public.profiles set suspended_at = now(), suspended_reason = 'tsdb2 check' where id = '7f000000-0000-4000-8000-0000000000a4';
 -- do $$
 -- begin
 --   if (select completed_at from public.profiles where id = '7f000000-0000-4000-8000-0000000000a1') is not null then
@@ -536,7 +572,8 @@ update public.profiles p
 -- update public.profiles set is_admin = true where id = '7f000000-0000-4000-8000-0000000000a2';
 -- insert into auth.sessions (id, user_id, created_at, updated_at) values
 --   ('7f000000-0000-4000-8000-0000000000b1', '7f000000-0000-4000-8000-0000000000a1', now(), now()),
---   ('7f000000-0000-4000-8000-0000000000b2', '7f000000-0000-4000-8000-0000000000a2', now(), now());
+--   ('7f000000-0000-4000-8000-0000000000b2', '7f000000-0000-4000-8000-0000000000a2', now(), now()),
+--   ('7f000000-0000-4000-8000-0000000000b4', '7f000000-0000-4000-8000-0000000000a4', now(), now());
 -- set local role authenticated;
 -- select set_config('request.jwt.claims', '{"sub":"7f000000-0000-4000-8000-0000000000a1","role":"authenticated","session_id":"7f000000-0000-4000-8000-0000000000b1","amr":[{"method":"otp","timestamp":1}]}', true);
 -- do $$
@@ -548,6 +585,29 @@ update public.profiles p
 --   get stacked diagnostics v_hint = pg_exception_hint;
 --   if v_hint is distinct from 'account_incomplete' then raise exception 'FAIL: incomplete refused with hint %', v_hint; end if;
 -- end $$;
+-- do $$
+-- declare v_hint text;
+-- begin
+--   -- INSERT into data_exports is gated now (review H1): an incomplete account cannot file an export.
+--   insert into public.data_exports (user_id) values ('7f000000-0000-4000-8000-0000000000a1');
+--   raise exception 'FAIL: an incomplete account filed an export';
+-- exception when sqlstate '42501' then
+--   get stacked diagnostics v_hint = pg_exception_hint;
+--   if v_hint is distinct from 'account_incomplete' then raise exception 'FAIL: incomplete export refused with hint %', v_hint; end if;
+-- end $$;
+-- select set_config('request.jwt.claims', '{"sub":"7f000000-0000-4000-8000-0000000000a4","role":"authenticated","session_id":"7f000000-0000-4000-8000-0000000000b4","amr":[{"method":"otp","timestamp":1}]}', true);
+-- do $$
+-- declare v_hint text; v_msg text;
+-- begin
+--   update public.profiles set language = 'ar' where id = '7f000000-0000-4000-8000-0000000000a4';
+--   raise exception 'FAIL: a suspended account wrote';
+-- exception when sqlstate '42501' then
+--   get stacked diagnostics v_hint = pg_exception_hint, v_msg = message_text;
+--   if v_msg is distinct from 'Ce compte est suspendu.' or nullif(v_hint, '') is not null then
+--     raise exception 'FAIL: the suspended refusal changed (% / %)', v_msg, v_hint;
+--   end if;
+-- end $$;
+-- insert into public.data_exports (user_id) values ('7f000000-0000-4000-8000-0000000000a4');  -- D3 kept: passes
 -- select set_config('request.jwt.claims', '{"sub":"7f000000-0000-4000-8000-0000000000a2","role":"authenticated","session_id":"7f000000-0000-4000-8000-0000000000b9","amr":[{"method":"otp","timestamp":1}]}', true);
 -- do $$
 -- declare v_hint text;
@@ -590,7 +650,7 @@ update public.profiles p
 --     raise exception 'FAIL: the purge deleted an account it must keep';
 --   end if;
 -- end $$;
--- select 'PASS: creation rules, the gate (incomplete, ended session, no session_id, through an RPC), the 7-day purge' as result;
+-- select 'PASS: creation rules, the gate (incomplete incl. an export insert, ended session, no session_id, through an RPC, suspended unchanged and D3 kept), the 7-day purge' as result;
 -- rollback;
 
 -- ─── ROLLBACK (one transaction) ─────────────────────────────────────────────────────────────────────
@@ -616,7 +676,16 @@ update public.profiles p
 --   return null;
 -- end;
 -- $function$;
--- drop function private.write_refusal();
+-- drop function private.write_refusal(boolean);
+-- drop trigger trg_enforce_active_user on public.data_exports;
+-- create trigger trg_enforce_active_user before update or delete on public.data_exports
+--   for each statement execute function public.enforce_active_user();
+-- drop trigger trg_enforce_active_user on public.deletion_requests;
+-- create trigger trg_enforce_active_user before update or delete on public.deletion_requests
+--   for each statement execute function public.enforce_active_user();
+-- drop trigger trg_enforce_active_user on public.disputes;
+-- create trigger trg_enforce_active_user before update or delete on public.disputes
+--   for each statement execute function public.enforce_active_user();
 -- create or replace function public.handle_new_user()
 --  returns trigger language plpgsql security definer set search_path to ''
 -- as $function$

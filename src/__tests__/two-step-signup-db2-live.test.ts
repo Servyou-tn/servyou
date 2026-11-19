@@ -9,9 +9,10 @@
  *       · an account the service role creates already confirmed, with the full profile, is complete under
  *         « cree-par-le-service ». GoTrue inserts it unconfirmed and confirms it in the same transaction;
  *       · under 16 it is incomplete even then;
- *   - the write gate on an incomplete account (an e-mail-link session): writes are refused with the hint
- *     account_incomplete on profiles, notification_preferences, favorites, reports, job_posts, and on deletion_requests
- *     and data_exports (decision 5);
+ *   - the write gate on an incomplete account (an e-mail-link session), on a sample of the 28 gated tables: writes are
+ *     refused with the hint account_incomplete on profiles, notification_preferences, favorites, reports and job_posts.
+ *     The INSERTs into deletion_requests and data_exports are refused too (decision 5): their trigger gains INSERT in
+ *     DB-2, while a SUSPENDED user can still file them (suspension D3, proved by suspension-enforcement);
  *   - complete_my_account still passes from that session, and afterwards the same write passes;
  *   - every write needs a live session. Once a session is signed out, its still-valid access token is refused
  *     (session_ended), while the account's other session still writes.
@@ -165,7 +166,7 @@ describe.skipIf(!hasCreds)('profile creation (handle_new_user + on_auth_user_con
 
 // The tests below run in order on the same accounts.
 describe.skipIf(!hasCreds)('the write gate', () => {
-  it('refuses every write of an incomplete account (account_incomplete), deletion and export requests included', async () => {
+  it("refuses an incomplete account's writes (account_incomplete), deletion and export requests included", async () => {
     const attempts: [string, () => PromiseLike<{ error: { code?: string; hint?: string | null } | null }>][] = [
       ['profiles', () => incomplete.from('profiles').update({ language: 'ar' }).eq('id', incompleteId)],
       ['notification_preferences', () => incomplete.from('notification_preferences').insert({ profile_id: incompleteId, email_newsletter: true })],
