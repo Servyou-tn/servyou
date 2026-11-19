@@ -2,8 +2,8 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 // loadBellFeed — mocked Supabase (the RLS that limits a reader to their own rows is proven live by
 // bell-notifications-live.test.ts, DB-1). Records the query chains and checks: the reader's own rows, newest first,
-// 20 at most, the order embedded; the unread count as a head count over read_at IS NULL; a failed read is reported and
-// is never an empty list.
+// 20 at most, the order embedded; the unread count as a head count over read_at IS NULL, of the kinds the map knows only
+// (founder, #401 D8); a failed read is reported and is never an empty list.
 
 type Call = [string, ...unknown[]]
 const state = {
@@ -18,7 +18,7 @@ function chain(): Record<string, unknown> {
   const calls: Call[] = []
   state.chains.push(calls)
   const proxy: Record<string, unknown> = {}
-  for (const m of ['select', 'eq', 'is', 'order', 'limit']) {
+  for (const m of ['select', 'eq', 'is', 'in', 'order', 'limit']) {
     proxy[m] = (...args: unknown[]) => {
       calls.push([m, ...args])
       return proxy
@@ -44,6 +44,7 @@ vi.mock('@/lib/supabase/query-error', () => ({
 
 import { loadBellFeed } from './bell-feed'
 import { BELL_LIMIT } from './bell'
+import { BELL_KINDS } from './bell-kinds'
 
 const READER = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'
 const SELLER = 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb'
@@ -84,7 +85,23 @@ describe('loadBellFeed — the server query', () => {
       ['select', 'id', { count: 'exact', head: true }],
       ['eq', 'recipient_id', READER],
       ['is', 'read_at', null],
+      ['in', 'kind', ['order_created', 'order_status_changed']],
     ])
+  })
+
+  it('the unread count counts only the kinds the map knows — every one of them, read off the map (#401 D8)', async () => {
+    await loadBellFeed(READER)
+    const isHead = (c: Call[]) => c.some(([m, , o]) => m === 'select' && (o as { head?: boolean } | undefined)?.head === true)
+    const kindFilters = state.chains.find(isHead)!.filter(([m]) => m === 'in')
+    expect(kindFilters).toHaveLength(1)
+    expect(kindFilters[0][1]).toBe('kind')
+    expect([...(kindFilters[0][2] as string[])].sort()).toEqual(Object.keys(BELL_KINDS).sort())
+  })
+
+  it('the list is NOT filtered by kind: an unmapped kind must still reach the loader, to be reported', async () => {
+    await loadBellFeed(READER)
+    const isHead = (c: Call[]) => c.some(([m, , o]) => m === 'select' && (o as { head?: boolean } | undefined)?.head === true)
+    expect(state.chains.find((c) => !isHead(c))!.some(([m]) => m === 'in')).toBe(false)
   })
 
   it('maps the rows to items through their kind (sentence, icon, tone, link for the reader’s side) and returns the server count', async () => {
@@ -98,8 +115,8 @@ describe('loadBellFeed — the server query', () => {
         {
           id: 'n-1',
           kind: 'order_status_changed',
-          icon: 'package',
-          tone: 'info',
+          icon: 'circle-check',
+          tone: 'success',
           sentence: { key: 'buyerOrder.event.accepted_freelancer' },
           href: `/mes-commandes/${ORDER}`,
           title: 'Logo',
@@ -118,7 +135,7 @@ describe('loadBellFeed — the server query', () => {
     expect(reported.map(([where]) => where)).toEqual(['bell rows'])
   })
 
-  it('drops a row of a kind this version does not map, and reports it', async () => {
+  it('drops a row of a kind this version does not map, and reports it (the count already leaves that kind out)', async () => {
     state.list.data = [rowFor('n-1', { kind: 'proposal_received' }), rowFor('n-2')]
     state.count.count = 2
     const feed = await loadBellFeed(READER)

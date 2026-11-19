@@ -12,11 +12,11 @@ import type { BellIcon, BellItem, BellRow, BellSentence, BellTone } from './bell
 // the reader's side and the order type. `read` picks a kind's own context out of the row, so kinds with different
 // subjects (an order, a job post, a product) share one map.
 //
-// The icon and the tone of the order kinds follow rules the app already has, until the « NOV 18 — Notifications »
-// frame says otherwise (docs/follow-ups/bell-ui.md):
-//   • icon = the sidebar icon of the page the item opens (sidebar-items.ts; the /aide AIDE ICON RULE);
-//   • tone = the tone of the status pill of the status reached. ORDER_TONE mirrors statusPillFor + status-pill.tsx's
-//     STATUS_TONE by hand (a server lib does not import a component); bell-kinds.test.tsx enforces the match.
+// The icon and the tone of the order kinds are the « NOV 18 — Notifications (cloche) · v1 » frame's (1778:30747,
+// docs/design/bell-panel-measurements.md), by the event: a new order or request is a blue shopping bag; accepted a green
+// circle-check; a receipt confirmed a green package-check; every step on the way (prepared, dispatched, in delivery,
+// arrived, work delivered) an indigo truck; a cancel or a refusal a red circle-x. (They replace UI-1's provisional rules —
+// the sidebar icon of the page opened, the status pill's tone — which held until the frame.)
 
 /** The kinds the DB allows: `notifications_kind_check` (migration 20261116201553). The generated types say `string`. */
 export type BellKindName = 'order_created' | 'order_status_changed'
@@ -78,22 +78,30 @@ const EVENT = 'shell.topbar.notifications.event.'
 /** The generic line for a known status the actor rule does not produce: « Statut : {status} » (the G9 timeline's). */
 export const BELL_STATUS_SENTENCE = 'seller.orderDetail.event_status'
 
-// The status reached → the tone of its status pill. A hand-kept mirror of statusPillFor's pill → status-pill.tsx
-// STATUS_TONE: « En attente » warning, the steps of the chain info, « Reçue » success, « Annulée » and « Refusée »
-// danger. bell-kinds.test.tsx renders the real StatusPill for every status and fails on a drift.
-const ORDER_TONE: Record<OrderStatus, BellTone> = {
-  pending: 'warning',
-  accepted: 'info',
-  prepared: 'info',
-  dispatched: 'info',
-  in_delivery: 'info',
-  arrived: 'info',
-  received: 'success',
-  cancelled: 'danger',
+// A status change → its tile, by the status reached (the frame). `pending` is never reached by a change (an order
+// starts there): it gets the neutral tile, like a status this version does not know.
+const ORDER_STATUS_FACE: Record<OrderStatus, { icon: BellIcon; tone: BellTone }> = {
+  pending: { icon: 'bell', tone: 'neutral' },
+  accepted: { icon: 'circle-check', tone: 'success' },
+  prepared: { icon: 'truck', tone: 'progress' },
+  dispatched: { icon: 'truck', tone: 'progress' },
+  in_delivery: { icon: 'truck', tone: 'progress' },
+  arrived: { icon: 'truck', tone: 'progress' },
+  received: { icon: 'package-check', tone: 'success' },
+  cancelled: { icon: 'circle-x', tone: 'danger' },
 }
 
+/** A new order or a new service request: the frame's blue shopping bag. */
+const ORDER_CREATED_FACE = { icon: 'shopping-bag', tone: 'info' } as const satisfies { icon: BellIcon; tone: BellTone }
+
+const UNKNOWN_FACE = { icon: 'bell', tone: 'neutral' } as const satisfies { icon: BellIcon; tone: BellTone }
+
 function isOrderStatus(value: string): value is OrderStatus {
-  return Object.hasOwn(ORDER_TONE, value)
+  return Object.hasOwn(ORDER_STATUS_FACE, value)
+}
+
+function orderStatusFace(e: OrderBellEvent): { icon: BellIcon; tone: BellTone } {
+  return isOrderStatus(e.toStatus) ? ORDER_STATUS_FACE[e.toStatus] : UNKNOWN_FACE
 }
 
 function toOrderType(value: string): OrderType | null {
@@ -114,12 +122,6 @@ export function bellReaderRole(order: { buyer_id: string; seller_id: string }, r
 export function bellHref(orderId: string, orderType: OrderType, role: BellReaderRole): string {
   if (role === 'buyer') return `/mes-commandes/${orderId}`
   return orderType === 'service' ? `/mes-engagements/${orderId}` : `/commandes-recues/${orderId}`
-}
-
-/** The sidebar icon of the page bellHref opens: Package, Inbox, Handshake (sidebar-items.ts). */
-function orderIcon(e: OrderBellEvent): BellIcon {
-  if (e.role === 'buyer') return 'package'
-  return e.orderType === 'service' ? 'handshake' : 'inbox'
 }
 
 /** The row's order from the reader's side; null when unreadable, not theirs, or of an unknown type (all unreachable). */
@@ -186,8 +188,6 @@ function orderSentence(key: string, e: OrderBellEvent): BellSentence {
 
 const ORDER_FACE = {
   read: readOrderEvent,
-  icon: orderIcon,
-  tone: (e: OrderBellEvent): BellTone => (isOrderStatus(e.toStatus) ? ORDER_TONE[e.toStatus] : 'neutral'),
   href: (e: OrderBellEvent) => bellHref(e.orderId, e.orderType, e.role),
   subject: (e: OrderBellEvent) => ({ title: e.title, ref: shortRef(e.orderId) }),
 }
@@ -195,9 +195,25 @@ const ORDER_FACE = {
 // ── The map ────────────────────────────────────────────────────────────────────────────────────────────────────────
 
 export const BELL_KINDS: Record<BellKindName, BellKind> = {
-  order_created: defineBellKind({ ...ORDER_FACE, sentence: (e) => orderSentence(orderCreatedSentenceKey(e), e) }),
-  order_status_changed: defineBellKind({ ...ORDER_FACE, sentence: (e) => orderSentence(orderStatusSentenceKey(e), e) }),
+  order_created: defineBellKind({
+    ...ORDER_FACE,
+    icon: () => ORDER_CREATED_FACE.icon,
+    tone: () => ORDER_CREATED_FACE.tone,
+    sentence: (e) => orderSentence(orderCreatedSentenceKey(e), e),
+  }),
+  order_status_changed: defineBellKind({
+    ...ORDER_FACE,
+    icon: (e) => orderStatusFace(e).icon,
+    tone: (e) => orderStatusFace(e).tone,
+    sentence: (e) => orderSentence(orderStatusSentenceKey(e), e),
+  }),
 }
+
+/**
+ * The kinds the map knows, read off the map itself: the unread count filters on them (founder, #401 D8), so the badge
+ * never counts a row the list cannot show.
+ */
+export const BELL_KIND_NAMES = Object.keys(BELL_KINDS) as BellKindName[]
 
 /** The entry for a row's kind, or null for a kind this version does not know (own keys only: « constructor » is none). */
 export function bellKind(kind: string): BellKind | null {
@@ -206,7 +222,8 @@ export function bellKind(kind: string): BellKind | null {
 
 /**
  * One row → one panel item, through its kind's entry. Null when this version does not know the kind, or the row's
- * subject is unreadable for this reader: the loader drops it and reports it (the badge still counts it).
+ * subject is unreadable for this reader: the loader drops it and reports it. The badge does not count an unknown kind
+ * (the count filters on BELL_KIND_NAMES).
  */
 export function toBellItem(row: BellRow, readerId: string): BellItem | null {
   const face = bellKind(row.kind)?.face(row, readerId)

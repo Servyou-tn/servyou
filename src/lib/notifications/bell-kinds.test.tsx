@@ -1,13 +1,8 @@
 import { describe, it, expect } from 'vitest'
-import { renderToStaticMarkup } from 'react-dom/server'
-import { Handshake, Inbox, Package, type LucideIcon } from 'lucide-react'
 import { fr } from '@/lib/i18n/fr'
 import { ar } from '@/lib/i18n/ar'
 import { en } from '@/lib/i18n/en'
 import { t, type Lang } from '@/lib/i18n'
-import { statusPillFor } from '@/lib/orders/order-status'
-import { StatusPill, TONE } from '@/components/ui/status-pill'
-import { sidebarSectionsForRole } from '@/components/shell/sidebar-items'
 import {
   BELL_KINDS,
   BELL_STATUS_SENTENCE,
@@ -67,27 +62,27 @@ type Case = {
 
 const CASES: Case[] = [
   // New order (product or service): the buyer acts, the seller reads.
-  { name: 'new product order → shop owner', kind: 'order_created', to: 'pending', reader: 'seller', key: `${E}new_order_product`, french: 'Nouvelle commande', icon: 'inbox', tone: 'warning' },
-  { name: 'new service order → freelancer', kind: 'order_created', to: 'pending', type: 'service', reader: 'seller', key: 'activite.request_title', french: 'Nouvelle demande de service', icon: 'handshake', tone: 'warning' },
+  { name: 'new product order → shop owner', kind: 'order_created', to: 'pending', reader: 'seller', key: `${E}new_order_product`, french: 'Nouvelle commande', icon: 'shopping-bag', tone: 'info' },
+  { name: 'new service order → freelancer', kind: 'order_created', to: 'pending', type: 'service', reader: 'seller', key: 'activite.request_title', french: 'Nouvelle demande de service', icon: 'shopping-bag', tone: 'info' },
   // The seller's steps: the buyer reads.
-  { name: 'pending → accepted (product)', kind: 'order_status_changed', to: 'accepted', reader: 'buyer', key: 'buyerOrder.event.accepted_shop', french: 'Acceptée par la boutique', icon: 'package', tone: 'info' },
-  { name: 'pending → accepted (service)', kind: 'order_status_changed', to: 'accepted', type: 'service', reader: 'buyer', key: 'buyerOrder.event.accepted_freelancer', french: 'Acceptée par le freelance', icon: 'package', tone: 'info' },
-  { name: 'accepted → prepared', kind: 'order_status_changed', to: 'prepared', reader: 'buyer', key: `${E}prepared`, french: 'Préparée par la boutique', icon: 'package', tone: 'info' },
-  { name: 'prepared → dispatched', kind: 'order_status_changed', to: 'dispatched', reader: 'buyer', key: 'buyerOrder.event.dispatched', french: 'Expédiée', icon: 'package', tone: 'info' },
-  { name: 'dispatched → in_delivery', kind: 'order_status_changed', to: 'in_delivery', reader: 'buyer', key: `${E}in_delivery`, french: 'En cours de livraison', icon: 'package', tone: 'info' },
-  { name: 'in_delivery → arrived (product)', kind: 'order_status_changed', to: 'arrived', reader: 'buyer', key: 'buyerOrder.event.arrived_product', french: 'Colis arrivé', icon: 'package', tone: 'info' },
-  { name: 'accepted → arrived (service)', kind: 'order_status_changed', to: 'arrived', type: 'service', reader: 'buyer', key: 'buyerOrder.event.arrived_service', french: 'Travail livré par le freelance', icon: 'package', tone: 'info' },
+  { name: 'pending → accepted (product)', kind: 'order_status_changed', to: 'accepted', reader: 'buyer', key: 'buyerOrder.event.accepted_shop', french: 'Acceptée par la boutique', icon: 'circle-check', tone: 'success' },
+  { name: 'pending → accepted (service)', kind: 'order_status_changed', to: 'accepted', type: 'service', reader: 'buyer', key: 'buyerOrder.event.accepted_freelancer', french: 'Acceptée par le freelance', icon: 'circle-check', tone: 'success' },
+  { name: 'accepted → prepared', kind: 'order_status_changed', to: 'prepared', reader: 'buyer', key: `${E}prepared`, french: 'Préparée par la boutique', icon: 'truck', tone: 'progress' },
+  { name: 'prepared → dispatched', kind: 'order_status_changed', to: 'dispatched', reader: 'buyer', key: 'buyerOrder.event.dispatched', french: 'Expédiée', icon: 'truck', tone: 'progress' },
+  { name: 'dispatched → in_delivery', kind: 'order_status_changed', to: 'in_delivery', reader: 'buyer', key: `${E}in_delivery`, french: 'En cours de livraison', icon: 'truck', tone: 'progress' },
+  { name: 'in_delivery → arrived (product)', kind: 'order_status_changed', to: 'arrived', reader: 'buyer', key: 'buyerOrder.event.arrived_product', french: 'Colis arrivé', icon: 'truck', tone: 'progress' },
+  { name: 'accepted → arrived (service)', kind: 'order_status_changed', to: 'arrived', type: 'service', reader: 'buyer', key: 'buyerOrder.event.arrived_service', french: 'Travail livré par le freelance', icon: 'truck', tone: 'progress' },
   // The buyer confirms receipt: the seller reads.
-  { name: 'arrived → received (product)', kind: 'order_status_changed', to: 'received', reader: 'seller', key: 'buyerOrder.event.received', french: 'Réception confirmée', icon: 'inbox', tone: 'success' },
-  { name: 'arrived → received (service)', kind: 'order_status_changed', to: 'received', type: 'service', reader: 'seller', key: 'buyerOrder.event.received', french: 'Réception confirmée', icon: 'handshake', tone: 'success' },
+  { name: 'arrived → received (product)', kind: 'order_status_changed', to: 'received', reader: 'seller', key: 'buyerOrder.event.received', french: 'Réception confirmée', icon: 'package-check', tone: 'success' },
+  { name: 'arrived → received (service)', kind: 'order_status_changed', to: 'received', type: 'service', reader: 'seller', key: 'buyerOrder.event.received', french: 'Réception confirmée', icon: 'package-check', tone: 'success' },
   // Cancels.
-  { name: '→ cancelled by the shop', kind: 'order_status_changed', to: 'cancelled', reader: 'buyer', key: 'buyerOrder.event.cancelled_shop', french: 'Annulée par la boutique', icon: 'package', tone: 'danger' },
-  { name: '→ cancelled by the freelancer', kind: 'order_status_changed', to: 'cancelled', type: 'service', reader: 'buyer', key: 'buyerOrder.event.cancelled_freelancer', french: 'Annulée par le freelance', icon: 'package', tone: 'danger' },
-  { name: '→ « Refusée à la livraison » (a seller cancel with refusal_reason)', kind: 'order_status_changed', to: 'cancelled', reader: 'buyer', refused: true, key: `${E}refused_on_delivery`, french: 'Refusée à la livraison', icon: 'package', tone: 'danger' },
-  { name: '→ cancelled by the buyer (product)', kind: 'order_status_changed', to: 'cancelled', reader: 'seller', key: 'common.cancelled_by_buyer', french: "Annulée par l'acheteur", icon: 'inbox', tone: 'danger' },
+  { name: '→ cancelled by the shop', kind: 'order_status_changed', to: 'cancelled', reader: 'buyer', key: 'buyerOrder.event.cancelled_shop', french: 'Annulée par la boutique', icon: 'circle-x', tone: 'danger' },
+  { name: '→ cancelled by the freelancer', kind: 'order_status_changed', to: 'cancelled', type: 'service', reader: 'buyer', key: 'buyerOrder.event.cancelled_freelancer', french: 'Annulée par le freelance', icon: 'circle-x', tone: 'danger' },
+  { name: '→ « Refusée à la livraison » (a seller cancel with refusal_reason)', kind: 'order_status_changed', to: 'cancelled', reader: 'buyer', refused: true, key: `${E}refused_on_delivery`, french: 'Refusée à la livraison', icon: 'circle-x', tone: 'danger' },
+  { name: '→ cancelled by the buyer (product)', kind: 'order_status_changed', to: 'cancelled', reader: 'seller', key: 'common.cancelled_by_buyer', french: "Annulée par l'acheteur", icon: 'circle-x', tone: 'danger' },
   // A refusal_reason on the order does not turn a BUYER's cancel into a refusal line for the seller (unreachable: only
   // the seller records a refusal, but the key must not depend on it).
-  { name: '→ cancelled by the buyer, order carrying a refusal_reason', kind: 'order_status_changed', to: 'cancelled', reader: 'seller', refused: true, key: 'common.cancelled_by_buyer', french: "Annulée par l'acheteur", icon: 'inbox', tone: 'danger' },
+  { name: '→ cancelled by the buyer, order carrying a refusal_reason', kind: 'order_status_changed', to: 'cancelled', reader: 'seller', refused: true, key: 'common.cancelled_by_buyer', french: "Annulée par l'acheteur", icon: 'circle-x', tone: 'danger' },
 ]
 
 const itemFor = (c: Case) =>
@@ -104,8 +99,8 @@ describe('toBellItem — the item, whatever the kind', () => {
     expect(toBellItem(row(), BUYER)).toEqual({
       id: 'n-1',
       kind: 'order_status_changed',
-      icon: 'package',
-      tone: 'info',
+      icon: 'circle-check',
+      tone: 'success',
       sentence: { key: 'buyerOrder.event.accepted_shop', vars: { status: { key: 'common.status_accepted' } } },
       title: 'Chéchia rouge',
       ref: '#A4F729',
@@ -208,37 +203,44 @@ describe('BELL_KINDS — every event of plan §1, seen by the party who did not 
   })
 })
 
-describe('the icon and tone rules of the order kinds (provisional until the « NOV 18 — Notifications » frame)', () => {
-  // The panel's Record<BellIcon, LucideIcon> lands with the panel; this one only checks the rule.
-  const LUCIDE: Record<BellIcon, LucideIcon> = { package: Package, inbox: Inbox, handshake: Handshake }
-  const sidebar = (['consumer', 'freelancer', 'shop_owner'] as const).flatMap((role) =>
-    sidebarSectionsForRole(role).flatMap((s) => s.items),
-  )
-
-  it('the icon is the sidebar icon of the page the item opens', () => {
-    for (const c of CASES) {
-      const item = itemFor(c)!
-      const section = `/${item.href.split('/')[1]}`
-      const nav = sidebar.find((i) => i.href === section)
-      expect(nav, `${c.name}: no sidebar item for ${section}`).toBeDefined()
-      expect(LUCIDE[item.icon], c.name).toBe(nav!.icon)
+describe('the icon and tone of the order kinds — the « NOV 18 — Notifications » frame (1778:30747)', () => {
+  it('a new order or request is a blue shopping bag, whoever reads it and whatever the order type', () => {
+    for (const reader of [BUYER, SELLER]) {
+      for (const order_type of ['product', 'service']) {
+        const item = toBellItem(row({ kind: 'order_created', from_status: null, to_status: 'pending' }, { order_type }), reader)
+        expect(item, `${reader} ${order_type}`).toMatchObject({ icon: 'shopping-bag', tone: 'info' })
+      }
     }
   })
 
-  it('the tone is the tone of the status pill of the status reached', () => {
-    for (const status of ['pending', 'accepted', 'prepared', 'dispatched', 'in_delivery', 'arrived', 'received', 'cancelled']) {
-      for (const orderType of ['product', 'service'] as const) {
-        const item = toBellItem(row({ to_status: status }, { order_type: orderType }), SELLER)!
-        const pill = statusPillFor(status, orderType)!.pill
-        const html = renderToStaticMarkup(<StatusPill status={pill}>x</StatusPill>)
-        const fill = TONE[item.tone].split(' ')[0]
-        expect(html, `${status} ${orderType} → ${item.tone}`).toContain(fill)
+  it('a status change takes the tile of the status reached, from either side and for both order types', () => {
+    const FRAME: Record<string, [BellIcon, BellTone]> = {
+      accepted: ['circle-check', 'success'],
+      prepared: ['truck', 'progress'],
+      dispatched: ['truck', 'progress'],
+      in_delivery: ['truck', 'progress'],
+      arrived: ['truck', 'progress'],
+      received: ['package-check', 'success'],
+      cancelled: ['circle-x', 'danger'],
+    }
+    for (const [status, [icon, tone]] of Object.entries(FRAME)) {
+      for (const reader of [BUYER, SELLER]) {
+        for (const order_type of ['product', 'service']) {
+          const item = toBellItem(row({ to_status: status }, { order_type }), reader)
+          expect(item, `${status} ${order_type}`).toMatchObject({ icon, tone })
+        }
       }
     }
-    // « Refusée à la livraison » takes the « Refusée » pill's tone.
-    const refused = toBellItem(row({ to_status: 'cancelled' }, { refusal_reason: 'refused_parcel' }), BUYER)!
-    const html = renderToStaticMarkup(<StatusPill status={statusPillFor('refused', 'product')!.pill}>x</StatusPill>)
-    expect(html).toContain(TONE[refused.tone].split(' ')[0])
+    // « Refusée à la livraison » is a cancel: the red circle-x too.
+    expect(toBellItem(row({ to_status: 'cancelled' }, { refusal_reason: 'refused_parcel' }), BUYER)).toMatchObject({
+      icon: 'circle-x',
+      tone: 'danger',
+    })
+  })
+
+  it('a status no rule covers (pending as a change, or unknown) gets the neutral bell tile, never a misleading colour', () => {
+    expect(toBellItem(row({ to_status: 'pending' }), BUYER)).toMatchObject({ icon: 'bell', tone: 'neutral' })
+    expect(toBellItem(row({ to_status: 'expired' }), BUYER)).toMatchObject({ icon: 'bell', tone: 'neutral' })
   })
 })
 
@@ -259,7 +261,7 @@ describe('bellHref and bellReaderRole — the order page for the reader’s side
     expect(bellReaderRole({ buyer_id: BUYER, seller_id: SELLER }, 'someone-else')).toBeNull()
   })
   it('a freelancer who BOUGHT a product opens it in « Mes commandes », not in their engagements', () => {
-    expect(toBellItem(row(), BUYER)).toMatchObject({ href: `/mes-commandes/${ORDER}`, icon: 'package' })
+    expect(toBellItem(row(), BUYER)?.href).toBe(`/mes-commandes/${ORDER}`)
   })
   it('the seller of a service order goes to « Mes engagements »; of a product order to « Commandes reçues »', () => {
     const created = { kind: 'order_created', from_status: null, to_status: 'pending' }
@@ -272,7 +274,7 @@ describe('defineBellKind — a later kind with its own subject slots into the sa
   // A stand-in for a plan §7 kind (say, low stock): its own context, a plain-value variable, no reference.
   const lowStock = defineBellKind<{ left: number }>({
     read: (r) => (r.order ? null : { left: 2 }),
-    icon: () => 'package',
+    icon: () => 'bell',
     tone: () => 'warning',
     sentence: (e) => ({ key: 'x.low_stock', vars: { count: { value: e.left } } }),
     href: () => '/mes-produits',
@@ -281,7 +283,7 @@ describe('defineBellKind — a later kind with its own subject slots into the sa
 
   it('builds the same face from a different context', () => {
     expect(lowStock.face(row({ order: null }), SELLER)).toEqual({
-      icon: 'package',
+      icon: 'bell',
       tone: 'warning',
       sentence: { key: 'x.low_stock', vars: { count: { value: 2 } } },
       href: '/mes-produits',

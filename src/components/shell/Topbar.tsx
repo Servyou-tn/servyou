@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import Image from 'next/image'
-import type { Ref } from 'react'
+import type { ReactNode, Ref } from 'react'
 import { Menu } from 'lucide-react'
 import { useLang } from '@/components/LangProvider'
 import { t } from '@/lib/i18n'
@@ -25,11 +25,14 @@ export function Topbar({
   role,
   onOpenDrawer,
   hamburgerRef,
+  notifications,
 }: {
   user: TopBarUser | null
   role: ShellRole
   onOpenDrawer: () => void
   hamburgerRef: Ref<HTMLButtonElement>
+  /** The bell with its server-read feed (AppShell → TopbarBell). Absent = the honest empty bell (the admin shell). */
+  notifications?: ReactNode
 }) {
   const lang = useLang()
   return (
@@ -96,7 +99,7 @@ export function Topbar({
           <div className="max-sm:hidden">
             <LanguageToggle />
           </div>
-          {user ? <TopbarNotifications /> : null}
+          {user ? (notifications ?? <TopbarNotifications feed={null} />) : null}
           <TopbarUserMenu user={user} role={role} />
         </div>
       </div>

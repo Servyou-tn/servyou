@@ -1,65 +1,108 @@
 'use client'
 
-import { Bell } from 'lucide-react'
+import { useId, useState, type MouseEvent } from 'react'
 import { useLang } from '@/components/LangProvider'
-import { t } from '@/lib/i18n'
+import { t, tn } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
 import { SURFACE_HOVER, FOCUS_RING } from '@/components/ui/interactive-surface'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { bellBadgeText, type BellFeed, type BellItem } from '@/lib/notifications/bell'
+import { useBellFeed } from './useBellFeed'
+import { BellButtonFace, BellPanelBody, BellPanelHeader } from './BellPanel'
+import { BellSheet } from './BellSheet'
 
-// Topbar notifications (design system Section 3.3). A real notifications backend is post-MVP
-// (roadmap), so this is an HONEST empty state — no fabricated count and no red dot (phase-aware:
-// never invent metrics). The bell + dropdown are wired and ready for the real feed.
-export function TopbarNotifications() {
+// The topbar bell, v1 (plan docs/follow-ups/bell-notifications-plan.md §3; Figma « NOV 18 — Notifications (cloche) · v1 »,
+// 1778:30747, measured in docs/design/bell-panel-measurements.md). The feed is read on the SERVER on every page load
+// (TopbarBell, streamed by AppShell; no Realtime): the badge is right before any JavaScript runs.
+//   • ≥ 1024 the bell opens a dropdown panel (a Radix Popover: a dialog, so its links and « Tout marquer » are in the
+//     Tab order and an empty or failed state is still a sensible dialog), end-aligned 8 px under the bell;
+//   • < 1024 it opens a bottom sheet (BellSheet, the native <dialog> modal pattern).
+// The surface is picked when the bell is pressed — one bell, one trigger.
+// Read on open (plan §3 decision 4, useBellFeed): opening the panel marks nothing; an unread item marks itself, then
+// navigates; « Tout marquer comme lu » marks everything.
+
+const DESKTOP = '(min-width: 1024px)'
+/** A shell with no bell feed (the admin topbar): an honest empty panel, no count. */
+const NO_FEED: BellFeed = { ok: true, items: [], unreadCount: 0 }
+
+const BELL_BUTTON = cn(
+  'relative inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-[10px]',
+  SURFACE_HOVER,
+  FOCUS_RING,
+)
+
+export function TopbarNotifications({ feed }: { feed: BellFeed | null }) {
   const lang = useLang()
+  const titleId = useId()
+  const { view, openItem, markAll, markAllFailed } = useBellFeed(feed ?? NO_FEED)
+  const [surface, setSurface] = useState<'menu' | 'sheet' | null>(null)
+  const unread = view.ok ? view.unreadCount : 0
+  const close = () => setSurface(null)
+
+  function onOpenChange(next: boolean) {
+    if (!next) return close()
+    setSurface(window.matchMedia(DESKTOP).matches ? 'menu' : 'sheet')
+  }
+
+  function onOpenItem(event: MouseEvent<HTMLAnchorElement>, item: BellItem) {
+    const tookOver = openItem(event, item)
+    const plainClick =
+      event.type === 'click' && event.button === 0 && !event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey
+    // A plain click leaves for the order (by the hook after the mark, or by the link itself for a read item): close.
+    // A new-tab open keeps the panel where it is.
+    if (tookOver || plainClick) close()
+  }
+
+  const header = (variant: 'menu' | 'sheet') => (
+    <BellPanelHeader
+      variant={variant}
+      view={view}
+      lang={lang}
+      titleId={titleId}
+      markAll={markAll}
+      markAllFailed={markAllFailed}
+      onClose={close}
+    />
+  )
+  const body = <BellPanelBody view={view} lang={lang} hint={feed !== null} onOpenItem={onOpenItem} />
+
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
+    <Popover open={surface === 'menu'} onOpenChange={onOpenChange}>
+      <PopoverTrigger asChild>
         <button
           type="button"
-          aria-label={t('shell.topbar.notifications.title', lang)}
-          className={cn(
-            // Figma 611:45640 IconButton: 40×40, radius 10, icon 20 — and NO fill and NO stroke;
-            // it is an invisible hit box that only paints on hover. interactiveSurface() was wrong
-            // here twice over: it carries bg-white + border + a drop shadow (Figma has none), and
-            // its h-11 beat the h-10 above in the cn() merge, so the bell measured 40×44 instead of
-            // 40×40. Hover + focus only, matching the sibling user icon in TopbarUserMenu.
-            'relative inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-[10px]',
-            SURFACE_HOVER,
-            FOCUS_RING,
-          )}
+          aria-label={
+            unread > 0 ? tn('shell.topbar.notifications.unreadAria', lang, unread) : t('shell.topbar.notifications.title', lang)
+          }
+          className={cn(BELL_BUTTON, surface !== null && 'bg-surface-subtle')}
         >
-          <Bell className="h-5 w-5 text-text-muted" aria-hidden="true" />
-          {/* Mobile touch-target: extends the hit region to 44px without moving a painted pixel
-              (the F3 Button pattern) — the measured box is 40, the WCAG 2.2 minimum is 44. */}
-          <span aria-hidden="true" className="absolute -inset-0.5" />
+          <BellButtonFace badge={bellBadgeText(unread)} />
         </button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent
+      </PopoverTrigger>
+      <PopoverContent
         align="end"
         sideOffset={8}
-        className="w-72 overflow-hidden rounded-2xl border border-border-subtle bg-white p-0 shadow-lg"
+        aria-labelledby={titleId}
+        className="flex max-h-[min(520px,var(--radix-popover-content-available-height))] w-[400px] flex-col overflow-hidden rounded-2xl border border-border-subtle bg-surface-base p-0 shadow-[0_12px_32px_rgb(15_23_42/0.12)]"
       >
-        <div className="border-b border-border-subtle px-4 py-3">
-          <p className="text-label font-semibold text-text-primary">
-            {t('shell.topbar.notifications.title', lang)}
-          </p>
-        </div>
-        <div className="px-4 py-8 text-center">
-          <p className="text-body-sm text-text-muted">
-            {t('shell.topbar.notifications.empty', lang)}
-          </p>
-        </div>
-        <div className="border-t border-border-subtle px-4 py-2.5 text-center">
-          <span className="text-body-sm text-text-muted/70">
-            {t('shell.topbar.notifications.viewAll', lang)}
-          </span>
-        </div>
-      </DropdownMenuContent>
-    </DropdownMenu>
+        {header('menu')}
+        {body}
+      </PopoverContent>
+      {surface === 'sheet' ? (
+        <BellSheet labelledBy={titleId} onClose={close} header={header('sheet')}>
+          {body}
+        </BellSheet>
+      ) : null}
+    </Popover>
+  )
+}
+
+/** The bell while its feed streams in (AppShell's Suspense fallback): the same box, no badge, nothing to open yet. */
+export function TopbarNotificationsFallback() {
+  const lang = useLang()
+  return (
+    <button type="button" aria-label={t('shell.topbar.notifications.title', lang)} aria-disabled="true" className={BELL_BUTTON}>
+      <BellButtonFace badge={null} />
+    </button>
   )
 }

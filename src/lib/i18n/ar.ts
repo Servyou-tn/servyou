@@ -3661,7 +3661,13 @@ export const ar: Record<string, string> = {
   'shell.topbar.menu.logout':             "تسجيل الخروج",
   'shell.topbar.notifications.title':     "الإشعارات",
   'shell.topbar.notifications.empty':     "لا توجد إشعارات بعد",
-  'shell.topbar.notifications.viewAll':   "عرض كل الإشعارات",
+  // Bell panel (Figma 1778:30747). « تعليم الكل كمقروء » is the frame's; REVIEW_AR_TRANSLATION for the others.
+  'shell.topbar.notifications.emptyBody': "سيصلك إشعار هنا عند وصول طلب أو تغيّر حالته.",
+  'shell.topbar.notifications.markAll':   "تعليم الكل كمقروء",
+  'shell.topbar.notifications.markAllError': "تعذّر تعليم الكل كمقروء. حاول مرة أخرى.",
+  'shell.topbar.notifications.error':     "تعذّر تحميل إشعاراتك. أعد تحميل الصفحة للمحاولة مجددًا.",
+  'shell.topbar.notifications.unreadMarker': "غير مقروء",
+  'shell.topbar.notifications.close':     "إغلاق الإشعارات",
   // REVIEW_AR_TRANSLATION — bell v1: the order events no existing label covers.
   'shell.topbar.notifications.event.new_order_product': "طلب جديد",
   'shell.topbar.notifications.event.prepared': "جهّزه المتجر",
@@ -4462,7 +4468,7 @@ export const ar: Record<string, string> = {
   'parametres.notifications.email_newsletter.consumer.label':    "النشرة الإخبارية وأخبار ServYou",
   'parametres.notifications.email_newsletter.consumer.desc':     "ميزات جديدة ونصائح وفرص. تُرسل مرة واحدة في الشهر كحد أقصى. دون أي تأثير على حسابك.",
   'parametres.notifications.platform.title':                     "الإشعارات داخل المنصة",
-  'parametres.notifications.platform.body':                      "ستصل الإشعارات الفورية داخل المنصة (الجرس + اللوحة الجانبية) في تحديث قادم.",
+  'parametres.notifications.platform.body':                      "ينبّهك الجرس أعلى الشاشة إلى الطلبات الجديدة وإلى كل تغيير في حالة طلباتك. ويُحدَّث عند كل تحميل للصفحة.", // REVIEW_AR_TRANSLATION (bell panel)
   'parametres.notifications.load_error':                         "تعذّر تحميل تفضيلات البريد الإلكتروني حاليًا.",
   'parametres.notifications.error_save':                         "تعذّر حفظ تفضيلاتك. حاول مرة أخرى.",
 

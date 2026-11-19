@@ -3723,7 +3723,13 @@ export const fr: Record<string, string> = {
   'shell.topbar.menu.logout':             "Se déconnecter",
   'shell.topbar.notifications.title':     "Notifications",
   'shell.topbar.notifications.empty':     "Aucune notification pour l'instant",
-  'shell.topbar.notifications.viewAll':   "Voir toutes les notifications",
+  // Bell panel (Figma « NOV 18 — Notifications (cloche) · v1 », 1778:30747).
+  'shell.topbar.notifications.emptyBody': "Vous serez prévenu ici quand une commande arrive ou change de statut.",
+  'shell.topbar.notifications.markAll':   "Tout marquer comme lu",
+  'shell.topbar.notifications.markAllError': "Impossible de tout marquer comme lu. Réessayez.",
+  'shell.topbar.notifications.error':     "Impossible de charger vos notifications. Rechargez la page pour réessayer.",
+  'shell.topbar.notifications.unreadMarker': "Non lue",
+  'shell.topbar.notifications.close':     "Fermer les notifications",
   // Bell v1 (bell-notifications-plan.md §1): the order events no existing label covers. The others reuse
   // buyerOrder.event.*, activite.request_title, common.cancelled_by_buyer and seller.orderDetail.event_status.
   'shell.topbar.notifications.event.new_order_product': "Nouvelle commande",
@@ -4564,7 +4570,7 @@ export const fr: Record<string, string> = {
   'parametres.notifications.email_newsletter.consumer.label':    "Newsletter et actualités ServYou",
   'parametres.notifications.email_newsletter.consumer.desc':     "Nouvelles fonctionnalités, conseils, et opportunités. Envoyé une fois par mois maximum. Aucun impact sur votre compte.",
   'parametres.notifications.platform.title':                     "Notifications sur la plateforme",
-  'parametres.notifications.platform.body':                      "Les notifications en temps réel dans la plateforme (cloche + tiroir) arriveront dans une prochaine mise à jour.",
+  'parametres.notifications.platform.body':                      "La cloche en haut de l'écran vous signale les nouvelles commandes et chaque changement de statut de vos commandes. Elle se met à jour à chaque chargement de page.",
   'parametres.notifications.load_error':                         "Impossible de charger vos préférences e-mail pour le moment.",
   'parametres.notifications.error_save':                         "Impossible d’enregistrer vos préférences. Réessayez.",
 

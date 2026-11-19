@@ -2,6 +2,11 @@
 
 ## The panel itself (desktop dropdown + mobile bottom sheet) waits for its Figma frame
 
+✅ CLOSED — bell UI-2 (`feat/bell-panel`, 2026-11-19): the panel, the badge and the Paramètres line shipped from the
+exported frame (`docs/design/bell-panel-measurements.md`). Its own follow-ups are in `docs/follow-ups/bell-panel.md`.
+The note below about the badge counting a dropped row no longer holds: since UI-2 the count only counts the kinds the
+map knows (founder, #401 D8).
+
 - **What:** the visual half of UI-1. The topbar badge (server-rendered, refreshed on page load) and the panel (the
   20 newest items) need building. Desktop gets a dropdown at 1440, the phone a bottom sheet at 375, in FR / EN / AR. The
   Paramètres « Notifications sur la plateforme » line (« … arriveront dans une prochaine mise à jour ») and its
@@ -55,7 +60,7 @@
 
   The item, the panel and the read actions do not change.
 - **Order of shipping:** the map entry ships with or before the migration that allows the kind. Until then, the loader
-  drops that kind's rows (reported as `bell rows`) while the badge counts them.
+  drops that kind's rows (reported as `bell rows`) and, since UI-2, the badge does not count them (#401 D8).
 - **Why deferred:** plan §7. v1 is order events only (founder 2026-11-15).
 - **Where it lives:** `src/lib/notifications/bell-kinds.ts`. `defineBellKind` is tested with a stand-in « low stock »
   kind that has its own context.

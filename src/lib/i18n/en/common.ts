@@ -1347,7 +1347,12 @@ export const strings: Record<string, string> = {
   "shell.topbar.menu.logout": "Sign out",
   "shell.topbar.notifications.title": "Notifications",
   "shell.topbar.notifications.empty": "No notifications yet",
-  "shell.topbar.notifications.viewAll": "View all notifications",
+  "shell.topbar.notifications.emptyBody": "You'll be told here when an order comes in or changes status.",
+  "shell.topbar.notifications.markAll": "Mark all as read",
+  "shell.topbar.notifications.markAllError": "Couldn't mark them all as read. Try again.",
+  "shell.topbar.notifications.error": "Couldn't load your notifications. Reload the page to try again.",
+  "shell.topbar.notifications.unreadMarker": "Unread",
+  "shell.topbar.notifications.close": "Close notifications",
   "shell.topbar.notifications.event.new_order_product": "New order",
   "shell.topbar.notifications.event.prepared": "Prepared by the shop",
   "shell.topbar.notifications.event.in_delivery": "Out for delivery",
@@ -1507,7 +1512,7 @@ export const strings: Record<string, string> = {
   "parametres.notifications.email_newsletter.consumer.label": "ServYou newsletter and news",
   "parametres.notifications.email_newsletter.consumer.desc": "New features, tips and opportunities. Sent once a month at most. No effect on your account.",
   "parametres.notifications.platform.title": "Notifications on the platform",
-  "parametres.notifications.platform.body": "Real-time notifications on the platform (bell + drawer) are coming in a future update.",
+  "parametres.notifications.platform.body": "The bell at the top of the screen tells you about new orders and every status change on your orders. It updates each time a page loads.",
   "parametres.notifications.load_error": "We can't load your email preferences right now.",
   "parametres.notifications.error_save": "We couldn't save your preferences. Try again.",
   // favorites
@@ -1605,6 +1610,7 @@ export const strings: Record<string, string> = {
 }
 
 export const plurals: Record<string, PluralVariants> = {
+  "shell.topbar.notifications.unreadAria": { one: "Notifications, {count} unread", other: "Notifications, {count} unread" },
   "mesfavoris.count": { one: "{count} saved item", other: "{count} saved items" },
   "page_header.recherche.subtitle": { one: "{count} result for « {query} »", other: "{count} results for « {query} »" },
   "page_header.recherche.emphasis": { one: "{count} result", other: "{count} results" },
