@@ -30,7 +30,7 @@ Founder decisions, 2026-11-10:
 2. **Same keys, same placeholders.** Copy each key exactly from `fr.ts` and keep every `{placeholder}` with the same
    name. Plurals: give `one` and `other` (English has no `two` / `zero` forms; leave them out).
 3. **Translate the meaning, not the words.** Short, clear UI English. Sentence case for headings and buttons
-   (« Create a service », not « Create A Service »). Keep `ServYou`, `TND`, `WhatsApp`, `UGC`, brand names, city names as is.
+   (« Create a service », not « Create A Service »). Keep `Servyou`, `TND`, `WhatsApp`, `UGC`, brand names, city names as is.
 4. **Honest claims stay honest.** No « verified », no « secure payment », no escrow or payment protection, no invented
    numbers. If the French says « paiement à la livraison », English says « cash on delivery ».
 5. **Glossary below is locked.** Use it exactly; if a term is missing, pick the closest plain word and list it in your

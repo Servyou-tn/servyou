@@ -143,7 +143,7 @@ describe('before-send filter', () => {
   // What the tracker hands over (document.title included) …
   const page = (path: string, referrer = '') => ({
     website: UMAMI_WEBSITE_ID,
-    title: 'Amira Ben Salah — Graphiste | ServYou',
+    title: 'Amira Ben Salah — Graphiste | Servyou',
     url: `https://servyou.tn${path}`,
     referrer,
   })

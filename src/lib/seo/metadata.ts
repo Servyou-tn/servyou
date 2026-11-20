@@ -3,7 +3,7 @@ import { t, type Lang } from '@/lib/i18n'
 import { getLang } from '@/lib/i18n/server'
 
 // Search and share metadata (audit checklist 5). The root layout sets metadataBase (siteUrl()), the title template
-// « %s · ServYou », the default description and robots NOINDEX — so every page is private unless it opts in here.
+// « %s · Servyou », the default description and robots NOINDEX — so every page is private unless it opts in here.
 //
 // A public page returns publicMetadata(): its own title + description in the visitor's language, a canonical path
 // (relative — metadataBase resolves it), robots index, and complete Open Graph + Twitter objects. Complete because
@@ -12,7 +12,7 @@ import { getLang } from '@/lib/i18n/server'
 // One URL serves every language (the language is a cookie), so there is no hreflang: crawlers and link previews,
 // which carry no cookie, read the French version.
 
-export const SITE_NAME = 'ServYou'
+export const SITE_NAME = 'Servyou'
 export const TITLE_TEMPLATE = `%s · ${SITE_NAME}`
 
 /** Open Graph locale per interface language. */
@@ -31,7 +31,7 @@ export function truncate(text: string, max: number): string {
 }
 
 export type PublicPageInput = {
-  /** The page's own title; the template adds « · ServYou ». */
+  /** The page's own title; the template adds « · Servyou ». */
   title: string
   description: string
   /** Canonical path, e.g. « /faq » or « /services/<id> » — no query string. */

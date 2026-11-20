@@ -55,7 +55,7 @@ export function TopBar({ account }: { account?: HeaderAccount }) {
         aria-label={t('nav.aria_primary', lang)}
         className="flex h-[60px] items-center border-b border-border-subtle bg-surface-base ps-4 pe-2 lg:h-20 lg:ps-10 lg:pe-10"
       >
-        <Link href="/" aria-label="ServYou" className={cn('inline-flex rounded-md', FOCUS_RING)}>
+        <Link href="/" aria-label="Servyou" className={cn('inline-flex rounded-md', FOCUS_RING)}>
           <Lockup size={28} className="lg:hidden" />
           <Lockup size={32} className="max-lg:hidden" />
         </Link>

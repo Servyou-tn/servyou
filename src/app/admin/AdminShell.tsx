@@ -87,9 +87,9 @@ export function AdminShell({ user, counts, children }: { user: TopBarUser | null
 
         {/* Mobile header — 56 tall, blue-950, pad 12/16, gap 12. */}
         <header className="sticky top-0 z-30 flex items-center gap-3 bg-brand-blue-950 px-4 py-3 lg:hidden">
-          <Link href="/admin" aria-label="ServYou" className={cn('relative flex shrink-0 items-center gap-2 rounded-pill', FOCUS_RING)}>
+          <Link href="/admin" aria-label="Servyou" className={cn('relative flex shrink-0 items-center gap-2 rounded-pill', FOCUS_RING)}>
             <Image src="/brand/logo/servyou-s-mark.png" alt="" width={32} height={32} priority className="h-8 w-8 shrink-0" />
-            <span className="text-xl font-bold text-white">ServYou</span>
+            <span className="text-xl font-bold text-white">Servyou</span>
             <HitArea size={32} axis="y" />
           </Link>
           <span className="rounded-full bg-brand-indigo-500 px-2 py-0.5 text-xs font-semibold text-white">

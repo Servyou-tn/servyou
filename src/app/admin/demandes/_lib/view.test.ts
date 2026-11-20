@@ -30,7 +30,7 @@ describe('demandes view logic', () => {
     expect(sortRequests(rows, 'pending').map((r) => r.id)).toEqual(['c', 'b', 'd', 'a'])
   })
   it('mailto only for a plausible address, subject encoded', () => {
-    expect(mailtoHref('leila.m@example.tn', 'Votre demande ServYou')).toBe('mailto:leila.m@example.tn?subject=Votre%20demande%20ServYou')
+    expect(mailtoHref('leila.m@example.tn', 'Votre demande Servyou')).toBe('mailto:leila.m@example.tn?subject=Votre%20demande%20Servyou')
     expect(mailtoHref('x" onclick="y', 'z')).toBeNull()
     // header injection from a sender-controlled address
     expect(mailtoHref('x@y.tn?bcc=a@evil.tn&body=hi', 'z')).toBeNull()

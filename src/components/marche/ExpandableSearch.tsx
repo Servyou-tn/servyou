@@ -143,7 +143,7 @@ export function ExpandableSearch({
                 onClick={(e) => e.stopPropagation()}
               >
                 <h2 id="search-modal-title" className="sr-only">
-                  Rechercher sur ServYou
+                  Rechercher sur Servyou
                 </h2>
                 <form onSubmit={onSubmit}>
                   {/* Large input row */}

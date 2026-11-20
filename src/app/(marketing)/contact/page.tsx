@@ -43,7 +43,7 @@ export default async function ContactPage() {
           <p className="mt-2 text-xs text-text-muted">{t('contact.methods.email.response', lang)}</p>
         </div>
 
-        {/* Réseaux sociaux — ServYou's own accounts (lib/contact/social-accounts.ts: only the ones with a real address). */}
+        {/* Réseaux sociaux — Servyou's own accounts (lib/contact/social-accounts.ts: only the ones with a real address). */}
         <div className={cardClass}>
           <div className={iconWrap}>
             <Globe className="h-5 w-5" aria-hidden="true" />

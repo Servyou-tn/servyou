@@ -79,21 +79,21 @@ describe('buildPublicMetadata', () => {
       robots: { index: true, follow: true },
       openGraph: {
         type: 'website',
-        siteName: 'ServYou',
+        siteName: 'Servyou',
         locale: 'ar_TN',
         url: '/faq',
-        title: 'Questions fréquentes · ServYou',
+        title: 'Questions fréquentes · Servyou',
         description: 'Les réponses.',
       },
-      twitter: { card: 'summary', title: 'Questions fréquentes · ServYou', description: 'Les réponses.' },
+      twitter: { card: 'summary', title: 'Questions fréquentes · Servyou', description: 'Les réponses.' },
     })
-    expect(TITLE_TEMPLATE).toBe('%s · ServYou')
+    expect(TITLE_TEMPLATE).toBe('%s · Servyou')
   })
 
   it('the home page title skips the template; the search page is crawlable but not indexed', () => {
-    const home = buildPublicMetadata({ title: 'ServYou — x', description: 'd', path: '/', lang: 'fr', absoluteTitle: true })
-    expect(home.title).toEqual({ absolute: 'ServYou — x' })
-    expect(home.openGraph?.title).toBe('ServYou — x')
+    const home = buildPublicMetadata({ title: 'Servyou — x', description: 'd', path: '/', lang: 'fr', absoluteTitle: true })
+    expect(home.title).toEqual({ absolute: 'Servyou — x' })
+    expect(home.openGraph?.title).toBe('Servyou — x')
     const search = buildPublicMetadata({ title: 'Recherche', description: 'd', path: '/recherche', lang: 'fr', noindex: true })
     expect(search.robots).toEqual({ index: false, follow: true })
   })
@@ -112,12 +112,12 @@ describe('detail pages — real data, visitor language', () => {
     const f = { id: 'f1', fullName: 'Sami Trabelsi', headline: 'Développeur web', city: 'Sfax' }
     const m = freelancerMetadata(f, 'fr')
     expect(m.title).toBe('Sami Trabelsi — Développeur web')
-    expect(m.description).toBe('Sami Trabelsi, freelance à Sfax sur ServYou : découvrez ses services, ses compétences et son portfolio.')
+    expect(m.description).toBe('Sami Trabelsi, freelance à Sfax sur Servyou : découvrez ses services, ses compétences et son portfolio.')
     expect(m.alternates).toEqual({ canonical: '/freelance/f1' })
     expect(freelancerMetadata(f, 'ar').description).toContain('صفاقس')
     expect(freelancerMetadata({ ...f, headline: null, city: null }, 'en')).toMatchObject({
       title: 'Sami Trabelsi',
-      description: 'Sami Trabelsi, freelancer on ServYou: see their services, skills and portfolio.',
+      description: 'Sami Trabelsi, freelancer on Servyou: see their services, skills and portfolio.',
     })
   })
 
@@ -129,13 +129,13 @@ describe('detail pages — real data, visitor language', () => {
     expect(shopMetadata({ id: 's1', name: 'Dar Zitouna', city: null }, 'fr').title).toBe('Dar Zitouna')
     expect(productMetadata({ id: 'p1', title: 'Huile d’olive', shop: { name: 'Dar Zitouna' } }, 'fr')).toMatchObject({
       title: 'Huile d’olive',
-      description: 'Huile d’olive, vendu par Dar Zitouna sur ServYou. Commandez en ligne et payez à la livraison.',
+      description: 'Huile d’olive, vendu par Dar Zitouna sur Servyou. Commandez en ligne et payez à la livraison.',
       alternates: { canonical: '/produits/p1' },
     })
-    expect(productMetadata({ id: 'p1', title: 'Huile', shop: null }, 'en').description).toBe('Huile on ServYou. Order online and pay on delivery.')
+    expect(productMetadata({ id: 'p1', title: 'Huile', shop: null }, 'en').description).toBe('Huile on Servyou. Order online and pay on delivery.')
     expect(serviceMetadata({ id: 'v1', title: 'Logo', freelancer: { name: 'Sami' } }, 'ar')).toMatchObject({
       title: 'Logo',
-      description: 'Logo، يقدمه Sami على ServYou. تواصل مع المستقل لمناقشة طلبك.',
+      description: 'Logo، يقدمه Sami على Servyou. تواصل مع المستقل لمناقشة طلبك.',
       alternates: { canonical: '/services/v1' },
     })
   })

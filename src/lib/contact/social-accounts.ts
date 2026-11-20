@@ -1,4 +1,4 @@
-// ServYou's own social accounts, in ONE place: the /contact « Réseaux sociaux » card and the landing footer link to them
+// Servyou's own social accounts, in ONE place: the /contact « Réseaux sociaux » card and the landing footer link to them
 // (founder decisions 2026-11-15, frontend audit C2; both addresses come from the founder). An account whose address is not
 // known has `url: null` and is not shown anywhere: no icon pretends to be a link, no link goes to a guessed page.
 

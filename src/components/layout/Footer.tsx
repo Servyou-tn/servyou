@@ -82,7 +82,7 @@ export function Footer({ lang }: { lang: Lang }) {
             <span className="inline-flex rounded-xl bg-white px-3 py-2">
               <Image
                 src="/brand/logo/servyou-navbar.png"
-                alt="ServYou"
+                alt="Servyou"
                 width={1536}
                 height={1024}
                 className="h-9 w-auto"

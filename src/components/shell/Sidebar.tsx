@@ -46,7 +46,7 @@ export function Sidebar({
   return (
     <div className="flex h-full w-full flex-col bg-brand-blue-950 px-4 pb-6 text-text-inverse">
       {/* Logo band — 72px tall, start-pad 12 (Figma 611:45637: band 208×72 → Lockup 123×32, gap 8).
-          The 32px S-mark + "ServYou" wordmark with BOTH words #FFFFFF: the two-tone Serv/You
+          The 32px S-mark + "Servyou" wordmark with BOTH words #FFFFFF: the two-tone Serv/You
           treatment is for light surfaces only, and the navbar PNG's navy "Serv" vanishes on this
           ground. shrink-0 so the band never compresses on a short viewport; ps-3 aligns the mark
           with the nav-item icons. */}
@@ -54,7 +54,7 @@ export function Sidebar({
         <Link
           href="/"
           onClick={onNavigate}
-          aria-label="ServYou"
+          aria-label="Servyou"
           className={`flex items-center gap-2 rounded-pill ${FOCUS_RING}`}
         >
           <Image
@@ -64,7 +64,7 @@ export function Sidebar({
             height={32}
             className="h-8 w-8 shrink-0"
           />
-          <span className="text-xl font-bold text-white">ServYou</span>
+          <span className="text-xl font-bold text-white">Servyou</span>
         </Link>
         {inDrawer ? (
           <button
