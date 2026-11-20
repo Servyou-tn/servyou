@@ -51,30 +51,30 @@ signup », an existing account « Magic Link ». The other templates (reset pass
 
 ### Template 1 — « Confirm signup » (a NEW account: step 1 of the sign-up, or a new link for an unconfirmed address)
 
-**Subject:** `Finalisez votre inscription à ServYou`
+**Subject:** `Finalisez votre inscription à Servyou`
 
 ```html
-<h2>Bienvenue sur ServYou</h2>
+<h2>Bienvenue sur Servyou</h2>
 <p>Pour finaliser votre inscription, ouvrez ce lien. Vous choisirez ensuite votre mot de passe.</p>
 <p><a href="{{ if eq .RedirectTo .SiteURL }}{{ .SiteURL }}/auth/confirm?next=%2F&token_hash={{ .TokenHash }}&type=email{{ else }}{{ .RedirectTo }}&token_hash={{ .TokenHash }}&type=email{{ end }}">Finaliser mon inscription</a></p>
-<p>Si vous n'avez pas demandé à créer un compte ServYou, ignorez cet e-mail.</p>
+<p>Si vous n'avez pas demandé à créer un compte Servyou, ignorez cet e-mail.</p>
 <hr>
-<p dir="rtl">مرحبًا بك في ServYou. لإكمال تسجيلك افتح الرابط أعلاه، ثم اختر كلمة المرور.</p>
-<p>Welcome to ServYou. To finish signing up, open the link above, then choose your password.</p>
+<p dir="rtl">مرحبًا بك في Servyou. لإكمال تسجيلك افتح الرابط أعلاه، ثم اختر كلمة المرور.</p>
+<p>Welcome to Servyou. To finish signing up, open the link above, then choose your password.</p>
 ```
 
 ### Template 2 — « Magic Link » (an EXISTING account: its e-mail typed on the sign-up page, or « Recevoir un nouveau lien »)
 
-**Subject:** `Votre lien de connexion ServYou`
+**Subject:** `Votre lien de connexion Servyou`
 
 ```html
-<h2>Votre lien de connexion ServYou</h2>
-<p>Vous avez déjà un compte ServYou avec cette adresse. Ouvrez ce lien pour vous connecter :</p>
+<h2>Votre lien de connexion Servyou</h2>
+<p>Vous avez déjà un compte Servyou avec cette adresse. Ouvrez ce lien pour vous connecter :</p>
 <p><a href="{{ if eq .RedirectTo .SiteURL }}{{ .SiteURL }}/auth/confirm?next=%2F&token_hash={{ .TokenHash }}&type=email{{ else }}{{ .RedirectTo }}&token_hash={{ .TokenHash }}&type=email{{ end }}">Me connecter</a></p>
 <p>Si vous n'avez pas finalisé votre compte, le lien vous y conduit. Si vous n'avez rien demandé, ignorez cet e-mail.</p>
 <hr>
-<p dir="rtl">لديك حساب في ServYou بهذا العنوان. افتح الرابط أعلاه لتسجيل الدخول.</p>
-<p>You already have a ServYou account with this address. Open the link above to sign in.</p>
+<p dir="rtl">لديك حساب في Servyou بهذا العنوان. افتح الرابط أعلاه لتسجيل الدخول.</p>
+<p>You already have a Servyou account with this address. Open the link above to sign in.</p>
 ```
 
 **Why the `{{ if }}`:** the app always asks for `<origin>/auth/confirm?next=…`, so the link is that address plus

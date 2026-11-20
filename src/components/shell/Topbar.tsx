@@ -60,10 +60,10 @@ export function Topbar({
             (Sidebar.tsx) — and the full wordmark returns at `sm:` where the row has room. No
             mobile Figma frame exists for this topbar to contradict; this is a functional fix, not
             a redraw. */}
-        <Link href="/" aria-label="ServYou" className="relative shrink-0 lg:hidden">
+        <Link href="/" aria-label="Servyou" className="relative shrink-0 lg:hidden">
           <Image
             src="/brand/logo/servyou-s-mark.png"
-            alt="ServYou"
+            alt="Servyou"
             width={32}
             height={32}
             priority
@@ -71,7 +71,7 @@ export function Topbar({
           />
           <Image
             src="/brand/logo/servyou-navbar.png"
-            alt="ServYou"
+            alt="Servyou"
             width={110}
             height={32}
             priority

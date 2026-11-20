@@ -104,7 +104,7 @@ literals for the parameters and the `is_admin()` gate left out.
 ## Decisions for the founder (numbered; the file implements the recommended option)
 
 - **D1 Declared value** = article × quantity + delivery fee, on orders **received** in the period. It is cash on
-  delivery: declared, never collected by ServYou (J9's subtitle). Alternative: without the delivery fee.
+  delivery: declared, never collected by Servyou (J9's subtitle). Alternative: without the delivery fee.
 - **D2 « Demandes » per category** = orders of the period + job posts of the period, both counted. Alternative: orders
   only. The RPC returns the counts separately; **the UI chooses the « Équilibré / Manque d'offre / Manque de demande »
   thresholds** (suggestion: listings ≥ 2 × demand → manque de demande; demand ≥ 2 × listings → manque d'offre).

@@ -108,7 +108,7 @@ export function Header({
       >
         {/* Left — brand */}
         <div className="flex items-center md:justify-start">
-          <Link href="/" aria-label="ServYou" className={`inline-flex items-center rounded-md ${FOCUS_RING}`}>
+          <Link href="/" aria-label="Servyou" className={`inline-flex items-center rounded-md ${FOCUS_RING}`}>
             <Wordmark className={isLanding ? 'h-18' : 'h-16'} />
           </Link>
         </div>

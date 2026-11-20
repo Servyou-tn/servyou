@@ -1,7 +1,7 @@
 /**
  * @vitest-environment jsdom
  *
- * /contact × ServYou's social accounts (founder decisions 2026-11-15, frontend audit C2) — mock-only. The « Réseaux sociaux »
+ * /contact × Servyou's social accounts (founder decisions 2026-11-15, frontend audit C2) — mock-only. The « Réseaux sociaux »
  * card links to Facebook then Instagram in a new tab, each named for screen readers; no WhatsApp channel, no « Bientôt
  * disponible ». The form and the copy button are stubbed: this test is about the cards.
  */

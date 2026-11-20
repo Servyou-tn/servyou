@@ -9,7 +9,7 @@ export function Wordmark({ className = 'h-16' }: { className?: string }) {
   return (
     <Image
       src="/brand/logo/servyou-navbar.png"
-      alt="ServYou"
+      alt="Servyou"
       width={1536}
       height={1024}
       priority

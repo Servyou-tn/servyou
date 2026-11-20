@@ -19,7 +19,7 @@ import { expiredLinkRedirect } from '@/lib/auth/expired-link'
 import type { Metadata } from 'next'
 import { publicMetadata } from '@/lib/seo/metadata'
 
-// Search / share metadata (audit checklist 5): a full title (no « · ServYou » template) and the landing's own
+// Search / share metadata (audit checklist 5): a full title (no « · Servyou » template) and the landing's own
 // founder-approved sentence as the description.
 export async function generateMetadata(): Promise<Metadata> {
   return publicMetadata('seo.home.title', 'lp.hero.subtitle', '/', { absoluteTitle: true })

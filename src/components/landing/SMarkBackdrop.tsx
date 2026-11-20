@@ -1,4 +1,4 @@
-// The ServYou S-mark as one vector path (traced from public/brand/landing/smark.webp, viewBox 1656×1800),
+// The Servyou S-mark as one vector path (traced from public/brand/landing/smark.webp, viewBox 1656×1800),
 // used as the hero backdrop: white at 20 % with a 100 % white outline on its exact edge (Figma « S-mark
 // backdrop » + « S-mark outline » in the hero proposal frames 1741:51431 / 1740:37951). Decorative only.
 const S_PATH =

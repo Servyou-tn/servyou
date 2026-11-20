@@ -1,7 +1,7 @@
 /**
  * @vitest-environment jsdom
  *
- * Landing footer × ServYou's social accounts (founder decisions 2026-11-15, frontend audit C2) — mock-only. The logos are
+ * Landing footer × Servyou's social accounts (founder decisions 2026-11-15, frontend audit C2) — mock-only. The logos are
  * real links to the accounts in lib/contact/social-accounts.ts (new tab, named for screen readers), WhatsApp is gone, and an
  * account without a real address is not shown at all.
  */

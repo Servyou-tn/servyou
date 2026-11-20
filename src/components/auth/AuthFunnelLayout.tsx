@@ -67,7 +67,7 @@ export function AuthFunnelLayout({
     >
       {homeBar ? (
         <div className="flex items-center justify-between gap-3 px-4 pt-4 md:px-6">
-          <Link href="/" aria-label={homeLabel ?? 'ServYou'} className={`inline-flex items-center rounded-md ${FOCUS_RING}`}>
+          <Link href="/" aria-label={homeLabel ?? 'Servyou'} className={`inline-flex items-center rounded-md ${FOCUS_RING}`}>
             <Wordmark className="h-12" />
           </Link>
           {back ? (

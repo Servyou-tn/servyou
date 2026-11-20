@@ -13,7 +13,7 @@ import { useLangSwitch } from './useLangSwitch'
 
 // Footer — Figma 1729:51925 / 1729:51976. Rounded box (hero-box shape), surface-sunken → border-subtle
 // gradient (a step darker than the FAQ box), brand column + 3 link columns, divider, bottom bar with the
-// FR | EN | العربية switch. The social logos link to ServYou's own accounts in a new tab — only the accounts that have a
+// FR | EN | العربية switch. The social logos link to Servyou's own accounts in a new tab — only the accounts that have a
 // real address (lib/contact/social-accounts.ts); WhatsApp is gone (founder decision 2026-11-15).
 const COLUMNS = [
   {
@@ -70,7 +70,7 @@ export function LandingFooter() {
     <footer className="mx-2 mt-4 mb-2 flex flex-col gap-8 rounded-3xl border border-border-subtle bg-gradient-to-b from-surface-sunken to-border-subtle px-5 pt-10 pb-6 lg:mx-6 lg:mt-8 lg:mb-6 lg:gap-12 lg:rounded-[32px] lg:px-24 lg:pt-[72px] lg:pb-8 max-xl:lg:px-12">
       <div className="flex flex-col gap-8 lg:flex-row lg:justify-between lg:gap-16">
         <div className="flex max-w-[300px] flex-col gap-4">
-          <Link href="/" aria-label="ServYou" className={cn('self-start rounded-md', FOCUS_RING)}>
+          <Link href="/" aria-label="Servyou" className={cn('self-start rounded-md', FOCUS_RING)}>
             <Lockup size={35} className="lg:hidden" />
             <Lockup size={40} className="max-lg:hidden" />
           </Link>

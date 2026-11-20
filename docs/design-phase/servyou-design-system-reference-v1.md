@@ -355,7 +355,7 @@
 **Structure (top to bottom):**
 
 ```
-1. Logo block (ServYou wordmark)        — 80px tall
+1. Logo block (Servyou wordmark)        — 80px tall
 2. Section label: "MAIN"                 — 32px tall
 3. Nav items (Dashboard, My Profile,     — 44px each
    Services with caret, Projects with
@@ -1105,10 +1105,13 @@ The agency used "Projects" but in Servyou's data model, projects overlap with se
 - Arabic context: `٢٬٤٥٠ د.ت` (Arabic numerals with thousands separator, Tunisian Dinar abbreviation `د.ت`)
 - **Exception:** Most Tunisian users use Western Arabic numerals (0-9) even when reading Arabic. Acceptable: `2,450 د.ت` in AR mode.
 
-### 6.6 — Brand name (locked, founder 2026-11-15)
+### 6.6 — Brand name (locked, founder 2026-11-20)
 
-The brand is written **ServYou** (capital S, capital Y) in every user-visible string, in FR, AR and EN alike. In Arabic
-text it stays in Latin letters (« مرحبا بك في ServYou »), never transliterated. Never « Servyou », « SERVYOU » or « Serv You ».
+The brand is written **Servyou** (capital S only) in every user-visible string, in FR, AR and EN alike. In Arabic
+text it stays in Latin letters (« مرحبا بك في Servyou »), never transliterated. Never « ServYou », « SERVYOU » or « Serv You ».
+
+The founder decided this on 2026-11-20. It reverses the « ServYou » spelling locked on 2026-11-15 (#397). Only the text
+changes: the logo and every image keep their own drawn lettering.
 
 Stays lowercase, because it is not prose: the domains (`servyou.tn`, `servyou.vercel.app`), e-mail addresses, code
 identifiers, file paths, i18n key names and the repository name (`Servyou-tn/servyou`).
@@ -1120,7 +1123,7 @@ identifiers, file paths, i18n key names and the repository name (`Servyou-tn/ser
 | Finish your account | **Finalisez votre compte** | **أكمل حسابك** | `/finaliser-mon-compte` |
 
 The page title of the two-step sign-up's second step (password, birth date, city, terms). The e-mails and every string of
-this flow spell the brand « ServYou » (6.6).
+this flow spell the brand « Servyou » (6.6).
 
 ---
 
