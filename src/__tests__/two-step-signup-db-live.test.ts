@@ -4,8 +4,9 @@
  *
  * Covered:
  *   - a sign-up without a birth date now creates an INCOMPLETE profile (it used to fail the whole Auth insert);
- *   - a sign-up with the full profile, and a service-role fixture, are complete at creation (the transitional rule),
- *     terms « avant 2026-11 »;
+ *   - since DB-2 (20261119230204_two_step_signup_db2.sql) the transitional rule is gone:
+ *       · a sign-up with the full profile but unconfirmed at creation is INCOMPLETE;
+ *       · a service-role fixture created confirmed is complete under « cree-par-le-service »;
  *   - complete_my_account, from a session opened by an e-mailed link (amr otp), in the order step 2 runs:
  *       · refuses while another session of the account is alive (other_sessions); once signOut({ scope: 'others' })
  *         ended it, that session can neither refresh nor complete (session_unknown, though its JWT is still valid);
@@ -108,7 +109,7 @@ beforeAll(async () => {
     options: { data: STEP1 },
   })
   if (squatErr) throw new Error(`generateLink squatted: ${squatErr.message}`)
-  // Today's form: an unconfirmed sign-up with the full profile.
+  // The old form, or a direct /signup call: an unconfirmed sign-up with the full profile.
   const { error: legacyErr } = await admin!.auth.admin.generateLink({
     type: 'signup',
     email: LEGACY,
@@ -146,14 +147,17 @@ describe.skipIf(!hasCreds)('profile creation (handle_new_user)', () => {
     expect(profile.terms_version).toBeNull()
   })
 
-  it('a sign-up with the full profile and a service-role fixture are complete at creation', async () => {
-    for (const address of [LEGACY, FIXTURE]) {
-      const profile = await profileOf(address)
-      expect(profile.completed_at).not.toBeNull()
-      expect(profile.terms_accepted_at).not.toBeNull()
-      expect(profile.terms_version).toBe('avant 2026-11')
-      expect(profile.date_of_birth).toBe('1990-01-01')
-    }
+  it('DB-2: a sign-up with the full profile is incomplete until step 2; a service-role fixture is complete', async () => {
+    const legacy = await profileOf(LEGACY)
+    expect(legacy.completed_at).toBeNull()
+    expect(legacy.terms_version).toBeNull()
+    expect(legacy.date_of_birth).toBe('1990-01-01')
+
+    const fixture = await profileOf(FIXTURE)
+    expect(fixture.completed_at).not.toBeNull()
+    expect(fixture.terms_accepted_at).not.toBeNull()
+    expect(fixture.terms_version).toBe('cree-par-le-service')
+    expect(fixture.date_of_birth).toBe('1990-01-01')
   })
 })
 

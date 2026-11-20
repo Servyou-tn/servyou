@@ -47,6 +47,9 @@ production. UI-1 handles the case on the page.
 
 ## 3. MEDIUM (DB-2): the gate, the end of the transitional rule, the purge
 
+✅ CLOSED — 2026-11-19, DB-2 applied as `20261119230204_two_step_signup_db2` (PR #404). Every point below shipped there.
+Its own follow-ups are in `docs/follow-ups/two-step-signup-db2.md`.
+
 **What:**
 - `trg_enforce_active_user` also refuses an incomplete account's writes on the 28 tables (decision 5:
   `deletion_requests` and `data_exports` included). `complete_my_account` must still get through.

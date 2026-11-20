@@ -34,8 +34,8 @@ One central `profiles` table holds the universal identity every user shares, sin
 | date_of_birth | date | nullable until the account is complete (two-step sign-up, below); required once complete; used for the 16+/18+ age rules; never client-writable |
 | city | text | nullable |
 | language | text | `'fr'`, `'ar'` or `'en'`, default `'fr'` |
-| completed_at | timestamptz | nullable; set when the account is complete (step 2, or at creation for a sign-up that carries the full profile) |
-| terms_accepted_at, terms_version | timestamptz, text | the terms and privacy policy accepted, and which version; « avant 2026-11 » for accounts created before the checkbox |
+| completed_at | timestamptz | nullable; set when the account is complete (step 2, or at creation for an account the service role creates already confirmed with the full profile, 16+) |
+| terms_accepted_at, terms_version | timestamptz, text | the terms and privacy policy accepted, and which version; « avant 2026-11 » for accounts created before the checkbox; « cree-par-le-service » for accounts the service role creates complete (fixtures, seeds) |
 | phone | text | nullable, progressively collected |
 | seller_type | text | nullable, `'freelancer'` or `'shop_owner'` |
 | is_admin | boolean | default false, separate protected flag |
@@ -58,9 +58,19 @@ One central `profiles` table holds the universal identity every user shares, sin
   - 16+, a name and a city;
   - the current `private.current_terms_version()`.
 - This is what makes a squatted sign-up harmless (pre-launch audit H1).
-- **Transitional (DB-1):** a sign-up that carries the full profile is still complete at creation, and an incomplete
-  account is not yet refused anything. DB-2 adds the write gate, the 7-day purge of incomplete accounts and the
-  confirmed-at-insert rule (`docs/follow-ups/two-step-signup-db.md`).
+- **DB-2** (migration `20261119230204_two_step_signup_db2`, 2026-11-19) closed H1:
+  - **Complete at creation:** only an account the service role creates already confirmed, with the full profile and
+    16+.
+    - GoTrue inserts every user unconfirmed and confirms an admin creation with an UPDATE in the same transaction.
+    - So `handle_new_user` marks a full-profile creation (a transaction-local setting), and
+      `on_auth_user_confirmed_at_creation` (AFTER UPDATE on `auth.users`) completes it under « cree-par-le-service ».
+    - Every other account, including a `/signup` call with the full metadata, starts incomplete until step 2.
+  - **The write gate:** `trg_enforce_active_user` (below, « User suspension ») also refuses an incomplete account
+    (`account_incomplete`) and any token whose session no longer exists (`session_ended`).
+    - The one exception is `complete_my_account`'s own `profiles` update.
+    - That includes `deletion_requests` and `data_exports`.
+  - **`private.purge_incomplete_accounts()`** (cron `purge-incomplete-accounts`, 03:27 UTC) deletes
+    confirmed-but-incomplete accounts 7 days after `created_at`, with the 24-hour purge's exclusions.
 
 A single `seller_type` field expresses the optional seller capability: empty for a pure consumer; `'freelancer'` or `'shop_owner'` once upgraded; never both at once. Future branched roles (such as `'liberal_professional'`, `'small_company'`) are added as new accepted values plus their own child tables. Admin status is a separate boolean, kept out of `seller_type` to preserve the developer/admin separation.
 
@@ -236,7 +246,7 @@ RLS on reports: the reporter creates and reads their own; admins read all and up
 
 The admin layer (Phase 9) adds moderation, dispute resolution, user suspension, and a forensic audit log on top of the marketplace core. Admin status is the `profiles.is_admin` boolean, read by the `is_admin()` SECURITY DEFINER function that gates every admin policy and RPC.
 
-**User suspension.** `profiles.suspended_at` (nullable timestamptz) and `suspended_reason` (nullable text) mark a suspended account, with a CHECK requiring a reason when suspended. Suspension is written only through the `admin_suspend_user(target, reason)` / `admin_unsuspend_user(target)` SECURITY DEFINER RPCs (admin-gated, self-suspend blocked, audit-logged). Enforcement is three-layered (migration `20261024191215_suspension_enforcement`, 2026-10-24): `trg_enforce_active_user`, a statement-level BEFORE trigger on every client-writable table, refuses any write by a suspended caller (`42501` "Ce compte est suspendu."), with restrictive `storage.objects` policies for uploads; the admin suspend actions mirror `suspended_at` as a Supabase Auth ban (`src/lib/auth/auth-ban.ts`); and `src/middleware.ts` signs a suspended or banned session out on every route but static assets and the auth pages. A suspended admin is not an admin: `is_admin()` requires `suspended_at IS NULL` (migration `20261024215559_is_admin_requires_active`), and so does the app-side `checkAdmin`.
+**User suspension.** `profiles.suspended_at` (nullable timestamptz) and `suspended_reason` (nullable text) mark a suspended account, with a CHECK requiring a reason when suspended. Suspension is written only through the `admin_suspend_user(target, reason)` / `admin_unsuspend_user(target)` SECURITY DEFINER RPCs (admin-gated, self-suspend blocked, audit-logged). Enforcement is three-layered (migration `20261024191215_suspension_enforcement`, 2026-10-24): `trg_enforce_active_user`, a statement-level BEFORE trigger on every client-writable table, refuses any write by a suspended caller (`42501` "Ce compte est suspendu."), with restrictive `storage.objects` policies for uploads. Since migration `20261119230204_two_step_signup_db2`, the same trigger also refuses an incomplete account (`account_incomplete`) and a token whose session is gone (`session_ended`), through `private.write_refusal(boolean)`. On `data_exports`, `deletion_requests` and `disputes` it now fires on INSERT too, and only the suspension refusal is waived there (suspension D3 / D4: a suspended user may still file them); the admin suspend actions mirror `suspended_at` as a Supabase Auth ban (`src/lib/auth/auth-ban.ts`); and `src/middleware.ts` signs a suspended or banned session out on every route but static assets and the auth pages. A suspended admin is not an admin: `is_admin()` requires `suspended_at IS NULL` (migration `20261024215559_is_admin_requires_active`), and so does the app-side `checkAdmin`.
 
 **Content moderation.** `shops`, `products`, `service_listings`, `freelancer_profiles`, and `job_posts` each carry `admin_hidden_at` (nullable timestamptz) + `admin_hidden_reason` (nullable text), with a CHECK requiring a reason when set. Only admins set or clear the marker — enforced by `enforce_admin_moderation_lock` (products/service_listings, which also have a seller `status='hidden'`) and `enforce_admin_marker_lock` (shops/freelancer_profiles/job_posts). `admin_hide_content` / `admin_unhide_content` SECURITY DEFINER RPCs are the only write path; public surfaces filter `admin_hidden_at IS NULL` at the application layer.
 

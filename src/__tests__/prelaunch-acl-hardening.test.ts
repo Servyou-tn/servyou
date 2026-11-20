@@ -54,10 +54,11 @@ const PASSWORD = `Pa-${randomUUID()}-Aa1!`
 const TITLE = `ACL hardening test ${RUN}`
 const METADATA = { full_name: 'ACL Hardening Test', date_of_birth: '1990-01-01', city: 'Sfax', language: 'fr' }
 
-// 15 years before today (UTC), so the minor stays under 18 whatever day the suite runs.
+// 17 years before today (UTC): under 18 whatever day the suite runs, and 16+ so the account is complete at creation
+// (two-step sign-up DB-2: a profile under 16 starts incomplete, and its writes would hit that gate instead).
 const MINOR_DOB = (() => {
   const d = new Date()
-  d.setUTCFullYear(d.getUTCFullYear() - 15)
+  d.setUTCFullYear(d.getUTCFullYear() - 17)
   return d.toISOString().slice(0, 10)
 })()
 
