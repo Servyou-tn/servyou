@@ -1602,11 +1602,13 @@ both on 2026-10-28.
     - **Rollback:** the commented `do $undo$` block at the end of the file (no row changes). Afterwards the prosrc md5 is
       `7801c2a006546ecc99cdc7c995f56d69` again.
 
-138 (number to confirm). **PENDING_two_step_signup_db2** — **NOT APPLIED.** The two-step sign-up, DB-2 of DB-1 → UI-1 →
-    DB-2. It closes pre-launch audit H1. PR on `feat/two-step-signup-db2`; plan `docs/follow-ups/two-step-signup-plan.md`
-    « DB-2 » and `docs/follow-ups/two-step-signup-db.md` §3. Written by db-guardian. The architect applies it only after
-    the founder's phone test passes and the founder says yes. After the apply: rename to the recorded version and
-    complete this entry.
+138. **20261119230204_two_step_signup_db2** — the two-step sign-up, DB-2 of DB-1 → UI-1 → DB-2. It closes pre-launch
+    audit H1. PR #404 on `feat/two-step-signup-db2`; plan `docs/follow-ups/two-step-signup-plan.md` « DB-2 » and
+    `docs/follow-ups/two-step-signup-db.md` §3. Written by db-guardian.
+    - **Applied** by the architect on 2026-11-19 from #404's head `30634da`, sections 1 to 6, D2's statement included.
+      It touched 0 rows.
+    - Before the apply, the cross-device phone test passed (+test2 and +test3: link → « Finalisez votre compte » →
+      complete). The founder approved D1–D4 as written.
     - **The write gate** (`trg_enforce_active_user`, the same 28 tables, statement level): `enforce_active_user` calls
       `private.write_refusal(boolean)` (SECURITY DEFINER, describes only the caller, EXECUTE for authenticated only).
       A signed-in write is refused when:
@@ -1629,12 +1631,35 @@ both on 2026-10-28.
     - **`private.purge_incomplete_accounts()`** and the cron job `purge-incomplete-accounts` (`27 3 * * *`):
       confirmed-but-incomplete accounts are deleted 7 days after `created_at`, with `purge_unconfirmed_signups`'
       exclusions verbatim.
-    - **D2:** accounts created the old way after UI-1 went live are turned incomplete. 0 rows on 2026-11-19.
-    - **Must-tests after the apply:**
-      - the file's rolled-back check;
-      - `two-step-signup-db2-live` (new, 3 verifications) and `two-step-signup-db-live` (LEGACY now incomplete);
-      - `two-step-signup-auth-live`, `suspension-enforcement`, and the 3 suites whose minor moved to 17;
-      - `client-write-grants-live` (no grant change).
+    - **D2:** accounts created the old way after UI-1 went live are turned incomplete. 0 rows on 2026-11-19, and 0 at the
+      apply.
+    - **Checked at the apply (architect):**
+      - the pre-apply count: 0, 7, 0, 2;
+      - `private.write_refusal`'s ACL is postgres + authenticated only;
+      - `complete_profile_confirmed_at_creation` and `purge_incomplete_accounts` are postgres only;
+      - the 3 triggers on `data_exports`, `deletion_requests` and `disputes` are BEFORE INSERT OR DELETE OR UPDATE;
+      - 28 gate triggers;
+      - `on_auth_user_confirmed_at_creation` exists;
+      - the cron job `purge-incomplete-accounts` runs at `27 3 * * *`;
+      - the file's rolled-back check returned PASS. Afterwards, 0 `tsdb2` users, sessions or posts persisted.
+    - **The recorded statement** (1 statement, 16 477 characters, md5 `7ecaf4f46cdaff6330931a1df87d9824`):
+      - it starts with two header lines the architect wrote;
+      - then comes the file's SQL up to its ROLLBACK block. Ignoring comment-only and blank lines, it equals the file
+        line for line;
+      - it keeps 29 of the file's 307 comment lines;
+      - checked read-only by db-guardian on 2026-11-20: decoded from `supabase_migrations.schema_migrations`, with the
+        md5 the database computed.
+    - **Types:** regenerated on 2026-11-20. The output equals `src/lib/supabase/database.types.ts` apart from that file's
+      hand-written 5-line header, so the file is unchanged. DB-2 changes no table or view. Its public functions are
+      trigger functions, which the types don't list, plus `complete_my_account`, replaced with the same signature.
+    - **Live (db-guardian, against production):** one suite at a time, 6 minutes apart; `rls-smoke` never run.
+      - 2026-11-19: the canary (the « service role creates confirmed » case) PASS at 23:13 UTC;
+        `two-step-signup-db2-live` 7/7, `two-step-signup-db-live` 11/11, `two-step-signup-auth-live` 3/3.
+      - `suspension-enforcement` came back 230/231 on 2026-11-19. Its `catalog` case had a stale list: `cod_block_lifts`
+        and `notifications`, both SELECT-only, were never classified (#378, #393). The architect ruled out a rollback.
+        Fixed in #405: 237/237 on 2026-11-20, from that branch.
+      - 2026-11-20: `job-responses-integrity` 22/22, `prelaunch-acl-hardening` 18/18, `seller-capability-integrity`
+        24/24 (the 3 suites whose minor moved to 17), `client-write-grants-live` 3/3.
     - **Rollback:** the commented block at the end of the file. D2's statement is not undone.
 
 ## Rollback paths

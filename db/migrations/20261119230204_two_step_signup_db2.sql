@@ -1,8 +1,9 @@
--- PENDING (db-guardian, 2026-11-19): the two-step sign-up, DB-2 of DB-1 -> UI-1 -> DB-2. It closes pre-launch audit H1.
+-- APPLIED 2026-11-19 by the architect, recorded as 20261119230204 two_step_signup_db2 (from #404 head 30634da).
+-- Written by db-guardian, 2026-11-19: the two-step sign-up, DB-2 of DB-1 -> UI-1 -> DB-2. It closes pre-launch audit H1.
 -- Plan and founder decisions of 2026-11-15: docs/follow-ups/two-step-signup-plan.md (#381), « DB-2 (db-guardian) »,
 -- and the DB-2 item of docs/follow-ups/two-step-signup-db.md (§3).
--- Written for review, NOT applied. The architect applies it only after the founder's phone test passes and the
--- founder says yes. The architect then gives the recorded version.
+-- Applied after the founder's phone test passed and the founder said yes. The apply checks, the recorded statement and
+-- the live results are in db/migrations/README.md, entry 138. Only these header lines changed after the apply.
 --
 -- WHAT IT DOES
 --   1. The write gate (trg_enforce_active_user, the same 28 tables). A signed-in caller's write is refused when:

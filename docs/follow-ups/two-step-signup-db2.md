@@ -1,6 +1,6 @@
 # Two-step sign-up, DB-2: follow-ups (`feat/two-step-signup-db2`, 2026-11-19)
 
-DB-2 of DB-1 → UI-1 → DB-2: `db/migrations/PENDING_two_step_signup_db2.sql`, the write gate, the end of the transitional
+DB-2 of DB-1 → UI-1 → DB-2: `db/migrations/20261119230204_two_step_signup_db2.sql` (applied 2026-11-19), the write gate, the end of the transitional
 rule and the 7-day purge. These are the items it leaves, ranked. `docs/follow-ups/two-step-signup-db.md` §3 is closed by
 this PR's commit 3, after the apply.
 
@@ -62,3 +62,27 @@ this PR's commit 3, after the apply.
 - **Why deferred:** it is a setting, not code. The PENDING file's DEPENDENCIES section names it.
 - **Where it lives:** Supabase dashboard › Authentication › Providers › Email; `docs/operations/supabase-auth-config.md`.
 - **Trigger:** the next refresh of the auth-config runbook. Mark the setting « never turn off: H1 ».
+
+## 6. HIGH (Google sign-in PR): a new Google user could never finish « Finalisez votre compte »
+
+- **What:** `complete_my_account` refuses unless two things hold.
+  - The session's JWT `amr` holds `otp` (`email_link_required`).
+  - A password was set during that session (`password_required`).
+  - A Google (OAuth) sign-in has amr `oauth` and no password, and its profile starts incomplete: no birth date, no city
+    (`handle_new_user`).
+  - So with Google switched on as it is today, a new Google user would be stuck on step 2 forever. The write gate
+    would refuse their every write, and the 7-day purge would delete the account.
+- **Why deferred:** Google sign-in is built but disabled (`ENABLE_GOOGLE_OAUTH = false`), and it has its own PR (plan §4
+  « Google, later »; DB-1 decision 6).
+- **Where it lives:**
+  - `public.complete_my_account` (migration `20261119230204_two_step_signup_db2`, from DB-1's);
+  - `src/app/finaliser-mon-compte/actions.ts`, which always calls `updateUser({ password })` first.
+- **Trigger:** the Google PR, BEFORE Google is switched on.
+  - The RPC must accept amr `oauth` for an account whose identity is Google, with the password optional for it
+    (plan §4, rule 3).
+  - It needs its own must-tests:
+    - a Google session completes without a password;
+    - a Google session cannot complete an account that has no Google identity;
+    - a password session is still refused;
+    - the other-sessions rule still holds.
+  - Step 2's page must skip the password for such a session.

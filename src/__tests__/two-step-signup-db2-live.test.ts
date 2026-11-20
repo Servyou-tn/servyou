@@ -1,7 +1,7 @@
 /**
- * Live proof of the two-step sign-up's database side, DB-2 (db/migrations/PENDING_two_step_signup_db2.sql; plan
- * docs/follow-ups/two-step-signup-plan.md « DB-2 », and docs/follow-ups/two-step-signup-db.md §3). RED until the
- * architect applies the migration.
+ * Live proof of the two-step sign-up's database side, DB-2 (db/migrations/20261119230204_two_step_signup_db2.sql, applied
+ * 2026-11-19, README #138; plan docs/follow-ups/two-step-signup-plan.md « DB-2 », and docs/follow-ups/two-step-signup-db.md
+ * §3).
  *
  * Covered:
  *   - creation:

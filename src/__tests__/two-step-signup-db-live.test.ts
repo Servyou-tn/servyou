@@ -4,10 +4,9 @@
  *
  * Covered:
  *   - a sign-up without a birth date now creates an INCOMPLETE profile (it used to fail the whole Auth insert);
- *   - since DB-2 (PENDING_two_step_signup_db2.sql) the transitional rule is gone:
+ *   - since DB-2 (20261119230204_two_step_signup_db2.sql) the transitional rule is gone:
  *       · a sign-up with the full profile but unconfirmed at creation is INCOMPLETE;
- *       · a service-role fixture created confirmed is complete under « cree-par-le-service ».
- *     Until DB-2 is applied, that case is red;
+ *       · a service-role fixture created confirmed is complete under « cree-par-le-service »;
  *   - complete_my_account, from a session opened by an e-mailed link (amr otp), in the order step 2 runs:
  *       · refuses while another session of the account is alive (other_sessions); once signOut({ scope: 'others' })
  *         ended it, that session can neither refresh nor complete (session_unknown, though its JWT is still valid);
