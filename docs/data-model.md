@@ -66,9 +66,12 @@ One central `profiles` table holds the universal identity every user shares, sin
       `on_auth_user_confirmed_at_creation` (AFTER UPDATE on `auth.users`) completes it under « cree-par-le-service ».
     - Every other account, including a `/signup` call with the full metadata, starts incomplete until step 2.
   - **The write gate:** `trg_enforce_active_user` (below, « User suspension ») also refuses an incomplete account
-    (`account_incomplete`) and any token whose session no longer exists (`session_ended`).
+    (`account_incomplete`) and any token whose session no longer exists (`session_ended`), on every table it guards.
+    That includes `deletion_requests`, `data_exports` and `disputes` (decision 5: an incomplete account's deletion and
+    export requests are blocked like every other write).
+    - On those three tables' INSERT, only the suspension refusal is waived (suspension D3 / D4), through
+      `private.write_refusal(p_suspension_waived)`. The session and completion checks still apply there.
     - The one exception is `complete_my_account`'s own `profiles` update.
-    - That includes `deletion_requests` and `data_exports`.
   - **`private.purge_incomplete_accounts()`** (cron `purge-incomplete-accounts`, 03:27 UTC) deletes
     confirmed-but-incomplete accounts 7 days after `created_at`, with the 24-hour purge's exclusions.
 

@@ -1646,7 +1646,7 @@ both on 2026-10-28.
       - it starts with two header lines the architect wrote;
       - then comes the file's SQL up to its ROLLBACK block. Ignoring comment-only and blank lines, it equals the file
         line for line;
-      - it keeps 29 of the file's 307 comment lines;
+      - it keeps 29 of the file's 308 comment lines above that block;
       - checked read-only by db-guardian on 2026-11-20: decoded from `supabase_migrations.schema_migrations`, with the
         md5 the database computed.
     - **Types:** regenerated on 2026-11-20. The output equals `src/lib/supabase/database.types.ts` apart from that file's
