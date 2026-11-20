@@ -269,23 +269,49 @@ Supabase Free keeps no backups, so a scheduled job makes one every night. It run
 are its Actions logs and artifacts. That repo's README is the source of truth for the scripts;
 this section is the runbook. Plan approved by the architect on 2026-11-13 (decisions D1–D7).
 
-**What runs, every night at 01:41 UTC** (96 minutes before the 03:17 purge job):
+**What runs, every night on the schedule 01:41 UTC.** GitHub starts it 6 to 8 hours late (runs
+began between 07:58 and 09:42 UTC in November 2026), so it runs after the 03:17 purge job. That
+is harmless: every data file reads one snapshot, so the purge never tears a dump; it only decides
+whether that day's expired sign-ups are in it.
 
-1. Dump the database through the session pooler as `servyou_backup`, a read-only role
+1. Set up the pinned images: production's Postgres image, and the Auth and Storage images the
+   restore check runs (`scripts/pins.sh` in the private repo). Since servyou-backups PR #5:
+   - a normal night loads them from the private repo's Actions cache, keyed by their digests,
+     and pulls nothing;
+   - otherwise each is pulled by its pinned digest from ECR Public, then from Docker Hub when ECR
+     refuses. Docker Hub serves the same digests. ECR answered `toomanyrequests: Data limit
+     exceeded` to GitHub's shared runners on 20 Nov 2026. The run then saves them to the cache;
+   - either way, each image's ID must equal its pin, so a cache file or a registry can't swap in
+     another image.
+2. Dump the database through the session pooler as `servyou_backup`, a read-only role
    (migration #133, `20261113150840_backup_role`).
-2. Download the public Storage files.
-3. Pack everything, encrypt it with [age](https://age-encryption.org), and upload one file to
+3. Download the public Storage files.
+4. Pack everything, encrypt it with [age](https://age-encryption.org), and upload one file to
    Backblaze B2 (EU). A second copy is kept for 7 days as an Actions artifact of the private repo.
-4. Restore the bundle into a throwaway Supabase Postgres 17 on the runner, held in memory only,
+5. Restore the bundle into a throwaway Supabase Postgres 17 on the runner, held in memory only,
    and compare the row counts (D4). Since servyou-backups PR #4, every privilege list in `public`
    and `private` is compared with production's too. Any mismatch fails the run.
+   - The throwaway database's Auth and Storage migrations must match production's. Since
+     servyou-backups PR #5 it runs Auth v2.198.0, whose migrations end at production's
+     `20261030120000`. CLI 3.1.0's own v2.197.0 lacked a column production gained on 17 Nov 2026,
+     so the restore checks of 17, 18 and 19 Nov failed (their bundles are in B2, but unverified).
+     Storage stays at v1.90.1 (migration #80, production's).
    - « In memory only »: the throwaway database's data folder is a Docker volume bound to a
      folder on the runner's tmpfs, with swap off. The CLI treats that empty volume as a new
      database, and the job then checks that Postgres really wrote its files there.
    - If the restore fails in `roles.sql` or `schema.sql`, which hold no rows, the log names the
      failed statement's first line. It never prints anything from `data.sql`.
-5. If a Storage file had to be skipped (step 2), fail the run at the end, once the bundle is safe
+6. If a Storage file had to be skipped (step 3), fail the run at the end, once the bundle is safe
    in B2.
+
+**Manual runs** run from `main`, like the schedule (private repo → Actions → nightly-backup → Run
+workflow). To try a branch of the private repo before its pull request is merged, tick
+`test_branch`. Such a run is a real backup: it reads production, uploads to B2 and checks in to
+Sentry.
+
+```powershell
+gh workflow run nightly-backup.yml --repo Servyou-tn/servyou-backups --ref <branch> -f test_branch=true
+```
 
 **What a bundle holds:** one file per night, `servyou-YYYY-MM-DD.tar.gz.age`. It's gzip, not zstd,
 so Windows' built-in `tar` can open it during a drill.
@@ -382,9 +408,14 @@ so Windows' built-in `tar` can open it during a drill.
 **Alerts:**
 
 - GitHub emails the founder when a run fails.
-- The Sentry cron monitor `nightly-backup` (check-ins `in_progress` / `ok` / `error`, a 90-minute
-  margin, a 30-minute maximum run time) also catches a run that never starts: a disabled
-  workflow, an exhausted minutes quota, or a skipped schedule.
+- The Sentry cron monitor `nightly-backup` (check-ins `in_progress` / `ok` / `error`, a 30-minute
+  maximum run time) also catches a run that never starts: a disabled workflow, an exhausted
+  minutes quota, or a skipped schedule.
+  - Its margin is 12 hours (since servyou-backups PR #5), because GitHub starts the 01:41 run 6 to
+    8 hours late. The former 90 minutes marked every night « missed » at 03:11 UTC, hours before
+    the run began.
+  - A run that fails still reports `error` at once. Only a run that never starts waits until
+    13:41 UTC to be called missed.
 
 #### Setup (founder, once, one action each)
 
@@ -593,10 +624,17 @@ re-create what "Not in a bundle" lists.
    New-Item -ItemType Directory C:\servyou-drill | Out-Null
    cd C:\servyou-drill
    npx supabase@3.1.0 init
+   New-Item -ItemType Directory supabase\.temp -Force | Out-Null
+   Set-Content -Encoding ascii supabase\.temp\gotrue-version 'v2.198.0'
+   Set-Content -Encoding ascii supabase\.temp\storage-version 'v1.90.1'
    npx supabase@3.1.0 start -x realtime,imgproxy,kong,mailpit,postgrest,postgres-meta,studio,edge-runtime,logflare,vector,supavisor
    ```
    - Auth (`gotrue`) and Storage (`storage-api`) still start, and their migrations create the
      `auth` and `storage` tables.
+   - The two `.temp` files make the CLI run the Auth and Storage versions of the nightly restore
+     check, not its own. Take the current tags from the private repo's `scripts/pins.sh`
+     (`GOTRUE_TAG`, `STORAGE_TAG`). CLI 3.1.0's own Auth v2.197.0 can't restore a bundle made
+     since 17 Nov 2026: `data.sql` then stops on `42703`.
    - Check that `supabase/config.toml` says `major_version = 17`.
    - If a health check fails on an excluded service, add `--ignore-health-check`.
 
