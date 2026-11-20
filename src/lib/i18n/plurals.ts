@@ -165,6 +165,9 @@ export const frPlurals: Record<string, PluralVariants> = {
   'activite.time_ago_hours':               { one: 'il y a {count}h', other: 'il y a {count}h' },
   'activite.time_ago_days':                { one: 'il y a {count} jour', other: 'il y a {count} jours' },
 
+  // Bell panel: the bell button's accessible name while something is unread (the badge itself is aria-hidden).
+  'shell.topbar.notifications.unreadAria':  { one: 'Notifications, {count} non lue', other: 'Notifications, {count} non lues' },
+
   // /aide search caption (the search term is user input — see the replacer note in tn()).
   'aide.search.count':                     { one: '{count} question correspond à « {q} »', other: '{count} questions correspondent à « {q} »' },
 }
@@ -319,6 +322,9 @@ const arPlurals: Record<string, PluralVariants> = {
   'activite.time_ago_minutes':             { one: 'منذ {count} دقيقة', two: 'منذ {count} دقيقتين', few: 'منذ {count} دقائق', many: 'منذ {count} دقيقةً', other: 'منذ {count} دقيقة' },
   'activite.time_ago_hours':               { one: 'منذ {count} ساعة', two: 'منذ {count} ساعتين', many: 'منذ {count} ساعةً', other: 'منذ {count} ساعات' },
   'activite.time_ago_days':                { one: 'منذ {count} يوم', two: 'منذ {count} يومين', many: 'منذ {count} يومًا', other: 'منذ {count} أيام' },
+
+  // REVIEW_AR_TRANSLATION — bell panel: the count after a colon needs no noun agreement.
+  'shell.topbar.notifications.unreadAria':  { other: 'الإشعارات، غير المقروءة: {count}' },
 
   // REVIEW_AR_TRANSLATION — /aide search caption. 11-99 take the accusative singular (`many`), like the other counts here.
   'aide.search.count':                     { one: 'سؤال واحد يطابق «{q}»', two: 'سؤالان يطابقان «{q}»', many: '{count} سؤالًا يطابق «{q}»', other: '{count} أسئلة تطابق «{q}»' },

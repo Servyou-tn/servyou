@@ -12,8 +12,8 @@ import type { Role } from '@/lib/roles'
 //   • « E-mails »: surface/base · border/subtle · r12 · pad 24 · gap 8 — a 20 Semi Bold title, a 14 secondary line, then the
 //     rows (Setting Row, divided by the list wrapper). Rows depend on the role (`rowsForRole`); « Alertes de sécurité » is a
 //     locked-ON row with no column behind it.
-//   • « Notifications sur la plateforme »: the muted surface/subtle panel with the « Bientôt disponible » badge — the in-app
-//     bell + drawer does not exist yet, so it is described, not faked (same honest treatment as Confidentialité's Visibilité).
+//   • « Notifications sur la plateforme »: the muted surface/subtle panel describing the in-app bell. Its « Bientôt
+//     disponible » badge went when the bell shipped (bell panel, Figma 1778:30747): the line now says what the bell does.
 // The tab owns NO state: the shell keeps the value, the saved value and the batched save bar (423:16882 / 558:38900).
 //
 // Copy is per role VARIANT only where the frames differ (commandes / avis / newsletter); « Propositions » and « Sécurité » read
@@ -86,9 +86,6 @@ export function NotificationsTab({
       <section className="flex flex-col gap-2 rounded-xl border border-border-subtle bg-surface-subtle px-4 py-6 shadow-[0px_1px_1px_rgba(0,0,0,0.04)] lg:p-6 max-lg:px-[15px] max-lg:py-[23px]">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
           <h2 className="text-xl font-semibold text-text-secondary max-lg:leading-[26px]">{t('parametres.notifications.platform.title', lang)}</h2>
-          <span className="rounded-md bg-surface-sunken px-3 py-1 text-center text-sm font-medium text-text-secondary lg:text-start max-lg:leading-[21px]">
-            {t('marche.sidebar.coming_soon', lang)}
-          </span>
         </div>
         <p className="text-sm text-text-secondary max-lg:leading-[21px]">{t('parametres.notifications.platform.body', lang)}</p>
       </section>

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { applyBellAction, bellSentenceText, type BellFeed, type BellItem } from './bell'
+import { applyBellAction, bellBadgeText, bellClickLeaves, bellSentenceText, type BellFeed, type BellItem } from './bell'
 
 // The panel's client-side contract: the sentence text and the optimistic read state. The rows → items part (plan §1,
 // icons, tones, links, the item envelope) is tested in bell-kinds.test.tsx. Pure: no I/O.
@@ -17,12 +17,40 @@ describe('bellSentenceText — the line in the reader’s language', () => {
   })
 })
 
+describe('bellBadgeText — the topbar badge (frames bell-0 / bell-3 / bell-9plus)', () => {
+  it('no badge at 0 (or below, or not a number)', () => {
+    for (const n of [0, -1, Number.NaN]) expect(bellBadgeText(n), String(n)).toBeNull()
+  })
+  it('the count from 1 to 9', () => {
+    for (let n = 1; n <= 9; n++) expect(bellBadgeText(n)).toBe(String(n))
+  })
+  it('« 9+ » above 9 — the count itself can exceed the 20 listed', () => {
+    for (const n of [10, 20, 137]) expect(bellBadgeText(n)).toBe('9+')
+  })
+})
+
+describe('bellClickLeaves — which clicks on an item close the panel', () => {
+  const click = { type: 'click', button: 0, metaKey: false, ctrlKey: false, shiftKey: false, altKey: false }
+  it('a plain left click leaves for the item: the panel closes', () => {
+    expect(bellClickLeaves(click)).toBe(true)
+  })
+  it('a new-tab open keeps the panel: a modifier key, or the middle button (auxclick)', () => {
+    for (const mod of ['metaKey', 'ctrlKey', 'shiftKey', 'altKey'] as const) {
+      expect(bellClickLeaves({ ...click, [mod]: true }), mod).toBe(false)
+    }
+    expect(bellClickLeaves({ ...click, type: 'auxclick', button: 1 })).toBe(false)
+  })
+  it('a right click keeps the panel', () => {
+    expect(bellClickLeaves({ ...click, type: 'auxclick', button: 2 })).toBe(false)
+  })
+})
+
 describe('applyBellAction — the optimistic read state', () => {
   const item = (id: string, unread: boolean): BellItem => ({
     id,
     kind: 'order_status_changed',
-    icon: 'package',
-    tone: 'info',
+    icon: 'circle-check',
+    tone: 'success',
     sentence: { key: 'buyerOrder.event.accepted_shop' },
     title: 'x',
     ref: '#X',

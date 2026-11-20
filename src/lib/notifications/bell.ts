@@ -26,11 +26,17 @@ export type BellRow = {
  * Icon KEYS (lucide names, kebab-case). The panel maps them to lucide components: a Server → Client prop must stay
  * serialisable (the AideIcon pattern, src/lib/aide/groups.ts). A new kind adds its key here, and the panel's
  * `Record<BellIcon, LucideIcon>` then fails to type-check until the icon is mapped.
+ * v1's set is the « NOV 18 — Notifications » frame's (1778:30747): a new order, accepted, receipt confirmed, on its way,
+ * stopped — plus `bell` for a line no rule covers.
  */
-export type BellIcon = 'package' | 'inbox' | 'handshake'
+export type BellIcon = 'shopping-bag' | 'circle-check' | 'package-check' | 'truck' | 'circle-x' | 'bell'
 
-/** Semantic tones. The panel maps them to tokens. */
-export type BellTone = 'info' | 'success' | 'warning' | 'danger' | 'neutral'
+/**
+ * Semantic tones; the panel maps them to tokens. The frame's tiles: `info` blue (something new), `success` green (done),
+ * `progress` indigo (on its way), `danger` red (stopped). `warning` and `neutral` are there for later kinds and for a line
+ * no rule covers.
+ */
+export type BellTone = 'info' | 'success' | 'progress' | 'warning' | 'danger' | 'neutral'
 
 /** A sentence variable: a KEY translated in the reader's language (a status label), or a plain value (a count). */
 export type BellVar = { key: string } | { value: string | number }
@@ -58,6 +64,27 @@ export type BellItem = {
 export type BellFeed = { ok: true; items: BellItem[]; unreadCount: number } | { ok: false }
 
 export const BELL_LIMIT = 20
+
+/** The topbar badge (frame bell-0 / bell-3 / bell-9plus): nothing at 0, the count up to 9, then « 9+ ». */
+export function bellBadgeText(unreadCount: number): string | null {
+  if (!Number.isFinite(unreadCount) || unreadCount < 1) return null
+  return unreadCount > 9 ? '9+' : String(Math.floor(unreadCount))
+}
+
+/**
+ * Does this click on an item leave the panel for the item's page? A plain left click does (the link, or the hook after
+ * the mark), so the panel closes. A new-tab open (a modifier key, the middle button) or a right click keeps it open.
+ */
+export function bellClickLeaves(e: {
+  type: string
+  button: number
+  metaKey: boolean
+  ctrlKey: boolean
+  shiftKey: boolean
+  altKey: boolean
+}): boolean {
+  return e.type === 'click' && e.button === 0 && !e.metaKey && !e.ctrlKey && !e.shiftKey && !e.altKey
+}
 
 type Translate = (key: string, vars?: Record<string, string | number>) => string
 
